@@ -5,7 +5,6 @@
 #include "printing/print_settings.h"
 
 #include "base/test/gtest_util.h"
-#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace printing {
@@ -15,13 +14,7 @@ TEST(PrintSettingsTest, IsColorModelSelected) {
     EXPECT_TRUE(IsColorModelSelected(IsColorModelSelected(model).has_value()));
 }
 
-// Flaky on Windows ASAN. See crbug.com/1074293.
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_IsColorModelSelectedUnknown DISABLED_IsColorModelSelectedUnknown
-#else
-#define MAYBE_IsColorModelSelectedUnknown IsColorModelSelectedUnknown
-#endif
-TEST(PrintSettingsDeathTest, MAYBE_IsColorModelSelectedUnknown) {
+TEST(PrintSettingsDeathTest, IsColorModelSelectedUnknown) {
   ::testing::FLAGS_gtest_death_test_style = "threadsafe";
   EXPECT_DCHECK_DEATH(IsColorModelSelected(UNKNOWN_COLOR_MODEL));
   EXPECT_DCHECK_DEATH(IsColorModelSelected(UNKNOWN_COLOR_MODEL - 1));

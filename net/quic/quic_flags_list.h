@@ -311,12 +311,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_remove_android_conformance_test_workaround,
     true)
 
-// If true, lower the CWND gain in BBRv2 STARTUP to 2 when BBQ2 is in connection
-// options.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr2_lower_startup_cwnd_gain,
-          true)
-
 // The divisor that controls how often MAX_STREAMS frames are sent.
 QUIC_FLAG(int32_t, FLAGS_quic_max_streams_window_divisor, 2)
 

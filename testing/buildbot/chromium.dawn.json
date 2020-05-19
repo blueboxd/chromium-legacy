@@ -2671,7 +2671,8 @@
         "args": [
           "--driver-logging",
           "--jobs=1",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--additional-driver-flag=--disable-gpu-sandbox",
+          "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {
@@ -2704,7 +2705,8 @@
           "--driver-logging",
           "--jobs=1",
           "--additional-driver-flag=--enable-dawn-backend-validation",
-          "--additional-driver-flag=--disable-gpu-sandbox"
+          "--additional-driver-flag=--disable-gpu-sandbox",
+          "--target=Release_x64"
         ],
         "isolate_name": "webgpu_blink_web_tests",
         "merge": {

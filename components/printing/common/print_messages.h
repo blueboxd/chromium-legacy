@@ -14,6 +14,7 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/printing_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
@@ -244,23 +245,23 @@ IPC_STRUCT_END()
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 // Parameters to describe the to-be-rendered preview document.
-IPC_STRUCT_BEGIN(PrintHostMsg_DidStartPreview_Params)
+IPC_STRUCT_TRAITS_BEGIN(printing::mojom::DidStartPreviewParams)
   // Total page count for the rendered preview. (Not the number of pages the
   // user selected to print.)
-  IPC_STRUCT_MEMBER(int, page_count)
+  IPC_STRUCT_TRAITS_MEMBER(page_count)
 
   // The list of 0-based page numbers that will be rendered.
-  IPC_STRUCT_MEMBER(std::vector<int>, pages_to_render)
+  IPC_STRUCT_TRAITS_MEMBER(pages_to_render)
 
   // number of pages per sheet and should be greater or equal to 1.
-  IPC_STRUCT_MEMBER(int, pages_per_sheet)
+  IPC_STRUCT_TRAITS_MEMBER(pages_per_sheet)
 
   // Physical size of the page, including non-printable margins.
-  IPC_STRUCT_MEMBER(gfx::Size, page_size)
+  IPC_STRUCT_TRAITS_MEMBER(page_size)
 
   // Scaling % to fit to page
-  IPC_STRUCT_MEMBER(int, fit_to_page_scaling)
-IPC_STRUCT_END()
+  IPC_STRUCT_TRAITS_MEMBER(fit_to_page_scaling)
+IPC_STRUCT_TRAITS_END()
 
 // Parameters to describe a rendered preview page.
 IPC_STRUCT_BEGIN(PrintHostMsg_DidPreviewPage_Params)
@@ -384,7 +385,7 @@ IPC_MESSAGE_ROUTED1(PrintHostMsg_RequestPrintPreview,
 
 // Notify the browser the about the to-be-rendered print preview document.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidStartPreview,
-                    PrintHostMsg_DidStartPreview_Params /* params */,
+                    printing::mojom::DidStartPreviewParams /* params */,
                     PrintHostMsg_PreviewIds /* ids */)
 
 // Notify the browser of the default page layout according to the currently

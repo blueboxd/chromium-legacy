@@ -894,9 +894,6 @@ void AssistantInteractionControllerImpl::OnUiVisible(
 
 bool AssistantInteractionControllerImpl::ShouldAttemptWarmerWelcome(
     AssistantEntryPoint entry_point) const {
-  if (!chromeos::assistant::features::IsWarmerWelcomeEnabled())
-    return false;
-
   if (number_of_times_shown_ > 1)
     return false;
 

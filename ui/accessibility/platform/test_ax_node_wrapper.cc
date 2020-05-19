@@ -461,7 +461,7 @@ base::Optional<bool> TestAXNodeWrapper::GetTableHasColumnOrRowHeaderNode()
 
 std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
   std::vector<int32_t> header_ids;
-  node_->GetTableCellColHeaderNodeIds(&header_ids);
+  node_->GetTableColHeaderNodeIds(&header_ids);
   return header_ids;
 }
 

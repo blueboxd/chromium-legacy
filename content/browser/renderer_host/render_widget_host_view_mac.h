@@ -333,20 +333,28 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void BeginKeyboardEvent() override;
   void EndKeyboardEvent() override;
   void ForwardKeyboardEventWithCommands(
-      std::unique_ptr<InputEvent> event,
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
       const std::vector<uint8_t>& native_event_data,
       bool skip_in_browser,
       std::vector<blink::mojom::EditCommandPtr> commands) override;
-  void RouteOrProcessMouseEvent(std::unique_ptr<InputEvent> event) override;
-  void RouteOrProcessTouchEvent(std::unique_ptr<InputEvent> event) override;
-  void RouteOrProcessWheelEvent(std::unique_ptr<InputEvent> event) override;
-  void ForwardMouseEvent(std::unique_ptr<InputEvent> event) override;
-  void ForwardWheelEvent(std::unique_ptr<InputEvent> event) override;
-  void GestureBegin(std::unique_ptr<InputEvent> event,
+  void RouteOrProcessMouseEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
+  void RouteOrProcessTouchEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
+  void RouteOrProcessWheelEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
+  void ForwardMouseEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
+  void ForwardWheelEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
+  void GestureBegin(std::unique_ptr<blink::WebCoalescedInputEvent> event,
                     bool is_synthetically_injected) override;
-  void GestureUpdate(std::unique_ptr<InputEvent> event) override;
-  void GestureEnd(std::unique_ptr<InputEvent> event) override;
-  void SmartMagnify(std::unique_ptr<InputEvent> event) override;
+  void GestureUpdate(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
+  void GestureEnd(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
+  void SmartMagnify(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
   void ImeSetComposition(const base::string16& text,
                          const std::vector<ui::ImeTextSpan>& ime_text_spans,
                          const gfx::Range& replacement_range,

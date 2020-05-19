@@ -553,9 +553,12 @@ void AwDrawFnImpl::PostDrawVkInterop(AwDrawFn_PostDrawVkParams* params) {
 
   // Flush so that we know the image's transition has been submitted and that
   // the |post_draw_semaphore| is pending.
+  GrFlushInfo flushInfo;
+  flushInfo.fNumSemaphores = 1;
+  flushInfo.fSignalSemaphores = &gr_post_draw_semaphore;
   GrSemaphoresSubmitted submitted =
-      vulkan_context_provider_->gr_context()->flushAndSignalSemaphores(
-          1, &gr_post_draw_semaphore);
+      vulkan_context_provider_->gr_context()->flush(flushInfo);
+  vulkan_context_provider_->gr_context()->submit();
   if (submitted != GrSemaphoresSubmitted::kYes) {
     LOG(ERROR) << "Skia could not submit GrSemaphore.";
     return;

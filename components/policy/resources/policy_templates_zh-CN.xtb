@@ -319,9 +319,6 @@
 <translation id="152657506688053119">默认搜索服务提供商的备选网址列表</translation>
 <translation id="1530812829012954197">总是通过托管浏览器呈现以下网址格式</translation>
 <translation id="1553532014072799546">应用级使用时间限制白名单</translation>
-<translation id="1553684822621013552">如果将这项政策设为 true，系统会为用户启用 ARC（需要经过额外的政策设置检查；如果目前的用户会话中已启用暂存模式或多帐号登录功能，则用户仍然无法使用 ARC）。
-
-如果停用或未配置此设置，那么企业用户将无法使用 ARC。</translation>
 <translation id="1553956579506604198">禁止安装外部扩展程序</translation>
 <translation id="1556072857949466438">借助此政策，管理员可以指定页面能否在取消加载的过程中显示弹出式窗口。
 
@@ -868,10 +865,6 @@
       如果未配置此政策或将其设为“True”，用户将能够使用网络文件共享功能。
 
       如果将此政策设为“False”，用户将无法使用网络文件共享功能。</translation>
-<translation id="2438609638493026652">允许向 Google 报告 Android 应用安装过程中发生的重要事件。系统仅会针对通过政策触发安装的应用捕获相关事件。
-
-      如果此政策设为 true，系统将会记录相关事件。
-      如果此政策设为 false 或未设置，系统将不会记录相关事件。</translation>
 <translation id="2440773021691931148">报告与电源相关的硬件统计信息和标识符。
 
       如果此政策设为 false 或未设置，系统将不会报告这些统计信息。
@@ -1181,15 +1174,6 @@
 
       每个列表条目指定一个标识符，用于在内部区分不同的设备本地帐号。</translation>
 <translation id="2769952903507981510">为远程访问主机配置所需的域名</translation>
-<translation id="2783078941107212091">在启动器中处于零状态的搜索框内启用应用推荐。
-
-          如果将此政策设置为 true，则系统可能会在零状态搜索时显示应用推荐。
-
-          如果将此政策设置为 false，则系统不会在零状态搜索时显示应用推荐。
-
-          如果您设置了此政策，用户将无法更改或覆盖它。
-
-          如果未设置此政策，则托管设备会将其默认设置为 False。</translation>
 <translation id="2787173078141616821">报告有关 Android 状态的信息</translation>
 <translation id="2799297758492717491">允许符合网址格式白名单中所列格式的网页自动播放媒体内容</translation>
 <translation id="2801065672151277034">证书管理设置</translation>
@@ -1842,15 +1826,6 @@
 <translation id="382476126209906314">为远程访问主机配置 TalkGadget 前缀</translation>
 <translation id="3824972131618513497">控制与电源管理和重新启动相关的设置。</translation>
 <translation id="3826475866868158882">已启用 Google 位置信息服务</translation>
-<translation id="3831054243924627613">此政策用于控制 Android 备份和恢复服务的初始状态。
-
-      如果此政策设为 <ph name="BR_DISABLED" /> 或未配置，则 Android 备份和恢复服务的初始状态为已停用。
-
-      如果此政策设为 <ph name="BR_ENABLED" />，则 Android 备份和恢复服务的初始状态为已启用。
-
-      如果此政策设为 <ph name="BR_UNDER_USER_CONTROL" />，则系统会要求用户选择是否使用 Android 备份和恢复服务。如果用户启用了备份和恢复服务，则系统会将 Android 应用数据上传到 Android 备份服务器，并会在用户重新安装兼容的应用时从 Android 备份服务器恢复这些数据。
-
-      请注意，此政策仅用于控制初始设置期间 Android 备份和恢复服务的状态。用户可在日后需要时前往 Android 设置以开启/关闭 Android 备份和恢复服务。</translation>
 <translation id="3831376478177535007">启用此设置后，只要赛门铁克公司 (Symantec Corporation) 的旧版公钥基础设施 (PKI) 操作签发的证书已以其他方式成功通过验证并关联至一个公认的 CA 证书，<ph name="PRODUCT_NAME" /> 就会允许信任这些证书。
 
       请注意，此政策有赖于相应操作系统是否仍能识别赛门铁克的旧版基础架构颁发的证书。如果该操作系统的某项更新更改了它对此类证书的处理方式，此政策便不再具有效力。另请注意，此政策只是一种临时解决方法，旨在让企业拥有更多时间来弃用旧版赛门铁克证书。我们将于 2019 年 1 月 1 日当天或前后撤消此政策。
@@ -3328,17 +3303,6 @@
 <translation id="6114416803310251055">已弃用</translation>
 <translation id="6133088669883929098">允许所有网站使用密钥生成功能</translation>
 <translation id="6135398260575578389">“安全浏览”功能会处于开启状态且会在增强模式下运行。此模式可提高安全性，但需与 Google 分享更多浏览信息。</translation>
-<translation id="6136537398661737682">此政策用于控制 Google 位置信息服务的初始状态。
-
-      如果此政策设为 <ph name="GLS_DISABLED" /> 或未配置，则 Google 位置信息服务的初始状态为已停用。
-
-      如果此政策设为 <ph name="GLS_ENABLED" />，则 Google 位置信息服务的初始状态为已启用。
-
-      如果此政策设为 <ph name="GLS_UNDER_USER_CONTROL" />，则系统会要求用户选择是否使用 Google 位置信息服务。这既会使得 Android 应用能够利用该服务查询设备位置信息，也会使得系统能够向 Google 提交匿名位置数据。
-
-      请注意，此政策仅用于控制初始设置期间 Google 位置信息服务的状态。用户可在日后需要时前往 Android 设置以开启/关闭 Google 位置信息服务。
-
-      请注意，如果 <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 政策设为 <ph name="BLOCK_GEOLOCATION_SETTING" />，则系统会忽略此政策并会始终停用 Google 位置信息服务。</translation>
 <translation id="6141402445226505817">一律使用粗略式时区检测方式</translation>
 <translation id="614616930188030377">系统会将此列表中的网址格式与请求网址的安全来源进行比对。
       如果找到了匹配项或者 chrome://flags/#enable-webrtc-hide-local-ips-with-mdns 已停用，本地 IP 地址就会显示在 WebRTC ICE 候选路径中。
@@ -4434,9 +4398,6 @@
 
           如果您未设置此政策，高对比度模式在登录屏幕上最初会处于停用状态，但用户可随时启用它。</translation>
 <translation id="7869986671709030417">默认背景图片打印模式</translation>
-<translation id="787125417158068494">如果设置为 SyncDisabled 或未配置，ARC 应用便无法使用 <ph name="PRODUCT_OS_NAME" /> 证书。
-
-      如果设置为 CopyCaCerts，ARC 应用便可使用所有已安装 ONC 且带有 <ph name="WEB_TRUSTED_BIT" /> 的 CA 证书。</translation>
 <translation id="7882585827992171421">此策略仅在零售模式下有效。
 
       确定在登录屏幕上用作屏幕保护程序的扩展程序的 ID。该扩展程序必须属于通过 DeviceAppPack 策略为此域配置的 AppPack。</translation>
@@ -4873,11 +4834,6 @@
 <translation id="8544465954173828789">允许将短信从手机同步到 Chromebook。</translation>
 <translation id="8548832052135586762">将打印模式设置为仅限彩色打印、仅限单色打印或无颜色模式限制。如果未设置此政策，则会被视为无限制。</translation>
 <translation id="8549772397068118889">访问非内容包内的网站时发出警告</translation>
-<translation id="8566729013138025202">指定要传递给 ARC 运行时的一组政策。相应值必须为有效的 JSON。
-
-      此政策可用于配置哪些 Android 应用会在设备上自动安装。
-
-      要将应用固定到启动器上，请参阅 PinnedLauncherApps。</translation>
 <translation id="8566842294717252664">在“打开新的标签页”页面和应用启动器中不显示网上应用店</translation>
 <translation id="8569734380847633643">
           如果此政策设为 false，<ph name="PRODUCT_OS_NAME" />将停用 Wi-Fi，并且用户无法重新启用 Wi-Fi。
@@ -4906,11 +4862,6 @@
           如果您未设置此政策，系统将使用默认时长。
 
           指定的政策值应以毫秒为单位。</translation>
-<translation id="8598350264853261122">如果此政策设为 false，独立用户将无法使用 ARC。
-
-      如果此政策设为 true 或未设置，所有用户都将能够使用 ARC（除非通过其他方式停用了 ARC）。
-
-      系统只会在未运行 ARC 时（例如启动 Chrome 操作系统时）应用对此政策做出的更改。</translation>
 <translation id="8606263947930257189">控制 <ph name="PRODUCT_NAME" /> 可否冻结已在后台运行至少 5 分钟的标签页。
 
       如果此政策设为 true，系统可能会冻结已在后台运行至少 5 分钟的标签页。冻结标签页可以降低 CPU、电池和内存使用量。<ph name="PRODUCT_NAME" /> 会使用试探法来避免冻结在后台执行有用工作（例如显示通知、播放声音、流式传输视频）的标签页。网络开发者也可选择停用用于冻结网站标签页的功能 (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md)。

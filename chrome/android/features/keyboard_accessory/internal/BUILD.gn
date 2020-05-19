@@ -26,6 +26,7 @@ android_library("internal_java") {
     "//components/feature_engagement/public:public_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:androidx_viewpager_viewpager_java",
     "//third_party/android_deps:com_google_android_material_material_java",

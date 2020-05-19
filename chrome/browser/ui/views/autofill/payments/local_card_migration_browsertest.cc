@@ -385,7 +385,7 @@ class LocalCardMigrationBrowserTest
 
   void ClickOnDialogViewAndWait(
       views::View* view,
-      views::DialogDelegateView* local_card_migration_view) {
+      views::BubbleDialogDelegateView* local_card_migration_view) {
     CHECK(local_card_migration_view);
     views::test::WidgetDestroyedWaiter destroyed_waiter(
         local_card_migration_view->GetWidget());
@@ -402,7 +402,7 @@ class LocalCardMigrationBrowserTest
 
   views::View* FindViewInDialogById(
       DialogViewId view_id,
-      views::DialogDelegateView* local_card_migration_view) {
+      views::BubbleDialogDelegateView* local_card_migration_view) {
     CHECK(local_card_migration_view);
 
     views::View* specified_view =
@@ -417,14 +417,15 @@ class LocalCardMigrationBrowserTest
     return specified_view;
   }
 
-  void ClickOnOkButton(views::DialogDelegateView* local_card_migration_view) {
+  void ClickOnOkButton(
+      views::BubbleDialogDelegateView* local_card_migration_view) {
     views::View* ok_button = local_card_migration_view->GetOkButton();
 
     ClickOnDialogViewAndWait(ok_button, local_card_migration_view);
   }
 
   void ClickOnCancelButton(
-      views::DialogDelegateView* local_card_migration_view) {
+      views::BubbleDialogDelegateView* local_card_migration_view) {
     views::View* cancel_button = local_card_migration_view->GetCancelButton();
     ClickOnDialogViewAndWait(cancel_button, local_card_migration_view);
   }
@@ -441,7 +442,7 @@ class LocalCardMigrationBrowserTest
             ->local_card_migration_bubble_view());
   }
 
-  views::DialogDelegateView* GetLocalCardMigrationMainDialogView() {
+  views::BubbleDialogDelegateView* GetLocalCardMigrationMainDialogView() {
     LocalCardMigrationDialogControllerImpl*
         local_card_migration_dialog_controller_impl =
             LocalCardMigrationDialogControllerImpl::FromWebContents(

@@ -1230,7 +1230,7 @@ TEST_F(RenderWidgetHostTest, PreHandleRawKeyDownEvent) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kRawKeyDown,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(
@@ -1259,7 +1259,7 @@ TEST_F(RenderWidgetHostTest, RawKeyDownShortcutEvent) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kRawKeyDown,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(
@@ -1280,7 +1280,7 @@ TEST_F(RenderWidgetHostTest, RawKeyDownShortcutEvent) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kChar,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(
@@ -1297,7 +1297,7 @@ TEST_F(RenderWidgetHostTest, RawKeyDownShortcutEvent) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kKeyUp,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(
@@ -1314,7 +1314,7 @@ TEST_F(RenderWidgetHostTest, UnhandledWheelEvent) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(
@@ -1336,7 +1336,7 @@ TEST_F(RenderWidgetHostTest, HandleWheelEvent) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(
@@ -1379,7 +1379,7 @@ TEST_F(RenderWidgetHostTest, UnhandledGestureEvent) {
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kGestureTwoFingerTap,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   // Send the simulated response from the renderer back.
   dispatched_events[0]->ToEvent()->CallCallback(
@@ -1574,10 +1574,10 @@ void CheckLatencyInfoComponentInMessage(
   ASSERT_EQ(1u, dispatched_events.size());
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
 
-  EXPECT_TRUE(dispatched_events[0]->ToEvent()->Event()->web_event->GetType() ==
+  EXPECT_TRUE(dispatched_events[0]->ToEvent()->Event()->Event().GetType() ==
               expected_type);
   EXPECT_TRUE(
-      dispatched_events[0]->ToEvent()->Event()->latency_info.FindLatency(
+      dispatched_events[0]->ToEvent()->Event()->latency_info().FindLatency(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   dispatched_events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
@@ -1589,12 +1589,12 @@ void CheckLatencyInfoComponentInGestureScrollUpdate(
   ASSERT_TRUE(dispatched_events[0]->ToEvent());
   ASSERT_TRUE(dispatched_events[1]->ToEvent());
   EXPECT_EQ(WebInputEvent::Type::kTouchScrollStarted,
-            dispatched_events[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[0]->ToEvent()->Event()->Event().GetType());
 
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
-            dispatched_events[1]->ToEvent()->Event()->web_event->GetType());
+            dispatched_events[1]->ToEvent()->Event()->Event().GetType());
   EXPECT_TRUE(
-      dispatched_events[1]->ToEvent()->Event()->latency_info.FindLatency(
+      dispatched_events[1]->ToEvent()->Event()->latency_info().FindLatency(
           ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   dispatched_events[1]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);

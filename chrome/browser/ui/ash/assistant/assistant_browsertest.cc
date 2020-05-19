@@ -11,8 +11,6 @@
 #include "chromeos/dbus/power_manager/backlight.pb.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "content/public/test/browser_test.h"
-#include "ui/message_center/message_center.h"
-#include "ui/message_center/public/cpp/notification.h"
 
 namespace chromeos {
 namespace assistant {
@@ -24,14 +22,6 @@ constexpr auto kMode = FakeS3Mode::kReplay;
 constexpr int kVersion = 1;
 
 constexpr int kStartBrightnessPercent = 50;
-
-// Ensures that |str_| starts with |prefix_|. If it doesn't, this will print a
-// nice error message.
-#define EXPECT_STARTS_WITH(str_, prefix_)                                      \
-  ({                                                                           \
-    EXPECT_TRUE(base::StartsWith(str_, prefix_, base::CompareCase::SENSITIVE)) \
-        << "Expected '" << str_ << "'' to start with '" << prefix_ << "'";     \
-  })
 
 // Ensures that |value_| is within the range {min_, max_}. If it isn't, this
 // will print a nice error message.
@@ -237,62 +227,6 @@ IN_PROC_BROWSER_TEST_P(AssistantBrowserTest, ShouldTurnDownBrightness) {
 // We parameterize all AssistantBrowserTests to verify that they work for both
 // response processing v1 as well as response processing v2.
 INSTANTIATE_TEST_SUITE_P(All, AssistantBrowserTest, testing::Bool());
-
-// TODO(b/153485859): Move to assistant_timers_browsertest.cc.
-class AssistantTimersV2BrowserTest : public MixinBasedInProcessBrowserTest {
- public:
-  AssistantTimersV2BrowserTest() {
-    feature_list_.InitAndEnableFeature(features::kAssistantTimersV2);
-  }
-
-  AssistantTimersV2BrowserTest(const AssistantTimersV2BrowserTest&) = delete;
-  AssistantTimersV2BrowserTest& operator=(const AssistantTimersV2BrowserTest&) =
-      delete;
-
-  ~AssistantTimersV2BrowserTest() override = default;
-
-  void ShowAssistantUi() {
-    if (!tester()->IsVisible())
-      tester()->PressAssistantKey();
-  }
-
-  AssistantTestMixin* tester() { return &tester_; }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-  AssistantTestMixin tester_{&mixin_host_, this, embedded_test_server(), kMode,
-                             kVersion};
-};
-
-IN_PROC_BROWSER_TEST_F(AssistantTimersV2BrowserTest,
-                       ShouldDismissTimerNotificationsWhenDisablingAssistant) {
-  tester()->StartAssistantAndWaitForReady();
-
-  ShowAssistantUi();
-  EXPECT_TRUE(tester()->IsVisible());
-
-  // Confirm no Assistant notifications are currently being shown.
-  auto* message_center = message_center::MessageCenter::Get();
-  EXPECT_TRUE(message_center->FindNotificationsByAppId("assistant").empty());
-
-  // Start a timer for one minute.
-  tester()->SendTextQuery("Set a timer for 1 minute.");
-
-  // Check for a stable substring of the expected answers.
-  tester()->ExpectTextResponse("1 min.");
-
-  // Confirm that an Assistant timer notification is now showing.
-  auto notifications = message_center->FindNotificationsByAppId("assistant");
-  ASSERT_EQ(1u, notifications.size());
-  EXPECT_STARTS_WITH((*notifications.begin())->id(), "assistant/timer");
-
-  // Disable Assistant.
-  tester()->SetAssistantEnabled(false);
-  base::RunLoop().RunUntilIdle();
-
-  // Confirm that our Assistant timer notification has been dismissed.
-  EXPECT_TRUE(message_center->FindNotificationsByAppId("assistant").empty());
-}
 
 }  // namespace assistant
 }  // namespace chromeos

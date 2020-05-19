@@ -74,9 +74,34 @@ public class MainActivity extends FragmentActivity {
         int COUNT = 3;
     }
 
-    private static void logFragmentNavigation(@FragmentNavigation int selectedFragment) {
-        RecordHistogram.recordEnumeratedHistogram("Android.WebView.DevUi.FragmentNavigation",
-                selectedFragment, FragmentNavigation.COUNT);
+    /**
+     * Logs a navigation to a fragment. Requires a suffix from histograms.xml ("AnyMethod",
+     * "FromIntent", or "NavBar") to determine which histogram to log.
+     *
+     * @param histogramSuffix one of the suffixes listed in histograms.xml
+     * @param selectedFragmentId one of FRAGMENT_ID_HOME, FRAGMENT_ID_CRASHES, or FRAGMENT_ID_FLAGS
+     */
+    private static void logFragmentNavigation(String histogramSuffix, int selectedFragmentId) {
+        // Map FRAGMENT_ID_* to FragmentNavigation value (so FRAGMENT_ID_* values are permitted to
+        // change in the future without messing up logs).
+        @FragmentNavigation
+        int sample;
+        switch (selectedFragmentId) {
+            default:
+                // Fall through.
+            case FRAGMENT_ID_HOME:
+                sample = FragmentNavigation.HOME_FRAGMENT;
+                break;
+            case FRAGMENT_ID_CRASHES:
+                sample = FragmentNavigation.CRASHES_LIST_FRAGMENT;
+                break;
+            case FRAGMENT_ID_FLAGS:
+                sample = FragmentNavigation.FLAGS_FRAGMENT;
+                break;
+        }
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.WebView.DevUi.FragmentNavigation." + histogramSuffix, sample,
+                FragmentNavigation.COUNT);
     }
 
     @Override
@@ -100,6 +125,7 @@ public class MainActivity extends FragmentActivity {
             assert mFragmentIdMap.containsKey(view.getId()) : "Unexpected view ID: " + view.getId();
             int fragmentId = mFragmentIdMap.get(view.getId());
             switchFragment(fragmentId);
+            logFragmentNavigation("NavBar", fragmentId);
         };
         final int childCount = bottomNavBar.getChildCount();
         for (int i = 0; i < childCount; ++i) {
@@ -132,19 +158,17 @@ public class MainActivity extends FragmentActivity {
                 chosenFragmentId = FRAGMENT_ID_HOME;
                 // Fall through.
             case FRAGMENT_ID_HOME:
-                logFragmentNavigation(FragmentNavigation.HOME_FRAGMENT);
                 fragment = new HomeFragment();
                 break;
             case FRAGMENT_ID_CRASHES:
-                logFragmentNavigation(FragmentNavigation.CRASHES_LIST_FRAGMENT);
                 fragment = new CrashesListFragment();
                 break;
             case FRAGMENT_ID_FLAGS:
-                logFragmentNavigation(FragmentNavigation.FLAGS_FRAGMENT);
                 fragment = new FlagsFragment();
                 break;
         }
         assert fragment != null;
+        logFragmentNavigation("AnyMethod", chosenFragmentId);
 
         // Switch fragments
         FragmentManager fm = getSupportFragmentManager();
@@ -212,6 +236,7 @@ public class MainActivity extends FragmentActivity {
             fragmentId = extras.getInt(FRAGMENT_ID_INTENT_EXTRA, fragmentId);
         }
         switchFragment(fragmentId);
+        logFragmentNavigation("FromIntent", fragmentId);
     }
 
     @Override

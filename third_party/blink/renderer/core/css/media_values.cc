@@ -174,15 +174,6 @@ int MediaValues::CalculateAvailableHoverTypes(LocalFrame* frame) {
   return frame->GetSettings()->GetAvailableHoverTypes();
 }
 
-DisplayShape MediaValues::CalculateDisplayShape(LocalFrame* frame) {
-  DCHECK(frame);
-  DCHECK(frame->GetPage());
-  return frame->GetPage()
-      ->GetChromeClient()
-      .GetScreenInfo(*frame)
-      .display_shape;
-}
-
 ColorSpaceGamut MediaValues::CalculateColorGamut(LocalFrame* frame) {
   DCHECK(frame);
   DCHECK(frame->GetPage());

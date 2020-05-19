@@ -6,6 +6,18 @@
     return document.getElementById(id);
   };
 
+  // The modal permission dialog requires a user gesture to trigger.
+  // Hook up a click event listener to run a specified method (which
+  // may be changed by the test).
+  var functionToRun;
+  function runFunctionOnClick() {
+      eval(functionToRun);
+  }
+
+  window.addEventListener('load', () => {
+      window.addEventListener('click', runFunctionOnClick);
+  });
+
   function getSources() {
     navigator.mediaDevices.enumerateDevices().then(function(devices) {
       document.title = 'Media devices available';
@@ -31,13 +43,17 @@
         JSON.stringify(constraints));
     navigator.mediaDevices.getUserMedia(constraints)
         .then(stream => {
+          window.document.title = 'Granted:1';
           detectVideoInLocalView1(stream).then(() => {
             stream.getVideoTracks()[0].stop();
             detectVideoStopped('local-view-1')
                 .then(reportTestSuccess);
           });
         })
-        .catch(failTest);
+        .catch(() => {
+          window.document.title = 'Denied:1';
+          failTest();
+        });
   }
 
   // Requests getusermedia and expects it to succeed.

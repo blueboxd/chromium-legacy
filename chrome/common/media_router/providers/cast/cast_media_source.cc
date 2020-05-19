@@ -23,9 +23,6 @@ using cast_channel::BroadcastRequest;
 using cast_channel::CastDeviceCapability;
 using cast_channel::ReceiverAppType;
 
-constexpr char kGoogleDocsOrigin[] = "https://docs.google.com";
-constexpr char kGoogleMeetOrigin[] = "https://meet.google.com";
-
 namespace cast_util {
 
 using media_router::AutoJoinPolicy;
@@ -424,26 +421,6 @@ std::vector<std::string> CastMediaSource::GetAppIds() const {
     app_ids.push_back(info.app_id);
 
   return app_ids;
-}
-
-std::vector<url::Origin> CastMediaSource::GetAllowedOrigins() const {
-  // Initiation of tab mirroring via a cast: URL is permitted for Slides and
-  // Meet until web APIs can meet their needs.
-  return ContainsStreamingApp()
-             ? std::vector<url::Origin>(
-                   {url::Origin::Create(GURL(kGoogleDocsOrigin)),
-                    url::Origin::Create(GURL(kGoogleMeetOrigin))})
-             : std::vector<url::Origin>();
-}
-
-bool CastMediaSource::IsAllowedOrigin(const url::Origin& origin) const {
-  // TODO(crbug.com/1047834): Check a specific origin for browser requested
-  // streaming.
-  if (ContainsStreamingApp() && origin.scheme() == url::kHttpsScheme) {
-    return base::Contains(GetAllowedOrigins(), origin);
-  } else {
-    return true;
-  }
 }
 
 void CastMediaSource::set_supported_app_types(

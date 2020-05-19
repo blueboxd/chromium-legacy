@@ -33,7 +33,6 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData()
       immersive_mode(false),
       strict_mode(true),
       display_mode(blink::mojom::DisplayMode::kBrowser),
-      display_shape(kDisplayShapeRect),
       color_gamut(ColorSpaceGamut::kUnknown),
       preferred_color_scheme(PreferredColorScheme::kNoPreference),
       prefers_reduced_motion(false),
@@ -76,7 +75,6 @@ MediaValuesCached::MediaValuesCachedData::MediaValuesCachedData(
     strict_mode = MediaValues::CalculateStrictMode(frame);
     display_mode = MediaValues::CalculateDisplayMode(frame);
     media_type = MediaValues::CalculateMediaType(frame);
-    display_shape = MediaValues::CalculateDisplayShape(frame);
     color_gamut = MediaValues::CalculateColorGamut(frame);
     preferred_color_scheme = MediaValues::CalculatePreferredColorScheme(frame);
     prefers_reduced_motion = MediaValues::CalculatePrefersReducedMotion(frame);
@@ -187,10 +185,6 @@ void MediaValuesCached::OverrideViewportDimensions(double width,
                                                    double height) {
   data_.viewport_width = width;
   data_.viewport_height = height;
-}
-
-DisplayShape MediaValuesCached::GetDisplayShape() const {
-  return data_.display_shape;
 }
 
 ColorSpaceGamut MediaValuesCached::ColorGamut() const {

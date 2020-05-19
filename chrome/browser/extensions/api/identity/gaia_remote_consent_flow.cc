@@ -46,7 +46,8 @@ GaiaRemoteConsentFlow::~GaiaRemoteConsentFlow() {
 void GaiaRemoteConsentFlow::Start() {
   if (!web_flow_) {
     web_flow_ = std::make_unique<WebAuthFlow>(
-        this, profile_, resolution_data_.url, WebAuthFlow::INTERACTIVE);
+        this, profile_, resolution_data_.url, WebAuthFlow::INTERACTIVE,
+        WebAuthFlow::GET_AUTH_TOKEN);
   }
 
   SetAccountsInCookie();

@@ -126,13 +126,11 @@ void StreamTextureWrapperImpl::UpdateTextureSize(const gfx::Size& new_size) {
 
 void StreamTextureWrapperImpl::Initialize(
     const base::RepeatingClosure& received_frame_cb,
-    const gfx::Size& rotated_visible_size,
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     StreamTextureWrapperInitCB init_cb) {
   DVLOG(2) << __func__;
 
   compositor_task_runner_ = compositor_task_runner;
-  rotated_visible_size_ = rotated_visible_size;
 
   main_task_runner_->PostTask(
       FROM_HERE,
@@ -159,8 +157,6 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
     std::move(init_cb).Run(false);
     return;
   }
-
-  stream_texture_proxy_->UpdateRotatedVisibleSize(rotated_visible_size_);
 
   // Unretained is safe here since |stream_texture_proxy_| is a scoped member of
   // the this StreamTextureWrapperImpl class which clears/resets this callback

@@ -41,6 +41,7 @@ void RecordUMAHistogramCount(const std::string& name, int64_t sample) {
 }  // namespace
 
 DataUseMeasurement::DataUseMeasurement(
+    PrefService* pref_service,
     network::NetworkConnectionTracker* network_connection_tracker)
     :
 #if defined(OS_ANDROID)
@@ -289,11 +290,13 @@ void DataUseMeasurement::OnConnectionChanged(
 
 void DataUseMeasurement::AddServicesDataUseObserver(
     ServicesDataUseObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   services_data_use_observer_list_.AddObserver(observer);
 }
 
 void DataUseMeasurement::RemoveServicesDataUseObserver(
     ServicesDataUseObserver* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   services_data_use_observer_list_.RemoveObserver(observer);
 }
 

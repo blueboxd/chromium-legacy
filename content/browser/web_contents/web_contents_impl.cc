@@ -1760,7 +1760,7 @@ Visibility WebContentsImpl::GetVisibility() {
 }
 
 bool WebContentsImpl::NeedToFireBeforeUnloadOrUnload() {
-  if (!WillNotifyDisconnection())
+  if (!notify_disconnection_)
     return false;
 
   // Don't fire if the main frame's RenderViewHost indicates that beforeunload
@@ -3589,18 +3589,6 @@ void WebContentsImpl::ReloadFocusedFrame() {
   focused_frame->Reload();
 }
 
-std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
-WebContentsImpl::PauseSubresourceLoading() {
-  std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
-      handles;
-  for (RenderFrameHost* rfh : GetAllFrames()) {
-    if (!rfh->IsRenderFrameLive())
-      continue;
-    handles.push_back(rfh->PauseSubresourceLoading());
-  }
-  return handles;
-}
-
 void WebContentsImpl::Undo() {
   auto* input_handler = GetFocusedFrameInputHandler();
   if (!input_handler)
@@ -3940,10 +3928,6 @@ void WebContentsImpl::GenerateWebBundle(
 
 const std::string& WebContentsImpl::GetContentsMimeType() {
   return contents_mime_type_;
-}
-
-bool WebContentsImpl::WillNotifyDisconnection() {
-  return notify_disconnection_;
 }
 
 blink::mojom::RendererPreferences* WebContentsImpl::GetMutableRendererPrefs() {

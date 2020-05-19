@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_job.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -269,6 +270,47 @@ base::LazyInstance<PageAllocator>::Leaky g_page_allocator =
 
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC)
 
+class JobDelegateImpl : public v8::JobDelegate {
+ public:
+  explicit JobDelegateImpl(base::JobDelegate* delegate) : delegate_(delegate) {}
+  JobDelegateImpl() = default;
+
+  JobDelegateImpl(const JobDelegateImpl&) = delete;
+  JobDelegateImpl& operator=(const JobDelegateImpl&) = delete;
+
+  // v8::JobDelegate:
+  bool ShouldYield() override { return delegate_->ShouldYield(); }
+  void NotifyConcurrencyIncrease() override {
+    delegate_->NotifyConcurrencyIncrease();
+  }
+
+ private:
+  base::JobDelegate* delegate_;
+};
+
+class JobHandleImpl : public v8::JobHandle {
+ public:
+  JobHandleImpl(base::JobHandle handle, std::unique_ptr<v8::JobTask> job_task)
+      : handle_(std::move(handle)), job_task_(std::move(job_task)) {}
+  ~JobHandleImpl() override = default;
+
+  JobHandleImpl(const JobHandleImpl&) = delete;
+  JobHandleImpl& operator=(const JobHandleImpl&) = delete;
+
+  // v8::JobHandle:
+  void NotifyConcurrencyIncrease() override {
+    handle_.NotifyConcurrencyIncrease();
+  }
+  void Join() override { handle_.Join(); }
+  void Cancel() override { handle_.Cancel(); }
+
+  bool IsRunning() override { return !!handle_; }
+
+ private:
+  base::JobHandle handle_;
+  std::unique_ptr<v8::JobTask> job_task_;
+};
+
 }  // namespace
 
 }  // namespace gin
@@ -439,6 +481,37 @@ void V8Platform::CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task,
       FROM_HERE, kDefaultTaskTraits,
       base::BindOnce(&v8::Task::Run, std::move(task)),
       base::TimeDelta::FromSecondsD(delay_in_seconds));
+}
+
+std::unique_ptr<v8::JobHandle> V8Platform::PostJob(
+    v8::TaskPriority priority,
+    std::unique_ptr<v8::JobTask> job_task) {
+  base::TaskTraits task_traits;
+  switch (priority) {
+    case v8::TaskPriority::kBestEffort:
+      task_traits = kLowPriorityTaskTraits;
+      break;
+    case v8::TaskPriority::kUserVisible:
+      task_traits = kDefaultTaskTraits;
+      break;
+    case v8::TaskPriority::kUserBlocking:
+      task_traits = kBlockingTaskTraits;
+      break;
+  }
+  auto handle = base::PostJob(
+      FROM_HERE, task_traits,
+      base::BindRepeating(
+          [](v8::JobTask* job_task, base::JobDelegate* delegate) {
+            JobDelegateImpl delegate_impl(delegate);
+            job_task->Run(&delegate_impl);
+          },
+          base::Unretained(job_task.get())),
+      base::BindRepeating(
+          [](v8::JobTask* job_task) { return job_task->GetMaxConcurrency(); },
+          base::Unretained(job_task.get())));
+
+  return std::make_unique<JobHandleImpl>(std::move(handle),
+                                         std::move(job_task));
 }
 
 bool V8Platform::IdleTasksEnabled(v8::Isolate* isolate) {

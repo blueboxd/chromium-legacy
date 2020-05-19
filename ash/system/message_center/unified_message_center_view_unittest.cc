@@ -106,15 +106,21 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return id;
   }
 
-  void CreateMessageCenterView(int max_height = kDefaultMaxHeight) {
-    message_center_view_ =
+  std::unique_ptr<TestUnifiedMessageCenterView> CreateMessageCenterViewImpl(
+      int max_height) {
+    auto message_center_view =
         std::make_unique<TestUnifiedMessageCenterView>(model_.get());
-    message_center_view_->AddObserver(this);
-    message_center_view_->SetMaxHeight(max_height);
-    message_center_view_->SetAvailableHeight(max_height);
-    message_center_view_->set_owned_by_client();
-    OnViewPreferredSizeChanged(message_center_view_.get());
+    message_center_view->AddObserver(this);
+    message_center_view->SetMaxHeight(max_height);
+    message_center_view->SetAvailableHeight(max_height);
+    OnViewPreferredSizeChanged(message_center_view.get());
     size_changed_count_ = 0;
+
+    return message_center_view;
+  }
+
+  virtual void CreateMessageCenterView(int max_height = kDefaultMaxHeight) {
+    message_center_view_ = CreateMessageCenterViewImpl(max_height);
   }
 
   void AnimateMessageListToValue(float value) {
@@ -201,7 +207,7 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
     return focused_message_view;
   }
 
-  TestUnifiedMessageCenterView* message_center_view() {
+  virtual TestUnifiedMessageCenterView* message_center_view() {
     return message_center_view_.get();
   }
 
@@ -217,6 +223,40 @@ class UnifiedMessageCenterViewTest : public AshTestBase,
   std::unique_ptr<TestUnifiedMessageCenterView> message_center_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedMessageCenterViewTest);
+};
+
+class UnifiedMessageCenterViewInWidgetTest
+    : public UnifiedMessageCenterViewTest {
+ public:
+  UnifiedMessageCenterViewInWidgetTest() = default;
+  UnifiedMessageCenterViewInWidgetTest(
+      const UnifiedMessageCenterViewInWidgetTest&) = delete;
+  UnifiedMessageCenterViewInWidgetTest& operator=(
+      const UnifiedMessageCenterViewInWidgetTest&) = delete;
+  ~UnifiedMessageCenterViewInWidgetTest() override = default;
+
+  void TearDown() override {
+    widget_.reset();
+
+    UnifiedMessageCenterViewTest::TearDown();
+  }
+
+ protected:
+  void CreateMessageCenterView(int max_height = kDefaultMaxHeight) override {
+    widget_ = CreateTestWidget();
+    message_center_ = widget_->GetRootView()->AddChildView(
+        CreateMessageCenterViewImpl(max_height));
+  }
+
+  TestUnifiedMessageCenterView* message_center_view() override {
+    return message_center_;
+  }
+
+  views::Widget* widget() { return widget_.get(); }
+
+ private:
+  std::unique_ptr<views::Widget> widget_;
+  TestUnifiedMessageCenterView* message_center_ = nullptr;
 };
 
 TEST_F(UnifiedMessageCenterViewTest, AddAndRemoveNotification) {
@@ -687,13 +727,12 @@ TEST_F(UnifiedMessageCenterViewTest,
   EXPECT_EQ(0, message_center_view()->rect_below_scroll().height());
 }
 
-TEST_F(UnifiedMessageCenterViewTest, FocusClearedAfterNotificationRemoval) {
+// We need a widget to initialize a FocusManager.
+TEST_F(UnifiedMessageCenterViewInWidgetTest,
+       FocusClearedAfterNotificationRemoval) {
   CreateMessageCenterView();
 
-  // We need to create a widget in order to initialize a FocusManager.
-  auto widget = CreateTestWidget();
-  widget->GetRootView()->AddChildView(message_center_view());
-  widget->Show();
+  widget()->Show();
 
   // Add notifications and focus on a child view in the last notification.
   AddNotification();
@@ -709,8 +748,6 @@ TEST_F(UnifiedMessageCenterViewTest, FocusClearedAfterNotificationRemoval) {
   MessageCenter::Get()->RemoveNotification(id1, true /* by_user */);
   AnimateMessageListToEnd();
   EXPECT_FALSE(message_center_view()->GetFocusManager()->GetFocusedView());
-
-  widget->GetRootView()->RemoveChildView(message_center_view());
 }
 
 TEST_F(UnifiedMessageCenterViewTest, CollapseAndExpand_NonAnimated) {

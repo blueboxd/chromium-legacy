@@ -71,6 +71,7 @@ jumbo_source_set("common") {
     "indexeddb/indexeddb_key_range.cc",
     "indexeddb/indexeddb_metadata.cc",
     "input/web_coalesced_input_event.cc",
+    "input/web_coalesced_input_event_mojom_traits.cc",
     "input/web_gesture_event.cc",
     "input/web_input_event.cc",
     "input/web_keyboard_event.cc",

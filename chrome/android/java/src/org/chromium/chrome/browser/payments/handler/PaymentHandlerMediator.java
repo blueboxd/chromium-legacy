@@ -7,11 +7,14 @@ package org.chromium.chrome.browser.payments.handler;
 import android.os.Handler;
 import android.view.View;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.payments.SslValidityChecker;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
+import org.chromium.chrome.browser.ui.TabObscuringHandler;
+import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.SheetState;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
@@ -21,6 +24,7 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.util.TokenHolder;
 
 /**
  * PaymentHandler mediator, which is responsible for receiving events from the view and notifies the
@@ -49,6 +53,9 @@ import org.chromium.ui.modelutil.PropertyModel;
     private final int mToolbarViewHeightPx;
     private final int mContainerTopPaddingPx;
 
+    /** A token held while the payment sheet is obscuring all visible tabs. */
+    private int mTabObscuringToken;
+
     /**
      * Build a new mediator that handle events from outside the payment handler component.
      * @param model The {@link PaymentHandlerProperties} that holds all the view state for the
@@ -74,15 +81,11 @@ import org.chromium.ui.modelutil.PropertyModel;
         mPaymentHandlerUiObserver = observer;
         mContainerTopPaddingPx = containerTopPaddingPx;
         mModel.set(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX, contentVisibleHeight());
+
+        mTabObscuringToken = TokenHolder.INVALID_TOKEN;
     }
 
-    @Override
-    public void destroy() {
-        super.destroy(); // Stops observing the web contents and cleans up associated references.
-        mHandler.removeCallbacksAndMessages(null);
-    }
-
-    // View.OnLayoutChangeListener:
+    // Implement View.OnLayoutChangeListener:
     // This is the Tab View's layout change listener, invoked in response to phone rotation.
     // TODO(crbug.com/1057825): It should listen to the BottomSheet container's layout change
     // instead of the Tab View layout change for better encapsulation.
@@ -92,7 +95,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         mModel.set(PaymentHandlerProperties.CONTENT_VISIBLE_HEIGHT_PX, contentVisibleHeight());
     }
 
-    // BottomSheetObserver:
+    // Implement BottomSheetObserver:
     @Override
     public void onSheetStateChanged(@SheetState int newState) {
         switch (newState) {
@@ -112,9 +115,41 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void onSheetOffsetChanged(float heightFraction, float offsetPx) {}
 
+    /**
+     * Set whether PaymentHandler UI is obscuring all tabs.
+     * @param activity The ChromeActivity of the tab.
+     * @param isObscuring Whether PaymentHandler UI is considered to be obscuring.
+     */
+    private void setIsObscuringAllTabs(ChromeActivity activity, boolean isObscuring) {
+        TabObscuringHandler obscuringHandler = activity.getTabObscuringHandler();
+        if (obscuringHandler == null) return;
+        if (isObscuring) {
+            assert mTabObscuringToken == TokenHolder.INVALID_TOKEN;
+            mTabObscuringToken = obscuringHandler.obscureAllTabs();
+        } else {
+            obscuringHandler.unobscureAllTabs(mTabObscuringToken);
+            mTabObscuringToken = TokenHolder.INVALID_TOKEN;
+        }
+    }
+
+    private void showScrim() {
+        // Using an empty scrim observer is to avoid the dismissal of the bottom-sheet on tapping.
+        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContentsRef);
+        assert activity != null;
+
+        ScrimView.ScrimParams params = activity.getBottomSheetController().createScrimParams(
+                new ScrimView.EmptyScrimObserver());
+        ScrimView scrim = activity.getScrim();
+        scrim.showScrim(params);
+        scrim.setViewAlpha(0);
+
+        setIsObscuringAllTabs(activity, true);
+    }
+
     @Override
     public void onSheetOpened(@StateChangeReason int reason) {
         mPaymentHandlerUiObserver.onPaymentHandlerUiShown();
+        showScrim();
     }
 
     @Override
@@ -129,7 +164,22 @@ import org.chromium.ui.modelutil.PropertyModel;
     @Override
     public void onSheetContentChanged(BottomSheetContent newContent) {}
 
-    // WebContentsObserver:
+    // Implement WebContentsObserver:
+    @Override
+    public void destroy() {
+        super.destroy(); // Stops observing the web contents and cleans up associated references.
+        mHandler.removeCallbacksAndMessages(null);
+        hideScrim();
+    }
+
+    private void hideScrim() {
+        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContentsRef);
+        assert activity != null;
+
+        activity.getScrim().hideScrim(true);
+        setIsObscuringAllTabs(activity, false);
+    }
+
     @Override
     public void didFinishNavigation(NavigationHandle navigationHandle) {
         if (navigationHandle.isSameDocument()) return;
@@ -164,7 +214,7 @@ import org.chromium.ui.modelutil.PropertyModel;
         });
     }
 
-    // PaymentHandlerToolbarObserver:
+    // Implement PaymentHandlerToolbarObserver:
     @Override
     public void onToolbarCloseButtonClicked() {
         ServiceWorkerPaymentAppBridge.onClosingPaymentAppWindow(mWebContentsRef);

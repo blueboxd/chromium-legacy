@@ -7,6 +7,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
+#include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
@@ -35,8 +37,12 @@ const size_t SearchHandler::kNumMaxResults = 5;
 
 SearchHandler::SearchHandler(
     SearchTagRegistry* search_tag_registry,
+    OsSettingsSections* sections,
+    Hierarchy* hierarchy,
     local_search_service::LocalSearchService* local_search_service)
     : search_tag_registry_(search_tag_registry),
+      sections_(sections),
+      hierarchy_(hierarchy),
       index_(local_search_service->GetIndex(
           local_search_service::IndexId::kCrosSettings)) {}
 
@@ -102,29 +108,42 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
   if (!concept)
     return nullptr;
 
+  std::string url;
   mojom::SearchResultIdentifierPtr result_id;
   switch (concept->type) {
-    case mojom::SearchResultType::kSection:
-      result_id =
-          mojom::SearchResultIdentifier::NewSection(concept->id.section);
+    case mojom::SearchResultType::kSection: {
+      mojom::Section section = concept->id.section;
+      url = GetModifiedUrl(*concept, section);
+      result_id = mojom::SearchResultIdentifier::NewSection(section);
       break;
-    case mojom::SearchResultType::kSubpage:
-      result_id =
-          mojom::SearchResultIdentifier::NewSubpage(concept->id.subpage);
+    }
+    case mojom::SearchResultType::kSubpage: {
+      mojom::Subpage subpage = concept->id.subpage;
+      url = GetModifiedUrl(*concept,
+                           hierarchy_->GetSubpageMetadata(subpage).section);
+      result_id = mojom::SearchResultIdentifier::NewSubpage(subpage);
       break;
-    case mojom::SearchResultType::kSetting:
-      result_id =
-          mojom::SearchResultIdentifier::NewSetting(concept->id.setting);
+    }
+    case mojom::SearchResultType::kSetting: {
+      mojom::Setting setting = concept->id.setting;
+      url = GetModifiedUrl(
+          *concept, hierarchy_->GetSettingMetadata(setting).primary.first);
+      result_id = mojom::SearchResultIdentifier::NewSetting(setting);
       break;
+    }
   }
 
   // TODO(https://crbug.com/1071700): Generate real hierarchy instead of using
   // GenerateDummySettingsHierarchy().
   return mojom::SearchResult::New(
-      l10n_util::GetStringUTF16(message_id), concept->url_path_with_parameters,
-      concept->icon, result.score,
+      l10n_util::GetStringUTF16(message_id), url, concept->icon, result.score,
       GenerateDummySettingsHierarchy(concept->url_path_with_parameters),
       concept->default_rank, concept->type, std::move(result_id));
+}
+
+std::string SearchHandler::GetModifiedUrl(const SearchConcept& concept,
+                                          mojom::Section section) const {
+  return sections_->GetSection(section)->ModifySearchResultUrl(concept);
 }
 
 }  // namespace settings

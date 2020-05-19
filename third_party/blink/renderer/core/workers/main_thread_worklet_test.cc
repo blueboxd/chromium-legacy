@@ -119,16 +119,19 @@ TEST_F(MainThreadWorkletTest, ContentSecurityPolicy) {
 
   // The "script-src 'self'" directive allows this.
   EXPECT_TRUE(csp->AllowScriptFromSource(
-      global_scope_->Url(), String(), IntegrityMetadataSet(), kParserInserted));
+      global_scope_->Url(), String(), IntegrityMetadataSet(), kParserInserted,
+      global_scope_->Url(), RedirectStatus::kNoRedirect));
 
   // The "script-src https://allowed.example.com" should allow this.
-  EXPECT_TRUE(csp->AllowScriptFromSource(KURL("https://allowed.example.com"),
-                                         String(), IntegrityMetadataSet(),
-                                         kParserInserted));
+  EXPECT_TRUE(csp->AllowScriptFromSource(
+      KURL("https://allowed.example.com"), String(), IntegrityMetadataSet(),
+      kParserInserted, KURL("https://allowed.example.com"),
+      RedirectStatus::kNoRedirect));
 
   EXPECT_FALSE(csp->AllowScriptFromSource(
       KURL("https://disallowed.example.com"), String(), IntegrityMetadataSet(),
-      kParserInserted));
+      kParserInserted, KURL("https://disallowed.example.com"),
+      RedirectStatus::kNoRedirect));
 }
 
 TEST_F(MainThreadWorkletTest, UseCounter) {

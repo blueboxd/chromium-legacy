@@ -90,8 +90,7 @@ class CONTENT_EXPORT MainThreadEventQueue
 
   // Called once the compositor has handled |event| and indicated that it is
   // a non-blocking event to be queued to the main thread.
-  void HandleEvent(ui::WebScopedInputEvent event,
-                   const ui::LatencyInfo& latency,
+  void HandleEvent(std::unique_ptr<blink::WebCoalescedInputEvent> event,
                    InputEventDispatchType dispatch_type,
                    blink::mojom::InputEventResultState ack_result,
                    const blink::WebInputEventAttribution& attribution,

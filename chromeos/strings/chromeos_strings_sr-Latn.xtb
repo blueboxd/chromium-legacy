@@ -43,6 +43,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="6058625436358447366">Da biste završili, unesite staru i novu lozinku</translation>
 <translation id="6106186594183574873">Da biste završili, unesite staru lozinku</translation>
 <translation id="6146993107019042706">Da biste završili, unesite novu lozinku</translation>
+<translation id="6517239166834772319">Istražite</translation>
 <translation id="6643016212128521049">Obriši</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7658239707568436148">Otkaži</translation>
@@ -50,6 +51,7 @@ Probajte da dodirnete mikrofon da biste me pitali nešto.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Promeni lozinku</translation>
 <translation id="8208861521865154048">Pogodnosti</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> upravlja ovim korisnikom. Može daljinski da upravlja podešavanjima i nadgleda aktivnosti korisnika.</translation>
 <translation id="8747900814994928677">Potvrdite promenu</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Preostali pokušaji: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Osvežite tiket za <ph name="PRINCIPAL_NAME" /></translation>

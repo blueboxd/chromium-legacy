@@ -4,10 +4,22 @@
 
 #include "components/feed/core/v2/types.h"
 
+#include "base/json/json_writer.h"
+#include "base/strings/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
 namespace {
+
+std::string ToJSON(const base::Value& value) {
+  std::string json;
+  CHECK(base::JSONWriter::WriteWithOptions(
+      value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json));
+  // Don't use \r\n on windows.
+  base::RemoveChars(json, "\r", &json);
+  return json;
+}
+
 DebugStreamData MakeDebugStreamData() {
   NetworkResponseInfo fetch_info;
   fetch_info.status_code = 200;
@@ -58,6 +70,26 @@ TEST(DebugStreamData, CanSerializeWithoutFetchInfo) {
 
 TEST(DebugStreamData, FailsDeserializationGracefully) {
   ASSERT_EQ(base::nullopt, DeserializeDebugStreamData({}));
+}
+
+TEST(PersistentMetricsData, SerializesAndDeserializes) {
+  PersistentMetricsData data;
+  data.accumulated_time_spent_in_feed = base::TimeDelta::FromHours(2);
+  data.current_day_start = base::Time::UnixEpoch();
+
+  const base::Value serialized_value = PersistentMetricsDataToValue(data);
+  const PersistentMetricsData deserialized_value =
+      PersistentMetricsDataFromValue(serialized_value);
+
+  EXPECT_EQ(R"({
+   "day_start": "11644473600000000",
+   "time_spent_in_feed": "7200000000"
+}
+)",
+            ToJSON(serialized_value));
+  EXPECT_EQ(data.accumulated_time_spent_in_feed,
+            deserialized_value.accumulated_time_spent_in_feed);
+  EXPECT_EQ(data.current_day_start, deserialized_value.current_day_start);
 }
 
 }  // namespace feed

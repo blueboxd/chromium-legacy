@@ -9,7 +9,6 @@ import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
@@ -27,11 +26,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.firstrun.FirstRunActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
@@ -62,22 +62,15 @@ public class SearchWidgetProviderTest {
 
         public final List<Pair<Integer, RemoteViews>> mViews = new ArrayList<>();
         private Context mContext;
-        private SharedPreferences mPreferences;
 
         private TestDelegate(Context context) {
             super(context);
             mContext = context;
-            mPreferences = new InMemorySharedPreferences();
         }
 
         @Override
         protected Context getContext() {
             return mContext;
-        }
-
-        @Override
-        protected SharedPreferences getSharedPreferences() {
-            return mPreferences;
         }
 
         @Override
@@ -198,10 +191,8 @@ public class SearchWidgetProviderTest {
         // SearchWidgetProvider should now believe that its widgets are displaying branding when it
         // isn't allowed to, then update them.
         mDelegate.mViews.clear();
-        mDelegate.getSharedPreferences()
-                .edit()
-                .putString(SearchWidgetProvider.PREF_SEARCH_ENGINE_SHORTNAME, TEXT_SEARCH_ENGINE)
-                .apply();
+        mDelegate.getSharedPreferencesManager().writeString(
+                ChromePreferenceKeys.SEARCH_WIDGET_SEARCH_ENGINE_SHORTNAME, TEXT_SEARCH_ENGINE);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> SearchWidgetProvider.updateCachedEngineName(TEXT_SEARCH_ENGINE));
         checkWidgetStates(TEXT_GENERIC, View.VISIBLE);
@@ -307,7 +298,7 @@ public class SearchWidgetProviderTest {
             }
         };
 
-        SharedPreferences prefs = mDelegate.getSharedPreferences();
+        SharedPreferencesManager prefs = mDelegate.getSharedPreferencesManager();
         Assert.assertEquals(0, SearchWidgetProvider.getNumConsecutiveCrashes(prefs));
 
         // The first few crashes should be silently absorbed.

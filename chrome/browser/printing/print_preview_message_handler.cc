@@ -23,6 +23,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 #include "components/printing/browser/print_composite_client.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,7 +105,7 @@ void PrintPreviewMessageHandler::OnRequestPrintPreview(
 }
 
 void PrintPreviewMessageHandler::OnDidStartPreview(
-    const PrintHostMsg_DidStartPreview_Params& params,
+    const mojom::DidStartPreviewParams& params,
     const PrintHostMsg_PreviewIds& ids) {
   if (params.page_count <= 0 || params.pages_to_render.empty()) {
     NOTREACHED();

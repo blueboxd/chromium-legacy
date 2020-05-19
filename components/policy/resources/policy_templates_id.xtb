@@ -334,13 +334,6 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
 <translation id="152657506688053119">Daftar URL pengganti untuk penyedia penelusuran default</translation>
 <translation id="1530812829012954197">Selalu urai pola URL berikut di browser host</translation>
 <translation id="1553532014072799546">Daftar yang Diizinkan terkait Batas Waktu per Aplikasi</translation>
-<translation id="1553684822621013552">Jika kebijakan ini disetel ke True, ARC akan diaktifkan untuk pengguna
-      (tunduk pada pemeriksaan setelan kebijakan tambahan - ARC akan tetap
-      tidak tersedia jika mode singkat atau fitur masuk banyak akun diaktifkan
-      di sesi pengguna saat ini).
-
-      Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna perusahaan
-      tidak dapat menggunakan ARC.</translation>
 <translation id="1553956579506604198">Memblokir ekstensi eksternal sehingga tidak dapat diinstal</translation>
 <translation id="1556072857949466438">Kebijakan ini memungkinkan admin menentukan bahwa halaman dapat menampilkan pop-up saat kontennya dibuka.
 
@@ -909,10 +902,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
       Jika kebijakan ini tidak dikonfigurasi atau disetel ke True, pengguna dapat menggunakan fitur Berbagi File Jaringan.
 
       Jika kebijakan ini disetel ke False, pengguna tidak dapat menggunakan fitur Berbagi File Jaringan.</translation>
-<translation id="2438609638493026652">Mengaktifkan pelaporan peristiwa penting selama penginstalan aplikasi Android ke Google. Peristiwa direkam hanya untuk aplikasi yang penginstalannya dipicu melalui kebijakan.
-
-      Jika kebijakan disetel ke true, peristiwa akan dicatat dalam log.
-      Jika kebijakan disetel ke false atau tidak disetel, peristiwa tidak akan dicatat dalam log.</translation>
 <translation id="2440773021691931148">Melaporkan ID dan statistik hardware yang terkait dengan daya.
 
       Jika kebijakan ditetapkan ke false atau tidak ditetapkan, statistik tidak akan dilaporkan.
@@ -1225,15 +1214,6 @@ Jika kebijakan ini tidak ditetapkan, layar privasi mula-mula akan dinonaktifkan 
 
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
-<translation id="2783078941107212091">Aktifkan fitur Rekomendasi Aplikasi pada Status Kosong kotak penelusuran di peluncur.
-
-          Jika kebijakan ini ditetapkan ke true, Rekomendasi Aplikasi dapat muncul dalam penelusuran dengan status kosong.
-
-          Jika kebijakan ini ditetapkan ke false, Rekomendasi Aplikasi tidak akan muncul dalam penelusuran dengan status kosong.
-
-          Jika kebijakan ini ditetapkan, pengguna tidak dapat mengubah atau menggantinya.
-
-          Jika kebijakan ini tidak ditetapkan, setelan default untuk perangkat yang dikelola adalah False.</translation>
 <translation id="2787173078141616821">Informasi laporan tentang status Android</translation>
 <translation id="2799297758492717491">Izinkan pemutaran otomatis media pada pola URL yang diizinkan</translation>
 <translation id="2801065672151277034">Setelan pengelolaan sertifikat</translation>
@@ -1890,15 +1870,6 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 <translation id="382476126209906314">Mengonfigurasi awalan TalkGadget untuk hosting akses jarak jauh</translation>
 <translation id="3824972131618513497">Mengontrol setelan yang terkait dengan pengelolaan daya dan reboot.</translation>
 <translation id="3826475866868158882">Layanan lokasi Google diaktifkan</translation>
-<translation id="3831054243924627613">Kebijakan ini mengontrol status awal pencadangan dan pemulihan Android.
-
-      Jika kebijakan ini tidak dikonfigurasi atau ditetapkan ke <ph name="BR_DISABLED" />, status awal pencadangan dan pemulihan Android adalah dinonaktifkan.
-
-      Jika kebijakan ini ditetapkan ke <ph name="BR_ENABLED" />, status awal pencadangan dan pemulihan Android adalah diaktifkan.
-
-      Jika kebijakan ini ditetapkan ke <ph name="BR_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan pencadangan dan pemulihan Android atau tidak. Jika pengguna mengaktifkan pencadangan dan pemulihan, data aplikasi Android akan diupload ke server cadangan Android dan dipulihkan dari server tersebut setelah penginstalan ulang untuk aplikasi yang kompatibel.
-
-      Perhatikan bahwa kebijakan ini mengontrol status pencadangan dan pemulihan Android selama penyiapan awal saja. Pengguna dapat membuka setelan Android setelahnya dan mengaktifkan/menonaktifkan pencadangan dan pemulihan Android.</translation>
 <translation id="3831376478177535007">Jika setelan ini diaktifkan, <ph name="PRODUCT_NAME" /> akan mengizinkan sertifikat yang dikeluarkan oleh operasi Symantec Corporation's Legacy PKI untuk dipercaya jika tidak berhasil memvalidasi dan menjangkau Sertifikat CA yang dikenal.
 
       Perlu diketahui bahwa kebijakan ini bergantung pada sistem operasi untuk tetap mengenali sertifikat dari infrastruktur lama milik Symantec. Jika update OS mengubah penanganan OS terhadap sertifikat tersebut, kebijakan ini tidak akan berlaku lagi.  Selain itu, kebijakan ini dimaksudkan sebagai solusi sementara guna memberikan perusahaan lebih banyak waktu untuk beralih dari sertifikat Symantec yang lama.  Kebijakan ini akan dihapus pada atau sekitar tanggal 1 Januari 2019.
@@ -3406,17 +3377,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="6114416803310251055">tak lagi digunakan</translation>
 <translation id="6133088669883929098">Izinkan semua situs menggunakan pembuatan kunci</translation>
 <translation id="6135398260575578389">Safe Browsing aktif dalam mode yang disempurnakan. Mode ini memberikan keamanan yang lebih baik, tetapi perlu membagikan lebih banyak informasi penjelajahan kepada Google.</translation>
-<translation id="6136537398661737682">Kebijakan ini mengontrol status awal layanan lokasi Google.
-
-      Jika kebijakan ini tidak dikonfigurasi atau ditetapkan ke <ph name="GLS_DISABLED" />, status awal layanan lokasi Google adalah dinonaktifkan.
-
-      Jika kebijakan ini ditetapkan ke <ph name="GLS_ENABLED" />, status awal layanan lokasi Google adalah diaktifkan.
-
-      Jika kebijakan ini ditetapkan ke <ph name="GLS_UNDER_USER_CONTROL" />, pengguna akan diminta memilih apakah mereka ingin menggunakan layanan lokasi Google atau tidak. Dengan setelan ini, aplikasi Android akan dapat menggunakan layanan untuk mengkueri lokasi perangkat, dan juga akan memungkinkan pengiriman data lokasi anonim ke Google.
-
-      Perhatikan bahwa kebijakan ini mengontrol status layanan lokasi Google selama penyiapan awal saja. Pengguna dapat membuka setelan Android setelahnya dan mengaktifkan/menonaktifkan layanan lokasi Google.
-
-      Perhatikan bahwa kebijakan ini diabaikan dan layanan lokasi Google akan selalu dinonaktifkan jika kebijakan <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> ditetapkan ke <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Selalu gunakan deteksi perkiraan kasar zona waktu</translation>
 <translation id="614616930188030377">Pola dalam daftar ini akan dicocokkan dengan asal keamanan URL yang meminta.
       Jika kecocokan ditemukan atau chrome://flags/#enable-webrtc-hide-local-ips-with-mdns Nonaktif, alamat IP lokal akan ditampilkan dalam kandidat WebRTC ICE.
@@ -4508,9 +4468,6 @@ Cara yang diharapkan terkait penggunaan kebijakan ini adalah merotasi konfiguras
 
           Jika kebijakan ini tidak ditetapkan, kontras tinggi mula-mula akan dinonaktifkan di layar login, tetapi dapat diaktifkan oleh pengguna kapan saja.</translation>
 <translation id="7869986671709030417">Mode pencetakan grafis latar belakang default</translation>
-<translation id="787125417158068494">Jika disetel ke SyncDisabled atau tidak dikonfigurasi, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak tersedia untuk aplikasi ARC.
-
-      Jika disetel ke CopyCaCerts, semua sertifikat CA yang memasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> tersedia untuk aplikasi ARC.</translation>
 <translation id="7882585827992171421">Kebijakan ini hanya aktif dalam mode ritel.
 
       Menentukan id ekstensi untuk digunakan sebagai tirai layar pada layar masuk. Ekstensi haruslah bagian dari AppPack yang dikonfigurasi untuk domain ini melalui kebijakan DeviceAppPack.</translation>
@@ -4941,11 +4898,6 @@ Kebijakan akan dihapus pada M75.</translation>
 <translation id="8544465954173828789">Izinkan SMS disinkronkan dari ponsel ke Chromebook.</translation>
 <translation id="8548832052135586762">Menyetel pencetakan ke hanya warna, hanya monokrom, atau tanpa batasan mode warna. Kebijakan yang tidak disetel diperlakukan sebagai tidak ada batasan.</translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
-<translation id="8566729013138025202">Menentukan kumpulan kebijakan yang akan diteruskan ke runtime ARC. Nilainya harus JSON yang valid.
-
-      Kebijakan ini dapat digunakan untuk mengonfigurasi aplikasi Android mana yang diinstal secara otomatis di perangkat.
-
-      Untuk memasang pin aplikasi ke peluncur, buka PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Menyembunyikan toko web dari Halaman Tab Baru dan peluncur aplikasi</translation>
 <translation id="8569734380847633643">
           Jika kebijakan ini ditetapkan ke False, <ph name="PRODUCT_OS_NAME" /> akan menonaktifkan Wi-Fi dan pengguna tidak dapat mengaktifkannya kembali.
@@ -4974,11 +4926,6 @@ Kebijakan akan dihapus pada M75.</translation>
           Jika kebijakan ini tidak ditetapkan, durasi waktu default akan digunakan.
 
           Nilai kebijakan harus ditentukan dalam milidetik.</translation>
-<translation id="8598350264853261122">Jika kebijakan disetel ke SALAH, pengguna yang tidak terafiliasi tidak akan diizinkan menggunakan ARC.
-
-      Jika kebijakan tidak disetel atau disetel ke BENAR, semua pengguna diizinkan menggunakan ARC (kecuali ARC dinonaktifkan dengan cara lain).
-
-      Perubahan kebijakan hanya akan diterapkan saat ARC tidak sedang berjalan, mis., saat Chrome OS dimulai.</translation>
 <translation id="8606263947930257189">Mengontrol apakah <ph name="PRODUCT_NAME" /> dapat membekukan tab yang telah berjalan di latar belakang selama setidaknya 5 menit.
 
       Jika kebijakan ini ditetapkan ke true, tab yang telah berjalan di latar belakang selama setidaknya 5 menit dapat dibekukan. Pembekuan tab mengurangi penggunaan CPU, baterai, dan memori. <ph name="PRODUCT_NAME" /> menggunakan heuristik untuk menghindari pembekuan tab yang sedang aktif di latar belakang (misalnya, menampilkan notifikasi, memutar suara, streaming video). Developer web juga dapat memilih untuk tidak membekukan situsnya (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).

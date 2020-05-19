@@ -46,7 +46,7 @@ void TabGroupViews::UpdateVisuals() {
 }
 
 gfx::Rect TabGroupViews::GetBounds() const {
-  if (tab_strip_->controller()->GetGroupCollapsedState(group_))
+  if (tab_strip_->controller()->IsGroupCollapsed(group_))
     return header_->bounds();
 
   const Tab* last_tab = GetLastTabInGroup();

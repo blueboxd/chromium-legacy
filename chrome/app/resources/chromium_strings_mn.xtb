@@ -158,6 +158,7 @@
 Зарим функц ажиллахгүй байж болно. профайлын өөр зааварчилгааг тодорхойлж өгөх эсвэл Chromium-ийн шинэ хувилбарыг ашиглана уу.</translation>
 <translation id="6734080038664603509">Chromium-ийг шинэчлэх</translation>
 <translation id="6734291798041940871">Chromium-г таны компьютерийн бүх хэрэглэгчид суулгасан байна.</translation>
+<translation id="6774082503108938489">Таны эцэг эх Chromium-н "Сайтууд, аппууд болон өргөтгөлүүдийн зөвшөөрөл"-ийг унтраасан байна. Энэ <ph name="EXTENSION_TYPE_PARAMETER" />-г идэвхжүүлэхийг зөвшөөрдөггүй.</translation>
 <translation id="6847869444787758381">Хэрэв таны нууц үг алдагдсан байвал Chromium танд мэдэгдэнэ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium-д хуулсан)</translation>
@@ -214,6 +215,7 @@
 <translation id="8417404458978023919">{0,plural, =1{Chromium-г 1 хоногийн дотор дахин ажиллуулна уу}other{Chromium-г # хоногийн дотор дахин ажиллуулна уу}}</translation>
 <translation id="8453117565092476964">Суулгагчийн архив устгагдсан эсвэл хүчингүй болсон байна. Chromium-ыг дахин татаж авна уу.</translation>
 <translation id="8493179195440786826">Chromium нь хуучирсан байна</translation>
+<translation id="8558383651099478961">Таны эцэг эх Chromium-н "Сайтууд, аппууд болон өргөтгөлүүдийн зөвшөөрөл"-ийг унтраасан байна. Энэ <ph name="EXTENSION_TYPE_PARAMETER" />-г нэмэхийг зөвшөөрдөггүй.</translation>
 <translation id="8568283329061645092">Chromium нь таныг Google Бүртгэлээрээ нэвтрэх үед таны нууц үгсийг шалгах боломжтой</translation>
 <translation id="8586442755830160949">Chromium-ийн зохиогчийн эрх <ph name="YEAR" />. Бүх эрхийг хуулиар хамгаалсан.</translation>
 <translation id="8619360774459241877">Chromium-г эхлүүлж байна...</translation>

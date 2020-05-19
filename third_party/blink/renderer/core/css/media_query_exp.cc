@@ -71,11 +71,6 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
   if (media_feature == media_feature_names::kScanMediaFeature)
     return ident == CSSValueID::kInterlace || ident == CSSValueID::kProgressive;
 
-  if (RuntimeEnabledFeatures::MediaQueryShapeEnabled()) {
-    if (media_feature == media_feature_names::kShapeMediaFeature)
-      return ident == CSSValueID::kRect || ident == CSSValueID::kRound;
-  }
-
   if (media_feature == media_feature_names::kColorGamutMediaFeature) {
     return ident == CSSValueID::kSRGB || ident == CSSValueID::kP3 ||
            ident == CSSValueID::kRec2020;
@@ -217,8 +212,6 @@ static inline bool FeatureWithoutValue(
          media_feature == media_feature_names::kResolutionMediaFeature ||
          media_feature == media_feature_names::kDisplayModeMediaFeature ||
          media_feature == media_feature_names::kScanMediaFeature ||
-         (media_feature == media_feature_names::kShapeMediaFeature &&
-          RuntimeEnabledFeatures::MediaQueryShapeEnabled()) ||
          media_feature == media_feature_names::kColorGamutMediaFeature ||
          media_feature == media_feature_names::kImmersiveMediaFeature ||
          media_feature ==
@@ -265,8 +258,7 @@ bool MediaQueryExp::IsDeviceDependent() const {
          media_feature_ == media_feature_names::kMinDeviceHeightMediaFeature ||
          media_feature_ == kMaxDeviceAspectRatioMediaFeature ||
          media_feature_ == media_feature_names::kMaxDeviceWidthMediaFeature ||
-         media_feature_ == media_feature_names::kMaxDeviceHeightMediaFeature ||
-         media_feature_ == media_feature_names::kShapeMediaFeature;
+         media_feature_ == media_feature_names::kMaxDeviceHeightMediaFeature;
 }
 
 MediaQueryExp::MediaQueryExp(const MediaQueryExp& other)

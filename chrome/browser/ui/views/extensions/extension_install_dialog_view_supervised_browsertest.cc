@@ -45,7 +45,7 @@ class ExtensionInstallDialogViewTestSupervised
   content::WebContents* web_contents() { return web_contents_; }
 
  protected:
-  views::DialogDelegateView* CreateAndShowPrompt(
+  ExtensionInstallDialogView* CreateAndShowPrompt(
       ExtensionInstallPromptTestHelper* helper,
       std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt);
 
@@ -91,13 +91,13 @@ ExtensionInstallDialogViewTestSupervised::CreatePrompt() {
   return prompt;
 }
 
-views::DialogDelegateView*
+ExtensionInstallDialogView*
 ExtensionInstallDialogViewTestSupervised::CreateAndShowPrompt(
     ExtensionInstallPromptTestHelper* helper,
     std::unique_ptr<ExtensionInstallPrompt::Prompt> prompt) {
   auto dialog = std::make_unique<ExtensionInstallDialogView>(
       profile(), web_contents(), helper->GetCallback(), std::move(prompt));
-  views::DialogDelegateView* delegate_view = dialog.get();
+  ExtensionInstallDialogView* delegate_view = dialog.get();
 
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
       dialog.release(), nullptr,
@@ -150,7 +150,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTestSupervised, AskAParent) {
   task_runner->FastForwardBy(duration);
 
   // Supervised user presses "Ask a parent".
-  views::DialogDelegateView* delegate_view =
+  ExtensionInstallDialogView* delegate_view =
       CreateAndShowPrompt(&helper, install_prompt.GetPromptForTesting());
   delegate_view->AcceptDialog();
   EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTestSupervised,
   task_runner->FastForwardBy(duration);
 
   // Supervised user presses "Cancel".
-  views::DialogDelegateView* delegate_view =
+  ExtensionInstallDialogView* delegate_view =
       CreateAndShowPrompt(&helper, install_prompt.GetPromptForTesting());
   delegate_view->CancelDialog();
   EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());

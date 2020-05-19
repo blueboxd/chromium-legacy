@@ -120,19 +120,19 @@ StringType ToUpperASCIIImpl(BasicStringPiece<StringType> str) {
 }  // namespace
 
 std::string ToLowerASCII(StringPiece str) {
-  return ToLowerASCIIImpl<std::string>(str);
+  return ToLowerASCIIImpl(str);
 }
 
 string16 ToLowerASCII(StringPiece16 str) {
-  return ToLowerASCIIImpl<string16>(str);
+  return ToLowerASCIIImpl(str);
 }
 
 std::string ToUpperASCII(StringPiece str) {
-  return ToUpperASCIIImpl<std::string>(str);
+  return ToUpperASCIIImpl(str);
 }
 
 string16 ToUpperASCII(StringPiece16 str) {
-  return ToUpperASCIIImpl<string16>(str);
+  return ToUpperASCIIImpl(str);
 }
 
 template<class StringType>
@@ -163,23 +163,19 @@ int CompareCaseInsensitiveASCIIT(BasicStringPiece<StringType> a,
 }
 
 int CompareCaseInsensitiveASCII(StringPiece a, StringPiece b) {
-  return CompareCaseInsensitiveASCIIT<std::string>(a, b);
+  return CompareCaseInsensitiveASCIIT(a, b);
 }
 
 int CompareCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
-  return CompareCaseInsensitiveASCIIT<string16>(a, b);
+  return CompareCaseInsensitiveASCIIT(a, b);
 }
 
 bool EqualsCaseInsensitiveASCII(StringPiece a, StringPiece b) {
-  if (a.length() != b.length())
-    return false;
-  return CompareCaseInsensitiveASCIIT<std::string>(a, b) == 0;
+  return a.size() == b.size() && CompareCaseInsensitiveASCIIT(a, b) == 0;
 }
 
 bool EqualsCaseInsensitiveASCII(StringPiece16 a, StringPiece16 b) {
-  if (a.length() != b.length())
-    return false;
-  return CompareCaseInsensitiveASCIIT<string16>(a, b) == 0;
+  return a.size() == b.size() && CompareCaseInsensitiveASCIIT(a, b) == 0;
 }
 
 const std::string& EmptyString() {
@@ -193,32 +189,32 @@ const string16& EmptyString16() {
 }
 
 template <class StringType>
-bool ReplaceCharsT(const StringType& input,
+bool ReplaceCharsT(BasicStringPiece<StringType> input,
                    BasicStringPiece<StringType> find_any_of_these,
                    BasicStringPiece<StringType> replace_with,
                    StringType* output);
 
-bool ReplaceChars(const string16& input,
+bool ReplaceChars(StringPiece16 input,
                   StringPiece16 replace_chars,
                   StringPiece16 replace_with,
                   string16* output) {
   return ReplaceCharsT(input, replace_chars, replace_with, output);
 }
 
-bool ReplaceChars(const std::string& input,
+bool ReplaceChars(StringPiece input,
                   StringPiece replace_chars,
                   StringPiece replace_with,
                   std::string* output) {
   return ReplaceCharsT(input, replace_chars, replace_with, output);
 }
 
-bool RemoveChars(const string16& input,
+bool RemoveChars(StringPiece16 input,
                  StringPiece16 remove_chars,
                  string16* output) {
   return ReplaceCharsT(input, remove_chars, StringPiece16(), output);
 }
 
-bool RemoveChars(const std::string& input,
+bool RemoveChars(StringPiece input,
                  StringPiece remove_chars,
                  std::string* output) {
   return ReplaceCharsT(input, remove_chars, StringPiece(), output);
@@ -353,8 +349,8 @@ StringPiece TrimWhitespaceASCII(StringPiece input, TrimPositions positions) {
   return TrimStringPieceT(input, StringPiece(kWhitespaceASCII), positions);
 }
 
-template<typename STR>
-STR CollapseWhitespaceT(const STR& text,
+template <typename STR>
+STR CollapseWhitespaceT(BasicStringPiece<STR> text,
                         bool trim_sequences_with_line_breaks) {
   STR result;
   result.resize(text.size());
@@ -365,15 +361,15 @@ STR CollapseWhitespaceT(const STR& text,
   bool already_trimmed = true;
 
   int chars_written = 0;
-  for (typename STR::const_iterator i(text.begin()); i != text.end(); ++i) {
-    if (IsUnicodeWhitespace(*i)) {
+  for (auto c : text) {
+    if (IsUnicodeWhitespace(c)) {
       if (!in_whitespace) {
         // Reduce all whitespace sequences to a single space.
         in_whitespace = true;
         result[chars_written++] = L' ';
       }
       if (trim_sequences_with_line_breaks && !already_trimmed &&
-          ((*i == '\n') || (*i == '\r'))) {
+          ((c == '\n') || (c == '\r'))) {
         // Whitespace sequences containing CR or LF are eliminated entirely.
         already_trimmed = true;
         --chars_written;
@@ -382,7 +378,7 @@ STR CollapseWhitespaceT(const STR& text,
       // Non-whitespace chracters are copied straight across.
       in_whitespace = false;
       already_trimmed = false;
-      result[chars_written++] = *i;
+      result[chars_written++] = c;
     }
   }
 
@@ -395,12 +391,12 @@ STR CollapseWhitespaceT(const STR& text,
   return result;
 }
 
-string16 CollapseWhitespace(const string16& text,
+string16 CollapseWhitespace(StringPiece16 text,
                             bool trim_sequences_with_line_breaks) {
   return CollapseWhitespaceT(text, trim_sequences_with_line_breaks);
 }
 
-std::string CollapseWhitespaceASCII(const std::string& text,
+std::string CollapseWhitespaceASCII(StringPiece text,
                                     bool trim_sequences_with_line_breaks) {
   return CollapseWhitespaceT(text, trim_sequences_with_line_breaks);
 }
@@ -531,9 +527,7 @@ bool LowerCaseEqualsASCII(StringPiece16 str, StringPiece lowercase_ascii) {
 }
 
 bool EqualsASCII(StringPiece16 str, StringPiece ascii) {
-  if (str.length() != ascii.length())
-    return false;
-  return std::equal(ascii.begin(), ascii.end(), str.begin());
+  return std::equal(ascii.begin(), ascii.end(), str.begin(), str.end());
 }
 
 template<typename Str>
@@ -836,13 +830,14 @@ bool DoReplaceMatchesAfterOffset(StringType* str,
 }
 
 template <class StringType>
-bool ReplaceCharsT(const StringType& input,
+bool ReplaceCharsT(BasicStringPiece<StringType> input,
                    BasicStringPiece<StringType> find_any_of_these,
                    BasicStringPiece<StringType> replace_with,
                    StringType* output) {
   // Commonly, this is called with output and input being the same string; in
-  // that case, this assignment is inexpensive.
-  *output = input;
+  // that case, skip the copy.
+  if (input.data() != output->data() || input.size() != output->size())
+    output->assign(input.data(), input.size());
 
   return DoReplaceMatchesAfterOffset(
       output, 0, CharacterMatcher<StringType>{find_any_of_these}, replace_with,
@@ -903,11 +898,11 @@ char16* WriteInto(string16* str, size_t length_with_null) {
 }
 
 // Generic version for all JoinString overloads. |list_type| must be a sequence
-// (std::vector or std::initializer_list) of strings/StringPieces (std::string,
+// (base::span or std::initializer_list) of strings/StringPieces (std::string,
 // string16, StringPiece or StringPiece16). |string_type| is either std::string
 // or string16.
 template <typename list_type, typename string_type>
-static string_type JoinStringT(const list_type& parts,
+static string_type JoinStringT(list_type parts,
                                BasicStringPiece<string_type> sep) {
   if (base::empty(parts))
     return string_type();
@@ -936,23 +931,19 @@ static string_type JoinStringT(const list_type& parts,
   return result;
 }
 
-std::string JoinString(const std::vector<std::string>& parts,
-                       StringPiece separator) {
+std::string JoinString(span<const std::string> parts, StringPiece separator) {
   return JoinStringT(parts, separator);
 }
 
-string16 JoinString(const std::vector<string16>& parts,
-                    StringPiece16 separator) {
+string16 JoinString(span<const string16> parts, StringPiece16 separator) {
   return JoinStringT(parts, separator);
 }
 
-std::string JoinString(const std::vector<StringPiece>& parts,
-                       StringPiece separator) {
+std::string JoinString(span<const StringPiece> parts, StringPiece separator) {
   return JoinStringT(parts, separator);
 }
 
-string16 JoinString(const std::vector<StringPiece16>& parts,
-                    StringPiece16 separator) {
+string16 JoinString(span<const StringPiece16> parts, StringPiece16 separator) {
   return JoinStringT(parts, separator);
 }
 
@@ -966,10 +957,10 @@ string16 JoinString(std::initializer_list<StringPiece16> parts,
   return JoinStringT(parts, separator);
 }
 
-template<class FormatStringType, class OutStringType>
-OutStringType DoReplaceStringPlaceholders(
-    const FormatStringType& format_string,
-    const std::vector<OutStringType>& subst,
+template <class StringType>
+StringType DoReplaceStringPlaceholders(
+    BasicStringPiece<StringType> format_string,
+    const std::vector<StringType>& subst,
     std::vector<size_t>* offsets) {
   size_t substitutions = subst.size();
   DCHECK_LT(substitutions, 10U);
@@ -978,7 +969,7 @@ OutStringType DoReplaceStringPlaceholders(
   for (const auto& cur : subst)
     sub_length += cur.length();
 
-  OutStringType formatted;
+  StringType formatted;
   formatted.reserve(format_string.length() + sub_length);
 
   std::vector<ReplacementOffset> r_offsets;
@@ -1021,7 +1012,7 @@ OutStringType DoReplaceStringPlaceholders(
   return formatted;
 }
 
-string16 ReplaceStringPlaceholders(const string16& format_string,
+string16 ReplaceStringPlaceholders(StringPiece16 format_string,
                                    const std::vector<string16>& subst,
                                    std::vector<size_t>* offsets) {
   return DoReplaceStringPlaceholders(format_string, subst, offsets);
@@ -1037,9 +1028,7 @@ string16 ReplaceStringPlaceholders(const string16& format_string,
                                    const string16& a,
                                    size_t* offset) {
   std::vector<size_t> offsets;
-  std::vector<string16> subst;
-  subst.push_back(a);
-  string16 result = ReplaceStringPlaceholders(format_string, subst, &offsets);
+  string16 result = ReplaceStringPlaceholders(format_string, {a}, &offsets);
 
   DCHECK_EQ(1U, offsets.size());
   if (offset)
@@ -1048,19 +1037,33 @@ string16 ReplaceStringPlaceholders(const string16& format_string,
 }
 
 #if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
-
-TrimPositions TrimWhitespace(WStringPiece input,
-                             TrimPositions positions,
-                             std::wstring* output) {
-  return TrimStringT(input, WStringPiece(kWhitespaceWide), positions, output);
+std::wstring ToLowerASCII(WStringPiece str) {
+  return ToLowerASCIIImpl(str);
 }
 
-WStringPiece TrimWhitespace(WStringPiece input, TrimPositions positions) {
-  return TrimStringPieceT(input, WStringPiece(kWhitespaceWide), positions);
+std::wstring ToUpperASCII(WStringPiece str) {
+  return ToUpperASCIIImpl(str);
 }
 
-bool LowerCaseEqualsASCII(WStringPiece str, StringPiece lowercase_ascii) {
-  return DoLowerCaseEqualsASCII(str, lowercase_ascii);
+int CompareCaseInsensitiveASCII(WStringPiece a, WStringPiece b) {
+  return CompareCaseInsensitiveASCIIT(a, b);
+}
+
+bool EqualsCaseInsensitiveASCII(WStringPiece a, WStringPiece b) {
+  return a.size() == b.size() && CompareCaseInsensitiveASCIIT(a, b) == 0;
+}
+
+bool RemoveChars(WStringPiece input,
+                 WStringPiece remove_chars,
+                 std::wstring* output) {
+  return ReplaceCharsT(input, remove_chars, WStringPiece(), output);
+}
+
+bool ReplaceChars(WStringPiece input,
+                  WStringPiece replace_chars,
+                  WStringPiece replace_with,
+                  std::wstring* output) {
+  return ReplaceCharsT(input, replace_chars, replace_with, output);
 }
 
 bool TrimString(WStringPiece input,
@@ -1075,14 +1078,86 @@ WStringPiece TrimString(WStringPiece input,
   return TrimStringPieceT(input, trim_chars, positions);
 }
 
+TrimPositions TrimWhitespace(WStringPiece input,
+                             TrimPositions positions,
+                             std::wstring* output) {
+  return TrimStringT(input, WStringPiece(kWhitespaceWide), positions, output);
+}
+
+WStringPiece TrimWhitespace(WStringPiece input, TrimPositions positions) {
+  return TrimStringPieceT(input, WStringPiece(kWhitespaceWide), positions);
+}
+
+std::wstring CollapseWhitespace(WStringPiece text,
+                                bool trim_sequences_with_line_breaks) {
+  return CollapseWhitespaceT(text, trim_sequences_with_line_breaks);
+}
+
+bool ContainsOnlyChars(WStringPiece input, WStringPiece characters) {
+  return input.find_first_not_of(characters) == StringPiece::npos;
+}
+
+bool LowerCaseEqualsASCII(WStringPiece str, StringPiece lowercase_ascii) {
+  return DoLowerCaseEqualsASCII(str, lowercase_ascii);
+}
+
+bool EqualsASCII(WStringPiece str, StringPiece ascii) {
+  return std::equal(ascii.begin(), ascii.end(), str.begin(), str.end());
+}
+
 bool StartsWith(WStringPiece str,
                 WStringPiece search_for,
                 CompareCase case_sensitivity) {
   return StartsWithT(str, search_for, case_sensitivity);
 }
 
+bool EndsWith(WStringPiece str,
+              WStringPiece search_for,
+              CompareCase case_sensitivity) {
+  return EndsWithT(str, search_for, case_sensitivity);
+}
+
+void ReplaceFirstSubstringAfterOffset(std::wstring* str,
+                                      size_t start_offset,
+                                      WStringPiece find_this,
+                                      WStringPiece replace_with) {
+  DoReplaceMatchesAfterOffset(str, start_offset,
+                              SubstringMatcher<std::wstring>{find_this},
+                              replace_with, ReplaceType::REPLACE_FIRST);
+}
+
+void ReplaceSubstringsAfterOffset(std::wstring* str,
+                                  size_t start_offset,
+                                  WStringPiece find_this,
+                                  WStringPiece replace_with) {
+  DoReplaceMatchesAfterOffset(str, start_offset,
+                              SubstringMatcher<std::wstring>{find_this},
+                              replace_with, ReplaceType::REPLACE_ALL);
+}
+
 wchar_t* WriteInto(std::wstring* str, size_t length_with_null) {
   return WriteIntoT(str, length_with_null);
+}
+
+std::wstring JoinString(span<const std::wstring> parts,
+                        WStringPiece separator) {
+  return JoinStringT(parts, separator);
+}
+
+std::wstring JoinString(span<const WStringPiece> parts,
+                        WStringPiece separator) {
+  return JoinStringT(parts, separator);
+}
+
+std::wstring JoinString(std::initializer_list<WStringPiece> parts,
+                        WStringPiece separator) {
+  return JoinStringT(parts, separator);
+}
+
+std::wstring ReplaceStringPlaceholders(WStringPiece format_string,
+                                       const std::vector<std::wstring>& subst,
+                                       std::vector<size_t>* offsets) {
+  return DoReplaceStringPlaceholders(format_string, subst, offsets);
 }
 
 #endif

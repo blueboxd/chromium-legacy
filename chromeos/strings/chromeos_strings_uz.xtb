@@ -43,6 +43,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="6058625436358447366">Yakunlash uchun eski va yangi parollarni kiriting</translation>
 <translation id="6106186594183574873">Yakunlash uchun eski parolni kiriting</translation>
 <translation id="6146993107019042706">Yakunlash uchun yangi parolni kiriting</translation>
+<translation id="6517239166834772319">Tanishuv</translation>
 <translation id="6643016212128521049">Tozalash</translation>
 <translation id="7162487448488904999">Galereya</translation>
 <translation id="7658239707568436148">Bekor qilish</translation>
@@ -50,6 +51,7 @@ Mikrofon ustiga bosing va savolni ayting.</translation>
 <translation id="7805768142964895445">Holat</translation>
 <translation id="808894953321890993">Parolni almashtirish</translation>
 <translation id="8208861521865154048">Imtiyozlar</translation>
+<translation id="8701136875688985581">Bu hisob <ph name="ENROLLMENT_DOMAIN" /> domenida boshqariladi. Bu domenda foydalanuvchilar faoliyati masofadan kuzatilishi va boshqarilishi mumkin.</translation>
 <translation id="8747900814994928677">Almashtiruvni tasdiqlang</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> ta urinish qoldi</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> uchun chiptani yangilash</translation>

@@ -37,6 +37,7 @@
     <include name="IDR_WEBUI_CERTIFICATE_MANAGER_JS"
              file="${root_gen_dir}/ui/webui/resources/cr_components/certificate_manager/certificate_manager.js"
              use_base_dir="false"
+             preprocess="true"
              type="BINDATA"
              compress="gzip" />
     <include name="IDR_WEBUI_CERTIFICATE_PASSWORD_ENCRYPTION_DIALOG_JS"
@@ -78,6 +79,32 @@
              file="${root_gen_dir}/ui/webui/resources/cr_components/certificate_manager/certificate_subentry.js"
              use_base_dir="false"
              type="BINDATA"
+             compress="gzip" />
+    <!-- TODO(https://crbug.com/1071641): When conditional imports are possible
+         in cr_components, only include the certificate provisioning items for
+         ChromeOS platforms. -->
+    <include name="IDR_WEBUI_CERTIFICATE_PROVISIONING_LIST_JS"
+             file="${root_gen_dir}/ui/webui/resources/cr_components/certificate_manager/certificate_provisioning_list.js"
+             use_base_dir="false"
+             type="BINDATA"
+             preprocess="true"
+             compress="gzip" />
+    <include name="IDR_WEBUI_CERTIFICATE_PROVISIONING_ENTRY_JS"
+             file="${root_gen_dir}/ui/webui/resources/cr_components/certificate_manager/certificate_provisioning_entry.js"
+             use_base_dir="false"
+             type="BINDATA"
+             preprocess="true"
+             compress="gzip" />
+    <include name="IDR_WEBUI_CERTIFICATE_PROVISIONING_DETAILS_DIALOG_JS"
+             file="${root_gen_dir}/ui/webui/resources/cr_components/certificate_manager/certificate_provisioning_details_dialog.js"
+             use_base_dir="false"
+             type="BINDATA"
+             preprocess="true"
+             compress="gzip" />
+    <include name="IDR_WEBUI_CERTIFICATE_PROVISIONING_BROWSER_PROXY"
+             file="cr_components/certificate_manager/certificate_provisioning_browser_proxy.js"
+             type="BINDATA"
+             preprocess="true"
              compress="gzip" />
     <include name="IDR_WEBUI_CERTIFICATES_BROWSER_PROXY_JS"
              file="cr_components/certificate_manager/certificates_browser_proxy.js"

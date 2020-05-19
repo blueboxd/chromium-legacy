@@ -16,6 +16,7 @@ android_library("animated_poodle_java") {
     "//base:base_java",
     "//chrome/android:chrome_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
   ]
 
   sources = [ "java/src/org/chromium/chrome/browser/" +
@@ -51,6 +52,7 @@ android_library("java") {
     "//mojo/public/java:bindings_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_collection_collection_java",
     "//third_party/android_deps:androidx_coordinatorlayout_coordinatorlayout_java",
     "//third_party/android_deps:androidx_core_core_java",
@@ -273,6 +275,8 @@ android_library("test_java") {
     "//chrome/browser/image_fetcher:java",
     "//chrome/browser/password_manager/android_test_helpers:test_support_java",
     "//chrome/browser/preferences:java",
+    "//chrome/browser/tab:java",
+    "//chrome/browser/util:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/autofill_assistant/browser:proto_java",
     "//components/browser_ui/android/bottomsheet:java",
@@ -290,6 +294,7 @@ android_library("test_java") {
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
     "//ui/android:ui_full_java",
+    "//url:gurl_java",
   ]
 
   data = [ "//components/test/data/autofill_assistant/" ]

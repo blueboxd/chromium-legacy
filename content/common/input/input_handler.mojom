@@ -9,163 +9,15 @@ import "content/common/input/synchronous_compositor.mojom";
 import "content/common/native_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "third_party/blink/public/mojom/input/gesture_event.mojom";
-import "third_party/blink/public/mojom/input/input_event.mojom";
-import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "third_party/blink/public/mojom/input/input_event_result.mojom";
-import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
-import "third_party/blink/public/mojom/input/touch_event.mojom";
+import "third_party/blink/public/mojom/input/input_handler.mojom";
 import "third_party/blink/public/mojom/input/pointer_lock_context.mojom";
+import "third_party/blink/public/mojom/input/pointer_lock_result.mojom";
 import "third_party/blink/public/mojom/selection_menu/selection_menu_behavior.mojom";
 import "ui/base/ime/mojom/ime_types.mojom";
-import "ui/events/mojom/event.mojom";
-import "ui/events/mojom/event_constants.mojom";
-import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "ui/gfx/range/mojom/range.mojom";
 import "ui/latency/mojom/latency_info.mojom";
-
-
-// These structs are purposely duplicated from ui/events/mojom/event.mojom.
-// They map WebInputEvent <-> WebInputEvent across mojo.
-// We have to work at unifying them. The current problem is that the browser
-// uses WebInputEvents inside the render widget host and input router. Once
-// we move these to ui::Event's then we can get rid of these duplicated
-// mojom structs. Ideally the browser would use ui::Event up until we
-// pass the events into the renderer and just use a StructTraits to perform
-// conversion from ui::mojom::Event --> blink::WebInputEvent.
-struct KeyData {
-  int32 dom_key;
-  int32 dom_code;
-  int32 windows_key_code;
-  int32 native_key_code;
-  bool is_system_key;
-  bool is_browser_shortcut;
-  mojo_base.mojom.String16 text;
-  mojo_base.mojom.String16 unmodified_text;
-};
-
-struct PointerData {
-  int32 pointer_id;
-  float force;
-  int32 tilt_x;
-  int32 tilt_y;
-  float tangential_pressure;
-  int32 twist;
-  blink.mojom.Button button;
-  ui.mojom.EventPointerType pointer_type;
-  int32 movement_x;
-  int32 movement_y;
-  bool is_raw_movement_event;
-  gfx.mojom.PointF widget_position;
-  gfx.mojom.PointF screen_position;
-  MouseData? mouse_data;
-};
-
-struct WheelData {
-  float delta_x;
-  float delta_y;
-  float wheel_ticks_x;
-  float wheel_ticks_y;
-  float acceleration_ratio_x;
-  float acceleration_ratio_y;
-  uint8 phase;
-  uint8 momentum_phase;
-  blink.mojom.DispatchType cancelable;
-  uint8 event_action;
-  uint8 delta_units;
-};
-
-struct MouseData {
-  int32 click_count;
-  WheelData? wheel_data;
-};
-
-struct ScrollUpdate {
-  float velocity_x;
-  float velocity_y;
-};
-
-struct ScrollData {
-  float delta_x;
-  float delta_y;
-  ui.mojom.ScrollGranularity delta_units;
-  bool target_viewport;
-  blink.mojom.InertialPhaseState inertial_phase;
-  bool synthetic;
-  int32 pointer_count;
-  ScrollUpdate? update_details;
-};
-
-struct PinchBeginData {
-  bool needs_wheel_event;
-};
-
-struct PinchUpdateData {
-  float scale;
-  bool zoom_disabled;
-  bool needs_wheel_event;
-};
-
-struct PinchEndData {
-  bool needs_wheel_event;
-};
-
-struct FlingData {
-  float velocity_x;
-  float velocity_y;
-  bool target_viewport;
-  bool prevent_boosting;
-};
-
-struct TapData {
-  int32 tap_count;
-  bool needs_wheel_event;
-};
-
-struct GestureData {
-  gfx.mojom.PointF screen_position;
-  gfx.mojom.PointF widget_position;
-  blink.mojom.GestureDevice source_device;
-  bool is_source_touch_event_set_non_blocking;
-  ui.mojom.EventPointerType primary_pointer_type;
-  int32 unique_touch_event_id;
-  gfx.mojom.Size? contact_size;
-  ScrollData? scroll_data;
-  PinchBeginData? pinch_begin_data;
-  PinchUpdateData? pinch_update_data;
-  PinchEndData? pinch_end_data;
-  TapData? tap_data;
-  FlingData? fling_data;
-};
-
-struct TouchPoint {
-  blink.mojom.TouchState state;
-  float radius_x;
-  float radius_y;
-  float rotation_angle;
-  PointerData pointer_data;
-};
-
-struct TouchData {
-  blink.mojom.DispatchType cancelable;
-  bool moved_beyond_slop_region;
-  bool touch_start_or_first_move;
-  bool hovering;
-  uint32 unique_touch_event_id;
-  array<TouchPoint> touches;
-};
-
-struct Event {
-  blink.mojom.EventType type;
-  int32 modifiers;
-  mojo_base.mojom.TimeTicks timestamp;
-  ui.mojom.LatencyInfo latency;
-  KeyData? key_data;
-  PointerData? pointer_data;
-  GestureData? gesture_data;
-  TouchData? touch_data;
-};
 
 // Interface exposed by the browser to the renderer.
 interface WidgetInputHandlerHost {
@@ -277,7 +129,7 @@ interface WidgetInputHandler {
   // the event. The callback may be delayed based on the event running on
   // the main thread so DispatchNonBlockingEvent is always preferred if
   // you don't require notification.
-  DispatchEvent(Event event)
+  DispatchEvent(blink.mojom.Event event)
       => (blink.mojom.InputEventResultSource source,
          ui.mojom.LatencyInfo updated_latency,
          blink.mojom.InputEventResultState state,
@@ -287,7 +139,7 @@ interface WidgetInputHandler {
   // Sends a non-blocking input event to the render widget. The behaviour
   // of this API is the same as DispatchEvent just that there is no callback
   // after the event is processed.
-  DispatchNonBlockingEvent(Event event);
+  DispatchNonBlockingEvent(blink.mojom.Event event);
 
   // Forces input to be flushed and resolves the callback only once the input
   // has been fully processed, meaning its effects are visible to the full

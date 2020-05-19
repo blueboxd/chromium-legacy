@@ -15,6 +15,7 @@ static_library("common") {
   ]
 
   deps = [
+    ":mojo_interfaces",
     "//base",
     "//components/cloud_devices/common:common",
     "//ipc",

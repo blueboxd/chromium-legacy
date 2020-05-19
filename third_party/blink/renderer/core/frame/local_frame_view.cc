@@ -1205,18 +1205,6 @@ void LocalFrameView::AddPartToUpdate(LayoutEmbeddedObject& object) {
   part_update_set_.insert(&object);
 }
 
-void LocalFrameView::SetDisplayShape(DisplayShape display_shape) {
-  if (display_shape == display_shape_)
-    return;
-
-  display_shape_ = display_shape;
-
-  if (frame_->GetDocument()) {
-    frame_->GetDocument()->MediaQueryAffectingValueChanged(
-        MediaValueChange::kOther);
-  }
-}
-
 void LocalFrameView::SetMediaType(const AtomicString& media_type) {
   DCHECK(frame_->GetDocument());
   media_type_ = media_type;

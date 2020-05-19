@@ -29,8 +29,9 @@ namespace assistant {
 
 namespace {
 
-// Please remember to set auth token when running in |kProxy| mode.
+// Please remember to set auth token when *not* running in |kReplay| mode.
 constexpr auto kMode = FakeS3Mode::kReplay;
+
 // Update this when you introduce breaking changes to existing tests.
 constexpr int kVersion = 1;
 
@@ -172,6 +173,34 @@ class AssistantTimersBrowserTest : public MixinBasedInProcessBrowserTest {
 };
 
 // Tests -----------------------------------------------------------------------
+
+// Timer notifications should be dismissed when disabling Assistant in settings.
+IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
+                       ShouldDismissTimerNotificationsWhenDisablingAssistant) {
+  tester()->StartAssistantAndWaitForReady();
+
+  ShowAssistantUi();
+  EXPECT_TRUE(tester()->IsVisible());
+
+  // Confirm no Assistant notifications are currently being shown.
+  EXPECT_TRUE(FindAssistantNotifications().empty());
+
+  // Start a timer for one minute.
+  tester()->SendTextQuery("Set a timer for 1 minute.");
+
+  // Check for a stable substring of the expected answers.
+  tester()->ExpectTextResponse("1 min.");
+
+  // Confirm that an Assistant timer notification is now showing.
+  ASSERT_EQ(1u, FindVisibleNotificationsByPrefixedId("assistant/timer").size());
+
+  // Disable Assistant.
+  tester()->SetAssistantEnabled(false);
+  base::RunLoop().RunUntilIdle();
+
+  // Confirm that our Assistant timer notification has been dismissed.
+  EXPECT_TRUE(FindAssistantNotifications().empty());
+}
 
 // Pressing the "STOP" action button in a timer notification should result in
 // the timer being removed.

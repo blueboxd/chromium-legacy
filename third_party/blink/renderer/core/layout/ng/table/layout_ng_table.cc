@@ -33,6 +33,11 @@ void LayoutNGTable::UpdateBlockLayout(bool relayout_children) {
   UpdateInFlowBlockLayout();
 }
 
+LayoutBox* LayoutNGTable::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableWithParent(*parent);
+}
+
 bool LayoutNGTable::IsFirstCell(const LayoutNGTableCellInterface& cell) const {
   const LayoutNGTableRowInterface* row = cell.RowInterface();
   if (row->FirstCellInterface() != &cell)

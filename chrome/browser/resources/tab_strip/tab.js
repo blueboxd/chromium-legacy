@@ -11,7 +11,7 @@ import {isRTL} from 'chrome://resources/js/util.m.js';
 
 import {AlertIndicatorsElement} from './alert_indicators.js';
 import {CustomElement} from './custom_element.js';
-import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
 import {TabSwiper} from './tab_swiper.js';
 import {CloseTabAction, TabData, TabNetworkState, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
@@ -87,7 +87,7 @@ export class TabElement extends CustomElement {
     this.tabsApi_ = TabsApiProxyImpl.getInstance();
 
     /** @private {!TabStripEmbedderProxy} */
-    this.embedderApi_ = TabStripEmbedderProxy.getInstance();
+    this.embedderApi_ = TabStripEmbedderProxyImpl.getInstance();
 
     /** @private {!HTMLElement} */
     this.titleTextEl_ = /** @type {!HTMLElement} */ (this.$('#titleText'));

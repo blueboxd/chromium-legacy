@@ -25,7 +25,11 @@ class FakeWebAuthFlowWithWindowKey : public WebAuthFlow {
  public:
   explicit FakeWebAuthFlowWithWindowKey(WebAuthFlow::Delegate* delegate,
                                         std::string window_key)
-      : WebAuthFlow(delegate, nullptr, GURL(), WebAuthFlow::INTERACTIVE),
+      : WebAuthFlow(delegate,
+                    nullptr,
+                    GURL(),
+                    WebAuthFlow::INTERACTIVE,
+                    WebAuthFlow::GET_AUTH_TOKEN),
         fake_window_key_(window_key) {}
 
   ~FakeWebAuthFlowWithWindowKey() override = default;

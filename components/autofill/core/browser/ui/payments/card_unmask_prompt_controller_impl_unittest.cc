@@ -69,15 +69,11 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
  public:
   explicit TestCardUnmaskPromptController(
       TestingPrefServiceSimple* pref_service)
-      : CardUnmaskPromptControllerImpl(pref_service, false),
-        can_store_locally_(!base::FeatureList::IsEnabled(
-            features::kAutofillNoLocalSaveOnUnmaskSuccess)) {}
+      : CardUnmaskPromptControllerImpl(pref_service) {}
 
-  bool CanStoreLocally() const override { return can_store_locally_; }
 #if defined(OS_ANDROID)
   bool ShouldOfferWebauthn() const override { return should_offer_webauthn_; }
 #endif
-  void set_can_store_locally(bool can) { can_store_locally_ = can; }
   void set_should_offer_webauthn(bool should) {
     should_offer_webauthn_ = should;
   }
@@ -87,7 +83,6 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
   }
 
  private:
-  bool can_store_locally_;
   bool should_offer_webauthn_;
   base::WeakPtrFactory<TestCardUnmaskPromptController> weak_factory_{this};
 
@@ -173,7 +168,6 @@ TEST_F(CardUnmaskPromptControllerImplTest,
        FidoAuthOfferCheckboxStatePersistent) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardAuthentication);
-  controller_->set_can_store_locally(false);
   ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
                                 /*enable_fido_auth=*/true);
   EXPECT_TRUE(pref_service_->GetBoolean(
@@ -189,7 +183,6 @@ TEST_F(CardUnmaskPromptControllerImplTest,
        PopulateCheckboxToUserProvidedUnmaskDetails) {
   scoped_feature_list_.InitAndEnableFeature(
       features::kAutofillCreditCardAuthentication);
-  controller_->set_can_store_locally(false);
   ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
                                 /*enable_fido_auth=*/true);
 
@@ -486,7 +479,6 @@ TEST_P(LoggingValidationTestForNickname, LogUnmaskedCardAfterFailure) {
 }
 
 TEST_P(LoggingValidationTestForNickname, DontLogForHiddenCheckbox) {
-  controller_->set_can_store_locally(false);
   ShowPromptAndSimulateResponse(/*should_store_pan=*/false,
                                 /*enable_fido_auth=*/false);
   base::HistogramTester histogram_tester;

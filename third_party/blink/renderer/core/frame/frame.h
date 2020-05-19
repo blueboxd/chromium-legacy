@@ -74,6 +74,10 @@ enum class FrameDetachType { kRemove, kSwap };
 // input, layout, or painting probably belongs on LocalFrame.
 class CORE_EXPORT Frame : public GarbageCollected<Frame> {
  public:
+  // Returns the Frame instance for the given |frame_token|.
+  // Note that this Frame can be either a LocalFrame or Remote instance.
+  static Frame* ResolveFrame(const base::UnguessableToken& frame_token);
+
   virtual ~Frame();
 
   virtual void Trace(Visitor*) const;

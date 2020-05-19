@@ -94,8 +94,7 @@ class BrowserTabStripController : public TabStripController,
       const tab_groups::TabGroupId& group_id) const override;
   tab_groups::TabGroupColorId GetGroupColorId(
       const tab_groups::TabGroupId& group_id) const override;
-  bool GetGroupCollapsedState(
-      const tab_groups::TabGroupId& group) const override;
+  bool IsGroupCollapsed(const tab_groups::TabGroupId& group) const override;
 
   void SetVisualDataForGroup(
       const tab_groups::TabGroupId& group,

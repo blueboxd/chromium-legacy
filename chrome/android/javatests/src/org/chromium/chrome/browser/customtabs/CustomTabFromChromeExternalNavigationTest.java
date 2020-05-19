@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
@@ -23,6 +24,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -30,14 +32,17 @@ import org.chromium.chrome.browser.tab.InterceptNavigationDelegateTabHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabTestUtils;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
 import org.chromium.components.external_intents.InterceptNavigationDelegateImpl;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
+import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServerRule;
 
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -50,6 +55,9 @@ public class CustomTabFromChromeExternalNavigationTest {
     public CustomTabActivityTestRule mActivityRule = new CustomTabActivityTestRule();
 
     @Rule
+    public ChromeActivityTestRule mChromeActivityTestRule =
+            new ChromeActivityTestRule(ChromeTabbedActivity.class);
+
     public EmbeddedTestServerRule mServerRule = new EmbeddedTestServerRule();
 
     private Intent getCustomTabFromChromeIntent(final String url, final boolean markFromChrome) {
@@ -168,5 +176,44 @@ public class CustomTabFromChromeExternalNavigationTest {
         Assert.assertFalse(menu.findItem(R.id.request_desktop_site_row_menu_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
         Assert.assertFalse(menu.findItem(R.id.open_webapk_id).isVisible());
+    }
+
+    /**
+     * This test verifies that untrusted intents are not launched by PaymentHandlerActivity.
+     * The source of untrusted intent for our test is IntentURI.
+     */
+    @Test
+    @LargeTest
+    public void testCCTOpenedFromIntentUriWithPaymentsUI() throws Exception {
+        final String initialUrl =
+                mServerRule.getServer().getURL("/chrome/test/data/android/url_overriding/"
+                        + "navigation_to_cct_via_intent_uri_spoofing.html");
+
+        mChromeActivityTestRule.startMainActivityOnBlankPage();
+        mChromeActivityTestRule.loadUrlInNewTab(initialUrl);
+
+        mChromeActivityTestRule.getActivity().onUserInteraction();
+        // Simulate the click on the link that fires the IntentURI for external navigations.
+        try {
+            DOMUtils.clickNode(mChromeActivityTestRule.getWebContents(), "link");
+        } catch (TimeoutException e) {
+            Assert.fail("Failed to click on the target node.");
+            return;
+        }
+
+        // We poll to check that a CustomTabActivity is fired because of our IntentURI.
+        // We also check that this CustomTabActivity should not be of PaymentHandlerActivity
+        // type as it lacks the trusted extras which can only be added by Chrome.
+        CriteriaHelper.pollUiThread(() -> {
+            boolean isCCTLaunched = false;
+            for (Activity runningActivity : ApplicationStatus.getRunningActivities()) {
+                if (runningActivity instanceof CustomTabActivity) {
+                    isCCTLaunched = true;
+                    CustomTabActivity cta = (CustomTabActivity) runningActivity;
+                    if (PaymentHandlerActivity.class == cta.getClass()) return false;
+                }
+            }
+            return isCCTLaunched;
+        });
     }
 }

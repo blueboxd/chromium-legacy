@@ -42,6 +42,7 @@
 <translation id="6058625436358447366">အပြီးသတ်ရန်အတွက် သင့်စကားဝှက် အသစ်နှင့် အဟောင်းကို ထည့်ပါ</translation>
 <translation id="6106186594183574873">အပြီးသတ်ရန်အတွက် သင့်စကားဝှက်ဟောင်းကို ထည့်ပါ</translation>
 <translation id="6146993107019042706">အပြီးသတ်ရန် သင့်စကားဝှက်အသစ်ကို ထည့်ပါ</translation>
+<translation id="6517239166834772319">စူးစမ်းလေ့လာရန်</translation>
 <translation id="6643016212128521049">ရှင်းရန်</translation>
 <translation id="7162487448488904999">ပြခန်း</translation>
 <translation id="7658239707568436148">မလုပ်တော့</translation>
@@ -49,6 +50,7 @@
 <translation id="7805768142964895445">အခြေအနေ</translation>
 <translation id="808894953321890993">စကားဝှက် ပြောင်းရန်</translation>
 <translation id="8208861521865154048">ခံစားခွင့်များ</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> က ဤအသုံးပြုသူကို စီမံသည်။ ၎င်းက ဆက်တင်များကို အဝေးထိန်းစီမံပြီး အသုံးပြုသူ လုပ်ဆောင်ချက်ကို စောင့်ကြည့်နိုင်သည်။</translation>
 <translation id="8747900814994928677">ပြောင်းလဲမှုကို အတည်ပြုခြင်း</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> လုပ်ဆောင်ခွင့် <ph name="ATTEMPTS_LEFT" /> ကြိမ် ကျန်သည်</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> အတွက် လက်မှတ်ကို ပြန်လည်စတင်ပါ</translation>

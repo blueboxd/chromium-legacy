@@ -677,7 +677,9 @@ class CacheStorageCacheTest : public testing::Test {
         nullptr /* side_data_blob */,
         nullptr /* side_data_blob_for_cache_put */,
         network::mojom::ParsedHeaders::New(),
-        false /* loaded_with_credentials */);
+        net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN,
+        "unknown" /* alpn_negotiated_protocol */,
+        false /* loaded_with_credentials */, false /* was_fetched_via_spdy */);
   }
 
   void CopySideDataToResponse(const std::string& uuid,

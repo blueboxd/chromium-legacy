@@ -1885,18 +1885,17 @@ void RenderWidgetHostViewMac::SetRemoteAccessibilityWindowToken(
 // forward them to the RenderWidgetHostNSViewHostHelper implementation:
 
 void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
-    std::unique_ptr<InputEvent> input_event,
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event,
     const std::vector<uint8_t>& native_event_data,
     bool skip_in_browser,
     std::vector<blink::mojom::EditCommandPtr> edit_commands) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsKeyboardEventType(
-          input_event->web_event->GetType())) {
+  if (!input_event || !blink::WebInputEvent::IsKeyboardEventType(
+                          input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-KeyboardEventType event.";
     return;
   }
   const blink::WebKeyboardEvent& keyboard_event =
-      static_cast<const blink::WebKeyboardEvent&>(*input_event->web_event);
+      static_cast<const blink::WebKeyboardEvent&>(input_event->Event());
   NativeWebKeyboardEvent native_event(keyboard_event, nil);
   native_event.skip_in_browser = skip_in_browser;
   // The NSEvent constructed from the InputEvent sent over mojo is not even
@@ -1905,127 +1904,118 @@ void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
   // https://crbug.com/919167,943197,964052
   [native_event.os_event release];
   native_event.os_event = [ui::EventFromData(native_event_data) retain];
-  ForwardKeyboardEventWithCommands(native_event, input_event->latency_info,
+  ForwardKeyboardEventWithCommands(native_event, input_event->latency_info(),
                                    std::move(edit_commands));
 }
 
 void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsMouseEventType(
-          input_event->web_event->GetType())) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event ||
+      !blink::WebInputEvent::IsMouseEventType(input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-MouseEventType event.";
     return;
   }
   const blink::WebMouseEvent& mouse_event =
-      static_cast<const blink::WebMouseEvent&>(*input_event->web_event);
+      static_cast<const blink::WebMouseEvent&>(input_event->Event());
   RouteOrProcessMouseEvent(mouse_event);
 }
 
 void RenderWidgetHostViewMac::RouteOrProcessTouchEvent(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsTouchEventType(
-          input_event->web_event->GetType())) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event ||
+      !blink::WebInputEvent::IsTouchEventType(input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-TouchEventType event.";
     return;
   }
   const blink::WebTouchEvent& touch_event =
-      static_cast<const blink::WebTouchEvent&>(*input_event->web_event);
+      static_cast<const blink::WebTouchEvent&>(input_event->Event());
   RouteOrProcessTouchEvent(touch_event);
 }
 
 void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      input_event->web_event->GetType() !=
-          blink::WebInputEvent::Type::kMouseWheel) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event || input_event->Event().GetType() !=
+                          blink::WebInputEvent::Type::kMouseWheel) {
     DLOG(ERROR) << "Absent or non-MouseWheel event.";
     return;
   }
   const blink::WebMouseWheelEvent& wheel_event =
-      static_cast<const blink::WebMouseWheelEvent&>(*input_event->web_event);
+      static_cast<const blink::WebMouseWheelEvent&>(input_event->Event());
   RouteOrProcessWheelEvent(wheel_event);
 }
 
 void RenderWidgetHostViewMac::ForwardMouseEvent(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsMouseEventType(
-          input_event->web_event->GetType())) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event ||
+      !blink::WebInputEvent::IsMouseEventType(input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-MouseEventType event.";
     return;
   }
   const blink::WebMouseEvent& mouse_event =
-      static_cast<const blink::WebMouseEvent&>(*input_event->web_event);
+      static_cast<const blink::WebMouseEvent&>(input_event->Event());
   ForwardMouseEvent(mouse_event);
 }
 
 void RenderWidgetHostViewMac::ForwardWheelEvent(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      input_event->web_event->GetType() !=
-          blink::WebInputEvent::Type::kMouseWheel) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event || input_event->Event().GetType() !=
+                          blink::WebInputEvent::Type::kMouseWheel) {
     DLOG(ERROR) << "Absent or non-MouseWheel event.";
     return;
   }
   const blink::WebMouseWheelEvent& wheel_event =
-      static_cast<const blink::WebMouseWheelEvent&>(*input_event->web_event);
+      static_cast<const blink::WebMouseWheelEvent&>(input_event->Event());
   ForwardWheelEvent(wheel_event);
 }
 
 void RenderWidgetHostViewMac::GestureBegin(
-    std::unique_ptr<InputEvent> input_event,
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event,
     bool is_synthetically_injected) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsGestureEventType(
-          input_event->web_event->GetType())) {
+  if (!input_event || !blink::WebInputEvent::IsGestureEventType(
+                          input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-GestureEventType event.";
     return;
   }
   blink::WebGestureEvent gesture_event =
-      *static_cast<const blink::WebGestureEvent*>(input_event->web_event.get());
+      static_cast<const blink::WebGestureEvent&>(input_event->Event());
   // Strip the gesture type, because it is not known.
   gesture_event.SetType(blink::WebInputEvent::Type::kUndefined);
   GestureBegin(gesture_event, is_synthetically_injected);
 }
 
 void RenderWidgetHostViewMac::GestureUpdate(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsGestureEventType(
-          input_event->web_event->GetType())) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event || !blink::WebInputEvent::IsGestureEventType(
+                          input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-GestureEventType event.";
     return;
   }
   const blink::WebGestureEvent& gesture_event =
-      static_cast<const blink::WebGestureEvent&>(*input_event->web_event);
+      static_cast<const blink::WebGestureEvent&>(input_event->Event());
   GestureUpdate(gesture_event);
 }
 
 void RenderWidgetHostViewMac::GestureEnd(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsGestureEventType(
-          input_event->web_event->GetType())) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event || !blink::WebInputEvent::IsGestureEventType(
+                          input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-GestureEventType event.";
     return;
   }
   blink::WebGestureEvent gesture_event =
-      *static_cast<const blink::WebGestureEvent*>(input_event->web_event.get());
+      static_cast<const blink::WebGestureEvent&>(input_event->Event());
   GestureEnd(gesture_event);
 }
 
 void RenderWidgetHostViewMac::SmartMagnify(
-    std::unique_ptr<InputEvent> input_event) {
-  if (!input_event || !input_event->web_event ||
-      !blink::WebInputEvent::IsGestureEventType(
-          input_event->web_event->GetType())) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event) {
+  if (!input_event || !blink::WebInputEvent::IsGestureEventType(
+                          input_event->Event().GetType())) {
     DLOG(ERROR) << "Absent or non-GestureEventType event.";
     return;
   }
   const blink::WebGestureEvent& gesture_event =
-      static_cast<const blink::WebGestureEvent&>(*input_event->web_event);
+      static_cast<const blink::WebGestureEvent&>(input_event->Event());
   SmartMagnify(gesture_event);
 }
 

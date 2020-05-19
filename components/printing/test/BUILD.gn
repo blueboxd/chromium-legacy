@@ -17,6 +17,7 @@ static_library("test_support") {
   public_deps = [
     "//base",
     "//components/printing/common",
+    "//components/printing/common:mojo_interfaces",
     "//components/printing/renderer",
     "//content/public/common",
     "//content/public/renderer",

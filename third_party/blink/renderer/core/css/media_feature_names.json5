@@ -58,6 +58,5 @@
     "-webkit-transform-3d",
     "scan",
     "screen-spanning",
-    "shape",
   ],
 }

@@ -31,6 +31,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/grit/components_resources.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_frame.h"
@@ -1506,14 +1507,15 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
       routing_id(), default_page_layout, printable_area_in_points,
       has_page_size_style, ids));
 
-  PrintHostMsg_DidStartPreview_Params params;
-  params.page_count = print_preview_context_.total_page_count();
-  params.pages_to_render = print_preview_context_.pages_to_render();
-  params.pages_per_sheet = print_params.pages_per_sheet;
-  params.page_size = GetPdfPageSize(print_params.page_size, dpi);
-  params.fit_to_page_scaling =
-      GetFitToPageScaleFactor(printable_area_in_points);
-  Send(new PrintHostMsg_DidStartPreview(routing_id(), params, ids));
+  Send(new PrintHostMsg_DidStartPreview(
+      routing_id(),
+      mojom::DidStartPreviewParams(
+          print_preview_context_.total_page_count(),
+          print_preview_context_.pages_to_render(),
+          print_params.pages_per_sheet,
+          GetPdfPageSize(print_params.page_size, dpi),
+          GetFitToPageScaleFactor(printable_area_in_points)),
+      ids));
   if (CheckForCancel())
     return CREATE_FAIL;
 

@@ -2,6 +2,7 @@
 <html>
 <head>
 <script src="../resources/js-test.js"></script>
+<script src="../resources/user-gesture-utils.js"></script>
 <script src="../resources/visibility.js"></script>
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/device/geolocation/public/interfaces/geolocation.mojom.js"></script>
@@ -67,19 +68,27 @@ navigator.geolocation.watchPosition(function(p) {
     state++;
     checkPosition(p);
     switch(state) {
+        case 1:
+            updatePosition();
+            break;
         case 2: {
             debug("* Hiding page");
             setMainWindowHidden(true).then(() => {
                 isPageVisible = false;
-                showPageAndUpdatePosition();
+                // This should not be received.
+                updatePosition();
+                // Wait for it to not be received, then continue.
+                roundTripToBrowser().then(showPageAndUpdatePosition);
             });
             break;
         }
+        case 3:
+            updatePosition();
+            break;
         case 4:
             finishJSTest();
             return;
     }
-    updatePosition();
 }, function(e) {
     testFailed('Error callback invoked unexpectedly');
     finishJSTest();

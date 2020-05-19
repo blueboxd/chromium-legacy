@@ -77,6 +77,8 @@ void UpdateRendererOnMixedContentFound(NavigationRequest* navigation_request,
   params.request_context_type = navigation_request->request_context_type();
   params.request_destination = navigation_request->request_destination();
   params.was_allowed = was_allowed;
+  DCHECK(!navigation_request->GetRedirectChain().empty());
+  params.url_before_redirects = navigation_request->GetRedirectChain()[0];
   params.had_redirect = for_redirect;
   params.source_location =
       *(navigation_request->common_params().source_location.get());

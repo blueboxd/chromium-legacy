@@ -144,7 +144,7 @@ class ImageTransferCacheEntryTest
       if (texture.isValid())
         gr_context_->deleteBackendTexture(texture);
     }
-    gr_context_->flush();
+    gr_context_->flushAndSubmit();
     textures_to_free_.clear();
   }
 

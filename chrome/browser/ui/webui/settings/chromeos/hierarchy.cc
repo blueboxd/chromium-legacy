@@ -126,6 +126,8 @@ Hierarchy::Hierarchy(const OsSettingsSections& sections) {
   }
 }
 
+Hierarchy::Hierarchy() = default;
+
 Hierarchy::~Hierarchy() = default;
 
 const Hierarchy::SubpageMetadata& Hierarchy::GetSubpageMetadata(

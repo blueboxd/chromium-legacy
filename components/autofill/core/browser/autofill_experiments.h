@@ -44,11 +44,6 @@ bool IsCreditCardMigrationEnabled(PersonalDataManager* personal_data_manager,
 // disables providing suggestions.
 bool IsInAutofillSuggestionsDisabledExperiment();
 
-// Returns true if the user should be offered to locally store unmasked cards.
-// This controls whether the option is presented at all rather than the default
-// response of the option.
-bool OfferStoreUnmaskedCards(bool is_off_the_record);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_EXPERIMENTS_H_

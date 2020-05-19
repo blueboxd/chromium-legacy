@@ -239,10 +239,10 @@ void RealtimeAudioDestinationHandler::Render(
 
 void RealtimeAudioDestinationHandler::SetDetectSilenceIfNecessary(
     bool has_automatic_pull_nodes) {
-  // When there is one or more automatic pull nodes, and the input is not
-  // connected, the silence detection should be turned off.
+  // When there is no automatic pull nodes, or the destination has an active
+  // input connection, the silence detection should be turned on.
   bool needs_silence_detection =
-      has_automatic_pull_nodes && !Input(0).IsConnected();
+      !has_automatic_pull_nodes || Input(0).IsConnected();
 
   // Post a cross-thread task only when the detecting condition has changed.
   if (is_detecting_silence_ != needs_silence_detection) {

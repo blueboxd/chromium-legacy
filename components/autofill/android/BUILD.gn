@@ -41,6 +41,7 @@ android_library("autofill_java") {
     "//base:base_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//ui/android:ui_java",
   ]
   sources = [

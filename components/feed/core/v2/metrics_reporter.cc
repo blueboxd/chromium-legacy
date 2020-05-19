@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "components/feed/core/v2/metrics_reporter.h"
 
+#include <algorithm>
 #include <cmath>
 
 #include "base/metrics/histogram_functions.h"
@@ -10,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
+#include "components/feed/core/v2/prefs.h"
 
 namespace feed {
 namespace {
@@ -23,6 +25,12 @@ constexpr base::TimeDelta kLoadTimeout = base::TimeDelta::FromSeconds(15);
 // Maximum time to wait before declaring opening a card a failure.
 // For ContentSuggestions.Feed.UserJourney.OpenCard.
 constexpr base::TimeDelta kOpenTimeout = base::TimeDelta::FromSeconds(20);
+// For ContentSuggestions.Feed.TimeSpentInFeed, we want to get a measure
+// of how much time the user is spending with the Feed. If the user stops
+// interacting with the Feed, we stop counting it as time spent after this
+// timeout.
+constexpr base::TimeDelta kTimeSpentInFeedInteractionTimeout =
+    base::TimeDelta::FromSeconds(30);
 
 void ReportEngagementTypeHistogram(FeedEngagementType engagement_type) {
   base::UmaHistogramEnumeration("ContentSuggestions.Feed.EngagementType",
@@ -41,10 +49,16 @@ void ReportUserActionHistogram(FeedUserActionType action_type) {
 
 }  // namespace
 
-MetricsReporter::MetricsReporter(const base::TickClock* clock)
-    : clock_(clock) {}
+MetricsReporter::MetricsReporter(const base::TickClock* clock,
+                                 PrefService* profile_prefs)
+    : clock_(clock), profile_prefs_(profile_prefs) {
+  persistent_data_ = prefs::GetPersistentMetricsData(profile_prefs_);
+  ReportPersistentDataIfDayIsDone();
+}
 
-MetricsReporter::~MetricsReporter() = default;
+MetricsReporter::~MetricsReporter() {
+  FinalizeMetrics();
+}
 
 void MetricsReporter::OnEnterBackground() {
   FinalizeMetrics();
@@ -57,6 +71,28 @@ void MetricsReporter::RecordInteraction() {
   ReportEngagementTypeHistogram(FeedEngagementType::kFeedInteracted);
 }
 
+void MetricsReporter::TrackTimeSpentInFeed(bool interacted_or_scrolled) {
+  if (time_in_feed_start_) {
+    ReportPersistentDataIfDayIsDone();
+    persistent_data_.accumulated_time_spent_in_feed +=
+        std::min(kTimeSpentInFeedInteractionTimeout,
+                 clock_->NowTicks() - *time_in_feed_start_);
+    time_in_feed_start_ = base::nullopt;
+  }
+
+  if (interacted_or_scrolled) {
+    time_in_feed_start_ = clock_->NowTicks();
+  }
+}
+
+void MetricsReporter::FinalizeVisit() {
+  if (!engaged_simple_reported_)
+    return;
+  engaged_reported_ = false;
+  engaged_simple_reported_ = false;
+  TrackTimeSpentInFeed(false);
+}
+
 void MetricsReporter::RecordEngagement(int scroll_distance_dp,
                                        bool interacted) {
   scroll_distance_dp = std::abs(scroll_distance_dp);
@@ -64,11 +100,12 @@ void MetricsReporter::RecordEngagement(int scroll_distance_dp,
   auto now = clock_->NowTicks();
   const base::TimeDelta kVisitTimeout = base::TimeDelta::FromMinutes(5);
   if (now - visit_start_time_ > kVisitTimeout) {
-    engaged_reported_ = false;
-    engaged_simple_reported_ = false;
+    FinalizeVisit();
   }
   // Reset the last active time for session measurement.
   visit_start_time_ = now;
+
+  TrackTimeSpentInFeed(true);
 
   // Report the user as engaged-simple if they have scrolled any amount or
   // interacted with the card, and we have not already reported it for this
@@ -87,6 +124,13 @@ void MetricsReporter::RecordEngagement(int scroll_distance_dp,
     ReportEngagementTypeHistogram(FeedEngagementType::kFeedEngaged);
     engaged_reported_ = true;
   }
+}
+
+void MetricsReporter::StreamScrollStart() {
+  // Note that |TrackTimeSpentInFeed()| is called as a result of
+  // |StreamScrolled()| as well. Tracking the start of scroll events ensures we
+  // don't miss out on long and slow scrolling.
+  TrackTimeSpentInFeed(true);
 }
 
 void MetricsReporter::StreamScrolled(int distance_dp) {
@@ -188,6 +232,8 @@ void MetricsReporter::ContextMenuOpened() {
 }
 
 void MetricsReporter::SurfaceOpened(SurfaceId surface_id) {
+  ReportPersistentDataIfDayIsDone();
+
   surfaces_waiting_for_content_.emplace(surface_id, clock_->NowTicks());
   ReportUserActionHistogram(FeedUserActionType::kOpenedFeedSurface);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -203,6 +249,7 @@ void MetricsReporter::SurfaceClosed(SurfaceId surface_id) {
 }
 
 void MetricsReporter::FinalizeMetrics() {
+  FinalizeVisit();
   ReportCardOpenEndIfNeeded(false);
   for (auto iter = surfaces_waiting_for_content_.begin();
        iter != surfaces_waiting_for_content_.end();) {
@@ -212,6 +259,7 @@ void MetricsReporter::FinalizeMetrics() {
        iter != surfaces_waiting_for_more_content_.end();) {
     ReportGetMoreIfNeeded((iter++)->first, false);
   }
+  prefs::SetPersistentMetricsData(persistent_data_, profile_prefs_);
 }
 
 void MetricsReporter::ReportOpenFeedIfNeeded(SurfaceId surface_id,
@@ -342,6 +390,36 @@ void MetricsReporter::OnClearAll(base::TimeDelta time_since_last_clear) {
       time_since_last_clear, base::TimeDelta::FromSeconds(1),
       base::TimeDelta::FromDays(7),
       /*bucket_count=*/50);
+}
+
+void MetricsReporter::ReportPersistentDataIfDayIsDone() {
+  // Reset the persistent data if 24 hours have elapsed, or if it has never
+  // been initialized.
+  bool reset_data = false;
+  if (persistent_data_.current_day_start.is_null()) {
+    reset_data = true;
+  } else {
+    // Report metrics if 24 hours have passed since the day started.
+    const base::TimeDelta since_day_start =
+        (base::Time::Now() - persistent_data_.current_day_start);
+    if (since_day_start > base::TimeDelta::FromDays(1)
+        // Allow up to 1 hour of negative delta, for expected clock changes.
+        || since_day_start < -base::TimeDelta::FromHours(1)) {
+      if (persistent_data_.accumulated_time_spent_in_feed > base::TimeDelta()) {
+        base::UmaHistogramLongTimes(
+            "ContentSuggestions.Feed.TimeSpentInFeed",
+            persistent_data_.accumulated_time_spent_in_feed);
+      }
+
+      reset_data = true;
+    }
+  }
+
+  if (reset_data) {
+    persistent_data_ = PersistentMetricsData();
+    persistent_data_.current_day_start = base::Time::Now().LocalMidnight();
+    prefs::SetPersistentMetricsData(persistent_data_, profile_prefs_);
+  }
 }
 
 }  // namespace feed

@@ -53,7 +53,6 @@ class ExtensionInstallDialogView
   // Changes the widget size to accommodate the contents' preferred size.
   void ResizeWidget();
 
- private:
   // views::BubbleDialogDelegate:
   gfx::Size CalculatePreferredSize() const override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
@@ -61,6 +60,7 @@ class ExtensionInstallDialogView
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   bool ShouldShowCloseButton() const override;
 
+ private:
   void CloseDialog();
 
   // extensions::ExtensionRegistryObserver:

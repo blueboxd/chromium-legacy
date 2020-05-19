@@ -78,15 +78,17 @@ public class ScreenshotCoordinator {
      * Opens the screenshot sharesheet.
      */
     private void launchSharesheet() {
-        // TODO(crbug/1024586): Open screenshot sharesheet.
+        ScreenshotShareSheetCoordinator shareSheet = new ScreenshotShareSheetCoordinator(mActivity);
+        shareSheet.showShareSheet();
+        mScreenshot = null;
     }
 
     /**
-     * Installs the DFM and shows UI (i.e. toasts and a retry dialog) informing the user of the
-     * installation status.
+     * Installs the DFM and shows UI (i.e. toasts and a retry dialog) informing the
+     * user of the installation status.
      */
     private void installEditor() {
-        ModuleInstallUi ui = new ModuleInstallUi(
+        final ModuleInstallUi ui = new ModuleInstallUi(
                 mTab, R.string.image_editor_module_title, new ModuleInstallUi.FailureUiListener() {
                     @Override
                     public void onFailureUiResponse(boolean retry) {
@@ -94,6 +96,8 @@ public class ScreenshotCoordinator {
                             // User initiated retries are not counted toward the maximum number
                             // of install attempts per session.
                             installEditor();
+                        } else {
+                            launchSharesheet();
                         }
                     }
                 });
@@ -104,7 +108,7 @@ public class ScreenshotCoordinator {
                 ui.showInstallSuccessUi();
                 launchEditor();
             } else {
-                ui.showInstallFailureUi();
+                launchSharesheet();
             }
         });
     }

@@ -33,6 +33,8 @@ class FakeRemoteFrameHost : public mojom::blink::RemoteFrameHost {
   void SetIsInert(bool inert) override;
   void DidChangeOpener(
       const base::Optional<base::UnguessableToken>& opener_frame) override;
+  void AdvanceFocus(blink::mojom::FocusType focus_type,
+                    const base::UnguessableToken& source_frame_token) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

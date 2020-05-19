@@ -38,6 +38,9 @@
             certificate-type="[[certificateTypeEnum_.PERSONAL]]"
             import-allowed="[[clientImportAllowed]]">
         </certificate-list>
+<if expr="chromeos">
+        <certificate-provisioning-list></certificate-provisioning-list>
+</if>
       </div>
       <div>
         <template is="dom-if" if="[[isTabSelected_(selected, 1)]]">

@@ -75,8 +75,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       const KURL& url,
       const ResourceLoaderOptions& options,
       ReportingDisposition reporting_disposition,
-      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info)
-      const override;
+      const Vector<KURL>& redirect_chain) const override;
   mojom::FetchCacheMode ResourceRequestCachePolicy(
       const ResourceRequest&,
       ResourceType,
@@ -112,7 +111,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   bool SendConversionRequestInsteadOfRedirecting(
       const KURL& url,
-      const base::Optional<ResourceRequest::RedirectInfo>& redirect_info,
+      const Vector<KURL>& redirect_chain,
       ReportingDisposition reporting_disposition) const override;
 
   mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
@@ -153,7 +152,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
       override;
   bool ShouldBlockFetchByMixedContentCheck(
       mojom::blink::RequestContextType request_context,
-      ResourceRequest::RedirectStatus redirect_status,
+      const Vector<KURL>& redirect_chain,
       const KURL& url,
       ReportingDisposition reporting_disposition,
       const base::Optional<String>& devtools_id) const override;

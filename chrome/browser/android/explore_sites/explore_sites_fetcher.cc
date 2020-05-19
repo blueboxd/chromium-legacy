@@ -89,7 +89,7 @@ const net::BackoffEntry::Policy
         -1,          // Don't discard entry even if unused.
         false        // Don't use initial delay unless the last was an error.
 };
-const int ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch = 7;
+const int ExploreSitesFetcher::kMaxFailureCountForBackgroundFetch = 2;
 
 // static
 std::unique_ptr<ExploreSitesFetcher> ExploreSitesFetcher::CreateForGetCatalog(

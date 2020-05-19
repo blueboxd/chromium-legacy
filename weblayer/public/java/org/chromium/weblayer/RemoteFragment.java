@@ -104,6 +104,12 @@ abstract class RemoteFragment extends Fragment {
         }
 
         @Override
+        public IObjectWrapper getView() {
+            StrictModeWorkaround.apply();
+            return ObjectWrapper.wrap(RemoteFragment.this.getView());
+        }
+
+        @Override
         public boolean startActivityForResult(
                 IObjectWrapper intent, int requestCode, IObjectWrapper options) {
             StrictModeWorkaround.apply();
@@ -222,7 +228,14 @@ abstract class RemoteFragment extends Fragment {
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         ThreadCheck.ensureOnUiThread();
         try {
-            return ObjectWrapper.unwrap(mRemoteFragment.handleOnCreateView(), View.class);
+            if (WebLayer.getSupportedMajorVersion(getContext()) < 84) {
+                return ObjectWrapper.unwrap(
+                        mRemoteFragment.deprecatedHandleOnCreateView(), View.class);
+            }
+            return ObjectWrapper.unwrap(
+                    mRemoteFragment.handleOnCreateView(
+                            ObjectWrapper.wrap(container), ObjectWrapper.wrap(savedInstanceState)),
+                    View.class);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

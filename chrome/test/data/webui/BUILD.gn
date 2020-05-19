@@ -332,6 +332,7 @@ js_modulizer("modulize_local") {
 group("closure_compile") {
   deps = [
     ":closure_compile_local",
+    "cr_components:closure_compile",
     "cr_elements:closure_compile",
     "print_preview:closure_compile",
     "settings:closure_compile",

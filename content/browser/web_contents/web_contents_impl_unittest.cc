@@ -837,12 +837,12 @@ TEST_F(WebContentsImplTest, FindOpenerRVHWhenPending) {
   // If swapped out is forbidden, a new proxy should be created for the opener
   // in |instance|, and we should ensure that its routing ID is returned here.
   // Otherwise, we should find the pending RFH and not create a new proxy.
-  int opener_frame_routing_id =
-      popup->GetRenderManager()->GetOpenerRoutingID(instance);
+  auto opener_frame_token =
+      popup->GetRenderManager()->GetOpenerFrameToken(instance);
   RenderFrameProxyHost* proxy =
       contents()->GetRenderManager()->GetRenderFrameProxyHost(instance);
   EXPECT_TRUE(proxy);
-  EXPECT_EQ(proxy->GetRoutingID(), opener_frame_routing_id);
+  EXPECT_EQ(proxy->GetFrameToken(), opener_frame_token);
 
   // Ensure that committing the navigation removes the proxy.
   navigation->Commit();

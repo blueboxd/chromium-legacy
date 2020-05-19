@@ -30,7 +30,7 @@ function focusShouldNotChange(action, nextTest) {
 
     action(w);
 
-    roundTripToBrowserThen(() => {
+    roundTripToBrowser().then(() => {
         originatingWindow.removeEventListener('focus', failHandler, false);
         w.removeEventListener('blur', failHandler, false);
 
@@ -92,7 +92,7 @@ function test5()
 
     focusWithUserGesture(w);
 
-    roundTripToBrowserThen(() => {
+    roundTripToBrowser().then(() => {
         w.removeEventListener('focus', handler, false);
 
         log(!fail, 'The last opened window should be able to get focus');

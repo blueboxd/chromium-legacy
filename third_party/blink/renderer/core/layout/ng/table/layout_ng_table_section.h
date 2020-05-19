@@ -27,6 +27,9 @@ class CORE_EXPORT LayoutNGTableSection : public LayoutNGMixin<LayoutBlock>,
 
   const char* GetName() const override { return "LayoutNGTableSection"; }
 
+  LayoutBox* CreateAnonymousBoxWithSameTypeAs(
+      const LayoutObject* parent) const override;
+
   bool AllowsOverflowClip() const override { return false; }
 
   bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const override {

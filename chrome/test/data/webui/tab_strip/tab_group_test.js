@@ -5,7 +5,7 @@
 import 'chrome://tab-strip/tab.js';
 import 'chrome://tab-strip/tab_group.js';
 
-import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
+import {TabStripEmbedderProxyImpl} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
 
 suite('TabGroup', () => {
@@ -16,7 +16,7 @@ suite('TabGroup', () => {
 
   setup(() => {
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
-    TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
+    TabStripEmbedderProxyImpl.instance_ = testTabStripEmbedderProxy;
 
     document.body.innerHTML = '';
     tabGroupElement = document.createElement('tabstrip-tab-group');

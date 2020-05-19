@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/util/type_safety/id_type.h"
+#include "base/values.h"
 #include "components/feed/core/v2/public/types.h"
 
 namespace feed {
@@ -33,6 +34,17 @@ struct RequestMetadata {
   std::string language_tag;
   DisplayMetrics display_metrics;
 };
+
+// Data internal to MetricsReporter which is persisted to Prefs.
+struct PersistentMetricsData {
+  // The midnight time for the day in which this metric was recorded.
+  base::Time current_day_start;
+  // The total recorded time spent on the Feed for the current day.
+  base::TimeDelta accumulated_time_spent_in_feed;
+};
+
+base::Value PersistentMetricsDataToValue(const PersistentMetricsData& data);
+PersistentMetricsData PersistentMetricsDataFromValue(const base::Value& value);
 
 }  // namespace feed
 

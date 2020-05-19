@@ -235,27 +235,26 @@ void InputHandlerProxy::WillShutdown() {
 }
 
 void InputHandlerProxy::HandleInputEventWithLatencyInfo(
-    WebScopedInputEvent event,
-    const ui::LatencyInfo& latency_info,
+    std::unique_ptr<blink::WebCoalescedInputEvent> event,
     EventDispositionCallback callback) {
   DCHECK(input_handler_);
 
   input_handler_->NotifyInputEvent();
 
+  int64_t trace_id = event->latency_info().trace_id();
   TRACE_EVENT("input,benchmark", "LatencyInfo.Flow",
-              [&latency_info](perfetto::EventContext ctx) {
+              [trace_id](perfetto::EventContext ctx) {
                 ChromeLatencyInfo* info =
                     ctx.event()->set_chrome_latency_info();
-                info->set_trace_id(latency_info.trace_id());
+                info->set_trace_id(trace_id);
                 info->set_step(ChromeLatencyInfo::STEP_HANDLE_INPUT_EVENT_IMPL);
                 tracing::FillFlowEvent(ctx, TrackEvent::LegacyEvent::FLOW_INOUT,
-                                       latency_info.trace_id());
+                                       trace_id);
               });
 
   std::unique_ptr<EventWithCallback> event_with_callback =
-      std::make_unique<EventWithCallback>(std::move(event), latency_info,
-                                          tick_clock_->NowTicks(),
-                                          std::move(callback));
+      std::make_unique<EventWithCallback>(
+          std::move(event), tick_clock_->NowTicks(), std::move(callback));
 
   enum {
     NO_SCROLL_PINCH = 0,
@@ -486,7 +485,8 @@ void InputHandlerProxy::InjectScrollbarGestureScroll(
 
   std::unique_ptr<EventWithCallback> gesture_event_with_callback_update =
       std::make_unique<EventWithCallback>(
-          std::move(web_scoped_gesture_event), scrollbar_latency_info,
+          std::make_unique<WebCoalescedInputEvent>(
+              std::move(web_scoped_gesture_event), scrollbar_latency_info),
           original_timestamp, original_timestamp, nullptr);
 
   bool needs_animate_input = compositor_event_queue_->empty();

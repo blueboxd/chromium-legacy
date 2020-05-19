@@ -160,6 +160,7 @@
 ზოგიერთი ფუნქცია შეიძლება მიუწვდომელი იყოს. გთხოვთ მიუთითოთ სხვადასხვა პროფილის დირექტორია ან გამოიყენეთ Chromium-ის ახალი ვერსია.</translation>
 <translation id="6734080038664603509">განაახლეთ &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium უკვე დაინსტალირებულია თქვენი კომპიუტერის ყველა მომხმარებლისთვის.</translation>
+<translation id="6774082503108938489">თქვენმა მშობელმა გამორთო „ნებართვები საიტებისთვის, აპებისა და გაფართოებებისთვის“ Chromium-ისთვის. ეს <ph name="EXTENSION_TYPE_PARAMETER" /> ვერ ჩაირთვება.</translation>
 <translation id="6847869444787758381">Chromium გაცნობებთ, თუ თქვენს პაროლებს ვინმე გატეხავს</translation>
 <translation id="6857782730669500492">Chromium — <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium-ში კოპირებული)</translation>
@@ -217,6 +218,7 @@ Chromium ვერ შეძლებს თქვენი პარამე�
 <translation id="8417404458978023919">{0,plural, =1{ხელახლა გაუშვით Chromium დღის განმავლობაში}other{ხელახლა გაუშვით Chromium # დღის განმავლობაში}}</translation>
 <translation id="8453117565092476964">ინსტალაციის პროგრამის არქივი დაზიანებულია ან არასწორია. ხელახლა ჩამოტვირთეთ Chromium.</translation>
 <translation id="8493179195440786826">Chromium მოძველდა</translation>
+<translation id="8558383651099478961">თქვენმა მშობელმა გამორთო „ნებართვები საიტებისთვის, აპებისა და გაფართოებებისთვის“ Chromium-ისთვის. ეს <ph name="EXTENSION_TYPE_PARAMETER" /> ვერ დაემატება.</translation>
 <translation id="8568283329061645092">პაროლების Chromium-ის მეშვეობით შესამოწმებლად შედით სისტემაში თქვენი Google ანგარიშით</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. ყველა უფლება დაცულია.</translation>
 <translation id="8619360774459241877">მიმდინარეობს Chromium-ის გაშვება…</translation>

@@ -455,6 +455,14 @@
     Password deleted
   </message>
   <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
+  <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_ON_DEVICE" desc="Message displayed in the edit dialog for a password stored on the device.">
+    Your password is stored &lt;b&gt;on this device&lt;/b&gt;.
+  </message>
+  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
+  <message translateable="false" name="IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT" desc="Message displayed in the edit dialog for a password stored in the account.">
+    Your password is stored &lt;b&gt;in your Google Account&lt;/b&gt;.
+  </message>
+  <!-- TODO(crbug.com/1062344): Make it translateable and add translation screenshots once final mocks are available. -->
   <message translateable="false" name="IDS_SETTINGS_PASSWORD_DELETED_PASSWORD_FROM_ACCOUNT" desc="Label for an undo tooltip following deletion of a password from the account.">
     Password deleted from your Google Account
   </message>

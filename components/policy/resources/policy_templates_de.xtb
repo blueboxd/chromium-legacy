@@ -334,13 +334,6 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
 <translation id="152657506688053119">Liste alternativer URLs für den Standardsuchanbieter</translation>
 <translation id="1530812829012954197">Immer die folgenden URL-Muster im Host-Browser darstellen</translation>
 <translation id="1553532014072799546">Weiße Liste für App-Zeitbeschränkungen</translation>
-<translation id="1553684822621013552">Wenn diese Richtlinie auf "true" gesetzt ist, wird ARC für den Nutzer aktiviert.
-      Dies unterliegt jedoch zusätzlichen Überprüfungen der Richtlinieneinstellungen
-      – ARC ist weiterhin nicht verfügbar, wenn entweder der flüchtige Modus oder die Mehrfachanmeldung in der aktuellen Nutzersitzung aktiviert
-      sind.
-
-      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, können
-      Enterprise-Nutzer kein ARC verwenden.</translation>
 <translation id="1553956579506604198">Installation externer Erweiterungen blockieren</translation>
 <translation id="1556072857949466438">Mit dieser Richtlinie kann ein Administrator festlegen, ob eine Seite während des Unloads Pop-ups einblenden darf.
 
@@ -910,10 +903,6 @@ Ist sie nicht konfiguriert, ist der Datenschutzbildschirm anfangs deaktiviert, N
       Wenn diese Richtlinie nicht konfiguriert oder auf "true" eingestellt ist, können Nutzer die Funktion "Netzwerkfreigaben" verwenden.
 
       Wenn diese Richtlinie auf "false" eingestellt, können Nutzer die Funktion "Netzwerkfreigaben" nicht verwenden.</translation>
-<translation id="2438609638493026652">Aktiviert die Meldung von wichtigen Ereignissen an Google während der Installation von Android-Apps. Ereignisse werden nur für Apps erfasst, deren Installation über die Richtlinie ausgelöst wurde.
-
-      Wenn die Richtlinie auf "true" festgelegt ist, werden Ereignisse protokolliert.
-      Ist die Richtlinie auf "false" festgelegt oder nicht konfiguriert, werden Ereignisse nicht protokolliert.</translation>
 <translation id="2440773021691931148">Hiermit können Hardwarestatistiken und Kennzeichnungen im Zusammenhang mit der Stromversorgung gemeldet werden.
 
       Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Statistiken gemeldet.
@@ -1224,15 +1213,6 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
 
       Jeder Listeneintrag besteht aus einer Kennung, die intern dazu verwendet wird, die verschiedenen lokalen Gerätekonten auseinanderzuhalten.</translation>
 <translation id="2769952903507981510">Erforderlichen Domainnamen für Remotezugriff-Hosts konfigurieren</translation>
-<translation id="2783078941107212091">Dadurch werden App-Empfehlungen bei Nullstatus des Suchfelds im Launcher aktiviert.
-
-          Ist die Richtlinie auf "true" festgelegt, können App-Empfehlungen in der Suche mit Nullstatus angezeigt werden.
-
-          Falls die Richtlinie auf "false" gesetzt ist, werden keine App-Empfehlungen in der Suche mit Nullstatus angezeigt.
-
-          Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
-
-          Wird die Richtlinie nicht konfiguriert, ist sie für verwaltete Geräte standardmäßig auf "false" festgelegt.</translation>
 <translation id="2787173078141616821">Informationen zum Status von Android senden</translation>
 <translation id="2799297758492717491">Autoplay von Medien für eine weiße Liste mit URL-Mustern erlauben</translation>
 <translation id="2801065672151277034">Zertifikatverwaltungseinstellungen</translation>
@@ -1885,15 +1865,6 @@ Wenn diese Richtlinie nicht festgelegt ist, gilt die Standardeinstellung: Vom Un
 <translation id="382476126209906314">TalkGadget-Präfix für Remotezugriff-Hosts konfigurieren</translation>
 <translation id="3824972131618513497">Legt die Einstellungen für das Energiesparen und Neustarten fest.</translation>
 <translation id="3826475866868158882">Standortdienste von Google aktiviert</translation>
-<translation id="3831054243924627613">Mit dieser Richtlinie wird der Ausgangszustand der Android-Funktion "Sichern und wiederherstellen" festgelegt.
-
-      Wenn die Richtlinie nicht konfiguriert oder auf "<ph name="BR_DISABLED" />" festgelegt ist, ist die Android-Funktion "Sichern und wiederherstellen" anfangs deaktiviert.
-
-      Wenn diese Richtlinie auf "<ph name="BR_ENABLED" />" festgelegt ist, ist die Android-Funktion "Sichern und wiederherstellen" anfangs aktiviert.
-
-      Ist die Richtlinie auf "<ph name="BR_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob er die Android-Funktion "Sichern und wiederherstellen" verwenden möchte. Aktiviert er die Funktion, werden App-Daten von Android auf die Android-Sicherungsserver hochgeladen und bei der Neuinstallation von kompatiblen Apps wiederhergestellt.
-
-      Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Android-Funktion "Sichern und wiederherstellen" bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Funktion "Sichern und wiederherstellen" aktivieren oder deaktivieren.</translation>
 <translation id="3831376478177535007">Wenn diese Einstellung aktiviert ist, werden von <ph name="PRODUCT_NAME" /> Zertifikate genehmigt, die von der veralteten Symantec-PKI herausgegeben werden – vorausgesetzt sie werden erfolgreich überprüft und bilden eine Kette zu einem anerkannten CA-Zertifikat.
 
       Diese Richtlinie setzt voraus, dass das Betriebssystem die Zertifikate der veralteten Symantec-Infrastruktur noch erkennt. Wenn sich durch ein Update des Betriebssystems die Handhabung solcher Zertifikate ändert, ist diese Richtlinie nicht mehr wirksam. Sie dient zur vorübergehenden Problemumgehung, um Unternehmen mehr Zeit zu geben, veraltete Symantec-Zertifikate zu ersetzen. Diese Richtlinie wird ab dem 1. Januar 2019 entfernt.
@@ -3390,17 +3361,6 @@ Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, wird kein Proxy 
 <translation id="6114416803310251055">Veraltet</translation>
 <translation id="6133088669883929098">Schlüsselgenerierung für alle Websites zulassen</translation>
 <translation id="6135398260575578389">Safe Browsing ist im erweiterten Modus aktiv. Dieser bietet einen besseren Schutz. Es müssen jedoch mehr Browserdaten mit Google geteilt werden.</translation>
-<translation id="6136537398661737682">Mit dieser Richtlinie wird der Ausgangszustand der Standortdienste von Google festgelegt.
-
-      Wenn die Richtlinie nicht konfiguriert oder auf "<ph name="GLS_DISABLED" />" festgelegt ist, sind die Standortdienste anfangs deaktiviert.
-
-      Ist die Richtlinie auf "<ph name="GLS_ENABLED" />" festgelegt, sind die Standortdienste anfangs aktiviert.
-
-      Ist die Richtlinie auf "<ph name="GLS_UNDER_USER_CONTROL" />" festgelegt, dann wird der Nutzer aufgefordert anzugeben, ob die Standortdienste von Google verwendet werden sollen. Hiermit wird Android-Apps die Nutzung der Dienste zum Abfragen des Gerätestandorts erlaubt und die Übermittlung anonymer Standortdaten an Google gestattet.
-
-      Beachten Sie, dass mit dieser Richtlinie lediglich der Status der Standortdienste von Google bei der erstmaligen Einrichtung festgelegt wird. Danach kann der Nutzer die Android-Einstellungen öffnen und die Standortdienste aktivieren oder deaktivieren.
-
-      Beachten Sie, dass die Richtlinie ignoriert wird und die Standortdienste von Google immer deaktiviert sind, wenn die Richtlinie "<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" />" auf "<ph name="BLOCK_GEOLOCATION_SETTING" />" festgelegt ist.</translation>
 <translation id="6141402445226505817">Immer die ungefähre Erkennung der Zeitzone verwenden</translation>
 <translation id="614616930188030377">Muster in dieser Liste werden mit der Sicherheitsherkunft der anfragenden URL abgeglichen.
       Wenn Übereinstimmungen gefunden werden oder chrome://flags/#enable-webrtc-hide-local-ips-with-mdns deaktiviert ist, werden die lokalen IP-Adressen in WebRTC ICE-Kandidaten angezeigt.
@@ -4501,9 +4461,6 @@ Die Richtlinienwerte sollten in % angegeben werden und zwischen 0 und 100 liegen
 
           Wird sie nicht konfiguriert, ist der hohe Kontrast auf dem Anmeldebildschirm anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
 <translation id="7869986671709030417">Standarddruckmodus mit Hintergrundgrafiken</translation>
-<translation id="787125417158068494"><ph name="PRODUCT_OS_NAME" />-Zertifikate sind nicht für ARC-Apps verfügbar, wenn "SyncDisabled" festgelegt wurde oder die Zertifikate nicht konfiguriert wurden.
-
-      Wenn "CopyCaCerts" festgelegt wurde, sind alle über ONC installierten CA-Zertifikate mit <ph name="WEB_TRUSTED_BIT" /> für ARC-Apps verfügbar.</translation>
 <translation id="7882585827992171421">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Bestimmt die ID der Erweiterung, die als Bildschirmschoner auf der Anmeldeseite verwendet werden soll. Die Erweiterung muss Teil des App-Pakets sein, das in der DeviceAppPack-Richtlinie für diese Domain konfiguriert wurde.</translation>
@@ -4940,11 +4897,6 @@ Die Richtlinie wird in M75 entfernt.</translation>
 <translation id="8544465954173828789">Zulassen, dass SMS zwischen Smartphone mit Chromebook synchronisiert werden.</translation>
 <translation id="8548832052135586762">Damit wird festgelegt, ob nur in Farbe, nur in Schwarz-Weiß oder ohne Farbmodusbeschränkung gedruckt wird. Ist die Richtlinie nicht konfiguriert, wird keine Einschränkung angewendet.</translation>
 <translation id="8549772397068118889">Vor dem Besuch von Websites außerhalb von Inhaltspaketen warnen</translation>
-<translation id="8566729013138025202">Gibt eine Gruppe von Richtlinien an, die an die ARC-Laufzeit übergeben werden. Der Wert muss in einem gültigen JSON-Format sein.
-
-      Mit dieser Richtlinie kann festgelegt werden, welche Android-Apps automatisch auf dem Gerät installiert werden sollen.
-
-      Verwenden Sie "PinnedLauncherApps", wenn Sie Apps an den Launcher anpinnen möchten.</translation>
 <translation id="8566842294717252664">Web Store auf der "Neuer Tab"-Seite und im App Launcher ausblenden</translation>
 <translation id="8569734380847633643">
           Wenn diese Richtlinie auf "false" gesetzt ist, wird WLAN unter <ph name="PRODUCT_OS_NAME" /> deaktiviert und Nutzer können die Funktion nicht wieder aktivieren.
@@ -4973,11 +4925,6 @@ Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer 
           Wenn die Richtlinie nicht konfiguriert ist, wird ein Standardwert verwendet.
 
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden.</translation>
-<translation id="8598350264853261122">Wenn die Richtlinie auf "false" festgelegt ist, können nicht verknüpfte Nutzer ARC nicht verwenden.
-
-      Wenn die Richtlinie nicht konfiguriert oder auf "true" festgelegt ist, können alle Nutzer ARC verwenden, es sei denn, ARC wurde anderweitig deaktiviert.
-
-       Änderungen an dieser Richtlinie werden nur angewendet, wenn ARC nicht ausgeführt wird, z. B. beim Start von Chrome OS.</translation>
 <translation id="8606263947930257189">Mit dieser Richtlinie kann festgelegt werden, ob <ph name="PRODUCT_NAME" /> Tabs, die mindestens fünf Minuten lang im Hintergrund waren, deaktivieren darf.
 
       Wenn sie auf "true" gesetzt ist, können diese Tabs deaktiviert werden. Durch die Deaktivierung von Tabs werden CPU, Akku und Arbeitsspeicher entlastet. Bei <ph name="PRODUCT_NAME" /> wird eine Heuristik genutzt, um Tabs zu erkennen, die zwar im Hintergrund ausgeführt werden, jedoch aktiviert bleiben sollten, weil auf ihnen beispielsweise Benachrichtigungen angezeigt, Ton wiedergegeben oder Videos gestreamt werden. Webentwickler können die Deaktivierung ihrer Website auch unterbinden (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).

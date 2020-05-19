@@ -158,6 +158,7 @@
 Ορισμένες λειτουργίες ενδέχεται να μην είναι διαθέσιμες. Καθορίστε έναν διαφορετικό κατάλογο προφίλ ή χρησιμοποιήστε μια νεότερη έκδοση του Chromium.</translation>
 <translation id="6734080038664603509">Ενημέρωση &amp;Chromium</translation>
 <translation id="6734291798041940871">Το Chromium είναι ήδη εγκατεστημένο για όλους τους χρήστες στον υπολογιστή σας.</translation>
+<translation id="6774082503108938489">Ο γονέας σου απενεργοποίησε την επιλογή Άδειες για ιστοτόπους, εφαρμογές και επεκτάσεις για το Chromium. Η ενεργοποίηση του στοιχείου <ph name="EXTENSION_TYPE_PARAMETER" /> δεν επιτρέπεται.</translation>
 <translation id="6847869444787758381">Το Chromium σας ενημερώνει σε περίπτωση παραβίασης των κωδικών πρόσβασής σας.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (αντιγράφηκε στο Chromium)</translation>
@@ -216,6 +217,7 @@
 <translation id="8417404458978023919">{0,plural, =1{Επανεκκίνηση του Chromium σε μία ημέρα}other{Επανεκκίνηση του Chromium σε # ημέρες}}</translation>
 <translation id="8453117565092476964">Το αρχείο του προγράμματος εγκατάστασης είναι κατεστραμμένο ή μη έγκυρο. Κατεβάστε το Chromium ξανά.</translation>
 <translation id="8493179195440786826">Το Chromium δεν είναι ενημερωμένο</translation>
+<translation id="8558383651099478961">Ο γονέας σου απενεργοποίησε την επιλογή Άδειες για ιστοτόπους, εφαρμογές και επεκτάσεις για το Chromium. Η προσθήκη του στοιχείου <ph name="EXTENSION_TYPE_PARAMETER" /> δεν επιτρέπεται.</translation>
 <translation id="8568283329061645092">Το Chromium μπορεί να ελέγξει τους κωδικούς πρόσβασής σας όταν συνδέεστε με τον Λογαριασμό σας Google.</translation>
 <translation id="8586442755830160949">Πνευματικά δικαιώματα <ph name="YEAR" /> Οι συντάκτες του Chromium. Με επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="8619360774459241877">Εκκίνηση του Chromium…</translation>

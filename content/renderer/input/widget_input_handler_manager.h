@@ -77,8 +77,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // InputHandlerProxyClient overrides.
   void WillShutdown() override;
   void DispatchNonBlockingEventToMainThread(
-      ui::WebScopedInputEvent event,
-      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
       const blink::WebInputEventAttribution& attribution) override;
 
   void DidAnimateForInput() override;
@@ -95,7 +94,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
-  void DispatchEvent(std::unique_ptr<content::InputEvent> event,
+  void DispatchEvent(std::unique_ptr<blink::WebCoalescedInputEvent> event,
                      mojom::WidgetInputHandler::DispatchEventCallback callback);
 
   void ProcessTouchAction(cc::TouchAction touch_action);
@@ -164,8 +163,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // InputHandlerProxy by calling DispatchEvent which will re-route to the main
   // thread if needed.
   void DispatchDirectlyToWidget(
-      const ui::WebScopedInputEvent& event,
-      const ui::LatencyInfo& latency,
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
       mojom::WidgetInputHandler::DispatchEventCallback callback);
 
   // This method is the callback used by the compositor input handler to
@@ -178,8 +176,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   void DidHandleInputEventSentToCompositor(
       mojom::WidgetInputHandler::DispatchEventCallback callback,
       blink::InputHandlerProxy::EventDisposition event_disposition,
-      ui::WebScopedInputEvent input_event,
-      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
       std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
           overscroll_params,
       const blink::WebInputEventAttribution& attribution);

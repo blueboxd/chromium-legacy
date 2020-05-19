@@ -37,6 +37,11 @@ void LayoutNGTableCell::ColSpanOrRowSpanChanged() {
   UpdateColAndRowSpanFlags();
 }
 
+LayoutBox* LayoutNGTableCell::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableCellWithParent(*parent);
+}
+
 Length LayoutNGTableCell::StyleOrColLogicalWidth() const {
   // TODO(atotic) TablesNG cannot easily get col width before layout.
   return StyleRef().LogicalWidth();

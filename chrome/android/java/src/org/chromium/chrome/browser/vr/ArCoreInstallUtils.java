@@ -70,6 +70,7 @@ public class ArCoreInstallUtils {
         try {
             return getArCoreShimInstance().checkAvailability(ContextUtils.getApplicationContext());
         } catch (RuntimeException e) {
+            Log.w(TAG, "ARCore availability check failed with error: %s", e.toString());
             return ArCoreShim.Availability.UNSUPPORTED_DEVICE_NOT_CAPABLE;
         }
     }
@@ -110,6 +111,13 @@ public class ArCoreInstallUtils {
             case ArCoreShim.Availability.SUPPORTED_INSTALLED:
                 assert false;
                 break;
+        }
+
+        if (infobarText == null || buttonText == null) {
+            // The action was something other than "install" or "update", log this
+            // and exit early to avoid showing an empty infobar.
+            Log.w(TAG, "ARCore unavailable, status code %d", arCoreAvailability);
+            return;
         }
 
         SimpleConfirmInfoBarBuilder.Listener listener = new SimpleConfirmInfoBarBuilder.Listener() {

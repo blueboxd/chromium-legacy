@@ -2092,9 +2092,55 @@ TEST_P(RenderFrameHostManagerTestWithSiteIsolation,
   EXPECT_FALSE(bar_rfh->GetEnabledBindings() & BINDINGS_POLICY_WEB_UI);
 }
 
+// This class intercepts RenderFrameProxyHost creations, and overrides their
+// respective blink::mojom::RemoteFrame instances, so that it can watch the
+// updates of opener frames.
+class UpdateOpenerProxyObserver {
+ public:
+  UpdateOpenerProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(base::BindRepeating(
+        &UpdateOpenerProxyObserver::RenderFrameProxyHostCreatedCallback,
+        base::Unretained(this)));
+  }
+  ~UpdateOpenerProxyObserver() {
+    RenderFrameProxyHost::SetCreatedCallbackForTesting(
+        RenderFrameProxyHost::CreatedCallback());
+  }
+  base::Optional<base::UnguessableToken> OpenerFrameToken(
+      RenderFrameProxyHost* proxy) {
+    return remote_frames_[proxy]->opener_frame_token();
+  }
+
+ private:
+  class Remote : public content::FakeRemoteFrame {
+   public:
+    explicit Remote(RenderFrameProxyHost* proxy) {
+      Init(proxy->GetRemoteAssociatedInterfacesTesting());
+    }
+    void UpdateOpener(
+        const base::Optional<base::UnguessableToken>& frame_token) override {
+      frame_token_ = frame_token;
+    }
+    base::Optional<base::UnguessableToken> opener_frame_token() {
+      return frame_token_;
+    }
+
+   private:
+    base::Optional<base::UnguessableToken> frame_token_;
+  };
+
+  void RenderFrameProxyHostCreatedCallback(RenderFrameProxyHost* proxy_host) {
+    remote_frames_[proxy_host] = std::make_unique<Remote>(proxy_host);
+  }
+
+  std::map<RenderFrameProxyHost*, std::unique_ptr<Remote>> remote_frames_;
+};
+
 // Test that opener proxies are created properly with a cycle on the opener
 // chain.
 TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
+  UpdateOpenerProxyObserver proxy_observers;
+
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -2138,28 +2184,26 @@ TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWithCycleOnOpenerChain) {
   EXPECT_TRUE(tab2_proxy);
 
   // Verify that the proxies' openers point to each other.
-  int tab1_opener_routing_id =
-      tab1_manager->GetOpenerRoutingID(rfh2->GetSiteInstance());
-  int tab2_opener_routing_id =
-      tab2_manager->GetOpenerRoutingID(rfh2->GetSiteInstance());
-  EXPECT_EQ(tab2_proxy->GetRoutingID(), tab1_opener_routing_id);
-  EXPECT_EQ(tab1_proxy->GetRoutingID(), tab2_opener_routing_id);
+  auto tab1_opener_frame_token =
+      tab1_manager->GetOpenerFrameToken(rfh2->GetSiteInstance());
+  auto tab2_opener_frame_token =
+      tab2_manager->GetOpenerFrameToken(rfh2->GetSiteInstance());
+  EXPECT_EQ(tab2_proxy->GetFrameToken(), tab1_opener_frame_token);
+  EXPECT_EQ(tab1_proxy->GetFrameToken(), tab2_opener_frame_token);
 
   // Setting tab2_proxy's opener required an extra IPC message to be set, since
-  // the opener's routing ID wasn't available when tab2_proxy was created.
-  // Verify that this IPC was sent and that it passed correct routing ID.
-  const IPC::Message* message =
-      rfh2->GetProcess()->sink().GetUniqueMessageMatching(
-          FrameMsg_UpdateOpener::ID);
-  EXPECT_TRUE(message);
-  FrameMsg_UpdateOpener::Param params;
-  EXPECT_TRUE(FrameMsg_UpdateOpener::Read(message, &params));
-  EXPECT_EQ(tab2_opener_routing_id, std::get<0>(params));
+  // the opener's frame token wasn't available when tab2_proxy was created.
+  // Verify that this IPC was sent and that it passed correct frame token.
+  base::RunLoop().RunUntilIdle();
+  DCHECK(proxy_observers.OpenerFrameToken(tab2_proxy) ==
+         tab2_manager->GetOpenerFrameToken(rfh2->GetSiteInstance()));
 }
 
 // Test that opener proxies are created properly when the opener points
 // to itself.
 TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
+  UpdateOpenerProxyObserver proxy_observers;
+
   const GURL kUrl1("http://www.google.com/");
   const GURL kUrl2 = isolated_cross_site_url();
 
@@ -2190,20 +2234,16 @@ TEST_P(RenderFrameHostManagerTest, CreateOpenerProxiesWhenOpenerPointsToSelf) {
   EXPECT_TRUE(opener_proxy);
 
   // Verify that the proxy's opener points to itself.
-  int opener_routing_id =
-      opener_manager->GetOpenerRoutingID(rfh2->GetSiteInstance());
-  EXPECT_EQ(opener_proxy->GetRoutingID(), opener_routing_id);
+  auto opener_frame_token =
+      opener_manager->GetOpenerFrameToken(rfh2->GetSiteInstance());
+  EXPECT_EQ(opener_proxy->GetFrameToken(), opener_frame_token);
 
   // Setting the opener in opener_proxy required an extra IPC message, since
-  // the opener's routing ID wasn't available when opener_proxy was created.
-  // Verify that this IPC was sent and that it passed correct routing ID.
-  const IPC::Message* message =
-      rfh2->GetProcess()->sink().GetUniqueMessageMatching(
-          FrameMsg_UpdateOpener::ID);
-  EXPECT_TRUE(message);
-  FrameMsg_UpdateOpener::Param params;
-  EXPECT_TRUE(FrameMsg_UpdateOpener::Read(message, &params));
-  EXPECT_EQ(opener_routing_id, std::get<0>(params));
+  // the opener's frame_token wasn't available when opener_proxy was created.
+  // Verify that this IPC was sent and that it passed correct frame token.
+  base::RunLoop().RunUntilIdle();
+  DCHECK(proxy_observers.OpenerFrameToken(opener_proxy) ==
+         opener_manager->GetOpenerFrameToken(rfh2->GetSiteInstance()));
 }
 
 // Build the following frame opener graph and see that it can be properly

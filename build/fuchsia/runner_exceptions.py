@@ -67,9 +67,12 @@ def HandleExceptionAndReturnExitCode():
       return 73
     return 72
   elif type is subprocess.CalledProcessError:
-    if value.cmd[0] == 'scp':
+    if os.path.basename(value.cmd[0]) == 'scp':
       print('Error: scp operation failed - %s' % str(value))
       return 81
+    if os.path.basename(value.cmd[0]) == 'qemu-img':
+      print('Error: qemu-img fuchsia image generation failed.')
+      return 82
     return 80
   else:
     return 1

@@ -113,6 +113,8 @@ jumbo_source_set("internal") {
     "policy_details.h",
     "policy_load_status.cc",
     "policy_load_status.h",
+    "policy_loader_common.cc",
+    "policy_loader_common.h",
     "policy_map.cc",
     "policy_map.h",
     "policy_merger.cc",

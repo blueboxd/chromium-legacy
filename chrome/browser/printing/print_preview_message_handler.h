@@ -9,13 +9,13 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/services/printing/public/mojom/pdf_nup_converter.mojom.h"
+#include "components/printing/common/print.mojom-forward.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
-struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
 
@@ -69,7 +69,7 @@ class PrintPreviewMessageHandler
                                  const gfx::Rect& printable_area_in_points,
                                  bool has_custom_page_size_style,
                                  const PrintHostMsg_PreviewIds& ids);
-  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+  void OnDidStartPreview(const mojom::DidStartPreviewParams& params,
                          const PrintHostMsg_PreviewIds& ids);
   void OnDidPreviewPage(content::RenderFrameHost* render_frame_host,
                         const PrintHostMsg_DidPreviewPage_Params& params,

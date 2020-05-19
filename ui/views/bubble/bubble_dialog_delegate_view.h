@@ -39,8 +39,10 @@ namespace views {
 
 class Button;
 
-// BubbleDialogDelegateView is a special DialogDelegateView for bubbles.
-class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
+// BubbleDialogDelegateView is a special DialogDelegate that is also a View for
+// bubbles.
+class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegate,
+                                              public View,
                                               public WidgetObserver {
  public:
   METADATA_HEADER(BubbleDialogDelegateView);
@@ -65,10 +67,17 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
 
   ~BubbleDialogDelegateView() override;
 
-  // DialogDelegateView:
+  // DialogDelegate:
   BubbleDialogDelegateView* AsBubbleDialogDelegate() override;
   NonClientFrameView* CreateNonClientFrameView(Widget* widget) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  View* GetContentsView() override;
+  void DeleteDelegate() override;
+
+  // View:
+  Widget* GetWidget() override;
+  const Widget* GetWidget() const override;
+  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& change) override;
 
   // WidgetObserver:
   void OnWidgetClosing(Widget* widget) override;

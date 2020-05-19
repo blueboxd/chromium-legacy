@@ -43,6 +43,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="6058625436358447366">Lai pabeigtu, ievadiet savu iepriekšējo un jauno paroli</translation>
 <translation id="6106186594183574873">Lai pabeigtu, ievadiet savu iepriekšējo paroli</translation>
 <translation id="6146993107019042706">Lai pabeigtu, ievadiet savu jauno paroli</translation>
+<translation id="6517239166834772319">Izpēte</translation>
 <translation id="6643016212128521049">Notīrīt</translation>
 <translation id="7162487448488904999">Galerija</translation>
 <translation id="7658239707568436148">Atcelt</translation>
@@ -50,6 +51,7 @@ Pieskarieties mikrofonam, lai uzdotu man jautājumu.</translation>
 <translation id="7805768142964895445">Statuss</translation>
 <translation id="808894953321890993">Mainīt paroli</translation>
 <translation id="8208861521865154048">Priekšrocības</translation>
+<translation id="8701136875688985581">Šis lietotājs tiek pārvaldīts domēnā<ph name="ENROLLMENT_DOMAIN" />. Šajā domēnā var tikt attālināti pārvaldīti iestatījumi un uzraudzītas lietotāja darbības.</translation>
 <translation id="8747900814994928677">Apstiprināt izmaiņas</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Atlikušais mēģinājumu skaits: <ph name="ATTEMPTS_LEFT" />.</translation>
 <translation id="910415269708673980">Atsvaidziniet <ph name="PRINCIPAL_NAME" /> biļeti</translation>

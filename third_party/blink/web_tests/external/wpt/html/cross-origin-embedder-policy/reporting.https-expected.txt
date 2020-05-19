@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS subresource CORP
+PASS CORP for subresource requests initiated from a service worker
+PASS navigation CORP
+PASS COEP violation on nested frame navigation
+FAIL subresource requests initiated from DedicatedWorker assert_unreached: A report whose blocked-url is https://www1.web-platform.test:8444/common/text-plain.txt?abc&subresource-corp-from-dedicated-worker and url is https://web-platform.test:8444/html/cross-origin-embedder-policy/resources/fetch-in-dedicated-worker.js is not found. Reached unreachable code
+FAIL subresource requests initiated from DedicatedWorker controlled by a passthrough service worker assert_unreached: A report whose blocked-url is https://www1.web-platform.test:8444/common/text-plain.txt?abc&subresource-corp-from-dedicated-worker-via-passthrough-sw and url is https://web-platform.test:8444/html/cross-origin-embedder-policy/resources/fetch-in-dedicated-worker.js is not found. Reached unreachable code
+PASS subresource CORP in an iframe hosted by a service worker without COEP
+Harness: the test ran to completion.
+

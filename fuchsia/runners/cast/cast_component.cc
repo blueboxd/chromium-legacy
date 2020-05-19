@@ -18,6 +18,7 @@
 #include "fuchsia/base/mem_buffer_util.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_runner.h"
+#include "fuchsia/runners/cast/cast_streaming.h"
 #include "fuchsia/runners/common/web_component.h"
 
 namespace {
@@ -91,6 +92,33 @@ void CastComponent::StartComponent() {
                                fuchsia::web::AllowInputState::DENY);
   frame()->SetNavigationEventListener(
       navigation_listener_binding_.NewBinding());
+
+  if (IsAppConfigForCastStreaming(application_config_)) {
+    // TODO(crbug.com/1082821): Remove this once the Cast Streaming Receiver
+    // component has been implemented.
+
+    // Register the MessagePort for the Cast Streaming Receiver.
+    fidl::InterfaceHandle<fuchsia::web::MessagePort> message_port;
+    fuchsia::web::WebMessage message;
+    message.set_data(cr_fuchsia::MemBufferFromString("", "empty_message"));
+    fuchsia::web::OutgoingTransferable outgoing_transferable;
+    outgoing_transferable.set_message_port(message_port.NewRequest());
+    std::vector<fuchsia::web::OutgoingTransferable> outgoing_transferables;
+    outgoing_transferables.push_back(std::move(outgoing_transferable));
+    message.set_outgoing_transfer(std::move(outgoing_transferables));
+
+    frame()->PostMessage(
+        kCastStreamingMessagePortOrigin, std::move(message),
+        [this](fuchsia::web::Frame_PostMessage_Result result) {
+          if (result.is_err()) {
+            DestroyComponent(kBindingsFailureExitCode,
+                             fuchsia::sys::TerminationReason::INTERNAL_ERROR);
+          }
+        });
+    api_bindings_client_->OnPortConnected(kCastStreamingMessagePortName,
+                                          std::move(message_port));
+  }
+
   api_bindings_client_->AttachToFrame(
       frame(), connector_.get(),
       base::BindOnce(&CastComponent::DestroyComponent, base::Unretained(this),
@@ -112,8 +140,8 @@ void CastComponent::StartComponent() {
           application_config_.agent_url()));
 
   // Pass application permissions to the frame.
-  std::string origin = GURL(application_config_.web_url()).GetOrigin().spec();
   if (application_config_.has_permissions()) {
+    std::string origin = GURL(application_config_.web_url()).GetOrigin().spec();
     for (auto& permission : application_config_.permissions()) {
       fuchsia::web::PermissionDescriptor permission_clone;
       zx_status_t status = permission.Clone(&permission_clone);

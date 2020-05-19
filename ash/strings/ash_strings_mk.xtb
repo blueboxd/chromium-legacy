@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Батеријата е полна</translation>
 <translation id="3604801046548457007">Работниот простор <ph name="DESK_TITILE" /> е создаден</translation>
 <translation id="3606978283550408104">Поврзан екран за брајово писмо.</translation>
+<translation id="3616883743181209306">Менито е преместено во горниот десен агол на екранот.</translation>
 <translation id="3621202678540785336">Внесување</translation>
 <translation id="3621712662352432595">Аудиопоставки</translation>
 <translation id="3626281679859535460">Осветленост</translation>
 <translation id="3631369015426612114">Дозволи известувања од следниве</translation>
 <translation id="3638400994746983214">Вклучете/исклучете го екранот за приватност. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" />, управуван корисник</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3712407551474845318">Снимајте регион</translation>
 <translation id="371370241367527062">Преден микрофон</translation>
@@ -406,6 +408,7 @@
 <translation id="6018164090099858612">Се излегува од режим на огледало</translation>
 <translation id="602001110135236999">Лизгај налево</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, управувана од администраторот</translation>
+<translation id="6030495522958826102">Менито е преместено во долниот лев агол на екранот.</translation>
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6043212731627905357">Мониторов не одговара на вашиот <ph name="DEVICE_TYPE" /> (не е поддржан).</translation>
 <translation id="6043994281159824495">Одјави се сега</translation>
@@ -504,6 +507,7 @@
 <translation id="7143207342074048698">Се поврзува</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Се навраќа на стара резолуција за <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">Менито е преместено во горниот лев агол на екранот.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Треба да го рестартирате овој Chromebook за да се примени ажурирањето. Ова може да потрае 1 минута.</translation>
 <translation id="7256634071279256947">Заден микрофон</translation>
 <translation id="726276584504105859">Повлечете тука за да користите поделен екран</translation>
@@ -614,6 +618,7 @@
 <translation id="8513108775083588393">Автоматско ротирање</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> може да не се полни додека е вклучен.</translation>
 <translation id="8563862697512465947">Поставки за известувања</translation>
+<translation id="857201607579416096">Менито е преместено во долниот десен агол на екранот.</translation>
 <translation id="8627191004499078455">Поврзан со <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Поставки за пристапност</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" />, управувана од администраторот</translation>

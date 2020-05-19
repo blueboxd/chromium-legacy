@@ -314,15 +314,16 @@ bool CSPDirectiveList::CheckDynamic(SourceListDirective* directive) const {
 }
 
 void CSPDirectiveList::ReportMixedContent(
-    const KURL& mixed_url,
+    const KURL& blocked_url,
     ResourceRequest::RedirectStatus redirect_status) const {
   if (StrictMixedContentChecking()) {
     policy_->ReportViolation(
         ContentSecurityPolicy::GetDirectiveName(
             ContentSecurityPolicy::DirectiveType::kBlockAllMixedContent),
         ContentSecurityPolicy::DirectiveType::kBlockAllMixedContent, String(),
-        mixed_url, report_endpoints_, use_reporting_api_, header_, header_type_,
-        ContentSecurityPolicy::kURLViolation, std::unique_ptr<SourceLocation>(),
+        blocked_url, report_endpoints_, use_reporting_api_, header_,
+        header_type_, ContentSecurityPolicy::kURLViolation,
+        std::unique_ptr<SourceLocation>(),
         nullptr,  // contextFrame,
         redirect_status);
   }
@@ -515,6 +516,7 @@ bool CSPDirectiveList::CheckSourceAndReportViolation(
     SourceListDirective* directive,
     const KURL& url,
     const ContentSecurityPolicy::DirectiveType effective_type,
+    const KURL& url_before_redirects,
     ResourceRequest::RedirectStatus redirect_status) const {
   if (!directive)
     return true;
@@ -578,7 +580,7 @@ bool CSPDirectiveList::CheckSourceAndReportViolation(
                       "' because it violates the following Content Security "
                       "Policy directive: \"" +
                       directive->GetText() + "\"." + suffix + "\n",
-                  url, redirect_status);
+                  url_before_redirects, redirect_status);
   return DenyIfEnforcingPolicy();
 }
 
@@ -737,6 +739,7 @@ bool CSPDirectiveList::AllowPluginType(
 bool CSPDirectiveList::AllowFromSource(
     ContentSecurityPolicy::DirectiveType type,
     const KURL& url,
+    const KURL& url_before_redirects,
     ResourceRequest::RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     const String& nonce,
@@ -782,7 +785,7 @@ bool CSPDirectiveList::AllowFromSource(
   bool result =
       reporting_disposition == ReportingDisposition::kReport
           ? CheckSourceAndReportViolation(OperativeDirective(type), url, type,
-                                          redirect_status)
+                                          url_before_redirects, redirect_status)
           : CheckSource(OperativeDirective(type), url, redirect_status);
 
   if (type == ContentSecurityPolicy::DirectiveType::kBaseURI) {

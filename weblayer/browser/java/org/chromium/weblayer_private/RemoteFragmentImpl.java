@@ -11,6 +11,7 @@ import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
@@ -31,13 +32,29 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
         mClient = client;
     }
 
-    public View onCreateView() {
+    @Deprecated
+    public final View onCreateView() {
+        return onCreateView(/*container=*/null, /*savedInstanceState=*/null);
+    }
+
+    public View onCreateView(ViewGroup container, Bundle savedInstanceState) {
         return null;
     }
 
     public final Activity getActivity() {
         try {
             return ObjectWrapper.unwrap(mClient.getActivity(), Activity.class);
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    public final View getView() {
+        if (WebLayerFactoryImpl.getClientMajorVersion() < 84) {
+            return null;
+        }
+        try {
+            return ObjectWrapper.unwrap(mClient.getView(), View.class);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }
@@ -176,9 +193,18 @@ public abstract class RemoteFragmentImpl extends IRemoteFragment.Stub {
     // IRemoteFragment implementation below.
 
     @Override
-    public final IObjectWrapper handleOnCreateView() {
+    @Deprecated
+    public final IObjectWrapper deprecatedHandleOnCreateView() {
         StrictModeWorkaround.apply();
         return ObjectWrapper.wrap(onCreateView());
+    }
+
+    @Override
+    public final IObjectWrapper handleOnCreateView(
+            IObjectWrapper container, IObjectWrapper savedInstanceState) {
+        StrictModeWorkaround.apply();
+        return ObjectWrapper.wrap(onCreateView(ObjectWrapper.unwrap(container, ViewGroup.class),
+                ObjectWrapper.unwrap(savedInstanceState, Bundle.class)));
     }
 
     @Override

@@ -63,12 +63,15 @@ source_set("cast_runner_core") {
     "cast/cast_component.h",
     "cast/cast_runner.cc",
     "cast/cast_runner.h",
+    "cast/cast_streaming.cc",
+    "cast/cast_streaming.h",
     "cast/named_message_port_connector.cc",
     "cast/named_message_port_connector.h",
     "cast/pending_cast_component.cc",
     "cast/pending_cast_component.h",
   ]
   data_deps = [ "//chromecast/bindings:named_message_port_connector_resources" ]
+  data = [ "cast/data" ]
   deps = [
     "//base",
     "//fuchsia/base",

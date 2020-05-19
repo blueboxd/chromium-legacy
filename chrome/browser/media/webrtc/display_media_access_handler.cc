@@ -225,6 +225,14 @@ void DisplayMediaAccessHandler::OnPickerDialogResults(
           blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED;
     }
 #endif
+    if (media_id.type == content::DesktopMediaID::TYPE_WEB_CONTENTS &&
+        !content::WebContents::FromRenderFrameHost(
+            content::RenderFrameHost::FromID(
+                media_id.web_contents_id.render_process_id,
+                media_id.web_contents_id.main_render_frame_id))) {
+      request_result =
+          blink::mojom::MediaStreamRequestResult::TAB_CAPTURE_FAILURE;
+    }
     if (request_result == blink::mojom::MediaStreamRequestResult::OK) {
       const auto& visible_url = url_formatter::FormatUrlForSecurityDisplay(
           web_contents->GetLastCommittedURL(),

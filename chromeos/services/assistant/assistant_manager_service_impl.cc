@@ -1054,7 +1054,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   // There can only be one |AssistantManager| instance at any given time.
   DCHECK(!assistant_manager_);
   new_display_connection_ = std::make_unique<CrosDisplayConnection>(
-      this, assistant::features::IsFeedbackUiEnabled(),
+      this, /*feedback_ui_enabled=*/true,
       assistant::features::IsMediaSessionIntegrationEnabled());
 
   new_assistant_manager_ = delegate_->CreateAssistantManager(

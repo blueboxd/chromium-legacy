@@ -136,6 +136,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                          const WebURL& mixed_content_url,
                          mojom::RequestContextType,
                          bool was_allowed,
+                         const WebURL& url_before_redirects,
                          bool had_redirect,
                          const WebSourceLocation&) override;
   void SendOrientationChangeEvent() override;

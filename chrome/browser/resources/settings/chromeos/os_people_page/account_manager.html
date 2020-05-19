@@ -54,6 +54,15 @@
         align-items: flex-end;
       }
 
+      #account-description {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      #account-description > p {
+        margin-bottom: 0;
+      }
+
       #account-list-header > h2 {
         padding-bottom: 12px;
         padding-top: 12px;
@@ -111,12 +120,16 @@
       }
     </style>
 
-    <div class="settings-box first">
+    <div id="account-description" class="settings-box first">
       <settings-localized-link
           class="account-manager-description"
           localized-string="[[getAccountManagerDescription_()]]"
           link-url="$i18nRaw{accountManagerLearnMoreUrl}">
       </settings-localized-link>
+      <template is="dom-if" if="[[isChildUser_]]">
+        <p>$i18n{accountManagerChildFirstMessage}</p>
+        <p>$i18n{accountManagerChildSecondMessage}</p>
+      </template>
     </div>
 
     <div id="settings-box-user-message" class="settings-box first user-message"

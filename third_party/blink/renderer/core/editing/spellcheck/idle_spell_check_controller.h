@@ -34,7 +34,7 @@ class CORE_EXPORT IdleSpellCheckController final
   USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckController);
 
  public:
-  explicit IdleSpellCheckController(LocalDOMWindow&);
+  explicit IdleSpellCheckController(LocalDOMWindow&, SpellCheckRequester&);
   ~IdleSpellCheckController();
 
   enum class State {
@@ -97,6 +97,7 @@ class CORE_EXPORT IdleSpellCheckController final
   int idle_callback_handle_;
   uint64_t last_processed_undo_step_sequence_;
   const Member<ColdModeSpellCheckRequester> cold_mode_requester_;
+  Member<SpellCheckRequester> spell_check_requeseter_;
   TaskHandle cold_mode_timer_;
 
   friend class IdleSpellCheckControllerTest;

@@ -52,6 +52,11 @@ class WebAuthFlow : public content::NotificationObserver,
     SILENT        // No UI should be shown.
   };
 
+  enum Partition {
+    GET_AUTH_TOKEN,       // Use the getAuthToken() partition.
+    LAUNCH_WEB_AUTH_FLOW  // Use the launchWebAuthFlow() partition.
+  };
+
   enum Failure {
     WINDOW_CLOSED,  // Window closed by user.
     INTERACTION_REQUIRED,  // Non-redirect page load in silent mode.
@@ -78,7 +83,8 @@ class WebAuthFlow : public content::NotificationObserver,
   WebAuthFlow(Delegate* delegate,
               Profile* profile,
               const GURL& provider_url,
-              Mode mode);
+              Mode mode,
+              Partition partition);
 
   ~WebAuthFlow() override;
 
@@ -96,8 +102,8 @@ class WebAuthFlow : public content::NotificationObserver,
   virtual const std::string& GetAppWindowKey() const;
 
   // Returns the URL used by the SiteInstance associated with the WebViewGuest
-  // used in the WebAuthFlow.
-  static GURL GetWebViewSiteURL();
+  // with given |partition| used in the WebAuthFlow.
+  static GURL GetWebViewSiteURL(Partition partition);
 
  private:
   friend class ::WebAuthFlowTest;
@@ -129,6 +135,7 @@ class WebAuthFlow : public content::NotificationObserver,
   Profile* profile_;
   GURL provider_url_;
   Mode mode_;
+  Partition partition_;
 
   AppWindow* app_window_;
   std::string app_window_key_;

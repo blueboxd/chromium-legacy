@@ -13,7 +13,6 @@
 #include "cc/input/overscroll_behavior.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/input/input_event.h"
 #include "content/common/input/input_event_dispatch_type.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/common/input/synthetic_pinch_gesture_params.h"

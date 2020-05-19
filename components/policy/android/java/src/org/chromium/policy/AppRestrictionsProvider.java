@@ -9,7 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.os.UserManager;
+
+import org.chromium.base.metrics.RecordHistogram;
 
 /**
  * Concrete app restriction provider, that uses the default android mechanism to retrieve the
@@ -34,7 +37,12 @@ public class AppRestrictionsProvider extends AbstractAppRestrictionsProvider {
     protected Bundle getApplicationRestrictions(String packageName) {
         if (mUserManager == null) return new Bundle();
         try {
-            return mUserManager.getApplicationRestrictions(packageName);
+            long startTime = SystemClock.elapsedRealtime();
+            Bundle bundle = mUserManager.getApplicationRestrictions(packageName);
+            long endTime = SystemClock.elapsedRealtime();
+            RecordHistogram.recordTimesHistogram(
+                    "Enterprise.AppRestrictionLoadTime2", endTime - startTime);
+            return bundle;
         } catch (SecurityException e) {
             // Android bug may throw SecurityException. See crbug.com/886814.
             return new Bundle();

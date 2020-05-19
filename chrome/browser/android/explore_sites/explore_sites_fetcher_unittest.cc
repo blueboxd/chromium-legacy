@@ -436,30 +436,6 @@ TEST_F(ExploreSitesFetcherTest, TwoBackoffsForImmediateFetch) {
   EXPECT_EQ(kTestData, data);
 }
 
-TEST_F(ExploreSitesFetcherTest, TwoBackoffsForBackgroundFetch) {
-  std::string data;
-  int initial_delay_ms =
-      ExploreSitesFetcher::kBackgroundFetchBackoffPolicy.initial_delay_ms;
-  std::vector<base::TimeDelta> backoff_delays = {
-      base::TimeDelta::FromMilliseconds(initial_delay_ms),
-      base::TimeDelta::FromMilliseconds(initial_delay_ms * 2)};
-  std::vector<base::OnceCallback<void(void)>> respond_callbacks;
-  respond_callbacks.push_back(
-      base::BindOnce(&ExploreSitesFetcherTest::RespondWithNetError,
-                     base::Unretained(this), net::ERR_INTERNET_DISCONNECTED));
-  respond_callbacks.push_back(
-      base::BindOnce(&ExploreSitesFetcherTest::RespondWithHttpError,
-                     base::Unretained(this), net::HTTP_INTERNAL_SERVER_ERROR));
-  respond_callbacks.push_back(
-      base::BindOnce(&ExploreSitesFetcherTest::RespondWithData,
-                     base::Unretained(this), kTestData));
-  EXPECT_EQ(
-      ExploreSitesRequestStatus::kSuccess,
-      RunFetcherWithBackoffs(false /*is_immediate_fetch*/, 2u, backoff_delays,
-                             std::move(respond_callbacks), &data));
-  EXPECT_EQ(kTestData, data);
-}
-
 TEST_F(ExploreSitesFetcherTest, ExceedMaxBackoffsForImmediateFetch) {
   std::string data;
   int delay_ms =

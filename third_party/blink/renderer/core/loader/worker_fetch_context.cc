@@ -142,13 +142,18 @@ WorkerFetchContext::CreateWebSocketHandshakeThrottle() {
 
 bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     mojom::RequestContextType request_context,
-    ResourceRequest::RedirectStatus redirect_status,
+    const Vector<KURL>& redirect_chain,
     const KURL& url,
     ReportingDisposition reporting_disposition,
     const base::Optional<String>& devtools_id) const {
+  RedirectStatus redirect_status = redirect_chain.IsEmpty()
+                                       ? RedirectStatus::kNoRedirect
+                                       : RedirectStatus::kFollowedRedirect;
+  const KURL& url_before_redirects =
+      redirect_chain.IsEmpty() ? url : redirect_chain.front();
   return MixedContentChecker::ShouldBlockFetchOnWorker(
-      *this, request_context, redirect_status, url, reporting_disposition,
-      global_scope_->IsWorkletGlobalScope());
+      *this, request_context, url_before_redirects, redirect_status, url,
+      reporting_disposition, global_scope_->IsWorkletGlobalScope());
 }
 
 bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(

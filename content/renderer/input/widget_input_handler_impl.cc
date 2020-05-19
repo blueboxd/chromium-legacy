@@ -153,14 +153,14 @@ void WidgetInputHandlerImpl::RequestCompositionUpdates(bool immediate_request,
 }
 
 void WidgetInputHandlerImpl::DispatchEvent(
-    std::unique_ptr<content::InputEvent> event,
+    std::unique_ptr<blink::WebCoalescedInputEvent> event,
     DispatchEventCallback callback) {
   TRACE_EVENT0("input", "WidgetInputHandlerImpl::DispatchEvent");
   input_handler_manager_->DispatchEvent(std::move(event), std::move(callback));
 }
 
 void WidgetInputHandlerImpl::DispatchNonBlockingEvent(
-    std::unique_ptr<content::InputEvent> event) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
   TRACE_EVENT0("input", "WidgetInputHandlerImpl::DispatchNonBlockingEvent");
   input_handler_manager_->DispatchEvent(std::move(event),
                                         DispatchEventCallback());

@@ -136,10 +136,6 @@ bool MediaValuesDynamic::StrictMode() const {
   return CalculateStrictMode(frame_);
 }
 
-DisplayShape MediaValuesDynamic::GetDisplayShape() const {
-  return CalculateDisplayShape(frame_);
-}
-
 ColorSpaceGamut MediaValuesDynamic::ColorGamut() const {
   return CalculateColorGamut(frame_);
 }

@@ -9,12 +9,14 @@ import("//weblayer/variables.gni")
 
 android_resources("weblayer_resources") {
   sources = [
+    "res/layout/site_settings_layout.xml",
     "res/layout/weblayer_url_bar.xml",
     "res/values/dimens.xml",
   ]
   custom_package = "org.chromium.weblayer_private"
   deps = [
     ":weblayer_strings_grd",
+    "//components/browser_ui/site_settings/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
     "//components/page_info/android:java_resources",
@@ -93,6 +95,7 @@ android_library("java") {
     "org/chromium/weblayer_private/WebLayerImpl.java",
     "org/chromium/weblayer_private/WebLayerNotificationBuilder.java",
     "org/chromium/weblayer_private/WebLayerNotificationChannels.java",
+    "org/chromium/weblayer_private/WebLayerSiteSettingsClient.java",
     "org/chromium/weblayer_private/WebLayerTabModalPresenter.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
@@ -111,6 +114,7 @@ android_library("java") {
     "//components/browser_ui/modaldialog/android:java",
     "//components/browser_ui/notifications/android:java",
     "//components/browser_ui/settings/android:java",
+    "//components/browser_ui/site_settings/android:java",
     "//components/browser_ui/styles/android:java",
     "//components/browser_ui/styles/android:java_resources",
     "//components/browser_ui/util/android:java",
@@ -142,6 +146,7 @@ android_library("java") {
     "//components/webrtc/android:java",
     "//content/public/android:content_java",
     "//net/android:net_java",
+    "//services/network/public/mojom:cookies_mojom_java",
     "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//ui/android:ui_full_java",
@@ -182,6 +187,7 @@ android_library("test_java") {
     ":java",
     ":weblayer_test_resources",
     "//base:jni_java",
+    "//components/location/android:location_java",
     "//components/permissions/android:java",
     "//content/public/test/android:content_java_test_support",
     "//net/android:net_java",

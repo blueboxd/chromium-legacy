@@ -473,6 +473,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
     EXPECT_EQ(dice_request_header != kNoDiceRequestHeader,
               IsReconcilorBlocked());
     dice_request_header_ = dice_request_header;
+    RunClosureIfValid(std::move(signin_requested_quit_closure_));
   }
 
   void OnChromeSigninEmbeddedRequest(const std::string& dice_request_header) {
@@ -622,6 +623,7 @@ class DiceBrowserTest : public InProcessBrowserTest,
   base::OnceClosure unblock_count_quit_closure_;
   base::OnceClosure tokens_loaded_quit_closure_;
   base::OnceClosure on_primary_account_set_quit_closure_;
+  base::OnceClosure signin_requested_quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(DiceBrowserTest);
 };
@@ -780,7 +782,27 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_NoDiceFromWebUI) {
   WaitForReconcilorUnblockedCount(0);
 }
 
-IN_PROC_BROWSER_TEST_F(DiceBrowserTest, DiceExtensionConsent) {
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest,
+                       NoDiceExtensionConsent_LaunchWebAuthFlow) {
+  auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
+      nullptr, browser()->profile(), https_server_.GetURL(kSigninURL),
+      extensions::WebAuthFlow::INTERACTIVE,
+      extensions::WebAuthFlow::LAUNCH_WEB_AUTH_FLOW);
+  web_auth_flow->Start();
+
+  if (dice_request_header_.empty())
+    WaitForClosure(&signin_requested_quit_closure_);
+
+  EXPECT_EQ(kNoDiceRequestHeader, dice_request_header_);
+  EXPECT_EQ(0, reconcilor_blocked_count_);
+  WaitForReconcilorUnblockedCount(0);
+
+  // Delete the web auth flow (uses DeleteSoon).
+  web_auth_flow.release()->DetachDelegateAndDelete();
+  base::RunLoop().RunUntilIdle();
+}
+
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, DiceExtensionConsent_GetAuthToken) {
   // Signin from extension consent flow.
   class DummyDelegate : public extensions::WebAuthFlow::Delegate {
    public:
@@ -791,7 +813,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, DiceExtensionConsent) {
   DummyDelegate delegate;
   auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
       &delegate, browser()->profile(), https_server_.GetURL(kSigninURL),
-      extensions::WebAuthFlow::INTERACTIVE);
+      extensions::WebAuthFlow::INTERACTIVE,
+      extensions::WebAuthFlow::GET_AUTH_TOKEN);
   web_auth_flow->Start();
 
   // Check that the token was requested and added to the token service.

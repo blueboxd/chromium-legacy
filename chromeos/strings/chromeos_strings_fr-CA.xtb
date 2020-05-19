@@ -43,6 +43,7 @@ Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation
 <translation id="6058625436358447366">Pour terminer cette opération, entrez votre ancien mot de passe et le nouveau</translation>
 <translation id="6106186594183574873">Pour terminer cette opération, entrez votre ancien mot de passe</translation>
 <translation id="6146993107019042706">Pour terminer cette opération, entrez votre nouveau mot de passe</translation>
+<translation id="6517239166834772319">Explorer</translation>
 <translation id="6643016212128521049">Effacer</translation>
 <translation id="7162487448488904999">Galerie</translation>
 <translation id="7658239707568436148">Annuler</translation>
@@ -50,6 +51,7 @@ Essayez de toucher le micro pour me demander ce que vous souhaitez.</translation
 <translation id="7805768142964895445">État</translation>
 <translation id="808894953321890993">Changer le mot de passe</translation>
 <translation id="8208861521865154048">Avantages</translation>
+<translation id="8701136875688985581">Le domaine <ph name="ENROLLMENT_DOMAIN" /> gère cet utilisateur. Il peut gérer les paramètres et faire le suivi de l'activité à l'utilisateur à distance.</translation>
 <translation id="8747900814994928677">Confirmer la modification</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Nombre de tentatives restantes : <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Actualiser le ticket pour <ph name="PRINCIPAL_NAME" /></translation>

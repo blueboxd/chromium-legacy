@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">Тіл қосу</translation>
 <translation id="2650751991977523696">Файл қайта жүктеп алынсын ба?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайл}}</translation>
+<translation id="2677748264148917807">Шығу</translation>
 <translation id="2689830683995595741">Chrome браузерін пайдалану арқылы <ph name="BEGIN_LINK1" />Google Қызмет көрсету шарттарына<ph name="END_LINK1" /> және <ph name="BEGIN_LINK2" />Google Chrome және Chrome OS Қосымша қызмет көрсету шарттарына<ph name="END_LINK2" /> келісім бересіз. <ph name="BEGIN_LINK3" />Family Link арқылы басқарылатын Google есептік жазбаларына арналған Құпиялылық мәлімдемесі<ph name="END_LINK3" /> де қолданылады.</translation>
 <translation id="2707726405694321444">Бетті жаңарту</translation>
 <translation id="2709516037105925701">Автотолтыру</translation>
@@ -455,6 +456,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4807098396393229769">Картадағы ат</translation>
 <translation id="4808319664292298116"><ph name="DOMAIN" /> сайтынан VR режиміне өтесіз бе?</translation>
 <translation id="4824958205181053313">Синхрондауды тоқтату қажет пе?</translation>
+<translation id="4835385943915508971">Chrome браузері сұралған ресурсқа кіре алмайды.</translation>
 <translation id="4837753911714442426">Бетті басып шығару үшін опцияларды ашу</translation>
 <translation id="4842092870884894799">Құпия сөз жасау қалқымалы терезесін көрсету</translation>
 <translation id="4860895144060829044">Қоңырау шалу</translation>
@@ -519,6 +521,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5342314432463739672">Рұқсат сұраулары</translation>
 <translation id="5357811892247919462">Қойынды алынды.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> қойынды ашық тұр, қойындыларды ауыстыру үшін түртіңіз.}other{<ph name="OPEN_TABS_MANY" /> қойынды ашық тұр, қойындыларды ауыстыру үшін түртіңіз.}}</translation>
+<translation id="5384883051496921101">Бұл сайт инкогнито режимінен тыс қолданбамен ақпаратты бөліскелі тұр.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(Тағы 1)}other{(Тағы #)}}</translation>
 <translation id="5403592356182871684">Атаулары</translation>
 <translation id="5403644198645076998">Тек белгілі бір сайттарға рұқсат беру</translation>
@@ -674,6 +677,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6593061639179217415">Компьютерге арналған сайт</translation>
 <translation id="6597891566292541626">QR кодын/штрихкодты осы кадрға қойыңыз.</translation>
 <translation id="6600954340915313787">Chrome жүйесіне көшірілген</translation>
+<translation id="662080504995468778">Қалу</translation>
 <translation id="6627583120233659107">Қалтаны өзгерту</translation>
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="6643649862576733715">Үнемделген деректер көлемі бойынша сұрыптау</translation>
@@ -945,6 +949,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8922289737868596582">Беттерді офлайн пайдалану үшін оларды "Қосымша опциялар" түймесі арқылы жүктеп алыңыз</translation>
 <translation id="8937772741022875483">Chrome браузерін пайдалану деректері Digital Wellbeing қызметінен өшірілсін бе?</translation>
 <translation id="8942627711005830162">Басқа терезеде ашу</translation>
+<translation id="894871326938397531">Инкогнито режимінен шығасыз ба?</translation>
 <translation id="8951232171465285730">Chrome браузері <ph name="MEGABYTES" /> МБ деректі сақтады</translation>
 <translation id="8965591936373831584">күтілуде</translation>
 <translation id="8970887620466824814">Бірдеңе дұрыс болмады.</translation>

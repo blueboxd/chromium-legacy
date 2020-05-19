@@ -17,6 +17,7 @@ android_library("java") {
     "//chrome/browser/touch_to_fill/android:public_java",
     "//chrome/browser/ui/android/favicon:java",
     "//chrome/browser/util:java",
+    "//components/browser_ui/android/bottomsheet:java",
     "//components/embedder_support/android:util_java",
     "//components/url_formatter/android:url_formatter_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",

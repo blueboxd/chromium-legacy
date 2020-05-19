@@ -160,6 +160,7 @@
 ممکن ہے کچھ خصوصیات غیر دستیاب ہوں۔ براہ کرم ایک مختلف پروفائل ڈائریکٹری متعین کریں یا Chromium کا ایک جدید تر ورژن استعمال کریں۔</translation>
 <translation id="6734080038664603509">‏‎Chromium کو اپ ڈیٹ کریں</translation>
 <translation id="6734291798041940871">‏Chromium پہلے سے آپ کے کمپیوٹر پر سبھی صارفین کیلئے انسٹال ہے۔</translation>
+<translation id="6774082503108938489">‏آپ کے والدین نے "Chromium کی خاطر سائٹس، ایپس اور ایکسٹینشنز کے لیے اجازتوں" کو آف کر دیا ہے۔ اس <ph name="EXTENSION_TYPE_PARAMETER" /> کو فعال کرنے کی اجازت نہیں ہے۔</translation>
 <translation id="6847869444787758381">‏Chromium آپ کو بتاتا ہے کہ آیا آپ کے پاس ورڈز کے ساتھ کبھی چھیڑ چھاڑ کی گئی ہے</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" />‎</translation>
 <translation id="6863361426438995919">‏Google Pay ‏(Chromium میں کاپی کر دیا گیا)</translation>
@@ -218,6 +219,7 @@ Chromium آپ کی ترتیبات کو بازیافت کرنے سے قاصر ہ�
 <translation id="8417404458978023919">{0,plural, =1{‏ایک دن کے اندر Chromium کو دوبارہ لانچ کریں}other{‏# دن کے اندر Chromium کو دوبارہ لانچ کریں}}</translation>
 <translation id="8453117565092476964">‏انسٹالر آرکائیو خراب یا غلط ہے۔ براہ کرم Chromium کو دوبارہ ڈاؤن لوڈ کریں۔</translation>
 <translation id="8493179195440786826">‏Chromium پرانا ہے</translation>
+<translation id="8558383651099478961">‏آپ کے والدین نے "Chromium کی خاطر سائٹس، ایپس اور ایکسٹینشنز کے لیے اجازتوں" کو آف کر دیا ہے۔ اس <ph name="EXTENSION_TYPE_PARAMETER" /> کو شامل کرنے کی اجازت نہیں ہے۔</translation>
 <translation id="8568283329061645092">‏جب آپ اپنے Google اکاؤنٹ سے سائن ان کرتے ہیں تو Chromium آپ کے پاس ورڈز کو چیک کر سکتا ہے</translation>
 <translation id="8586442755830160949">‏کاپی رائٹ ‎<ph name="YEAR" /> The Chromium Authors۔ جملہ حقوق محفوظ۔</translation>
 <translation id="8619360774459241877">‏Chromium شروع ہو رہا ہے…</translation>

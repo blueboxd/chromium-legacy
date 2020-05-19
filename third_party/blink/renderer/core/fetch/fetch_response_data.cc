@@ -194,6 +194,10 @@ FetchResponseData* FetchResponseData::Clone(ScriptState* script_state,
   new_response->response_time_ = response_time_;
   new_response->cache_storage_cache_name_ = cache_storage_cache_name_;
   new_response->cors_exposed_header_names_ = cors_exposed_header_names_;
+  new_response->connection_info_ = connection_info_;
+  new_response->alpn_negotiated_protocol_ = alpn_negotiated_protocol_;
+  new_response->loaded_with_credentials_ = loaded_with_credentials_;
+  new_response->was_fetched_via_spdy_ = was_fetched_via_spdy_;
 
   switch (type_) {
     case Type::kBasic:
@@ -261,7 +265,10 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   response->cache_storage_cache_name = cache_storage_cache_name_;
   response->cors_exposed_header_names =
       HeaderSetToVector(cors_exposed_header_names_);
+  response->connection_info = connection_info_;
+  response->alpn_negotiated_protocol = alpn_negotiated_protocol_;
   response->loaded_with_credentials = loaded_with_credentials_;
+  response->was_fetched_via_spdy = was_fetched_via_spdy_;
   for (const auto& header : HeaderList()->List())
     response->headers.insert(header.first, header.second);
   response->parsed_headers = ParseHeaders(
@@ -308,6 +315,16 @@ void FetchResponseData::InitFromResourceResponse(
     SetResponseSource(network::mojom::FetchResponseSource::kNetwork);
   }
 
+  SetConnectionInfo(response.ConnectionInfo());
+
+  // Some non-http responses, like data: url responses, will have a null
+  // |alpn_negotiated_protocol|.  In these cases we leave the default
+  // value of "unknown".
+  if (!response.AlpnNegotiatedProtocol().IsNull())
+    SetAlpnNegotiatedProtocol(response.AlpnNegotiatedProtocol());
+
+  SetWasFetchedViaSpdy(response.WasFetchedViaSPDY());
+
   // TODO(wanderview): Remove |tainting| and use |response.GetType()|
   // instead once the OOR-CORS disabled path is removed.
   SetLoadedWithCredentials(
@@ -326,7 +343,10 @@ FetchResponseData::FetchResponseData(Type type,
       status_message_(status_message),
       header_list_(MakeGarbageCollected<FetchHeaderList>()),
       response_time_(base::Time::Now()),
-      loaded_with_credentials_(false) {}
+      connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
+      alpn_negotiated_protocol_("unknown"),
+      loaded_with_credentials_(false),
+      was_fetched_via_spdy_(false) {}
 
 void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
   if (type_ == Type::kBasic || type_ == Type::kCors) {

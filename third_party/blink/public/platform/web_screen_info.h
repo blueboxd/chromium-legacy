@@ -32,7 +32,6 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SCREEN_INFO_H_
 
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
-#include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "ui/gfx/color_space.h"
 
@@ -83,9 +82,6 @@ struct WebScreenInfo {
   // TODO(crbug.com/840189): we should use an enum rather than a number here.
   uint16_t orientation_angle = 0;
 
-  // This is the shape of display.
-  DisplayShape display_shape = kDisplayShapeRect;
-
   WebScreenInfo() = default;
 
   bool operator==(const WebScreenInfo& other) const {
@@ -97,8 +93,7 @@ struct WebScreenInfo {
            this->rect == other.rect &&
            this->available_rect == other.available_rect &&
            this->orientation_type == other.orientation_type &&
-           this->orientation_angle == other.orientation_angle &&
-           this->display_shape == other.display_shape;
+           this->orientation_angle == other.orientation_angle;
   }
 
   bool operator!=(const WebScreenInfo& other) const {

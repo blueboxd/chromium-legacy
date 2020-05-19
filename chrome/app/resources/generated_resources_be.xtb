@@ -1335,7 +1335,6 @@
 <translation id="2673135533890720193">Чытанне вашай гісторыі прагляду сайтаў</translation>
 <translation id="2673589024369449924">Стварыць ярлык на працоўным стале для гэтага карыстальніка</translation>
 <translation id="2674764818721168631">Выключана</translation>
-<translation id="2677748264148917807">Выйсці</translation>
 <translation id="2678063897982469759">Паўторна ўключыць</translation>
 <translation id="268053382412112343">Гі&amp;сторыя</translation>
 <translation id="2682498795777673382">Вашы бацькі змянілі налады</translation>
@@ -2975,7 +2974,6 @@
 <translation id="4830573902900904548">Прыладзе <ph name="DEVICE_TYPE" /> не ўдалося падключыцца да інтэрнэту праз сетку <ph name="NETWORK_NAME" />. Выберыце іншую сетку. <ph name="LEARN_MORE_LINK_START" />Даведацца больш<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Даведайцеся, што новага на прыладзе Chromebook</translation>
 <translation id="4833683849865011483">На серверы друку знойдзены 1 прынтар</translation>
-<translation id="4835385943915508971">Chrome не мае доступу да запытанай крыніцы.</translation>
 <translation id="4836504898754963407">Кіраваць адбіткамі пальцаў</translation>
 <translation id="4837926214103741331">Вы не аўтарызаваны для выкарыстання гэтай прылады. Звярніцеся да ўладальніка прылады з запытам дазволу на ўваход.</translation>
 <translation id="4837952862063191349">Каб разблакіраваць і аднавіць лакальныя даныя, увядзіце стары пароль прылады <ph name="DEVICE_TYPE" />.</translation>
@@ -3389,7 +3387,6 @@
 <translation id="5379140238605961210">Працягваць блакіраваць доступ да мікрафона</translation>
 <translation id="5382591305415226340">Кіраваць спасылкамі, якія падтрымліваюцца</translation>
 <translation id="5383377866517186886">Камера выключана ў наладах System Preferences сістэмы Mac</translation>
-<translation id="5384883051496921101">Гэты сайт будзе абагульваць звесткі з праграмай па-за рэжымам інкогніта.</translation>
 <translation id="5388885445722491159">Спалучана</translation>
 <translation id="5389237414310520250">Не ўдалося стварыць новага карыстальніка. Праверце месца на цвёрдым дыску і дазволы, затым паўтарыце спробу.</translation>
 <translation id="5390100381392048184">Дазволіць сайтам прайграваць гук</translation>
@@ -4341,7 +4338,6 @@
 <translation id="661907246513853610">Сайт можа адсочваць ваша месцазнаходжанне</translation>
 <translation id="6619801788773578757">Дадаць праграму-кіёск</translation>
 <translation id="6619990499523117484">Пацвердзіце PIN-код</translation>
-<translation id="662080504995468778">Застацца</translation>
 <translation id="6621715389962683284">Не ўдалося наладзіць падключэнне да сеткі.</translation>
 <translation id="6622980291894852883">Працягнуць блакіраваць відарысы</translation>
 <translation id="6624535038674360844">Файл "<ph name="FILE_NAME" />" змяшчае канфідэнцыяльнае або небяспечнае змесціва. Папрасіце ўладальніка файла вырашыць гэту праблему.</translation>
@@ -6161,7 +6157,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> абагульвае акно з укладкай "<ph name="TAB_NAME" />".</translation>
 <translation id="8945274638472141382">Памер значкоў</translation>
 <translation id="8946359700442089734">Не ўсе функцыі адладкі былі ўключаны на гэтай прыладзе <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="894871326938397531">Выйсці з рэжыму інкогніта?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> запытвае доступ на прагляд маркі і мадэлі ключа бяспекі</translation>
 <translation id="8951256747718668828">Аднаўленне не ўдалося завяршыць з-за памылкі</translation>
 <translation id="8951465597020890363">Усё роўна выйсці з гасцявога рэжыму?</translation>

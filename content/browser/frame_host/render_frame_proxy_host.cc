@@ -200,7 +200,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
     IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_AdvanceFocus, OnAdvanceFocus)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PrintCrossProcessSubframe,
                         OnPrintCrossProcessSubframe)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -376,9 +375,10 @@ void RenderFrameProxyHost::UpdateOpener() {
         GetSiteInstance(), frame_tree_node_);
   }
 
-  int opener_routing_id =
-      frame_tree_node_->render_manager()->GetOpenerRoutingID(GetSiteInstance());
-  Send(new FrameMsg_UpdateOpener(GetRoutingID(), opener_routing_id));
+  auto opener_frame_token =
+      frame_tree_node_->render_manager()->GetOpenerFrameToken(
+          GetSiteInstance());
+  GetAssociatedRemoteFrame()->UpdateOpener(opener_frame_token);
 }
 
 void RenderFrameProxyHost::SetFocusedFrame() {
@@ -626,33 +626,6 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
                                target_origin, std::move(message));
 }
 
-void RenderFrameProxyHost::OnAdvanceFocus(blink::mojom::FocusType type,
-                                          int32_t source_routing_id) {
-  RenderFrameHostImpl* target_rfh =
-      frame_tree_node_->render_manager()->current_frame_host();
-  if (target_rfh->InsidePortal()) {
-    bad_message::ReceivedBadMessage(
-        GetProcess(), bad_message::RFPH_ADVANCE_FOCUS_INTO_PORTAL);
-    return;
-  }
-
-  // Translate the source RenderFrameHost in this process to its equivalent
-  // RenderFrameProxyHost in the target process.  This is needed for continuing
-  // the focus traversal from correct place in a parent frame after one of its
-  // child frames finishes its traversal.
-  RenderFrameHostImpl* source_rfh =
-      RenderFrameHostImpl::FromID(GetProcess()->GetID(), source_routing_id);
-  RenderFrameProxyHost* source_proxy =
-      source_rfh ? source_rfh->frame_tree_node()
-                       ->render_manager()
-                       ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance())
-                 : nullptr;
-
-  target_rfh->AdvanceFocus(type, source_proxy);
-  frame_tree_node_->current_frame_host()->delegate()->OnAdvanceFocus(
-      source_rfh);
-}
-
 void RenderFrameProxyHost::DidFocusFrame() {
   RenderFrameHostImpl* render_frame_host =
       frame_tree_node_->current_frame_host();
@@ -684,6 +657,33 @@ void RenderFrameProxyHost::DidChangeOpener(
     const base::Optional<base::UnguessableToken>& opener_frame_token) {
   frame_tree_node_->render_manager()->DidChangeOpener(
       opener_frame_token.value_or(base::UnguessableToken()), GetSiteInstance());
+}
+
+void RenderFrameProxyHost::AdvanceFocus(
+    blink::mojom::FocusType focus_type,
+    const base::UnguessableToken& source_frame_token) {
+  RenderFrameHostImpl* target_rfh = frame_tree_node_->current_frame_host();
+  if (target_rfh->InsidePortal()) {
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RFPH_ADVANCE_FOCUS_INTO_PORTAL);
+    return;
+  }
+
+  // Translate the source RenderFrameHost in this process to its equivalent
+  // RenderFrameProxyHost in the target process.  This is needed for continuing
+  // the focus traversal from correct place in a parent frame after one of its
+  // child frames finishes its traversal.
+  RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromFrameToken(
+      GetProcess()->GetID(), source_frame_token);
+  RenderFrameProxyHost* source_proxy =
+      source_rfh ? source_rfh->frame_tree_node()
+                       ->render_manager()
+                       ->GetRenderFrameProxyHost(target_rfh->GetSiteInstance())
+                 : nullptr;
+
+  target_rfh->AdvanceFocus(focus_type, source_proxy);
+  frame_tree_node_->current_frame_host()->delegate()->OnAdvanceFocus(
+      source_rfh);
 }
 
 bool RenderFrameProxyHost::IsInertForTesting() {

@@ -3666,6 +3666,24 @@ Only you can see what your camera is looking at. The site can't see your camera'
       <message name="IDS_QR_CODE_FAILED_DOWNLOAD_TEXT" desc="Notification text for failed QR code download.">
         Something went wrong
       </message>
+
+      <!-- Share Screenshot strings -->
+      <message name="IDS_SCREENSHOT_EDIT_TITLE" desc="The text shown on the share option for screenshots.">
+        Edit
+      </message>
+
+      <message name="IDS_SCREENSHOT_DELETE_TITLE" desc="The text shown on the delete option for screenshots.">
+        Delete
+      </message>
+
+      <message name="IDS_SCREENSHOT_SAVE_TITLE" desc="The text shown on the save option for screenshots.">
+        Save
+      </message>
+
+      <message name="IDS_SCREENSHOT_SHARE_TITLE" desc="The text shown on the share option for screenshots.">
+        Share
+      </message>
+
       <!-- Chime DFM module strings -->
       <message name="IDS_CHIME_MODULE_TITLE" desc="Text shown when the chime module is referenced in install start, success, failure UI (e.g. in IDS_MODULE_INSTALL_START_TEXT, which will expand to 'Installing Google Notifications Platform for Chrome…').">
         Google Notifications Platform

@@ -9,6 +9,8 @@
 #include "base/base64.h"
 #include "base/pickle.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/value_conversions.h"
+#include "base/values.h"
 #include "components/feed/core/v2/public/types.h"
 
 // Note: This file contains implementation for both types.h and public/types.h.
@@ -98,5 +100,31 @@ DebugStreamData::DebugStreamData() = default;
 DebugStreamData::~DebugStreamData() = default;
 DebugStreamData::DebugStreamData(const DebugStreamData&) = default;
 DebugStreamData& DebugStreamData::operator=(const DebugStreamData&) = default;
+
+base::Value PersistentMetricsDataToValue(const PersistentMetricsData& data) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetKey("day_start", base::CreateTimeValue(data.current_day_start));
+  dict.SetKey("time_spent_in_feed",
+              base::CreateTimeDeltaValue(data.accumulated_time_spent_in_feed));
+  return dict;
+}
+
+PersistentMetricsData PersistentMetricsDataFromValue(const base::Value& value) {
+  PersistentMetricsData result;
+  if (!value.is_dict())
+    return result;
+  const base::Value* day_start = value.FindKey("day_start");
+  if (!day_start ||
+      !base::GetValueAsTime(*day_start, &result.current_day_start))
+    return result;
+  const base::Value* time_spent_in_feed = value.FindKey("time_spent_in_feed");
+  if (time_spent_in_feed) {
+    // Ignore return value, OK to keep going on failure.
+    (void)base::GetValueAsTimeDelta(*time_spent_in_feed,
+                                    &result.accumulated_time_spent_in_feed);
+  }
+
+  return result;
+}
 
 }  // namespace feed

@@ -80,10 +80,6 @@
 #include "third_party/blink/renderer/core/layout/layout_list_marker.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_spanner_placeholder.h"
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
-#include "third_party/blink/renderer/core/layout/layout_table_caption.h"
-#include "third_party/blink/renderer/core/layout/layout_table_cell.h"
-#include "third_party/blink/renderer/core/layout/layout_table_col.h"
-#include "third_party/blink/renderer/core/layout/layout_table_row.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -245,24 +241,16 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return LayoutObjectFactory::CreateBlockFlow(*element, style, legacy);
     case EDisplay::kTable:
     case EDisplay::kInlineTable:
-      UseCounter::Count(element->GetDocument(),
-                        WebFeature::kLegacyLayoutByTable);
-      return new LayoutTable(element);
+      return LayoutObjectFactory::CreateTable(*element, style, legacy);
     case EDisplay::kTableRowGroup:
     case EDisplay::kTableHeaderGroup:
     case EDisplay::kTableFooterGroup:
-      UseCounter::Count(element->GetDocument(),
-                        WebFeature::kLegacyLayoutByTable);
-      return new LayoutTableSection(element);
+      return LayoutObjectFactory::CreateTableSection(*element, style, legacy);
     case EDisplay::kTableRow:
-      UseCounter::Count(element->GetDocument(),
-                        WebFeature::kLegacyLayoutByTable);
-      return new LayoutTableRow(element);
+      return LayoutObjectFactory::CreateTableRow(*element, style, legacy);
     case EDisplay::kTableColumnGroup:
     case EDisplay::kTableColumn:
-      UseCounter::Count(element->GetDocument(),
-                        WebFeature::kLegacyLayoutByTable);
-      return new LayoutTableCol(element);
+      return LayoutObjectFactory::CreateTableColumn(*element, style, legacy);
     case EDisplay::kTableCell:
       return LayoutObjectFactory::CreateTableCell(*element, style, legacy);
     case EDisplay::kTableCaption:
@@ -431,7 +419,7 @@ void LayoutObject::AddChild(LayoutObject* new_child,
         !after_child->IsBeforeContent()) {
       table = after_child;
     } else {
-      table = LayoutTable::CreateAnonymousWithParent(this);
+      table = LayoutObjectFactory::CreateAnonymousTableWithParent(*this);
       children->InsertChildNode(this, table, before_child);
     }
     table->AddChild(new_child);

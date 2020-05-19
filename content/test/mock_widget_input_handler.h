@@ -140,7 +140,7 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   // that was passed to the MockWidgetInputHandler interface.
   class DispatchedEventMessage : public DispatchedMessage {
    public:
-    DispatchedEventMessage(std::unique_ptr<content::InputEvent> event,
+    DispatchedEventMessage(std::unique_ptr<blink::WebCoalescedInputEvent> event,
                            DispatchEventCallback callback);
     ~DispatchedEventMessage() override;
 
@@ -162,10 +162,10 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
     bool HasCallback() const;
 
     // Return the associated event.
-    const content::InputEvent* Event() const;
+    const blink::WebCoalescedInputEvent* Event() const;
 
    private:
-    std::unique_ptr<content::InputEvent> event_;
+    std::unique_ptr<blink::WebCoalescedInputEvent> event_;
     DispatchEventCallback callback_;
 
     DISALLOW_COPY_AND_ASSIGN(DispatchedEventMessage);
@@ -214,10 +214,10 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
   void RequestCompositionUpdates(bool immediate_request,
                                  bool monitor_request) override;
 
-  void DispatchEvent(std::unique_ptr<content::InputEvent> event,
+  void DispatchEvent(std::unique_ptr<blink::WebCoalescedInputEvent> event,
                      DispatchEventCallback callback) override;
   void DispatchNonBlockingEvent(
-      std::unique_ptr<content::InputEvent> event) override;
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
   void AttachSynchronousCompositor(
       mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,

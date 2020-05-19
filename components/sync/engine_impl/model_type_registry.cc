@@ -145,22 +145,11 @@ void ModelTypeRegistry::ConnectNonBlockingType(
     int migrated_entity_count = 0;
     if (uss_migrator_.Run(type, user_share_, worker_ptr,
                           &migrated_entity_count)) {
-      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationSuccess",
-                                ModelTypeHistogramValue(type));
       // If we succesfully migrated, purge the directory of data for the type.
       // Purging removes the directory's local copy of the data only.
       directory()->PurgeEntriesWithTypeIn(ModelTypeSet(type), ModelTypeSet(),
                                           ModelTypeSet());
-    } else {
-      UMA_HISTOGRAM_ENUMERATION("Sync.USSMigrationFailure",
-                                ModelTypeHistogramValue(type));
     }
-
-    // Note that a partial failure may still contribute to the counts histogram.
-    base::UmaHistogramCounts100000(
-        std::string("Sync.USSMigrationEntityCount.") +
-            ModelTypeToHistogramSuffix(type),
-        migrated_entity_count);
   }
 
   // We want to check that we haven't accidentally enabled both the non-blocking

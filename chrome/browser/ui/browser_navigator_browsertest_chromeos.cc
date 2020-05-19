@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
@@ -80,6 +81,23 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, NavigateToOSSettings) {
       GURL("chrome://os-settings/"),
       os_settings_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
   EXPECT_NE(browser(), os_settings_browser);
+}
+
+// Verifies that new browser is not opened for Signin profile.
+IN_PROC_BROWSER_TEST_F(BrowserNavigatorTestChromeOS, RestrictSigninProfile) {
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1u);
+
+  NavigateParams params(MakeNavigateParams());
+  params.url = GetGoogleURL();
+  params.transition = ui::PageTransition::PAGE_TRANSITION_LINK;
+  // Replace profile.
+  params.initiating_profile = chromeos::ProfileHelper::GetSigninProfile();
+  // Delete browser, because there is no browser associated with Signin profile.
+  params.browser = nullptr;
+  Navigate(&params);
+
+  // Expect there is no new browser window created.
+  EXPECT_EQ(chrome::GetTotalBrowserCount(), 1u);
 }
 
 // This test verifies that the settings page is opened in a new browser window.

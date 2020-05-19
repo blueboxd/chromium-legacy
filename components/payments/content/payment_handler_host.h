@@ -130,7 +130,8 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // The merchant page that invoked the Payment Request API.
   content::WebContents* web_contents_;
 
-  // Not null and outlives this object. Owns this object.
+  // Not null and outlives this object. Either owns this object or is owned by
+  // the owner of this object.
   Delegate* delegate_;
 
   // The origin of the payment handler / service worker registration scope. Used

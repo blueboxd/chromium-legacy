@@ -16,6 +16,7 @@
 #include "base/threading/thread_local.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/android/cpu_time_metrics.h"
 #include "services/tracing/public/cpp/trace_startup.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -52,7 +53,12 @@ ChildProcess::ChildProcess(base::ThreadPriority io_thread_priority,
     DCHECK(base::ThreadPoolInstance::Get());
     initialized_thread_pool_ = true;
   }
+
   tracing::InitTracingPostThreadPoolStartAndFeatureList();
+
+#if defined(OS_ANDROID)
+  SetupCpuTimeMetrics();
+#endif
 
   // We can't recover from failing to start the IO thread.
   base::Thread::Options thread_options(base::MessagePumpType::IO, 0);

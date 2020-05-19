@@ -138,6 +138,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrame);
 
  public:
+  // Returns the LocalFrame instance for the given |frame_token|.
+  static LocalFrame* FromFrameToken(const base::UnguessableToken& frame_token);
+
   // For a description of |inheriting_agent_factory| go see the comment on the
   // Frame constructor.
   LocalFrame(
@@ -577,6 +580,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
       BlinkTransferableMessage message) final;
   void BindReportingObserver(
       mojo::PendingReceiver<mojom::blink::ReportingObserver> receiver) final;
+  void UpdateOpener(
+      const base::Optional<base::UnguessableToken>& opener_routing_id) final;
 
   // blink::mojom::LocalMainFrame overrides:
   void AnimateDoubleTapZoom(const gfx::Point& point,

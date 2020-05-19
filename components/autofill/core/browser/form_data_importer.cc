@@ -679,15 +679,10 @@ bool FormDataImporter::ImportCreditCard(
     }
   }
 
-  // If editable expiration date experiment is enabled, the card with invalid
-  // expiration date can be uploaded. However, the card with invalid card number
-  // must be ignored.
+  // Cards with invalid expiration dates can be uploaded due to the existence of
+  // the expiration date fix flow. However, cards with invalid card numbers must
+  // still be ignored.
   if (!candidate_credit_card.HasValidCardNumber()) {
-    return false;
-  }
-  if (!candidate_credit_card.HasValidExpirationDate() &&
-      !base::FeatureList::IsEnabled(
-          features::kAutofillUpstreamEditableExpirationDate)) {
     return false;
   }
 

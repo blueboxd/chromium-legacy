@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_row.h"
@@ -173,7 +174,8 @@ void LayoutTableSection::AddChild(LayoutObject* child,
       return;
     }
 
-    LayoutObject* row = LayoutTableRow::CreateAnonymousWithParent(this);
+    LayoutObject* row =
+        LayoutObjectFactory::CreateAnonymousTableRowWithParent(*this);
     AddChild(row, before_child);
     row->AddChild(child);
     return;
@@ -1868,15 +1870,9 @@ bool LayoutTableSection::NodeAtPoint(HitTestResult& result,
   return false;
 }
 
-LayoutTableSection* LayoutTableSection::CreateAnonymousWithParent(
-    const LayoutObject* parent) {
-  scoped_refptr<ComputedStyle> new_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
-                                                     EDisplay::kTableRowGroup);
-  LayoutTableSection* new_section = new LayoutTableSection(nullptr);
-  new_section->SetDocumentForAnonymous(&parent->GetDocument());
-  new_section->SetStyle(std::move(new_style));
-  return new_section;
+LayoutBox* LayoutTableSection::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableSectionWithParent(*parent);
 }
 
 void LayoutTableSection::SetLogicalPositionForCell(

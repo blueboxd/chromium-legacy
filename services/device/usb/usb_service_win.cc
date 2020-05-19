@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_devinfo.h"
@@ -305,6 +306,10 @@ UsbDeviceWin::FunctionInfo GetFunctionInfo(const base::string16& instance_id) {
   if (!base::EqualsCaseInsensitiveASCII(info.driver, L"winusb"))
     return info;
 
+  // Boost priority while potentially loading Advapi32.dll on a background
+  // thread for the registry functions used below.
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
   // There is no standard device interface GUID for USB functions and so we
   // must discover the set of GUIDs that have been set in the registry by
   // the INF file or Microsoft OS Compatibility descriptors before
@@ -327,6 +332,10 @@ UsbDeviceWin::FunctionInfo GetFunctionInfo(const base::string16& instance_id) {
   }
 
   for (const auto& guid_string : device_interface_guids) {
+    // Boost priority while potentially loading Ole32.dll on a background
+    // thread for CLSIDFromString().
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
     GUID guid;
     if (FAILED(CLSIDFromString(guid_string.c_str(), &guid))) {
       USB_LOG(ERROR) << "Failed to parse device interface GUID: "
@@ -352,6 +361,10 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
   ~BlockingTaskRunnerHelper() {}
 
   void EnumerateDevices() {
+    // Boost priority while potentially loading SetupAPI.dll for the following
+    // functions on a background thread.
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
     base::win::ScopedDevInfo dev_info(
         SetupDiGetClassDevs(&GUID_DEVINTERFACE_USB_DEVICE, nullptr, 0,
                             DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
@@ -379,6 +392,10 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
   }
 
   void OnDeviceAdded(const GUID& guid, const base::string16& device_path) {
+    // Boost priority while potentially loading SetupAPI.dll and Ole32.dll on a
+    // background thread for the following functions.
+    SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
     base::win::ScopedDevInfo dev_info(SetupDiGetClassDevs(
         &guid, nullptr, 0, DIGCF_DEVICEINTERFACE | DIGCF_PRESENT));
     if (!dev_info.is_valid()) {
@@ -402,6 +419,7 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
     }
   }
 
+ private:
   void EnumerateDevice(HDEVINFO dev_info,
                        SP_DEVICE_INTERFACE_DATA* device_interface_data,
                        const base::Optional<base::string16>& opt_device_path) {
@@ -494,7 +512,6 @@ class UsbServiceWin::BlockingTaskRunnerHelper {
                        std::move(parent_path), interface_number, info));
   }
 
- private:
   std::unordered_map<base::string16, base::string16> hub_paths_;
 
   // Calls back to |service_| must be posted to |service_task_runner_|, which

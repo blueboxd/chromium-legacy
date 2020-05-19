@@ -277,12 +277,12 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
                                  bool monitor_request) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
-  void DispatchEvent(std::unique_ptr<content::InputEvent> event,
+  void DispatchEvent(std::unique_ptr<blink::WebCoalescedInputEvent> event,
                      DispatchEventCallback callback) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void DispatchNonBlockingEvent(
-      std::unique_ptr<content::InputEvent> event) override {
+      std::unique_ptr<blink::WebCoalescedInputEvent> event) override {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override {

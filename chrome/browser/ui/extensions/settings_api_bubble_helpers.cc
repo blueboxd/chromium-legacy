@@ -74,11 +74,31 @@ void MaybeShowExtensionControlledSearchNotification(
     content::WebContents* web_contents,
     AutocompleteMatch::Type match_type) {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  if (AutocompleteMatch::IsSearchType(match_type) &&
-      match_type != AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
-    Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-    if (browser)
-      ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE, browser);
+  if (!AutocompleteMatch::IsSearchType(match_type) ||
+      match_type == AutocompleteMatchType::SEARCH_OTHER_ENGINE) {
+    return;
+  }
+
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  if (!browser)
+    return;
+
+  if (base::FeatureList::IsEnabled(
+          features::kExtensionSettingsOverriddenDialogs)) {
+    base::Optional<ExtensionSettingsOverriddenDialog::Params> params =
+        settings_overridden_params::GetSearchOverriddenParams(
+            browser->profile());
+    if (!params)
+      return;
+
+    auto dialog = std::make_unique<ExtensionSettingsOverriddenDialog>(
+        std::move(*params), browser->profile());
+    if (!dialog->ShouldShow())
+      return;
+
+    chrome::ShowExtensionSettingsOverriddenDialog(std::move(dialog), browser);
+  } else {
+    ShowSettingsApiBubble(BUBBLE_TYPE_SEARCH_ENGINE, browser);
   }
 #endif
 }

@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
@@ -231,8 +232,8 @@ void LayoutTable::AddChild(LayoutObject* child, LayoutObject* before_child) {
       NeedsTableSection(before_child))
     before_child = nullptr;
 
-  LayoutTableSection* section =
-      LayoutTableSection::CreateAnonymousWithParent(this);
+  LayoutBox* section =
+      LayoutObjectFactory::CreateAnonymousTableSectionWithParent(*this);
   AddChild(section, before_child);
   section->AddChild(child);
 }
@@ -1657,16 +1658,9 @@ bool LayoutTable::NodeAtPoint(HitTestResult& result,
   return false;
 }
 
-LayoutTable* LayoutTable::CreateAnonymousWithParent(
-    const LayoutObject* parent) {
-  scoped_refptr<ComputedStyle> new_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(
-          parent->StyleRef(),
-          parent->IsLayoutInline() ? EDisplay::kInlineTable : EDisplay::kTable);
-  LayoutTable* new_table = new LayoutTable(nullptr);
-  new_table->SetDocumentForAnonymous(&parent->GetDocument());
-  new_table->SetStyle(std::move(new_style));
-  return new_table;
+LayoutBox* LayoutTable::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableWithParent(*parent);
 }
 
 void LayoutTable::EnsureIsReadyForPaintInvalidation() {

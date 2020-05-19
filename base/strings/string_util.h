@@ -19,6 +19,7 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "base/containers/span.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"  // For implicit conversions.
@@ -169,10 +170,10 @@ BASE_EXPORT extern const char kUtf8ByteOrderMark[];
 // Removes characters in |remove_chars| from anywhere in |input|.  Returns true
 // if any characters were removed.  |remove_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
-BASE_EXPORT bool RemoveChars(const string16& input,
+BASE_EXPORT bool RemoveChars(StringPiece16 input,
                              StringPiece16 remove_chars,
                              string16* output);
-BASE_EXPORT bool RemoveChars(const std::string& input,
+BASE_EXPORT bool RemoveChars(StringPiece input,
                              StringPiece remove_chars,
                              std::string* output);
 
@@ -181,11 +182,11 @@ BASE_EXPORT bool RemoveChars(const std::string& input,
 // the |replace_with| string.  Returns true if any characters were replaced.
 // |replace_chars| must be null-terminated.
 // NOTE: Safe to use the same variable for both |input| and |output|.
-BASE_EXPORT bool ReplaceChars(const string16& input,
+BASE_EXPORT bool ReplaceChars(StringPiece16 input,
                               StringPiece16 replace_chars,
                               StringPiece16 replace_with,
                               string16* output);
-BASE_EXPORT bool ReplaceChars(const std::string& input,
+BASE_EXPORT bool ReplaceChars(StringPiece input,
                               StringPiece replace_chars,
                               StringPiece replace_with,
                               std::string* output);
@@ -314,11 +315,10 @@ BASE_EXPORT StringPiece TrimWhitespaceASCII(StringPiece input,
 // (2) If |trim_sequences_with_line_breaks| is true, any other whitespace
 //     sequences containing a CR or LF are trimmed.
 // (3) All other whitespace sequences are converted to single spaces.
-BASE_EXPORT string16 CollapseWhitespace(
-    const string16& text,
-    bool trim_sequences_with_line_breaks);
+BASE_EXPORT string16 CollapseWhitespace(StringPiece16 text,
+                                        bool trim_sequences_with_line_breaks);
 BASE_EXPORT std::string CollapseWhitespaceASCII(
-    const std::string& text,
+    StringPiece text,
     bool trim_sequences_with_line_breaks);
 
 // Returns true if |input| is empty or contains only characters found in
@@ -488,8 +488,8 @@ BASE_EXPORT void ReplaceSubstringsAfterOffset(
 BASE_EXPORT char* WriteInto(std::string* str, size_t length_with_null);
 BASE_EXPORT char16* WriteInto(string16* str, size_t length_with_null);
 
-// Joins a vector or list of strings into a single string, inserting |separator|
-// (which may be empty) in between all elements.
+// Joins a list of strings into a single string, inserting |separator| (which
+// may be empty) in between all elements.
 //
 // Note this is inverse of SplitString()/SplitStringPiece() defined in
 // string_split.h.
@@ -501,13 +501,13 @@ BASE_EXPORT char16* WriteInto(string16* str, size_t length_with_null);
 // copies of those strings are created until the final join operation.
 //
 // Use StrCat (in base/strings/strcat.h) if you don't need a separator.
-BASE_EXPORT std::string JoinString(const std::vector<std::string>& parts,
+BASE_EXPORT std::string JoinString(span<const std::string> parts,
                                    StringPiece separator);
-BASE_EXPORT string16 JoinString(const std::vector<string16>& parts,
+BASE_EXPORT string16 JoinString(span<const string16> parts,
                                 StringPiece16 separator);
-BASE_EXPORT std::string JoinString(const std::vector<StringPiece>& parts,
+BASE_EXPORT std::string JoinString(span<const StringPiece> parts,
                                    StringPiece separator);
-BASE_EXPORT string16 JoinString(const std::vector<StringPiece16>& parts,
+BASE_EXPORT string16 JoinString(span<const StringPiece16> parts,
                                 StringPiece16 separator);
 // Explicit initializer_list overloads are required to break ambiguity when used
 // with a literal initializer list (otherwise the compiler would not be able to
@@ -521,10 +521,10 @@ BASE_EXPORT string16 JoinString(std::initializer_list<StringPiece16> parts,
 // Additionally, any number of consecutive '$' characters is replaced by that
 // number less one. Eg $$->$, $$$->$$, etc. The offsets parameter here can be
 // NULL. This only allows you to use up to nine replacements.
-BASE_EXPORT string16 ReplaceStringPlaceholders(
-    const string16& format_string,
-    const std::vector<string16>& subst,
-    std::vector<size_t>* offsets);
+BASE_EXPORT string16
+ReplaceStringPlaceholders(StringPiece16 format_string,
+                          const std::vector<string16>& subst,
+                          std::vector<size_t>* offsets);
 
 BASE_EXPORT std::string ReplaceStringPlaceholders(
     StringPiece format_string,
@@ -536,7 +536,36 @@ BASE_EXPORT string16 ReplaceStringPlaceholders(const string16& format_string,
                                                const string16& a,
                                                size_t* offset);
 
+// The following section contains overloads of the previously defined APIs for
+// std::wstring and base::WStringPiece. In order to discourage using
+// std::wstring in cross-platform code, these overloads are only enabled on
+// Windows, and only if std::wstring is a different type than base::string16.
 #if defined(OS_WIN) && defined(BASE_STRING16_IS_STD_U16STRING)
+BASE_EXPORT std::wstring ToLowerASCII(WStringPiece str);
+
+BASE_EXPORT std::wstring ToUpperASCII(WStringPiece str);
+
+BASE_EXPORT int CompareCaseInsensitiveASCII(WStringPiece a, WStringPiece b);
+
+BASE_EXPORT bool EqualsCaseInsensitiveASCII(WStringPiece a, WStringPiece b);
+
+BASE_EXPORT bool RemoveChars(WStringPiece input,
+                             WStringPiece remove_chars,
+                             std::wstring* output);
+
+BASE_EXPORT bool ReplaceChars(WStringPiece input,
+                              WStringPiece replace_chars,
+                              WStringPiece replace_with,
+                              std::wstring* output);
+
+BASE_EXPORT bool TrimString(WStringPiece input,
+                            WStringPiece trim_chars,
+                            std::string* output);
+
+BASE_EXPORT WStringPiece TrimString(WStringPiece input,
+                                    WStringPiece trim_chars,
+                                    TrimPositions positions);
+
 BASE_EXPORT TrimPositions TrimWhitespace(WStringPiece input,
                                          TrimPositions positions,
                                          std::wstring* output);
@@ -544,22 +573,50 @@ BASE_EXPORT TrimPositions TrimWhitespace(WStringPiece input,
 BASE_EXPORT WStringPiece TrimWhitespace(WStringPiece input,
                                         TrimPositions positions);
 
+BASE_EXPORT std::wstring CollapseWhitespace(
+    WStringPiece text,
+    bool trim_sequences_with_line_breaks);
+
+BASE_EXPORT bool ContainsOnlyChars(WStringPiece input, WStringPiece characters);
+
 BASE_EXPORT bool LowerCaseEqualsASCII(WStringPiece str,
                                       StringPiece lowecase_ascii);
 
-BASE_EXPORT bool TrimString(WStringPiece input,
-                            WStringPiece trim_chars,
-                            std::wstring* output);
-
-BASE_EXPORT WStringPiece TrimString(WStringPiece input,
-                                    WStringPiece trim_chars,
-                                    TrimPositions positions);
+BASE_EXPORT bool EqualsASCII(StringPiece16 str, StringPiece ascii);
 
 BASE_EXPORT bool StartsWith(WStringPiece str,
                             WStringPiece search_for,
                             CompareCase case_sensitivity);
 
+BASE_EXPORT bool EndsWith(WStringPiece str,
+                          WStringPiece search_for,
+                          CompareCase case_sensitivity);
+
+BASE_EXPORT void ReplaceFirstSubstringAfterOffset(std::wstring* str,
+                                                  size_t start_offset,
+                                                  WStringPiece find_this,
+                                                  WStringPiece replace_with);
+
+BASE_EXPORT void ReplaceSubstringsAfterOffset(std::wstring* str,
+                                              size_t start_offset,
+                                              WStringPiece find_this,
+                                              WStringPiece replace_with);
+
 BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
+
+BASE_EXPORT std::wstring JoinString(span<const std::wstring> parts,
+                                    WStringPiece separator);
+
+BASE_EXPORT std::wstring JoinString(span<const WStringPiece> parts,
+                                    WStringPiece separator);
+
+BASE_EXPORT std::wstring JoinString(std::initializer_list<WStringPiece> parts,
+                                    WStringPiece separator);
+
+BASE_EXPORT std::wstring ReplaceStringPlaceholders(
+    WStringPiece format_string,
+    const std::vector<string16>& subst,
+    std::vector<size_t>* offsets);
 #endif
 
 }  // namespace base

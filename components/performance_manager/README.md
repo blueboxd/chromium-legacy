@@ -94,6 +94,20 @@ A simple example Decorator might periodically measure the cumulative CPU usage
 for each process Node in the Graph and adorn each node with the measured
 cumulative CPU usage of the corresponding process.
 
+Decorators can make data available to consumers by updating core properties of
+a node or by exposing their own custom API. A common interface is to provide an
+associated Data class, with a static accessor to retrieve a Data object from a
+given Node. See
+[PageLiveStateDecorator::Data](public/decorators/page_live_state_decorator.h)
+for an example.
+
+## Observers
+
+Each node type provides an observer interface that callers can implement to
+receive notifications when core node properties change. Data that is exposed
+through a decorator or Node Attached Data may or may not provide change
+notifications depending on the details of the decorator's API.
+
 ## Aggregators
 
 Aggregators, like Decorators, set properties on the graph nodes. The difference is that

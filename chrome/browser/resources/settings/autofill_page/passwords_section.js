@@ -186,6 +186,13 @@ Polymer({
           'signedIn_, hasNeverCheckedPasswords_, hasStoredPasswords_)',
     },
 
+    shouldShowStorageDetailsInEditDialog_: {
+      type: Boolean,
+      value: false,
+      computed: 'computeShouldShowStorageDetailsInEditDialog_('+
+      'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
+    },
+
     /** @private */
     hasLeakedCredentials_: {
       type: Boolean,
@@ -495,6 +502,14 @@ Polymer({
   computeShouldShowBanner_() {
     return this.signedIn_ && this.hasStoredPasswords_ &&
         this.hasNeverCheckedPasswords_ && !this.hasLeakedCredentials_;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowStorageDetailsInEditDialog_() {
+    return this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_;
   },
 
   /**

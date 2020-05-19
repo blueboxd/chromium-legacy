@@ -544,6 +544,46 @@ suite('PasswordsSection', function() {
     assertTrue(passwordDialog.$.showPasswordButton.hidden);
   });
 
+  test('verifyStorageDetailsInEditDialogForAccountPassword', function() {
+    const accountPassword = createPasswordEntry('goo.gl', 'bart');
+    accountPassword.fromAccountStore = true;
+    const accountPasswordDialog =
+        elementFactory.createPasswordEditDialog(accountPassword);
+    flush();
+
+    // By default no message is displayed.
+    assertTrue(accountPasswordDialog.$.storageDetails.hidden);
+
+    // Display the message.
+    accountPasswordDialog.shouldShowStorageDetails = true;
+    flush();
+    assertFalse(accountPasswordDialog.$.storageDetails.hidden);
+    assertEquals(
+        accountPasswordDialog.i18nAdvanced(
+            'passwordStoredInAccount', {tags: ['b']}),
+        accountPasswordDialog.$.storageDetails.innerHTML);
+  });
+
+  test('verifyStorageDetailsInEditDialogForDevicePassword', function() {
+    const devicePassword = createPasswordEntry('goo.gl', 'bart');
+    devicePassword.fromAccountStore = false;
+    const devicePasswordDialog =
+        elementFactory.createPasswordEditDialog(devicePassword);
+    flush();
+
+    // By default no message is displayed.
+    assertTrue(devicePasswordDialog.$.storageDetails.hidden);
+
+    // Display the message.
+    devicePasswordDialog.shouldShowStorageDetails = true;
+    flush();
+    assertFalse(devicePasswordDialog.$.storageDetails.hidden);
+    assertEquals(
+        devicePasswordDialog.i18nAdvanced(
+            'passwordStoredOnDevice', {tags: ['b']}),
+        devicePasswordDialog.$.storageDetails.innerHTML);
+  });
+
   test('showSavedPasswordEditDialog', function() {
     const PASSWORD = 'bAn@n@5';
     const item = createPasswordEntry('goo.gl', 'bart');

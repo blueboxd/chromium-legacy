@@ -7,6 +7,7 @@ module blink.mojom;
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/parsed_headers.mojom";
+import "services/network/public/mojom/network_types.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "url/mojom/url.mojom";
@@ -74,6 +75,13 @@ struct FetchAPIResponse {
   // output of blink::ParseHeaders(headers, url);
   network.mojom.ParsedHeaders? parsed_headers;
 
+  // Enumeration that describes the kind of connection originally used to
+  // fetch this request.
+  network.mojom.ConnectionInfo connection_info;
+
+  // ALPN negotiated protocol of the socket which fetched this resource.
+  string alpn_negotiated_protocol = "unknown";
+
   // True if the response was loaded with a Request where the credentials mode
   // would potentially send cookies to the server:
   //
@@ -86,4 +94,8 @@ struct FetchAPIResponse {
   // This field may be true even if there were no cookies actually available
   // to send.
   bool loaded_with_credentials = false;
+
+  // True if the response was originally loaded via a request fetched over a
+  // SPDY channel.
+  bool was_fetched_via_spdy = false;
 };

@@ -48,11 +48,6 @@ extern const char kAutofillEnforceMinRequiredFieldsForUploadDescription[];
 extern const char kAutofillIOSDelayBetweenFieldsName[];
 extern const char kAutofillIOSDelayBetweenFieldsDescription[];
 
-// Title and description for the flag to control offering to save unmasked
-// server cards locally as FULL_SERVER_CARDs upon success of credit card unmask.
-extern const char kAutofillNoLocalSaveOnUnmaskSuccessName[];
-extern const char kAutofillNoLocalSaveOnUnmaskSuccessDescription[];
-
 // Title and description for the flag that controls whether the maximum number
 // of Autofill suggestions shown is pruned.
 extern const char kAutofillPruneSuggestionsName[];
@@ -174,12 +169,6 @@ extern const char kEmbedderBlockRestoreUrlDescription[];
 // cards until page navigation to simplify consecutive fills on the same page.
 extern const char kEnableAutofillCacheServerCardInfoName[];
 extern const char kEnableAutofillCacheServerCardInfoDescription[];
-
-// Title and description for the flag to control if credit card upload can
-// display an expiration date fix flow.
-extern const char kEnableAutofillCreditCardUploadEditableExpirationDateName[];
-extern const char
-    kEnableAutofillCreditCardUploadEditableExpirationDateDescription[];
 
 // Title and description for the flag to enable the clipboard provider to
 // suggest searchihng for copied images.

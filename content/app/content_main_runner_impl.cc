@@ -60,6 +60,7 @@
 #include "content/browser/tracing/memory_instrumentation_util.h"
 #include "content/browser/utility_process_host.h"
 #include "content/child/field_trial.h"
+#include "content/common/android/cpu_time_metrics.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
 #include "content/gpu/in_process_gpu_thread.h"
@@ -897,6 +898,10 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     BrowserTaskExecutor::PostFeatureListSetup();
 
     tracing::InitTracingPostThreadPoolStartAndFeatureList();
+
+#if defined(OS_ANDROID)
+    SetupCpuTimeMetrics();
+#endif
 
     if (should_start_service_manager_only)
       ForceInProcessNetworkService(true);

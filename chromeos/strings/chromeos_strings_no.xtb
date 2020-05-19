@@ -43,6 +43,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="6058625436358447366">For å fullføre passordendringen, skriv inn det gamle og det nye passordet</translation>
 <translation id="6106186594183574873">For å fullføre passordendringen, skriv inn det gamle passordet</translation>
 <translation id="6146993107019042706">For å fullføre passordendringen, skriv inn det nye passordet</translation>
+<translation id="6517239166834772319">Utforsk</translation>
 <translation id="6643016212128521049">Tøm</translation>
 <translation id="7162487448488904999">Galleri</translation>
 <translation id="7658239707568436148">Avbryt</translation>
@@ -50,6 +51,7 @@ Prøv å trykke på mikrofonen for å spørre meg om noe.</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Endre passord</translation>
 <translation id="8208861521865154048">Fordeler</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne brukeren. Domenet kan administrere innstillinger og overvåke brukeraktivitet eksternt.</translation>
 <translation id="8747900814994928677">Bekreft endringen</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> forsøk igjen</translation>
 <translation id="910415269708673980">Oppdater saken for <ph name="PRINCIPAL_NAME" /></translation>

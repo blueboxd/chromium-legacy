@@ -500,5 +500,8 @@ void FeedStream::ReportContextMenuOpened() {
 void FeedStream::ReportStreamScrolled(int distance_dp) {
   metrics_reporter_->StreamScrolled(distance_dp);
 }
+void FeedStream::ReportStreamScrollStart() {
+  metrics_reporter_->StreamScrollStart();
+}
 
 }  // namespace feed

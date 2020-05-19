@@ -79,6 +79,7 @@ class CORE_EXPORT CSPDirectiveList final
 
   bool AllowFromSource(ContentSecurityPolicy::DirectiveType,
                        const KURL&,
+                       const KURL& url_before_redirects,
                        ResourceRequest::RedirectStatus,
                        ReportingDisposition,
                        const String& nonce = String(),
@@ -105,7 +106,7 @@ class CORE_EXPORT CSPDirectiveList final
   bool StrictMixedContentChecking() const {
     return strict_mixed_content_checking_enforced_;
   }
-  void ReportMixedContent(const KURL& mixed_url,
+  void ReportMixedContent(const KURL& blocked_url,
                           ResourceRequest::RedirectStatus) const;
 
   bool ShouldDisableEval() const {
@@ -283,6 +284,7 @@ class CORE_EXPORT CSPDirectiveList final
   bool CheckSourceAndReportViolation(SourceListDirective*,
                                      const KURL&,
                                      const ContentSecurityPolicy::DirectiveType,
+                                     const KURL& url_before_redirects,
                                      ResourceRequest::RedirectStatus) const;
   bool CheckMediaTypeAndReportViolation(MediaListDirective*,
                                         const String& type,

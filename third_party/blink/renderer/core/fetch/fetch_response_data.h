@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "net/http/http_response_info.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink-forward.h"
@@ -103,9 +104,18 @@ class CORE_EXPORT FetchResponseData final
   void SetCorsExposedHeaderNames(const HTTPHeaderSet& header_names) {
     cors_exposed_header_names_ = header_names;
   }
-  bool LoadedWithCredentials() const { return loaded_with_credentials_; }
+  void SetConnectionInfo(
+      net::HttpResponseInfo::ConnectionInfo connection_info) {
+    connection_info_ = connection_info;
+  }
+  void SetAlpnNegotiatedProtocol(AtomicString alpn_negotiated_protocol) {
+    alpn_negotiated_protocol_ = alpn_negotiated_protocol;
+  }
   void SetLoadedWithCredentials(bool loaded_with_credentials) {
     loaded_with_credentials_ = loaded_with_credentials;
+  }
+  void SetWasFetchedViaSpdy(bool was_fetched_via_spdy) {
+    was_fetched_via_spdy_ = was_fetched_via_spdy;
   }
 
   // If the type is Default, replaces |buffer_|.
@@ -141,7 +151,10 @@ class CORE_EXPORT FetchResponseData final
   base::Time response_time_;
   String cache_storage_cache_name_;
   HTTPHeaderSet cors_exposed_header_names_;
+  net::HttpResponseInfo::ConnectionInfo connection_info_;
+  AtomicString alpn_negotiated_protocol_;
   bool loaded_with_credentials_;
+  bool was_fetched_via_spdy_;
 
   DISALLOW_COPY_AND_ASSIGN(FetchResponseData);
 };

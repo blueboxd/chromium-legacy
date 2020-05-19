@@ -1154,23 +1154,16 @@ LayoutTableCell* LayoutTableCell::CreateAnonymous(
     Document* document,
     scoped_refptr<ComputedStyle> style,
     LegacyLayout legacy) {
-  LayoutTableCell* layout_object =
+  LayoutBlockFlow* layout_object =
       LayoutObjectFactory::CreateTableCell(*document, *style, legacy);
   layout_object->SetDocumentForAnonymous(document);
   layout_object->SetStyle(std::move(style));
-  return layout_object;
+  return To<LayoutTableCell>(layout_object);
 }
 
-LayoutTableCell* LayoutTableCell::CreateAnonymousWithParent(
-    const LayoutObject* parent) {
-  scoped_refptr<ComputedStyle> new_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
-                                                     EDisplay::kTableCell);
-  LegacyLayout legacy =
-      parent->ForceLegacyLayout() ? LegacyLayout::kForce : LegacyLayout::kAuto;
-  LayoutTableCell* new_cell = LayoutTableCell::CreateAnonymous(
-      &parent->GetDocument(), std::move(new_style), legacy);
-  return new_cell;
+LayoutBox* LayoutTableCell::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableCellWithParent(*parent);
 }
 
 bool LayoutTableCell::BackgroundIsKnownToBeOpaqueInRect(

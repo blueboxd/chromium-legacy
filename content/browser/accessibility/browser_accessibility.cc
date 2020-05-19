@@ -1748,7 +1748,7 @@ base::Optional<bool> BrowserAccessibility::GetTableHasColumnOrRowHeaderNode()
 
 std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds() const {
   std::vector<int32_t> result;
-  node()->GetTableCellColHeaderNodeIds(&result);
+  node()->GetTableColHeaderNodeIds(&result);
   return result;
 }
 

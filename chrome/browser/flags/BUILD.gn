@@ -64,6 +64,7 @@ java_library("flags_junit_tests") {
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
     "//chrome/test/android:chrome_java_test_support",
+    "//third_party/junit",
   ]
 }
 

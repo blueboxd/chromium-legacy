@@ -15,6 +15,7 @@ const polymerUrl = 'chrome://resources/polymer/v3_0/';
 const nonGeneratedFiles = [
   'action_link.js',
   'certificate_manager_types.js',
+  'certificate_provisioning_browser_proxy.js',
   'certificates_browser_proxy.js',
   'cr.m.js',
   'cr_splitter.js',

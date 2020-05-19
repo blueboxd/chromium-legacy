@@ -324,9 +324,6 @@ Se disattivi questo criterio, lo scorrimento della pagina web ai frammenti di te
 <translation id="152657506688053119">Elenco di URL alternativi per il fornitore del servizio di ricerca predefinito</translation>
 <translation id="1530812829012954197">Visualizza sempre i seguenti schemi URL nel browser host</translation>
 <translation id="1553532014072799546">Whitelist limiti di utilizzo per app</translation>
-<translation id="1553684822621013552">Quando questo criterio è impostato su true, ARC è attivato (soggetto ad altri controlli delle impostazioni dei criteri - ARC continuerà a essere disattivato se nella sessione utente corrente è attivata la modalità temporanea o l'accesso simultaneo).
-
-Se l'impostazione è disattivata o non è stata configurata, gli utenti aziendali non potranno utilizzare ARC.</translation>
 <translation id="1553956579506604198">Blocca l'installazione delle estensioni esterne</translation>
 <translation id="1556072857949466438">Questo criterio consente a un amministratore di specificare che una pagina potrebbe mostrare popup durante l'unload.
 
@@ -881,10 +878,6 @@ Se questo criterio non viene impostato, la Schermata sulla privacy verrà inizia
       Quando questa norma non è configurata o è impostata su True, gli utenti possono utilizzare la funzione Condivisioni file di rete.
 
       Quando questa norma è impostata su False, gli utenti non possono utilizzare la funzione Condivisioni file di rete.</translation>
-<translation id="2438609638493026652">Attiva la segnalazione di eventi chiave durante l'installazione di app Android a Google. Gli eventi vengono acquisiti solo per le app la cui installazione è stata lanciata tramite norma.
-
-      Se la norma viene impostata su True, gli eventi saranno registrati.
-      Se la norma viene impostata su False o non viene impostata, gli eventi non saranno registrati.</translation>
 <translation id="2440773021691931148">Consente di segnalare statistiche hardware e identificatori relativi all'alimentazione.
 
       Se il criterio viene impostato su false o non viene impostato, le statistiche non vengono segnalate.
@@ -1195,15 +1188,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
 
       Ogni voce in elenco specifica un identificatore che viene utilizzato internamente per distinguere i vari account del dispositivo.</translation>
 <translation id="2769952903507981510">Configura il nome di dominio richiesto per gli host di accesso remoto</translation>
-<translation id="2783078941107212091">Consente di attivare i consigli di app a stato nullo della casella di ricerca in Avvio app.
-
-          Se questo criterio viene impostato su true, i consigli di app potrebbero essere visualizzati nella ricerca a stato nullo.
-
-          Se questo criterio viene impostato su false, i consigli di app non verranno visualizzati nella ricerca a stato nullo.
-
-          Se questo criterio viene impostato, gli utenti non potranno modificarlo o ignorarlo.
-
-          Se questo criterio non viene impostato, il valore predefinito è False per i dispositivi gestiti.</translation>
 <translation id="2787173078141616821">Segnala informazioni sullo stato di Android</translation>
 <translation id="2799297758492717491">Consenti la riproduzione automatica dei contenuti multimediali per una whitelist di pattern URL</translation>
 <translation id="2801065672151277034">Impostazioni di gestione dei certificati</translation>
@@ -1841,6 +1825,7 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
       Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.
 
       Se la norma non viene impostata, viene utilizzata la directory di download predefinita e l'utente può modificarla.</translation>
+<translation id="3803171355925844705">Non consentire il caricamento di contenuti misti in nessun sito</translation>
 <translation id="3805659594028420438">Attiva estensione di certificati associati al dominio TLS (obsoleta)</translation>
 <translation id="3808945828600697669">Specifica un elenco dei plug-in disattivati</translation>
 <translation id="3810642039169532482">Consente di attivare la funzione di accessibilità di dettatura nella schermata di accesso.
@@ -1859,15 +1844,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 <translation id="382476126209906314">Configura il prefisso TalkGadget per gli host di accesso remoto</translation>
 <translation id="3824972131618513497">Consente di controllare le impostazioni relative alla gestione dell'alimentazione e al riavvio.</translation>
 <translation id="3826475866868158882">Servizi di geolocalizzazione di Google attivi</translation>
-<translation id="3831054243924627613">Questo criterio controlla lo stato iniziale del backup e ripristino di Android.
-
-      Se questo criterio non è configurato o non è impostato su <ph name="BR_DISABLED" />, il backup e ripristino di Android viene inizialmente disattivato.
-
-      Se il criterio è impostato su <ph name="BR_ENABLED" />, il backup e ripristino di Android viene inizialmente attivato.
-
-      Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, all'utente viene chiesto di scegliere se utilizzare il backup e ripristino di Android. Se l'utente attiva il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati dai server per le app compatibili durante la fase di reinstallazione.
-
-      Tieni presente che questo criterio controlla lo stato di backup e ripristino di Android solo durante la configurazione iniziale. L'utente può aprire le impostazioni di Android in un secondo momento e attivare o disattivare il backup e ripristino di Android.</translation>
 <translation id="3831376478177535007">Se questa impostazione viene attivata, <ph name="PRODUCT_NAME" /> consente di ritenere attendibili i certificati emessi dal team addetto alle operazioni dell'infrastruttura PKI precedente di Symantec Corporation se sono correttamente convalidati e collegati a un certificato CA riconosciuto.
 
       Tieni presente che questa norma dipende dal riconoscimento da parte del sistema operativo dei certificati dell'infrastruttura precedente di Symantec. Se un aggiornamento del sistema operativo cambia la modalità di gestione di tali certificati da parte del sistema, questa norma non viene più applicata. Inoltre, questa norma è intesa come soluzione alternativa temporanea per dare alle aziende più tempo per ritirare i certificati Symantec precedenti. Questa norma verrà rimossa il 1° gennaio 2019 o in una data successiva.
@@ -3356,17 +3332,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Consenti a tutti i siti di utilizzare la generazione di chiavi</translation>
 <translation id="6135398260575578389">Navigazione sicura è attiva in modalità potenziata. Questa modalità fornisce maggior sicurezza, ma non richiede la condivisione di ulteriori dati di navigazione con Google.</translation>
-<translation id="6136537398661737682">Questo criterio consente di controllare lo stato iniziale dei Servizi di geolocalizzazione di Google.
-
-      Se questo criterio non viene configurato o viene impostato su <ph name="GLS_DISABLED" />, i Servizi di geolocalizzazione di Google sono inizialmente disattivati.
-
-      Se questo criterio viene impostato su <ph name="GLS_ENABLED" />, i Servizi di geolocalizzazione di Google sono inizialmente attivati.
-
-      Se questo criterio viene impostato su <ph name="GLS_UNDER_USER_CONTROL" />, all'utente viene chiesto di scegliere se utilizzare o meno i Servizi di geolocalizzazione di Google. In questo modo le app Android potranno usare i servizi per inviare query sulla posizione del dispositivo; inoltre, verrà attivato l'invio a Google di dati sulla posizione anonimi.
-
-      Tieni presente che questo criterio consente di controllare lo stato dei Servizi di geolocalizzazione di Google solo durante la configurazione iniziale. L'utente può aprire le impostazioni di Android in un secondo momento e attivare o disattivare i Servizi di geolocalizzazione di Google.
-
-      Tieni presente che questo criterio viene ignorato e i Servizi di geolocalizzazione di Google vengono sempre disattivati se il criterio <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> è impostato su <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Utilizza sempre il rilevamento approssimativo del fuso orario</translation>
 <translation id="614616930188030377">I pattern di questo elenco verranno confrontati con l'origine di sicurezza dell'URL richiedente.
       Se viene trovata una corrispondenza o se chrome://flags/#enable-webrtc-hide-local-ips-with-mdns è disattivato, gli indirizzi IP locali vengono mostrati nei candidati ICE WebRTC.
@@ -4478,9 +4443,6 @@ L'aggiornamento dinamico della norma è supportato in M56 e versioni successive.
 
           Se questo criterio non viene impostato, inizialmente l'alto contrasto è disattivato nella schermata di accesso, ma l'utente può attivarlo in qualsiasi momento.</translation>
 <translation id="7869986671709030417">Modalità di stampa predefinita delle immagini di sfondo</translation>
-<translation id="787125417158068494">Se la norma viene impostata su SyncDisabled o non viene configurata, i certificati <ph name="PRODUCT_OS_NAME" /> non saranno disponibili per le app ARC.
-
-      Se viene impostata su CopyCaCerts, per le app ARC saranno disponibili tutti i certificati CA installati su ONC con <ph name="WEB_TRUSTED_BIT" />.</translation>
 <translation id="7882585827992171421">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire l'ID dell'estensione da utilizzare come salvaschermo nella schermata di accesso. L'estensione deve far parte dell'AppPack configurato per il dominio tramite la norma DeviceAppPack.</translation>
@@ -4915,11 +4877,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
 <translation id="8544465954173828789">Consente la sincronizzazione di messaggi SMS dal telefono al Chromebook</translation>
 <translation id="8548832052135586762">Consente di impostare solo la stampa a colori, solo la stampa monocromatica oppure nessuna limitazione per la modalità a colori. Se la norma non viene impostata non vengono applicate limitazioni.</translation>
 <translation id="8549772397068118889">Avvisa quando vengono visitati siti non presenti nei pacchetti di contenuti</translation>
-<translation id="8566729013138025202">Consente di specificare un insieme di criteri che verranno trasferiti al runtime ARC. Il valore deve essere un JSON valido.
-
-      Questo criterio può essere utilizzato per configurare quali app Android vengono installate automaticamente sul dispositivo.
-
-      Per bloccare le app nell'Avvio app, vedi PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Nascondi il Web Store nella pagina Nuova scheda e in Avvio applicazioni</translation>
 <translation id="8569734380847633643">
           Se la norma è impostata su false, <ph name="PRODUCT_OS_NAME" /> disattiverà la connessione Wi-Fi e gli utenti non potranno riattivarla.
@@ -4948,11 +4905,6 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Se questo criterio non viene impostato, viene usato un periodo di tempo predefinito.
 
           Il valore del criterio deve essere specificato in millisecondi.</translation>
-<translation id="8598350264853261122">Se la norma viene impostata su false, gli utenti non affiliati non potranno usare ARC.
-
-      Se la norma non viene impostata o viene impostata su true, tutti gli utenti potranno utilizzare ARC (a meno che la funzione ARC sia stata disattivata in altri modi).
-
-      Le modifiche apportate alla norma verranno applicate soltanto quando ARC non è in esecuzione, ad esempio durante l'avvio di Chrome OS.</translation>
 <translation id="8606263947930257189">Consente di stabilire se <ph name="PRODUCT_NAME" /> può bloccare le schede che sono in secondo piano da almeno cinque minuti.
 
       Se il criterio viene impostato su true, le schede che sono in secondo piano da almeno cinque minuti potrebbero essere bloccate. Il blocco delle schede riduce l'utilizzo di CPU, batteria e memoria. <ph name="PRODUCT_NAME" /> usa l'euristica per evitare di bloccare le schede in secondo piano che hanno una funzione utile (ad esempio visualizzare notifiche, riprodurre audio, riprodurre video in streaming). Gli sviluppatori web possono anche disattivare il blocco nei loro siti (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
@@ -5275,6 +5227,7 @@ https://www.w3.org/TR/secure-contexts/
       Se imposti un valore più basso per questa norma, l'effetto è permanente: il dispositivo POTREBBE non essere in grado di eseguire il rollback alle versioni precedenti anche dopo aver reimpostato un valore maggiore della norma.
 
       Le possibilità effettive di eseguire il rollback potrebbero dipendere anche dal modello di dispositivo e dalle patch di vulnerabilità critiche.</translation>
+<translation id="9123464369663964441">Consenti agli utenti di aggiungere eccezioni per consentire contenuti misti</translation>
 <translation id="9126014181388780690">"Consenti all'Assistente Google di accedere al contesto dello schermo"</translation>
 <translation id="913195841488580904">Blocca l'accesso a un elenco di URL</translation>
 <translation id="9135033364005346124">Attiva proxy <ph name="CLOUD_PRINT_NAME" /></translation>

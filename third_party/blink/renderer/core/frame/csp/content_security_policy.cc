@@ -715,6 +715,7 @@ bool ContentSecurityPolicy::AllowRequest(
     const String& nonce,
     const IntegrityMetadataSet& integrity_metadata,
     ParserDisposition parser_disposition,
+    const KURL& url_before_redirects,
     RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
@@ -723,9 +724,9 @@ bool ContentSecurityPolicy::AllowRequest(
 
   if (!type)
     return true;
-  return AllowFromSource(*type, url, redirect_status, reporting_disposition,
-                         check_header_type, nonce, integrity_metadata,
-                         parser_disposition);
+  return AllowFromSource(*type, url, url_before_redirects, redirect_status,
+                         reporting_disposition, check_header_type, nonce,
+                         integrity_metadata, parser_disposition);
 }
 
 void ContentSecurityPolicy::UsesScriptHashAlgorithms(uint8_t algorithms) {
@@ -739,6 +740,7 @@ void ContentSecurityPolicy::UsesStyleHashAlgorithms(uint8_t algorithms) {
 bool ContentSecurityPolicy::AllowFromSource(
     ContentSecurityPolicy::DirectiveType type,
     const KURL& url,
+    const KURL& url_before_redirects,
     RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type,
@@ -779,9 +781,9 @@ bool ContentSecurityPolicy::AllowFromSource(
   for (const auto& policy : policies_) {
     if (!CheckHeaderTypeMatches(check_header_type, policy->HeaderType()))
       continue;
-    is_allowed &= policy->AllowFromSource(type, url, redirect_status,
-                                          reporting_disposition, nonce, hashes,
-                                          parser_disposition);
+    is_allowed &= policy->AllowFromSource(
+        type, url, url_before_redirects, redirect_status, reporting_disposition,
+        nonce, hashes, parser_disposition);
   }
 
   return is_allowed;
@@ -791,40 +793,45 @@ bool ContentSecurityPolicy::AllowBaseURI(const KURL& url) const {
   // `base-uri` isn't affected by 'upgrade-insecure-requests', so we use
   // CheckHeaderType::kCheckAll to check both report-only and enforce headers
   // here.
-  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kBaseURI, url);
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kBaseURI, url,
+                         url, RedirectStatus::kNoRedirect);
 }
 
 bool ContentSecurityPolicy::AllowConnectToSource(
     const KURL& url,
+    const KURL& url_before_redirects,
     RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kConnectSrc, url,
-                         redirect_status, reporting_disposition,
-                         check_header_type);
+                         url_before_redirects, redirect_status,
+                         reporting_disposition, check_header_type);
 }
 
 bool ContentSecurityPolicy::AllowFormAction(const KURL& url) const {
-  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kFormAction,
-                         url);
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kFormAction, url,
+                         url, RedirectStatus::kNoRedirect);
 }
 
 bool ContentSecurityPolicy::AllowImageFromSource(
     const KURL& url,
+    const KURL& url_before_redirects,
     RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kImgSrc, url,
-                         redirect_status, reporting_disposition,
-                         check_header_type);
+                         url_before_redirects, redirect_status,
+                         reporting_disposition, check_header_type);
 }
 
 bool ContentSecurityPolicy::AllowMediaFromSource(const KURL& url) const {
-  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kMediaSrc, url);
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kMediaSrc, url,
+                         url, RedirectStatus::kNoRedirect);
 }
 
 bool ContentSecurityPolicy::AllowObjectFromSource(const KURL& url) const {
-  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kObjectSrc, url);
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kObjectSrc, url,
+                         url, RedirectStatus::kNoRedirect);
 }
 
 bool ContentSecurityPolicy::AllowScriptFromSource(
@@ -832,17 +839,20 @@ bool ContentSecurityPolicy::AllowScriptFromSource(
     const String& nonce,
     const IntegrityMetadataSet& hashes,
     ParserDisposition parser_disposition,
+    const KURL& url_before_redirects,
     RedirectStatus redirect_status,
     ReportingDisposition reporting_disposition,
     CheckHeaderType check_header_type) const {
   return AllowFromSource(ContentSecurityPolicy::DirectiveType::kScriptSrcElem,
-                         url, redirect_status, reporting_disposition,
-                         check_header_type, nonce, hashes, parser_disposition);
+                         url, url_before_redirects, redirect_status,
+                         reporting_disposition, check_header_type, nonce,
+                         hashes, parser_disposition);
 }
 
 bool ContentSecurityPolicy::AllowWorkerContextFromSource(
     const KURL& url) const {
-  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kWorkerSrc, url);
+  return AllowFromSource(ContentSecurityPolicy::DirectiveType::kWorkerSrc, url,
+                         url, RedirectStatus::kNoRedirect);
 }
 
 bool ContentSecurityPolicy::AllowTrustedTypePolicy(const String& policy_name,
@@ -991,9 +1001,13 @@ static void GatherSecurityPolicyViolationEventData(
         init->setBlockedURI("eval");
         break;
       case ContentSecurityPolicy::kURLViolation:
-        init->setBlockedURI(
-            StripURLForUseInReport(delegate->GetSecurityOrigin(), blocked_url,
-                                   redirect_status, effective_type));
+        // We pass RedirectStatus::kNoRedirect so that StripURLForUseInReport
+        // does not strip path and query from the URL. This is safe since
+        // blocked_url at this point is always the original url (before
+        // redirects).
+        init->setBlockedURI(StripURLForUseInReport(
+            delegate->GetSecurityOrigin(), blocked_url,
+            RedirectStatus::kNoRedirect, effective_type));
         break;
       case ContentSecurityPolicy::kTrustedTypesSinkViolation:
         init->setBlockedURI("trusted-types-sink");
@@ -1215,10 +1229,10 @@ void ContentSecurityPolicy::PostViolationReport(
 }
 
 void ContentSecurityPolicy::ReportMixedContent(
-    const KURL& mixed_url,
+    const KURL& blocked_url,
     RedirectStatus redirect_status) const {
   for (const auto& policy : policies_)
-    policy->ReportMixedContent(mixed_url, redirect_status);
+    policy->ReportMixedContent(blocked_url, redirect_status);
 }
 
 void ContentSecurityPolicy::ReportReportOnlyInMeta(const String& header) {

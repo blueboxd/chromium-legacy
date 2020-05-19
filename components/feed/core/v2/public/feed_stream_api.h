@@ -109,6 +109,9 @@ class FeedStreamApi {
   virtual void ReportContextMenuOpened() = 0;
   // The user scrolled the feed by |distance_dp| and then stopped.
   virtual void ReportStreamScrolled(int distance_dp) = 0;
+  // The user started scrolling the feed. Typically followed by a call to
+  // |ReportStreamScrolled()|.
+  virtual void ReportStreamScrollStart() = 0;
 
   // The following methods are used for the internals page.
 

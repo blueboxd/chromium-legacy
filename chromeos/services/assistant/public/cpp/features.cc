@@ -13,12 +13,6 @@ namespace features {
 const base::Feature kAssistantAudioEraser{"AssistantAudioEraser",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAssistantFeedbackUi{"AssistantFeedbackUi",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kAssistantWarmerWelcomeFeature{
-    "AssistantWarmerWelcome", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAssistantAppSupport{"AssistantAppSupport",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -149,10 +143,6 @@ bool IsDspHotwordEnabled() {
   return base::FeatureList::IsEnabled(kEnableDspHotword);
 }
 
-bool IsFeedbackUiEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantFeedbackUi);
-}
-
 bool IsLauncherChipIntegrationEnabled() {
   return base::FeatureList::IsEnabled(kAssistantLauncherChipIntegration);
 }
@@ -211,10 +201,6 @@ bool IsWaitSchedulingEnabled() {
   // Wait scheduling is only supported for response processing v2 and routines.
   return base::FeatureList::IsEnabled(kAssistantWaitScheduling) &&
          (IsResponseProcessingV2Enabled() || IsRoutinesEnabled());
-}
-
-bool IsWarmerWelcomeEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantWarmerWelcomeFeature);
 }
 
 }  // namespace features

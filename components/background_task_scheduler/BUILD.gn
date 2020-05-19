@@ -119,6 +119,7 @@ if (is_android) {
     ]
 
     deps = [
+      ":background_task_scheduler_task_ids_java",
       "$google_play_services_package:google_play_services_auth_base_java",
       "$google_play_services_package:google_play_services_base_java",
       "$google_play_services_package:google_play_services_basement_java",
@@ -131,6 +132,8 @@ if (is_android) {
       "//base:base_junit_test_support",
       "//components/background_task_scheduler:public_java",
       "//third_party/junit",
+      "//third_party/mockito:mockito_java",
+      "//third_party/robolectric:robolectric_all_java",
     ]
   }
 }

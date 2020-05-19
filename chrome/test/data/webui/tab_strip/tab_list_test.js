@@ -6,7 +6,7 @@ import {webUIListenerCallback} from 'chrome://resources/js/cr.m.js';
 import {FocusOutlineManager} from 'chrome://resources/js/cr/ui/focus_outline_manager.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {setScrollAnimationEnabledForTesting} from 'chrome://tab-strip/tab_list.js';
-import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
+import {TabStripEmbedderProxyImpl} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
 
 import {eventToPromise} from '../test_util.m.js';
@@ -91,7 +91,7 @@ suite('TabList', () => {
       '--width': '150px',
     });
     testTabStripEmbedderProxy.setVisible(true);
-    TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
+    TabStripEmbedderProxyImpl.instance_ = testTabStripEmbedderProxy;
 
     setScrollAnimationEnabledForTesting(false);
 

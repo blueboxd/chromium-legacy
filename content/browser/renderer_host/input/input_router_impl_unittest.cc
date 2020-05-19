@@ -588,10 +588,10 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+          &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(0, wheel_event->delta_x);
   EXPECT_EQ(-5, wheel_event->delta_y);
 
@@ -607,9 +607,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(8, wheel_event->delta_x);
   EXPECT_EQ(-10 + -6, wheel_event->delta_y);  // coalesced
 
@@ -622,9 +622,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(9, wheel_event->delta_x);
   EXPECT_EQ(-7, wheel_event->delta_y);
 
@@ -637,9 +637,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(0, wheel_event->delta_x);
   EXPECT_EQ(-10, wheel_event->delta_y);
 
@@ -652,9 +652,9 @@ TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   ASSERT_EQ(1u, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get());
+      &dispatched_messages[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(0, wheel_event->delta_x);
   EXPECT_EQ(0, wheel_event->delta_y);
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
@@ -845,13 +845,13 @@ TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   ASSERT_TRUE(dispatched_messages[2]->ToEvent());
   ASSERT_TRUE(dispatched_messages[3]->ToEvent());
   ASSERT_EQ(WebInputEvent::Type::kGestureScrollBegin,
-            dispatched_messages[0]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[0]->ToEvent()->Event()->Event().GetType());
   ASSERT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
-            dispatched_messages[1]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[1]->ToEvent()->Event()->Event().GetType());
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel,
-            dispatched_messages[2]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[2]->ToEvent()->Event()->Event().GetType());
   ASSERT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
-            dispatched_messages[3]->ToEvent()->Event()->web_event->GetType());
+            dispatched_messages[3]->ToEvent()->Event()->Event().GetType());
 
   // Indicate that the GestureScrollBegin event was consumed.
   dispatched_messages[0]->ToEvent()->CallCallback(
@@ -1766,7 +1766,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
   const WebInputEvent* input_event =
-      dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+      &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   const WebMouseWheelEvent* synthetic_wheel =
       static_cast<const WebMouseWheelEvent*>(input_event);
@@ -1800,7 +1800,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, synthetic_wheel->phase);
@@ -1840,7 +1840,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseEnded, synthetic_wheel->phase);
@@ -1870,7 +1870,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_TRUE(synthetic_wheel->GetModifiers() &
@@ -1899,7 +1899,7 @@ TEST_P(TouchpadPinchInputRouterImplTest, TouchpadPinchUpdate) {
   dispatched_messages = GetAndResetDispatchedMessages();
   ASSERT_EQ(1U, dispatched_messages.size());
   ASSERT_TRUE(dispatched_messages[0]->ToEvent());
-  input_event = dispatched_messages[0]->ToEvent()->Event()->web_event.get();
+  input_event = &dispatched_messages[0]->ToEvent()->Event()->Event();
   ASSERT_EQ(WebInputEvent::Type::kMouseWheel, input_event->GetType());
   synthetic_wheel = static_cast<const WebMouseWheelEvent*>(input_event);
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseChanged, synthetic_wheel->phase);
@@ -2123,7 +2123,7 @@ class InputRouterImplScaleEventTest : public InputRouterImplTestBase {
     EXPECT_EQ(1u, dispatched_messages_.size());
 
     return static_cast<const T*>(
-        dispatched_messages_[0]->ToEvent()->Event()->web_event.get());
+        &dispatched_messages_[0]->ToEvent()->Event()->Event());
   }
 
   template <typename T>
@@ -2417,9 +2417,8 @@ class InputRouterImplScaleGestureEventTest
     ASSERT_EQ(expected_types.size(), dispatched_messages_.size());
     for (size_t i = 0; i < dispatched_messages_.size(); i++) {
       ASSERT_TRUE(dispatched_messages_[i]->ToEvent());
-      ASSERT_EQ(
-          expected_types[i],
-          dispatched_messages_[i]->ToEvent()->Event()->web_event->GetType());
+      ASSERT_EQ(expected_types[i],
+                dispatched_messages_[i]->ToEvent()->Event()->Event().GetType());
       dispatched_messages_[i]->ToEvent()->CallCallback(
           blink::mojom::InputEventResultState::kConsumed);
     }

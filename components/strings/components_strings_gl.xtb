@@ -201,6 +201,7 @@
 <translation id="1746113442205726301">Desprazamento da imaxe no eixe Y</translation>
 <translation id="17513872634828108">Pestanas abertas</translation>
 <translation id="1752021286346845558">Caixa de correo 8</translation>
+<translation id="1752483581718172048">Ocultar suxestións</translation>
 <translation id="1753706481035618306">Número de páxina</translation>
 <translation id="1763864636252898013">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o sistema operativo do teu dispositivo non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proba a executar Diagnósticos da rede de Windows<ph name="END_LINK" />.</translation>
@@ -599,6 +600,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3539171420378717834">Manter unha copia desta tarxeta neste dispositivo</translation>
 <translation id="3558573058928565255">Hora do día</translation>
 <translation id="3566021033012934673">A túa conexión non é privada</translation>
+<translation id="3567778190852720481">Non se puido realizar o rexistro coa conta de empresa (esta non cumpre os requisitos).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Unha páxina inserida en <ph name="SITE" /> di</translation>
 <translation id="3581089476000296252">Chrome permitirache saber cando está lista esta páxina. &lt;a&gt;Cancelar&lt;/a&gt;</translation>
@@ -875,6 +877,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Executar Diagnósticos da rede de Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Volver cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
+<translation id="4731638775147756694">O teu administrador bloqueou esta aplicación</translation>
 <translation id="4731967714531604179">Prc2 (sobre)</translation>
 <translation id="4733082559415072992">O URL <ph name="URL" /> quere utilizar a localización do teu dispositivo</translation>
 <translation id="4736825316280949806">Reinicia Chromium</translation>
@@ -1241,6 +1244,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6263376278284652872">Marcadores de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Volver para estar a salvo</translation>
 <translation id="6266934640124581640">Turquesa claro</translation>
+<translation id="6272383483618007430">Actualización de Google</translation>
 <translation id="6276112860590028508">As páxinas da túa lista de lectura aparecen aquí</translation>
 <translation id="627746635834430766">Para pagar máis rápido a próxima vez, garda a túa tarxeta e o enderezo de facturación na conta de Google.</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />non gardará<ph name="END_EMPHASIS" /> a seguinte información:
@@ -1614,6 +1618,7 @@ Detalles adicionais:
 <translation id="7844689747373518809">{COUNT,plural, =0{Ningunha}=1{1 aplicación (<ph name="EXAMPLE_APP_1" />)}=2{2 aplicacións (<ph name="EXAMPLE_APP_1" /> e <ph name="EXAMPLE_APP_2" />)}other{# aplicacións (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> e <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Con todo, non es invisible. O modo de incógnito non impide que o teu xefe, o teu fornecedor de servizos de Internet nin os sitios web que visitas obteñan información sobre como navegas.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7858256690562840157">Envíalle a Google os <ph name="BEGIN_WHITEPAPER_LINK" />URL dalgunhas páxinas que visites, información limitada do sistema e contido da páxina<ph name="END_WHITEPAPER_LINK" /> para axudar a mellorar a seguranza para todo o mundo. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Queres saír do sitio?</translation>
 <translation id="7865448901209910068">A mellor velocidade</translation>
 <translation id="7874263914261512992">Acabas de escribir o teu contrasinal nun sitio enganoso. Chrome recomenda comprobar os contrasinais gardados para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> e outros sitios nos que esteas a utilizar este contrasinal neste momento.</translation>

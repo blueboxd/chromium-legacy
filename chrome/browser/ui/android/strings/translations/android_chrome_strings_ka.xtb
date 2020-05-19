@@ -204,6 +204,8 @@
 <translation id="2647434099613338025">დაამატე ენა</translation>
 <translation id="2650751991977523696">გსურთ ფაილის ხელახლა ჩამოტვირთვა?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# აუდიოფაილი}other{# აუდიოფაილი}}</translation>
+<translation id="2656405586795711023">ვებ-აპები</translation>
+<translation id="2677748264148917807">დატოვება</translation>
 <translation id="2689830683995595741">Chrome-ის გამოყენებით ეთანხმებით <ph name="BEGIN_LINK1" />Google-ის მომსახურების პირობებს<ph name="END_LINK1" />, ასევე, <ph name="BEGIN_LINK2" />Google Chrome-ისა და Chrome OS-ის მომსახურების დამატებით პირობებს<ph name="END_LINK2" />. გარდა ამისა, ვრცელდება <ph name="BEGIN_LINK3" />კონფიდენციალურობის შეტყობინება Family Link-ით მართული Google ანგარიშებისთვის<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">გვერდის განახლება</translation>
 <translation id="2709516037105925701">ავტომატური შევსება</translation>
@@ -365,6 +367,7 @@
 <translation id="3997476611815694295">უმნიშვნელო მეხსიერება</translation>
 <translation id="4000212216660919741">ხაზგარეშე მთავარი გვერდი</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# სთ}other{# სთ}}</translation>
+<translation id="403687620286099920">შეეხეთ QR კოდის გასახსნელად</translation>
 <translation id="4046123991198612571">შემდეგი ჩანაწერი</translation>
 <translation id="4056223980640387499">სეპია</translation>
 <translation id="4060598801229743805">ვარიანტები ხელმისაწვდომია ეკრანის ზედა ნაწილთან</translation>
@@ -449,12 +452,14 @@
 <translation id="4749960740855309258">ახალ ჩანართში გახსნა</translation>
 <translation id="4759238208242260848">ჩამოტვირთვები</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ჩამოტვირთვა დასრულდა.}other{# ჩამოტვირთვა დასრულდა.}}</translation>
+<translation id="478981486571169252">Chrome-ში იხილავთ როგორც <ph name="SITE_NAME" />-ში შესვლის სტატუსს, ისე დათვალიერების/საიტის მონაცემებს.</translation>
 <translation id="4802417911091824046">საიდუმლო ფრაზით დაშიფვრა არ მოიცავს Google Pay-ში შენახულ გადახდის მეთოდებსა და მისამართებს.
 
 ამ პარამეტრის შესაცვლელად საჭიროა <ph name="BEGIN_LINK" />სინქრონიზაციის გადაყენება<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">სახელი ბარათზე</translation>
 <translation id="4808319664292298116">გსურთ VR-ში შესვლა <ph name="DOMAIN" />-დან?</translation>
 <translation id="4824958205181053313">გსურთ სინქრონიზაციის გაუქმება?</translation>
+<translation id="4835385943915508971">Chrome-ს მოთხოვნილ რესურსზე წვდომა არ აქვს.</translation>
 <translation id="4837753911714442426">გვერდის ბეჭდვის ვარიანტების გახსნა</translation>
 <translation id="4842092870884894799">პაროლების გენერირების კონტექსტური ფანჯრის ჩვენება</translation>
 <translation id="4860895144060829044">დარეკვა</translation>
@@ -519,6 +524,7 @@
 <translation id="5342314432463739672">ნებართვების მოთხოვნები</translation>
 <translation id="5357811892247919462">ჩანართი მიღებულია</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{გახსნილია <ph name="OPEN_TABS_ONE" /> ჩანართი, შეეხეთ ჩანართებს შორის გადასართველად}other{გახსნილია <ph name="OPEN_TABS_MANY" /> ჩანართი, შეეხეთ ჩანართებს შორის გადასართველად}}</translation>
+<translation id="5384883051496921101">ეს საიტი აპირებს ინფორმაციის გაზიარებას აპთან ინკოგნიტო რეჟიმის გარეთ.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ 1 სხვა)}other{(+ # სხვა)}}</translation>
 <translation id="5403592356182871684">სახელები</translation>
 <translation id="5403644198645076998">მხოლოდ კონკრეტული საიტების დაშვება</translation>
@@ -559,6 +565,7 @@
 <translation id="5659593005791499971">ელფოსტა</translation>
 <translation id="5665379678064389456">მოვლენის <ph name="APP_NAME" />-ში შექმნა</translation>
 <translation id="5668404140385795438">ვებსაიტის მიერ მასშტაბირების აკრძალვის გაუქმება</translation>
+<translation id="5681394891799747640">QR კოდის ჩამოტვირთვა ვერ ხერხდება</translation>
 <translation id="5684874026226664614">ამ გვერდის გადათარგმნა ვერ მოხერხდა.</translation>
 <translation id="5686790454216892815">ფაილის სახელი მეტისმეტად გრძელია</translation>
 <translation id="5694049548840660018">მარტივად დაბრუნდით მთავარ გვერდზე</translation>
@@ -607,6 +614,7 @@
 <translation id="6042308850641462728">სხვა</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> ვერ ჩამოიტვირთა უცნობი შეცდომის გამო.</translation>
 <translation id="605721222689873409">წწ</translation>
+<translation id="6059830886158432458">აქ შეგიძლიათ მართოთ ამბები და აქტივობა</translation>
 <translation id="60923314841986378">დარჩენილია <ph name="HOURS" /> საათი</translation>
 <translation id="6108923351542677676">მიმდინარეობს დაყენება…</translation>
 <translation id="6111020039983847643">მოხმარებული მონაცემები</translation>
@@ -630,6 +638,7 @@
 <translation id="629730747756840877">ანგარიში</translation>
 <translation id="6297765934698848803">თქვენი მოწყობილობის მმართველმა ორგანიზაციამ გამორთო თქვენი კამერა.</translation>
 <translation id="6303969859164067831">გამოსვლა და სინქრონიზაციის გამორთვა</translation>
+<translation id="6312687380483398334">ვებ-აპები (ჩუმი)</translation>
 <translation id="6316139424528454185">Android-ის ვერსია მხარდაუჭერელია</translation>
 <translation id="6324034347079777476">Android სისტემის სინქრონიზაცია გათიშულია</translation>
 <translation id="6333140779060797560">გაზიარების პროგრამა: <ph name="APPLICATION" /></translation>
@@ -674,6 +683,7 @@
 <translation id="6593061639179217415">დესკტოპის საიტი</translation>
 <translation id="6597891566292541626">მოათავსეთ QR/შტრიხკოდი ამ ჩარჩოში.</translation>
 <translation id="6600954340915313787">დაკოპირდა Chrome-ში</translation>
+<translation id="662080504995468778">დარჩენა</translation>
 <translation id="6627583120233659107">საქაღალდის რედაქტირება</translation>
 <translation id="6643016212128521049">გასუფთავება</translation>
 <translation id="6643649862576733715">დალაგება დაზოგილი მონაცემების მიხედვით</translation>
@@ -790,6 +800,7 @@
 <translation id="7605594153474022051">სინქრონიზაცია არ მუშაობს</translation>
 <translation id="7606077192958116810">Lite რეჟიმი ჩართულია. მისი მართვა შეგიძლიათ პარამეტრებიდან.</translation>
 <translation id="7612619742409846846">Google-ში შესულია:</translation>
+<translation id="7614971007231847352">QR კოდი ჩამოტვირთულია</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> ვერ ჩამოიტვირთა ქსელთან დაკავშირებული პრობლემების გამო.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />დახმარების მიღება<ph name="END_LINK1" /> ან <ph name="BEGIN_LINK2" />ხელახლა სკანირება<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">მოგესალმებათ Chrome!</translation>
@@ -817,6 +828,7 @@
 <translation id="7821588508402923572">აქ გამოჩნდება ინტერნეტის ტრაფიკის თქვენ მიერ დაზოგილი მოცულობა</translation>
 <translation id="7835852323729233924">გაშვებული მედია</translation>
 <translation id="783819812427904514">ვიდეოს დადუმების მოხსნა</translation>
+<translation id="7846296061357476882">Google სერვისები</translation>
 <translation id="784934925303690534">დროის დიაპაზონი</translation>
 <translation id="7851858861565204677">სხვა მოწყობილობები</translation>
 <translation id="7875915731392087153">ელფოსტის შექმნა</translation>
@@ -945,6 +957,7 @@
 <translation id="8922289737868596582">ჩამოტვირთეთ გვერდები ხაზგარეშე რეჟიმში გამოსაყენებლად, „დამატებითი ვარიანტების“ ღილაკის მეშვეობით</translation>
 <translation id="8937772741022875483">გსურთ, ციფრული კომფორტიდან ამოშალოთ თქვენი აქტივობა Chrome-ში?</translation>
 <translation id="8942627711005830162">სხვა ფანჯარაში გახსნა</translation>
+<translation id="894871326938397531">გსურთ ინკოგნიტო რეჟიმიდან გამოსვლა?</translation>
 <translation id="8951232171465285730">Chrome-ის მეშვეობით თქვენ <ph name="MEGABYTES" /> მბაიტი დაზოგეთ</translation>
 <translation id="8965591936373831584">მომლოდინე</translation>
 <translation id="8970887620466824814">წარმოიქმნა შეფერხება.</translation>

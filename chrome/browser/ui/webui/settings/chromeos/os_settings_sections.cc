@@ -131,6 +131,8 @@ OsSettingsSections::OsSettingsSections(
   sections_.push_back(std::move(about_section));
 }
 
+OsSettingsSections::OsSettingsSections() = default;
+
 OsSettingsSections::~OsSettingsSections() = default;
 
 const OsSettingsSection* OsSettingsSections::GetSection(

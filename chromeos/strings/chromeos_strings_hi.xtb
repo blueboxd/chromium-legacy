@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">पूरा करने के लिए, पुराना और नया पासवर्ड डालें</translation>
 <translation id="6106186594183574873">पूरा करने के लिए, पुराना पासवर्ड डालें</translation>
 <translation id="6146993107019042706">खत्म करने के लिए, नया पासवर्ड डालें</translation>
+<translation id="6517239166834772319">Explore</translation>
 <translation id="6643016212128521049">साफ़ करें</translation>
 <translation id="7162487448488904999">गैलरी</translation>
 <translation id="7658239707568436148">अभी नहीं</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">स्थिति</translation>
 <translation id="808894953321890993">पासवर्ड बदलें</translation>
 <translation id="8208861521865154048">फ़ायदे</translation>
+<translation id="8701136875688985581">इस उपयोगकर्ता को <ph name="ENROLLMENT_DOMAIN" /> प्रबंधित करता है. यह दूर से सेटिंग प्रबंधित कर सकता है. साथ ही, उपयोगकर्ता गतिविधि की निगरानी कर सकता है.</translation>
 <translation id="8747900814994928677">बदलाव की पुष्टि करें</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> बार और कोशिश कर सकते हैं</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> के लिए टिकट रीफ़्रेश करें</translation>

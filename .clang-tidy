@@ -4,17 +4,28 @@
                     google-build-explicit-make-pair,
                     google-explicit-constructor,
                     google-readability-casting,
+                    modernize-avoid-bind,
                     modernize-loop-convert,
                     modernize-make-shared,
+                    modernize-make-unique,
                     modernize-redundant-void-arg,
                     modernize-replace-random-shuffle,
                     modernize-shrink-to-fit,
                     modernize-use-bool-literals,
+                    modernize-use-default-member-init,
+                    modernize-use-emplace,
                     modernize-use-equals-default,
                     modernize-use-equals-delete,
+                    modernize-use-noexcept,
                     modernize-use-nullptr,
                     modernize-use-override,
                     modernize-use-transparent-functors,
                     readability-redundant-member-init'
+  CheckOptions:
+    # This relaxes modernize-use-emplace in some cases; we might want to make it
+    # more aggressive in the future. See discussion on
+    # https://groups.google.com/a/chromium.org/g/cxx/c/noMMTNYiM0w .
+    - key:          modernize-use-emplace.IgnoreImplicitConstructors
+      value:        1
 ...
 

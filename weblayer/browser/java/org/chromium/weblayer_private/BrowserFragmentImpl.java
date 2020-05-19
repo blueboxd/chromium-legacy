@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.ContextThemeWrapper;
 import android.view.View;
+import android.view.ViewGroup;
 
 import org.chromium.components.browser_ui.styles.R;
 import org.chromium.components.embedder_support.application.ClassLoaderContextWrapperFactory;
@@ -73,7 +74,7 @@ public class BrowserFragmentImpl extends RemoteFragmentImpl {
     }
 
     @Override
-    public View onCreateView() {
+    public View onCreateView(ViewGroup container, Bundle savedInstanceState) {
         StrictModeWorkaround.apply();
         return mBrowser.getFragmentView();
     }

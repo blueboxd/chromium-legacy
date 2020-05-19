@@ -1345,7 +1345,6 @@
 <translation id="2673135533890720193">Կարդալ ձեր զննարկման պատմությունը</translation>
 <translation id="2673589024369449924">Ստեղծել աշխատասեղանի դյուրանցում այս պրոֆիլի համար</translation>
 <translation id="2674764818721168631">Անջատված է</translation>
-<translation id="2677748264148917807">Դուրս գալ էջից</translation>
 <translation id="2678063897982469759">Նորից միացնել</translation>
 <translation id="268053382412112343">Պատ&amp;մություն</translation>
 <translation id="2682498795777673382">Ծնողը փոխել է կարգավորումները</translation>
@@ -3000,7 +2999,6 @@
 <translation id="4830573902900904548">Ձեր <ph name="DEVICE_TYPE" /> սարքը չի կարողանում կապակցվել համացանցին <ph name="NETWORK_NAME" />-ի միջոցով: Ընտրեք այլ ցանց: <ph name="LEARN_MORE_LINK_START" />Մանրամասն<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Ինչ նոր բան կա Chromebook-ում</translation>
 <translation id="4833683849865011483">Տպման սերվերում գտնվել է 1 տպիչ։</translation>
-<translation id="4835385943915508971">Հարցված ռեսուրսը հասանելի չէ Chrome-ին:</translation>
 <translation id="4836504898754963407">Մատնահետքերի կառավարում</translation>
 <translation id="4837926214103741331">Դուք այս սարքից օգտվելու իրավունք չունեք: Մուտք գործելու թույլտվության համար դիմեք սարքի սեփականատիրոջը:</translation>
 <translation id="4837952862063191349">Տեղական տվյալներն ապակողպելու և վերականգնելու համար մուտքագրեք նախկին <ph name="DEVICE_TYPE" /> սարքի գաղտնաբառը:</translation>
@@ -3422,7 +3420,6 @@
 <translation id="5379140238605961210">Շարունակել արգելափակել խոսափողի օգտագործումը</translation>
 <translation id="5382591305415226340">Կառավարել աջակցվող հղումները</translation>
 <translation id="5383377866517186886">Տեսախցիկն անջատած է Mac-ի համակարգի կարգավորումներում</translation>
-<translation id="5384883051496921101">Այս կայքը պատրաստվում է ուղարկել տվյալները մի հավելվածի, որն ինկոգնիտո ռեժիմից դուրս է գտնվում։</translation>
 <translation id="5388885445722491159">Զուգակցված է</translation>
 <translation id="5389237414310520250">Չհաջողվեց ստեղծել նոր պրոֆիլ: Ստուգեք ձեր կոշտ սկավառակի տարածքն ու թույլտվությունները և նորից փորձեք:</translation>
 <translation id="5390100381392048184">Թույլատրել կայքերին նվագարկել ձայն</translation>
@@ -4376,7 +4373,6 @@
 <translation id="661907246513853610">Կայքը կարող է իմանալ ձեր գտնվելու վայրը</translation>
 <translation id="6619801788773578757">Ավելացնել կրպակ-հավելված</translation>
 <translation id="6619990499523117484">Հաստատեք ձեր PIN կոդը</translation>
-<translation id="662080504995468778">Մնալ կայքում</translation>
 <translation id="6621715389962683284">Չհաջողվեց միանալ։</translation>
 <translation id="6622980291894852883">Շարունակել պատկերների արգելափակումը</translation>
 <translation id="6624535038674360844">«<ph name="FILE_NAME" />» ֆայլը պարունակում է խիստ անձնական կամ վտանգավոր բովանդակություն։ Խնդրեք սեփականատիրոջը շտկել այդ խնդիրը։</translation>
@@ -6205,7 +6201,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> հավելվածը կիսվում է պատուհանով <ph name="TAB_NAME" />-ի հետ:</translation>
 <translation id="8945274638472141382">Պատկերակների չափը</translation>
 <translation id="8946359700442089734">Վրիպազերծման գործառույթները լրիվ միացված չեն այս <ph name="IDS_SHORT_PRODUCT_NAME" /> սարքի վրա:</translation>
-<translation id="894871326938397531">Դուրս գա՞լ ինկոգնիտո ռեժիմից</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> կայքին անհրաժեշտ է տեսնել անվտանգության բանալու արտադրողի և մոդելի անունը:</translation>
 <translation id="8951256747718668828">Չհաջողվեց վերականգնել սխալի պատճառով</translation>
 <translation id="8951465597020890363">Փակե՞լ հյուրի ռեժիմը։</translation>

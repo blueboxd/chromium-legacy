@@ -52,17 +52,9 @@ void AddEduStrings(content::WebUIDataSource* source,
   source->AddLocalizedString("backButton", IDS_EDU_LOGIN_BACK);
   source->AddLocalizedString("nextButton", IDS_EDU_LOGIN_NEXT);
 
-  source->AddLocalizedString("welcomeTitle", IDS_EDU_LOGIN_WELCOME_TITLE);
-  source->AddLocalizedString("welcomeBody", IDS_EDU_LOGIN_WELCOME_BODY);
-  source->AddLocalizedString("welcomeReauthTitle",
-                             IDS_EDU_LOGIN_WELCOME_REAUTH_TITLE);
-  source->AddLocalizedString("welcomeReauthBody",
-                             IDS_EDU_LOGIN_WELCOME_REAUTH_BODY);
-  source->AddLocalizedString("parentsListTitle",
-                             IDS_EDU_LOGIN_PARENTS_LIST_TITLE);
-  source->AddLocalizedString("parentsListBody",
-                             IDS_EDU_LOGIN_PARENTS_LIST_BODY);
-
+  source->AddLocalizedString("parentsListTitle", IDS_EDU_LOGIN_WELCOME_TITLE_2);
+  source->AddLocalizedString("parentsListBody", IDS_EDU_LOGIN_WELCOME_BODY_2);
+  source->AddLocalizedString("reauthBody", IDS_EDU_LOGIN_WELCOME_REAUTH_BODY);
   source->AddLocalizedString("parentSigninTitle",
                              IDS_EDU_LOGIN_PARENT_SIGNIN_TITLE);
   source->AddString(
@@ -131,7 +123,6 @@ content::WebUIDataSource* CreateWebUIDataSource() {
     {"icons.js", IDR_EDU_LOGIN_ICONS_JS},
     {"browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS},
     {"edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS},
-    {"edu_login_welcome.js", IDR_EDU_LOGIN_EDU_LOGIN_WELCOME_JS},
     {"edu_login_parents.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS},
     {"edu_login_parent_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS},
     {"edu_login_parent_info.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS},

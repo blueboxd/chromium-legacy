@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_state.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -154,7 +155,8 @@ void LayoutTableRow::AddChild(LayoutObject* child, LayoutObject* before_child) {
       return;
     }
 
-    LayoutTableCell* cell = LayoutTableCell::CreateAnonymousWithParent(this);
+    LayoutBlockFlow* cell =
+        LayoutObjectFactory::CreateAnonymousTableCellWithParent(*this);
     AddChild(cell, before_child);
     cell->AddChild(child);
     return;
@@ -284,15 +286,9 @@ LayoutTableRow* LayoutTableRow::CreateAnonymous(Document* document) {
   return layout_object;
 }
 
-LayoutTableRow* LayoutTableRow::CreateAnonymousWithParent(
-    const LayoutObject* parent) {
-  LayoutTableRow* new_row =
-      LayoutTableRow::CreateAnonymous(&parent->GetDocument());
-  scoped_refptr<ComputedStyle> new_style =
-      ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
-                                                     EDisplay::kTableRow);
-  new_row->SetStyle(std::move(new_style));
-  return new_row;
+LayoutBox* LayoutTableRow::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableRowWithParent(*parent);
 }
 
 void LayoutTableRow::ComputeLayoutOverflow() {

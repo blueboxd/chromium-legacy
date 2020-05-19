@@ -23,6 +23,8 @@ using base::BindOnce;
 using base::MockCallback;
 using base::Unretained;
 using testing::_;
+using testing::ByMove;
+using testing::Return;
 using testing::StrictMock;
 using testing::WithArg;
 
@@ -46,16 +48,6 @@ PasswordForm CreateForm(base::StringPiece origin,
   form.password_value = ASCIIToUTF16(password);
   form.signon_realm = form.origin.GetOrigin().spec();
   return form;
-}
-
-// Used to mimic the callback of the |PasswordStore|.  Converts the vector of
-// |PasswordForm|s to a vector of unique pointers to |PasswordForm|s.
-ACTION_P(InvokeConsumerWithPasswordForms, forms) {
-  std::vector<std::unique_ptr<PasswordForm>> results;
-  for (const auto& form : forms) {
-    results.push_back(std::make_unique<PasswordForm>(form));
-  }
-  arg0->OnGetPasswordStoreResults(std::move(results));
 }
 
 }  // namespace
@@ -84,14 +76,18 @@ class LeakDetectionDelegateHelperTest : public testing::Test {
     delegate_helper_->ProcessLeakedPassword(GURL(kLeakedOrigin),
                                             ASCIIToUTF16(kLeakedUsername),
                                             ASCIIToUTF16(kLeakedPassword));
+    task_environment_.RunUntilIdle();
   }
 
   // Sets the |PasswordForm|s which are retrieve from the |PasswordStore|.
   void SetGetLoginByPasswordConsumerInvocation(
       std::vector<PasswordForm> password_forms) {
-    EXPECT_CALL(*store_.get(), GetLoginsByPassword(_, _))
-        .WillRepeatedly(
-            WithArg<1>(InvokeConsumerWithPasswordForms(password_forms)));
+    std::vector<std::unique_ptr<PasswordForm>> results;
+    for (auto& form : password_forms) {
+      results.push_back(std::make_unique<PasswordForm>(std::move(form)));
+    }
+    EXPECT_CALL(*store_, FillMatchingLoginsByPassword)
+        .WillOnce(Return(ByMove(std::move(results))));
   }
 
   // Set the expectation for the |CredentialLeakType| in the callback_.
@@ -204,7 +200,6 @@ TEST_F(LeakDetectionDelegateHelperTest, SaveLeakedCredentials) {
                            ASCIIToUTF16(kLeakedUsername), base::Time::Now(),
                            CompromiseType::kLeaked}));
   InitiateGetCredentialLeakType();
-  task_environment_.RunUntilIdle();
 }
 
 // Credential with the same canonicalized username marked as leaked.
@@ -221,7 +216,6 @@ TEST_F(LeakDetectionDelegateHelperTest, SaveLeakedCredentialsCanonicalized) {
                            ASCIIToUTF16(kLeakedUsernameNonCanonicalized),
                            base::Time::Now(), CompromiseType::kLeaked}));
   InitiateGetCredentialLeakType();
-  task_environment_.RunUntilIdle();
 }
 
 }  // namespace password_manager

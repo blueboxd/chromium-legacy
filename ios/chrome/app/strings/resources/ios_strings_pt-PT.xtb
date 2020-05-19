@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1650222530560417226">Toque no botão "Iniciar o registo" para recolher futuros registos da consola de JavaScript e erros de todos os separadores. Os registos serão recolhidos (e armazenados apenas na memória) até fechar esta página ou tocar em "Parar o registo".</translation>
 <translation id="1657011748321897393">A partilha falhou porque não está ligado à rede.</translation>
+<translation id="1657641691196698092">Cookies bloqueados</translation>
 <translation id="165877110639533037">Sem separadores abertos</translation>
 <translation id="1674504678466460478">De <ph name="SOURCE_LANGUAGE" /> para <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Para obter os seus marcadores em todos os dispositivos, ative a sincronização.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Uma política do dispositivo bloqueou o acesso às suas fotos</translation>
 <translation id="2578571896248130439">Envie a página Web</translation>
 <translation id="2584132361465095047">Adicionar conta...</translation>
+<translation id="2600682495497606169">Limpar cookies de sites</translation>
 <translation id="2625189173221582860">Palavra-passe copiada</translation>
 <translation id="2647269890314209800">Cookies em utilização</translation>
 <translation id="2648803196158606475">Eliminar lidas</translation>
@@ -332,6 +334,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5234764350956374838">Ignorar</translation>
 <translation id="5245322853195994030">Cancelar sincronização</translation>
 <translation id="5271549068863921519">Guardar palavra-passe</translation>
+<translation id="5295239312320826323">Pretende remover a conta <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
@@ -418,6 +421,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="6362362396625799311">Sem separadores de navegação anónima</translation>
 <translation id="6363526231572697780">Sem nome de utilizador</translation>
 <translation id="6374469231428023295">Tentar novamente</translation>
+<translation id="6377118281273296434">Segurança do site</translation>
 <translation id="6380866119319257197">Se se esquecer da frase de acesso ou pretender alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome no cartão</translation>
 <translation id="6406506848690869874">Sincronização</translation>
@@ -525,11 +529,13 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 
 Uma vez que a sua conta é gerida pelo domínio <ph name="HOSTED_DOMAIN" />, os dados do Chrome serão eliminados deste dispositivo quando terminar sessão. Os seus dados sincronizados permanecem na sua Conta Google.</translation>
 <translation id="7772032839648071052">Confirmar frase de acesso</translation>
+<translation id="7778472311864276518">Remova a conta deste dispositivo</translation>
 <translation id="7781011649027948662">Pretende traduzir a página?</translation>
 <translation id="7781829728241885113">Ontem</translation>
 <translation id="778855399387580014">Inicie uma pesquisa no novo separador do Chrome.</translation>
 <translation id="7791543448312431591">Adicionar</translation>
 <translation id="7828557259026017104">Os cookies são ficheiros criados pelos Websites que visitou. Os sites utilizam os cookies para memorizar as suas preferências. Os cookies de terceiros são criados por outros sites. Estes sites possuem algum do conteúdo, tal como anúncios ou imagens, que vê na página Web que visita.</translation>
+<translation id="7839985698273989086">Página offline</translation>
 <translation id="7840771868269352570">Os itens selecionados serão removidos.</translation>
 <translation id="7856733331829174190">Impossível transferir</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>

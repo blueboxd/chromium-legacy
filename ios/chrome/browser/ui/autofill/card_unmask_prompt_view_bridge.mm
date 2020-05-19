@@ -213,18 +213,7 @@ void CardUnmaskPromptViewBridge::DeleteSelf() {
   _CVCItem.instructionsText = instructions;
   _CVCItem.CVCImageResourceID = CVCImageResourceID;
   [model addItem:_CVCItem toSectionWithIdentifier:SectionIdentifierMain];
-
-  if (controller->CanStoreLocally()) {
-    _storageSwitchItem =
-        [[CollectionViewSwitchItem alloc] initWithType:ItemTypeStorageSwitch];
-    _storageSwitchItem.text = l10n_util::GetNSString(
-        IDS_AUTOFILL_CARD_UNMASK_PROMPT_STORAGE_CHECKBOX);
-    _storageSwitchItem.on = controller->GetStoreLocallyStartState();
-    [model addItem:_storageSwitchItem
-        toSectionWithIdentifier:SectionIdentifierMain];
-  } else {
-    _storageSwitchItem = nil;
-  }
+  _storageSwitchItem = nil;
 
   // No status item when loading the model.
   _statusItem = nil;

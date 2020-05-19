@@ -152,6 +152,7 @@
 <translation id="218608176142494674">షేరింగ్</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" />గా కొనసాగించు</translation>
 <translation id="2234876718134438132">సింక్ మరియు Google సేవలు</translation>
+<translation id="2239812875700136898">Discover ఆప్షన్‌ల బటన్ కోసం మీ కథనాలను నియంత్రించండి</translation>
 <translation id="2259659629660284697">పాస్‌వర్డ్‌లను ఎగుమతి చేయండి…</translation>
 <translation id="2268044343513325586">మరింత మెరుగుపరచండి</translation>
 <translation id="2286841657746966508">బిల్లింగ్ చిరునామా</translation>
@@ -203,6 +204,7 @@
 <translation id="2647434099613338025">భాషను జోడించు</translation>
 <translation id="2650751991977523696">ఫైల్‌ను మళ్లీ డౌన్‌లోడ్ చేయాలా?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ఆడియో ఫైల్}other{# ఆడియో ఫైల్‌లు}}</translation>
+<translation id="2677748264148917807">నిష్క్రమించు</translation>
 <translation id="2689830683995595741">Chromeను ఉపయోగించడం ద్వారా, మీరు <ph name="BEGIN_LINK1" />Google సేవా నిబంధనలు<ph name="END_LINK1" />, అలాగే <ph name="BEGIN_LINK2" />Google Chrome, Chrome OS అదనపు సేవా నిబంధనలు<ph name="END_LINK2" />కు అంగీకరిస్తున్నారు. <ph name="BEGIN_LINK3" />Family Linkతో మేనేజ్ చేస్తున్న Google ఖాతాల కోసం గోప్యతా ప్రకటన<ph name="END_LINK3" /> కూడా వర్తిస్తుంది.</translation>
 <translation id="2707726405694321444">పేజీని రిఫ్రెష్ చేయండి</translation>
 <translation id="2709516037105925701">స్వయంపూర్తి</translation>
@@ -454,6 +456,7 @@
 <translation id="4807098396393229769">కార్డ్‌పై పేరు</translation>
 <translation id="4808319664292298116"><ph name="DOMAIN" /> నుండి VR మోడ్‌లోకి ప్రవేశించాలా?</translation>
 <translation id="4824958205181053313">సింక్‌ను రద్దు చేయాలా?</translation>
+<translation id="4835385943915508971">Chrome అభ్యర్థించిన వనరుకు యాక్సెస్ కలిగి లేదు.</translation>
 <translation id="4837753911714442426">పేజీని ముద్రించడానికి ఎంపికలను తెరవండి</translation>
 <translation id="4842092870884894799">పాస్‌వర్డ్ ఉత్పత్తి పాప్ అప్ చూపబడుతోంది</translation>
 <translation id="4860895144060829044">కాల్ చేయండి</translation>
@@ -518,6 +521,7 @@
 <translation id="5342314432463739672">అనుమతి అభ్యర్థనలు</translation>
 <translation id="5357811892247919462">ట్యాబ్‌ను అందుకున్నారు</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ట్యాబ్ తెరవబడి ఉంది, ట్యాబ్‌లను మార్చడం కోసం నొక్కండి}other{<ph name="OPEN_TABS_MANY" /> ట్యాబ్‌లు తెరవబడి ఉన్నాయి, ట్యాబ్‌లను మార్చడం కోసం నొక్కండి}}</translation>
+<translation id="5384883051496921101">ఈ సైట్ అజ్ఞాత మోడ్ వెలుపల ఉన్న ఒక యాప్‌తో సమాచారాన్ని షేర్ చేయబోతోంది.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ మరో 1)}other{(+ మరో #)}}</translation>
 <translation id="5403592356182871684">పేర్లు</translation>
 <translation id="5403644198645076998">నిర్దిష్ట సైట్‌లను మాత్రమే అనుమతించండి</translation>
@@ -673,6 +677,7 @@
 <translation id="6593061639179217415">డెస్క్‌టాప్ సైట్</translation>
 <translation id="6597891566292541626">QR/బార్ కోడ్‌ను ఈ ఫ్రేమ్‌లో ఉంచండి.</translation>
 <translation id="6600954340915313787">Chromeకి కాపీ చేయబడింది</translation>
+<translation id="662080504995468778">ఇందులోనే ఉంచు</translation>
 <translation id="6627583120233659107">ఫోల్డర్‌ను సవరించు</translation>
 <translation id="6643016212128521049">క్లియర్ చేయి</translation>
 <translation id="6643649862576733715">సేవ్ చేసిన డేటా పరిమాణం ద్వారా క్రమీకరించు</translation>
@@ -944,6 +949,7 @@
 <translation id="8922289737868596582">మరిన్ని ఎంపికలు బటన్ నుండి పేజీలను డౌన్‌లోడ్ చేసుకోవడం ద్వారా వాటిని ఆఫ్‌లైన్‌లో ఉపయోగించండి</translation>
 <translation id="8937772741022875483">డిజిటల్ సంక్షేమం నుండి మీ Chrome కార్యకలాపం తీసివేయాలా?</translation>
 <translation id="8942627711005830162">మరొక విండోలో తెరువు</translation>
+<translation id="894871326938397531">అజ్ఞాత మోడ్ నుండి నిష్క్రమించాలా?</translation>
 <translation id="8951232171465285730">Chrome మీకు <ph name="MEGABYTES" /> MB ఆదా చేసింది</translation>
 <translation id="8965591936373831584">పెండింగ్‌లో ఉంది</translation>
 <translation id="8970887620466824814">ఏదో తప్పు జరిగింది.</translation>

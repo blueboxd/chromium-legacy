@@ -199,6 +199,7 @@ android_library("java") {
     "//content/public/android:content_java_resources",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_deps:androidx_legacy_legacy_support_v13_java",
     "//third_party/android_deps:androidx_lifecycle_lifecycle_common_java",

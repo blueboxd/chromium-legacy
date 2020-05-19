@@ -626,7 +626,7 @@ void QuicTransport::Init(const String& url, ExceptionState& exception_state) {
   auto* execution_context = GetExecutionContext();
 
   if (!execution_context->GetContentSecurityPolicyForWorld()
-           ->AllowConnectToSource(url_)) {
+           ->AllowConnectToSource(url_, url_, RedirectStatus::kNoRedirect)) {
     // TODO(ricea): This error should probably be asynchronous like it is for
     // WebSockets and fetch.
     exception_state.ThrowSecurityError(

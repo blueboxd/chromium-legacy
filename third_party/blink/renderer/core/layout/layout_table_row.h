@@ -84,11 +84,8 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent,
   }
 
   static LayoutTableRow* CreateAnonymous(Document*);
-  static LayoutTableRow* CreateAnonymousWithParent(const LayoutObject*);
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
-      const LayoutObject* parent) const override {
-    return CreateAnonymousWithParent(parent);
-  }
+      const LayoutObject* parent) const override;
 
   void SetRowIndex(unsigned row_index) {
     CHECK_LE(row_index, kMaxRowIndex);

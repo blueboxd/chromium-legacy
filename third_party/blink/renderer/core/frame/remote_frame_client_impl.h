@@ -49,7 +49,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                          const IntRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override;
-  void AdvanceFocus(mojom::blink::FocusType, LocalFrame*) override;
   uint32_t Print(const IntRect&, cc::PaintCanvas*) const override;
 
   WebRemoteFrameImpl* GetWebFrame() const { return web_frame_; }

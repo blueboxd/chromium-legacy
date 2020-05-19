@@ -9,6 +9,7 @@
 #include "content/common/content_export.h"
 #include "content/common/input/input_handler.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_context.mojom.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 
 namespace blink {

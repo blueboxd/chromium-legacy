@@ -160,19 +160,17 @@ bool GetWindowManagerName(std::string* wm_name) {
 }
 
 unsigned int GetMaxCursorSize() {
-  // Although XQueryBestCursor() takes unsigned ints, the width and height will
-  // be sent over the wire as 16 bit integers.
   constexpr unsigned int kQuerySize = std::numeric_limits<uint16_t>::max();
-  XDisplay* display = gfx::GetXDisplay();
-  unsigned int width = 0;
-  unsigned int height = 0;
-  XQueryBestCursor(display, DefaultRootWindow(display), kQuerySize, kQuerySize,
-                   &width, &height);
-  unsigned int min_dimension = std::min(width, height);
+  auto* connection = x11::Connection::Get();
+  x11::XProto::QueryBestSizeRequest request{
+      x11::XProto::QueryShapeOf::LargestCursor,
+      static_cast<x11::Window>(GetX11RootWindow()), kQuerySize, kQuerySize};
+  if (auto response = connection->QueryBestSize(request).Sync())
+    return std::min(response->width, response->height);
   // libXcursor defines MAX_BITMAP_CURSOR_SIZE to 64 in src/xcursorint.h, so use
   // this as a fallback in case the X server returns zero size, which can happen
   // on some buggy implementations of XWayland/XMir.
-  return min_dimension > 0 ? min_dimension : 64;
+  return 64;
 }
 
 // A process wide singleton cache for custom X cursors.
@@ -485,11 +483,10 @@ void SetUseOSWindowFrame(XID window, bool use_os_window_frame) {
   motif_hints.flags = (1L << 1);
   motif_hints.decorations = use_os_window_frame ? 1 : 0;
 
-  auto hint_atom = static_cast<uint32_t>(gfx::GetAtom("_MOTIF_WM_HINTS"));
-  XChangeProperty(gfx::GetXDisplay(), window, hint_atom, hint_atom, 32,
-                  PropModeReplace,
-                  reinterpret_cast<unsigned char*>(&motif_hints),
-                  sizeof(MotifWmHints) / sizeof(long));
+  std::vector<uint32_t> hints(sizeof(MotifWmHints) / sizeof(uint32_t));
+  memcpy(hints.data(), &motif_hints, sizeof(MotifWmHints));
+  x11::Atom hint_atom = gfx::GetAtom("_MOTIF_WM_HINTS");
+  SetArrayProperty(window, hint_atom, hint_atom, hints);
 }
 
 bool IsShapeExtensionAvailable() {
@@ -533,10 +530,10 @@ void ClearX11DefaultRootWindow() {
 bool IsWindowVisible(XID window) {
   TRACE_EVENT0("ui", "IsWindowVisible");
 
-  XWindowAttributes win_attributes;
-  if (!XGetWindowAttributes(gfx::GetXDisplay(), window, &win_attributes))
-    return false;
-  if (win_attributes.map_state != IsViewable)
+  auto x11_window = static_cast<x11::Window>(window);
+  auto* connection = x11::Connection::Get();
+  auto response = connection->GetWindowAttributes({x11_window}).Sync();
+  if (!response || response->map_state != x11::XProto::MapState::Viewable)
     return false;
 
   // Minimized windows are not visible.
@@ -556,21 +553,22 @@ bool IsWindowVisible(XID window) {
 }
 
 bool GetInnerWindowBounds(XID window, gfx::Rect* rect) {
-  Window root, child;
-  int x, y;
-  unsigned int width, height;
-  unsigned int border_width, depth;
+  auto x11_window = static_cast<x11::Window>(window);
+  auto root = static_cast<x11::Window>(GetX11RootWindow());
 
-  if (!XGetGeometry(gfx::GetXDisplay(), window, &root, &x, &y, &width, &height,
-                    &border_width, &depth))
+  x11::Connection* connection = x11::Connection::Get();
+  auto get_geometry = connection->GetGeometry({x11_window});
+  auto translate_coords = connection->TranslateCoordinates({x11_window, root});
+
+  // Sync after making both requests so only one round-trip is made.
+  auto geometry = get_geometry.Sync();
+  auto coords = translate_coords.Sync();
+
+  if (!geometry || !coords)
     return false;
 
-  if (!XTranslateCoordinates(gfx::GetXDisplay(), window, root, 0, 0, &x, &y,
-                             &child))
-    return false;
-
-  *rect = gfx::Rect(x, y, width, height);
-
+  *rect = gfx::Rect(coords->dst_x, coords->dst_y, geometry->width,
+                    geometry->height);
   return true;
 }
 
@@ -901,12 +899,7 @@ std::string GetX11ErrorString(XDisplay* display, int err) {
 
 // Returns true if |window| is a named window.
 bool IsWindowNamed(XID window) {
-  XTextProperty prop;
-  if (!XGetWMName(gfx::GetXDisplay(), window, &prop) || !prop.value)
-    return false;
-
-  XFree(prop.value);
-  return true;
+  return PropertyExists(window, "WM_NAME");
 }
 
 bool EnumerateChildren(EnumerateWindowsDelegate* delegate,
@@ -1123,8 +1116,8 @@ gfx::ICCProfile GetICCProfileForMonitor(int monitor) {
                               ? "_ICC_PROFILE"
                               : base::StringPrintf("_ICC_PROFILE_%d", monitor);
   std::vector<uint8_t> data;
-  if (GetRawBytesOfProperty(DefaultRootWindow(gfx::GetXDisplay()),
-                            gfx::GetAtom(atom_name), &data, nullptr)) {
+  if (GetRawBytesOfProperty(GetX11RootWindow(), gfx::GetAtom(atom_name), &data,
+                            nullptr)) {
     icc_profile = gfx::ICCProfile::FromData(data.data(), data.size());
   }
   return icc_profile;
@@ -1409,9 +1402,8 @@ XVisualManager::XVisualData::XVisualData(XVisualInfo visual_info)
 XVisualManager::XVisualData::~XVisualData() = default;
 
 Colormap XVisualManager::XVisualData::GetColormap() {
-  XDisplay* display = gfx::GetXDisplay();
   if (colormap_ == static_cast<int>(x11::XProto::WindowClass::CopyFromParent)) {
-    colormap_ = XCreateColormap(display, DefaultRootWindow(display),
+    colormap_ = XCreateColormap(gfx::GetXDisplay(), GetX11RootWindow(),
                                 visual_info.visual, AllocNone);
   }
   return colormap_;

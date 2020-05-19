@@ -72,7 +72,6 @@ media::mojom::MediaService& GetMediaService() {
         std::move(receiver),
         ServiceProcessHost::Options()
             .WithDisplayName("Media Service")
-            .WithSandboxType(service_manager::SANDBOX_TYPE_UTILITY)
             .Pass());
     remote.reset_on_idle_timeout(kIdleTimeout);
 #endif

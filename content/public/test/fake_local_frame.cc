@@ -107,6 +107,9 @@ void FakeLocalFrame::GetFirstRectForRange(const gfx::Range& range) {}
 void FakeLocalFrame::BindReportingObserver(
     mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) {}
 
+void FakeLocalFrame::UpdateOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame_token) {}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

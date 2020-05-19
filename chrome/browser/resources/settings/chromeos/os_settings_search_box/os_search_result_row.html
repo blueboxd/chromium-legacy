@@ -26,6 +26,10 @@
         background-color: var(--cros-menu-button-bg-color-hover);
       }
 
+      :host-context([dir=rtl]) #actionTypeIcon {
+        transform: scaleX(-1);  /* Invert X: flip on the Y axis (aka mirror). */
+      }
+
       [focus-row-container] {
         width: inherit;
       }

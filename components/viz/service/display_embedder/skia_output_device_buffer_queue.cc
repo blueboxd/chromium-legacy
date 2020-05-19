@@ -140,6 +140,8 @@ class SkiaOutputDeviceBufferQueue::Image {
       };
       scoped_skia_write_access_->surface()->flush(
           SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+      DCHECK(scoped_skia_write_access_->surface()->getContext());
+      scoped_skia_write_access_->surface()->getContext()->submit();
     }
     scoped_skia_write_access_.reset();
     end_semaphores_.clear();

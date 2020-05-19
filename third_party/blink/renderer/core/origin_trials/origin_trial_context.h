@@ -73,6 +73,11 @@ class CORE_EXPORT OriginTrialContext final
       const Vector<OriginTrialFeature>*);
 
   void AddToken(const String& token);
+  // Add Token injected from external script. The token may be a third-party
+  // token, which will be validated against the given origin of the injecting
+  // script.
+  void AddTokenFromExternalScript(const String& token,
+                                  const SecurityOrigin* origin);
   void AddTokens(const Vector<String>& tokens);
   void AddTokens(const SecurityOrigin* origin,
                  bool is_secure,
@@ -123,6 +128,14 @@ class CORE_EXPORT OriginTrialContext final
   void Trace(Visitor*) const;
 
  private:
+  // Handle token from document origin or third party origins, initialize
+  // features if the token is valid.
+  void AddTokenInternal(const String& token,
+                        const SecurityOrigin* origin,
+                        bool is_origin_secure,
+                        const SecurityOrigin* script_origin,
+                        bool is_script_origin_secure);
+
   // If this returns false, the trial cannot be enabled (e.g. due to it is
   // invalid in the browser's present configuration).
   bool CanEnableTrialFromName(const StringView& trial_name);

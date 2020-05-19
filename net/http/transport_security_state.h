@@ -579,34 +579,25 @@ class NET_EXPORT TransportSecurityState {
   // changed.
   void DirtyNotify();
 
-  // Adds HSTS state to |host|.
+  // Adds HSTS, HPKP, and Expect-CT state for |host|. The new state supercedes
+  // any previous state for the |host|, including static entries.
+  //
+  // The new state for |host| is persisted using the Delegate (if any).
   void AddHSTSInternal(const std::string& host,
                        STSState::UpgradeMode upgrade_mode,
                        const base::Time& expiry,
                        bool include_subdomains);
-
-  // Adds HPKP state to |host|.
   void AddHPKPInternal(const std::string& host,
                        const base::Time& last_observed,
                        const base::Time& expiry,
                        bool include_subdomains,
                        const HashValueVector& hashes,
                        const GURL& report_uri);
-
-  // Adds Expect-CT state to |host|.
   void AddExpectCTInternal(const std::string& host,
                            const base::Time& last_observed,
                            const base::Time& expiry,
                            bool enforce,
                            const GURL& report_uri);
-
-  // Enable TransportSecurity for |host|. |state| supercedes any previous
-  // state for the |host|, including static entries.
-  //
-  // The new state for |host| is persisted using the Delegate (if any).
-  void EnableSTSHost(const std::string& host, const STSState& state);
-  void EnablePKPHost(const std::string& host, const PKPState& state);
-  void EnableExpectCTHost(const std::string& host, const ExpectCTState& state);
 
   // Returns true if a request to |host_port_pair| with the given
   // SubjectPublicKeyInfo |hashes| satisfies the pins in |pkp_state|,

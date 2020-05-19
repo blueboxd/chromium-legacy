@@ -264,7 +264,7 @@ class NamedValue(object):
     self.mojom_name = mojom_name
 
   def GetSpec(self):
-    return (self.module.mojom_namespace + '.' +
+    return (self.module.GetNamespacePrefix() +
             (self.parent_kind and
              (self.parent_kind.mojom_name + '.') or "") + self.mojom_name)
 
@@ -299,9 +299,9 @@ class EnumValue(NamedValue):
     self.enum = enum
 
   def GetSpec(self):
-    return (self.module.mojom_namespace + '.' +
-            (self.parent_kind and (self.parent_kind.mojom_name + '.')
-             or "") + self.enum.mojom_name + '.' + self.mojom_name)
+    return (self.module.GetNamespacePrefix() +
+            (self.parent_kind and (self.parent_kind.mojom_name + '.') or "") +
+            self.enum.mojom_name + '.' + self.mojom_name)
 
   @property
   def name(self):
@@ -1016,6 +1016,9 @@ class Module(object):
               'interfaces': False,
               'unions': False
           })
+
+  def GetNamespacePrefix(self):
+    return '%s.' % self.mojom_namespace if self.mojom_namespace else ''
 
   def AddInterface(self, mojom_name, attributes=None):
     interface = Interface(mojom_name, self, attributes)

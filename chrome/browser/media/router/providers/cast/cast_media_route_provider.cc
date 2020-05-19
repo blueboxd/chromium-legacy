@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/strings/strcat.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/media/router/providers/cast/cast_activity_manager.h"
 #include "chrome/browser/media/router/providers/cast/cast_internal_message_util.h"
@@ -22,6 +21,25 @@
 #include "url/origin.h"
 
 namespace media_router {
+
+namespace {
+
+// Returns a list of origins that are valid for |source_id|. An empty list
+// means all origins are valid.
+std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
+  // Use of the mirroring app as a Cast URL is permitted for Slides as a
+  // temporary workaround only. The eventual goal is to support their usecase
+  // using generic Presentation API.
+  // See also cast_media_source.cc.
+  static const char kMirroringAppPrefix[] = "cast:0F5096E8";
+  return base::StartsWith(source_id, kMirroringAppPrefix,
+                          base::CompareCase::SENSITIVE)
+             ? std::vector<url::Origin>(
+                   {url::Origin::Create(GURL("https://docs.google.com"))})
+             : std::vector<url::Origin>();
+}
+
+}  // namespace
 
 CastMediaRouteProvider::CastMediaRouteProvider(
     mojo::PendingReceiver<mojom::MediaRouteProvider> receiver,
@@ -94,20 +112,13 @@ void CastMediaRouteProvider::CreateRoute(const std::string& source_id,
     return;
   }
 
-  const auto cast_source = CastMediaSource::FromMediaSourceId(source_id);
+  std::unique_ptr<CastMediaSource> cast_source =
+      CastMediaSource::FromMediaSourceId(source_id);
   if (!cast_source) {
     DVLOG(2) << "CreateRoute: invalid source";
     std::move(callback).Run(
-        base::nullopt, nullptr, base::StrCat({"Invalid source ", source_id}),
+        base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
-    return;
-  }
-
-  if (!cast_source->IsAllowedOrigin(origin)) {
-    std::move(callback).Run(
-        base::nullopt, nullptr,
-        base::StrCat({"Invalid origin ", origin.Serialize()}),
-        RouteRequestResult::ResultCode::INVALID_ORIGIN);
     return;
   }
 
@@ -122,10 +133,11 @@ void CastMediaRouteProvider::JoinRoute(const std::string& media_source,
                                        base::TimeDelta timeout,
                                        bool incognito,
                                        JoinRouteCallback callback) {
-  const auto cast_source = CastMediaSource::FromMediaSourceId(media_source);
+  std::unique_ptr<CastMediaSource> cast_source =
+      CastMediaSource::FromMediaSourceId(media_source);
   if (!cast_source) {
     std::move(callback).Run(
-        base::nullopt, nullptr, base::StrCat({"Invalid source ", media_source}),
+        base::nullopt, nullptr, std::string("Invalid source"),
         RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
     return;
   }
@@ -175,7 +187,8 @@ void CastMediaRouteProvider::StartObservingMediaSinks(
   if (base::Contains(sink_queries_, media_source))
     return;
 
-  const auto cast_source = CastMediaSource::FromMediaSourceId(media_source);
+  std::unique_ptr<CastMediaSource> cast_source =
+      CastMediaSource::FromMediaSourceId(media_source);
   if (!cast_source)
     return;
 
@@ -278,11 +291,8 @@ void CastMediaRouteProvider::OnSinkQueryUpdated(
     const std::vector<MediaSinkInternal>& sinks) {
   DVLOG(1) << __func__ << ", source_id: " << source_id
            << ", #sinks: " << sinks.size();
-  const auto cast_source = CastMediaSource::FromMediaSourceId(source_id);
-  if (cast_source) {
-    media_router_->OnSinksReceived(MediaRouteProviderId::CAST, source_id, sinks,
-                                   cast_source->GetAllowedOrigins());
-  }
+  media_router_->OnSinksReceived(MediaRouteProviderId::CAST, source_id, sinks,
+                                 GetOrigins(source_id));
 }
 
 void CastMediaRouteProvider::BroadcastMessageToSinks(

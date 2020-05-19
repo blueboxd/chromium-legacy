@@ -145,9 +145,9 @@ public class CardUnmaskPrompt
 
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
             String instructions, String confirmButtonLabel, int drawableId,
-            boolean shouldRequestExpirationDate, boolean canStoreLocally,
-            boolean defaultToStoringLocally, boolean shouldOfferWebauthn,
-            boolean defaultUseScreenlockChecked, long successMessageDurationMilliseconds) {
+            boolean shouldRequestExpirationDate, boolean defaultToStoringLocally,
+            boolean shouldOfferWebauthn, boolean defaultUseScreenlockChecked,
+            long successMessageDurationMilliseconds) {
         mDelegate = delegate;
 
         LayoutInflater inflater = LayoutInflater.from(context);
@@ -165,16 +165,15 @@ public class CardUnmaskPrompt
         mNewCardLink.setOnClickListener(this);
         mErrorMessage = (TextView) v.findViewById(R.id.error_message);
         mStoreLocallyCheckbox = (CheckBox) v.findViewById(R.id.store_locally_checkbox);
-        mStoreLocallyCheckbox.setChecked(canStoreLocally && defaultToStoringLocally);
         mUseScreenlockCheckbox = (CheckBox) v.findViewById(R.id.use_screenlock_checkbox);
         mUseScreenlockCheckbox.setChecked(defaultUseScreenlockChecked);
-        if (canStoreLocally || !shouldOfferWebauthn) {
+        if (!shouldOfferWebauthn) {
             mUseScreenlockCheckbox.setVisibility(View.GONE);
             mUseScreenlockCheckbox.setChecked(false);
         }
         mStoreLocallyTooltipIcon = (ImageView) v.findViewById(R.id.store_locally_tooltip_icon);
         mStoreLocallyTooltipIcon.setOnClickListener(this);
-        if (!canStoreLocally) v.findViewById(R.id.store_locally_container).setVisibility(View.GONE);
+        v.findViewById(R.id.store_locally_container).setVisibility(View.GONE);
         mControlsContainer = (ViewGroup) v.findViewById(R.id.controls_container);
         mVerificationOverlay = v.findViewById(R.id.verification_overlay);
         mVerificationProgressBar = (ProgressBar) v.findViewById(R.id.verification_progress_bar);

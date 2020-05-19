@@ -7,7 +7,8 @@
  */
 
 // clang-format off
-import { CertificatesError, CertificatesImportError,CertificateSubnode, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
+import {CertificateProvisioningProcess} from './certificate_provisioning_browser_proxy.js';
+import {CertificatesError, CertificatesImportError,CertificateSubnode, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
 // clang-format on
 
 /**
@@ -46,3 +47,20 @@ export const CertificateAction = {
  * dropdown menu. CertificateActionEventDetail is passed as the event detail.
  */
 export const CertificateActionEvent = 'certificate-action';
+
+/**
+ * The payload of the 'certificate-provisioning-view-details-action' event.
+ * @typedef {{
+ *   model: !CertificateProvisioningProcess,
+ *   anchor: !HTMLElement
+ * }}
+ */
+export let CertificateProvisioningActionEventDetail;
+
+/**
+ * The name of the event fired when a the "View Details" action is selected on
+ * the dropdown menu next to a certificate provisioning process.
+ * CertificateActionEventDetail is passed as the event detail.
+ */
+export const CertificateProvisioningViewDetailsActionEvent =
+    'certificate-provisioning-view-details-action';

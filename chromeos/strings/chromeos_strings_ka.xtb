@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">დასასრულებლად შეიყვანეთ თქვენი ძველი და ახალი პაროლები</translation>
 <translation id="6106186594183574873">დასასრულებლად შეიყვანეთ თქვენი ძველი პაროლი</translation>
 <translation id="6146993107019042706">დასასრულებლად შეიყვანეთ თქვენი ახალი პაროლი</translation>
+<translation id="6517239166834772319">გაცნობა</translation>
 <translation id="6643016212128521049">გასუფთავება</translation>
 <translation id="7162487448488904999">გალერეა</translation>
 <translation id="7658239707568436148">გაუქმება</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">სტატუსი</translation>
 <translation id="808894953321890993">პაროლის შეცვლა</translation>
 <translation id="8208861521865154048">ბონუსები</translation>
+<translation id="8701136875688985581">ამ მომხმარებელს მართავს <ph name="ENROLLMENT_DOMAIN" />. მას შეუძლია პარამეტრების დისტანციურად მართვა და მომხმარებლის აქტივობის მონიტორინგი.</translation>
 <translation id="8747900814994928677">დაადასტურეთ ცვლილება</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> დარჩენილია <ph name="ATTEMPTS_LEFT" /> მცდელობა</translation>
 <translation id="910415269708673980">განაახლეთ ბილეთი <ph name="PRINCIPAL_NAME" />-ისთვის</translation>

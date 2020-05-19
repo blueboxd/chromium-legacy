@@ -11,10 +11,8 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -33,6 +31,8 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.UrlBarData;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -69,9 +69,9 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             return mContext;
         }
 
-        /** See {@link ContextUtils#getAppSharedPreferences}. */
-        protected SharedPreferences getSharedPreferences() {
-            return ContextUtils.getAppSharedPreferences();
+        /** Returns the {@link SharedPreferencesManager} to store prefs. */
+        protected SharedPreferencesManager getSharedPreferencesManager() {
+            return SharedPreferencesManager.getInstance();
         }
 
         /** Returns IDs for all search widgets that exist. */
@@ -117,13 +117,6 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     public static final String EXTRA_START_VOICE_SEARCH =
             "org.chromium.chrome.browser.searchwidget.START_VOICE_SEARCH";
 
-    private static final String PREF_IS_VOICE_SEARCH_AVAILABLE =
-            "org.chromium.chrome.browser.searchwidget.IS_VOICE_SEARCH_AVAILABLE";
-    private static final String PREF_NUM_CONSECUTIVE_CRASHES =
-            "org.chromium.chrome.browser.searchwidget.NUM_CONSECUTIVE_CRASHES";
-    static final String PREF_SEARCH_ENGINE_SHORTNAME =
-            "org.chromium.chrome.browser.searchwidget.SEARCH_ENGINE_SHORTNAME";
-
     /** Number of consecutive crashes this widget will absorb before giving up. */
     private static final int CRASH_LIMIT = 3;
 
@@ -163,10 +156,9 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
     /** Nukes all cached information and forces all widgets to start with a blank slate. */
     public static void reset() {
-        SharedPreferences.Editor editor = getDelegate().getSharedPreferences().edit();
-        editor.remove(PREF_IS_VOICE_SEARCH_AVAILABLE);
-        editor.remove(PREF_SEARCH_ENGINE_SHORTNAME);
-        editor.apply();
+        SharedPreferencesManager prefs = getDelegate().getSharedPreferencesManager();
+        prefs.removeKey(ChromePreferenceKeys.SEARCH_WIDGET_IS_VOICE_SEARCH_AVAILABLE);
+        prefs.removeKey(ChromePreferenceKeys.SEARCH_WIDGET_SEARCH_ENGINE_SHORTNAME);
 
         performUpdate(null);
     }
@@ -240,7 +232,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         if (ids == null) ids = delegate.getAllSearchWidgetIds();
         if (ids.length == 0) return;
 
-        SharedPreferences prefs = delegate.getSharedPreferences();
+        SharedPreferencesManager prefs = delegate.getSharedPreferencesManager();
         boolean isVoiceSearchAvailable = getCachedVoiceSearchAvailability(prefs);
         String engineName = getCachedEngineName(prefs);
 
@@ -293,9 +285,10 @@ public class SearchWidgetProvider extends AppWidgetProvider {
 
     /** Caches whether or not a voice search is possible. */
     static void updateCachedVoiceSearchAvailability(boolean isVoiceSearchAvailable) {
-        SharedPreferences prefs = getDelegate().getSharedPreferences();
+        SharedPreferencesManager prefs = getDelegate().getSharedPreferencesManager();
         if (getCachedVoiceSearchAvailability(prefs) != isVoiceSearchAvailable) {
-            prefs.edit().putBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, isVoiceSearchAvailable).apply();
+            prefs.writeBoolean(ChromePreferenceKeys.SEARCH_WIDGET_IS_VOICE_SEARCH_AVAILABLE,
+                    isVoiceSearchAvailable);
             performUpdate(null);
         }
     }
@@ -333,12 +326,13 @@ public class SearchWidgetProvider extends AppWidgetProvider {
      * TemplateUrlService whenever the widget is updated.
      */
     static void updateCachedEngineName(String engineName) {
-        SharedPreferences prefs = getDelegate().getSharedPreferences();
+        SharedPreferencesManager prefs = getDelegate().getSharedPreferencesManager();
 
         if (!shouldShowFullString()) engineName = null;
 
         if (!TextUtils.equals(getCachedEngineName(prefs), engineName)) {
-            prefs.edit().putString(PREF_SEARCH_ENGINE_SHORTNAME, engineName).apply();
+            prefs.writeString(
+                    ChromePreferenceKeys.SEARCH_WIDGET_SEARCH_ENGINE_SHORTNAME, engineName);
             performUpdate(null);
         }
     }
@@ -346,36 +340,25 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     /** Updates the number of consecutive crashes this widget has absorbed. */
     @SuppressLint({"ApplySharedPref", "CommitPrefEdits"})
     static void updateNumConsecutiveCrashes(int newValue) {
-        SharedPreferences prefs = getDelegate().getSharedPreferences();
+        SharedPreferencesManager prefs = getDelegate().getSharedPreferencesManager();
         if (getNumConsecutiveCrashes(prefs) == newValue) return;
 
-        SharedPreferences.Editor editor = prefs.edit();
-        if (newValue == 0) {
-            editor.remove(PREF_NUM_CONSECUTIVE_CRASHES);
-        } else {
-            editor.putInt(PREF_NUM_CONSECUTIVE_CRASHES, newValue);
-        }
-
         // This metric is committed synchronously because it relates to crashes.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            editor.commit();
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        prefs.writeIntSync(ChromePreferenceKeys.SEARCH_WIDGET_NUM_CONSECUTIVE_CRASHES, newValue);
     }
 
-    private static boolean getCachedVoiceSearchAvailability(SharedPreferences prefs) {
-        return prefs.getBoolean(PREF_IS_VOICE_SEARCH_AVAILABLE, true);
+    private static boolean getCachedVoiceSearchAvailability(SharedPreferencesManager prefs) {
+        return prefs.readBoolean(
+                ChromePreferenceKeys.SEARCH_WIDGET_IS_VOICE_SEARCH_AVAILABLE, true);
     }
 
-    private static String getCachedEngineName(SharedPreferences prefs) {
-        return prefs.getString(PREF_SEARCH_ENGINE_SHORTNAME, null);
+    private static String getCachedEngineName(SharedPreferencesManager prefs) {
+        return prefs.readString(ChromePreferenceKeys.SEARCH_WIDGET_SEARCH_ENGINE_SHORTNAME, null);
     }
 
     @VisibleForTesting
-    static int getNumConsecutiveCrashes(SharedPreferences prefs) {
-        return prefs.getInt(PREF_NUM_CONSECUTIVE_CRASHES, 0);
+    static int getNumConsecutiveCrashes(SharedPreferencesManager prefs) {
+        return prefs.readInt(ChromePreferenceKeys.SEARCH_WIDGET_NUM_CONSECUTIVE_CRASHES);
     }
 
     private static SearchWidgetProviderDelegate getDelegate() {
@@ -391,7 +374,8 @@ public class SearchWidgetProvider extends AppWidgetProvider {
             runnable.run();
             updateNumConsecutiveCrashes(0);
         } catch (Exception e) {
-            int numCrashes = getNumConsecutiveCrashes(getDelegate().getSharedPreferences()) + 1;
+            int numCrashes =
+                    getNumConsecutiveCrashes(getDelegate().getSharedPreferencesManager()) + 1;
             updateNumConsecutiveCrashes(numCrashes);
 
             if (numCrashes < CRASH_LIMIT) {

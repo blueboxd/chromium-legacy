@@ -585,6 +585,20 @@ AXNode* AXNode::GetTableCellFromCoords(int row_index, int col_index) const {
 }
 
 void AXNode::GetTableColHeaderNodeIds(
+    std::vector<int32_t>* col_header_ids) const {
+  DCHECK(col_header_ids);
+  const AXTableInfo* table_info = GetAncestorTableInfo();
+  if (!table_info)
+    return;
+
+  // Flatten and add column header ids of each column to |col_header_ids|.
+  for (std::vector<int32_t> col_headers_at_index : table_info->col_headers) {
+    col_header_ids->insert(col_header_ids->end(), col_headers_at_index.begin(),
+                           col_headers_at_index.end());
+  }
+}
+
+void AXNode::GetTableColHeaderNodeIds(
     int col_index,
     std::vector<int32_t>* col_header_ids) const {
   DCHECK(col_header_ids);

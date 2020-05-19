@@ -13,6 +13,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.components.browser_ui.http_auth.LoginPrompt;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -24,11 +25,10 @@ import org.chromium.ui.base.WindowAndroid;
  * extend HttpAuthHandler due to the private access of HttpAuthHandler's
  * constructor.
  */
-public class ChromeHttpAuthHandler extends EmptyTabObserver {
+public class ChromeHttpAuthHandler extends EmptyTabObserver implements LoginPrompt.Observer {
     private static Callback<ChromeHttpAuthHandler> sTestCreationCallback;
 
     private long mNativeChromeHttpAuthHandler;
-    private AutofillObserver mAutofillObserver;
     private String mAutofillUsername;
     private String mAutofillPassword;
     private LoginPrompt mLoginPrompt;
@@ -60,30 +60,21 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
     // iff this is the first auth challenge attempt for this connection.
     // (see WebUrlLoaderClient::authRequired call to didReceiveAuthenticationChallenge)
     // In ChromeHttpAuthHandler this mechanism is superseded by the
-    // AutofillObserver.onAutofillDataAvailable mechanism below, however the legacy WebView
+    // LoginPrompt.onAutofillDataAvailable mechanism below, however the legacy WebView
     // implementation will need to handle the API mismatch between the legacy
     // WebView.getHttpAuthUsernamePassword synchronous call and the credentials arriving
     // asynchronously in onAutofillDataAvailable.
 
-    /**
-     * Cancel the authorization request.
-     */
+    @Override
     public void cancel() {
         ChromeHttpAuthHandlerJni.get().cancelAuth(
                 mNativeChromeHttpAuthHandler, ChromeHttpAuthHandler.this);
     }
 
-    /**
-     * Proceed with the authorization with the given credentials.
-     */
+    @Override
     public void proceed(String username, String password) {
         ChromeHttpAuthHandlerJni.get().setAuth(
                 mNativeChromeHttpAuthHandler, ChromeHttpAuthHandler.this, username, password);
-    }
-
-    public String getMessageBody() {
-        return ChromeHttpAuthHandlerJni.get().getMessageBody(
-                mNativeChromeHttpAuthHandler, ChromeHttpAuthHandler.this);
     }
 
     /** Return whether the auth dialog is being shown. */
@@ -104,8 +95,13 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
         }
         mTab = tab;
         mTab.addObserver(this);
-        mLoginPrompt = new LoginPrompt(activity, this);
-        setAutofillObserver(mLoginPrompt);
+        String messageBody = ChromeHttpAuthHandlerJni.get().getMessageBody(
+                mNativeChromeHttpAuthHandler, ChromeHttpAuthHandler.this);
+        mLoginPrompt = new LoginPrompt(activity, messageBody, this);
+        // In case the autofill data arrives before the prompt is created.
+        if (mAutofillUsername != null && mAutofillPassword != null) {
+            mLoginPrompt.onAutofillDataAvailable(mAutofillUsername, mAutofillPassword);
+        }
         mLoginPrompt.show();
     }
 
@@ -126,38 +122,12 @@ public class ChromeHttpAuthHandler extends EmptyTabObserver {
         cancel();
     }
 
-    // ---------------------------------------------
-    // Autofill-related
-    // ---------------------------------------------
-
-    /**
-     * This is a public interface that will act as a hook for providing login data using
-     * autofill. When the observer is set, {@link ChromeHttpAuthhandler}'s
-     * onAutofillDataAvailable callback can be used by the observer to fill out necessary
-     * login information.
-     */
-    public static interface AutofillObserver {
-        public void onAutofillDataAvailable(String username, String password);
-    }
-
-    /**
-     * Register for onAutofillDataAvailable callbacks.  |observer| can be null,
-     * in which case no callback is made.
-     */
-    private void setAutofillObserver(AutofillObserver observer) {
-        mAutofillObserver = observer;
-        // In case the autofill data arrives before the observer is set.
-        if (mAutofillUsername != null && mAutofillPassword != null) {
-            mAutofillObserver.onAutofillDataAvailable(mAutofillUsername, mAutofillPassword);
-        }
-    }
-
     @CalledByNative
     private void onAutofillDataAvailable(String username, String password) {
         mAutofillUsername = username;
         mAutofillPassword = password;
-        if (mAutofillObserver != null) {
-            mAutofillObserver.onAutofillDataAvailable(username, password);
+        if (mLoginPrompt != null) {
+            mLoginPrompt.onAutofillDataAvailable(username, password);
         }
     }
 

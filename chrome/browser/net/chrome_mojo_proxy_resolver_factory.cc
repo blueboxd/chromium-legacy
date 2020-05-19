@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/service_sandbox_type.h"
 #include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
@@ -22,10 +23,6 @@
 #else
 #include "content/public/browser/service_process_host.h"
 #include "services/strings/grit/services_strings.h"
-#endif
-
-#if defined(OS_WIN)
-#include "services/service_manager/sandbox/sandbox_type.h"
 #endif
 
 namespace {
@@ -47,9 +44,6 @@ proxy_resolver::mojom::ProxyResolverFactory* GetProxyResolverFactory() {
         remote->BindNewPipeAndPassReceiver(),
         content::ServiceProcessHost::Options()
             .WithDisplayName(IDS_PROXY_RESOLVER_DISPLAY_NAME)
-#if defined(OS_WIN)
-            .WithSandboxType(service_manager::SandboxType::kProxyResolver)
-#endif
             .Pass());
 
     // The service will report itself idle once there are no more bound

@@ -161,30 +161,4 @@ TEST(CastMediaSourceTest, FromInvalidSource) {
       "https://google.com/cast#__castAppId__=/param=foo"));
 }
 
-TEST(CastMediaSourceTest, TestIsAllowedOrigin) {
-  const auto cast_app_source = CastMediaSource::FromAppId("ABCDEFAB");
-  ASSERT_TRUE(cast_app_source);
-  ASSERT_FALSE(cast_app_source->ContainsStreamingApp());
-
-  const auto cast_streaming_source =
-      CastMediaSource::FromAppId(kCastStreamingAppId);
-  ASSERT_TRUE(cast_streaming_source);
-  ASSERT_TRUE(cast_streaming_source->ContainsStreamingApp());
-
-  const url::Origin empty_origin = url::Origin::Create(GURL());
-  const url::Origin site_origin =
-      url::Origin::Create(GURL("https://www.example.com"));
-  const url::Origin docs_origin =
-      url::Origin::Create(GURL("https://docs.google.com"));
-
-  EXPECT_TRUE(cast_app_source->IsAllowedOrigin(empty_origin));
-  EXPECT_TRUE(cast_app_source->IsAllowedOrigin(site_origin));
-  EXPECT_TRUE(cast_app_source->IsAllowedOrigin(docs_origin));
-
-  // Cast streaming apps are only allowed on whitelisted origins.
-  EXPECT_FALSE(cast_streaming_source->IsAllowedOrigin(site_origin));
-  EXPECT_TRUE(cast_streaming_source->IsAllowedOrigin(empty_origin));
-  EXPECT_TRUE(cast_streaming_source->IsAllowedOrigin(docs_origin));
-}
-
 }  // namespace media_router

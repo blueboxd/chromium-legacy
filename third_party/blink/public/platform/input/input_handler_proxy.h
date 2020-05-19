@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/snap_fling_controller.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/platform/input/elastic_overscroll_controller.h"
 #include "third_party/blink/public/platform/input/synchronous_input_handler_proxy.h"
@@ -125,15 +126,14 @@ class BLINK_PLATFORM_EXPORT InputHandlerProxy
     // to the next renderer).
     DID_HANDLE_SHOULD_BUBBLE,
   };
-  using EventDispositionCallback =
-      base::OnceCallback<void(EventDisposition,
-                              WebScopedInputEvent WebInputEvent,
-                              const ui::LatencyInfo&,
-                              std::unique_ptr<DidOverscrollParams>,
-                              const blink::WebInputEventAttribution&)>;
-  void HandleInputEventWithLatencyInfo(WebScopedInputEvent event,
-                                       const ui::LatencyInfo& latency_info,
-                                       EventDispositionCallback callback);
+  using EventDispositionCallback = base::OnceCallback<void(
+      EventDisposition,
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
+      std::unique_ptr<DidOverscrollParams>,
+      const blink::WebInputEventAttribution&)>;
+  void HandleInputEventWithLatencyInfo(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
+      EventDispositionCallback callback);
   void InjectScrollbarGestureScroll(
       const blink::WebInputEvent::Type type,
       const gfx::PointF& position_in_widget,

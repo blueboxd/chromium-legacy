@@ -14,6 +14,11 @@ const base::Feature kPolicyAtomicGroup{"PolicyAtomicGroup",
 const base::Feature kCBCMServiceAccounts{"CBCMServiceAccounts",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_MACOSX)
+const base::Feature kIgnoreSensitivePoliciesOnUnmanagedMac{
+    "IgnoreSensitivePoliciesOnUnmanagedMac", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 }  // namespace features
 
 }  // namespace policy

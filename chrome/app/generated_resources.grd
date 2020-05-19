@@ -4621,6 +4621,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_NTP_OVERRIDDEN_DIALOG_BODY_GENERIC" desc="The body of the dialog informing the user that the new tab page has been overridden by an extension, indicating which extension now controls it.">
         This page was changed by the <ph name="EXTENSION_NAME">$1<ex>Google Arts and Culture</ex></ph> extension
       </message>
+      <message name="IDS_EXTENSION_SEARCH_OVERRIDDEN_DIALOG_TITLE_GENERIC" desc="The title of the dialog informing the user that the new tab page has been overridden by an extension.">
+        Did you mean to change your search provider?
+      </message>
+      <message name="IDS_EXTENSION_SEARCH_OVERRIDDEN_DIALOG_BODY_GENERIC" desc="The body of the dialog informing the user that the new tab page has been overridden by an extension, indicating which extension now controls it.">
+        The <ph name="EXTENSION_NAME">$2<ex>Some New Search</ex></ph> extension changed search to use <ph name="SEARCH_PROVIDER_DOMAIN">$1<ex>google.com</ex></ph>
+      </message>
       <!-- End Extension Settings Overridden Dialog strings. -->
 
       <!-- Extensions Menu bubble -->

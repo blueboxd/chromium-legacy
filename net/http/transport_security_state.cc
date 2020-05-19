@@ -658,72 +658,21 @@ void TransportSecurityState::AddHSTSInternal(
     const base::Time& expiry,
     bool include_subdomains) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  const std::string canonicalized_host = CanonicalizeHost(host);
+  if (canonicalized_host.empty())
+    return;
 
   STSState sts_state;
+  // No need to store |sts_state.domain| since it is redundant.
+  // (|canonicalized_host| is the map key.)
   sts_state.last_observed = base::Time::Now();
   sts_state.include_subdomains = include_subdomains;
   sts_state.expiry = expiry;
   sts_state.upgrade_mode = upgrade_mode;
 
-  EnableSTSHost(host, sts_state);
-}
-
-void TransportSecurityState::AddHPKPInternal(const std::string& host,
-                                             const base::Time& last_observed,
-                                             const base::Time& expiry,
-                                             bool include_subdomains,
-                                             const HashValueVector& hashes,
-                                             const GURL& report_uri) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  PKPState pkp_state;
-  pkp_state.last_observed = last_observed;
-  pkp_state.expiry = expiry;
-  pkp_state.include_subdomains = include_subdomains;
-  pkp_state.spki_hashes = hashes;
-  pkp_state.report_uri = report_uri;
-
-  EnablePKPHost(host, pkp_state);
-}
-
-void TransportSecurityState::AddExpectCTInternal(
-    const std::string& host,
-    const base::Time& last_observed,
-    const base::Time& expiry,
-    bool enforce,
-    const GURL& report_uri) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  ExpectCTState expect_ct_state;
-  expect_ct_state.last_observed = last_observed;
-  expect_ct_state.expiry = expiry;
-  expect_ct_state.enforce = enforce;
-  expect_ct_state.report_uri = report_uri;
-
-  EnableExpectCTHost(host, expect_ct_state);
-}
-
-void TransportSecurityState::
-    SetEnablePublicKeyPinningBypassForLocalTrustAnchors(bool value) {
-  enable_pkp_bypass_for_local_trust_anchors_ = value;
-}
-
-void TransportSecurityState::EnableSTSHost(const std::string& host,
-                                           const STSState& state) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  const std::string canonicalized_host = CanonicalizeHost(host);
-  if (canonicalized_host.empty())
-    return;
-
   // Only store new state when HSTS is explicitly enabled. If it is
   // disabled, remove the state from the enabled hosts.
-  if (state.ShouldUpgradeToSSL()) {
-    STSState sts_state(state);
-    // No need to store this value since it is redundant. (|canonicalized_host|
-    // is the map key.)
-    sts_state.domain.clear();
-
+  if (sts_state.ShouldUpgradeToSSL()) {
     enabled_sts_hosts_[HashHost(canonicalized_host)] = sts_state;
   } else {
     const std::string hashed_host = HashHost(canonicalized_host);
@@ -733,22 +682,29 @@ void TransportSecurityState::EnableSTSHost(const std::string& host,
   DirtyNotify();
 }
 
-void TransportSecurityState::EnablePKPHost(const std::string& host,
-                                           const PKPState& state) {
+void TransportSecurityState::AddHPKPInternal(const std::string& host,
+                                             const base::Time& last_observed,
+                                             const base::Time& expiry,
+                                             bool include_subdomains,
+                                             const HashValueVector& hashes,
+                                             const GURL& report_uri) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
   const std::string canonicalized_host = CanonicalizeHost(host);
   if (canonicalized_host.empty())
     return;
 
+  PKPState pkp_state;
+  // No need to store |pkp_state.domain| since it is redundant.
+  // (|canonicalized_host| is the map key.)
+  pkp_state.last_observed = last_observed;
+  pkp_state.expiry = expiry;
+  pkp_state.include_subdomains = include_subdomains;
+  pkp_state.spki_hashes = hashes;
+  pkp_state.report_uri = report_uri;
+
   // Only store new state when HPKP is explicitly enabled. If it is
   // disabled, remove the state from the enabled hosts.
-  if (state.HasPublicKeyPins()) {
-    PKPState pkp_state(state);
-    // No need to store this value since it is redundant. (|canonicalized_host|
-    // is the map key.)
-    pkp_state.domain.clear();
-
+  if (pkp_state.HasPublicKeyPins()) {
     enabled_pkp_hosts_[HashHost(canonicalized_host)] = pkp_state;
   } else {
     const std::string hashed_host = HashHost(canonicalized_host);
@@ -758,8 +714,12 @@ void TransportSecurityState::EnablePKPHost(const std::string& host,
   DirtyNotify();
 }
 
-void TransportSecurityState::EnableExpectCTHost(const std::string& host,
-                                                const ExpectCTState& state) {
+void TransportSecurityState::AddExpectCTInternal(
+    const std::string& host,
+    const base::Time& last_observed,
+    const base::Time& expiry,
+    bool enforce,
+    const GURL& report_uri) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!IsDynamicExpectCTEnabled())
     return;
@@ -768,14 +728,17 @@ void TransportSecurityState::EnableExpectCTHost(const std::string& host,
   if (canonicalized_host.empty())
     return;
 
+  ExpectCTState expect_ct_state;
+  // No need to store |expect_ct_state.domain| since it is redundant.
+  // (|canonicalized_host| is the map key.)
+  expect_ct_state.last_observed = last_observed;
+  expect_ct_state.expiry = expiry;
+  expect_ct_state.enforce = enforce;
+  expect_ct_state.report_uri = report_uri;
+
   // Only store new state when Expect-CT is explicitly enabled. If it is
   // disabled, remove the state from the enabled hosts.
-  if (state.enforce || !state.report_uri.is_empty()) {
-    ExpectCTState expect_ct_state(state);
-    // No need to store this value since it is redundant. (|canonicalized_host|
-    // is the map key.)
-    expect_ct_state.domain.clear();
-
+  if (expect_ct_state.enforce || !expect_ct_state.report_uri.is_empty()) {
     enabled_expect_ct_hosts_[HashHost(canonicalized_host)] = expect_ct_state;
   } else {
     const std::string hashed_host = HashHost(canonicalized_host);
@@ -783,6 +746,11 @@ void TransportSecurityState::EnableExpectCTHost(const std::string& host,
   }
 
   DirtyNotify();
+}
+
+void TransportSecurityState::
+    SetEnablePublicKeyPinningBypassForLocalTrustAnchors(bool value) {
+  enable_pkp_bypass_for_local_trust_anchors_ = value;
 }
 
 TransportSecurityState::PKPStatus

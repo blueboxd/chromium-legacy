@@ -1818,6 +1818,7 @@ void HTMLMediaElement::SetReadyState(ReadyState state) {
           frame,
           HasVideo() ? mojom::blink::RequestContextType::VIDEO
                      : mojom::blink::RequestContextType::AUDIO,
+          current_src_,
           // Strictly speaking, this check is an approximation; a request could
           // have have redirected back to its original URL, for example.
           // However, the redirect status is only used to prevent leaking

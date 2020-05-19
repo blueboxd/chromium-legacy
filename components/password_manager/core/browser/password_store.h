@@ -223,8 +223,8 @@ class PasswordStore : protected PasswordStoreSync,
   // Searches for credentials with the specified |plain_text_password|, and
   // notifies |consumer| on completion. The request will be cancelled if the
   // consumer is destroyed.
-  virtual void GetLoginsByPassword(const base::string16& plain_text_password,
-                                   PasswordStoreConsumer* consumer);
+  void GetLoginsByPassword(const base::string16& plain_text_password,
+                           PasswordStoreConsumer* consumer);
 
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.

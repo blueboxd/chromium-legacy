@@ -30,8 +30,12 @@
 
 namespace blink {
 
-class LayoutTableCellDeathTest : public RenderingTest {
+class LayoutTableCellDeathTest : public RenderingTest,
+                                 public ScopedLayoutNGTableForTest {
  protected:
+  // These tests test Legacy behavior only.
+  LayoutTableCellDeathTest() : ScopedLayoutNGTableForTest(false) {}
+
   void SetUp() override {
     RenderingTest::SetUp();
     auto style = ComputedStyle::Create();

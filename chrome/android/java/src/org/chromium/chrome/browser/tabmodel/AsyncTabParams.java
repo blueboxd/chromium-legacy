@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tabmodel;
 
 import android.content.ComponentName;
-import android.content.Intent;
 
 import androidx.annotation.Nullable;
 
@@ -22,11 +21,6 @@ public interface AsyncTabParams {
      * @return The {@link LoadUrlParams} associated with the initial URL to load.
      */
     LoadUrlParams getLoadUrlParams();
-
-    /**
-     * @return The original {@link Intent} that contains this {@link AsyncTabParams}.
-     */
-    @Nullable Intent getOriginalIntent();
 
     /**
      * @return The request ID (tab ID) for this {@link AsyncTabParams}.

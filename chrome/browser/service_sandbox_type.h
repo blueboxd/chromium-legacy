@@ -55,4 +55,32 @@ content::GetServiceSandboxType<chrome::mojom::ProfileImport>() {
   return content::SandboxType::kNoSandbox;
 }
 
+// printing::mojom::PrintingService
+#if defined(OS_WIN)
+namespace printing {
+namespace mojom {
+class PrintingService;
+}
+}  // namespace printing
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<printing::mojom::PrintingService>() {
+  return content::SandboxType::kPdfConversion;
+}
+#endif  // defined(OS_WIN)
+
+// proxy_resolver::mojom::ProxyResolverFactory
+#if defined(OS_WIN)
+namespace proxy_resolver {
+namespace mojom {
+class ProxyResolverFactory;
+}
+}  // namespace proxy_resolver
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<proxy_resolver::mojom::ProxyResolverFactory>() {
+  return content::SandboxType::kProxyResolver;
+}
+#endif  // defined(OS_WIN)
+
 #endif  // CHROME_BROWSER_SERVICE_SANDBOX_TYPE_H_

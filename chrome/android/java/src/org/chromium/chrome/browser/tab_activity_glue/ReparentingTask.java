@@ -119,7 +119,7 @@ public class ReparentingTask implements UserData {
             // ensure the global count of tabs is correct. See https://crbug.com/611806.
             intent.putExtra(IntentHandler.EXTRA_TAB_ID, mTab.getId());
             AsyncTabParamsManager.add(
-                    mTab.getId(), new TabReparentingParams(mTab, intent, finalizeCallback));
+                    mTab.getId(), new TabReparentingParams(mTab, finalizeCallback));
 
             detach();
         }

@@ -322,7 +322,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
                          url::Origin::Create(origin));
 
   EXPECT_TRUE(controller()->current_account_chooser());
-  views::DialogDelegateView* dialog = controller()->current_account_chooser();
+  views::BubbleDialogDelegateView* dialog =
+      controller()->current_account_chooser();
   views::test::WidgetClosingObserver bubble_observer(dialog->GetWidget());
   EXPECT_CALL(*this, OnChooseCredential(testing::Pointee(form)));
   dialog->Accept();

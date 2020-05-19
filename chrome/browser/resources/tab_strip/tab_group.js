@@ -5,7 +5,7 @@
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 
 import {CustomElement} from './custom_element.js';
-import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {TabGroupVisualData} from './tabs_api_proxy.js';
 
 export class TabGroupElement extends CustomElement {
@@ -17,7 +17,7 @@ export class TabGroupElement extends CustomElement {
     super();
 
     /** @private @const {!TabStripEmbedderProxy} */
-    this.embedderApi_ = TabStripEmbedderProxy.getInstance();
+    this.embedderApi_ = TabStripEmbedderProxyImpl.getInstance();
 
     /** @private @const {!HTMLElement} */
     this.chip_ = /** @type {!HTMLElement} */ (this.$('#chip'));

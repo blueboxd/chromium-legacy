@@ -32,7 +32,11 @@ class DeleteCookiesTestCookieManager : public network::TestCookieManager {
 class FakeWebAuthFlow : public WebAuthFlow {
  public:
   explicit FakeWebAuthFlow(WebAuthFlow::Delegate* delegate)
-      : WebAuthFlow(delegate, nullptr, GURL(), WebAuthFlow::INTERACTIVE) {
+      : WebAuthFlow(delegate,
+                    nullptr,
+                    GURL(),
+                    WebAuthFlow::INTERACTIVE,
+                    WebAuthFlow::GET_AUTH_TOKEN) {
     storage_partition.set_cookie_manager_for_browser_process(&cookie_manager);
   }
 

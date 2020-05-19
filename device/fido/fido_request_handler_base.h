@@ -289,7 +289,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
   // to FidoDeviceAuthenticator instances in order to determine their protocol
   // versions before a request can be dispatched.
   void InitializeAuthenticatorAndDispatchRequest(
-      AuthenticatorState* authenticator_state);
+      const std::string& authenticator_id);
   void ConstructBleAdapterPowerManager();
 
   AuthenticatorMap active_authenticators_;

@@ -73,6 +73,7 @@ Polymer({
         ariaLabelledByIds.push(node.id);
         return;
       }
+
       // Only text and <a> nodes are allowed.
       assertNotReached('settings-localized-link has invalid node types');
     });

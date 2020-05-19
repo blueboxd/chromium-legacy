@@ -49,6 +49,22 @@ mojom("mojom_ip_address") {
         "//services/network/public/cpp:cpp_base",
       ]
     },
+    {
+      types = [
+        {
+          mojom = "network.mojom.ConnectionInfo"
+          cpp = "::net::HttpResponseInfo::ConnectionInfo"
+        },
+      ]
+      traits_headers = [
+        "//net/http/http_response_info.h",
+        "//services/network/public/cpp/network_ipc_param_traits.h",
+      ]
+      traits_public_deps = [
+        "//net",
+        "//services/network/public/cpp:cpp_base",
+      ]
+    },
   ]
 
   cpp_typemaps = [
@@ -659,10 +675,6 @@ mojom("mojom") {
         {
           mojom = "network.mojom.CTPolicyCompliance"
           cpp = "::net::ct::CTPolicyCompliance"
-        },
-        {
-          mojom = "network.mojom.ConnectionInfo"
-          cpp = "::net::HttpResponseInfo::ConnectionInfo"
         },
         {
           mojom = "network.mojom.CorsErrorStatus"

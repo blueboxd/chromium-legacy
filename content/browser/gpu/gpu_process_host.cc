@@ -1121,6 +1121,27 @@ bool GpuProcessHost::LaunchGpuProcess() {
     cmd_line->AppendSwitch(service_manager::switches::kDisableGpuSandbox);
     cmd_line->AppendSwitchASCII(switches::kUseGL,
                                 gl::kGLImplementationDisabledName);
+
+    // Pass the current device info to the info-collection GPU process for
+    // crash key logging.
+    const gpu::GPUInfo::GPUDevice device_info = GetGPUInfo().active_gpu();
+    cmd_line->AppendSwitchASCII(
+        switches::kGpuVendorId,
+        base::StringPrintf("%u", device_info.vendor_id));
+    cmd_line->AppendSwitchASCII(
+        switches::kGpuDeviceId,
+        base::StringPrintf("%u", device_info.device_id));
+#if defined(OS_WIN)
+    cmd_line->AppendSwitchASCII(
+        switches::kGpuSubSystemId,
+        base::StringPrintf("%u", device_info.sub_sys_id));
+    cmd_line->AppendSwitchASCII(switches::kGpuRevision,
+                                base::StringPrintf("%u", device_info.revision));
+#endif
+    if (device_info.driver_version.length()) {
+      cmd_line->AppendSwitchASCII(switches::kGpuDriverVersion,
+                                  device_info.driver_version);
+    }
   }
 
   // TODO(penghuang): Replace all GPU related switches with GpuPreferences.

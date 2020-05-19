@@ -166,11 +166,7 @@ FidoRequestHandlerBase::~FidoRequestHandlerBase() {
 
 void FidoRequestHandlerBase::StartAuthenticatorRequest(
     const std::string& authenticator_id) {
-  auto authenticator_it = active_authenticators_.find(authenticator_id);
-  if (authenticator_it == active_authenticators_.end())
-    return;
-
-  InitializeAuthenticatorAndDispatchRequest(authenticator_it->second.get());
+  InitializeAuthenticatorAndDispatchRequest(authenticator_id);
 }
 
 void FidoRequestHandlerBase::CancelActiveAuthenticators(
@@ -279,13 +275,17 @@ void FidoRequestHandlerBase::DiscoveryStarted(
 void FidoRequestHandlerBase::AuthenticatorAdded(
     FidoDiscoveryBase* discovery,
     FidoAuthenticator* authenticator) {
-  DCHECK(authenticator &&
-         !base::Contains(active_authenticators(), authenticator->GetId()));
-  auto authenticator_state =
-      std::make_unique<AuthenticatorState>(authenticator);
-  auto* weak_authenticator_state = authenticator_state.get();
-  active_authenticators_.emplace(authenticator->GetId(),
-                                 std::move(authenticator_state));
+  DCHECK(!authenticator->GetId().empty());
+  bool was_inserted;
+  std::tie(std::ignore, was_inserted) = active_authenticators_.insert(
+      {authenticator->GetId(),
+       std::make_unique<AuthenticatorState>(authenticator)});
+  if (!was_inserted) {
+    NOTREACHED();
+    FIDO_LOG(ERROR) << "Authenticator with duplicate ID "
+                    << authenticator->GetId();
+    return;
+  }
 
   // If |observer_| exists, dispatching request to |authenticator| is
   // delegated to |observer_|. Else, dispatch request to |authenticator|
@@ -307,7 +307,7 @@ void FidoRequestHandlerBase::AuthenticatorAdded(
         FROM_HERE,
         base::BindOnce(
             &FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest,
-            GetWeakPtr(), weak_authenticator_state));
+            GetWeakPtr(), authenticator->GetId()));
   } else {
     VLOG(2) << "Embedder controls the dispatch.";
   }
@@ -336,7 +336,12 @@ void FidoRequestHandlerBase::NotifyObserverTransportAvailability() {
 }
 
 void FidoRequestHandlerBase::InitializeAuthenticatorAndDispatchRequest(
-    AuthenticatorState* authenticator_state) {
+    const std::string& authenticator_id) {
+  auto authenticator_it = active_authenticators_.find(authenticator_id);
+  if (authenticator_it == active_authenticators_.end()) {
+    return;
+  }
+  AuthenticatorState* authenticator_state = authenticator_it->second.get();
   authenticator_state->timer = std::make_unique<base::ElapsedTimer>();
   authenticator_state->authenticator->InitializeAuthenticator(base::BindOnce(
       &FidoRequestHandlerBase::DispatchRequest, weak_factory_.GetWeakPtr(),

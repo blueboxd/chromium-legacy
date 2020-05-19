@@ -7,18 +7,22 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/settings_api_bubble_helpers.h"
 #include "chrome/browser/ui/extensions/settings_overridden_dialog_controller.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 
 namespace {
 
@@ -51,10 +55,13 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
   ~SettingsOverriddenDialogViewBrowserTest() override = default;
 
   void ShowUi(const std::string& name) override {
+    test_name_ = name;
     if (name == "SimpleDialog")
       ShowSimpleDialog();
     else if (name == "NtpOverriddenDialog")
       ShowNtpOverriddenDialog();
+    else if (name == "SearchOverriddenDialog")
+      ShowSearchOverriddenDialog();
     else
       NOTREACHED() << name;
   }
@@ -88,7 +95,45 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
         ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
   }
 
+  void ShowSearchOverriddenDialog() {
+    base::FilePath test_root_path;
+    ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_root_path));
+
+    // Load up an extension that overrides search.
+    Profile* const profile = browser()->profile();
+    scoped_refptr<const extensions::Extension> extension =
+        extensions::ChromeTestExtensionLoader(profile).LoadExtension(
+            test_root_path.AppendASCII("extensions/search_provider_override"));
+    ASSERT_TRUE(extension);
+
+    // Perform a search via the omnibox to trigger the dialog.
+    ui_test_utils::SendToOmniboxAndSubmit(browser(), "Penguin",
+                                          base::TimeTicks::Now());
+    content::WaitForLoadStop(
+        browser()->tab_strip_model()->GetActiveWebContents());
+  }
+
+  bool VerifyUi() override {
+    if (!DialogBrowserTest::VerifyUi())
+      return false;
+
+    if (test_name_ == "SearchOverriddenDialog") {
+      // Note: Because this is a test, we don't actually expect this navigation
+      // to succeed. But we can still check that the user was sent to
+      // example.com (the new search engine).
+      EXPECT_EQ("www.example.com", browser()
+                                       ->tab_strip_model()
+                                       ->GetActiveWebContents()
+                                       ->GetLastCommittedURL()
+                                       .host_piece());
+    }
+
+    return true;
+  }
+
  private:
+  std::string test_name_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
@@ -105,3 +150,12 @@ IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
   ShowAndVerifyUi();
   extensions::SetNtpPostInstallUiEnabledForTesting(false);
 }
+
+// The chrome_settings_overrides API that allows extensions to override the
+// default search provider is only available on Windows and Mac.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
+                       InvokeUi_SearchOverriddenDialog) {
+  ShowAndVerifyUi();
+}
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)

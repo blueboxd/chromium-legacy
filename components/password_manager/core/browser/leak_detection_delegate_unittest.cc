@@ -38,14 +38,6 @@ using testing::NiceMock;
 using testing::Return;
 using testing::WithArg;
 
-ACTION_P(InvokeConsumerWithPasswordForms, forms) {
-  std::vector<std::unique_ptr<autofill::PasswordForm>> results;
-  for (const auto& form : forms) {
-    results.push_back(std::make_unique<autofill::PasswordForm>(form));
-  }
-  arg0->OnGetPasswordStoreResults(std::move(results));
-}
-
 autofill::PasswordForm CreateTestForm() {
   autofill::PasswordForm form;
   form.origin = GURL("http://www.example.com/a/LoginAuth");
@@ -277,9 +269,7 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithTrueResult) {
 
   EXPECT_CALL(client(), GetProfilePasswordStore())
       .WillRepeatedly(testing::Return(store()));
-  EXPECT_CALL(*store(), GetLoginsByPassword)
-      .WillRepeatedly(WithArg<1>(InvokeConsumerWithPasswordForms(
-          std::vector<autofill::PasswordForm>())));
+  EXPECT_CALL(*store(), FillMatchingLoginsByPassword);
   EXPECT_CALL(factory(), TryCreateLeakCheck)
       .WillOnce(
           Return(ByMove(std::make_unique<NiceMock<MockLeakDetectionCheck>>())));
@@ -293,6 +283,7 @@ TEST_F(LeakDetectionDelegateTest, LeakDetectionDoneWithTrueResult) {
   delegate_interface->OnLeakDetectionDone(
       /*is_leaked=*/true, form.origin, form.username_value,
       form.password_value);
+  WaitForPasswordStore();
   histogram_tester.ExpectTotalCount(
       "PasswordManager.LeakDetection.NotifyIsLeakedTime", 1);
 }
@@ -305,9 +296,10 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
 
   EXPECT_CALL(client(), GetProfilePasswordStore())
       .WillRepeatedly(testing::Return(store()));
-  EXPECT_CALL(*store(), GetLoginsByPassword)
-      .WillRepeatedly(WithArg<1>(InvokeConsumerWithPasswordForms(
-          std::vector<autofill::PasswordForm>{form})));
+  std::vector<std::unique_ptr<autofill::PasswordForm>> forms;
+  forms.push_back(std::make_unique<autofill::PasswordForm>(form));
+  EXPECT_CALL(*store(), FillMatchingLoginsByPassword)
+      .WillOnce(Return(ByMove(std::move(forms))));
   EXPECT_CALL(factory(), TryCreateLeakCheck)
       .WillOnce(
           Return(ByMove(std::make_unique<NiceMock<MockLeakDetectionCheck>>())));
@@ -323,6 +315,45 @@ TEST_F(LeakDetectionDelegateTest, LeakHistoryAddCredentials) {
       GetSignonRealm(form.origin), form.username_value, base::Time::Now(),
       CompromiseType::kLeaked};
   EXPECT_CALL(*store(), AddCompromisedCredentialsImpl(compromised_credentials));
+  WaitForPasswordStore();
+}
+
+// crbug.com/1083937 regression
+TEST_F(LeakDetectionDelegateTest, CallStartTwice) {
+  EXPECT_CALL(client(), GetProfilePasswordStore())
+      .WillRepeatedly(testing::Return(store()));
+  EXPECT_CALL(*store(), FillMatchingLoginsByPassword)
+      .Times(testing::AtLeast(1));
+  auto check_instance = std::make_unique<NiceMock<MockLeakDetectionCheck>>();
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
+      .WillOnce(Return(ByMove(std::move(check_instance))));
+  autofill::PasswordForm form = CreateTestForm();
+  delegate().StartLeakCheck(form);
+  ASSERT_TRUE(delegate().leak_check());
+
+  // The delegate analyses the password store after this call.
+  LeakDetectionDelegateInterface* delegate_interface = &delegate();
+  delegate_interface->OnLeakDetectionDone(
+      /*is_leaked=*/true, form.origin, form.username_value,
+      form.password_value);
+
+  // Start the check again on another form in the mean time.
+  check_instance = std::make_unique<NiceMock<MockLeakDetectionCheck>>();
+  EXPECT_CALL(factory(), TryCreateLeakCheck(&delegate(), _, _))
+      .WillOnce(Return(ByMove(std::move(check_instance))));
+  form.username_value = ASCIIToUTF16("username");
+  form.password_value = ASCIIToUTF16("password");
+  delegate().StartLeakCheck(form);
+  ASSERT_TRUE(delegate().leak_check());
+
+  // Simulate the previous check is complete now.
+  WaitForPasswordStore();
+
+  // The second check is finishing and talking to the password store. It should
+  // not crash.
+  delegate_interface->OnLeakDetectionDone(
+      /*is_leaked=*/true, form.origin, form.username_value,
+      form.password_value);
   WaitForPasswordStore();
 }
 

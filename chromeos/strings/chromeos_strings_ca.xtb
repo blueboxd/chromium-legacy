@@ -43,6 +43,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6058625436358447366">Per acabar, introdueix la contrasenya antiga i la nova</translation>
 <translation id="6106186594183574873">Per acabar, introdueix la contrasenya antiga</translation>
 <translation id="6146993107019042706">Per acabar, introdueix la contrasenya nova</translation>
+<translation id="6517239166834772319">Explora</translation>
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
@@ -50,6 +51,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
 <translation id="8208861521865154048">Avantatges</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest usuari. És possible que gestioni la configuració i supervisi l'activitat de l'usuari de manera remota.</translation>
 <translation id="8747900814994928677">Confirma el canvi</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Intents restants: <ph name="ATTEMPTS_LEFT" />.</translation>
 <translation id="910415269708673980">Actualitza el tiquet de: <ph name="PRINCIPAL_NAME" /></translation>

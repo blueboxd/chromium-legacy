@@ -23,6 +23,8 @@
 #include "base/android/application_status_listener.h"
 #endif
 
+class PrefService;
+
 namespace data_use_measurement {
 
 // Records the data use of user traffic and various services in UMA histograms.
@@ -53,7 +55,10 @@ class DataUseMeasurement
   static bool IsMetricsServiceRequest(
       int32_t network_traffic_annotation_hash_id);
 
+  // |pref_service| can be used for accessing local state prefs. Can be null.
+  // |network_connection_tracker| is guaranteed to be non-null.
   DataUseMeasurement(
+      PrefService* pref_service,
       network::NetworkConnectionTracker* network_connection_tracker);
   ~DataUseMeasurement() override;
 

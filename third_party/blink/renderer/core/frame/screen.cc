@@ -100,113 +100,110 @@ unsigned Screen::pixelDepth() const {
   return colorDepth();
 }
 
-void Screen::RecordIdentifiableSurface(WebFeature feature, int value) const {
-  if (!DomWindow()) return;
+int Screen::RecordThenReturn(WebFeature feature, int value) const {
+  if (!DomWindow()) return value;
   Document* document = DomWindow()->document();
-  if (!document) return;
+  if (!document) return value;
   IdentifiabilityMetricBuilder(
       base::UkmSourceId::FromInt64(document->UkmSourceID()))
-      .Set(IdentifiableSurface::FromTypeAndInput(
-              IdentifiableSurface::Type::kWebFeature,
-              static_cast<uint64_t>(feature)),
-          IdentifiabilityDigestHelper(value))
+      .SetWebfeature(feature, IdentifiabilityDigestHelper(value))
       .Record(document->UkmRecorder());
-}
-
-int Screen::ComputeAvailLeft() const {
-  if (display_) {
-    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->work_area.x();
-  }
-  LocalFrame* frame = GetFrame();
-  if (!frame)
-    return 0;
-  Page* page = frame->GetPage();
-  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
-    WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.x *
-                                    screen_info.device_scale_factor));
-  }
-  return static_cast<int>(GetScreenInfo(*frame).available_rect.x);
+  return value;
 }
 
 int Screen::availLeft() const {
-  int result = ComputeAvailLeft();
-  RecordIdentifiableSurface(
-      WebFeature::kV8Screen_AvailLeft_AttributeGetter, result);
-  return result;
-}
-
-int Screen::ComputeAvailTop() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->work_area.y();
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailLeft_AttributeGetter,
+        display_->work_area.x());
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailLeft_AttributeGetter, 0);
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.y *
-                                    screen_info.device_scale_factor));
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailLeft_AttributeGetter,
+        static_cast<int>(lroundf(screen_info.available_rect.x *
+                                 screen_info.device_scale_factor)));
   }
-  return static_cast<int>(GetScreenInfo(*frame).available_rect.y);
+  return RecordThenReturn(
+      WebFeature::kV8Screen_AvailLeft_AttributeGetter,
+      static_cast<int>(GetScreenInfo(*frame).available_rect.x));
 }
 
 int Screen::availTop() const {
-  int result = ComputeAvailTop();
-  RecordIdentifiableSurface(
-      WebFeature::kV8Screen_AvailTop_AttributeGetter, result);
-  return result;
-}
-
-int Screen::ComputeAvailHeight() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->work_area.height();
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailTop_AttributeGetter,
+        display_->work_area.y());
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
+    return RecordThenReturn(WebFeature::kV8Screen_AvailTop_AttributeGetter, 0);
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.height *
-                                    screen_info.device_scale_factor));
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailTop_AttributeGetter,
+        static_cast<int>(lroundf(screen_info.available_rect.y *
+                                 screen_info.device_scale_factor)));
   }
-  return GetScreenInfo(*frame).available_rect.height;
+  return RecordThenReturn(
+      WebFeature::kV8Screen_AvailTop_AttributeGetter,
+      static_cast<int>(GetScreenInfo(*frame).available_rect.y));
 }
 
 int Screen::availHeight() const {
-  int result = ComputeAvailHeight();
-  RecordIdentifiableSurface(
-      WebFeature::kV8Screen_AvailHeight_AttributeGetter, result);
-  return result;
-}
-
-int Screen::ComputeAvailWidth() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->work_area.width();
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailHeight_AttributeGetter,
+        display_->work_area.height());
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailHeight_AttributeGetter, 0);
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(lroundf(screen_info.available_rect.width *
-                                    screen_info.device_scale_factor));
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailHeight_AttributeGetter,
+        static_cast<int>(lroundf(screen_info.available_rect.height *
+                                 screen_info.device_scale_factor)));
   }
-  return GetScreenInfo(*frame).available_rect.width;
+  return RecordThenReturn(
+        WebFeature::kV8Screen_AvailHeight_AttributeGetter,
+        GetScreenInfo(*frame).available_rect.height);
 }
 
 int Screen::availWidth() const {
-  int result = ComputeAvailWidth();
-  RecordIdentifiableSurface(
-      WebFeature::kV8Screen_AvailWidth_AttributeGetter, result);
-  return result;
+  if (display_) {
+    DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailWidth_AttributeGetter,
+        display_->work_area.width());
+  }
+  LocalFrame* frame = GetFrame();
+  if (!frame)
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailWidth_AttributeGetter, 0);
+  Page* page = frame->GetPage();
+  if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
+    WebScreenInfo screen_info = GetScreenInfo(*frame);
+    return RecordThenReturn(
+        WebFeature::kV8Screen_AvailWidth_AttributeGetter,
+        static_cast<int>(lroundf(screen_info.available_rect.width *
+                                 screen_info.device_scale_factor)));
+  }
+  return RecordThenReturn(
+      WebFeature::kV8Screen_AvailWidth_AttributeGetter,
+      GetScreenInfo(*frame).available_rect.width);
 }
 
 void Screen::Trace(Visitor* visitor) const {

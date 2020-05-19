@@ -1566,17 +1566,6 @@ void DecodeGenericPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
-  if (policy.has_device_login_screen_isolate_origins()) {
-    const em::DeviceLoginScreenIsolateOriginsProto& container(
-        policy.device_login_screen_isolate_origins());
-    if (container.has_isolate_origins()) {
-      policies->Set(
-          key::kDeviceLoginScreenIsolateOrigins, POLICY_LEVEL_MANDATORY,
-          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
-          std::make_unique<base::Value>(container.isolate_origins()), nullptr);
-    }
-  }
-
   if (policy.has_virtual_machines_allowed()) {
     const em::VirtualMachinesAllowedProto& container(
         policy.virtual_machines_allowed());

@@ -17,7 +17,7 @@ import {CustomElement} from './custom_element.js';
 import {DragManager, DragManagerDelegate} from './drag_manager.js';
 import {TabElement} from './tab.js';
 import {isTabGroupElement, TabGroupElement} from './tab_group.js';
-import {TabStripEmbedderProxy} from './tab_strip_embedder_proxy.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from './tab_strip_embedder_proxy.js';
 import {tabStripOptions} from './tab_strip_options.js';
 import {TabData, TabGroupVisualData, TabsApiProxy, TabsApiProxyImpl} from './tabs_api_proxy.js';
 
@@ -122,7 +122,7 @@ class TabListElement extends CustomElement {
     this.pinnedTabsElement_ = /** @type {!Element} */ (this.$('#pinnedTabs'));
 
     /** @private {!TabStripEmbedderProxy} */
-    this.tabStripEmbedderProxy_ = TabStripEmbedderProxy.getInstance();
+    this.tabStripEmbedderProxy_ = TabStripEmbedderProxyImpl.getInstance();
 
     /** @private {!TabsApiProxy} */
     this.tabsApi_ = TabsApiProxyImpl.getInstance();

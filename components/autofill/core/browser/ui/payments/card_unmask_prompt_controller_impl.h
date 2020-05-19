@@ -22,8 +22,7 @@ class CardUnmaskPromptView;
 
 class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
  public:
-  CardUnmaskPromptControllerImpl(PrefService* pref_service,
-                                 bool is_off_the_record);
+  explicit CardUnmaskPromptControllerImpl(PrefService* pref_service);
   virtual ~CardUnmaskPromptControllerImpl();
 
   // This should be OnceCallback<unique_ptr<CardUnmaskPromptView>> but there are
@@ -54,7 +53,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
   base::string16 GetOkButtonLabel() const override;
   int GetCvcImageRid() const override;
   bool ShouldRequestExpirationDate() const override;
-  bool CanStoreLocally() const override;
   bool GetStoreLocallyStartState() const override;
 #if defined(OS_ANDROID)
   bool ShouldOfferWebauthn() const override;
@@ -78,7 +76,6 @@ class CardUnmaskPromptControllerImpl : public CardUnmaskPromptController {
 
   PrefService* pref_service_;
   bool new_card_link_clicked_ = false;
-  bool is_off_the_record_;
   CreditCard card_;
   AutofillClient::UnmaskCardReason reason_;
   base::WeakPtr<CardUnmaskDelegate> delegate_;

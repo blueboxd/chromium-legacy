@@ -89,7 +89,7 @@ tab_groups::TabGroupColorId FakeBaseTabStripController::GetGroupColorId(
   return fake_group_data_.color();
 }
 
-bool FakeBaseTabStripController::GetGroupCollapsedState(
+bool FakeBaseTabStripController::IsGroupCollapsed(
     const tab_groups::TabGroupId& group) const {
   return fake_group_data_.is_collapsed();
 }

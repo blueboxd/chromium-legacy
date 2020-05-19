@@ -82,7 +82,6 @@ class BrowserContext;
 class BrowserPluginGuestDelegate;
 class RenderFrameHost;
 class RenderViewHost;
-class RenderWidgetHost;
 class RenderWidgetHostView;
 class WebContentsDelegate;
 class WebUI;
@@ -684,13 +683,6 @@ class WebContents : public PageNavigator,
   // Reloads the focused frame.
   virtual void ReloadFocusedFrame() = 0;
 
-  // Attains PauseSubresourceLoadingHandles for each frame in the web contents.
-  // As long as these handles are not deleted, subresources will continue to be
-  // deferred until an internal navigation happens in the frame. Holding handles
-  // for deleted or re-navigated frames has no effect.
-  virtual std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
-  PauseSubresourceLoading() = 0;
-
   // Editing commands ----------------------------------------------------------
 
   virtual void Undo() = 0;
@@ -827,19 +819,12 @@ class WebContents : public PageNavigator,
   // Returns the contents MIME type after a navigation.
   virtual const std::string& GetContentsMimeType() = 0;
 
-  // Returns true if this WebContents will notify about disconnection.
-  virtual bool WillNotifyDisconnection() = 0;
-
   // Returns the settings which get passed to the renderer.
   virtual blink::mojom::RendererPreferences* GetMutableRendererPrefs() = 0;
 
   // Tells the tab to close now. The tab will take care not to close until it's
   // out of nested run loops.
   virtual void Close() = 0;
-
-  // A render view-originated drag has ended. Informs the render view host and
-  // WebContentsDelegate.
-  virtual void SystemDragEnded(RenderWidgetHost* source_rwh) = 0;
 
   // Indicates if this tab was explicitly closed by the user (control-w, close
   // tab menu item...). This is false for actions that indirectly close the tab,

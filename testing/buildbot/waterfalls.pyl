@@ -1355,7 +1355,7 @@
       },
       'Dawn Win10 x64 ASAN Release': {
         'os_type': 'win',
-        'browser_config': 'release',
+        'browser_config': 'release_x64',
         'swarming': {
           'dimension_sets': [
             # This bot spawns jobs on multiple GPU types.

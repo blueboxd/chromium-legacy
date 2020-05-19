@@ -1082,10 +1082,6 @@
       name: "MediaQueryNavigationControls",
     },
     {
-      name: "MediaQueryShape",
-      status: "experimental",
-    },
-    {
       name: "MediaSession",
       status: "stable",
     },
@@ -1738,6 +1734,10 @@
       name: "TextFragmentIdentifiers",
       origin_trial_feature_name: "TextFragmentIdentifiers",
       status: "stable",
+    },
+    {
+      name: "ThirdPartyOriginTrials",
+      status: "test",
     },
     {
       name: "TimerThrottlingForBackgroundTabs",

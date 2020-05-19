@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<!--
+Copyright 2020 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    video {
+      background-color: black;
+      max-width: 100%;
+      height: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <video src="data:cast_streaming_receiver" autoplay>
+
+  <!-- TODO(crbug.com/1042501): This should not be necessary. Figure out why
+       autoplay is not enough here. -->
+  <script>
+    var video = document.querySelector('video');
+    video.play();
+  </script>
+</body>
+</html>

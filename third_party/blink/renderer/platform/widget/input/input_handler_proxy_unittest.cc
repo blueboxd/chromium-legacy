@@ -221,11 +221,10 @@ class MockInputHandlerProxyClient : public InputHandlerProxyClient {
                     const WebInputEventAttribution&));
 
   void DispatchNonBlockingEventToMainThread(
-      std::unique_ptr<WebInputEvent> event,
-      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<WebCoalescedInputEvent> event,
       const WebInputEventAttribution&) override {
     CHECK(event.get());
-    DispatchNonBlockingEventToMainThread_(*event.get());
+    DispatchNonBlockingEventToMainThread_(event->Event());
   }
 
   MOCK_METHOD5(DidOverscroll,
@@ -395,16 +394,17 @@ class InputHandlerProxyTest
 InputHandlerProxy::EventDisposition HandleInputEventWithLatencyInfo(
     TestInputHandlerProxy* input_handler,
     const WebInputEvent& event) {
-  std::unique_ptr<WebInputEvent> scoped_input_event(event.Clone());
+  std::unique_ptr<WebCoalescedInputEvent> scoped_input_event =
+      std::make_unique<WebCoalescedInputEvent>(event.Clone(),
+                                               ui::LatencyInfo());
   InputHandlerProxy::EventDisposition event_disposition =
       InputHandlerProxy::DID_NOT_HANDLE;
   input_handler->HandleInputEventWithLatencyInfo(
-      std::move(scoped_input_event), ui::LatencyInfo(),
+      std::move(scoped_input_event),
       base::BindLambdaForTesting(
           [&event_disposition](
               InputHandlerProxy::EventDisposition disposition,
-              std::unique_ptr<WebInputEvent> event,
-              const ui::LatencyInfo& latency_info,
+              std::unique_ptr<blink::WebCoalescedInputEvent> event,
               std::unique_ptr<InputHandlerProxy::DidOverscrollParams> callback,
               const WebInputEventAttribution& attribution) {
             event_disposition = disposition;
@@ -419,16 +419,17 @@ InputHandlerProxy::EventDisposition HandleInputEventAndFlushEventQueue(
     const WebInputEvent& event) {
   EXPECT_CALL(mock_input_handler, SetNeedsAnimateInput())
       .Times(testing::AnyNumber());
-  std::unique_ptr<WebInputEvent> scoped_input_event(event.Clone());
+  std::unique_ptr<WebCoalescedInputEvent> scoped_input_event =
+      std::make_unique<WebCoalescedInputEvent>(event.Clone(),
+                                               ui::LatencyInfo());
   InputHandlerProxy::EventDisposition event_disposition =
       InputHandlerProxy::DID_NOT_HANDLE;
   input_handler->HandleInputEventWithLatencyInfo(
-      std::move(scoped_input_event), ui::LatencyInfo(),
+      std::move(scoped_input_event),
       base::BindLambdaForTesting(
           [&event_disposition](
               InputHandlerProxy::EventDisposition disposition,
-              std::unique_ptr<WebInputEvent> event,
-              const ui::LatencyInfo& latency_info,
+              std::unique_ptr<blink::WebCoalescedInputEvent> event,
               std::unique_ptr<InputHandlerProxy::DidOverscrollParams> callback,
               const WebInputEventAttribution& attribution) {
             event_disposition = disposition;
@@ -472,9 +473,9 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
   }
 
   void InjectInputEvent(std::unique_ptr<WebInputEvent> event) {
-    ui::LatencyInfo latency;
     input_handler_proxy_.HandleInputEventWithLatencyInfo(
-        std::move(event), latency,
+        std::make_unique<WebCoalescedInputEvent>(std::move(event),
+                                                 ui::LatencyInfo()),
         base::BindOnce(
             &InputHandlerProxyEventQueueTest::DidHandleInputEventAndOverscroll,
             weak_ptr_factory_.GetWeakPtr()));
@@ -491,12 +492,11 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
 
   void DidHandleInputEventAndOverscroll(
       InputHandlerProxy::EventDisposition event_disposition,
-      std::unique_ptr<WebInputEvent> input_event,
-      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<WebCoalescedInputEvent> input_event,
       std::unique_ptr<InputHandlerProxy::DidOverscrollParams> overscroll_params,
       const WebInputEventAttribution& attribution) {
     event_disposition_recorder_.push_back(event_disposition);
-    latency_info_recorder_.push_back(latency_info);
+    latency_info_recorder_.push_back(input_event->latency_info());
   }
 
   base::circular_deque<std::unique_ptr<EventWithCallback>>& event_queue() {
@@ -3126,9 +3126,10 @@ class InputHandlerProxyMomentumScrollJankTest : public testing::Test {
 
  protected:
   void HandleGesture(std::unique_ptr<WebInputEvent> event) {
-    ui::LatencyInfo latency;
     input_handler_proxy_.HandleInputEventWithLatencyInfo(
-        std::move(event), latency, base::DoNothing());
+        std::make_unique<WebCoalescedInputEvent>(std::move(event),
+                                                 ui::LatencyInfo()),
+        base::DoNothing());
   }
 
   uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;

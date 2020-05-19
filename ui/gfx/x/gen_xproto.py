@@ -177,6 +177,11 @@ import types
 # so this global is unavoidable.
 output = collections.defaultdict(int)
 
+MODULE_NAMES = {
+    'xproto': 'XProto',
+    'glx': 'Glx',
+}
+
 UPPER_CASE_PATTERN = re.compile(r'^[A-Z0-9_]+$')
 
 
@@ -328,6 +333,9 @@ class GenXproto:
         # Map of enums to their underlying types
         self.enum_types = collections.defaultdict(set)
 
+        # Map from (XML tag, XML name) to XML element
+        self.module_names = {}
+
     # Write a line to the current file.
     def write(self, line=''):
         indent = self.indent if line and not line.startswith('#') else 0
@@ -472,16 +480,45 @@ class GenXproto:
         assert expr.lenfield_name
         return expr.lenfield_name
 
+    def get_xidunion_element(self, name):
+        key = ('xidunion', name[-1])
+        return self.module_names.get(key, None)
+
+    def declare_xidunion(self, xidunion, xidname):
+        names = [type_element.text for type_element in xidunion]
+        types = list(set([self.module.get_type(name) for name in names]))
+        assert len(types) == 1
+        value_type = types[0]
+        value_typename = self.qualtype(value_type, value_type.name)
+        with Indent(self, 'struct %s {' % xidname, '};'):
+            self.write('%s() : value{} {}' % xidname)
+            self.write()
+            for name in names:
+                cpp_name = self.module.get_type_name(name)
+                typename = self.qualtype(value_type, cpp_name)
+                self.write('%s(%s value) : value{static_cast<%s>(value)} {}' %
+                           (xidname, typename, value_typename))
+                self.write(
+                    'operator %s() const { return static_cast<%s>(value); }' %
+                    (typename, typename))
+                self.write()
+            self.write('%s value;' % value_typename)
+
     def declare_simple(self, item, name):
         # The underlying type of an enum must be integral, so avoid defining
         # FLOAT32 or FLOAT64.  Usages are renamed to float and double instead.
         renamed = tuple(self.rename_type(item, name))
-        if name[-1] not in ('FLOAT32', 'FLOAT64'
-                            ) and renamed not in self.replace_with_enum:
-            self.write(
-                'enum class %s : %s {};' %
-                (adjust_type_case(name[-1]), self.qualtype(item, item.name)))
-            self.write()
+        if (name[-1] in ('FLOAT32', 'FLOAT64')
+                or renamed in self.replace_with_enum):
+            return
+
+        xidunion = self.get_xidunion_element(name)
+        if xidunion:
+            self.declare_xidunion(xidunion, renamed[-1])
+        else:
+            self.write('enum class %s : %s {};' %
+                       (renamed[-1], self.qualtype(item, item.name)))
+        self.write()
 
     def copy_primitive(self, name):
         self.write('%s(&%s, &buf);' %
@@ -931,19 +968,26 @@ class GenXproto:
             self.replace_with_enum.add(t)
             self.enum_types[enum.name] = simple.name
 
+        for node in self.module.namespace.root:
+            if 'name' in node.attrib:
+                key = (node.tag, node.attrib['name'])
+                assert key not in self.module_names
+                self.module_names[key] = node
+
         # The order of types in xcbproto's xml files are inconsistent, so sort
-        # them in the order {type aliases, enums, structs, requests/replies}.
-        def type_order_priority(item):
+        # them in the order {type aliases, enums, xidunions, structs,
+        # requests/replies}.
+        def type_order_priority((name, item)):
             if item.is_simple:
-                return 0
+                return 2 if self.get_xidunion_element(name) else 0
             if isinstance(item, self.xcbgen.xtypes.Enum):
                 return 1
             if isinstance(item, self.xcbgen.xtypes.Request):
-                return 3
-            return 2
+                return 4
+            return 3
 
-        def cmp((_1, item1), (_2, item2)):
-            return type_order_priority(item1) - type_order_priority(item2)
+        def cmp(type1, type2):
+            return type_order_priority(type1) - type_order_priority(type2)
 
         # sort() is guaranteed to be stable.
         self.module.all.sort(cmp=cmp)

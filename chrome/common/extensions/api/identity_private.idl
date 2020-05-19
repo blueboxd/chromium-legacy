@@ -14,6 +14,15 @@ namespace identityPrivate {
 
   interface Events {
     // Fired when a web flow dialog should be displayed.
-    static void onWebFlowRequest(DOMString key, DOMString url, DOMString mode);
+    // |key| : A unique identifier that the caller can use to locate the dialog
+    // window.
+    // |url| : A URL that will be loaded in the webview.
+    // |mode| : 'interactive' or 'silent'. The window will be displayed if the
+    // mode is 'interactive'.
+    // |partition| : A name used for the webview partition.
+    static void onWebFlowRequest(DOMString key,
+                                 DOMString url,
+                                 DOMString mode,
+                                 DOMString partition);
   };
 };

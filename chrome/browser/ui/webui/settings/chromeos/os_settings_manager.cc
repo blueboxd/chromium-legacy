@@ -45,7 +45,8 @@ OsSettingsManager::OsSettingsManager(
       hierarchy_(std::make_unique<Hierarchy>(*sections_)) {
   if (base::FeatureList::IsEnabled(features::kNewOsSettingsSearch)) {
     search_handler_ = std::make_unique<SearchHandler>(
-        search_tag_registry_.get(), local_search_service);
+        search_tag_registry_.get(), sections_.get(), hierarchy_.get(),
+        local_search_service);
   }
 }
 

@@ -232,11 +232,8 @@ class CORE_EXPORT LayoutTableSection final
   // information.
   int DistributeExtraLogicalHeightToRows(int extra_logical_height);
 
-  static LayoutTableSection* CreateAnonymousWithParent(const LayoutObject*);
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
-      const LayoutObject* parent) const override {
-    return CreateAnonymousWithParent(parent);
-  }
+      const LayoutObject* parent) const override;
 
   void Paint(const PaintInfo&) const override;
 

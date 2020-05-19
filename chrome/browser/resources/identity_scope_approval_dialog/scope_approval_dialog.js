@@ -12,8 +12,9 @@ let windowId;
  * @param {Object} win The dialog window that contains this page. Can
  *     be left undefined if the caller does not want to display the
  *     window.
+ * @param {string} partition The partition name used for the webview.
  */
-function loadAuthUrlAndShowWindow(url, win) {
+function loadAuthUrlAndShowWindow(url, win, partition) {
   // Send popups from the webview to a normal browser window.
   webview.addEventListener('newwindow', function(e) {
     e.window.discard();
@@ -43,6 +44,7 @@ function loadAuthUrlAndShowWindow(url, win) {
     document.querySelector('.titlebar').classList.add('titlebar-border');
   }
 
+  webview.partition = partition;
   webview.src = url;
   let windowShown = false;
   webview.addEventListener('loadstop', function() {

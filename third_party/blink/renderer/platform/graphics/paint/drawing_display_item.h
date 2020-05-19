@@ -50,8 +50,8 @@ class PLATFORM_EXPORT DrawingDisplayItem : public DisplayItem {
  private:
   bool CalculateKnownToBeOpaque(const PaintRecord*) const;
 
-  sk_sp<const PaintRecord> record_;
   mutable base::Optional<bool> known_to_be_opaque_;
+  sk_sp<const PaintRecord> record_;
 };
 
 // TODO(dcheng): Move this ctor back inline once the clang plugin is fixed.

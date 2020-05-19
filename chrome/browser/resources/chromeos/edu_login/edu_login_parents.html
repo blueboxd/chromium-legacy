@@ -7,6 +7,10 @@
     transition: background 200ms;
   }
 
+  .main-padding {
+    margin-bottom: 16px;
+  }
+
   .main-padding.account-list-item {
     padding-bottom: 0;
     padding-top: 0;
@@ -31,20 +35,20 @@
     width: var(--profile-icon-size);
   }
 
-  #parentsListBody {
-    margin-bottom: 16px;
-  }
 </style>
 
 <edu-login-template>
   <span slot="main">
     <div class="main-padding">
       <if expr="_google_chrome">
-        <img class="google-full-logo"
-            src="chrome://theme/IDR_LOGO_GOOGLE_COLOR_90" alt="">
+        <img class="google-logo"
+            src="chrome://chrome-signin/googleg.svg" alt="">
       </if>
-      <h1>$i18n{parentsListTitle}</h1>
-      <p id="parentsListBody" class="secondary">$i18n{parentsListBody}</p>
+      <h1>[[getTitle_()]]</h1>
+      <p id="reauth-message" hidden="[[!reauthFlow_]]">
+        [[getReauthMessage_()]]
+      </p>
+      <p>[[getBody_()]]</p>
     </div>
     <div>
       <template is="dom-repeat" items="[[parents_]]">
@@ -66,7 +70,6 @@
     </div>
   </span>
   <span slot="buttons">
-    <edu-login-button button-type="back"></edu-login-button>
     <edu-login-button button-type="next"
         disabled="[[isNextDisabled_(selectedParent)]]">
     </edu-login-button>

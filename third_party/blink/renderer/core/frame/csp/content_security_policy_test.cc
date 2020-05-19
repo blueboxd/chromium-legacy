@@ -134,18 +134,19 @@ TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
   csp2->CopyStateFrom(csp.Get());
   EXPECT_FALSE(csp2->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted,
-      ResourceRequest::RedirectStatus::kNoRedirect,
+      example_url, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting,
       ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
   EXPECT_TRUE(csp2->AllowPluginType("application/x-type-1",
                                     "application/x-type-1", example_url,
                                     ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(csp2->AllowImageFromSource(
-      example_url, ResourceRequest::RedirectStatus::kNoRedirect,
+      example_url, example_url, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting,
       ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
   EXPECT_FALSE(csp2->AllowImageFromSource(
-      not_example_url, ResourceRequest::RedirectStatus::kNoRedirect,
+      not_example_url, not_example_url,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting,
       ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
   EXPECT_FALSE(csp2->AllowPluginType("application/x-type-2",
@@ -168,17 +169,18 @@ TEST_F(ContentSecurityPolicyTest, CopyPluginTypesFrom) {
   csp2->CopyPluginTypesFrom(csp.Get());
   EXPECT_TRUE(csp2->AllowScriptFromSource(
       example_url, String(), IntegrityMetadataSet(), kParserInserted,
-      ResourceRequest::RedirectStatus::kNoRedirect,
+      example_url, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(csp2->AllowPluginType("application/x-type-1",
                                     "application/x-type-1", example_url,
                                     ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(csp2->AllowImageFromSource(
-      example_url, ResourceRequest::RedirectStatus::kNoRedirect,
+      example_url, example_url, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
-  EXPECT_TRUE(csp2->AllowImageFromSource(
-      not_example_url, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(
+      csp2->AllowImageFromSource(not_example_url, not_example_url,
+                                 ResourceRequest::RedirectStatus::kNoRedirect,
+                                 ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(csp2->AllowPluginType("application/x-type-2",
                                      "application/x-type-2", example_url,
                                      ReportingDisposition::kSuppressReporting));
@@ -279,19 +281,19 @@ TEST_F(ContentSecurityPolicyTest, ObjectSrc) {
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
                                  network::mojom::RequestDestination::kEmpty,
                                  url, String(), IntegrityMetadataSet(),
-                                 kParserInserted,
+                                 kParserInserted, url,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::EMBED,
                                  network::mojom::RequestDestination::kEmbed,
                                  url, String(), IntegrityMetadataSet(),
-                                 kParserInserted,
+                                 kParserInserted, url,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::PLUGIN,
                                 network::mojom::RequestDestination::kEmpty, url,
                                 String(), IntegrityMetadataSet(),
-                                kParserInserted,
+                                kParserInserted, url,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
 }
@@ -305,31 +307,31 @@ TEST_F(ContentSecurityPolicyTest, ConnectSrc) {
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE,
                                  network::mojom::RequestDestination::kEmpty,
                                  url, String(), IntegrityMetadataSet(),
-                                 kParserInserted,
+                                 kParserInserted, url,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::XML_HTTP_REQUEST,
                                  network::mojom::RequestDestination::kEmpty,
                                  url, String(), IntegrityMetadataSet(),
-                                 kParserInserted,
+                                 kParserInserted, url,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::BEACON,
                                  network::mojom::RequestDestination::kEmpty,
                                  url, String(), IntegrityMetadataSet(),
-                                 kParserInserted,
+                                 kParserInserted, url,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::FETCH,
                                  network::mojom::RequestDestination::kEmpty,
                                  url, String(), IntegrityMetadataSet(),
-                                 kParserInserted,
+                                 kParserInserted, url,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::PLUGIN,
                                 network::mojom::RequestDestination::kEmpty, url,
                                 String(), IntegrityMetadataSet(),
-                                kParserInserted,
+                                kParserInserted, url,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
 }
@@ -366,9 +368,11 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
         execution_context->GetContentSecurityPolicyDelegate());
     policy->DidReceiveHeader(test.policy, ContentSecurityPolicyType::kEnforce,
                              ContentSecurityPolicySource::kHTTP);
-    EXPECT_EQ(test.allowed, policy->AllowScriptFromSource(
-                                resource, String(test.nonce),
-                                IntegrityMetadataSet(), kParserInserted));
+    EXPECT_EQ(test.allowed,
+              policy->AllowScriptFromSource(
+                  resource, String(test.nonce), IntegrityMetadataSet(),
+                  kParserInserted, resource,
+                  ResourceRequest::RedirectStatus::kNoRedirect));
     // If this is expected to generate a violation, we should have sent a
     // report.
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
@@ -381,7 +385,7 @@ TEST_F(ContentSecurityPolicyTest, NonceSinglePolicy) {
                              ContentSecurityPolicySource::kHTTP);
     EXPECT_TRUE(policy->AllowScriptFromSource(
         resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
-        ResourceRequest::RedirectStatus::kNoRedirect,
+        resource, ResourceRequest::RedirectStatus::kNoRedirect,
         ReportingDisposition::kReport,
         ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
     // If this is expected to generate a violation, we should have sent a
@@ -539,12 +543,13 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     EXPECT_EQ(test.allowed1,
               policy->AllowScriptFromSource(
                   resource, String(test.nonce), IntegrityMetadataSet(),
-                  kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+                  kParserInserted, resource,
+                  ResourceRequest::RedirectStatus::kNoRedirect,
                   ReportingDisposition::kReport,
                   ContentSecurityPolicy::CheckHeaderType::kCheckEnforce));
     EXPECT_TRUE(policy->AllowScriptFromSource(
         resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
-        ResourceRequest::RedirectStatus::kNoRedirect,
+        resource, ResourceRequest::RedirectStatus::kNoRedirect,
         ReportingDisposition::kReport,
         ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
@@ -559,13 +564,14 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
                              ContentSecurityPolicySource::kHTTP);
     EXPECT_TRUE(policy->AllowScriptFromSource(
         resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
-        ResourceRequest::RedirectStatus::kNoRedirect,
+        resource, ResourceRequest::RedirectStatus::kNoRedirect,
         ReportingDisposition::kReport,
         ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
     EXPECT_EQ(test.allowed2,
               policy->AllowScriptFromSource(
                   resource, String(test.nonce), IntegrityMetadataSet(),
-                  kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+                  kParserInserted, resource,
+                  ResourceRequest::RedirectStatus::kNoRedirect,
                   ReportingDisposition::kReport,
                   ContentSecurityPolicy::CheckHeaderType::kCheckEnforce));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
@@ -581,7 +587,8 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
     EXPECT_EQ(test.allowed1 && test.allowed2,
               policy->AllowScriptFromSource(
                   resource, String(test.nonce), IntegrityMetadataSet(),
-                  kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+                  kParserInserted, resource,
+                  ResourceRequest::RedirectStatus::kNoRedirect,
                   ReportingDisposition::kReport,
                   ContentSecurityPolicy::CheckHeaderType::kCheckEnforce));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
@@ -596,7 +603,7 @@ TEST_F(ContentSecurityPolicyTest, NonceMultiplePolicy) {
                              ContentSecurityPolicySource::kHTTP);
     EXPECT_TRUE(policy->AllowScriptFromSource(
         resource, String(test.nonce), IntegrityMetadataSet(), kParserInserted,
-        ResourceRequest::RedirectStatus::kNoRedirect,
+        resource, ResourceRequest::RedirectStatus::kNoRedirect,
         ReportingDisposition::kReport,
         ContentSecurityPolicy::CheckHeaderType::kCheckReportOnly));
     EXPECT_EQ(expected_reports, policy->violation_reports_sent_.size());
@@ -748,18 +755,20 @@ TEST_F(ContentSecurityPolicyTest, RequestsAllowedWhenBypassingCSP) {
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
 
+  const KURL example_url("https://example.com/");
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
                                 network::mojom::RequestDestination::kEmpty,
-                                KURL(base, "https://example.com/"), String(),
-                                IntegrityMetadataSet(), kParserInserted,
+                                example_url, String(), IntegrityMetadataSet(),
+                                kParserInserted, example_url,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
 
+  const KURL not_example_url("https://not-example.com/");
   EXPECT_FALSE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
-      network::mojom::RequestDestination::kEmpty,
-      KURL(base, "https://not-example.com/"), String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      network::mojom::RequestDestination::kEmpty, not_example_url, String(),
+      IntegrityMetadataSet(), kParserInserted, not_example_url,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   // Register "https" as bypassing CSP, which should now bypass it entirely
@@ -767,16 +776,16 @@ TEST_F(ContentSecurityPolicyTest, RequestsAllowedWhenBypassingCSP) {
 
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
                                 network::mojom::RequestDestination::kEmpty,
-                                KURL(base, "https://example.com/"), String(),
-                                IntegrityMetadataSet(), kParserInserted,
+                                example_url, String(), IntegrityMetadataSet(),
+                                kParserInserted, example_url,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
 
   EXPECT_TRUE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
-      network::mojom::RequestDestination::kEmpty,
-      KURL(base, "https://not-example.com/"), String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
+      network::mojom::RequestDestination::kEmpty, not_example_url, String(),
+      IntegrityMetadataSet(), kParserInserted, not_example_url,
+      ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
@@ -793,38 +802,36 @@ TEST_F(ContentSecurityPolicyTest, FilesystemAllowedWhenBypassingCSP) {
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
 
-  EXPECT_FALSE(
-      csp->AllowRequest(mojom::RequestContextType::OBJECT,
-                        network::mojom::RequestDestination::kEmpty,
-                        KURL(base, "filesystem:https://example.com/file.txt"),
-                        String(), IntegrityMetadataSet(), kParserInserted,
-                        ResourceRequest::RedirectStatus::kNoRedirect,
-                        ReportingDisposition::kSuppressReporting));
+  const KURL example_url("filesystem:https://example.com/file.txt");
+  EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                                 network::mojom::RequestDestination::kEmpty,
+                                 example_url, String(), IntegrityMetadataSet(),
+                                 kParserInserted, example_url,
+                                 ResourceRequest::RedirectStatus::kNoRedirect,
+                                 ReportingDisposition::kSuppressReporting));
 
+  const KURL not_example_url("filesystem:https://not-example.com/file.txt");
   EXPECT_FALSE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
-      network::mojom::RequestDestination::kEmpty,
-      KURL(base, "filesystem:https://not-example.com/file.txt"), String(),
-      IntegrityMetadataSet(), kParserInserted,
+      network::mojom::RequestDestination::kEmpty, not_example_url, String(),
+      IntegrityMetadataSet(), kParserInserted, not_example_url,
       ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   // Register "https" as bypassing CSP, which should now bypass it entirely
   SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy("https");
 
-  EXPECT_TRUE(
-      csp->AllowRequest(mojom::RequestContextType::OBJECT,
-                        network::mojom::RequestDestination::kEmpty,
-                        KURL(base, "filesystem:https://example.com/file.txt"),
-                        String(), IntegrityMetadataSet(), kParserInserted,
-                        ResourceRequest::RedirectStatus::kNoRedirect,
-                        ReportingDisposition::kSuppressReporting));
+  EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
+                                network::mojom::RequestDestination::kEmpty,
+                                example_url, String(), IntegrityMetadataSet(),
+                                kParserInserted, example_url,
+                                ResourceRequest::RedirectStatus::kNoRedirect,
+                                ReportingDisposition::kSuppressReporting));
 
   EXPECT_TRUE(csp->AllowRequest(
       mojom::RequestContextType::OBJECT,
-      network::mojom::RequestDestination::kEmpty,
-      KURL(base, "filesystem:https://not-example.com/file.txt"), String(),
-      IntegrityMetadataSet(), kParserInserted,
+      network::mojom::RequestDestination::kEmpty, not_example_url, String(),
+      IntegrityMetadataSet(), kParserInserted, not_example_url,
       ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
@@ -843,38 +850,38 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
                         ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
 
-  EXPECT_FALSE(csp->AllowRequest(
-      mojom::RequestContextType::OBJECT,
-      network::mojom::RequestDestination::kEmpty,
-      KURL(base, "blob:https://example.com/"), String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-
+  const KURL example_url("blob:https://example.com/");
   EXPECT_FALSE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
                                  network::mojom::RequestDestination::kEmpty,
-                                 KURL(base, "blob:https://not-example.com/"),
-                                 String(), IntegrityMetadataSet(),
-                                 kParserInserted,
+                                 example_url, String(), IntegrityMetadataSet(),
+                                 kParserInserted, example_url,
                                  ResourceRequest::RedirectStatus::kNoRedirect,
                                  ReportingDisposition::kSuppressReporting));
+
+  const KURL not_example_url("blob:https://not-example.com/");
+  EXPECT_FALSE(csp->AllowRequest(
+      mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty, not_example_url, String(),
+      IntegrityMetadataSet(), kParserInserted, not_example_url,
+      ResourceRequest::RedirectStatus::kNoRedirect,
+      ReportingDisposition::kSuppressReporting));
 
   // Register "https" as bypassing CSP, which should now bypass it entirely
   SchemeRegistry::RegisterURLSchemeAsBypassingContentSecurityPolicy("https");
 
-  EXPECT_TRUE(csp->AllowRequest(
-      mojom::RequestContextType::OBJECT,
-      network::mojom::RequestDestination::kEmpty,
-      KURL(base, "blob:https://example.com/"), String(), IntegrityMetadataSet(),
-      kParserInserted, ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::OBJECT,
                                 network::mojom::RequestDestination::kEmpty,
-                                KURL(base, "blob:https://not-example.com/"),
-                                String(), IntegrityMetadataSet(),
-                                kParserInserted,
+                                example_url, String(), IntegrityMetadataSet(),
+                                kParserInserted, example_url,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
+
+  EXPECT_TRUE(csp->AllowRequest(
+      mojom::RequestContextType::OBJECT,
+      network::mojom::RequestDestination::kEmpty, not_example_url, String(),
+      IntegrityMetadataSet(), kParserInserted, not_example_url,
+      ResourceRequest::RedirectStatus::kNoRedirect,
+      ReportingDisposition::kSuppressReporting));
 
   SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
       "https");
@@ -906,19 +913,19 @@ TEST_F(ContentSecurityPolicyTest, CSPBypassDisabledWhenSchemeIsPrivileged) {
 
   EXPECT_TRUE(csp->AllowScriptFromSource(
       allowed_url, String(), IntegrityMetadataSet(), kNotParserInserted,
+      allowed_url, ResourceRequest::RedirectStatus::kNoRedirect,
+      ReportingDisposition::kSuppressReporting));
+  EXPECT_FALSE(csp->AllowScriptFromSource(
+      http_url, String(), IntegrityMetadataSet(), kNotParserInserted, http_url,
       ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(csp->AllowScriptFromSource(
-      http_url, String(), IntegrityMetadataSet(), kNotParserInserted,
-      ResourceRequest::RedirectStatus::kNoRedirect,
-      ReportingDisposition::kSuppressReporting));
-  EXPECT_FALSE(csp->AllowScriptFromSource(
-      blob_url, String(), IntegrityMetadataSet(), kNotParserInserted,
+      blob_url, String(), IntegrityMetadataSet(), kNotParserInserted, blob_url,
       ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
   EXPECT_FALSE(csp->AllowScriptFromSource(
       filesystem_url, String(), IntegrityMetadataSet(), kNotParserInserted,
-      ResourceRequest::RedirectStatus::kNoRedirect,
+      filesystem_url, ResourceRequest::RedirectStatus::kNoRedirect,
       ReportingDisposition::kSuppressReporting));
 
   SchemeRegistry::RemoveURLSchemeRegisteredAsBypassingContentSecurityPolicy(
@@ -1257,9 +1264,11 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   EXPECT_TRUE(csp->AllowScriptFromSource(
-      example_url, String(), IntegrityMetadataSet(), kParserInserted));
+      example_url, String(), IntegrityMetadataSet(), kParserInserted,
+      example_url, ResourceRequest::RedirectStatus::kNoRedirect));
   EXPECT_FALSE(csp->AllowScriptFromSource(
-      not_example_url, String(), IntegrityMetadataSet(), kParserInserted));
+      not_example_url, String(), IntegrityMetadataSet(), kParserInserted,
+      not_example_url, ResourceRequest::RedirectStatus::kNoRedirect));
 
   // Duplicate directive that is in a different case pattern is
   // correctly treated as a duplicate directive and ignored.
@@ -1270,9 +1279,11 @@ TEST_F(ContentSecurityPolicyTest, DirectiveNameCaseInsensitive) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
 
   EXPECT_TRUE(csp->AllowScriptFromSource(
-      example_url, String(), IntegrityMetadataSet(), kParserInserted));
+      example_url, String(), IntegrityMetadataSet(), kParserInserted,
+      example_url, ResourceRequest::RedirectStatus::kNoRedirect));
   EXPECT_FALSE(csp->AllowScriptFromSource(
-      not_example_url, String(), IntegrityMetadataSet(), kParserInserted));
+      not_example_url, String(), IntegrityMetadataSet(), kParserInserted,
+      not_example_url, ResourceRequest::RedirectStatus::kNoRedirect));
 }
 
 // Tests that using an empty CSP works and doesn't impose any policy
@@ -1324,18 +1335,23 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
       ContentSecurityPolicy::DirectiveType::kStyleSrcElem,
       ContentSecurityPolicy::DirectiveType::kWorkerSrc};
   for (auto type : types_to_test) {
-    EXPECT_TRUE(csp->AllowFromSource(type, example_url));
+    EXPECT_TRUE(
+        csp->AllowFromSource(type, example_url, example_url,
+                             ResourceRequest::RedirectStatus::kNoRedirect));
   }
 
   EXPECT_TRUE(csp->AllowObjectFromSource(example_url));
-  EXPECT_TRUE(csp->AllowImageFromSource(example_url));
+  EXPECT_TRUE(csp->AllowImageFromSource(
+      example_url, example_url, ResourceRequest::RedirectStatus::kNoRedirect));
   EXPECT_TRUE(csp->AllowMediaFromSource(example_url));
-  EXPECT_TRUE(csp->AllowConnectToSource(example_url));
+  EXPECT_TRUE(csp->AllowConnectToSource(
+      example_url, example_url, ResourceRequest::RedirectStatus::kNoRedirect));
   EXPECT_TRUE(csp->AllowFormAction(example_url));
   EXPECT_TRUE(csp->AllowBaseURI(example_url));
   EXPECT_TRUE(csp->AllowWorkerContextFromSource(example_url));
   EXPECT_TRUE(csp->AllowScriptFromSource(
-      example_url, nonce, IntegrityMetadataSet(), kParserInserted));
+      example_url, nonce, IntegrityMetadataSet(), kParserInserted, example_url,
+      ResourceRequest::RedirectStatus::kNoRedirect));
 
   EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy", true));
   EXPECT_TRUE(csp->AllowTrustedTypePolicy("somepolicy", false));
@@ -1350,7 +1366,8 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SCRIPT,
                                 network::mojom::RequestDestination::kScript,
                                 example_url, nonce, IntegrityMetadataSet(),
-                                kParserInserted));
+                                kParserInserted, example_url,
+                                ResourceRequest::RedirectStatus::kNoRedirect));
   EXPECT_FALSE(csp->IsActive());
   EXPECT_FALSE(csp->IsActiveForConnections());
   EXPECT_TRUE(csp->FallbackUrlForPlugin().IsEmpty());
@@ -1378,7 +1395,7 @@ TEST_F(ContentSecurityPolicyTest, OpaqueOriginBeforeBind) {
   EXPECT_TRUE(csp->AllowRequest(mojom::RequestContextType::SUBRESOURCE,
                                 network::mojom::RequestDestination::kEmpty, url,
                                 String(), IntegrityMetadataSet(),
-                                kParserInserted,
+                                kParserInserted, url,
                                 ResourceRequest::RedirectStatus::kNoRedirect,
                                 ReportingDisposition::kSuppressReporting));
 }

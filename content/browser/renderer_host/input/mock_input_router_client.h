@@ -11,7 +11,6 @@
 
 #include "content/browser/renderer_host/input/fling_controller.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/common/input/input_event.h"
 #include "ui/events/blink/did_overscroll_params.h"
 
 namespace content {
@@ -72,7 +71,7 @@ class MockInputRouterClient : public InputRouterClient,
     filter_state_ = blink::mojom::InputEventResultState::kNoConsumerExists;
   }
   const blink::WebInputEvent* last_filter_event() const {
-    return last_filter_event_->web_event.get();
+    return last_filter_event_.get();
   }
 
   // FlingControllerSchedulerClient
@@ -89,7 +88,7 @@ class MockInputRouterClient : public InputRouterClient,
   blink::mojom::InputEventResultState filter_state_;
 
   bool filter_input_event_called_;
-  std::unique_ptr<InputEvent> last_filter_event_;
+  std::unique_ptr<blink::WebInputEvent> last_filter_event_;
 
   ui::DidOverscrollParams overscroll_;
 

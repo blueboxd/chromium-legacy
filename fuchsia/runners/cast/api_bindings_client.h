@@ -27,9 +27,9 @@ class ApiBindingsClient {
   ~ApiBindingsClient();
 
   // Injects APIs and handles channel connections on |frame|.
-  // |on_error_closure|: Invoked in the event of an unrecoverable error (e.g.
-  //                     lost connection to the Agent). The callback must
-  //                     remain valid for the entire lifetime of |this|.
+  // |on_error_callback| is invoked in the event of an unrecoverable error (e.g.
+  // lost connection to the Agent). The callback must remain valid for the
+  // entire lifetime of |this|.
   void AttachToFrame(fuchsia::web::Frame* frame,
                      NamedMessagePortConnector* connector,
                      base::OnceClosure on_error_callback);
@@ -38,13 +38,16 @@ class ApiBindingsClient {
   // |bindings_service_|.
   bool HasBindings() const;
 
+  // TODO(crbug.com/1082821): Move this method back to private once the Cast
+  // Streaming Receiver component has been implemented.
+  // Called when |connector_| has connected a port.
+  void OnPortConnected(base::StringPiece port_name,
+                       fidl::InterfaceHandle<fuchsia::web::MessagePort> port);
+
  private:
   // Called when ApiBindings::GetAll() has responded.
   void OnBindingsReceived(std::vector<chromium::cast::ApiBinding> bindings);
 
-  // Called when |connector_| has connected a port.
-  void OnPortConnected(base::StringPiece port_name,
-                       fidl::InterfaceHandle<fuchsia::web::MessagePort> port);
 
   base::Optional<std::vector<chromium::cast::ApiBinding>> bindings_;
   fuchsia::web::Frame* frame_ = nullptr;

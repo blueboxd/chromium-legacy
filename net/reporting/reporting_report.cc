@@ -55,6 +55,11 @@ ReportingReport::~ReportingReport() {
   RecordReportOutcome(outcome);
 }
 
+ReportingEndpointGroupKey ReportingReport::GetGroupKey() const {
+  return ReportingEndpointGroupKey(network_isolation_key,
+                                   url::Origin::Create(url), group);
+}
+
 // static
 void ReportingReport::RecordReportDiscardedForNoURLRequestContext() {
   RecordReportOutcome(Outcome::DISCARDED_NO_URL_REQUEST_CONTEXT);

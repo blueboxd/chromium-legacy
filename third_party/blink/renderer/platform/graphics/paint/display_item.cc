@@ -13,7 +13,8 @@ struct SameSizeAsDisplayItem {
   void* pointer;
   IntRect rect;
   float outset;
-  int i;
+  uint32_t i1;
+  uint32_t i2;
 };
 static_assert(sizeof(DisplayItem) == sizeof(SameSizeAsDisplayItem),
               "DisplayItem should stay small");

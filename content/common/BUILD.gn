@@ -40,6 +40,8 @@ source_set("common") {
 
   sources = [
     "all_messages.h",
+    "android/cpu_time_metrics.cc",
+    "android/cpu_time_metrics.h",
     "android/gin_java_bridge_errors.cc",
     "android/gin_java_bridge_errors.h",
     "android/gin_java_bridge_value.cc",
@@ -122,12 +124,8 @@ source_set("common") {
     "input/gesture_event_stream_validator.h",
     "input/ime_text_span_conversions.cc",
     "input/ime_text_span_conversions.h",
-    "input/input_event.cc",
-    "input/input_event.h",
     "input/input_event_ack_state.cc",
     "input/input_event_dispatch_type.h",
-    "input/input_event_mojom_traits.cc",
-    "input/input_event_mojom_traits.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",
     "input/synthetic_gesture_params.cc",
@@ -549,8 +547,8 @@ mojom("mojo_bindings") {
           cpp = "::content::ContentSecurityPolicy"
         },
         {
-          mojom = "content.mojom.Event"
-          cpp = "::std::unique_ptr<::content::InputEvent>"
+          mojom = "blink.mojom.Event"
+          cpp = "::std::unique_ptr<::blink::WebCoalescedInputEvent>"
           move_only = true
         },
         {
@@ -607,7 +605,6 @@ mojom("mojo_bindings") {
         "//cc/input/touch_action.h",
         "//content/common/cursors/webcursor.h",
         "//content/common/frame_replication_state.h",
-        "//content/common/input/input_event.h",
         "//content/common/input/synthetic_pinch_gesture_params.h",
         "//content/common/input/synthetic_pointer_action_list_params.h",
         "//content/common/input/synthetic_smooth_drag_gesture_params.h",
@@ -616,6 +613,7 @@ mojom("mojo_bindings") {
         "//content/common/visual_properties.h",
         "//content/public/common/web_preferences.h",
         "//net/base/network_change_notifier.h",
+        "//third_party/blink/public/common/input/web_coalesced_input_event_mojom_traits.h",
         "//third_party/blink/public/common/input/web_input_event.h",
         "//third_party/blink/public/common/input/web_mouse_wheel_event.h",
         "//third_party/blink/public/common/input/web_pointer_properties.h",
@@ -628,7 +626,6 @@ mojom("mojo_bindings") {
 
       traits_private_headers = [
         "//content/common/frame_messages.h",
-        "//content/common/input/input_event_mojom_traits.h",
         "//content/common/input_messages.h",
         "//content/common/view_messages.h",
         "//content/common/widget_messages.h",

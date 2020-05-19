@@ -70,13 +70,21 @@ class CastRunner : public fuchsia::sys::Runner,
   // Handlers used to provide parameters for main & isolated Contexts.
   fuchsia::web::CreateContextParams GetCommonContextParams();
   fuchsia::web::CreateContextParams GetMainContextParams();
-  fuchsia::web::CreateContextParams GetIsolatedContextParams(
+  fuchsia::web::CreateContextParams GetIsolatedContextParamsWithFuchsiaDirs(
       std::vector<fuchsia::web::ContentDirectoryProvider> content_directories);
+  // TODO(crbug.com/1082821): Remove this once the CastStreamingReceiver
+  // Component has been implemented.
+  fuchsia::web::CreateContextParams GetIsolatedContextParamsForCastStreaming();
 
-  // Creates a CastRunner configured to serve data from content directories in
-  // |component_params|.
+  // Returns CreateContextParams for |app_config|. Returns nullopt if there is
+  // no need to create an isolated context.
+  base::Optional<fuchsia::web::CreateContextParams>
+  GetContextParamsForAppConfig(chromium::cast::ApplicationConfig* app_config);
+
+  // Launches an isolated Context with the given |create_context_params| and
+  // returns the newly created WebContentRunner.
   WebContentRunner* CreateIsolatedContextForParams(
-      CastComponent::Params* component_params);
+      fuchsia::web::CreateContextParams create_context_params);
 
   // Called when an isolated component terminates, to allow the Context hosting
   // it to be torn down.
@@ -99,9 +107,10 @@ class CastRunner : public fuchsia::sys::Runner,
   const std::unique_ptr<base::fuchsia::FilteredServiceDirectory> main_services_;
   const std::unique_ptr<WebContentRunner> main_context_;
 
-  // Holds fuchsia.web.Contexts used to host isolated components.
   const std::unique_ptr<base::fuchsia::FilteredServiceDirectory>
       isolated_services_;
+
+  // Holds fuchsia.web.Contexts used to host isolated components.
   base::flat_set<std::unique_ptr<WebContentRunner>, base::UniquePtrComparator>
       isolated_contexts_;
 

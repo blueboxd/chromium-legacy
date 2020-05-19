@@ -21,18 +21,18 @@ if (build_with_chromium) {
       "//third_party/zlib:minizip",
     ]
   }
-}
 
-static_library("compression_utils") {
-  sources = [
-    "compression_utils.cc",
-    "compression_utils.h",
-  ]
-  deps = [
-    ":compression_utils_portable",
-    "//base",
-    "//third_party/zlib",
-  ]
+  static_library("compression_utils") {
+    sources = [
+      "compression_utils.cc",
+      "compression_utils.h",
+    ]
+    deps = [
+      ":compression_utils_portable",
+      "//base",
+      "//third_party/zlib",
+    ]
+  }
 }
 
 # This allows other users of Chromium's zlib library, but don't use Chromium's

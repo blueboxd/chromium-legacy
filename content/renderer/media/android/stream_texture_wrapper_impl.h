@@ -63,7 +63,6 @@ class CONTENT_EXPORT StreamTextureWrapperImpl
   //     DidReceiveFrame() method.
   void Initialize(
       const base::RepeatingClosure& received_frame_cb,
-      const gfx::Size& rotated_visible_size,
       scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       StreamTextureWrapperInitCB init_cb) override;
 

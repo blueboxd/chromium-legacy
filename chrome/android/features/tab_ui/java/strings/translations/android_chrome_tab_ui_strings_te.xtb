@@ -11,6 +11,8 @@
 <translation id="2613747923081026172">సమూహాన్ని సృష్టించు</translation>
 <translation id="2671423594960767771">సమూహాన్ని షేర్ చేయండి</translation>
 <translation id="2977480621796371840">గుంపు నుండి తీసివేయి</translation>
+<translation id="3328308545011660196">సూచన: <ph name="NUMBER_OF_TABS" /> ట్యాబ్‌లు సంబంధించినవిగా అనిపిస్తున్నాయి. వాటిని గ్రూప్ చేయాలా?</translation>
+<translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> ట్యాబ్‌లు సంబంధించినవిగా అనిపిస్తున్నాయి. వాటిని గ్రూప్ చేయాలా?</translation>
 <translation id="4212246570487010370">బ్రౌజింగ్‌ను కొనసాగించండి</translation>
 <translation id="4450893287417543264">మళ్లీ చూపవద్దు</translation>
 <translation id="4648718555153979859">మీ ట్యాబ్‌లు ఇక్కడ సమూహంగా కలిపి అందించబడతాయి</translation>
@@ -28,6 +30,7 @@
 <translation id="7151209024774799310">గ్రూప్ నుండి ట్యాబ్‌లు తీసేయి</translation>
 <translation id="7559245342362162951">సమూహంలోని ట్యాబ్‌లను పూర్తి స్క్రీన్ గ్రిడ్‌లో చూపు</translation>
 <translation id="7792771145871471484">సూచనలను సమీక్షించండి.</translation>
+<translation id="7838146321400849846">{TABS_COUNT,plural, =1{ఎంచుకున్న <ph name="TABS_COUNT_ONE" /> ట్యాబ్ గ్రూప్ చేయబడుతుంది}other{ఎంచుకున్న <ph name="TABS_COUNT_MANY" /> ట్యాబ్‌లు గ్రూప్ చేయబడతాయి}}</translation>
 <translation id="7885132941432959125">ట్యాబ్‌ను కుడి వైపునకు తరలించు</translation>
 <translation id="7966321538264951561">సూచనలను తీసివేయండి.</translation>
 <translation id="814503310257431685">అన్నింటినీ చూడండి</translation>

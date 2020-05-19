@@ -833,7 +833,7 @@ SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
     gl::ScopedProgressReporter scoped_progress_reporter(
         context_state_->progress_reporter());
     // This ensures any outstanding callbacks for promise images are performed.
-    gr_context()->flush();
+    gr_context()->flushAndSubmit();
     release_current_last_.emplace(gl_surface_, context_state_);
   }
 
@@ -969,6 +969,8 @@ bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
           context_state_->progress_reporter());
       result = output_sk_surface()->flush(
           SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+      DCHECK(output_sk_surface()->getContext());
+      output_sk_surface()->getContext()->submit();
     }
 
     if (result != GrSemaphoresSubmitted::kYes &&
@@ -1111,6 +1113,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintRenderPass(
                                           &flush_info);
     auto result = offscreen.surface()->flush(
         SkSurface::BackendSurfaceAccess::kNoAccess, flush_info);
+    DCHECK(offscreen.surface()->getContext());
+    offscreen.surface()->getContext()->submit();
     if (result != GrSemaphoresSubmitted::kYes &&
         !(scoped_promise_image_access.begin_semaphores().empty() &&
           scoped_promise_image_access.end_semaphores().empty())) {
@@ -1227,11 +1231,11 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     surface->getCanvas()->drawPaint(paint);
     gl::ScopedProgressReporter scoped_progress_reporter(
         context_state_->progress_reporter());
-    surface->flush();
+    surface->flushAndSubmit();
   }
 
   if (use_gl_renderer_copier_) {
-    surface->flush();
+    surface->flushAndSubmit();
 
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;

@@ -191,12 +191,43 @@ OriginTrialContext::GetEnabledNavigationFeatures() const {
 }
 
 void OriginTrialContext::AddToken(const String& token) {
+  AddTokenInternal(token, GetSecurityOrigin(), IsSecureContext(), nullptr,
+                   false);
+}
+
+void OriginTrialContext::AddTokenFromExternalScript(
+    const String& token,
+    const SecurityOrigin* origin) {
+  bool is_script_origin_secure = false;
+  if (origin &&
+      RuntimeEnabledFeatures::ThirdPartyOriginTrialsEnabled(context_)) {
+    DVLOG(1) << "AddTokenFromExternalScript: "
+             << (origin ? origin->ToString() : "null");
+    // Both document origin and script origin needs to be secure for third party
+    // origin trial token.
+    is_script_origin_secure =
+        IsSecureContext() && origin->IsPotentiallyTrustworthy();
+  } else {
+    origin = nullptr;
+  }
+  AddTokenInternal(token, GetSecurityOrigin(), IsSecureContext(), origin,
+                   is_script_origin_secure);
+}
+
+void OriginTrialContext::AddTokenInternal(const String& token,
+                                          const SecurityOrigin* origin,
+                                          bool is_origin_secure,
+                                          const SecurityOrigin* script_origin,
+                                          bool is_script_origin_secure) {
   if (token.IsEmpty())
     return;
   tokens_.push_back(token);
-  if (EnableTrialFromToken(GetSecurityOrigin(), IsSecureContext(), token)) {
-    // Only install pending features if the provided token is valid. Otherwise,
-    // there was no change to the list of enabled features.
+
+  bool enabled = EnableTrialFromToken(origin, is_origin_secure, script_origin,
+                                      is_script_origin_secure, token);
+  if (enabled) {
+    // Only install pending features if the provided token is valid.
+    // Otherwise, there was no change to the list of enabled features.
     InitializePendingFeatures();
   }
 }

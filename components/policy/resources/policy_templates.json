@@ -15410,7 +15410,7 @@
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome_os:66-'],
+      'supported_on': ['chrome_os:66-76'],
       'device_only': True,
       'features': {
         'dynamic_refresh': False,
@@ -15421,6 +15421,7 @@
       'caption': '''Enable Site Isolation for specified origins''',
       'tags': ['system-security'],
       'desc': '''
+      This policy was removed in M77.
       This policy applies to the sign-in screen. Please see also the <ph name="ISOLATE_ORIGINS_POLICY_NAME">IsolateOrigins</ph> policy which applies to the user session.
       If the policy is enabled, each of the named origins in a comma-separated list will run in its own process. This will also isolate origins named by subdomains; e.g. specifying https://example.com/ will also cause https://foo.example.com/ to be isolated as part of the https://example.com/ site.
       If the policy is not configured or disabled, the platform default site isolation settings will be used for the sign-in screen.
@@ -15442,6 +15443,7 @@
       'caption': '''Enable Site Isolation for every site''',
       'tags': ['system-security'],
       'desc': '''
+      This policy was removed in M77.
       This policy applies to the sign-in screen. Please see also the <ph name="SITE_PER_PROCESS_POLICY_NAME">SitePerProcess</ph> policy which applies to the user session. It is recommended to set both policies to the same value. If the values don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
       ''',
     },
@@ -18445,9 +18447,18 @@
               'type': 'object',
               'properties': {
                 'day': { '$ref': 'WeekDay' },
-                'start_time': { '$ref': 'Time' },
-                'end_time': { '$ref': 'Time' },
-                'charge_start_time': { '$ref': 'Time' }
+                'start_time': {
+                  'description': '''Time when the device will start running from the battery, interpreted in the device's local time zone.''',
+                  '$ref': 'Time'
+                },
+                'end_time': {
+                  'description': '''Time when the device will run from alternating current, interpreted in the device's local time zone.''',
+                  '$ref': 'Time'
+                },
+                'charge_start_time': {
+                  'description': '''Time when the device will use alternating current to charge battery, interpreted in the device's local time zone.''',
+                  '$ref': 'Time'
+                }
               }
             }
           }

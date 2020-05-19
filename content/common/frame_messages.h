@@ -66,7 +66,6 @@
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom.h"
 #include "third_party/blink/public/mojom/frame/tree_scope_type.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
-#include "third_party/blink/public/mojom/input/focus_type.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom.h"
 #include "third_party/blink/public/mojom/security_context/insecure_request_policy.mojom.h"
@@ -111,8 +110,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::ContextMenuDataMediaType,
                           blink::ContextMenuDataMediaType::kLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ContextMenuDataInputFieldType,
                           blink::ContextMenuDataInputFieldType::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FocusType,
-                          blink::mojom::FocusType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ScrollbarMode,
                           blink::mojom::ScrollbarMode::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
@@ -457,6 +454,7 @@ IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
   IPC_STRUCT_MEMBER(blink::mojom::RequestContextType, request_context_type)
   IPC_STRUCT_MEMBER(network::mojom::RequestDestination, request_destination)
   IPC_STRUCT_MEMBER(bool, was_allowed)
+  IPC_STRUCT_MEMBER(GURL, url_before_redirects)
   IPC_STRUCT_MEMBER(bool, had_redirect)
   IPC_STRUCT_MEMBER(network::mojom::SourceLocation, source_location)
 IPC_STRUCT_END()
@@ -483,11 +481,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_ContextMenuClosed,
 IPC_MESSAGE_ROUTED2(FrameMsg_CustomContextMenuAction,
                     content::CustomContextMenuContext /* custom_context */,
                     unsigned /* action */)
-
-// Requests that the RenderFrame or RenderFrameProxy updates its opener to the
-// specified frame.  The routing ID may be MSG_ROUTING_NONE if the opener was
-// disowned.
-IPC_MESSAGE_ROUTED1(FrameMsg_UpdateOpener, int /* opener_routing_id */)
 
 // Requests that the RenderFrame send back a response after waiting for the
 // commit, activation and frame swap of the current DOM tree in blink.
@@ -794,15 +787,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
 IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
                     std::string /* data buffer */,
                     bool /* end of data? */)
-
-// This message is sent from a RenderFrameProxy when sequential focus
-// navigation needs to advance into its actual frame.  |source_routing_id|
-// identifies the frame that issued this request.  This is used when pressing
-// <tab> or <shift-tab> hits an out-of-process iframe when searching for the
-// next focusable element.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
-                    blink::mojom::FocusType /* type */,
-                    int32_t /* source_routing_id */)
 
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.

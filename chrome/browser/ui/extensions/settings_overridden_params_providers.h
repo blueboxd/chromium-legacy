@@ -15,6 +15,12 @@ namespace settings_overridden_params {
 base::Optional<ExtensionSettingsOverriddenDialog::Params>
 GetNtpOverriddenParams(Profile* profile);
 
+// Retrieves the params for displaying the dialog indicating that the default
+// search engine has been overridden, if there is a controlling extension.
+// Otherwise, returns an empty optional.
+base::Optional<ExtensionSettingsOverriddenDialog::Params>
+GetSearchOverriddenParams(Profile* profile);
+
 }  // namespace settings_overridden_params
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_SETTINGS_OVERRIDDEN_PARAMS_PROVIDERS_H_

@@ -3474,6 +3474,124 @@ TEST_F(AXPlatformNodeWinTest, ITableProviderGetColumnHeaders) {
   EXPECT_EQ(nullptr, safearray.Get());
 }
 
+TEST_F(AXPlatformNodeWinTest, ITableProviderGetColumnHeadersMultipleHeaders) {
+  // Build a table like this:
+  //   header_r1c1  | header_r1c2 | header_r1c3
+  //    cell_r2c1   | cell_r2c2   | cell_r2c3
+  //    cell_r3c1   | header_r3c2 |
+
+  // <table>
+  //   <tr aria-label="row1">
+  //     <th>header_r1c1</th>
+  //     <th>header_r1c2</th>
+  //     <th>header_r1c3</th>
+  //   </tr>
+  //   <tr aria-label="row2">
+  //     <td>cell_r2c1</td>
+  //     <td>cell_r2c2</td>
+  //     <td>cell_r2c3</td>
+  //   </tr>
+  //   <tr aria-label="row3">
+  //     <td>cell_r3c1</td>
+  //     <th>header_r3c2</th>
+  //   </tr>
+  // </table>
+
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kTable;
+
+  AXNodeData row1;
+  row1.id = 2;
+  row1.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row1.id);
+
+  AXNodeData row2;
+  row2.id = 3;
+  row2.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row2.id);
+
+  AXNodeData row3;
+  row3.id = 4;
+  row3.role = ax::mojom::Role::kRow;
+  root.child_ids.push_back(row3.id);
+
+  // <tr aria-label="row1">
+  //   <th>header_r1c1</th> <th>header_r1c2</th> <th>header_r1c3</th>
+  // </tr>
+  AXNodeData header_r1c1;
+  header_r1c1.id = 5;
+  header_r1c1.role = ax::mojom::Role::kColumnHeader;
+  header_r1c1.SetName(L"header_r1c1");
+  row1.child_ids.push_back(header_r1c1.id);
+
+  AXNodeData header_r1c2;
+  header_r1c2.id = 6;
+  header_r1c2.role = ax::mojom::Role::kColumnHeader;
+  header_r1c2.SetName(L"header_r1c2");
+  row1.child_ids.push_back(header_r1c2.id);
+
+  AXNodeData header_r1c3;
+  header_r1c3.id = 7;
+  header_r1c3.role = ax::mojom::Role::kColumnHeader;
+  header_r1c3.SetName(L"header_r1c3");
+  row1.child_ids.push_back(header_r1c3.id);
+
+  // <tr aria-label="row2">
+  //   <td>cell_r2c1</td> <td>cell_r2c2</td> <td>cell_r2c3</td>
+  // </tr>
+  AXNodeData cell_r2c1;
+  cell_r2c1.id = 8;
+  cell_r2c1.role = ax::mojom::Role::kCell;
+  cell_r2c1.SetName(L"cell_r2c1");
+  row2.child_ids.push_back(cell_r2c1.id);
+
+  AXNodeData cell_r2c2;
+  cell_r2c2.id = 9;
+  cell_r2c2.role = ax::mojom::Role::kCell;
+  cell_r2c2.SetName(L"cell_r2c2");
+  row2.child_ids.push_back(cell_r2c2.id);
+
+  AXNodeData cell_r2c3;
+  cell_r2c3.id = 10;
+  cell_r2c3.role = ax::mojom::Role::kCell;
+  cell_r2c3.SetName(L"cell_r2c3");
+  row2.child_ids.push_back(cell_r2c3.id);
+
+  // <tr aria-label="row3">
+  //   <td>cell_r3c1</td> <th>header_r3c2</th>
+  // </tr>
+  AXNodeData cell_r3c1;
+  cell_r3c1.id = 11;
+  cell_r3c1.role = ax::mojom::Role::kCell;
+  cell_r3c1.SetName(L"cell_r3c1");
+  row3.child_ids.push_back(cell_r3c1.id);
+
+  AXNodeData header_r3c2;
+  header_r3c2.id = 12;
+  header_r3c2.role = ax::mojom::Role::kColumnHeader;
+  header_r3c2.SetName(L"header_r3c2");
+  row3.child_ids.push_back(header_r3c2.id);
+
+  Init(root, row1, row2, row3, header_r1c1, header_r1c2, header_r1c3, cell_r2c1,
+       cell_r2c2, cell_r2c3, cell_r3c1, header_r3c2);
+
+  ComPtr<ITableProvider> root_itableprovider(
+      QueryInterfaceFromNode<ITableProvider>(GetRootAsAXNode()));
+
+  base::win::ScopedSafearray safearray;
+  EXPECT_HRESULT_SUCCEEDED(
+      root_itableprovider->GetColumnHeaders(safearray.Receive()));
+  EXPECT_NE(nullptr, safearray.Get());
+
+  // Validate that we retrieve all column headers of the table and in the order
+  // below.
+  std::vector<std::wstring> expected_names = {L"header_r1c1", L"header_r1c2",
+                                              L"header_r3c2", L"header_r1c3"};
+  EXPECT_UIA_ELEMENT_ARRAY_BSTR_EQ(safearray.Get(), UIA_NamePropertyId,
+                                   expected_names);
+}
+
 TEST_F(AXPlatformNodeWinTest, ITableProviderGetRowHeaders) {
   AXNodeData root;
   root.id = 1;

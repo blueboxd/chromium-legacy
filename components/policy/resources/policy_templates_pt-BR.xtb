@@ -340,13 +340,6 @@ Se você desativar a política, essa rolagem será desativada.</translation>
 <translation id="152657506688053119">Lista de URLs alternativos para o provedor de pesquisa padrão</translation>
 <translation id="1530812829012954197">Sempre renderizar os seguintes padrões de URL no navegador do host</translation>
 <translation id="1553532014072799546">Autorização de limites de tempo por app</translation>
-<translation id="1553684822621013552">Quando esta política está definida como "true", o recurso ARC fica ativado para o usuário
-      (sujeito a verificações de configuração adicionais de política - O ARC ainda estará
-      disponível, se o modo efêmero ou o login múltiplo estiver ativado
-      na sessão atual do usuário).
-
-      Se essa configuração estiver desativada ou não for configurada, os usuários corporativos não
-      conseguirão usar o ARC.</translation>
 <translation id="1553956579506604198">Bloqueia a instalação de extensões externas</translation>
 <translation id="1556072857949466438">Esta política permite que um administrador especifique que uma página pode mostrar pop-ups ao fazer unload.
 
@@ -929,10 +922,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
       Quando esta política não for configurada ou for definida como verdadeira, os usuários poderão usar o Compartilhamento de arquivos de rede.
 
       Quando esta política for definida como falsa, os usuários não poderão usar o Compartilhamento de arquivos de rede.</translation>
-<translation id="2438609638493026652">Ativa a geração de relatórios dos principais eventos durante a instalação do app Android no Google. Os eventos são capturados apenas para os apps cuja instalação foi acionada por meio da política.
-
-      Se a política estiver definida como verdadeira, os eventos serão registrados.
-      Se a política estiver definida como falsa ou não tiver sido definida, os eventos não serão registrados.</translation>
 <translation id="2440773021691931148">Informa estatísticas de hardware e identificadores relacionados à energia.
 
       Se a política for definida como falsa ou se não for definida, as estatísticas não serão informadas.
@@ -1246,15 +1235,6 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 
       Cada entrada da lista especifica um identificador, que é usado internamente para diferenciar as contas locais de dispositivo.</translation>
 <translation id="2769952903507981510">Configurar o nome de domínio obrigatório para hosts de acesso remoto</translation>
-<translation id="2783078941107212091">Ativar recomendação de app no estado inicial da caixa de pesquisa no acesso rápido.
-
-          Se esta política for definida como verdadeira, as recomendações de app poderão ser exibidas no estado inicial da pesquisa.
-
-          Se esta política foi definida como falsa, as recomendações de app não serão exibidas no estado inicial da pesquisa.
-
-          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
-
-          Se esta política não for definida, o padrão será falso para dispositivos gerenciados.</translation>
 <translation id="2787173078141616821">Informações de relatório sobre o status do Android</translation>
 <translation id="2799297758492717491">Permitir reprodução automática de mídia em uma lista de permissões de padrões de URL</translation>
 <translation id="2801065672151277034">Configurações de gerenciamento do certificado</translation>
@@ -1889,6 +1869,7 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
       Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas. 
 
       Se esta política não for definida, será usado o diretório de download padrão, e o usuário poderá alterá-lo.</translation>
+<translation id="3803171355925844705">Não permitir que nenhum site carregue conteúdo misto</translation>
 <translation id="3805659594028420438">Ativar extensão dos certificados vinculados ao domínio TLS (obsoleto)</translation>
 <translation id="3808945828600697669">Especificar uma lista de plug-ins desativados</translation>
 <translation id="3810642039169532482">Ativar o recurso de acessibilidade de ditado na tela de login.
@@ -1907,15 +1888,6 @@ Se esta política for definida como falsa, o <ph name="PRODUCT_NAME" /> não usa
 <translation id="382476126209906314">Configurar o prefixo TalkGadget para hosts de acesso remoto</translation>
 <translation id="3824972131618513497">Controla as configurações relacionadas ao gerenciamento de energia e à reinicialização.</translation>
 <translation id="3826475866868158882">Serviços de localização do Google ativados</translation>
-<translation id="3831054243924627613">Esta política controla o estado inicial de backup e restauração do Android.
-
-      Quando esta política não estiver configurada ou definida como <ph name="BR_DISABLED" />, o recurso de backup e restauração do Android estará inicialmente desativado.
-
-      Quando esta política for configurada como <ph name="BR_ENABLED" />, o recurso de backup e restauração do Android estará inicialmente ativado.
-
-      Quando esta política estiver configurada como <ph name="BR_UNDER_USER_CONTROL" />, o usuário poderá optar pelo uso do recurso de backup e restauração do Android. Se o usuário ativar o recurso de backup e restauração, os dados de apps Android serão carregados para os servidores de backup do Android e restaurados a partir deles durante a reinstalação de apps compatíveis.
-
-      Observe que esta política controla o estado do recurso de backup e restauração do Android apenas durante a configuração inicial. O usuário pode abrir as configurações do Android posteriormente e ativar ou desativar esse recurso.</translation>
 <translation id="3831376478177535007">Quando esta configuração está ativada, <ph name="PRODUCT_NAME" /> permite que os certificados emitidos pelas operações de PKI herdadas da Symantec Corporation sejam confiáveis, caso sejam validados e vinculados a um certificado de CA (Autoridade de certificação) reconhecido.
 
       Esta política depende de o sistema operacional continuar reconhecendo os certificados da infraestrutura herdada da Symantec. Se uma atualização de SO alterar o manuseio do SO de tais certificados, esta política não terá mais validade. Além disso, esta política visa ser uma alternativa temporária para dar às empresas mais tempo para fazer a transição dos certificados herdados da Symantec. Esta política será removida por volta de 1º de janeiro de 2019.
@@ -3421,17 +3393,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="6114416803310251055">obsoleto</translation>
 <translation id="6133088669883929098">Permitir que todos os sites usem a geração de chaves</translation>
 <translation id="6135398260575578389">O "Navegação segura" está ativo no modo avançado. Esse modo oferece maior segurança, mas requer o compartilhamento de mais informações de navegação com o Google.</translation>
-<translation id="6136537398661737682">Esta política controla o estado inicial dos Serviços de localização do Google.
-
-      Quando esta política não estiver configurada ou estiver definida como <ph name="GLS_DISABLED" />, os Serviços de localização do Google estarão inicialmente desativados.
-
-      Quando esta política estiver configurada como <ph name="GLS_ENABLED" />, os Serviços de localização do Google estarão inicialmente ativados.
-
-      Quando esta política estiver configurada como <ph name="GLS_UNDER_USER_CONTROL" />, o usuário poderá optar por usar ou não os Serviços de localização do Google. Isso permitirá que apps Android usem os serviços para consultar a localização do dispositivo e também ativará o envio de dados de local anônimos para o Google.
-
-      Esta política controla o estado dos Serviços de localização do Google apenas durante a configuração inicial. O usuário pode abrir as configurações do Android posteriormente e ativar ou desativar esse recurso.
-
-      Observe que esta política será ignorada e os Serviços de localização do Google estarão sempre desativados quando a política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> estiver configurada como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Sempre usar detecção de fuso horário aproximada</translation>
 <translation id="614616930188030377">Os padrões desta lista serão comparados com a origem de segurança do URL solicitante.
       Se uma correspondência for encontrada ou a opção chrome://flags/#enable-webrtc-hide-local-ips-with-mdns estiver desativada, os endereços IP locais serão mostrados nos candidatos ICE do WebRTC.
@@ -4565,9 +4526,6 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 
           Se esta política não for definida, o alto contraste ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="7869986671709030417">Modo de impressão de gráficos em segundo plano padrão</translation>
-<translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
-
-      Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
 <translation id="7882585827992171421">Esta política só fica ativada em modo de varejo.
 
       Determina a identificação da extensão a ser usada como protetor de tela na tela de login. A extensão deve ser parte do AppPack configurado para este domínio por meio da política DeviceAppPack.</translation>
@@ -5016,11 +4974,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8544465954173828789">Permite a sincronização de mensagens SMS do smartphone com o Chromebook.</translation>
 <translation id="8548832052135586762">Define a impressão para apenas em cores, apenas monocromática ou sem restrição de modo de cor. Se a política não for definida, não haverá restrição.</translation>
 <translation id="8549772397068118889">Avisar ao visitar sites fora de pacotes de conteúdo</translation>
-<translation id="8566729013138025202">Especifica um conjunto de políticas que serão entregues ao ambiente de execução do ARC. O valor precisa ser um JSON válido.
-
-      Esta política pode ser usada para configurar quais apps Android são instalados automaticamente no dispositivo.
-
-      Para fixar apps no acesso rápido, consulte PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Ocultar a loja on-line da página "Nova guia" e do Acesso rápido aos apps</translation>
 <translation id="8569734380847633643">
           Se esta política for definida como falsa, o Wi-Fi será desativado pelo <ph name="PRODUCT_OS_NAME" />, e a reativação pelo usuário não será possível.
@@ -5049,11 +5002,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
           Quando esta política não é definida, um período padrão é usado.
 
           O valor da política precisa ser especificado em milissegundos.</translation>
-<translation id="8598350264853261122">Se a política for definida como falsa, usuários sem afiliação não poderão usar o ARC.
-
-      Se a política não for definida ou for definida como verdadeira, todos os usuários poderão usar o ARC (a não ser que o ARC seja desativado por outros meios).
-
-      Alterações à política só serão aplicadas enquanto o ARC não estiver funcionando, ou seja, enquanto o Chrome OS estiver no processo de inicialização.</translation>
 <translation id="8606263947930257189">Controla se o <ph name="PRODUCT_NAME" /> pode congelar as guias que estão em segundo plano há pelo menos 5 minutos.
 
       Se a política for definida como verdadeira, as guias que estiverem em segundo plano há pelo menos 5 minutos poderão ser congeladas. O congelamento de guias reduz o uso de CPU, bateria e memória. O <ph name="PRODUCT_NAME" /> usa a heurística para evitar o congelamento de guias que fazem um bom trabalho em segundo plano (por exemplo, exibir notificações, reproduzir som, fazer streaming de vídeo). Os desenvolvedores da Web também podem desativar o congelamento nos respectivos sites (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
@@ -5405,6 +5353,7 @@ Se você ativar esta configuração, o <ph name="PRODUCT_NAME" /> e os apps ARC 
       Se essa política for definida para um valor menor, o efeito será permanente: o dispositivo PODE não ser capaz de fazer a reversão para versões anteriores mesmo depois de a política ser redefinida para um valor maior.
 
       As possibilidades de reversão reais também podem depender dos patches de vulnerabilidade críticos e do modelo.</translation>
+<translation id="9123464369663964441">Permitir que os usuários adicionem exceções para liberar conteúdo misto</translation>
 <translation id="9126014181388780690">"Permitir que o Google Assistente tenha acesso ao contexto da tela"</translation>
 <translation id="913195841488580904">Bloquear acesso a uma lista de URLs</translation>
 <translation id="9135033364005346124">Ativar proxy do <ph name="CLOUD_PRINT_NAME" /></translation>

@@ -886,7 +886,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/locale/LocaleTemplateUrlLoader.java",
   "java/src/org/chromium/chrome/browser/locale/SogouPromoDialog.java",
   "java/src/org/chromium/chrome/browser/login/ChromeHttpAuthHandler.java",
-  "java/src/org/chromium/chrome/browser/login/LoginPrompt.java",
   "java/src/org/chromium/chrome/browser/media/MediaCaptureDevicesDispatcherAndroid.java",
   "java/src/org/chromium/chrome/browser/media/MediaCaptureNotificationService.java",
   "java/src/org/chromium/chrome/browser/media/MediaLauncherActivity.java",

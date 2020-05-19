@@ -982,7 +982,6 @@ chrome_java_resources = [
   "java/res/layout/history_privacy_disclaimer_header.xml",
   "java/res/layout/history_toolbar.xml",
   "java/res/layout/homepage_editor.xml",
-  "java/res/layout/http_auth_dialog.xml",
   "java/res/layout/icon_row_menu_footer.xml",
   "java/res/layout/incognito_description_layout.xml",
   "java/res/layout/incognito_toggle_tabs.xml",

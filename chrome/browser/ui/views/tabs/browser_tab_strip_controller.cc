@@ -349,9 +349,8 @@ void BrowserTabStripController::MoveGroup(const tab_groups::TabGroupId& group,
 
 void BrowserTabStripController::ToggleTabGroupCollapsedState(
     const tab_groups::TabGroupId group) {
-  tab_groups::TabGroupVisualData new_data(GetGroupTitle(group),
-                                          GetGroupColorId(group),
-                                          !GetGroupCollapsedState(group));
+  tab_groups::TabGroupVisualData new_data(
+      GetGroupTitle(group), GetGroupColorId(group), !IsGroupCollapsed(group));
   model_->group_model()->GetTabGroup(group)->SetVisualData(new_data, true);
 }
 
@@ -474,7 +473,7 @@ tab_groups::TabGroupColorId BrowserTabStripController::GetGroupColorId(
   return model_->group_model()->GetTabGroup(group)->visual_data()->color();
 }
 
-bool BrowserTabStripController::GetGroupCollapsedState(
+bool BrowserTabStripController::IsGroupCollapsed(
     const tab_groups::TabGroupId& group) const {
   return model_->group_model()->ContainsTabGroup(group) &&
          model_->group_model()

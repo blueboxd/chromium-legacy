@@ -29,6 +29,21 @@ struct OptionsFromDocumentParams {
   DuplexMode duplex;
 };
 
+// Parameters to describe the to-be-rendered preview document.
+struct DidStartPreviewParams {
+  // Total page count for the rendered preview. (Not the number of pages the
+  // user selected to print.)
+  int32 page_count;
+  // The list of 0-based page numbers that will be rendered.
+  array<int32> pages_to_render;
+  // number of pages per sheet and should be greater or equal to 1.
+  int32 pages_per_sheet;
+  // Physical size of the page, including non-printable margins.
+  gfx.mojom.Size page_size;
+  // Scaling % to fit to page
+  int32 fit_to_page_scaling;
+};
+
 // Interface implemented by a class that desires to render print documents for
 // Chrome print preview.
 interface PrintRenderer {

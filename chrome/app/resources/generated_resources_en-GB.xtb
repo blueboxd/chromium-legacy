@@ -709,6 +709,7 @@
 <translation id="186612162884103683">"<ph name="EXTENSION" />" can read and write images, video and sound files in the ticked locations.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> is ready to complete your installation</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
+<translation id="1868553836791672080">Password check is not available in Chromium</translation>
 <translation id="1871534214638631766">Show related info when you right-click or long press on content</translation>
 <translation id="1871615898038944731">Your <ph name="DEVICE_TYPE" /> is up to date</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Move tab to another window}other{Move tabs to another window}}</translation>
@@ -1345,7 +1346,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2673135533890720193">Read your browsing history</translation>
 <translation id="2673589024369449924">Create a desktop shortcut for this profile</translation>
 <translation id="2674764818721168631">Off</translation>
-<translation id="2677748264148917807">Leave</translation>
 <translation id="2678063897982469759">Re-enable</translation>
 <translation id="268053382412112343">Hi&amp;story</translation>
 <translation id="2682498795777673382">Update from a parent</translation>
@@ -3000,7 +3000,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4830573902900904548">Your <ph name="DEVICE_TYPE" /> is unable to connect to the Internet using <ph name="NETWORK_NAME" />. Please choose another network. <ph name="LEARN_MORE_LINK_START" />Find out more<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">See what's new on Chromebook</translation>
 <translation id="4833683849865011483">Found one printer from the print server</translation>
-<translation id="4835385943915508971">Chrome does not have access to the requested resource.</translation>
 <translation id="4836504898754963407">Manage fingerprints</translation>
 <translation id="4837926214103741331">You are not authorised to use this device. Please contact the device owner for sign-in permission.</translation>
 <translation id="4837952862063191349">To unlock and restore your local data, please enter your old <ph name="DEVICE_TYPE" /> password.</translation>
@@ -3419,7 +3418,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5379140238605961210">Continue blocking microphone access</translation>
 <translation id="5382591305415226340">Manage supported links</translation>
 <translation id="5383377866517186886">Camera is turned off in Mac System Preferences</translation>
-<translation id="5384883051496921101">This site is about to share information with an app outside of incognito mode.</translation>
 <translation id="5388885445722491159">Paired</translation>
 <translation id="5389237414310520250">The new user couldn't be created. Please check your hard drive space and permissions and try again.</translation>
 <translation id="5390100381392048184">Allow sites to play sound</translation>
@@ -4373,7 +4371,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="661907246513853610">Site can track your location</translation>
 <translation id="6619801788773578757">Add kiosk application</translation>
 <translation id="6619990499523117484">Confirm your PIN</translation>
-<translation id="662080504995468778">Stay</translation>
 <translation id="6621715389962683284">Network connection cannot be established.</translation>
 <translation id="6622980291894852883">Continue blocking images</translation>
 <translation id="6624535038674360844"><ph name="FILE_NAME" /> has sensitive or dangerous content. Ask its owner to fix it.</translation>
@@ -6204,7 +6201,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8944964446326379280"><ph name="APP_NAME" /> is sharing a window with <ph name="TAB_NAME" />.</translation>
 <translation id="8945274638472141382">Icon size</translation>
 <translation id="8946359700442089734">Debugging features were not completely enabled on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device.</translation>
-<translation id="894871326938397531">Leave incognito mode?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> wants to see the make and model of your security key</translation>
 <translation id="8951256747718668828">Restoring couldn't be completed due to an error</translation>
 <translation id="8951465597020890363">Exit guest mode anyway?</translation>

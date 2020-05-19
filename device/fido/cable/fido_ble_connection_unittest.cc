@@ -165,10 +165,10 @@ class FidoBleConnectionTest : public ::testing::Test {
                                                 {kDefaultServiceRevision})));
             }));
 
-    ON_CALL(*fido_service_revision_bitfield_,
-            DeprecatedWriteRemoteCharacteristic_)
+    ON_CALL(*fido_service_revision_bitfield_, WriteRemoteCharacteristic_)
         .WillByDefault(Invoke(
-            [=](auto&, base::OnceClosure& callback,
+            [=](auto&, BluetoothRemoteGattCharacteristic::WriteType,
+                base::OnceClosure& callback,
                 const BluetoothRemoteGattCharacteristic::ErrorCallback&) {
               base::ThreadTaskRunnerHandle::Get()->PostTask(
                   FROM_HERE, std::move(callback));
@@ -284,20 +284,15 @@ class FidoBleConnectionTest : public ::testing::Test {
   }
 
   void SetNextWriteControlPointResponse(bool success) {
-// For performance reasons we try writes without responses first on macOS.
-#if defined(OS_MACOSX)
-    EXPECT_CALL(*fido_control_point_, WriteWithoutResponse)
-        .WillOnce(Return(success));
-    if (success)
-      return;
-#else
-    EXPECT_CALL(*fido_control_point_, WriteWithoutResponse).Times(0);
-#endif  // defined(OS_MACOSX)
-
-    EXPECT_CALL(*fido_control_point_,
-                DeprecatedWriteRemoteCharacteristic_(_, _, _))
+    EXPECT_CALL(
+        *fido_control_point_,
+        WriteRemoteCharacteristic_(
+            _, BluetoothRemoteGattCharacteristic::WriteType::kWithoutResponse,
+            _, _))
         .WillOnce(Invoke([success](
-                             const auto& data, base::OnceClosure& callback,
+                             const auto& data,
+                             BluetoothRemoteGattCharacteristic::WriteType,
+                             base::OnceClosure& callback,
                              BluetoothRemoteGattCharacteristic::ErrorCallback&
                                  error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -311,10 +306,15 @@ class FidoBleConnectionTest : public ::testing::Test {
 
   void SetNextWriteServiceRevisionResponse(std::vector<uint8_t> expected_data,
                                            bool success) {
-    EXPECT_CALL(*fido_service_revision_bitfield_,
-                DeprecatedWriteRemoteCharacteristic_(expected_data, _, _))
+    EXPECT_CALL(
+        *fido_service_revision_bitfield_,
+        WriteRemoteCharacteristic_(
+            expected_data,
+            BluetoothRemoteGattCharacteristic::WriteType::kWithResponse, _, _))
         .WillOnce(Invoke([success](
-                             const auto& data, base::OnceClosure& callback,
+                             const auto& data,
+                             BluetoothRemoteGattCharacteristic::WriteType,
+                             base::OnceClosure& callback,
                              BluetoothRemoteGattCharacteristic::ErrorCallback&
                                  error_callback) {
           base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -339,7 +339,7 @@ class FidoBleConnectionTest : public ::testing::Test {
           std::make_unique<NiceMockBluetoothGattCharacteristic>(
               fido_service_, "fido_control_point",
               BluetoothUUID(kFidoControlPointUUID), kIsLocal,
-              BluetoothGattCharacteristic::PROPERTY_WRITE,
+              BluetoothGattCharacteristic::PROPERTY_WRITE_WITHOUT_RESPONSE,
               BluetoothGattCharacteristic::PERMISSION_NONE);
       fido_control_point_ = fido_control_point.get();
       fido_service_->AddMockCharacteristic(std::move(fido_control_point));

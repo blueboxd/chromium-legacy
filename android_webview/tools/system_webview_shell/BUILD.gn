@@ -116,6 +116,7 @@ instrumentation_test_apk("system_webview_shell_layout_test_apk") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//testing/android/reporter:reporter_java",
+    "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",

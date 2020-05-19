@@ -655,7 +655,7 @@ class RenderWidgetHostViewAuraOverscrollTest
       MockWidgetInputHandler::DispatchedEventMessage* event =
           messages[i]->ToEvent();
       if (event &&
-          event->Event()->web_event->GetType() ==
+          event->Event()->Event().GetType() ==
               WebInputEvent::Type::kGestureScrollUpdate &&
           event->HasCallback()) {
         event->CallCallback(ack_result);
@@ -672,7 +672,7 @@ class RenderWidgetHostViewAuraOverscrollTest
       MockWidgetInputHandler::DispatchedEventMessage* event =
           messages[i]->ToEvent();
       // GSB events are blocking, send the ack.
-      if (event && event->Event()->web_event->GetType() ==
+      if (event && event->Event()->Event().GetType() ==
                        WebInputEvent::Type::kGestureScrollBegin) {
         event->CallCallback(ack_result);
         return;
@@ -938,7 +938,7 @@ class RenderWidgetHostViewAuraOverscrollTest
       // GestureScrollUpdate since the ack for the wheel event is non-blocking.
       EXPECT_TRUE(events[0]->ToEvent());
       EXPECT_EQ(WebInputEvent::Type::kMouseWheel,
-                events[0]->ToEvent()->Event()->web_event->GetType());
+                events[0]->ToEvent()->Event()->Event().GetType());
       gesture_scroll_update_index = 1;
     }
     EXPECT_EQ(gesture_scroll_update_index + 1, events.size());
@@ -947,7 +947,8 @@ class RenderWidgetHostViewAuraOverscrollTest
               events[gesture_scroll_update_index]
                   ->ToEvent()
                   ->Event()
-                  ->web_event->GetType());
+                  ->Event()
+                  .GetType());
     return events;
   }
 
@@ -1497,7 +1498,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   ASSERT_FALSE(events.empty());
   const blink::WebKeyboardEvent* blink_key_event1 =
       static_cast<const blink::WebKeyboardEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   ASSERT_TRUE(blink_key_event1);
   ASSERT_EQ(key_event1.key_code(), blink_key_event1->windows_key_code);
   ASSERT_EQ(ui::KeycodeConverter::DomCodeToNativeKeycode(key_event1.code()),
@@ -1589,7 +1590,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
         << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
     const blink::WebKeyboardEvent* blink_key_event =
         static_cast<const blink::WebKeyboardEvent*>(
-            events[0]->ToEvent()->Event()->web_event.get());
+            &events[0]->ToEvent()->Event()->Event());
     ASSERT_TRUE(blink_key_event)
         << "Failed for DomCode: "
         << ui::KeycodeConverter::DomCodeToCodeString(dom_code);
@@ -1692,21 +1693,21 @@ TEST_F(RenderWidgetHostViewAuraTest, TimerBasedWheelEventPhaseInfo) {
   EXPECT_TRUE(events[0]->ToEvent());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kNotConsumed);
 
   events = GetAndResetDispatchedMessages();
   const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin, gesture_event->GetType());
   EXPECT_TRUE(gesture_event->data.scroll_begin.synthetic);
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
             gesture_event->GetType());
   EXPECT_EQ(0U, gesture_event->data.scroll_update.delta_x);
@@ -1722,12 +1723,12 @@ TEST_F(RenderWidgetHostViewAuraTest, TimerBasedWheelEventPhaseInfo) {
   base::RunLoop().RunUntilIdle();
   events = GetAndResetDispatchedMessages();
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   base::TimeTicks wheel_event_timestamp = wheel_event->TimeStamp();
   EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, wheel_event->phase);
 
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
             gesture_event->GetType());
   EXPECT_EQ(0U, gesture_event->data.scroll_update.delta_x);
@@ -1743,7 +1744,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TimerBasedWheelEventPhaseInfo) {
   events = GetAndResetDispatchedMessages();
   const WebMouseWheelEvent* wheel_end_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_end_event->phase);
   EXPECT_EQ(0U, wheel_end_event->delta_x);
   EXPECT_EQ(0U, wheel_end_event->delta_y);
@@ -1752,7 +1753,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TimerBasedWheelEventPhaseInfo) {
   EXPECT_GT(wheel_end_event->TimeStamp(), wheel_event_timestamp);
 
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollEnd, gesture_event->GetType());
   EXPECT_TRUE(gesture_event->data.scroll_end.synthetic);
 }
@@ -1781,7 +1782,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TimerBasedLatchingBreaksWithMouseMove) {
   EXPECT_TRUE(events[0]->ToEvent());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kNotConsumed);
@@ -1800,7 +1801,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TimerBasedLatchingBreaksWithMouseMove) {
   EXPECT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
 
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, wheel_event->phase);
   events = GetAndResetDispatchedMessages();
 
@@ -1815,11 +1816,11 @@ TEST_F(RenderWidgetHostViewAuraTest, TimerBasedLatchingBreaksWithMouseMove) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
 
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 }
 
@@ -1847,7 +1848,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_TRUE(events[0]->ToEvent());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kNotConsumed);
@@ -1863,7 +1864,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
 
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, wheel_event->phase);
   events = GetAndResetDispatchedMessages();
 
@@ -1877,11 +1878,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
 
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 }
 
@@ -1910,7 +1911,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_TRUE(events[0]->ToEvent());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kNotConsumed);
@@ -1935,11 +1936,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
 
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 }
 
@@ -1964,7 +1965,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_TRUE(events[0]->ToEvent());
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kNotConsumed);
@@ -1985,11 +1986,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
   EXPECT_TRUE(events[0]->ToEvent());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
   EXPECT_TRUE(events[2]->ToEvent());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 }
 
@@ -2020,7 +2021,7 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
 
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
@@ -2029,13 +2030,13 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
   const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin, gesture_event->GetType());
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
             gesture_event->GetType());
   EXPECT_EQ(0U, gesture_event->data.scroll_update.delta_x);
@@ -2057,11 +2058,11 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ(2U, events.size());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, wheel_event->phase);
   EXPECT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   events[1]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
@@ -2099,10 +2100,10 @@ TEST_F(RenderWidgetHostViewAuraTest, TouchpadFlingStartResetsWheelPhaseState) {
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->momentum_phase);
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 }
 
@@ -2149,7 +2150,7 @@ TEST_F(RenderWidgetHostViewAuraTest, MouseWheelScrollingAfterGFCWithoutGFS) {
       GetAndResetDispatchedMessages();
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 
@@ -2188,7 +2189,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
 
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
@@ -2202,12 +2203,12 @@ TEST_F(RenderWidgetHostViewAuraTest,
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
   const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin, gesture_event->GetType());
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollUpdate,
             gesture_event->GetType());
   events[1]->ToEvent()->CallCallback(
@@ -2224,11 +2225,11 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
   EXPECT_TRUE(events[0]->ToEvent());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
   EXPECT_TRUE(events[2]->ToEvent());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
 
   // The mouse_wheel_phase_handler's timer will be running during mouse wheel
@@ -2253,7 +2254,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_EQ("MouseWheel", GetMessageNames(events));
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kNotConsumed);
@@ -2261,12 +2262,12 @@ TEST_F(RenderWidgetHostViewAuraTest,
   events = GetAndResetDispatchedMessages();
   EXPECT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
   const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   events[0]->ToEvent()->CallCallback(
       blink::mojom::InputEventResultState::kConsumed);
 
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_EQ(0U, gesture_event->data.scroll_update.delta_x);
   EXPECT_EQ(5U, gesture_event->data.scroll_update.delta_y);
   events[1]->ToEvent()->CallCallback(
@@ -2294,18 +2295,18 @@ TEST_F(RenderWidgetHostViewAuraTest,
   EXPECT_EQ(3U, events.size());
 
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
   EXPECT_EQ(0U, wheel_event->delta_x);
   EXPECT_EQ(0U, wheel_event->delta_y);
 
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollEnd, gesture_event->GetType());
   EXPECT_EQ(blink::WebGestureDevice::kTouchpad, gesture_event->SourceDevice());
 
   gesture_event = static_cast<const WebGestureEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureScrollBegin, gesture_event->GetType());
   EXPECT_EQ(blink::WebGestureDevice::kTouchscreen,
             gesture_event->SourceDevice());
@@ -3818,15 +3819,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   events = GetAndResetDispatchedMessages();
   for (const auto& event : events) {
     EXPECT_NE(WebInputEvent::Type::kGestureFlingStart,
-              event->ToEvent()->Event()->web_event->GetType());
+              event->ToEvent()->Event()->Event().GetType());
   }
 
   // Fling controller handles the GFS with touchpad source and zero velocity and
   // sends a nonblocking wheel end event. The GSE generated from wheel end event
   // resets scroll state.
-  EXPECT_EQ(
-      WebInputEvent::Type::kGestureScrollEnd,
-      events[events.size() - 1]->ToEvent()->Event()->web_event->GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollEnd,
+            events[events.size() - 1]->ToEvent()->Event()->Event().GetType());
 
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
@@ -4758,15 +4758,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
   events = GetAndResetDispatchedMessages();
   for (const auto& event : events) {
     EXPECT_NE(WebInputEvent::Type::kGestureFlingStart,
-              event->ToEvent()->Event()->web_event->GetType());
+              event->ToEvent()->Event()->Event().GetType());
   }
 
   // Fling controller handles a GFS with touchpad source and zero velocity and
   // sends a nonblocking wheel end event. The GSE generated from wheel end event
   // resets scroll state.
-  EXPECT_EQ(
-      WebInputEvent::Type::kGestureScrollEnd,
-      events[events.size() - 1]->ToEvent()->Event()->web_event->GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollEnd,
+            events[events.size() - 1]->ToEvent()->Event()->Event().GetType());
   EXPECT_TRUE(ScrollStateIsUnknown());
 
   // Dropped flings should neither propagate *nor* indicate that they were
@@ -4805,15 +4804,14 @@ TEST_F(RenderWidgetHostViewAuraOverscrollTest,
 
   for (const auto& event : events) {
     EXPECT_NE(WebInputEvent::Type::kGestureFlingStart,
-              event->ToEvent()->Event()->web_event->GetType());
+              event->ToEvent()->Event()->Event().GetType());
   }
 
   // Fling controller handles a GFS with touchpad source and zero velocity and
   // sends a nonblocking wheel end event. The GSE generated from wheel end event
   // resets scroll state.
-  EXPECT_EQ(
-      WebInputEvent::Type::kGestureScrollEnd,
-      events[events.size() - 1]->ToEvent()->Event()->web_event->GetType());
+  EXPECT_EQ(WebInputEvent::Type::kGestureScrollEnd,
+            events[events.size() - 1]->ToEvent()->Event()->Event().GetType());
 
   EXPECT_EQ(OVERSCROLL_NONE, overscroll_mode());
   EXPECT_EQ(OverscrollSource::NONE, overscroll_source());
@@ -5015,7 +5013,7 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
       GetAndResetDispatchedMessages();
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[0]->ToEvent()->Event()->web_event.get());
+          &events[0]->ToEvent()->Event()->Event());
   // Check if scroll is caused when ctrl-scroll is generated from
   // mouse wheel event.
   EXPECT_EQ(blink::WebMouseWheelEvent::EventAction::kPageZoom,
@@ -5037,13 +5035,13 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   // dispatching the wheel event.
   EXPECT_EQ(2u, events.size());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
 
   // Check if scroll is caused when no modifier is applied to the
   // mouse wheel event.
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_NE(blink::WebMouseWheelEvent::EventAction::kPageZoom,
             wheel_event->event_action);
 
@@ -5061,12 +5059,12 @@ TEST_F(RenderWidgetHostViewAuraTest, SetCanScrollForWebMouseWheelEvent) {
   // dispatching the wheel event.
   EXPECT_EQ(2u, events.size());
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[0]->ToEvent()->Event()->web_event.get());
+      &events[0]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
   // Check if scroll is caused when ctrl-touchpad-scroll is generated
   // from scroll event.
   wheel_event = static_cast<const WebMouseWheelEvent*>(
-      events[1]->ToEvent()->Event()->web_event.get());
+      &events[1]->ToEvent()->Event()->Event());
   EXPECT_NE(blink::WebMouseWheelEvent::EventAction::kPageZoom,
             wheel_event->event_action);
 }
@@ -5344,7 +5342,7 @@ TEST_F(RenderWidgetHostViewAuraTest,
 
   const WebMouseWheelEvent* wheel_event =
       static_cast<const WebMouseWheelEvent*>(
-          events[4]->ToEvent()->Event()->web_event.get());
+          &events[4]->ToEvent()->Event()->Event());
   EXPECT_EQ(blink::WebMouseWheelEvent::kPhaseBlocked,
             wheel_event->momentum_phase);
 
@@ -5402,7 +5400,7 @@ TEST_F(RenderWidgetHostViewAuraTest, GestureTapFromStylusHasPointerType) {
   EXPECT_EQ("GestureTapDown GestureShowPress GestureTap",
             GetMessageNames(events));
   const WebGestureEvent* gesture_event = static_cast<const WebGestureEvent*>(
-      events[2]->ToEvent()->Event()->web_event.get());
+      &events[2]->ToEvent()->Event()->Event());
   EXPECT_EQ(WebInputEvent::Type::kGestureTap, gesture_event->GetType());
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
             gesture_event->primary_pointer_type);

@@ -43,6 +43,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="6058625436358447366">Amaitzeko, idatzi pasahitz zaharra eta berria</translation>
 <translation id="6106186594183574873">Amaitzeko, idatzi pasahitz zaharra</translation>
 <translation id="6146993107019042706">Amaitzeko, idatzi pasahitz berria</translation>
+<translation id="6517239166834772319">Arakatu</translation>
 <translation id="6643016212128521049">Garbitu</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7658239707568436148">Utzi</translation>
@@ -50,6 +51,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="7805768142964895445">Egoera</translation>
 <translation id="808894953321890993">Aldatu pasahitza</translation>
 <translation id="8208861521865154048">Abantailak</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> domeinuak kudeatzen du erabiltzaile hau. Ezarpenak kudeatu eta erabiltzailearen jarduerak gainbegira ditzake urrunetik.</translation>
 <translation id="8747900814994928677">Berretsi aldaketa</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> saiakera gelditzen dira</translation>
 <translation id="910415269708673980">Freskatu <ph name="PRINCIPAL_NAME" /> erabiltzailearen zerbitzu-eskaera</translation>

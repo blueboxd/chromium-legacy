@@ -2,13 +2,7 @@
   {{enum_name}} = {};
 {%-   set prev_enum = 0 %}
 {%-   for field in enum.fields %}
-{%-     if field.value %}
-  {{enum_name}}.{{field.name}} = {{field.value|expression_to_text}};
-{%-     elif loop.first %}
-  {{enum_name}}.{{field.name}} = 0;
-{%-     else %}
-  {{enum_name}}.{{field.name}} = {{enum_name}}.{{enum.fields[loop.index0 - 1].name}} + 1;
-{%-     endif %}
+  {{enum_name}}.{{field.name}} = {{field.numeric_value}};
 {%-   endfor %}
 {%-   if enum.min_value is not none %}
   {{enum_name}}.MIN_VALUE = {{enum.min_value}},

@@ -18,6 +18,7 @@ TODO(crbug.com/1046861): Remove this workaround when the bug is fixed.
 
 import logging
 import subprocess
+import tempfile
 import time
 
 
@@ -33,7 +34,9 @@ def _ExecQemuImgWithTimeout(command):
   """
 
   logging.info('qemu-img starting')
-  p = subprocess.Popen(command)
+  command_output_file = tempfile.NamedTemporaryFile('w')
+  p = subprocess.Popen(command, stdout=command_output_file,
+                       stderr=subprocess.STDOUT)
   start_sec = time.time()
   while p.poll() is None and time.time() - start_sec < QEMU_IMG_TIMEOUT_SEC:
     time.sleep(1)
@@ -41,10 +44,17 @@ def _ExecQemuImgWithTimeout(command):
   logging.info('qemu-img duration: %f' % float(stop_sec - start_sec))
 
   if p.poll() is None:
+    returncode = None
     p.kill()
-    return None
+    p.wait()
+  else:
+    returncode = p.returncode
 
-  return p.returncode
+  log_level = logging.WARN if returncode else logging.DEBUG
+  for line in open(command_output_file.name, 'r'):
+    logging.log(log_level, 'qemu-img stdout: ' + line.strip())
+
+  return returncode
 
 
 def ExecQemuImgWithRetry(command):

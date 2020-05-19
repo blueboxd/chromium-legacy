@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row.h"
 
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_row_interface.h"
@@ -18,6 +19,11 @@ LayoutNGTableRow::LayoutNGTableRow(Element* element)
 
 bool LayoutNGTableRow::IsEmpty() const {
   return !FirstChild();
+}
+
+LayoutBox* LayoutNGTableRow::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableRowWithParent(*parent);
 }
 
 unsigned LayoutNGTableRow::RowIndex() const {

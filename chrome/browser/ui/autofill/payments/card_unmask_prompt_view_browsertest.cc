@@ -70,8 +70,7 @@ class TestCardUnmaskPromptController : public CardUnmaskPromptControllerImpl {
       content::WebContents* contents,
       scoped_refptr<content::MessageLoopRunner> runner)
       : CardUnmaskPromptControllerImpl(
-            user_prefs::UserPrefs::Get(contents->GetBrowserContext()),
-            false),
+            user_prefs::UserPrefs::Get(contents->GetBrowserContext())),
         runner_(runner) {}
 
   // CardUnmaskPromptControllerImpl:.

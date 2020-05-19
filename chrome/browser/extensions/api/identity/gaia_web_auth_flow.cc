@@ -223,7 +223,8 @@ void GaiaWebAuthFlow::OnAuthFlowTitleChange(const std::string& title) {
 
 std::unique_ptr<WebAuthFlow> GaiaWebAuthFlow::CreateWebAuthFlow(GURL url) {
   return std::unique_ptr<WebAuthFlow>(
-      new WebAuthFlow(this, profile_, url, WebAuthFlow::INTERACTIVE));
+      new WebAuthFlow(this, profile_, url, WebAuthFlow::INTERACTIVE,
+                      WebAuthFlow::GET_AUTH_TOKEN));
 }
 
 }  // namespace extensions

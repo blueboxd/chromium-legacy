@@ -34,6 +34,7 @@ TEST(MimeUtilTest, ExtensionTest) {
     {FILE_PATH_LITERAL("webm"), "video/webm", true},
     {FILE_PATH_LITERAL("weba"), "audio/webm", true},
     {FILE_PATH_LITERAL("avif"), "image/avif", true},
+    {FILE_PATH_LITERAL("avifs"), "image/avif-sequence", true},
 #if defined(OS_CHROMEOS)
     // These are test cases for testing platform mime types on Chrome OS.
     {FILE_PATH_LITERAL("epub"), "application/epub+zip", true},
@@ -311,6 +312,7 @@ TEST(MimeUtilTest, TestGetExtensionsForMimeType) {
       {"MeSsAge/*", 1, "eml"},
       {"message/", 0, nullptr, true},
       {"image/avif", 1, "avif"},
+      {"image/avif-sequence", 1, "avifs"},
       {"image/bmp", 1, "bmp"},
       {"video/*", 6, "mp4"},
       {"video/*", 6, "mpeg"},

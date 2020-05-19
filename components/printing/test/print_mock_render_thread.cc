@@ -8,6 +8,7 @@
 
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/test/mock_printer.h"
 #include "ipc/ipc_sync_message.h"
 #include "printing/buildflags/buildflags.h"
@@ -98,7 +99,7 @@ void PrintMockRenderThread::OnDidPrintDocument(
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintMockRenderThread::OnDidStartPreview(
-    const PrintHostMsg_DidStartPreview_Params& params,
+    const printing::mojom::DidStartPreviewParams& params,
     const PrintHostMsg_PreviewIds& ids) {
   print_preview_pages_remaining_ = params.page_count;
 }

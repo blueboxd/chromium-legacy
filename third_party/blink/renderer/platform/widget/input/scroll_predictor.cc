@@ -74,11 +74,11 @@ std::unique_ptr<EventWithCallback> ScrollPredictor::ResampleScrollEvents(
       return event_with_callback;
 
     for (auto& coalesced_event : original_events)
-      UpdatePrediction(coalesced_event.event_, frame_time);
+      UpdatePrediction(coalesced_event.event_->Event(), frame_time);
 
     if (should_resample_scroll_events_) {
       ResampleEvent(frame_time, event_with_callback->event_pointer(),
-                    event_with_callback->mutable_latency_info());
+                    &event_with_callback->latency_info());
     }
 
     metrics_handler_.EvaluatePrediction();
@@ -100,12 +100,11 @@ void ScrollPredictor::Reset() {
   metrics_handler_.Reset();
 }
 
-void ScrollPredictor::UpdatePrediction(
-    const std::unique_ptr<WebInputEvent>& event,
-    base::TimeTicks frame_time) {
-  DCHECK(event->GetType() == WebInputEvent::Type::kGestureScrollUpdate);
+void ScrollPredictor::UpdatePrediction(const WebInputEvent& event,
+                                       base::TimeTicks frame_time) {
+  DCHECK(event.GetType() == WebInputEvent::Type::kGestureScrollUpdate);
   const WebGestureEvent& gesture_event =
-      static_cast<const WebGestureEvent&>(*event);
+      static_cast<const WebGestureEvent&>(event);
   // When fling, GSU is sending per frame, resampling is not needed.
   if (gesture_event.data.scroll_update.inertial_phase ==
       WebGestureEvent::InertialPhaseState::kMomentum) {

@@ -129,7 +129,8 @@ void EmitSameSiteCookiesDeprecationWarning(
     breaking_context_downgrade = breaking_context_downgrade ||
                                  excluded_cookie.status.HasDowngradeWarning();
 
-    if (excluded_cookie.status.ShouldRecordDowngradeMetrics()) {
+    if (excluded_cookie.status.HasDowngradeWarning()) {
+      // Unlike with UMA, do not record cookies that have no downgrade warning.
       RecordContextDowngradeUKM(rfh, cookie_details->type,
                                 excluded_cookie.status, cookie_details->url);
     }

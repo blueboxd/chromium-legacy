@@ -445,11 +445,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
           ReceiveLoadedDbValues(h, result.get(),
                                 &pending_server_creditcards_query_,
                                 &server_credit_cards_);
-
-          // If the user has a saved unmasked server card and the experiment is
-          // disabled, force mask all cards back to the unsaved state.
-          if (!OfferStoreUnmaskedCards(is_off_the_record_))
-            ResetFullServerCards();
         }
         break;
       case AUTOFILL_CLOUDTOKEN_RESULT:

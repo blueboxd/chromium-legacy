@@ -106,7 +106,7 @@ void SkiaGlRenderer::RenderFrame() {
   } else {
     Draw(sk_surface_->getCanvas(), NextFraction());
   }
-  gr_context_->flush();
+  gr_context_->flushAndSubmit();
   glFinish();
 
   if (gl_surface_->SupportsAsyncSwap()) {

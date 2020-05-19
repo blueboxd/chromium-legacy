@@ -64,6 +64,15 @@ RequestSchedule GetRequestSchedule(PrefService* pref_service) {
   return RequestScheduleFromValue(*pref_service->Get(kRequestSchedule));
 }
 
+void SetPersistentMetricsData(const PersistentMetricsData& data,
+                              PrefService* pref_service) {
+  pref_service->Set(kMetricsData, PersistentMetricsDataToValue(data));
+}
+
+PersistentMetricsData GetPersistentMetricsData(PrefService* pref_service) {
+  return PersistentMetricsDataFromValue(*pref_service->Get(kMetricsData));
+}
+
 }  // namespace prefs
 
 }  // namespace feed

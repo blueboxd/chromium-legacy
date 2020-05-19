@@ -76,8 +76,7 @@ ResourceRequestHead::ResourceRequestHead(const KURL& url)
       referrer_policy_(network::mojom::ReferrerPolicy::kDefault),
       is_external_request_(false),
       cors_preflight_policy_(
-          network::mojom::CorsPreflightPolicy::kConsiderPreflight),
-      redirect_info_(base::nullopt) {}
+          network::mojom::CorsPreflightPolicy::kConsiderPreflight) {}
 
 ResourceRequestHead::ResourceRequestHead(const ResourceRequestHead&) = default;
 
@@ -155,7 +154,8 @@ std::unique_ptr<ResourceRequest> ResourceRequestHead::CreateRedirectRequest(
   request->SetReferrerString(referrer);
   request->SetReferrerPolicy(new_referrer_policy);
   request->SetSkipServiceWorker(skip_service_worker);
-  request->SetRedirectInfo(RedirectInfo(Url()));
+  request->redirect_chain_ = GetRedirectChain();
+  request->redirect_chain_.push_back(Url());
 
   // Copy from parameters for |this|.
   request->SetDownloadToBlob(DownloadToBlob());
@@ -195,14 +195,6 @@ const KURL& ResourceRequestHead::Url() const {
 
 void ResourceRequestHead::SetUrl(const KURL& url) {
   url_ = url;
-}
-
-const KURL& ResourceRequestHead::GetInitialUrlForResourceTiming() const {
-  return initial_url_for_resource_timing_;
-}
-
-void ResourceRequestHead::SetInitialUrlForResourceTiming(const KURL& url) {
-  initial_url_for_resource_timing_ = url;
 }
 
 void ResourceRequestHead::RemoveUserAndPassFromURL() {

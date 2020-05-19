@@ -270,13 +270,15 @@ class CORE_EXPORT ContentSecurityPolicy final
   bool AllowBaseURI(const KURL&) const;
   bool AllowConnectToSource(
       const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
+      const KURL& url_before_redirects,
+      RedirectStatus,
       ReportingDisposition = ReportingDisposition::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowFormAction(const KURL&) const;
   bool AllowImageFromSource(
       const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
+      const KURL& url_before_redirects,
+      RedirectStatus,
       ReportingDisposition = ReportingDisposition::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowMediaFromSource(const KURL&) const;
@@ -286,7 +288,8 @@ class CORE_EXPORT ContentSecurityPolicy final
       const String& nonce,
       const IntegrityMetadataSet&,
       ParserDisposition,
-      RedirectStatus = RedirectStatus::kNoRedirect,
+      const KURL& url_before_redirects,
+      RedirectStatus,
       ReportingDisposition = ReportingDisposition::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
   bool AllowWorkerContextFromSource(const KURL&) const;
@@ -333,7 +336,8 @@ class CORE_EXPORT ContentSecurityPolicy final
       mojom::RequestContextType,
       network::mojom::RequestDestination,
       const KURL&,
-      RedirectStatus = RedirectStatus::kNoRedirect,
+      const KURL& url_before_redirects,
+      RedirectStatus,
       ReportingDisposition = ReportingDisposition::kReport,
       CheckHeaderType = CheckHeaderType::kCheckAll) const;
 
@@ -345,7 +349,8 @@ class CORE_EXPORT ContentSecurityPolicy final
                     const String& nonce,
                     const IntegrityMetadataSet&,
                     ParserDisposition,
-                    RedirectStatus = RedirectStatus::kNoRedirect,
+                    const KURL& url_before_redirects,
+                    RedirectStatus,
                     ReportingDisposition = ReportingDisposition::kReport,
                     CheckHeaderType = CheckHeaderType::kCheckAll) const;
 
@@ -417,7 +422,7 @@ class CORE_EXPORT ContentSecurityPolicy final
   // Called when mixed content is detected on a page; will trigger a violation
   // report if the 'block-all-mixed-content' directive is specified for a
   // policy.
-  void ReportMixedContent(const KURL& mixed_url, RedirectStatus) const;
+  void ReportMixedContent(const KURL& blocked_url, RedirectStatus) const;
 
   void ReportBlockedScriptExecutionToInspector(
       const String& directive_text) const;
@@ -544,7 +549,8 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   bool AllowFromSource(ContentSecurityPolicy::DirectiveType,
                        const KURL&,
-                       RedirectStatus = RedirectStatus::kNoRedirect,
+                       const KURL& url_before_redirects,
+                       RedirectStatus,
                        ReportingDisposition = ReportingDisposition::kReport,
                        CheckHeaderType = CheckHeaderType::kCheckAll,
                        const String& = String(),

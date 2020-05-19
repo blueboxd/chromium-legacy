@@ -21,10 +21,11 @@
 
 namespace data_use_measurement {
 
-class DataUseMeasurementTest : public testing::Test {
+class DataUseMeasurementTest {
  public:
   DataUseMeasurementTest()
       : data_use_measurement_(
+            nullptr,
             network::TestNetworkConnectionTracker::GetInstance()) {
     // During the test it is expected to not have cellular connection.
     DCHECK(!net::NetworkChangeNotifier::IsConnectionCellular(
@@ -59,22 +60,27 @@ class DataUseMeasurementTest : public testing::Test {
 // foreground or the OS is not Android.
 // TODO(amohammadkhan): Add tests for Cellular/non-cellular connection types
 // when support for testing is provided in its class.
-TEST_F(DataUseMeasurementTest, UserNotUserTest) {
+TEST(DataUseMeasurementTest, UserNotUserTest) {
+  DataUseMeasurementTest data_use_measurement_test;
 #if defined(OS_ANDROID)
-  data_use_measurement()->OnApplicationStateChangeForTesting(
-      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
+  data_use_measurement_test.data_use_measurement()
+      ->OnApplicationStateChangeForTesting(
+          base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES);
 #endif
-  TestForAUserRequest("Foreground.");
+  data_use_measurement_test.TestForAUserRequest("Foreground.");
 }
 
 #if defined(OS_ANDROID)
 // This test function tests recording of data use information in UMA histogram
 // when packet is originated from user or services when the app is in the
 // background and OS is Android.
-TEST_F(DataUseMeasurementTest, ApplicationStateTest) {
-  data_use_measurement()->OnApplicationStateChangeForTesting(
-      base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
-  TestForAUserRequest("Background.");
+TEST(DataUseMeasurementTest, ApplicationStateTest) {
+  DataUseMeasurementTest data_use_measurement_test;
+
+  data_use_measurement_test.data_use_measurement()
+      ->OnApplicationStateChangeForTesting(
+          base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES);
+  data_use_measurement_test.TestForAUserRequest("Background.");
 }
 #endif
 

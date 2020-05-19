@@ -130,6 +130,83 @@ proto::CacheResponse::ResponseType FetchResponseTypeToProtoResponseType(
   return proto::CacheResponse::OPAQUE_TYPE;
 }
 
+// Assert that ConnectionInfo does not change since we cast it to
+// an integer in order to serialize it to disk.
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN == 0,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1 == 1,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY2 == 2,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_SPDY3 == 3,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP2 == 4,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION == 5,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_14 == 6,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_DEPRECATED_HTTP2_15 == 7,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP0_9 == 8,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_HTTP1_0 == 9,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_32 == 10,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_33 == 11,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_34 == 12,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_35 == 13,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_36 == 14,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_37 == 15,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_38 == 16,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_39 == 17,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_40 == 18,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_41 == 19,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_42 == 20,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_43 == 21,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q099 == 22,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_44 == 23,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_45 == 24,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_46 == 25,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_47 == 26,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_999 == 27,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q048 == 28,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q049 == 29,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_Q050 == 30,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T048 == 31,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T049 == 32,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T050 == 33,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_T099 == 34,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_25 == 35,
+              "ConnectionInfo enum is stable");
+static_assert(net::HttpResponseInfo::CONNECTION_INFO_QUIC_DRAFT_27 == 36,
+              "ConnectionInfo enum is stable");
+
 // Copy headers out of a cache entry and into a protobuf. The callback is
 // guaranteed to be run.
 void ReadMetadata(disk_cache::Entry* entry, MetadataCallback callback);
@@ -339,6 +416,11 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
     headers.insert(std::make_pair(header.name(), header.value()));
   }
 
+  std::string alpn_negotiated_protocol =
+      metadata.response().has_alpn_negotiated_protocol()
+          ? metadata.response().alpn_negotiated_protocol()
+          : "unknown";
+
   return blink::mojom::FetchAPIResponse::New(
       url_list, metadata.response().status_code(),
       metadata.response().status_text(),
@@ -352,7 +434,11 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
           metadata.response().cors_exposed_header_names().end()),
       nullptr /* side_data_blob */, nullptr /* side_data_blob_for_cache_put */,
       network::mojom::ParsedHeaders::New(),
-      metadata.response().loaded_with_credentials());
+      // Default proto value of 0 maps to CONNECTION_INFO_UNKNOWN.
+      static_cast<net::HttpResponseInfo::ConnectionInfo>(
+          metadata.response().connection_info()),
+      alpn_negotiated_protocol, metadata.response().loaded_with_credentials(),
+      metadata.response().was_fetched_via_spdy());
 }
 
 // The size of opaque (non-cors) resource responses are padded in order
@@ -1703,6 +1789,12 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
     response_metadata->add_url_list(url.spec());
   response_metadata->set_loaded_with_credentials(
       put_context->response->loaded_with_credentials);
+  response_metadata->set_connection_info(
+      put_context->response->connection_info);
+  response_metadata->set_alpn_negotiated_protocol(
+      put_context->response->alpn_negotiated_protocol);
+  response_metadata->set_was_fetched_via_spdy(
+      put_context->response->was_fetched_via_spdy);
   response_metadata->set_response_time(
       put_context->response->response_time.ToInternalValue());
   for (ResponseHeaderMap::const_iterator it =

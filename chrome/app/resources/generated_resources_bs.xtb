@@ -709,6 +709,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="186612162884103683">"<ph name="EXTENSION" />" može čitati i pisati slike, videozapise i zvučne fajlove na označenim lokacijama.</translation>
 <translation id="1867780286110144690">Aplikacija <ph name="PRODUCT_NAME" /> je spremna za završetak vaše instalacije</translation>
 <translation id="1868193363684582383">"Ok Google"</translation>
+<translation id="1868553836791672080">Provjera lozinki nije dostupna u Chromiumu</translation>
 <translation id="1871534214638631766">Prikaz srodnih informacija o sadržaju pomoću desnog klika ili dugog pritiska</translation>
 <translation id="1871615898038944731">Vaš uređaj <ph name="DEVICE_TYPE" /> je ažuriran</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Premjesti karticu u drugi prozor}one{Premjesti kartice u drugi prozor}few{Premjesti kartice u drugi prozor}other{Premjesti kartice u drugi prozor}}</translation>
@@ -1345,7 +1346,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2673135533890720193">Čitati vašu historiju pregledanja</translation>
 <translation id="2673589024369449924">Kreiraj prečicu na radnoj površini za ovog korisnika</translation>
 <translation id="2674764818721168631">Isključeno</translation>
-<translation id="2677748264148917807">Napusti</translation>
 <translation id="2678063897982469759">Ponovo omogući</translation>
 <translation id="268053382412112343">Historija</translation>
 <translation id="2682498795777673382">Roditelj je izvršio ažuriranje</translation>
@@ -3000,7 +3000,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="4830573902900904548">Vaš uređaj <ph name="DEVICE_TYPE" /> se ne može povezati na internet putem mreže <ph name="NETWORK_NAME" />. Odaberite drugu mrežu. <ph name="LEARN_MORE_LINK_START" />Saznajte više<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Pogledajte šta je novo na Chromebooku</translation>
 <translation id="4833683849865011483">Pronađen je 1 štampač na serveru za štampanje</translation>
-<translation id="4835385943915508971">Chrome nema pristup traženom resursu.</translation>
 <translation id="4836504898754963407">Upravljajte otiscima prstiju</translation>
 <translation id="4837926214103741331">Nemate odobrenje za korištenje ovog uređaja. Kontaktirajte vlasnika uređaja zbog odobrenja za prijavu.</translation>
 <translation id="4837952862063191349">Za otključavanje i vraćanje svojih lokalnih podataka, unesite svoju staru lozinku za uređaj <ph name="DEVICE_TYPE" />.</translation>
@@ -3419,7 +3418,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5379140238605961210">Nastavi blokirati pristup mikrofonu</translation>
 <translation id="5382591305415226340">Upravljajte podržanim linkovima</translation>
 <translation id="5383377866517186886">Kamera je isključena u Postavkama sustava na Macu</translation>
-<translation id="5384883051496921101">Ova stranica će podijeliti informacije s aplikacijom izvan anonimnog načina rada.</translation>
 <translation id="5388885445722491159">Upareno</translation>
 <translation id="5389237414310520250">Kreiranje novog korisnika nije uspjelo. Provjerite imate li dovoljno prostora na svom tvrdom disku i potrebna odobrenja, i pokušajte ponovo.</translation>
 <translation id="5390100381392048184">Dozvoli web lokacijama da reproduciraju zvuk</translation>
@@ -4373,7 +4371,6 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="661907246513853610">Web lokacija može pratiti vašu lokaciju</translation>
 <translation id="6619801788773578757">Dodaj aplikaciju za kiosk</translation>
 <translation id="6619990499523117484">Potvrdite PIN</translation>
-<translation id="662080504995468778">Ostani</translation>
 <translation id="6621715389962683284">Nije moguće uspostaviti mrežnu vezu.</translation>
 <translation id="6622980291894852883">Nastavi blokirati slike</translation>
 <translation id="6624535038674360844">U fajlu <ph name="FILE_NAME" /> postoji osjetljiv ili opasan sadržaj. Zatražite od vlasnika da ispravi grešku.</translation>
@@ -6204,7 +6201,6 @@ Fajl ključa: <ph name="KEY_FILE" />
 <translation id="8944964446326379280">Aplikacija <ph name="APP_NAME" /> dijeli prozor s karticom <ph name="TAB_NAME" />.</translation>
 <translation id="8945274638472141382">Veličina ikona</translation>
 <translation id="8946359700442089734">Funkcije za uklanjanje grešaka nisu u potpunosti omogućene na ovom <ph name="IDS_SHORT_PRODUCT_NAME" /> uređaju.</translation>
-<translation id="894871326938397531">Izaći iz anonimnog načina rada?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> želi vidjeti proizvođača i model vašeg sigurnosnog ključa</translation>
 <translation id="8951256747718668828">Vraćanje nije uspjelo zbog greške</translation>
 <translation id="8951465597020890363">Ipak napustiti način rada za gosta?</translation>

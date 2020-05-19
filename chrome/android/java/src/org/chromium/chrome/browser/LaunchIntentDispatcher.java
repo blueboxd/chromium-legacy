@@ -276,9 +276,12 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             }
         }
 
+        boolean isIntentSenderChrome = IntentHandler.wasIntentSenderChrome(intent);
+
         // Use a custom tab with a unique theme for payment handlers.
         if (intent.getIntExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT)
-                == CustomTabsUiType.PAYMENT_REQUEST) {
+                        == CustomTabsUiType.PAYMENT_REQUEST
+                && isIntentSenderChrome) {
             newIntent.setClassName(context, PaymentHandlerActivity.class.getName());
         }
 
@@ -314,7 +317,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         // If the previous caller was not Chrome, but added EXTRA_IS_OPENED_BY_CHROME
         // for malicious purpose, remove it. The new intent will be sent by Chrome, but was not
         // sent by Chrome initially.
-        if (!IntentHandler.wasIntentSenderChrome(intent)) {
+        if (!isIntentSenderChrome) {
             IntentUtils.safeRemoveExtra(
                     newIntent, CustomTabIntentDataProvider.EXTRA_IS_OPENED_BY_CHROME);
         }

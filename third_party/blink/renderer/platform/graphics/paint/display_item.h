@@ -166,17 +166,17 @@ class PLATFORM_EXPORT DisplayItem {
       : client_(&client),
         visual_rect_(client.VisualRect()),
         outset_for_raster_effects_(client.VisualRectOutsetForRasterEffects()),
-        type_(type),
-        draws_content_(draws_content),
         fragment_(0),
+        type_(type),
+        derived_size_(derived_size),
+        draws_content_(draws_content),
         is_cacheable_(client.IsCacheable()),
         is_tombstone_(false),
         is_moved_from_cached_subsequence_(false) {
     // |derived_size| must fit in |derived_size_|.
     // If it doesn't, enlarge |derived_size_| and fix this assert.
-    SECURITY_DCHECK(derived_size < (1 << 7));
+    SECURITY_DCHECK(derived_size == derived_size_);
     SECURITY_DCHECK(derived_size >= sizeof(*this));
-    derived_size_ = static_cast<unsigned>(derived_size);
   }
 
   virtual ~DisplayItem() = default;
@@ -184,16 +184,16 @@ class PLATFORM_EXPORT DisplayItem {
   // Ids are for matching new DisplayItems with existing DisplayItems.
   struct Id {
     DISALLOW_NEW();
-    Id(const DisplayItemClient& client, const Type type, unsigned fragment = 0)
+    Id(const DisplayItemClient& client, Type type, wtf_size_t fragment = 0)
         : client(client), type(type), fragment(fragment) {}
-    Id(const Id& id, unsigned fragment)
+    Id(const Id& id, wtf_size_t fragment)
         : client(id.client), type(id.type), fragment(fragment) {}
 
     String ToString() const;
 
     const DisplayItemClient& client;
     const Type type;
-    const unsigned fragment;
+    const wtf_size_t fragment;
   };
 
   Id GetId() const { return Id(*client_, GetType(), fragment_); }
@@ -225,11 +225,8 @@ class PLATFORM_EXPORT DisplayItem {
 
   // The fragment is part of the id, to uniquely identify display items in
   // different fragments for the same client and type.
-  unsigned Fragment() const { return fragment_; }
-  void SetFragment(unsigned fragment) {
-    DCHECK(fragment < (1 << 14));
-    fragment_ = fragment;
-  }
+  wtf_size_t Fragment() const { return fragment_; }
+  void SetFragment(wtf_size_t fragment) { fragment_ = fragment; }
 
   void SetVisualRectForTesting(const IntRect& r) { visual_rect_ = r; }
 
@@ -297,7 +294,7 @@ class PLATFORM_EXPORT DisplayItem {
 #endif
 
  private:
-  template <typename T, unsigned alignment>
+  template <typename T, wtf_size_t alignment>
   friend class ContiguousContainer;
   friend class DisplayItemList;
 
@@ -312,15 +309,15 @@ class PLATFORM_EXPORT DisplayItem {
   const DisplayItemClient* client_;
   IntRect visual_rect_;
   float outset_for_raster_effects_;
-
-  static_assert(kTypeLast < (1 << 7), "DisplayItem::Type should fit in 7 bits");
-  unsigned type_ : 7;
-  unsigned draws_content_ : 1;
-  unsigned derived_size_ : 7;  // size of the actual derived class
-  unsigned fragment_ : 14;
-  unsigned is_cacheable_ : 1;
-  unsigned is_tombstone_ : 1;
-  unsigned is_moved_from_cached_subsequence_ : 1;
+  wtf_size_t fragment_;
+  static_assert(kTypeLast < (1 << 8),
+                "DisplayItem::Type should fit in uint8_t");
+  uint8_t type_;
+  uint8_t derived_size_;  // size of the actual derived class
+  bool draws_content_ : 1;
+  bool is_cacheable_ : 1;
+  bool is_tombstone_ : 1;
+  bool is_moved_from_cached_subsequence_ : 1;
 };
 
 inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {

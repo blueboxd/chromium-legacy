@@ -43,6 +43,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="6058625436358447366">Aby zakończyć, wpisz stare i nowe hasło</translation>
 <translation id="6106186594183574873">Aby zakończyć, wpisz stare hasło</translation>
 <translation id="6146993107019042706">Aby zakończyć, wpisz nowe hasło</translation>
+<translation id="6517239166834772319">Odkrywaj</translation>
 <translation id="6643016212128521049">Wyczyść</translation>
 <translation id="7162487448488904999">Galeria</translation>
 <translation id="7658239707568436148">Anuluj</translation>
@@ -50,6 +51,7 @@ Kliknij mikrofon i zadaj pytanie.</translation>
 <translation id="7805768142964895445">Stan</translation>
 <translation id="808894953321890993">Zmień hasło</translation>
 <translation id="8208861521865154048">Korzyści</translation>
+<translation id="8701136875688985581">Tym użytkownikiem zarządza domena <ph name="ENROLLMENT_DOMAIN" />. Może ona zdalnie zarządzać ustawieniami i monitorować aktywność użytkownika.</translation>
 <translation id="8747900814994928677">Potwierdź zmianę</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Pozostałe próby: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Odśwież bilet przypisany do konta <ph name="PRINCIPAL_NAME" />.</translation>

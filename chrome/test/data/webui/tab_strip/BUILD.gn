@@ -21,8 +21,15 @@ js_type_check("closure_compile") {
     #":tab_list_test",
     #":tab_swiper_test",
     #":tab_test",
-    #":test_tab_strip_embedder_proxy",
+    ":test_tab_strip_embedder_proxy",
     ":test_tabs_api_proxy",
+  ]
+}
+
+js_library("test_tab_strip_embedder_proxy") {
+  deps = [
+    "..:test_browser_proxy.m",
+    "//chrome/browser/resources/tab_strip:tab_strip_embedder_proxy",
   ]
 }
 

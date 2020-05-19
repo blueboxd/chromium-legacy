@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/enterprise_util.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/mac/foundation_util.h"
@@ -19,9 +20,11 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/policy/core/common/external_data_fetcher.h"
+#include "components/policy/core/common/features.h"
 #include "components/policy/core/common/mac_util.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
+#include "components/policy/core/common/policy_loader_common.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/preferences_mac.h"
 #include "components/policy/core/common/schema.h"
@@ -30,6 +33,24 @@
 using base::ScopedCFTypeRef;
 
 namespace policy {
+
+namespace {
+
+// Encapsulates logic to determine if enterprise policies should be honored.
+bool ShouldHonorPolicies() {
+  base::DeviceUserDomainJoinState join_state =
+      base::AreDeviceAndUserJoinedToDomain();
+  // IsDeviceRegisteredWithManagementNew is only available after 10.13.4.
+  // Eventually switch to it when that is the minimum OS required by Chromium.
+  base::MacDeviceManagementStateOld mdm_state =
+      base::IsDeviceRegisteredWithManagementOld();
+
+  // Only honor sensitive policies if the Mac is managed externally.
+  return join_state.device_joined ||
+         mdm_state == base::MacDeviceManagementStateOld::kMDMEnrollment;
+}
+
+}  // namespace
 
 PolicyLoaderMac::PolicyLoaderMac(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -124,6 +145,12 @@ std::unique_ptr<PolicyBundle> PolicyLoaderMac::Load() {
 
   // Load policy for the registered components.
   LoadPolicyForDomain(POLICY_DOMAIN_EXTENSIONS, "extensions", bundle.get());
+
+  if (base::FeatureList::IsEnabled(
+          policy::features::kIgnoreSensitivePoliciesOnUnmanagedMac) &&
+      !ShouldHonorPolicies()) {
+    FilterSensitivePolicies(&chrome_policy);
+  }
 
   return bundle;
 }

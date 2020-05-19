@@ -122,8 +122,13 @@ junit_binary("media_router_junit_tests") {
 
   deps = [
     ":java",
+    "$google_play_services_package:google_play_services_basement_java",
+    "$google_play_services_package:google_play_services_cast_framework_java",
+    "$google_play_services_package:google_play_services_cast_java",
+    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//third_party/android_deps:androidx_mediarouter_mediarouter_java",
   ]
 }
 

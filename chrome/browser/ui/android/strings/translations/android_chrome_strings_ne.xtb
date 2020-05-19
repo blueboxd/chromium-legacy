@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">भाषा थप्नुहोस्</translation>
 <translation id="2650751991977523696">फाइल पुनः डाउनलोड गर्ने हो?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# अडियो फाइल}other{# अडियो फाइलहरू}}</translation>
+<translation id="2677748264148917807">छोड्नुहोस्</translation>
 <translation id="2689830683995595741">Chrome प्रयोग गरेर तपाईं <ph name="BEGIN_LINK1" />Google का सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />Google Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू<ph name="END_LINK2" />मा सहमति जनाउनुहुन्छ। <ph name="BEGIN_LINK3" />Family Link मार्फत व्यवस्थापन गरिएका Google खाताहरूको गोपनीयता सूचना<ph name="END_LINK3" /> पनि लागू हुन्छ।</translation>
 <translation id="2707726405694321444">पृष्ठ ताजा गर्नुहोस्</translation>
 <translation id="2709516037105925701">स्वत:भर्नुहोस्</translation>
@@ -454,6 +455,7 @@
 <translation id="4807098396393229769">कार्डमा रहेको नाम</translation>
 <translation id="4808319664292298116"><ph name="DOMAIN" /> बाट VR मा प्रवेश गर्ने हो?</translation>
 <translation id="4824958205181053313">सिंक रद्द गर्ने हो?</translation>
+<translation id="4835385943915508971">Chrome सँग अनुरोध गरिएको स्रोत माथिको पहुँच छैन।</translation>
 <translation id="4837753911714442426">पृष्ठ छाप्ने सम्बन्धी विकल्पहरू खोल्नुहोस्</translation>
 <translation id="4842092870884894799">पासवर्ड उत्पादन पपअप देखाउँदै</translation>
 <translation id="4860895144060829044">कल गर्नुहोस्</translation>
@@ -518,6 +520,7 @@
 <translation id="5342314432463739672">अनुमतिसम्बन्धी अनुरोधहरू</translation>
 <translation id="5357811892247919462">ट्याब प्राप्त भयो</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> ट्याब खोल्नुहोस्, एउटा ट्याबबाट अर्को ट्याबमा जान ट्याप गर्नुहोस्}other{<ph name="OPEN_TABS_MANY" /> ट्याबहरू खोल्नुहोस्, एउटा ट्याबबाट अर्को ट्याबमा जान ट्याप गर्नुहोस्}}</translation>
+<translation id="5384883051496921101">यो साइटले इन्कोग्निटो मोड बाहिरको अनुप्रयोगसँग जानकारी आदान प्रदान गर्न लाग्दैछ।</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(+ १ थप)}other{(+ # थप)}}</translation>
 <translation id="5403592356182871684">नामहरू</translation>
 <translation id="5403644198645076998">निश्चित साइटहरूलाई मात्र अनुमति दिनुहोस्</translation>
@@ -673,6 +676,7 @@
 <translation id="6593061639179217415">डेस्कटप साइट</translation>
 <translation id="6597891566292541626">QR/बार कोडलाई यस फ्रेमभित्र पार्नुहोस्।</translation>
 <translation id="6600954340915313787">Chrome मा प्रतिलिपि गरियो</translation>
+<translation id="662080504995468778">यहीँ रहनुहोस्</translation>
 <translation id="6627583120233659107">फोल्डर सम्पादन गर्नुहोस्</translation>
 <translation id="6643016212128521049">खालि गर्नुहोस्</translation>
 <translation id="6643649862576733715">बचत गरिएको डेटाको मात्राद्वारा क्रमबद्ध गर्नुहोस्</translation>
@@ -944,6 +948,7 @@
 <translation id="8922289737868596582">पृष्ठहरूलाई अफलाइन हेर्न थप विकल्पहरू नामक बटनबाट तिनीहरूलाई डाउनलोड गर्नुहोस्</translation>
 <translation id="8937772741022875483">तपाईंले Chrome मा गर्नुभएका क्रियाकलाप डिजिटल वेलबिइङबाट हटाउने हो?</translation>
 <translation id="8942627711005830162">अर्को विन्डोमा खोल्नुहोस्</translation>
+<translation id="894871326938397531">इन्कोग्निटो मोड छोड्ने हो?</translation>
 <translation id="8951232171465285730">Chrome ले तपाईंको <ph name="MEGABYTES" /> एम.बि. बचाएको छ</translation>
 <translation id="8965591936373831584">विचाराधीन</translation>
 <translation id="8970887620466824814">केही चिज गडबड भयो।</translation>

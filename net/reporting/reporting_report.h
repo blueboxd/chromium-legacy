@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/network_isolation_key.h"
+#include "net/reporting/reporting_endpoint.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -64,6 +65,13 @@ struct NET_EXPORT ReportingReport {
 
   // Records metrics about report outcome.
   ~ReportingReport();
+
+  // Bundles together the NIK, origin of the report URL, and group name.
+  // This is not exactly the same as the group key of the endpoint that the
+  // report will be delivered to. The origin may differ if the endpoint is
+  // configured for a superdomain of the report's origin. The NIK and group name
+  // will be the same.
+  ReportingEndpointGroupKey GetGroupKey() const;
 
   static void RecordReportDiscardedForNoURLRequestContext();
   static void RecordReportDiscardedForNoReportingService();

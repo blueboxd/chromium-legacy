@@ -344,7 +344,7 @@ std::vector<gfx::Rect> TabStripLayoutHelper::CalculateIdealBounds(
     base::Optional<tab_groups::TabGroupId> id = slots_[i].view->group();
     bool slot_is_collapsed_tab =
         (slots_[i].type == ViewType::kTab && id.has_value())
-            ? controller_->GetGroupCollapsedState(id.value())
+            ? controller_->IsGroupCollapsed(id.value())
             : false;
 
     auto open = (slots_[i].animation->IsClosing() || slot_is_collapsed_tab)

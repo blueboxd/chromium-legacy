@@ -90,7 +90,7 @@ void ChromeDataUseMeasurement::DeleteInstance() {
 ChromeDataUseMeasurement::ChromeDataUseMeasurement(
     network::NetworkConnectionTracker* network_connection_tracker,
     PrefService* local_state)
-    : DataUseMeasurement(network_connection_tracker),
+    : DataUseMeasurement(local_state, network_connection_tracker),
       local_state_(local_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }

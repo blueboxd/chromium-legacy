@@ -36,7 +36,7 @@ class Hierarchy {
   explicit Hierarchy(const OsSettingsSections& sections);
   Hierarchy(const Hierarchy& other) = delete;
   Hierarchy& operator=(const Hierarchy& other) = delete;
-  ~Hierarchy();
+  virtual ~Hierarchy();
 
   struct SubpageMetadata {
     explicit SubpageMetadata(mojom::Section section);
@@ -69,11 +69,15 @@ class Hierarchy {
   const SubpageMetadata& GetSubpageMetadata(mojom::Subpage subpage) const;
   const SettingMetadata& GetSettingMetadata(mojom::Setting setting) const;
 
- private:
-  class PerSectionHierarchyGenerator;
+ protected:
+  // Used by tests.
+  Hierarchy();
 
   std::unordered_map<mojom::Subpage, SubpageMetadata> subpage_map_;
   std::unordered_map<mojom::Setting, SettingMetadata> setting_map_;
+
+ private:
+  class PerSectionHierarchyGenerator;
 };
 
 }  // namespace settings

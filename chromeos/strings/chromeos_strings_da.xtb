@@ -42,6 +42,7 @@
 <translation id="6058625436358447366">Angiv din gamle og nye adgangskode for at afslutte</translation>
 <translation id="6106186594183574873">Angiv din gamle adgangskode for at afslutte</translation>
 <translation id="6146993107019042706">Angiv din nye adgangskode for at afslutte</translation>
+<translation id="6517239166834772319">Udforsk</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="7162487448488904999">Galleri</translation>
 <translation id="7658239707568436148">Annuller</translation>
@@ -49,6 +50,7 @@
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Skift adgangskode</translation>
 <translation id="8208861521865154048">Fordele</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administrerer denne bruger. Det kan administrere indstillinger via fjernadgang og overvåge brugeraktivitet.</translation>
 <translation id="8747900814994928677">Bekræft ændring</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> forsøg tilbage</translation>
 <translation id="910415269708673980">Gendan billetten for <ph name="PRINCIPAL_NAME" /></translation>

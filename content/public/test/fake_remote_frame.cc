@@ -80,6 +80,9 @@ void FakeRemoteFrame::DidStopLoading() {}
 void FakeRemoteFrame::IntrinsicSizingInfoOfChildChanged(
     blink::mojom::IntrinsicSizingInfoPtr sizing_info) {}
 
+void FakeRemoteFrame::UpdateOpener(
+    const base::Optional<base::UnguessableToken>& opener_frame_token) {}
+
 void FakeRemoteFrame::FakeRemoteFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::RemoteFrame>(

@@ -463,7 +463,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // flushing once to see if that releases the read refs. We can avoid a copy
     // by queuing this work before writing to this resource.
     if (is_accelerated_)
-      surface_->flush();
+      surface_->flushAndSubmit();
 
     return !resource_->HasOneRef();
   }
@@ -505,7 +505,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // SkSurface here.
     if (IsGpuContextLost())
       return;
-    GetGrContext()->flush();
+    GetGrContext()->flushAndSubmit();
   }
 
   void EnsureWriteAccess() {
@@ -1332,7 +1332,7 @@ void CanvasResourceProvider::RasterRecord(
     sk_sp<cc::PaintRecord> last_recording) {
   EnsureSkiaCanvas();
   skia_canvas_->drawPicture(std::move(last_recording));
-  GetSkSurface()->flush();
+  GetSkSurface()->flushAndSubmit();
 }
 
 bool CanvasResourceProvider::IsGpuContextLost() const {

@@ -154,6 +154,7 @@
 <translation id="6717134281241384636">Потребителският ви профил не може да се използва, защото е от по-нова версия на Chromium. Някои функции може да не са налице. Моля, посочете друга директория в потребителския профил или използвайте по-нова версия на Chromium.</translation>
 <translation id="6734080038664603509">Актуализиране на &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium вече е инсталиран за всички потребители на компютъра ви.</translation>
+<translation id="6774082503108938489">Някой от родителите ви е изключил разрешенията за сайтове, приложения и разширения за Chromium. Активирането на това <ph name="EXTENSION_TYPE_PARAMETER" /> не е разрешено.</translation>
 <translation id="6847869444787758381">Chromium ви уведомява, ако паролите ви бъдат компрометирани</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (копирано в Chromium)</translation>
@@ -209,6 +210,7 @@
 <translation id="8417404458978023919">{0,plural, =1{Повторно стартиране на Chromium до 1 ден}other{Повторно стартиране на Chromium до # дни}}</translation>
 <translation id="8453117565092476964">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете отново Chromium.</translation>
 <translation id="8493179195440786826">Chromium не е актуален</translation>
+<translation id="8558383651099478961">Някой от родителите ви е изключил разрешенията за сайтове, приложения и разширения за Chromium. Добавянето на това <ph name="EXTENSION_TYPE_PARAMETER" /> не е разрешено.</translation>
 <translation id="8568283329061645092">Chromium може да проверява паролите ви, когато влезете с профила си в Google</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
 <translation id="8619360774459241877">Chromium стартира…</translation>

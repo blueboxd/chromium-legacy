@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "components/payments/content/android/payment_request_update_event_listener.h"
 #include "components/payments/content/payment_handler_host.h"
 
 namespace payments {
@@ -17,30 +18,36 @@ namespace android {
 // The native bridge for Java to interact with the payment handler host.
 // Object relationship diagram:
 //
-// PaymentRequestImpl.java ---- implements ----> PaymentHandlerHostDelegate
+// PaymentRequestImpl.java --- implements ---> PaymentRequestUpdateEventListener
 //       |        ^
-//      owns      |_________
-//       |                  |
-//       v                  |
-// PaymentHandlerHost.java  |
-//       |                  |
-//      owns                |
-//       |               delegate
-//       v                  |
-// android/payment_handler_host.h -- implements -> PaymentHandlerHost::Delegate
-//       |        ^
-//      owns      |
+//      owns      |________________________
+//       |                                |
+//       v                                |
+// PaymentHandlerHost.java                |
+//       |                                |
+//      owns                              |
+//       |                             listener
+//       v                                |
+// android/payment_handler_host.h         |
+//       |        |                       |
+//      owns      |                       |
+//       |       owns                     |
+//       |        |                       |
+//       |        v                       |
+//       |    android/payment_request_update_event_listener.h
+//       |        ^        \ ---- implements ---> PaymentHandlerHost::Delegate
+//       |        |
 //       |     delegate
 //       v        |
 // payment_handler_host.h
-class PaymentHandlerHost : public payments::PaymentHandlerHost::Delegate {
+class PaymentHandlerHost {
  public:
-  // The |delegate| must implement PaymentHandlerHostDelegate from
-  // PaymentHandlerHost.java. The |web_contents| should be from the same browser
-  // context as the payment handler and are used for logging in developr tools.
+  // The |listener| must implement PaymentRequestUpdateEventListener. The
+  // |web_contents| should be from the same browser context as the payment
+  // handler and are used for logging in developr tools.
   PaymentHandlerHost(const base::android::JavaParamRef<jobject>& web_contents,
-                     const base::android::JavaParamRef<jobject>& delegate);
-  ~PaymentHandlerHost() override;
+                     const base::android::JavaParamRef<jobject>& listener);
+  ~PaymentHandlerHost();
 
   // Checks whether any payment method, shipping address or shipping option
   // change is currently in progress.
@@ -64,14 +71,7 @@ class PaymentHandlerHost : public payments::PaymentHandlerHost::Delegate {
   void OnPaymentDetailsNotUpdated(JNIEnv* env);
 
  private:
-  // PaymentHandlerHost::Delegate implementation:
-  bool ChangePaymentMethod(const std::string& method_name,
-                           const std::string& stringified_data) override;
-  bool ChangeShippingOption(const std::string& shipping_option_id) override;
-  bool ChangeShippingAddress(
-      mojom::PaymentAddressPtr shipping_address) override;
-
-  base::android::ScopedJavaGlobalRef<jobject> delegate_;
+  PaymentRequestUpdateEventListener listener_;
   payments::PaymentHandlerHost payment_handler_host_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentHandlerHost);

@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_FEED_CORE_V2_METRICS_REPORTER_H_
 #define COMPONENTS_FEED_CORE_V2_METRICS_REPORTER_H_
 
+#include <map>
+
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
@@ -54,7 +56,8 @@ enum class FeedUserActionType {
 // Note this is inherited only for testing.
 class MetricsReporter {
  public:
-  explicit MetricsReporter(const base::TickClock* clock);
+  explicit MetricsReporter(const base::TickClock* clock,
+                           PrefService* profile_prefs);
   virtual ~MetricsReporter();
   MetricsReporter(const MetricsReporter&) = delete;
   MetricsReporter& operator=(const MetricsReporter&) = delete;
@@ -77,6 +80,7 @@ class MetricsReporter {
   // Indicates the user scrolled the feed by |distance_dp| and then stopped
   // scrolling.
   void StreamScrolled(int distance_dp);
+  void StreamScrollStart();
 
   // Called when the Feed surface is opened and closed.
   void SurfaceOpened(SurfaceId surface_id);
@@ -104,16 +108,23 @@ class MetricsReporter {
   base::WeakPtr<MetricsReporter> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
+  void ReportPersistentDataIfDayIsDone();
   void CardOpenBegin();
   void CardOpenTimeout(base::TimeTicks start_ticks);
   void ReportCardOpenEndIfNeeded(bool success);
   void RecordEngagement(int scroll_distance_dp, bool interacted);
+  void TrackTimeSpentInFeed(bool interacted_or_scrolled);
   void RecordInteraction();
   void ReportOpenFeedIfNeeded(SurfaceId surface_id, bool success);
   void ReportGetMoreIfNeeded(SurfaceId surface_id, bool success);
   void FinalizeMetrics();
+  void FinalizeVisit();
 
   const base::TickClock* clock_;
+  PrefService* profile_prefs_;
+  // Persistent data stored in prefs. Data is read in the constructor, and then
+  // written back to prefs on backgrounding.
+  PersistentMetricsData persistent_data_;
 
   base::TimeTicks visit_start_time_;
   bool engaged_simple_reported_ = false;
@@ -131,6 +142,11 @@ class MetricsReporter {
   // |ChromeStopping()|, the open is considered failed. Otherwise, if the
   // loading the page succeeds, the open is considered successful.
   base::Optional<base::TimeTicks> pending_open_;
+
+  // For tracking time spent in the Feed.
+  base::Optional<base::TimeTicks> time_in_feed_start_;
+  // For TimeSpentOnFeed.
+  base::TimeDelta tracked_visit_time_in_feed_;
 
   base::WeakPtrFactory<MetricsReporter> weak_ptr_factory_{this};
 };

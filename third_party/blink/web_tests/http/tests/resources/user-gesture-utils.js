@@ -32,13 +32,15 @@ function focusWithUserGesture(w) {
  * When testing focus, this is useful to avoid long timeouts waiting to see
  * if a focus event will be dispatched or not.
  */
-function roundTripToBrowserThen(f) {
-  var frame = document.createElement('iframe');
-  // An OOPIF navigation requires the browser to participate.
-  frame.src = "http://localhost:8080/resources/blank.html";
-  frame.addEventListener('load', () => {
-    document.body.removeChild(frame);
-    f();
+function roundTripToBrowser() {
+  return new Promise((resolve, reject) => {
+    var frame = document.createElement('iframe');
+    // An OOPIF navigation requires the browser to participate.
+    frame.src = "http://localhost:8080/resources/blank.html";
+    frame.addEventListener('load', () => {
+      document.body.removeChild(frame);
+      resolve();
+    });
+    document.body.appendChild(frame);
   });
-  document.body.appendChild(frame);
 }

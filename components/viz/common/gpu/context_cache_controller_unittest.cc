@@ -177,7 +177,7 @@ TEST(ContextCacheControllerTest, CheckSkiaResourcePurgeAPI) {
     SkPixmap pixmap(image_info, image_data.data(), image_info.minRowBytes());
     auto image = SkImage::MakeRasterCopy(pixmap);
     auto image_gpu = image->makeTextureImage(gr_context);
-    gr_context->flush();
+    gr_context->flushAndSubmit();
   }
 
   // Ensure we see size taken up for the image (now released, but cached for

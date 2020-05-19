@@ -71,22 +71,21 @@ class MediaControlUi : public mojom::MediaControlUi,
 
   // UI components
   std::unique_ptr<views::Widget> widget_;
-  std::unique_ptr<views::View> touch_view_;
-  std::unique_ptr<views::View> view_;
+  views::View* view_;
 
   // Controls
-  std::unique_ptr<views::ImageButton> btn_previous_;
-  std::unique_ptr<views::ImageButton> btn_play_pause_;
-  std::unique_ptr<views::ImageButton> btn_next_;
-  std::unique_ptr<views::ImageButton> btn_replay30_;
-  std::unique_ptr<views::ImageButton> btn_forward30_;
+  views::ImageButton* btn_previous_;
+  views::ImageButton* btn_play_pause_;
+  views::ImageButton* btn_next_;
+  views::ImageButton* btn_replay30_;
+  views::ImageButton* btn_forward30_;
 
   // Labels
-  std::unique_ptr<views::Label> lbl_meta_;
-  std::unique_ptr<views::Label> lbl_title_;
+  views::Label* lbl_meta_;
+  views::Label* lbl_title_;
 
   // Progress
-  std::unique_ptr<views::ProgressBar> progress_bar_;
+  views::ProgressBar* progress_bar_;
 
   bool is_paused_;
 

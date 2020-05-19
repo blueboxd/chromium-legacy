@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.components.payments.PaymentApp.PaymentRequestUpdateEventListener;
+import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;

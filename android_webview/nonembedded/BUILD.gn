@@ -23,6 +23,7 @@ android_library("nonembedded_java") {
     ":services_java",
     "//android_webview:android_webview_product_config_java",
     "//android_webview:common_java",
+    "//android_webview:common_metrics_java",
     "//base:base_java",
     "//base:jni_java",
     "//components/about_ui/android:aboutui_java",
@@ -85,11 +86,13 @@ android_library("services_java") {
     "//android_webview:common_metrics_java",
     "//android_webview:common_platform_services_java",
     "//android_webview:common_variations_java",
+    "//android_webview/proto:metrics_bridge_records_proto_java",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
+    "//third_party/android_deps:com_google_protobuf_protobuf_javalite_java",
   ]
 }
 

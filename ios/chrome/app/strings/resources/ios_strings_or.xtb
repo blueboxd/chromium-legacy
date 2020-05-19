@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">ଇତିବୃତ୍ତି</translation>
 <translation id="1650222530560417226">ସମସ୍ତ ଟାବ୍‌ରୁ ଭବିଷ୍ୟତର JavaScript କନ୍ସୋଲ୍‌ ଏବଂ ତ୍ରୁଟି ସଂଗ୍ରହ କରିବାକୁ "ଷ୍ଟାର୍ଟ ଲଗିଂ" ବଟନ୍‌ରେ ଟାପ୍‌ କରନ୍ତୁ। ଯେପର୍ଯ୍ୟନ୍ତ ଏହି ପୃଷ୍ଠା ବନ୍ଦ କରାନଯାଇଛି କିମ୍ବା "ଲଗ୍‍ଇନ୍‍ ବନ୍ଦ କରନ୍ତୁ"ରେ ଟାପ୍‌ କରାନଯାଇଛି, ସେପର୍ଯ୍ୟନ୍ତ ଲଗ୍‌ ସଂଗ୍ରହ କରାଯିବ(ଏବଂ କେବଳ ମେମୋରୀରେ ଷ୍ଟୋର୍‌ କରାଯାଇଛି)।</translation>
 <translation id="1657011748321897393">ଆପଣ ନେଟ୍‌ୱାର୍କ ସହିତ ସଂଯୁକ୍ତ ନଥିବାରୁ ସେୟାରିଂ ବିଫଳ ହୋଇଛି।</translation>
+<translation id="1657641691196698092">ବ୍ଲକ୍ କରାଯାଇଥିବା କୁକୀଗୁଡ଼ିକ</translation>
 <translation id="165877110639533037">ଖୋଲାଯାଇଥିବା କୌଣସି ଟାବ୍ ନାହିଁ</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ରୁ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">ଆପଣଙ୍କର ବୁକ୍‌ମାର୍କଗୁଡ଼ିକୁ ନିଜର ସବୁ ଡିଭାଇସ୍‌ଗୁଡ଼ିକରେ ପାଇବା ପାଇଁ, ସିଙ୍କକୁ ଚାଲୁ କରନ୍ତୁ।</translation>
@@ -132,7 +133,9 @@
 <translation id="2572712655377361602">ଏକ ଡିଭାଇସ୍ ନୀତି ଆପଣଙ୍କର ଫଟୋଗୁଡ଼ିକୁ ଆକ୍‌ସେସ୍ କରିବାକୁ ବ୍ଲକ୍ କରିଦେଇଛି</translation>
 <translation id="2578571896248130439">ୱେବ୍‌ପୃଷ୍ଠା ପଠାନ୍ତୁ</translation>
 <translation id="2584132361465095047">ଆକାଉଣ୍ଟ ଯୋଗ କରନ୍ତୁ…</translation>
+<translation id="2600682495497606169">ସାଇଟ୍ କୁକୀଗୁଡ଼ିକ ଖାଲି କରନ୍ତୁ</translation>
 <translation id="2625189173221582860">ପାସ୍‍ୱର୍ଡ କପି ହୋଇଛି</translation>
+<translation id="2647269890314209800">ବ୍ୟବହାର ହେଉଥିବା କୁକୀଗୁଡ଼ିକ</translation>
 <translation id="2648803196158606475">"ପଢ଼ାଯାଇଥିବା"କୁ ଡିଲିଟ୍ କରନ୍ତୁ</translation>
 <translation id="2653659639078652383">ଉପସ୍ଥାପନ</translation>
 <translation id="2690858294534178585">କ୍ୟାମେରା ବ୍ୟବହାର କରାଯାଉଛି</translation>
@@ -329,6 +332,7 @@
 <translation id="5234764350956374838">ଖାରଜ କରନ୍ତୁ</translation>
 <translation id="5245322853195994030">ସିଙ୍କ୍ ବାତିଲ୍ କରନ୍ତୁ</translation>
 <translation id="5271549068863921519">ପାସୱାର୍ଡ ସଞ୍ଚୟ କରନ୍ତୁ</translation>
+<translation id="5295239312320826323"><ph name="USER_EMAIL" /> ଆକାଉଣ୍ଟ କାଢ଼ି ଦେବେ?</translation>
 <translation id="5300589172476337783">ପ୍ରଦର୍ଶନ କରନ୍ତୁ</translation>
 <translation id="5317780077021120954">ସଞ୍ଚୟ</translation>
 <translation id="5327248766486351172">ନାମ</translation>

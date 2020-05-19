@@ -11,25 +11,21 @@
 namespace blink {
 
 EventWithCallback::EventWithCallback(
-    WebScopedInputEvent event,
-    const ui::LatencyInfo& latency,
+    std::unique_ptr<WebCoalescedInputEvent> event,
     base::TimeTicks timestamp_now,
     InputHandlerProxy::EventDispositionCallback callback)
-    : event_(event->Clone()),
-      latency_(latency),
+    : event_(std::make_unique<WebCoalescedInputEvent>(*event)),
       creation_timestamp_(timestamp_now),
       last_coalesced_timestamp_(timestamp_now) {
-  original_events_.emplace_back(std::move(event), latency, std::move(callback));
+  original_events_.emplace_back(std::move(event), std::move(callback));
 }
 
 EventWithCallback::EventWithCallback(
-    WebScopedInputEvent event,
-    const ui::LatencyInfo& latency,
+    std::unique_ptr<WebCoalescedInputEvent> event,
     base::TimeTicks creation_timestamp,
     base::TimeTicks last_coalesced_timestamp,
     std::unique_ptr<OriginalEventList> original_events)
     : event_(std::move(event)),
-      latency_(latency),
       creation_timestamp_(creation_timestamp),
       last_coalesced_timestamp_(last_coalesced_timestamp) {
   if (original_events)
@@ -43,33 +39,15 @@ bool EventWithCallback::CanCoalesceWith(const EventWithCallback& other) const {
 }
 
 void EventWithCallback::SetScrollbarManipulationHandledOnCompositorThread() {
-  for (auto& original_event : original_events_)
-    original_event.event_->SetScrollbarManipulationHandledOnCompositorThread();
+  for (auto& original_event : original_events_) {
+    original_event.event_->EventPointer()
+        ->SetScrollbarManipulationHandledOnCompositorThread();
+  }
 }
 
 void EventWithCallback::CoalesceWith(EventWithCallback* other,
                                      base::TimeTicks timestamp_now) {
-  TRACE_EVENT2("input", "EventWithCallback::CoalesceWith", "traceId",
-               latency_.trace_id(), "coalescedTraceId",
-               other->latency_.trace_id());
-  // |other| should be a newer event than |this|.
-  if (other->latency_.trace_id() >= 0 && latency_.trace_id() >= 0)
-    DCHECK_GT(other->latency_.trace_id(), latency_.trace_id());
-
-  // New events get coalesced into older events, and the newer timestamp
-  // should always be preserved.
-  const base::TimeTicks time_stamp = other->event().TimeStamp();
-  event_->Coalesce(other->event());
-  event_->SetTimeStamp(time_stamp);
-
-  // When coalescing two input events, we keep the oldest LatencyInfo
-  // since it will represent the longest latency. If it's a GestureScrollUpdate
-  // event, also update the old event's last timestamp and scroll delta using
-  // the newer event's latency info.
-  if (event_->GetType() == WebInputEvent::Type::kGestureScrollUpdate)
-    latency_.CoalesceScrollUpdateWith(other->latency_);
-  other->latency_ = latency_;
-  other->latency_.set_coalesced();
+  event_->CoalesceWith(*other->event_);
 
   // Move original events.
   original_events_.splice(original_events_.end(), other->original_events_);
@@ -96,8 +74,9 @@ void EventWithCallback::RunCallbacks(
     return;
 
   // Ack the oldest event with original latency.
+  original_events_.front().event_->latency_info() = latency;
   std::move(original_events_.front().callback_)
-      .Run(disposition, std::move(original_events_.front().event_), latency,
+      .Run(disposition, std::move(original_events_.front().event_),
            did_overscroll_params
                ? std::make_unique<InputHandlerProxy::DidOverscrollParams>(
                      *did_overscroll_params)
@@ -114,14 +93,14 @@ void EventWithCallback::RunCallbacks(
   bool handled = HandledOnCompositorThread(disposition);
   for (auto& coalesced_event : original_events_) {
     if (handled) {
-      int64_t original_trace_id = coalesced_event.latency_.trace_id();
-      coalesced_event.latency_ = latency;
-      coalesced_event.latency_.set_trace_id(original_trace_id);
-      coalesced_event.latency_.set_coalesced();
+      int64_t original_trace_id =
+          coalesced_event.event_->latency_info().trace_id();
+      coalesced_event.event_->latency_info() = latency;
+      coalesced_event.event_->latency_info().set_trace_id(original_trace_id);
+      coalesced_event.event_->latency_info().set_coalesced();
     }
     std::move(coalesced_event.callback_)
         .Run(disposition, std::move(coalesced_event.event_),
-             coalesced_event.latency_,
              did_overscroll_params
                  ? std::make_unique<InputHandlerProxy::DidOverscrollParams>(
                        *did_overscroll_params)
@@ -131,12 +110,9 @@ void EventWithCallback::RunCallbacks(
 }
 
 EventWithCallback::OriginalEventWithCallback::OriginalEventWithCallback(
-    WebScopedInputEvent event,
-    const ui::LatencyInfo& latency,
+    std::unique_ptr<WebCoalescedInputEvent> event,
     InputHandlerProxy::EventDispositionCallback callback)
-    : event_(std::move(event)),
-      latency_(latency),
-      callback_(std::move(callback)) {}
+    : event_(std::move(event)), callback_(std::move(callback)) {}
 
 EventWithCallback::OriginalEventWithCallback::~OriginalEventWithCallback() {}
 

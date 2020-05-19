@@ -27,12 +27,18 @@ declare_args() {
   # not work (see build/BUILDCONFIG.gn for pattern that would cause issue).
   ios_sdk_developer_dir = ""
 
-  # The iOS Code signing identity to use
-  # TODO(GYP), TODO(sdfresne): Consider having a separate
-  # ios_enable_code_signing_flag=<bool> flag to make the invocation clearer.
+  # Control whether codesiging is enabled (ignored for simulator builds).
   ios_enable_code_signing = true
+
+  # Explicitly select the identity to use for codesigning. If defined, must
+  # be set to a non-empty string that will be passed to codesigning. Can be
+  # left unspecified if ios_code_signing_identity_description is used instead.
   ios_code_signing_identity = ""
-  ios_code_signing_identity_description = "iPhone Developer"
+
+  # Pattern used to select the identity to use for codesigning. If defined,
+  # must be a substring of the description of exactly one of the identities by
+  # `security find-identity -v -p codesigning`.
+  ios_code_signing_identity_description = ""
 
   # Prefix for CFBundleIdentifier property of iOS bundles (correspond to the
   # "Organization Identifier" in Xcode). Code signing will fail if no mobile
@@ -67,6 +73,18 @@ assert(custom_toolchain == "" || additional_target_cpus == [],
        "cannot define both custom_toolchain and additional_target_cpus")
 
 use_ios_simulator = current_cpu == "x86" || current_cpu == "x64"
+
+# If codesigning is enabled, use must configure either a codesigning identity
+# or a filter to automatically select the codesigning identity.
+if (!use_ios_simulator && ios_enable_code_signing) {
+  assert(ios_code_signing_identity == "" ||
+             ios_code_signing_identity_description == "",
+         "You should either specify the precise identity to use with " +
+             "ios_code_signing_identity or let the code select an identity " +
+             "automatically (via find_signing_identity.py which use the " +
+             "variable ios_code_signing_identity_description to set the " +
+             "pattern to match the identity to use).")
+}
 
 # Initialize additional_toolchains from additional_target_cpus. Assert here
 # that the list does not contains $target_cpu nor duplicates as this would
@@ -135,12 +153,15 @@ if (!use_ios_simulator && ios_enable_code_signing) {
   # Automatically select a codesigning identity if no identity is configured.
   # This only applies to device build as simulator builds are not signed.
   if (ios_code_signing_identity == "") {
-    ios_code_signing_identity =
-        exec_script("find_signing_identity.py",
-                    [
-                      "--matching-pattern",
-                      ios_code_signing_identity_description,
-                    ],
-                    "string")
+    find_signing_identity_args = []
+    if (ios_code_signing_identity_description != "") {
+      find_signing_identity_args = [
+        "--matching-pattern",
+        ios_code_signing_identity_description,
+      ]
+    }
+    ios_code_signing_identity = exec_script("find_signing_identity.py",
+                                            find_signing_identity_args,
+                                            "trim string")
   }
 }

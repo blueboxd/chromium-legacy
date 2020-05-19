@@ -8,6 +8,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "base/bind.h"
 #include "base/no_destructor.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/internet_handler.h"
@@ -374,11 +375,81 @@ const std::vector<SearchConcept>& GetVpnConnectedSearchConcepts() {
   return *tags;
 }
 
+const std::vector<mojom::Setting>& GetEthernetDetailsSettings() {
+  static const base::NoDestructor<std::vector<mojom::Setting>> settings({
+      mojom::Setting::kConfigureEthernet,
+      mojom::Setting::kEthernetAutoConfigureIp,
+      mojom::Setting::kEthernetDns,
+      mojom::Setting::kEthernetProxy,
+  });
+  return *settings;
+}
+
+const std::vector<mojom::Setting>& GetWifiDetailsSettings() {
+  static const base::NoDestructor<std::vector<mojom::Setting>> settings({
+      mojom::Setting::kDisconnectWifiNetwork,
+      mojom::Setting::kPreferWifiNetwork,
+      mojom::Setting::kForgetWifiNetwork,
+      mojom::Setting::kConfigureWifi,
+      mojom::Setting::kWifiAutoConfigureIp,
+      mojom::Setting::kWifiDns,
+      mojom::Setting::kWifiProxy,
+      mojom::Setting::kWifiAutoConnectToNetwork,
+  });
+  return *settings;
+}
+
+const std::vector<mojom::Setting>& GetCellularDetailsSettings() {
+  static const base::NoDestructor<std::vector<mojom::Setting>> settings({
+      mojom::Setting::kCellularSimLock,
+      mojom::Setting::kCellularRoaming,
+      mojom::Setting::kCellularApn,
+      mojom::Setting::kDisconnectCellularNetwork,
+      mojom::Setting::kCellularAutoConfigureIp,
+      mojom::Setting::kCellularDns,
+      mojom::Setting::kCellularProxy,
+      mojom::Setting::kCellularAutoConnectToNetwork,
+  });
+  return *settings;
+}
+
 bool IsConnected(network_config::mojom::ConnectionStateType connection_state) {
   return connection_state ==
              network_config::mojom::ConnectionStateType::kOnline ||
          connection_state ==
              network_config::mojom::ConnectionStateType::kConnected;
+}
+
+bool IsPartOfDetailsSubpage(const SearchConcept& concept,
+                            mojom::Subpage details_subpage) {
+  switch (concept.type) {
+    case mojom::SearchResultType::kSection:
+      // Applies to a section, not a details subpage.
+      return false;
+
+    case mojom::SearchResultType::kSubpage:
+      return concept.id.subpage == details_subpage;
+
+    case mojom::SearchResultType::kSetting: {
+      const mojom::Setting& setting = concept.id.setting;
+      switch (details_subpage) {
+        case mojom::Subpage::kEthernetDetails:
+          return base::Contains(GetEthernetDetailsSettings(), setting);
+        case mojom::Subpage::kWifiDetails:
+          return base::Contains(GetWifiDetailsSettings(), setting);
+        case mojom::Subpage::kCellularDetails:
+          return base::Contains(GetCellularDetailsSettings(), setting);
+        default:
+          return false;
+      }
+    }
+  }
+}
+
+std::string GetDetailsSubpageUrl(const SearchConcept& concept,
+                                 const std::string& guid) {
+  return base::StringPrintf("%s?guid=%s", concept.url_path_with_parameters,
+                            guid.c_str());
 }
 
 }  // namespace
@@ -563,14 +634,8 @@ void InternetSection::AddHandlers(content::WebUI* web_ui) {
 void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Ethernet details.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kEthernetDetails);
-  static constexpr mojom::Setting kEthernetDetailsSettings[] = {
-      mojom::Setting::kConfigureEthernet,
-      mojom::Setting::kEthernetAutoConfigureIp,
-      mojom::Setting::kEthernetDns,
-      mojom::Setting::kEthernetProxy,
-  };
   RegisterNestedSettingBulk(mojom::Subpage::kEthernetDetails,
-                            kEthernetDetailsSettings, generator);
+                            GetEthernetDetailsSettings(), generator);
 
   // Wi-Fi networks.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kWifiNetworks);
@@ -581,18 +646,8 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Wi-Fi details.
   generator->RegisterNestedSubpage(mojom::Subpage::kWifiDetails,
                                    mojom::Subpage::kWifiNetworks);
-  static constexpr mojom::Setting kWifiDetailsSettings[] = {
-      mojom::Setting::kDisconnectWifiNetwork,
-      mojom::Setting::kPreferWifiNetwork,
-      mojom::Setting::kForgetWifiNetwork,
-      mojom::Setting::kConfigureWifi,
-      mojom::Setting::kWifiAutoConfigureIp,
-      mojom::Setting::kWifiDns,
-      mojom::Setting::kWifiProxy,
-      mojom::Setting::kWifiAutoConnectToNetwork,
-  };
-  RegisterNestedSettingBulk(mojom::Subpage::kWifiDetails, kWifiDetailsSettings,
-                            generator);
+  RegisterNestedSettingBulk(mojom::Subpage::kWifiDetails,
+                            GetWifiDetailsSettings(), generator);
 
   // Known networks.
   generator->RegisterNestedSubpage(mojom::Subpage::kKnownNetworks,
@@ -616,18 +671,8 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // to the cellular details page and skips over the mobile data subpage.
   generator->RegisterNestedSubpage(mojom::Subpage::kCellularDetails,
                                    mojom::Subpage::kMobileDataNetworks);
-  static constexpr mojom::Setting kCellularDetailsSettings[] = {
-      mojom::Setting::kCellularSimLock,
-      mojom::Setting::kCellularRoaming,
-      mojom::Setting::kCellularApn,
-      mojom::Setting::kDisconnectCellularNetwork,
-      mojom::Setting::kCellularAutoConfigureIp,
-      mojom::Setting::kCellularDns,
-      mojom::Setting::kCellularProxy,
-      mojom::Setting::kCellularAutoConnectToNetwork,
-  };
   RegisterNestedSettingBulk(mojom::Subpage::kCellularDetails,
-                            kCellularDetailsSettings, generator);
+                            GetCellularDetailsSettings(), generator);
 
   // Instant Tethering. Although this is a multi-device feature, its UI resides
   // in the network section.
@@ -638,6 +683,27 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   // VPN.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kVpnDetails);
+}
+
+std::string InternetSection::ModifySearchResultUrl(
+    const SearchConcept& concept) const {
+  if (IsPartOfDetailsSubpage(concept, mojom::Subpage::kEthernetDetails))
+    return GetDetailsSubpageUrl(concept, *connected_ethernet_guid_);
+
+  if (IsPartOfDetailsSubpage(concept, mojom::Subpage::kWifiDetails))
+    return GetDetailsSubpageUrl(concept, *connected_wifi_guid_);
+
+  if (IsPartOfDetailsSubpage(concept, mojom::Subpage::kCellularDetails))
+    return GetDetailsSubpageUrl(concept, *connected_cellular_guid_);
+
+  if (IsPartOfDetailsSubpage(concept, mojom::Subpage::kTetherDetails))
+    return GetDetailsSubpageUrl(concept, *connected_tether_guid_);
+
+  if (IsPartOfDetailsSubpage(concept, mojom::Subpage::kVpnDetails))
+    return GetDetailsSubpageUrl(concept, *connected_vpn_guid_);
+
+  // URL does not need to be modified; use default implementation.
+  return OsSettingsSection::ModifySearchResultUrl(concept);
 }
 
 void InternetSection::OnDeviceStateListChanged() {
@@ -722,28 +788,39 @@ void InternetSection::OnActiveNetworks(
   registry()->RemoveSearchTags(GetInstantTetheringConnectedSearchConcepts());
   registry()->RemoveSearchTags(GetVpnConnectedSearchConcepts());
 
+  connected_ethernet_guid_.reset();
+  connected_wifi_guid_.reset();
+  connected_cellular_guid_.reset();
+  connected_tether_guid_.reset();
+  connected_vpn_guid_.reset();
+
   for (const auto& network : networks) {
     if (!IsConnected(network->connection_state))
       continue;
 
     switch (network->type) {
       case NetworkType::kEthernet:
+        connected_ethernet_guid_ = network->guid;
         registry()->AddSearchTags(GetEthernetConnectedSearchConcepts());
         break;
 
       case NetworkType::kWiFi:
+        connected_wifi_guid_ = network->guid;
         registry()->AddSearchTags(GetWifiConnectedSearchConcepts());
         break;
 
       case NetworkType::kCellular:
+        connected_cellular_guid_ = network->guid;
         registry()->AddSearchTags(GetCellularConnectedSearchConcepts());
         break;
 
       case NetworkType::kTether:
+        connected_tether_guid_ = network->guid;
         registry()->AddSearchTags(GetInstantTetheringConnectedSearchConcepts());
         break;
 
       case NetworkType::kVPN:
+        connected_vpn_guid_ = network->guid;
         registry()->AddSearchTags(GetVpnConnectedSearchConcepts());
         break;
 

@@ -144,12 +144,6 @@ void RemoteFrameClientImpl::UpdateRemoteViewportIntersection(
   web_frame_->Client()->UpdateRemoteViewportIntersection(intersection_state);
 }
 
-void RemoteFrameClientImpl::AdvanceFocus(mojom::blink::FocusType type,
-                                         LocalFrame* source) {
-  web_frame_->Client()->AdvanceFocus(type,
-                                     WebLocalFrameImpl::FromFrame(source));
-}
-
 uint32_t RemoteFrameClientImpl::Print(const IntRect& rect,
                                       cc::PaintCanvas* canvas) const {
   return web_frame_->Client()->Print(rect, canvas);

@@ -1270,6 +1270,7 @@ if (!is_android) {
       "../browser/ui/extensions/extension_message_bubble_browsertest.cc",
       "../browser/ui/extensions/extension_message_bubble_browsertest.h",
       "../browser/ui/extensions/hosted_app_browsertest.cc",
+      "../browser/ui/extensions/settings_overridden_params_providers_browsertest.cc",
       "../browser/ui/find_bar/find_bar_controller_browsertest.cc",
       "../browser/ui/find_bar/find_bar_host_browsertest.cc",
       "../browser/ui/find_bar/find_bar_platform_helper_mac_browsertest.mm",
@@ -2508,6 +2509,7 @@ if (!is_android) {
           "../browser/ui/ash/assistant/assistant_test_mixin.cc",
           "../browser/ui/ash/assistant/assistant_test_mixin.h",
           "../browser/ui/ash/assistant/assistant_timers_browsertest.cc",
+          "../browser/ui/ash/assistant/assistant_web_view_impl_browsertest.cc",
           "../browser/ui/ash/assistant/test/fake_s3_server.cc",
           "../browser/ui/ash/assistant/test/fake_s3_server.h",
         ]
@@ -5398,6 +5400,7 @@ test("unit_tests") {
       "../browser/ui/views/download/download_in_progress_dialog_view_unittest.cc",
       "../browser/ui/views/download/download_item_view_unittest.cc",
       "../browser/ui/views/extensions/chooser_dialog_view_unittest.cc",
+      "../browser/ui/views/extensions/expandable_container_view_unittest.cc",
       "../browser/ui/views/extensions/extensions_menu_item_unittest.cc",
       "../browser/ui/views/extensions/extensions_menu_view_unittest.cc",
       "../browser/ui/views/extensions/media_galleries_dialog_views_unittest.cc",

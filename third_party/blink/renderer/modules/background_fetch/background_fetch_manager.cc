@@ -68,7 +68,8 @@ ScriptPromise RejectWithTypeError(ScriptState* script_state,
 bool ShouldBlockDueToCSP(ExecutionContext* execution_context,
                          const KURL& request_url) {
   return !execution_context->GetContentSecurityPolicyForWorld()
-              ->AllowConnectToSource(request_url);
+              ->AllowConnectToSource(request_url, request_url,
+                                     RedirectStatus::kNoRedirect);
 }
 
 bool ShouldBlockPort(const KURL& request_url) {

@@ -2526,7 +2526,7 @@ void GpuImageDecodeCache::FlushYUVImages(
   CheckContextLockAcquiredIfNecessary();
   lock_.AssertAcquired();
   for (auto& image : *yuv_images) {
-    image->flush(context_->GrContext());
+    image->flushAndSubmit(context_->GrContext());
   }
   yuv_images->clear();
 }

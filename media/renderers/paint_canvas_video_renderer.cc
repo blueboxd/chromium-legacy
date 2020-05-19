@@ -1453,7 +1453,7 @@ bool PaintCanvasVideoRenderer::CopyVideoFrameYUVDataToGLTexture(
         gr_context, video_frame.ColorSpace(), video_frame.format(),
         yuv_textures, result_texture);
 
-    gr_context->flush();
+    gr_context->flushAndSubmit();
     source_ri->EndSharedImageAccessDirectCHROMIUM(yuv_cache_.texture);
 
     source_ri->GenUnverifiedSyncTokenCHROMIUM(
@@ -1601,7 +1601,7 @@ bool PaintCanvasVideoRenderer::Cache::Recycle() {
     return false;
 
   // Flush any pending GPU work using this texture.
-  sk_image->flush(raster_context_provider->GrContext());
+  sk_image->flushAndSubmit(raster_context_provider->GrContext());
 
   // We need a new texture ID because skia will destroy the previous one with
   // the SkImage.
@@ -1681,7 +1681,7 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
           ConvertFromVideoFrameYUV(video_frame.get(), raster_context_provider,
                                    dest_holder);
         }
-        raster_context_provider->GrContext()->flush();
+        raster_context_provider->GrContext()->flushAndSubmit();
       }
 
       // TODO(jochin): Don't always generate SkImage here.

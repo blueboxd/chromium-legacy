@@ -520,6 +520,10 @@ crbug.com/611945 [ qualcomm-adreno-(tm)-420 android ] conformance/glsl/bugs/samp
 crbug.com/611945 [ qualcomm-adreno-(tm)-430 android ] conformance/glsl/bugs/sampler-struct-function-arg.html [ Failure ]
 crbug.com/951628 [ android qualcomm-adreno-(tm)-420 no-passthrough ] conformance/rendering/blending.html [ Failure ]
 crbug.com/1002997 [ android qualcomm-adreno-(tm)-430 no-passthrough ] conformance/rendering/blending.html [ Failure ]
+crbug.com/1083320 [ android qualcomm-adreno-(tm)-420 ] conformance/misc/uninitialized-test.html [ Skip ]
+crbug.com/1056830 [ android qualcomm-adreno-(tm)-420 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
+crbug.com/1083320 [ android qualcomm-adreno-(tm)-430 ] conformance/misc/uninitialized-test.html [ Skip ]
+crbug.com/1056830 [ android qualcomm-adreno-(tm)-430 ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 
 # This test is skipped because running it causes a future test to fail.
 # The list of tests which may be that future test is very long. It is

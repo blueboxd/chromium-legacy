@@ -54,9 +54,10 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   void RequestTextInputStateUpdate() override;
   void RequestCompositionUpdates(bool immediate_request,
                                  bool monitor_request) override;
-  void DispatchEvent(std::unique_ptr<content::InputEvent>,
+  void DispatchEvent(std::unique_ptr<blink::WebCoalescedInputEvent>,
                      DispatchEventCallback callback) override;
-  void DispatchNonBlockingEvent(std::unique_ptr<content::InputEvent>) override;
+  void DispatchNonBlockingEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
   void AttachSynchronousCompositor(
       mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,

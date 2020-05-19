@@ -65,7 +65,7 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
             // state themselves.
             if (mDelegate.isNTPUrl(tab.getUrlString())) continue;
 
-            TabReparentingParams params = new TabReparentingParams(tab, null, null);
+            TabReparentingParams params = new TabReparentingParams(tab, null);
             AsyncTabParamsManager.add(tab.getId(), params);
             ReparentingTask.from(tab).detach();
         }

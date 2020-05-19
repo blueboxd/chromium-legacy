@@ -123,6 +123,11 @@ class CheckedPtr {
     return *this;
   }
 
+  ALWAYS_INLINE CheckedPtr& operator=(std::nullptr_t) noexcept {
+    wrapped_ptr_ = Impl::GetWrappedNullPtr();
+    return *this;
+  }
+
   ~CheckedPtr() = default;
 
   // Avoid using. The goal of CheckedPtr is to be as close to raw pointer as

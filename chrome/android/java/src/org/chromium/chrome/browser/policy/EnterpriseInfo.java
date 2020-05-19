@@ -10,6 +10,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.os.SystemClock;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -31,6 +32,8 @@ public final class EnterpriseInfo {
                 private Boolean calculateIsRunningOnManagedProfile(Context context) {
                     if (VERSION.SDK_INT < VERSION_CODES.M) return null;
 
+                    long startTime = SystemClock.elapsedRealtime();
+                    boolean hasProfileOwnerApp = false;
                     PackageManager packageManager = context.getPackageManager();
                     DevicePolicyManager devicePolicyManager =
                             context.getSystemService(DevicePolicyManager.class);
@@ -38,11 +41,17 @@ public final class EnterpriseInfo {
                     for (PackageInfo pkg : packageManager.getInstalledPackages(/* flags= */ 0)) {
                         assert devicePolicyManager != null;
                         if (devicePolicyManager.isProfileOwnerApp(pkg.packageName)) {
-                            return true;
+                            hasProfileOwnerApp = true;
+                            break;
                         }
                     }
 
-                    return false;
+                    long endTime = SystemClock.elapsedRealtime();
+                    RecordHistogram.recordTimesHistogram(
+                            "EnterpriseCheck.IsRunningOnManagedProfileDuration",
+                            endTime - startTime);
+
+                    return hasProfileOwnerApp;
                 }
 
                 @Override

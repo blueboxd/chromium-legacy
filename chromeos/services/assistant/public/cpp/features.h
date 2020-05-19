@@ -20,14 +20,6 @@ namespace features {
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantAudioEraser;
 
-// Enable Assistant Feedback UI.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantFeedbackUi;
-
-// Enables Assistant warmer welcome.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantWarmerWelcomeFeature;
-
 // Enables Assistant app support.
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantAppSupport;

@@ -297,6 +297,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
   FidoTransportProtocol DeviceTransport() const override;
 
  private:
+  static std::string MakeVirtualFidoDeviceId();
+
+  const std::string id_ = MakeVirtualFidoDeviceId();
   scoped_refptr<State> state_ = base::MakeRefCounted<State>();
 
   DISALLOW_COPY_AND_ASSIGN(VirtualFidoDevice);

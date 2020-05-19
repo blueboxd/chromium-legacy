@@ -301,7 +301,7 @@ public class AwContentsGarbageCollectionTest {
 
             gcAndCheckAllAwContentsDestroyed();
         } finally {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                 Reference.reachabilityFence(heldObject);
             }
         }

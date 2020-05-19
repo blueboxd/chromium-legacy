@@ -217,10 +217,6 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
   base::TimeDelta commit_delay = base::TimeDelta::FromMinutes(60);
 #endif
 
-  if (!data_use_measurement::ChromeDataUseMeasurement::GetInstance()) {
-    data_use_measurement::ChromeDataUseMeasurement::CreateInstance(
-        g_browser_process->local_state());
-  }
   PrefService* profile_prefs = profile->GetPrefs();
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
       content::BrowserContext::GetDefaultStoragePartition(profile)

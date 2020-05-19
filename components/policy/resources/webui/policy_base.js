@@ -173,10 +173,9 @@ cr.define('policy', function() {
 
       if (scope !== 'updater') {
         this.setLabelAndShow_(
-            '.time-since-last-refresh', status.timeSinceLastRefresh, false);
-        this.setLabelAndShow_(
-            '.refresh-interval', status.refreshInterval, false);
-        this.setLabelAndShow_('.status', status.status, false);
+            '.time-since-last-refresh', status.timeSinceLastRefresh);
+        this.setLabelAndShow_('.refresh-interval', status.refreshInterval);
+        this.setLabelAndShow_('.status', status.status);
         this.setLabelAndShow_(
             '.policy-push',
             loadTimeData.getString(

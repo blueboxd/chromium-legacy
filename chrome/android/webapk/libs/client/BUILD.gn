@@ -43,6 +43,7 @@ junit_binary("webapk_client_junit_tests") {
   data = [ "//chrome/test/data/webapks/" ]
   deps = [
     ":client_java",
+    "//base:base_java",
     "//base:base_junit_test_support",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/runtime_library:webapk_service_aidl_java",

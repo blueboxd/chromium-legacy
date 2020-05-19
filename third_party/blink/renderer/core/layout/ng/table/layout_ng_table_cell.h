@@ -37,6 +37,9 @@ class CORE_EXPORT LayoutNGTableCell
   // compat.
   const char* GetName() const final { return "LayoutNGTableCellNew"; }
 
+  LayoutBox* CreateAnonymousBoxWithSameTypeAs(
+      const LayoutObject* parent) const override;
+
   // LayoutBlockFlow methods end.
 
   // LayoutNGTableCellInterface methods start.

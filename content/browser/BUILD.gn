@@ -2564,7 +2564,10 @@ jumbo_source_set("browser") {
       "webauth/virtual_fido_discovery_factory.h",
     ]
 
-    deps += [ "//third_party/flac" ]
+    deps += [
+      "//components/speech",
+      "//third_party/flac",
+    ]
   }
 
   if (is_mac) {

@@ -191,7 +191,6 @@ TEST(MediaQuerySetTest, Basic) {
 }
 
 TEST(MediaQuerySetTest, BehindRuntimeFlag) {
-  ScopedMediaQueryShapeForTest shape_flag(false);
   ScopedForcedColorsForTest forced_colors_flag(false);
   ScopedMediaQueryNavigationControlsForTest navigation_controls_flag(false);
   ScopedCSSFoldablesForTest foldables_flag(false);
@@ -199,7 +198,6 @@ TEST(MediaQuerySetTest, BehindRuntimeFlag) {
   // The first string represents the input string, the second string represents
   // the output string.
   MediaQuerySetTestCase test_cases[] = {
-      {"(shape)", "not all"},
       {"(forced-colors)", "not all"},
       {"(navigation-controls)", "not all"},
       {"(screen-spanning)", "not all"},

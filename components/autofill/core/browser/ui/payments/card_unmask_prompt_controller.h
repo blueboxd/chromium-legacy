@@ -32,7 +32,6 @@ class CardUnmaskPromptController {
   virtual base::string16 GetOkButtonLabel() const = 0;
   virtual int GetCvcImageRid() const = 0;
   virtual bool ShouldRequestExpirationDate() const = 0;
-  virtual bool CanStoreLocally() const = 0;
   virtual bool GetStoreLocallyStartState() const = 0;
 #if defined(OS_ANDROID)
   virtual bool ShouldOfferWebauthn() const = 0;

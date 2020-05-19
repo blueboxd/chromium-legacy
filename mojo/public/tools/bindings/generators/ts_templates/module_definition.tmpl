@@ -11,11 +11,7 @@ export const {{constant.name}}: {{constant.kind|typescript_type_with_nullability
 {% for enum in enums %}
 export enum {{enum.name}} {
 {%- for field in enum.fields %}
-{%-  if field.value %}
-  {{field.name}} = {{field.value}},
-{%-  else %}
-  {{field.name}},
-{%-  endif %}
+  {{field.name}} = {{field.numeric_value}},
 {%- endfor %}
 {%- if enum.min_value is not none %}
   MIN_VALUE = {{enum.min_value}},

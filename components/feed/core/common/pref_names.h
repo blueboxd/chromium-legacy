@@ -52,6 +52,8 @@ extern const char kThrottlerLastRequestTime[];
 extern const char kDebugStreamData[];
 // The pref name for storing the request schedule.
 extern const char kRequestSchedule[];
+// The pref name for storing the persistent metrics data.
+extern const char kMetricsData[];
 
 }  // namespace prefs
 

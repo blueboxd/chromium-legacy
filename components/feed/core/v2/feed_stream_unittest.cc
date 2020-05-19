@@ -359,8 +359,8 @@ class FakeRefreshTaskScheduler : public RefreshTaskScheduler {
 
 class TestMetricsReporter : public MetricsReporter {
  public:
-  explicit TestMetricsReporter(const base::TickClock* clock)
-      : MetricsReporter(clock) {}
+  explicit TestMetricsReporter(const base::TickClock* clock, PrefService* prefs)
+      : MetricsReporter(clock, prefs) {}
 
   // MetricsReporter.
   void ContentSliceViewed(SurfaceId surface_id, int index_in_stream) override {
@@ -402,8 +402,10 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
   void SetUp() override {
     feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
     feed::RegisterProfilePrefs(profile_prefs_.registry());
-    CHECK_EQ(kTestTimeEpoch, task_environment_.GetMockClock()->Now());
+    metrics_reporter_ = std::make_unique<TestMetricsReporter>(
+        task_environment_.GetMockTickClock(), &profile_prefs_);
 
+    CHECK_EQ(kTestTimeEpoch, task_environment_.GetMockClock()->Now());
     CreateStream();
   }
 
@@ -436,7 +438,7 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
     chrome_info.channel = version_info::Channel::STABLE;
     chrome_info.version = base::Version({99, 1, 9911, 2});
     stream_ = std::make_unique<FeedStream>(
-        &refresh_scheduler_, &metrics_reporter_, this, &profile_prefs_,
+        &refresh_scheduler_, metrics_reporter_.get(), this, &profile_prefs_,
         &network_, store_.get(), task_environment_.GetMockClock(),
         task_environment_.GetMockTickClock(), chrome_info);
 
@@ -495,8 +497,8 @@ class FeedStreamTest : public testing::Test, public FeedStream::Delegate {
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  TestMetricsReporter metrics_reporter_{task_environment_.GetMockTickClock()};
   TestingPrefServiceSimple profile_prefs_;
+  std::unique_ptr<TestMetricsReporter> metrics_reporter_;
   TestFeedNetwork network_;
   TestWireResponseTranslator response_translator_;
 
@@ -531,7 +533,7 @@ TEST_F(FeedStreamTest, DoNotRefreshIfArticlesListIsHidden) {
   stream_->ExecuteRefreshTask();
   EXPECT_TRUE(refresh_scheduler_.refresh_task_complete);
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
-            metrics_reporter_.background_refresh_status);
+            metrics_reporter_->background_refresh_status);
 }
 
 TEST_F(FeedStreamTest, BackgroundRefreshSuccess) {
@@ -544,7 +546,7 @@ TEST_F(FeedStreamTest, BackgroundRefreshSuccess) {
   // network.
   ASSERT_TRUE(refresh_scheduler_.refresh_task_complete);
   EXPECT_EQ(LoadStreamStatus::kLoadedFromNetwork,
-            metrics_reporter_.background_refresh_status);
+            metrics_reporter_->background_refresh_status);
   EXPECT_TRUE(response_translator_.InjectedResponseConsumed());
   EXPECT_FALSE(stream_->GetModel());
   TestSurface surface(stream_.get());
@@ -558,7 +560,7 @@ TEST_F(FeedStreamTest, BackgroundRefreshNotAttemptedWhenModelIsLoading) {
   stream_->ExecuteRefreshTask();
   WaitForIdleTaskQueue();
 
-  EXPECT_EQ(metrics_reporter_.background_refresh_status,
+  EXPECT_EQ(metrics_reporter_->background_refresh_status,
             LoadStreamStatus::kModelAlreadyLoaded);
 }
 
@@ -570,7 +572,7 @@ TEST_F(FeedStreamTest, BackgroundRefreshNotAttemptedAfterModelIsLoaded) {
   stream_->ExecuteRefreshTask();
   WaitForIdleTaskQueue();
 
-  EXPECT_EQ(metrics_reporter_.background_refresh_status,
+  EXPECT_EQ(metrics_reporter_->background_refresh_status,
             LoadStreamStatus::kModelAlreadyLoaded);
 }
 
@@ -837,7 +839,7 @@ TEST_F(FeedStreamTest, LoadFromNetworkFailsDueToProtoTranslation) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kProtoTranslationFailed,
-            metrics_reporter_.load_stream_status);
+            metrics_reporter_->load_stream_status);
 }
 
 TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
@@ -847,7 +849,7 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkWhenOffline) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkOffline,
-            metrics_reporter_.load_stream_status);
+            metrics_reporter_->load_stream_status);
   EXPECT_EQ("loading -> cant-refresh", surface.DescribeUpdates());
 }
 
@@ -858,7 +860,7 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenArticleListIsHidden) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedArticlesListHidden,
-            metrics_reporter_.load_stream_status);
+            metrics_reporter_->load_stream_status);
   EXPECT_EQ("no-cards", surface.DescribeUpdates());
 }
 
@@ -869,7 +871,7 @@ TEST_F(FeedStreamTest, DoNotLoadStreamWhenEulaIsNotAccepted) {
   WaitForIdleTaskQueue();
 
   EXPECT_EQ(LoadStreamStatus::kLoadNotAllowedEulaNotAccepted,
-            metrics_reporter_.load_stream_status);
+            metrics_reporter_->load_stream_status);
   EXPECT_EQ("no-cards", surface.DescribeUpdates());
 }
 
@@ -900,7 +902,7 @@ TEST_F(FeedStreamTest, DoNotLoadFromNetworkAfterHistoryIsDeleted) {
   EXPECT_EQ("loading -> no-cards", surface.DescribeUpdates());
 
   EXPECT_EQ(LoadStreamStatus::kCannotLoadFromNetworkSupressedForHistoryDelete,
-            metrics_reporter_.load_stream_status);
+            metrics_reporter_->load_stream_status);
 
   surface.Detach();
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
@@ -1028,7 +1030,7 @@ TEST_F(FeedStreamTest, ReportSliceViewedIdentifiesCorrectIndex) {
   stream_->ReportSliceViewed(
       surface.GetSurfaceId(),
       surface.initial_state->updated_slices(1).slice().slice_id());
-  EXPECT_EQ(1, metrics_reporter_.slice_viewed_index);
+  EXPECT_EQ(1, metrics_reporter_->slice_viewed_index);
 }
 
 TEST_F(FeedStreamTest, LoadMoreAppendsContent) {

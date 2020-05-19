@@ -682,7 +682,6 @@ bool ThreadableLoader::RedirectReceived(
 
   ResourceRequest cross_origin_request;
   cross_origin_request.CopyFrom(new_request);
-  cross_origin_request.SetInitialUrlForResourceTiming(initial_request_url_);
 
   // Remove any headers that may have been added by the network layer that cause
   // access control to fail.

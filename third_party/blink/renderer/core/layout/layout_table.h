@@ -378,11 +378,8 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock,
       RecalcSections();
   }
 
-  static LayoutTable* CreateAnonymousWithParent(const LayoutObject*);
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
-      const LayoutObject* parent) const override {
-    return CreateAnonymousWithParent(parent);
-  }
+      const LayoutObject* parent) const override;
 
   void AddCaption(const LayoutTableCaption*);
   void RemoveCaption(const LayoutTableCaption*);

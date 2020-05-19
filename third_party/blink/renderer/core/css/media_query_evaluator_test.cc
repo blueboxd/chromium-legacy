@@ -70,8 +70,6 @@ MediaQueryEvaluatorTestCase g_screen_test_cases[] = {
     {"(display-mode: @browser)", 0},
     {"(display-mode: 'browser')", 0},
     {"(display-mode: @junk browser)", 0},
-    {"(shape: rect)", 1},
-    {"(shape: round)", 0},
     {"(max-device-aspect-ratio: 4294967295/1)", 1},
     {"(min-device-aspect-ratio: 1/4294967296)", 1},
     {nullptr, 0}  // Do not remove the terminator line.
@@ -265,7 +263,6 @@ TEST(MediaQueryEvaluatorTest, Cached) {
   data.media_type = media_type_names::kScreen;
   data.strict_mode = true;
   data.display_mode = blink::mojom::DisplayMode::kBrowser;
-  data.display_shape = kDisplayShapeRect;
   data.immersive_mode = false;
 
   // Default values.

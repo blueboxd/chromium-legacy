@@ -115,6 +115,8 @@ static_library("test_support") {
     "//base",
     "//components/data_reduction_proxy/core/common",
     "//components/data_reduction_proxy/core/common:test_support",
+    "//components/data_use_measurement/core",
+    "//components/data_use_measurement/core:ascriber",
     "//components/prefs:test_support",
     "//components/previews/core:core",
     "//net",

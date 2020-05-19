@@ -253,7 +253,8 @@ void WorkerGlobalScope::ImportScriptsInternal(const Vector<String>& urls,
       return;
     }
     if (!GetContentSecurityPolicy()->AllowScriptFromSource(
-            url, AtomicString(), IntegrityMetadataSet(), kNotParserInserted)) {
+            url, AtomicString(), IntegrityMetadataSet(), kNotParserInserted,
+            url, RedirectStatus::kNoRedirect)) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNetworkError,
           "The script at '" + url.ElidedString() + "' failed to load.");

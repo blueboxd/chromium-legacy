@@ -66,52 +66,38 @@ MediaControlUi::MediaControlUi(CastWindowManager* window_manager)
 
   // |touch_view| will detect touch events and decide whether to show
   // or hide |view_|, which contains the media controls.
-  touch_view_ = std::make_unique<TouchView>(base::BindRepeating(
+  auto touch_view = std::make_unique<TouchView>(base::BindRepeating(
       &MediaControlUi::OnTapped, weak_factory_.GetWeakPtr()));
 
   // Main view.
-  view_ = std::make_unique<views::View>();
-  view_->set_owned_by_client();
-  view_->SetVisible(false);
-  view_->SetBackground(
+  auto view = std::make_unique<views::View>();
+  view->SetVisible(false);
+  view->SetBackground(
       views::CreateSolidBackground(SkColorSetA(SK_ColorBLACK, 0x80)));
-  view_->SetBoundsRect(
+  view->SetBoundsRect(
       window_manager_->GetRootWindow()->GetBoundsInRootWindow());
-  touch_view_->AddChildView(view_.get());
+  view_ = touch_view->AddChildView(std::move(view));
 
   // Buttons.
-  btn_previous_ =
-      CreateImageButton(vector_icons::kPreviousIcon, kButtonSmallHeight);
-  btn_previous_->set_owned_by_client();
-  view_->AddChildView(btn_previous_.get());
-  btn_play_pause_ =
-      CreateImageButton(vector_icons::kPlayIcon, kButtonBigHeight);
-  btn_play_pause_->set_owned_by_client();
-  view_->AddChildView(btn_play_pause_.get());
-  btn_next_ = CreateImageButton(vector_icons::kNextIcon, kButtonSmallHeight);
-  btn_next_->set_owned_by_client();
-  view_->AddChildView(btn_next_.get());
-  btn_replay30_ =
-      CreateImageButton(vector_icons::kBack30Icon, kButtonSmallHeight);
-  btn_replay30_->set_owned_by_client();
-  view_->AddChildView(btn_replay30_.get());
-  btn_forward30_ =
-      CreateImageButton(vector_icons::kForward30Icon, kButtonSmallHeight);
-  btn_forward30_->set_owned_by_client();
-  view_->AddChildView(btn_forward30_.get());
+  btn_previous_ = view_->AddChildView(
+      CreateImageButton(vector_icons::kPreviousIcon, kButtonSmallHeight));
+  btn_play_pause_ = view_->AddChildView(
+      CreateImageButton(vector_icons::kPlayIcon, kButtonBigHeight));
+  btn_next_ = view_->AddChildView(
+      CreateImageButton(vector_icons::kNextIcon, kButtonSmallHeight));
+  btn_replay30_ = view_->AddChildView(
+      CreateImageButton(vector_icons::kBack30Icon, kButtonSmallHeight));
+  btn_forward30_ = view_->AddChildView(
+      CreateImageButton(vector_icons::kForward30Icon, kButtonSmallHeight));
 
   // Labels.
-  lbl_title_ = std::make_unique<views::Label>(base::string16());
-  lbl_title_->set_owned_by_client();
-  view_->AddChildView(lbl_title_.get());
-  lbl_meta_ = std::make_unique<views::Label>(base::string16());
-  lbl_meta_->set_owned_by_client();
-  view_->AddChildView(lbl_meta_.get());
+  lbl_title_ =
+      view_->AddChildView(std::make_unique<views::Label>(base::string16()));
+  lbl_meta_ =
+      view_->AddChildView(std::make_unique<views::Label>(base::string16()));
 
   // Progress Bar.
-  progress_bar_ = std::make_unique<views::ProgressBar>();
-  progress_bar_->set_owned_by_client();
-  view_->AddChildView(progress_bar_.get());
+  progress_bar_ = view_->AddChildView(std::make_unique<views::ProgressBar>());
 
   LayoutElements();
 
@@ -123,7 +109,7 @@ MediaControlUi::MediaControlUi(CastWindowManager* window_manager)
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.bounds = window_manager_->GetRootWindow()->GetBoundsInRootWindow();
   widget_->Init(std::move(params));
-  widget_->SetContentsView(touch_view_.release());  // Ownership passed.
+  widget_->SetContentsView(std::move(touch_view));
 
   window_manager_->SetZOrder(widget_->GetNativeView(),
                              mojom::ZOrder::MEDIA_INFO);
@@ -161,9 +147,8 @@ void MediaControlUi::SetAttributes(
     if (is_paused_ && !visible()) {
       ShowMediaControls(true);
     }
-    SetButtonImage(btn_play_pause_.get(), is_paused_
-                                              ? vector_icons::kPlayIcon
-                                              : vector_icons::kPauseIcon);
+    SetButtonImage(btn_play_pause_, is_paused_ ? vector_icons::kPlayIcon
+                                               : vector_icons::kPauseIcon);
   }
 
   if (attributes->duration > 0.0) {
@@ -235,15 +220,15 @@ void MediaControlUi::ButtonPressed(views::Button* sender,
     return;
   }
 
-  if (sender == btn_previous_.get()) {
+  if (sender == btn_previous_) {
     client_->Execute(mojom::MediaCommand::PREVIOUS);
-  } else if (sender == btn_play_pause_.get()) {
+  } else if (sender == btn_play_pause_) {
     client_->Execute(mojom::MediaCommand::TOGGLE_PLAY_PAUSE);
-  } else if (sender == btn_next_.get()) {
+  } else if (sender == btn_next_) {
     client_->Execute(mojom::MediaCommand::NEXT);
-  } else if (sender == btn_replay30_.get()) {
+  } else if (sender == btn_replay30_) {
     client_->Execute(mojom::MediaCommand::REPLAY_30_SECONDS);
-  } else if (sender == btn_forward30_.get()) {
+  } else if (sender == btn_forward30_) {
     client_->Execute(mojom::MediaCommand::FORWARD_30_SECONDS);
   } else {
     NOTREACHED();

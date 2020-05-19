@@ -324,7 +324,7 @@ void LinkStyle::Process() {
     if (!GetDocument().GetSecurityOrigin()->CanDisplay(params.href))
       return;
     if (!GetDocument().GetContentSecurityPolicy()->AllowImageFromSource(
-            params.href))
+            params.href, params.href, RedirectStatus::kNoRedirect))
       return;
     if (GetDocument().GetFrame())
       GetDocument().GetFrame()->UpdateFaviconURL();

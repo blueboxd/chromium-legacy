@@ -879,27 +879,6 @@
             ]
         }
     ],
-    "AutofillUpstreamEditableExpirationDate": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillUpstreamEditableExpirationDate"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillUseImprovedLabelDisambiguation": [
         {
             "platforms": [
@@ -2868,10 +2847,6 @@
     "ImprovedCookieControls": [
         {
             "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows",
                 "android"
             ],
             "experiments": [
@@ -4195,8 +4170,13 @@
             ],
             "experiments": [
                 {
-                    "name": "WithEnhancedExperiment",
+                    "name": "WithEnhancedExperiment_20200519",
+                    "params": {
+                        "DefaultInIncognito": "true"
+                    },
                     "enable_features": [
+                        "ImprovedCookieControls",
+                        "ImprovedCookieControlsForThirdPartyCookieBlocking",
                         "PasswordCheck",
                         "PrivacySettingsRedesign",
                         "SafeBrowsingEnhancedProtection",
@@ -7156,6 +7136,21 @@
                     "name": "Enabled",
                     "enable_features": [
                         "WinrtSensorsImplementation"
+                    ]
+                }
+            ]
+        }
+    ],
+    "iOSQRCodeGenerator": [
+        {
+            "platforms": [
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "QRCodeGeneration"
                     ]
                 }
             ]

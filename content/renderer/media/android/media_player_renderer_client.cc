@@ -55,17 +55,13 @@ void MediaPlayerRendererClient::Initialize(
   client_ = client;
   init_cb_ = std::move(init_cb);
 
-  // Initialize the StreamTexture using a 1x1 texture because we do not have
-  // any size information from the MediaPlayer yet.
-  // The size will be automatically updated in OnVideoNaturalSizeChange() once
-  // we parse the media's metadata.
   // Unretained is safe here because |stream_texture_wrapper_| resets the
   // Closure it has before destroying itself on |compositor_task_runner_|,
   // and |this| is garanteed to live until the Closure has been reset.
   stream_texture_wrapper_->Initialize(
       base::BindRepeating(&MediaPlayerRendererClient::OnFrameAvailable,
                           base::Unretained(this)),
-      gfx::Size(1, 1), compositor_task_runner_,
+      compositor_task_runner_,
       base::BindOnce(
           &MediaPlayerRendererClient::OnStreamTextureWrapperInitialized,
           weak_factory_.GetWeakPtr(), media_resource));

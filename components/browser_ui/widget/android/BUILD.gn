@@ -101,6 +101,7 @@ android_library("java") {
     "//components/embedder_support/android:util_java",
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_interpolator_interpolator_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//ui/android:ui_java",
@@ -235,6 +236,7 @@ android_library("javatests") {
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_appcompat_appcompat_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
@@ -284,5 +286,8 @@ java_library("junit") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
+    "//third_party/junit",
+    "//third_party/mockito:mockito_java",
+    "//third_party/robolectric:robolectric_all_java",
   ]
 }

@@ -39,13 +39,9 @@ ExpandableContainerView::DetailsView::DetailsView(
   }
 }
 
-gfx::Size ExpandableContainerView::DetailsView::CalculatePreferredSize() const {
-  return expanded_ ? views::View::CalculatePreferredSize() : gfx::Size();
-}
-
 void ExpandableContainerView::DetailsView::ToggleExpanded() {
   expanded_ = !expanded_;
-  PreferredSizeChanged();
+  SetVisible(expanded_);
 }
 
 // ExpandableContainerView -----------------------------------------------------
@@ -54,29 +50,17 @@ ExpandableContainerView::ExpandableContainerView(
     const std::vector<base::string16>& details,
     int available_width) {
   DCHECK(!details.empty());
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
 
-  views::GridLayout* layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>());
-  constexpr int kColumnSetId = 0;
-  views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
-
-  // Even though we only have one column, using a GridLayout here will
-  // properly handle a 0 height row when |details_view_| is collapsed.
-  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                        views::GridLayout::kFixedSize,
-                        views::GridLayout::ColumnSize::kFixed, available_width,
-                        0);
-
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
-  details_view_ = layout->AddView(std::make_unique<DetailsView>(details));
-
-  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
+  details_view_ = AddChildView(std::make_unique<DetailsView>(details));
+  details_view_->SetVisible(false);
   auto details_link = std::make_unique<views::Link>(
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
   details_link->set_callback(base::BindRepeating(
       &ExpandableContainerView::ToggleDetailLevel, base::Unretained(this)));
   details_link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  details_link_ = layout->AddView(std::move(details_link));
+  details_link_ = AddChildView(std::move(details_link));
 }
 
 ExpandableContainerView::~ExpandableContainerView() = default;

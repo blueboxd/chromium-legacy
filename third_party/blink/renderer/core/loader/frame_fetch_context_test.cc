@@ -239,9 +239,9 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                                             .GetSecurityOrigin());
     ResourceLoaderOptions options;
     // DJKim
-    return GetFetchContext()->CanRequest(ResourceType::kImage, resource_request,
-                                         input_url, options,
-                                         reporting_disposition, base::nullopt);
+    return GetFetchContext()->CanRequest(
+        ResourceType::kImage, resource_request, input_url, options,
+        reporting_disposition, Vector<KURL, 0>());
   }
 
   int filtered_load_callback_counter_;

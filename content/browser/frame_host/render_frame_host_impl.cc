@@ -1419,17 +1419,6 @@ void RenderFrameHostImpl::GetCanonicalUrlForSharing(
   }
 }
 
-mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
-RenderFrameHostImpl::PauseSubresourceLoading() {
-  DCHECK(frame_);
-  mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
-      pause_subresource_loading_handle;
-  GetRemoteInterfaces()->GetInterface(
-      pause_subresource_loading_handle.BindNewPipeAndPassReceiver());
-
-  return pause_subresource_loading_handle;
-}
-
 void RenderFrameHostImpl::ExecuteMediaPlayerActionAtLocation(
     const gfx::Point& location,
     const blink::mojom::MediaPlayerAction& action) {
@@ -5578,9 +5567,10 @@ void RenderFrameHostImpl::UpdateOpener() {
         GetSiteInstance(), frame_tree_node_);
   }
 
-  int opener_routing_id =
-      frame_tree_node_->render_manager()->GetOpenerRoutingID(GetSiteInstance());
-  Send(new FrameMsg_UpdateOpener(GetRoutingID(), opener_routing_id));
+  auto opener_frame_token =
+      frame_tree_node_->render_manager()->GetOpenerFrameToken(
+          GetSiteInstance());
+  GetAssociatedLocalFrame()->UpdateOpener(opener_frame_token);
 }
 
 void RenderFrameHostImpl::SetFocusedFrame() {

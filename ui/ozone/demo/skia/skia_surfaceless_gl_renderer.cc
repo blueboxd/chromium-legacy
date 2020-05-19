@@ -244,7 +244,7 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
   } else {
     Draw(sk_surface->getCanvas(), NextFraction());
   }
-  gr_context_->flush();
+  gr_context_->flushAndSubmit();
   glFinish();
 
   if (!disable_primary_plane_) {

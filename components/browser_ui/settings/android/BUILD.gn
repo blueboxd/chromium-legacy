@@ -25,6 +25,7 @@ android_library("java") {
     "//base:base_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_resources_java",
     "//third_party/android_deps:androidx_preference_preference_java",
     "//ui/android:ui_java",
   ]

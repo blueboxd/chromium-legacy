@@ -5,10 +5,14 @@
 #include "components/feed/core/v2/metrics_reporter.h"
 
 #include <map>
+#include <memory>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/task_environment.h"
+#include "components/feed/core/common/pref_names.h"
+#include "components/feed/core/shared_prefs/pref_names.h"
+#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace feed {
@@ -19,6 +23,17 @@ const base::TimeDelta kEpsilon = base::TimeDelta::FromMilliseconds(1);
 
 class MetricsReporterTest : public testing::Test {
  protected:
+  void SetUp() override {
+    feed::prefs::RegisterFeedSharedProfilePrefs(profile_prefs_.registry());
+    feed::RegisterProfilePrefs(profile_prefs_.registry());
+
+    // Tests start at the beginning of a day.
+    task_environment_.AdvanceClock(
+        (base::Time::Now().LocalMidnight() + base::TimeDelta::FromDays(1)) -
+        base::Time::Now() + base::TimeDelta::FromSeconds(1));
+
+    RecreateMetricsReporter();
+  }
   std::map<FeedEngagementType, int> ReportedEngagementType() {
     std::map<FeedEngagementType, int> result;
     for (const auto& bucket :
@@ -28,21 +43,27 @@ class MetricsReporterTest : public testing::Test {
     return result;
   }
 
+  void RecreateMetricsReporter() {
+    reporter_ = std::make_unique<MetricsReporter>(
+        task_environment_.GetMockTickClock(), &profile_prefs_);
+  }
+
  protected:
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
-  MetricsReporter reporter_{task_environment_.GetMockTickClock()};
+  TestingPrefServiceSimple profile_prefs_;
+  std::unique_ptr<MetricsReporter> reporter_;
   base::HistogramTester histogram_;
   base::UserActionTester user_actions_;
 };
 
 TEST_F(MetricsReporterTest, SliceViewedReportsSuggestionShown) {
-  reporter_.ContentSliceViewed(kSurfaceId, 5);
+  reporter_->ContentSliceViewed(kSurfaceId, 5);
   histogram_.ExpectUniqueSample("NewTabPage.ContentSuggestions.Shown", 5, 1);
 }
 
 TEST_F(MetricsReporterTest, ScrollingSmall) {
-  reporter_.StreamScrolled(100);
+  reporter_->StreamScrolled(100);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedScrolled, 1},
@@ -52,7 +73,7 @@ TEST_F(MetricsReporterTest, ScrollingSmall) {
 }
 
 TEST_F(MetricsReporterTest, ScrollingCanTriggerEngaged) {
-  reporter_.StreamScrolled(161);
+  reporter_->StreamScrolled(161);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedScrolled, 1},
@@ -63,7 +84,7 @@ TEST_F(MetricsReporterTest, ScrollingCanTriggerEngaged) {
 }
 
 TEST_F(MetricsReporterTest, OpeningContentIsInteracting) {
-  reporter_.OpenAction(5);
+  reporter_->OpenAction(5);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -74,7 +95,7 @@ TEST_F(MetricsReporterTest, OpeningContentIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, RemovingContentIsInteracting) {
-  reporter_.RemoveAction();
+  reporter_->RemoveAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -85,7 +106,7 @@ TEST_F(MetricsReporterTest, RemovingContentIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, NotInterestedInIsInteracting) {
-  reporter_.NotInterestedInAction();
+  reporter_->NotInterestedInAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -96,7 +117,7 @@ TEST_F(MetricsReporterTest, NotInterestedInIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
-  reporter_.ManageInterestsAction();
+  reporter_->ManageInterestsAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -107,11 +128,11 @@ TEST_F(MetricsReporterTest, ManageInterestsInIsInteracting) {
 }
 
 TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
-  reporter_.StreamScrolled(1);
+  reporter_->StreamScrolled(1);
   task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5) - kEpsilon);
-  reporter_.OpenAction(0);
+  reporter_->OpenAction(0);
   task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5) - kEpsilon);
-  reporter_.StreamScrolled(1);
+  reporter_->StreamScrolled(1);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -123,11 +144,11 @@ TEST_F(MetricsReporterTest, VisitsCanLastMoreThanFiveMinutes) {
 }
 
 TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
-  reporter_.OpenAction(0);
-  reporter_.StreamScrolled(1);
+  reporter_->OpenAction(0);
+  reporter_->StreamScrolled(1);
   task_environment_.FastForwardBy(base::TimeDelta::FromMinutes(5) + kEpsilon);
-  reporter_.OpenAction(0);
-  reporter_.StreamScrolled(1);
+  reporter_->OpenAction(0);
+  reporter_->StreamScrolled(1);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 2},
@@ -139,8 +160,8 @@ TEST_F(MetricsReporterTest, NewVisitAfterInactivity) {
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
-  reporter_.OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
-                         LoadStreamStatus::kLoadedFromNetwork);
+  reporter_->OnLoadStream(LoadStreamStatus::kDataInStoreIsStale,
+                          LoadStreamStatus::kLoadedFromNetwork);
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
@@ -151,8 +172,8 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatus) {
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
-  reporter_.OnLoadStream(LoadStreamStatus::kNoStatus,
-                         LoadStreamStatus::kLoadedFromNetwork);
+  reporter_->OnLoadStream(LoadStreamStatus::kNoStatus,
+                          LoadStreamStatus::kLoadedFromNetwork);
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.Initial",
@@ -162,7 +183,7 @@ TEST_F(MetricsReporterTest, ReportsLoadStreamStatusIgnoresNoStatusFromStore) {
 }
 
 TEST_F(MetricsReporterTest, ReportsLoadMoreStatus) {
-  reporter_.OnLoadMore(LoadStreamStatus::kLoadedFromNetwork);
+  reporter_->OnLoadMore(LoadStreamStatus::kLoadedFromNetwork);
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.LoadMore",
@@ -170,7 +191,7 @@ TEST_F(MetricsReporterTest, ReportsLoadMoreStatus) {
 }
 
 TEST_F(MetricsReporterTest, ReportsBackgroundRefreshStatus) {
-  reporter_.OnBackgroundRefresh(LoadStreamStatus::kLoadedFromNetwork);
+  reporter_->OnBackgroundRefresh(LoadStreamStatus::kLoadedFromNetwork);
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.LoadStreamStatus.BackgroundRefresh",
@@ -178,7 +199,7 @@ TEST_F(MetricsReporterTest, ReportsBackgroundRefreshStatus) {
 }
 
 TEST_F(MetricsReporterTest, OpenAction) {
-  reporter_.OpenAction(5);
+  reporter_->OpenAction(5);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -194,7 +215,7 @@ TEST_F(MetricsReporterTest, OpenAction) {
 }
 
 TEST_F(MetricsReporterTest, OpenInNewTabAction) {
-  reporter_.OpenInNewTabAction(5);
+  reporter_->OpenInNewTabAction(5);
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -210,7 +231,7 @@ TEST_F(MetricsReporterTest, OpenInNewTabAction) {
 }
 
 TEST_F(MetricsReporterTest, OpenInNewIncognitoTabAction) {
-  reporter_.OpenInNewIncognitoTabAction();
+  reporter_->OpenInNewIncognitoTabAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -227,7 +248,7 @@ TEST_F(MetricsReporterTest, OpenInNewIncognitoTabAction) {
 }
 
 TEST_F(MetricsReporterTest, SendFeedbackAction) {
-  reporter_.SendFeedbackAction();
+  reporter_->SendFeedbackAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -242,7 +263,7 @@ TEST_F(MetricsReporterTest, SendFeedbackAction) {
 }
 
 TEST_F(MetricsReporterTest, DownloadAction) {
-  reporter_.DownloadAction();
+  reporter_->DownloadAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -257,7 +278,7 @@ TEST_F(MetricsReporterTest, DownloadAction) {
 }
 
 TEST_F(MetricsReporterTest, LearnMoreAction) {
-  reporter_.LearnMoreAction();
+  reporter_->LearnMoreAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -272,7 +293,7 @@ TEST_F(MetricsReporterTest, LearnMoreAction) {
 }
 
 TEST_F(MetricsReporterTest, RemoveAction) {
-  reporter_.RemoveAction();
+  reporter_->RemoveAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -287,7 +308,7 @@ TEST_F(MetricsReporterTest, RemoveAction) {
 }
 
 TEST_F(MetricsReporterTest, NotInterestedInAction) {
-  reporter_.NotInterestedInAction();
+  reporter_->NotInterestedInAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -302,7 +323,7 @@ TEST_F(MetricsReporterTest, NotInterestedInAction) {
 }
 
 TEST_F(MetricsReporterTest, ManageInterestsAction) {
-  reporter_.ManageInterestsAction();
+  reporter_->ManageInterestsAction();
 
   std::map<FeedEngagementType, int> want({
       {FeedEngagementType::kFeedEngaged, 1},
@@ -317,7 +338,7 @@ TEST_F(MetricsReporterTest, ManageInterestsAction) {
 }
 
 TEST_F(MetricsReporterTest, ContextMenuOpened) {
-  reporter_.ContextMenuOpened();
+  reporter_->ContextMenuOpened();
 
   std::map<FeedEngagementType, int> want_empty;
   EXPECT_EQ(want_empty, ReportedEngagementType());
@@ -328,7 +349,7 @@ TEST_F(MetricsReporterTest, ContextMenuOpened) {
 }
 
 TEST_F(MetricsReporterTest, SurfaceOpened) {
-  reporter_.SurfaceOpened(kSurfaceId);
+  reporter_->SurfaceOpened(kSurfaceId);
 
   std::map<FeedEngagementType, int> want_empty;
   EXPECT_EQ(want_empty, ReportedEngagementType());
@@ -337,9 +358,9 @@ TEST_F(MetricsReporterTest, SurfaceOpened) {
 }
 
 TEST_F(MetricsReporterTest, OpenFeedSuccessDuration) {
-  reporter_.SurfaceOpened(kSurfaceId);
+  reporter_->SurfaceOpened(kSurfaceId);
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(9));
-  reporter_.ContentSliceViewed(kSurfaceId, 0);
+  reporter_->ContentSliceViewed(kSurfaceId, 0);
 
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.UserJourney.OpenFeed.SuccessDuration",
@@ -347,7 +368,7 @@ TEST_F(MetricsReporterTest, OpenFeedSuccessDuration) {
 }
 
 TEST_F(MetricsReporterTest, OpenFeedLoadTimeout) {
-  reporter_.SurfaceOpened(kSurfaceId);
+  reporter_->SurfaceOpened(kSurfaceId);
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(16));
 
   histogram_.ExpectUniqueTimeSample(
@@ -358,9 +379,9 @@ TEST_F(MetricsReporterTest, OpenFeedLoadTimeout) {
 }
 
 TEST_F(MetricsReporterTest, OpenFeedCloseBeforeLoad) {
-  reporter_.SurfaceOpened(kSurfaceId);
+  reporter_->SurfaceOpened(kSurfaceId);
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(14));
-  reporter_.SurfaceClosed(kSurfaceId);
+  reporter_->SurfaceClosed(kSurfaceId);
 
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.UserJourney.OpenFeed.FailureDuration",
@@ -370,21 +391,19 @@ TEST_F(MetricsReporterTest, OpenFeedCloseBeforeLoad) {
 }
 
 TEST_F(MetricsReporterTest, OpenCardSuccessDuration) {
-  reporter_.OpenAction(0);
+  reporter_->OpenAction(0);
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(19));
-  reporter_.PageLoaded();
+  reporter_->PageLoaded();
 
-  histogram_.ExpectTotalCount(
-      "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration", 1);
   histogram_.ExpectUniqueTimeSample(
       "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration",
       base::TimeDelta::FromSeconds(19), 1);
 }
 
 TEST_F(MetricsReporterTest, OpenCardTimeout) {
-  reporter_.OpenAction(0);
+  reporter_->OpenAction(0);
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(21));
-  reporter_.PageLoaded();
+  reporter_->PageLoaded();
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.UserJourney.OpenCard.Failure", 1, 1);
@@ -393,10 +412,10 @@ TEST_F(MetricsReporterTest, OpenCardTimeout) {
 }
 
 TEST_F(MetricsReporterTest, OpenCardFailureTwiceAndThenSucceed) {
-  reporter_.OpenAction(0);
-  reporter_.OpenAction(1);
-  reporter_.OpenAction(2);
-  reporter_.PageLoaded();
+  reporter_->OpenAction(0);
+  reporter_->OpenAction(1);
+  reporter_->OpenAction(2);
+  reporter_->PageLoaded();
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.UserJourney.OpenCard.Failure", 1, 2);
@@ -405,13 +424,86 @@ TEST_F(MetricsReporterTest, OpenCardFailureTwiceAndThenSucceed) {
 }
 
 TEST_F(MetricsReporterTest, OpenCardCloseChromeFailure) {
-  reporter_.OpenAction(0);
-  reporter_.OnEnterBackground();
+  reporter_->OpenAction(0);
+  reporter_->OnEnterBackground();
 
   histogram_.ExpectUniqueSample(
       "ContentSuggestions.Feed.UserJourney.OpenCard.Failure", 1, 1);
   histogram_.ExpectTotalCount(
       "ContentSuggestions.Feed.UserJourney.OpenCard.SuccessDuration", 0);
+}
+
+TEST_F(MetricsReporterTest, TimeSpentInFeedCountsOnlyForegroundTime) {
+  reporter_->OpenAction(0);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  reporter_->OnEnterBackground();
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  reporter_->OpenAction(0);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(3));
+  reporter_->OnEnterBackground();
+
+  // Trigger reporting the persistent metrics the next day.
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  RecreateMetricsReporter();
+
+  histogram_.ExpectUniqueTimeSample("ContentSuggestions.Feed.TimeSpentInFeed",
+                                    base::TimeDelta::FromSeconds(4), 1);
+}
+
+TEST_F(MetricsReporterTest, TimeSpentInFeedLimitsIdleTime) {
+  reporter_->OpenAction(0);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(31));
+  reporter_->OnEnterBackground();
+
+  // Trigger reporting the persistent metrics the next day.
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  RecreateMetricsReporter();
+
+  histogram_.ExpectUniqueTimeSample("ContentSuggestions.Feed.TimeSpentInFeed",
+                                    base::TimeDelta::FromSeconds(30), 1);
+}
+
+TEST_F(MetricsReporterTest, TimeSpentInFeedIsPerDay) {
+  // One interaction every hour for 2 days. Should be reported at 30 seconds per
+  // interaction due to the interaction timeout. The 49th |OpenAction()| call
+  // triggers reporting the UMA for the previous day.
+  for (int i = 0; i < 49; ++i) {
+    reporter_->OpenAction(0);
+    task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+  }
+
+  histogram_.ExpectUniqueTimeSample("ContentSuggestions.Feed.TimeSpentInFeed",
+                                    base::TimeDelta::FromSeconds(30) * 24, 2);
+}
+
+TEST_F(MetricsReporterTest, TimeSpentIsPersisted) {
+  // Verify that the previous test also works when |MetricsReporter| is
+  // destroyed and recreated. The 49th |OpenAction()| call triggers reporting
+  // the UMA for the previous day.
+  for (int i = 0; i < 49; ++i) {
+    reporter_->OpenAction(0);
+    task_environment_.FastForwardBy(base::TimeDelta::FromHours(1));
+    reporter_->OnEnterBackground();
+    RecreateMetricsReporter();
+  }
+
+  histogram_.ExpectUniqueTimeSample("ContentSuggestions.Feed.TimeSpentInFeed",
+                                    base::TimeDelta::FromSeconds(30) * 24, 2);
+}
+
+TEST_F(MetricsReporterTest, TimeSpentInFeedTracksWholeScrollTime) {
+  reporter_->StreamScrollStart();
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(2));
+  reporter_->StreamScrolled(1);
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
+  reporter_->OnEnterBackground();
+
+  // Trigger reporting the persistent metrics the next day.
+  task_environment_.FastForwardBy(base::TimeDelta::FromDays(1));
+  RecreateMetricsReporter();
+
+  histogram_.ExpectUniqueTimeSample("ContentSuggestions.Feed.TimeSpentInFeed",
+                                    base::TimeDelta::FromSeconds(3), 1);
 }
 
 }  // namespace feed

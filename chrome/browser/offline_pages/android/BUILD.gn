@@ -8,6 +8,7 @@ android_library("java") {
   sources = [ "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchConfiguration.java" ]
 
   deps = [
+    "//base:jni_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/profiles/android:java",
   ]

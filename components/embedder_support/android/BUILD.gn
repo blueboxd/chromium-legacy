@@ -256,6 +256,8 @@ java_library("components_embedder_support_junit_tests") {
   deps = [
     ":util_java",
     "//base:base_junit_test_support",
+    "//third_party/junit",
+    "//third_party/robolectric:robolectric_all_java",
   ]
 }
 

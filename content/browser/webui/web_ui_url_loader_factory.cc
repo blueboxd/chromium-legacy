@@ -291,20 +291,8 @@ class WebUIURLLoaderFactory : public network::mojom::URLLoaderFactory,
     // from frames can happen while the RFH is changed for a cross-process
     // navigation. The URLDataSources just need the WebContents; the specific
     // frame doesn't matter.
-#if defined(OS_CHROMEOS)
-    // https://crbug.com/1082326 PFQ has test suites that flaked when the thread
-    // hop to IO thread got eliminated. So add an extra IO->UI thread hop to
-    // simulate old timing to avoid this flake for now. This should be fixed to
-    // remove these unnecessary hops.
-    base::PostTaskAndReply(
-        FROM_HERE, {BrowserThread::IO}, base::DoNothing(),
-        base::BindOnce(
-            &StartURLLoader, request, render_frame_host_->GetFrameTreeNodeId(),
-            std::move(client), GetStoragePartition()->browser_context()));
-#else
     StartURLLoader(request, render_frame_host_->GetFrameTreeNodeId(),
                    std::move(client), GetStoragePartition()->browser_context());
-#endif
   }
 
   void Clone(mojo::PendingReceiver<network::mojom::URLLoaderFactory> receiver)

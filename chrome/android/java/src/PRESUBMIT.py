@@ -144,7 +144,6 @@ def _CheckAlertDialogBuilder(input_api, output_api):
 def _CheckCompatibleAlertDialogBuilder(input_api, output_api):
   # "Blacklist" because the following files are excluded from the check.
   blacklist = (
-      BROWSER_ROOT + 'LoginPrompt.java',
       BROWSER_ROOT + 'SSLClientCertificateRequest.java',
       BROWSER_ROOT + 'autofill/AutofillPopupBridge.java',
       BROWSER_ROOT + 'autofill/keyboard_accessory/'

@@ -162,6 +162,7 @@
 အင်္ဂါရပ် အချို့ကို ရချင်မှ ရနိုင်မည်။ ကျေးဇူးပြုပြီး အခြား ပရုဖိုင် ဒါရုက်ထရီကို ဖေါ်ပြပေးပါ သို့မဟုတ် ပိုသစ်သည့် Chromium ဗားရှင်းကို အသုံးပြုပါ။</translation>
 <translation id="6734080038664603509">အပ်ဒိတ်လုပ်ရန် &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium ကို သင့်ကွန်ပျူတာပေါ်ရှိ အသုံးပြုသူများအားလုံးအတွက် ထည့်သွင်းပြီးပါပြီ။</translation>
+<translation id="6774082503108938489">Chromium အတွက် "ဝဘ်ဆိုက်၊ အက်ပ်နှင့် နောက်ဆက်တွဲ ခွင့်ပြုချက်များ" ကို သင့်မိဘက ပိတ်လိုက်သည်။ ဤ <ph name="EXTENSION_TYPE_PARAMETER" /> ဖွင့်ခြင်းကို ခွင့်မပြုပါ။</translation>
 <translation id="6847869444787758381">သင့်စကားဝှက်များ ကျိုးပေါက်ထားခြင်း ရှိမရှိ Chromium က သင့်အား အသိပေးပါမည်</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium သို့ မိတ္တူကူးထားသည်)</translation>
@@ -220,6 +221,7 @@ Chromium သည်သင့်ကြိုတင်ချိန်ညှိခ�
 <translation id="8417404458978023919">{0,plural, =1{Chromium ကို တစ်ရက်အတွင်း ပြန်လည်စတင်ပါ}other{Chromium ကို # ရက်အတွင်း ပြန်လည်စတင်ပါ}}</translation>
 <translation id="8453117565092476964">ထည့်သွင်းရာတွင် အသုံးပြုသည့် ချုံ့ထားသောဖိုင်မှတ်တမ်း ပျက်စီးနေသည် သို့မဟုတ် တရားမဝင်ပါ။ ကျေးဇူး၍ Chromium ကို ထပ်ပြီး ဒေါင်းလုဒ် လုပ်ယူပါ။</translation>
 <translation id="8493179195440786826">Chromium မှာ ဟောင်းသွားပြီ</translation>
+<translation id="8558383651099478961">Chromium အတွက် "ဝဘ်ဆိုက်၊ အက်ပ်နှင့် နောက်ဆက်တွဲ ခွင့်ပြုချက်များ" ကို သင့်မိဘက ပိတ်လိုက်သည်။ ဤ <ph name="EXTENSION_TYPE_PARAMETER" /> ထည့်ခြင်းကို ခွင့်မပြုပါ။</translation>
 <translation id="8568283329061645092">သင်၏ Google Account နှင့် လက်မှတ်ထိုးဝင်သည့်အခါ Chromium က သင့်စကားဝှက်များကို စစ်ဆေးနိုင်သည်</translation>
 <translation id="8586442755830160949">မူပိုင်ခွင့် <ph name="YEAR" /> The Chromium ပြုစုသူများ။ မူပိုင်ခွင့်များ အားလုံးကို ချုပ်ထိန်းထားသည်။</translation>
 <translation id="8619360774459241877">Chromium ကို ဖွင့်နေသည်...</translation>

@@ -36,17 +36,11 @@ bool IsTabletModeEnabled() {
 }  // namespace
 
 AccessibilityHandler::AccessibilityHandler(Profile* profile)
-    : profile_(profile) {
-  if (ash::TabletMode::Get())
-    ash::TabletMode::Get()->AddObserver(this);
-}
+    : profile_(profile) {}
 
 AccessibilityHandler::~AccessibilityHandler() {
   if (a11y_nav_buttons_toggle_metrics_reporter_timer_.IsRunning())
     a11y_nav_buttons_toggle_metrics_reporter_timer_.FireNow();
-
-  if (ash::TabletMode::Get())
-    ash::TabletMode::Get()->RemoveObserver(this);
 }
 
 void AccessibilityHandler::RegisterMessages() {
@@ -75,6 +69,16 @@ void AccessibilityHandler::RegisterMessages() {
       "manageA11yPageReady",
       base::BindRepeating(&AccessibilityHandler::HandleManageA11yPageReady,
                           base::Unretained(this)));
+}
+
+void AccessibilityHandler::OnJavascriptAllowed() {
+  if (ash::TabletMode::Get()) {
+    tablet_mode_observer_.Add(ash::TabletMode::Get());
+  }
+}
+
+void AccessibilityHandler::OnJavascriptDisallowed() {
+  tablet_mode_observer_.RemoveAll();
 }
 
 void AccessibilityHandler::HandleShowChromeVoxSettings(

@@ -349,13 +349,6 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
 <translation id="152657506688053119">Danh sách các URL thay thế cho nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
 <translation id="1530812829012954197">Luôn hiển thị các mẫu URL sau đây trong trình duyệt chính</translation>
 <translation id="1553532014072799546">Danh sách cho phép về giới hạn thời gian cho mỗi ứng dụng</translation>
-<translation id="1553684822621013552">Khi chính sách này được đặt thành true, ARC sẽ được bật cho người dùng
-      (theo kiểm tra cài đặt chính sách bổ sung - ARC sẽ vẫn không khả
-      dụng nếu chế độ tạm thời hoặc đăng nhập nhiều tài khoản được bật trong
-      phiên người dùng hiện tại).
-
-      Nếu cài đặt này bị tắt hoặc không được định cấu hình thì người dùng
-      doanh nghiệp sẽ không thể sử dụng ARC.</translation>
 <translation id="1553956579506604198">Chặn không cho cài đặt các tiện ích bên ngoài</translation>
 <translation id="1556072857949466438">Chính sách này cho phép quản trị viên chỉ định rằng trang có thể hiển thị cửa sổ bật lên khi đang hủy tải trang.
 
@@ -930,10 +923,6 @@ Nếu bạn không đặt chính sách này, thì màn hình bảo vệ quyền 
       Khi chưa định cấu hình chính sách này hoặc khi đặt chính sách thành True, người dùng sẽ có thể sử dụng tính năng Chia sẻ tệp trong mạng.
 
       Khi đặt chính sách này thành False, người dùng sẽ không thể sử dụng tính năng Chia sẻ tệp trong mạng.</translation>
-<translation id="2438609638493026652">Bật tính năng báo cáo các sự kiện quan trọng trong quá trình cài đặt ứng dụng Android cho Google. Các sự kiện chỉ được ghi lại cho các ứng dụng có quá trình cài đặt được kích hoạt qua chính sách.
-
-      Nếu bạn đặt chính sách này là true thì các sự kiện sẽ được ghi lại.
-      Nếu bạn đặt chính sách này là false hoặc không đặt, thì các sự kiện sẽ không được ghi lại.</translation>
 <translation id="2440773021691931148">Báo cáo thống kê phần cứng và mã nhận dạng liên quan đến nguồn.
 
       Nếu bạn không đặt chính sách này hoặc đặt thành false, thì số liệu thống kê sẽ không được báo cáo.
@@ -1254,15 +1243,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Mỗi mục nhập trong danh sách chỉ định một định danh, được sử dụng nội bộ để cho biết riêng các tài khoản trong thiết bị khác nhau.</translation>
 <translation id="2769952903507981510">Định cấu hình tên miền bắt buộc cho máy chủ truy cập từ xa</translation>
-<translation id="2783078941107212091">Bật Ứng dụng đề xuất khi hộp tìm kiếm ở trạng thái 0 trong trình chạy.
-
-          Nếu bạn đặt chính sách này thành true, thì Ứng dụng đề xuất có thể xuất hiện trong nội dung tìm kiếm ở trạng thái 0.
-
-          Nếu bạn đặt chính sách này thành false, thì Ứng dụng đề xuất sẽ không xuất hiện trong nội dung tìm kiếm ở trạng thái 0.
-
-          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
-
-          Nếu bạn không đặt chính sách này, thì tùy chọn mặc định sẽ là False đối với các thiết bị được quản lý.</translation>
 <translation id="2787173078141616821">Báo cáo thông tin về trạng thái của Android</translation>
 <translation id="2799297758492717491">Cho phép tự động phát nội dung nghe nhìn thuộc danh sách các mẫu URL được phép</translation>
 <translation id="2801065672151277034">Các tùy chọn quản lý chứng chỉ</translation>
@@ -1926,15 +1906,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="382476126209906314">Định cấu hình tiền tố TalkGadget cho máy chủ truy cập từ xa</translation>
 <translation id="3824972131618513497">Kiểm soát các tùy chọn cài đặt liên quan đến quản lý nguồn và khởi động lại.</translation>
 <translation id="3826475866868158882">Đã bật Dịch vụ vị trí của Google</translation>
-<translation id="3831054243924627613">Chính sách này kiểm soát trạng thái ban đầu của dịch vụ sao lưu và khôi phục của Android.
-
-      Khi bạn không định cấu hình chính sách này hoặc đặt chính sách thành <ph name="BR_DISABLED" />, dịch vụ sao lưu và khôi phục của Android sẽ tắt ngay từ đầu.
-
-      Khi bạn đặt chính sách này thành <ph name="BR_ENABLED" />, dịch vụ sao lưu và khôi phục của Android sẽ bật ngay từ đầu.
-
-      Khi bạn đặt chính sách này thành <ph name="BR_UNDER_USER_CONTROL" />, người dùng sẽ được yêu cầu chọn xem có sử dụng dịch vụ sao lưu và khôi phục của Android hay không. Nếu người dùng bật dịch vụ sao lưu và khôi phục, thì dữ liệu ứng dụng Android sẽ được tải lên máy chủ sao lưu của Android và được khôi phục từ các máy chủ đó khi cài đặt lại các ứng dụng tương thích.
-
-      Xin lưu ý rằng chính sách này chỉ kiểm soát trạng thái của dịch vụ sao lưu và khôi phục của Android trong quá trình thiết lập ban đầu. Sau đó, người dùng có thể mở phần cài đặt của Android rồi bật/tắt dịch vụ sao lưu và khôi phục của Android.</translation>
 <translation id="3831376478177535007">Khi bạn bật cài đặt này, <ph name="PRODUCT_NAME" /> sẽ cho phép tin cậy các chứng chỉ do hoạt động của Cơ sở hạ tầng khóa công khai (PKI) cũ của Symantec Corporation phát hành nếu các chứng chỉ xác thực thành công và liên kết với một chứng chỉ CA được công nhận.
 
       Lưu ý rằng chính sách này phụ thuộc vào việc hệ điều hành vẫn công nhận các chứng chỉ từ hạ tầng cũ của Symantec. Nếu bản cập nhật hệ điều hành thay đổi cách xử lý các chứng chỉ đó của hệ điều hành, thì chính sách này sẽ không còn hiệu lực nữa.  Ngoài ra, chính sách này có vai trò là giải pháp tạm thời để cho các doanh nghiệp có thêm thời gian di chuyển đổi chứng chỉ Symantec cũ. Chính sách này sẽ bị loại bỏ vào đúng hoặc khoảng ngày 01 tháng 01 năm 2019.
@@ -3479,17 +3450,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="6114416803310251055">không được chấp thuận</translation>
 <translation id="6133088669883929098">Cho phép tất cả các trang web sử dụng tạo khóa</translation>
 <translation id="6135398260575578389">Tính năng Duyệt web an toàn đang hoạt động ở chế độ nâng cao. Chế độ này bảo mật tốt hơn nhưng người dùng sẽ phải chia sẻ thêm thông tin duyệt web với Google.</translation>
-<translation id="6136537398661737682">Chính sách này kiểm soát trạng thái ban đầu của Dịch vụ vị trí của Google.
-
-      Khi bạn không định cấu hình chính sách này hoặc đặt chính sách thành <ph name="GLS_DISABLED" />, Dịch vụ vị trí của Google sẽ tắt ngay từ đầu.
-
-      Khi bạn đặt chính sách này thành <ph name="GLS_ENABLED" />, Dịch vụ vị trí của Google sẽ bật ngay từ đầu.
-
-      Khi bạn đặt chính sách này thành <ph name="GLS_UNDER_USER_CONTROL" />, người dùng sẽ được yêu cầu chọn có sử dụng Dịch vụ vị trí của Google hay không. Điều này sẽ cho phép các ứng dụng Android dùng dịch vụ này để truy vấn vị trí thiết bị, đồng thời cho phép gửi dữ liệu vị trí ẩn danh tới Google.
-
-      Xin lưu ý rằng chính sách này chỉ kiểm soát trạng thái Dịch vụ vị trí của Google trong quá trình thiết lập ban đầu. Sau đó, người dùng có thể mở phần cài đặt của Android rồi bật/tắt Dịch vụ vị trí của Google.
-
-      Xin lưu ý rằng chính sách này sẽ bị bỏ qua và Dịch vụ vị trí của Google luôn tắt khi bạn đặt chính sách <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> thành <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Luôn sử dụng tính năng phát hiện múi giờ thô</translation>
 <translation id="614616930188030377">Các mẫu trong danh sách này sẽ được so khớp với nguồn bảo mật của URL yêu cầu.
       Nếu tìm thấy mẫu phù hợp hoặc nếu chrome://flags/#enable-webrtc-hide-local-ips-with-mdns đang Tắt, thì địa chỉ IP cục bộ sẽ hiển thị trong ứng viên WebRTC ICE.
@@ -4618,9 +4578,6 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Nếu bạn không đặt chính sách này, thì ban đầu, chế độ tương phản cao sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="7869986671709030417">Chế độ in đồ họa nền mặc định</translation>
-<translation id="787125417158068494">Nếu được đặt thành SyncDisabled hoặc không được định cấu hình, các chứng chỉ <ph name="PRODUCT_OS_NAME" /> sẽ không khả dụng cho ứng dụng ARC.
-
-      Nếu được đặt thành CopyCaCerts, tất cả các chứng chỉ CA đã cài đặt ONC có <ph name="WEB_TRUSTED_BIT" /> sẽ khả dụng cho ứng dụng ARC.</translation>
 <translation id="7882585827992171421">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Xác định id của tiện ích được sử dụng làm trình bảo vệ màn hình trên màn hình đăng nhập. Tiện ích phải thuộc AppPack được định cấu hình cho miền này thông qua chính sách DeviceAppPack.</translation>
@@ -5070,11 +5027,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8544465954173828789">Cho phép đồng bộ hóa Tin nhắn SMS từ điện thoại sang Chromebook.</translation>
 <translation id="8548832052135586762">Đặt chế độ in thành chỉ in màu, chỉ in đen trắng hoặc không có hạn chế về chế độ in màu. Khi bạn không đặt chính sách, thì sẽ không có hạn chế nào.</translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
-<translation id="8566729013138025202">Chỉ định một nhóm chính sách sẽ được chuyển giao cho thư viện thời gian chạy ARC. Giá trị phải là định dạng JSON hợp lệ.
-
-      Chính sách này có thể dùng để định cấu hình ứng dụng Android nào sẽ được cài đặt tự động trên thiết bị.
-
-      Để ghim ứng dụng vào trình chạy, hãy xem PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
 <translation id="8569734380847633643">
           Nếu bạn đặt chính sách này thành false, thì <ph name="PRODUCT_OS_NAME" /> sẽ tắt Wi-Fi và người dùng không thể bật lại.
@@ -5103,11 +5055,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
           Khi bạn không đặt chính sách này, khoảng thời gian mặc định sẽ được sử dụng.
 
           Bạn phải chỉ định giá trị của chính sách bằng mili giây.</translation>
-<translation id="8598350264853261122">Nếu bạn đặt chính sách thành false thì người dùng không liên kết sẽ không được phép sử dụng ARC.
-
-      Nếu bạn không đặt hoặc đặt chính sách thành true thì tất cả người dùng sẽ được phép sử dụng ARC (trừ khi ARC bị tắt bởi các phương tiện khác).
-
-      Các thay đổi đối với chính sách sẽ chỉ được áp dụng trong khi ARC không chạy, ví dụ như khi Chrome OS đang khởi động.</translation>
 <translation id="8606263947930257189">Kiểm soát việc <ph name="PRODUCT_NAME" /> có thể đóng băng các tab chạy trong nền trong tối thiểu 5 phút hay không.
 
       Nếu bạn đặt chính sách này thành true, thì các tab chạy trong nền trong tối thiểu 5 phút có thể bị đóng băng. Việc đóng băng tab sẽ giúp giảm mức sử dụng CPU, pin và bộ nhớ. <ph name="PRODUCT_NAME" /> sử dụng kỹ thuật "tự nghiệm học" để tránh đóng băng các tab hữu ích chạy trong nền (ví dụ: hiển thị thông báo, phát âm thanh, phát video trực tuyến). Các nhà phát triển web cũng có thể chọn không đóng băng trang web của mình (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).

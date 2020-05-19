@@ -27,8 +27,6 @@ class MockPasswordStore : public PasswordStore {
                void(const PasswordStore::FormDigest&, base::OnceClosure));
   MOCK_METHOD2(GetLogins,
                void(const PasswordStore::FormDigest&, PasswordStoreConsumer*));
-  MOCK_METHOD2(GetLoginsByPassword,
-               void(const base::string16&, PasswordStoreConsumer*));
   MOCK_METHOD1(AddLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD1(UpdateLogin, void(const autofill::PasswordForm&));
   MOCK_METHOD2(UpdateLoginWithPrimaryKey,

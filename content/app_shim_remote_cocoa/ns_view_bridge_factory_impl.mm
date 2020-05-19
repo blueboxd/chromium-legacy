@@ -50,9 +50,12 @@ class RenderWidgetHostNSViewBridgeOwner
  private:
   void OnMojoDisconnect() { delete this; }
 
-  std::unique_ptr<content::InputEvent> TranslateEvent(
+  std::unique_ptr<blink::WebCoalescedInputEvent> TranslateEvent(
       const blink::WebInputEvent& web_event) {
-    return std::make_unique<content::InputEvent>(web_event, ui::LatencyInfo());
+    return std::make_unique<blink::WebCoalescedInputEvent>(
+        web_event.Clone(), std::vector<std::unique_ptr<blink::WebInputEvent>>{},
+        std::vector<std::unique_ptr<blink::WebInputEvent>>{},
+        ui::LatencyInfo());
   }
 
   // RenderWidgetHostNSViewHostHelper implementation.
@@ -82,8 +85,11 @@ class RenderWidgetHostNSViewBridgeOwner
       std::vector<blink::mojom::EditCommandPtr> edit_commands) override {
     const blink::WebKeyboardEvent* web_event =
         static_cast<const blink::WebKeyboardEvent*>(&key_event);
-    std::unique_ptr<content::InputEvent> input_event =
-        std::make_unique<content::InputEvent>(*web_event, latency_info);
+    std::unique_ptr<blink::WebCoalescedInputEvent> input_event =
+        std::make_unique<blink::WebCoalescedInputEvent>(
+            web_event->Clone(),
+            std::vector<std::unique_ptr<blink::WebInputEvent>>{},
+            std::vector<std::unique_ptr<blink::WebInputEvent>>{}, latency_info);
     std::vector<uint8_t> native_event_data =
         ui::EventToData(key_event.os_event);
     host_->ForwardKeyboardEventWithCommands(

@@ -335,8 +335,12 @@ class AX_EXPORT AXNode final {
   AXNode* GetTableCaption() const;
   AXNode* GetTableCellFromIndex(int index) const;
   AXNode* GetTableCellFromCoords(int row_index, int col_index) const;
+  // Get all the column header node ids of the table.
+  void GetTableColHeaderNodeIds(std::vector<int32_t>* col_header_ids) const;
+  // Get the column header node ids associated with |col_index|.
   void GetTableColHeaderNodeIds(int col_index,
                                 std::vector<int32_t>* col_header_ids) const;
+  // Get the row header node ids associated with |row_index|.
   void GetTableRowHeaderNodeIds(int row_index,
                                 std::vector<int32_t>* row_header_ids) const;
   void GetTableUniqueCellIds(std::vector<int32_t>* row_header_ids) const;

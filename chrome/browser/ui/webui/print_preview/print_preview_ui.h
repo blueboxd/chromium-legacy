@@ -26,7 +26,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_PreviewIds;
 struct PrintHostMsg_RequestPrintPreview_Params;
 
@@ -146,7 +145,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   virtual void OnPrintPreviewRequest(int request_id);
 
   // Notifies the Web UI about the properties of the request preview.
-  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+  void OnDidStartPreview(const mojom::DidStartPreviewParams& params,
                          int request_id);
 
   // Notifies the Web UI of the default page layout according to the currently

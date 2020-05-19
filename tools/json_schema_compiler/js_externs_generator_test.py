@@ -84,6 +84,7 @@ namespace fakeApi {
                                        optional double num,
                                        object obj,
                                        optional boolean bool,
+                                       optional Baz baz,
                                        VoidCallback callback);
 
     static void multipleOptionalParams(optional DOMString param1,
@@ -227,10 +228,11 @@ chrome.fakeApi.optionalParam = function(callback) {};
  * @param {?number|undefined} num
  * @param {Object} obj
  * @param {?boolean|undefined} bool
+ * @param {?chrome.fakeApi.Baz|undefined} baz
  * @param {function():void} callback
  * @see https://developer.chrome.com/extensions/fakeApi#method-nonFinalOptionalParams
  */
-chrome.fakeApi.nonFinalOptionalParams = function(string, num, obj, bool, callback) {};
+chrome.fakeApi.nonFinalOptionalParams = function(string, num, obj, bool, baz, callback) {};
 
 /**
  * @param {string=} param1

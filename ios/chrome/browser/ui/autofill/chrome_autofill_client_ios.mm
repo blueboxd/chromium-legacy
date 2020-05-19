@@ -116,8 +116,7 @@ ChromeAutofillClientIOS::ChromeAutofillClientIOS(
           GetApplicationContext()->GetApplicationLocale())),
       infobar_manager_(infobar_manager),
       password_manager_(password_manager),
-      unmask_controller_(browser_state->GetPrefs(),
-                         browser_state->IsOffTheRecord()),
+      unmask_controller_(browser_state->GetPrefs()),
       // TODO(crbug.com/928595): Replace the closure with a callback to the
       // renderer that indicates if log messages should be sent from the
       // renderer.

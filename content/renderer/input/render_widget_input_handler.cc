@@ -613,15 +613,15 @@ void RenderWidgetInputHandler::InjectGestureScrollEvent(
           scrollable_area_element_id.GetStableId();
     }
 
-    ui::LatencyInfo latency_info;
-    ui::WebScopedInputEvent web_scoped_gesture_event(gesture_event.release());
+    std::unique_ptr<blink::WebCoalescedInputEvent> web_scoped_gesture_event =
+        std::make_unique<blink::WebCoalescedInputEvent>(
+            std::move(gesture_event), ui::LatencyInfo());
     // TODO(acomminos): If/when we add support for gesture event attribution on
     //                  the impl thread, have the caller provide attribution.
     blink::WebInputEventAttribution attribution;
 
     widget_->GetInputEventQueue()->HandleEvent(
-        std::move(web_scoped_gesture_event), latency_info,
-        DISPATCH_TYPE_NON_BLOCKING,
+        std::move(web_scoped_gesture_event), DISPATCH_TYPE_NON_BLOCKING,
         blink::mojom::InputEventResultState::kNotConsumed, attribution,
         HandledEventCallback());
   }

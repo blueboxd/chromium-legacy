@@ -138,28 +138,28 @@ interface RenderWidgetHostNSViewHost {
   // Forward a keyboard event to the RenderWidgetHost that is currently handling
   // the key-down event.
   ForwardKeyboardEventWithCommands(
-      content.mojom.Event event,
+      blink.mojom.Event event,
       array<uint8> native_event_data,
       bool skip_in_browser,
       array<blink.mojom.EditCommand> commands);
 
   // Forward events to the renderer or the input router, as appropriate.
-  RouteOrProcessMouseEvent(content.mojom.Event event);
-  RouteOrProcessTouchEvent(content.mojom.Event event);
-  RouteOrProcessWheelEvent(content.mojom.Event event);
+  RouteOrProcessMouseEvent(blink.mojom.Event event);
+  RouteOrProcessTouchEvent(blink.mojom.Event event);
+  RouteOrProcessWheelEvent(blink.mojom.Event event);
 
   // Special case forwarding of synthetic events to the renderer.
-  ForwardMouseEvent(content.mojom.Event event);
-  ForwardWheelEvent(content.mojom.Event event);
+  ForwardMouseEvent(blink.mojom.Event event);
+  ForwardWheelEvent(blink.mojom.Event event);
 
   // Handling pinch gesture events. Note that for GestureBegin, the type of the
   // event is ignored, and is inferred from subsequent GestureUpdate calls.
-  GestureBegin(content.mojom.Event event, bool is_synthetically_injected);
-  GestureUpdate(content.mojom.Event event);
-  GestureEnd(content.mojom.Event event);
+  GestureBegin(blink.mojom.Event event, bool is_synthetically_injected);
+  GestureUpdate(blink.mojom.Event event);
+  GestureEnd(blink.mojom.Event event);
 
   // Handle a double-tap magnify event.
-  SmartMagnify(content.mojom.Event event);
+  SmartMagnify(blink.mojom.Event event);
 
   // Forward the corresponding Ime commands to the appropriate RenderWidgetHost.
   // Appropriate, has two meanings here. If this is during a key-down event,

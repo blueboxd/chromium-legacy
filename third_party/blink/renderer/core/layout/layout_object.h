@@ -2589,6 +2589,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return element->GetDisplayLockContext();
   }
 
+  void SetDocumentForAnonymous(Document* document) {
+    DCHECK(IsAnonymous());
+    node_ = document;
+  }
+
  protected:
   enum LayoutObjectType {
     kLayoutObjectBr,
@@ -2730,11 +2735,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   virtual void InsertedIntoTree();
   virtual void WillBeRemovedFromTree();
-
-  void SetDocumentForAnonymous(Document* document) {
-    DCHECK(IsAnonymous());
-    node_ = document;
-  }
 
 #if DCHECK_IS_ON()
   virtual bool PaintInvalidationStateIsDirty() const;

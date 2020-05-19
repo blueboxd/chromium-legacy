@@ -64,16 +64,10 @@ class PLATFORM_EXPORT ResourceRequestHead {
   DISALLOW_NEW();
 
  public:
-  enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
-
-  struct RedirectInfo {
-    // Previous url in the redirect chain.
-    KURL previous_url;
-
-    RedirectInfo() = default;
-    explicit RedirectInfo(const KURL& previous_url)
-        : previous_url(previous_url) {}
-  };
+  enum class RedirectStatus : uint8_t {
+    kFollowedRedirect,
+    kNoRedirect
+  };  // TO REMOVE
 
   ResourceRequestHead();
   explicit ResourceRequestHead(const KURL&);
@@ -100,14 +94,6 @@ class PLATFORM_EXPORT ResourceRequestHead {
 
   const KURL& Url() const;
   void SetUrl(const KURL&);
-
-  // ThreadableLoader sometimes breaks redirect chains into separate Resource
-  // and ResourceRequests. The ResourceTiming API needs the initial URL for the
-  // name attribute of PerformanceResourceTiming entries. This property
-  // remembers the initial URL for that purpose. Note that it can return a null
-  // URL. In that case, use Url() instead.
-  const KURL& GetInitialUrlForResourceTiming() const;
-  void SetInitialUrlForResourceTiming(const KURL&);
 
   void RemoveUserAndPassFromURL();
 
@@ -344,10 +330,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
     cors_preflight_policy_ = policy;
   }
 
-  void SetRedirectInfo(const RedirectInfo& info) { redirect_info_ = info; }
-  const base::Optional<RedirectInfo>& GetRedirectInfo() const {
-    return redirect_info_;
-  }
+  const Vector<KURL>& GetRedirectChain() const { return redirect_chain_; }
 
   void SetSuggestedFilename(const base::Optional<String>& suggested_filename) {
     suggested_filename_ = suggested_filename;
@@ -472,9 +455,6 @@ class PLATFORM_EXPORT ResourceRequestHead {
   bool NeedsHTTPOrigin() const;
 
   KURL url_;
-  // TODO(yoav): initial_url_for_resource_timing_ is a stop-gap only needed
-  // until Out-of-Blink CORS lands: https://crbug.com/736308
-  KURL initial_url_for_resource_timing_;
   // base::TimeDelta::Max() represents the default timeout on platforms that
   // have one.
   base::TimeDelta timeout_interval_;
@@ -515,7 +495,7 @@ class PLATFORM_EXPORT ResourceRequestHead {
   network::mojom::ReferrerPolicy referrer_policy_;
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
-  base::Optional<RedirectInfo> redirect_info_;
+  Vector<KURL> redirect_chain_;
   base::Optional<network::mojom::blink::TrustTokenParams> trust_token_params_;
 
   base::Optional<String> suggested_filename_;

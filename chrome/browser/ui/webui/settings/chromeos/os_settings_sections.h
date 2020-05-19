@@ -54,7 +54,7 @@ class OsSettingsSections {
       CupsPrintersManager* printers_manager);
   OsSettingsSections(const OsSettingsSections& other) = delete;
   OsSettingsSections& operator=(const OsSettingsSections& other) = delete;
-  ~OsSettingsSections();
+  virtual ~OsSettingsSections();
 
   const OsSettingsSection* GetSection(mojom::Section section) const;
 
@@ -62,7 +62,10 @@ class OsSettingsSections {
     return sections_;
   }
 
- private:
+ protected:
+  // Used by tests.
+  OsSettingsSections();
+
   std::unordered_map<mojom::Section, OsSettingsSection*> sections_map_;
   std::vector<std::unique_ptr<OsSettingsSection>> sections_;
 };

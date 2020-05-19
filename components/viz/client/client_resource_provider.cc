@@ -383,7 +383,7 @@ ClientResourceProvider::ScopedSkSurface::ScopedSkSurface(
 
 ClientResourceProvider::ScopedSkSurface::~ScopedSkSurface() {
   if (surface_)
-    surface_->flush();
+    surface_->flushAndSubmit();
 }
 
 SkSurfaceProps ClientResourceProvider::ScopedSkSurface::ComputeSurfaceProps(

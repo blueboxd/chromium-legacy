@@ -154,7 +154,6 @@ CardUnmaskPromptViewAndroid::GetOrCreateJavaObject() {
              confirm,
              ResourceMapper::MapToJavaDrawableId(controller_->GetCvcImageRid()),
              controller_->ShouldRequestExpirationDate(),
-             controller_->CanStoreLocally(),
              controller_->GetStoreLocallyStartState(),
              controller_->ShouldOfferWebauthn(),
              controller_->GetWebauthnOfferStartState(),

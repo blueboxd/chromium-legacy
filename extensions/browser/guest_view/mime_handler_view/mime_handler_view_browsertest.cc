@@ -21,6 +21,7 @@
 #include "components/guest_view/browser/test_guest_view_manager.h"
 #include "components/javascript_dialogs/app_modal_dialog_controller.h"
 #include "components/javascript_dialogs/app_modal_dialog_view.h"
+#include "components/printing/common/print.mojom.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -194,7 +195,7 @@ class PrintPreviewWaiter : public content::BrowserMessageFilter {
     return false;
   }
 
-  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+  void OnDidStartPreview(const printing::mojom::DidStartPreviewParams& params,
                          const PrintHostMsg_PreviewIds& ids) {
     // Expect that there is at least one page.
     did_load_ = true;

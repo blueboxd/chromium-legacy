@@ -15,11 +15,11 @@ class ComputedStyle;
 class LayoutBlock;
 class LayoutBlockFlow;
 class LayoutObject;
+class LayoutBox;
 enum class LegacyLayout;
 class LayoutProgress;
 class LayoutRubyAsBlock;
 class LayoutTableCaption;
-class LayoutTableCell;
 class LayoutText;
 class LayoutTextFragment;
 class Node;
@@ -50,12 +50,21 @@ class LayoutObjectFactory {
   static LayoutObject* CreateListMarker(Node&,
                                         const ComputedStyle&,
                                         LegacyLayout);
+  static LayoutBlock* CreateTable(Node&, const ComputedStyle&, LegacyLayout);
   static LayoutTableCaption* CreateTableCaption(Node&,
                                                 const ComputedStyle&,
                                                 LegacyLayout);
-  static LayoutTableCell* CreateTableCell(Node&,
+  static LayoutBlockFlow* CreateTableCell(Node&,
                                           const ComputedStyle&,
                                           LegacyLayout);
+  static LayoutBox* CreateTableColumn(Node&,
+                                      const ComputedStyle&,
+                                      LegacyLayout);
+
+  static LayoutBox* CreateTableRow(Node&, const ComputedStyle&, LegacyLayout);
+  static LayoutBox* CreateTableSection(Node&,
+                                       const ComputedStyle&,
+                                       LegacyLayout);
   static LayoutBlock* CreateFieldset(Node&, const ComputedStyle&, LegacyLayout);
   static LayoutBlockFlow* CreateFileUploadControl(Node& node,
                                                   const ComputedStyle& style,
@@ -72,6 +81,19 @@ class LayoutObjectFactory {
   static LayoutRubyAsBlock* CreateRubyAsBlock(Node* node,
                                               const ComputedStyle& style,
                                               LegacyLayout legacy);
+
+  // Anonoymous creation methods
+
+  static LayoutBox* CreateAnonymousTableWithParent(const LayoutObject& parent);
+
+  static LayoutBox* CreateAnonymousTableSectionWithParent(
+      const LayoutObject& parent);
+
+  static LayoutBox* CreateAnonymousTableRowWithParent(
+      const LayoutObject& parent);
+
+  static LayoutBlockFlow* CreateAnonymousTableCellWithParent(
+      const LayoutObject& parent);
 };
 
 }  // namespace blink

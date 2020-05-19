@@ -1332,7 +1332,6 @@
 <translation id="2673135533890720193">আপোনাৰ ব্ৰাউজিংৰ ইতিহাস পঢ়ক</translation>
 <translation id="2673589024369449924">এই ব্যৱহাৰকাৰীজনৰ বাবে ডেস্কট’প শ্বৰ্টকাট সৃষ্টি কৰক</translation>
 <translation id="2674764818721168631">অফ আছে</translation>
-<translation id="2677748264148917807">ত্যাগ কৰক</translation>
 <translation id="2678063897982469759">পুনঃসক্ষম কৰক</translation>
 <translation id="268053382412112343">ইতি&amp;হাস</translation>
 <translation id="2682498795777673382">আপোনাৰ অভিভাৱকে কৰা আপডে'ট</translation>
@@ -2968,7 +2967,6 @@
 <translation id="4830573902900904548">আপোনাৰ <ph name="DEVICE_TYPE" /> <ph name="NETWORK_NAME" /> ব্যৱহাৰ কৰি ইণ্টাৰনেটৰ সৈতে সংযোগ হ’ব পৰা নাই। অনুগ্ৰহ কৰি অন্য এটা নেটৱৰ্ক বাছনি কৰক। <ph name="LEARN_MORE_LINK_START" />অধিক জানক<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">Chromebookত কি নতুন আছে চাওক</translation>
 <translation id="4833683849865011483">প্ৰিণ্ট ছার্ভাৰটোৰ পৰা ১ টা প্ৰিণ্টাৰ বিচাৰি পোৱা গৈছে</translation>
-<translation id="4835385943915508971">অনুৰোধ জনোৱা সমললৈ Chromeৰ এক্সেছ নাই।</translation>
 <translation id="4836504898754963407">ফিংগাৰপ্ৰিণ্টবোৰ পৰিচালনা কৰক</translation>
 <translation id="4837926214103741331">আপোনাৰ এই ডিভাইচটো ব্যৱহাৰ কৰাৰ কৰ্তৃত্ব নাই। ছাইন ইনৰ অনুমতিৰ বাবে অনুগ্ৰহ কৰি ডিভাইচৰ গৰাকীৰ সৈতে যোগাযোগ কৰক।</translation>
 <translation id="4837952862063191349">আপোনাৰ স্থানীয় ডেটা আনলক আৰু পুনঃস্থাপন কৰিবলৈ , আপোনাৰ পুৰণি  <ph name="DEVICE_TYPE" />ৰ পাছৱর্ড দিয়ক।</translation>
@@ -3382,7 +3380,6 @@
 <translation id="5379140238605961210">মাইক্ৰ’ফ’নৰ এক্সেছ অৱৰোধ কৰাটো অব্যাহত ৰাখক</translation>
 <translation id="5382591305415226340">সমৰ্থন কৰা লিংকবোৰ পৰিচালনা কৰক</translation>
 <translation id="5383377866517186886">Mac ছিষ্টেম অগ্ৰাধিকাৰসমূহত কেমেৰা অফ কৰা আছে</translation>
-<translation id="5384883051496921101">এই ছাইটটোৱে ইনক'গনিট' ম'ডৰ বাহিৰৰ এটা এপৰ সৈতে তথ্য শ্বেয়াৰ কৰিব ওলাইছে।</translation>
 <translation id="5388885445722491159">যোৰা লগোৱা হ’ল</translation>
 <translation id="5389237414310520250">নতুন ব্যৱহাৰকাৰী সৃষ্টি কৰিব পৰা নগ'ল। অনুগ্ৰহ কৰি আপোনাৰ হাৰ্ড ড্ৰাইভত থকা ঠাই আৰু অনুমতি পৰীক্ষা কৰি পুনৰ চেষ্টা কৰক।</translation>
 <translation id="5390100381392048184">ছাইটবোৰক ধ্বনি প্লে’ কৰিবলৈ দিয়ক</translation>
@@ -4330,7 +4327,6 @@
 <translation id="661907246513853610">ছাইটটোৱে আপোনাৰ অৱস্থান ট্ৰেক কৰিব পাৰে</translation>
 <translation id="6619801788773578757">কিঅ’স্ক এপ্লিকেশ্বন যোগ কৰক</translation>
 <translation id="6619990499523117484">আপোনাৰ পিন নিশ্চিত কৰক</translation>
-<translation id="662080504995468778">ইয়াতে থাকক</translation>
 <translation id="6621715389962683284">নেটৱৰ্ক সংযোগ স্থাপন কৰিব নোৱাৰি।</translation>
 <translation id="6622980291894852883">প্ৰতিচ্ছবি অৱৰোধ কৰাটো অব্যাহত ৰাখক</translation>
 <translation id="6624535038674360844"><ph name="FILE_NAME" />ত সংবেদনশীল অথবা বিপজ্জনক সমল আছে। এইটোৰ গৰাকীক সমাধান কৰিবলৈ কওক।</translation>
@@ -6145,7 +6141,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" />এ <ph name="TAB_NAME" />ৰ সৈতে এখন ৱিণ্ড’ শ্বেয়াৰ কৰিছে।</translation>
 <translation id="8945274638472141382">চিহ্নৰ আকাৰ</translation>
 <translation id="8946359700442089734">ডিবাগিঙৰ সুবিধাসমূহ এই <ph name="IDS_SHORT_PRODUCT_NAME" /> ডিভাইচটোত সম্পূৰ্ণৰূপে সক্ষম কৰা হোৱা নাছিল।</translation>
-<translation id="894871326938397531">ইনক’গনিট’ ম’ডৰ পৰা বাহিৰ হ’বনে?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" />এ আপোনাৰ সুৰক্ষা সম্পৰ্কীয় চাবিৰ মেক আৰু ম'ডেল চাব বিচাৰিছে</translation>
 <translation id="8951256747718668828">কোনো আসোঁৱাহৰ বাবে পুনঃস্থাপন সম্পূৰ্ণ কৰিব পৰা নগ'ল</translation>
 <translation id="8951465597020890363">যিকোনো প্ৰকাৰে অতিথি ম’ডৰ পৰা বাহিৰ হ’বনে?</translation>

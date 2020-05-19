@@ -64,7 +64,6 @@ printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 printing/webgl-repeated-printing.html [ Failure ]
 
 transforms/3d/general/background-visibility-layers.html [ Failure ]
-virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
 
 # Raster invalidation doesn't work for huge layers.
 paint/invalidation/raster-under-invalidation-checking.html [ Failure ]

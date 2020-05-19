@@ -173,14 +173,16 @@ void CompositorThreadEventQueue::Queue(
 
   std::unique_ptr<EventWithCallback> scroll_event =
       std::make_unique<EventWithCallback>(
-          coalesced_events.first.Clone(), scroll_latency,
+          std::make_unique<WebCoalescedInputEvent>(
+              coalesced_events.first.Clone(), scroll_latency),
           oldest_creation_timestamp, timestamp_now,
           std::move(scroll_original_events));
   scroll_event->set_coalesced_scroll_and_pinch();
 
   std::unique_ptr<EventWithCallback> pinch_event =
       std::make_unique<EventWithCallback>(
-          coalesced_events.second.Clone(), pinch_latency,
+          std::make_unique<WebCoalescedInputEvent>(
+              coalesced_events.second.Clone(), pinch_latency),
           oldest_creation_timestamp, timestamp_now,
           std::move(pinch_original_events));
   pinch_event->set_coalesced_scroll_and_pinch();

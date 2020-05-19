@@ -14,6 +14,7 @@ import './certificate_list.js';
 import './certificate_password_decryption_dialog.js';
 import './certificate_password_encryption_dialog.js';
 import './certificates_error_dialog.js';
+import './certificate_provisioning_list.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 

@@ -7,6 +7,7 @@
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 
 namespace chromeos {
 namespace settings {
@@ -34,6 +35,14 @@ OsSettingsSection::OsSettingsSection(Profile* profile,
     : profile_(profile), search_tag_registry_(search_tag_registry) {
   DCHECK(profile);
   DCHECK(search_tag_registry);
+}
+
+OsSettingsSection::OsSettingsSection() = default;
+
+std::string OsSettingsSection::ModifySearchResultUrl(
+    const SearchConcept& concept) const {
+  // Default case for static URLs which do not need to be modified.
+  return concept.url_path_with_parameters;
 }
 
 }  // namespace settings

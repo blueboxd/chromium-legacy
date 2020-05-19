@@ -10,6 +10,8 @@
 #include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/fake_hierarchy.h"
+#include "chrome/browser/ui/webui/settings/chromeos/fake_os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom-test-utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 #include "chrome/grit/generated_resources.h"
@@ -58,7 +60,10 @@ class SearchHandlerTest : public testing::Test {
  protected:
   SearchHandlerTest()
       : search_tag_registry_(&local_search_service_),
-        handler_(&search_tag_registry_, &local_search_service_) {}
+        handler_(&search_tag_registry_,
+                 &fake_sections_,
+                 &fake_hierarchy_,
+                 &local_search_service_) {}
   ~SearchHandlerTest() override = default;
 
   // testing::Test:
@@ -66,12 +71,21 @@ class SearchHandlerTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(
         chromeos::features::kNewOsSettingsSearch);
     handler_.BindInterface(handler_remote_.BindNewPipeAndPassReceiver());
+
+    fake_hierarchy_.AddSubpageMetadata(mojom::Section::kPrinting,
+                                       mojom::Subpage::kPrintingDetails);
+    fake_hierarchy_.AddSettingMetadata(mojom::Section::kPrinting,
+                                       mojom::Setting::kAddPrinter);
+    fake_hierarchy_.AddSettingMetadata(mojom::Section::kPrinting,
+                                       mojom::Setting::kSavedPrinters);
   }
 
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
   local_search_service::LocalSearchService local_search_service_;
   SearchTagRegistry search_tag_registry_;
+  FakeOsSettingsSections fake_sections_;
+  FakeHierarchy fake_hierarchy_;
   SearchHandler handler_;
   mojo::Remote<mojom::SearchHandler> handler_remote_;
 };
@@ -97,6 +111,23 @@ TEST_F(SearchHandlerTest, AddAndRemove) {
   mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
       .Search(base::ASCIIToUTF16("Printing"), &search_results);
   EXPECT_TRUE(search_results.empty());
+}
+
+TEST_F(SearchHandlerTest, UrlModification) {
+  // Add printing search tags to registry and search for "Saved".
+  search_tag_registry_.AddSearchTags(GetPrintingSearchConcepts());
+  std::vector<mojom::SearchResultPtr> search_results;
+  mojom::SearchHandlerAsyncWaiter(handler_remote_.get())
+      .Search(base::ASCIIToUTF16("Saved"), &search_results);
+
+  // Only the "saved printers" item should be returned.
+  EXPECT_EQ(search_results.size(), 1u);
+
+  // The URL should have bee modified according to the FakeOsSettingSection
+  // scheme.
+  EXPECT_EQ(
+      std::string("Section::kPrinting::") + mojom::kPrintingDetailsSubpagePath,
+      search_results[0]->url_path_with_parameters);
 }
 
 }  // namespace settings

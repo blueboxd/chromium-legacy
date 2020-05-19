@@ -5,19 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_INPUT_INPUT_HANDLER_PROXY_CLIENT_H_
 
-namespace ui {
-class LatencyInfo;
-}
-
 namespace blink {
-class WebInputEvent;
+class WebCoalescedInputEvent;
 class WebGestureEvent;
 
 // All callbacks invoked from the compositor thread.
 class InputHandlerProxyClient {
  public:
-  using WebScopedInputEvent = std::unique_ptr<blink::WebInputEvent>;
-
   // Called just before the InputHandlerProxy shuts down.
   virtual void WillShutdown() = 0;
 
@@ -25,8 +19,7 @@ class InputHandlerProxyClient {
   // gesture fling from a touchpad is processed and the target only has
   // passive event listeners.
   virtual void DispatchNonBlockingEventToMainThread(
-      WebScopedInputEvent event,
-      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<WebCoalescedInputEvent> event,
       const blink::WebInputEventAttribution& attribution) = 0;
 
   virtual void DidAnimateForInput() = 0;

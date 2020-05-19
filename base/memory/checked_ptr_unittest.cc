@@ -50,12 +50,14 @@ static_assert(
 
 namespace {
 
+static int g_wrap_raw_ptr_cnt = INT_MIN;
 static int g_get_for_dereference_cnt = INT_MIN;
 static int g_get_for_extraction_cnt = INT_MIN;
 static int g_get_for_comparison_cnt = INT_MIN;
 static int g_checked_ptr_swap_cnt = INT_MIN;
 
 static void ClearCounters() {
+  g_wrap_raw_ptr_cnt = 0;
   g_get_for_dereference_cnt = 0;
   g_get_for_extraction_cnt = 0;
   g_get_for_comparison_cnt = 0;
@@ -64,6 +66,11 @@ static void ClearCounters() {
 
 struct CheckedPtrCountingNoOpImpl : base::internal::CheckedPtrNoOpImpl {
   using Super = base::internal::CheckedPtrNoOpImpl;
+
+  static ALWAYS_INLINE uintptr_t WrapRawPtr(const void* const_ptr) {
+    ++g_wrap_raw_ptr_cnt;
+    return Super::WrapRawPtr(const_ptr);
+  }
 
   static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
       uintptr_t wrapped_ptr) {
@@ -453,6 +460,18 @@ TEST(CheckedPtr, AdvanceString) {
   for (size_t i = 0; i < str.size(); ++i, ++ptr) {
     ASSERT_EQ(*ptr, kChars[i]);
   }
+}
+
+TEST(CheckedPtr, AssignmentFromNullptr) {
+  CountingCheckedPtr<int> checked_ptr;
+
+  ClearCounters();
+  checked_ptr = nullptr;
+
+  EXPECT_EQ(g_wrap_raw_ptr_cnt, 0);
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
 }  // namespace

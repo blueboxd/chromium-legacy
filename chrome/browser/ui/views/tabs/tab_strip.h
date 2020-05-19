@@ -562,6 +562,9 @@ class TabStrip : public views::AccessiblePaneView,
   // the index of the first non-pinned tab.
   int UpdateIdealBoundsForPinnedTabs(int* first_non_pinned_index);
 
+  // Gets the width that our parent view can allot to the tabstrip.
+  int GetAvailableWidthForTabstrip();
+
   // Calculates the width that can be occupied by the tabs in the strip.
   int CalculateAvailableWidthForTabs();
 
@@ -697,6 +700,12 @@ class TabStrip : public views::AccessiblePaneView,
 
   // Size we last layed out at.
   gfx::Size last_layout_size_;
+
+  // The width available for tabs at the time of last layout.
+  int last_available_width_ = 0;
+
+  // Guard to protect against layout loops.
+  bool is_doing_layout_ = false;
 
   // See description above stacked_layout().
   bool stacked_layout_ = false;

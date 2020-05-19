@@ -17,6 +17,7 @@ import '../icons.m.js';
 import '../settings_shared_css.m.js';
 import '../settings_vars_css.m.js';
 import './passwords_shared_css.js';
+import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -28,7 +29,11 @@ Polymer({
 
   _template: html`{__html_template__}`,
 
-  behaviors: [ShowPasswordBehavior],
+  behaviors: [ShowPasswordBehavior, I18nBehavior],
+
+  properties: {
+    shouldShowStorageDetails: {type: Boolean, value: false},
+  },
 
   /** @override */
   attached() {
@@ -52,4 +57,16 @@ Polymer({
   onInputBlur_() {
     this.shadowRoot.getSelection().removeAllRanges();
   },
+
+  /**
+   * Gets the HTML-formatted message to indicate in which locations the password
+   * is stored.
+   */
+  getStorageDetailsMessage_() {
+    // TODO(crbug.com/1049141): Add support and tests for the multi-store case
+    // when dedup is being done.
+    return this.item.entry.isPresentInAccount() ?
+        this.i18nAdvanced('passwordStoredInAccount', {tags: ['b']}) :
+        this.i18nAdvanced('passwordStoredOnDevice', {tags: ['b']});
+  }
 });

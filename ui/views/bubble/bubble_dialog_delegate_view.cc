@@ -197,6 +197,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
                                                    BubbleBorder::Arrow arrow,
                                                    BubbleBorder::Shadow shadow)
     : shadow_(shadow) {
+  set_owned_by_client();
   WidgetDelegate::SetShowCloseButton(false);
 
   SetArrow(arrow);
@@ -250,7 +251,31 @@ bool BubbleDialogDelegateView::AcceleratorPressed(
     GetFocusManager()->AdvanceFocus(accelerator.key_code() != ui::VKEY_DOWN);
     return true;
   }
-  return DialogDelegateView::AcceleratorPressed(accelerator);
+  return View::AcceleratorPressed(accelerator);
+}
+
+Widget* BubbleDialogDelegateView::GetWidget() {
+  return View::GetWidget();
+}
+
+const Widget* BubbleDialogDelegateView::GetWidget() const {
+  return View::GetWidget();
+}
+
+void BubbleDialogDelegateView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this && GetWidget() &&
+      ui::IsAlert(GetAccessibleWindowRole())) {
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  }
+}
+
+View* BubbleDialogDelegateView::GetContentsView() {
+  return this;
+}
+
+void BubbleDialogDelegateView::DeleteDelegate() {
+  delete this;
 }
 
 void BubbleDialogDelegateView::OnWidgetClosing(Widget* widget) {
@@ -450,7 +475,7 @@ gfx::Size BubbleDialogDelegateView::GetMaximumSize() const {
 }
 
 void BubbleDialogDelegateView::OnThemeChanged() {
-  DialogDelegateView::OnThemeChanged();
+  View::OnThemeChanged();
   UpdateColorsFromTheme();
 }
 

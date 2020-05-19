@@ -113,13 +113,13 @@ public class PaymentHandlerCoordinator {
             changeProcessor.destroy();
             bottomSheetController.removeObserver(mediator);
             bottomSheetController.hideContent(/*content=*/view, /*animate=*/true);
-            mWebContents.destroy();
             uiObserver.onPaymentHandlerUiClosed();
             assert activity.getWindow() != null;
             assert activity.getWindow().getDecorView() != null;
             activity.getWindow().getDecorView().removeOnLayoutChangeListener(mediator);
-            thinWebView.destroy();
             mediator.destroy();
+            thinWebView.destroy();
+            mWebContents.destroy();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);
     }

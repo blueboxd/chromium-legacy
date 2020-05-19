@@ -24,6 +24,7 @@
 <translation id="4787850887676698916">Тук ще се показват разделите, които сте отворили в Chromium на другите си устройства.</translation>
 <translation id="4999538639245140991">Тъй като излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />, данните ви в Chromium ще бъдат изтрити от това устройство, но ще останат в профила ви в Google.</translation>
 <translation id="5573014823074921752">Съвет за Chromium. За да видите още опции за разделите, докоснете и задръжте бутона „Показване на разделите“ в лентата с инструменти в долната или горната част на екрана.</translation>
+<translation id="5777187867430702742">Страница на Chromium</translation>
 <translation id="5862307444128926510">Добре дошли в Chromium</translation>
 <translation id="5945387852661427312">Влизате с профил, управляван от <ph name="DOMAIN" />, и предоставяте на администратора му контрол над данните си в Chromium. Те ще се свържат за постоянно с този профил. При излизане от браузъра информацията ви ще се изтрие от устройството, но ще продължи да се съхранява в профила ви в Google.</translation>
 <translation id="602807004951640891">С използването на Chromium приемате <ph name="BEGIN_LINK_TOS" />Общите условия<ph name="END_LINK_TOS" />.</translation>
@@ -44,6 +45,7 @@
 <translation id="8175055321229419309">Съвет: <ph name="BEGIN_LINK" />Преместете Chromium в лентата „Dock“<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Подобрете работата си с Google в Chromium въз основа на местоположението си.</translation>
 <translation id="8586442755830160949">Авторски права <ph name="YEAR" /> Авторите на Chromium. Всички права запазени.</translation>
+<translation id="8776843108004031667">Този профил и всички незапазени данни ще бъдат премахнати от Chromium.</translation>
 <translation id="8809780021347235332">За да запазите изображения, докоснете „Settings“ и разрешете на Chromium да използва снимките ви</translation>
 <translation id="9022552996538154597">Вход в Chromium</translation>
 <translation id="985602178874221306">Авторите на Chromium</translation>

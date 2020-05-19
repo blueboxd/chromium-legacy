@@ -85,6 +85,7 @@ source_set("headers") {
     "indexeddb/web_idb_types.h",
     "input/pointer_id.h",
     "input/web_coalesced_input_event.h",
+    "input/web_coalesced_input_event_mojom_traits.h",
     "input/web_gesture_device.h",
     "input/web_gesture_event.h",
     "input/web_input_event.h",

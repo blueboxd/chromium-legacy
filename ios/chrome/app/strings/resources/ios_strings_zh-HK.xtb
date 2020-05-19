@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">記錄</translation>
 <translation id="1650222530560417226">輕按 [開始記錄] 按鈕即可收集之後的 JavaScript 控制台記錄和所有分頁錯誤。系統會持續收集記錄 (且僅會儲存於記憶體中)，直到網頁關閉或使用者輕按 [停止記錄] 為止。</translation>
 <translation id="1657011748321897393">您尚未連上網路，因此無法分享。</translation>
+<translation id="1657641691196698092">已封鎖的 Cookie</translation>
 <translation id="165877110639533037">沒有開啟的分頁</translation>
 <translation id="1674504678466460478">從<ph name="SOURCE_LANGUAGE" />翻譯成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">如要將書籤同步到所有裝置，請開啟同步處理功能。</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">裝置政策禁止您存取相片</translation>
 <translation id="2578571896248130439">傳送網頁</translation>
 <translation id="2584132361465095047">新增帳戶…</translation>
+<translation id="2600682495497606169">清除網站 Cookie</translation>
 <translation id="2625189173221582860">已複製密碼</translation>
 <translation id="2647269890314209800">使用中的 Cookie</translation>
 <translation id="2648803196158606475">刪除已閱讀的項目</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">關閉</translation>
 <translation id="5245322853195994030">取消同步處理</translation>
 <translation id="5271549068863921519">儲存密碼</translation>
+<translation id="5295239312320826323">要移除帳戶 <ph name="USER_EMAIL" /> 嗎？</translation>
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5317780077021120954">儲存</translation>
 <translation id="5327248766486351172">名稱</translation>
@@ -418,6 +421,7 @@
 <translation id="6362362396625799311">沒有已開啟的無痕式分頁</translation>
 <translation id="6363526231572697780">沒有使用者名稱</translation>
 <translation id="6374469231428023295">再試一次</translation>
+<translation id="6377118281273296434">網站安全性</translation>
 <translation id="6380866119319257197">如果您忘記密碼短語，或希望變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6406506848690869874">同步處理</translation>
@@ -525,11 +529,13 @@
 
 由於您的帳戶由 <ph name="HOSTED_DOMAIN" /> 管理，當您登出帳戶時，Chrome 資料亦會從此裝置上刪除，但已同步處理的資料會繼續保留在 Google 帳戶中。</translation>
 <translation id="7772032839648071052">確認複雜密碼</translation>
+<translation id="7778472311864276518">從這個裝置移除帳戶</translation>
 <translation id="7781011649027948662">要翻譯網頁嗎？</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="778855399387580014">在新的 Chrome 分頁上開始搜尋。</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="7828557259026017104">Cookie 是您瀏覽的網站所建立的檔案，網站會使用這些檔案記住您的偏好設定，第三方 Cookie 則由其他網站建立。這些網站擁有您所瀏覽網頁的部分內容，例如廣告和圖片。</translation>
+<translation id="7839985698273989086">離線版網頁</translation>
 <translation id="7840771868269352570">您選取的項目將會被移除。</translation>
 <translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽記錄</translation>

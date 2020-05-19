@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/printing/printer_configuration.h"
+#include "content/public/test/browser_test.h"
 #include "extensions/test/result_catcher.h"
 #include "printing/backend/print_backend.h"
 #include "printing/backend/test_print_backend.h"

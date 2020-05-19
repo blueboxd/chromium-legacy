@@ -188,7 +188,7 @@ sk_sp<SkImage> NewSkImageFromVideoFrameYUVTexturesWithExternalBackend(
   sk_sp<SkImage> img = YUVGrBackendTexturesToSkImage(
       gr_context, video_frame->ColorSpace(), video_frame->format(),
       yuv_textures, result_texture);
-  gr_context->flush();
+  gr_context->flushAndSubmit();
 
   DeleteYUVTextures(video_frame, raster_context_provider, yuv_textures_info);
 

@@ -347,13 +347,6 @@ Si la inhabilitas, se inhabilitará el desplazamiento de la página web a fragme
 <translation id="152657506688053119">Lista de las URL alternativas para el proveedor de búsqueda predeterminado</translation>
 <translation id="1530812829012954197">Siempre procesar los siguientes patrones de direcciones URL en el navegador del host</translation>
 <translation id="1553532014072799546">Lista blanca de límites de tiempo por app</translation>
-<translation id="1553684822621013552">Cuando esta política se establece en true, ARC estará habilitado para el usuario
-      (sujeto a verificaciones adicionales de configuraciones de políticas. ARC
-      permanecerá inhabilitado si se habilita el modo efímero o el acceso
-      múltiple en la sesión de usuario actual)
-
-      Si esta configuración está inhabilitada o no se configuró, los usuarios
-      no podrán usar ARC.</translation>
 <translation id="1553956579506604198">Impide la instalación de extensiones externas</translation>
 <translation id="1556072857949466438">Esta política permite que un administrador especifique si una página puede mostrar ventanas emergentes durante su descarga.
 
@@ -910,10 +903,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
       Cuando no se configura o se establece como verdadera, los usuarios podrán usar esta función.
 
       Cuando se establece como falsa, los usuarios no podrán usar esta función.</translation>
-<translation id="2438609638493026652">Permite informar eventos clave durante la instalación de apps de Android en Google. Solo se capturan los eventos de las apps cuya instalación se activó a través de la política.
-
-      Si la política se establece como verdadera, se registrarán los eventos.
-      Si se establece como falsa o no se establece, no se registrarán los eventos.</translation>
 <translation id="2440773021691931148">Envía informes sobre las estadísticas de hardware y los identificadores relacionados con la energía.
 
       Si se establece la política como falsa o no se establece, no se enviará un informe con las estadísticas.
@@ -1224,15 +1213,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 
       Cada entrada de la lista especifica un identificador, que se utiliza de forma interna para diferenciar las cuentas locales del dispositivo.</translation>
 <translation id="2769952903507981510">Configura el nombre de dominio requerido para los hosts de acceso remoto.</translation>
-<translation id="2783078941107212091">Habilita las recomendaciones de apps cuando el cuadro de búsqueda del Selector se encuentra sin estado.
-
-          Si se establece esta política como verdadera, las recomendaciones de apps podrán aparecer en el cuadro de búsqueda cuando se encuentre sin estado.
-
-          Si se establece como falsa, las recomendaciones de apps no aparecerán en el cuadro de búsqueda cuando se encuentre sin estado.
-
-          Si la estableces, los usuarios no podrán cambiarla ni anularla.
-
-          Si no la estableces, la configuración predeterminada será falsa en dispositivos administrados.</translation>
 <translation id="2787173078141616821">Informar datos sobre el estado de Android</translation>
 <translation id="2799297758492717491">Permitir la reproducción automática de contenido multimedia en una lista blanca de patrones de URL</translation>
 <translation id="2801065672151277034">Configuración de la administración de certificados</translation>
@@ -1886,15 +1866,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="382476126209906314">Configura el prefijo TalkGadget para los hosts de acceso remoto.</translation>
 <translation id="3824972131618513497">Controla la configuración relacionada con el reinicio y la administración de energía.</translation>
 <translation id="3826475866868158882">Se habilitaron los Servicios de ubicación de Google</translation>
-<translation id="3831054243924627613">Esta política controla el estado inicial de la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
-
-      Si no se configura o se establece como <ph name="BR_DISABLED" />, se inhabilitará esa funcionalidad de Android.
-
-      Si esta política se establece como <ph name="BR_ENABLED" />, se habilitará la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos.
-
-      Si esta política se establece como <ph name="BR_UNDER_USER_CONTROL" />, se le pedirá al usuario que elija si quiere usar la funcionalidad de Android para hacer copias de seguridad y aplicar restablecimientos. Si el usuario la habilita, se cargan los datos de las apps de Android a los servidores de copia de seguridad de Android y se vuelven a restablecer cuando se reinstalan apps compatibles.
-
-      Ten en cuenta que esta política solo controla el estado de esta funcionalidad durante la configuración inicial. El usuario puede abrir la configuración de Android luego y activar o desactivar esta funcionalidad.</translation>
 <translation id="3831376478177535007">Si se habilita esta configuración, <ph name="PRODUCT_NAME" /> permite que los certificados emitidos mediante las operaciones del PKI heredado de Symantec Corporation se consideren de confianza cuando reciben la validación correcta de un certificado de CA reconocido y se vinculan a este.
 
       Ten en cuenta que esta política depende de que el sistema operativo siga reconociendo certificados de la infraestructura heredada de Symantec. Si una actualización del sistema operativo cambia la forma en la que este maneja dichos certificados, esta política ya no tendrá efecto. Además, se trata de una solución temporal para que las empresas tengan más tiempo para dejar de usar los certificados heredados de Symantec. Esta política se quitará el 1 de enero de 2019 o cerca de esta fecha.
@@ -3396,17 +3367,6 @@ Si se establece como falsa, <ph name="PRODUCT_NAME" /> no podrá usar notificaci
 <translation id="6114416803310251055">en desuso</translation>
 <translation id="6133088669883929098">Permitir que todos los sitios utilicen la generación de claves</translation>
 <translation id="6135398260575578389">Se activó la Navegación segura en el modo mejorado. Este modo es más seguro, pero requiere que compartas con Google más datos sobre la navegación.</translation>
-<translation id="6136537398661737682">Esta política controla el estado inicial de los Servicios de ubicación de Google.
-
-      Si no se configura o se establece como <ph name="GLS_DISABLED" />, se inhabilitarán los Servicios de ubicación de Google de forma inicial.
-
-      Si se establece como <ph name="GLS_ENABLED" />, se habilitará esta configuración de forma inicial.
-
-      Si esta política se establece como <ph name="GLS_UNDER_USER_CONTROL" />, se le pedirá al usuario que elija si quiere usar esta configuración. Esto permitirá que las apps de Android usen los servicios para consultar la ubicación del dispositivo. También permitirá enviar datos de ubicación anónimos a Google.
-
-      Ten en cuenta que esta política solo controla el estado de los Servicios de ubicación de Google durante la configuración inicial. El usuario puede abrir la configuración de Android luego y activar o desactivar estos servicios.
-
-      Se ignorará esta política, y los Servicios de ubicación de Google estarán siempre inhabilitados si la política <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> se establece como <ph name="BLOCK_GEOLOCATION_SETTING" />.</translation>
 <translation id="6141402445226505817">Usar siempre la detección amplia de la zona horaria</translation>
 <translation id="614616930188030377">Se compararán los patrones de esta lista con el origen de seguridad de la URL solicitante.
       Si se encuentra una coincidencia o se inhabilita la opción chrome://flags/#enable-webrtc-hide-local-ips-with-mdns, se mostrarán las direcciones IP locales en los candidatos ICE de WebRTC.
@@ -4522,9 +4482,6 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si no la estableces, el contraste alto estará inicialmente inhabilitado en la pantalla de acceso, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="7869986671709030417">Modo predeterminado de impresión de los gráficos de fondo</translation>
-<translation id="787125417158068494">Si se establece en SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las apps de ARC.
-
-      Si se establece en CopyCaCerts, todos los certificados de CA de ONC instalado con <ph name="WEB_TRUSTED_BIT" /> estarán disponibles para las apps de ARC.</translation>
 <translation id="7882585827992171421">Esta política solo se encuentra activa en el modo de venta.
 
       Determina la ID de la extensión que se debe utilizar como protector de pantalla en la página de acceso. La extensión debe formar parte del AppPack configurado para este dominio a través de la política DeviceAppPack.</translation>
@@ -4983,11 +4940,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
 <translation id="8544465954173828789">Permite que los mensajes SMS se sincronicen desde el teléfono con la Chromebook</translation>
 <translation id="8548832052135586762">Establece la impresión como solo a color, solo monocromática o sin restricción del modo de color. Si no se configura la política, no se aplicará ninguna restricción.</translation>
 <translation id="8549772397068118889">Advierte cuando se visitan sitios fuera de los paquetes de contenido.</translation>
-<translation id="8566729013138025202">Especifica el conjunto de políticas que se enviará al tiempo de ejecución de ARC. El valor debe ser un formato JSON válido.
-
-      Esta política se puede usar para configurar qué apps de Android se instalan de forma automática.
-
-      Para fijar apps al Selector, consulta PinnedLauncherApps.</translation>
 <translation id="8566842294717252664">Ocultar ícono de Web Store en la página Nueva pestaña y el Selector de aplicaciones</translation>
 <translation id="8569734380847633643">
           Si la política se establece como falsa, <ph name="PRODUCT_OS_NAME" /> inhabilitará Wi-Fi, y los usuarios no podrán volver a habilitarla.
@@ -5016,11 +4968,6 @@ Si no la estableces, inicialmente se inhabilitará la pantalla de privacidad, pe
           Si no se establece, se utilizará un período predeterminado.
 
           El valor de la política debe especificarse en milisegundos.</translation>
-<translation id="8598350264853261122">Si se establece esta política como falsa, los usuarios no afiliados no podrán usar ARC.
-
-      Si no se establece o se establece como verdadera, todos los usuarios podrán usar ARC (a menos que ARC se inhabilite por otros medios).
-
-      Los cambios en la política solo se aplicarán cuando no se esté ejecutando ARC, p. ej., cuando se esté iniciando el Sistema operativo Chrome.</translation>
 <translation id="8606263947930257189">Controla si <ph name="PRODUCT_NAME" /> puede inmovilizar pestañas que hayan estado en segundo plano por al menos 5 minutos.
 
       Si se establece la política como verdadera, es posible que las pestañas que hayan estado en segundo plano por al menos 5 minutos queden inmovilizadas. Cuando se inmovilizan las pestañas, se reduce el uso de la CPU, la batería y la memoria. <ph name="PRODUCT_NAME" /> utiliza heurísticas para evitar que se inmovilicen las pestañas que realizan tareas útiles en segundo plano (p. ej., muestran notificaciones de pantalla, reproducen sonidos o transmiten video). Los desarrolladores web también pueden inhabilitar la inmovilización en sus sitios (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).

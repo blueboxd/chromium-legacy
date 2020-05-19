@@ -204,6 +204,8 @@
 <translation id="2647434099613338025">Додајте јазик</translation>
 <translation id="2650751991977523696">Дали да се преземе датотеката повторно?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиодатотека}one{# аудиодатотека}other{# аудиодатотеки}}</translation>
+<translation id="2656405586795711023">Веб-апликации</translation>
+<translation id="2677748264148917807">Напушти</translation>
 <translation id="2689830683995595741">Ако користите Chrome, се согласувате со <ph name="BEGIN_LINK1" />Условите за користење на Google<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Дополнителните услови за користење на Google Chrome и Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Известувањето за приватност за сметките на Google управувани со Family Link<ph name="END_LINK3" /> исто така важи.</translation>
 <translation id="2707726405694321444">Освежи ја страницата</translation>
 <translation id="2709516037105925701">Автоматско пополнување</translation>
@@ -365,6 +367,7 @@
 <translation id="3997476611815694295">Неважен простор</translation>
 <translation id="4000212216660919741">Офлајн</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ч.}one{# ч.}other{# ч.}}</translation>
+<translation id="403687620286099920">Допрете за да го отворите QR-кодот</translation>
 <translation id="4046123991198612571">Следна песна</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Достапни се опции речиси на врвот на екранот</translation>
@@ -449,12 +452,14 @@
 <translation id="4749960740855309258">Отворете нова картичка</translation>
 <translation id="4759238208242260848">Преземања</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 преземање е завршено.}one{# преземање е завршено.}other{# преземања се завршени.}}</translation>
+<translation id="478981486571169252">Ќе ги видите статусот на најавување на <ph name="SITE_NAME" />, податоците од прелистување и податоците од сајтовите во Chrome.</translation>
 <translation id="4802417911091824046">Шифрирањето на лозинката не ги вклучува начините на плаќање и адресите од Google Pay.
 
 За да ја промените поставкава, <ph name="BEGIN_LINK" />ресетирајте ја синхронизацијата<ph name="END_LINK" /></translation>
 <translation id="4807098396393229769">Име на картичка</translation>
 <translation id="4808319664292298116">Да се влезе во VR од <ph name="DOMAIN" />?</translation>
 <translation id="4824958205181053313">Да се откаже синхронизацијата?</translation>
+<translation id="4835385943915508971">Chrome нема пристап до бараниот ресурс.</translation>
 <translation id="4837753911714442426">Отворете опции за печатење страница</translation>
 <translation id="4842092870884894799">Се прикажува појавен прозорец за генерирање лозинки</translation>
 <translation id="4860895144060829044">Повикајте</translation>
@@ -519,6 +524,7 @@
 <translation id="5342314432463739672">Барања за дозвола</translation>
 <translation id="5357811892247919462">Примена е картичка</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> отворена ка​ртичка, допрете за да се префрлите помеѓу картичките}one{<ph name="OPEN_TABS_MANY" /> отворена ка​ртичка, допрете за да се префрлите помеѓу картичките}other{<ph name="OPEN_TABS_MANY" /> отворени ка​ртички, допрете за да се префрлите помеѓу картичките}}</translation>
+<translation id="5384883051496921101">Сајтов ќе сподели информации со една апликација надвор од режимот „Инкогнито“.</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(и уште 1)}one{(и уште #)}other{(и уште #)}}</translation>
 <translation id="5403592356182871684">Имиња</translation>
 <translation id="5403644198645076998">Дозволи само одредени сајтови</translation>
@@ -559,6 +565,7 @@
 <translation id="5659593005791499971">Е-пошта</translation>
 <translation id="5665379678064389456">Создаjте настан во <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Отфрли го барањето на веб-локацијата да спречи зумирање</translation>
+<translation id="5681394891799747640">Не може да се преземе QR-кодот</translation>
 <translation id="5684874026226664614">Оваа страница не може да се преведе.</translation>
 <translation id="5686790454216892815">Името на датотеката е предолго</translation>
 <translation id="5694049548840660018">Вратете се дома лесно</translation>
@@ -607,6 +614,7 @@
 <translation id="6042308850641462728">Повеќе</translation>
 <translation id="604996488070107836">Преземањето на <ph name="FILE_NAME" /> не успеа поради непозната грешка.</translation>
 <translation id="605721222689873409">ГГ</translation>
+<translation id="6059830886158432458">Контролирајте ги сториите и активноста тука</translation>
 <translation id="60923314841986378">Останаа <ph name="HOURS" /> часа</translation>
 <translation id="6108923351542677676">Поставувањето е во тек…</translation>
 <translation id="6111020039983847643">искористен сообраќај</translation>
@@ -630,6 +638,7 @@
 <translation id="629730747756840877">Сметка</translation>
 <translation id="6297765934698848803">Организацијата што управува со вашиот уред ви ја исклучила камерата.</translation>
 <translation id="6303969859164067831">Одјавете се и исклучете ја синхронизацијата</translation>
+<translation id="6312687380483398334">Веб-апликации (тивки)</translation>
 <translation id="6316139424528454185">Верзијата на Android не е поддржана</translation>
 <translation id="6324034347079777476">Синхронизацијата на системот Android е оневозможена</translation>
 <translation id="6333140779060797560">Сподели преку <ph name="APPLICATION" /></translation>
@@ -674,6 +683,7 @@
 <translation id="6593061639179217415">Сајт за десктоп</translation>
 <translation id="6597891566292541626">Ставете го QR/линискиот код во оваа рамка.</translation>
 <translation id="6600954340915313787">Копирано на Chrome</translation>
+<translation id="662080504995468778">Остани</translation>
 <translation id="6627583120233659107">Уредувај папка</translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6643649862576733715">Подреди по количина на заштеден сообраќај</translation>
@@ -790,6 +800,7 @@
 <translation id="7605594153474022051">Синхронизацијата не функционира</translation>
 <translation id="7606077192958116810">„Лесниот режим“ е вклучен. Управувајте со него во „Поставки“.</translation>
 <translation id="7612619742409846846">Најавени на Google како</translation>
+<translation id="7614971007231847352">QR-кодот е преземен</translation>
 <translation id="7619072057915878432">Преземањето на <ph name="FILE_NAME" /> не успеа поради прекини на мрежата.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Побарајте помош<ph name="END_LINK1" /> или <ph name="BEGIN_LINK2" />скенирајте повторно<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Добре дојдовте на Chrome</translation>
@@ -817,6 +828,7 @@
 <translation id="7821588508402923572">Заштедата на сообраќајот ќе се појави тука</translation>
 <translation id="7835852323729233924">Пуштање аудиовизуелни содржини</translation>
 <translation id="783819812427904514">Вклучете звук на видео</translation>
+<translation id="7846296061357476882">Услуги на Google</translation>
 <translation id="784934925303690534">Временски период</translation>
 <translation id="7851858861565204677">Други уреди</translation>
 <translation id="7875915731392087153">Создајте е-пошта</translation>
@@ -945,6 +957,7 @@
 <translation id="8922289737868596582">Преземете ги страниците преку копчето „Повеќе опции“ за да ги користите офлајн</translation>
 <translation id="8937772741022875483">Да се отстрани вашата активност на Chrome од „Дигитална благосостојба“?</translation>
 <translation id="8942627711005830162">Отвори во друг прозорец</translation>
+<translation id="894871326938397531">Да се напушти режимот „Инкогнито“?</translation>
 <translation id="8951232171465285730">Chrome ви заштеди <ph name="MEGABYTES" /> мб</translation>
 <translation id="8965591936373831584">чека на ред</translation>
 <translation id="8970887620466824814">Нешто тргна наопаку.</translation>

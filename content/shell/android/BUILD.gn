@@ -248,6 +248,7 @@ android_library("content_shell_test_java") {
     "//mojo/public/java/system:test_support_java",
     "//third_party/android_support_test_runner:rules_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/hamcrest:hamcrest_java",
     "//third_party/junit:junit",
     "//ui/android:ui_java",
   ]

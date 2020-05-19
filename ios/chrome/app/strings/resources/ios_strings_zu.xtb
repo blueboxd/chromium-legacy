@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Umlando</translation>
 <translation id="1650222530560417226">Thepha inkinobho "Qala ukungena" ukuze uqoqe amalogo namaphutha ekhonsoli ye-JavaScript kusuka kuwo wonke amathebhu. Amalogo azoqoqwa (futhi alondolozwe kuphela kwinkumbulo) leli khasi lize livalwe noma okuthi "Yeka ukungena" kuthephiwe.</translation>
 <translation id="1657011748321897393">Ukwabelana kwehlulekile ngoba uwuxhumekile kunethiwekhi.</translation>
+<translation id="1657641691196698092">Amakhukhi Avinjiwe</translation>
 <translation id="165877110639533037">Awekho Amathebhu Avuliwe</translation>
 <translation id="1674504678466460478">Isi-<ph name="SOURCE_LANGUAGE" /> ukuya kusi-<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ukuze uthole amabhukhimakhi akho kuwo onke amadivayisi akho, vula ukuvumelanisa.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Inqubomgomo yedivayisi ivimbele ukufinyelela kuzithombe zakho</translation>
 <translation id="2578571896248130439">Thumela ikhasi lewebhu</translation>
 <translation id="2584132361465095047">Engeza i-akhawunti...</translation>
+<translation id="2600682495497606169">Sula Amakhukhi Wesayithi</translation>
 <translation id="2625189173221582860">Iphasiwedi ikopishiwe</translation>
 <translation id="2647269890314209800">Amakhukhi asebenzayo</translation>
 <translation id="2648803196158606475">Susa okufundiwe</translation>
@@ -332,6 +334,7 @@ Ukuze ushintshe lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvum
 <translation id="5234764350956374838">Cashisa</translation>
 <translation id="5245322853195994030">Khansela ukuvumelanisa</translation>
 <translation id="5271549068863921519">Londoloza iphasiwedi</translation>
+<translation id="5295239312320826323">Ususa i-akhawunti ka-<ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Bonisa</translation>
 <translation id="5317780077021120954">Londoloza</translation>
 <translation id="5327248766486351172">Igama</translation>
@@ -418,6 +421,7 @@ I-Handoff futhi kufanele inikwe amandla esigabeni sokuvamile zezilungiselelo, fu
 <translation id="6362362396625799311">Awekho Amathebhu e-Incognito</translation>
 <translation id="6363526231572697780">Alikho igama lomsebenzisi</translation>
 <translation id="6374469231428023295">Phinda uzame</translation>
+<translation id="6377118281273296434">Ukuvikeleka Kwesayithi</translation>
 <translation id="6380866119319257197">Uma ukhohlwa umushwana wakho wokungena noma ufuna ukushintsha lesi silungiselelo, <ph name="BEGIN_LINK" />setha kabusha ukuvumelanisa<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Igama kukhadi</translation>
 <translation id="6406506848690869874">Vumelanisa</translation>
@@ -525,11 +529,13 @@ Idatha yakho ibethelwe ngomushwana wokungena wakho ngo-<ph name="TIME" />. Yifak
 
 Ngoba i-akhawunti yakho iphethwe yi-<ph name="HOSTED_DOMAIN" />, idatha yakho ye-Chrome izosuswa kule divayisi uma uphuma ngemvume. Idatha yakho evunyelanisiwe izohlala ku-Akhawunti yakho ye-Google.</translation>
 <translation id="7772032839648071052">Qinisekisa umushwana wokungena</translation>
+<translation id="7778472311864276518">Susa i-akhawunti evela kule Divayisi</translation>
 <translation id="7781011649027948662">Humusha ikhasi?</translation>
 <translation id="7781829728241885113">Izolo</translation>
 <translation id="778855399387580014">Qala usesho kuthebhu elisha le-Chrome.</translation>
 <translation id="7791543448312431591">Engeza</translation>
 <translation id="7828557259026017104">Amakhukhi amafayela adalwe amawebhusayithi owavakashelayo. Amasayithi ayawasebenzisa ukukhumbula okuncamelayo. Amakhukhi wenkampani yangaphandle adalwa ngamanye amasayithi. Lamasayithi aphethe okunye okuqukethwe, njengezikhangiso noma izithombe, ozibona ekhasini lewebhu olivakashelayo.</translation>
+<translation id="7839985698273989086">Ikhasi Elingaxhunyiwe kwi-Intanethi</translation>
 <translation id="7840771868269352570">Izinto ozikhethile zizosuswa.</translation>
 <translation id="7856733331829174190">Ayikwazanga ukulanda</translation>
 <translation id="7859704718976024901">Umlando wokuphequlula</translation>

@@ -25,6 +25,7 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
@@ -105,7 +106,7 @@ public final class FirstRunIntegrationUnitTest {
 
     /** Builds activity using the component class name from the provided intent. */
     @SuppressWarnings("unchecked")
-    private static void buildActivityWithClassNameFromIntent(Intent intent) {
+    private static ActivityController buildActivityWithClassNameFromIntent(Intent intent) {
         Class<? extends Activity> activityClass = null;
         try {
             activityClass =
@@ -113,7 +114,7 @@ public final class FirstRunIntegrationUnitTest {
         } catch (ClassNotFoundException e) {
             Assert.fail();
         }
-        Robolectric.buildActivity(activityClass, intent).create();
+        return Robolectric.buildActivity(activityClass, intent).create();
     }
 
     /**
@@ -243,10 +244,11 @@ public final class FirstRunIntegrationUnitTest {
 
         Intent launchedIntent = mShadowApplication.getNextStartedActivity();
         Assert.assertTrue(checkIntentComponentClass(launchedIntent, WebappActivity.class));
-        buildActivityWithClassNameFromIntent(launchedIntent);
+        ActivityController controller = buildActivityWithClassNameFromIntent(launchedIntent);
 
         // No FRE should have been launched.
         Assert.assertNull(mShadowApplication.getNextStartedActivity());
+        controller.destroy();
     }
 
     /**

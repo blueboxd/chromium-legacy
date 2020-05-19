@@ -74,3 +74,26 @@ TEST_F('CrComponentsCertificateManagerV3Test', 'All', function() {
 });
 
 GEN('#endif  // defined(USE_NSS_CERTS)');
+
+
+GEN('#if defined(USE_NSS_CERTS) && defined(OS_CHROMEOS)');
+
+/**
+ * ChromeOS specific test fixture for chrome://settings/certificates, testing
+ * the certificate provisioning UI. This tests the certificate-manager component
+ * in the context of the Settings privacy page.
+ */
+// eslint-disable-next-line no-var
+var CrComponentsCertificateManagerProvisioningV3Test =
+    class extends CrComponentsCertificateManagerV3Test {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_provisioning_test.js';
+  }
+};
+
+TEST_F('CrComponentsCertificateManagerProvisioningV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // defined(USE_NSS_CERTS) && defined(OS_CHROMEOS)');

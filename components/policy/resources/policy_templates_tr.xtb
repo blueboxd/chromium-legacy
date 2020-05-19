@@ -327,14 +327,6 @@ Bu politikayı devre dışı bırakırsanız web sayfasını URL yoluyla belirli
 <translation id="152657506688053119">Varsayılan arama sağlayıcısına ilişkin alternatif URL'lerin listesi</translation>
 <translation id="1530812829012954197">Aşağıdaki URL kalıplarını her zaman ana makine tarayıcısında oluştur</translation>
 <translation id="1553532014072799546">Uygulama Başına Süre Sınırları Beyaz Listesi</translation>
-<translation id="1553684822621013552">Bu politika doğru değerine ayarlandığında, ARC kullanıcı için
-      etkinleştirilir (ek politika ayarı kontrollerine tabidir; geçerli
-      kullanıcı oturumunda geçici mod veya çoklu oturum açma
-      etkinleştirilirse ARC yine de kullanılamaz).
-
-      Bu ayar devre dışı bırakılır veya yapılandırılmazsa kurumsal kullanıcılar
-
-      ARC'yi kullanamaz.</translation>
 <translation id="1553956579506604198">Harici uzantıların yüklenmesini engeller</translation>
 <translation id="1556072857949466438">Bu politika, bir yöneticinin, bir sayfanın yüklemesi kaldırılırken pop-up gösterebileceğini belirtmesini sağlar.
 
@@ -915,10 +907,6 @@ Bu politika ayarlanmadan bırakılırsa gizlilik ekranı başta devre dışı b�
       Bu politika True (Doğru) değerine yapılandırılmaz veya ayarlanmazsa, kullanıcılar Ağ Üzerinde Dosya Paylaşımı özelliğini kullanabilirler.
 
       Bu politika False (Yanlış) değerine ayarlanırsa, kullanıcılar Ağ Üzerinde Dosya Paylaşımı özelliğini kullanamazlar</translation>
-<translation id="2438609638493026652">Android uygulaması yüklemesi sırasında önemli etkinliklerin Google'a bildirilmesini sağlar. Etkinlikler yalnızca yüklemesini politikanın tetiklediği uygulamalar için yakalanır.
-
-      Politika true (doğru) değerine ayarlanırsa etkinlikler günlüğe kaydedilir.
-      Politika false (yanlış) değerine ayarlanırsa etkinlikler günlüğe kaydedilmez.</translation>
 <translation id="2440773021691931148">Güçle ilgili donanım istatistiklerini ve tanımlayıcıları bildirir.
 
       Politika false (yanlış) değerine ayarlanırsa veya ayarlanmadan bırakılırsa istatistikler bildirilmez.
@@ -1239,15 +1227,6 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 
       Her liste girişi, farklı cihaz-yerel hesaplarını ayırt etmek için dahili olarak kullanılan bir tanımlayıcıyı belirtir.</translation>
 <translation id="2769952903507981510">Uzaktan erişim ana makineleri için gerekli alan adını yapılandır</translation>
-<translation id="2783078941107212091">Başlatıcıda, arama kutusunun Sıfır Durumunda Uygulama Önerisi politikasını etkinleştirin.
-
-          Bu politika true (doğru) değerine ayarlanırsa, sıfır durumu aramalarında Uygulama önerileri görülebilir.
-
-          Bu politika false (yanlış) değerine ayarlanırsa, sıfır durumu aramalarında Uygulama önerileri görünmez.
-
-          Bu politikayı ayarlarsanız kullanıcılar değiştiremez veya geçersiz kılamazlar.
-
-          Bu politika ayarlanmadan bırakılırsa, yönetilen cihazlar için False (Yanlış) varsayılan değerdir.</translation>
 <translation id="2787173078141616821">Android'in durumu hakkında rapor bilgileri</translation>
 <translation id="2799297758492717491">URL kalıpları beyaz listesinde medyanın otomatik olarak oynatılmasına izin ver</translation>
 <translation id="2801065672151277034">Sertifika yönetim ayarları</translation>
@@ -1909,15 +1888,6 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
 <translation id="382476126209906314">Uzaktan erişim ana makineleri için TalkGadget önekini yapılandır</translation>
 <translation id="3824972131618513497">Güç yönetimi ve yeniden başlatmayla ilgili ayarları kontrol eder.</translation>
 <translation id="3826475866868158882">Google konum hizmetleri etkin</translation>
-<translation id="3831054243924627613">Bu politika Android yedekleme ve geri yükleme özelliğinin ilk durumunu denetler.
-
-      Bu politika yapılandırılmaz veya <ph name="BR_DISABLED" /> seçeneğine ayarlanırsa, Android yedekleme ve geri yükleme özelliği başlangıçta devre dışı bırakılır.
-
-      Bu politika <ph name="BR_ENABLED" /> seçeneğine ayarlanırsa, Android yedekleme ve geri yükleme özelliği başlangıçta etkinleştirilir.
-
-      Bu politika <ph name="BR_UNDER_USER_CONTROL" /> seçeneğine ayarlanırsa, kullanıcıdan Android yedekleme ve geri yükleme özelliğini kullanıp kullanmayacağını seçmesi istenir. Kullanıcı, yedekleme ve geri yükleme özelliğini etkinleştirirse, Android uygulama verileri Android yedekleme sunucularına yüklenir ve uyumlu uygulamalar için uygulama yeniden yüklemeleri sırasında oradan geri yüklenir.
-
-      Bu politikanın, Android yedekleme ve geri yükleme özelliğinin durumunu sadece ilk kurulumda denetlediğini unutmayın. Kullanıcı Android ayarlarını daha sonra açıp Android yedekleme ve geri yükleme özelliğini açabilir veya kapatabilir.</translation>
 <translation id="3831376478177535007">Bu ayar etkinleştirildiğinde, <ph name="PRODUCT_NAME" />, başarılı bir şekilde doğrulanmaları ve tanınan bir CA sertifikası ile zincir oluşturmaları halinde Symantec Corporation'ın Eski PKI işlemleri tarafından yayınlanan sertifikalara güvenilmesine izin verir.
 
       Bu politikanın, işletim sisteminin Symantec'in eski altyapısından gelen sertifikaları tanımaya devam edip etmemesine bağlı olduğunu unutmayın. Bir OS güncellemesi, OS'in bu tür sertifikaları işleme şeklini değiştirirse bu politikanın etkisi ortadan kalkar. Ayrıca bu politika, kuruluşlara eski Symantec sertifikasından geçiş yapmaları için daha fazla zaman sağlayan geçici bir çözüm olarak tasarlanmıştır. Bu politika, tam olarak 1 Ocak 2019 tarihinde veya o tarihe yakın bir zamanda kaldırılacaktır.
@@ -3450,17 +3420,6 @@ Bu ayarı etkinleştirirseniz veya yapılandırmazsanız kullanıcılar şifrele
 <translation id="6114416803310251055">onaylanmadı</translation>
 <translation id="6133088669883929098">Tüm sitelerin anahtar oluşturma işlevini kullanmasına izin ver</translation>
 <translation id="6135398260575578389">Güvenli Tarama gelişmiş modda etkin. Bu mod daha yüksek güvenlik sağlar, ancak Google ile daha fazla tarama bilgisi paylaşmayı gerektirir.</translation>
-<translation id="6136537398661737682">Bu politika, Google konum hizmetlerinin ilk durumunu denetler.
-
-      Bu politika yapılandırılmaz veya <ph name="GLS_DISABLED" /> seçeneğine ayarlanırsa, Google konum hizmetleri ilk başta devre dışı bırakılır.
-
-      Bu politika <ph name="GLS_ENABLED" /> seçeneğine ayarlanırsa, Google konum hizmetleri ilk başta etkinleştirilir.
-
-      Bu politika <ph name="GLS_UNDER_USER_CONTROL" /> seçeneğine ayarlanırsa, kullanıcıdan Google konum hizmetlerini kullanıp kullanmayacağını seçmesi istenir. Bu, cihaz konumunu sorgulamak için Android uygulamalarının hizmetleri kullanmasına, ayrıca anonim konum verilerinin Google'a gönderilmesine izin verir.
-
-      Bu politikanın, Google konum hizmetlerinin durumunu sadece ilk kurulum sırasında denetlediğini unutmayın. Kullanıcı daha sonra Android ayarlarını açıp Google konum hizmetlerini açabilir veya kapatabilir.
-
-      <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> politikası <ph name="BLOCK_GEOLOCATION_SETTING" /> olarak ayarlandığında bu politikanın yoksayıldığını ve Google konum hizmetlerinin her zaman devre dışı olduğunu unutmayın.</translation>
 <translation id="6141402445226505817">Her zaman yüzeysel saat dilimi algılamasını kullan</translation>
 <translation id="614616930188030377">Bu listedeki kalıplar, istek yapan URL'nin güvenlik kaynağı ile karşılaştırılır.
       Bir eşleşme bulunursa veya chrome://flags/#enable-webrtc-hide-local-ips-with-mdns Devre dışı bırakıldıysa yerel IP adresleri WebRTC ICE adaylarında gösterilir.
@@ -4580,9 +4539,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 
           Bu politika ayarlanmadan bırakılırsa giriş ekranında yüksek kontrast başlangıçta devre dışı bırakılır, ancak kullanıcılar istedikleri zaman etkinleştirebilirler.</translation>
 <translation id="7869986671709030417">Varsayılan arka plan grafikleri yazdırma modu</translation>
-<translation id="787125417158068494">SyncDisabled seçeneğine ayarlanırsa veya hiç yapılandırılmazsa, ARC uygulamaları için <ph name="PRODUCT_OS_NAME" /> sertifikaları kullanılamaz.
-
-      CopyCaCerts seçeneğine ayarlanırsa ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikaları ARC uygulamaları için kullanılabilir.</translation>
 <translation id="7882585827992171421">Bu politika yalnızca perakende modunda etkindir.
 
       Oturum açma ekranında ekran koruyucu olarak kullanılacak uzantının kimliğini belirler. Uzantı, DeviceAppPack politikası kullanılarak bu alan adı için yapılandırılmış AppPack'in bir parçası olmalıdır.</translation>
@@ -5018,11 +4974,6 @@ Politika ayarlanırsa sınıra uymak için eski anlık görüntüler gerektiğin
 <translation id="8544465954173828789">SMS Mesajlarının telefondan Chromebook'a senkronize edilmesine izin ver</translation>
 <translation id="8548832052135586762">Yazdırmayı yalnızca renkli, yalnızca tek renk veya renk modu kısıtlaması yok değerine ayarlar. Ayarlanmayan politika, kısıtlama yokmuş gibi işlenir.</translation>
 <translation id="8549772397068118889">İçerik paketlerinin dışındaki siteleri ziyaret ederken uyar</translation>
-<translation id="8566729013138025202">ARC çalışma zamanına devredilecek politika grubunu belirtir. Değer, geçerli JSON olmalıdır.
-
-      Bu politika, cihaza hangi Android uygulamalarının otomatik olarak yükleneceğini yapılandırmak için kullanılabilir.
-
-      Uygulamaları başlatıcıya sabitlemek için PinnedLauncherApps politikasına bakın.</translation>
 <translation id="8566842294717252664">Yeni sekme sayfasında ve uygulama başlatıcıda web mağazasını gizle</translation>
 <translation id="8569734380847633643">
           Politika false (yanlış) değerine ayarlanırsa, <ph name="PRODUCT_OS_NAME" /> kablosuzu devre dışı bırakır ve kullanıcılar tekrar etkinleştiremezler.
@@ -5051,11 +5002,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
           Bu politika ayarlanmadan bırakılırsa varsayılan süre kullanılır.
 
           Politika değeri milisaniye olarak belirtilmelidir.</translation>
-<translation id="8598350264853261122">Politika false (yanlış) değerine ayarlanırsa bağlı olmayan kullanıcıların ARC'yi kullanmasına izin verilmez.
-
-      Politika ayarlanmazsa veya true (doğru) değerine ayarlanırsa tüm kullanıcıların ARC'yi kullanmasına izin verilir (ARC diğer yollarla devre dışı bırakılmamışsa).
-
-      Politikada yapılacak değişiklikler yalnızca ARC çalışmıyorken (ör. Chrome OS başlatılırken) uygulanır.</translation>
 <translation id="8606263947930257189"><ph name="PRODUCT_NAME" /> ürününün en az 5 dakikadır arka planda olan sekmeleri dondurup donduramayacağını kontrol eder.
 
       Politika true (doğru) değerine ayarlanırsa en az 5 dakikadır arka planda bulunan sekmeler dondurulabilir. Sekme dondurma işlemi CPU, pil ve bellek kullanımını azaltır. <ph name="PRODUCT_NAME" />, arka planda faydalı işler yapan sekmelerin (ör. bildirimleri görüntüleme, ses çalma, video yayınlama) dondurulmaması için sezgisel yöntemler kullanır. Web geliştiricileri, sitelerinin dondurma kapsamı dışında kalmasını seçebilir (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).

@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "components/printing/common/print.mojom-forward.h"
 #include "content/public/test/mock_render_thread.h"
 #include "printing/buildflags/buildflags.h"
 
@@ -24,7 +25,6 @@ class DictionaryValue;
 }
 
 class MockPrinter;
-struct PrintHostMsg_DidStartPreview_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_DidPrintDocument_Params;
 struct PrintHostMsg_PreviewIds;
@@ -81,7 +81,7 @@ class PrintMockRenderThread : public content::MockRenderThread {
   void OnDidPrintDocument(const PrintHostMsg_DidPrintDocument_Params& params,
                           IPC::Message* reply_msg);
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  void OnDidStartPreview(const PrintHostMsg_DidStartPreview_Params& params,
+  void OnDidStartPreview(const printing::mojom::DidStartPreviewParams& params,
                          const PrintHostMsg_PreviewIds& ids);
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params,
                         const PrintHostMsg_PreviewIds& ids);

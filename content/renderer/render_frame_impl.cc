@@ -2191,7 +2191,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
-    IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
@@ -2677,11 +2676,6 @@ void RenderFrameImpl::ExtractSmartClipData(
   std::move(callback).Run(clip_text.Utf16(), clip_html.Utf16(), clip_rect);
 }
 #endif  // defined(OS_ANDROID)
-
-void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
-  WebFrame* opener = ResolveWebFrame(opener_routing_id);
-  frame_->SetOpener(opener);
-}
 
 void RenderFrameImpl::OnReload() {
   frame_->StartReload(WebFrameLoadType::kReload);
@@ -5781,7 +5775,8 @@ void RenderFrameImpl::OnMixedContentFound(
       params.request_context_type);
   frame_->MixedContentFound(params.main_resource_url, params.mixed_content_url,
                             request_context, params.was_allowed,
-                            params.had_redirect, source_location);
+                            params.url_before_redirects, params.had_redirect,
+                            source_location);
 }
 
 void RenderFrameImpl::RequestOverlayRoutingToken(

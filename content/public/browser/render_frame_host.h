@@ -430,13 +430,6 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrameHost.
   virtual void ViewSource() = 0;
 
-  // Starts pausing subresource loading on this frame and returns
-  // PauseSubresourceLoadingHandle that controls the pausing behavior.  As long
-  // as this handle is live, pausing will continue until an internal
-  // navigation happens in the frame.
-  virtual mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
-  PauseSubresourceLoading() = 0;
-
   // Run the given action on the media player location at the given point.
   virtual void ExecuteMediaPlayerActionAtLocation(
       const gfx::Point& location,

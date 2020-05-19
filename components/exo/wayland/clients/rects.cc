@@ -438,7 +438,7 @@ int RectsClient::Run(const ClientBase::InitParams& params,
       }
       GrContext* gr_context = gr_context_.get();
       if (gr_context) {
-        gr_context->flush();
+        gr_context->flushAndSubmit();
 
 #if defined(USE_GBM)
         if (egl_sync_type_) {

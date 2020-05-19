@@ -5,7 +5,6 @@
 #include "content/browser/renderer_host/input/mock_input_router_client.h"
 
 #include "content/browser/renderer_host/input/input_router.h"
-#include "content/common/input/input_event.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::TimeDelta;
@@ -31,7 +30,7 @@ blink::mojom::InputEventResultState MockInputRouterClient::FilterInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info) {
   filter_input_event_called_ = true;
-  last_filter_event_.reset(new InputEvent(input_event, latency_info));
+  last_filter_event_ = input_event.Clone();
   return filter_state_;
 }
 

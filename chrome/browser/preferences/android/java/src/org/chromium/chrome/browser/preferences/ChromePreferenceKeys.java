@@ -529,6 +529,13 @@ public final class ChromePreferenceKeys {
     public static final String SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP =
             "search_engine_choice_requested_timestamp";
 
+    public static final String SEARCH_WIDGET_IS_VOICE_SEARCH_AVAILABLE =
+            "org.chromium.chrome.browser.searchwidget.IS_VOICE_SEARCH_AVAILABLE";
+    public static final String SEARCH_WIDGET_NUM_CONSECUTIVE_CRASHES =
+            "org.chromium.chrome.browser.searchwidget.NUM_CONSECUTIVE_CRASHES";
+    public static final String SEARCH_WIDGET_SEARCH_ENGINE_SHORTNAME =
+            "org.chromium.chrome.browser.searchwidget.SEARCH_ENGINE_SHORTNAME";
+
     // Tracks which GUIDs there is an active notification for.
     public static final String SEND_TAB_TO_SELF_ACTIVE_NOTIFICATIONS =
             "send_tab_to_self.notification.active";

@@ -285,9 +285,9 @@ void PaintController::DidAppendItem(DisplayItem& display_item) {
 
 #if DCHECK_IS_ON()
   if (display_item.IsCacheable()) {
-    auto index = FindMatchingItemFromIndex(display_item.GetId(),
-                                           new_display_item_indices_by_client_,
-                                           new_display_item_list_);
+    auto index = FindItemFromIdIndexMap(display_item.GetId(),
+                                        new_display_item_id_index_map_,
+                                        new_display_item_list_);
     if (index != kNotFound) {
       ShowDebugData();
       NOTREACHED() << "DisplayItem " << display_item.AsDebugString().Utf8()
@@ -295,9 +295,8 @@ void PaintController::DidAppendItem(DisplayItem& display_item) {
                    << new_display_item_list_[index].AsDebugString().Utf8()
                    << " (index=" << index << ")";
     }
-    AddToIndicesByClientMap(display_item.Client(),
-                            new_display_item_list_.size() - 1,
-                            new_display_item_indices_by_client_);
+    AddToIdIndexMap(display_item.GetId(), new_display_item_list_.size() - 1,
+                    new_display_item_id_index_map_);
   }
 #endif
 
@@ -342,9 +341,9 @@ void PaintController::DidAppendChunk() {
 
 #if DCHECK_IS_ON()
   if (new_paint_chunks_.LastChunk().is_cacheable) {
-    AddToIndicesByClientMap(new_paint_chunks_.LastChunk().id.client,
-                            new_paint_chunks_.size() - 1,
-                            new_paint_chunk_indices_by_client_);
+    AddToIdIndexMap(new_paint_chunks_.LastChunk().id,
+                    new_paint_chunks_.size() - 1,
+                    new_paint_chunk_id_index_map_);
   }
 #endif
 }
@@ -398,36 +397,27 @@ bool PaintController::ClientCacheIsValid(
   return client.IsValid();
 }
 
-wtf_size_t PaintController::FindMatchingItemFromIndex(
+wtf_size_t PaintController::FindItemFromIdIndexMap(
     const DisplayItem::Id& id,
-    const IndicesByClientMap& display_item_indices_by_client,
+    const IdIndexMap& display_item_id_index_map,
     const DisplayItemList& list) {
-  IndicesByClientMap::const_iterator it =
-      display_item_indices_by_client.find(&id.client);
-  if (it == display_item_indices_by_client.end())
+  auto it = display_item_id_index_map.find(IdAsHashKey(id));
+  if (it == display_item_id_index_map.end())
     return kNotFound;
 
-  for (auto index : it->value) {
-    const DisplayItem& existing_item = list[index];
-    if (existing_item.IsTombstone())
-      continue;
-    DCHECK(existing_item.Client() == id.client);
-    if (id == existing_item.GetId())
-      return index;
-  }
-
-  return kNotFound;
+  wtf_size_t index = it->value;
+  const DisplayItem& existing_item = list[index];
+  if (existing_item.IsTombstone())
+    return kNotFound;
+  DCHECK_EQ(existing_item.GetId(), id);
+  return index;
 }
 
-void PaintController::AddToIndicesByClientMap(const DisplayItemClient& client,
-                                              wtf_size_t index,
-                                              IndicesByClientMap& map) {
-  auto it = map.find(&client);
-  auto& indices =
-      it == map.end()
-          ? map.insert(&client, Vector<wtf_size_t>()).stored_value->value
-          : it->value;
-  indices.push_back(index);
+void PaintController::AddToIdIndexMap(const DisplayItem::Id& id,
+                                      wtf_size_t index,
+                                      IdIndexMap& map) {
+  DCHECK(!map.Contains(IdAsHashKey(id)));
+  map.insert(IdAsHashKey(id), index);
 }
 
 wtf_size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
@@ -452,8 +442,8 @@ wtf_size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
   }
 
   wtf_size_t found_index =
-      FindMatchingItemFromIndex(id, out_of_order_item_indices_,
-                                current_paint_artifact_->GetDisplayItemList());
+      FindItemFromIdIndexMap(id, out_of_order_item_id_index_map_,
+                             current_paint_artifact_->GetDisplayItemList());
   if (found_index != kNotFound) {
 #if DCHECK_IS_ON()
     ++num_out_of_order_matches_;
@@ -482,7 +472,7 @@ wtf_size_t PaintController::FindOutOfOrderCachedItemForward(
 #if DCHECK_IS_ON()
       ++num_indexed_items_;
 #endif
-      AddToIndicesByClientMap(item.Client(), i, out_of_order_item_indices_);
+      AddToIdIndexMap(item.GetId(), i, out_of_order_item_id_index_map_);
       next_item_to_index_ = i + 1;
     }
   }
@@ -572,8 +562,8 @@ void PaintController::CommitNewDisplayItems() {
   num_cached_new_items_ = 0;
   num_cached_new_subsequences_ = 0;
 #if DCHECK_IS_ON()
-  new_display_item_indices_by_client_.clear();
-  new_paint_chunk_indices_by_client_.clear();
+  new_display_item_id_index_map_.clear();
+  new_paint_chunk_id_index_map_.clear();
 #endif
 
   cache_is_all_invalid_ = false;
@@ -590,7 +580,7 @@ void PaintController::CommitNewDisplayItems() {
                             new_paint_chunks_.ReleasePaintChunks());
 
   ResetCurrentListIndices();
-  out_of_order_item_indices_.clear();
+  out_of_order_item_id_index_map_.clear();
 
   // We'll allocate the initial buffer when we start the next paint.
   new_display_item_list_ = DisplayItemList(0);
@@ -838,17 +828,12 @@ void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
     return;
   }
 
-  auto it = new_paint_chunk_indices_by_client_.find(&id.client);
-  if (it != new_paint_chunk_indices_by_client_.end()) {
-    const auto& indices = it->value;
-    for (auto index : indices) {
-      const auto& chunk = new_paint_chunks_.PaintChunks()[index];
-      if (chunk.id == id) {
-        ShowDebugData();
-        NOTREACHED() << "New paint chunk id " << id
-                     << " has duplicated id with previous chuck " << chunk;
-      }
-    }
+  auto it = new_paint_chunk_id_index_map_.find(IdAsHashKey(id));
+  if (it != new_paint_chunk_id_index_map_.end()) {
+    ShowDebugData();
+    NOTREACHED() << "New paint chunk id " << id
+                 << " has duplicated id with previous chuck "
+                 << new_paint_chunks_.PaintChunks()[it->value];
   }
 #endif
 }

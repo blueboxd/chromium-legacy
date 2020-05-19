@@ -40,6 +40,7 @@
 #include "base/win/windows_version.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
+#include "components/policy/core/common/policy_loader_common.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_types.h"
@@ -55,33 +56,6 @@ const char kKeyMandatory[] = "policy";
 const char kKeyRecommended[] = "recommended";
 const char kKeyThirdParty[] = "3rdparty";
 
-// The web store url that is the only trusted source for extensions.
-const char kExpectedWebStoreUrl[] =
-    ";https://clients2.google.com/service/update2/crx";
-// String to be prepended to each blocked entry.
-const char kBlockedExtensionPrefix[] = "[BLOCKED]";
-
-// List of policies that are considered only if the user is part of a AD domain.
-// Please document any new additions in policy_templates.json!
-const char* kInsecurePolicies[] = {
-    key::kChromeCleanupEnabled,
-    key::kChromeCleanupReportingEnabled,
-    key::kCommandLineFlagSecurityWarningsEnabled,
-    key::kDefaultSearchProviderEnabled,
-    key::kAutoOpenFileTypes,
-    key::kHomepageIsNewTabPage,
-    key::kHomepageLocation,
-    key::kMetricsReportingEnabled,
-    key::kNewTabPageLocation,
-    key::kPasswordProtectionChangePasswordURL,
-    key::kPasswordProtectionLoginURLs,
-    key::kRestoreOnStartup,
-    key::kRestoreOnStartupURLs,
-    key::kSafeBrowsingForTrustedSourcesEnabled,
-    key::kSafeBrowsingEnabled,
-    key::kSafeBrowsingWhitelistDomains,
-};
-
 // The list of possible errors that can occur while collecting information about
 // the current enterprise environment.
 // This enum is used to define the buckets for an enumerated UMA histogram.
@@ -95,70 +69,13 @@ enum DomainCheckErrors {
   DOMAIN_CHECK_ERROR_SIZE,  // Not a DomainCheckError.  Must be last.
 };
 
-// Encapculates logic to determine if enterprise policies should be honored.
-// This is used in various places below.
+// Encapsulates logic to determine if enterprise policies should be honored.
 bool ShouldHonorPolicies() {
   bool is_enterprise_version =
       base::win::OSInfo::GetInstance()->version_type() != base::win::SUITE_HOME;
   return base::win::IsEnrolledToDomain() ||
          (base::win::IsDeviceRegisteredWithManagement() &&
           is_enterprise_version);
-}
-
-// Verifies that untrusted policies contain only safe values. Modifies the
-// |policy| in place.
-void FilterUntrustedPolicy(PolicyMap* policy) {
-  if (ShouldHonorPolicies())
-    return;
-
-  int invalid_policies = 0;
-  const PolicyMap::Entry* map_entry =
-      policy->Get(key::kExtensionInstallForcelist);
-  if (map_entry && map_entry->value) {
-    const base::ListValue* policy_list_value = nullptr;
-    if (!map_entry->value->GetAsList(&policy_list_value))
-      return;
-
-    std::unique_ptr<base::ListValue> filtered_values(new base::ListValue);
-    for (const auto& list_entry : *policy_list_value) {
-      std::string entry;
-      if (!list_entry.GetAsString(&entry))
-        continue;
-      size_t pos = entry.find(';');
-      if (pos == std::string::npos)
-        continue;
-      // Only allow custom update urls in enterprise environments.
-      if (!base::LowerCaseEqualsASCII(entry.substr(pos),
-                                      kExpectedWebStoreUrl)) {
-        entry = kBlockedExtensionPrefix + entry;
-        invalid_policies++;
-      }
-
-      filtered_values->AppendString(entry);
-    }
-    if (invalid_policies) {
-      PolicyMap::Entry filtered_entry = map_entry->DeepCopy();
-      filtered_entry.value = std::move(filtered_values);
-      policy->Set(key::kExtensionInstallForcelist, std::move(filtered_entry));
-
-      const PolicyDetails* details =
-          GetChromePolicyDetails(key::kExtensionInstallForcelist);
-      base::UmaHistogramSparse("EnterpriseCheck.InvalidPolicies", details->id);
-    }
-  }
-
-  for (size_t i = 0; i < base::size(kInsecurePolicies); ++i) {
-    if (policy->Get(kInsecurePolicies[i])) {
-      policy->GetMutable(kInsecurePolicies[i])->SetBlocked();
-      invalid_policies++;
-      const PolicyDetails* details =
-          GetChromePolicyDetails(kInsecurePolicies[i]);
-      base::UmaHistogramSparse("EnterpriseCheck.InvalidPolicies", details->id);
-    }
-  }
-
-  UMA_HISTOGRAM_COUNTS_1M("EnterpriseCheck.InvalidPoliciesDetected",
-                          invalid_policies);
 }
 
 // Parses |gpo_dict| according to |schema| and writes the resulting policy
@@ -406,7 +323,8 @@ void PolicyLoaderWin::LoadChromePolicy(const RegistryDict* gpo_dict,
   const Schema* chrome_schema =
       schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
   ParsePolicy(gpo_dict, level, scope, *chrome_schema, &policy);
-  FilterUntrustedPolicy(&policy);
+  if (!ShouldHonorPolicies())
+    FilterSensitivePolicies(&policy);
   chrome_policy_map->MergeFrom(policy);
 }
 

@@ -11,6 +11,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
+#import "ios/web/navigation/navigation_item_storage_builder.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -87,4 +88,39 @@ TEST_F(CRWNavigationItemStorageTest, EncodeDecodeNoURL) {
   // If the URL isn't encoded, the virtual URL is used.
   EXPECT_EQ(item_storage().virtualURL, decoded.URL);
   EXPECT_EQ(item_storage().virtualURL, decoded.virtualURL);
+}
+
+// CRWNavigationItemStorage does not store "virtualURL" if the it's the same
+// as "URL" to save memory. This test verifies that virtualURL actually gets
+// restored correctly.
+TEST_F(CRWNavigationItemStorageTest, EncodeDecodeSameVirtualURL) {
+  web::NavigationItemStorageBuilder builder;
+
+  web::NavigationItemImpl item_to_store;
+  item_to_store.SetURL(GURL("http://url.test"));
+  item_to_store.SetVirtualURL(item_to_store.GetURL());
+
+  // Serialize and deserialize navigation item.
+  NSData* data = [NSKeyedArchiver
+      archivedDataWithRootObject:builder.BuildStorage(&item_to_store)
+           requiringSecureCoding:NO
+                           error:nil];
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingFromData:data error:nil];
+  unarchiver.requiresSecureCoding = NO;
+  std::unique_ptr<web::NavigationItemImpl> restored_item =
+      builder.BuildNavigationItemImpl(
+          [unarchiver decodeObjectForKey:NSKeyedArchiveRootObjectKey]);
+
+  EXPECT_EQ(item_to_store.GetURL(), restored_item->GetURL());
+  EXPECT_EQ(item_to_store.GetVirtualURL(), restored_item->GetVirtualURL());
+}
+
+// Tests that virtualURL will be the same as URL, if virtualURL is not
+// overridden. This logic allows to store only one URL when virtualURL and URL
+// are the same.
+TEST_F(CRWNavigationItemStorageTest, VirtualURL) {
+  CRWNavigationItemStorage* storage = [[CRWNavigationItemStorage alloc] init];
+  storage.URL = GURL("https://foo.test/");
+  EXPECT_EQ(storage.URL, storage.virtualURL);
 }

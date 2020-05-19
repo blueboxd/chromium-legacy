@@ -25,6 +25,7 @@ android_library("java") {
     "//components/embedder_support/android:util_java",
     "//components/navigation_interception/android:navigation_interception_java",
     "//content/public/android:content_java",
+    "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
@@ -72,7 +73,10 @@ android_library("javatests") {
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_sdk:android_test_mock_java",
     "//third_party/android_sdk/androidx_browser:androidx_browser_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
     "//ui/android:ui_java",
   ]
 }

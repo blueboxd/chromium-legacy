@@ -116,17 +116,16 @@ class OriginTrialContextTest : public testing::Test {
         feature);
   }
 
-  bool IsFeatureEnabledForThirdPartyOrigin(OriginTrialFeature feature,
-                                           bool is_secure_script_origin) {
-    // There's no AddTokenFromExternalScript function so we test directly
-    // against EnableTrialFromToken function.
-    scoped_refptr<const SecurityOrigin> origin =
-        SecurityOrigin::CreateFromString(kFrobulateEnabledOrigin);
-    scoped_refptr<const SecurityOrigin> script_origin =
-        SecurityOrigin::CreateFromString(kFrobulateEnabledOrigin);
-    execution_context_->GetOriginTrialContext()->EnableTrialFromToken(
-        origin.get(), true, script_origin.get(), is_secure_script_origin,
-        kTokenPlaceholder);
+  bool IsFeatureEnabledForThirdPartyOrigin(const String& origin,
+                                           const String& script_origin,
+                                           OriginTrialFeature feature) {
+    UpdateSecurityOrigin(origin);
+    KURL script_url(script_origin);
+    scoped_refptr<const SecurityOrigin> script_security_origin =
+        SecurityOrigin::Create(script_url);
+    // Need at least one token to ensure the token validator is called.
+    execution_context_->GetOriginTrialContext()->AddTokenFromExternalScript(
+        kTokenPlaceholder, script_security_origin.get());
     return execution_context_->GetOriginTrialContext()->IsFeatureEnabled(
         feature);
   }
@@ -269,7 +268,8 @@ TEST_F(OriginTrialContextTest, EnabledNonThirdPartyTrialWithThirdPartyToken) {
   TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
                                 kFrobulateTrialName, base::Time(), true);
   bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
-      OriginTrialFeature::kOriginTrialsSampleAPI, true);
+      kFrobulateEnabledOrigin, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPI);
   EXPECT_FALSE(is_origin_enabled);
   EXPECT_EQ(1, TokenValidator()->CallCount());
   ExpectStatusUniqueMetric(OriginTrialTokenStatus::kFeatureDisabled, 1);
@@ -282,20 +282,51 @@ TEST_F(OriginTrialContextTest, ThirdPartyTokenNotFromExternalScript) {
                                 kFrobulateThirdPartyTrialName, base::Time(),
                                 true);
   bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
-      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty, true);
+      kFrobulateEnabledOrigin, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
   EXPECT_FALSE(is_origin_enabled);
   EXPECT_EQ(1, TokenValidator()->CallCount());
   ExpectStatusUniqueMetric(OriginTrialTokenStatus::kWrongOrigin, 1);
 }
 
 // The feature should not be enabled if token is injected from insecure external
-// script, regardless if the document is secure or not.
+// script even if document origin is secure.
 TEST_F(OriginTrialContextTest, ThirdPartyTokenFromInsecureExternalScript) {
   TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
                                 kFrobulateThirdPartyTrialName, base::Time(),
                                 true);
   bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
-      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty, false);
+      kFrobulateEnabledOrigin, kFrobulateEnabledOriginUnsecure,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
+  EXPECT_FALSE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kInsecure, 1);
+}
+
+// The feature should not be enabled if token is injected from insecure external
+// script when the document origin is also insecure.
+TEST_F(OriginTrialContextTest,
+       ThirdPartyTokenFromInsecureExternalScriptOnInsecureDocument) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateThirdPartyTrialName, base::Time(),
+                                true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOriginUnsecure, kFrobulateEnabledOriginUnsecure,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
+  EXPECT_FALSE(is_origin_enabled);
+  EXPECT_EQ(1, TokenValidator()->CallCount());
+  ExpectStatusUniqueMetric(OriginTrialTokenStatus::kInsecure, 1);
+}
+
+// The feature should not be enabled if token is injected from secure external
+// script when the document is insecure.
+TEST_F(OriginTrialContextTest, ThirdPartyTokenOnInsecureDocument) {
+  TokenValidator()->SetResponse(OriginTrialTokenStatus::kSuccess,
+                                kFrobulateThirdPartyTrialName, base::Time(),
+                                true);
+  bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
+      kFrobulateEnabledOriginUnsecure, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
   EXPECT_FALSE(is_origin_enabled);
   EXPECT_EQ(1, TokenValidator()->CallCount());
   ExpectStatusUniqueMetric(OriginTrialTokenStatus::kInsecure, 1);
@@ -309,7 +340,8 @@ TEST_F(OriginTrialContextTest, EnabledThirdPartyTrialWithThirdPartyToken) {
                                 kFrobulateThirdPartyTrialName, base::Time(),
                                 true);
   bool is_origin_enabled = IsFeatureEnabledForThirdPartyOrigin(
-      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty, true);
+      kFrobulateEnabledOrigin, kFrobulateEnabledOrigin,
+      OriginTrialFeature::kOriginTrialsSampleAPIThirdParty);
   EXPECT_TRUE(is_origin_enabled);
   EXPECT_EQ(1, TokenValidator()->CallCount());
   ExpectStatusUniqueMetric(OriginTrialTokenStatus::kSuccess, 1);

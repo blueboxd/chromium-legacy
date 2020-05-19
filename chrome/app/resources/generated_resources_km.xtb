@@ -1335,7 +1335,6 @@
 <translation id="2673135533890720193">អានប្រវត្តិរុករករបស់អ្នក</translation>
 <translation id="2673589024369449924">បង្កើតផ្លូវកាត់ដេស៍ថបសម្រាប់អ្នកប្រើនេះ</translation>
 <translation id="2674764818721168631">បិទ</translation>
-<translation id="2677748264148917807">ចាកចេញ</translation>
 <translation id="2678063897982469759">បើកដំណើរការឡើងវិញ</translation>
 <translation id="268053382412112343">ប្រវតិ្ត</translation>
 <translation id="2682498795777673382">បច្ចុប្បន្នភាពពីមាតាបិតារបស់អ្នក</translation>
@@ -2976,7 +2975,6 @@
 <translation id="4830573902900904548"><ph name="DEVICE_TYPE" /> របស់អ្នកមិនអាចភ្ជាប់អ៊ីនធឺណិតដោយប្រើ <ph name="NETWORK_NAME" /> បានទេ។ សូមជ្រើសរើសបណ្តាញផ្សេងទៀត។ <ph name="LEARN_MORE_LINK_START" />ស្វែងយល់បន្ថែម<ph name="LEARN_MORE_LINK_END" /></translation>
 <translation id="4833236810053292670">មើលអ្វីដែលថ្មីនៅលើ Chromebook</translation>
 <translation id="4833683849865011483">បានរកឃើញម៉ាស៊ីនបោះពុម្ព 1 ពីម៉ាស៊ីនមេបោះពុម្ព</translation>
-<translation id="4835385943915508971">Chrome មិន​អាច​ចូល​ប្រើ​ធនធាន​ដែល​បាន​ស្នើ​នេះ​ទេ​។​</translation>
 <translation id="4836504898754963407">គ្រប់គ្រងស្នាមម្រាមដៃ</translation>
 <translation id="4837926214103741331">អ្នកមិនត្រូវបានអនុញ្ញាតឲ្យប្រើឧបករណ៍នេះទេ។ សូមទាក់ទងម្ចាស់ឧបករណ៍សម្រាប់ការអនុញ្ញាតចូល។</translation>
 <translation id="4837952862063191349">ដើម្បីដោះសោ ឬស្តារទិន្នន័យមូលដ្ឋានរបស់អ្នកឡើងវិញ សូមបញ្ចូលពាក្យសម្ងាត់ <ph name="DEVICE_TYPE" /> ចាស់របស់អ្នក។</translation>
@@ -3390,7 +3388,6 @@
 <translation id="5379140238605961210">បន្តរារាំងការចូលប្រើម៉ៃក្រូហ្វូន</translation>
 <translation id="5382591305415226340">គ្រប់គ្រងតំណដែលគាំទ្រ</translation>
 <translation id="5383377866517186886">កាម៉េរា​ត្រូវបានបិទ​ក្នុងចំណូលចិត្តប្រព័ន្ធ Mac</translation>
-<translation id="5384883051496921101">ទំព័រនេះ​ត្រៀមនឹង​ចែករំលែក​ព័ត៌មាន​ជាមួយ​កម្មវិធី​ខាងក្រៅ​មុខងារអនាមិក។</translation>
 <translation id="5388885445722491159">បានផ្គូផ្គង</translation>
 <translation id="5389237414310520250">មិនអាចបង្កើតអ្នកប្រើថ្មីបានទេ។ សូមពិនិត្យចន្លោះផ្ទុកថាសរឹង និងសិទ្ធិអនុញ្ញាតរបស់អ្នក ហើយព្យាយាមម្តងទៀត។</translation>
 <translation id="5390100381392048184">អនុញ្ញាតឱ្យទំព័រចាក់សំឡេង</translation>
@@ -4344,7 +4341,6 @@
 <translation id="661907246513853610">ទំព័រ​អាចតាមដាន​ទីតាំង​របស់អ្នក​បាន</translation>
 <translation id="6619801788773578757">បញ្ចូលកម្មវិធីបញ្ជរ</translation>
 <translation id="6619990499523117484">បញ្ជាក់​កូដ PIN របស់​អ្នក</translation>
-<translation id="662080504995468778">នៅដដែល</translation>
 <translation id="6621715389962683284">មិនអាច​បង្កើត​ការតភ្ជាប់​បណ្តាញ​បានទេ។</translation>
 <translation id="6622980291894852883">បន្តការរារាំងរូបភាព</translation>
 <translation id="6624535038674360844"><ph name="FILE_NAME" /> មានខ្លឹមសាររសើប ឬគ្រោះថ្នាក់។ សូមស្នើឱ្យម្ចាស់ឯកសារ​នេះធ្វើការកែប្រែ។</translation>
@@ -6165,7 +6161,6 @@
 <translation id="8944964446326379280"><ph name="APP_NAME" /> កំពុងចែករំលែកផ្ទាំងវិនដូជាមួយ <ph name="TAB_NAME" />។</translation>
 <translation id="8945274638472141382">ទំហំ​រូបតំណាង</translation>
 <translation id="8946359700442089734">លក្ខណៈពិសេសកម្ចាត់កំហុសមិនត្រូវបានបើកដំណើរការទាំងស្រុងនៅលើឧបករណ៍ <ph name="IDS_SHORT_PRODUCT_NAME" /> នេះទេ។</translation>
-<translation id="894871326938397531">ចាកចេញ​ពី​មុខងារ​អនាមិក?</translation>
 <translation id="8948939328578167195"><ph name="WEBSITE" /> ចង់មើល​ម៉ាក និង​ម៉ូដែល​សោ​សុវត្ថិភាព​របស់អ្នក</translation>
 <translation id="8951256747718668828">មិនអាច​បញ្ចប់​ការស្ដារបានទេ ដោយសារ​មានបញ្ហា</translation>
 <translation id="8951465597020890363">ចេញពីមុខងារភ្ញៀវទោះយ៉ាងណាក៏ដោយ?</translation>

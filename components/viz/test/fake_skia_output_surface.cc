@@ -213,7 +213,7 @@ SkCanvas* FakeSkiaOutputSurface::BeginPaintRenderPass(
 gpu::SyncToken FakeSkiaOutputSurface::SubmitPaint(
     base::OnceClosure on_finished) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  sk_surfaces_[current_render_pass_id_]->flush();
+  sk_surfaces_[current_render_pass_id_]->flushAndSubmit();
   current_render_pass_id_ = 0;
 
   if (on_finished)

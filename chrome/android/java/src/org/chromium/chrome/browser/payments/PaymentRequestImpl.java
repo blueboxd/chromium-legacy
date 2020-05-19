@@ -48,9 +48,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
-import org.chromium.chrome.browser.widget.ScrimView;
-import org.chromium.chrome.browser.widget.ScrimView.EmptyScrimObserver;
-import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.components.autofill.Completable;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -64,7 +61,7 @@ import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentHandlerHost;
-import org.chromium.components.payments.PaymentHandlerHost.PaymentHandlerHostDelegate;
+import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.UrlUtil;
 import org.chromium.components.security_state.SecurityStateModel;
@@ -115,12 +112,11 @@ import java.util.Set;
  */
 public class PaymentRequestImpl
         implements PaymentRequest, PaymentRequestUI.Client, PaymentAppFactoryDelegate,
-                   PaymentAppFactoryParams, PaymentApp.PaymentRequestUpdateEventListener,
+                   PaymentAppFactoryParams, PaymentRequestUpdateEventListener,
                    PaymentApp.AbortCallback, PaymentApp.InstrumentDetailsCallback,
                    PaymentResponseHelper.PaymentResponseRequesterDelegate, FocusChangedObserver,
                    NormalizedAddressRequestDelegate, SettingsAutofillAndPaymentsObserver.Observer,
-                   PaymentHandlerHostDelegate, PaymentDetailsConverter.MethodChecker,
-                   PaymentHandlerUiObserver {
+                   PaymentDetailsConverter.MethodChecker, PaymentHandlerUiObserver {
     /**
      * A delegate to ask questions about the system, that allows tests to inject behaviour without
      * having to modify the entire system. This partially mirrors a similar C++
@@ -1185,7 +1181,8 @@ public class PaymentRequestImpl
     @Override
     public boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails) {
         if (TextUtils.isEmpty(methodName) || stringifiedDetails == null || mClient == null
-                || mInvokedPaymentApp == null) {
+                || mInvokedPaymentApp == null
+                || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
             return false;
         }
 
@@ -1199,7 +1196,8 @@ public class PaymentRequestImpl
     @Override
     public boolean changeShippingOptionFromInvokedApp(String shippingOptionId) {
         if (TextUtils.isEmpty(shippingOptionId) || mClient == null || mInvokedPaymentApp == null
-                || !mRequestShipping || mRawShippingOptions == null) {
+                || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate() || !mRequestShipping
+                || mRawShippingOptions == null) {
             return false;
         }
 
@@ -1223,53 +1221,13 @@ public class PaymentRequestImpl
     @Override
     public boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress) {
         if (shippingAddress == null || mClient == null || mInvokedPaymentApp == null
-                || !mRequestShipping) {
+                || mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate() || !mRequestShipping) {
             return false;
         }
 
         redactShippingAddress(shippingAddress);
         mClient.onShippingAddressChange(shippingAddress);
         return true;
-    }
-
-    /**
-     * Called by the web-based payment handler to get updated total based on the billing address,
-     * for example.
-     */
-    @Override
-    public boolean changePaymentMethodFromPaymentHandler(
-            String methodName, String stringifiedData) {
-        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isWaitingForPaymentDetailsUpdate()) {
-            return false;
-        }
-
-        return changePaymentMethodFromInvokedApp(methodName, stringifiedData);
-    }
-
-    /**
-     * Called by the web-based payment handler to get updated payment details based on the shipping
-     * option.
-     */
-    @Override
-    public boolean changeShippingOptionFromPaymentHandler(String shippingOptionId) {
-        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isWaitingForPaymentDetailsUpdate()) {
-            return false;
-        }
-
-        return changeShippingOptionFromInvokedApp(shippingOptionId);
-    }
-
-    /**
-     * Called by the web-based payment handler to get updated payment details based on the shipping
-     * address.
-     */
-    @Override
-    public boolean changeShippingAddressFromPaymentHandler(PaymentAddress shippingAddress) {
-        if (mPaymentHandlerHost == null || mPaymentHandlerHost.isWaitingForPaymentDetailsUpdate()) {
-            return false;
-        }
-
-        return changeShippingAddressFromInvokedApp(shippingAddress);
     }
 
     /**
@@ -1393,21 +1351,12 @@ public class PaymentRequestImpl
     public void onPaymentHandlerUiClosed() {
         mPaymentUisShowStateReconciler.onBottomSheetClosed();
         mPaymentHandlerUi = null;
-        ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);
-        if (activity != null) activity.getScrim().hideScrim(true);
     }
 
     @Override
     public void onPaymentHandlerUiShown() {
         assert mPaymentHandlerUi != null;
         mPaymentUisShowStateReconciler.onBottomSheetShown();
-        // Using an empty scrim observer is to avoid the dismissal of the bottom-sheet on tapping.
-        ScrimParams params = ChromeActivity.fromWebContents(mWebContents)
-                                     .getBottomSheetController()
-                                     .createScrimParams(new EmptyScrimObserver());
-        ScrimView scrim = ChromeActivity.fromWebContents(mWebContents).getScrim();
-        scrim.showScrim(params);
-        scrim.setViewAlpha(0);
     }
 
     @Override
@@ -2610,7 +2559,7 @@ public class PaymentRequestImpl
 
     // PaymentAppFactoryParams implementation.
     @Override
-    public PaymentApp.PaymentRequestUpdateEventListener getPaymentRequestUpdateEventListener() {
+    public PaymentRequestUpdateEventListener getPaymentRequestUpdateEventListener() {
         return this;
     }
 

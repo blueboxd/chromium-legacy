@@ -85,6 +85,8 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
 #endif
   void BindReportingObserver(
       mojo::PendingReceiver<blink::mojom::ReportingObserver> receiver) override;
+  void UpdateOpener(const base::Optional<base::UnguessableToken>&
+                        opener_frame_token) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -105,7 +105,9 @@ SpellChecker::SpellChecker(LocalDOMWindow& window)
     : window_(&window),
       spell_check_requester_(MakeGarbageCollected<SpellCheckRequester>(window)),
       idle_spell_check_controller_(
-          MakeGarbageCollected<IdleSpellCheckController>(window)) {}
+          MakeGarbageCollected<IdleSpellCheckController>(
+              window,
+              *spell_check_requester_)) {}
 
 LocalFrame& SpellChecker::GetFrame() const {
   DCHECK(window_->GetFrame());

@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1650222530560417226">Toca o botón Iniciar o rexistro; obterás rexistros e erros futuros da consola de JavaScript procedentes de todas as pestanas. Os rexistros compilaranse (e almacenaranse só na memoria) ata que se peche a páxina ou se toque o botón Deter rexistro.</translation>
 <translation id="1657011748321897393">Non se puido compartir porque non tes conexión á rede.</translation>
+<translation id="1657641691196698092">Cookies bloqueadas</translation>
 <translation id="165877110639533037">Non hai pestanas abertas</translation>
 <translation id="1674504678466460478">De <ph name="SOURCE_LANGUAGE" /> a <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Activa a sincronización para acceder aos marcadores desde todos os teus dispositivos.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Unha política do dispositivo bloqueou o acceso ás túas fotos</translation>
 <translation id="2578571896248130439">Enviar páxina web</translation>
 <translation id="2584132361465095047">Engadir conta...</translation>
+<translation id="2600682495497606169">Borrar cookies dos sitios</translation>
 <translation id="2625189173221582860">Copiouse o contrasinal</translation>
 <translation id="2647269890314209800">Cookies en uso</translation>
 <translation id="2648803196158606475">Eliminar os elementos lidos</translation>
@@ -332,6 +334,7 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5234764350956374838">Rexeitar</translation>
 <translation id="5245322853195994030">Cancelar sincronización</translation>
 <translation id="5271549068863921519">Gardar contrasinal</translation>
+<translation id="5295239312320826323">Queres quitar a conta <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5317780077021120954">Gardar</translation>
 <translation id="5327248766486351172">Nome</translation>
@@ -418,6 +421,7 @@ Handoff tamén debe estar activado na sección Xeral da configuración e os teus
 <translation id="6362362396625799311">Non hai pestanas do modo de incógnito</translation>
 <translation id="6363526231572697780">Sen nome de usuario</translation>
 <translation id="6374469231428023295">Tentar de novo</translation>
+<translation id="6377118281273296434">Seguranza do sitio</translation>
 <translation id="6380866119319257197">Se esqueciches o contrasinal ou queres cambiar esta configuración, <ph name="BEGIN_LINK" />restablece a sincronización<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nome na tarxeta</translation>
 <translation id="6406506848690869874">Sincronización</translation>
@@ -525,11 +529,13 @@ Os teus datos encriptáronse co teu contrasinal de sincronización o <ph name="T
 
 Ademais, dado que a conta está xestionada por <ph name="HOSTED_DOMAIN" />, os teus datos de Chrome eliminaranse deste dispositivo cando peches sesión. Os datos sincronizados conservaranse na túa Conta de Google.</translation>
 <translation id="7772032839648071052">Confirmar frase de acceso</translation>
+<translation id="7778472311864276518">Quitar conta deste dispositivo</translation>
 <translation id="7781011649027948662">Traducir esta páxina?</translation>
 <translation id="7781829728241885113">Onte</translation>
 <translation id="778855399387580014">Inicia unha busca nunha nova pestana de Chrome.</translation>
 <translation id="7791543448312431591">Engadir</translation>
 <translation id="7828557259026017104">As cookies son ficheiros creados polos sitios web que visitas. Os sitios utilízanas para lembrar as túas preferencias. As de terceiros son as que crean outros sitios. Parte do contido que ves na páxina web que visitas, como anuncios ou imaxes, pertence a esoutros sitios.</translation>
+<translation id="7839985698273989086">Páxina sen conexión</translation>
 <translation id="7840771868269352570">Quitaranse os elementos seleccionados.</translation>
 <translation id="7856733331829174190">Non se puido descargar o ficheiro</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>

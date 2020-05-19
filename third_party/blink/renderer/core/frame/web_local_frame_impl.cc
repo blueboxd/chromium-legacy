@@ -2198,6 +2198,7 @@ void WebLocalFrameImpl::MixedContentFound(
     const WebURL& mixed_content_url,
     mojom::RequestContextType request_context,
     bool was_allowed,
+    const WebURL& url_before_redirects,
     bool had_redirect,
     const WebSourceLocation& source_location) {
   DCHECK(GetFrame());
@@ -2209,7 +2210,7 @@ void WebLocalFrameImpl::MixedContentFound(
   }
   MixedContentChecker::MixedContentFound(
       GetFrame(), main_resource_url, mixed_content_url, request_context,
-      was_allowed, had_redirect, std::move(source));
+      was_allowed, url_before_redirects, had_redirect, std::move(source));
 }
 
 void WebLocalFrameImpl::DidDropNavigation() {

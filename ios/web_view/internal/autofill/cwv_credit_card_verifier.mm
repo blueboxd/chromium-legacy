@@ -107,8 +107,7 @@ class WebViewCardUnmaskPromptView : public autofill::CardUnmaskPromptView {
     _unmaskingView =
         std::make_unique<ios_web_view::WebViewCardUnmaskPromptView>(self);
     _unmaskingController =
-        std::make_unique<autofill::CardUnmaskPromptControllerImpl>(
-            prefs, isOffTheRecord);
+        std::make_unique<autofill::CardUnmaskPromptControllerImpl>(prefs);
     _unmaskingController->ShowPrompt(
         base::BindOnce(^autofill::CardUnmaskPromptView*() {
           return _unmaskingView.get();

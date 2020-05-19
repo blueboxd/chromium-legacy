@@ -420,6 +420,7 @@ void MixedContentChecker::Count(Frame* frame,
 bool MixedContentChecker::ShouldBlockFetch(
     LocalFrame* frame,
     mojom::RequestContextType request_context,
+    const KURL& url_before_redirects,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     const base::Optional<String>& devtools_id,
@@ -450,7 +451,7 @@ bool MixedContentChecker::ShouldBlockFetch(
   MixedContentChecker::Count(mixed_frame, request_context, frame);
   if (ContentSecurityPolicy* policy =
           frame->GetSecurityContext()->GetContentSecurityPolicy())
-    policy->ReportMixedContent(url, redirect_status);
+    policy->ReportMixedContent(url_before_redirects, redirect_status);
 
   Settings* settings = mixed_frame->GetSettings();
   // Use the current local frame's client; the embedder doesn't distinguish
@@ -553,6 +554,7 @@ bool MixedContentChecker::ShouldBlockFetch(
 bool MixedContentChecker::ShouldBlockFetchOnWorker(
     const WorkerFetchContext& worker_fetch_context,
     mojom::RequestContextType request_context,
+    const KURL& url_before_redirects,
     ResourceRequest::RedirectStatus redirect_status,
     const KURL& url,
     ReportingDisposition reporting_disposition,
@@ -567,7 +569,7 @@ bool MixedContentChecker::ShouldBlockFetchOnWorker(
   worker_fetch_context.CountUsage(WebFeature::kMixedContentPresent);
   worker_fetch_context.CountUsage(WebFeature::kMixedContentBlockable);
   if (auto* policy = worker_fetch_context.GetContentSecurityPolicy())
-    policy->ReportMixedContent(url, redirect_status);
+    policy->ReportMixedContent(url_before_redirects, redirect_status);
 
   // Blocks all mixed content request from worklets.
   // TODO(horo): Revise this when the spec is updated.
@@ -832,6 +834,7 @@ void MixedContentChecker::MixedContentFound(
     const KURL& mixed_content_url,
     mojom::RequestContextType request_context,
     bool was_allowed,
+    const KURL& url_before_redirects,
     bool had_redirect,
     std::unique_ptr<SourceLocation> source_location) {
   // Logs to the frame console.
@@ -850,7 +853,7 @@ void MixedContentChecker::MixedContentFound(
       frame->GetSecurityContext()->GetContentSecurityPolicy();
   if (policy) {
     policy->ReportMixedContent(
-        mixed_content_url,
+        url_before_redirects,
         had_redirect ? ResourceRequest::RedirectStatus::kFollowedRedirect
                      : ResourceRequest::RedirectStatus::kNoRedirect);
   }

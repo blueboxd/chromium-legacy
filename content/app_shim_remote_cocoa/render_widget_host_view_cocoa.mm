@@ -38,7 +38,6 @@
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
-using content::InputEvent;
 using content::NativeWebKeyboardEvent;
 using content::RenderWidgetHostViewMacEditCommandHelper;
 using content::WebGestureEventBuilder;

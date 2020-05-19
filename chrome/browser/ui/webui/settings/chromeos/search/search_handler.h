@@ -21,6 +21,9 @@ class LocalSearchService;
 namespace chromeos {
 namespace settings {
 
+class Hierarchy;
+class OsSettingsSections;
+struct SearchConcept;
 class SearchTagRegistry;
 
 // Handles search queries for Chrome OS settings. Search() is expected to be
@@ -37,6 +40,8 @@ class SearchHandler : public mojom::SearchHandler {
   static const size_t kNumMaxResults;
 
   SearchHandler(SearchTagRegistry* search_tag_registry,
+                OsSettingsSections* sections,
+                Hierarchy* hierarchy,
                 local_search_service::LocalSearchService* local_search_service);
   ~SearchHandler() override;
 
@@ -58,8 +63,12 @@ class SearchHandler : public mojom::SearchHandler {
           local_search_service_results);
   mojom::SearchResultPtr ResultToSearchResult(
       const local_search_service::Result& result);
+  std::string GetModifiedUrl(const SearchConcept& concept,
+                             mojom::Section section) const;
 
   SearchTagRegistry* search_tag_registry_;
+  OsSettingsSections* sections_;
+  Hierarchy* hierarchy_;
   local_search_service::Index* index_;
 
   // Note: Expected to have multiple clients, so a ReceiverSet is used.

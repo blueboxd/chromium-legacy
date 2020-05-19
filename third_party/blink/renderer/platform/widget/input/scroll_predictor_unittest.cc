@@ -54,7 +54,8 @@ class ScrollPredictorTest : public testing::Test {
     gesture.data.scroll_update.delta_y = delta_y;
     gesture.data.scroll_update.inertial_phase = phase;
 
-    original_events_.emplace_back(gesture.Clone(), ui::LatencyInfo(),
+    original_events_.emplace_back(std::make_unique<WebCoalescedInputEvent>(
+                                      gesture.Clone(), ui::LatencyInfo()),
                                   base::NullCallback());
 
     return gesture.Clone();
@@ -76,9 +77,10 @@ class ScrollPredictorTest : public testing::Test {
   void HandleResampleScrollEvents(std::unique_ptr<WebInputEvent>& event,
                                   double time_delta_in_milliseconds = 0) {
     std::unique_ptr<EventWithCallback> event_with_callback =
-        std::make_unique<EventWithCallback>(std::move(event), ui::LatencyInfo(),
-                                            base::TimeTicks(),
-                                            base::NullCallback());
+        std::make_unique<EventWithCallback>(
+            std::make_unique<WebCoalescedInputEvent>(std::move(event),
+                                                     ui::LatencyInfo()),
+            base::TimeTicks(), base::NullCallback());
     event_with_callback->original_events() = std::move(original_events_);
 
     event_with_callback = scroll_predictor_->ResampleScrollEvents(

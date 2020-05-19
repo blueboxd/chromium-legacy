@@ -1361,22 +1361,22 @@ message DeviceUserPolicyLoopbackProcessingModeProto {
 
 // Specifies a list of origins. Each of the specified origins will run in its
 // own process on the sign-in screen.
-message DeviceLoginScreenIsolateOriginsProto {
+message OBSOLETE_DeviceLoginScreenIsolateOriginsProto {
   // A comma-separated list of the origins to be run in a separate process on
   // the sign-in screen.
   // If the value of this policy does not match the value of the user policy
   // IsolateOrigins, the chrome process will be restarted on user sign-in to
   // apply the value specified by the user policy.
-  optional string isolate_origins = 1;
+  optional string OBSOLETE_isolate_origins = 1 [deprecated = true];
 }
 
 // Specifies if each site should run in its own process on the sign-in screen.
-message DeviceLoginScreenSitePerProcessProto {
+message OBSOLETE_DeviceLoginScreenSitePerProcessProto {
   // If true, each site will run in its own process on the sign-in screen.
   // If the value of this policy does not match the value of the user policy
   // SitePerProcess, the chrome process will be restarted on user sign-in to
   // apply the value specified by the user policy.
-  optional bool site_per_process = 1;
+  optional bool OBSOLETE_site_per_process = 1 [deprecated = true];
 }
 
 // Setting to control if running virtual machines on Chrome OS is allowed.
@@ -1682,10 +1682,10 @@ message ChromeDeviceSettingsProto {
       65;
   optional DeviceUserPolicyLoopbackProcessingModeProto
       device_user_policy_loopback_processing_mode = 66;
-  optional DeviceLoginScreenIsolateOriginsProto
-      device_login_screen_isolate_origins = 67;
-  optional DeviceLoginScreenSitePerProcessProto
-      device_login_screen_site_per_process = 68;
+  optional OBSOLETE_DeviceLoginScreenIsolateOriginsProto
+      device_login_screen_isolate_origins = 67 [deprecated = true];
+  optional OBSOLETE_DeviceLoginScreenSitePerProcessProto
+      device_login_screen_site_per_process = 68 [deprecated = true];
   optional VirtualMachinesAllowedProto virtual_machines_allowed = 69;
   optional DeviceMachinePasswordChangeRateProto
       device_machine_password_change_rate = 70;

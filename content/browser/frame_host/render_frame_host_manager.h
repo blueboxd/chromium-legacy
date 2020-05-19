@@ -409,6 +409,15 @@ class CONTENT_EXPORT RenderFrameHostManager
   // if the opener node doesn't have a proxy for |instance|.
   int GetOpenerRoutingID(SiteInstance* instance);
 
+  // Returns a base::UnguessableToken for the current FrameTreeNode's opener
+  // node in the given SiteInstance.  May return a frame token of either a
+  // RenderFrameHost (if opener's current or pending RFH has SiteInstance
+  // |instance|) or a RenderFrameProxyHost.  Returns an empty frame token if
+  // there is no opener, or if the opener node doesn't have a proxy for
+  // |instance|.
+  base::Optional<base::UnguessableToken> GetOpenerFrameToken(
+      SiteInstance* instance);
+
   // Called on the RFHM of the inner WebContents to create a
   // RenderFrameProxyHost in its outer WebContents's SiteInstance,
   // |outer_contents_site_instance|. The frame in outer WebContents that is

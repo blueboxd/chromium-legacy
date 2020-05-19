@@ -194,7 +194,7 @@ static void BlendRGBAF16Buffer(ImageFrame::PixelDataF16* dst,
       SkImage::MakeFromRaster(src_pixmap, nullptr, nullptr);
 
   surface->getCanvas()->drawImage(src_image, 0, 0);
-  surface->flush();
+  surface->flushAndSubmit();
 }
 
 void ImageFrame::BlendRGBARawF16Buffer(PixelDataF16* dst,

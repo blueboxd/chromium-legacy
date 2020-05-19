@@ -24,6 +24,7 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
+struct SearchConcept;
 class SearchTagRegistry;
 
 // Represents one top-level section of the settings app (i.e., one item on the
@@ -98,6 +99,13 @@ class OsSettingsSection {
   // Registers the subpages and/or settings which reside in this section.
   virtual void RegisterHierarchy(HierarchyGenerator* generator) const = 0;
 
+  // Modifies a URL to be used by settings search. Some URLs require dynamic
+  // content (e.g., network detail settings use the GUID of the network as a URL
+  // parameter to route to details for a specific network). By default, this
+  // function simply returns the URL contained in |concept|, which provides
+  // functionality for static URLs.
+  virtual std::string ModifySearchResultUrl(const SearchConcept& concept) const;
+
  protected:
   static base::string16 GetHelpUrlWithBoard(const std::string& original_url);
   static void RegisterNestedSettingBulk(
@@ -106,6 +114,9 @@ class OsSettingsSection {
       HierarchyGenerator* generator);
 
   OsSettingsSection(Profile* profile, SearchTagRegistry* search_tag_registry);
+
+  // Used by tests.
+  OsSettingsSection();
 
   Profile* profile() { return profile_; }
   SearchTagRegistry* registry() { return search_tag_registry_; }

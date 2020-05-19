@@ -134,8 +134,9 @@ class RealtimeAudioDestinationHandler final
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  // The current condition of silence detection.
-  bool is_detecting_silence_ = false;
+  // Represents the current condition of silence detection. By default, the
+  // silence detection is active.
+  bool is_detecting_silence_ = true;
 };
 
 // -----------------------------------------------------------------------------

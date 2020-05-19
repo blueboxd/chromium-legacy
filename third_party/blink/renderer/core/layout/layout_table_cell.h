@@ -241,11 +241,9 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow,
   static LayoutTableCell* CreateAnonymous(Document*,
                                           scoped_refptr<ComputedStyle>,
                                           LegacyLayout);
-  static LayoutTableCell* CreateAnonymousWithParent(const LayoutObject*);
+
   LayoutBox* CreateAnonymousBoxWithSameTypeAs(
-      const LayoutObject* parent) const override {
-    return CreateAnonymousWithParent(parent);
-  }
+      const LayoutObject* parent) const override;
 
   // The table's style determines cell order and cell adjacency in the table.
   // Collapsed borders also use in table's inline and block directions.
@@ -378,7 +376,9 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow,
 
  protected:
   bool IsOfType(LayoutObjectType type) const override {
-    return type == kLayoutObjectTableCell || LayoutBlockFlow::IsOfType(type);
+    return type == kLayoutObjectTableCell ||
+           type == kLayoutObjectTableCellLegacy ||
+           LayoutBlockFlow::IsOfType(type);
   }
 
  private:
@@ -551,7 +551,7 @@ inline LayoutTableCell* LayoutTableRow::LastCell() const {
 template <>
 struct DowncastTraits<LayoutTableCell> {
   static bool AllowFrom(const LayoutObject& object) {
-    return object.IsTableCell();
+    return object.IsTableCellLegacy();
   }
 };
 

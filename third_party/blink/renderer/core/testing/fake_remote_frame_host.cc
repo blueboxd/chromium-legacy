@@ -36,6 +36,10 @@ void FakeRemoteFrameHost::SetIsInert(bool inert) {}
 void FakeRemoteFrameHost::DidChangeOpener(
     const base::Optional<base::UnguessableToken>& opener_frame_token) {}
 
+void FakeRemoteFrameHost::AdvanceFocus(
+    blink::mojom::FocusType focus_type,
+    const base::UnguessableToken& source_frame_token) {}
+
 void FakeRemoteFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::RemoteFrameHost>(

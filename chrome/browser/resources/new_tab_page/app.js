@@ -608,10 +608,11 @@ class AppElement extends PolymerElement {
       overlayRects.forEach(({x, y, width, height}) => {
         const rectElement =
             document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rectElement.setAttribute('x', x);
-        rectElement.setAttribute('y', y);
-        rectElement.setAttribute('width', width);
-        rectElement.setAttribute('height', height);
+        // Add 8px around every rect to ensure shadows are not cutoff.
+        rectElement.setAttribute('x', x - 8);
+        rectElement.setAttribute('y', y - 8);
+        rectElement.setAttribute('width', width + 16);
+        rectElement.setAttribute('height', height + 16);
         this.$.oneGoogleBarClipPath.appendChild(rectElement);
       });
     }

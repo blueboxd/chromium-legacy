@@ -15,7 +15,7 @@
 <translation id="2903070246402204397">El administrador ha bloqueado la extensión <ph name="EXTENSION_NAME" /> (ID de extensión "<ph name="EXTENSION_ID" />"). <ph name="ADMIN_INFO" /></translation>
 <translation id="2988488679308982380">No se ha podido instalar el paquete: "<ph name="ERROR_CODE" />".</translation>
 <translation id="3115238746683532089">Producto <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /> desconocido (número de serie <ph name="SERIAL_NUMBER" />)</translation>
-<translation id="3144135466825225871">No se ha podido sustituir el archivo .crx. Comprueba si se está utilizando el archivo.</translation>
+<translation id="3144135466825225871">No se ha podido reemplazar el archivo .crx. Comprueba si se está utilizando el archivo.</translation>
 <translation id="3163201441334626963">Producto <ph name="PRODUCT_ID" /> del proveedor <ph name="VENDOR_ID" /> desconocido</translation>
 <translation id="3302709122321372472">No se ha podido cargar el archivo CSS "<ph name="RELATIVE_PATH" />" para el script de contenido.</translation>
 <translation id="3369521687965833290">No se puede descomprimir la extensión. Para descomprimir de forma segura una extensión, debe existir una ruta al directorio de tu perfil que comience con una letra de unidad y que no incluya ninguna unión, ningún punto de montaje ni ningún enlace simbólico. No existe ninguna ruta de este tipo para tu perfil.</translation>

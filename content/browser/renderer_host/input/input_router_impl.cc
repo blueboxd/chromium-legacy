@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/web_touch_event_traits.h"
 #include "content/common/input_messages.h"
 #include "content/public/browser/notification_service.h"
@@ -26,7 +25,9 @@
 #include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_sender.h"
 #include "services/tracing/public/cpp/perfetto/flow_event_utils.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-shared.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/web_input_event_traits.h"
@@ -58,18 +59,23 @@ bool WasHandled(blink::mojom::InputEventResultState state) {
   }
 }
 
-std::unique_ptr<InputEvent> ScaleEvent(const WebInputEvent& event,
-                                       double scale,
-                                       const ui::LatencyInfo& latency_info) {
+std::unique_ptr<blink::WebCoalescedInputEvent> ScaleEvent(
+    const WebInputEvent& event,
+    double scale,
+    const ui::LatencyInfo& latency_info) {
   std::unique_ptr<blink::WebInputEvent> event_in_viewport =
       ui::ScaleWebInputEvent(event, scale);
   if (event_in_viewport) {
-    return std::make_unique<InputEvent>(
-        ui::WebScopedInputEvent(event_in_viewport.release()),
+    return std::make_unique<blink::WebCoalescedInputEvent>(
+        std::move(event_in_viewport),
+        std::vector<std::unique_ptr<WebInputEvent>>(),
+        std::vector<std::unique_ptr<WebInputEvent>>(),
         latency_info.ScaledBy(scale));
   }
 
-  return std::make_unique<InputEvent>(event.Clone(), latency_info);
+  return std::make_unique<blink::WebCoalescedInputEvent>(
+      event.Clone(), std::vector<std::unique_ptr<WebInputEvent>>(),
+      std::vector<std::unique_ptr<WebInputEvent>>(), latency_info);
 }
 
 }  // namespace
@@ -537,7 +543,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
     return;
   }
 
-  std::unique_ptr<InputEvent> event =
+  std::unique_ptr<blink::WebCoalescedInputEvent> event =
       ScaleEvent(input_event, device_scale_factor_, latency_info);
   if (WebInputEventTraits::ShouldBlockEventStream(input_event)) {
     TRACE_EVENT_INSTANT0("input", "InputEventSentBlocking",

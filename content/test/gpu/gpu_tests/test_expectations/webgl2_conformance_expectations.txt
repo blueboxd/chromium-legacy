@@ -296,7 +296,7 @@ crbug.com/965648 [ opengl linux passthrough nvidia ] deqp/functional/gles3/shade
 ####################
 
 crbug.com/angleproject/4242 [ mac ] conformance2/glsl3/matrix-row-major-dynamic-indexing.html [ Failure ]
-crbug.com/angleproject/4417 [ mac intel no-passthrough ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
+crbug.com/angleproject/4417 [ mac no-passthrough ] conformance2/rendering/framebuffer-render-to-layer.html [ Failure ]
 
 # Flakes heavily on many OpenGL configurations
 crbug.com/832238 [ mac no-angle ] conformance2/transform_feedback/too-small-buffers.html [ Failure ]

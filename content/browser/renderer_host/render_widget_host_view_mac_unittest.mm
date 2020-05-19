@@ -221,17 +221,15 @@ blink::WebPointerProperties::PointerType GetPointerType(
     return blink::WebPointerProperties::PointerType::kUnknown;
 
   if (blink::WebInputEvent::IsMouseEventType(
-          event->Event()->web_event->GetType())) {
-    return static_cast<const blink::WebMouseEvent*>(
-               event->Event()->web_event.get())
-        ->pointer_type;
+          event->Event()->Event().GetType())) {
+    return static_cast<const blink::WebMouseEvent&>(event->Event()->Event())
+        .pointer_type;
   }
 
   if (blink::WebInputEvent::IsTouchEventType(
-          event->Event()->web_event->GetType())) {
-    return static_cast<const blink::WebTouchEvent*>(
-               event->Event()->web_event.get())
-        ->touches[0]
+          event->Event()->Event().GetType())) {
+    return static_cast<const blink::WebTouchEvent&>(event->Event()->Event())
+        .touches[0]
         .pointer_type;
   }
   return blink::WebPointerProperties::PointerType::kUnknown;
@@ -1053,9 +1051,9 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeNoTabletEvent) {
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("MouseMove", GetMessageNames(events));
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
-            static_cast<const blink::WebMouseEvent*>(
-                events[0]->ToEvent()->Event()->web_event.get())
-                ->pointer_type);
+            static_cast<const blink::WebMouseEvent&>(
+                events[0]->ToEvent()->Event()->Event())
+                .pointer_type);
 }
 
 TEST_F(RenderWidgetHostViewMacTest, PointerEventWithMouseType) {
@@ -1119,9 +1117,9 @@ TEST_F(RenderWidgetHostViewMacTest, PointerEventWithPenTypeSendAsTouch) {
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("TouchEnd GestureScrollEnd", GetMessageNames(events));
   EXPECT_EQ(blink::WebPointerProperties::PointerType::kPen,
-            static_cast<const blink::WebTouchEvent*>(
-                events[0]->ToEvent()->Event()->web_event.get())
-                ->touches[0]
+            static_cast<const blink::WebTouchEvent&>(
+                events[0]->ToEvent()->Event()->Event())
+                .touches[0]
                 .pointer_type);
 
   events.clear();
@@ -1264,9 +1262,9 @@ TEST_F(RenderWidgetHostViewMacTest, TimerBasedPhaseInfo) {
   // Both GSB and GSU will be sent since GestureEventQueue allows multiple
   // in-flight events.
   ASSERT_EQ("GestureScrollBegin GestureScrollUpdate", GetMessageNames(events));
-  ASSERT_TRUE(static_cast<const blink::WebGestureEvent*>(
-                  events[0]->ToEvent()->Event()->web_event.get())
-                  ->data.scroll_begin.synthetic);
+  ASSERT_TRUE(static_cast<const blink::WebGestureEvent&>(
+                  events[0]->ToEvent()->Event()->Event())
+                  .data.scroll_begin.synthetic);
   events.clear();
 
   // Wait for the mouse_wheel_end_dispatch_timer_ to expire, the pending wheel
@@ -1279,9 +1277,9 @@ TEST_F(RenderWidgetHostViewMacTest, TimerBasedPhaseInfo) {
 
   events = host_->GetAndResetDispatchedMessages();
   ASSERT_EQ("MouseWheel GestureScrollEnd", GetMessageNames(events));
-  ASSERT_TRUE(static_cast<const blink::WebGestureEvent*>(
-                  events[1]->ToEvent()->Event()->web_event.get())
-                  ->data.scroll_end.synthetic);
+  ASSERT_TRUE(static_cast<const blink::WebGestureEvent&>(
+                  events[1]->ToEvent()->Event()->Event())
+                  .data.scroll_end.synthetic);
 }
 
 // With wheel scroll latching wheel end events are not sent immediately, instead

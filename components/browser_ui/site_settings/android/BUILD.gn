@@ -105,7 +105,9 @@ android_library("javatests") {
   sources = [ "javatests/src/org/chromium/components/browser_ui/site_settings/WebsiteAddressTest.java" ]
   deps = [
     ":java",
+    "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/junit",
   ]
 }
 

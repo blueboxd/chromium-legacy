@@ -25,10 +25,6 @@ namespace extensions {
 
 namespace {
 
-// Whether the user has been notified about extension taking over some aspect of
-// the user's settings (homepage, startup pages, or search engine).
-const char kSettingsBubbleAcknowledged[] = "ack_settings_bubble";
-
 using ProfileSetMap = std::map<std::string, std::set<Profile*>>;
 base::LazyInstance<ProfileSetMap>::Leaky g_settings_api_shown =
     LAZY_INSTANCE_INITIALIZER;
@@ -41,8 +37,11 @@ SettingsApiBubbleDelegate::SettingsApiBubbleDelegate(
     : ExtensionMessageBubbleController::Delegate(profile),
       type_(type),
       profile_(profile) {
-  set_acknowledged_flag_pref_name(kSettingsBubbleAcknowledged);
+  set_acknowledged_flag_pref_name(kAcknowledgedPreference);
 }
+
+const char SettingsApiBubbleDelegate::kAcknowledgedPreference[] =
+    "ack_settings_bubble";
 
 SettingsApiBubbleDelegate::~SettingsApiBubbleDelegate() {}
 

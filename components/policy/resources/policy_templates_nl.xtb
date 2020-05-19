@@ -336,9 +336,6 @@ Als je dit beleid uitschakelt, wordt op de webpagina naar specifieke tekstfragme
 <translation id="152657506688053119">Lijst met alternatieve URL's voor de standaardzoekprovider</translation>
 <translation id="1530812829012954197">De volgende URL-patronen altijd verwerken in de hostbrowser</translation>
 <translation id="1553532014072799546">Witte lijst voor tijdslimieten per app</translation>
-<translation id="1553684822621013552">Als dit beleid is ingesteld op 'True', wordt ARC ingeschakeld voor de gebruiker (onderhevig aan extra controles van de beleidsinstellingen; ARC is nog steeds niet beschikbaar als de kortstondige modus of toegang tot meerdere accounts is ingeschakeld in de huidige gebruikerssessie).
-
-     Als deze instelling is uitgeschakeld of niet is geconfigureerd, kunnen zakelijke gebruikers ARC niet gebruiken.</translation>
 <translation id="1553956579506604198">Blokkeert de installatie van externe extensies</translation>
 <translation id="1556072857949466438">Via dit beleid kan een beheerder opgeven dat een pagina pop-upvensters mag weergeven tijdens het unloaden.
 
@@ -913,10 +910,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
       Wanneer dit beleid niet is geconfigureerd of is ingesteld op 'True', kunnen gebruikers Network File Shares gebruiken.
 
       Wanneer dit beleid is ingesteld op 'False', kunnen gebruikers Network File Shares niet gebruiken.</translation>
-<translation id="2438609638493026652">Hiermee schakel je de rapportage aan Google in van belangrijke gebeurtenissen tijdens de installatie van Android-apps. Gebeurtenissen worden alleen geregistreerd voor apps waarvan de installatie via beleid is geactiveerd.
-
-      Als het beleid is ingesteld op 'True', worden gebeurtenissen geregistreerd.
-      Als het beleid is ingesteld op 'False' of niet is ingesteld, worden gebeurtenissen niet geregistreerd.</translation>
 <translation id="2440773021691931148">Hiermee worden hardwarestatistieken en -ID's over de stroomstatus gerapporteerd.
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de statistieken niet gerapporteerd.
@@ -1237,15 +1230,6 @@ Als dit beleid niet is ingesteld, is het privacyscherm in eerste instantie uitge
 
       Elke lijstvermelding specificeert een ID die intern wordt gebruikt om de verschillende lokale accounts van het apparaat te onderscheiden.</translation>
 <translation id="2769952903507981510">De vereiste domeinnaam configureren voor hosts voor externe toegang</translation>
-<translation id="2783078941107212091">Schakel app-aanbevelingen in voor de nulstatus van het zoekvak in de Launcher.
-
-          Als dit beleid is ingesteld op True, kunnen er app-aanbevelingen worden weergegeven als het zoekvak de nulstatus heeft.
-
-          Als dit beleid is ingesteld op False, worden er geen app-aanbevelingen weergegeven als het zoekvak de nulstatus heeft.
-
-          Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
-
-          Als dit beleid niet wordt ingesteld, is de standaardwaarde False voor beheerde apparaten.</translation>
 <translation id="2787173078141616821">Informatie over de status van Android rapporteren</translation>
 <translation id="2799297758492717491">Automatisch afspelen van media toestaan op een witte lijst met URL-patronen</translation>
 <translation id="2801065672151277034">Instellingen voor certificaatbeheer</translation>
@@ -1889,6 +1873,7 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
       Ga naar https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
 
       Als dit beleid niet wordt ingesteld, wordt de directory voor het downloaden van bestanden gebruikt en kan de gebruiker deze wijzigen.</translation>
+<translation id="3803171355925844705">Niet toestaan dat sites gemengde content laden</translation>
 <translation id="3805659594028420438">Extensie TLS-domeingebonden certificaten inschakelen (afgekeurd)</translation>
 <translation id="3808945828600697669">Een lijst met uitgeschakelde plug-ins specificeren</translation>
 <translation id="3810642039169532482">De toegankelijkheidsfunctie voor dicteren op het inlogscherm inschakelen.
@@ -1907,15 +1892,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="382476126209906314">Het voorvoegsel voor het TalkGadget configureren voor hosts voor externe toegang</translation>
 <translation id="3824972131618513497">Beheert instellingen met betrekking tot energiebeheer en opnieuw opstarten.</translation>
 <translation id="3826475866868158882">Google-locatieservices ingeschakeld</translation>
-<translation id="3831054243924627613">Met dit beleid wordt de beginstatus van de back-up- en herstelfunctie van Android beheerd.
-
-      Als dit beleid niet is geconfigureerd of niet is ingesteld op <ph name="BR_DISABLED" />, is de back-up- en herstelfunctie van Android aanvankelijk uitgeschakeld.
-
-      Als dit beleid is ingesteld op <ph name="BR_ENABLED" />, is de back-up- en herstelfunctie van Android aanvankelijk ingeschakeld.
-
-      Als dit beleid is ingesteld op <ph name="BR_UNDER_USER_CONTROL" />, wordt de gebruiker gevraagd of die de back-up- en herstelfunctie van Android wil gebruiken. Als de gebruiker de back-up- en herstelfunctie inschakelt, worden gegevens van Android-apps geüpload naar Android-back-upservers. De gegevens worden vanaf deze servers hersteld wanneer apps opnieuw worden geïnstalleerd (indien de app hiervoor geschikt is).
-
-      Dit beleid bepaalt alleen of de back-up- en herstelfunctie van Android is ingeschakeld bij de eerste installatie. De gebruiker kan later de Android-instellingen zelf aanpassen en de back-up- en herstelfunctie van Android in- of uitschakelen.</translation>
 <translation id="3831376478177535007">Wanneer deze instelling is ingeschakeld, staat <ph name="PRODUCT_NAME" /> toe dat certificaten die zijn uitgegeven via de verouderde PKI-bewerkingen van Symantec Corporation worden vertrouwd als deze correct worden gevalideerd en zijn gekoppeld aan een herkend CA-certificaat.
 
       Houd er rekening mee dat dit beleid afhankelijk is van het feit of de certificaten van de verouderde infrastructuur van Symantec nog door het besturingssysteem worden herkend. Als door een update van het besturingssysteem de verwerking van dergelijke certificaten door het besturingssysteem verandert, is dit beleid niet meer van toepassing. Daarnaast is dit beleid bedoeld als tijdelijke oplossing om bedrijven meer tijd te geven om af te stappen van de verouderde Symantec-certificaten. Dit beleid wordt op of rond 1 januari 2019 verwijderd.
@@ -3446,17 +3422,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="6114416803310251055">verouderd</translation>
 <translation id="6133088669883929098">Alle sites toestaan sleutels te genereren</translation>
 <translation id="6135398260575578389">Safe Browsing is actief in de uitgebreide modus. Deze modus biedt betere beveiliging, maar vereist dat er meer browsegegevens worden gedeeld met Google.</translation>
-<translation id="6136537398661737682">Met dit beleid wordt de beginstatus van Google-locatieservices beheerd.
-
-      Als dit beleid niet is geconfigureerd of niet is ingesteld op <ph name="GLS_DISABLED" />, zijn Google-locatieservices aanvankelijk uitgeschakeld.
-
-      Als dit beleid is ingesteld op <ph name="GLS_ENABLED" />, zijn Google-locatieservices aanvankelijk ingeschakeld.
-
-      Als dit beleid is ingesteld op <ph name="GLS_UNDER_USER_CONTROL" />, wordt de gebruiker gevraagd of die Google-locatieservices wil gebruiken. Hiermee kunnen Android-apps de services gebruiken om de apparaatlocatie op te vragen. Ook worden hierdoor anonieme locatiegegevens verzonden naar Google.
-
-      Dit beleid bepaalt alleen of de Google-locatieservices zijn ingeschakeld bij de eerste installatie. De gebruiker kan later de Android-instellingen zelf aanpassen en de Google-locatieservices in- of uitschakelen.
-
-      Als het beleid <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> is ingesteld op <ph name="BLOCK_GEOLOCATION_SETTING" />, wordt dit beleid genegeerd en zijn Google-locatieservices altijd uitgeschakeld.</translation>
 <translation id="6141402445226505817">Altijd minder nauwkeurige tijdzonedetectie gebruiken</translation>
 <translation id="614616930188030377">Patronen in deze lijst worden vergeleken met de beveiligingsoorsprong van de aanvragende URL.
       Als een overeenkomst wordt gevonden of als chrome://flags/#enable-webrtc-hide-local-ips-with-mdns is Uitgeschakeld, worden de lokale IP-adressen weergegeven in WebRTC ICE-kandidaten.
@@ -4571,9 +4536,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als dit beleid niet is ingesteld, is hoog contrast in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
 <translation id="7869986671709030417">Standaardmodus voor afdrukken met achtergrondbeelden</translation>
-<translation id="787125417158068494">Als dit is ingesteld op SyncDisabled of niet is geconfigureerd, zijn certificaten van <ph name="PRODUCT_OS_NAME" /> niet beschikbaar voor ARC-apps.
-
-      Als dit is ingesteld op CopyCaCerts, zijn alle door ONC geïnstalleerde CA-certificaten met <ph name="WEB_TRUSTED_BIT" /> beschikbaar voor ARC-apps.</translation>
 <translation id="7882585827992171421">Dit beleid is alleen actief in de commerciële modus.
 
       Hiermee bepaal je de ID van de extensie die moet worden gebruikt als schermbeveiliging voor het inlogvenster. De extensie moet onderdeel zijn van het AppPack dat is geconfigureerd voor dit domein via het beleid DeviceAppPack.</translation>
@@ -5015,11 +4977,6 @@ Dit beleid wordt verwijderd in M75.</translation>
 <translation id="8544465954173828789">Toestaan dat sms-berichten worden gesynchroniseerd tussen telefoon en Chromebook.</translation>
 <translation id="8548832052135586762">Hiermee bepaal je of je alleen in kleur, alleen in monochroom of zonder kleurbeperking wilt afdrukken. Als er geen beleid is ingesteld, gelden er geen beperkingen.</translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
-<translation id="8566729013138025202">Hiermee wordt een reeks beleidsregels gespecificeerd om door te geven aan de ARC-runtime. De waarde moet geldige json zijn.
-
-      Dit beleid kan worden gebruikt om in te stellen welke Android-apps automatisch op het apparaat worden geïnstalleerd.
-
-      Bekijk PinnedLauncherApps als je apps wilt vastzetten in de Launcher.</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
 <translation id="8569734380847633643">
           Als het beleid is ingesteld op 'false', schakelt <ph name="PRODUCT_OS_NAME" /> wifi uit en kunnen gebruikers wifi niet opnieuw inschakelen.
@@ -5048,11 +5005,6 @@ Dit beleid wordt verwijderd in M75.</translation>
           Als dit beleid niet is ingesteld, wordt er een standaard tijdsduur gebruikt.
 
           De beleidswaarde moet worden gespecificeerd in milliseconden.</translation>
-<translation id="8598350264853261122">Als het beleid is ingesteld op 'False', mogen niet-gelieerde gebruikers ARC niet gebruiken.
-
-      Als het beleid niet is ingesteld of is ingesteld op 'True', mogen alle gebruikers ARC gebruiken (tenzij ARC op een andere manier is uitgeschakeld).
-
-      Wijzigingen in het beleid worden alleen toegepast wanneer ARC niet actief is, bijvoorbeeld wanneer Chrome OS wordt gestart.</translation>
 <translation id="8606263947930257189">Bepaalt of <ph name="PRODUCT_NAME" /> tabbladen kan vastzetten die minimaal vijf minuten op de achtergrond actief zijn.
 
       Als het beleid is ingesteld op 'True', kunnen tabbladen die minimaal vijf minuten op de achtergrond actief zijn worden vastgezet. Het vastzetten van tabbladen verlaagt het CPU-, batterij- en geheugengebruik. <ph name="PRODUCT_NAME" /> gebruikt bepaalde methoden om te voorkomen dat tabbladen worden vastgezet die nuttig werk op de achtergrond leveren (zoals meldingen weergeven, geluid afspelen en video streamen). Webontwikkelaars kunnen daarnaast hun site afmelden voor vastzetten (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).
@@ -5396,6 +5348,7 @@ Dit beleid wordt verwijderd in M75.</translation>
       Als er een lagere waarde wordt ingesteld voor dit beleid, heeft dit een permanent effect: het apparaat kan mogelijk niet terugkeren naar oudere versies, zelfs nadat het beleid weer wordt ingesteld op een hogere waarde.
 
       Welke rollback precies mogelijk is, hangt ook samen met welke patches zijn geïnstalleerd voor het moederbord en voor kritieke risico's.</translation>
+<translation id="9123464369663964441">Gebruikers toestaan uitzonderingen toe te voegen om gemengde content toe te staan</translation>
 <translation id="9126014181388780690">'De Google Assistent toegang verlenen tot schermcontext'</translation>
 <translation id="913195841488580904">Toegang blokkeren voor een lijst met URL's</translation>
 <translation id="9135033364005346124">Proxy voor <ph name="CLOUD_PRINT_NAME" /> inschakelen</translation>

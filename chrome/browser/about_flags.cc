@@ -3205,14 +3205,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAll,
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillCreditCardAblationExperiment)},
-    {"enable-autofill-credit-card-upload-editable-expiration-date",
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadEditableExpirationDateName,
-     flag_descriptions::
-         kEnableAutofillCreditCardUploadEditableExpirationDateDescription,
-     kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillUpstreamEditableExpirationDate)},
 
 #if defined(OS_ANDROID)
     {"enable-autofill-manual-fallback",
@@ -4628,12 +4620,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"strict-origin-isolation", flag_descriptions::kStrictOriginIsolationName,
      flag_descriptions::kStrictOriginIsolationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kStrictOriginIsolation)},
-
-    {"autofill-no-local-save-on-unmask-success",
-     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessName,
-     flag_descriptions::kAutofillNoLocalSaveOnUnmaskSuccessDescription, kOsAll,
-     FEATURE_VALUE_TYPE(
-         autofill::features::kAutofillNoLocalSaveOnUnmaskSuccess)},
 
 #if defined(OS_ANDROID)
     {"enable-logging-js-console-messages",

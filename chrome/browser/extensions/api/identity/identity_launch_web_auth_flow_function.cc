@@ -49,7 +49,8 @@ ExtensionFunction::ResponseAction IdentityLaunchWebAuthFlowFunction::Run() {
 
   AddRef();  // Balanced in OnAuthFlowSuccess/Failure.
 
-  auth_flow_.reset(new WebAuthFlow(this, profile, auth_url, mode));
+  auth_flow_.reset(new WebAuthFlow(this, profile, auth_url, mode,
+                                   WebAuthFlow::LAUNCH_WEB_AUTH_FLOW));
   auth_flow_->Start();
   return RespondLater();
 }

@@ -43,6 +43,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="6058625436358447366">Lisää lopuksi vanha ja uusi salasana</translation>
 <translation id="6106186594183574873">Lisää lopuksi vanha salasana</translation>
 <translation id="6146993107019042706">Lisää lopuksi uusi salasana</translation>
+<translation id="6517239166834772319">Explore</translation>
 <translation id="6643016212128521049">Tyhjennä</translation>
 <translation id="7162487448488904999">Galleria</translation>
 <translation id="7658239707568436148">Peruuta</translation>
@@ -50,6 +51,7 @@ Napauta mikrofonia, niin voit kysyä mitä haluat.</translation>
 <translation id="7805768142964895445">Tila</translation>
 <translation id="808894953321890993">Vaihda salasana</translation>
 <translation id="8208861521865154048">Edut</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> on tämän käyttäjän ylläpitäjä. Se voi muuttaa asetuksia ja seurata käyttäjän toimia etänä.</translation>
 <translation id="8747900814994928677">Vahvista muutos</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> yritystä jäljellä</translation>
 <translation id="910415269708673980">Päivitä tukipyyntö: <ph name="PRINCIPAL_NAME" /></translation>

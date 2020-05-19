@@ -3020,11 +3020,10 @@ void RenderFrameHostManager::CreateOpenerProxies(
     if (!proxy)
       continue;
 
-    int opener_routing_id =
-        node->render_manager()->GetOpenerRoutingID(instance);
-    DCHECK_NE(opener_routing_id, MSG_ROUTING_NONE);
-    proxy->Send(
-        new FrameMsg_UpdateOpener(proxy->GetRoutingID(), opener_routing_id));
+    auto opener_frame_token =
+        node->render_manager()->GetOpenerFrameToken(instance);
+    DCHECK(opener_frame_token);
+    proxy->GetAssociatedRemoteFrame()->UpdateOpener(opener_frame_token);
   }
 }
 
@@ -3053,6 +3052,16 @@ int RenderFrameHostManager::GetOpenerRoutingID(SiteInstance* instance) {
   return frame_tree_node_->opener()
       ->render_manager()
       ->GetRoutingIdForSiteInstance(instance);
+}
+
+base::Optional<base::UnguessableToken>
+RenderFrameHostManager::GetOpenerFrameToken(SiteInstance* instance) {
+  if (!frame_tree_node_->opener())
+    return base::nullopt;
+
+  return frame_tree_node_->opener()
+      ->render_manager()
+      ->GetFrameTokenForSiteInstance(instance);
 }
 
 void RenderFrameHostManager::SendPageMessage(IPC::Message* msg,

@@ -84,6 +84,7 @@ DataReductionProxyService::DataReductionProxyService(
       channel_(channel),
       save_data_savings_estimate_dict_(
           GetSaveDataSavingsPercentEstimateFromFieldTrial()) {
+  DCHECK(data_use_measurement_);
   DCHECK(settings);
   DCHECK(network_quality_tracker_);
   DCHECK(network_connection_tracker_);

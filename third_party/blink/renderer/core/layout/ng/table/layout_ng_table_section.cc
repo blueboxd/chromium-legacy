@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_section.h"
 
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table.h"
 #include "third_party/blink/renderer/core/layout/ng/table/layout_ng_table_cell.h"
@@ -23,6 +24,11 @@ bool LayoutNGTableSection::IsEmpty() const {
       return false;
   }
   return true;
+}
+
+LayoutBox* LayoutNGTableSection::CreateAnonymousBoxWithSameTypeAs(
+    const LayoutObject* parent) const {
+  return LayoutObjectFactory::CreateAnonymousTableSectionWithParent(*parent);
 }
 
 LayoutNGTableInterface* LayoutNGTableSection::TableInterface() const {

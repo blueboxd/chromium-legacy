@@ -204,6 +204,7 @@ void VulkanDemo::RenderFrame() {
       .fSignalSemaphores = &semaphore,
   };
   sk_surface_->flush(SkSurface::BackendSurfaceAccess::kPresent, flush_info);
+  sk_surface_->getContext()->submit();
   auto backend = sk_surface_->getBackendRenderTarget(
       SkSurface::kFlushRead_BackendHandleAccess);
   GrVkImageInfo vk_image_info;

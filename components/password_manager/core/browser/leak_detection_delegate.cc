@@ -57,6 +57,8 @@ void LeakDetectionDelegate::StartLeakCheck(const autofill::PasswordForm& form) {
   DCHECK(!form.password_value.empty());
   leak_check_ = leak_factory_->TryCreateLeakCheck(
       this, client_->GetIdentityManager(), client_->GetURLLoaderFactory());
+  // Reset the helper to avoid notifications from the currently running check.
+  helper_.reset();
   if (leak_check_) {
     is_leaked_timer_ = std::make_unique<base::ElapsedTimer>();
     leak_check_->Start(form.origin, form.username_value, form.password_value);

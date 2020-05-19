@@ -35,7 +35,6 @@
 #include "third_party/blink/public/common/css/screen_spanning.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
-#include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"
@@ -735,28 +734,6 @@ static bool PrefersReducedMotionMediaFeatureEval(
 
   return (value.id == CSSValueID::kNoPreference) ^
          media_values.PrefersReducedMotion();
-}
-
-static bool ShapeMediaFeatureEval(const MediaQueryExpValue& value,
-                                  MediaFeaturePrefix,
-                                  const MediaValues& media_values) {
-  if (!value.IsValid())
-    return true;
-
-  if (!value.is_id)
-    return false;
-
-  DisplayShape shape = media_values.GetDisplayShape();
-
-  switch (value.id) {
-    case CSSValueID::kRect:
-      return shape == kDisplayShapeRect;
-    case CSSValueID::kRound:
-      return shape == kDisplayShapeRound;
-    default:
-      NOTREACHED();
-      return false;
-  }
 }
 
 static bool AnyPointerMediaFeatureEval(const MediaQueryExpValue& value,

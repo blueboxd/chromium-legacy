@@ -793,11 +793,12 @@
     Manage your signed-in accounts. Websites, apps, and extensions in Chrome and Google Play may use these accounts to customize your experience, depending on permissions. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION" desc="Description of the Account Manager Settings page for child users. Shown just below the title of the page.">
-    Add a school account or manage child accounts here. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+    Manage your accounts here. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_DESCRIPTION_2" desc="Description of the Account Manager Settings page for child users. Shown just below the title of the page.">
-    Manage your accounts here. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>&lt;br&gt;&lt;br&gt;
-    Bookmarks, passwords, and other browser data are synced with the primary account.&lt;br&gt;&lt;br&gt;
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_FIRST_MESSAGE" desc="Description of the Account Manager Settings page for child users. Shown just below the link to learn more about account management.">
+     Bookmarks, passwords, and other browser data are synced with the primary account.
+  </message>
+  <message name="IDS_SETTINGS_ACCOUNT_MANAGER_CHILD_SECOND_MESSAGE" desc="Description of the Account Manager Settings page for child users. Shown just below the link to learn more about account management.">
     Adding a school account enables easy sign-in to websites and extensions as a student while still operating under parental controls.
   </message>
   <message name="IDS_SETTINGS_ACCOUNT_MANAGER_LIST_HEADER" desc="List header for Account List in Account Manager Settings page.">
@@ -1100,10 +1101,10 @@
     Ports
   </message>
   <message name="IDS_SETTINGS_CROSTINI_MIC_TITLE" desc="Title for sharing mic with Crostini.">
-    Allow Linux apps to access the microphone
+    Allow Linux to access your microphone
   </message>
   <message name="IDS_SETTINGS_CROSTINI_MIC_DIALOG_LABEL" desc="Dialog label for sharing mic with Crostini.">
-    The change made to the microphone access requires Linux to restart. Shut down Linux to proceed.
+    The change in microphone setting requires Linux to shut down. Shut down Linux to proceed.
   </message>
   <message name="IDS_SETTINGS_CROSTINI_MIC_DIALOG_SHUTDOWN_BUTTON" desc="Label for the shutdown button in the Crostini mic sharing dialog.">
     Shut down

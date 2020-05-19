@@ -20,13 +20,8 @@ enum class {{enum_name}} : int32_t;
 {{ kythe_annotation(full_enum_name) }}
 enum class {{enum_name}} : int32_t {
 {%-   for field in enum.fields %}
-{%-     if field.value %}
   {{ kythe_annotation("%s.%s"|format(full_enum_name, field.name)) }}
-  {{field.name}} = {{field.value|expression_to_text}},
-{%-     else %}
-  {{ kythe_annotation("%s.%s"|format(full_enum_name, field.name)) }}
-  {{field.name}},
-{%-     endif %}
+  {{field.name}} = {{field.numeric_value}},
 {%-   endfor %}
 {%-   if enum.min_value is not none %}
   kMinValue = {{enum.min_value}},

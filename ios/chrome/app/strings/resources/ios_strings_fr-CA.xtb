@@ -418,6 +418,7 @@ La fonction de transfert doit également être activée dans la section Généra
 <translation id="6362362396625799311">Aucun onglet de navigation privée</translation>
 <translation id="6363526231572697780">Aucun nom d'utilisateur</translation>
 <translation id="6374469231428023295">Réessayer</translation>
+<translation id="6377118281273296434">Sécurité du site</translation>
 <translation id="6380866119319257197">Si vous oubliez votre phrase de passe ou souhaitez modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Nom sur carte</translation>
 <translation id="6406506848690869874">Synchronisation</translation>
@@ -525,11 +526,13 @@ Vos données ont été chiffrées avec votre phrase de passe le <ph name="TIME" 
 
 Comme votre compte est géré par <ph name="HOSTED_DOMAIN" />, vos données Chrome seront supprimées de cet appareil lorsque vous vous déconnecterez. Vos données synchronisées resteront dans votre compte Google.</translation>
 <translation id="7772032839648071052">Confirmer la phrase de passe</translation>
+<translation id="7778472311864276518">Supprimer le compte de cet appareil</translation>
 <translation id="7781011649027948662">Traduire la page?</translation>
 <translation id="7781829728241885113">Hier</translation>
 <translation id="778855399387580014">Lancez une recherche dans un nouvel onglet Chrome.</translation>
 <translation id="7791543448312431591">Ajouter</translation>
 <translation id="7828557259026017104">Les témoins sont des fichiers créés par les sites Web que vous visitez. Les sites les utilisent pour mémoriser vos préférences. Les témoins tiers sont ceux que créent d'autres sites. Ces sites possèdent certains types de contenu, comme des annonces et des images, que vous voyez sur les pages que vous visitez.</translation>
+<translation id="7839985698273989086">Page hors ligne</translation>
 <translation id="7840771868269352570">Les éléments sélectionnés seront supprimés.</translation>
 <translation id="7856733331829174190">Échec du téléchargement</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>

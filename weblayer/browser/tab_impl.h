@@ -81,6 +81,14 @@ class TabImpl : public Tab,
     kBitmapAllocationFailed,
   };
 
+  class DataObserver {
+   public:
+    // Called when SetData() is called on |tab|.
+    virtual void OnDataChanged(
+        TabImpl* tab,
+        const std::map<std::string, std::string>& data) = 0;
+  };
+
   // TODO(sky): investigate a better way to not have so many ifdefs.
 #if defined(OS_ANDROID)
   TabImpl(ProfileImpl* profile,
@@ -154,9 +162,16 @@ class TabImpl : public Tab,
       JNIEnv* env,
       jfloat scale,
       const base::android::JavaParamRef<jobject>& value_callback);
+
+  jboolean SetData(JNIEnv* env,
+                   const base::android::JavaParamRef<jobjectArray>& data);
+  base::android::ScopedJavaLocalRef<jobjectArray> GetData(JNIEnv* env);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
+
+  void AddDataObserver(DataObserver* observer);
+  void RemoveDataObserver(DataObserver* observer);
 
   // Tab:
   void SetErrorPageDelegate(ErrorPageDelegate* delegate) override;
@@ -169,6 +184,8 @@ class TabImpl : public Tab,
                      bool use_separate_isolate,
                      JavaScriptResultCallback callback) override;
   const std::string& GetGuid() override;
+  void SetData(const std::map<std::string, std::string>& data) override;
+  const std::map<std::string, std::string>& GetData() override;
 #if !defined(OS_ANDROID)
   void AttachToView(views::WebView* web_view) override;
 #endif
@@ -291,6 +308,8 @@ class TabImpl : public Tab,
 
   void UpdateBrowserVisibleSecurityStateIfNecessary();
 
+  bool SetDataInternal(const std::map<std::string, std::string>& data);
+
   BrowserImpl* browser_ = nullptr;
   ErrorPageDelegate* error_page_delegate_ = nullptr;
   FullscreenDelegate* fullscreen_delegate_ = nullptr;
@@ -320,6 +339,9 @@ class TabImpl : public Tab,
   std::unique_ptr<autofill::AutofillProvider> autofill_provider_;
 
   const std::string guid_;
+
+  std::map<std::string, std::string> data_;
+  base::ObserverList<DataObserver>::Unchecked data_observers_;
 
   base::string16 title_;
 

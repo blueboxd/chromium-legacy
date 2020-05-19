@@ -332,7 +332,7 @@ class OopPixelTest : public testing::Test,
     raster_source->PlaybackToCanvas(
         canvas, options.content_size, options.full_raster_rect,
         options.playback_rect, raster_transform, settings);
-    surface->flush();
+    surface->flushAndSubmit();
     EXPECT_EQ(gles2_context_provider_->ContextGL()->GetError(),
               static_cast<unsigned>(GL_NO_ERROR));
 

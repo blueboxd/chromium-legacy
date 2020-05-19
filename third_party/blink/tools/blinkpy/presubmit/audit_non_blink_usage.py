@@ -408,6 +408,9 @@ _CONFIG = [
             # HTTP status codes
             'net::HTTP_.+',
 
+            # For ConnectionInfo enumeration
+            'net::HttpResponseInfo',
+
             # Network service.
             'network::.+',
 
@@ -543,7 +546,9 @@ _CONFIG = [
         ],
     },
     {
-        'paths': ['third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.cc'],
+        'paths': [
+            'third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.cc'
+        ],
         'allowed': [
             'gpu::SHARED_IMAGE_USAGE_DISPLAY',
             'gpu::SHARED_IMAGE_USAGE_SCANOUT',

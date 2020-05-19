@@ -26,6 +26,10 @@
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/android/modules/stack_unwinder/public/module.h"
+#endif
+
 using CallStackProfileBuilder = metrics::CallStackProfileBuilder;
 using CallStackProfileParams = metrics::CallStackProfileParams;
 using StackSamplingProfiler = base::StackSamplingProfiler;
@@ -60,6 +64,46 @@ CallStackProfileParams::Process GetProcess() {
   if (process_type == switches::kPpapiBrokerProcess)
     return CallStackProfileParams::PPAPI_BROKER_PROCESS;
   return CallStackProfileParams::UNKNOWN_PROCESS;
+}
+
+const base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>&
+GetNativeUnwinderFactory() {
+  const auto create_native_unwinder_factory = []() {
+#if defined(OS_ANDROID)
+    // The module is loadable if the profiler is enabled for the current
+    // process.
+    CHECK(StackSamplingConfiguration::Get()
+              ->IsProfilerEnabledForCurrentProcess());
+
+    struct UnwinderCreationState {
+      std::unique_ptr<stack_unwinder::Module> module;
+      std::unique_ptr<stack_unwinder::MemoryRegionsMap> memory_regions_map;
+    };
+    const auto create_native_unwinder =
+        [](UnwinderCreationState* creation_state) {
+          return creation_state->module->CreateNativeUnwinder(
+              creation_state->memory_regions_map.get());
+        };
+
+    std::unique_ptr<stack_unwinder::Module> module =
+        stack_unwinder::Module::Load();
+    std::unique_ptr<stack_unwinder::MemoryRegionsMap> memory_regions_map =
+        module->CreateMemoryRegionsMap();
+    return base::BindRepeating(
+        create_native_unwinder,
+        base::Owned(new UnwinderCreationState{std::move(module),
+                                              std::move(memory_regions_map)}));
+#else
+    return base::BindRepeating(
+        []() -> std::unique_ptr<base::Unwinder> { return nullptr; });
+#endif
+  };
+
+  static base::NoDestructor<
+      base::RepeatingCallback<std::unique_ptr<base::Unwinder>()>>
+      native_unwinder_factory(create_native_unwinder_factory());
+
+  return *native_unwinder_factory;
 }
 
 }  // namespace
@@ -239,7 +283,8 @@ ThreadProfiler::ThreadProfiler(
       std::make_unique<CallStackProfileBuilder>(
           CallStackProfileParams(GetProcess(), thread,
                                  CallStackProfileParams::PROCESS_STARTUP),
-          work_id_recorder_.get()));
+          work_id_recorder_.get()),
+      GetNativeUnwinderFactory().Run());
 
   startup_profiler_->Start();
 
@@ -303,7 +348,8 @@ void ThreadProfiler::StartPeriodicSamplingCollection() {
           work_id_recorder_.get(),
           base::BindOnce(&ThreadProfiler::OnPeriodicCollectionCompleted,
                          owning_thread_task_runner_,
-                         weak_factory_.GetWeakPtr())));
+                         weak_factory_.GetWeakPtr())),
+      GetNativeUnwinderFactory().Run());
   if (aux_unwinder_factory_)
     periodic_profiler_->AddAuxUnwinder(aux_unwinder_factory_.Run());
 

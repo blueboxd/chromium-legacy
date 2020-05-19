@@ -89,7 +89,13 @@ class JsUtil(object):
       # If the parameter was originally optional, but was followed by
       # non-optional parameters, allow it to be `null` or `undefined` instead.
       if not optional and param.optional:
-        js_type = Code().Append('?%s|undefined' % js_type.Render())
+        js_type_string = js_type.Render()
+
+        # Remove the leading "!" from |js_type_string| if it exists, since "?!"
+        # is not a valid type modifier.
+        if js_type_string.startswith('!'):
+          js_type_string = js_type_string[1:]
+        js_type = Code().Append('?%s|undefined' % js_type_string)
 
       append_field(c, 'param', js_type, param.name, optional, param.description)
 

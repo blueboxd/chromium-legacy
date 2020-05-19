@@ -64,6 +64,8 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_tests") {
   ]
   deps = [
     ":chrome_java_test_pagecontroller",
+    "//base:base_java_test_support",
+    "//content/public/test/android:content_java_test_support",
     "//third_party/junit",
   ]
 
@@ -104,6 +106,11 @@ instrumentation_test_apk("chrome_java_test_webapk_launch_tests") {
   sources = [ "javatests/src/org/chromium/chrome/test/pagecontroller/tests/webapk/MapsGoFirstRunTest.java" ]
   deps = [
     ":chrome_java_test_pagecontroller",
+    "//base:base_java",
+    "//chrome/android:chrome_java",
+    "//chrome/android/webapk/libs/client:client_java",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",
   ]
 

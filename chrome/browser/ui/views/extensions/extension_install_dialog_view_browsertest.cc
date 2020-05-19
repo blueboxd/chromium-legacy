@@ -186,12 +186,12 @@ class ExtensionInstallDialogViewTest
       const ExtensionInstallDialogViewTest&) = delete;
 
  protected:
-  views::DialogDelegateView* CreateAndShowPrompt(
+  ExtensionInstallDialogView* CreateAndShowPrompt(
       ExtensionInstallPromptTestHelper* helper) {
     auto dialog = std::make_unique<ExtensionInstallDialogView>(
         profile(), web_contents(), helper->GetCallback(),
         CreatePrompt(ExtensionInstallPrompt::INSTALL_PROMPT));
-    views::DialogDelegateView* delegate_view = dialog.get();
+    ExtensionInstallDialogView* delegate_view = dialog.get();
 
     views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
         dialog.release(), nullptr,
@@ -207,14 +207,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
   {
     // User presses install.
     ExtensionInstallPromptTestHelper helper;
-    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
     delegate_view->AcceptDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::ACCEPTED, helper.result());
   }
   {
     // User presses cancel.
     ExtensionInstallPromptTestHelper helper;
-    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
     delegate_view->CancelDialog();
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
   }
@@ -222,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
     // Dialog is closed without the user explicitly choosing to proceed or
     // cancel.
     ExtensionInstallPromptTestHelper helper;
-    views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+    ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
     CloseAndWait(delegate_view->GetWidget());
     // TODO(devlin): Should this be ABORTED?
     EXPECT_EQ(ExtensionInstallPrompt::Result::USER_CANCELED, helper.result());
@@ -234,7 +234,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, NotifyDelegate) {
 IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogViewTest, InstallButtonDelay) {
   ExtensionInstallDialogView::SetInstallButtonDelayForTesting(0);
   ExtensionInstallPromptTestHelper helper;
-  views::DialogDelegateView* delegate_view = CreateAndShowPrompt(&helper);
+  ExtensionInstallDialogView* delegate_view = CreateAndShowPrompt(&helper);
 
   // Check that dialog is visible.
   EXPECT_TRUE(delegate_view->GetVisible());
@@ -617,7 +617,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallDialogWithWithholdPermissionsUI,
   prompt->AddPermissionSet(permissions);
   auto dialog = std::make_unique<ExtensionInstallDialogView>(
       profile(), web_contents(), helper.GetCallback(), std::move(prompt));
-  views::DialogDelegateView* delegate_view = dialog.get();
+  views::BubbleDialogDelegateView* delegate_view = dialog.get();
 
   views::Widget* modal_dialog = views::DialogDelegate::CreateDialogWidget(
       dialog.release(), nullptr,

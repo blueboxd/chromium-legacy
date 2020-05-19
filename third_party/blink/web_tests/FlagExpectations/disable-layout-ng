@@ -64,6 +64,8 @@ crbug.com/998423 external/wpt/css/css-multicol/with-custom-layout-on-same-elemen
 crbug.com/998423 external/wpt/css/css-multicol/with-custom-layout-on-same-element.https.html [ Skip ]
 
 ### external/wpt/css/css-position/
+crbug.com/591099 external/wpt/css/css-position/position-absolute-center-003.html [ Failure ]
+crbug.com/591099 external/wpt/css/css-position/position-absolute-center-004.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-position/position-absolute-crash-chrome-006.html [ Crash ]
 crbug.com/591099 external/wpt/css/css-position/position-absolute-dynamic-overflow-002.html [ Failure ]
 

@@ -87,6 +87,37 @@ class ThrottleContentBrowserClient : public ChromeContentBrowserClient {
 
 // Subclass of DiceManageAccountBrowserTest with Mirror enabled.
 class MirrorBrowserTest : public InProcessBrowserTest {
+ protected:
+  void RunExtensionConsentTest(extensions::WebAuthFlow::Partition partition,
+                               bool expects_header) {
+    net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+    https_server.AddDefaultHandlers(GetChromeTestDataDir());
+    const std::string kAuthPath = "/auth";
+    net::test_server::HttpRequest::HeaderMap headers;
+    base::RunLoop run_loop;
+    https_server.RegisterRequestMonitor(base::BindLambdaForTesting(
+        [&](const net::test_server::HttpRequest& request) {
+          if (request.GetURL().path() != kAuthPath)
+            return;
+
+          headers = request.headers;
+          run_loop.Quit();
+        }));
+    ASSERT_TRUE(https_server.Start());
+
+    auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
+        nullptr, browser()->profile(),
+        https_server.GetURL("google.com", kAuthPath),
+        extensions::WebAuthFlow::INTERACTIVE, partition);
+
+    web_auth_flow->Start();
+    run_loop.Run();
+    EXPECT_EQ(!!headers.count(signin::kChromeConnectedHeader), expects_header);
+
+    web_auth_flow.release()->DetachDelegateAndDelete();
+    base::RunLoop().RunUntilIdle();
+  }
+
  private:
   void SetUpOnMainThread() override {
     // The test makes requests to google.com and other domains which we want to
@@ -227,34 +258,15 @@ IN_PROC_BROWSER_TEST_F(MirrorBrowserTest, MirrorRequestHeader) {
 // Verifies that requests originated from chrome.identity.launchWebAuthFlow()
 // API don't have Mirror headers attached.
 // This is a regression test for crbug.com/1077504.
-IN_PROC_BROWSER_TEST_F(MirrorBrowserTest, MirrorExtensionConsent) {
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+IN_PROC_BROWSER_TEST_F(MirrorBrowserTest,
+                       NoMirrorExtensionConsent_LaunchWebAuthFlow) {
+  RunExtensionConsentTest(extensions::WebAuthFlow::LAUNCH_WEB_AUTH_FLOW, false);
+}
 
-  const std::string kAuthPath = "/auth";
-  net::test_server::HttpRequest::HeaderMap headers;
-  base::RunLoop run_loop;
-  https_server.RegisterRequestMonitor(base::BindLambdaForTesting(
-      [&](const net::test_server::HttpRequest& request) {
-        if (request.GetURL().path() != kAuthPath)
-          return;
-
-        headers = request.headers;
-        run_loop.Quit();
-      }));
-  ASSERT_TRUE(https_server.Start());
-
-  auto web_auth_flow = std::make_unique<extensions::WebAuthFlow>(
-      nullptr, browser()->profile(),
-      https_server.GetURL("www.google.com", kAuthPath),
-      extensions::WebAuthFlow::INTERACTIVE);
-
-  web_auth_flow->Start();
-  run_loop.Run();
-  EXPECT_FALSE(!!headers.count(signin::kChromeConnectedHeader));
-
-  web_auth_flow.release()->DetachDelegateAndDelete();
-  base::RunLoop().RunUntilIdle();
+// Verifies that requests originated from chrome.identity.getAuthToken()
+// API have Mirror headers attached.
+IN_PROC_BROWSER_TEST_F(MirrorBrowserTest, MirrorExtensionConsent_GetAuthToken) {
+  RunExtensionConsentTest(extensions::WebAuthFlow::GET_AUTH_TOKEN, true);
 }
 
 }  // namespace

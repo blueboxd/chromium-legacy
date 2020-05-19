@@ -6,6 +6,10 @@
 
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/input/web_gesture_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
+#include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
+#include "third_party/blink/public/common/input/web_touch_event.h"
 
 using base::TimeDelta;
 using blink::WebGestureEvent;
@@ -92,14 +96,14 @@ void MockWidgetInputHandler::RequestCompositionUpdates(bool immediate_request,
 }
 
 void MockWidgetInputHandler::DispatchEvent(
-    std::unique_ptr<content::InputEvent> event,
+    std::unique_ptr<blink::WebCoalescedInputEvent> event,
     DispatchEventCallback callback) {
   dispatched_messages_.emplace_back(std::make_unique<DispatchedEventMessage>(
       std::move(event), std::move(callback)));
 }
 
 void MockWidgetInputHandler::DispatchNonBlockingEvent(
-    std::unique_ptr<content::InputEvent> event) {
+    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
   dispatched_messages_.emplace_back(std::make_unique<DispatchedEventMessage>(
       std::move(event), DispatchEventCallback()));
 }
@@ -199,10 +203,10 @@ MockWidgetInputHandler::DispatchedEditCommandMessage::Commands() const {
 }
 
 MockWidgetInputHandler::DispatchedEventMessage::DispatchedEventMessage(
-    std::unique_ptr<content::InputEvent> event,
+    std::unique_ptr<blink::WebCoalescedInputEvent> event,
     DispatchEventCallback callback)
     : DispatchedMessage(
-          blink::WebInputEvent::GetName(event->web_event->GetType())),
+          blink::WebInputEvent::GetName(event->Event().GetType())),
       event_(std::move(event)),
       callback_(std::move(callback)) {}
 
@@ -246,7 +250,7 @@ bool MockWidgetInputHandler::DispatchedEventMessage::HasCallback() const {
   return !!callback_;
 }
 
-const content::InputEvent*
+const blink::WebCoalescedInputEvent*
 MockWidgetInputHandler::DispatchedEventMessage::Event() const {
   return event_.get();
 }

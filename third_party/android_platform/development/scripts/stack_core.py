@@ -516,22 +516,26 @@ def GetUncompressedSharedLibraryFromAPK(apkname, offset):
   FILE_NAME_OFFSET = 30
   soname = ""
   sosize = 0
-  with zipfile.ZipFile(apkname, 'r') as apk:
-    for infoList in apk.infolist():
-      _, file_extension = os.path.splitext(infoList.filename)
-      if (file_extension == '.so' and
-           infoList.file_size == infoList.compress_size):
-        with open(apkname, 'rb') as f:
-          f.seek(infoList.header_offset + FILE_NAME_LEN_OFFSET)
-          file_name_len = struct.unpack('H', f.read(2))[0]
-          extra_field_len = struct.unpack('H', f.read(2))[0]
-          file_offset = (infoList.header_offset + FILE_NAME_OFFSET +
-                         file_name_len + extra_field_len)
-          f.seek(file_offset)
-          if offset == file_offset and f.read(4) == "\x7fELF":
-            soname = infoList.filename.replace('crazy.', '')
-            sosize = infoList.file_size
-            break
+  try:
+    with zipfile.ZipFile(apkname, 'r') as apk:
+      for infoList in apk.infolist():
+        _, file_extension = os.path.splitext(infoList.filename)
+        if (file_extension == '.so' and
+             infoList.file_size == infoList.compress_size):
+          with open(apkname, 'rb') as f:
+            f.seek(infoList.header_offset + FILE_NAME_LEN_OFFSET)
+            file_name_len = struct.unpack('H', f.read(2))[0]
+            extra_field_len = struct.unpack('H', f.read(2))[0]
+            file_offset = (infoList.header_offset + FILE_NAME_OFFSET +
+                           file_name_len + extra_field_len)
+            f.seek(file_offset)
+            if offset == file_offset and f.read(4) == "\x7fELF":
+              soname = infoList.filename.replace('crazy.', '')
+              sosize = infoList.file_size
+              break
+  except zipfile.BadZipfile:
+    logging.warning("Ignorning bad zip file %s", apkname)
+    return "", 0
   return soname, sosize
 
 

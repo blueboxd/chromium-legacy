@@ -58,8 +58,6 @@ class RemoteFrameClient : public FrameClient {
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) = 0;
 
-  virtual void AdvanceFocus(mojom::blink::FocusType, LocalFrame* source) = 0;
-
   virtual uint32_t Print(const IntRect&, cc::PaintCanvas*) const = 0;
 };
 

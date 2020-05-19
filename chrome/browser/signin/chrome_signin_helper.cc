@@ -304,6 +304,8 @@ void ProcessMirrorHeader(
     signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
         account_reconcilor->GetState());
     auto* window = web_contents->GetNativeView()->GetWindowAndroid();
+    if (!window)
+      return;
     SigninUtils::OpenAccountManagementScreen(window, service_type,
                                              manage_accounts_params.email);
   }

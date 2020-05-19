@@ -59,6 +59,8 @@ junit_binary("module_installer_junit_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//third_party/google_android_play_core:com_google_android_play_core_java",
+    "//third_party/hamcrest:hamcrest_java",
   ]
 }
 

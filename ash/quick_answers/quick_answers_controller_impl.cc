@@ -85,6 +85,9 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
 }
 
 void QuickAnswersControllerImpl::DismissQuickAnswers(bool is_active) {
+  if (!is_eligible_)
+    return;
+
   MaybeDismissQuickAnswersConsent();
   quick_answers_ui_controller_->CloseQuickAnswersView();
   quick_answers_client_->OnQuickAnswersDismissed(

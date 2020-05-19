@@ -31,7 +31,6 @@
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink-forward.h"
-#include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
@@ -273,9 +272,6 @@ class CORE_EXPORT LocalFrameView final
   AtomicString MediaType() const;
   void SetMediaType(const AtomicString&);
   void AdjustMediaTypeForPrinting(bool printing);
-
-  DisplayShape GetDisplayShape() { return display_shape_; }
-  void SetDisplayShape(DisplayShape);
 
   // For any viewport-constrained object, we need to know if it's due to fixed
   // or sticky so that we can support HasStickyViewportConstrainedObject().
@@ -866,8 +862,6 @@ class CORE_EXPORT LocalFrameView final
   EmbeddedObjectSet part_update_set_;
 
   Member<LocalFrame> frame_;
-
-  DisplayShape display_shape_;
 
   bool can_have_scrollbars_;
 

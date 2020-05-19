@@ -227,6 +227,11 @@ void StreamTexture::OnFrameAvailable() {
   if (!has_listener_ || !channel_)
     return;
 
+  // We haven't received size for first time yet from the MediaPlayer we will
+  // defer this sending OnFrameAvailable till then.
+  if (rotated_visible_size_.IsEmpty())
+    return;
+
   UpdateTexImage(BindingsMode::kEnsureTexImageBound);
 
   gfx::Rect visible_rect;
@@ -324,7 +329,14 @@ gpu::Mailbox StreamTexture::CreateSharedImage(const gfx::Size& coded_size) {
 void StreamTexture::OnUpdateRotatedVisibleSize(
     const gfx::Size& rotated_visible_size) {
   DCHECK(channel_);
+  bool was_empty = rotated_visible_size_.IsEmpty();
   rotated_visible_size_ = rotated_visible_size;
+
+  // It's possible that first OnUpdateRotatedVisibleSize will come after first
+  // OnFrameAvailable. We delay sending OnFrameWithInfoAvailable if it comes
+  // first so now it's time to send it.
+  if (was_empty && has_pending_frame_)
+    OnFrameAvailable();
 }
 
 void StreamTexture::OnDestroy() {

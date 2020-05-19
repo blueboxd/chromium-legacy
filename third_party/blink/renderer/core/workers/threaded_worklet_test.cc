@@ -106,18 +106,20 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     ContentSecurityPolicy* csp = GlobalScope()->GetContentSecurityPolicy();
 
     // The "script-src 'self'" directive allows this.
-    EXPECT_TRUE(csp->AllowScriptFromSource(GlobalScope()->Url(), String(),
-                                           IntegrityMetadataSet(),
-                                           kParserInserted));
+    EXPECT_TRUE(csp->AllowScriptFromSource(
+        GlobalScope()->Url(), String(), IntegrityMetadataSet(), kParserInserted,
+        GlobalScope()->Url(), RedirectStatus::kNoRedirect));
 
     // The "script-src https://allowed.example.com" should allow this.
-    EXPECT_TRUE(csp->AllowScriptFromSource(KURL("https://allowed.example.com"),
-                                           String(), IntegrityMetadataSet(),
-                                           kParserInserted));
+    EXPECT_TRUE(csp->AllowScriptFromSource(
+        KURL("https://allowed.example.com"), String(), IntegrityMetadataSet(),
+        kParserInserted, KURL("https://allowed.example.com"),
+        RedirectStatus::kNoRedirect));
 
     EXPECT_FALSE(csp->AllowScriptFromSource(
         KURL("https://disallowed.example.com"), String(),
-        IntegrityMetadataSet(), kParserInserted));
+        IntegrityMetadataSet(), kParserInserted,
+        KURL("https://disallowed.example.com"), RedirectStatus::kNoRedirect));
 
     PostCrossThreadTask(*GetParentTaskRunnerForTesting(), FROM_HERE,
                         CrossThreadBindOnce(&test::ExitRunLoop));

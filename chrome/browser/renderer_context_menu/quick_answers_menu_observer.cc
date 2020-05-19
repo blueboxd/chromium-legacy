@@ -133,7 +133,7 @@ void QuickAnswersMenuObserver::OnContextMenuShown(
   if (!IsRichUiEnabled())
     return;
 
-  if (!is_eligible_ || !quick_answers_controller_)
+  if (!quick_answers_controller_)
     return;
 
   if (params.input_field_type ==
@@ -157,7 +157,7 @@ void QuickAnswersMenuObserver::OnMenuClosed() {
   if (!IsRichUiEnabled())
     return;
 
-  if (!is_eligible_ || !quick_answers_controller_)
+  if (!quick_answers_controller_)
     return;
 
   quick_answers_controller_->DismissQuickAnswers(!is_other_command_executed_);

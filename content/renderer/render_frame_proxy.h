@@ -195,8 +195,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                          const blink::WebRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(
       const blink::ViewportIntersectionState& intersection_state) override;
-  void AdvanceFocus(blink::mojom::FocusType type,
-                    blink::WebLocalFrame* source) override;
   base::UnguessableToken GetDevToolsFrameToken() override;
   uint32_t Print(const blink::WebRect& rect, cc::PaintCanvas* canvas) override;
 
@@ -227,7 +225,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   // IPC handlers
   void OnDeleteProxy();
   void OnCompositorFrameSwapped(const IPC::Message& message);
-  void OnUpdateOpener(int opener_routing_id);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(
       blink::mojom::InsecureRequestPolicy policy);

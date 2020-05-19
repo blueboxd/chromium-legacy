@@ -55,6 +55,8 @@ android_library("java") {
     "//components/offline_items_collection/core:core_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:androidx_fragment_fragment_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
     "//third_party/android_deps:com_google_android_material_material_java",
     "//ui/android:ui_java",
   ]
@@ -94,6 +96,7 @@ android_library("download_java_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/browser_ui/util/android:java",
     "//components/offline_items_collection/core:core_java",
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/junit",

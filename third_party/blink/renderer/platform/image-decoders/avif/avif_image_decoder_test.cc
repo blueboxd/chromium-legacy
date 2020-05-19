@@ -192,9 +192,7 @@ StaticColorCheckParam kTestParams[] = {
      1,
      {
          {gfx::Point(0, 0), SkColorSetARGB(0, 0, 0, 0)},
-         // If the color space is sRGB, pre-multiplied red should be 187.84.
-         //  http://www.color.org/sRGB.pdf
-         {gfx::Point(1, 1), SkColorSetARGB(128, 188, 0, 0)},
+         {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
 #endif
@@ -265,9 +263,7 @@ StaticColorCheckParam kTestParams[] = {
      1,
      {
          {gfx::Point(0, 0), SkColorSetARGB(0, 0, 0, 0)},
-         // If the color space is sRGB, pre-multiplied red should be 187.84.
-         //  http://www.color.org/sRGB.pdf
-         {gfx::Point(1, 1), SkColorSetARGB(128, 188, 0, 0)},
+         {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
 #endif
@@ -374,9 +370,7 @@ StaticColorCheckParam kTestParams[] = {
      1,
      {
          {gfx::Point(0, 0), SkColorSetARGB(0, 0, 0, 0)},
-         // If the color space is sRGB, pre-multiplied red should be 187.84.
-         //  http://www.color.org/sRGB.pdf
-         {gfx::Point(1, 1), SkColorSetARGB(128, 188, 0, 0)},
+         {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
 #endif
@@ -423,7 +417,7 @@ StaticColorCheckParam kTestParams[] = {
      ColorType::kRgb,
      ImageDecoder::kLosslessFormat,
      ImageDecoder::kAlphaNotPremultiplied,
-     ColorBehavior::Tag(),
+     ColorBehavior::Ignore(),
      1,
      {
          {gfx::Point(0, 0), SkColorSetARGB(255, 0, 0, 255)},

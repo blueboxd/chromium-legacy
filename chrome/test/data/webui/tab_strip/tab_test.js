@@ -6,7 +6,7 @@ import 'chrome://tab-strip/tab.js';
 
 import {getFavicon} from 'chrome://resources/js/icon.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {TabStripEmbedderProxy} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
+import {TabStripEmbedderProxy, TabStripEmbedderProxyImpl} from 'chrome://tab-strip/tab_strip_embedder_proxy.js';
 import {CloseTabAction, TabNetworkState, TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
 
 import {TestTabStripEmbedderProxy} from './test_tab_strip_embedder_proxy.js';
@@ -44,7 +44,7 @@ suite('Tab', function() {
     document.body.style.setProperty('--tabstrip-tab-spacing', '20px');
 
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
-    TabStripEmbedderProxy.instance_ = testTabStripEmbedderProxy;
+    TabStripEmbedderProxyImpl.instance_ = testTabStripEmbedderProxy;
 
     testTabsApiProxy = new TestTabsApiProxy();
     TabsApiProxyImpl.instance_ = testTabsApiProxy;

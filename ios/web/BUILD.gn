@@ -224,6 +224,7 @@ source_set("ios_web_general_unittests") {
     "//components/url_formatter",
     "//ios/net",
     "//ios/testing:ocmock_support",
+    "//ios/web/navigation",
     "//ios/web/public",
     "//ios/web/public/session",
     "//ios/web/public/test",

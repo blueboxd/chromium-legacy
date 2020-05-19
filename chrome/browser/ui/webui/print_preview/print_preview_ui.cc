@@ -651,7 +651,7 @@ void PrintPreviewUI::OnPrintPreviewRequest(int request_id) {
 }
 
 void PrintPreviewUI::OnDidStartPreview(
-    const PrintHostMsg_DidStartPreview_Params& params,
+    const mojom::DidStartPreviewParams& params,
     int request_id) {
   DCHECK_GT(params.page_count, 0);
   DCHECK(!params.pages_to_render.empty());

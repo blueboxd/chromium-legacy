@@ -28,15 +28,16 @@ class ExpandableContainerView : public views::View {
   ExpandableContainerView(const ExpandableContainerView&) = delete;
   ExpandableContainerView& operator=(const ExpandableContainerView&) = delete;
 
+  // Accessors for testing.
+  View* details_view() { return details_view_; }
+  void ToggleDetailLevelForTest() { ToggleDetailLevel(); }
+
  private:
   // Helper class representing the list of details, that can hide itself.
   class DetailsView : public views::View {
    public:
     explicit DetailsView(const std::vector<base::string16>& details);
     ~DetailsView() override;
-
-    // views::View:
-    gfx::Size CalculatePreferredSize() const override;
 
     // Expands or collapses this view.
     void ToggleExpanded();

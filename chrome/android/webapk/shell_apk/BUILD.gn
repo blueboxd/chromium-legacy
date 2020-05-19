@@ -359,6 +359,8 @@ junit_binary("webapk_shell_apk_junit_tests") {
     "junit/src/org/chromium/webapk/shell_apk/WebApkUtilsTest.java",
   ]
   deps = [
+    ":compiled_in_runtime_library_java",
+    ":webapk_generated_webapk_java",
     ":webapk_generated_webapk_with_service_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/libs/runtime_library:runtime_library_for_tests_java",
@@ -375,6 +377,7 @@ junit_binary("webapk_shell_apk_h2o_junit_tests") {
   ]
   deps = [
     ":${h2o_junit_manifest_target_name}",
+    ":h2o_j_unit_webapk_generated_webapk_java",
     ":h2o_j_unit_webapk_generated_webapk_with_service_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/android/webapk/test:junit_test_support",

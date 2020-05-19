@@ -19,6 +19,10 @@ namespace blink {
 
 void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
                                  const PhysicalOffset& paint_offset) {
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelectionDragImage)
+    return;
+
   WebMediaPlayer* media_player =
       layout_video_.MediaElement()->GetWebMediaPlayer();
   bool displaying_poster =
@@ -57,8 +61,9 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers;
 
   bool paint_with_foreign_layer =
-      !displaying_poster && !force_software_video_paint &&
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled();
+      RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
+      paint_info.phase == PaintPhase::kForeground && !displaying_poster &&
+      !force_software_video_paint;
   if (paint_with_foreign_layer) {
     if (cc::Layer* layer = layout_video_.MediaElement()->CcLayer()) {
       layer->SetBounds(gfx::Size(snapped_replaced_rect.Size()));

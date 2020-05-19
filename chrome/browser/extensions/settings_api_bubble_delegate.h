@@ -21,6 +21,13 @@ class SettingsApiBubbleDelegate
   SettingsApiBubbleDelegate(Profile* profile, SettingsApiOverrideType type);
   ~SettingsApiBubbleDelegate() override;
 
+  // The preference used to indicate if the user has acknowledged the extension
+  // taking over some aspect of the user's settings (homepage, startup pages,
+  // or search engine).
+  // TODO(devlin): We currently use one preference for all of these, but that's
+  // probably not desirable.
+  static const char kAcknowledgedPreference[];
+
   // ExtensionMessageBubbleController::Delegate methods.
   bool ShouldIncludeExtension(const Extension* extension) override;
   void AcknowledgeExtension(

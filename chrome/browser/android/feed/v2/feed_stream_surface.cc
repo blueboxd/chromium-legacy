@@ -190,4 +190,10 @@ void FeedStreamSurface::ReportStreamScrolled(JNIEnv* env,
   feed_stream_api_->ReportStreamScrolled(distance_dp);
 }
 
+void FeedStreamSurface::ReportStreamScrollStart(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->ReportStreamScrollStart();
+}
+
 }  // namespace feed

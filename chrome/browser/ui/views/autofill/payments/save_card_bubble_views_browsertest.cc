@@ -817,23 +817,6 @@ class SaveCardBubbleViewsFullFormBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViewsFullFormBrowserTest);
 };
 
-class SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate() {
-    // Enable the EditableExpirationDate experiment.
-    feature_list_.InitWithFeatures(
-        // Enabled
-        {features::kAutofillUpstreamEditableExpirationDate,
-         features::kAutofillUpstream},
-        // Disabled
-        {});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // TODO(crbug.com/932818): Remove this class after experiment flag is cleaned
 // up. Otherwise we need it because the toolbar is init-ed before each test is
 // set up. Thus need to enable the feature in the general browsertest SetUp().
@@ -1776,7 +1759,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a pair of
 // dropdowns requesting expiration date if expiration date is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithMissingExpirationDateRequestsExpirationDate) {
   SetUpForEditableExpirationDate();
   FillFormWithoutExpirationDate();
@@ -1787,7 +1770,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that the bubble surfaces a pair of
 // dropdowns requesting expiration date if expiration date is expired.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithExpiredExpirationDateRequestsExpirationDate) {
   SetUpForEditableExpirationDate();
   FillFormWithSpecificExpirationDate("08", "2000");
@@ -1795,51 +1778,10 @@ IN_PROC_BROWSER_TEST_F(
   VerifyExpirationDateDropdownsAreVisible();
 }
 
-class
-    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate
-    : public SaveCardBubbleViewsFullFormBrowserTest {
- public:
-  SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate() {
-    // Disable the EditableExpirationDate experiment.
-    feature_list_.InitWithFeatures(
-        // Enabled
-        {features::kAutofillUpstream},
-        // Disabled
-        {features::kAutofillUpstreamEditableExpirationDate});
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-// Tests the upload save bubble. Ensures that the bubble is not shown when
-// expiration date is passed, but the flag is disabled.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate,
-    Logic_ShouldNotOfferToSaveIfSubmittingExpiredExpirationDateAndExpOff) {
-  // The credit card will not be imported if the expiration date is expired and
-  // experiment is off.
-  FillFormWithSpecificExpirationDate("08", "2000");
-  SubmitForm();
-  EXPECT_FALSE(GetSaveCardBubbleViews());
-}
-
-// Tests the upload save bubble. Ensures that the bubble is not shown when
-// expiration date is missing, but the flag is disabled.
-IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstreamAndNoEditableExpirationDate,
-    Logic_ShouldNotOfferToSaveIfMissingExpirationDateAndExpOff) {
-  // The credit card will not be imported if there is no expiration date and
-  // experiment is off.
-  FillFormWithoutExpirationDate();
-  SubmitForm();
-  EXPECT_FALSE(GetSaveCardBubbleViews());
-}
-
 // Tests the upload save bubble. Ensures that the bubble does not surface the
 // expiration date dropdowns if it is not needed.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_ShouldNotRequestExpirationDateInHappyPath) {
   SetUpForEditableExpirationDate();
   FillForm();
@@ -1858,7 +1800,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if the expiration date drop down
 // box is changing, [Save] button will change status correctly.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SaveButtonStatusResetBetweenExpirationDateSelectionChanges) {
   SetUpForEditableExpirationDate();
   FillFormWithoutExpirationDate();
@@ -1890,7 +1832,7 @@ IN_PROC_BROWSER_TEST_F(
 // Tests the upload save bubble. Ensures that if the user is selecting an
 // expired expiration date, it is not allowed to click [Save].
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SaveButtonIsDisabledIfExpiredExpirationDateAndExpirationDateRequested) {
   SetUpForEditableExpirationDate();
   FillFormWithoutExpirationDate();
@@ -1916,7 +1858,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date with year pre-populated if year is valid
 // but month is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithMissingExpirationDateMonthAndWithValidYear) {
   SetUpForEditableExpirationDate();
   // Submit the form with a year value, but not a month value.
@@ -1934,7 +1876,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date with month pre-populated if month is
 // detected but year is missing.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithMissingExpirationDateYearAndWithMonth) {
   SetUpForEditableExpirationDate();
   // Submit the form with a month value, but not a year value.
@@ -1952,7 +1894,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date if month is missing and year is detected
 // but out of the range of dropdown.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithExpirationDateMonthAndWithYearIsOutOfRange) {
   SetUpForEditableExpirationDate();
   // Fill form but with an expiration year ten years in the future which is out
@@ -1970,7 +1912,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date if expiration date month is missing and
 // year is detected but passed.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithExpirationDateMonthAndYearExpired) {
   SetUpForEditableExpirationDate();
   // Fill form with a valid month but a passed year.
@@ -1988,7 +1930,7 @@ IN_PROC_BROWSER_TEST_F(
 // dropdowns requesting expiration date if expiration date is expired but is
 // current year.
 IN_PROC_BROWSER_TEST_F(
-    SaveCardBubbleViewsFullFormBrowserTestWithEditableExpirationDate,
+    SaveCardBubbleViewsFullFormBrowserTestWithAutofillUpstream,
     Upload_SubmittingFormWithExpirationDateMonthAndCurrentYear) {
   SetUpForEditableExpirationDate();
   const base::Time kJune2017 = base::Time::FromDoubleT(1497552271);

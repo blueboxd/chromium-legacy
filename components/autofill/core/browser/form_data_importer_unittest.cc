@@ -1507,39 +1507,10 @@ TEST_F(FormDataImporterTest, ImportCreditCard_InvalidCardNumber) {
   ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
 }
 
-// Tests that an invalid credit card expiration is not extracted when the
-// expiration date fix flow experiment is disabled.
-TEST_F(FormDataImporterTest, ImportCreditCard_InvalidExpiryDate) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
-  FormData form;
-  form.url = GURL("https://wwww.foo.com");
-
-  AddFullCreditCardForm(&form, "Smalls Biggie", "4111-1111-1111-1111", "0",
-                        "2999");
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
-  std::unique_ptr<CreditCard> imported_credit_card;
-  base::HistogramTester histogram_tester;
-  EXPECT_FALSE(ImportCreditCard(form_structure, false, &imported_credit_card));
-  ASSERT_FALSE(imported_credit_card);
-  histogram_tester.ExpectUniqueSample("Autofill.SubmittedCardState",
-                                      AutofillMetrics::HAS_CARD_NUMBER_ONLY, 1);
-
-  // Since no refresh is expected, reload the data from the database to make
-  // sure no changes were written out.
-  ResetPersonalDataManager(USER_MODE_NORMAL);
-
-  ASSERT_EQ(0U, personal_data_manager_->GetCreditCards().size());
-}
-
-// Tests that an empty credit card expiration is extracted when editable
-// expiration date experiment on.
+// Tests that a credit card with an empty expiration can be extracted due to the
+// expiration date fix flow.
 TEST_F(FormDataImporterTest,
        ImportCreditCard_InvalidExpiryDate_EditableExpirationExpOn) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
@@ -1555,12 +1526,10 @@ TEST_F(FormDataImporterTest,
                                       AutofillMetrics::HAS_CARD_NUMBER_ONLY, 1);
 }
 
-// Tests that an expired credit card is extracted when editable expiration date
-// experiment on.
+// Tests that an expired credit card can be extracted due to the expiration date
+// fix flow.
 TEST_F(FormDataImporterTest,
        ImportCreditCard_ExpiredExpiryDate_EditableExpirationExpOn) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
   FormData form;
   form.url = GURL("https://wwww.foo.com");
 
@@ -2458,38 +2427,7 @@ TEST_F(FormDataImporterTest,
 // Ensures that |imported_credit_card_record_type_| is set correctly.
 TEST_F(
     FormDataImporterTest,
-    ImportFormData_ImportCreditCardRecordType_NoCard_ExpiredCard_EditableExpDateOff) {
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
-  // Simulate a form submission with an expired credit card.
-  FormData form;
-  form.url = GURL("https://wwww.foo.com");
-
-  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
-                        "1999");
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes();
-  std::unique_ptr<CreditCard> imported_credit_card;
-  base::Optional<std::string> imported_upi_id;
-  EXPECT_FALSE(form_data_importer_->ImportFormData(
-      form_structure, /*profile_autofill_enabled=*/true,
-      /*credit_card_autofill_enabled=*/true,
-      /*should_return_local_card=*/true, &imported_credit_card,
-      &imported_upi_id));
-  ASSERT_FALSE(imported_credit_card);
-  // |imported_credit_card_record_type_| should be NO_CARD because no valid card
-  // was successfully imported from the form.
-  ASSERT_TRUE(form_data_importer_->imported_credit_card_record_type_ ==
-              FormDataImporter::ImportedCreditCardRecordType::NO_CARD);
-}
-
-// Ensures that |imported_credit_card_record_type_| is set correctly.
-TEST_F(
-    FormDataImporterTest,
     ImportFormData_ImportCreditCardRecordType_NewCard_ExpiredCard_WithExpDateFixFlow) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
   // Simulate a form submission with an expired credit card.
   FormData form;
   form.url = GURL("https://wwww.foo.com");
@@ -3110,8 +3048,6 @@ TEST_F(FormDataImporterTest,
 // server card and user submitted an invalid expiration date month.
 TEST_F(FormDataImporterTest,
        Metrics_SubmittedServerCardExpirationStatus_EmptyExpirationMonth) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
   EnableWalletCardImport();
 
   std::vector<CreditCard> server_cards;
@@ -3160,8 +3096,6 @@ TEST_F(FormDataImporterTest,
 // server card and user submitted an invalid expiration date year.
 TEST_F(FormDataImporterTest,
        Metrics_SubmittedServerCardExpirationStatus_EmptyExpirationYear) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
   EnableWalletCardImport();
 
   std::vector<CreditCard> server_cards;
@@ -3211,8 +3145,6 @@ TEST_F(FormDataImporterTest,
 TEST_F(
     FormDataImporterTest,
     Metrics_SubmittedDifferentServerCardExpirationStatus_EmptyExpirationYear) {
-  scoped_feature_list_.InitAndEnableFeature(
-      features::kAutofillUpstreamEditableExpirationDate);
   EnableWalletCardImport();
 
   std::vector<CreditCard> server_cards;

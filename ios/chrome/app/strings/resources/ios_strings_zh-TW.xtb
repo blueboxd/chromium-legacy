@@ -418,6 +418,7 @@
 <translation id="6362362396625799311">沒有已開啟的無痕式分頁</translation>
 <translation id="6363526231572697780">沒有使用者名稱</translation>
 <translation id="6374469231428023295">再試一次</translation>
+<translation id="6377118281273296434">網站安全性</translation>
 <translation id="6380866119319257197">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">持卡人姓名</translation>
 <translation id="6406506848690869874">同步</translation>
@@ -525,11 +526,13 @@
 
 由於你的帳戶是由 <ph name="HOSTED_DOMAIN" /> 管理，因此當你登出帳戶時，系統會將你的 Chrome 資料從這部裝置上刪除，但是已同步處理的資料會繼續保留在你的 Google 帳戶中。</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
+<translation id="7778472311864276518">從這個裝置移除帳戶</translation>
 <translation id="7781011649027948662">是否要翻譯網頁？</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="778855399387580014">在 Chrome 新分頁中進行搜尋。</translation>
 <translation id="7791543448312431591">新增</translation>
 <translation id="7828557259026017104">Cookie 是你造訪過的網站所建立的檔案，網站會使用這些檔案記住你的偏好設定。第三方 Cookie 由其他網站所建立。這類網站通常是在你造訪的網站上提供部分內容 (例如廣告或圖片) 的其他網站。</translation>
+<translation id="7839985698273989086">離線版網頁</translation>
 <translation id="7840771868269352570">系統將移除所選項目。</translation>
 <translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽記錄</translation>

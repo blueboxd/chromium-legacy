@@ -543,6 +543,10 @@ interface LocalFrame {
   // Binds |receiver| to the document of this frame.
   BindReportingObserver(
       pending_receiver<blink.mojom.ReportingObserver> receiver);
+
+  // Requests that the blink::LocalFrame updates its opener to the specified
+  // frame. The frame token may be "empty" if the opener was disowned.
+  UpdateOpener(mojo_base.mojom.UnguessableToken? opener_frame_token);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that
@@ -598,6 +602,14 @@ interface RemoteFrameHost {
   // frame identified by |opener_frame|, or, if |opener_frame| is "empty",
   // the frame disowns its opener for the lifetime of the window.
   DidChangeOpener(mojo_base.mojom.UnguessableToken? opener_frame);
+
+  // This message is sent from a RemoteFrame when sequential focus navigation
+  // needs to advance into its actual frame. |source_frame_token| identifies the
+  // frame that issued this request.  This is used when pressing <tab> or
+  // <shift-tab> hits an out-of-process iframe when searching for the next
+  // focusable element.
+  AdvanceFocus(blink.mojom.FocusType focus_type,
+               mojo_base.mojom.UnguessableToken source_frame_token);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -727,6 +739,10 @@ interface RemoteFrame {
   // Notifies the frame that its parent has changed the frame's sandbox flags or
   // container policy.
   DidUpdateFramePolicy(blink.mojom.FramePolicy frame_policy);
+
+  // Requests that the blink::RemoteFrame updates its opener to the specified
+  // frame. The frame token may be "empty" if the opener was disowned.
+  UpdateOpener(mojo_base.mojom.UnguessableToken? opener_frame_token);
 };
 
 // Implemented in Blink, this interface defines main-frame-specific methods that

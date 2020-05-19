@@ -337,6 +337,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         // TODO(jianli): Call this function at the appropriate time.
         void reportStreamScrolled(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, int distanceDp);
+        // TODO(jianli): Call this function at the appropriate time.
+        void reportStreamScrollStart(long nativeFeedStreamSurface, FeedStreamSurface caller);
         void loadMore(long nativeFeedStreamSurface, FeedStreamSurface caller);
         void processThereAndBackAgain(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);

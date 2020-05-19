@@ -140,6 +140,7 @@ class FeedStream : public FeedStreamApi,
   void ReportManageInterestsAction() override;
   void ReportContextMenuOpened() override;
   void ReportStreamScrolled(int distance_dp) override;
+  void ReportStreamScrollStart() override;
 
   // offline_pages::TaskQueue::Delegate.
   void OnTaskQueueIsIdle() override;

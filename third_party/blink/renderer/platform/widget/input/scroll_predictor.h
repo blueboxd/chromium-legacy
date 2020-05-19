@@ -49,8 +49,7 @@ class PLATFORM_EXPORT ScrollPredictor {
   void Reset();
 
   // Update the prediction with GestureScrollUpdate deltaX and deltaY
-  void UpdatePrediction(const std::unique_ptr<WebInputEvent>& event,
-                        base::TimeTicks frame_time);
+  void UpdatePrediction(const WebInputEvent& event, base::TimeTicks frame_time);
 
   // Apply resampled deltaX/deltaY to gesture events
   void ResampleEvent(base::TimeTicks frame_time,

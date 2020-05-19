@@ -138,8 +138,12 @@ NSString* const kNavigationItemStorageUserAgentTypeKey = @"userAgentType";
 - (void)encodeWithCoder:(NSCoder*)aCoder {
   // Desktop Chrome doesn't persist |url_| or |originalUrl_|, only
   // |virtualUrl_|. Chrome on iOS is persisting |url_|.
-  web::nscoder_util::EncodeString(
-      aCoder, web::kNavigationItemStorageVirtualURLKey, _virtualURL.spec());
+  if (_virtualURL != _URL) {
+    // In most cases _virtualURL is the same as URL. Not storing virtual URL
+    // will save memory during unarchiving.
+    web::nscoder_util::EncodeString(
+        aCoder, web::kNavigationItemStorageVirtualURLKey, _virtualURL.spec());
+  }
   web::nscoder_util::EncodeString(aCoder, web::kNavigationItemStorageURLKey,
                                   _URL.spec());
   web::nscoder_util::EncodeString(
@@ -161,6 +165,13 @@ NSString* const kNavigationItemStorageUserAgentTypeKey = @"userAgentType";
   [aCoder encodeObject:_POSTData forKey:web::kNavigationItemStoragePOSTDataKey];
   [aCoder encodeObject:_HTTPRequestHeaders
                 forKey:web::kNavigationItemStorageHTTPRequestHeadersKey];
+}
+
+- (GURL)virtualURL {
+  // virtualURL is not stored (see -encodeWithCoder:) if it's the same as URL.
+  // This logic repeats NavigationItemImpl::GetURL to store virtualURL only when
+  // different from URL.
+  return _virtualURL.is_empty() ? _URL : _virtualURL;
 }
 
 @end

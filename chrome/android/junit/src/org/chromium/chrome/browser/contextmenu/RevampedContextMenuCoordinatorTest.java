@@ -10,6 +10,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import android.app.Activity;
 import android.util.Pair;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -54,6 +55,11 @@ public class RevampedContextMenuCoordinatorTest {
         mActivity = Robolectric.setupActivity(Activity.class);
         mWindow = new ActivityWindowAndroid(mActivity, false);
         mCoordinator = new RevampedContextMenuCoordinator(0, null);
+    }
+
+    @After
+    public void tearDownTest() {
+        mWindow.destroy();
     }
 
     @Test

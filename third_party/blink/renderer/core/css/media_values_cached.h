@@ -34,7 +34,6 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
     bool strict_mode;
     String media_type;
     blink::mojom::DisplayMode display_mode;
-    DisplayShape display_shape;
     ColorSpaceGamut color_gamut;
     PreferredColorScheme preferred_color_scheme;
     bool prefers_reduced_motion;
@@ -64,7 +63,6 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
       data.strict_mode = strict_mode;
       data.media_type = media_type.IsolatedCopy();
       data.display_mode = display_mode;
-      data.display_shape = display_shape;
       data.color_gamut = color_gamut;
       data.preferred_color_scheme = preferred_color_scheme;
       data.prefers_reduced_motion = prefers_reduced_motion;
@@ -105,7 +103,6 @@ class CORE_EXPORT MediaValuesCached final : public MediaValues {
   bool HasValues() const override;
   const String MediaType() const override;
   blink::mojom::DisplayMode DisplayMode() const override;
-  DisplayShape GetDisplayShape() const override;
   ColorSpaceGamut ColorGamut() const override;
   PreferredColorScheme GetPreferredColorScheme() const override;
   bool PrefersReducedMotion() const override;

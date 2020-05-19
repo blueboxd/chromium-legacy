@@ -429,8 +429,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void ReplaceMisspelling(const base::string16& word) override;
   void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) override;
-  std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
-  PauseSubresourceLoading() override;
   void ExecuteCustomContextMenuCommand(
       int action,
       const CustomContextMenuContext& context) override;
@@ -465,10 +463,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       base::OnceCallback<void(uint64_t, data_decoder::mojom::WebBundlerError)>
           callback) override;
   const std::string& GetContentsMimeType() override;
-  bool WillNotifyDisconnection() override;
   blink::mojom::RendererPreferences* GetMutableRendererPrefs() override;
   void Close() override;
-  void SystemDragEnded(RenderWidgetHost* source_rwh) override;
   void SetClosedByUserGesture(bool value) override;
   bool GetClosedByUserGesture() override;
   int GetMinimumZoomPercent() override;
@@ -1195,6 +1191,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Returns the focused frame's input handler.
   mojom::FrameInputHandler* GetFocusedFrameInputHandler();
+
+  // A render view-originated drag has ended. Informs the render view host and
+  // WebContentsDelegate.
+  void SystemDragEnded(RenderWidgetHost* source_rwh);
 
  private:
   friend class WebContentsObserver;

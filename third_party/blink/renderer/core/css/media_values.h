@@ -7,7 +7,6 @@
 
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
-#include "third_party/blink/public/platform/shape_properties.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -81,7 +80,6 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual bool HasValues() const = 0;
 
   virtual void OverrideViewportDimensions(double width, double height) = 0;
-  virtual DisplayShape GetDisplayShape() const = 0;
   virtual ColorSpaceGamut ColorGamut() const = 0;
   virtual PreferredColorScheme GetPreferredColorScheme() const = 0;
   virtual bool PrefersReducedMotion() const = 0;
@@ -107,7 +105,6 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static int CalculateAvailablePointerTypes(LocalFrame*);
   static HoverType CalculatePrimaryHoverType(LocalFrame*);
   static int CalculateAvailableHoverTypes(LocalFrame*);
-  static DisplayShape CalculateDisplayShape(LocalFrame*);
   static ColorSpaceGamut CalculateColorGamut(LocalFrame*);
   static PreferredColorScheme CalculatePreferredColorScheme(LocalFrame*);
   static bool CalculatePrefersReducedMotion(LocalFrame*);

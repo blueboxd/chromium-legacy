@@ -5612,8 +5612,7 @@
   },
 
   "DeviceLoginScreenIsolateOrigins": {
-    "os": ["chromeos"],
-    "note": "Chrome OS device policy used by session_manager only"
+    "note": "This policy has been removed in Chrome 77, see https://crbug.com/964068 ."
   },
 
   "DeviceLoginScreenSitePerProcess": {

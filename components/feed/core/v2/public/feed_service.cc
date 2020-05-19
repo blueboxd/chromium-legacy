@@ -141,8 +141,8 @@ FeedService::FeedService(
   stream_delegate_ =
       std::make_unique<StreamDelegateImpl>(local_state, delegate_.get());
   network_delegate_ = std::make_unique<NetworkDelegateImpl>(delegate_.get());
-  metrics_reporter_ =
-      std::make_unique<MetricsReporter>(base::DefaultTickClock::GetInstance());
+  metrics_reporter_ = std::make_unique<MetricsReporter>(
+      base::DefaultTickClock::GetInstance(), profile_prefs);
   feed_network_ = std::make_unique<FeedNetworkImpl>(
       network_delegate_.get(), identity_manager, api_key, url_loader_factory,
       base::DefaultTickClock::GetInstance(), profile_prefs);

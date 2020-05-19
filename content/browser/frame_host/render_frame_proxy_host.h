@@ -162,6 +162,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
   void SetIsInert(bool inert) override;
   void DidChangeOpener(const base::Optional<base::UnguessableToken>&
                            opener_frame_token) override;
+  void AdvanceFocus(blink::mojom::FocusType focus_type,
+                    const base::UnguessableToken& source_frame_token) override;
 
   // Returns associated remote for the content::mojom::RenderFrameProxy Mojo
   // interface.
@@ -186,7 +188,6 @@ class CONTENT_EXPORT RenderFrameProxyHost
   void OnDetach();
   void OnOpenURL(const FrameHostMsg_OpenURL_Params& params);
   void OnRouteMessageEvent(const FrameMsg_PostMessage_Params& params);
-  void OnAdvanceFocus(blink::mojom::FocusType type, int32_t source_routing_id);
   void OnPrintCrossProcessSubframe(const gfx::Rect& rect, int document_cookie);
 
   // IPC::Listener

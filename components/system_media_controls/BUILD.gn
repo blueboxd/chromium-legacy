@@ -4,15 +4,6 @@
 
 import("linux/buildflags/buildflags.gni")
 
-  ldflags = [
-    "-weak_framework",
-    "MediaPlayer",
-    "-weak_framework",
-    "VideoToolbox",
-    "-weak_framework",
-    "CoreBluetooth",
-  ]
-
 component("system_media_controls") {
   friend = [ ":unit_tests" ]
 

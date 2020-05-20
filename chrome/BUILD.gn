@@ -1058,6 +1058,15 @@ if (is_win) {
       "-Wl,-order_file," + rebase_path("app/framework.order", root_build_dir),
     ]
 
+    ldflags += [
+      "-weak_framework",
+      "MediaPlayer",
+      "-weak_framework",
+      "VideoToolbox",
+      "-weak_framework",
+      "CoreBluetooth",
+    ]
+
     if (is_component_build) {
       ldflags += [
         "-rpath",

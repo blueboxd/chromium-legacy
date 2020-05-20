@@ -4,6 +4,8 @@
 
 #include "ash/sticky_keys/sticky_keys_overlay.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
@@ -100,11 +102,7 @@ void StickyKeyOverlayLabel::SetKeyState(StickyKeyState state) {
 //  StickyKeysOverlayView
 class StickyKeysOverlayView : public views::View {
  public:
-  // This object is not owned by the views hiearchy or by the widget. The
-  // StickyKeysOverlay is the only class that should create and destroy this
-  // view.
   StickyKeysOverlayView();
-
   ~StickyKeysOverlayView() override;
 
   // views::View overrides:
@@ -127,9 +125,6 @@ class StickyKeysOverlayView : public views::View {
 };
 
 StickyKeysOverlayView::StickyKeysOverlayView() {
-  // The parent StickyKeysOverlay object owns this view.
-  set_owned_by_client();
-
   const gfx::Font& font =
       ui::ResourceBundle::GetSharedInstance().GetFont(kKeyLabelFontStyle);
   int font_size = font.GetFontSize();
@@ -202,10 +197,10 @@ void StickyKeysOverlayView::AddKeyLabel(ui::EventFlags modifier,
 
 ///////////////////////////////////////////////////////////////////////////////
 //  StickyKeysOverlay
-StickyKeysOverlay::StickyKeysOverlay()
-    : is_visible_(false),
-      overlay_view_(new StickyKeysOverlayView),
-      widget_size_(overlay_view_->GetPreferredSize()) {
+StickyKeysOverlay::StickyKeysOverlay() {
+  auto overlay_view = std::make_unique<StickyKeysOverlayView>();
+  widget_size_ = overlay_view->GetPreferredSize();
+
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_POPUP;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
@@ -218,7 +213,7 @@ StickyKeysOverlay::StickyKeysOverlay()
   overlay_widget_.reset(new views::Widget);
   overlay_widget_->Init(std::move(params));
   overlay_widget_->SetVisibilityChangedAnimationsEnabled(false);
-  overlay_widget_->SetContentsView(overlay_view_.get());
+  overlay_view_ = overlay_widget_->SetContentsView(std::move(overlay_view));
   overlay_widget_->GetNativeView()->SetName("StickyKeysOverlay");
 }
 

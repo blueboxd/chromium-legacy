@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.metrics.util.UkmUtilsForTest;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
@@ -41,50 +40,6 @@ public class UkmTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-    }
-
-    /**
-     * Closes the current tab.
-     * @param incognito Whether to close an incognito or non-incognito tab.
-     */
-    protected void closeCurrentTab(final boolean incognito) {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mActivityTestRule.getActivity().getTabModelSelector().selectModel(incognito));
-        ChromeTabUtils.closeCurrentTab(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-    }
-
-    protected void closeRegularTab() {
-        closeCurrentTab(false);
-    }
-
-    protected void closeIncognitoTab() {
-        closeCurrentTab(true);
-    }
-
-    // TODO(crbug/1049736): Move this to ukm_browsertest.cc.
-    @Test
-    @SmallTest
-    public void testIncognitoPlusRegularCheck() {
-        // Keep in sync with UkmBrowserTest.IncognitoPlusRegularCheck in
-        // chrome/browser/metrics/ukm_browsertest.cc.
-
-        // Start by closing all tabs.
-        ChromeTabUtils.closeAllTabs(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-
-        mActivityTestRule.newIncognitoTabFromMenu();
-
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
-
-        closeIncognitoTab();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
     }
 
     // TODO(crbug/1049736): Move this to ukm_browsertest.cc.

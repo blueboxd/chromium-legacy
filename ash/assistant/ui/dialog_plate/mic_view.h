@@ -9,7 +9,6 @@
 #include "ash/assistant/ui/base/assistant_button.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
-#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -58,12 +57,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) MicView
 
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};
-
-  ScopedObserver<AssistantInteractionController,
-                 AssistantInteractionModelObserver,
-                 &AssistantInteractionController::AddModelObserver,
-                 &AssistantInteractionController::RemoveModelObserver>
-      assistant_interaction_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MicView);
 };

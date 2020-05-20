@@ -11,6 +11,7 @@
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 
@@ -18,11 +19,10 @@ namespace content {
 
 namespace {
 
-void RecordContextDowngradeUKM(
-    RenderFrameHost* rfh,
-    CookieAccessDetails::Type access_type,
-    const net::CanonicalCookie::CookieInclusionStatus& status,
-    const GURL& url) {
+void RecordContextDowngradeUKM(RenderFrameHost* rfh,
+                               CookieAccessDetails::Type access_type,
+                               const net::CookieInclusionStatus& status,
+                               const GURL& url) {
   DCHECK(rfh);
   ukm::SourceId source_id = rfh->GetPageUkmSourceId();
 
@@ -59,8 +59,7 @@ void SplitCookiesIntoAllowedAndBlocked(
 
   for (auto& cookie_and_status : cookie_details->cookie_list) {
     if (cookie_and_status.status.HasExclusionReason(
-            net::CanonicalCookie::CookieInclusionStatus::
-                EXCLUDE_USER_PREFERENCES)) {
+            net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES)) {
       blocked->cookie_list.push_back(std::move(cookie_and_status.cookie));
     } else if (cookie_and_status.status.IsInclude()) {
       allowed->cookie_list.push_back(std::move(cookie_and_status.cookie));
@@ -95,20 +94,19 @@ void EmitSameSiteCookiesDeprecationWarning(
 
     if (excluded_cookie.status.ShouldWarn()) {
       if (excluded_cookie.status.HasWarningReason(
-              net::CanonicalCookie::CookieInclusionStatus::
+              net::CookieInclusionStatus::
                   WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
         samesite_treated_as_lax_cookies = true;
       }
 
       if (excluded_cookie.status.HasWarningReason(
-              net::CanonicalCookie::CookieInclusionStatus::
+              net::CookieInclusionStatus::
                   WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE)) {
         samesite_treated_as_lax_cookies = true;
       }
 
       if (excluded_cookie.status.HasWarningReason(
-              net::CanonicalCookie::CookieInclusionStatus::
-                  WARN_SAMESITE_NONE_INSECURE)) {
+              net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE)) {
         samesite_none_insecure_cookies = true;
       }
       devtools_instrumentation::ReportSameSiteCookieIssue(

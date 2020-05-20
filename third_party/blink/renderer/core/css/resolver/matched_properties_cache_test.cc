@@ -432,6 +432,27 @@ TEST_F(MatchedPropertiesCacheTest, VarInNonInheritedPropertyCachable) {
   EXPECT_TRUE(MatchedPropertiesCache::IsCacheable(state));
 }
 
+TEST_F(MatchedPropertiesCacheTest, MaxDependencies) {
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+
+  StyleResolverState state(GetDocument(), *GetDocument().body(), parent.get(),
+                           parent.get());
+  state.SetStyle(style);
+  for (size_t i = 0; i < MatchedPropertiesCache::kMaxDependencies; i++) {
+    CustomProperty property(AtomicString(String::Format("--x%zu", i)),
+                            GetDocument());
+    state.MarkDependency(property);
+    EXPECT_TRUE(MatchedPropertiesCache::IsCacheable(state));
+  }
+  CustomProperty property("--y", GetDocument());
+  state.MarkDependency(property);
+  // Limit exceeded.
+  EXPECT_FALSE(MatchedPropertiesCache::IsCacheable(state));
+}
+
 TEST_F(MatchedPropertiesCacheTest,
        ExplicitlyInheritedNotCacheableWithoutFeature) {
   ScopedMPCDependenciesForTest scoped_feature(false);

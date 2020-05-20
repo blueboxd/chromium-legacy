@@ -26,6 +26,10 @@ extern const base::FeatureParam<bool> kImprovedCookieControlsDefaultInIncognito;
 COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
 extern const base::Feature kImprovedCookieControlsForThirdPartyCookieBlocking;
 
+// Feature to disallow wildcard pattern matching for plugin content settings
+COMPONENT_EXPORT(CONTENT_SETTINGS_FEATURES)
+extern const base::Feature kDisallowWildcardsInPluginContentSettings;
+
 }  // namespace content_settings
 
 #endif  // COMPONENTS_CONTENT_SETTINGS_CORE_COMMON_FEATURES_H_

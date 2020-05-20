@@ -23,6 +23,7 @@
 #include "components/user_manager/user_type.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
 class AccountId;
@@ -155,10 +156,9 @@ class GaiaScreenHandler : public BaseScreenHandler,
                              const std::string& partition_name);
 
   // Called after the GAPS cookie, if present, is added to the cookie store.
-  void OnSetCookieForLoadGaiaWithPartition(
-      const GaiaContext& context,
-      const std::string& partition_name,
-      net::CanonicalCookie::CookieInclusionStatus status);
+  void OnSetCookieForLoadGaiaWithPartition(const GaiaContext& context,
+                                           const std::string& partition_name,
+                                           net::CookieInclusionStatus status);
 
   // Callback that loads GAIA after version and stat consent information has
   // been retrieved.

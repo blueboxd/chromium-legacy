@@ -15,6 +15,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PackageManagerDelegate;
@@ -193,16 +194,34 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         ResolveInfo twaApp = findAppWithPackageName(allInstalledPaymentApps, twaPackageName);
         if (twaApp == null) return;
 
-        for (GURL appStoreBillingUriMethod : mAppStores.values()) {
-            assert appStoreBillingUriMethod != null;
-            assert appStoreBillingUriMethod.isValid();
-            String appStoreBillingMethod = removeTrailingSlash(appStoreBillingUriMethod.getSpec());
-            assert appStoreBillingMethod != null;
-            if (!mFactoryDelegate.getParams().getMethodData().containsKey(appStoreBillingMethod)) {
-                continue;
+        List<String> agreedAppStoreMethods = new ArrayList<>();
+        for (GURL appStoreUriMethod : mAppStores.values()) {
+            assert appStoreUriMethod != null;
+            assert appStoreUriMethod.isValid();
+            String appStoreMethod = removeTrailingSlash(appStoreUriMethod.getSpec());
+            assert appStoreMethod != null;
+            if (!mFactoryDelegate.getParams().getMethodData().containsKey(appStoreMethod)) continue;
+            if (!paymentAppSupportsUriMethod(twaApp, appStoreUriMethod)) continue;
+            agreedAppStoreMethods.add(appStoreMethod);
+        }
+
+        boolean allowTwaInstalledFromAnySource =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_APP_STORE_BILLING_DEBUG);
+        if (!allowTwaInstalledFromAnySource) {
+            String installerPackageName =
+                    mTwaPackageManagerDelegate.getInstallerPackage(twaPackageName);
+            if (installerPackageName == null) return;
+            GURL appStoreUriMethod = mAppStores.get(installerPackageName);
+            if (appStoreUriMethod == null) return;
+            assert appStoreUriMethod.isValid();
+
+            String method = appStoreUriMethod.getSpec();
+            if (!agreedAppStoreMethods.contains(method)) return;
+            onValidPaymentAppForPaymentMethodName(twaApp, method);
+        } else {
+            for (String appStoreMethod : agreedAppStoreMethods) {
+                onValidPaymentAppForPaymentMethodName(twaApp, appStoreMethod);
             }
-            if (!paymentAppSupportsUriMethod(twaApp, appStoreBillingUriMethod)) continue;
-            onValidPaymentAppForPaymentMethodName(twaApp, appStoreBillingMethod);
         }
     }
 

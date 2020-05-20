@@ -86,10 +86,14 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     static class DropdownItemViewInfo extends MVCListAdapter.ListItem {
         /** Processor managing the item. */
         public final DropdownItemProcessor processor;
+        /** Group ID this ViewInfo belongs to. */
+        public final int groupId;
 
-        public DropdownItemViewInfo(DropdownItemProcessor itemProcessor, PropertyModel model) {
-            super(itemProcessor.getViewTypeId(), model);
-            processor = itemProcessor;
+        public DropdownItemViewInfo(
+                DropdownItemProcessor processor, PropertyModel model, int groupId) {
+            super(processor.getViewTypeId(), model);
+            this.processor = processor;
+            this.groupId = groupId;
         }
 
         /**
@@ -102,6 +106,11 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         void initializeModel(int layoutDirection, boolean useDarkColors) {
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, layoutDirection);
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, useDarkColors);
+        }
+
+        @Override
+        public String toString() {
+            return "DropdownItemViewInfo(group=" + groupId + ", type=" + type + ")";
         }
     }
 
@@ -129,8 +138,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
     private final TileSuggestionProcessor mTileSuggestionProcessor;
     private HeaderProcessor mHeaderProcessor;
     private final List<SuggestionProcessor> mSuggestionProcessors;
-    private AutocompleteResult mAutocompleteResult;
     private final List<DropdownItemViewInfo> mViewInfoList;
+    private AutocompleteResult mAutocompleteResult;
 
     private ToolbarDataProvider mDataProvider;
     private OverviewModeBehavior mOverviewModeBehavior;
@@ -203,7 +212,7 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         mHandler = handler;
         mTileSuggestionProcessor =
                 new TileSuggestionProcessor(mContext, queryTileSuggestionCallback);
-        mHeaderProcessor = new HeaderProcessor(mContext, mDelegate);
+        mHeaderProcessor = new HeaderProcessor(mContext, this, mDelegate);
         mSuggestionProcessors = new ArrayList<>();
         mViewInfoList = new ArrayList<>();
         mAutocompleteResult = new AutocompleteResult(null, null);
@@ -1011,6 +1020,101 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         resolvePendingKeyboardShowDecision();
     }
 
+    @Override
+    public void setGroupVisibility(int groupId, boolean state) {
+        if (state) {
+            insertSuggestionsForGroup(groupId);
+        } else {
+            removeSuggestionsForGroup(groupId);
+        }
+    }
+
+    /**
+     * @return True, if view info is a header for the specific group of suggestions.
+     */
+    private boolean isGroupHeaderWithId(DropdownItemViewInfo info, int groupId) {
+        return (info.type == OmniboxSuggestionUiType.HEADER && info.groupId == groupId);
+    }
+
+    /**
+     * Remove all suggestions that belong to specific group.
+     *
+     * @param groupId Group ID of suggestions that should be removed.
+     */
+    private void removeSuggestionsForGroup(int groupId) {
+        final ModelList modelList = getSuggestionModelList();
+        int index;
+        int count = 0;
+
+        for (index = modelList.size() - 1; index >= 0; index--) {
+            DropdownItemViewInfo viewInfo = (DropdownItemViewInfo) modelList.get(index);
+            if (isGroupHeaderWithId(viewInfo, groupId)) {
+                break;
+            } else if (viewInfo.groupId == groupId) {
+                count++;
+            } else if (count > 0 && viewInfo.groupId != groupId) {
+                break;
+            }
+        }
+        if (count > 0) {
+            // Skip group header when dropping items.
+            modelList.removeRange(index + 1, count);
+        }
+    }
+
+    /**
+     * Insert all suggestions that belong to specific group.
+     *
+     * @param groupId Group ID of suggestions that should be removed.
+     */
+    private void insertSuggestionsForGroup(int groupId) {
+        final ModelList offeredViewInfoList = getSuggestionModelList();
+        int insertPosition = 0;
+
+        // Search for the insert position.
+        // Iterate through all *available* view infos until we find the first element that we
+        // should insert. To determine the insertion point we skip past all *displayed* view
+        // infos that were also preceding elements that we want to insert.
+        for (; insertPosition < offeredViewInfoList.size(); insertPosition++) {
+            final DropdownItemViewInfo viewInfo =
+                    (DropdownItemViewInfo) offeredViewInfoList.get(insertPosition);
+            // Insert suggestions directly below their header.
+            if (isGroupHeaderWithId(viewInfo, groupId)) break;
+        }
+
+        // Check if reached the end of the list.
+        if (insertPosition == offeredViewInfoList.size()) return;
+
+        // insertPosition points to header - advance the index and see if we already have
+        // elements belonging to that group on the list.
+        insertPosition++;
+        if (insertPosition < offeredViewInfoList.size()
+                && ((DropdownItemViewInfo) offeredViewInfoList.get(insertPosition)).groupId
+                        == groupId) {
+            return;
+        }
+
+        // Find elements to insert.
+        int firstElementIndex = -1;
+        int count = 0;
+        for (int index = 0; index < mViewInfoList.size(); index++) {
+            final DropdownItemViewInfo viewInfo = mViewInfoList.get(index);
+            if (isGroupHeaderWithId(viewInfo, groupId)) {
+                firstElementIndex = index + 1;
+            } else if (viewInfo.groupId == groupId) {
+                count++;
+            } else if (count > 0 && viewInfo.groupId != groupId) {
+                break;
+            }
+        }
+
+        if (count != 0 && firstElementIndex != -1) {
+            offeredViewInfoList.addAll(
+                    mViewInfoList.subList(firstElementIndex, firstElementIndex + count),
+                    insertPosition);
+        }
+    }
+
     /**
      * Process the supplied SuggestionList to internal representation.
      *
@@ -1038,15 +1142,15 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
             if (suggestion.getGroupId() != currentGroup) {
                 currentGroup = suggestion.getGroupId();
                 final PropertyModel model = mHeaderProcessor.createModel();
-                mHeaderProcessor.populateModel(
-                        model, mAutocompleteResult.getGroupHeaders().get(currentGroup));
-                mViewInfoList.add(new DropdownItemViewInfo(mHeaderProcessor, model));
+                mHeaderProcessor.populateModel(model, currentGroup,
+                        mAutocompleteResult.getGroupHeaders().get(currentGroup));
+                mViewInfoList.add(new DropdownItemViewInfo(mHeaderProcessor, model, currentGroup));
             }
 
             final SuggestionProcessor processor = getProcessorForSuggestion(suggestion, index == 0);
             final PropertyModel model = processor.createModel();
             processor.populateModel(suggestion, model, index);
-            mViewInfoList.add(new DropdownItemViewInfo(processor, model));
+            mViewInfoList.add(new DropdownItemViewInfo(processor, model, currentGroup));
         }
 
         return true;

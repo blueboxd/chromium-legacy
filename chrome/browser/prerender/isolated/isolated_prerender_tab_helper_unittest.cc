@@ -36,6 +36,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -314,7 +315,7 @@ class IsolatedPrerenderTabHelperTest : public ChromeRenderViewHostTestHarness {
         *cc.get(), url, options,
         base::BindOnce(
             [](bool* result, base::RunLoop* run_loop,
-               net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {
+               net::CookieInclusionStatus set_cookie_status) {
               *result = set_cookie_status.IsInclude();
               run_loop->Quit();
             },

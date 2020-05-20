@@ -29,7 +29,6 @@
 namespace ash {
 
 class AssistantControllerImpl;
-class AssistantInteractionModelObserver;
 class ProactiveSuggestions;
 enum class AssistantButtonId;
 enum class AssistantQuerySource;
@@ -68,8 +67,6 @@ class AssistantInteractionControllerImpl
 
   // AssistantInteractionController:
   const AssistantInteractionModel* GetModel() const override;
-  void AddModelObserver(AssistantInteractionModelObserver*) override;
-  void RemoveModelObserver(AssistantInteractionModelObserver*) override;
   void StartTextInteraction(const std::string& text,
                             bool allow_tts,
                             AssistantQuerySource query_source) override;

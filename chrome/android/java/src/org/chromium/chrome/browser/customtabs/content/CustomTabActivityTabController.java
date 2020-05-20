@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
+import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabObserver;
@@ -100,6 +101,7 @@ public class CustomTabActivityTabController implements InflationObserver {
     private final CustomTabActivityTabProvider mTabProvider;
     private final StartupTabPreloader mStartupTabPreloader;
     private final ReparentingTaskProvider mReparentingTaskProvider;
+    private final Lazy<CustomTabIncognitoManager> mCustomTabIncognitoManager;
 
     @Nullable
     private final CustomTabsSessionToken mSession;
@@ -124,7 +126,8 @@ public class CustomTabActivityTabController implements InflationObserver {
             Lazy<CustomTabObserver> customTabObserver, WebContentsFactory webContentsFactory,
             CustomTabNavigationEventObserver tabNavigationEventObserver,
             CustomTabActivityTabProvider tabProvider, StartupTabPreloader startupTabPreloader,
-            ReparentingTaskProvider reparentingTaskProvider) {
+            ReparentingTaskProvider reparentingTaskProvider,
+            Lazy<CustomTabIncognitoManager> customTabIncognitoManager) {
         mCustomTabDelegateFactory = customTabDelegateFactory;
         mActivity = activity;
         mConnection = connection;
@@ -141,6 +144,7 @@ public class CustomTabActivityTabController implements InflationObserver {
         mTabProvider = tabProvider;
         mStartupTabPreloader = startupTabPreloader;
         mReparentingTaskProvider = reparentingTaskProvider;
+        mCustomTabIncognitoManager = customTabIncognitoManager;
 
         mSession = mIntentDataProvider.getSession();
         mIntent = mIntentDataProvider.getIntent();
@@ -389,29 +393,40 @@ public class CustomTabActivityTabController implements InflationObserver {
         return tab;
     }
 
-    private WebContents takeWebContents() {
-        int webContentsStateOnLaunch;
-
-        WebContents webContents = takeAsyncWebContents();
-        if (webContents != null) {
-            webContentsStateOnLaunch = WebContentsState.TRANSFERRED_WEBCONTENTS;
-            webContents.resumeLoadingCreatedWebContents();
-        } else {
-            webContents = mWarmupManager.takeSpareWebContents(mIntentDataProvider.isIncognito(),
-                    false /*initiallyHidden*/, WarmupManager.FOR_CCT);
-            if (webContents != null) {
-                webContentsStateOnLaunch = WebContentsState.SPARE_WEBCONTENTS;
-            } else {
-                webContents = mWebContentsFactory.createWebContentsWithWarmRenderer(
-                        mIntentDataProvider.isIncognito(), false);
-                webContentsStateOnLaunch = WebContentsState.NO_WEBCONTENTS;
-            }
-        }
-
+    private void recordWebContentsStateOnLaunch(int webContentsStateOnLaunch) {
         RecordHistogram.recordEnumeratedHistogram("CustomTabs.WebContentsStateOnLaunch",
                 webContentsStateOnLaunch, WebContentsState.NUM_ENTRIES);
+    }
 
-        return webContents;
+    private WebContents takeWebContents() {
+        WebContents webContents = takeAsyncWebContents();
+        if (webContents != null) {
+            // TODO(https://crbug.com/1033386): Remove assert before closing the bug.
+            assert !mIntentDataProvider.isIncognito()
+                : "UNEXPECTED. This path is not covered for incognito CCT.";
+            recordWebContentsStateOnLaunch(WebContentsState.TRANSFERRED_WEBCONTENTS);
+            webContents.resumeLoadingCreatedWebContents();
+            return webContents;
+        }
+
+        webContents = mWarmupManager.takeSpareWebContents(mIntentDataProvider.isIncognito(),
+                false /*initiallyHidden*/, WarmupManager.FOR_CCT);
+        if (webContents != null) {
+            // TODO(https://crbug.com/1033386): Remove assert before closing the bug.
+            assert !mIntentDataProvider.isIncognito()
+                : "UNEXPECTED. This path is not covered for incognito CCT.";
+            recordWebContentsStateOnLaunch(WebContentsState.SPARE_WEBCONTENTS);
+            return webContents;
+        }
+
+        recordWebContentsStateOnLaunch(WebContentsState.NO_WEBCONTENTS);
+        if (mCustomTabIncognitoManager.get().isEnabledIncognitoCCT()) {
+            return mWebContentsFactory.createWebContentsWithWarmRenderer(
+                    mCustomTabIncognitoManager.get().getProfile(), false);
+        } else {
+            return mWebContentsFactory.createWebContentsWithWarmRenderer(
+                    mIntentDataProvider.isIncognito(), false);
+        }
     }
 
     @Nullable

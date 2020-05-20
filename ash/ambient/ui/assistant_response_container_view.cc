@@ -4,7 +4,6 @@
 
 #include "ash/ambient/ui/assistant_response_container_view.h"
 
-#include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/model/ui/assistant_text_element.h"

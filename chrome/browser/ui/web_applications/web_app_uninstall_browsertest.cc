@@ -15,6 +15,7 @@
 #include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
@@ -119,11 +120,10 @@ IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
             GetSecureAppURL());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppUninstallBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppUninstallBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
 
 }  // namespace web_app

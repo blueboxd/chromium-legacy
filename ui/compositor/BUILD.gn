@@ -17,6 +17,8 @@ jumbo_component("compositor") {
     "animation_metrics_recorder.cc",
     "animation_metrics_recorder.h",
     "animation_metrics_reporter.h",
+    "animation_throughput_reporter.cc",
+    "animation_throughput_reporter.h",
     "callback_layer_animation_observer.cc",
     "callback_layer_animation_observer.h",
     "canvas_painter.cc",
@@ -220,6 +222,7 @@ jumbo_static_library("test_support") {
 
 test("compositor_unittests") {
   sources = [
+    "animation_throughput_reporter_unittest.cc",
     "callback_layer_animation_observer_unittest.cc",
     "canvas_painter_unittest.cc",
     "compositor_lock_unittest.cc",

@@ -35,6 +35,8 @@ pushd third_party/webgpu-cts/src > /dev/null
   yarn install --frozen-lockfile
   npx grunt prebuild
 
+  # TODO(kainino): only run a few tests on worker
+
   echo 'Regenerating...'
   npx ./tools/gen_wpt_cts_html \
     ../../blink/web_tests/wpt_internal/webgpu/cts.html \

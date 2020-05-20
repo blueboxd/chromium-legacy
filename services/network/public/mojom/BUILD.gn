@@ -373,11 +373,11 @@ mojom("cookies_mojom") {
         },
         {
           mojom = "network.mojom.CookieInclusionStatusWarningReason"
-          cpp = "::net::CanonicalCookie::CookieInclusionStatus::WarningReason"
+          cpp = "::net::CookieInclusionStatus::WarningReason"
         },
         {
           mojom = "network.mojom.CookieInclusionStatus"
-          cpp = "::net::CanonicalCookie::CookieInclusionStatus"
+          cpp = "::net::CookieInclusionStatus"
           move_only = true
         },
         {

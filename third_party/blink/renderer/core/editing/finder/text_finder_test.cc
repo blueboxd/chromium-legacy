@@ -717,4 +717,20 @@ TEST_F(TextFinderTest, BeforeMatchEventRemoveElement) {
 // TODO(jarhar): Write more tests here once we decide on a behavior here:
 // https://github.com/WICG/display-locking/issues/150
 
+TEST_F(TextFinderTest, FindTextAcrossCommentNode) {
+  GetDocument().body()->setInnerHTML(
+      "<span>abc</span><!--comment--><span>def</span>");
+  GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kTest);
+
+  int identifier = 0;
+  WebString search_text(String("abcdef"));
+  auto find_options = mojom::blink::FindOptions::New();
+  find_options->run_synchronously_for_testing = true;
+  bool wrap_within_frame = true;
+
+  EXPECT_TRUE(GetTextFinder().Find(identifier, search_text, *find_options,
+                                   wrap_within_frame));
+  EXPECT_TRUE(GetTextFinder().ActiveMatch());
+}
+
 }  // namespace blink

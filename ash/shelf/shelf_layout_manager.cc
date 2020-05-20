@@ -1697,19 +1697,20 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     const bool move_shelf_with_hotseat =
         !Shell::Get()->overview_controller()->InOverviewSession() &&
         visibility_state() == SHELF_AUTO_HIDE;
+    // Do not allow the shelf to be dragged more than |shelf_size| from the
+    // bottom of the display.
+    int adjusted_shelf_position =
+        std::max(available_bounds.bottom() - shelf_size,
+                 static_cast<int>(shelf_position));
     if (move_shelf_with_hotseat) {
-      // Do not allow the shelf to be dragged more than |shelf_size| from the
-      // bottom of the display.
-      int shelf_y = std::max(available_bounds.bottom() - shelf_size,
-                             static_cast<int>(baseline + translate));
       // Window drags only happen after the hotseat has been dragged up to its
       // full height. After the drag moves a window, do not allow the drag to
       // move the hotseat down.
       if (IsWindowDragInProgress())
-        shelf_y = available_bounds.bottom() - shelf_size;
+        adjusted_shelf_position = available_bounds.bottom() - shelf_size;
       gfx::Rect updated_target_bounds =
           shelf_->shelf_widget()->GetTargetBounds();
-      updated_target_bounds.set_y(shelf_y);
+      updated_target_bounds.set_y(adjusted_shelf_position);
       shelf_->shelf_widget()->set_target_bounds(updated_target_bounds);
     }
 
@@ -1734,11 +1735,14 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // the hotseat down.
     if (IsWindowDragInProgress())
       hotseat_y = -hotseat_extended_y;
-    gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
     gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
-    hotseat_bounds.set_y(hotseat_y + shelf_bounds.y());
+    hotseat_bounds.set_y(hotseat_y + adjusted_shelf_position);
     shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
-    shelf_->status_area_widget()->UpdateTargetBoundsForGesture(shelf_position);
+
+    shelf_->navigation_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
+    shelf_->status_area_widget()->UpdateTargetBoundsForGesture(
+        adjusted_shelf_position);
     return;
   }
 

@@ -20,6 +20,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_deletion_info.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
 
 class GURL;
@@ -54,7 +55,7 @@ class NET_EXPORT CookieStore {
       const CookieList& cookies,
       const std::vector<CookieAccessSemantics>& access_semantics_list)>;
   using SetCookiesCallback =
-      base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus status)>;
+      base::OnceCallback<void(CookieInclusionStatus status)>;
   using DeleteCallback = base::OnceCallback<void(uint32_t num_deleted)>;
   using SetCookieableSchemesCallback = base::OnceCallback<void(bool success)>;
 

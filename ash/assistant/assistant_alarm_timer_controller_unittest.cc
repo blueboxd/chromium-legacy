@@ -100,14 +100,16 @@ class ScopedNotificationModelObserver
     Shell::Get()
         ->assistant_controller()
         ->notification_controller()
-        ->AddModelObserver(this);
+        ->model()
+        ->AddObserver(this);
   }
 
   ~ScopedNotificationModelObserver() override {
     Shell::Get()
         ->assistant_controller()
         ->notification_controller()
-        ->RemoveModelObserver(this);
+        ->model()
+        ->RemoveObserver(this);
   }
 
   // AssistantNotificationModelObserver:

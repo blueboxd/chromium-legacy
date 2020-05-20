@@ -78,6 +78,7 @@
 #include "net/base/isolation_info.h"
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
@@ -1227,7 +1228,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // TODO(crbug.com/977040): Remove when no longer needed.
   void AddSameSiteCookieDeprecationMessage(
       const std::string& cookie_url,
-      net::CanonicalCookie::CookieInclusionStatus status,
+      net::CookieInclusionStatus status,
       bool is_lax_by_default_enabled,
       bool is_none_requires_secure_enabled);
 

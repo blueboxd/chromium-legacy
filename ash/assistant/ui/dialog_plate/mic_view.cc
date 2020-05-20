@@ -9,6 +9,7 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/logo_view/logo_view.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
@@ -32,11 +33,13 @@ MicView::MicView(AssistantButtonListener* listener, AssistantButtonId button_id)
   InitLayout();
 
   assistant_controller_observer_.Add(AssistantController::Get());
-  assistant_interaction_model_observer_.Add(
-      AssistantInteractionController::Get());
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
 }
 
-MicView::~MicView() = default;
+MicView::~MicView() {
+  if (AssistantInteractionController::Get())
+    AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* MicView::GetClassName() const {
   return "MicView";
@@ -51,8 +54,7 @@ int MicView::GetHeightForWidth(int width) const {
 }
 
 void MicView::OnAssistantControllerDestroying() {
-  assistant_interaction_model_observer_.Remove(
-      AssistantInteractionController::Get());
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
   assistant_controller_observer_.Remove(AssistantController::Get());
 }
 

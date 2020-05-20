@@ -105,7 +105,7 @@ class SetCookieCallback : public CookieTestCallback {
   }
 
  private:
-  void Run(CanonicalCookie::CookieInclusionStatus status) {
+  void Run(CookieInclusionStatus status) {
     EXPECT_TRUE(status.IsInclude());
     CookieTestCallback::Run();
   }

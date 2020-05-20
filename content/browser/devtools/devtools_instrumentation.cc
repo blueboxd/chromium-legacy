@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/http/http_request_headers.h"
 #include "net/quic/quic_transport_error.h"
 #include "net/ssl/ssl_info.h"
@@ -688,16 +689,16 @@ void OnCorsPreflightRequestCompleted(
 
 namespace {
 std::vector<blink::mojom::SameSiteCookieExclusionReason> BuildExclusionReasons(
-    net::CanonicalCookie::CookieInclusionStatus status) {
+    net::CookieInclusionStatus status) {
   std::vector<blink::mojom::SameSiteCookieExclusionReason> exclusion_reasons;
   if (status.HasExclusionReason(
-          net::CanonicalCookie::CookieInclusionStatus::
+          net::CookieInclusionStatus::
               EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX)) {
     exclusion_reasons.push_back(blink::mojom::SameSiteCookieExclusionReason::
                                     ExcludeSameSiteUnspecifiedTreatedAsLax);
   }
-  if (status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
-                                    EXCLUDE_SAMESITE_NONE_INSECURE)) {
+  if (status.HasExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE)) {
     exclusion_reasons.push_back(blink::mojom::SameSiteCookieExclusionReason::
                                     ExcludeSameSiteNoneInsecure);
   }
@@ -705,20 +706,20 @@ std::vector<blink::mojom::SameSiteCookieExclusionReason> BuildExclusionReasons(
 }
 
 std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
-    net::CanonicalCookie::CookieInclusionStatus status) {
+    net::CookieInclusionStatus status) {
   std::vector<blink::mojom::SameSiteCookieWarningReason> warning_reasons;
   if (status.HasWarningReason(
-          net::CanonicalCookie::CookieInclusionStatus::
+          net::CookieInclusionStatus::
               WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteUnspecifiedCrossSiteContext);
   }
-  if (status.HasWarningReason(net::CanonicalCookie::CookieInclusionStatus::
-                                  WARN_SAMESITE_NONE_INSECURE)) {
+  if (status.HasWarningReason(
+          net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE)) {
     warning_reasons.push_back(
         blink::mojom::SameSiteCookieWarningReason::WarnSameSiteNoneInsecure);
   }
-  if (status.HasWarningReason(net::CanonicalCookie::CookieInclusionStatus::
+  if (status.HasWarningReason(net::CookieInclusionStatus::
                                   WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteUnspecifiedLaxAllowUnsafe);
@@ -729,27 +730,27 @@ std::vector<blink::mojom::SameSiteCookieWarningReason> BuildWarningReasons(
     return warning_reasons;
 
   // There can only be one of the following warnings.
-  if (status.HasWarningReason(net::CanonicalCookie::CookieInclusionStatus::
+  if (status.HasWarningReason(net::CookieInclusionStatus::
                                   WARN_STRICT_LAX_DOWNGRADE_STRICT_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteStrictLaxDowngradeStrict);
   } else if (status.HasWarningReason(
-                 net::CanonicalCookie::CookieInclusionStatus::
+                 net::CookieInclusionStatus::
                      WARN_STRICT_CROSS_DOWNGRADE_STRICT_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteStrictCrossDowngradeStrict);
   } else if (status.HasWarningReason(
-                 net::CanonicalCookie::CookieInclusionStatus::
+                 net::CookieInclusionStatus::
                      WARN_STRICT_CROSS_DOWNGRADE_LAX_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteStrictCrossDowngradeLax);
   } else if (status.HasWarningReason(
-                 net::CanonicalCookie::CookieInclusionStatus::
+                 net::CookieInclusionStatus::
                      WARN_LAX_CROSS_DOWNGRADE_STRICT_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteLaxCrossDowngradeStrict);
   } else if (status.HasWarningReason(
-                 net::CanonicalCookie::CookieInclusionStatus::
+                 net::CookieInclusionStatus::
                      WARN_LAX_CROSS_DOWNGRADE_LAX_SAMESITE)) {
     warning_reasons.push_back(blink::mojom::SameSiteCookieWarningReason::
                                   WarnSameSiteLaxCrossDowngradeLax);

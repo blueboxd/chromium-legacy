@@ -64,6 +64,7 @@ class NavigationControllerImpl : public NavigationController,
   base::android::ScopedJavaLocalRef<jstring> GetNavigationEntryTitle(
       JNIEnv* env,
       int index);
+  bool IsNavigationEntrySkippable(JNIEnv* env, int index);
 #endif
 
  private:
@@ -90,6 +91,7 @@ class NavigationControllerImpl : public NavigationController,
   int GetNavigationListCurrentIndex() override;
   GURL GetNavigationEntryDisplayURL(int index) override;
   std::string GetNavigationEntryTitle(int index) override;
+  bool IsNavigationEntrySkippable(int index) override;
 
   // content::WebContentsObserver implementation:
   void DidStartNavigation(

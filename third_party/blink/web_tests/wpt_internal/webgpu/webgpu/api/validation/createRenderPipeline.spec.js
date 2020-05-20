@@ -5,8 +5,8 @@
 export const description = `
 createRenderPipeline validation tests.
 `;
-import { poptions } from '../../../common/framework/params.js';
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { poptions } from '../../../common/framework/params_builder.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { kTextureFormatInfo, kTextureFormats } from '../../capability_info.js';
 import { ValidationTest } from './validation_test.js';
 
@@ -98,12 +98,12 @@ class F extends ValidationTest {
 
 }
 
-export const g = new TestGroup(F);
-g.test('basic use of createRenderPipeline', t => {
+export const g = makeTestGroup(F);
+g.test('basic_use_of_createRenderPipeline').fn(t => {
   const descriptor = t.getDescriptor();
   t.device.createRenderPipeline(descriptor);
 });
-g.test('at least one color state is required', async t => {
+g.test('at_least_one_color_state_is_required').fn(async t => {
   const goodDescriptor = t.getDescriptor({
     colorStates: [{
       format: 'rgba8unorm'
@@ -119,7 +119,7 @@ g.test('at least one color state is required', async t => {
     t.device.createRenderPipeline(badDescriptor);
   });
 });
-g.test('color formats must be renderable', async t => {
+g.test('color_formats_must_be_renderable').params(poptions('format', kTextureFormats)).fn(async t => {
   const format = t.params.format;
   const info = kTextureFormatInfo[format];
   const descriptor = t.getDescriptor({
@@ -137,26 +137,8 @@ g.test('color formats must be renderable', async t => {
       t.device.createRenderPipeline(descriptor);
     });
   }
-}).params(poptions('format', kTextureFormats));
-g.test('sample count must be valid', async t => {
-  const {
-    sampleCount,
-    _success
-  } = t.params;
-  const descriptor = t.getDescriptor({
-    sampleCount
-  });
-
-  if (_success) {
-    // Succeeds when sample count is valid
-    t.device.createRenderPipeline(descriptor);
-  } else {
-    // Fails when sample count is not 4 or 1
-    t.expectValidationError(() => {
-      t.device.createRenderPipeline(descriptor);
-    });
-  }
-}).params([{
+});
+g.test('sample_count_must_be_valid').params([{
   sampleCount: 0,
   _success: false
 }, {
@@ -177,8 +159,41 @@ g.test('sample count must be valid', async t => {
 }, {
   sampleCount: 16,
   _success: false
-}]);
-g.test('sample count must be equal to the one of every attachment in the render pass', async t => {
+}]).fn(async t => {
+  const {
+    sampleCount,
+    _success
+  } = t.params;
+  const descriptor = t.getDescriptor({
+    sampleCount
+  });
+
+  if (_success) {
+    // Succeeds when sample count is valid
+    t.device.createRenderPipeline(descriptor);
+  } else {
+    // Fails when sample count is not 4 or 1
+    t.expectValidationError(() => {
+      t.device.createRenderPipeline(descriptor);
+    });
+  }
+});
+g.test('sample_count_must_be_equal_to_the_one_of_every_attachment_in_the_render_pass').params([{
+  attachmentSamples: 4,
+  pipelineSamples: 4,
+  _success: true
+}, // It is allowed to use multisampled render pass and multisampled render pipeline.
+{
+  attachmentSamples: 4,
+  pipelineSamples: 1,
+  _success: false
+}, // It is not allowed to use multisampled render pass and non-multisampled render pipeline.
+{
+  attachmentSamples: 1,
+  pipelineSamples: 4,
+  _success: false
+} // It is not allowed to use non-multisampled render pass and multisampled render pipeline.
+]).fn(async t => {
   const {
     attachmentSamples,
     pipelineSamples,
@@ -242,20 +257,5 @@ g.test('sample count must be equal to the one of every attachment in the render 
       commandEncoder.finish();
     }, !_success);
   }
-}).params([{
-  attachmentSamples: 4,
-  pipelineSamples: 4,
-  _success: true
-}, // It is allowed to use multisampled render pass and multisampled render pipeline.
-{
-  attachmentSamples: 4,
-  pipelineSamples: 1,
-  _success: false
-}, // It is not allowed to use multisampled render pass and non-multisampled render pipeline.
-{
-  attachmentSamples: 1,
-  pipelineSamples: 4,
-  _success: false
-} // It is not allowed to use non-multisampled render pass and multisampled render pipeline.
-]);
+});
 //# sourceMappingURL=createRenderPipeline.spec.js.map

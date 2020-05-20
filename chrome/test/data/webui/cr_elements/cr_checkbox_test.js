@@ -6,13 +6,17 @@
 // #import 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 // #import {keyDownOn, keyUpOn, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {eventToPromise} from '../test_util.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-checkbox', function() {
+  /** @type {!CrCheckboxElement} */
   let checkbox;
 
+  /** @type {!HTMLElement} */
+  let innerCheckbox;
+
   setup(function() {
-    PolymerTest.clearBody();
     document.body.innerHTML = `
       <cr-checkbox>
         <div>label
@@ -21,46 +25,48 @@ suite('cr-checkbox', function() {
       </cr-checkbox>
     `;
 
-    checkbox = document.querySelector('cr-checkbox');
+    checkbox = /** @type {!CrCheckboxElement} */ (
+        document.querySelector('cr-checkbox'));
+    innerCheckbox = /** @type {!HTMLElement} */ (checkbox.$$('#checkbox'));
     assertNotChecked();
   });
 
   function assertChecked() {
     assertTrue(checkbox.checked);
     assertTrue(checkbox.hasAttribute('checked'));
-    assertEquals('true', checkbox.$.checkbox.getAttribute('aria-checked'));
+    assertEquals('true', innerCheckbox.getAttribute('aria-checked'));
   }
 
   function assertNotChecked() {
     assertFalse(checkbox.checked);
     assertEquals(null, checkbox.getAttribute('checked'));
-    assertEquals('false', checkbox.$.checkbox.getAttribute('aria-checked'));
+    assertEquals('false', innerCheckbox.getAttribute('aria-checked'));
   }
 
   function assertDisabled() {
     assertTrue(checkbox.disabled);
     assertFalse(checkbox.hasAttribute('tabindex'));
-    assertEquals('-1', checkbox.$.checkbox.getAttribute('tabindex'));
+    assertEquals('-1', innerCheckbox.getAttribute('tabindex'));
     assertTrue(checkbox.hasAttribute('disabled'));
-    assertEquals('true', checkbox.$.checkbox.getAttribute('aria-disabled'));
+    assertEquals('true', innerCheckbox.getAttribute('aria-disabled'));
     assertEquals('none', getComputedStyle(checkbox).pointerEvents);
   }
 
   function assertNotDisabled() {
     assertFalse(checkbox.disabled);
     assertFalse(checkbox.hasAttribute('tabindex'));
-    assertEquals('0', checkbox.$.checkbox.getAttribute('tabindex'));
+    assertEquals('0', innerCheckbox.getAttribute('tabindex'));
     assertFalse(checkbox.hasAttribute('disabled'));
-    assertEquals('false', checkbox.$.checkbox.getAttribute('aria-disabled'));
+    assertEquals('false', innerCheckbox.getAttribute('aria-disabled'));
   }
 
   /**
    * @param {string} keyName The name of the key to trigger.
-   * @param {HTMLElement=} element
+   * @param {!HTMLElement=} element
    */
   function triggerKeyPressEvent(keyName, element) {
-    element = element || checkbox.$.checkbox;
-    MockInteractions.pressAndReleaseKeyOn(element, '', undefined, keyName);
+    MockInteractions.pressAndReleaseKeyOn(
+        element || innerCheckbox, 0, undefined, keyName);
   }
 
   // Test that the control is checked when the user taps on it (no movement
@@ -97,7 +103,7 @@ suite('cr-checkbox', function() {
 
   test('Toggle checkbox button click', async () => {
     let whenChanged = test_util.eventToPromise('change', checkbox);
-    checkbox.$.checkbox.click();
+    innerCheckbox.click();
     await whenChanged;
     assertChecked();
     whenChanged = test_util.eventToPromise('change', checkbox);
@@ -122,7 +128,7 @@ suite('cr-checkbox', function() {
 
     checkbox.click();
     assertNotChecked();
-    checkbox.$.checkbox.click();
+    innerCheckbox.click();
     assertNotChecked();
     triggerKeyPressEvent('Enter');
     assertNotChecked();
@@ -148,7 +154,8 @@ suite('cr-checkbox', function() {
     });
 
     assertNotChecked();
-    const link = document.querySelector('a');
+    const link =
+        /** @type {!HTMLAnchorElement} */ (document.querySelector('a'));
     link.click();
     assertNotChecked();
 
@@ -161,52 +168,54 @@ suite('cr-checkbox', function() {
 
   test('space key down does not toggle', () => {
     assertNotChecked();
-    MockInteractions.keyDownOn(checkbox.$.checkbox, null, undefined, ' ');
+    MockInteractions.keyDownOn(innerCheckbox, 0, undefined, ' ');
     assertNotChecked();
   });
 
   test('space key up toggles', () => {
     assertNotChecked();
-    MockInteractions.keyUpOn(checkbox.$.checkbox, null, undefined, ' ');
+    MockInteractions.keyUpOn(innerCheckbox, 0, undefined, ' ');
     assertChecked();
   });
 
   test('InitializingWithTabindex', function() {
-    PolymerTest.clearBody();
     document.body.innerHTML = `
       <cr-checkbox id="checkbox" tab-index="-1"></cr-checkbox>
     `;
 
-    checkbox = document.querySelector('cr-checkbox');
+    checkbox = /** @type {!CrCheckboxElement} */ (
+        document.querySelector('cr-checkbox'));
+    innerCheckbox = /** @type {!HTMLElement} */ (checkbox.$$('#checkbox'));
 
     // Should not override tabindex if it is initialized.
     assertEquals(-1, checkbox.tabIndex);
     assertFalse(checkbox.hasAttribute('tabindex'));
-    assertEquals('-1', checkbox.$.checkbox.getAttribute('tabindex'));
+    assertEquals('-1', innerCheckbox.getAttribute('tabindex'));
   });
 
   test('InitializingWithDisabled', function() {
-    PolymerTest.clearBody();
     document.body.innerHTML = `
       <cr-checkbox id="checkbox" disabled></cr-checkbox>
     `;
 
-    checkbox = document.querySelector('cr-checkbox');
+    checkbox = /** @type {!CrCheckboxElement} */ (
+        document.querySelector('cr-checkbox'));
+    innerCheckbox = /** @type {!HTMLElement} */ (checkbox.$$('#checkbox'));
 
     // Initializing with disabled should make tabindex="-1".
     assertEquals(-1, checkbox.tabIndex);
     assertFalse(checkbox.hasAttribute('tabindex'));
-    assertEquals('-1', checkbox.$.checkbox.getAttribute('tabindex'));
+    assertEquals('-1', innerCheckbox.getAttribute('tabindex'));
   });
 
   test('tabindex attribute is controlled by tabIndex', () => {
-    PolymerTest.clearBody();
     document.body.innerHTML = `
       <cr-checkbox id="checkbox" tabindex="-1"></cr-checkbox>
     `;
-    checkbox = document.querySelector('cr-checkbox');
+    checkbox = /** @type {!CrCheckboxElement} */ (
+        document.querySelector('cr-checkbox'));
     assertEquals(0, checkbox.tabIndex);
     assertFalse(checkbox.hasAttribute('tabindex'));
-    assertEquals('0', checkbox.$.checkbox.getAttribute('tabindex'));
+    assertEquals('0', innerCheckbox.getAttribute('tabindex'));
   });
 });

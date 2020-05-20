@@ -199,12 +199,8 @@ public class ServiceWorkerPaymentApp extends PaymentApp {
         mUkmSourceId = 0;
     }
 
-    /**
-     * Sets the endpoint for payment handler communication. Must be called before invoking this
-     * payment handler.
-     * @param host The endpoint for payment handler communication. Should not be null.
-     */
-    /* package */ void setPaymentHandlerHost(PaymentHandlerHost host) {
+    @Override
+    public void setPaymentHandlerHost(PaymentHandlerHost host) {
         assert host != null;
         mPaymentHandlerHost = host;
     }

@@ -142,6 +142,16 @@ gfx::Rect GetScreenAvailableBounds() {
   return available_bounds;
 }
 
+// Returns the distance of the top of a widget from the bottom of the primary
+// screen.
+int GetWidgetOffsetFromBottom(const views::Widget* widget) {
+  const int display_bottom =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom();
+
+  return display_bottom -
+         widget->GetClientAreaBoundsInScreen().top_center().y();
+}
+
 class TestDisplayObserver : public display::DisplayObserver {
  public:
   TestDisplayObserver() { display::Screen::GetScreen()->AddObserver(this); }
@@ -693,7 +703,7 @@ TEST_P(ShelfLayoutManagerTest, VisibleWhenStatusOrShelfFocused) {
 
 // Checks that the status area follows along the auto-hidden shelf when the
 // user swipes it up or down.
-TEST_P(ShelfLayoutManagerTest, StatusAreaMovesWithSwipeOnAutoHiddenShelf) {
+TEST_P(ShelfLayoutManagerTest, StatusAreaMoveWithSwipeOnAutoHiddenShelf) {
   Shelf* shelf = GetPrimaryShelf();
   CreateTestWidget();
   TabletModeControllerTestApi().EnterTabletMode();
@@ -701,20 +711,9 @@ TEST_P(ShelfLayoutManagerTest, StatusAreaMovesWithSwipeOnAutoHiddenShelf) {
   const int hidden_shelf_in_screen_portion =
       ShelfConfig::Get()->hidden_shelf_in_screen_portion();
 
-  auto number_of_status_area_visible_pixels = []() {
-    const Shelf* shelf = GetPrimaryShelf();
-    const int display_bottom =
-        display::Screen::GetScreen()->GetPrimaryDisplay().bounds().bottom();
-
-    return display_bottom - shelf->status_area_widget()
-                                ->GetClientAreaBoundsInScreen()
-                                .top_center()
-                                .y();
-  };
-
   // The shelf is hidden. The status area should also be off-screen.
   EXPECT_EQ(hidden_shelf_in_screen_portion,
-            number_of_status_area_visible_pixels());
+            GetWidgetOffsetFromBottom(shelf->status_area_widget()));
 
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
@@ -728,20 +727,21 @@ TEST_P(ShelfLayoutManagerTest, StatusAreaMovesWithSwipeOnAutoHiddenShelf) {
 
   // The drag has just started, but we haven't moved yet.
   EXPECT_EQ(hidden_shelf_in_screen_portion,
-            number_of_status_area_visible_pixels());
+            GetWidgetOffsetFromBottom(shelf->status_area_widget()));
 
   generator->MoveTouch(middle);
 
   // Now the status area should have entered the screen.
   const int status_area_visible_px_mid_gesture =
-      number_of_status_area_visible_pixels();
+      GetWidgetOffsetFromBottom(shelf->status_area_widget());
   EXPECT_LT(hidden_shelf_in_screen_portion, status_area_visible_px_mid_gesture);
 
   // Finish the gesture, the status area should follow.
   generator->MoveTouch(end);
   generator->ReleaseTouch();
+
   const int status_area_visible_px_end_gesture =
-      number_of_status_area_visible_pixels();
+      GetWidgetOffsetFromBottom(shelf->status_area_widget());
   EXPECT_LT(status_area_visible_px_mid_gesture,
             status_area_visible_px_end_gesture);
 
@@ -749,13 +749,80 @@ TEST_P(ShelfLayoutManagerTest, StatusAreaMovesWithSwipeOnAutoHiddenShelf) {
   generator->MoveTouch(end);
   generator->PressTouch();
   EXPECT_EQ(status_area_visible_px_end_gesture,
-            number_of_status_area_visible_pixels());
+            GetWidgetOffsetFromBottom(shelf->status_area_widget()));
 
   // And it should be back to off-screen after the gesture ends.
   generator->MoveTouch(start);
   generator->ReleaseTouch();
+
   EXPECT_EQ(hidden_shelf_in_screen_portion,
-            number_of_status_area_visible_pixels());
+            GetWidgetOffsetFromBottom(shelf->status_area_widget()));
+}
+
+// Checks that the navigation widget follows along the auto-hidden shelf when
+// the user swipes it up or down.
+TEST_P(ShelfLayoutManagerTest, NavigationWidgetMoveWithSwipeOnAutoHiddenShelf) {
+  Shell::Get()
+      ->accessibility_controller()
+      ->SetTabletModeShelfNavigationButtonsEnabled(true);
+
+  Shelf* shelf = GetPrimaryShelf();
+  CreateTestWidget();
+  TabletModeControllerTestApi().EnterTabletMode();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  const int hidden_shelf_in_screen_portion =
+      ShelfConfig::Get()->hidden_shelf_in_screen_portion();
+
+  // The shelf is hidden. The navigation widget should also be off-screen.
+  EXPECT_EQ(hidden_shelf_in_screen_portion,
+            GetWidgetOffsetFromBottom(shelf->navigation_widget()));
+
+  gfx::Rect display_bounds =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
+  const gfx::Point start(display_bounds.bottom_center());
+  const gfx::Point middle(start + gfx::Vector2d(0, -40));
+  const gfx::Point end(start + gfx::Vector2d(0, -80));
+
+  ui::test::EventGenerator* generator = GetEventGenerator();
+  generator->MoveTouch(start);
+  generator->PressTouch();
+
+  // The drag has just started, but we haven't moved yet.
+  EXPECT_EQ(hidden_shelf_in_screen_portion,
+            GetWidgetOffsetFromBottom(shelf->navigation_widget()));
+
+  generator->MoveTouch(middle);
+
+  // Now the navigation widget should have entered the screen.
+  const int navigation_visible_px_mid_gesture =
+      GetWidgetOffsetFromBottom(shelf->navigation_widget());
+  EXPECT_LT(hidden_shelf_in_screen_portion, navigation_visible_px_mid_gesture);
+
+  // Verify that the navigation widget and status area moved the same amount.
+  EXPECT_EQ(navigation_visible_px_mid_gesture,
+            GetWidgetOffsetFromBottom(shelf->status_area_widget()));
+
+  // Finish the gesture, the navigation widget should follow.
+  generator->MoveTouch(end);
+  generator->ReleaseTouch();
+
+  const int navigation_visible_px_end_gesture =
+      GetWidgetOffsetFromBottom(shelf->navigation_widget());
+  EXPECT_LT(navigation_visible_px_mid_gesture,
+            navigation_visible_px_end_gesture);
+
+  // Now start swiping down. The navigation widget should follow the other way.
+  generator->MoveTouch(end);
+  generator->PressTouch();
+  EXPECT_EQ(navigation_visible_px_end_gesture,
+            GetWidgetOffsetFromBottom(shelf->navigation_widget()));
+
+  // And it should be back to off-screen after the gesture ends.
+  generator->MoveTouch(start);
+  generator->ReleaseTouch();
+
+  EXPECT_EQ(hidden_shelf_in_screen_portion,
+            GetWidgetOffsetFromBottom(shelf->navigation_widget()));
 }
 
 // Ensure a SHELF_VISIBLE shelf stays visible when the app list is shown.

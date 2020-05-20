@@ -15,12 +15,12 @@ AssistantNotificationModel::AssistantNotificationModel() = default;
 AssistantNotificationModel::~AssistantNotificationModel() = default;
 
 void AssistantNotificationModel::AddObserver(
-    AssistantNotificationModelObserver* observer) {
+    AssistantNotificationModelObserver* observer) const {
   observers_.AddObserver(observer);
 }
 
 void AssistantNotificationModel::RemoveObserver(
-    AssistantNotificationModelObserver* observer) {
+    AssistantNotificationModelObserver* observer) const {
   observers_.RemoveObserver(observer);
 }
 

@@ -222,13 +222,13 @@ void AssistantScreenContextControllerImpl::RequestScreenshot(
 }
 
 void AssistantScreenContextControllerImpl::OnAssistantControllerConstructed() {
-  AssistantUiController::Get()->AddModelObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantScreenContextControllerImpl::OnAssistantControllerDestroying() {
   assistant_controller_->view_delegate()->RemoveObserver(this);
-  AssistantUiController::Get()->RemoveModelObserver(this);
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
 }
 
 void AssistantScreenContextControllerImpl::OnUiVisibilityChanged(

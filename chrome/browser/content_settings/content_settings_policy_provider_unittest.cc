@@ -296,4 +296,40 @@ TEST_F(PolicyProviderTest, InvalidManagedDefaultContentSetting) {
   provider.ShutdownOnUIThread();
 }
 
+TEST_F(PolicyProviderTest, WildcardsMatchingTest) {
+  // Enabling the feature which disallows wildcard matching for Plugin content
+  // settings
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine(
+      "DisallowWildcardsInPluginContentSettings", std::string());
+
+  TestingProfile profile;
+  sync_preferences::TestingPrefServiceSyncable* prefs =
+      profile.GetTestingPrefService();
+
+  auto value = std::make_unique<base::ListValue>();
+  value->AppendString("[*.]google.com");
+  value->AppendString("http://drive.google.com:443");
+  prefs->SetManagedPref(prefs::kManagedPluginsAllowedForUrls, std::move(value));
+
+  PolicyProvider provider(prefs);
+
+  GURL google_mail_url("http://mail.google.com");
+  GURL google_drive_url("http://drive.google.com:443");
+
+  // mail.google.com doesnt match because it's not an exact match
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            TestUtils::GetContentSetting(
+                &provider, google_mail_url, google_mail_url,
+                ContentSettingsType::PLUGINS, std::string(), false));
+
+  // drive.google.com matches because it's an exact match
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            TestUtils::GetContentSetting(
+                &provider, google_drive_url, google_drive_url,
+                ContentSettingsType::PLUGINS, std::string(), false));
+
+  provider.ShutdownOnUIThread();
+}
+
 }  // namespace content_settings

@@ -42,28 +42,6 @@ void AssistantViewDelegateImpl::RemoveObserver(
   view_delegate_observers_.RemoveObserver(observer);
 }
 
-void AssistantViewDelegateImpl::AddAlarmTimerModelObserver(
-    AssistantAlarmTimerModelObserver* observer) {
-  assistant_controller_->alarm_timer_controller()->AddModelObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveAlarmTimerModelObserver(
-    AssistantAlarmTimerModelObserver* observer) {
-  assistant_controller_->alarm_timer_controller()->RemoveModelObserver(
-      observer);
-}
-
-void AssistantViewDelegateImpl::AddNotificationModelObserver(
-    AssistantNotificationModelObserver* observer) {
-  assistant_controller_->notification_controller()->AddModelObserver(observer);
-}
-
-void AssistantViewDelegateImpl::RemoveNotificationModelObserver(
-    AssistantNotificationModelObserver* observer) {
-  assistant_controller_->notification_controller()->RemoveModelObserver(
-      observer);
-}
-
 void AssistantViewDelegateImpl::DownloadImage(
     const GURL& url,
     ImageDownloader::DownloadCallback callback) {

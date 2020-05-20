@@ -23,6 +23,7 @@
 #include "ios/net/cookies/cookie_cache.h"
 #import "ios/net/cookies/system_cookie_store.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
 #include "url/gurl.h"
@@ -263,7 +264,7 @@ class CookieStoreIOS : public net::CookieStore,
   // calling the provided callback.
 
   void UpdateCachesAfterSet(SetCookiesCallback callback,
-                            net::CanonicalCookie::CookieInclusionStatus status);
+                            net::CookieInclusionStatus status);
   void UpdateCachesAfterDelete(DeleteCallback callback, uint32_t num_deleted);
   void UpdateCachesAfterClosure(base::OnceClosure callback);
 

@@ -65,5 +65,7 @@ public class ExpandablePaymentHandlerTest {
                 return mUiShown;
             }
         });
+
+        mRule.runOnUiThread(() -> paymentHandler.hide());
     }
 }

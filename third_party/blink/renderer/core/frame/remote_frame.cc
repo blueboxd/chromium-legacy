@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_fullscreen_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -24,6 +25,7 @@
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -34,6 +36,7 @@
 #include "third_party/blink/renderer/core/loader/frame_load_request.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -320,6 +323,25 @@ void RemoteFrame::CreateView() {
 
   if (OwnerLayoutObject())
     DeprecatedLocalOwner()->SetEmbeddedContentView(view_);
+}
+
+void RemoteFrame::ForwardPostMessage(
+    MessageEvent* message_event,
+    base::Optional<base::UnguessableToken> cluster_id,
+    scoped_refptr<const SecurityOrigin> target_security_origin,
+    LocalFrame* source_frame) {
+  base::Optional<base::UnguessableToken> source_token;
+  if (source_frame)
+    source_token = source_frame->GetFrameToken();
+
+  String source_origin = message_event->origin();
+  String target_origin = g_empty_string;
+  if (target_security_origin)
+    target_origin = target_security_origin->ToString();
+
+  GetRemoteFrameHostRemote().RouteMessageEvent(
+      source_token, source_origin, target_origin,
+      BlinkTransferableMessage::FromMessageEvent(message_event, cluster_id));
 }
 
 mojom::blink::RemoteFrameHost& RemoteFrame::GetRemoteFrameHostRemote() {

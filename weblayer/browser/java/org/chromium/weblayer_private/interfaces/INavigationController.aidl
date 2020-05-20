@@ -33,4 +33,7 @@ interface INavigationController {
 
   // Added in 82, removed in 83.
   // void replace(in String uri) = 12;
+
+  // Added in 85.
+  boolean isNavigationEntrySkippable(int index) = 13;
 }

@@ -41,10 +41,6 @@ class RemoteFrameClientImpl final : public RemoteFrameClient {
                 mojo::PendingRemote<mojom::blink::BlobURLToken>,
                 const base::Optional<WebImpression>& impression) override;
   unsigned BackForwardLength() override;
-  void ForwardPostMessage(MessageEvent*,
-                          scoped_refptr<const SecurityOrigin> target,
-                          base::Optional<base::UnguessableToken> cluster_id,
-                          LocalFrame* source) const override;
   void FrameRectsChanged(const IntRect& local_frame_rect,
                          const IntRect& screen_space_rect) override;
   void UpdateRemoteViewportIntersection(

@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -26,20 +27,12 @@ namespace web_app {
 
 class WebAppProviderBase;
 
-enum class ControllerType {
-  kUnifiedControllerWithBookmarkApp,
-  kUnifiedControllerWithWebApp,
-};
-
-std::string ControllerTypeParamToString(
-    const ::testing::TestParamInfo<ControllerType>& controller_type);
-
 // Base class for tests of user interface support for web applications.
-// ControllerType selects between use of WebAppBrowserController and
-// HostedAppBrowserController.
+// ProviderType selects between use of BMO web apps and
+// Extensions-based bookmark apps.
 class WebAppControllerBrowserTestBase
     : public extensions::ExtensionBrowserTest,
-      public ::testing::WithParamInterface<ControllerType> {
+      public ::testing::WithParamInterface<ProviderType> {
  public:
   WebAppControllerBrowserTestBase();
   ~WebAppControllerBrowserTestBase() = 0;

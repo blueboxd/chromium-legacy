@@ -175,13 +175,6 @@
       origin_trial_feature_name: "AppCache",
     },
     {
-      // Use an aspect ratio from the HTML attributes even when we use sizing
-      // from CSS.
-      // https://github.com/WICG/intrinsicsize-attribute/issues/16
-      name: "AspectRatioFromWidthAndHeight",
-      status: "stable",
-    },
-    {
       name: "AudioOutputDevices",
       // Android does not yet support switching of audio output devices
       status: {"Android": "", "default": "stable"},
@@ -1807,10 +1800,6 @@
       status: "experimental",
       origin_trial_feature_name: "UnsizedMediaPolicy",
       implied_by: ["ExperimentalProductivityFeatures"]
-    },
-    {
-      name: "UserActivationAPI",
-      status: "stable",
     },
     {
       name: "UserActivationPostMessageTransfer",

@@ -133,20 +133,22 @@ def GetCommandDecoder(gpu_info):
   return 'no_passthrough'
 
 
-# Used to check GPU feature status to see if SkiaRenderer is enabled.
-def GetSkiaRenderer(gpu_feature_status):
-  if gpu_feature_status and 'skia_renderer' in gpu_feature_status:
-    if gpu_feature_status['skia_renderer'] == 'enabled_on':
-      return 'skia-renderer'
+# Used to parse additional options sent to the browser instance via
+# '--extra-browser-args', looking for '--enable-features=UseSkiaRenderer' which
+# may be merged with additional feature flags.
+def GetSkiaRenderer(extra_browser_args):
+  if extra_browser_args:
+    for o in extra_browser_args:
+      if o.startswith('--enable-features') and "UseSkiaRenderer" in o:
+        return 'skia-renderer'
+      if o.startswith('--disable-features') and "UseSkiaRenderer" in o:
+        return 'no-skia-renderer'
+      if "--disable-vulkan-fallback-to-gl-for-testing" in o:
+        return 'skia-renderer'
+  # TODO(kylechar): The feature is enabled/disabled differently depending on
+  # platform and official build status. Find out if SkiaRenderer is enabled
+  # through GPU info instead.
   return 'no-skia-renderer'
-
-
-# Used to check GPU feature status to see if Vulkan is enabled.
-def GetVulkan(gpu_feature_status):
-  if gpu_feature_status and 'vulkan' in gpu_feature_status:
-    if gpu_feature_status['vulkan'] == 'enabled_on':
-      return 'vulkan'
-  return 'no-vulkan'
 
 
 # Used to parse additional options sent to the browser instance via
@@ -160,9 +162,18 @@ def GetGL(extra_browser_args):
 
 
 # Used to parse additional options sent to the browser instance via
+# '--extra-browser-args', looking for '--use-vulkan='.
+def GetVulkan(extra_browser_args):
+  if extra_browser_args:
+    for o in extra_browser_args:
+      if "--use-vulkan=" in o:
+        return 'use-vulkan'
+  return 'no-use-vulkan'
+
+
+# Used to parse additional options sent to the browser instance via
 # '--extra-browser-args', looking for '--enable-features=SkiaDawn' which
 # may be merged with additional feature flags.
-# TODO(sgilhuly): Use GPU feature status for Dawn instead of command line.
 def GetSkiaDawn(extra_browser_args):
   if extra_browser_args:
     for o in extra_browser_args:

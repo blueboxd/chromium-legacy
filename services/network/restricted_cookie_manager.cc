@@ -86,8 +86,6 @@ net::CookieOptions MakeOptionsForGet(
 
 }  // namespace
 
-using CookieInclusionStatus = net::CanonicalCookie::CookieInclusionStatus;
-
 class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
  public:
   Listener(net::CookieStore* cookie_store,
@@ -264,7 +262,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   // TODO(https://crbug.com/993843): Use the statuses passed in |cookie_list|.
   for (size_t i = 0; i < cookie_list.size(); ++i) {
     const net::CanonicalCookie& cookie = cookie_list[i].cookie;
-    CookieInclusionStatus status = cookie_list[i].status;
+    net::CookieInclusionStatus status = cookie_list[i].status;
     const std::string& cookie_name = cookie.Name();
 
     if (match_type == mojom::CookieMatchType::EQUALS) {
@@ -281,7 +279,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
 
     if (blocked) {
       status.AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+          net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     } else {
       result.push_back(cookie);
     }
@@ -319,21 +317,24 @@ void RestrictedCookieManager::SetCanonicalCookie(
   bool blocked = !cookie_settings_->IsCookieAccessAllowed(
       url, site_for_cookies.RepresentativeUrl(), top_frame_origin);
 
-  CookieInclusionStatus status;
+  net::CookieInclusionStatus status;
   if (blocked)
-    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+    status.AddExclusionReason(
+        net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
 
   // Don't allow URLs with leading dots like https://.some-weird-domain.com
   // This probably never happens.
   if (!net::cookie_util::DomainIsHostOnly(url.host()))
-    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
+    status.AddExclusionReason(
+        net::CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
 
   // Don't allow setting cookies on other domains.
   // TODO(crbug.com/996786): This should never happen. This should eventually
   // result in a renderer kill, but for now just log metrics.
   bool domain_match = cookie.IsDomainMatch(url.host());
   if (!domain_match)
-    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH);
+    status.AddExclusionReason(
+        net::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH);
   UMA_HISTOGRAM_BOOLEAN(
       "Net.RestrictedCookieManager.SetCanonicalCookieDomainMatch",
       domain_match);
@@ -384,12 +385,12 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
     const net::CanonicalCookie& cookie,
     const net::CookieOptions& net_options,
     SetCanonicalCookieCallback user_callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+    net::CookieInclusionStatus status) {
   std::vector<net::CookieWithStatus> notify;
   // TODO(https://crbug.com/977040): Only report pure INCLUDE once samesite
   // tightening up is rolled out.
   DCHECK(!status.HasExclusionReason(
-      CookieInclusionStatus::EXCLUDE_USER_PREFERENCES));
+      net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES));
 
   if (status.IsInclude() || status.ShouldWarn()) {
     if (cookie_observer_) {

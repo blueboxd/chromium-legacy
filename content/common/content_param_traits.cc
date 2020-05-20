@@ -24,7 +24,6 @@
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
-#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -236,81 +235,6 @@ struct ParamTraits<
     return true;
   }
 };
-
-void ParamTraits<scoped_refptr<base::RefCountedData<
-    blink::TransferableMessage>>>::Write(base::Pickle* m, const param_type& p) {
-  m->WriteData(reinterpret_cast<const char*>(p->data.encoded_message.data()),
-               p->data.encoded_message.size());
-  WriteParam(m, p->data.blobs);
-  WriteParam(m, p->data.stack_trace_id);
-  WriteParam(m, p->data.stack_trace_debugger_id_first);
-  WriteParam(m, p->data.stack_trace_debugger_id_second);
-  WriteParam(m, p->data.stack_trace_should_pause);
-  WriteParam(m, p->data.locked_agent_cluster_id);
-  WriteParam(m, p->data.ports);
-  WriteParam(m, p->data.stream_channels);
-  WriteParam(m, !!p->data.user_activation);
-  WriteParam(m, p->data.transfer_user_activation);
-  WriteParam(m, p->data.allow_autoplay);
-  WriteParam(m, p->data.sender_origin);
-  WriteParam(m, p->data.native_file_system_tokens);
-  if (p->data.user_activation) {
-    WriteParam(m, p->data.user_activation->has_been_active);
-    WriteParam(m, p->data.user_activation->was_active);
-  }
-}
-
-bool ParamTraits<
-    scoped_refptr<base::RefCountedData<blink::TransferableMessage>>>::
-    Read(const base::Pickle* m, base::PickleIterator* iter, param_type* r) {
-  *r = new base::RefCountedData<blink::TransferableMessage>();
-
-  const char* data;
-  int length;
-  if (!iter->ReadData(&data, &length))
-    return false;
-  // This just makes encoded_message point into the IPC message buffer. Usually
-  // code receiving a TransferableMessage will synchronously process the message
-  // so this avoids an unnecessary copy. If a receiver needs to hold on to the
-  // message longer, it should make sure to call EnsureDataIsOwned on the
-  // returned message.
-  (*r)->data.encoded_message =
-      base::make_span(reinterpret_cast<const uint8_t*>(data), length);
-  bool has_activation = false;
-  if (!ReadParam(m, iter, &(*r)->data.blobs) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_id) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_first) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
-      !ReadParam(m, iter, &(*r)->data.stack_trace_should_pause) ||
-      !ReadParam(m, iter, &(*r)->data.locked_agent_cluster_id) ||
-      !ReadParam(m, iter, &(*r)->data.ports) ||
-      !ReadParam(m, iter, &(*r)->data.stream_channels) ||
-      !ReadParam(m, iter, &has_activation) ||
-      !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
-      !ReadParam(m, iter, &(*r)->data.allow_autoplay) ||
-      !ReadParam(m, iter, &(*r)->data.sender_origin) ||
-      !ReadParam(m, iter, &(*r)->data.native_file_system_tokens)) {
-    return false;
-  }
-
-  if (has_activation) {
-    bool has_been_active;
-    bool was_active;
-    if (!ReadParam(m, iter, &has_been_active) ||
-        !ReadParam(m, iter, &was_active)) {
-      return false;
-    }
-    (*r)->data.user_activation =
-        blink::mojom::UserActivationSnapshot::New(has_been_active, was_active);
-  }
-  return true;
-}
-
-void ParamTraits<scoped_refptr<
-    base::RefCountedData<blink::TransferableMessage>>>::Log(const param_type& p,
-                                                            std::string* l) {
-  l->append("<blink::TransferableMessage>");
-}
 
 void ParamTraits<viz::FrameSinkId>::Write(base::Pickle* m,
                                           const param_type& p) {

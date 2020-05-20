@@ -1028,6 +1028,7 @@ class AccessibilityRelnotesFieldTest(unittest.TestCase):
     mock_output_api = MockOutputApi()
 
     mock_input_api.files = [MockAffectedFile('ui/accessibility/foo.bar', [''])]
+    mock_input_api.change.DescriptionText = lambda : 'Commit description'
     mock_input_api.change.footers['AX-Relnotes'] = [
         'Important user facing change']
 
@@ -1046,6 +1047,7 @@ class AccessibilityRelnotesFieldTest(unittest.TestCase):
         MockAffectedFile('ui/accessibility/foo.bar', ['']),
         MockAffectedFile('some/other/file', [''])
     ]
+    mock_input_api.change.DescriptionText = lambda : 'Commit description'
 
     msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
         mock_input_api, mock_output_api)
@@ -1065,6 +1067,7 @@ class AccessibilityRelnotesFieldTest(unittest.TestCase):
         MockAffectedFile('some/file', ['']),
         MockAffectedFile('some/other/file', [''])
     ]
+    mock_input_api.change.DescriptionText = lambda : 'Commit description'
 
     msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
         mock_input_api, mock_output_api)
@@ -1097,6 +1100,7 @@ class AccessibilityRelnotesFieldTest(unittest.TestCase):
       mock_input_api.files = [
           MockAffectedFile(testFile, [''])
       ]
+      mock_input_api.change.DescriptionText = lambda : 'Commit description'
 
       msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
           mock_input_api, mock_output_api)
@@ -1106,6 +1110,58 @@ class AccessibilityRelnotesFieldTest(unittest.TestCase):
       self.assertTrue("Missing 'AX-Relnotes:' field" in msgs[0].message,
                       ('Missing AX-Relnotes field message not found in errors '
                        ' for file %s' % (testFile)))
+
+  # Test that AX-Relnotes field can appear in the commit description (as long
+  # as it appears at the beginning of a line).
+  def testRelnotesInCommitDescription(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+        MockAffectedFile('ui/accessibility/foo.bar', ['']),
+    ]
+    mock_input_api.change.DescriptionText = lambda : ('Description:\n' +
+        'AX-Relnotes: solves all accessibility issues forever')
+
+    msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(msgs),
+                     'Expected %d messages, found %d: %s'
+                     % (0, len(msgs), msgs))
+
+  # Test that we don't match AX-Relnotes if it appears in the middle of a line.
+  def testRelnotesMustAppearAtBeginningOfLine(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+        MockAffectedFile('ui/accessibility/foo.bar', ['']),
+    ]
+    mock_input_api.change.DescriptionText = lambda : ('Description:\n' +
+        'This change has no AX-Relnotes: we should print a warning')
+
+    msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
+        mock_input_api, mock_output_api)
+    self.assertTrue("Missing 'AX-Relnotes:' field" in msgs[0].message,
+                    'Missing AX-Relnotes field message not found in errors')
+
+  # Tests that the AX-Relnotes field can be lowercase and use a '=' in place
+  # of a ':'.
+  def testRelnotesLowercaseWithEqualSign(self):
+    mock_input_api = MockInputApi()
+    mock_output_api = MockOutputApi()
+
+    mock_input_api.files = [
+        MockAffectedFile('ui/accessibility/foo.bar', ['']),
+    ]
+    mock_input_api.change.DescriptionText = lambda : ('Description:\n' +
+        'ax-relnotes= this is a valid format for accessibiliy relnotes')
+
+    msgs = PRESUBMIT._CheckAccessibilityRelnotesField(
+        mock_input_api, mock_output_api)
+    self.assertEqual(0, len(msgs),
+                     'Expected %d messages, found %d: %s'
+                     % (0, len(msgs), msgs))
 
 class AndroidDeprecatedTestAnnotationTest(unittest.TestCase):
   def testCheckAndroidTestAnnotationUsage(self):

@@ -97,19 +97,24 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   bool IsHiddenForPaint() const { return is_hidden_for_paint_; }
   bool IsListMarker() const;
 
-  // Return true if this is the first fragment generated from a node.
-  bool IsFirstForNode() const {
-    DCHECK(Type() != kLine);
-    return is_first_for_node_;
+  // A sequence number of fragments generated from a |LayoutObject|.
+  wtf_size_t FragmentId() const {
+    DCHECK_NE(Type(), kLine);
+    return fragment_id_;
   }
+  void SetFragmentId(wtf_size_t id) const {
+    DCHECK_NE(Type(), kLine);
+    fragment_id_ = id;
+  }
+
+  // Return true if this is the first fragment generated from a node.
+  bool IsFirstForNode() const { return !FragmentId(); }
 
   // Return true if this is the last fragment generated from a node.
   bool IsLastForNode() const {
     DCHECK(Type() != kLine);
     return is_last_for_node_;
   }
-
-  void SetIsFirstForNode(bool is_first) const { is_first_for_node_ = is_first; }
   void SetIsLastForNode(bool is_last) const { is_last_for_node_ = is_last; }
 
   NGStyleVariant StyleVariant() const {
@@ -377,6 +382,8 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
 
   std::unique_ptr<NGInkOverflow> ink_overflow_;
 
+  mutable wtf_size_t fragment_id_ = 0;
+
   // Item index delta to the next item for the same |LayoutObject|.
   mutable wtf_size_t delta_to_next_for_same_layout_object_ = 0;
 
@@ -394,7 +401,6 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
 
   mutable unsigned is_dirty_ : 1;
 
-  mutable unsigned is_first_for_node_ : 1;
   mutable unsigned is_last_for_node_ : 1;
 };
 

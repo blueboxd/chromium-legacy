@@ -62,9 +62,9 @@ class ASH_EXPORT StickyKeysOverlay : public ui::ImplicitAnimationObserver {
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override;
 
-  bool is_visible_;
+  bool is_visible_ = false;
   std::unique_ptr<views::Widget> overlay_widget_;
-  std::unique_ptr<StickyKeysOverlayView> overlay_view_;
+  StickyKeysOverlayView* overlay_view_;  // owned by |overlay_widget_|.
   gfx::Size widget_size_;
 };
 

@@ -49,10 +49,6 @@ class AssistantAlarmTimerControllerImpl
   // Returns the underlying model.
   const AssistantAlarmTimerModel* model() const { return &model_; }
 
-  // Adds/removes the specified model |observer|.
-  void AddModelObserver(AssistantAlarmTimerModelObserver* observer);
-  void RemoveModelObserver(AssistantAlarmTimerModelObserver* observer);
-
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 

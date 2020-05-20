@@ -145,6 +145,11 @@ ScopedJavaLocalRef<jstring> NavigationControllerImpl::GetNavigationEntryTitle(
   return ScopedJavaLocalRef<jstring>(base::android::ConvertUTF8ToJavaString(
       env, GetNavigationEntryTitle(index)));
 }
+
+bool NavigationControllerImpl::IsNavigationEntrySkippable(JNIEnv* env,
+                                                          int index) {
+  return IsNavigationEntrySkippable(index);
+}
 #endif
 
 void NavigationControllerImpl::WillRedirectRequest(
@@ -246,6 +251,10 @@ std::string NavigationControllerImpl::GetNavigationEntryTitle(int index) {
   if (!entry)
     return std::string();
   return base::UTF16ToUTF8(entry->GetTitle());
+}
+
+bool NavigationControllerImpl::IsNavigationEntrySkippable(int index) {
+  return web_contents()->GetController().IsEntryMarkedToBeSkipped(index);
 }
 
 void NavigationControllerImpl::DidStartNavigation(

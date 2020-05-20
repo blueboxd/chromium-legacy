@@ -15,6 +15,24 @@
 
 namespace blink {
 
+namespace {
+
+struct SameSizeAsNGFragmentItem : RefCounted<NGFragmentItem>,
+                                  public DisplayItemClient {
+  struct {
+    void* pointer;
+    NGTextOffset text_offset;
+  } type_data;
+  PhysicalRect rect;
+  void* pointers[2];
+  wtf_size_t sizes[2];
+  unsigned flags;
+};
+
+static_assert(sizeof(NGFragmentItem) == sizeof(SameSizeAsNGFragmentItem),
+              "NGFragmentItem should stay small");
+}  // namespace
+
 NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
     : layout_object_(text.GetLayoutObject()),
       text_({text.TextShapeResult(), text.TextOffset()}),
@@ -26,7 +44,6 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
       text_direction_(static_cast<unsigned>(text.ResolvedDirection())),
       ink_overflow_computed_(false),
       is_dirty_(false),
-      is_first_for_node_(true),
       is_last_for_node_(true) {
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
@@ -56,7 +73,6 @@ NGFragmentItem::NGFragmentItem(NGInlineItemResult&& item_result,
       text_direction_(static_cast<unsigned>(item_result.item->Direction())),
       ink_overflow_computed_(false),
       is_dirty_(false),
-      is_first_for_node_(true),
       is_last_for_node_(true) {
 #if DCHECK_IS_ON()
   if (text_.shape_result) {
@@ -81,7 +97,6 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalLineBoxFragment& line,
       text_direction_(static_cast<unsigned>(line.BaseDirection())),
       ink_overflow_computed_(false),
       is_dirty_(false),
-      is_first_for_node_(true),
       is_last_for_node_(true) {
   DCHECK(!IsFormattingContextRoot());
 }
@@ -97,7 +112,6 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
       text_direction_(static_cast<unsigned>(resolved_direction)),
       ink_overflow_computed_(false),
       is_dirty_(false),
-      is_first_for_node_(true),
       is_last_for_node_(true) {
   DCHECK_EQ(IsFormattingContextRoot(), box.IsFormattingContextRoot());
 }
@@ -113,7 +127,6 @@ NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
       text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
       ink_overflow_computed_(false),
       is_dirty_(false),
-      is_first_for_node_(true),
       is_last_for_node_(true) {
   DCHECK_EQ(inline_item.Type(), NGInlineItem::kOpenTag);
   DCHECK(layout_object_);

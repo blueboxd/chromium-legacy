@@ -38,6 +38,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -304,9 +305,8 @@ class ClearSiteDataHandlerBrowserTest : public ContentBrowserTest {
   }
 
   // Callback handler for AddCookie().
-  static void AddCookieCallback(
-      base::OnceClosure callback,
-      net::CanonicalCookie::CookieInclusionStatus status) {
+  static void AddCookieCallback(base::OnceClosure callback,
+                                net::CookieInclusionStatus status) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     ASSERT_TRUE(status.IsInclude());
     std::move(callback).Run();

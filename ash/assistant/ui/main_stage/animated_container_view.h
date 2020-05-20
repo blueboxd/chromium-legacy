@@ -13,7 +13,6 @@
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
-#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "base/scoped_observer.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 
@@ -164,12 +163,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AnimatedContainerView
 
   ScopedObserver<AssistantController, AssistantControllerObserver>
       assistant_controller_observer_{this};
-
-  ScopedObserver<AssistantInteractionController,
-                 AssistantInteractionModelObserver,
-                 &AssistantInteractionController::AddModelObserver,
-                 &AssistantInteractionController::RemoveModelObserver>
-      assistant_interaction_model_observer_{this};
 
   base::WeakPtrFactory<AnimatedContainerView> weak_factory_{this};
 

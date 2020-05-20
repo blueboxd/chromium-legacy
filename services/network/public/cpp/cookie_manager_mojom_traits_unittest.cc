@@ -59,34 +59,32 @@ TEST(CookieManagerTraitsTest, Roundtrips_CanonicalCookie) {
 TEST(CookieManagerTraitsTest, Roundtrips_CookieInclusionStatus) {
   // This status + warning combo doesn't really make sense. It's just an
   // arbitrary selection of values to test the serialization/deserialization.
-  net::CanonicalCookie::CookieInclusionStatus original =
-      net::CanonicalCookie::CookieInclusionStatus::MakeFromReasonsForTesting(
-          {net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
-           net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
-           net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY},
-          {net::CanonicalCookie::CookieInclusionStatus::
+  net::CookieInclusionStatus original =
+      net::CookieInclusionStatus::MakeFromReasonsForTesting(
+          {net::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
+           net::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
+           net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY},
+          {net::CookieInclusionStatus::
                WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-           net::CanonicalCookie::CookieInclusionStatus::
-               WARN_SAMESITE_NONE_INSECURE,
-           net::CanonicalCookie::CookieInclusionStatus::
+           net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE,
+           net::CookieInclusionStatus::
                WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE});
 
-  net::CanonicalCookie::CookieInclusionStatus copied;
+  net::CookieInclusionStatus copied;
 
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::CookieInclusionStatus>(
       &original, &copied));
   EXPECT_TRUE(copied.HasExactlyExclusionReasonsForTesting(
-      {net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
-       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
-       net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
+      {net::CookieInclusionStatus::EXCLUDE_SAMESITE_LAX,
+       net::CookieInclusionStatus::EXCLUDE_INVALID_PREFIX,
+       net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
   EXPECT_TRUE(copied.HasExactlyWarningReasonsForTesting(
-      {net::CanonicalCookie::CookieInclusionStatus::
-           WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
-       net::CanonicalCookie::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE,
-       net::CanonicalCookie::CookieInclusionStatus::
+      {net::CookieInclusionStatus::WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT,
+       net::CookieInclusionStatus::WARN_SAMESITE_NONE_INSECURE,
+       net::CookieInclusionStatus::
            WARN_SAMESITE_UNSPECIFIED_LAX_ALLOW_UNSAFE}));
 
-  net::CanonicalCookie::CookieInclusionStatus invalid;
+  net::CookieInclusionStatus invalid;
   invalid.set_exclusion_reasons(~0u);
 
   EXPECT_FALSE(
@@ -100,8 +98,8 @@ TEST(CookieManagerTraitsTest, Roundtrips_CookieWithStatus) {
       /* secure = */ true, /* http_only = */ false,
       net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_LOW);
 
-  net::CookieWithStatus original = {
-      original_cookie, net::CanonicalCookie::CookieInclusionStatus()};
+  net::CookieWithStatus original = {original_cookie,
+                                    net::CookieInclusionStatus()};
 
   net::CookieWithStatus copied;
 

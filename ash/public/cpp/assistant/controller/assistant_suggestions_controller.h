@@ -10,7 +10,6 @@
 namespace ash {
 
 class AssistantSuggestionsModel;
-class AssistantSuggestionsModelObserver;
 
 // The interface for the Assistant controller in charge of suggestions.
 class ASH_PUBLIC_EXPORT AssistantSuggestionsController {
@@ -20,10 +19,6 @@ class ASH_PUBLIC_EXPORT AssistantSuggestionsController {
 
   // Returns a pointer to the underlying model.
   virtual const AssistantSuggestionsModel* GetModel() const = 0;
-
-  // Adds/removes the specified model observer.
-  virtual void AddModelObserver(AssistantSuggestionsModelObserver*) = 0;
-  virtual void RemoveModelObserver(AssistantSuggestionsModelObserver*) = 0;
 
  protected:
   AssistantSuggestionsController();

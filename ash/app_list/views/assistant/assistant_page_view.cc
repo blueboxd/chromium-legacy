@@ -19,6 +19,7 @@
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/view_shadow.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
@@ -61,10 +62,13 @@ AssistantPageView::AssistantPageView(
     assistant_controller_observer_.Add(AssistantController::Get());
 
   if (AssistantUiController::Get())  // May be |nullptr| in tests.
-    assistant_ui_model_observer_.Add(AssistantUiController::Get());
+    AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
-AssistantPageView::~AssistantPageView() = default;
+AssistantPageView::~AssistantPageView() {
+  if (AssistantUiController::Get())
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+}
 
 void AssistantPageView::InitLayout() {
   SetPaintToLayer();
@@ -247,7 +251,7 @@ gfx::Rect AssistantPageView::GetPageBoundsForState(
 
 void AssistantPageView::OnAssistantControllerDestroying() {
   if (AssistantUiController::Get())  // May be |nullptr| in tests.
-    assistant_ui_model_observer_.Remove(AssistantUiController::Get());
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
 
   if (AssistantController::Get())  // May be |nullptr| in tests.
     assistant_controller_observer_.Remove(AssistantController::Get());

@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 
 import org.chromium.base.Callback;
@@ -88,8 +89,9 @@ public class WebApkInstaller {
                             @Override
                             public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
                                 BrowserServicesIntentDataProvider intentDataProvider =
-                                        WebApkIntentDataProviderFactory.create(packageName, null,
-                                                source, false /* forceNavigation */,
+                                        WebApkIntentDataProviderFactory.create(new Intent(),
+                                                packageName, null, source,
+                                                false /* forceNavigation */,
                                                 false /* canUseSplashFromContentProvider */,
                                                 null /* shareData */,
                                                 null /* shareDataActivityClassName */);

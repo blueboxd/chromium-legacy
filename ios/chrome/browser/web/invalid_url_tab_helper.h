@@ -13,8 +13,8 @@
 //    which is suboptimal user experience).
 //  - Extremely long URLs (these use a lot of memory during the navigation
 //    causing stability problems).
-class InvalidUrlTabHelper : public web::WebStateUserData<InvalidUrlTabHelper>,
-                            public web::WebStatePolicyDecider {
+class InvalidUrlTabHelper : public web::WebStatePolicyDecider,
+                            public web::WebStateUserData<InvalidUrlTabHelper> {
  public:
   ~InvalidUrlTabHelper() override;
 

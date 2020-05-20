@@ -618,6 +618,7 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       [self.observers appState:self
            firstSceneActivated:sceneDelegate.sceneState];
       sceneDelegate.sceneState.presentingModalOverlay =
+          self.sceneShowingBlockingUI &&
           (self.sceneShowingBlockingUI != sceneDelegate.sceneState);
     }
   }

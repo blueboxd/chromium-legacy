@@ -4310,8 +4310,16 @@ def _CheckAccessibilityRelnotesField(input_api, output_api):
   if not any(input_api.AffectedFiles(file_filter=FileFilter)):
     return []
 
-  relnotes = input_api.change.GitFootersFromDescription().get('AX-Relnotes', [])
-  if relnotes:
+  # AX-Relnotes can appear in either the description or the footer.
+  # When searching the description, require 'AX-Relnotes:' to appear at the
+  # beginning of a line.
+  ax_regex = input_api.re.compile('ax-relnotes[:=]')
+  description_has_relnotes = any(ax_regex.match(line)
+    for line in input_api.change.DescriptionText().lower().splitlines())
+
+  footer_relnotes = input_api.change.GitFootersFromDescription().get(
+    'AX-Relnotes', [])
+  if description_has_relnotes or footer_relnotes:
     return []
 
   # TODO(chrishall): link to Relnotes documentation in message.

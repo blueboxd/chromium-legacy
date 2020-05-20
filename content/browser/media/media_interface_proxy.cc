@@ -35,6 +35,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/time.h"
@@ -42,6 +43,7 @@
 #include "content/browser/media/key_system_support_impl.h"
 #include "content/public/common/cdm_info.h"
 #include "media/base/key_system_names.h"
+#include "media/base/media_switches.h"
 #include "media/mojo/mojom/cdm_service.mojom.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #if defined(OS_MACOSX)
@@ -72,6 +74,15 @@ bool IsValidCdmDisplayName(const std::string& cdm_name) {
   return cdm_name.size() <= kMaxCdmNameSize && base::IsStringASCII(cdm_name);
 }
 
+// CdmService is keyed on CDM type, user profile and site URL. Note that site
+// is not normal URL nor origin. See chrome/browser/site_isolation for details.
+using CdmServiceKey = std::tuple<base::Token, const BrowserContext*, GURL>;
+
+std::ostream& operator<<(std::ostream& os, const CdmServiceKey& key) {
+  return os << "{" << std::get<0>(key).ToString() << ", " << std::get<1>(key)
+            << ", " << std::get<2>(key) << "}";
+}
+
 // A map hosts all media::mojom::CdmService remotes, each of which corresponds
 // to one CDM process. There should be only one instance of this class stored in
 // base::SequenceLocalStorageSlot. See below.
@@ -86,19 +97,19 @@ class CdmServiceMap {
 
   // Gets or creates a media::mojom::CdmService remote. The returned remote
   // might not be bound, e.g. if it's newly created.
-  auto& GetOrCreateRemote(const base::Token& guid) {
-    auto& remote = remotes_[guid];
+  auto& GetOrCreateRemote(const CdmServiceKey& key) {
+    auto& remote = remotes_[key];
     max_remote_count_ = std::max(max_remote_count_, remotes_.size());
     return remote;
   }
 
-  void EraseRemote(const base::Token& guid) {
-    DCHECK(remotes_.count(guid));
-    remotes_.erase(guid);
+  void EraseRemote(const CdmServiceKey& key) {
+    DCHECK(remotes_.count(key));
+    remotes_.erase(key);
   }
 
  private:
-  std::map<base::Token, mojo::Remote<media::mojom::CdmService>> remotes_;
+  std::map<CdmServiceKey, mojo::Remote<media::mojom::CdmService>> remotes_;
   size_t max_remote_count_ = 0;
 };
 
@@ -111,26 +122,37 @@ CdmServiceMap& GetCdmServiceMap() {
   return slot->GetOrCreateValue();
 }
 
-// Erases the CDM service instance for the CDM identified by |guid|.
-void EraseCdmServiceForGuid(const base::Token& guid) {
-  GetCdmServiceMap().EraseRemote(guid);
+// Erases the CDM service instance for the CDM identified by |key|.
+void EraseCdmService(const CdmServiceKey& key) {
+  DVLOG(2) << __func__ << ": key=" << key;
+  GetCdmServiceMap().EraseRemote(key);
 }
 
 // Gets an instance of the CDM service for the CDM identified by |guid|.
 // Instances are started lazily as needed.
-media::mojom::CdmService& GetCdmServiceForGuid(const base::Token& guid,
-                                               const std::string& cdm_name) {
-  auto& remote = GetCdmServiceMap().GetOrCreateRemote(guid);
+media::mojom::CdmService& GetCdmService(const base::Token& guid,
+                                        const BrowserContext* browser_context,
+                                        const GURL& site,
+                                        const std::string& cdm_name) {
+  CdmServiceKey key;
+  std::string display_name;
+  if (base::FeatureList::IsEnabled(media::kCdmProcessSiteIsolation)) {
+    key = {guid, browser_context, site};
+    display_name = cdm_name + " (" + site.spec() + ")";
+  } else {
+    key = {guid, nullptr, GURL()};
+    display_name = cdm_name;
+  }
+  DVLOG(2) << __func__ << ": key=" << key;
+
+  auto& remote = GetCdmServiceMap().GetOrCreateRemote(key);
   if (!remote) {
     ServiceProcessHost::Launch(
         remote.BindNewPipeAndPassReceiver(),
-        ServiceProcessHost::Options()
-            .WithDisplayName(cdm_name)
-            .Pass());
-    remote.set_disconnect_handler(
-        base::BindOnce(&EraseCdmServiceForGuid, guid));
+        ServiceProcessHost::Options().WithDisplayName(display_name).Pass());
+    remote.set_disconnect_handler(base::BindOnce(&EraseCdmService, key));
     remote.set_idle_handler(kCdmServiceIdleTimeout,
-                            base::BindRepeating(EraseCdmServiceForGuid, guid));
+                            base::BindRepeating(EraseCdmService, key));
   }
 
   return *remote.get();
@@ -241,11 +263,10 @@ class FrameInterfaceFactoryImpl : public media::mojom::FrameInterfaceFactory {
   void CreateProvisionFetcher(
       mojo::PendingReceiver<media::mojom::ProvisionFetcher> receiver) override {
 #if BUILDFLAG(ENABLE_MOJO_CDM)
-    ProvisionFetcherImpl::Create(
-        BrowserContext::GetDefaultStoragePartition(
-            render_frame_host_->GetProcess()->GetBrowserContext())
-            ->GetURLLoaderFactoryForBrowserProcess(),
-        std::move(receiver));
+    ProvisionFetcherImpl::Create(BrowserContext::GetDefaultStoragePartition(
+                                     render_frame_host_->GetBrowserContext())
+                                     ->GetURLLoaderFactoryForBrowserProcess(),
+                                 std::move(receiver));
 #endif
   }
 
@@ -456,12 +477,13 @@ media::mojom::CdmFactory* MediaInterfaceProxy::ConnectToCdmService(
     const base::FilePath& cdm_path,
     const std::string& cdm_file_system_id,
     const std::string& cdm_name) {
-  DVLOG(1) << __func__ << ": cdm_guid = " << cdm_guid.ToString();
+  DVLOG(1) << __func__ << ": cdm_name = " << cdm_name;
 
   DCHECK(!cdm_factory_map_.count(cdm_guid));
 
-  media::mojom::CdmService& cdm_service =
-      GetCdmServiceForGuid(cdm_guid, cdm_name);
+  auto* browser_context = render_frame_host_->GetBrowserContext();
+  auto& site = render_frame_host_->GetSiteInstance()->GetSiteURL();
+  auto& cdm_service = GetCdmService(cdm_guid, browser_context, site, cdm_name);
 
 #if defined(OS_MACOSX)
   // LoadCdm() should always be called before CreateInterfaceFactory().

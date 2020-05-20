@@ -65,16 +65,15 @@ DelayedCookieMonsterChangeDispatcher::AddCallbackForAllChanges(
 }
 
 DelayedCookieMonster::DelayedCookieMonster()
-    : cookie_monster_(new CookieMonster(nullptr /* store */,
-                                        nullptr /* netlog */)),
+    : cookie_monster_(
+          new CookieMonster(nullptr /* store */, nullptr /* netlog */)),
       did_run_(false),
-      result_(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE) {}
+      result_(CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE) {}
 
 DelayedCookieMonster::~DelayedCookieMonster() = default;
 
 void DelayedCookieMonster::SetCookiesInternalCallback(
-    CanonicalCookie::CookieInclusionStatus result) {
+    CookieInclusionStatus result) {
   result_ = result;
   did_run_ = true;
 }

@@ -50,8 +50,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantInteractionModel {
   ~AssistantInteractionModel();
 
   // Adds/removes the specified interaction model |observer|.
-  void AddObserver(AssistantInteractionModelObserver* observer);
-  void RemoveObserver(AssistantInteractionModelObserver* observer);
+  void AddObserver(AssistantInteractionModelObserver* observer) const;
+  void RemoveObserver(AssistantInteractionModelObserver* observer) const;
 
   // Resets the interaction to its initial state.
   void ClearInteraction();
@@ -151,7 +151,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantInteractionModel {
   scoped_refptr<AssistantResponse> pending_response_;
   scoped_refptr<AssistantResponse> response_;
 
-  base::ObserverList<AssistantInteractionModelObserver> observers_;
+  mutable base::ObserverList<AssistantInteractionModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionModel);
 };

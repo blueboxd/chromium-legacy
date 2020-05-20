@@ -14,6 +14,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/payments/content/payment_event_response_util.h"
+#include "components/payments/content/payment_handler_host.h"
 #include "components/payments/content/payment_request_converter.h"
 #include "components/payments/core/features.h"
 #include "components/payments/core/method_strings.h"
@@ -547,6 +548,11 @@ ukm::SourceId ServiceWorkerPaymentApp::UkmSourceId() {
             ->GetSourceIdForPaymentAppFromScope(sw_scope.GetOrigin());
   }
   return ukm_source_id_;
+}
+
+void ServiceWorkerPaymentApp::SetPaymentHandlerHost(
+    base::WeakPtr<PaymentHandlerHost> payment_handler_host) {
+  payment_handler_host_ = payment_handler_host->Bind();
 }
 
 }  // namespace payments

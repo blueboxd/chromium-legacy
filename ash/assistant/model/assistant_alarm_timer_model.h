@@ -26,8 +26,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
   ~AssistantAlarmTimerModel();
 
   // Adds/removes the specified alarm/timer model |observer|.
-  void AddObserver(AssistantAlarmTimerModelObserver* observer);
-  void RemoveObserver(AssistantAlarmTimerModelObserver* observer);
+  void AddObserver(AssistantAlarmTimerModelObserver* observer) const;
+  void RemoveObserver(AssistantAlarmTimerModelObserver* observer) const;
 
   // Adds or updates the timer specified by |timer.id| in the model.
   void AddOrUpdateTimer(AssistantTimerPtr timer);
@@ -59,7 +59,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantAlarmTimerModel {
 
   std::map<std::string, AssistantTimerPtr> timers_;
 
-  base::ObserverList<AssistantAlarmTimerModelObserver> observers_;
+  mutable base::ObserverList<AssistantAlarmTimerModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerModel);
 };

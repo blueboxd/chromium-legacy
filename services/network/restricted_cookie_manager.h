@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
@@ -116,13 +117,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) RestrictedCookieManager
 
   // Reports the result of setting the cookie to |network_context_client_|, and
   // invokes the user callback.
-  void SetCanonicalCookieResult(
-      const GURL& url,
-      const net::SiteForCookies& site_for_cookies,
-      const net::CanonicalCookie& cookie,
-      const net::CookieOptions& net_options,
-      SetCanonicalCookieCallback user_callback,
-      net::CanonicalCookie::CookieInclusionStatus status);
+  void SetCanonicalCookieResult(const GURL& url,
+                                const net::SiteForCookies& site_for_cookies,
+                                const net::CanonicalCookie& cookie,
+                                const net::CookieOptions& net_options,
+                                SetCanonicalCookieCallback user_callback,
+                                net::CookieInclusionStatus status);
 
   // Called when the Mojo pipe associated with a listener is closed.
   void RemoveChangeListener(Listener* listener);

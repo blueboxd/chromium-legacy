@@ -16,6 +16,7 @@
 #include "chrome/browser/usb/usb_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/win/vr_browser_renderer_thread_win.h"
+#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_result.h"

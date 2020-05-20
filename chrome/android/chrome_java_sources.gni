@@ -948,7 +948,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/night_mode/settings/ThemeSettingsFragment.java",
   "java/src/org/chromium/chrome/browser/notifications/ActionInfo.java",
   "java/src/org/chromium/chrome/browser/notifications/CustomNotificationBuilder.java",
-  "java/src/org/chromium/chrome/browser/notifications/ForegroundServiceUtils.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationBuilder.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationBuilderBase.java",
   "java/src/org/chromium/chrome/browser/notifications/NotificationBuilderFactory.java",

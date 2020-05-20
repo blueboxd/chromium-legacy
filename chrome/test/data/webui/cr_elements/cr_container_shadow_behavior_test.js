@@ -5,6 +5,7 @@
 // clang-format off
 // #import {CrContainerShadowBehavior} from 'chrome://resources/cr_elements/cr_container_shadow_behavior.m.js';
 // #import {Polymer, html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// #import {assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('CrContainerShadowBehavior', function() {
@@ -61,11 +62,12 @@ suite('CrContainerShadowBehavior', function() {
   });
 
   setup(function() {
-    PolymerTest.clearBody();
+    document.body.innerHTML = '';
   });
 
   test('no bottom shadow', function() {
-    const element = document.createElement('test-element');
+    const element = /** @type {TestElementElement} */ (
+        document.createElement('test-element'));
     document.body.appendChild(element);
 
     // Should not have a bottom shadow div.
@@ -80,7 +82,8 @@ suite('CrContainerShadowBehavior', function() {
   });
 
   test('show bottom shadow', function() {
-    const element = document.createElement('test-element');
+    const element = /** @type {TestElementElement} */ (
+        document.createElement('test-element'));
     element.showBottomShadow = true;
     document.body.appendChild(element);
 

@@ -3116,7 +3116,8 @@ void BrowserView::LoadAccelerators() {
   for (const auto& entry : accelerator_list) {
     // In app mode, only allow accelerators of white listed commands to pass
     // through.
-    if (is_app_mode && !chrome::IsCommandAllowedInAppMode(entry.command_id))
+    if (is_app_mode && !chrome::IsCommandAllowedInAppMode(
+                           entry.command_id, browser()->is_type_popup()))
       continue;
 
     ui::Accelerator accelerator(entry.keycode, entry.modifiers);

@@ -12,8 +12,6 @@
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/main_stage/animated_container_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
-#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
-#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
@@ -89,18 +87,6 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
 
   // The suggestion chip that was pressed by the user. May be |nullptr|.
   const SuggestionChipView* selected_chip_ = nullptr;
-
-  ScopedObserver<AssistantSuggestionsController,
-                 AssistantSuggestionsModelObserver,
-                 &AssistantSuggestionsController::AddModelObserver,
-                 &AssistantSuggestionsController::RemoveModelObserver>
-      assistant_suggestions_model_observer_{this};
-
-  ScopedObserver<AssistantUiController,
-                 AssistantUiModelObserver,
-                 &AssistantUiController::AddModelObserver,
-                 &AssistantUiController::RemoveModelObserver>
-      assistant_ui_model_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionContainerView);
 };

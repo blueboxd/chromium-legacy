@@ -13,6 +13,7 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
@@ -118,11 +119,23 @@ AssistantSearchProvider::AssistantSearchProvider() {
   UpdateResults();
 
   // Bind observers.
-  state_observer_.Add(ash::AssistantState::Get());
-  suggestions_observer_.Add(ash::AssistantSuggestionsController::Get());
+  assistant_controller_observer_.Add(ash::AssistantController::Get());
+  assistant_state_observer_.Add(ash::AssistantState::Get());
+  ash::AssistantSuggestionsController::Get()->GetModel()->AddObserver(this);
 }
 
-AssistantSearchProvider::~AssistantSearchProvider() = default;
+AssistantSearchProvider::~AssistantSearchProvider() {
+  if (ash::AssistantSuggestionsController::Get()) {
+    ash::AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(
+        this);
+  }
+}
+
+void AssistantSearchProvider::OnAssistantControllerDestroying() {
+  ash::AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
+  assistant_state_observer_.Remove(ash::AssistantState::Get());
+  assistant_controller_observer_.Remove(ash::AssistantController::Get());
+}
 
 void AssistantSearchProvider::OnAssistantFeatureAllowedChanged(
     chromeos::assistant::AssistantAllowedState allowed_state) {

@@ -47,14 +47,14 @@ void ShowToast(const std::string& id, int message_id) {
 // AssistantUiControllerImpl ---------------------------------------------------
 
 AssistantUiControllerImpl::AssistantUiControllerImpl() {
-  AddModelObserver(this);
+  model_.AddObserver(this);
   assistant_controller_observer_.Add(AssistantController::Get());
   highlighter_controller_observer_.Add(Shell::Get()->highlighter_controller());
   overview_controller_observer_.Add(Shell::Get()->overview_controller());
 }
 
 AssistantUiControllerImpl::~AssistantUiControllerImpl() {
-  RemoveModelObserver(this);
+  model_.RemoveObserver(this);
 }
 
 void AssistantUiControllerImpl::SetAssistant(
@@ -64,16 +64,6 @@ void AssistantUiControllerImpl::SetAssistant(
 
 const AssistantUiModel* AssistantUiControllerImpl::GetModel() const {
   return &model_;
-}
-
-void AssistantUiControllerImpl::AddModelObserver(
-    AssistantUiModelObserver* observer) {
-  model_.AddObserver(observer);
-}
-
-void AssistantUiControllerImpl::RemoveModelObserver(
-    AssistantUiModelObserver* observer) {
-  model_.RemoveObserver(observer);
 }
 
 void AssistantUiControllerImpl::ShowUi(AssistantEntryPoint entry_point) {
@@ -175,11 +165,11 @@ void AssistantUiControllerImpl::OnHighlighterEnabledChanged(
 }
 
 void AssistantUiControllerImpl::OnAssistantControllerConstructed() {
-  AssistantInteractionController::Get()->AddModelObserver(this);
+  AssistantInteractionController::Get()->GetModel()->AddObserver(this);
 }
 
 void AssistantUiControllerImpl::OnAssistantControllerDestroying() {
-  AssistantInteractionController::Get()->RemoveModelObserver(this);
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
 }
 
 void AssistantUiControllerImpl::OnOpeningUrl(const GURL& url,

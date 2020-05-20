@@ -5,7 +5,7 @@
 export const description = `
 render pass validation tests.
 `;
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { ValidationTest } from './validation_test.js';
 
 class F extends ValidationTest {
@@ -82,8 +82,24 @@ class F extends ValidationTest {
 
 }
 
-export const g = new TestGroup(F);
-g.test('it is invalid to draw in a render pass with missing bind groups', async t => {
+export const g = makeTestGroup(F);
+g.test('it_is_invalid_to_draw_in_a_render_pass_with_missing_bind_groups').params([{
+  setBindGroup1: true,
+  setBindGroup2: true,
+  _success: true
+}, {
+  setBindGroup1: true,
+  setBindGroup2: false,
+  _success: false
+}, {
+  setBindGroup1: false,
+  setBindGroup2: true,
+  _success: false
+}, {
+  setBindGroup1: false,
+  setBindGroup2: false,
+  _success: false
+}]).fn(async t => {
   const {
     setBindGroup1,
     setBindGroup2,
@@ -143,21 +159,5 @@ g.test('it is invalid to draw in a render pass with missing bind groups', async 
   t.expectValidationError(() => {
     commandEncoder.finish();
   }, !_success);
-}).params([{
-  setBindGroup1: true,
-  setBindGroup2: true,
-  _success: true
-}, {
-  setBindGroup1: true,
-  setBindGroup2: false,
-  _success: false
-}, {
-  setBindGroup1: false,
-  setBindGroup2: true,
-  _success: false
-}, {
-  setBindGroup1: false,
-  setBindGroup2: false,
-  _success: false
-}]);
+});
 //# sourceMappingURL=render_pass.spec.js.map

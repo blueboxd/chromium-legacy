@@ -64,8 +64,8 @@ void RemoteDOMWindow::ForwardPostMessage(
   base::Optional<base::UnguessableToken> agent_cluster;
   if (event->IsLockedToAgentCluster())
     agent_cluster = source->GetExecutionContext()->GetAgentClusterID();
-  GetFrame()->Client()->ForwardPostMessage(event, std::move(target),
-                                           agent_cluster, source->GetFrame());
+  GetFrame()->ForwardPostMessage(event, agent_cluster, std::move(target),
+                                 source->GetFrame());
 }
 
 }  // namespace blink

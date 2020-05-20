@@ -604,6 +604,11 @@ ContentSettingsPattern::Relation ContentSettingsPattern::Compare(
   return path_relation;
 }
 
+bool ContentSettingsPattern::HasWildcards() const {
+  return parts_.is_scheme_wildcard || parts_.has_domain_wildcard ||
+         parts_.is_path_wildcard || parts_.is_port_wildcard;
+}
+
 bool ContentSettingsPattern::operator==(
     const ContentSettingsPattern& other) const {
   return Compare(other) == IDENTITY;

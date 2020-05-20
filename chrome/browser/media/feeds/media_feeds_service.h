@@ -10,6 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/media/feeds/media_feeds_converter.h"
 #include "chrome/browser/media/feeds/media_feeds_fetcher.h"
 #include "chrome/browser/media/feeds/media_feeds_store.mojom.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
@@ -158,6 +159,8 @@ class MediaFeedsService : public KeyedService {
   std::unique_ptr<CookieChangeListener> cookie_change_listener_;
 
   base::OnceClosure cookie_change_callback_;
+
+  MediaFeedsConverter media_feeds_converter_;
 
   std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker_;
   Profile* const profile_;

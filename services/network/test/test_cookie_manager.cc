@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 
 namespace network {
 
@@ -21,8 +22,8 @@ void TestCookieManager::SetCanonicalCookie(
     const net::CookieOptions& cookie_options,
     SetCanonicalCookieCallback callback) {
   if (callback) {
-    std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
+    std::move(callback).Run(net::CookieInclusionStatus(
+        net::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
   }
 }
 

@@ -86,8 +86,7 @@ class DelayedCookieMonster : public CookieStore {
  private:
   // Be called immediately from CookieMonster.
 
-  void SetCookiesInternalCallback(
-      CanonicalCookie::CookieInclusionStatus result);
+  void SetCookiesInternalCallback(CookieInclusionStatus result);
 
   void GetCookiesWithOptionsInternalCallback(const std::string& cookie);
   void GetCookieListWithOptionsInternalCallback(
@@ -107,7 +106,7 @@ class DelayedCookieMonster : public CookieStore {
   DelayedCookieMonsterChangeDispatcher change_dispatcher_;
 
   bool did_run_;
-  CanonicalCookie::CookieInclusionStatus result_;
+  CookieInclusionStatus result_;
   std::string cookie_;
   std::string cookie_line_;
   CookieStatusList cookie_status_list_;

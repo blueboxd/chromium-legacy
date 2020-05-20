@@ -19,7 +19,6 @@
 #include "build/build_config.h"
 #include "components/browsing_data/content/cookie_helper.h"
 #include "components/browsing_data/content/local_shared_objects_container.h"
-#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -35,6 +34,8 @@ class NavigationHandle;
 namespace url {
 class Origin;
 }  // namespace url
+
+class ContentSettingsUsagesState;
 
 namespace content_settings {
 
@@ -84,6 +85,10 @@ class TabSpecificContentSettings
 
     // Gets the settings map for the current web contents.
     virtual HostContentSettingsMap* GetSettingsMap() = 0;
+
+    virtual ContentSetting GetEmbargoSetting(
+        const GURL& request_origin,
+        ContentSettingsType permission) = 0;
 
     // Gets any additional file system types which should be used when
     // constructing a browsing_data::FileSystemHelper.
@@ -259,13 +264,13 @@ class TabSpecificContentSettings
   // Returns the ContentSettingsUsagesState that controls the
   // geolocation API usage on this page.
   const ContentSettingsUsagesState& geolocation_usages_state() const {
-    return geolocation_usages_state_;
+    return *geolocation_usages_state_;
   }
 
   // Returns the ContentSettingsUsageState that controls the MIDI usage on
   // this page.
   const ContentSettingsUsagesState& midi_usages_state() const {
-    return midi_usages_state_;
+    return *midi_usages_state_;
   }
 
   // Returns the |LocalSharedObjectsContainer| instances corresponding to all
@@ -427,10 +432,10 @@ class TabSpecificContentSettings
   browsing_data::LocalSharedObjectsContainer blocked_local_shared_objects_;
 
   // Manages information about Geolocation API usage in this page.
-  ContentSettingsUsagesState geolocation_usages_state_;
+  std::unique_ptr<ContentSettingsUsagesState> geolocation_usages_state_;
 
   // Manages information about MIDI usages in this page.
-  ContentSettingsUsagesState midi_usages_state_;
+  std::unique_ptr<ContentSettingsUsagesState> midi_usages_state_;
 
   // Stores whether the user can load blocked plugins on this page.
   bool load_plugins_link_enabled_;

@@ -2,183 +2,383 @@
 
 export const listing = [
   {
-    "path": "",
-    "description": "WebGPU conformance test suite."
+    "file": [],
+    "readme": "WebGPU conformance test suite."
   },
   {
-    "path": "api/",
-    "description": "Tests for full coverage of the Javascript API surface of WebGPU."
+    "file": [
+      "api"
+    ],
+    "readme": "Tests for full coverage of the Javascript API surface of WebGPU."
   },
   {
-    "path": "api/operation/",
-    "description": "Tests that check the result of performing valid WebGPU operations, taking advantage of\nparameterization to exercise interactions between features."
+    "file": [
+      "api",
+      "operation"
+    ],
+    "readme": "Tests that check the result of performing valid WebGPU operations, taking advantage of\nparameterization to exercise interactions between features."
   },
   {
-    "path": "api/operation/buffers/",
-    "description": "GPUBuffer tests."
+    "file": [
+      "api",
+      "operation",
+      "buffers"
+    ],
+    "readme": "GPUBuffer tests."
   },
   {
-    "path": "api/operation/buffers/create_mapped",
+    "file": [
+      "api",
+      "operation",
+      "buffers",
+      "create_mapped"
+    ],
     "description": ""
   },
   {
-    "path": "api/operation/buffers/map",
+    "file": [
+      "api",
+      "operation",
+      "buffers",
+      "map"
+    ],
     "description": ""
   },
   {
-    "path": "api/operation/buffers/map_detach",
+    "file": [
+      "api",
+      "operation",
+      "buffers",
+      "map_detach"
+    ],
     "description": ""
   },
   {
-    "path": "api/operation/buffers/map_oom",
+    "file": [
+      "api",
+      "operation",
+      "buffers",
+      "map_oom"
+    ],
     "description": ""
   },
   {
-    "path": "api/operation/command_buffer/basic",
+    "file": [
+      "api",
+      "operation",
+      "command_buffer",
+      "basic"
+    ],
     "description": "Basic tests."
   },
   {
-    "path": "api/operation/command_buffer/compute/basic",
+    "file": [
+      "api",
+      "operation",
+      "command_buffer",
+      "compute",
+      "basic"
+    ],
     "description": "Basic command buffer compute tests."
   },
   {
-    "path": "api/operation/command_buffer/copies",
+    "file": [
+      "api",
+      "operation",
+      "command_buffer",
+      "copies"
+    ],
     "description": "copy{Buffer,Texture}To{Buffer,Texture} tests."
   },
   {
-    "path": "api/operation/command_buffer/render/basic",
+    "file": [
+      "api",
+      "operation",
+      "command_buffer",
+      "render",
+      "basic"
+    ],
     "description": "Basic command buffer rendering tests."
   },
   {
-    "path": "api/operation/command_buffer/render/rendering",
+    "file": [
+      "api",
+      "operation",
+      "command_buffer",
+      "render",
+      "rendering"
+    ],
     "description": ""
   },
   {
-    "path": "api/operation/command_buffer/render/storeop",
+    "file": [
+      "api",
+      "operation",
+      "command_buffer",
+      "render",
+      "storeop"
+    ],
     "description": "renderPass store op test that drawn quad is either stored or cleared based on storeop"
   },
   {
-    "path": "api/operation/fences",
+    "file": [
+      "api",
+      "operation",
+      "fences"
+    ],
     "description": ""
   },
   {
-    "path": "api/operation/resource_init/sampled_texture_clear",
-    "description": "computePass test that sampled texture is cleared"
+    "file": [
+      "api",
+      "operation",
+      "resource_init",
+      "copied_texture_clear"
+    ],
+    "description": "Test uninitialized textures are initialized to zero when copied."
   },
   {
-    "path": "api/regression/",
-    "description": "One-off tests that reproduce API bugs found in implementations to prevent the bugs from\nappearing again."
+    "file": [
+      "api",
+      "operation",
+      "resource_init",
+      "depth_stencil_attachment_clear"
+    ],
+    "description": "Test uninitialized textures are initialized to zero when used as a depth/stencil attachment."
   },
   {
-    "path": "api/validation/",
-    "description": "Positive and negative tests for all the validation rules of the API."
+    "file": [
+      "api",
+      "operation",
+      "resource_init",
+      "sampled_texture_clear"
+    ],
+    "description": "Test uninitialized textures are initialized to zero when sampled."
   },
   {
-    "path": "api/validation/createBindGroup",
+    "file": [
+      "api",
+      "regression"
+    ],
+    "readme": "One-off tests that reproduce API bugs found in implementations to prevent the bugs from\nappearing again."
+  },
+  {
+    "file": [
+      "api",
+      "validation"
+    ],
+    "readme": "Positive and negative tests for all the validation rules of the API."
+  },
+  {
+    "file": [
+      "api",
+      "validation",
+      "createBindGroup"
+    ],
     "description": "createBindGroup validation tests."
   },
   {
-    "path": "api/validation/createBindGroupLayout",
+    "file": [
+      "api",
+      "validation",
+      "createBindGroupLayout"
+    ],
     "description": "createBindGroupLayout validation tests."
   },
   {
-    "path": "api/validation/createPipelineLayout",
+    "file": [
+      "api",
+      "validation",
+      "createPipelineLayout"
+    ],
     "description": "createPipelineLayout validation tests."
   },
   {
-    "path": "api/validation/createRenderPipeline",
+    "file": [
+      "api",
+      "validation",
+      "createRenderPipeline"
+    ],
     "description": "createRenderPipeline validation tests."
   },
   {
-    "path": "api/validation/createTexture",
+    "file": [
+      "api",
+      "validation",
+      "createTexture"
+    ],
     "description": "createTexture validation tests."
   },
   {
-    "path": "api/validation/createView",
+    "file": [
+      "api",
+      "validation",
+      "createView"
+    ],
     "description": "createView validation tests."
   },
   {
-    "path": "api/validation/error_scope",
+    "file": [
+      "api",
+      "validation",
+      "error_scope"
+    ],
     "description": "error scope validation tests."
   },
   {
-    "path": "api/validation/fences",
+    "file": [
+      "api",
+      "validation",
+      "fences"
+    ],
     "description": "fences validation tests."
   },
   {
-    "path": "api/validation/queue_submit",
+    "file": [
+      "api",
+      "validation",
+      "queue_submit"
+    ],
     "description": "queue submit validation tests."
   },
   {
-    "path": "api/validation/render_pass",
+    "file": [
+      "api",
+      "validation",
+      "render_pass"
+    ],
     "description": "render pass validation tests."
   },
   {
-    "path": "api/validation/render_pass_descriptor",
+    "file": [
+      "api",
+      "validation",
+      "render_pass_descriptor"
+    ],
     "description": "render pass descriptor validation tests."
   },
   {
-    "path": "api/validation/setBindGroup",
+    "file": [
+      "api",
+      "validation",
+      "setBindGroup"
+    ],
     "description": "setBindGroup validation tests."
   },
   {
-    "path": "api/validation/setBlendColor",
+    "file": [
+      "api",
+      "validation",
+      "setBlendColor"
+    ],
     "description": "setBlendColor validation tests."
   },
   {
-    "path": "api/validation/setScissorRect",
+    "file": [
+      "api",
+      "validation",
+      "setScissorRect"
+    ],
     "description": "setScissorRect validation tests."
   },
   {
-    "path": "api/validation/setStencilReference",
+    "file": [
+      "api",
+      "validation",
+      "setStencilReference"
+    ],
     "description": "setStencilReference validation tests."
   },
   {
-    "path": "api/validation/setVertexBuffer",
+    "file": [
+      "api",
+      "validation",
+      "setVertexBuffer"
+    ],
     "description": "setVertexBuffer validation tests."
   },
   {
-    "path": "api/validation/setViewport",
+    "file": [
+      "api",
+      "validation",
+      "setViewport"
+    ],
     "description": "setViewport validation tests."
   },
   {
-    "path": "api/validation/vertex_state",
+    "file": [
+      "api",
+      "validation",
+      "vertex_state"
+    ],
     "description": "vertexState validation tests."
   },
   {
-    "path": "examples",
+    "file": [
+      "examples"
+    ],
     "description": "Examples of writing CTS tests with various features.\n\nStart here when looking for examples of basic framework usage."
   },
   {
-    "path": "idl/",
-    "description": "Tests to check that the WebGPU IDL is correctly implemented, for examples that objects exposed\nexactly the correct members, and that methods throw when passed incomplete dictionaries."
+    "file": [
+      "idl"
+    ],
+    "readme": "Tests to check that the WebGPU IDL is correctly implemented, for examples that objects exposed\nexactly the correct members, and that methods throw when passed incomplete dictionaries."
   },
   {
-    "path": "shader/",
-    "description": "Tests for full coverage of the shaders that can be passed to WebGPU."
+    "file": [
+      "shader"
+    ],
+    "readme": "Tests for full coverage of the shaders that can be passed to WebGPU."
   },
   {
-    "path": "shader/execution/",
-    "description": "Tests that check the result of valid shader execution."
+    "file": [
+      "shader",
+      "execution"
+    ],
+    "readme": "Tests that check the result of valid shader execution."
   },
   {
-    "path": "shader/regression/",
-    "description": "One-off tests that reproduce shader bugs found in implementations to prevent the bugs from\nappearing again."
+    "file": [
+      "shader",
+      "execution",
+      "robust_access"
+    ],
+    "description": "Tests to check array clamping in shaders is correctly implemented including vector / matrix indexing"
   },
   {
-    "path": "shader/validation/",
-    "description": "Positive and negative tests for all the validation rules of the shading language."
+    "file": [
+      "shader",
+      "regression"
+    ],
+    "readme": "One-off tests that reproduce shader bugs found in implementations to prevent the bugs from\nappearing again."
   },
   {
-    "path": "web-platform/",
-    "description": "Tests for Web platform-specific interactions like GPUSwapChain and canvas, WebXR,\nImageBitmaps, and video APIs."
+    "file": [
+      "shader",
+      "validation"
+    ],
+    "readme": "Positive and negative tests for all the validation rules of the shading language."
   },
   {
-    "path": "web-platform/canvas/context_creation",
+    "file": [
+      "web-platform"
+    ],
+    "readme": "Tests for Web platform-specific interactions like GPUSwapChain and canvas, WebXR,\nImageBitmaps, and video APIs."
+  },
+  {
+    "file": [
+      "web-platform",
+      "canvas",
+      "context_creation"
+    ],
     "description": ""
   },
   {
-    "path": "web-platform/copyImageBitmapToTexture",
+    "file": [
+      "web-platform",
+      "copyImageBitmapToTexture"
+    ],
     "description": "copy imageBitmap To texture tests."
   }
 ];

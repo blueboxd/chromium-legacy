@@ -115,14 +115,15 @@ void IncrementNumWarmerWelcomeTriggered() {
 AssistantInteractionControllerImpl::AssistantInteractionControllerImpl(
     AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  AddModelObserver(this);
+  model_.AddObserver(this);
+
   assistant_controller_observer_.Add(AssistantController::Get());
   highlighter_controller_observer_.Add(Shell::Get()->highlighter_controller());
   tablet_mode_controller_observer_.Add(GetTabletModeController());
 }
 
 AssistantInteractionControllerImpl::~AssistantInteractionControllerImpl() {
-  RemoveModelObserver(this);
+  model_.RemoveObserver(this);
 }
 
 void AssistantInteractionControllerImpl::SetAssistant(
@@ -137,16 +138,6 @@ void AssistantInteractionControllerImpl::SetAssistant(
 const AssistantInteractionModel* AssistantInteractionControllerImpl::GetModel()
     const {
   return &model_;
-}
-
-void AssistantInteractionControllerImpl::AddModelObserver(
-    AssistantInteractionModelObserver* observer) {
-  model_.AddObserver(observer);
-}
-
-void AssistantInteractionControllerImpl::RemoveModelObserver(
-    AssistantInteractionModelObserver* observer) {
-  model_.RemoveObserver(observer);
 }
 
 void AssistantInteractionControllerImpl::StartTextInteraction(
@@ -164,13 +155,13 @@ void AssistantInteractionControllerImpl::StartTextInteraction(
 }
 
 void AssistantInteractionControllerImpl::OnAssistantControllerConstructed() {
-  AssistantUiController::Get()->AddModelObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantInteractionControllerImpl::OnAssistantControllerDestroying() {
   assistant_controller_->view_delegate()->RemoveObserver(this);
-  AssistantUiController::Get()->RemoveModelObserver(this);
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
 }
 
 void AssistantInteractionControllerImpl::OnDeepLinkReceived(

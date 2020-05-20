@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "content/public/test/browser_test.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -130,11 +131,10 @@ IN_PROC_BROWSER_TEST_P(WebAppNavigateBrowserTest, NewPopup) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppNavigateBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppNavigateBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
 
 }  // namespace web_app

@@ -452,7 +452,7 @@ class GomaLinkBase(object):
       elif not self.LTO_RE.match(param):
         final_params.append(param)
 
-    index_params.append(self.WL + self.PREFIX_REPLACE + ';' + obj_dir)
+    index_params.append(self.WL + self.PREFIX_REPLACE + ';' + obj_dir + '/')
     i = 0
     while i < len(args):
       x = args[i]

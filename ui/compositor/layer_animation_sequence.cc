@@ -249,11 +249,17 @@ void LayerAnimationSequence::OnAnimatorAttached(
     LayerAnimationDelegate* delegate) {
   for (auto& element : elements_)
     element->OnAnimatorAttached(delegate);
+
+  for (LayerAnimationObserver& observer : observers_)
+    observer.OnAnimatorAttachedToTimeline();
 }
 
 void LayerAnimationSequence::OnAnimatorDetached() {
   for (auto& element : elements_)
     element->OnAnimatorDetached();
+
+  for (LayerAnimationObserver& observer : observers_)
+    observer.OnAnimatorDetachedFromTimeline();
 }
 
 void LayerAnimationSequence::SetAnimationMetricsReporter(

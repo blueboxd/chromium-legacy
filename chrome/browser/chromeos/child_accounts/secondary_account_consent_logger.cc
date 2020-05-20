@@ -40,7 +40,7 @@ constexpr char kConsentApiPath[] =
 // Version of the parental consent text. Must be updated when consent text is
 // changed. Format of the text version is "v<GERRIT_CL_NUMBER>" with number of
 // the last CL where strings with information for parents were changed.
-constexpr char kConsentScreenTextVersion[] = "v2199861";
+constexpr char kConsentScreenTextVersion[] = "v2209337";
 // The text version which requires invalidation of the secondary accounts added
 // before consent text changes. Format of the invalidation version is
 // "iv<GERRIT_CL_NUMBER>".

@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -63,7 +64,7 @@
 #endif
 
 using ::testing::_;
-using web_app::ControllerType;
+using web_app::ProviderType;
 
 namespace {
 
@@ -3024,9 +3025,8 @@ IN_PROC_BROWSER_TEST_F(PictureInPictureWindowControllerBrowserTest,
                 .WaitAndGetTitle());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppPictureInPictureWindowControllerBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppPictureInPictureWindowControllerBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

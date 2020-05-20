@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -22,7 +23,7 @@
 #include "ui/views/window/non_client_view.h"
 #include "url/gurl.h"
 
-using web_app::ControllerType;
+using web_app::ProviderType;
 
 namespace {
 
@@ -113,9 +114,8 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewMacBrowserTest, TitleUpdates) {
   }
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    BrowserNonClientFrameViewMacBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         BrowserNonClientFrameViewMacBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

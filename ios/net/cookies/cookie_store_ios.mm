@@ -106,7 +106,7 @@ NotificationTrampoline* NotificationTrampoline::g_notification_trampoline =
 // callback to |status|.
 base::OnceClosure BindSetCookiesCallback(
     CookieStoreIOS::SetCookiesCallback* callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+    net::CookieInclusionStatus status) {
   base::OnceClosure set_callback;
   if (!callback->is_null()) {
     set_callback = base::BindOnce(std::move(*callback), status);
@@ -248,8 +248,8 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
 
   if (cookie->IsSecure() && !secure_source) {
     if (!callback.is_null())
-      std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus(
-          net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY));
+      std::move(callback).Run(net::CookieInclusionStatus(
+          net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY));
     return;
   }
 
@@ -258,14 +258,13 @@ void CookieStoreIOS::SetCanonicalCookieAsync(
   if (ns_cookie != nil) {
     system_store_->SetCookieAsync(
         ns_cookie, &cookie->CreationDate(),
-        BindSetCookiesCallback(&callback,
-                               net::CanonicalCookie::CookieInclusionStatus()));
+        BindSetCookiesCallback(&callback, net::CookieInclusionStatus()));
     return;
   }
 
   if (!callback.is_null())
-    std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus(
-        net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE));
+    std::move(callback).Run(net::CookieInclusionStatus(
+        net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE));
 }
 
 void CookieStoreIOS::GetCookieListWithOptionsAsync(
@@ -642,9 +641,8 @@ void CookieStoreIOS::UpdateCachesFromCookieMonster() {
   }
 }
 
-void CookieStoreIOS::UpdateCachesAfterSet(
-    SetCookiesCallback callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+void CookieStoreIOS::UpdateCachesAfterSet(SetCookiesCallback callback,
+                                          net::CookieInclusionStatus status) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (status.IsInclude())
     UpdateCachesFromCookieMonster();
@@ -686,7 +684,7 @@ CookieStoreIOS::CanonicalCookieWithStatusListFromSystemCookies(
   for (NSHTTPCookie* cookie in cookies) {
     base::Time created = system_store_->GetCookieCreationTime(cookie);
     cookie_list.push_back({CanonicalCookieFromSystemCookie(cookie, created),
-                           net::CanonicalCookie::CookieInclusionStatus()});
+                           net::CookieInclusionStatus()});
   }
   return cookie_list;
 }

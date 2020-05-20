@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/web_applications/web_app_metrics.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/daily_metrics_helper.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/test/browser_test.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -428,11 +429,10 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest, Suspend_FlushesSessionTimes) {
       entry, UkmEntry::kBackgroundDurationName));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppMetricsBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppMetricsBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
 
 }  // namespace web_app

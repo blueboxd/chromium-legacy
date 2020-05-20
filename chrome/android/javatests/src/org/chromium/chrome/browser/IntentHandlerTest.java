@@ -532,4 +532,21 @@ public class IntentHandlerTest {
         Assert.assertFalse(
                 intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, true));
     }
+
+    /**
+     * Test that IntentHandler#shouldIgnoreIntent() returns false for Webapp launch intents.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testShouldIgnoreIntentWebapp() {
+        Intent webappLauncherActivityIntent =
+                WebappTestHelper.createMinimalWebappIntent("id", GOOGLE_URL);
+        WebappLauncherActivity.LaunchData launchData = new WebappLauncherActivity.LaunchData("id",
+                GOOGLE_URL, null /* webApkPackageName */, false /* isSplashProvidedByWebApk */);
+        Intent intent = WebappLauncherActivity.createIntentToLaunchForWebapp(
+                webappLauncherActivityIntent, launchData, 0);
+
+        Assert.assertFalse(mIntentHandler.shouldIgnoreIntent(intent));
+    }
 }

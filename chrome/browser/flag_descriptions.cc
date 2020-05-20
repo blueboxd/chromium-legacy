@@ -2197,6 +2197,13 @@ const char kWebPaymentsMinimalUIDescription[] =
     "Allow Payment Request API to open a minimal UI to replace the Payment "
     "Request UI when appropriate.";
 
+const char kAppStoreBillingDebugName[] =
+    "Web Payments App Store Billing Debug Mode";
+const char kAppStoreBillingDebugDescription[] =
+    "App-store purchases (e.g., Google Play Store) within a TWA can be "
+    "requested using the Payment Request API. This flag removes the "
+    "restriction that the TWA has to be installed from the app-store.";
+
 const char kWebrtcCaptureMultiChannelApmName[] =
     "WebRTC multi-channel capture audio processing.";
 const char kWebrtcCaptureMultiChannelApmDescription[] =

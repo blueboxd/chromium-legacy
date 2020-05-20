@@ -1216,13 +1216,11 @@ TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
   base::OnceCallback<void(bool)> callback = base::BindLambdaForTesting(
       [&result_out](bool result) { result_out = result; });
 
-  base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
-      adapted_callback =
-          cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
+  base::OnceCallback<void(CookieInclusionStatus)> adapted_callback =
+      cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
 
   std::move(adapted_callback)
-      .Run(CanonicalCookie::CookieInclusionStatus(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
+      .Run(CookieInclusionStatus(CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
 
   EXPECT_FALSE(result_out);
 
@@ -1233,7 +1231,7 @@ TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
   adapted_callback =
       cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
 
-  std::move(adapted_callback).Run(CanonicalCookie::CookieInclusionStatus());
+  std::move(adapted_callback).Run(CookieInclusionStatus());
 
   EXPECT_TRUE(result_out);
 }

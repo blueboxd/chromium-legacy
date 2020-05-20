@@ -76,6 +76,11 @@ class TabSpecificContentSettingsTest
       return test_->settings_map_.get();
     }
 
+    ContentSetting GetEmbargoSetting(const GURL& request_origin,
+                                     ContentSettingsType permission) override {
+      return ContentSetting::CONTENT_SETTING_ASK;
+    }
+
     std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes()
         override {
       return {};

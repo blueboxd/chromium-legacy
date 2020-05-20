@@ -75,28 +75,18 @@ bool IsValidActionUrl(const GURL& action_url) {
 
 AssistantNotificationController::AssistantNotificationController()
     : expiry_monitor_(this), notifier_id_(GetNotifierId()) {
-  AddModelObserver(this);
+  model_.AddObserver(this);
   message_center::MessageCenter::Get()->AddObserver(this);
 }
 
 AssistantNotificationController::~AssistantNotificationController() {
   message_center::MessageCenter::Get()->RemoveObserver(this);
-  RemoveModelObserver(this);
+  model_.RemoveObserver(this);
 }
 
 void AssistantNotificationController::BindReceiver(
     mojo::PendingReceiver<mojom::AssistantNotificationController> receiver) {
   receiver_.Bind(std::move(receiver));
-}
-
-void AssistantNotificationController::AddModelObserver(
-    AssistantNotificationModelObserver* observer) {
-  model_.AddObserver(observer);
-}
-
-void AssistantNotificationController::RemoveModelObserver(
-    AssistantNotificationModelObserver* observer) {
-  model_.RemoveObserver(observer);
 }
 
 void AssistantNotificationController::SetAssistant(

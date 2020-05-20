@@ -630,7 +630,8 @@ void ServiceWorkerContainer::DispatchMessageEvent(
     TransferableMessage message) {
   DCHECK(is_client_message_queue_enabled_);
 
-  auto msg = ToBlinkTransferableMessage(std::move(message));
+  auto msg =
+      BlinkTransferableMessage::FromTransferableMessage(std::move(message));
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(msg.ports));
   ServiceWorker* service_worker =

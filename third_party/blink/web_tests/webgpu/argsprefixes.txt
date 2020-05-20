@@ -1,2 +1,1 @@
-?worker=0&q=
-?worker=1&q=
+?q=

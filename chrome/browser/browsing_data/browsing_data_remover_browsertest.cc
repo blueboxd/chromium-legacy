@@ -71,6 +71,7 @@
 #include "media/mojo/mojom/media_types.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -265,9 +266,9 @@ bool SetGaiaCookieForProfile(Profile* profile) {
       net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_DEFAULT);
   bool success = false;
   base::RunLoop loop;
-  base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
-      callback = base::BindLambdaForTesting(
-          [&success, &loop](net::CanonicalCookie::CookieInclusionStatus s) {
+  base::OnceCallback<void(net::CookieInclusionStatus)> callback =
+      base::BindLambdaForTesting(
+          [&success, &loop](net::CookieInclusionStatus s) {
             success = s.IsInclude();
             loop.Quit();
           });

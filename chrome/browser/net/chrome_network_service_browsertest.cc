@@ -16,6 +16,7 @@
 #include "content/public/test/browser_test.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "services/network/public/cpp/features.h"
@@ -53,9 +54,7 @@ void SetCookie(
       cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
       net::CookieOptions(),
       base::BindLambdaForTesting(
-          [&](net::CanonicalCookie::CookieInclusionStatus status) {
-            run_loop.Quit();
-          }));
+          [&](net::CookieInclusionStatus status) { run_loop.Quit(); }));
   run_loop.Run();
 }
 

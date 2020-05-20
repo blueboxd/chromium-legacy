@@ -10,6 +10,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 
@@ -145,17 +146,15 @@ struct StructTraits<network::mojom::CanonicalCookieDataView,
 
 template <>
 struct StructTraits<network::mojom::CookieInclusionStatusDataView,
-                    net::CanonicalCookie::CookieInclusionStatus> {
-  static uint32_t exclusion_reasons(
-      const net::CanonicalCookie::CookieInclusionStatus& s) {
+                    net::CookieInclusionStatus> {
+  static uint32_t exclusion_reasons(const net::CookieInclusionStatus& s) {
     return s.exclusion_reasons();
   }
-  static uint32_t warning_reasons(
-      const net::CanonicalCookie::CookieInclusionStatus& s) {
+  static uint32_t warning_reasons(const net::CookieInclusionStatus& s) {
     return s.warning_reasons();
   }
   static bool Read(network::mojom::CookieInclusionStatusDataView status,
-                   net::CanonicalCookie::CookieInclusionStatus* out);
+                   net::CookieInclusionStatus* out);
 };
 
 template <>
@@ -164,7 +163,7 @@ struct StructTraits<network::mojom::CookieWithStatusDataView,
   static const net::CanonicalCookie& cookie(const net::CookieWithStatus& c) {
     return c.cookie;
   }
-  static const net::CanonicalCookie::CookieInclusionStatus& status(
+  static const net::CookieInclusionStatus& status(
       const net::CookieWithStatus& c) {
     return c.status;
   }
@@ -183,7 +182,7 @@ struct StructTraits<network::mojom::CookieAndLineWithStatusDataView,
       const net::CookieAndLineWithStatus& c) {
     return c.cookie_string;
   }
-  static const net::CanonicalCookie::CookieInclusionStatus& status(
+  static const net::CookieInclusionStatus& status(
       const net::CookieAndLineWithStatus& c) {
     return c.status;
   }

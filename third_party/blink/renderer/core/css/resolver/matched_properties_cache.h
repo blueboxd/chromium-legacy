@@ -79,6 +79,13 @@ class CORE_EXPORT MatchedPropertiesCache {
   MatchedPropertiesCache();
   ~MatchedPropertiesCache() { DCHECK(cache_.IsEmpty()); }
 
+  // Declarations such as all:inherit would effectively produce dependencies on
+  // all (400-500) properties, which is not practical to store in a cache.
+  // Hence we use a reasonable limit for how many dependencies a given entry
+  // may hold. If the limit is exceeded, the MatchResult/ComputedStyle is not
+  // eligible for entry into the cache.
+  static const size_t kMaxDependencies = 8;
+
   class CORE_EXPORT Key {
     STACK_ALLOCATED();
 

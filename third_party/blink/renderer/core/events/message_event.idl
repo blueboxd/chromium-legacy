@@ -37,7 +37,7 @@
     // TODO(bashi): |source| should be of type MessageEventSource.
     readonly attribute EventTarget? source;
     [CachedAttribute=isPortsDirty] readonly attribute FrozenArray<MessagePort> ports;
-    [RuntimeEnabled=UserActivationAPI] readonly attribute UserActivation? userActivation;
+    readonly attribute UserActivation? userActivation;
 
     // TODO(foolip): |source| should be of type MessageEventSource.
     [MeasureAs=InitMessageEvent] void initMessageEvent(

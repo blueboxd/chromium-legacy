@@ -566,8 +566,11 @@ base::ScopedDispatchObject<dispatch_data_t> GetLibraryData() {
 class API_AVAILABLE(macos(10.11)) TestShaderState
     : public base::RefCountedThreadSafe<TestShaderState> {
  public:
-  TestShaderState(TestShaderCallback callback, const base::TimeDelta& timeout)
+  TestShaderState(TestShaderCallback callback,
+                  TestShaderComponent component,
+                  const base::TimeDelta& timeout)
       : callback_(std::move(callback)),
+        component_(component),
         timeout_(timeout),
         start_time_(base::TimeTicks::Now()) {}
 
@@ -635,7 +638,7 @@ class API_AVAILABLE(macos(10.11)) TestShaderState
             std::min(timeout_, completion_handler_called_time_ - start_time_);
 
       // Set up the callback to execute once we release the lock.
-      closure = base::BindOnce(std::move(callback_), result_, method_time,
+      closure = base::BindOnce(std::move(callback_), component_, result_,
                                compile_time);
     }
     if (closure)
@@ -645,6 +648,7 @@ class API_AVAILABLE(macos(10.11)) TestShaderState
   base::Lock lock_;
   TestShaderCallback callback_;
   TestShaderResult result_ = TestShaderResult::kTimedOut;
+  const TestShaderComponent component_;
   const base::TimeDelta timeout_;
   const base::TimeTicks start_time_;
   base::TimeTicks method_completed_time_;
@@ -678,8 +682,8 @@ void TestRenderPipelineStateNow(base::scoped_nsprotocol<id<MTLDevice>> device,
 
   // Initialize the TestShaderState and post the timeout callback, before
   // calling into the Metal API.
-  auto state =
-      base::MakeRefCounted<TestShaderState>(std::move(callback), timeout);
+  auto state = base::MakeRefCounted<TestShaderState>(
+      std::move(callback), TestShaderComponent::kLink, timeout);
   base::ThreadPool::PostDelayedTask(
       FROM_HERE, {}, base::BindOnce(&TestShaderState::OnTimeout, state),
       timeout);
@@ -712,11 +716,11 @@ void TestRenderPipelineStateNow(base::scoped_nsprotocol<id<MTLDevice>> device,
 
 void TestShaderNow(base::scoped_nsprotocol<id<MTLDevice>> device,
                    const base::TimeDelta& timeout,
-                   TestShaderCallback callback) API_AVAILABLE(macos(10.11)) {
+                   TestShaderCallback callback) API_AVAILABLE(macos(10.14)) {
   // Initialize the TestShaderState and post the timeout callback, before
   // calling into the Metal API.
-  auto state =
-      base::MakeRefCounted<TestShaderState>(std::move(callback), timeout);
+  auto state = base::MakeRefCounted<TestShaderState>(
+      std::move(callback), TestShaderComponent::kCompile, timeout);
   base::ThreadPool::PostDelayedTask(
       FROM_HERE, {}, base::BindOnce(&TestShaderState::OnTimeout, state),
       timeout);
@@ -730,7 +734,7 @@ void TestShaderNow(base::scoped_nsprotocol<id<MTLDevice>> device,
       [[MTLCompileOptions alloc] init]);
   MTLNewLibraryCompletionHandler completion_handler =
       ^(id<MTLLibrary> library, NSError* error) {
-        if (error || !library) {
+        if (!library) {
           static crash_reporter::CrashKeyString<kCrashKeyLength> crash_key(
               "newLibraryWithSource");
           crash_reporter::ScopedCrashKeyString value(
@@ -750,9 +754,13 @@ void TestShaderNow(base::scoped_nsprotocol<id<MTLDevice>> device,
 
 void TestShader(TestShaderCallback callback,
                 const base::TimeDelta& delay,
-                const base::TimeDelta& timeout,
-                TestShaderComponent component) {
-  if (@available(macOS 10.11, *)) {
+                const base::TimeDelta& timeout) {
+  // For the moment, still only test linking shaders.
+  TestShaderComponent component = TestShaderComponent::kLink;
+
+  // The metallib listed above is in MTLLanguageVersion2_1, which is available
+  // only on 10.14 and above.
+  if (@available(macOS 10.14, *)) {
     base::scoped_nsprotocol<id<MTLDevice>> device(CreateDefaultDevice());
     if (device) {
       // Select the callback depending on if we're testing online or offline
@@ -764,29 +772,19 @@ void TestShader(TestShaderCallback callback,
                                    std::move(callback));
           break;
         case TestShaderComponent::kLink:
-          // The metallib listed above is in MTLLanguageVersion2_1, which is
-          // available only on 10.14 and above.
-          if (@available(macOS 10.14, *)) {
-            closure = base::BindOnce(&TestRenderPipelineStateNow, device,
-                                     timeout, std::move(callback));
-          }
+          closure = base::BindOnce(&TestRenderPipelineStateNow, device, timeout,
+                                   std::move(callback));
           break;
       }
-
-      // Run either immediately or after the specified delay.
       if (closure) {
-        if (delay.is_zero()) {
-          std::move(closure).Run();
-        } else {
-          base::ThreadPool::PostDelayedTask(FROM_HERE,
-                                            {base::TaskPriority::HIGHEST},
-                                            std::move(closure), delay);
-        }
+        base::ThreadPool::PostDelayedTask(FROM_HERE,
+                                          {base::TaskPriority::HIGHEST},
+                                          std::move(closure), delay);
         return;
       }
     }
   }
-  std::move(callback).Run(TestShaderResult::kNotAttempted, base::TimeDelta(),
+  std::move(callback).Run(component, TestShaderResult::kNotAttempted,
                           base::TimeDelta());
 }
 

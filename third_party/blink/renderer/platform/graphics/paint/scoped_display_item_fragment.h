@@ -16,7 +16,7 @@ class ScopedDisplayItemFragment final {
   STACK_ALLOCATED();
 
  public:
-  ScopedDisplayItemFragment(GraphicsContext& context, unsigned fragment)
+  ScopedDisplayItemFragment(GraphicsContext& context, wtf_size_t fragment)
       : context_(context),
         original_fragment_(context.GetPaintController().CurrentFragment()) {
     context.GetPaintController().SetCurrentFragment(fragment);
@@ -27,7 +27,7 @@ class ScopedDisplayItemFragment final {
 
  private:
   GraphicsContext& context_;
-  unsigned original_fragment_;
+  wtf_size_t original_fragment_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedDisplayItemFragment);
 };

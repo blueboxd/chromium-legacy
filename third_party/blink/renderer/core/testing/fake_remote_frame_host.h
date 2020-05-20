@@ -5,10 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_FAKE_REMOTE_FRAME_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TESTING_FAKE_REMOTE_FRAME_HOST_H_
 
+#include "base/optional.h"
+#include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
+#include "third_party/blink/renderer/core/messaging/blink_transferable_message.h"
 
 namespace blink {
 
@@ -35,6 +38,11 @@ class FakeRemoteFrameHost : public mojom::blink::RemoteFrameHost {
       const base::Optional<base::UnguessableToken>& opener_frame) override;
   void AdvanceFocus(blink::mojom::FocusType focus_type,
                     const base::UnguessableToken& source_frame_token) override;
+  void RouteMessageEvent(
+      const base::Optional<base::UnguessableToken>& source_frame_token,
+      const String& source_origin,
+      const String& target_origin,
+      BlinkTransferableMessage message) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

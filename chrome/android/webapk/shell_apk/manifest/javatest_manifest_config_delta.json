@@ -1,5 +1,17 @@
 {
   "bound_webapk": {
     "runtime_host": "org.chromium.chrome.tests"
-  }
+  },
+  "share_template": [{
+    "index": "0",
+    "title": "Share Text and Images",
+    "action": "https://pwa-directory.appspot.com/echoall",
+    "method": "POST",
+    "enctype": "application/x-www-form-urlencoded",
+    "param_title": "title",
+    "param_text": "text",
+    "param_url": "url",
+    "is_file_upload": false,
+    "is_file_upload_param_empty": true
+  }]
 }

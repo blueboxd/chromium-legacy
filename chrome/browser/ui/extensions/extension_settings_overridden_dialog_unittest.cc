@@ -25,10 +25,12 @@ constexpr char kTestDialogResultHistogramName[] = "TestHistogramName";
 
 ExtensionSettingsOverriddenDialog::Params CreateTestDialogParams(
     const extensions::ExtensionId& controlling_id) {
-  return {controlling_id, kTestAcknowledgedPreference,
+  return {controlling_id,
+          kTestAcknowledgedPreference,
           kTestDialogResultHistogramName,
           base::ASCIIToUTF16("Test Dialog Title"),
-          base::ASCIIToUTF16("Test Dialog Body")};
+          base::ASCIIToUTF16("Test Dialog Body"),
+          nullptr};
 }
 
 }  // namespace

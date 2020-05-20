@@ -108,10 +108,9 @@ void NGContainerFragmentBuilder::PropagateChildData(
   // Compute |has_floating_descendants_for_paint_| to optimize tree traversal
   // in paint.
   if (!has_floating_descendants_for_paint_) {
-    // TODO(layout-dev): The |NGPhysicalFragment::IsAtomicInline| check should
-    // be checking for any children which paint all phases atomically.
     if (child.IsFloating() || child.IsLegacyLayoutRoot() ||
-        (child.HasFloatingDescendantsForPaint() && !child.IsAtomicInline()))
+        (child.HasFloatingDescendantsForPaint() &&
+         !child.IsPaintedAtomically()))
       has_floating_descendants_for_paint_ = true;
   }
 

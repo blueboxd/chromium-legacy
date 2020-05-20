@@ -965,7 +965,7 @@ void CookieMonster::FilterCookiesWithOptions(
     // Filter out cookies that should not be included for a request to the
     // given |url|. HTTP only cookies are filtered depending on the passed
     // cookie |options|.
-    CanonicalCookie::CookieInclusionStatus status = (*it)->IncludeForRequestURL(
+    CookieInclusionStatus status = (*it)->IncludeForRequestURL(
         url, options, GetAccessSemanticsForCookieGet(**it));
 
     if (!status.IsInclude()) {
@@ -990,12 +990,12 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
     bool skip_httponly,
     bool already_expired,
     base::Time* creation_date_to_inherit,
-    CanonicalCookie::CookieInclusionStatus* status) {
+    CookieInclusionStatus* status) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!status->HasExclusionReason(
-      CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE));
+      CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE));
   DCHECK(!status->HasExclusionReason(
-      CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY));
+      CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY));
 
   bool found_equivalent_cookie = false;
   CookieMap::iterator deletion_candidate_it = cookies_.end();
@@ -1030,7 +1030,7 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
                               capture_mode);
                         });
       status->AddExclusionReason(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE);
+          CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE);
     }
 
     if (cookie_being_set.IsEquivalent(*cur_existing_cookie)) {
@@ -1050,8 +1050,8 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
               return NetLogCookieMonsterCookieRejectedHttponly(
                   cur_existing_cookie, &cookie_being_set, capture_mode);
             });
-        status->AddExclusionReason(CanonicalCookie::CookieInclusionStatus::
-                                       EXCLUDE_OVERWRITE_HTTP_ONLY);
+        status->AddExclusionReason(
+            CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY);
       } else {
         deletion_candidate_it = cur_it;
       }
@@ -1067,8 +1067,7 @@ void CookieMonster::MaybeDeleteEquivalentCookieAndUpdateStatus(
                            already_expired ? DELETE_COOKIE_EXPIRED_OVERWRITE
                                            : DELETE_COOKIE_OVERWRITE);
     } else if (status->HasExclusionReason(
-                   CanonicalCookie::CookieInclusionStatus::
-                       EXCLUDE_OVERWRITE_SECURE)) {
+                   CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE)) {
       // Log that we preserved a cookie that would have been deleted due to
       // Leave Secure Cookies Alone. This arbitrarily only logs the last
       // |skipped_secure_cookie| that we were left with after the for loop, even
@@ -1154,19 +1153,18 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
                                        SetCookiesCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  CanonicalCookie::CookieInclusionStatus status;
+  CookieInclusionStatus status;
 
   bool secure_source = source_url.SchemeIsCryptographic();
   cc->SetSourceScheme(secure_source ? CookieSourceScheme::kSecure
                                     : CookieSourceScheme::kNonSecure);
   if ((cc->IsSecure() && !secure_source)) {
-    status.AddExclusionReason(
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
+    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_SECURE_ONLY);
   }
 
   if (!IsCookieableScheme(source_url.scheme())) {
     status.AddExclusionReason(
-        CanonicalCookie::CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
+        CookieInclusionStatus::EXCLUDE_NONCOOKIEABLE_SCHEME);
   }
 
   const std::string key(GetKey(cc->Domain()));
@@ -1194,9 +1192,9 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
       &creation_date_to_inherit, &status);
 
   if (status.HasExclusionReason(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE) ||
-      status.HasExclusionReason(CanonicalCookie::CookieInclusionStatus::
-                                    EXCLUDE_OVERWRITE_HTTP_ONLY)) {
+          CookieInclusionStatus::EXCLUDE_OVERWRITE_SECURE) ||
+      status.HasExclusionReason(
+          CookieInclusionStatus::EXCLUDE_OVERWRITE_HTTP_ONLY)) {
     DVLOG(net::cookie_util::kVlogSetCookies)
         << "SetCookie() not clobbering httponly cookie or secure cookie for "
            "insecure scheme";
@@ -1293,8 +1291,7 @@ void CookieMonster::SetAllCookies(CookieList list,
   // shouldn't have a return value.  But it should also be deleted (see
   // https://codereview.chromium.org/2882063002/#msg64), which would
   // solve the return value problem.
-  MaybeRunCookieCallback(std::move(callback),
-                         CanonicalCookie::CookieInclusionStatus());
+  MaybeRunCookieCallback(std::move(callback), CookieInclusionStatus());
 }
 
 void CookieMonster::InternalUpdateCookieAccessTime(CanonicalCookie* cc,

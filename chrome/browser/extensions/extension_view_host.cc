@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/extension_view_host.h"
 
-#include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -33,44 +32,47 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-using content::NativeWebKeyboardEvent;
-using content::OpenURLParams;
-using content::RenderViewHost;
-using content::WebContents;
-using content::WebContentsObserver;
-using web_modal::WebContentsModalDialogManager;
-
 namespace extensions {
 
 // Notifies an ExtensionViewHost when a WebContents is destroyed.
 class ExtensionViewHost::AssociatedWebContentsObserver
-    : public WebContentsObserver {
+    : public content::WebContentsObserver {
  public:
   AssociatedWebContentsObserver(ExtensionViewHost* host,
-                                WebContents* web_contents)
+                                content::WebContents* web_contents)
       : WebContentsObserver(web_contents), host_(host) {}
-  ~AssociatedWebContentsObserver() override {}
+  AssociatedWebContentsObserver(const AssociatedWebContentsObserver&) = delete;
+  AssociatedWebContentsObserver& operator=(
+      const AssociatedWebContentsObserver&) = delete;
+  ~AssociatedWebContentsObserver() override = default;
 
   // content::WebContentsObserver:
   void WebContentsDestroyed() override {
     // Deleting |this| from here is safe.
-    host_->SetAssociatedWebContents(NULL);
+    host_->SetAssociatedWebContents(nullptr);
   }
 
  private:
   ExtensionViewHost* host_;
-
-  DISALLOW_COPY_AND_ASSIGN(AssociatedWebContentsObserver);
 };
 
 ExtensionViewHost::ExtensionViewHost(const Extension* extension,
                                      content::SiteInstance* site_instance,
                                      const GURL& url,
-                                     ViewType host_type)
-    : ExtensionHost(extension, site_instance, url, host_type) {
+                                     ViewType host_type,
+                                     Browser* browser)
+    : ExtensionHost(extension, site_instance, url, host_type),
+      browser_(browser) {
   // Not used for panels, see PanelHost.
   DCHECK(host_type == VIEW_TYPE_EXTENSION_DIALOG ||
          host_type == VIEW_TYPE_EXTENSION_POPUP);
+
+  // The browser should always be associated with the same original profile as
+  // this view host. The profiles may not be identical (i.e., one may be the
+  // off-the-record version of the other) in the case of a spanning-mode
+  // extension creating a popup in an incognito window.
+  DCHECK(!browser_ || Profile::FromBrowserContext(browser_context())
+                          ->IsSameProfile(browser_->profile()));
 
   // Attach WebContents helpers. Extension tabs automatically get them attached
   // in TabHelpers::AttachTabHelpers, but popups don't.
@@ -81,10 +83,10 @@ ExtensionViewHost::ExtensionViewHost(const Extension* extension,
       autofill::ChromeAutofillClient::FromWebContents(host_contents()),
       g_browser_process->GetApplicationLocale(),
       autofill::AutofillManager::ENABLE_AUTOFILL_DOWNLOAD_MANAGER);
-  if (auto* performance_manager_registry =
-          performance_manager::PerformanceManagerRegistry::GetInstance()) {
-    performance_manager_registry->CreatePageNodeForWebContents(host_contents());
-  }
+  auto* registry =
+      performance_manager::PerformanceManagerRegistry::GetInstance();
+  if (registry)
+    registry->CreatePageNodeForWebContents(host_contents());
 
   // The popup itself cannot be zoomed, but we must specify a zoom level to use.
   // Otherwise, if a user zooms a page of the same extension, the popup would
@@ -102,43 +104,31 @@ ExtensionViewHost::ExtensionViewHost(const Extension* extension,
 ExtensionViewHost::~ExtensionViewHost() {
   // The hosting WebContents will be deleted in the base class, so unregister
   // this object before it deletes the attached WebContentsModalDialogManager.
-  WebContentsModalDialogManager* manager =
-      WebContentsModalDialogManager::FromWebContents(host_contents());
+  auto* const manager =
+      web_modal::WebContentsModalDialogManager::FromWebContents(
+          host_contents());
   if (manager)
-    manager->SetDelegate(NULL);
+    manager->SetDelegate(nullptr);
 }
 
-void ExtensionViewHost::CreateView(Browser* browser) {
-  if (browser) {
-    // The browser should always be associated with the same original profile as
-    // this view host. The profiles may not be identical (i.e., one may be the
-    // off-the-record version of the other) in the case of a spanning-mode
-    // extension creating a popup in an incognito window.
-    DCHECK(Profile::FromBrowserContext(browser_context())
-               ->IsSameProfile(browser->profile()));
-  }
-  browser_ = browser;
-  view_ = CreateExtensionView(this, browser ? browser->profile() : nullptr);
-}
-
-void ExtensionViewHost::SetAssociatedWebContents(WebContents* web_contents) {
+void ExtensionViewHost::SetAssociatedWebContents(
+    content::WebContents* web_contents) {
   associated_web_contents_ = web_contents;
   if (associated_web_contents_) {
     // Observe the new WebContents for deletion.
-    associated_web_contents_observer_.reset(
-        new AssociatedWebContentsObserver(this, associated_web_contents_));
+    associated_web_contents_observer_ =
+        std::make_unique<AssociatedWebContentsObserver>(
+            this, associated_web_contents_);
   } else {
     associated_web_contents_observer_.reset();
   }
 }
 
 bool ExtensionViewHost::UnhandledKeyboardEvent(
-    WebContents* source,
+    content::WebContents* source,
     const content::NativeWebKeyboardEvent& event) {
   return view_->HandleKeyboardEvent(source, event);
 }
-
-// ExtensionHost overrides:
 
 void ExtensionViewHost::OnDidStopFirstLoad() {
   view_->OnLoaded();
@@ -156,24 +146,22 @@ void ExtensionViewHost::LoadInitialURL() {
 
   // Popups may spawn modal dialogs, which need positioning information.
   if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) {
-    WebContentsModalDialogManager::CreateForWebContents(host_contents());
-    WebContentsModalDialogManager::FromWebContents(
-        host_contents())->SetDelegate(this);
+    web_modal::WebContentsModalDialogManager::CreateForWebContents(
+        host_contents());
+    web_modal::WebContentsModalDialogManager::FromWebContents(host_contents())
+        ->SetDelegate(this);
   }
 
   ExtensionHost::LoadInitialURL();
 }
 
 bool ExtensionViewHost::IsBackgroundPage() const {
-  DCHECK(view_);
   return false;
 }
 
-// content::WebContentsDelegate overrides:
-
-WebContents* ExtensionViewHost::OpenURLFromTab(
-    WebContents* source,
-    const OpenURLParams& params) {
+content::WebContents* ExtensionViewHost::OpenURLFromTab(
+    content::WebContents* source,
+    const content::OpenURLParams& params) {
   // Whitelist the dispositions we will allow to be opened.
   switch (params.disposition) {
     case WindowOpenDisposition::SINGLETON_TAB:
@@ -201,30 +189,23 @@ bool ExtensionViewHost::ShouldTransferNavigation(
 }
 
 content::KeyboardEventProcessingResult
-ExtensionViewHost::PreHandleKeyboardEvent(WebContents* source,
-                                          const NativeWebKeyboardEvent& event) {
-  if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP &&
-      event.GetType() == NativeWebKeyboardEvent::Type::kRawKeyDown &&
-      event.windows_key_code == ui::VKEY_ESCAPE) {
+ExtensionViewHost::PreHandleKeyboardEvent(
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  if (IsEscapeInPopup(event))
     return content::KeyboardEventProcessingResult::NOT_HANDLED_IS_SHORTCUT;
-  }
 
-  // Handle higher priority browser shortcuts such as Ctrl-w.
-  if (browser_)
-    return browser_->PreHandleKeyboardEvent(source, event);
-
-  return content::KeyboardEventProcessingResult::NOT_HANDLED;
+  // Handle higher priority browser shortcuts such as ctrl-w.
+  return browser_ ? browser_->PreHandleKeyboardEvent(source, event)
+                  : content::KeyboardEventProcessingResult::NOT_HANDLED;
 }
 
 bool ExtensionViewHost::HandleKeyboardEvent(
-    WebContents* source,
-    const NativeWebKeyboardEvent& event) {
-  if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) {
-    if (event.GetType() == NativeWebKeyboardEvent::Type::kRawKeyDown &&
-        event.windows_key_code == ui::VKEY_ESCAPE) {
-      Close();
-      return true;
-    }
+    content::WebContents* source,
+    const content::NativeWebKeyboardEvent& event) {
+  if (IsEscapeInPopup(event)) {
+    Close();
+    return true;
   }
   return UnhandledKeyboardEvent(source, event);
 }
@@ -237,7 +218,7 @@ bool ExtensionViewHost::PreHandleGestureEvent(
 }
 
 content::ColorChooser* ExtensionViewHost::OpenColorChooser(
-    WebContents* web_contents,
+    content::WebContents* web_contents,
     SkColor initial_color,
     const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
   // Similar to the file chooser below, opening a color chooser requires a
@@ -256,27 +237,24 @@ void ExtensionViewHost::RunFileChooser(
                                    params);
 }
 
-
-void ExtensionViewHost::ResizeDueToAutoResize(WebContents* source,
+void ExtensionViewHost::ResizeDueToAutoResize(content::WebContents* source,
                                               const gfx::Size& new_size) {
   view_->ResizeDueToAutoResize(source, new_size);
 }
 
-// content::WebContentsObserver overrides:
-
-void ExtensionViewHost::RenderViewCreated(RenderViewHost* render_view_host) {
+void ExtensionViewHost::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
   ExtensionHost::RenderViewCreated(render_view_host);
   view_->RenderViewCreated(render_view_host);
 }
-
-// web_modal::WebContentsModalDialogManagerDelegate overrides:
 
 web_modal::WebContentsModalDialogHost*
 ExtensionViewHost::GetWebContentsModalDialogHost() {
   return this;
 }
 
-bool ExtensionViewHost::IsWebContentsVisible(WebContents* web_contents) {
+bool ExtensionViewHost::IsWebContentsVisible(
+    content::WebContents* web_contents) {
   return platform_util::IsVisible(web_contents->GetNativeView());
 }
 
@@ -285,18 +263,15 @@ gfx::NativeView ExtensionViewHost::GetHostView() const {
 }
 
 gfx::Point ExtensionViewHost::GetDialogPosition(const gfx::Size& size) {
-  if (!GetVisibleWebContents())
-    return gfx::Point();
-  gfx::Rect bounds = GetVisibleWebContents()->GetViewBounds();
-  return gfx::Point(
-      std::max(0, (bounds.width() - size.width()) / 2),
-      std::max(0, (bounds.height() - size.height()) / 2));
+  auto* const web_contents = GetVisibleWebContents();
+  const gfx::Size view_size =
+      web_contents ? web_contents->GetViewBounds().size() : gfx::Size();
+  return gfx::Rect(view_size - size).CenterPoint();
 }
 
 gfx::Size ExtensionViewHost::GetMaximumDialogSize() {
-  if (!GetVisibleWebContents())
-    return gfx::Size();
-  return GetVisibleWebContents()->GetViewBounds().size();
+  auto* const web_contents = GetVisibleWebContents();
+  return web_contents ? web_contents->GetViewBounds().size() : gfx::Size();
 }
 
 void ExtensionViewHost::AddObserver(
@@ -311,16 +286,15 @@ WindowController* ExtensionViewHost::GetExtensionWindowController() const {
   return browser_ ? browser_->extension_window_controller() : nullptr;
 }
 
-WebContents* ExtensionViewHost::GetAssociatedWebContents() const {
+content::WebContents* ExtensionViewHost::GetAssociatedWebContents() const {
   return associated_web_contents_;
 }
 
-WebContents* ExtensionViewHost::GetVisibleWebContents() const {
+content::WebContents* ExtensionViewHost::GetVisibleWebContents() const {
   if (associated_web_contents_)
     return associated_web_contents_;
-  if (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP)
-    return host_contents();
-  return NULL;
+  return (extension_host_type() == VIEW_TYPE_EXTENSION_POPUP) ? host_contents()
+                                                              : nullptr;
 }
 
 void ExtensionViewHost::Observe(int type,
@@ -331,6 +305,14 @@ void ExtensionViewHost::Observe(int type,
              ->runtime_data()
              ->IsBackgroundPageReady(extension()));
   LoadInitialURL();
+}
+
+bool ExtensionViewHost::IsEscapeInPopup(
+    const content::NativeWebKeyboardEvent& event) const {
+  return extension_host_type() == VIEW_TYPE_EXTENSION_POPUP &&
+         event.GetType() ==
+             content::NativeWebKeyboardEvent::Type::kRawKeyDown &&
+         event.windows_key_code == ui::VKEY_ESCAPE;
 }
 
 }  // namespace extensions

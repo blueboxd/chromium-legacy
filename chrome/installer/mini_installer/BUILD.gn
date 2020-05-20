@@ -180,6 +180,7 @@ template("generate_mini_installer") {
       "//chrome/browser/extensions/default_extensions",
       "//chrome/common/win:eventlog_provider",
       "//chrome/installer/setup",
+      "//mojo/core:shared_library",
       "//third_party/icu:icudata",
       chrome_dll_target,
     ]

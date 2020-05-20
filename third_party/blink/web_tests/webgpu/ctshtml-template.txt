@@ -17,24 +17,18 @@
 
 <script src=/resources/testharness.js></script>
 <script src=/resources/testharnessreport.js></script>
-<style>
-#results {
-    font-family: monospace;
-    width: 100%;
-    height: 15em;
-}
-
-/* Test Name column */
-#results > tbody > tr > td:nth-child(2) {
-    word-break: break-word;
-}
-
-/* Message column */
-#results > tbody > tr > td:nth-child(3) {
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-</style>
-
-<textarea id=results></textarea>
 <script type=module src=/wpt_internal/webgpu/common/runtime/wpt.js></script>
+
+<!-- Manually-selected tests to run on worker: -->
+<meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,create_mapped:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,map:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,buffers,map_detach:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,basic:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,compute,basic:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,copies:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,render,basic:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,render,rendering:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,command_buffer,render,storeop:*'>
+<meta name=variant content='?worker=1&q=webgpu:api,operation,fences:*'>
+
+<!-- Variant list is auto-generated below this line: -->

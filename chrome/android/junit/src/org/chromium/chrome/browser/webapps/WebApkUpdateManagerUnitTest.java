@@ -385,7 +385,7 @@ public class WebApkUpdateManagerUnitTest {
                                 && manifestData.shareTargetEncType.equals(
                                         SHARE_TARGET_ENC_TYPE_MULTIPART),
                         manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts);
-        return WebApkIntentDataProviderFactory.create("", manifestData.scopeUrl,
+        return WebApkIntentDataProviderFactory.create(new Intent(), "", manifestData.scopeUrl,
                 new WebappIcon(manifestData.primaryIcon), null, manifestData.name,
                 manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
                 manifestData.themeColor, manifestData.backgroundColor,

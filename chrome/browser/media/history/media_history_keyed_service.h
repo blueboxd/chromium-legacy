@@ -133,6 +133,10 @@ class MediaHistoryKeyedService : public KeyedService,
     // If set then changes to the cookie name provided on the feed origin or any
     // associated origin will trigger the feed to be reset.
     std::string cookie_name_filter;
+
+    // Logs about any errors that may have occurred while fetching or converting
+    // the feed data.
+    std::string error_logs;
   };
   // Replaces the media items in |result.feed_id|. This will delete any old feed
   // items and store the new ones in |result.items|. This will also update the

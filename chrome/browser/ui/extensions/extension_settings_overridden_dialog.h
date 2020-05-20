@@ -14,6 +14,10 @@
 
 class Profile;
 
+namespace gfx {
+struct VectorIcon;
+}
+
 // The controller for a settings overridden dialog that manages settings
 // overridden by an extension. The user has the option to acknowledge or
 // disable the extension.
@@ -27,7 +31,8 @@ class ExtensionSettingsOverriddenDialog
            const char* extension_acknowledged_preference_name,
            const char* dialog_result_histogram_name,
            base::string16 dialog_title,
-           base::string16 dialog_message);
+           base::string16 dialog_message,
+           const gfx::VectorIcon* icon);
     Params(Params&& params);
     Params(const Params& params) = delete;
     ~Params();
@@ -43,6 +48,9 @@ class ExtensionSettingsOverriddenDialog
 
     base::string16 dialog_title;
     base::string16 dialog_message;
+
+    // The icon to display in the dialog, if any.
+    const gfx::VectorIcon* icon = nullptr;
   };
 
   ExtensionSettingsOverriddenDialog(Params params, Profile* profile);

@@ -6,9 +6,11 @@
 
 #include <utility>
 
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/main_stage/element_animator.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
@@ -44,8 +46,7 @@ class AnimatedContainerView::ScopedDisablePreferredSizeChanged {
 AnimatedContainerView::AnimatedContainerView(AssistantViewDelegate* delegate)
     : delegate_(delegate) {
   assistant_controller_observer_.Add(AssistantController::Get());
-  assistant_interaction_model_observer_.Add(
-      AssistantInteractionController::Get());
+  AssistantInteractionController::Get()->GetModel()->AddObserver(this);
 
   AddScrollViewObserver(this);
 }
@@ -53,6 +54,9 @@ AnimatedContainerView::AnimatedContainerView(AssistantViewDelegate* delegate)
 AnimatedContainerView::~AnimatedContainerView() {
   if (IsResponseProcessingV2Enabled() && response_)
     response_.get()->RemoveObserver(this);
+
+  if (AssistantInteractionController::Get())
+    AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
 
   RemoveScrollViewObserver(this);
 }
@@ -76,8 +80,7 @@ void AnimatedContainerView::OnChildViewRemoved(View* observed_view,
 }
 
 void AnimatedContainerView::OnAssistantControllerDestroying() {
-  assistant_interaction_model_observer_.Remove(
-      AssistantInteractionController::Get());
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
   assistant_controller_observer_.Remove(AssistantController::Get());
 }
 

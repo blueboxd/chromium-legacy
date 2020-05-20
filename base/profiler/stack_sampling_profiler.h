@@ -191,10 +191,6 @@ class BASE_EXPORT StackSamplingProfiler {
   // thread sampling starts.
   std::unique_ptr<StackSampler> sampler_;
 
-  // If an AuxUnwinder is added before Start() it will be saved here until it
-  // can be passed to the sampling thread when thread sampling starts.
-  std::unique_ptr<Unwinder> pending_aux_unwinder_;
-
   // This starts "signaled", is reset when sampling begins, and is signaled
   // when that sampling is complete and the profile_builder_'s
   // OnProfileCompleted function has executed.

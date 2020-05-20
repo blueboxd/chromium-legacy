@@ -58,11 +58,6 @@ class WebDOMMessageEvent : public WebDOMEvent {
       const WebFrame* source_frame = nullptr,
       const WebDocument& target_document = WebDocument(),
       WebVector<MessagePortChannel> ports = WebVector<MessagePortChannel>());
-  BLINK_EXPORT WebDOMMessageEvent(
-      TransferableMessage,
-      const WebString& origin = WebString(),
-      const WebFrame* source_frame = nullptr,
-      const WebDocument& target_document = WebDocument());
   WebDOMMessageEvent() = default;
 
   BLINK_EXPORT WebString Origin() const;
@@ -70,11 +65,6 @@ class WebDOMMessageEvent : public WebDOMEvent {
   base::Optional<base::UnguessableToken> locked_agent_cluster_id() const {
     return locked_agent_cluster_id_;
   }
-
-  // The |encoded_message| in the returned message is only valid as long as this
-  // WebDOMMessageEvent is still valid, unless EnsureDataIsOwned is called on
-  // the returned message.
-  BLINK_EXPORT TransferableMessage AsMessage();
 
 #if INSIDE_BLINK
   explicit WebDOMMessageEvent(

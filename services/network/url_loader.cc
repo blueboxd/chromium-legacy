@@ -35,6 +35,7 @@
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_file_element_reader.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/static_cookie_policy.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -315,14 +316,13 @@ class SSLPrivateKeyInternal : public net::SSLPrivateKey {
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKeyInternal);
 };
 
-bool ShouldNotifyAboutCookie(
-    net::CanonicalCookie::CookieInclusionStatus status) {
+bool ShouldNotifyAboutCookie(net::CookieInclusionStatus status) {
   // Notify about cookies actually used, and those blocked by preferences ---
   // for purposes of cookie UI --- as well those carrying warnings pertaining to
   // SameSite features, in order to issue a deprecation warning for them.
   return status.IsInclude() || status.ShouldWarn() ||
-         status.HasExclusionReason(net::CanonicalCookie::CookieInclusionStatus::
-                                       EXCLUDE_USER_PREFERENCES);
+         status.HasExclusionReason(
+             net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
 }
 
 mojom::HttpRawRequestResponseInfoPtr BuildRawRequestResponseInfo(

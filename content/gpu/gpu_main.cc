@@ -181,9 +181,9 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
 };
 
 #if defined(OS_MACOSX)
-void TestShaderCallback(metal::TestShaderResult result,
-                        const base::TimeDelta& method_time,
-                        const base::TimeDelta& compile_time) {
+void TestShaderCallback(metal::TestShaderComponent component,
+                        metal::TestShaderResult result,
+                        const base::TimeDelta& callback_time) {
   switch (result) {
     case metal::TestShaderResult::kNotAttempted:
     case metal::TestShaderResult::kFailed:
@@ -195,8 +195,15 @@ void TestShaderCallback(metal::TestShaderResult result,
     case metal::TestShaderResult::kSucceeded:
       break;
   }
-  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderMethodTime", method_time);
-  UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderCompileTime", compile_time);
+  switch (component) {
+    case metal::TestShaderComponent::kCompile:
+      UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderCompileTime",
+                                 callback_time);
+      break;
+    case metal::TestShaderComponent::kLink:
+      UMA_HISTOGRAM_MEDIUM_TIMES("Gpu.Metal.TestShaderLinkTime", callback_time);
+      break;
+  }
 }
 #endif
 

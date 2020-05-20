@@ -17,6 +17,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_storage_partition.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_util.h"
 #include "net/url_request/url_request_context.h"
@@ -224,11 +225,10 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
   cookie_manager->SetCanonicalCookie(
       cookie1, net::cookie_util::SimulatedCookieSource(cookie1, "https"),
       options,
-      base::BindLambdaForTesting(
-          [&](net::CanonicalCookie::CookieInclusionStatus result) {
-            result_out = result.IsInclude();
-            run_loop1.Quit();
-          }));
+      base::BindLambdaForTesting([&](net::CookieInclusionStatus result) {
+        result_out = result.IsInclude();
+        run_loop1.Quit();
+      }));
   run_loop1.Run();
   EXPECT_TRUE(result_out);
 
@@ -245,11 +245,10 @@ TEST_F(SameSiteDataRemoverImplTest, TestCookieRemovalUnaffectedByParameters) {
   cookie_manager->SetCanonicalCookie(
       cookie2, net::cookie_util::SimulatedCookieSource(cookie2, "https"),
       options,
-      base::BindLambdaForTesting(
-          [&](net::CanonicalCookie::CookieInclusionStatus result) {
-            result_out = result.IsInclude();
-            run_loop2.Quit();
-          }));
+      base::BindLambdaForTesting([&](net::CookieInclusionStatus result) {
+        result_out = result.IsInclude();
+        run_loop2.Quit();
+      }));
   run_loop2.Run();
   EXPECT_TRUE(result_out);
 

@@ -11326,9 +11326,7 @@
       'tags': [],
       'desc': '''Setting the policy to None turns the screen magnifier off.
 
-      If you set the policy, users can't change it. If not set, the screen magnifier is off at first, but users can turn it on any time.
-
-      Valid values: • 0 = Off • 1 = On • 2 = Docked magnifier on''',
+      If you set the policy, users can't change it. If not set, the screen magnifier is off at first, but users can turn it on any time.''',
     },
     {
       'name': 'DeviceLoginScreenDefaultLargeCursorEnabled',
@@ -20706,12 +20704,12 @@
         {
           'name': 'Full',
           'value': 0,
-          'caption': '''available''',
+          'caption': '''Full''',
         },
         {
           'name': 'Fast',
           'value': 1,
-          'caption': '''disabled''',
+          'caption': '''Fast''',
         },
       ],
       'supported_on': ['chrome.win:84-'],

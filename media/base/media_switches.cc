@@ -261,6 +261,12 @@ const base::Feature kBackgroundVideoPauseOptimization{
 const base::Feature kCdmHostVerification{"CdmHostVerification",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Use per-CDM-type, per-user and per-site CDM processes (for library CDM). If
+// disabled, the CDM processes are only per-CDM-type, meaning different sites
+// using the same CDM type would share one CDM process.
+const base::Feature kCdmProcessSiteIsolation{"CdmProcessSiteIsolation",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Make MSE garbage collection algorithm more aggressive when we are under
 // moderate or critical memory pressure. This will relieve memory pressure by
 // releasing stale data from MSE buffers.

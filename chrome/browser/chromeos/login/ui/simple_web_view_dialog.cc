@@ -142,9 +142,8 @@ SimpleWebViewDialog::~SimpleWebViewDialog() {
 
 void SimpleWebViewDialog::StartLoad(const GURL& url) {
   if (!web_view_container_)
-    web_view_container_.reset(new views::WebView(profile_));
+    web_view_container_ = std::make_unique<views::WebView>(profile_);
   web_view_ = web_view_container_.get();
-  web_view_->set_owned_by_client();
   web_view_->GetWebContents()->SetDelegate(this);
   web_view_->LoadInitialURL(url);
 
@@ -209,7 +208,9 @@ void SimpleWebViewDialog::Init() {
   // Add the views as child views before the grid layout is installed. This
   // ensures ownership is more clear.
   ToolbarRowView* toolbar_row_ptr = AddChildView(std::move(toolbar_row));
-  AddChildView(web_view_);
+  // Transfer ownership of the |web_view_| from the |web_view_container_|
+  // created in StartLoad() to |this|.
+  AddChildView(std::move(web_view_container_));
 
   // Layout.
   GridLayout* layout = SetLayoutManager(std::make_unique<GridLayout>());

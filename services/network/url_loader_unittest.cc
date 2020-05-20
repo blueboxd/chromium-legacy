@@ -50,6 +50,7 @@
 #include "net/cert/internal/parse_name.h"
 #include "net/cert/test_root_certs.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_response_info.h"
@@ -2656,7 +2657,7 @@ class MockCookieObserver : public network::mojom::CookieAccessObserver {
     // The full details are available for the tests to query manually, but
     // they are not covered by operator== (and testing::ElementsAre).
     GURL url;
-    net::CanonicalCookie::CookieInclusionStatus status;
+    net::CookieInclusionStatus status;
   };
 
   mojo::PendingRemote<mojom::CookieAccessObserver> GetRemote() {
@@ -4120,8 +4121,7 @@ TEST_F(URLLoaderTest, RawRequestCookiesFlagged) {
               network_service_client.raw_request_cookies()[0].cookie.Value());
     EXPECT_TRUE(network_service_client.raw_request_cookies()[0]
                     .status.HasExactlyExclusionReasonsForTesting(
-                        {net::CanonicalCookie::CookieInclusionStatus::
-                             EXCLUDE_NOT_ON_PATH}));
+                        {net::CookieInclusionStatus::EXCLUDE_NOT_ON_PATH}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4211,10 +4211,10 @@ TEST_F(URLLoaderTest, RawResponseCookiesInvalid) {
     network_service_client.WaitUntilRawResponse(1u);
     // On these failures the cookie object is not created
     EXPECT_FALSE(network_service_client.raw_response_cookies()[0].cookie);
-    EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
-                    .status.HasExactlyExclusionReasonsForTesting(
-                        {net::CanonicalCookie::CookieInclusionStatus::
-                             EXCLUDE_FAILURE_TO_STORE}));
+    EXPECT_TRUE(
+        network_service_client.raw_response_cookies()[0]
+            .status.HasExactlyExclusionReasonsForTesting(
+                {net::CookieInclusionStatus::EXCLUDE_FAILURE_TO_STORE}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4318,8 +4318,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesRedirect) {
         network_service_client.raw_response_cookies()[0].cookie->IsSecure());
     EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
                     .status.HasExactlyExclusionReasonsForTesting(
-                        {net::CanonicalCookie::CookieInclusionStatus::
-                             EXCLUDE_SECURE_ONLY}));
+                        {net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
   }
 }
 
@@ -4412,8 +4411,7 @@ TEST_F(URLLoaderTest, RawResponseCookiesAuth) {
         network_service_client.raw_response_cookies()[0].cookie->IsSecure());
     EXPECT_TRUE(network_service_client.raw_response_cookies()[0]
                     .status.HasExactlyExclusionReasonsForTesting(
-                        {net::CanonicalCookie::CookieInclusionStatus::
-                             EXCLUDE_SECURE_ONLY}));
+                        {net::CookieInclusionStatus::EXCLUDE_SECURE_ONLY}));
 
     EXPECT_EQ("TEST", network_service_client.devtools_request_id());
   }
@@ -4516,11 +4514,11 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     if (net::cookie_util::IsSameSiteByDefaultCookiesEnabled()) {
       EXPECT_TRUE(cookie_observer.observed_cookies()[0]
                       .status.HasExactlyExclusionReasonsForTesting(
-                          {net::CanonicalCookie::CookieInclusionStatus::
+                          {net::CookieInclusionStatus::
                                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
     }
     EXPECT_TRUE(cookie_observer.observed_cookies()[0].status.HasWarningReason(
-        net::CanonicalCookie::CookieInclusionStatus::WarningReason::
+        net::CookieInclusionStatus::WarningReason::
             WARN_SAMESITE_UNSPECIFIED_CROSS_SITE_CONTEXT));
   }
 
@@ -4567,10 +4565,10 @@ TEST_F(URLLoaderTest, CookieReportingCategories) {
     EXPECT_THAT(cookie_observer.observed_cookies(),
                 testing::ElementsAre(MockCookieObserver::CookieDetails{
                     CookieAccessType::kChange, "a", "b", false}));
-    EXPECT_TRUE(cookie_observer.observed_cookies()[0]
-                    .status.HasExactlyExclusionReasonsForTesting(
-                        {net::CanonicalCookie::CookieInclusionStatus::
-                             EXCLUDE_USER_PREFERENCES}));
+    EXPECT_TRUE(
+        cookie_observer.observed_cookies()[0]
+            .status.HasExactlyExclusionReasonsForTesting(
+                {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
 
     test_network_delegate()->set_cookie_options(0);
   }

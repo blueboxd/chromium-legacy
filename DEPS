@@ -178,7 +178,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '682fca92996b6ee1053733cd78bf620d7c3df816',
+  'skia_revision': '1ac547483837cc7f650b4ccac226dc973994ffb4',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': '34dc00881b0b2146a250c66079cc2b922e756f5e',
+  'devtools_frontend_revision': '6a935445b316d30ff8937552a19e49ec7008b1a8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -524,7 +524,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '9c26a7e67aa298a57e5a78e22d7fbe5abc6fe34f',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '9d2398094e6a16497d0985de81c3bbb22cb3249b',
       'condition': 'checkout_ios',
   },
 
@@ -851,7 +851,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '9adfd61269a07e71c6a52e8ca5e86811213512fe',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '52fe4b9946f768e40db27fb6d6644aa54325ccd2',
       'condition': 'checkout_linux',
   },
 
@@ -1440,7 +1440,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '204abd22436837ddbe93816ec2ac52b7440daa6e',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'd2bd82eb543151dc9db4e058483a34bc4a3b6ff0',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '550dfb76f2b4a363f46c02691c3d4480aae28ed1',
 
   'src/third_party/blink/web_tests/wpt_internal/webgpu/third_party/glslang_js': {
     'packages': [
@@ -1453,7 +1453,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '4b860c1fb389b641acf8595a1ca38fd07f11bc2d',
+    Var('webrtc_git') + '/src.git' + '@' + '704fb55255c85cc3b36d91df3209d153bb2f9c02',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@690f0c26c8327d52550ad5ab2b4bc05225e3de56',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@a9f5e8e76386d8ae9607f35ad1fd0209d78c64b6',
     'condition': 'checkout_src_internal',
   },
 

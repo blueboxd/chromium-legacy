@@ -8,6 +8,7 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/components/browser_ui/notifications/ChromeNotification.java",
     "java/src/org/chromium/components/browser_ui/notifications/ChromeNotificationBuilder.java",
+    "java/src/org/chromium/components/browser_ui/notifications/ForegroundServiceUtils.java",
     "java/src/org/chromium/components/browser_ui/notifications/NotificationBuilder.java",
     "java/src/org/chromium/components/browser_ui/notifications/NotificationCompatBuilder.java",
     "java/src/org/chromium/components/browser_ui/notifications/NotificationManagerProxy.java",

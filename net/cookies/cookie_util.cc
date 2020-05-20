@@ -610,11 +610,11 @@ bool DoesCreationTimeGrantLegacySemantics(base::Time creation_date) {
   return (base::Time::Now() - creation_date) < recency_threshold;
 }
 
-base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
+base::OnceCallback<void(CookieInclusionStatus)>
 AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
   return base::BindOnce(
       [](base::OnceCallback<void(bool)> inner_callback,
-         const net::CanonicalCookie::CookieInclusionStatus status) {
+         const CookieInclusionStatus status) {
         bool success = status.IsInclude();
         std::move(inner_callback).Run(success);
       },

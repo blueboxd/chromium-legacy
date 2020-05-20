@@ -1861,6 +1861,37 @@ TEST_F(TextFragmentAnchorTest, PageVisibility) {
   EXPECT_EQ(p, *GetDocument().CssTarget());
 }
 
+// Test that a text directive can match across comment nodes
+TEST_F(TextFragmentAnchorTest, MatchAcrossCommentNode) {
+  SimRequest request("https://example.com/test.html#:~:text=abcdef",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:text=abcdef");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      div {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <div id="text"><span>abc</span><!--comment--><span>def</span></div>
+  )HTML");
+  RunAsyncMatchingTasks();
+
+  // Render two frames to handle the async step added by the beforematch event.
+  Compositor().BeginFrame();
+  Compositor().BeginFrame();
+
+  Element& div = *GetDocument().getElementById("text");
+
+  EXPECT_EQ(div, *GetDocument().CssTarget());
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)));
+  EXPECT_EQ(2u, GetDocument().Markers().Markers().size());
+}
+
 }  // namespace
 
 }  // namespace blink

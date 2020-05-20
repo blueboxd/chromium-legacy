@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.search_engines.settings;
 
-import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import androidx.preference.Preference;
@@ -13,6 +12,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
@@ -24,11 +24,9 @@ import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.settings.MainSettings;
-import org.chromium.chrome.browser.settings.SettingsActivity;
 import org.chromium.chrome.browser.settings.SettingsActivityTestRule;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.components.browser_ui.settings.ManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.site_settings.PermissionInfo;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridgeJni;
@@ -50,11 +48,20 @@ import java.util.concurrent.ExecutionException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class SearchEngineSettingsTest {
-    @Rule
-    public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
-    @Rule
-    public final SettingsActivityTestRule<SearchEngineSettings> mSettingsActivityTestRule =
+    private final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
+
+    private final SettingsActivityTestRule<SearchEngineSettings> mSearchEngineSettingsTestRule =
             new SettingsActivityTestRule<>(SearchEngineSettings.class);
+
+    private final SettingsActivityTestRule<MainSettings> mMainSettingsTestRule =
+            new SettingsActivityTestRule<>(MainSettings.class);
+
+    // We need to destroy the SettingsActivity before tearing down the mock sign-in environment
+    // setup in ChromeBrowserTestRule to avoid code crash.
+    @Rule
+    public final RuleChain mRuleChain = RuleChain.outerRule(mBrowserTestRule)
+                                                .around(mMainSettingsTestRule)
+                                                .around(mSearchEngineSettingsTestRule);
 
     /**
      * Change search engine and make sure it works correctly.
@@ -67,11 +74,11 @@ public class SearchEngineSettingsTest {
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        mSettingsActivityTestRule.startSettingsActivity();
+        mSearchEngineSettingsTestRule.startSettingsActivity();
 
         // Set the second search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
+            SearchEngineSettings pref = mSearchEngineSettingsTestRule.getFragment();
             pref.setValueForTesting("1");
 
             // Ensure that the second search engine in the list is selected.
@@ -144,11 +151,9 @@ public class SearchEngineSettingsTest {
             }
         }));
 
-        SettingsActivity settingsActivity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), SettingsActivity.class);
+        mMainSettingsTestRule.startSettingsActivity();
 
-        final MainSettings mainSettings =
-                ActivityUtils.waitForFragmentToAttach(settingsActivity, MainSettings.class);
+        final MainSettings mainSettings = mMainSettingsTestRule.getFragment();
 
         final Preference searchEnginePref =
                 waitForPreference(mainSettings, MainSettings.PREF_SEARCH_ENGINE);
@@ -181,17 +186,17 @@ public class SearchEngineSettingsTest {
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
-        mSettingsActivityTestRule.startSettingsActivity();
+        mSearchEngineSettingsTestRule.startSettingsActivity();
 
         // Set the first search engine as the default using TemplateUrlService.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
+            SearchEngineSettings pref = mSearchEngineSettingsTestRule.getFragment();
             pref.setValueForTesting("0");
         });
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Ensure that the first search engine in the list is selected.
-            SearchEngineSettings pref = mSettingsActivityTestRule.getFragment();
+            SearchEngineSettings pref = mSearchEngineSettingsTestRule.getFragment();
             Assert.assertNotNull(pref);
             Assert.assertEquals("0", pref.getValueForTesting());
 

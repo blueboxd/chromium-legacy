@@ -44,7 +44,7 @@ class RecordingCookieObserver : public network::mojom::CookieAccessObserver {
     // The vector is merely to permit use of MatchesCookieLine, there is always
     // one thing.
     std::vector<net::CanonicalCookie> cookie;
-    net::CanonicalCookie::CookieInclusionStatus status;
+    net::CookieInclusionStatus status;
     base::Optional<std::string> devtools_request_id;
   };
 
@@ -184,17 +184,16 @@ class RestrictedCookieManagerTest
   bool SetCanonicalCookie(const net::CanonicalCookie& cookie,
                           std::string source_scheme,
                           bool can_modify_httponly) {
-    net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
-        callback;
+    net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback;
     net::CookieOptions options;
     if (can_modify_httponly)
       options.set_include_httponly();
     cookie_monster_.SetCanonicalCookieAsync(
         std::make_unique<net::CanonicalCookie>(cookie),
         net::cookie_util::SimulatedCookieSource(cookie, source_scheme), options,
-        base::BindOnce(&net::ResultSavingCookieCallback<
-                           net::CanonicalCookie::CookieInclusionStatus>::Run,
-                       base::Unretained(&callback)));
+        base::BindOnce(
+            &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
+            base::Unretained(&callback)));
     callback.WaitUntilDone();
     return callback.result().IsInclude();
   }
@@ -483,8 +482,7 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicy) {
               net::MatchesCookieLine("cookie-name=cookie-value"));
   EXPECT_TRUE(
       recorded_activity()[1].status.HasExactlyExclusionReasonsForTesting(
-          {net::CanonicalCookie::CookieInclusionStatus::
-               EXCLUDE_USER_PREFERENCES}));
+          {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
 }
 
 TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
@@ -530,8 +528,7 @@ TEST_P(RestrictedCookieManagerTest, GetAllForUrlPolicyWarnActual) {
               net::MatchesCookieLine("cookie-name=cookie-value"));
   EXPECT_TRUE(
       recorded_activity()[0].status.HasExactlyExclusionReasonsForTesting(
-          {net::CanonicalCookie::CookieInclusionStatus::
-               EXCLUDE_SAMESITE_NONE_INSECURE}));
+          {net::CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE}));
 }
 
 TEST_P(RestrictedCookieManagerTest, SetCanonicalCookie) {
@@ -596,7 +593,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookieValidateDomain) {
       url::Origin::Create(GURL("https://example.com"))));
   ASSERT_EQ(1u, recorded_activity().size());
   EXPECT_TRUE(recorded_activity()[0].status.HasExclusionReason(
-      net::CanonicalCookie::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH));
+      net::CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH));
 
   auto options = mojom::CookieManagerGetOptions::New();
   options->name = "cookie";
@@ -708,8 +705,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicy) {
   EXPECT_THAT(recorded_activity()[1].cookie, net::MatchesCookieLine("A2=B2"));
   EXPECT_TRUE(
       recorded_activity()[1].status.HasExactlyExclusionReasonsForTesting(
-          {net::CanonicalCookie::CookieInclusionStatus::
-               EXCLUDE_USER_PREFERENCES}));
+          {net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES}));
 
   // Read back, in first-party context
   auto options = mojom::CookieManagerGetOptions::New();
@@ -755,7 +751,7 @@ TEST_P(RestrictedCookieManagerTest, SetCanonicalCookiePolicyWarnActual) {
   EXPECT_THAT(recorded_activity()[0].cookie, net::MatchesCookieLine("A=B"));
   EXPECT_TRUE(
       recorded_activity()[0].status.HasExactlyExclusionReasonsForTesting(
-          {net::CanonicalCookie::CookieInclusionStatus::
+          {net::CookieInclusionStatus::
                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX}));
 }
 
@@ -1033,13 +1029,12 @@ TEST_P(RestrictedCookieManagerTest, ChangeNotificationIncludesAccessSemantics) {
       base::nullopt);
 
   // Set cookie directly into the CookieMonster, using all-inclusive options.
-  net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
-      callback;
+  net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback;
   cookie_monster_.SetCanonicalCookieAsync(
       std::move(cookie), cookie_url, net::CookieOptions::MakeAllInclusive(),
-      base::BindOnce(&net::ResultSavingCookieCallback<
-                         net::CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&callback)));
+      base::BindOnce(
+          &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
+          base::Unretained(&callback)));
   callback.WaitUntilDone();
   ASSERT_TRUE(callback.result().IsInclude());
 
@@ -1089,14 +1084,13 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
       base::Time::Now(), base::nullopt);
 
   // Set cookies directly into the CookieMonster, using all-inclusive options.
-  net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
-      callback1;
+  net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback1;
   cookie_monster_.SetCanonicalCookieAsync(
       std::move(unspecified_cookie), cookie_url,
       net::CookieOptions::MakeAllInclusive(),
-      base::BindOnce(&net::ResultSavingCookieCallback<
-                         net::CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&callback1)));
+      base::BindOnce(
+          &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
+          base::Unretained(&callback1)));
   callback1.WaitUntilDone();
   ASSERT_TRUE(callback1.result().IsInclude());
 
@@ -1105,14 +1099,13 @@ TEST_P(RestrictedCookieManagerTest, NoChangeNotificationForNonlegacyCookie) {
   base::RunLoop().RunUntilIdle();
   ASSERT_THAT(listener.observed_changes(), testing::SizeIs(0));
 
-  net::ResultSavingCookieCallback<net::CanonicalCookie::CookieInclusionStatus>
-      callback2;
+  net::ResultSavingCookieCallback<net::CookieInclusionStatus> callback2;
   cookie_monster_.SetCanonicalCookieAsync(
       std::move(samesite_none_cookie), cookie_url,
       net::CookieOptions::MakeAllInclusive(),
-      base::BindOnce(&net::ResultSavingCookieCallback<
-                         net::CanonicalCookie::CookieInclusionStatus>::Run,
-                     base::Unretained(&callback2)));
+      base::BindOnce(
+          &net::ResultSavingCookieCallback<net::CookieInclusionStatus>::Run,
+          base::Unretained(&callback2)));
   callback2.WaitUntilDone();
   ASSERT_TRUE(callback2.result().IsInclude());
 

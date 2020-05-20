@@ -635,14 +635,10 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
 }
 
 void ShelfNavigationWidget::UpdateTargetBoundsForGesture(int shelf_position) {
-  if (shelf_->IsHorizontalAlignment()) {
-    if (!Shell::Get()->IsInTabletMode() ||
-        !chromeos::switches::ShouldShowShelfHotseat()) {
-      target_bounds_.set_y(shelf_position);
-    }
-  } else {
+  if (shelf_->IsHorizontalAlignment())
+    target_bounds_.set_y(shelf_position);
+  else
     target_bounds_.set_x(shelf_position);
-  }
 }
 
 void ShelfNavigationWidget::UpdateButtonVisibility(

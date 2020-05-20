@@ -20,6 +20,7 @@
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -30,6 +31,8 @@ struct PrefsForManagedContentSettingsMapEntry {
   const char* pref_name;
   ContentSettingsType content_type;
   ContentSetting setting;
+  content_settings::WildcardsInPrimaryPattern wildcards_in_primary_pattern =
+      content_settings::WildcardsInPrimaryPattern::ALLOWED;
 };
 
 const PrefsForManagedContentSettingsMapEntry
@@ -57,7 +60,8 @@ const PrefsForManagedContentSettingsMapEntry
         {prefs::kManagedNotificationsBlockedForUrls,
          ContentSettingsType::NOTIFICATIONS, CONTENT_SETTING_BLOCK},
         {prefs::kManagedPluginsAllowedForUrls, ContentSettingsType::PLUGINS,
-         CONTENT_SETTING_ALLOW},
+         CONTENT_SETTING_ALLOW,
+         content_settings::WildcardsInPrimaryPattern::NOT_ALLOWED},
         {prefs::kManagedPluginsBlockedForUrls, ContentSettingsType::PLUGINS,
          CONTENT_SETTING_BLOCK},
         {prefs::kManagedPopupsAllowedForUrls, ContentSettingsType::POPUPS,
@@ -272,6 +276,14 @@ void PolicyProvider::GetContentSettingsFromPreferences(
       if (!pattern_pair.first.IsValid()) {
         VLOG(1) << "Ignoring invalid content settings pattern "
                 << original_pattern_str;
+        continue;
+      }
+
+      if (base::FeatureList::IsEnabled(
+              content_settings::kDisallowWildcardsInPluginContentSettings) &&
+          kPrefsForManagedContentSettingsMap[i].wildcards_in_primary_pattern ==
+              WildcardsInPrimaryPattern::NOT_ALLOWED &&
+          pattern_pair.first.HasWildcards()) {
         continue;
       }
 

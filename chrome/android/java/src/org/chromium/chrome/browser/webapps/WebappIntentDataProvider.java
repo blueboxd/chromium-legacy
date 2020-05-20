@@ -39,8 +39,10 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         return Color.WHITE;
     }
 
-    WebappIntentDataProvider(int toolbarColor, boolean hasCustomToolbarColor, ShareData shareData,
+    WebappIntentDataProvider(@NonNull Intent intent, int toolbarColor,
+            boolean hasCustomToolbarColor, @Nullable ShareData shareData,
             @NonNull WebappExtras webappExtras, @Nullable WebApkExtras webApkExtras) {
+        mIntent = intent;
         mToolbarColor = toolbarColor;
         mHasCustomToolbarColor = hasCustomToolbarColor;
         mCloseButtonIcon = TintedDrawable.constructTintedDrawable(
@@ -49,7 +51,6 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
         mWebappExtras = webappExtras;
         mWebApkExtras = webApkExtras;
         mActivityType = (webApkExtras != null) ? ActivityType.WEB_APK : ActivityType.WEBAPP;
-        mIntent = new Intent();
     }
 
     @Override

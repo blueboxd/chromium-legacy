@@ -305,4 +305,11 @@ public abstract class PaymentApp extends EditableOption {
     public long getUkmSourceId() {
         return 0;
     }
+
+    /**
+     * Sets the endpoint for payment handler communication. Must be called before invoking this
+     * payment app. Used only by payment apps that are backed by a payment handler.
+     * @param host The endpoint for payment handler communication. Should not be null.
+     */
+    public void setPaymentHandlerHost(PaymentHandlerHost host) {}
 }

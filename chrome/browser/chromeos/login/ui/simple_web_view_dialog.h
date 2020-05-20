@@ -103,7 +103,8 @@ class SimpleWebViewDialog : public views::ButtonListener,
   LocationBarView* location_bar_ = nullptr;
   views::WebView* web_view_ = nullptr;
 
-  // Contains |web_view_| while it isn't owned by the view.
+  // Will own the |web_view_| until it is added as a child to the to the simple
+  // web view dialog.
   std::unique_ptr<views::WebView> web_view_container_;
 
   std::unique_ptr<StubBubbleModelDelegate> bubble_model_delegate_;

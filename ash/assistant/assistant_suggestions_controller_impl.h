@@ -20,7 +20,6 @@
 namespace ash {
 
 class AssistantControllerImpl;
-class AssistantSuggestionsModelObserver;
 class ProactiveSuggestions;
 
 // The implementation of the Assistant controller in charge of suggestions.
@@ -36,8 +35,6 @@ class AssistantSuggestionsControllerImpl
 
   // AssistantSuggestionsController:
   const AssistantSuggestionsModel* GetModel() const override;
-  void AddModelObserver(AssistantSuggestionsModelObserver*) override;
-  void RemoveModelObserver(AssistantSuggestionsModelObserver*) override;
 
   // AssistantControllerObserver:
   void OnAssistantControllerConstructed() override;

@@ -77,7 +77,7 @@ class AssistantNotificationControllerTest : public AshTestBase {
   AssistantNotificationModelObserverMock& AddStrictObserverMock() {
     observer_ =
         std::make_unique<StrictMock<AssistantNotificationModelObserverMock>>();
-    controller().AddModelObserver(observer_.get());
+    controller().model()->AddObserver(observer_.get());
     return *observer_;
   }
 

@@ -93,6 +93,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/filter/gzip_header.h"
 #include "net/filter/gzip_source_stream.h"
@@ -1864,7 +1865,7 @@ bool SetCookie(BrowserContext* browser_context,
       *cc.get(), url, options,
       base::BindOnce(
           [](bool* result, base::RunLoop* run_loop,
-             net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {
+             net::CookieInclusionStatus set_cookie_status) {
             *result = set_cookie_status.IsInclude();
             run_loop->Quit();
           },

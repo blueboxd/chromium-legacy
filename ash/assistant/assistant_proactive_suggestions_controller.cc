@@ -11,6 +11,7 @@
 
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/assistant_suggestions_controller_impl.h"
+#include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/ui/proactive_suggestions_rich_view.h"
 #include "ash/assistant/ui/proactive_suggestions_simple_view.h"
 #include "ash/assistant/ui/proactive_suggestions_view.h"
@@ -50,14 +51,14 @@ AssistantProactiveSuggestionsController::
 
 void AssistantProactiveSuggestionsController::
     OnAssistantControllerConstructed() {
-  AssistantSuggestionsController::Get()->AddModelObserver(this);
+  AssistantSuggestionsController::Get()->GetModel()->AddObserver(this);
   assistant_controller_->view_delegate()->AddObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::
     OnAssistantControllerDestroying() {
   assistant_controller_->view_delegate()->RemoveObserver(this);
-  AssistantSuggestionsController::Get()->RemoveModelObserver(this);
+  AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
 }
 
 void AssistantProactiveSuggestionsController::OnAssistantReady() {

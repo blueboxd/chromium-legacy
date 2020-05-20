@@ -5,7 +5,7 @@
 export const description = `
 setVertexBuffer validation tests.
 `;
-import { TestGroup } from '../../../common/framework/test_group.js';
+import { makeTestGroup } from '../../../common/framework/test_group.js';
 import { range } from '../../../common/framework/util/util.js';
 import { ValidationTest } from './validation_test.js';
 
@@ -103,8 +103,8 @@ class F extends ValidationTest {
 
 }
 
-export const g = new TestGroup(F);
-g.test('vertex buffers inherit from previous pipeline', async t => {
+export const g = makeTestGroup(F);
+g.test('vertex_buffers_inherit_from_previous_pipeline').fn(async t => {
   const pipeline1 = t.createRenderPipeline(1);
   const pipeline2 = t.createRenderPipeline(2);
   const vertexBuffer1 = t.getVertexBuffer();
@@ -134,7 +134,7 @@ g.test('vertex buffers inherit from previous pipeline', async t => {
     commandEncoder.finish();
   }
 });
-g.test('vertex buffers do not inherit between render passes', async t => {
+g.test('vertex_buffers_do_not_inherit_between_render_passes').fn(async t => {
   const pipeline1 = t.createRenderPipeline(1);
   const pipeline2 = t.createRenderPipeline(2);
   const vertexBuffer1 = t.getVertexBuffer();

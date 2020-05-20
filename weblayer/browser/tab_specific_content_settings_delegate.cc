@@ -6,9 +6,11 @@
 
 #include "base/bind_helpers.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "content/public/browser/render_process_host.h"
 #include "weblayer/browser/browser_context_impl.h"
 #include "weblayer/browser/host_content_settings_map_factory.h"
+#include "weblayer/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "weblayer/common/renderer_configuration.mojom.h"
 
 namespace weblayer {
@@ -57,6 +59,15 @@ PrefService* TabSpecificContentSettingsDelegate::GetPrefs() {
 HostContentSettingsMap* TabSpecificContentSettingsDelegate::GetSettingsMap() {
   return HostContentSettingsMapFactory::GetForBrowserContext(
       web_contents_->GetBrowserContext());
+}
+
+ContentSetting TabSpecificContentSettingsDelegate::GetEmbargoSetting(
+    const GURL& request_origin,
+    ContentSettingsType permission) {
+  return PermissionDecisionAutoBlockerFactory::GetForBrowserContext(
+             web_contents_->GetBrowserContext())
+      ->GetEmbargoResult(request_origin, permission)
+      .content_setting;
 }
 
 std::vector<storage::FileSystemType>

@@ -34,10 +34,8 @@ std::unique_ptr<ExtensionViewHost> CreateViewHostForExtension(
   DCHECK(browser || view_type == VIEW_TYPE_EXTENSION_DIALOG);
   scoped_refptr<content::SiteInstance> site_instance =
       ProcessManager::Get(profile)->GetSiteInstanceForURL(url);
-  auto host = std::make_unique<ExtensionViewHost>(
-      extension, site_instance.get(), url, view_type);
-  host->CreateView(browser);
-  return host;
+  return std::make_unique<ExtensionViewHost>(extension, site_instance.get(),
+                                             url, view_type, browser);
 }
 
 // Creates a view host for an extension in an incognito window. Returns NULL

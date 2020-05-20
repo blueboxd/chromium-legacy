@@ -1158,6 +1158,19 @@ message FanInfo {
   optional uint32 speed_rpm = 1;
 }
 
+// Information about a device's Bluetooth adapter, which is used to detect and
+// connect to Bluetooth devices.
+message BluetoothAdapterInfo {
+  // The name of the adapter.
+  optional string name = 1;
+  // The MAC address of the adapter.
+  optional string address = 2;
+  // Indicates whether the adapter is on or off.
+  optional bool powered = 3;
+  // The number of devices connected to this adapter.
+  optional uint32 num_connected_devices = 4;
+}
+
 // Report device level status.
 message DeviceStatusReportRequest {
   reserved 4, 7, 13, 20;
@@ -1273,6 +1286,9 @@ message DeviceStatusReportRequest {
 
   // Overall information about the device's CPUs.
   optional GlobalCpuInfo global_cpu_info = 39;
+
+  // Information about the device's Bluetooth adapters.
+  repeated BluetoothAdapterInfo bluetooth_adapter_info = 40;
 }
 
 message OsUpdateStatus {

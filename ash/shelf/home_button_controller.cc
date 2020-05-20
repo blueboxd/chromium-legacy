@@ -51,7 +51,7 @@ HomeButtonController::HomeButtonController(HomeButton* button)
   Shell* shell = Shell::Get();
   shell->app_list_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
-  AssistantUiController::Get()->AddModelObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
   AssistantState::Get()->AddObserver(this);
 }
 
@@ -61,7 +61,7 @@ HomeButtonController::~HomeButtonController() {
   // AppListController and TabletModeController are destroyed early when Shell
   // is being destroyed, so they may not exist.
   if (AssistantUiController::Get())
-    AssistantUiController::Get()->RemoveModelObserver(this);
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
   if (shell->app_list_controller())
     shell->app_list_controller()->RemoveObserver(this);
   if (shell->tablet_mode_controller())

@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
@@ -145,7 +146,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
 
         int defaultBackgroundColor = SplashLayout.getDefaultBackgroundColor(appContext);
         BrowserServicesIntentDataProvider intentDataProvider =
-                WebApkIntentDataProviderFactory.create(mOldInfo.url(), scopeUrl,
+                WebApkIntentDataProviderFactory.create(new Intent(), mOldInfo.url(), scopeUrl,
                         new WebappIcon(primaryIconBitmap), new WebappIcon(splashIconBitmap), name,
                         shortName, displayMode, orientation, mOldInfo.source(), themeColor,
                         backgroundColor, defaultBackgroundColor, isPrimaryIconMaskable,

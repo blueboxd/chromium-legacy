@@ -2,11 +2,11 @@
 * AUTO-GENERATED - DO NOT EDIT. Source: https://github.com/gpuweb/cts
 **/
 
-export const description = ``;
-import { TestGroup } from '../../../../../common/framework/test_group.js';
+export const description = '';
+import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../gpu_test.js';
-export const g = new TestGroup(GPUTest);
-g.test('fullscreen quad', async t => {
+export const g = makeTestGroup(GPUTest);
+g.test('fullscreen_quad').fn(async t => {
   const dst = t.device.createBuffer({
     size: 4,
     usage: GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST

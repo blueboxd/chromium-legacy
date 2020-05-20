@@ -309,7 +309,7 @@ public class NavigateTest {
                 tab.getWebContents(), "document.body.textContent");
         // Note: |content| is JSON, hence lots of escaping.
         Assert.assertEquals("Proper headers",
-                "\"\\\"x86_64\\\"\\n"
+                "\"\\\"x86\\\"\\n"
                         + "?0\\n"
                         + "\\\"\\\"\\n"
                         + "\\\"Linux\\\"\"",

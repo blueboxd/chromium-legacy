@@ -33,6 +33,13 @@ public class WebContentsFactory {
                 Profile.getLastUsedRegularProfile(), incognito, initiallyHidden, false);
     }
 
+    // TODO(https://crbug.com/1033955): Remove after check discard error is fixed.
+    private static WebContents createWebContents(Profile profile, boolean incognito,
+            boolean initiallyHidden, boolean initializeRenderer) {
+        return WebContentsFactoryJni.get().createWebContents(
+                profile, incognito, initiallyHidden, initializeRenderer);
+    }
+
     /**
      * A factory method to build a {@link WebContents} object.
      *
@@ -45,8 +52,21 @@ public class WebContentsFactory {
      */
     public WebContents createWebContentsWithWarmRenderer(
             boolean incognito, boolean initiallyHidden) {
-        return WebContentsFactoryJni.get().createWebContents(
+        return createWebContents(
                 Profile.getLastUsedRegularProfile(), incognito, initiallyHidden, true);
+    }
+
+    /**
+     * A factory method to build a {@link WebContents} object.
+     *
+     * Also creates and initializes the renderer.
+     *
+     * @param profile         The profile to be used by the WebContents.
+     * @param initiallyHidden Whether or not the {@link WebContents} should be initially hidden.
+     * @return                A newly created {@link WebContents} object.
+     */
+    public WebContents createWebContentsWithWarmRenderer(Profile profile, boolean initiallyHidden) {
+        return createWebContents(profile, false, initiallyHidden, true);
     }
 
     @NativeMethods

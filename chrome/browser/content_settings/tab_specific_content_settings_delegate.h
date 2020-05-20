@@ -66,6 +66,8 @@ class TabSpecificContentSettingsDelegate
       const RendererContentSettingRules& rules) override;
   PrefService* GetPrefs() override;
   HostContentSettingsMap* GetSettingsMap() override;
+  ContentSetting GetEmbargoSetting(const GURL& request_origin,
+                                   ContentSettingsType permission) override;
   std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override;
   browsing_data::CookieHelper::IsDeletionDisabledCallback
   GetIsDeletionDisabledCallback() override;

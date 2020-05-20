@@ -40,9 +40,9 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.url.GURL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -98,6 +98,7 @@ public class AutocompleteMediatorUnitTest {
         when(mMockProcessor.createModel())
                 .thenAnswer((mock) -> new PropertyModel(SuggestionCommonProperties.ALL_KEYS));
         when(mMockProcessor.getMinimumViewHeight()).thenReturn(SUGGESTION_MIN_HEIGHT);
+        when(mMockProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.DEFAULT);
 
         when(mHandler.sendMessageAtTime(any(Message.class), anyLong()))
                 .thenAnswer(new Answer<Void>() {
@@ -119,18 +120,11 @@ public class AutocompleteMediatorUnitTest {
      */
     private List<OmniboxSuggestion> buildDummySuggestionsList(int count, String prefix) {
         List<OmniboxSuggestion> list = new ArrayList<>();
-
         for (int index = 0; index < count; ++index) {
-            OmniboxSuggestion suggestion = new OmniboxSuggestion(
-                    OmniboxSuggestionType.SEARCH_SUGGEST, true /* isSearchType */,
-                    0 /* relevance */, 0 /* transition */, prefix + (index + 1),
-                    null /* displayTextClassifications */, null /* description */,
-                    null /* descriptionClassifications */, null /* answer */,
-                    null /* fillIntoEdit */, GURL.emptyGURL() /* url */,
-                    GURL.emptyGURL() /* imageUrl */, null /* imageDominantColor */,
-                    false /* isStarred */, false /* isDeletable */, null /* postContentType */,
-                    null /* postData */, OmniboxSuggestion.INVALID_GROUP, null);
-            list.add(suggestion);
+            list.add(OmniboxSuggestionBuilderForTest
+                             .searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                             .setDisplayText(prefix + (index + 1))
+                             .build());
         }
 
         return list;
@@ -409,8 +403,6 @@ public class AutocompleteMediatorUnitTest {
         list.add(suggestion);
         list.add(suggestion);
 
-        when(mMockProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.DEFAULT);
-
         mMediator.onSuggestionsReceived(new AutocompleteResult(list, headers), "a");
         final ModelList model = mMediator.getSuggestionModelList();
         Assert.assertEquals(2 /* suggestions */ + 1 /* group headers */, model.size());
@@ -453,8 +445,6 @@ public class AutocompleteMediatorUnitTest {
         list.add(suggestionForGroup2);
         list.add(suggestionForGroup2);
 
-        when(mMockProcessor.getViewTypeId()).thenReturn(OmniboxSuggestionUiType.DEFAULT);
-
         mMediator.onSuggestionsReceived(new AutocompleteResult(list, headers), "a");
         final ModelList model = mMediator.getSuggestionModelList();
         Assert.assertEquals(5 /* suggestions */ + 2 /* group headers */, model.size());
@@ -479,6 +469,173 @@ public class AutocompleteMediatorUnitTest {
 
         Assert.assertEquals(header1.model.get(HeaderViewProperties.TITLE), headers.get(1));
         Assert.assertEquals(header2.model.get(HeaderViewProperties.TITLE), headers.get(2));
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_toggleGroupVisibility() {
+        mMediator.onNativeInitialized();
+        final List<OmniboxSuggestion> list = Arrays.asList(
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Ungrouped 1")
+                        .build(),
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Ungrouped 2")
+                        .build(),
+
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 1/1")
+                        .setGroupId(1)
+                        .build(),
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 1/2")
+                        .setGroupId(1)
+                        .build(),
+
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 2/1")
+                        .setGroupId(2)
+                        .build(),
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 2/2")
+                        .setGroupId(2)
+                        .build());
+
+        final SparseArray<String> headers = buildDummyGroupHeaders(3, 1, "Header1");
+        mMediator.onSuggestionsReceived(new AutocompleteResult(list, headers), "a");
+
+        final List<DropdownItemViewInfo> viewInfos = mMediator.getSuggestionViewInfoListForTest();
+        final ModelList modelList = mMediator.getSuggestionModelList();
+
+        // Check that initially both lists contain same elements.
+        Assert.assertEquals(viewInfos.size(), modelList.size());
+        for (int index = 0; index < viewInfos.size(); index++) {
+            Assert.assertEquals(viewInfos.get(index), modelList.get(index));
+        }
+
+        // Hide items belonging to group 1. Check that only suggestions for group 1 are hidden, and
+        // the order is maintained.
+        mMediator.setGroupVisibility(1, false);
+        // We hid 2 suggestions.
+        Assert.assertEquals(viewInfos.size() - 2, modelList.size());
+        int modelIndex = 0;
+        for (int index = 0; index < viewInfos.size(); index++) {
+            DropdownItemViewInfo info = viewInfos.get(index);
+            if (info.type != OmniboxSuggestionUiType.HEADER && info.groupId == 1) continue;
+            Assert.assertEquals("Wrong item at position " + index, info, modelList.get(modelIndex));
+            modelIndex++;
+        }
+
+        // Hide items belonging to group 2. Check that suggestion for both groups 1 and 2 are
+        // hidden, and the order is maintained.
+        mMediator.setGroupVisibility(2, false);
+        // We now hid 4 suggestions: 2 for group 1 and 2 for group 2.
+        Assert.assertEquals(viewInfos.size() - 4, modelList.size());
+        modelIndex = 0;
+        for (int index = 0; index < viewInfos.size(); index++) {
+            DropdownItemViewInfo info = viewInfos.get(index);
+            if (info.type != OmniboxSuggestionUiType.HEADER
+                    && (info.groupId == 1 || info.groupId == 2)) {
+                continue;
+            }
+            Assert.assertEquals(info, modelList.get(modelIndex));
+            modelIndex++;
+        }
+
+        // Show items belonging to group 1. Check that only suggestion for group 2 are hidden.
+        mMediator.setGroupVisibility(1, true);
+        // We now hide just 2 suggestions belonging to group 2.
+        Assert.assertEquals(viewInfos.size() - 2, modelList.size());
+        modelIndex = 0;
+        for (int index = 0; index < viewInfos.size(); index++) {
+            DropdownItemViewInfo info = viewInfos.get(index);
+            if (info.type != OmniboxSuggestionUiType.HEADER && info.groupId == 2) continue;
+            Assert.assertEquals(info, modelList.get(modelIndex));
+            modelIndex++;
+        }
+
+        // Show items belonging to group 1. Check that only suggestion for group 2 are hidden.
+        mMediator.setGroupVisibility(2, true);
+        // Check that in the end both lists contain same elements.
+        Assert.assertEquals(viewInfos.size(), modelList.size());
+        for (int index = 0; index < viewInfos.size(); index++) {
+            Assert.assertEquals(viewInfos.get(index), modelList.get(index));
+        }
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_expandingAlreadyExpandedGroupAddsNoNewElementns() {
+        mMediator.onNativeInitialized();
+        final List<OmniboxSuggestion> list = Arrays.asList(
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Ungrouped 1")
+                        .build(),
+
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 1/1")
+                        .setGroupId(1)
+                        .build(),
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 1/2")
+                        .setGroupId(1)
+                        .build());
+
+        final SparseArray<String> headers = buildDummyGroupHeaders(1, 1, "Header1");
+        mMediator.onSuggestionsReceived(new AutocompleteResult(list, headers), "a");
+
+        final List<DropdownItemViewInfo> viewInfos = mMediator.getSuggestionViewInfoListForTest();
+        final ModelList modelList = mMediator.getSuggestionModelList();
+
+        // Check that initially both lists contain same elements.
+        Assert.assertEquals(viewInfos.size(), modelList.size());
+        // Expand already expanded group 1.
+        mMediator.setGroupVisibility(1, true);
+        // Check that in the end both lists contain same elements.
+        Assert.assertEquals(viewInfos.size(), modelList.size());
+    }
+
+    @CalledByNativeJavaTest
+    @NativeJavaTestFeatures.Disable({ChromeFeatureList.OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT,
+            ChromeFeatureList.OMNIBOX_DEFERRED_KEYBOARD_POPUP})
+    public void
+    updateSuggestionsList_collapseAlreadyCollapsedListIsNoOp() {
+        mMediator.onNativeInitialized();
+        final List<OmniboxSuggestion> list = Arrays.asList(
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Ungrouped 1")
+                        .build(),
+
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 1/1")
+                        .setGroupId(1)
+                        .build(),
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("Grouped 1/2")
+                        .setGroupId(1)
+                        .build());
+
+        final SparseArray<String> headers = buildDummyGroupHeaders(1, 1, "Header1");
+        mMediator.onSuggestionsReceived(new AutocompleteResult(list, headers), "a");
+
+        // Only the first two elements on the list should be displayed once we collapse group 1:
+        // - the ungrouped suggestion
+        // - the group header.
+        final List<DropdownItemViewInfo> viewInfos =
+                mMediator.getSuggestionViewInfoListForTest().subList(0, 2);
+        final ModelList modelList = mMediator.getSuggestionModelList();
+
+        // Collapse group 1.
+        mMediator.setGroupVisibility(1, false);
+        Assert.assertEquals(viewInfos.size(), modelList.size());
+
+        // Collapse the group again.
+        mMediator.setGroupVisibility(1, false);
+        Assert.assertEquals(viewInfos.size(), modelList.size());
     }
 
     @CalledByNativeJavaTest

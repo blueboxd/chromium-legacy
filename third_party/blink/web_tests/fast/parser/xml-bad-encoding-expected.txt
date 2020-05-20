@@ -1,0 +1,2 @@
+CONSOLE WARNING: line 25: Document encoding not valid: bad-encoding
+PASS: renderer didn't crash

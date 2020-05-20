@@ -17,9 +17,11 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
@@ -1035,10 +1037,76 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.setStringArrayMetaData(
                 "com.merchant.twa", new String[] {"https://play.google.com/billing"});
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
         assertPaymentAppsCreated("com.merchant.twa");
+    }
+
+    /**
+     * In the context of finding the app store billing app in TWA, test that the TWA's installer
+     * cannot be null. The special conditions about this test is that the installer package name is
+     * mocked to null.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testFindAppStoreBillingAppInstallerNotNull() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://play.google.com/billing");
+        mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
+                "https://play.google.com/billing", /*signature=*/"01020304050607080900");
+        mPackageManager.setStringArrayMetaData(
+                "com.merchant.twa", new String[] {"https://play.google.com/billing"});
+
+        setMockTrustedWebActivity("com.merchant.twa", null);
+        findApps(methods);
+
+        assertNoPaymentAppsCreated();
+    }
+
+    /**
+     * In the context of finding the app store billing app in TWA, test that the TWA's installer
+     * is linked to a supported app store billing method. The special conditions about this test is
+     * that the installer package name is mocked to be an unknown app store.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testFindAppStoreBillingAppInstallerLinkedToSupportedMethod() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://play.google.com/billing");
+        mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
+                "https://play.google.com/billing", /*signature=*/"01020304050607080900");
+        mPackageManager.setStringArrayMetaData(
+                "com.merchant.twa", new String[] {"https://play.google.com/billing"});
+
+        setMockTrustedWebActivity("com.merchant.twa", "com.unknown.appstore");
+        findApps(methods);
+
+        assertNoPaymentAppsCreated();
+    }
+
+    /**
+     * In the context of finding the app store billing app in TWA, test that the TWA's installer's
+     * app store method is the one that the TWA is requesting for payment. The special conditions
+     * about this test is that the finder adds a new app store, the installer package name is set to
+     * be the app store, but the app-store method that the TWA requests is not of the same store.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testFindAppStoreBillingAppInstallerMethodIsRequested() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://play.google.com/billing");
+        mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
+                "https://play.google.com/billing", /*signature=*/"01020304050607080900");
+        mPackageManager.setStringArrayMetaData(
+                "com.merchant.twa", new String[] {"https://play.google.com/billing"});
+
+        setMockTrustedWebActivity("com.merchant.twa", "another.known.appstore");
+        addAppStoreMethodAndFindApps(/*appStorePackageName=*/"another.known.appstore",
+                /*appStorePaymentMethod=*/new GURL("https://another.known.appstore/billing"),
+                methods);
+
+        assertNoPaymentAppsCreated();
     }
 
     /**
@@ -1051,7 +1119,7 @@ public class AndroidPaymentAppFinderTest
         Set<String> methods = new HashSet<>();
         methods.add("https://play.google.com/billing");
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
         assertPaymentAppsCreated(/*no identifiers*/);
@@ -1070,7 +1138,7 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.installPaymentApp(
                 "MerchantTwaApp", "com.merchant.twa", null, /*signature=*/"01020304050607080900");
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
         assertPaymentAppsCreated(/*no identifiers*/);
@@ -1089,7 +1157,7 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
                 "https://play.google.com/billing", /*signature=*/"01020304050607080900");
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
         assertPaymentAppsCreated("com.merchant.twa");
@@ -1110,20 +1178,20 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.setStringArrayMetaData(
                 "com.merchant.twa", new String[] {"https://play.google.com/billing"});
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
         assertPaymentAppsCreated("com.merchant.twa");
     }
 
     /**
-     * For finding app store billing app, test that the TWA has support the billing method but no
-     * default method in its manifest. The test setting intentionally set TWA's default method to a
-     * non-store method.
+     * For finding app store billing app, test that the TWA can request only the app store method of
+     * its installer app store. The test intentionally add another app store, request the methods of
+     * both stores, and set the twa to be installed from one of them.
      */
     @Test
     @Feature({"Payments"})
-    public void testFindAppStoreBillingAppTwaCanSupportMultipleAppStoreMethods() throws Throwable {
+    public void testFindAppStoreBillingAppTwaCanSupportOnlyOneAppStoreMethods() throws Throwable {
         Set<String> methods = new HashSet<>();
         methods.add("https://play.google.com/billing");
         methods.add("https://another.appstore.com/billing");
@@ -1133,13 +1201,12 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.setStringArrayMetaData(
                 "com.merchant.twa", new String[] {"https://play.google.com/billing"});
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         addAppStoreMethodAndFindApps(
                 "com.another.appstore", new GURL("https://another.appstore.com/billing"), methods);
 
         assertPaymentAppsCreated("com.merchant.twa");
-        assertPaymentAppHasMethods(mPaymentApps.get(0), "https://another.appstore.com/billing",
-                "https://play.google.com/billing");
+        assertPaymentAppHasMethods(mPaymentApps.get(0), "https://play.google.com/billing");
     }
 
     /**
@@ -1187,7 +1254,7 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://bobpay.com/webpay"});
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(noRequestedMethod);
 
         assertPaymentAppsCreated("com.bobpay");
@@ -1214,7 +1281,7 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://bobpay.com/webpay"});
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
         assertPaymentAppsCreated("com.merchant.twa", "com.bobpay");
@@ -1222,7 +1289,7 @@ public class AndroidPaymentAppFinderTest
 
     /**
      * For finding app store billing app, test that if delegation is requested along with the
-     * app-store billing method, the app-store billing method would be ignore. The test setting
+     * app-store billing method, the app-store billing method would be ignored. The test setting
      * requests the shipping or payer contact delegation.
      */
     @Test
@@ -1242,10 +1309,57 @@ public class AndroidPaymentAppFinderTest
         mPackageManager.setStringArrayMetaData(
                 "com.bobpay", new String[] {"https://bobpay.com/webpay"});
 
-        setMockTrustedWebActivity("com.merchant.twa");
+        setMockTrustedWebActivity("com.merchant.twa", "com.android.vending");
         findApps(methods);
 
         assertPaymentAppsCreated("com.bobpay");
+    }
+
+    /**
+     * For finding app store billing app, test that the TWA's installer app store must be a
+     * whitelisted one. The test setting sets the twa installer app store to be an unsupported one.
+     */
+    @Test
+    @Feature({"Payments"})
+    public void testFindAppStoreBillingAppMustInSupportedAppStore() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://another.playstore.com/billing");
+        methods.add("https://bobpay.com/webpay");
+        mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
+                "https://another.playstore.com/billing", /*signature=*/"01020304050607080900");
+        mPackageManager.setStringArrayMetaData(
+                "com.merchant.twa", new String[] {"https://another.playstore.com/billing"});
+        mPackageManager.installPaymentApp("BobPay", "com.bobpay", "https://bobpay.com/webpay",
+                /*signature=*/"01020304050607080900");
+        mPackageManager.setStringArrayMetaData(
+                "com.bobpay", new String[] {"https://bobpay.com/webpay"});
+
+        setMockTrustedWebActivity("com.merchant.twa", "com.another.appstore");
+        findApps(methods);
+
+        assertPaymentAppsCreated("com.bobpay");
+    }
+
+    /**
+     * For finding app store billing app, test that the TWA can be installed from any source in
+     * debug. The test setting sets the twa to be installed from an arbitrary source, and set the
+     * debug mode enabled.
+     */
+    @Test
+    @Features.EnableFeatures({ChromeFeatureList.WEB_PAYMENTS_APP_STORE_BILLING_DEBUG})
+    @Feature({"Payments"})
+    public void testFindAppStoreBillingAppAllowedAnySourceInDebug() throws Throwable {
+        Set<String> methods = new HashSet<>();
+        methods.add("https://play.google.com/billing");
+        mPackageManager.installPaymentApp("MerchantTwaApp", "com.merchant.twa",
+                "https://play.google.com/billing", /*signature=*/"01020304050607080900");
+        mPackageManager.setStringArrayMetaData(
+                "com.merchant.twa", new String[] {"https://play.google.com/billing"});
+
+        setMockTrustedWebActivity("com.merchant.twa", "com.arbitrary.appstore");
+        findApps(methods);
+
+        assertPaymentAppsCreated("com.merchant.twa");
     }
 
     /**
@@ -1416,8 +1530,9 @@ public class AndroidPaymentAppFinderTest
         return result;
     }
 
-    private void setMockTrustedWebActivity(String twaPackageName) {
+    private void setMockTrustedWebActivity(String twaPackageName, String installerPackageName) {
         mTwaPackageManager.setMockTrustedWebActivity(twaPackageName);
+        mTwaPackageManager.mockInstallerForPackage(twaPackageName, installerPackageName);
     }
 
     private void assertPaymentAppsCreated(String... expectedIds) {
@@ -1437,6 +1552,10 @@ public class AndroidPaymentAppFinderTest
                                       expectedId, Arrays.toString(expectedIds), ids.toString()),
                     ids.contains(expectedId));
         }
+    }
+
+    private void assertNoPaymentAppsCreated() {
+        assertPaymentAppsCreated();
     }
 
     private void assertPaymentAppHasMethods(PaymentApp app, String... expectedMethodNames) {

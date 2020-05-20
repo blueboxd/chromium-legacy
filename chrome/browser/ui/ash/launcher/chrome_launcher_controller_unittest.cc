@@ -53,6 +53,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
@@ -110,6 +111,8 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -350,6 +353,13 @@ class ChromeLauncherControllerTest
     base::RunLoop run_loop;
     extension_system->ready().Post(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
+
+    // Many pinned app tests assume OS sync is enabled.
+    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+      syncer::SyncService* sync_service =
+          ProfileSyncServiceFactory::GetForProfile(profile());
+      sync_service->GetUserSettings()->SetOsSyncFeatureEnabled(true);
+    }
 
     app_list_syncable_service_ =
         app_list::AppListSyncableServiceFactory::GetForProfile(profile());
@@ -1020,6 +1030,20 @@ class ChromeLauncherControllerWithArcTest
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerWithArcTest);
 };
 
+// Tests for feature SplitSettingsSync. Exists as a separate class because the
+// feature must be initialized before ChromeLauncherControllerTest::SetUp().
+class ChromeLauncherControllerSplitSettingsSyncTest
+    : public ChromeLauncherControllerTest {
+ public:
+  ChromeLauncherControllerSplitSettingsSyncTest() {
+    feature_list_.InitAndEnableFeature(chromeos::features::kSplitSettingsSync);
+  }
+  ~ChromeLauncherControllerSplitSettingsSyncTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
 class ChromeLauncherControllerExtendedShelfTest
     : public ChromeLauncherControllerWithArcTest {
  protected:
@@ -1305,6 +1329,25 @@ TEST_P(ChromeLauncherControllerTest, DefaultApps) {
   EXPECT_EQ("Chrome, Doc, Youtube, App1", GetPinnedAppStatus());
   AddExtension(extension_gmail_app_.get());
   EXPECT_EQ("Chrome, Gmail, Doc, Youtube, App1", GetPinnedAppStatus());
+}
+
+TEST_P(ChromeLauncherControllerSplitSettingsSyncTest, DefaultApps) {
+  // Simulate a user who opted out of sync.
+  syncer::SyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile());
+  sync_service->GetUserSettings()->SetOsSyncFeatureEnabled(false);
+
+  InitLauncherController();
+  EXPECT_EQ("Chrome", GetPinnedAppStatus());
+
+  // Simulate the default app loader installing some apps. Don't start the
+  // pref sync service, because this user opted out of sync.
+  AddExtension(extension_youtube_app_.get());
+  AddExtension(extension_doc_app_.get());
+  AddExtension(extension_gmail_app_.get());
+
+  // Default apps are pinned.
+  EXPECT_EQ("Chrome, Gmail, Doc, Youtube", GetPinnedAppStatus());
 }
 
 TEST_P(ChromeLauncherControllerExtendedShelfTest, ExtendedShefDefault) {
@@ -4841,6 +4884,11 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     All,
     ChromeLauncherControllerWithArcTest,
+    ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    ChromeLauncherControllerSplitSettingsSyncTest,
     ::testing::Values(std::make_pair(ProviderType::kBookmarkApps, false)));
 
 INSTANTIATE_TEST_SUITE_P(

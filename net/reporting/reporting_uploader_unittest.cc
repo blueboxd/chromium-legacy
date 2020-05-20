@@ -14,6 +14,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "net/base/features.h"
 #include "net/base/network_isolation_key.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_store.h"
 #include "net/cookies/cookie_store_test_callbacks.h"
 #include "net/http/http_status_code.h"
@@ -446,8 +447,7 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
   server_.RegisterRequestHandler(base::BindRepeating(&ReturnResponse, HTTP_OK));
   ASSERT_TRUE(server_.Start());
 
-  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
-      cookie_callback;
+  ResultSavingCookieCallback<CookieInclusionStatus> cookie_callback;
   GURL url = server_.GetURL("/");
   auto cookie = CanonicalCookie::Create(url, "foo=bar", base::Time::Now(),
                                         base::nullopt /* server_time */);

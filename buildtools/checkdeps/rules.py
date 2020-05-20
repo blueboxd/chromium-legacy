@@ -74,6 +74,14 @@ def ParseRuleString(rule_string, source):
       'The rule string "%s" does not begin with a "+", "-" or "!".' %
       rule_string)
 
+  # If a directory is specified in a DEPS file with a trailing slash, then it
+  # will not match as a parent directory in Rule's [Parent|Child]OrMatch above.
+  # Ban them.
+  if rule_string[-1] == '/':
+    raise Exception(
+      'The rule string "%s" ends with a "/" which is not allowed' %
+      rule_string)
+
   return rule_string[0], rule_string[1:]
 
 

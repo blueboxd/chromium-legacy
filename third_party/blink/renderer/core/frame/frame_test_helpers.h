@@ -463,10 +463,6 @@ class TestWebRemoteFrameClient : public WebRemoteFrameClient {
 
   // WebRemoteFrameClient:
   void FrameDetached(DetachType) override;
-  void ForwardPostMessage(WebLocalFrame* source_frame,
-                          WebRemoteFrame* target_frame,
-                          WebSecurityOrigin target_origin,
-                          WebDOMMessageEvent) override {}
 
   AssociatedInterfaceProvider* GetAssociatedInterfaceProvider() {
     return associated_interface_provider_.get();

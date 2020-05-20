@@ -24,14 +24,6 @@ class AssistantViewDelegateImpl : public AssistantViewDelegate {
   const AssistantNotificationModel* GetNotificationModel() const override;
   void AddObserver(AssistantViewDelegateObserver* observer) override;
   void RemoveObserver(AssistantViewDelegateObserver* observer) override;
-  void AddAlarmTimerModelObserver(
-      AssistantAlarmTimerModelObserver* observer) override;
-  void RemoveAlarmTimerModelObserver(
-      AssistantAlarmTimerModelObserver* observer) override;
-  void AddNotificationModelObserver(
-      AssistantNotificationModelObserver* observer) override;
-  void RemoveNotificationModelObserver(
-      AssistantNotificationModelObserver* observer) override;
   void DownloadImage(const GURL& url,
                      ImageDownloader::DownloadCallback callback) override;
   ::wm::CursorManager* GetCursorManager() override;

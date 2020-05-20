@@ -83,6 +83,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_status_code.h"
 #include "net/test/cert_test_util.h"
@@ -108,9 +109,8 @@ constexpr std::initializer_list<base::StringPiece> kPrimaryButton = {
 constexpr std::initializer_list<base::StringPiece> kSecondaryButton = {
     "gaia-signin", "secondary-action-button"};
 
-void InjectCookieDoneCallback(
-    base::OnceClosure done_closure,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+void InjectCookieDoneCallback(base::OnceClosure done_closure,
+                              net::CookieInclusionStatus status) {
   ASSERT_TRUE(status.IsInclude());
   std::move(done_closure).Run();
 }

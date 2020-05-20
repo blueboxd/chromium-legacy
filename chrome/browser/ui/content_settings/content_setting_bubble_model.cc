@@ -29,6 +29,7 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -43,15 +44,18 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
+#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
+#include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
@@ -566,6 +570,8 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
       content_settings->midi_usages_state().state_map();
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
+  auto* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(GetProfile());
   for (const std::pair<const GURL, ContentSetting>& map_entry : state_map) {
     permissions::PermissionUmaUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
@@ -574,6 +580,8 @@ void ContentSettingMidiSysExBubbleModel::OnCustomLinkClicked() {
     map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
                                        ContentSettingsType::MIDI_SYSEX,
                                        std::string(), CONTENT_SETTING_DEFAULT);
+    auto_blocker->RemoveEmbargoAndResetCounts(map_entry.first,
+                                              ContentSettingsType::MIDI_SYSEX);
   }
 }
 
@@ -655,6 +663,8 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
       content_settings->geolocation_usages_state().state_map();
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
+  auto* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(GetProfile());
   for (const std::pair<const GURL, ContentSetting>& map_entry : state_map) {
     permissions::PermissionUmaUtil::ScopedRevocationReporter(
         GetProfile(), map_entry.first, embedder_url,
@@ -663,6 +673,8 @@ void ContentSettingDomainListBubbleModel::OnCustomLinkClicked() {
     map->SetContentSettingDefaultScope(map_entry.first, embedder_url,
                                        ContentSettingsType::GEOLOCATION,
                                        std::string(), CONTENT_SETTING_DEFAULT);
+    auto_blocker->RemoveEmbargoAndResetCounts(map_entry.first,
+                                              ContentSettingsType::GEOLOCATION);
   }
 }
 

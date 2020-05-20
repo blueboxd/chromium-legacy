@@ -130,8 +130,10 @@ class MediaInterfaceProxy : public media::mojom::InterfaceFactory {
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
   // CDM GUID to CDM InterfaceFactory Remotes mapping, where the
-  // InterfaceFactory instances live in the standalone CDM Service instances.
-  // These map entries effectively own the corresponding service processes.
+  // InterfaceFactory instances live in the standalone CdmService instances.
+  // These map entries effectively own the corresponding CDM processes.
+  // Only using the GUID to identify the CdmFactory is sufficient because the
+  // BrowserContext and Site URL should never change.
   std::map<base::Token, mojo::Remote<media::mojom::CdmFactory>>
       cdm_factory_map_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)

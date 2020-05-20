@@ -27,6 +27,7 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
@@ -585,17 +586,15 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, CommandLineTab) {
   EXPECT_EQ(expected_tabs, browser()->tab_strip_model()->count());
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppEngagementBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
-                      ControllerType::kUnifiedControllerWithWebApp),
-    ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppEngagementBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    HostedAppEngagementBrowserTest,
-    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp),
-    ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         HostedAppEngagementBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ProviderTypeParamToString);
 
 }  // namespace web_app

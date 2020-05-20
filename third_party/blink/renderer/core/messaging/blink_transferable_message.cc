@@ -8,42 +8,124 @@
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
+#include "third_party/blink/renderer/core/frame/user_activation.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
 
+#include "third_party/blink/public/web/web_dom_message_event.h"
+
 namespace blink {
 
-BlinkTransferableMessage::BlinkTransferableMessage() = default;
-BlinkTransferableMessage::~BlinkTransferableMessage() = default;
+// static
+BlinkTransferableMessage BlinkTransferableMessage::FromMessageEvent(
+    MessageEvent* message_event,
+    base::Optional<base::UnguessableToken> cluster_id) {
+  BlinkTransferableMessage result;
+  SerializedScriptValue* serialized_script_value =
+      message_event->DataAsSerializedScriptValue();
 
-BlinkTransferableMessage::BlinkTransferableMessage(BlinkTransferableMessage&&) =
-    default;
-BlinkTransferableMessage& BlinkTransferableMessage::operator=(
-    BlinkTransferableMessage&&) = default;
+  // Message data and cluster ID (optional).
+  base::span<const uint8_t> message_wire_data =
+      serialized_script_value->GetWireData();
+  result.message = SerializedScriptValue::Create(
+      reinterpret_cast<const char*>(message_wire_data.data()),
+      message_wire_data.size());
+  result.locked_agent_cluster_id = cluster_id;
 
-scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(
-    const SkBitmap& sk_bitmap) {
-  sk_sp<SkImage> image = SkImage::MakeFromBitmap(sk_bitmap);
-  if (!image)
-    return nullptr;
+  // Ports
+  Vector<MessagePortChannel> ports = message_event->ReleaseChannels();
+  result.ports.AppendRange(ports.begin(), ports.end());
 
-  return UnacceleratedStaticBitmapImage::Create(std::move(image));
-}
-
-base::Optional<SkBitmap> ToSkBitmap(
-    const scoped_refptr<blink::StaticBitmapImage>& static_bitmap_image) {
-  const sk_sp<SkImage> image =
-      static_bitmap_image->PaintImageForCurrentFrame().GetSkImage();
-  SkBitmap result;
-  if (image && image->asLegacyBitmap(
-                   &result, SkImage::LegacyBitmapMode::kRO_LegacyBitmapMode)) {
-    return result;
+  // User activation and |allow_autoplay|.
+  UserActivation* user_activation = message_event->userActivation();
+  if (user_activation) {
+    result.user_activation = mojom::blink::UserActivationSnapshot::New(
+        user_activation->hasBeenActive(), user_activation->isActive());
   }
-  return base::nullopt;
+  result.transfer_user_activation = message_event->transferUserActivation();
+  result.allow_autoplay = message_event->allowAutoplay();
+
+  // Blobs.
+  for (const auto& blob : serialized_script_value->BlobDataHandles()) {
+    result.message->BlobDataHandles().Set(
+        blob.value->Uuid(),
+        BlobDataHandle::Create(blob.value->Uuid(), blob.value->GetType(),
+                               blob.value->size(),
+                               mojo::PendingRemote<mojom::blink::Blob>(
+                                   blob.value->CloneBlobRemote().PassPipe(),
+                                   mojom::blink::Blob::Version_)));
+  }
+
+  // Stream channels.
+  auto& stream_channels = serialized_script_value->GetStreamChannels();
+  result.message->GetStreamChannels().AppendRange(stream_channels.begin(),
+                                                  stream_channels.end());
+  // Array buffer contents array.
+  auto& source_array_buffer_contents_array =
+      serialized_script_value->GetArrayBufferContentsArray();
+  if (!source_array_buffer_contents_array.IsEmpty()) {
+    SerializedScriptValue::ArrayBufferContentsArray array_buffer_contents_array;
+    array_buffer_contents_array.ReserveInitialCapacity(
+        base::checked_cast<wtf_size_t>(
+            source_array_buffer_contents_array.size()));
+
+    for (auto& source_contents : source_array_buffer_contents_array) {
+      uint8_t* allocation_start = static_cast<uint8_t*>(source_contents.Data());
+      mojo_base::BigBuffer buffer(
+          base::make_span(allocation_start, source_contents.DataLength()));
+      ArrayBufferContents contents(buffer.size(), 1,
+                                   ArrayBufferContents::kNotShared,
+                                   ArrayBufferContents::kDontInitialize);
+      // Check if we allocated the backing store of the ArrayBufferContents
+      // correctly.
+      CHECK_EQ(contents.DataLength(), buffer.size());
+      memcpy(contents.Data(), buffer.data(), buffer.size());
+      array_buffer_contents_array.push_back(std::move(contents));
+    }
+    result.message->SetArrayBufferContentsArray(
+        std::move(array_buffer_contents_array));
+  }
+
+  // Image bitmap contents array.
+  auto& source_image_bitmap_contents_array =
+      serialized_script_value->GetImageBitmapContentsArray();
+  if (!source_image_bitmap_contents_array.IsEmpty()) {
+    SerializedScriptValue::ImageBitmapContentsArray image_bitmap_contents_array;
+    image_bitmap_contents_array.ReserveInitialCapacity(
+        base::checked_cast<wtf_size_t>(
+            source_image_bitmap_contents_array.size()));
+
+    for (auto& contents : image_bitmap_contents_array) {
+      base::Optional<SkBitmap> sk_bitmap = ToSkBitmap(contents);
+      if (!sk_bitmap)
+        continue;
+
+      const scoped_refptr<StaticBitmapImage> bitmap_contents =
+          ToStaticBitmapImage(sk_bitmap.value());
+      if (!bitmap_contents)
+        continue;
+      image_bitmap_contents_array.push_back(bitmap_contents);
+    }
+    result.message->SetImageBitmapContentsArray(
+        std::move(image_bitmap_contents_array));
+  }
+
+  // Native file system transfer tokens.
+  for (auto& token : serialized_script_value->NativeFileSystemTokens()) {
+    uint32_t token_version = token.version();
+    mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>
+        converted_token(token.PassPipe(), token_version);
+    result.message->NativeFileSystemTokens().push_back(
+        std::move(converted_token));
+  }
+
+  return result;
 }
 
-BlinkTransferableMessage ToBlinkTransferableMessage(
+// static
+BlinkTransferableMessage BlinkTransferableMessage::FromTransferableMessage(
     TransferableMessage message) {
   BlinkTransferableMessage result;
   result.message = SerializedScriptValue::Create(
@@ -129,72 +211,33 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
   return result;
 }
 
-TransferableMessage ToTransferableMessage(BlinkTransferableMessage message) {
-  TransferableMessage result;
-  result.encoded_message = message.message->GetWireData();
-  result.blobs.reserve(message.message->BlobDataHandles().size());
-  for (const auto& blob : message.message->BlobDataHandles()) {
-    result.blobs.push_back(mojom::SerializedBlob::New(
-        blob.value->Uuid().Utf8(), blob.value->GetType().Utf8(),
-        blob.value->size(),
-        mojo::PendingRemote<mojom::Blob>(
-            blob.value->CloneBlobRemote().PassPipe(), mojom::Blob::Version_)));
-  }
-  if (message.sender_origin) {
-    result.sender_origin = message.sender_origin->ToUrlOrigin();
-  }
-  result.stack_trace_id = message.sender_stack_trace_id.id;
-  result.stack_trace_debugger_id_first =
-      message.sender_stack_trace_id.debugger_id.first;
-  result.stack_trace_debugger_id_second =
-      message.sender_stack_trace_id.debugger_id.second;
-  result.stack_trace_should_pause = message.sender_stack_trace_id.should_pause;
-  result.locked_agent_cluster_id = message.locked_agent_cluster_id;
-  result.ports.assign(message.ports.begin(), message.ports.end());
-  auto& stream_channels = message.message->GetStreamChannels();
-  result.stream_channels.assign(stream_channels.begin(), stream_channels.end());
-  if (message.user_activation) {
-    result.user_activation = mojom::UserActivationSnapshot::New(
-        message.user_activation->has_been_active,
-        message.user_activation->was_active);
-  }
-  result.transfer_user_activation = message.transfer_user_activation;
-  result.allow_autoplay = message.allow_autoplay;
+BlinkTransferableMessage::BlinkTransferableMessage() = default;
+BlinkTransferableMessage::~BlinkTransferableMessage() = default;
 
-  auto& array_buffer_contents_array =
-      message.message->GetArrayBufferContentsArray();
-  result.array_buffer_contents_array.reserve(
-      array_buffer_contents_array.size());
-  for (auto& contents : array_buffer_contents_array) {
-    uint8_t* allocation_start = static_cast<uint8_t*>(contents.Data());
-    mojo_base::BigBuffer buffer(
-        base::make_span(allocation_start, contents.DataLength()));
-    result.array_buffer_contents_array.push_back(
-        mojom::SerializedArrayBufferContents::New(std::move(buffer)));
-  }
+BlinkTransferableMessage::BlinkTransferableMessage(BlinkTransferableMessage&&) =
+    default;
+BlinkTransferableMessage& BlinkTransferableMessage::operator=(
+    BlinkTransferableMessage&&) = default;
 
-  auto& image_bitmap_contents_array =
-      message.message->GetImageBitmapContentsArray();
-  result.image_bitmap_contents_array.reserve(
-      image_bitmap_contents_array.size());
-  for (auto& contents : image_bitmap_contents_array) {
-    base::Optional<SkBitmap> bitmap = ToSkBitmap(contents);
-    if (!bitmap)
-      continue;
-    result.image_bitmap_contents_array.push_back(std::move(bitmap.value()));
-  }
+scoped_refptr<StaticBitmapImage> ToStaticBitmapImage(
+    const SkBitmap& sk_bitmap) {
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(sk_bitmap);
+  if (!image)
+    return nullptr;
 
-  // Convert the PendingRemote<NativeFileSystemTransferToken> from the
-  // blink::mojom::blink namespace to the blink::mojom namespace.
-  result.native_file_system_tokens.reserve(
-      message.message->NativeFileSystemTokens().size());
-  for (auto& token : message.message->NativeFileSystemTokens()) {
-    uint32_t token_version = token.version();
-    mojo::PendingRemote<mojom::NativeFileSystemTransferToken> converted_token(
-        token.PassPipe(), token_version);
-    result.native_file_system_tokens.push_back(std::move(converted_token));
+  return UnacceleratedStaticBitmapImage::Create(std::move(image));
+}
+
+base::Optional<SkBitmap> ToSkBitmap(
+    const scoped_refptr<blink::StaticBitmapImage>& static_bitmap_image) {
+  const sk_sp<SkImage> image =
+      static_bitmap_image->PaintImageForCurrentFrame().GetSkImage();
+  SkBitmap result;
+  if (image && image->asLegacyBitmap(
+                   &result, SkImage::LegacyBitmapMode::kRO_LegacyBitmapMode)) {
+    return result;
   }
-  return result;
+  return base::nullopt;
 }
 
 }  // namespace blink

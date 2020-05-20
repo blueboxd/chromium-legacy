@@ -22,6 +22,11 @@ class PatternParser;
 namespace mojom {
 class ContentSettingsPatternDataView;
 }
+
+enum class WildcardsInPrimaryPattern {
+  NOT_ALLOWED,
+  ALLOWED,
+};
 }
 
 // A pattern used in content setting rules. See |IsValid| for a description of
@@ -217,6 +222,9 @@ class ContentSettingsPattern {
   // Compares the pattern with a given |other| pattern and returns the
   // |Relation| of the two patterns.
   Relation Compare(const ContentSettingsPattern& other) const;
+
+  // True if either scheme, domain, path or port in the pattern has a wildcard
+  bool HasWildcards() const;
 
   // Returns true if the pattern and the |other| pattern are identical.
   bool operator==(const ContentSettingsPattern& other) const;

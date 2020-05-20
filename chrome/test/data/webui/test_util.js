@@ -44,7 +44,7 @@ cr.define('test_util', function() {
   /**
    * Converts an event occurrence to a promise.
    * @param {string} eventType
-   * @param {Element|EventTarget} target
+   * @param {!Element|!EventTarget|!Window} target
    * @return {!Promise} A promise firing once the event occurs.
    */
   /* #export */ function eventToPromise(eventType, target) {

@@ -68,7 +68,7 @@ AssistantNotificationExpiryMonitor::AssistantNotificationExpiryMonitor(
     AssistantNotificationController* controller)
     : controller_(controller), observer_(std::make_unique<Observer>(this)) {
   DCHECK(controller_);
-  controller_->AddModelObserver(observer_.get());
+  controller_->model()->AddObserver(observer_.get());
 }
 
 AssistantNotificationExpiryMonitor::~AssistantNotificationExpiryMonitor() =

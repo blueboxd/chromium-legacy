@@ -7,6 +7,10 @@
 
 #include "base/strings/string16.h"
 
+namespace gfx {
+struct VectorIcon;
+}
+
 // The controller for the SettingsOverriddenDialog. This class is responsible
 // for both providing the display information (ShowParams) as well as handling
 // the result of the dialog (i.e., the user input).
@@ -17,7 +21,10 @@ class SettingsOverriddenDialogController {
     base::string16 dialog_title;
     base::string16 message;
 
-    // TODO(devlin): Add support for an icon.
+    // The icon to display, if any. If non-null, the VectorIcon should have
+    // all its colors fully specified; otherwise a placehold grey color will
+    // be used.
+    const gfx::VectorIcon* icon = nullptr;
   };
 
   // The result (i.e., user input) from the dialog being shown.

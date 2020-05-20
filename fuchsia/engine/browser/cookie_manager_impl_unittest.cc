@@ -17,6 +17,7 @@
 #include "fuchsia/base/result_receiver.h"
 #include "fuchsia/engine/browser/cookie_manager_impl.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "services/network/network_service.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -74,7 +75,7 @@ class CookieManagerImplTest : public testing::Test {
     net::CookieOptions options;
     mojo_cookie_manager_->SetCanonicalCookie(
         *CreateCookie(name, value), GURL(kTestCookieUrl), options,
-        base::BindOnce([](net::CanonicalCookie::CookieInclusionStatus status) {
+        base::BindOnce([](net::CookieInclusionStatus status) {
           EXPECT_TRUE(status.IsInclude());
         }));
   }

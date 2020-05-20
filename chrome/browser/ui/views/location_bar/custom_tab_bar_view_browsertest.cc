@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -700,10 +701,8 @@ IN_PROC_BROWSER_TEST_P(CustomTabBarViewBrowserTest, BlobUrlLocation) {
       base::ASCIIToUTF16(https_server()->GetURL("/").spec()));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    CustomTabBarViewBrowserTest,
-    ::testing::Values(
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
-        web_app::ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         CustomTabBarViewBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

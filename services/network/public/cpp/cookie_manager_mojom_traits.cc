@@ -351,10 +351,10 @@ bool StructTraits<
 }
 
 bool StructTraits<network::mojom::CookieInclusionStatusDataView,
-                  net::CanonicalCookie::CookieInclusionStatus>::
+                  net::CookieInclusionStatus>::
     Read(network::mojom::CookieInclusionStatusDataView status,
-         net::CanonicalCookie::CookieInclusionStatus* out) {
-  *out = net::CanonicalCookie::CookieInclusionStatus();
+         net::CookieInclusionStatus* out) {
+  *out = net::CookieInclusionStatus();
   out->set_exclusion_reasons(status.exclusion_reasons());
   out->set_warning_reasons(status.warning_reasons());
 
@@ -366,7 +366,7 @@ bool StructTraits<
     net::CookieWithStatus>::Read(network::mojom::CookieWithStatusDataView c,
                                  net::CookieWithStatus* out) {
   net::CanonicalCookie cookie;
-  net::CanonicalCookie::CookieInclusionStatus status;
+  net::CookieInclusionStatus status;
   if (!c.ReadCookie(&cookie))
     return false;
   if (!c.ReadStatus(&status))
@@ -383,7 +383,7 @@ bool StructTraits<network::mojom::CookieAndLineWithStatusDataView,
          net::CookieAndLineWithStatus* out) {
   base::Optional<net::CanonicalCookie> cookie;
   std::string cookie_string;
-  net::CanonicalCookie::CookieInclusionStatus status;
+  net::CookieInclusionStatus status;
   if (!c.ReadCookie(&cookie))
     return false;
   if (!c.ReadCookieString(&cookie_string))

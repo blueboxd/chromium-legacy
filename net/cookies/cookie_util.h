@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/site_for_cookies.h"
 #include "url/origin.h"
@@ -198,7 +199,7 @@ bool DoesCreationTimeGrantLegacySemantics(base::Time creation_date);
 //
 // Can be used with SetCanonicalCookie when you don't need to know why a cookie
 // was blocked, only whether it was blocked.
-NET_EXPORT base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
+NET_EXPORT base::OnceCallback<void(CookieInclusionStatus)>
 AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback);
 
 // Turn a CookieStatusList into a CookieList by stripping out the statuses

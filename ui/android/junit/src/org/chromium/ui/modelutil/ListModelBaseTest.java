@@ -20,6 +20,8 @@ import org.robolectric.annotation.Config;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 
+import java.util.Arrays;
+
 /**
  * Basic test ensuring the {@link ListModel} notifies listeners properly.
  * TODO(yuezhanggg) Merge this test with SimpleListObservableTest.
@@ -57,6 +59,10 @@ public class ListModelBaseTest {
         verify(mObserver).onItemRangeInserted(mIntegerList, 3, 1);
         assertThat(mIntegerList.size(), is(4));
         assertThat(mIntegerList.get(3), is(55555));
+
+        // Adding multiple items also triggers event.
+        mIntegerList.addAll(Arrays.asList(333, 88888888, 22), 2);
+        verify(mObserver).onItemRangeInserted(mIntegerList, 2, 3);
     }
 
     @Test

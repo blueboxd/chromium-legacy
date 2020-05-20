@@ -223,8 +223,6 @@ OffTheRecordProfileImpl::~OffTheRecordProfileImpl() {
 
 #if !defined(OS_ANDROID)
 void OffTheRecordProfileImpl::TrackZoomLevelsFromParent() {
-  DCHECK(!profile_->IsIncognitoProfile());
-
   // Here we only want to use zoom levels stored in the main-context's default
   // storage partition. We're not interested in zoom levels in special
   // partitions, e.g. those used by WebViewGuests.

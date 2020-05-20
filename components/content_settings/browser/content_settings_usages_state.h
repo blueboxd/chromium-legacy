@@ -9,19 +9,20 @@
 #include <set>
 
 #include "base/macros.h"
+#include "components/content_settings/browser/tab_specific_content_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "url/gurl.h"
-
-class HostContentSettingsMap;
 
 // This class manages a content setting state per tab for a given
 // |ContentSettingsType|, and provides information and presentation data about
 // the content setting usage.
 class ContentSettingsUsagesState {
  public:
-  ContentSettingsUsagesState(HostContentSettingsMap* host_content_settings_map,
-                             ContentSettingsType type);
+  ContentSettingsUsagesState(
+      content_settings::TabSpecificContentSettings::Delegate* delegate_,
+      ContentSettingsType type);
+
   ~ContentSettingsUsagesState();
 
   typedef std::map<GURL, ContentSetting> StateMap;
@@ -57,8 +58,7 @@ class ContentSettingsUsagesState {
 
  private:
   std::string GURLToFormattedHost(const GURL& url) const;
-
-  HostContentSettingsMap* const host_content_settings_map_;
+  content_settings::TabSpecificContentSettings::Delegate* delegate_;
   ContentSettingsType type_;
   StateMap state_map_;
   GURL embedder_url_;

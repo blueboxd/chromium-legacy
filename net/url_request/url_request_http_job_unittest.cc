@@ -1646,7 +1646,7 @@ TEST_F(URLRequestHttpJobWebSocketTest, CreateHelperPassedThrough) {
 
 bool SetAllCookies(CookieMonster* cm, const CookieList& list) {
   DCHECK(cm);
-  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+  ResultSavingCookieCallback<CookieInclusionStatus> callback;
   cm->SetAllCookiesAsync(list, callback.MakeCallback());
   callback.WaitUntilDone();
   return callback.result().IsInclude();
@@ -1660,7 +1660,7 @@ bool CreateAndSetCookie(CookieStore* cs,
   if (!cookie)
     return false;
   DCHECK(cs);
-  ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus> callback;
+  ResultSavingCookieCallback<CookieInclusionStatus> callback;
   cs->SetCanonicalCookieAsync(std::move(cookie), url,
                               CookieOptions::MakeAllInclusive(),
                               callback.MakeCallback());

@@ -32,8 +32,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
   ~AssistantSuggestionsModel();
 
   // Adds/removes the specified suggestions model |observer|.
-  void AddObserver(AssistantSuggestionsModelObserver* observer);
-  void RemoveObserver(AssistantSuggestionsModelObserver* observer);
+  void AddObserver(AssistantSuggestionsModelObserver* observer) const;
+  void RemoveObserver(AssistantSuggestionsModelObserver* observer) const;
 
   // Sets the cache of conversation starters.
   void SetConversationStarters(
@@ -62,7 +62,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
   std::vector<AssistantSuggestionPtr> conversation_starters_;
   scoped_refptr<const ProactiveSuggestions> proactive_suggestions_;
 
-  base::ObserverList<AssistantSuggestionsModelObserver> observers_;
+  mutable base::ObserverList<AssistantSuggestionsModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantSuggestionsModel);
 };

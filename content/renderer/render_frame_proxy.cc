@@ -600,34 +600,6 @@ void RenderFrameProxy::FrameDetached(DetachType type) {
   delete this;
 }
 
-void RenderFrameProxy::ForwardPostMessage(
-    blink::WebLocalFrame* source_frame,
-    blink::WebRemoteFrame* target_frame,
-    blink::WebSecurityOrigin target_origin,
-    blink::WebDOMMessageEvent event) {
-  DCHECK(!web_frame_ || web_frame_ == target_frame);
-
-  FrameMsg_PostMessage_Params params;
-  params.message =
-      new base::RefCountedData<blink::TransferableMessage>(event.AsMessage());
-  params.source_origin = event.Origin().Utf16();
-  if (!target_origin.IsNull())
-    params.target_origin = target_origin.ToString().Utf16();
-
-  // Include the routing ID for the source frame (if one exists), which the
-  // browser process will translate into the routing ID for the equivalent
-  // frame in the target process.
-  params.source_routing_id = MSG_ROUTING_NONE;
-  if (source_frame) {
-    RenderFrameImpl* source_render_frame =
-        RenderFrameImpl::FromWebFrame(source_frame);
-    if (source_render_frame)
-      params.source_routing_id = source_render_frame->GetRoutingID();
-  }
-
-  Send(new FrameHostMsg_RouteMessageEvent(routing_id_, params));
-}
-
 void RenderFrameProxy::Navigate(
     const blink::WebURLRequest& request,
     blink::WebLocalFrame* initiator_frame,

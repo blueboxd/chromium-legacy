@@ -17,12 +17,12 @@ AssistantInteractionModel::AssistantInteractionModel()
 AssistantInteractionModel::~AssistantInteractionModel() = default;
 
 void AssistantInteractionModel::AddObserver(
-    AssistantInteractionModelObserver* observer) {
+    AssistantInteractionModelObserver* observer) const {
   observers_.AddObserver(observer);
 }
 
 void AssistantInteractionModel::RemoveObserver(
-    AssistantInteractionModelObserver* observer) {
+    AssistantInteractionModelObserver* observer) const {
   observers_.RemoveObserver(observer);
 }
 

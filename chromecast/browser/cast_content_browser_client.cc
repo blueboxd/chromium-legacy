@@ -26,6 +26,7 @@
 #include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/chromecast_switches.h"
+#include "chromecast/base/pref_names.h"
 #include "chromecast/browser/application_media_info_manager.h"
 #include "chromecast/browser/browser_buildflags.h"
 #include "chromecast/browser/cast_browser_context.h"
@@ -57,6 +58,7 @@
 #include "chromecast/media/service/cast_renderer.h"
 #include "chromecast/media/service/mojom/video_geometry_setter.mojom.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
@@ -548,6 +550,10 @@ void CastContentBrowserClient::OverrideWebkitPrefs(
       prefs->databases_enabled = true;
     }
   }
+
+  prefs->preferred_color_scheme = static_cast<blink::PreferredColorScheme>(
+      CastBrowserProcess::GetInstance()->pref_service()->GetInteger(
+          prefs::kWebColorScheme));
 }
 
 std::string CastContentBrowserClient::GetApplicationLocale() {

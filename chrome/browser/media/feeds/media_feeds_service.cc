@@ -430,7 +430,7 @@ void MediaFeedsService::OnFetchResponse(
   result.reset_token = reset_token;
 
   if (result.status == media_feeds::mojom::FetchResult::kSuccess &&
-      !ConvertMediaFeed(response, &result)) {
+      !media_feeds_converter_.ConvertMediaFeed(response, &result)) {
     result.status = media_feeds::mojom::FetchResult::kInvalidFeed;
   }
 

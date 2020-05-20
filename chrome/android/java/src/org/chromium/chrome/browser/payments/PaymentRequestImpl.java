@@ -2104,14 +2104,7 @@ public class PaymentRequestImpl
             }
         }
 
-        if (mInvokedPaymentApp instanceof ServiceWorkerPaymentApp) {
-            if (mPaymentHandlerHost == null) {
-                mPaymentHandlerHost = new PaymentHandlerHost(mWebContents, this /* delegate */);
-            }
-
-            ((ServiceWorkerPaymentApp) mInvokedPaymentApp)
-                    .setPaymentHandlerHost(mPaymentHandlerHost);
-        }
+        mInvokedPaymentApp.setPaymentHandlerHost(getPaymentHandlerHost());
 
         // Create payment options for the invoked payment app.
         PaymentOptions paymentOptions = new PaymentOptions();
@@ -2149,6 +2142,13 @@ public class PaymentRequestImpl
             mJourneyLogger.setEventOccurred(Event.SELECTED_OTHER);
         }
         return !isAutofillCard;
+    }
+
+    private PaymentHandlerHost getPaymentHandlerHost() {
+        if (mPaymentHandlerHost == null) {
+            mPaymentHandlerHost = new PaymentHandlerHost(mWebContents, /*delegate=*/this);
+        }
+        return mPaymentHandlerHost;
     }
 
     @Override
@@ -2984,7 +2984,10 @@ public class PaymentRequestImpl
         }
         mJourneyLogger.destroy();
 
-        if (mPaymentHandlerHost != null) mPaymentHandlerHost.destroy();
+        if (mPaymentHandlerHost != null) {
+            mPaymentHandlerHost.destroy();
+            mPaymentHandlerHost = null;
+        }
     }
 
     private void closeClient() {

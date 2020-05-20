@@ -185,7 +185,8 @@ void ChromeNativeAppWindowViews::InitializeDefaultWindow(
 
   for (auto iter = accelerator_table.begin(); iter != accelerator_table.end();
        ++iter) {
-    if (is_kiosk_app_mode && !chrome::IsCommandAllowedInAppMode(iter->second))
+    if (is_kiosk_app_mode &&
+        !chrome::IsCommandAllowedInAppMode(iter->second, /* is_popup */ false))
       continue;
 
     focus_manager->RegisterAccelerator(

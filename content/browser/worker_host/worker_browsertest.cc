@@ -39,6 +39,7 @@
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/ssl/ssl_server_config.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -168,7 +169,7 @@ class WorkerTest : public ContentBrowserTest,
     cookie_manager->SetCanonicalCookie(
         *cookie, cookie_url, options,
         base::BindLambdaForTesting(
-            [&](net::CanonicalCookie::CookieInclusionStatus set_cookie_result) {
+            [&](net::CookieInclusionStatus set_cookie_result) {
               EXPECT_TRUE(set_cookie_result.IsInclude());
               run_loop.Quit();
             }));

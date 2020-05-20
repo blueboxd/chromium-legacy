@@ -1106,6 +1106,32 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         }
       }
     }
+
+    // Process Bluetooth result.
+    const auto& bluetooth_result = probe_result->bluetooth_result;
+    if (!bluetooth_result.is_null()) {
+      switch (bluetooth_result->which()) {
+        case cros_healthd::BluetoothResult::Tag::ERROR: {
+          LOG(ERROR) << "cros_healthd: Error getting Bluetooth info: "
+                     << bluetooth_result->get_error()->msg;
+          break;
+        }
+
+        case cros_healthd::BluetoothResult::Tag::BLUETOOTH_ADAPTER_INFO: {
+          for (const auto& adapter :
+               bluetooth_result->get_bluetooth_adapter_info()) {
+            em::BluetoothAdapterInfo* const adapter_info_out =
+                response_params_.device_status->add_bluetooth_adapter_info();
+            adapter_info_out->set_name(adapter->name);
+            adapter_info_out->set_address(adapter->address);
+            adapter_info_out->set_powered(adapter->powered);
+            adapter_info_out->set_num_connected_devices(
+                adapter->num_connected_devices);
+          }
+          break;
+        }
+      }
+    }
   }
 
   void OnEMMCLifetimeReceived(const em::DiskLifetimeEstimation& est) {
@@ -1284,6 +1310,8 @@ DeviceStatusCollector::DeviceStatusCollector(
       chromeos::kReportDeviceBacklightInfo, callback);
   crash_report_info_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kReportDeviceCrashReportInfo, callback);
+  bluetooth_info_subscription_ = cros_settings_->AddSettingsObserver(
+      chromeos::kReportDeviceBluetoothInfo, callback);
   stats_reporting_pref_subscription_ = cros_settings_->AddSettingsObserver(
       chromeos::kStatsReportingPref, callback);
 
@@ -1428,6 +1456,10 @@ void DeviceStatusCollector::UpdateReportingSettings() {
   if (!cros_settings_->GetBoolean(chromeos::kReportDeviceCrashReportInfo,
                                   &report_crash_report_info_)) {
     report_crash_report_info_ = false;
+  }
+  if (!cros_settings_->GetBoolean(chromeos::kReportDeviceBluetoothInfo,
+                                  &report_bluetooth_info_)) {
+    report_bluetooth_info_ = false;
   }
   if (!cros_settings_->GetBoolean(chromeos::kStatsReportingPref,
                                   &stat_reporting_pref_)) {
@@ -1723,6 +1755,8 @@ void DeviceStatusCollector::FetchCrosHealthdData(
         categories_to_probe.push_back(ProbeCategoryEnum::kMemory);
       if (report_backlight_info_)
         categories_to_probe.push_back(ProbeCategoryEnum::kBacklight);
+      if (report_bluetooth_info_)
+        categories_to_probe.push_back(ProbeCategoryEnum::kBluetooth);
 
       completion_callback =
           base::BindOnce(&DeviceStatusCollector::OnProbeDataFetched,
@@ -1754,7 +1788,8 @@ void DeviceStatusCollector::OnProbeDataFetched(
 
 bool DeviceStatusCollector::ShouldFetchCrosHealthdData() const {
   return report_power_status_ || report_storage_status_ || report_cpu_info_ ||
-         report_timezone_info_ || report_memory_info_ || report_backlight_info_;
+         report_timezone_info_ || report_memory_info_ ||
+         report_backlight_info_ || report_bluetooth_info_;
 }
 
 void DeviceStatusCollector::ReportingUsersChanged() {

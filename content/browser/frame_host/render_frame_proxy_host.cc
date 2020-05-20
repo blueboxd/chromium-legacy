@@ -35,6 +35,7 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
+#include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 
 namespace content {
@@ -199,7 +200,6 @@ bool RenderFrameProxyHost::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxyHost, msg)
     IPC_MESSAGE_HANDLER(FrameHostMsg_Detach, OnDetach)
     IPC_MESSAGE_HANDLER(FrameHostMsg_OpenURL, OnOpenURL)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_RouteMessageEvent, OnRouteMessageEvent)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PrintCrossProcessSubframe,
                         OnPrintCrossProcessSubframe)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -497,8 +497,38 @@ void RenderFrameProxyHost::ChildProcessGone() {
   GetAssociatedRenderFrameProxy()->ChildProcessGone();
 }
 
-void RenderFrameProxyHost::OnRouteMessageEvent(
-    const FrameMsg_PostMessage_Params& params) {
+void RenderFrameProxyHost::DidFocusFrame() {
+  RenderFrameHostImpl* render_frame_host =
+      frame_tree_node_->current_frame_host();
+
+  // We need to handle this case due to a race, see documentation in
+  // RenderFrameHostImpl::DidFocusFrame for more details.
+  if (render_frame_host->InsidePortal())
+    return;
+
+  render_frame_host->delegate()->SetFocusedFrame(frame_tree_node_,
+                                                 GetSiteInstance());
+}
+
+void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
+    const gfx::Rect& clip_rect,
+    const base::UnguessableToken& guid) {
+  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
+  if (!rfh->is_active())
+    return;
+  rfh->delegate()->CapturePaintPreviewOfCrossProcessSubframe(clip_rect, guid,
+                                                             rfh);
+}
+
+void RenderFrameProxyHost::SetIsInert(bool inert) {
+  cross_process_frame_connector_->SetIsInert(inert);
+}
+
+void RenderFrameProxyHost::RouteMessageEvent(
+    const base::Optional<base::UnguessableToken>& source_frame_token,
+    const base::string16& source_origin,
+    const base::string16& target_origin,
+    blink::TransferableMessage message) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();
   if (!target_rfh->IsRenderFrameLive()) {
     // Check if there is an inner delegate involved; if so target its main
@@ -510,34 +540,34 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
       return;
   }
 
-  // |targetOrigin| argument of postMessage is already checked by
+  // |target_origin| argument of postMessage is already checked by
   // blink::LocalDOMWindow::DispatchMessageEventWithOriginCheck (needed for
   // messages sent within the same process - e.g. same-site, cross-origin),
   // but this check needs to be duplicated below in case the recipient renderer
   // process got compromised (i.e. in case the renderer-side check may be
   // bypassed).
-  if (!params.target_origin.empty()) {
-    url::Origin target_origin =
-        url::Origin::Create(GURL(base::UTF16ToUTF8(params.target_origin)));
+  if (!target_origin.empty()) {
+    url::Origin target_url_origin =
+        url::Origin::Create(GURL(base::UTF16ToUTF8(target_origin)));
 
     // Renderer should send either an empty string (this is how "*" is expressed
     // in the IPC) or a valid, non-opaque origin.  OTOH, there are no security
     // implications here - the message payload needs to be protected from an
     // unintended recipient, not from the sender.
-    DCHECK(!target_origin.opaque());
+    DCHECK(!target_url_origin.opaque());
 
     // While the postMessage was in flight, the target might have navigated away
     // to another origin.  In this case, the postMessage should be silently
     // dropped.
-    if (target_origin != target_rfh->GetLastCommittedOrigin())
+    if (target_url_origin != target_rfh->GetLastCommittedOrigin())
       return;
   }
 
   // TODO(lukasza): Move opaque-ness check into ChildProcessSecurityPolicyImpl.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (params.source_origin != base::UTF8ToUTF16("null") &&
+  if (source_origin != base::UTF8ToUTF16("null") &&
       !policy->CanAccessDataForOrigin(GetProcess()->GetID(),
-                                      GURL(params.source_origin))) {
+                                      GURL(source_origin))) {
     bad_message::ReceivedBadMessage(
         GetProcess(), bad_message::RFPH_POST_MESSAGE_INVALID_SOURCE_ORIGIN);
     return;
@@ -556,16 +586,12 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
                                                        GetSiteInstance()))
     return;
 
-  base::Optional<base::UnguessableToken> translated_source_token;
-  base::string16 source_origin = params.source_origin;
-  base::string16 target_origin = params.target_origin;
-  blink::TransferableMessage message = std::move(params.message->data);
-
-  // If there is a source_routing_id, translate it to the frame token of the
+  // If there is a |source_frame_token|, translate it to the frame token of the
   // equivalent RenderFrameProxyHost in the target process.
-  if (params.source_routing_id != MSG_ROUTING_NONE) {
-    RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromID(
-        GetProcess()->GetID(), params.source_routing_id);
+  base::Optional<base::UnguessableToken> translated_source_token;
+  if (source_frame_token) {
+    RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromFrameToken(
+        GetProcess()->GetID(), source_frame_token.value());
     if (source_rfh) {
       // https://crbug.com/822958: If the postMessage is going to a descendant
       // frame, ensure that any pending visual properties such as size are sent
@@ -608,8 +634,9 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
       }
 
       // If the message source is a cross-process subframe, its proxy will only
-      // be created in --site-per-process mode.  If the proxy wasn't created,
-      // set the source routing ID to MSG_ROUTING_NONE (see
+      // be created in --site-per-process mode, which is the case when we set an
+      // actual non-empty value for |translated_source_token|. Otherwise (if the
+      // proxy wasn't created), use an empty |translated_source_token| (see
       // https://crbug.com/485520 for discussion on why this is ok).
       RenderFrameProxyHost* source_proxy_in_target_site_instance =
           source_rfh->frame_tree_node()
@@ -624,33 +651,6 @@ void RenderFrameProxyHost::OnRouteMessageEvent(
 
   target_rfh->PostMessageEvent(translated_source_token, source_origin,
                                target_origin, std::move(message));
-}
-
-void RenderFrameProxyHost::DidFocusFrame() {
-  RenderFrameHostImpl* render_frame_host =
-      frame_tree_node_->current_frame_host();
-
-  // We need to handle this case due to a race, see documentation in
-  // RenderFrameHostImpl::DidFocusFrame for more details.
-  if (render_frame_host->InsidePortal())
-    return;
-
-  render_frame_host->delegate()->SetFocusedFrame(frame_tree_node_,
-                                                 GetSiteInstance());
-}
-
-void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
-    const gfx::Rect& clip_rect,
-    const base::UnguessableToken& guid) {
-  RenderFrameHostImpl* rfh = frame_tree_node_->current_frame_host();
-  if (!rfh->is_active())
-    return;
-  rfh->delegate()->CapturePaintPreviewOfCrossProcessSubframe(clip_rect, guid,
-                                                             rfh);
-}
-
-void RenderFrameProxyHost::SetIsInert(bool inert) {
-  cross_process_frame_connector_->SetIsInert(inert);
 }
 
 void RenderFrameProxyHost::DidChangeOpener(

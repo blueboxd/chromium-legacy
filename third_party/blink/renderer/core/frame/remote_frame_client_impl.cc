@@ -17,8 +17,6 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
-#include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
 
@@ -118,19 +116,6 @@ unsigned RemoteFrameClientImpl::BackForwardLength() {
   // navigation and the subsequent one moving the frame out-of-process.
   // See https://crbug.com/501116.
   return 2;
-}
-
-void RemoteFrameClientImpl::ForwardPostMessage(
-    MessageEvent* event,
-    scoped_refptr<const SecurityOrigin> target,
-    base::Optional<base::UnguessableToken> cluster_id,
-    LocalFrame* source_frame) const {
-  if (web_frame_->Client()) {
-    web_frame_->Client()->ForwardPostMessage(
-        WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
-        WebSecurityOrigin(std::move(target)),
-        WebDOMMessageEvent(event, cluster_id));
-  }
 }
 
 void RemoteFrameClientImpl::FrameRectsChanged(

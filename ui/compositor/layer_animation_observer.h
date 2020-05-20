@@ -73,6 +73,12 @@ class COMPOSITOR_EXPORT LayerAnimationObserver  {
   // Called when |this| is removed to |sequence|'s observer list.
   virtual void OnDetachedFromSequence(LayerAnimationSequence* sequence);
 
+  // Called when the relevant animator attaches to an animation timeline.
+  virtual void OnAnimatorAttachedToTimeline() {}
+
+  // Called when the relevant animator detaches from an animation timeline.
+  virtual void OnAnimatorDetachedFromTimeline() {}
+
   // Detaches this observer from all sequences it is currently observing.
   void StopObserving();
 

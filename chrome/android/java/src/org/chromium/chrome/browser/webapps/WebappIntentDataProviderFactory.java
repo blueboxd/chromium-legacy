@@ -100,7 +100,7 @@ public class WebappIntentDataProviderFactory {
                 new WebappExtras(id, url, scope, new WebappIcon(icon, true /* isTrusted */), name,
                         shortName, displayMode, orientation, source, backgroundColor,
                         defaultBackgroundColor, isIconGenerated, isIconAdaptive, forceNavigation);
-        return new WebappIntentDataProvider(toolbarColor, hasValidToolbarColor,
+        return new WebappIntentDataProvider(intent, toolbarColor, hasValidToolbarColor,
                 null /* shareData */, webappExtras, null /* webApkExtras */);
     }
 }

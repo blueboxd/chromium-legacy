@@ -165,16 +165,6 @@ class TestAssistantSuggestionsController
     return &model_;
   }
 
-  void AddModelObserver(
-      ash::AssistantSuggestionsModelObserver* observer) override {
-    model_.AddObserver(observer);
-  }
-
-  void RemoveModelObserver(
-      ash::AssistantSuggestionsModelObserver* observer) override {
-    model_.RemoveObserver(observer);
-  }
-
   void ClearConversationStarters() { SetConversationStarters({}); }
 
   void SetConversationStarter(AssistantSuggestionPtr conversation_starter) {

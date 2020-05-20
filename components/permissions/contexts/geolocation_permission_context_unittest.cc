@@ -123,7 +123,6 @@ class TestTabSpecificContentSettingsDelegate
       content::BrowserContext* browser_context)
       : browser_context_(browser_context) {}
 
-  // content_settings::TabSpecificContentSettings::Delegate:
   void UpdateLocationBar() override {}
 
   void SetContentSettingRules(
@@ -134,6 +133,11 @@ class TestTabSpecificContentSettingsDelegate
 
   HostContentSettingsMap* GetSettingsMap() override {
     return PermissionsClient::Get()->GetSettingsMap(browser_context_);
+  }
+
+  ContentSetting GetEmbargoSetting(const GURL& request_origin,
+                                   ContentSettingsType permission) override {
+    return ContentSetting::CONTENT_SETTING_ASK;
   }
 
   std::vector<storage::FileSystemType> GetAdditionalFileSystemTypes() override {

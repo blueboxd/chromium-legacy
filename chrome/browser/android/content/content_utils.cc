@@ -27,7 +27,7 @@ static void JNI_ContentUtils_SetUserAgentOverride(
   spoofed_ua.ua_metadata_override->platform = "Linux";
   spoofed_ua.ua_metadata_override->platform_version =
       std::string();  // match content::GetOSVersion(false) on Linux
-  spoofed_ua.ua_metadata_override->architecture = "x86_64";
+  spoofed_ua.ua_metadata_override->architecture = "x86";
   spoofed_ua.ua_metadata_override->model = std::string();
   spoofed_ua.ua_metadata_override->mobile = false;
 

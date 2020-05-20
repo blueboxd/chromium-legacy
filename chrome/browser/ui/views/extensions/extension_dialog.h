@@ -114,20 +114,17 @@ class ExtensionDialog : public views::DialogDelegate,
 
   // Use Show() to create instances.
   ExtensionDialog(std::unique_ptr<extensions::ExtensionViewHost> host,
-                  ExtensionDialogObserver* observer);
-
-  void InitWindow(gfx::NativeWindow parent_window,
+                  ExtensionDialogObserver* observer,
+                  gfx::NativeWindow parent_window,
                   const InitParams& init_params);
-
-  ExtensionViewViews* GetExtensionView() const;
-  static ExtensionViewViews* GetExtensionView(
-      extensions::ExtensionViewHost* host);
 
   // Window Title
   base::string16 window_title_;
 
   // The contained host for the view.
   std::unique_ptr<extensions::ExtensionViewHost> host_;
+
+  ExtensionViewViews* extension_view_ = nullptr;
 
   content::NotificationRegistrar registrar_;
 

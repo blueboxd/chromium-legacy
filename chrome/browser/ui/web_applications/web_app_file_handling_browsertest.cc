@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 #include "chrome/browser/web_applications/components/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/web_application_info.h"
 #include "components/embedder_support/switches.h"
 #include "content/public/test/browser_test.h"
@@ -559,26 +560,20 @@ IN_PROC_BROWSER_TEST_P(WebAppFileHandlingOriginTrialTest,
             content::EvalJs(web_content, "window.launchParams.files[0].name"));
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppFileHandlingBrowserTest,
-    ::testing::Values(
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
-        web_app::ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppFileHandlingBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppFileHandlingOriginTrialBrowserTest,
-    ::testing::Values(
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
-        web_app::ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppFileHandlingOriginTrialBrowserTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppFileHandlingOriginTrialTest,
-    ::testing::Values(
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
-        web_app::ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppFileHandlingOriginTrialTest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

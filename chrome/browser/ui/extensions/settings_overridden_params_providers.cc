@@ -46,7 +46,7 @@ GetNtpOverriddenParams(Profile* profile) {
 
   return ExtensionSettingsOverriddenDialog::Params(
       extension->id(), preference_name, kHistogramName, std::move(dialog_title),
-      std::move(dialog_message));
+      std::move(dialog_message), nullptr);
 }
 
 base::Optional<ExtensionSettingsOverriddenDialog::Params>
@@ -99,7 +99,7 @@ GetSearchOverriddenParams(Profile* profile) {
 
   return ExtensionSettingsOverriddenDialog::Params(
       extension->id(), preference_name, kHistogramName, std::move(dialog_title),
-      std::move(dialog_message));
+      std::move(dialog_message), nullptr);
 }
 
 }  // namespace settings_overridden_params

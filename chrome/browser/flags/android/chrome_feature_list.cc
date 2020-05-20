@@ -218,6 +218,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &paint_preview::kPaintPreviewDemo,
     &paint_preview::kPaintPreviewShowOnStartup,
     &payments::features::kAlwaysAllowJustInTimePaymentApp,
+    &payments::features::kAppStoreBillingDebug,
     &payments::features::kPaymentRequestSkipToGPay,
     &payments::features::kPaymentRequestSkipToGPayIfNoCard,
     &payments::features::kReturnGooglePayInBasicCard,

@@ -51,7 +51,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
-#include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -345,24 +344,6 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // An embedding token used to signify the relationship between the frame and
   // its parent. This is populated for cross-document navigations in a subframe.
   IPC_STRUCT_MEMBER(base::Optional<base::UnguessableToken>, embedding_token)
-IPC_STRUCT_END()
-
-IPC_STRUCT_BEGIN(FrameMsg_PostMessage_Params)
-  // When sent to the browser, this is the routing ID of the source frame in
-  // the source process.  The browser replaces it with the routing ID of the
-  // equivalent frame proxy in the destination process.
-  IPC_STRUCT_MEMBER(int, source_routing_id)
-
-  // The origin of the source frame.
-  IPC_STRUCT_MEMBER(base::string16, source_origin)
-
-  // The origin for the message's target.
-  IPC_STRUCT_MEMBER(base::string16, target_origin)
-
-  // The encoded data, and any extra properties such as transfered ports or
-  // blobs.
-  IPC_STRUCT_MEMBER(
-      scoped_refptr<base::RefCountedData<blink::TransferableMessage>>, message)
 IPC_STRUCT_END()
 
 IPC_STRUCT_TRAITS_BEGIN(network::mojom::SourceLocation)
@@ -753,11 +734,6 @@ IPC_SYNC_MESSAGE_ROUTED1_2(FrameHostMsg_RunBeforeUnloadConfirm,
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_VisualStateResponse, uint64_t /* id */)
-
-// Sent to the browser from a frame proxy to post a message to the frame's
-// active renderer.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_RouteMessageEvent,
-                    FrameMsg_PostMessage_Params)
 
 // Sent when the renderer runs insecure content in a secure origin.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_DidRunInsecureContent,

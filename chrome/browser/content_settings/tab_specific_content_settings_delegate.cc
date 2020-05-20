@@ -10,12 +10,14 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_process_host.h"
@@ -72,6 +74,15 @@ PrefService* TabSpecificContentSettingsDelegate::GetPrefs() {
 HostContentSettingsMap* TabSpecificContentSettingsDelegate::GetSettingsMap() {
   return HostContentSettingsMapFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+}
+
+ContentSetting TabSpecificContentSettingsDelegate::GetEmbargoSetting(
+    const GURL& request_origin,
+    ContentSettingsType permission) {
+  return PermissionDecisionAutoBlockerFactory::GetForProfile(
+             Profile::FromBrowserContext(web_contents()->GetBrowserContext()))
+      ->GetEmbargoResult(request_origin, permission)
+      .content_setting;
 }
 
 std::vector<storage::FileSystemType>

@@ -57,6 +57,7 @@ std::unique_ptr<PrefService> PrefServiceHelper::CreatePrefService(
   registry->RegisterBooleanPref(prefs::kOptInStats, true);
   registry->RegisterListPref(prefs::kActiveDCSExperiments);
   registry->RegisterDictionaryPref(prefs::kLatestDCSFeatures);
+  registry->RegisterIntegerPref(prefs::kWebColorScheme, 0);
 
   cdm::MediaDrmStorageImpl::RegisterProfilePrefs(registry);
 

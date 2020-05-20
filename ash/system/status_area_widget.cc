@@ -242,12 +242,10 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
 }
 
 void StatusAreaWidget::UpdateTargetBoundsForGesture(int shelf_position) {
-  const gfx::Point shelf_origin =
-      shelf_->shelf_widget()->GetTargetBounds().origin();
   if (shelf_->IsHorizontalAlignment())
-    target_bounds_.set_y(shelf_origin.y());
+    target_bounds_.set_y(shelf_position);
   else
-    target_bounds_.set_x(shelf_origin.x());
+    target_bounds_.set_x(shelf_position);
 }
 
 void StatusAreaWidget::CalculateButtonVisibilityForCollapsedState() {

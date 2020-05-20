@@ -314,7 +314,7 @@ webapk_tmpl("new_splash_webapk") {
 webapk_tmpl("javatests_webapk") {
   testonly = true
   config_file = "manifest/bound_manifest_config.json"
-  manifest_to_upload_dep = ":generate_old_style_manifest_for_upload"
+  manifest_to_upload_dep = ":generate_new_style_manifest_for_upload"
   delta_config_file = "manifest/javatest_manifest_config_delta.json"
   apk_name = "JavatestsWebApk"
   apk_package_name = "org.chromium.webapk.test"

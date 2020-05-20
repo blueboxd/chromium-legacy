@@ -230,8 +230,12 @@ def _run_with_weston(cmd, env, stdoutfile):
       # to enter idle state. Otherwise, Weston stops to send frame callbacks,
       # and tests start to time out (this typically happens after 300 seconds -
       # the default time after which Weston enters the idle state).
+      # 3) --width && --height set size of a virtual display: we need to set
+      # an adequate size so that tests can have more room for managing size
+      # of windows.
       weston_proc = subprocess.Popen(
-         ('./weston', '--backend=headless-backend.so', '--idle-time=0'),
+         ('./weston', '--backend=headless-backend.so', '--idle-time=0',
+          '--width=1024', '--height=768'),
          stderr=subprocess.STDOUT, env=env)
 
       # Get the $WAYLAND_DISPLAY set by Weston and pass it to the test launcher.

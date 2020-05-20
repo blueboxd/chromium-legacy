@@ -16,6 +16,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.widget.TextViewCompat;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SimpleHorizontalLayoutView;
@@ -50,7 +51,8 @@ public class HeaderView extends SimpleHorizontalLayoutView {
         mHeaderText.setMaxLines(1);
         mHeaderText.setEllipsize(TruncateAt.END);
         mHeaderText.setAllCaps(true);
-        mHeaderText.setTextAppearance(ChromeColors.getMediumTextSecondaryStyle(false));
+        TextViewCompat.setTextAppearance(
+                mHeaderText, ChromeColors.getMediumTextSecondaryStyle(false));
         mHeaderText.setMinHeight(context.getResources().getDimensionPixelSize(
                 R.dimen.omnibox_suggestion_header_height));
         mHeaderText.setGravity(Gravity.CENTER_VERTICAL);

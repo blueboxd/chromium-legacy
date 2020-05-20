@@ -350,6 +350,12 @@ void TextFragmentAnchor::DidFindMatch(
       EphemeralRange(ToPositionInDOMTree(range.StartPosition()),
                      ToPositionInDOMTree(range.EndPosition()));
   frame_->GetDocument()->Markers().AddTextFragmentMarker(dom_range);
+
+  // Set the sequential focus navigation to the start of selection.
+  // Even if this element isn't focusable, "Tab" press will
+  // start the search to find the next focusable element from this element.
+  frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
+      range.StartPosition().NodeAsRangeFirstNode());
 }
 
 void TextFragmentAnchor::DidFindAmbiguousMatch() {

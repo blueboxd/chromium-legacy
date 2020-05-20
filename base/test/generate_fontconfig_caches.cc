@@ -25,16 +25,14 @@
 // determinism. We have no way of guaranteeing that this produces correct
 // results, or even has the intended effect.
 int main() {
-  // fontconfig generates a random uuid and uses it to match font folders with
-  // the font cache. Rather than letting fontconfig generate a random uuid,
-  // which introduces build non-determinism, we place a fixed uuid in the font
-  // folder, which fontconfig will use to generate the cache.
   base::FilePath dir_module;
   base::PathService::Get(base::DIR_MODULE, &dir_module);
-  base::FilePath uuid_file_path =
-      dir_module.Append("test_fonts").Append(".uuid");
-  const char uuid[] = "fb5c91b2895aa445d23aebf7f9e2189c";
-  WriteFile(uuid_file_path, uuid);
+
+  // This is the MD5 hash of "/test_fonts", which is used as the key of the
+  // fontconfig cache.
+  //     $ echo -n /test_fonts | md5sum
+  //     fb5c91b2895aa445d23aebf7f9e2189c  -
+  static const char kCacheKey[] = "fb5c91b2895aa445d23aebf7f9e2189c";
 
   // fontconfig writes the mtime of the test_fonts directory into the cache. It
   // presumably checks this later to ensure that the cache is still up to date.
@@ -61,6 +59,6 @@ int main() {
 
   // Check existence of intended fontconfig cache file.
   CHECK(base::PathExists(
-      fontconfig_caches.Append(base::StrCat({uuid, "-le64.cache-7"}))));
+      fontconfig_caches.Append(base::StrCat({kCacheKey, "-le64.cache-7"}))));
   return 0;
 }

@@ -95,6 +95,7 @@
 #include "third_party/blink/public/web/web_text_checking_completion.h"
 #include "third_party/blink/public/web/web_text_checking_result.h"
 #include "third_party/blink/public/web/web_view_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/v8_script_value_serializer.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -118,6 +119,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/idle_spell_check_controller.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
 #include "third_party/blink/renderer/core/exported/web_remote_frame_impl.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
@@ -1124,24 +1126,26 @@ TEST_F(WebFrameTest, PostMessageEvent) {
   frame_test_helpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad(base_url_ + "postmessage_test.html");
 
-  WebSerializedScriptValue data(WebSerializedScriptValue::CreateInvalid());
-  WebDOMMessageEvent message(data, "http://origin.com");
   auto* frame =
       To<LocalFrame>(web_view_helper.GetWebView()->GetPage()->MainFrame());
+
+  scoped_refptr<SerializedScriptValue> data = SerializedScriptValue::Create();
+  MessageEvent* message_event = MessageEvent::Create(
+      /*ports=*/nullptr, std::move(data), "http://origin.com");
 
   // Send a message with the correct origin.
   scoped_refptr<SecurityOrigin> correct_origin =
       SecurityOrigin::Create(ToKURL(base_url_));
-  frame->PostMessageEvent(base::nullopt, g_empty_string,
-                          correct_origin->ToString(),
-                          ToBlinkTransferableMessage(message.AsMessage()));
+  frame->PostMessageEvent(
+      base::nullopt, g_empty_string, correct_origin->ToString(),
+      BlinkTransferableMessage::FromMessageEvent(message_event));
 
   // Send another message with incorrect origin.
   scoped_refptr<SecurityOrigin> incorrect_origin =
       SecurityOrigin::Create(ToKURL(chrome_url_));
-  frame->PostMessageEvent(base::nullopt, g_empty_string,
-                          incorrect_origin->ToString(),
-                          ToBlinkTransferableMessage(message.AsMessage()));
+  frame->PostMessageEvent(
+      base::nullopt, g_empty_string, incorrect_origin->ToString(),
+      BlinkTransferableMessage::FromMessageEvent(message_event));
 
   // Verify that only the first addition is in the body of the page.
   std::string content = WebFrameContentDumper::DumpWebViewAsText(

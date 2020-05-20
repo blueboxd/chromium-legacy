@@ -51,7 +51,8 @@ class DepsChecker(DepsBuilder):
     Args:
       base_directory: OS-compatible path to root of checkout, e.g. C:\chr\src.
       verbose: Set to true for debug output.
-      being_tested: Set to true to ignore the DEPS file at tools/checkdeps/DEPS.
+      being_tested: Set to true to ignore the DEPS file at
+                    buildtools/checkdeps/DEPS.
       ignore_temp_rules: Ignore rules that start with Rule.TEMP_ALLOW ("!").
     """
     DepsBuilder.__init__(
@@ -188,7 +189,7 @@ def PrintUsage():
 
   --root ROOT Specifies the repository root. This defaults to "../../.."
               relative to the script file. This will be correct given the
-              normal location of the script in "<root>/tools/checkdeps".
+              normal location of the script in "<root>/buildtools/checkdeps".
 
   --(others)  There are a few lesser-used options; run with --help to show them.
 

@@ -13,6 +13,8 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
 
@@ -26,8 +28,9 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
                  l10n_util::GetStringUTF16(
                      IDS_EXTENSION_SETTINGS_OVERRIDDEN_DIALOG_IGNORE));
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
-      views::TEXT, views::TEXT));
+  ChromeLayoutProvider* const layout_provider = ChromeLayoutProvider::Get();
+  set_margins(
+      layout_provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
 
   using DialogResult = SettingsOverriddenDialogController::DialogResult;
   auto make_result_callback = [this](DialogResult result) {
@@ -45,6 +48,18 @@ SettingsOverriddenDialogView::SettingsOverriddenDialogView(
       controller_->GetShowParams();
 
   SetTitle(show_params.dialog_title);
+
+  if (show_params.icon) {
+    SetShowIcon(true);
+    // Note: Any icons added *should* fully specify their own color, so this
+    // will be a no-op. But, the call requires a color, and this enables testing
+    // with other icons and a reasonable fallback.
+    constexpr SkColor kPlaceholderColor = gfx::kGoogleGrey500;
+    SetIcon(gfx::CreateVectorIcon(*show_params.icon,
+                                  layout_provider->GetDistanceMetric(
+                                      DISTANCE_BUBBLE_HEADER_VECTOR_ICON_SIZE),
+                                  kPlaceholderColor));
+  }
 
   auto message_label = std::make_unique<views::Label>(
       show_params.message, CONTEXT_BODY_TEXT_LARGE,

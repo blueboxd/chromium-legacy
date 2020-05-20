@@ -15,12 +15,12 @@ AssistantSuggestionsModel::AssistantSuggestionsModel() = default;
 AssistantSuggestionsModel::~AssistantSuggestionsModel() = default;
 
 void AssistantSuggestionsModel::AddObserver(
-    AssistantSuggestionsModelObserver* observer) {
+    AssistantSuggestionsModelObserver* observer) const {
   observers_.AddObserver(observer);
 }
 
 void AssistantSuggestionsModel::RemoveObserver(
-    AssistantSuggestionsModelObserver* observer) {
+    AssistantSuggestionsModelObserver* observer) const {
   observers_.RemoveObserver(observer);
 }
 

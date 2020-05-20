@@ -196,7 +196,7 @@ void AndroidSmsAppSetupControllerImpl::OnSetRememberDeviceByDefaultCookieResult(
     const GURL& app_url,
     const GURL& install_url,
     SuccessCallback callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+    net::CookieInclusionStatus status) {
   if (!status.IsInclude()) {
     PA_LOG(WARNING)
         << "AndroidSmsAppSetupControllerImpl::"
@@ -344,7 +344,7 @@ void AndroidSmsAppSetupControllerImpl::SetMigrationCookie(
 void AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(
     const GURL& app_url,
     SuccessCallback callback,
-    net::CanonicalCookie::CookieInclusionStatus status) {
+    net::CookieInclusionStatus status) {
   if (!status.IsInclude()) {
     PA_LOG(ERROR)
         << "AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(): "

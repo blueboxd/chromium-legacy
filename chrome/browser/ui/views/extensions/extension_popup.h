@@ -128,10 +128,10 @@ class ExtensionPopup : public views::BubbleDialogDelegateView,
   // Closes the bubble if the devtools window is not attached.
   void CloseUnlessUnderInspection();
 
-  ExtensionViewViews* GetExtensionView();
-
   // The contained host for the view.
   std::unique_ptr<extensions::ExtensionViewHost> host_;
+
+  ExtensionViewViews* extension_view_;
 
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>

@@ -39358,6 +39358,7 @@ from previous Chrome versions.
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:disabled"/>
   <int value="-990187062" label="SendTabToSelfShowSendingUI:enabled"/>
   <int value="-989671895" label="OfflineIndicatorAlwaysHttpProbe:enabled"/>
+  <int value="-989050085" label="AppStoreBillingDebug:enabled"/>
   <int value="-987470173" label="ClickToCallOpenDialerDirectly:disabled"/>
   <int value="-984052166" label="DoodlesOnLocalNtp:enabled"/>
   <int value="-983342281" label="TabSwitcherLongpressMenu:disabled"/>
@@ -40614,6 +40615,7 @@ from previous Chrome versions.
   <int value="464773709" label="OmniboxExperimentalSuggestScoring:enabled"/>
   <int value="466248382" label="disable-push-api-background-mode"/>
   <int value="468665559" label="TrilinearFiltering:disabled"/>
+  <int value="468901900" label="AppStoreBillingDebug:disabled"/>
   <int value="468959230"
       label="enable-non-validating-reload-on-refresh-content"/>
   <int value="470011024" label="NonValidatingReloadOnNormalReload:enabled"/>
@@ -58830,6 +58832,9 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="3" label="Timeout"/>
   <int value="4" label="File too large"/>
   <int value="5" label="Failed to get token"/>
+  <int value="6" label="Unauthorized"/>
+  <int value="7" label="File encrypted"/>
+  <int value="8" label="Unsupported file type"/>
 </enum>
 
 <enum name="SafeBrowsingDelayedWarningEvent">

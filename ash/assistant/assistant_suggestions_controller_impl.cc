@@ -99,24 +99,14 @@ const AssistantSuggestionsModel* AssistantSuggestionsControllerImpl::GetModel()
   return &model_;
 }
 
-void AssistantSuggestionsControllerImpl::AddModelObserver(
-    AssistantSuggestionsModelObserver* observer) {
-  model_.AddObserver(observer);
-}
-
-void AssistantSuggestionsControllerImpl::RemoveModelObserver(
-    AssistantSuggestionsModelObserver* observer) {
-  model_.RemoveObserver(observer);
-}
-
 void AssistantSuggestionsControllerImpl::OnAssistantControllerConstructed() {
-  AssistantUiController::Get()->AddModelObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
   AssistantState::Get()->AddObserver(this);
 }
 
 void AssistantSuggestionsControllerImpl::OnAssistantControllerDestroying() {
   AssistantState::Get()->RemoveObserver(this);
-  AssistantUiController::Get()->RemoveModelObserver(this);
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
 }
 
 void AssistantSuggestionsControllerImpl::OnUiVisibilityChanged(

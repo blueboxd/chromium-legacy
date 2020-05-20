@@ -12,11 +12,12 @@ AssistantUiModel::AssistantUiModel() = default;
 
 AssistantUiModel::~AssistantUiModel() = default;
 
-void AssistantUiModel::AddObserver(AssistantUiModelObserver* observer) {
+void AssistantUiModel::AddObserver(AssistantUiModelObserver* observer) const {
   observers_.AddObserver(observer);
 }
 
-void AssistantUiModel::RemoveObserver(AssistantUiModelObserver* observer) {
+void AssistantUiModel::RemoveObserver(
+    AssistantUiModelObserver* observer) const {
   observers_.RemoveObserver(observer);
 }
 

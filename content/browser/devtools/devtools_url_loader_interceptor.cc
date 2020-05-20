@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
 #include "net/base/load_flags.h"
 #include "net/base/mime_sniffer.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
@@ -1112,8 +1113,9 @@ void InterceptionJob::ProcessSetCookies(const net::HttpResponseHeaders& headers,
 
   // |this| might be deleted here if |cookies| is empty!
   auto on_cookie_set = base::BindRepeating(
-      [](base::RepeatingClosure closure,
-         net::CanonicalCookie::CookieInclusionStatus) { closure.Run(); },
+      [](base::RepeatingClosure closure, net::CookieInclusionStatus) {
+        closure.Run();
+      },
       base::BarrierClosure(cookies.size(), std::move(callback)));
   for (auto& cookie : cookies) {
     cookie_manager_->SetCanonicalCookie(

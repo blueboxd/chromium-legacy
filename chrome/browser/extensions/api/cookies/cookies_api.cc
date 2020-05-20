@@ -461,7 +461,7 @@ ExtensionFunction::ResponseAction CookiesSetFunction::Run() {
 }
 
 void CookiesSetFunction::SetCanonicalCookieCallback(
-    net::CanonicalCookie::CookieInclusionStatus set_cookie_result) {
+    net::CookieInclusionStatus set_cookie_result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(NO_RESPONSE, state_);
   state_ = SET_COMPLETED;

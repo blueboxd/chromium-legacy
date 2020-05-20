@@ -273,8 +273,9 @@ class LoaderFactoryInterceptingBrowserClient : public TestContentBrowserClient {
   std::vector<std::unique_ptr<PassThroughURLLoaderFactory>> proxies_;
 };
 
+// Timeout waiting for "AppCache updated" title (http://crbug.com/1080708).
 IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
-                       AppCacheRequestsAreProxied) {
+                       DISABLED_AppCacheRequestsAreProxied) {
   LoaderFactoryInterceptingBrowserClient browser_client;
   ContentBrowserClient* original_client =
       SetBrowserClientForTesting(&browser_client);

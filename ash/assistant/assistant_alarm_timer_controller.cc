@@ -211,22 +211,12 @@ AssistantNotificationPtr CreateTimerNotification(const AssistantTimer& timer) {
 AssistantAlarmTimerControllerImpl::AssistantAlarmTimerControllerImpl(
     AssistantControllerImpl* assistant_controller)
     : assistant_controller_(assistant_controller) {
-  AddModelObserver(this);
+  model_.AddObserver(this);
   assistant_controller_observer_.Add(AssistantController::Get());
 }
 
 AssistantAlarmTimerControllerImpl::~AssistantAlarmTimerControllerImpl() {
-  RemoveModelObserver(this);
-}
-
-void AssistantAlarmTimerControllerImpl::AddModelObserver(
-    AssistantAlarmTimerModelObserver* observer) {
-  model_.AddObserver(observer);
-}
-
-void AssistantAlarmTimerControllerImpl::RemoveModelObserver(
-    AssistantAlarmTimerModelObserver* observer) {
-  model_.RemoveObserver(observer);
+  model_.RemoveObserver(this);
 }
 
 void AssistantAlarmTimerControllerImpl::SetAssistant(

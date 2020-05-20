@@ -9,6 +9,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -57,7 +58,9 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
   void ShowUi(const std::string& name) override {
     test_name_ = name;
     if (name == "SimpleDialog")
-      ShowSimpleDialog();
+      ShowSimpleDialog(false);
+    else if (name == "SimpleDialogWithIcon")
+      ShowSimpleDialog(true);
     else if (name == "NtpOverriddenDialog")
       ShowNtpOverriddenDialog();
     else if (name == "SearchOverriddenDialog")
@@ -66,12 +69,14 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
       NOTREACHED() << name;
   }
 
-  void ShowSimpleDialog() {
+  void ShowSimpleDialog(bool show_icon) {
     SettingsOverriddenDialogController::ShowParams params{
         base::ASCIIToUTF16("Settings overridden dialog title"),
         base::ASCIIToUTF16(
             "Settings overriden dialog body, which is quite a bit "
             "longer than the title alone")};
+    if (show_icon)
+      params.icon = &kProductIcon;
     auto* dialog = new SettingsOverriddenDialogView(
         std::make_unique<TestDialogController>(std::move(params)));
     dialog->Show(browser()->window()->GetNativeWindow());
@@ -139,6 +144,11 @@ class SettingsOverriddenDialogViewBrowserTest : public DialogBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
                        InvokeUi_SimpleDialog) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsOverriddenDialogViewBrowserTest,
+                       InvokeUi_SimpleDialogWithIcon) {
   ShowAndVerifyUi();
 }
 

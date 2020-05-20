@@ -192,12 +192,12 @@ class ParentPermissionInputSection : public views::TextfieldController {
         gfx::HorizontalAlignment::ALIGN_LEFT);
     view->AddChildView(std::move(enter_password_label));
 
-    auto credential_input_field = std::make_unique<views::Textfield>();
-    credential_input_field->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
-    credential_input_field->SetAccessibleName(enter_password_string);
-    credential_input_field->RequestFocus();
-    credential_input_field->set_controller(this);
-    view->AddChildView(std::move(credential_input_field));
+    credential_input_field_ =
+        view->AddChildView(std::make_unique<views::Textfield>());
+    credential_input_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
+    credential_input_field_->SetAccessibleName(enter_password_string);
+    credential_input_field_->RequestFocus();
+    credential_input_field_->set_controller(this);
 
     const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
     const gfx::Insets content_insets =
@@ -219,6 +219,11 @@ class ParentPermissionInputSection : public views::TextfieldController {
     main_view_->set_parent_permission_credential(new_contents);
   }
 
+  void ClearCredentialInputField() {
+    credential_input_field_->SetText(base::string16());
+  }
+  void FocusCredentialInputField() { credential_input_field_->RequestFocus(); }
+
  private:
   void OnParentRadioButtonSelected(ParentPermissionDialogView* main_view,
                                    const base::string16& parent_email) {
@@ -227,6 +232,9 @@ class ParentPermissionInputSection : public views::TextfieldController {
 
   views::PropertyChangedSubscription parent_0_subscription_;
   views::PropertyChangedSubscription parent_1_subscription_;
+
+  // The credential input field.
+  views::Textfield* credential_input_field_ = nullptr;
 
   // Owned by the parent view class, not this class.
   ParentPermissionDialogView* main_view_;
@@ -711,6 +719,8 @@ void ParentPermissionDialogView::OnReAuthProofTokenFailure(
     invalid_credential_received_ = true;
     if (reprompt_after_incorrect_credential_) {
       SetEnabled(true);
+      parent_permission_input_section_->ClearCredentialInputField();
+      parent_permission_input_section_->FocusCredentialInputField();
       invalid_credential_label_->SetText(l10n_util::GetStringUTF16(
           IDS_PARENT_PERMISSION_PROMPT_PASSWORD_INCORRECT_LABEL));
       invalid_credential_label_->NotifyAccessibilityEvent(

@@ -6,20 +6,18 @@
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_VIEWS_H_
 
 #include "base/compiler_specific.h"
-#include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/extensions/extension_view.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/views/controls/webview/unhandled_keyboard_event_handler.h"
 #include "ui/views/controls/webview/webview.h"
-
-class Profile;
 
 namespace content {
 class RenderViewHost;
 }
 
 namespace extensions {
-class ExtensionHost;
+class ExtensionViewHost;
 }
 
 // This handles the display portion of an ExtensionHost.
@@ -30,12 +28,14 @@ class ExtensionViewViews : public views::WebView,
   // (bottom shelf, side bar, etc.)
   class Container {
    public:
-    virtual ~Container() {}
+    virtual ~Container() = default;
 
     virtual void OnExtensionSizeChanged(ExtensionViewViews* view) {}
   };
 
-  ExtensionViewViews(extensions::ExtensionHost* host, Profile* profile);
+  explicit ExtensionViewViews(extensions::ExtensionViewHost* host);
+  ExtensionViewViews(const ExtensionViewViews&) = delete;
+  ExtensionViewViews& operator=(const ExtensionViewViews&) = delete;
   ~ExtensionViewViews() override;
 
   // views::WebView:
@@ -47,8 +47,6 @@ class ExtensionViewViews : public views::WebView,
   void set_container(Container* container) { container_ = container; }
 
  private:
-  friend class extensions::ExtensionHost;
-
   // extensions::ExtensionView:
   gfx::NativeView GetNativeView() override;
   void ResizeDueToAutoResize(content::WebContents* web_contents,
@@ -65,23 +63,21 @@ class ExtensionViewViews : public views::WebView,
   void PreferredSizeChanged() override;
   void OnWebContentsAttached() override;
 
-  // Note that host_ owns view
-  extensions::ExtensionHost* host_;
+  extensions::ExtensionViewHost* host_;
 
   // What we should set the preferred width to once the ExtensionViewViews has
   // loaded.
   gfx::Size pending_preferred_size_;
-  gfx::Size minimum_size_;
+
+  base::Optional<gfx::Size> minimum_size_;
 
   // The container this view is in (not necessarily its direct superview).
   // Note: the view does not own its container.
-  Container* container_;
+  Container* container_ = nullptr;
 
   // A handler to handle unhandled keyboard messages coming back from the
   // renderer process.
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;
-
-  DISALLOW_COPY_AND_ASSIGN(ExtensionViewViews);
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_VIEW_VIEWS_H_

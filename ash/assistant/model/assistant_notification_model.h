@@ -31,8 +31,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   ~AssistantNotificationModel();
 
   // Adds/removes the specified notification model |observer|.
-  void AddObserver(AssistantNotificationModelObserver* observer);
-  void RemoveObserver(AssistantNotificationModelObserver* observer);
+  void AddObserver(AssistantNotificationModelObserver* observer) const;
+  void RemoveObserver(AssistantNotificationModelObserver* observer) const;
 
   // Adds or updates the specified |notification| in the model. If there is an
   // existing notification with the same |client_id|, an update will occur.
@@ -72,7 +72,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
   // Notifications are each mapped to their unique id.
   std::map<std::string, AssistantNotificationPtr> notifications_;
 
-  base::ObserverList<AssistantNotificationModelObserver> observers_;
+  mutable base::ObserverList<AssistantNotificationModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantNotificationModel);
 };

@@ -35,6 +35,10 @@ extern const base::Feature kWebPaymentsModifiers;
 // with a single URL based payment app and no other info requested.
 extern const base::Feature kWebPaymentsSingleAppUiSkip;
 
+// Used to control whether to remove the restriction that TWA has to be
+// installed from specific app stores.
+extern const base::Feature kAppStoreBillingDebug;
+
 // Used to control whether allow crawling just-in-time installable payment app.
 extern const base::Feature kWebPaymentsJustInTimePaymentApp;
 

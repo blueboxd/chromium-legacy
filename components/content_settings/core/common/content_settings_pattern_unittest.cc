@@ -808,3 +808,20 @@ TEST(ContentSettingsPatternTest, FileSchemeHasPath) {
   EXPECT_TRUE(Pattern("file:///foo/bar/").HasPath());
   EXPECT_TRUE(Pattern("file:///foo/bar/test.html").HasPath());
 }
+
+TEST(ContentSettingsPatternTest, PatternHasWildcards) {
+  // scheme wildcard
+  EXPECT_TRUE(Pattern("mail.google.com:443/home").HasWildcards());
+  // domain wildcard
+  EXPECT_TRUE(Pattern("https://[*.]google.com:443/home").HasWildcards());
+  // path wildcard
+  EXPECT_TRUE(Pattern("https://mail.google.com:443/*").HasWildcards());
+  // port wildcard
+  EXPECT_TRUE(Pattern("https://mail.google.com/home").HasWildcards());
+  // full wildcard pattern
+  EXPECT_TRUE(Pattern("*").HasWildcards());
+  // full wildcard pattern
+  EXPECT_TRUE(ContentSettingsPattern::Wildcard().HasWildcards());
+  // no wildcards
+  EXPECT_FALSE(Pattern("https://mail.google.com:443/home").HasWildcards());
+}

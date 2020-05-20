@@ -11,14 +11,12 @@ import android.app.ActivityManager.AppTask;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.hardware.display.DisplayManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Browser;
 import android.text.TextUtils;
 import android.view.Display;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -38,7 +36,6 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -76,13 +73,12 @@ public class MultiWindowUtils implements ActivityStateListener {
 
     /**
      * @param activity The {@link Activity} to check.
-     * @return Whether the system currently supports multiple displays.
+     * @return Whether the system currently supports multiple displays, requiring Android Q+.
      */
     public boolean isInMultiDisplayMode(Activity activity) {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)) return false;
-        // TODO(crbug.com/824954): Consider supporting more displays. Update function signature
-        // to pass in WindowAndroid instead.
-        return getTargetableDisplayIds(activity).size() == 1;
+        // TODO(crbug.com/824954): Consider supporting more displays.
+        return ApiCompatibilityUtils.getTargetableDisplayIds(activity).size() == 2;
     }
 
     @VisibleForTesting
@@ -118,36 +114,6 @@ public class MultiWindowUtils implements ActivityStateListener {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Get a list of ids of targetable displays, excluding the default display for the
-     * current activity. A set of targetable displays can only be determined on Q+. An empty list
-     * is returned if called on prior Q.
-     * @param activity The {@link Activity} to check.
-     * @return A list of display ids. Empty if there is none or version is less than Q, or
-     *         windowAndroid does not contain an activity.
-     */
-    @NonNull
-    public static List<Integer> getTargetableDisplayIds(Activity activity) {
-        List<Integer> displayList = new ArrayList<>();
-        if (activity == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return displayList;
-        DisplayManager displayManager =
-                (DisplayManager) activity.getSystemService(Context.DISPLAY_SERVICE);
-        if (displayManager == null) return displayList;
-        Display[] displays = displayManager.getDisplays();
-        if (displays == null) return displayList;
-        Display defaultDisplay = DisplayAndroidManager.getDefaultDisplayForContext(activity);
-        ActivityManager am = (ActivityManager) activity.getSystemService(Context.ACTIVITY_SERVICE);
-        for (Display display : displays) {
-            if (defaultDisplay.getDisplayId() != display.getDisplayId()
-                    && display.getState() == Display.STATE_ON
-                    && am.isActivityStartAllowedOnDisplay(activity, display.getDisplayId(),
-                            new Intent(activity, activity.getClass()))) {
-                displayList.add(display.getDisplayId());
-            }
-        }
-        return displayList;
     }
 
     /**
@@ -207,13 +173,18 @@ public class MultiWindowUtils implements ActivityStateListener {
      * @return The targetable secondary display. {@code Display.INVALID_DISPLAY} if not found.
      */
     public static int getDisplayIdForTargetableSecondaryDisplay(Activity activity) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_MULTIPLE_DISPLAY)) {
             return Display.INVALID_DISPLAY;
         }
-        // TODO(crbug.com/824954): Update function signature to pass in WindowAndroid instead.
-        List<Integer> displays = getTargetableDisplayIds(activity);
-        if (displays.size() != 0) return displays.get(0);
+        List<Integer> displays = ApiCompatibilityUtils.getTargetableDisplayIds(activity);
+        Display defaultDisplay = DisplayAndroidManager.getDefaultDisplayForContext(activity);
+        if (displays.size() != 0) {
+            for (int id : displays) {
+                if (id != defaultDisplay.getDisplayId()) {
+                    return id;
+                }
+            }
+        }
         return Display.INVALID_DISPLAY;
     }
 

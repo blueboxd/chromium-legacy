@@ -1077,7 +1077,6 @@ void ChromeLauncherController::OnSyncModelUpdated() {
 }
 
 void ChromeLauncherController::OnIsSyncingChanged() {
-  // TODO(jamescook): Should this move below the is_syncing check?
   UpdateAppLaunchersFromSync();
 
   // Wait until the initial sync happens.

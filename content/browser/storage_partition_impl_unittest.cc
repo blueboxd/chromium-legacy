@@ -42,6 +42,7 @@
 #include "content/public/test/test_utils.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -148,7 +149,7 @@ class RemoveCookieTester {
   }
 
   void AddCookie(const url::Origin& origin) {
-    CanonicalCookie::CookieInclusionStatus status;
+    net::CookieInclusionStatus status;
     std::unique_ptr<net::CanonicalCookie> cc(
         net::CanonicalCookie::Create(origin.GetURL(), "A=1", base::Time::Now(),
                                      base::nullopt /* server_time */, &status));
@@ -173,7 +174,7 @@ class RemoveCookieTester {
     await_completion_.Notify();
   }
 
-  void SetCookieCallback(CanonicalCookie::CookieInclusionStatus result) {
+  void SetCookieCallback(net::CookieInclusionStatus result) {
     ASSERT_TRUE(result.IsInclude());
     await_completion_.Notify();
   }

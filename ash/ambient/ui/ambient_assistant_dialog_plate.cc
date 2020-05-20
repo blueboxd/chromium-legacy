@@ -6,10 +6,12 @@
 
 #include <memory>
 
+#include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/dialog_plate/mic_view.h"
 #include "ash/assistant/ui/main_stage/assistant_query_view.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/layout/box_layout.h"
@@ -21,11 +23,14 @@ AmbientAssistantDialogPlate::AmbientAssistantDialogPlate(
     : delegate_(delegate) {
   InitLayout();
 
-  assistant_interaction_model_observer_.Add(
-      AssistantInteractionController::Get());
+  assistant_controller_observer_.Add(AssistantController::Get());
+  AssistantInteractionController::Get()->GetModel()->AddObserver(this);
 }
 
-AmbientAssistantDialogPlate::~AmbientAssistantDialogPlate() = default;
+AmbientAssistantDialogPlate::~AmbientAssistantDialogPlate() {
+  if (AssistantInteractionController::Get())
+    AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* AmbientAssistantDialogPlate::GetClassName() const {
   return "AmbientAssistantDialogPlate";
@@ -33,6 +38,11 @@ const char* AmbientAssistantDialogPlate::GetClassName() const {
 
 void AmbientAssistantDialogPlate::OnButtonPressed(AssistantButtonId button_id) {
   delegate_->OnDialogPlateButtonPressed(button_id);
+}
+
+void AmbientAssistantDialogPlate::OnAssistantControllerDestroying() {
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
+  assistant_controller_observer_.Remove(AssistantController::Get());
 }
 
 void AmbientAssistantDialogPlate::OnCommittedQueryChanged(

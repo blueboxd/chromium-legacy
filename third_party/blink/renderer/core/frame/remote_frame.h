@@ -28,6 +28,7 @@ namespace blink {
 class AssociatedInterfaceProvider;
 class InterfaceRegistry;
 class LocalFrame;
+class MessageEvent;
 class RemoteFrameClient;
 struct FrameLoadRequest;
 
@@ -79,6 +80,12 @@ class CORE_EXPORT RemoteFrame final : public Frame,
 
   void SetView(RemoteFrameView*);
   void CreateView();
+
+  void ForwardPostMessage(
+      MessageEvent* message_event,
+      base::Optional<base::UnguessableToken> cluster_id,
+      scoped_refptr<const SecurityOrigin> target_security_origin,
+      LocalFrame* source_frame);
 
   mojom::blink::RemoteFrameHost& GetRemoteFrameHostRemote();
 

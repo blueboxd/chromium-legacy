@@ -22,7 +22,7 @@ import androidx.core.app.ServiceCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.notifications.ForegroundServiceUtils;
+import org.chromium.components.browser_ui.notifications.ForegroundServiceUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

@@ -22,6 +22,7 @@
 #include "components/browsing_data/content/local_storage_helper.h"
 #include "components/browsing_data/content/service_worker_helper.h"
 #include "components/browsing_data/content/shared_worker_helper.h"
+#include "components/content_settings/browser/content_settings_usages_state.h"
 #include "components/content_settings/common/content_settings_agent.mojom.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -91,8 +92,12 @@ TabSpecificContentSettings::TabSpecificContentSettings(
       blocked_local_shared_objects_(tab->GetBrowserContext(),
                                     delegate_->GetAdditionalFileSystemTypes(),
                                     delegate_->GetIsDeletionDisabledCallback()),
-      geolocation_usages_state_(map_, ContentSettingsType::GEOLOCATION),
-      midi_usages_state_(map_, ContentSettingsType::MIDI_SYSEX),
+      geolocation_usages_state_(std::make_unique<ContentSettingsUsagesState>(
+          delegate_.get(),
+          ContentSettingsType::GEOLOCATION)),
+      midi_usages_state_(std::make_unique<ContentSettingsUsagesState>(
+          delegate_.get(),
+          ContentSettingsType::MIDI_SYSEX)),
       load_plugins_link_enabled_(true),
       microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
   ClearContentSettingsExceptForNavigationRelatedSettings();
@@ -488,7 +493,7 @@ void TabSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
 void TabSpecificContentSettings::OnGeolocationPermissionSet(
     const GURL& requesting_origin,
     bool allowed) {
-  geolocation_usages_state_.OnPermissionSet(requesting_origin, allowed);
+  geolocation_usages_state_->OnPermissionSet(requesting_origin, allowed);
   delegate_->UpdateLocationBar();
 }
 
@@ -564,13 +569,13 @@ void TabSpecificContentSettings::OnMediaStreamPermissionSet(
 
 void TabSpecificContentSettings::OnMidiSysExAccessed(
     const GURL& requesting_origin) {
-  midi_usages_state_.OnPermissionSet(requesting_origin, true);
+  midi_usages_state_->OnPermissionSet(requesting_origin, true);
   OnContentAllowed(ContentSettingsType::MIDI_SYSEX);
 }
 
 void TabSpecificContentSettings::OnMidiSysExAccessBlocked(
     const GURL& requesting_origin) {
-  midi_usages_state_.OnPermissionSet(requesting_origin, false);
+  midi_usages_state_->OnPermissionSet(requesting_origin, false);
   OnContentBlocked(ContentSettingsType::MIDI_SYSEX);
 }
 
@@ -808,16 +813,16 @@ void TabSpecificContentSettings::ClearContentSettingsChangedViaPageInfo() {
 
 void TabSpecificContentSettings::GeolocationDidNavigate(
     content::NavigationHandle* navigation_handle) {
-  geolocation_usages_state_.ClearStateMap();
-  geolocation_usages_state_.DidNavigate(navigation_handle->GetURL(),
-                                        navigation_handle->GetPreviousURL());
+  geolocation_usages_state_->ClearStateMap();
+  geolocation_usages_state_->DidNavigate(navigation_handle->GetURL(),
+                                         navigation_handle->GetPreviousURL());
 }
 
 void TabSpecificContentSettings::MidiDidNavigate(
     content::NavigationHandle* navigation_handle) {
-  midi_usages_state_.ClearStateMap();
-  midi_usages_state_.DidNavigate(navigation_handle->GetURL(),
-                                 navigation_handle->GetPreviousURL());
+  midi_usages_state_->ClearStateMap();
+  midi_usages_state_->DidNavigate(navigation_handle->GetURL(),
+                                  navigation_handle->GetPreviousURL());
 }
 
 void TabSpecificContentSettings::BlockAllContentForTesting() {

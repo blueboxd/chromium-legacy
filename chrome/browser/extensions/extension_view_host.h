@@ -16,7 +16,6 @@
 #include "extensions/browser/extension_host.h"
 
 class Browser;
-class Profile;
 
 namespace content {
 class SiteInstance;
@@ -36,21 +35,19 @@ class ExtensionViewHost
       public web_modal::WebContentsModalDialogHost,
       public content::NotificationObserver {
  public:
+  // |browser| may be null, since extension views may be bound to TabContents
+  // hosted in ExternalTabContainer objects, which do not instantiate Browsers.
   ExtensionViewHost(const Extension* extension,
                     content::SiteInstance* site_instance,
                     const GURL& url,
-                    ViewType host_type);
+                    ViewType host_type,
+                    Browser* browser);
   ~ExtensionViewHost() override;
 
   Browser* browser() { return browser_; }
-  ExtensionView* view() { return view_.get(); }
-  const ExtensionView* view() const { return view_.get(); }
 
-  // Create an ExtensionView and tie it to this host and |browser|.  Note NULL
-  // is a valid argument for |browser|.  Extension views may be bound to
-  // tab-contents hosted in ExternalTabContainer objects, which do not
-  // instantiate Browser objects.
-  void CreateView(Browser* browser);
+  void set_view(ExtensionView* view) { view_ = view; }
+  ExtensionView* view() { return view_; }
 
   void SetAssociatedWebContents(content::WebContents* web_contents);
 
@@ -116,16 +113,15 @@ class ExtensionViewHost
                const content::NotificationDetails& details) override;
 
  private:
-  // Implemented per-platform. Create the platform-specific ExtensionView.
-  static std::unique_ptr<ExtensionView> CreateExtensionView(
-      ExtensionViewHost* host,
-      Profile* profile);
+  // Returns whether the provided event is a raw escape keypress in a
+  // VIEW_TYPE_EXTENSION_POPUP.
+  bool IsEscapeInPopup(const content::NativeWebKeyboardEvent& event) const;
 
   // The browser associated with the ExtensionView, if any.
-  Browser* browser_ = nullptr;
+  Browser* browser_;
 
-  // Optional view that shows the rendered content in the UI.
-  std::unique_ptr<ExtensionView> view_;
+  // View that shows the rendered content in the UI.
+  ExtensionView* view_;
 
   // The relevant WebContents associated with this ExtensionViewHost, if any.
   content::WebContents* associated_web_contents_ = nullptr;

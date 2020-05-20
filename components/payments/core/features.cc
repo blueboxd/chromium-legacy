@@ -44,6 +44,9 @@ const base::Feature kWebPaymentsPerMethodCanMakePaymentQuota{
 const base::Feature kWebPaymentsRedactShippingAddress{
     "WebPaymentsRedactShippingAddress", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kAppStoreBillingDebug{"AppStoreBillingDebug",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kStrictHasEnrolledAutofillInstrument{
     "StrictHasEnrolledAutofillInstrument", base::FEATURE_DISABLED_BY_DEFAULT};
 

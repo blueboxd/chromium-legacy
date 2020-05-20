@@ -10,9 +10,11 @@
 #include "ash/ambient/ui/ambient_assistant_dialog_plate.h"
 #include "ash/ambient/ui/assistant_response_container_view.h"
 #include "ash/assistant/assistant_controller_impl.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -44,13 +46,22 @@ AmbientAssistantContainerView::AmbientAssistantContainerView()
   DCHECK(delegate_);
   InitLayout();
 
-  assistant_ui_model_observer_.Add(AssistantUiController::Get());
+  assistant_controller_observer_.Add(AssistantController::Get());
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
-AmbientAssistantContainerView::~AmbientAssistantContainerView() = default;
+AmbientAssistantContainerView::~AmbientAssistantContainerView() {
+  if (AssistantUiController::Get())
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* AmbientAssistantContainerView::GetClassName() const {
   return "AmbientAssistantContainerView";
+}
+
+void AmbientAssistantContainerView::OnAssistantControllerDestroying() {
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+  assistant_controller_observer_.Remove(AssistantController::Get());
 }
 
 void AmbientAssistantContainerView::OnUiVisibilityChanged(

@@ -17,27 +17,6 @@ promise_test(async t => {
   return promise_rejects_dom(t, "NotAllowedError", navigator.wakeLock.request('screen'));
 }, "navigator.wakeLock.request('screen') fails when the document is hidden");
 
-// This test currently checks for Chromium-specific behavior: WakeLock::request()
-// performs an asynchronous permission request, which is why it is possible to
-// call navigator.wakeLock.request(), change page visibility later and still get
-// a NotAllowedError.
-// A more interoperable test would allow both |screenLock| to reject with
-// NotAllowedError as well as it resolving to a WakeLockSentinel that would fire
-// a "release" event upon page vsibility change.
-
-// crbug.com/1083585: Disabled due to flakiness.
-//promise_test(async t => {
-//  await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
-//                                location.origin, location.origin);
-//
-//  await setMainWindowHidden(false);
-//
-//  const screenLock = navigator.wakeLock.request('screen');
-//  await setMainWindowHidden(true);
-//  assert_true(document.hidden);
-//  return promise_rejects_dom(t, "NotAllowedError", screenLock);
-//}, "navigator.wakeLock.request('screen') aborts when the page is hidden");
-
 promise_test(async t => {
   await internals.setPermission({name: 'screen-wake-lock'}, 'granted',
                                 location.origin, location.origin);

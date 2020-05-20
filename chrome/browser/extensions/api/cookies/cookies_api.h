@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_change_dispatcher.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
@@ -150,8 +151,7 @@ class CookiesSetFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void SetCanonicalCookieCallback(
-      net::CanonicalCookie::CookieInclusionStatus set_cookie_result);
+  void SetCanonicalCookieCallback(net::CookieInclusionStatus set_cookie_result);
   void GetCookieListCallback(const net::CookieStatusList& cookie_list,
                              const net::CookieStatusList& excluded_cookies);
 

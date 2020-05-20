@@ -188,6 +188,11 @@ constexpr uint32_t kFakeSpeedRpm = 1225;
 // Stateful partition test values:
 constexpr uint64_t kFakeAvailableSpace = 9238571212ul;
 constexpr uint64_t kFakeTotalSpace = 23420982409ul;
+// Bluetooth test values:
+constexpr char kFakeBluetoothAdapterName[] = "Marty Byrde's BT Adapter";
+constexpr char kFakeBluetoothAdapterAddress[] = "aa:bb:cc:dd:ee:ff";
+constexpr bool kFakeBluetoothAdapterIsPowered = true;
+constexpr uint32_t kFakeNumConnectedBluetoothDevices = 7;
 
 // Time delta representing 1 hour time interval.
 constexpr TimeDelta kHour = TimeDelta::FromHours(1);
@@ -543,6 +548,15 @@ cros_healthd::StatefulPartitionResultPtr CreateStatefulPartitionResult() {
                                                kFakeTotalSpace));
 }
 
+cros_healthd::BluetoothResultPtr CreateBluetoothResult() {
+  std::vector<cros_healthd::BluetoothAdapterInfoPtr> adapter_info;
+  adapter_info.push_back(cros_healthd::BluetoothAdapterInfo::New(
+      kFakeBluetoothAdapterName, kFakeBluetoothAdapterAddress,
+      kFakeBluetoothAdapterIsPowered, kFakeNumConnectedBluetoothDevices));
+  return cros_healthd::BluetoothResult::NewBluetoothAdapterInfo(
+      std::move(adapter_info));
+}
+
 base::circular_deque<std::unique_ptr<policy::SampledData>>
 CreateFakeSampleData() {
   em::CPUTempInfo fake_cpu_temp_sample;
@@ -589,6 +603,7 @@ void FetchFakeFullCrosHealthdData(
       fake_info.backlight_result = CreateBacklightResult();
       fake_info.fan_result = CreateFanResult();
       fake_info.stateful_partition_result = CreateStatefulPartitionResult();
+      fake_info.bluetooth_result = CreateBluetoothResult();
       std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
       return;
     }
@@ -3003,6 +3018,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       chromeos::kReportDevicePowerStatus, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceStorageStatus, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceBluetoothInfo, false);
   GetStatus();
   ASSERT_EQ(device_status_.cpu_info_size(), 0);
   EXPECT_FALSE(device_status_.has_power_status());
@@ -3011,6 +3028,7 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_FALSE(device_status_.has_timezone_info());
   EXPECT_FALSE(device_status_.has_memory_info());
   EXPECT_EQ(device_status_.fan_info_size(), 0);
+  EXPECT_EQ(device_status_.bluetooth_adapter_info_size(), 0);
 
   // When all of the relevant policies are set, expect the protobuf to have the
   // data from cros_healthd.
@@ -3026,6 +3044,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       chromeos::kReportDeviceStorageStatus, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceTimezoneInfo, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceBluetoothInfo, true);
   GetStatus();
 
   // Check that the CPU temperature samples are stored correctly.
@@ -3127,6 +3147,14 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   ASSERT_EQ(device_status_.fan_info_size(), 1);
   const auto& fan = device_status_.fan_info(0);
   EXPECT_EQ(fan.speed_rpm(), kFakeSpeedRpm);
+
+  // Verify the Bluetooth info.
+  ASSERT_EQ(device_status_.bluetooth_adapter_info_size(), 1);
+  const auto& adapter = device_status_.bluetooth_adapter_info(0);
+  EXPECT_EQ(adapter.name(), kFakeBluetoothAdapterName);
+  EXPECT_EQ(adapter.address(), kFakeBluetoothAdapterAddress);
+  EXPECT_EQ(adapter.powered(), kFakeBluetoothAdapterIsPowered);
+  EXPECT_EQ(adapter.num_connected_devices(), kFakeNumConnectedBluetoothDevices);
 }
 
 TEST_F(DeviceStatusCollectorTest, TestPartialCrosHealthdInfo) {

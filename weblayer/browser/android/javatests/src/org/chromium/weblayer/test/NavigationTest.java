@@ -691,6 +691,32 @@ public class NavigationTest {
 
     @Test
     @SmallTest
+    public void testSkippedNavigationEntry() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(URL1);
+        setNavigationCallback(activity);
+
+        int curCompletedCount = mCallback.onCompletedCallback.getCallCount();
+        mActivityTestRule.executeScriptSync(
+                "history.pushState(null, '', '#foo');", true /* useSeparateIsolate */);
+        mCallback.onCompletedCallback.assertCalledWith(curCompletedCount, URL1 + "#foo", true);
+
+        curCompletedCount = mCallback.onCompletedCallback.getCallCount();
+        mActivityTestRule.executeScriptSync(
+                "history.pushState(null, '', '#bar');", true /* useSeparateIsolate */);
+        mCallback.onCompletedCallback.assertCalledWith(curCompletedCount, URL1 + "#bar", true);
+
+        runOnUiThreadBlocking(() -> {
+            NavigationController navigationController = activity.getTab().getNavigationController();
+            int currentIndex = navigationController.getNavigationListCurrentIndex();
+            // Should skip the two previous same document entries, but not the most recent.
+            assertFalse(navigationController.isNavigationEntrySkippable(currentIndex));
+            assertTrue(navigationController.isNavigationEntrySkippable(currentIndex - 1));
+            assertTrue(navigationController.isNavigationEntrySkippable(currentIndex - 2));
+        });
+    }
+
+    @Test
+    @SmallTest
     public void testIndexOutOfBounds() throws Exception {
         InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
         runOnUiThreadBlocking(() -> {
@@ -700,6 +726,7 @@ public class NavigationTest {
             assertIndexOutOfBoundsException(() -> controller.goToIndex(10));
             assertIndexOutOfBoundsException(() -> controller.getNavigationEntryDisplayUri(10));
             assertIndexOutOfBoundsException(() -> controller.getNavigationEntryTitle(10));
+            assertIndexOutOfBoundsException(() -> controller.isNavigationEntrySkippable(10));
         });
     }
 

@@ -14,6 +14,8 @@
 #include "ash/assistant/ui/logo_view/logo_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
@@ -100,12 +102,17 @@ AssistantDialogPlate::AssistantDialogPlate(AssistantViewDelegate* delegate)
   InitLayout();
 
   assistant_controller_observer_.Add(AssistantController::Get());
-  assistant_interaction_model_observer_.Add(
-      AssistantInteractionController::Get());
-  assistant_ui_model_observer_.Add(AssistantUiController::Get());
+  AssistantInteractionController::Get()->GetModel()->AddObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
-AssistantDialogPlate::~AssistantDialogPlate() = default;
+AssistantDialogPlate::~AssistantDialogPlate() {
+  if (AssistantUiController::Get())
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+
+  if (AssistantInteractionController::Get())
+    AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* AssistantDialogPlate::GetClassName() const {
   return "AssistantDialogPlate";
@@ -162,9 +169,8 @@ bool AssistantDialogPlate::HandleKeyEvent(views::Textfield* textfield,
 }
 
 void AssistantDialogPlate::OnAssistantControllerDestroying() {
-  assistant_ui_model_observer_.Remove(AssistantUiController::Get());
-  assistant_interaction_model_observer_.Remove(
-      AssistantInteractionController::Get());
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
   assistant_controller_observer_.Remove(AssistantController::Get());
 }
 

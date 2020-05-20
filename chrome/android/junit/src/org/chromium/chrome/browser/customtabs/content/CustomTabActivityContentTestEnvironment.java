@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
+import org.chromium.chrome.browser.customtabs.CustomTabIncognitoManager;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabNavigationEventObserver;
 import org.chromium.chrome.browser.customtabs.CustomTabObserver;
@@ -94,6 +95,7 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public ChromeBrowserInitializer browserInitializer;
     @Mock public ChromeFullscreenManager fullscreenManager;
     @Mock public StartupTabPreloader startupTabPreloader;
+    @Mock public CustomTabIncognitoManager customTabIncognitoManager;
     // clang-format on
 
     public final CustomTabActivityTabProvider tabProvider = new CustomTabActivityTabProvider();
@@ -143,7 +145,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
                 () -> compositorViewHolder, lifecycleDispatcher, warmupManager,
                 tabPersistencePolicy, tabFactory, () -> customTabObserver, webContentsFactory,
-                navigationEventObserver, tabProvider, startupTabPreloader, reparentingTaskProvider);
+                navigationEventObserver, tabProvider, startupTabPreloader, reparentingTaskProvider,
+                () -> customTabIncognitoManager);
     }
     // clang-format on
 

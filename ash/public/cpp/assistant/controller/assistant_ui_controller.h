@@ -20,7 +20,6 @@ enum class AssistantExitPoint;
 namespace ash {
 
 class AssistantUiModel;
-class AssistantUiModelObserver;
 
 // The interface for the Assistant controller in charge of UI.
 class ASH_PUBLIC_EXPORT AssistantUiController {
@@ -30,10 +29,6 @@ class ASH_PUBLIC_EXPORT AssistantUiController {
 
   // Returns a pointer to the underlying model.
   virtual const AssistantUiModel* GetModel() const = 0;
-
-  // Adds/removes the specified model observer.
-  virtual void AddModelObserver(AssistantUiModelObserver*) = 0;
-  virtual void RemoveModelObserver(AssistantUiModelObserver*) = 0;
 
   // Invoke to show/close/toggle Assistant UI.
   virtual void ShowUi(chromeos::assistant::mojom::AssistantEntryPoint) = 0;

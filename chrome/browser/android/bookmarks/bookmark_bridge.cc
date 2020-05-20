@@ -165,8 +165,15 @@ jlong BookmarkBridge::GetBookmarkIdForWebContents(
   if (!web_contents)
     return kInvalidId;
 
-  DCHECK_EQ(profile_,
-            Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+  // TODO(https://crbug.com/1023759): We currently don't have a separate tab
+  // model for incognito CCTs and incognito Tabs. So for incognito CCTs, the
+  // incognito Tabs profile is passed to initialize BookmarkBridge, but here the
+  // incognito CCT profile is used.
+  // This DCHECK should be updated to compare profile objects instead of their
+  // OTR state.
+  DCHECK_EQ(profile_->IsOffTheRecord(),
+            Profile::FromBrowserContext(web_contents->GetBrowserContext())
+                ->IsOffTheRecord());
   GURL url = dom_distiller::url_utils::GetOriginalUrlFromDistillerUrl(
       web_contents->GetURL());
   // Get all the nodes for |url| and sort them by date added.

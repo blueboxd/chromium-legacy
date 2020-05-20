@@ -127,10 +127,10 @@ struct CanonicalCookie {
 
 struct CookieInclusionStatus {
   // Bitfield. Is defined in
-  // net::CanonicalCookie::CookieInclusionStatus::ExclusionReason.
+  // net::CookieInclusionStatus::ExclusionReason.
+  // net::CookieInclusionStatus::WarningReason.
   uint32 exclusion_reasons;
   // Bitfield. Is defined in
-  // net::CanonicalCookie::CookieInclusionStatus::WarningReason.
   uint32 warning_reasons;
 };
 

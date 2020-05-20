@@ -31,6 +31,7 @@
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_delegate.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster_change_dispatcher.h"
 #include "net/cookies/cookie_store.h"
 #include "net/log/net_log_with_source.h"
@@ -428,7 +429,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
       bool skip_httponly,
       bool already_expired,
       base::Time* creation_date_to_inherit,
-      CanonicalCookie::CookieInclusionStatus* status);
+      CookieInclusionStatus* status);
 
   // This is only used if the RecentCreationTimeGrantsLegacyCookieSemantics
   // feature is enabled. It finds an equivalent cookie (based on name, domain,

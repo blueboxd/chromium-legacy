@@ -765,10 +765,8 @@ void PaymentRequest::OnConnectionTerminated() {
 void PaymentRequest::Pay() {
   journey_logger_.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
   DCHECK(state_->selected_app());
-  if (state_->selected_app()->type() == PaymentApp::Type::SERVICE_WORKER_APP) {
-    static_cast<ServiceWorkerPaymentApp*>(state_->selected_app())
-        ->set_payment_handler_host(payment_handler_host_.Bind());
-  }
+  state_->selected_app()->SetPaymentHandlerHost(
+      payment_handler_host_.AsWeakPtr());
   state_->GeneratePaymentResponse();
 }
 

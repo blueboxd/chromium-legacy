@@ -41,10 +41,6 @@ class ASH_EXPORT AssistantNotificationController
   // Returns the underlying model.
   const AssistantNotificationModel* model() const { return &model_; }
 
-  // Adds/removes the specified model |observer|.
-  void AddModelObserver(AssistantNotificationModelObserver* observer);
-  void RemoveModelObserver(AssistantNotificationModelObserver* observer);
-
   // Provides a pointer to the |assistant| owned by AssistantController.
   void SetAssistant(chromeos::assistant::mojom::Assistant* assistant);
 

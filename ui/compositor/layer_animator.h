@@ -258,6 +258,7 @@ class COMPOSITOR_EXPORT LayerAnimator : public base::RefCounted<LayerAnimator>,
   friend class base::RefCounted<LayerAnimator>;
   friend class ScopedLayerAnimationSettings;
   friend class LayerAnimatorTestController;
+  friend class AnimationThroughputReporter;
   FRIEND_TEST_ALL_PREFIXES(LayerAnimatorTest, AnimatorStartedCorrectly);
   FRIEND_TEST_ALL_PREFIXES(LayerAnimatorTest,
                            AnimatorRemovedFromCollectionWhenLayerIsDestroyed);

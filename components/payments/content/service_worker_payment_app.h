@@ -98,11 +98,8 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   bool HandlesPayerEmail() const override;
   bool HandlesPayerPhone() const override;
   ukm::SourceId UkmSourceId() override;
-
-  void set_payment_handler_host(
-      mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host) {
-    payment_handler_host_ = std::move(payment_handler_host);
-  }
+  void SetPaymentHandlerHost(
+      base::WeakPtr<PaymentHandlerHost> payment_handler_host) override;
 
  private:
   friend class ServiceWorkerPaymentAppTest;

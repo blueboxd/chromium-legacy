@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/xml/document_xslt.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -102,11 +103,19 @@ Document* XSLTProcessor::CreateDocumentFromSource(
           .WithTypeFrom(mime_type)
           .WithContextDocument(owner_document->ContextDocument());
   Document* document = DOMImplementation::createDocument(init);
-  DocumentEncodingData data;
-  data.SetEncoding(source_encoding.IsEmpty()
-                       ? UTF8Encoding()
-                       : WTF::TextEncoding(source_encoding));
-  document->SetEncodingData(data);
+  auto parsed_source_encoding = source_encoding.IsEmpty()
+                                    ? UTF8Encoding()
+                                    : WTF::TextEncoding(source_encoding);
+  if (parsed_source_encoding.IsValid()) {
+    DocumentEncodingData data;
+    data.SetEncoding(parsed_source_encoding);
+    document->SetEncodingData(data);
+  } else {
+    document_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kXml,
+        mojom::blink::ConsoleMessageLevel::kWarning,
+        String("Document encoding not valid: ") + source_encoding));
+  }
   document->SetContent(document_source);
   return document;
 }

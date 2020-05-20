@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 
@@ -24,5 +25,17 @@ public class TwaPackageManagerDelegate {
         CustomTabActivity customTabActivity = ((CustomTabActivity) activity);
         if (!customTabActivity.isInTwaMode()) return null;
         return customTabActivity.getTwaPackage();
+    }
+
+    /**
+     * Get the package name of a specified package's installer app.
+     * @param packageName The package name of the specified package. Not allowed to be null.
+     * @return The package name of the installer app.
+     */
+    @Nullable
+    public String getInstallerPackage(String packageName) {
+        assert packageName != null;
+        return ContextUtils.getApplicationContext().getPackageManager().getInstallerPackageName(
+                packageName);
     }
 }

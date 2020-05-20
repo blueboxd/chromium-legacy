@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
@@ -79,9 +80,9 @@ public class WebApkHandlerDelegate {
         // Pass non-null URL parameter so that {@link WebApkInfo#create()}
         // return value is non-null
         WebappInfo webApkInfo = WebappInfo.create(WebApkIntentDataProviderFactory.create(
-                packageInfo.packageName, "", ShortcutSource.UNKNOWN, false /* forceNavigation */,
-                false /* isSplashProvidedByWebApk */, null /* shareData */,
-                null /* shareDataActivityClassName */));
+                new Intent(), packageInfo.packageName, "", ShortcutSource.UNKNOWN,
+                false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
+                null /* shareData */, null /* shareDataActivityClassName */));
         if (webApkInfo == null) {
             return;
         }

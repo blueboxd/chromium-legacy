@@ -34,9 +34,6 @@
 #include "ui/aura/window.h"
 #endif
 
-using content::BrowserContext;
-using content::WebContents;
-
 ExtensionDialog::InitParams::InitParams(gfx::Size size)
     : size(std::move(size)) {}
 ExtensionDialog::InitParams::InitParams(const InitParams& other) = default;
@@ -46,43 +43,28 @@ ExtensionDialog::InitParams::~InitParams() = default;
 ExtensionDialog* ExtensionDialog::Show(const GURL& url,
                                        gfx::NativeWindow parent_window,
                                        Profile* profile,
-                                       WebContents* web_contents,
+                                       content::WebContents* web_contents,
                                        ExtensionDialogObserver* observer,
                                        const InitParams& init_params) {
+  DCHECK(parent_window);
+
   std::unique_ptr<extensions::ExtensionViewHost> host =
       extensions::ExtensionViewHostFactory::CreateDialogHost(url, profile);
   if (!host)
     return nullptr;
-  // Preferred size must be set before views::Widget::CreateWindowWithParent()
-  // is called because CreateWindowWithParent() references CanResize().
-  ExtensionViewViews* view = GetExtensionView(host.get());
-  view->SetPreferredSize(init_params.size);
-  view->set_minimum_size(init_params.min_size);
   host->SetAssociatedWebContents(web_contents);
 
-  DCHECK(parent_window);
-  extensions::ExtensionViewHost* host_ptr = host.get();
-  ExtensionDialog* dialog = new ExtensionDialog(std::move(host), observer);
-  dialog->set_title(init_params.title);
-  dialog->InitWindow(parent_window, init_params);
-
-  // Show a white background while the extension loads.  This is prettier than
-  // flashing a black unfilled window frame.
-  view->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
-  view->SetVisible(true);
-
-  // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
-  host_ptr->host_contents()->Focus();
-  return dialog;
+  return new ExtensionDialog(std::move(host), observer, parent_window,
+                             init_params);
 }
 
 void ExtensionDialog::ObserverDestroyed() {
-  observer_ = NULL;
+  observer_ = nullptr;
 }
 
 void ExtensionDialog::MaybeFocusRenderView() {
   views::FocusManager* focus_manager = GetWidget()->GetFocusManager();
-  DCHECK(focus_manager != NULL);
+  DCHECK(focus_manager);
 
   // Already there's a focused view, so no need to switch the focus.
   if (focus_manager->GetFocusedView())
@@ -97,7 +79,7 @@ void ExtensionDialog::MaybeFocusRenderView() {
 }
 
 void ExtensionDialog::SetMinimumContentsSize(int width, int height) {
-  GetExtensionView()->SetPreferredSize(gfx::Size(width, height));
+  extension_view_->SetPreferredSize(gfx::Size(width, height));
 }
 
 bool ExtensionDialog::CanResize() const {
@@ -106,8 +88,7 @@ bool ExtensionDialog::CanResize() const {
   if (ash::TabletMode::Get() && ash::TabletMode::Get()->InTabletMode())
     return false;
 #endif
-  // Can resize only if minimum contents size set.
-  return GetExtensionView()->GetPreferredSize() != gfx::Size();
+  return true;
 }
 
 ui::ModalType ExtensionDialog::GetModalType() const {
@@ -133,15 +114,23 @@ void ExtensionDialog::DeleteDelegate() {
 }
 
 views::Widget* ExtensionDialog::GetWidget() {
-  return GetExtensionView()->GetWidget();
+  return extension_view_->GetWidget();
 }
 
 const views::Widget* ExtensionDialog::GetWidget() const {
-  return GetExtensionView()->GetWidget();
+  return extension_view_->GetWidget();
 }
 
 views::View* ExtensionDialog::GetContentsView() {
-  return GetExtensionView();
+  if (!extension_view_) {
+    extension_view_ = new ExtensionViewViews(host_.get());  // Owned by caller.
+
+    // Show a white background while the extension loads.  This is prettier than
+    // flashing a black unfilled window frame.
+    extension_view_->SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
+  }
+
+  return extension_view_;
 }
 
 void ExtensionDialog::Observe(int type,
@@ -151,7 +140,7 @@ void ExtensionDialog::Observe(int type,
     case extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD:
       // Avoid potential overdraw by removing the temporary background after
       // the extension finishes loading.
-      GetExtensionView()->SetBackground(nullptr);
+      extension_view_->SetBackground(nullptr);
       // The render view is created during the LoadURL(), so we should
       // set the focus to the view if nobody else takes the focus.
       if (content::Details<extensions::ExtensionHost>(host()) == details)
@@ -179,40 +168,44 @@ ExtensionDialog::~ExtensionDialog() = default;
 
 ExtensionDialog::ExtensionDialog(
     std::unique_ptr<extensions::ExtensionViewHost> host,
-    ExtensionDialogObserver* observer)
+    ExtensionDialogObserver* observer,
+    gfx::NativeWindow parent_window,
+    const InitParams& init_params)
     : host_(std::move(host)), observer_(observer) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_use_custom_frame(false);
 
   AddRef();  // Balanced in DeleteDelegate();
 
+  const content::Source<content::BrowserContext> source =
+      host_->browser_context();
   registrar_.Add(this,
                  extensions::NOTIFICATION_EXTENSION_HOST_DID_STOP_FIRST_LOAD,
-                 content::Source<BrowserContext>(host_->browser_context()));
+                 source);
   // Listen for the containing view calling window.close();
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-                 content::Source<BrowserContext>(host_->browser_context()));
+  registrar_.Add(
+      this, extensions::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE, source);
   // Listen for a crash or other termination of the extension process.
   registrar_.Add(this, extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 content::Source<BrowserContext>(host_->browser_context()));
+                 source);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::EXTENSION);
-}
 
-void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
-                                 const InitParams& init_params) {
+  set_title(init_params.title);
+
   views::Widget* window =
       init_params.is_modal
-          ? constrained_window::CreateBrowserModalDialogViews(this, parent)
-          : views::DialogDelegate::CreateDialogWidget(
-                this, nullptr /* context */, nullptr /* parent */);
+          ? constrained_window::CreateBrowserModalDialogViews(this,
+                                                              parent_window)
+          : views::DialogDelegate::CreateDialogWidget(this, nullptr, nullptr);
 
   // Center the window over the parent browser window or the screen.
-  gfx::Rect screen_rect =
-      display::Screen::GetScreen()->GetDisplayNearestWindow(parent).work_area();
-  gfx::Rect bounds = parent ? views::Widget::GetWidgetForNativeWindow(parent)
-                                  ->GetWindowBoundsInScreen()
-                            : screen_rect;
+  gfx::Rect screen_rect = display::Screen::GetScreen()
+                              ->GetDisplayNearestWindow(parent_window)
+                              .work_area();
+  gfx::Rect bounds =
+      parent_window ? views::Widget::GetWidgetForNativeWindow(parent_window)
+                          ->GetWindowBoundsInScreen()
+                    : screen_rect;
   bounds.ClampToCenteredSize(init_params.size);
 
   // Make sure bounds is larger than {min_size}.
@@ -248,13 +241,14 @@ void ExtensionDialog::InitWindow(gfx::NativeWindow parent,
   window->Show();
   // TODO(jamescook): Remove redundant call to Activate()?
   window->Activate();
-}
 
-ExtensionViewViews* ExtensionDialog::GetExtensionView() const {
-  return GetExtensionView(host_.get());
-}
+  // Creating the Widget should have called GetContentsView() and created
+  // |extension_view_|.
+  DCHECK(extension_view_);
+  extension_view_->SetPreferredSize(init_params.size);
+  extension_view_->set_minimum_size(init_params.min_size);
+  extension_view_->SetVisible(true);
 
-ExtensionViewViews* ExtensionDialog::GetExtensionView(
-    extensions::ExtensionViewHost* host) {
-  return static_cast<ExtensionViewViews*>(host->view());
+  // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
+  host_->host_contents()->Focus();
 }

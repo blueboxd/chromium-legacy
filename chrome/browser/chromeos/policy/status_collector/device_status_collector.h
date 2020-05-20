@@ -438,6 +438,7 @@ class DeviceStatusCollector : public StatusCollector,
   bool report_memory_info_ = false;
   bool report_backlight_info_ = false;
   bool report_crash_report_info_ = false;
+  bool report_bluetooth_info_ = false;
   bool stat_reporting_pref_ = false;
 
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
@@ -472,6 +473,8 @@ class DeviceStatusCollector : public StatusCollector,
       backlight_info_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       crash_report_info_subscription_;
+  std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
+      bluetooth_info_subscription_;
   std::unique_ptr<chromeos::CrosSettings::ObserverSubscription>
       stats_reporting_pref_subscription_;
 

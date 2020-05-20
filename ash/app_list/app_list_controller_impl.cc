@@ -178,7 +178,7 @@ AppListControllerImpl::AppListControllerImpl()
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
   AssistantController::Get()->AddObserver(this);
-  AssistantUiController::Get()->AddModelObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
@@ -1706,7 +1706,7 @@ void AppListControllerImpl::Shutdown() {
 
   Shell* shell = Shell::Get();
   AssistantController::Get()->RemoveObserver(this);
-  AssistantUiController::Get()->RemoveModelObserver(this);
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
   AssistantState::Get()->RemoveObserver(this);

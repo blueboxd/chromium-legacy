@@ -9,7 +9,8 @@
 
 #include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
-#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_controller_observer.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
@@ -20,6 +21,7 @@ namespace app_list {
 // launcher chip integration is enabled from Assistant's internal cache of
 // conversation starters.
 class AssistantSearchProvider : public SearchProvider,
+                                public ash::AssistantControllerObserver,
                                 public ash::AssistantStateObserver,
                                 public ash::AssistantSuggestionsModelObserver {
  public:
@@ -31,6 +33,9 @@ class AssistantSearchProvider : public SearchProvider,
  private:
   // SearchProvider:
   void Start(const base::string16& query) override {}
+
+  // ash::AssistantControllerObserver:
+  void OnAssistantControllerDestroying() override;
 
   // ash::AssistantStateObserver:
   void OnAssistantFeatureAllowedChanged(
@@ -45,19 +50,11 @@ class AssistantSearchProvider : public SearchProvider,
   // Invoke to update results based on current state.
   void UpdateResults();
 
-  // We observe Assistant state.
-  ScopedObserver<ash::AssistantStateBase,
-                 ash::AssistantStateObserver,
-                 &ash::AssistantState::AddObserver,
-                 &ash::AssistantState::RemoveObserver>
-      state_observer_{this};
+  ScopedObserver<ash::AssistantController, ash::AssistantControllerObserver>
+      assistant_controller_observer_{this};
 
-  // We observe Assistant suggestions.
-  ScopedObserver<ash::AssistantSuggestionsController,
-                 ash::AssistantSuggestionsModelObserver,
-                 &ash::AssistantSuggestionsController::AddModelObserver,
-                 &ash::AssistantSuggestionsController::RemoveModelObserver>
-      suggestions_observer_{this};
+  ScopedObserver<ash::AssistantStateBase, ash::AssistantStateObserver>
+      assistant_state_observer_{this};
 };
 
 }  // namespace app_list

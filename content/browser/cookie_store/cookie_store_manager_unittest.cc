@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/base/features.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -287,7 +288,7 @@ class CookieStoreManagerTest
         cookie, net::cookie_util::SimulatedCookieSource(cookie, "https"),
         net::CookieOptions::MakeAllInclusive(),
         base::BindLambdaForTesting(
-            [&](net::CanonicalCookie::CookieInclusionStatus service_status) {
+            [&](net::CookieInclusionStatus service_status) {
               success = service_status.IsInclude();
               run_loop.Quit();
             }));

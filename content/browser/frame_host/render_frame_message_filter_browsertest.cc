@@ -35,6 +35,7 @@
 #include "ipc/ipc_security_test_util.h"
 #include "net/base/features.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -78,9 +79,7 @@ void SetCookieDirect(WebContentsImpl* tab,
       ->SetCanonicalCookie(
           *cookie_obj, url, options,
           base::BindLambdaForTesting(
-              [&](net::CanonicalCookie::CookieInclusionStatus status) {
-                run_loop.Quit();
-              }));
+              [&](net::CookieInclusionStatus status) { run_loop.Quit(); }));
   run_loop.Run();
 }
 

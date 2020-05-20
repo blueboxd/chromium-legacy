@@ -41,70 +41,7 @@ const char kHeightDictAttr[] = "height";
 const char kRangeLocDictAttr[] = "loc";
 const char kRangeLenDictAttr[] = "len";
 
-std::unique_ptr<base::DictionaryValue> PopulatePosition(
-    const BrowserAccessibility& node) {
-  BrowserAccessibilityManager* root_manager = node.manager()->GetRootManager();
-  DCHECK(root_manager);
-
-  std::unique_ptr<base::DictionaryValue> position(new base::DictionaryValue);
-  // The NSAccessibility position of an object is in global coordinates and
-  // based on the lower-left corner of the object. To make this easier and less
-  // confusing, convert it to local window coordinates using the top-left
-  // corner when dumping the position.
-  BrowserAccessibility* root = root_manager->GetRoot();
-  BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
-  NSPoint root_position = [[cocoa_root position] pointValue];
-  NSSize root_size = [[cocoa_root size] sizeValue];
-  int root_top = -static_cast<int>(root_position.y + root_size.height);
-  int root_left = static_cast<int>(root_position.x);
-
-  BrowserAccessibilityCocoa* cocoa_node =
-      ToBrowserAccessibilityCocoa(const_cast<BrowserAccessibility*>(&node));
-  NSPoint node_position = [[cocoa_node position] pointValue];
-  NSSize node_size = [[cocoa_node size] sizeValue];
-
-  position->SetInteger(kXCoordDictAttr,
-                       static_cast<int>(node_position.x - root_left));
-  position->SetInteger(
-      kYCoordDictAttr,
-      static_cast<int>(-node_position.y - node_size.height - root_top));
-  return position;
-}
-
-std::unique_ptr<base::DictionaryValue> PopulateSize(
-    const BrowserAccessibilityCocoa* cocoa_node) {
-  std::unique_ptr<base::DictionaryValue> size(new base::DictionaryValue);
-  NSSize node_size = [[cocoa_node size] sizeValue];
-  size->SetInteger(kHeightDictAttr, static_cast<int>(node_size.height));
-  size->SetInteger(kWidthDictAttr, static_cast<int>(node_size.width));
-  return size;
-}
-
-std::unique_ptr<base::DictionaryValue> PopulateRange(NSRange range) {
-  std::unique_ptr<base::DictionaryValue> rangeDict(new base::DictionaryValue);
-  rangeDict->SetInteger(kRangeLocDictAttr, static_cast<int>(range.location));
-  rangeDict->SetInteger(kRangeLenDictAttr, static_cast<int>(range.length));
-  return rangeDict;
-}
-
-// Returns true if |value| is an NSValue containing a NSRange.
-bool IsRangeValue(id value) {
-  if (![value isKindOfClass:[NSValue class]])
-    return false;
-  return 0 == strcmp([value objCType], @encode(NSRange));
-}
-
-std::unique_ptr<base::Value> PopulateObject(id value);
-
-std::unique_ptr<base::ListValue> PopulateArray(NSArray* array) {
-  std::unique_ptr<base::ListValue> list(new base::ListValue);
-  for (NSUInteger i = 0; i < [array count]; i++)
-    list->Append(PopulateObject([array objectAtIndex:i]));
-  return list;
-}
-
-std::unique_ptr<base::Value> StringForBrowserAccessibility(
-    BrowserAccessibilityCocoa* obj) {
+base::Value StringForBrowserAccessibility(BrowserAccessibilityCocoa* obj) {
   NSMutableArray* tokens = [[NSMutableArray alloc] init];
 
   // Always include the role
@@ -132,24 +69,7 @@ std::unique_ptr<base::Value> StringForBrowserAccessibility(
   }
 
   NSString* result = [tokens componentsJoinedByString:@" "];
-  return std::unique_ptr<base::Value>(
-      new base::Value(SysNSStringToUTF16(result)));
-}
-
-std::unique_ptr<base::Value> PopulateObject(id value) {
-  if ([value isKindOfClass:[NSArray class]])
-    return std::unique_ptr<base::Value>(PopulateArray((NSArray*)value));
-  if (IsRangeValue(value))
-    return std::unique_ptr<base::Value>(PopulateRange([value rangeValue]));
-  if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
-    std::string str;
-    StringForBrowserAccessibility(value)->GetAsString(&str);
-    return std::unique_ptr<base::Value>(
-        StringForBrowserAccessibility((BrowserAccessibilityCocoa*)value));
-  }
-
-  return std::unique_ptr<base::Value>(new base::Value(
-      SysNSStringToUTF16([NSString stringWithFormat:@"%@", value])));
+  return base::Value(SysNSStringToUTF16(result));
 }
 
 }  // namespace
@@ -181,8 +101,14 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
-  void AddProperties(const BrowserAccessibilityCocoa* node,
-                     base::DictionaryValue* dict);
+
+  void AddProperties(const BrowserAccessibilityCocoa* node, base::Value* dict);
+  base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
+  base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
+  base::Value PopulateObject(id) const;
+  base::Value PopulateRange(NSRange) const;
+  base::Value PopulateArray(NSArray*) const;
+
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
       base::DictionaryValue* filtered_dict_result = nullptr) override;
@@ -272,21 +198,99 @@ void AccessibilityTreeFormatterMac::RecursiveBuildAccessibilityTree(
 
 void AccessibilityTreeFormatterMac::AddProperties(
     const BrowserAccessibilityCocoa* cocoa_node,
-    base::DictionaryValue* dict) {
+    base::Value* dict) {
+  // DOM element id
   BrowserAccessibility* node = [cocoa_node owner];
-  dict->SetString("id", base::NumberToString16(node->GetId()));
+  dict->SetKey("id", base::Value(base::NumberToString16(node->GetId())));
 
   for (NSString* supportedAttribute in
        [cocoa_node accessibilityAttributeNames]) {
     if (FilterPropertyName(SysNSStringToUTF16(supportedAttribute))) {
       id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
       if (value != nil) {
-        dict->Set(SysNSStringToUTF8(supportedAttribute), PopulateObject(value));
+        dict->SetPath(SysNSStringToUTF8(supportedAttribute),
+                      PopulateObject(value));
       }
     }
   }
-  dict->Set(kPositionDictAttr, PopulatePosition(*node));
-  dict->Set(kSizeDictAttr, PopulateSize(cocoa_node));
+  dict->SetPath(kPositionDictAttr, PopulatePosition(cocoa_node));
+  dict->SetPath(kSizeDictAttr, PopulateSize(cocoa_node));
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulateSize(
+    const BrowserAccessibilityCocoa* cocoa_node) const {
+  base::Value size(base::Value::Type::DICTIONARY);
+  NSSize node_size = [[cocoa_node size] sizeValue];
+  size.SetIntPath(kHeightDictAttr, static_cast<int>(node_size.height));
+  size.SetIntPath(kWidthDictAttr, static_cast<int>(node_size.width));
+  return size;
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulatePosition(
+    const BrowserAccessibilityCocoa* cocoa_node) const {
+  BrowserAccessibility* node = [cocoa_node owner];
+  BrowserAccessibilityManager* root_manager = node->manager()->GetRootManager();
+  DCHECK(root_manager);
+
+  // The NSAccessibility position of an object is in global coordinates and
+  // based on the lower-left corner of the object. To make this easier and less
+  // confusing, convert it to local window coordinates using the top-left
+  // corner when dumping the position.
+  BrowserAccessibility* root = root_manager->GetRoot();
+  BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
+  NSPoint root_position = [[cocoa_root position] pointValue];
+  NSSize root_size = [[cocoa_root size] sizeValue];
+  int root_top = -static_cast<int>(root_position.y + root_size.height);
+  int root_left = static_cast<int>(root_position.x);
+
+  NSPoint node_position = [[cocoa_node position] pointValue];
+  NSSize node_size = [[cocoa_node size] sizeValue];
+
+  base::Value position(base::Value::Type::DICTIONARY);
+  position.SetIntPath(kXCoordDictAttr,
+                      static_cast<int>(node_position.x - root_left));
+  position.SetIntPath(
+      kYCoordDictAttr,
+      static_cast<int>(-node_position.y - node_size.height - root_top));
+  return position;
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulateObject(id value) const {
+  // NSArray
+  if ([value isKindOfClass:[NSArray class]]) {
+    return PopulateArray((NSArray*)value);
+  }
+
+  // NSRange
+  if ([value isKindOfClass:[NSValue class]] &&
+      0 == strcmp([value objCType], @encode(NSRange))) {
+    return PopulateRange([value rangeValue]);
+  }
+
+  // Accessible object.
+  if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
+    return StringForBrowserAccessibility((BrowserAccessibilityCocoa*)value);
+  }
+
+  // Scalar value.
+  return base::Value(
+      SysNSStringToUTF16([NSString stringWithFormat:@"%@", value]));
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulateRange(
+    NSRange node_range) const {
+  base::Value range(base::Value::Type::DICTIONARY);
+  range.SetIntPath(kRangeLocDictAttr, static_cast<int>(node_range.location));
+  range.SetIntPath(kRangeLenDictAttr, static_cast<int>(node_range.length));
+  return range;
+}
+
+base::Value AccessibilityTreeFormatterMac::PopulateArray(
+    NSArray* node_array) const {
+  base::Value list(base::Value::Type::LIST);
+  for (NSUInteger i = 0; i < [node_array count]; i++)
+    list.Append(PopulateObject([node_array objectAtIndex:i]));
+  return list;
 }
 
 base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(

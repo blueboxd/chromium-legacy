@@ -49,8 +49,6 @@ class ASH_EXPORT AssistantUiControllerImpl
 
   // AssistantUiController:
   const AssistantUiModel* GetModel() const override;
-  void AddModelObserver(AssistantUiModelObserver* observer) override;
-  void RemoveModelObserver(AssistantUiModelObserver* observer) override;
   void ShowUi(AssistantEntryPoint entry_point) override;
   void CloseUi(AssistantExitPoint exit_point) override;
   void ToggleUi(base::Optional<AssistantEntryPoint> entry_point,

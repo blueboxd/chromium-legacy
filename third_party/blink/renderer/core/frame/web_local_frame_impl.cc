@@ -2461,7 +2461,8 @@ void WebLocalFrameImpl::OnPortalActivated(
   DOMWindowPortalHost::portalHost(*window)->OnPortalActivated();
   GetFrame()->GetPage()->SetInsidePortal(false);
 
-  auto blink_data = ToBlinkTransferableMessage(std::move(data));
+  auto blink_data =
+      BlinkTransferableMessage::FromTransferableMessage(std::move(data));
   DCHECK(!blink_data.locked_agent_cluster_id)
       << "portal activation is always cross-agent-cluster and should be "
          "diagnosed early";
@@ -2490,8 +2491,9 @@ void WebLocalFrameImpl::ForwardMessageFromHost(
     target = target_origin.value();
 
   PortalHost::From(*(GetFrame()->DomWindow()))
-      .ReceiveMessage(ToBlinkTransferableMessage(std::move(message)),
-                      source_origin, target);
+      .ReceiveMessage(
+          BlinkTransferableMessage::FromTransferableMessage(std::move(message)),
+          source_origin, target);
 }
 
 void WebLocalFrameImpl::AddMessageToConsoleImpl(

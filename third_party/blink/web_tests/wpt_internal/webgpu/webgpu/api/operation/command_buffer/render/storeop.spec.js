@@ -4,10 +4,18 @@
 
 export const description = `
 renderPass store op test that drawn quad is either stored or cleared based on storeop`;
-import { TestGroup } from '../../../../../common/framework/test_group.js';
+import * as C from '../../../../../common/constants.js';
+import { makeTestGroup } from '../../../../../common/framework/test_group.js';
 import { GPUTest } from '../../../../gpu_test.js';
-export const g = new TestGroup(GPUTest);
-g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
+export const g = makeTestGroup(GPUTest);
+g.test('storeOp_controls_whether_1x1_drawn_quad_is_stored').params([{
+  storeOp: C.StoreOp.Store,
+  _expected: 1
+}, //
+{
+  storeOp: C.StoreOp.Clear,
+  _expected: 0
+}]).fn(async t => {
   const renderTexture = t.device.createTexture({
     size: {
       width: 1,
@@ -20,17 +28,17 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
 
   const vertexModule = t.makeShaderModule('vertex', {
     glsl: `
-      #version 450
-      const vec2 pos[3] = vec2[3](
-                              vec2( 1.0f, -1.0f),
-                              vec2( 1.0f,  1.0f),
-                              vec2(-1.0f,  1.0f)
-                              );
+        #version 450
+        const vec2 pos[3] = vec2[3](
+                                vec2( 1.0f, -1.0f),
+                                vec2( 1.0f,  1.0f),
+                                vec2(-1.0f,  1.0f)
+                                );
 
-      void main() {
-          gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
-      }
-    `
+        void main() {
+            gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);
+        }
+      `
   });
   const fragmentModule = t.makeShaderModule('fragment', {
     glsl: `
@@ -75,30 +83,13 @@ g.test('storeOp controls whether 1x1 drawn quad is stored', async t => {
   pass.setPipeline(renderPipeline);
   pass.draw(3, 1, 0, 0);
   pass.endPass();
-  const dstBuffer = t.device.createBuffer({
-    size: 4,
-    usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.COPY_SRC
-  });
-  encoder.copyTextureToBuffer({
-    texture: renderTexture
-  }, {
-    buffer: dstBuffer,
-    bytesPerRow: 256
-  }, {
-    width: 1,
-    height: 1,
-    depth: 1
-  });
   t.device.defaultQueue.submit([encoder.finish()]); // expect the buffer to be clear
 
-  const expectedContent = new Uint32Array([t.params._expected]);
-  t.expectContents(dstBuffer, expectedContent);
-}).params([{
-  storeOp: 'store',
-  _expected: 255
-}, //
-{
-  storeOp: 'clear',
-  _expected: 0
-}]);
+  t.expectSingleColor(renderTexture, 'r8unorm', {
+    size: [1, 1, 1],
+    exp: {
+      R: t.params._expected
+    }
+  });
+});
 //# sourceMappingURL=storeop.spec.js.map

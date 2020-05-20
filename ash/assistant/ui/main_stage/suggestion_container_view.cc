@@ -10,6 +10,7 @@
 
 #include "ash/assistant/model/assistant_response.h"
 #include "ash/assistant/model/assistant_suggestions_model.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
@@ -17,6 +18,8 @@
 #include "ash/assistant/ui/main_stage/element_animator.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "base/bind.h"
 #include "ui/compositor/callback_layer_animation_observer.h"
 #include "ui/compositor/layer_animation_element.h"
@@ -93,12 +96,17 @@ SuggestionContainerView::SuggestionContainerView(
   SetID(AssistantViewID::kSuggestionContainer);
   InitLayout();
 
-  assistant_suggestions_model_observer_.Add(
-      AssistantSuggestionsController::Get());
-  assistant_ui_model_observer_.Add(AssistantUiController::Get());
+  AssistantSuggestionsController::Get()->GetModel()->AddObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
-SuggestionContainerView::~SuggestionContainerView() = default;
+SuggestionContainerView::~SuggestionContainerView() {
+  if (AssistantUiController::Get())
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+
+  if (AssistantSuggestionsController::Get())
+    AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* SuggestionContainerView::GetClassName() const {
   return "SuggestionContainerView";
@@ -124,9 +132,8 @@ void SuggestionContainerView::OnContentsPreferredSizeChanged(
 void SuggestionContainerView::OnAssistantControllerDestroying() {
   AnimatedContainerView::OnAssistantControllerDestroying();
 
-  assistant_ui_model_observer_.Remove(AssistantUiController::Get());
-  assistant_suggestions_model_observer_.Remove(
-      AssistantSuggestionsController::Get());
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+  AssistantSuggestionsController::Get()->GetModel()->RemoveObserver(this);
 }
 
 void SuggestionContainerView::OnCommittedQueryChanged(

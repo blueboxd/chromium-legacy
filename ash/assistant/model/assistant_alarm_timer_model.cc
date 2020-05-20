@@ -17,12 +17,12 @@ AssistantAlarmTimerModel::AssistantAlarmTimerModel() = default;
 AssistantAlarmTimerModel::~AssistantAlarmTimerModel() = default;
 
 void AssistantAlarmTimerModel::AddObserver(
-    AssistantAlarmTimerModelObserver* observer) {
+    AssistantAlarmTimerModelObserver* observer) const {
   observers_.AddObserver(observer);
 }
 
 void AssistantAlarmTimerModel::RemoveObserver(
-    AssistantAlarmTimerModelObserver* observer) {
+    AssistantAlarmTimerModelObserver* observer) const {
   observers_.RemoveObserver(observer);
 }
 

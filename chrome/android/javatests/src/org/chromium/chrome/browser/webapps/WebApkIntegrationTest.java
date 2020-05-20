@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import static org.junit.Assert.assertEquals;
+
 import android.content.Intent;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
@@ -21,12 +23,17 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.flags.ActivityType;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
+import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.webapk.lib.client.WebApkValidator;
-import org.chromium.webapk.lib.common.WebApkConstants;
+
+import java.util.concurrent.TimeoutException;
 
 /** Integration tests for WebAPK feature. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -45,11 +52,6 @@ public class WebApkIntegrationTest {
                                           .around(mNativeLibraryTestRule)
                                           .around(mCertVerifierRule);
 
-    /** Returns URL for the passed-in host which maps to a page on the EmbeddedTestServer. */
-    private String getUrlForHost(String host) {
-        return "https://" + host + "/defaultresponse";
-    }
-
     @Before
     public void setUp() {
         mActivityTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
@@ -61,25 +63,52 @@ public class WebApkIntegrationTest {
     }
 
     /**
-     * Tests that WebAPK Activities are started properly by WebappLauncherActivity.
+     * Tests that sending deep link intent to WebAPK launches WebAPK Activity.
      */
     @Test
     @LargeTest
     @Feature({"Webapps"})
-    public void testWebApkLaunchesByLauncherActivity() {
-        String pwaRocksUrl = getUrlForHost("pwa-directory.appspot.com");
+    public void testDeepLink() {
+        String pageUrl = "https://pwa-directory.appspot.com/defaultresponse";
 
-        Intent intent = new Intent();
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setPackage(InstrumentationRegistry.getTargetContext().getPackageName());
-        intent.setAction(WebappLauncherActivity.ACTION_START_WEBAPP);
-        intent.putExtra(WebApkConstants.EXTRA_URL, pwaRocksUrl)
-                .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, "org.chromium.webapk.test");
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(pageUrl));
+        intent.setPackage("org.chromium.webapk.test");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mActivityTestRule.startActivityCompletely(intent);
+        InstrumentationRegistry.getTargetContext().startActivity(intent);
 
-        WebappActivity lastActivity = mActivityTestRule.getActivity();
+        WebappActivity lastActivity = ChromeActivityTestRule.waitFor(WebappActivity.class);
         Assert.assertEquals(ActivityType.WEB_APK, lastActivity.getActivityType());
-        Assert.assertEquals(pwaRocksUrl, lastActivity.getIntentDataProvider().getUrlToLoad());
+        Assert.assertEquals(pageUrl, lastActivity.getIntentDataProvider().getUrlToLoad());
+    }
+
+    /**
+     * Tests launching WebAPK via POST share intent.
+     */
+    @Test
+    @LargeTest
+    @Feature({"Webapps"})
+    public void testShare() throws TimeoutException {
+        final String sharedSubject = "Fun tea parties";
+        final String sharedText = "Boston";
+        final String expectedShareUrl = "https://pwa-directory.appspot.com/echoall";
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setPackage("org.chromium.webapk.test");
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_SUBJECT, sharedSubject);
+        intent.putExtra(Intent.EXTRA_TEXT, sharedText);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        InstrumentationRegistry.getTargetContext().startActivity(intent);
+
+        WebappActivity lastActivity = ChromeActivityTestRule.waitFor(WebappActivity.class);
+        Assert.assertEquals(ActivityType.WEB_APK, lastActivity.getActivityType());
+
+        Tab tab = lastActivity.getActivityTab();
+        ChromeTabUtils.waitForTabPageLoaded(tab, expectedShareUrl);
+        String postDataJson = JavaScriptUtils.executeJavaScriptAndWaitForResult(
+                tab.getWebContents(), "document.getElementsByTagName('pre')[0].innerText");
+        assertEquals("\"title=Fun+tea+parties\\ntext=Boston\\n\"", postDataJson);
     }
 }

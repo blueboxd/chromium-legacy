@@ -13,7 +13,6 @@
 namespace ash {
 
 class AssistantInteractionModel;
-class AssistantInteractionModelObserver;
 
 // The interface for the Assistant controller in charge of interactions.
 class ASH_PUBLIC_EXPORT AssistantInteractionController {
@@ -23,10 +22,6 @@ class ASH_PUBLIC_EXPORT AssistantInteractionController {
 
   // Returns a pointer to the underlying model.
   virtual const AssistantInteractionModel* GetModel() const = 0;
-
-  // Adds/removes the specified model observer.
-  virtual void AddModelObserver(AssistantInteractionModelObserver*) = 0;
-  virtual void RemoveModelObserver(AssistantInteractionModelObserver*) = 0;
 
   // Start Assistant text interaction.
   virtual void StartTextInteraction(

@@ -39,6 +39,7 @@
 #include "content/public/browser/cookie_store_factory.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -476,7 +477,7 @@ void CookieManager::SetCookieHelper(const GURL& host,
   UMA_HISTOGRAM_ENUMERATION(
       "Android.WebView.CookieManager.SameSiteAttributeValue", samesite);
 
-  net::CanonicalCookie::CookieInclusionStatus status;
+  net::CookieInclusionStatus status;
   std::unique_ptr<net::CanonicalCookie> cc(
       net::CanonicalCookie::Create(new_host, value, base::Time::Now(),
                                    base::nullopt /* server_time */, &status));

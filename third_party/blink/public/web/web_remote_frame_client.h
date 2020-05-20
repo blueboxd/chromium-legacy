@@ -29,12 +29,6 @@ class WebRemoteFrameClient {
   // and release any resources associated with it.
   virtual void FrameDetached(DetachType) {}
 
-  // Notifies the embedder that a postMessage was issued to a remote frame.
-  virtual void ForwardPostMessage(WebLocalFrame* source_frame,
-                                  WebRemoteFrame* target_frame,
-                                  WebSecurityOrigin target_origin,
-                                  WebDOMMessageEvent) {}
-
   // A remote frame was asked to start a navigation.
   virtual void Navigate(const WebURLRequest& request,
                         blink::WebLocalFrame* initiator_frame,

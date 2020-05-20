@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.test.util.browser.webapps;
 
+import android.content.Intent;
 import android.graphics.Color;
 
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -51,8 +52,8 @@ public class WebApkIntentDataProviderBuilder {
      * Builds {@link BrowserServicesIntentDataProvider} object using options that have been set.
      */
     public BrowserServicesIntentDataProvider build() {
-        return WebApkIntentDataProviderFactory.create(mUrl, mScope, null, null, null, null,
-                mDisplayMode, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
+        return WebApkIntentDataProviderFactory.create(new Intent(), mUrl, mScope, null, null, null,
+                null, mDisplayMode, ScreenOrientationValues.DEFAULT, ShortcutSource.UNKNOWN,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, Color.WHITE,
                 false /* isPrimaryIconMaskable */, false /* isSplashIconMaskable */,

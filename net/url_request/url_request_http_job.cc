@@ -88,7 +88,7 @@ base::Value CookieInclusionStatusNetLogParams(
     const std::string& cookie_name,
     const std::string& cookie_domain,
     const std::string& cookie_path,
-    const net::CanonicalCookie::CookieInclusionStatus& status,
+    const net::CookieInclusionStatus& status,
     net::NetLogCaptureMode capture_mode) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("operation", operation);
@@ -617,14 +617,14 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
     for (CookieStatusList::iterator it = maybe_sent_cookies.begin();
          it != maybe_sent_cookies.end(); ++it) {
       it->status.AddExclusionReason(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
   }
   for (const auto& cookie_with_status : cookies_with_status_list) {
-    CanonicalCookie::CookieInclusionStatus status = cookie_with_status.status;
+    CookieInclusionStatus status = cookie_with_status.status;
     if (!can_get_cookies) {
       status.AddExclusionReason(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
     maybe_sent_cookies.push_back({cookie_with_status.cookie, status});
   }
@@ -707,7 +707,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   // it reaches 0 in the callback itself.
   num_cookie_lines_left_ = 1;
   while (headers->EnumerateHeader(&iter, name, &cookie_string)) {
-    CanonicalCookie::CookieInclusionStatus returned_status;
+    CookieInclusionStatus returned_status;
 
     num_cookie_lines_left_++;
 
@@ -723,7 +723,7 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
     }
     if (cookie && !CanSetCookie(*cookie, &options)) {
       returned_status.AddExclusionReason(
-          CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
     if (!returned_status.IsInclude()) {
       OnSetCookieResult(options, cookie_to_return, std::move(cookie_string),
@@ -749,7 +749,7 @@ void URLRequestHttpJob::OnSetCookieResult(
     const CookieOptions& options,
     base::Optional<CanonicalCookie> cookie,
     std::string cookie_string,
-    CanonicalCookie::CookieInclusionStatus status) {
+    CookieInclusionStatus status) {
   if (request_->net_log().IsCapturing()) {
     request_->net_log().AddEvent(
         NetLogEventType::COOKIE_INCLUSION_STATUS,

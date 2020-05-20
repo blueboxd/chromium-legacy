@@ -25,7 +25,8 @@
 //   milestone, the flag may be freely hidden or deleted. The special value -1
 //   means "never expires", which should only be used in consultation with
 //   top-level OWNERS. The use of the -1 value must be accompanied by a comment
-//   explaining why the flag must not expire.
+//   explaining why the flag must not expire and an entry in
+//   flag-never-expire-list.json. 
 
 [
   {
@@ -1413,6 +1414,13 @@
     "name": "enable-de-jelly",
     "owners": [ "ericrk", "//components/viz/OWNERS" ],
     "expiry_milestone": 94
+  },
+  {
+    "name": "enable-debug-for-store-billing",
+    "owners": [ "maxlg", "web-payments-team@google.com" ],
+    // This flag is to allow developers to develop their app-billing capable
+    // TWA apps locally, without having to upload the apps to the Play Store.
+    "expiry_milestone": -1
   },
   {
     "name": "enable-defer-all-script",

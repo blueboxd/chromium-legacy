@@ -24,6 +24,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "media/base/media_switches.h"
 #include "net/base/load_flags.h"
+#include "net/cookies/cookie_inclusion_status.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -276,11 +277,10 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
       net::CookieOptions options;
       GetCookieManager()->SetCanonicalCookie(
           *cookie, url, options,
-          base::BindLambdaForTesting(
-              [&](net::CanonicalCookie::CookieInclusionStatus status) {
-                if (--tasks == 0)
-                  run_loop.Quit();
-              }));
+          base::BindLambdaForTesting([&](net::CookieInclusionStatus status) {
+            if (--tasks == 0)
+              run_loop.Quit();
+          }));
     }
 
     run_loop.Run();

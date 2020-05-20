@@ -27,9 +27,7 @@ How to update or add fonts:
 6.  Add all the font_bundle.tar.gz.sha1 file to the chromium src repository, by
     executing the following command:
 	$ git add ./third_party/test_fonts/test_fonts.tar.gz.sha1
-7.  Update filename constant for fontconfig cache in //base/test/BUILD.gn and
-    //base/test/generate_fontconfig_caches.cc when test fonts change.
-8.  (optional) Update FONT_FILES in
+7.  (optional) Update FONT_FILES in
     third_party/blink/tools/blinkpy/web_tests/port/base.py .
 
 If you need access to the chromium-fonts bucket, contact Chrome infra.% For

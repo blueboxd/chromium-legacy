@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/browser_test.h"
@@ -84,10 +85,8 @@ IN_PROC_BROWSER_TEST_P(WebAppAshInteractiveUITest,
   CheckWebAppMenuClickable();
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    WebAppAshInteractiveUITest,
-    ::testing::Values(
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
-        web_app::ControllerType::kUnifiedControllerWithWebApp),
-    web_app::ControllerTypeParamToString);
+INSTANTIATE_TEST_SUITE_P(All,
+                         WebAppAshInteractiveUITest,
+                         ::testing::Values(web_app::ProviderType::kBookmarkApps,
+                                           web_app::ProviderType::kWebApps),
+                         web_app::ProviderTypeParamToString);

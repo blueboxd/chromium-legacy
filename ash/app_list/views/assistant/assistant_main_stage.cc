@@ -6,6 +6,7 @@
 
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
+#include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/assistant_view_delegate.h"
 #include "ash/assistant/ui/assistant_view_ids.h"
@@ -16,6 +17,8 @@
 #include "ash/assistant/ui/main_stage/ui_element_container_view.h"
 #include "ash/assistant/util/animation_util.h"
 #include "ash/assistant/util/assistant_util.h"
+#include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
+#include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/time/time.h"
@@ -120,12 +123,17 @@ AppListAssistantMainStage::AppListAssistantMainStage(
   InitLayout();
 
   assistant_controller_observer_.Add(AssistantController::Get());
-  assistant_interaction_model_observer_.Add(
-      AssistantInteractionController::Get());
-  assistant_ui_model_observer_.Add(AssistantUiController::Get());
+  AssistantInteractionController::Get()->GetModel()->AddObserver(this);
+  AssistantUiController::Get()->GetModel()->AddObserver(this);
 }
 
-AppListAssistantMainStage::~AppListAssistantMainStage() = default;
+AppListAssistantMainStage::~AppListAssistantMainStage() {
+  if (AssistantUiController::Get())
+    AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+
+  if (AssistantInteractionController::Get())
+    AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
+}
 
 const char* AppListAssistantMainStage::GetClassName() const {
   return "AppListAssistantMainStage";
@@ -327,9 +335,8 @@ void AppListAssistantMainStage::AnimateInFooter() {
 }
 
 void AppListAssistantMainStage::OnAssistantControllerDestroying() {
-  assistant_ui_model_observer_.Remove(AssistantUiController::Get());
-  assistant_interaction_model_observer_.Remove(
-      AssistantInteractionController::Get());
+  AssistantUiController::Get()->GetModel()->RemoveObserver(this);
+  AssistantInteractionController::Get()->GetModel()->RemoveObserver(this);
   assistant_controller_observer_.Remove(AssistantController::Get());
 }
 

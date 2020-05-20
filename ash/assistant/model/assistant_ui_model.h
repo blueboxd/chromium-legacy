@@ -51,8 +51,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
   ~AssistantUiModel();
 
   // Adds/removes the specified |observer|.
-  void AddObserver(AssistantUiModelObserver* observer);
-  void RemoveObserver(AssistantUiModelObserver* observer);
+  void AddObserver(AssistantUiModelObserver* observer) const;
+  void RemoveObserver(AssistantUiModelObserver* observer) const;
 
   // Sets the UI mode. If |due_to_interaction| is true, the UI mode was changed
   // as a result of an Assistant interaction.
@@ -92,7 +92,7 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiModel {
   AssistantVisibility visibility_ = AssistantVisibility::kClosed;
   AssistantEntryPoint entry_point_ = AssistantEntryPoint::kUnspecified;
 
-  base::ObserverList<AssistantUiModelObserver> observers_;
+  mutable base::ObserverList<AssistantUiModelObserver> observers_;
 
   // Usable work area for Assistant. Value is only meaningful when Assistant
   // UI exists.

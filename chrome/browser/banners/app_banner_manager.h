@@ -143,13 +143,17 @@ class AppBannerManager : public content::WebContentsObserver,
   bool IsProbablyPromotableWebApp(
       bool ignore_existing_installations = false) const;
 
+  // Returns whether installability checks satisfy promotion requirements
+  // (e.g. having a service worker fetch event).
+  bool IsPromotableWebApp() const;
+
   // Returns the page's web app start URL if available, otherwise return an
   // empty or invalid GURL.
-  const GURL& GetManifestStartUrl();
+  const GURL& GetManifestStartUrl() const;
 
   // Returns the page's web app |DisplayMode| if available, otherwise it will be
   // DisplayMode::kUndefined.
-  blink::mojom::DisplayMode GetManifestDisplayMode();
+  blink::mojom::DisplayMode GetManifestDisplayMode() const;
 
   // Each successful installability check gets to show one animation prompt,
   // this returns and consumes the animation prompt if it is available.

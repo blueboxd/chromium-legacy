@@ -96,6 +96,9 @@ class OsSettingsSection {
   // derived type requires one or more handlers for this section.
   virtual void AddHandlers(content::WebUI* web_ui) {}
 
+  // Provides the message ID for the name of this section.
+  virtual int GetSectionNameMessageId() const = 0;
+
   // Registers the subpages and/or settings which reside in this section.
   virtual void RegisterHierarchy(HierarchyGenerator* generator) const = 0;
 
@@ -119,6 +122,7 @@ class OsSettingsSection {
   OsSettingsSection();
 
   Profile* profile() { return profile_; }
+  const Profile* profile() const { return profile_; }
   SearchTagRegistry* registry() { return search_tag_registry_; }
 
  private:

@@ -407,6 +407,9 @@ inline bool NGFragmentItem::CanReuse() const {
   return false;
 }
 
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGFragmentItem*);
+CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGFragmentItem&);
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_INLINE_NG_FRAGMENT_ITEM_H_

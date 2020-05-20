@@ -38,7 +38,10 @@ class SigninViewControllerDelegateViews
   static std::unique_ptr<views::WebView> CreateSigninErrorWebView(
       Browser* browser);
 
-  static std::unique_ptr<views::WebView> CreateReauthWebView(
+  static std::unique_ptr<views::WebView> CreateReauthConfirmationWebView(
+      Browser* browser);
+
+  static std::unique_ptr<views::WebView> CreateGaiaReauthWebView(
       Browser* browser,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 

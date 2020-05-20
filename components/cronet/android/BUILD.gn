@@ -767,6 +767,7 @@ if (!is_component_build) {
     min_sdk_version = _cronet_min_sdk_version
     sources = [ "sample/javatests/src/org/chromium/cronet_sample_apk/CronetSampleTest.java" ]
     deps = [
+      ":cronet_sample_apk_java",
       "//third_party/android_support_test_runner:rules_java",
       "//third_party/android_support_test_runner:runner_java",
       "//third_party/espresso:espresso_all_java",

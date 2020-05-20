@@ -306,9 +306,8 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
       kUpdateHistogramName, ManifestUpdateResult::kWebContentsDestroyed, 1);
 }
 
-// Flaky: https://crbug.com/1083215
 IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
-                       DISABLED_CheckCancelledByAppUninstalled) {
+                       CheckCancelledByAppUninstalled) {
   AppId app_id = InstallWebApp();
   GetManifestUpdateManager(browser()).hang_update_checks_for_testing();
 

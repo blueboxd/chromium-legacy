@@ -21,8 +21,6 @@ namespace ui {
 struct AXNodeData;
 }
 
-class BrowserView;
-
 namespace captions {
 class CaptionBubbleFrameView;
 
@@ -35,9 +33,7 @@ class CaptionBubbleFrameView;
 class CaptionBubble : public views::BubbleDialogDelegateView,
                       public views::ButtonListener {
  public:
-  CaptionBubble(views::View* anchor,
-                BrowserView* browser_view,
-                base::OnceClosure destroyed_callback);
+  CaptionBubble(views::View* anchor, base::OnceClosure destroyed_callback);
   ~CaptionBubble() override;
   CaptionBubble(const CaptionBubble&) = delete;
   CaptionBubble& operator=(const CaptionBubble&) = delete;
@@ -59,8 +55,6 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   // Hides the bubble. This should be used instead of showing/hiding the widget
   // directly.
   void Hide();
-
-  const char* GetClassName() const override;
 
  protected:
   // views::BubbleDialogDelegateView:
@@ -119,9 +113,6 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
 
   // Whether we should show the widget. False if explicitly asked to hide.
   bool should_show_ = true;
-
-  // A reference to the BrowserView holding this bubble. Unowned.
-  BrowserView* browser_view_;
 };
 
 }  // namespace captions

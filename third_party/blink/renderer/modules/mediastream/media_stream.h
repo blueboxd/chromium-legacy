@@ -67,6 +67,9 @@ class MODULES_EXPORT MediaStream final
   // Creates a MediaStream matching the MediaStreamDescriptor. MediaStreamTracks
   // are created for any MediaStreamComponents attached to the descriptor.
   static MediaStream* Create(ExecutionContext*, MediaStreamDescriptor*);
+  static MediaStream* Create(ExecutionContext*,
+                             MediaStreamDescriptor*,
+                             bool pan_tilt_zoom_allowed);
   // Creates a MediaStream with the specified MediaStreamDescriptor and
   // MediaStreamTracks. The tracks must match the MediaStreamComponents attached
   // to the descriptor (or else a DCHECK fails). This allows you to create
@@ -81,7 +84,9 @@ class MODULES_EXPORT MediaStream final
                              const MediaStreamTrackVector& audio_tracks,
                              const MediaStreamTrackVector& video_tracks);
 
-  MediaStream(ExecutionContext*, MediaStreamDescriptor*);
+  MediaStream(ExecutionContext*,
+              MediaStreamDescriptor*,
+              bool pan_tilt_zoom_allowed);
   MediaStream(ExecutionContext*,
               MediaStreamDescriptor*,
               const MediaStreamTrackVector& audio_tracks,

@@ -832,26 +832,6 @@ void SimulateMouseClickAt(WebContents* web_contents,
                           int modifiers,
                           blink::WebMouseEvent::Button button,
                           const gfx::Point& point) {
-  blink::WebMouseEvent mouse_event(blink::WebInputEvent::Type::kMouseDown,
-                                   modifiers, ui::EventTimeForNow());
-  mouse_event.button = button;
-  mouse_event.SetPositionInWidget(point.x(), point.y());
-  // Mac needs positionInScreen for events to plugins.
-  gfx::Rect offset = web_contents->GetContainerBounds();
-  mouse_event.SetPositionInScreen(point.x() + offset.x(),
-                                  point.y() + offset.y());
-  mouse_event.click_count = 1;
-  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
-  mouse_event.SetType(blink::WebInputEvent::Type::kMouseUp);
-  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
-}
-
-void SimulateRoutedMouseClickAt(WebContents* web_contents,
-                                int modifiers,
-                                blink::WebMouseEvent::Button button,
-                                const gfx::Point& point) {
   content::WebContentsImpl* web_contents_impl =
       static_cast<content::WebContentsImpl*>(web_contents);
   content::RenderWidgetHostViewBase* rwhvb =
@@ -891,17 +871,14 @@ void SendMouseDownToWidget(RenderWidgetHost* target,
 void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point) {
-  blink::WebMouseEvent mouse_event(type, blink::WebInputEvent::kNoModifiers,
-                                   ui::EventTimeForNow());
-  mouse_event.SetPositionInWidget(point.x(), point.y());
-  web_contents->GetRenderViewHost()->GetWidget()->ForwardMouseEvent(
-      mouse_event);
+  SimulateMouseEvent(web_contents, type,
+                     blink::WebMouseEvent::Button::kNoButton, point);
 }
 
-void SimulateRoutedMouseEvent(WebContents* web_contents,
-                              blink::WebInputEvent::Type type,
-                              blink::WebMouseEvent::Button button,
-                              const gfx::Point& point) {
+void SimulateMouseEvent(WebContents* web_contents,
+                        blink::WebInputEvent::Type type,
+                        blink::WebMouseEvent::Button button,
+                        const gfx::Point& point) {
   content::WebContentsImpl* web_contents_impl =
       static_cast<content::WebContentsImpl*>(web_contents);
   content::RenderWidgetHostViewBase* rwhvb =
@@ -917,13 +894,6 @@ void SimulateRoutedMouseEvent(WebContents* web_contents,
 
   web_contents_impl->GetInputEventRouter()->RouteMouseEvent(rwhvb, &mouse_event,
                                                             ui::LatencyInfo());
-}
-
-void SimulateRoutedMouseEvent(WebContents* web_contents,
-                              blink::WebInputEvent::Type type,
-                              const gfx::Point& point) {
-  SimulateRoutedMouseEvent(web_contents, type,
-                           blink::WebMouseEvent::Button::kNoButton, point);
 }
 
 void SimulateMouseWheelEvent(WebContents* web_contents,
@@ -2196,53 +2166,6 @@ WebContents* GetFocusedWebContents(WebContents* web_contents) {
       static_cast<WebContentsImpl*>(web_contents);
   return web_contents_impl->GetFocusedWebContents();
 }
-
-void RouteMouseEvent(WebContents* web_contents, blink::WebMouseEvent* event) {
-  WebContentsImpl* web_contents_impl =
-      static_cast<WebContentsImpl*>(web_contents);
-  web_contents_impl->GetInputEventRouter()->RouteMouseEvent(
-      static_cast<RenderWidgetHostViewBase*>(
-          web_contents_impl->GetMainFrame()->GetView()),
-      event, ui::LatencyInfo());
-}
-
-#if defined(USE_AURA)
-void SendRoutedTouchTapSequence(content::WebContents* web_contents,
-                                gfx::Point point) {
-  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
-      web_contents->GetRenderWidgetHostView());
-  ui::TouchEvent touch_start(
-      ui::ET_TOUCH_PRESSED, point, base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  rwhva->OnTouchEvent(&touch_start);
-  ui::TouchEvent touch_end(ui::ET_TOUCH_RELEASED, point, base::TimeTicks::Now(),
-                           ui::PointerDetails(ui::EventPointerType::kTouch, 0));
-  rwhva->OnTouchEvent(&touch_end);
-}
-
-void SendRoutedGestureTapSequence(content::WebContents* web_contents,
-                                  gfx::Point point) {
-  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
-      web_contents->GetRenderWidgetHostView());
-  ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);
-  gesture_tap_down_details.set_is_source_touch_event_set_non_blocking(true);
-  gesture_tap_down_details.set_device_type(
-      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  ui::GestureEvent gesture_tap_down(point.x(), point.y(), 0,
-                                    base::TimeTicks::Now(),
-                                    gesture_tap_down_details);
-  rwhva->OnGestureEvent(&gesture_tap_down);
-  ui::GestureEventDetails gesture_tap_details(ui::ET_GESTURE_TAP);
-  gesture_tap_details.set_is_source_touch_event_set_non_blocking(true);
-  gesture_tap_details.set_device_type(
-      ui::GestureDeviceType::DEVICE_TOUCHSCREEN);
-  gesture_tap_details.set_tap_count(1);
-  ui::GestureEvent gesture_tap(point.x(), point.y(), 0, base::TimeTicks::Now(),
-                               gesture_tap_details);
-  rwhva->OnGestureEvent(&gesture_tap);
-}
-
-#endif
 
 namespace {
 

@@ -6,11 +6,17 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "fake_server_response.cc",
+    "fake_server_response.h",
     "fake_tile_service.cc",
     "fake_tile_service.h",
   ]
 
-  deps = [ "//components/query_tiles:public" ]
+  deps = [
+    "//components/query_tiles:public",
+    "//components/query_tiles/internal",
+    "//components/query_tiles/proto",
+  ]
 }
 
 source_set("test_lib") {

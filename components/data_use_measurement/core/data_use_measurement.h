@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/time/time.h"
@@ -93,39 +94,32 @@ class DataUseMeasurement
   void ReportDataUsageServices(int32_t traffic_annotation_hash,
                                TrafficDirection dir,
                                DataUseUserData::AppState app_state,
-                               int64_t message_size_bytes) const;
+                               int64_t message_size_bytes);
 
   // Returns if the current network connection type is cellular.
   bool IsCurrentNetworkCellular() const;
 
-#if defined(OS_ANDROID)
-  // Records the count of bytes received and sent by Chrome on the network as
-  // reported by the operating system.
-  void MaybeRecordNetworkBytesOS();
-
-  // Number of bytes received and sent by Chromium as reported by the network
-  // delegate since the operating system was last queried for traffic
-  // statistics.
-  int64_t bytes_transferred_since_last_traffic_stats_query_ = 0;
-#endif
-
   base::ObserverList<ServicesDataUseObserver>::Unchecked
       services_data_use_observer_list_;
 
-  SEQUENCE_CHECKER(sequence_checker_);
-
  private:
   friend class DataUseMeasurementTest;
+
+  // Records the count of bytes received and sent by Chrome on the network as
+  // reported by the operating system. If |force_record_metrics| is true, the
+  // data use metrics are always recorded. If |force_record_metrics| is false,
+  // data use may be recorded only if it's expected to be high.
+  void MaybeRecordNetworkBytesOS(bool force_record_metrics);
 
   // Makes the full name of the histogram. It is made from |prefix| and suffix
   // which is made based on network and application status. suffix is a string
   // representing whether the data use was on the send ("Upstream") or receive
   // ("Downstream") path, and whether the app was in the "Foreground" or
   // "Background".
-  std::string GetHistogramNameWithConnectionType(
+  static std::string GetHistogramNameWithConnectionType(
       const char* prefix,
       TrafficDirection dir,
-      DataUseUserData::AppState app_state) const;
+      DataUseUserData::AppState app_state);
 
   // Makes the full name of the histogram. It is made from |prefix| and suffix
   // which is made based on network and application status. suffix is a string
@@ -135,10 +129,10 @@ class DataUseMeasurement
   // example, "Prefix.Upstream.Foreground.Cellular" is a possible output.
   // |app_state| indicates the app state which can be foreground, background, or
   // unknown.
-  std::string GetHistogramName(const char* prefix,
-                               TrafficDirection dir,
-                               DataUseUserData::AppState app_state,
-                               bool is_connection_cellular) const;
+  static std::string GetHistogramName(const char* prefix,
+                                      TrafficDirection dir,
+                                      DataUseUserData::AppState app_state,
+                                      bool is_connection_cellular);
 
 #if defined(OS_ANDROID)
   // Called whenever the application transitions from foreground to background
@@ -161,32 +155,36 @@ class DataUseMeasurement
 #if defined(OS_ANDROID)
   // Application listener store the last known state of the application in this
   // field.
-  base::android::ApplicationState app_state_;
+  base::android::ApplicationState app_state_ =
+      base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES;
 
   // ApplicationStatusListener used to monitor whether the application is in the
   // foreground or in the background. It is owned by DataUseMeasurement.
   std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
+#endif
 
   // Number of bytes received and sent by Chromium as reported by the operating
   // system when it was last queried for traffic statistics. Set to 0 if the
   // operating system was never queried.
-  int64_t rx_bytes_os_;
-  int64_t tx_bytes_os_;
-
-  // The time at which Chromium app state changed to background. Can be null if
-  // app is not in background.
-  base::TimeTicks last_app_background_time_;
-
-  // True if app is in background and first network read has not yet happened.
-  bool no_reads_since_background_;
-#endif
+  int64_t rx_bytes_os_ = 0;
+  int64_t tx_bytes_os_ = 0;
 
   // Watches for network connection changes. Global singleton object and
   // outlives |this|
   network::NetworkConnectionTracker* network_connection_tracker_;
 
   // The current connection type.
-  network::mojom::ConnectionType connection_type_;
+  network::mojom::ConnectionType connection_type_ =
+      network::mojom::ConnectionType::CONNECTION_UNKNOWN;
+
+  // Number of bytes received and sent by Chromium as reported by the network
+  // delegate since the operating system was last queried for traffic
+  // statistics.
+  int64_t bytes_transferred_since_last_traffic_stats_query_ = 0;
+
+  SEQUENCE_CHECKER(sequence_checker_);
+
+  base::WeakPtrFactory<DataUseMeasurement> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DataUseMeasurement);
 };

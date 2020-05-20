@@ -7,9 +7,11 @@
 #include "components/translate/core/browser/translate_error_details.h"
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_switches.h"
+#include "content/public/browser/browser_context.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
 #include "weblayer/browser/translate_client_impl.h"
 #include "weblayer/public/tab.h"
@@ -178,6 +180,43 @@ IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, PageLanguageDetection) {
 
 // Test that the translation was successful.
 IN_PROC_BROWSER_TEST_F(TranslateBrowserTest, PageTranslationSuccess) {
+  SetTranslateScript(kTestValidScript);
+
+  TranslateClientImpl* translate_client = GetTranslateClient(shell());
+
+  NavigateAndWaitForCompletion(GURL("about:blank"), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("und", translate_client->GetLanguageState().original_language());
+
+  // Navigate to a page in French.
+  NavigateAndWaitForCompletion(
+      GURL(embedded_test_server()->GetURL("/french_page.html")), shell());
+  WaitUntilLanguageDetermined(shell());
+  EXPECT_EQ("fr", translate_client->GetLanguageState().original_language());
+
+  // Translate the page through TranslateManager.
+  translate::TranslateManager* manager =
+      translate_client->GetTranslateManager();
+  manager->TranslatePage(
+      translate_client->GetLanguageState().original_language(), "en", true);
+
+  WaitUntilPageTranslated(shell());
+
+  EXPECT_FALSE(translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(translate::TranslateErrors::NONE, GetPageTranslatedResult());
+}
+
+class IncognitoTranslateBrowserTest : public TranslateBrowserTest {
+ public:
+  IncognitoTranslateBrowserTest() { SetShellStartsInIncognitoMode(); }
+};
+
+// Test that the translation infrastructure is set up properly when the user is
+// in incognito mode.
+IN_PROC_BROWSER_TEST_F(IncognitoTranslateBrowserTest,
+                       PageTranslationSuccess_IncognitoMode) {
+  ASSERT_TRUE(GetProfile()->GetBrowserContext()->IsOffTheRecord());
+
   SetTranslateScript(kTestValidScript);
 
   TranslateClientImpl* translate_client = GetTranslateClient(shell());

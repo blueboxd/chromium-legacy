@@ -255,13 +255,18 @@ void ApkWebAppService::OnPackageInstalled(
     }
   }
 
-  // TODO(crbug.com/1082547): check if fingerprint or is_twa has chagned.
   bool was_previously_web_app = !web_app_id.empty();
   bool is_now_web_app = !package_info.web_app_info.is_null();
 
-  // The previous and current states match. Nothing to do.
-  if (is_now_web_app == was_previously_web_app)
+  // The previous and current states match.
+  if (is_now_web_app == was_previously_web_app) {
+    if (is_now_web_app && package_info.web_app_info->is_web_only_twa !=
+                              IsWebOnlyTwa(web_app_id)) {
+      UpdatePackageInfo(web_app_id, package_info.web_app_info);
+    }
+
     return;
+  }
 
   // Only call this function if there has been a state change from web app to
   // Android app or vice-versa.
@@ -468,6 +473,17 @@ bool ApkWebAppService::IsWebAppInstalledFromArc(
     const web_app::AppId& web_app_id) {
   return web_app::ExternallyInstalledWebAppPrefs::HasAppIdWithInstallSource(
       profile_->GetPrefs(), web_app_id, web_app::ExternalInstallSource::kArc);
+}
+
+void ApkWebAppService::UpdatePackageInfo(
+    const std::string& app_id,
+    const arc::mojom::WebAppInfoPtr& web_app_info) {
+  DictionaryPrefUpdate dict_update(profile_->GetPrefs(), kWebAppToApkDictPref);
+  dict_update->SetPath({app_id, kIsWebOnlyTwaKey},
+                       base::Value(web_app_info->is_web_only_twa));
+  dict_update->SetPath(
+      {app_id, kSha256FingerprintKey},
+      base::Value(web_app_info->certificate_sha256_fingerprint.value()));
 }
 
 }  // namespace chromeos

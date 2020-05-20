@@ -66,7 +66,8 @@ TEST_F(WebDialogWebContentsDelegateTest, DoNothingMethodsTest) {
   // None of the following calls should do anything.
   history::HistoryAddPageArgs should_add_args(
       GURL(), base::Time::Now(), 0, 0, GURL(), history::RedirectList(),
-      ui::PAGE_TRANSITION_TYPED, false, history::SOURCE_SYNCED, false, true);
+      ui::PAGE_TRANSITION_TYPED, false, history::SOURCE_SYNCED, false, true,
+      false);
   test_web_contents_delegate_->NavigationStateChanged(
       nullptr, content::InvalidateTypes(0));
   test_web_contents_delegate_->ActivateContents(nullptr);

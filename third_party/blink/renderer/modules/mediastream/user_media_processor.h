@@ -102,7 +102,8 @@ class MODULES_EXPORT UserMediaProcessor
   // |request| have completed.
   virtual void GetUserMediaRequestSucceeded(
       const blink::WebMediaStream& stream,
-      UserMediaRequest* user_media_request);
+      UserMediaRequest* user_media_request,
+      bool pan_tilt_zoom_allowed);
   virtual void GetUserMediaRequestFailed(
       blink::mojom::blink::MediaStreamRequestResult result,
       const String& constraint_name = String());
@@ -138,7 +139,8 @@ class MODULES_EXPORT UserMediaProcessor
                          blink::mojom::blink::MediaStreamRequestResult result,
                          const String& label,
                          const Vector<blink::MediaStreamDevice>& audio_devices,
-                         const Vector<blink::MediaStreamDevice>& video_devices);
+                         const Vector<blink::MediaStreamDevice>& video_devices,
+                         bool pan_tilt_zoom_allowed);
 
   void GotAllVideoInputFormatsForDevice(
       UserMediaRequest* user_media_request,
@@ -154,10 +156,10 @@ class MODULES_EXPORT UserMediaProcessor
 
   bool IsCurrentRequestInfo(int request_id) const;
   bool IsCurrentRequestInfo(UserMediaRequest* user_media_request) const;
-  void DelayedGetUserMediaRequestSucceeded(
-      int request_id,
-      const blink::WebMediaStream& stream,
-      UserMediaRequest* user_media_request);
+  void DelayedGetUserMediaRequestSucceeded(int request_id,
+                                           const blink::WebMediaStream& stream,
+                                           UserMediaRequest* user_media_request,
+                                           bool pan_tilt_zoom_allowed);
   void DelayedGetUserMediaRequestFailed(
       int request_id,
       UserMediaRequest* user_media_request,

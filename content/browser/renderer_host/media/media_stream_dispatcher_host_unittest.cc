@@ -160,7 +160,8 @@ class MockMediaStreamDispatcherHost
                          blink::mojom::MediaStreamRequestResult result,
                          const std::string& label,
                          const blink::MediaStreamDevices& audio_devices,
-                         const blink::MediaStreamDevices& video_devices) {
+                         const blink::MediaStreamDevices& video_devices,
+                         bool pan_tilt_zoom_allowed) {
     if (result != blink::mojom::MediaStreamRequestResult::OK) {
       OnStreamGenerationFailed(request_id, result);
       return;

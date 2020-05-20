@@ -227,11 +227,12 @@ SigninViewController::ShowReauthPrompt(
   // The delegate will delete itself on request of the UI code when the widget
   // is closed.
   if (!base::FeatureList::IsEnabled(kSigninReauthPrompt)) {
-    // This currently displays a fake dialog for development purposes. Should
-    // not be called in production.
-    delegate_ = SigninViewControllerDelegate::CreateFakeReauthDelegate(
-        browser_, account_id, std::move(wrapped_reauth_callback));
+    // This currently displays the reauth confirmation dialog without the Gaia
+    // reauth for development purposes. Should not be called in production.
+    delegate_ = SigninViewControllerDelegate::CreateReauthConfirmationDelegate(
+        browser_, account_id);
     delegate_observer_.Add(delegate_);
+    reauth_callback_ = std::move(wrapped_reauth_callback);
     return abort_handle;
   }
 
@@ -243,6 +244,7 @@ SigninViewController::ShowReauthPrompt(
               account_id);
 
   // For now, Reauth is restricted to the primary account only.
+  // TODO(crbug.com/1083429): add support for secondary accounts.
   CoreAccountId primary_account_id =
       identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
 
@@ -260,7 +262,7 @@ SigninViewController::ShowReauthPrompt(
         browser_, account_id, std::move(wrapped_reauth_callback));
     delegate_observer_.Add(delegate_);
   } else {
-    delegate_ = SigninViewControllerDelegate::CreateReauthDelegate(
+    delegate_ = SigninViewControllerDelegate::CreateGaiaReauthDelegate(
         browser_, account_id, std::move(wrapped_reauth_callback));
     delegate_observer_.Add(delegate_);
   }
@@ -273,6 +275,10 @@ bool SigninViewController::ShowsModalDialog() {
 }
 
 void SigninViewController::CloseModalSignin() {
+  if (reauth_callback_) {
+    std::move(reauth_callback_).Run(signin::ReauthResult::kCancelled);
+  }
+
   if (delegate_)
     delegate_->CloseModalSignin();
 
@@ -285,8 +291,20 @@ void SigninViewController::SetModalSigninHeight(int height) {
 }
 
 void SigninViewController::OnModalSigninClosed() {
+  if (reauth_callback_) {
+    std::move(reauth_callback_).Run(signin::ReauthResult::kDismissedByUser);
+  }
+
   delegate_observer_.Remove(delegate_);
   delegate_ = nullptr;
+}
+
+void SigninViewController::OnReauthConfirmed() {
+  if (reauth_callback_) {
+    std::move(reauth_callback_).Run(signin::ReauthResult::kSuccess);
+  }
+
+  CloseModalSignin();
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

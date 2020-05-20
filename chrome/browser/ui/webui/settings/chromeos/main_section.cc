@@ -162,6 +162,10 @@ void MainSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::BrowserLifetimeHandler>());
 }
 
+int MainSection::GetSectionNameMessageId() const {
+  return IDS_INTERNAL_APP_SETTINGS;
+}
+
 void MainSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // MainSection is a container for common resources/functionality shared
   // between sections and does not have its own subpages/settings.

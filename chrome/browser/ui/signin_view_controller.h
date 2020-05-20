@@ -138,6 +138,9 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   // SigninViewControllerDelegate::Observer:
   void OnModalSigninClosed() override;
 
+  // Notifies that the user confirmed the reauth dialog.
+  void OnReauthConfirmed();
+
  private:
   friend class login_ui_test_utils::SigninViewControllerTestUtil;
 
@@ -161,6 +164,9 @@ class SigninViewController : public SigninViewControllerDelegate::Observer {
   ScopedObserver<SigninViewControllerDelegate,
                  SigninViewControllerDelegate::Observer>
       delegate_observer_{this};
+  // TODO(crbug.com/1045515): move the reauth callback to a dedicated reauth
+  // controller.
+  base::OnceCallback<void(signin::ReauthResult)> reauth_callback_;
 
   base::WeakPtrFactory<SigninViewController> weak_ptr_factory_{this};
 

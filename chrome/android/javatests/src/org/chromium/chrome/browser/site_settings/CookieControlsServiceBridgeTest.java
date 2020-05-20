@@ -77,15 +77,11 @@ public class CookieControlsServiceBridgeTest {
         mTestServer.stopAndDestroyServer();
     }
 
-    private void setThirdPartyCookieBlocking(boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
-        });
-    }
-
     private void setCookieControlsMode(@CookieControlsMode int mode) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.BLOCK_THIRD_PARTY_COOKIES, mode == CookieControlsMode.BLOCK_THIRD_PARTY);
         });
     }
 
@@ -95,7 +91,6 @@ public class CookieControlsServiceBridgeTest {
     @Test
     @SmallTest
     public void testCookieSettingsCheckedChanges() throws Exception {
-        setThirdPartyCookieBlocking(false);
         setCookieControlsMode(CookieControlsMode.OFF);
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
         Tab tab = mActivityTestRule.loadUrlInNewTab(url, true); // incognito tab
@@ -131,7 +126,7 @@ public class CookieControlsServiceBridgeTest {
         int expectedEnforcement = CookieControlsEnforcement.ENFORCED_BY_COOKIE_SETTING;
         mEnforcement = CookieControlsEnforcement.NO_ENFORCEMENT;
         currentCallCount = mCallbackHelper.getCallCount();
-        setThirdPartyCookieBlocking(true);
+        setCookieControlsMode(CookieControlsMode.BLOCK_THIRD_PARTY);
         mCallbackHelper.waitForCallback(currentCallCount, 1);
         Assert.assertEquals(expectedChecked, mChecked);
         Assert.assertEquals(expectedEnforcement, mEnforcement);
@@ -143,7 +138,6 @@ public class CookieControlsServiceBridgeTest {
     @Test
     @SmallTest
     public void testCookieBridgeWithTPCookiesDisabled() throws Exception {
-        setThirdPartyCookieBlocking(false);
         setCookieControlsMode(CookieControlsMode.OFF);
         final String url = mTestServer.getURL("/chrome/test/data/android/cookie.html");
         Tab tab = mActivityTestRule.loadUrlInNewTab(url, true); // incognito tab.

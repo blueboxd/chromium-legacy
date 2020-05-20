@@ -667,6 +667,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
       bool hidden,
       VisitSource visit_source,
       bool should_increment_typed_count,
+      bool publicly_routable,
       base::Optional<base::string16> title = base::nullopt);
 
   // Returns a redirect chain in |redirects| for the VisitID

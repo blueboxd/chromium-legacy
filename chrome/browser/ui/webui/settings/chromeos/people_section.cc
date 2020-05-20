@@ -784,6 +784,10 @@ void PeopleSection::AddHandlers(content::WebUI* web_ui) {
   }
 }
 
+int PeopleSection::GetSectionNameMessageId() const {
+  return IDS_OS_SETTINGS_PEOPLE;
+}
+
 void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpParentalControls);
 

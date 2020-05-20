@@ -206,9 +206,7 @@ bool FocusManager::RotatePaneFocus(Direction direction,
       continue;
 
     pane->RequestFocus();
-    // |pane| may be in a different widget, so don't assume its focus manager
-    // is |this|.
-    focused_view = pane->GetWidget()->GetFocusManager()->GetFocusedView();
+    focused_view = GetFocusedView();
     if (pane == focused_view || pane->Contains(focused_view))
       return true;
   }

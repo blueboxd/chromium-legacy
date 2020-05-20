@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_response_interceptor_url_loader_throttle.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
@@ -16,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "extensions/browser/guest_view/mime_handler_view/mime_handler_view_attach_helper.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handlers/mime_types_handler.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -54,6 +57,14 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   if (extension_id.empty())
     return;
+
+  // Chrome's PDF Extension does not work properly in the face of a restrictive
+  // Content-Security-Policy, and does not currently respect the policy anyway.
+  // Ignore CSP served on a PDF response. https://crbug.com/271452
+  if (extension_id == extension_misc::kPdfExtensionId &&
+      response_head->headers) {
+    response_head->headers->RemoveHeader("Content-Security-Policy");
+  }
 
   MimeTypesHandler::ReportUsedHandler(extension_id);
 

@@ -10,6 +10,7 @@ group("closure_compile") {
     deps += [
       "signin_email_confirmation:closure_compile",
       "signin_error:closure_compile",
+      "signin_reauth:closure_compile",
     ]
   }
 }
@@ -23,6 +24,7 @@ group("web_components") {
     public_deps += [
       "signin_email_confirmation:web_components",
       "signin_error:web_components",
+      "signin_reauth:web_components",
     ]
   }
 }

@@ -15,5 +15,9 @@ PASS [service worker] same-origin
 PASS [service worker] blocked by CORP: same-origin
 PASS [service worker] blocked due to COEP
 PASS [service worker] blocked during redirect
+PASS [between service worker and page] same-origin
+PASS [between service worker and page] blocked by CORP: same-origin
+PASS [between service worker and page] blocked due to COEP
+PASS [between service worker and page] blocked during redirect
 Harness: the test ran to completion.
 

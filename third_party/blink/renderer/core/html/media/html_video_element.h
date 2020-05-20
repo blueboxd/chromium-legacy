@@ -53,6 +53,7 @@ class CORE_EXPORT HTMLVideoElement final
       public ImageBitmapSource,
       public Supplementable<HTMLVideoElement> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLVideoElement);
 
  public:
   static const int kNoAlreadyUploadedFrame = -1;

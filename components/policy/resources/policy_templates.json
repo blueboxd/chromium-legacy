@@ -869,6 +869,7 @@
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportDeviceAppInfo',
+        'ReportDeviceBluetoothInfo',
         'ReportUploadFrequency',
         'ReportArcStatusEnabled',
         'HeartbeatEnabled',
@@ -8368,6 +8369,27 @@
 
       If the policy is set to false or left unset, the information will not be reported.
       If set to true, the device's applications and usage will be reported.''',
+      'arc_support': 'This policy has no effect on the logging done by Android.',
+    },
+    {
+      'name': 'ReportDeviceBluetoothInfo',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:85-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': False,
+      'id': 708,
+      'caption': '''Report Bluetooth info''',
+      'tags': ['admin-sharing'],
+      'desc': '''Report a device's Bluetooth information.
+
+      If the policy is set to false or left unset, the information will not be reported.
+      If set to true, the device's Bluetooth information will be reported.''',
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
@@ -21572,6 +21594,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'ReportDeviceOsUpdateStatus': 'device_reporting.report_os_update_status',
     'ReportDeviceVersionInfo': 'device_reporting.report_version_info',
     'ReportDeviceAppInfo': 'device_reporting.report_app_info',
+    'ReportDeviceBluetoothInfo': 'device_reporting.report_bluetooth_info',
     'ReportUploadFrequency': 'device_reporting.device_status_frequency',
     'NetworkThrottlingEnabled': 'network_throttling.enabled',
     'NetworkThrottlingEnabled': 'network_throttling.upload_rate_kbits',
@@ -22018,6 +22041,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
         'ReportDevicePowerStatus',
         'ReportDeviceStorageStatus',
         'ReportDeviceAppInfo',
+        'ReportDeviceBluetoothInfo',
         'ReportUploadFrequency',
         'ReportArcStatusEnabled',
         'HeartbeatEnabled',
@@ -22089,6 +22113,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 707,
+  'highest_id_currently_used': 708,
   'highest_atomic_group_id_currently_used': 38
 }

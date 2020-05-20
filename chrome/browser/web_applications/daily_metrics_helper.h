@@ -38,6 +38,8 @@ struct DailyInteraction {
 // that start_url (ie. replacing or summing as appropriate).
 void FlushOldRecordsAndUpdate(DailyInteraction& record, Profile* profile);
 
+// Emits UKM metrics for all existing records. Note that this is asynchronous
+// unless |SkipOriginCheckForTesting| has been called.
 void FlushAllRecordsForTesting(Profile* profile);
 
 // Skip the origin check, which is async and requires a history service.

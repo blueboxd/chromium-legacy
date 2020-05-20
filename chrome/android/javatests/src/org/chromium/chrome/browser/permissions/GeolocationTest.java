@@ -12,7 +12,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
@@ -62,18 +61,6 @@ public class GeolocationTest {
     }
 
     /**
-     * Verify Geolocation creates an InfoBar and receives a mock location.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @Feature({"Location", "Main"})
-    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
-    public void testGeolocationPlumbingAllowedInfoBar() throws Exception {
-        runTest("initiate_getCurrentPosition()", 1, false, false);
-    }
-
-    /**
      * Verify Geolocation creates a dialog and receives a mock location.
      * @throws Exception
      */
@@ -94,18 +81,6 @@ public class GeolocationTest {
     @Feature({"Location", "Main"})
     public void testGeolocationPlumbingAllowedDialogNoGesture() throws Exception {
         runTest("initiate_getCurrentPosition()", 1, false, true);
-    }
-
-    /**
-     * Verify Geolocation creates an InfoBar and receives multiple locations.
-     * @throws Exception
-     */
-    @Test
-    @MediumTest
-    @Feature({"Location"})
-    @DisabledTest(message = "Modals are now enabled and test needs to be reworked crbug.com/935900")
-    public void testGeolocationWatchInfoBar() throws Exception {
-        runTest("initiate_watchPosition()", 2, false, false);
     }
 
     /**

@@ -270,6 +270,10 @@ void AboutSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<::settings::AboutHandler>());
 }
 
+int AboutSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_ABOUT_OS;
+}
+
 void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // About Chrome OS.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kAboutChromeOsDetails);

@@ -52,13 +52,11 @@ class CookieControlsServiceTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::SetUp();
     feature_list_.InitAndEnableFeature(
         content_settings::kImprovedCookieControls);
-    web_ui_.set_web_contents(web_contents());
   }
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
 
  protected:
-  content::TestWebUI web_ui_;
   std::unique_ptr<CookieControlsServiceObserver> observer_;
 
  private:
@@ -66,27 +64,24 @@ class CookieControlsServiceTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(CookieControlsServiceTest, HandleCookieControlsToggleChanged) {
-  Profile* profile = Profile::FromBrowserContext(
-      web_ui_.GetWebContents()->GetBrowserContext());
-  observer_ = std::make_unique<CookieControlsServiceObserver>(profile);
+  Profile* otr_profile = profile()->GetPrimaryOTRProfile();
+  observer_ = std::make_unique<CookieControlsServiceObserver>(otr_profile);
   EXPECT_EQ(
       static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly),
-      profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
+      otr_profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
 
   // Set toggle value to false
   observer_->SetChecked(true);
   observer_->GetService()->HandleCookieControlsToggleChanged(false);
   EXPECT_EQ(static_cast<int>(content_settings::CookieControlsMode::kOff),
-            profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
+            otr_profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
   EXPECT_EQ(observer_->GetChecked(), false);
 
   // Set toggle value to true
   observer_->GetService()->HandleCookieControlsToggleChanged(true);
   EXPECT_EQ(
       static_cast<int>(content_settings::CookieControlsMode::kIncognitoOnly),
-      profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
+      otr_profile->GetPrefs()->GetInteger(prefs::kCookieControlsMode));
 
-  // TestingProfile does not have a PolicyService for incognito and this
-  // should not create a checked value of "true" in normal mode.
-  EXPECT_EQ(observer_->GetChecked(), false);
+  EXPECT_EQ(observer_->GetChecked(), true);
 }

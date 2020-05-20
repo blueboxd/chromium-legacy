@@ -6,6 +6,8 @@
 
 #include <sstream>
 
+#include "chrome/grit/generated_resources.h"
+
 namespace chromeos {
 namespace settings {
 
@@ -13,6 +15,10 @@ FakeOsSettingsSection::FakeOsSettingsSection(mojom::Section section)
     : section_(section) {}
 
 FakeOsSettingsSection::~FakeOsSettingsSection() = default;
+
+int FakeOsSettingsSection::GetSectionNameMessageId() const {
+  return IDS_INTERNAL_APP_SETTINGS;
+}
 
 std::string FakeOsSettingsSection::ModifySearchResultUrl(
     const SearchConcept& concept) const {

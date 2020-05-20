@@ -440,6 +440,11 @@ std::unique_ptr<Network::ResourceTiming> GetTiming(
                            load_timing.request_start))
       .SetWorkerStart(-1)
       .SetWorkerReady(-1)
+      .SetWorkerFetchStart(timeDelta(load_timing.service_worker_fetch_start,
+                                     load_timing.request_start))
+      .SetWorkerRespondWithSettled(
+          timeDelta(load_timing.service_worker_respond_with_settled,
+                    load_timing.request_start))
       .SetSendStart(
           timeDelta(load_timing.send_start, load_timing.request_start))
       .SetSendEnd(timeDelta(load_timing.send_end, load_timing.request_start))

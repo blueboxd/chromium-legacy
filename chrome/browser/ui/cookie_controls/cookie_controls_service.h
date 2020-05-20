@@ -9,10 +9,10 @@
 
 #include "base/observer_list.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/prefs/pref_change_registrar.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -25,8 +25,9 @@ namespace policy {
 class PolicyChangeRegistrar;
 }
 
-// Handles the global state for cookie settings changes and observation.
-class CookieControlsService : public KeyedService {
+// Handles the global state for cookie settings for the incognito NTP.
+class CookieControlsService : public KeyedService,
+                              content_settings::CookieSettings::Observer {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -57,13 +58,19 @@ class CookieControlsService : public KeyedService {
   // an instance of this service.
   explicit CookieControlsService(Profile* profile);
 
-  void OnThirdPartyCookieBlockingPrefChanged();
+  void OnThirdPartyCookieBlockingChanged(
+      bool block_third_party_cookies) override;
   void OnThirdPartyCookieBlockingPolicyChanged(const base::Value* previous,
                                                const base::Value* current);
 
   Profile* profile_;
-  PrefChangeRegistrar pref_change_registrar_;
   std::unique_ptr<policy::PolicyChangeRegistrar> policy_registrar_;
+  scoped_refptr<content_settings::CookieSettings> incongito_cookie_settings_;
+  scoped_refptr<content_settings::CookieSettings> regular_cookie_settings_;
+  ScopedObserver<content_settings::CookieSettings,
+                 content_settings::CookieSettings::Observer>
+      cookie_observer_{this};
+
   base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieControlsService);

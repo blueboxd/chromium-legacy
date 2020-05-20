@@ -198,24 +198,19 @@ void SimulateUnresponsiveRenderer(WebContents* web_contents,
                                   RenderWidgetHost* widget);
 
 // Simulates clicking at the center of the given tab asynchronously; modifiers
-// may contain bits from WebInputEvent::Modifiers.
+// may contain bits from WebInputEvent::Modifiers. Sends the event through
+// RenderWidgetHostInputEventRouter and thus can target OOPIFs.
 void SimulateMouseClick(WebContents* web_contents,
                         int modifiers,
                         blink::WebMouseEvent::Button button);
 
 // Simulates clicking at the point |point| of the given tab asynchronously;
-// modifiers may contain bits from WebInputEvent::Modifiers.
+// modifiers may contain bits from WebInputEvent::Modifiers. Sends the event
+// through RenderWidgetHostInputEventRouter and thus can target OOPIFs.
 void SimulateMouseClickAt(WebContents* web_contents,
                           int modifiers,
                           blink::WebMouseEvent::Button button,
                           const gfx::Point& point);
-
-// Same as SimulateMouseClickAt() except it forces the mouse event to go through
-// RenderWidgetHostInputEventRouter.
-void SimulateRoutedMouseClickAt(WebContents* web_contents,
-                                int modifiers,
-                                blink::WebMouseEvent::Button button,
-                                const gfx::Point& point);
 
 // Simulates MouseDown at the center of the given RenderWidgetHost's area.
 // This does not send a corresponding MouseUp.
@@ -223,20 +218,15 @@ void SendMouseDownToWidget(RenderWidgetHost* target,
                            int modifiers,
                            blink::WebMouseEvent::Button button);
 
-// Simulates asynchronously a mouse enter/move/leave event.
+// Simulates asynchronously a mouse enter/move/leave event. The mouse event is
+// routed through RenderWidgetHostInputEventRouter and thus can target OOPIFs.
 void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point);
-
-// Same as SimulateMouseEvent() except it forces the mouse event to go through
-// RenderWidgetHostInputEventRouter.
-void SimulateRoutedMouseEvent(WebContents* web_contents,
-                              blink::WebInputEvent::Type type,
-                              const gfx::Point& point);
-void SimulateRoutedMouseEvent(WebContents* web_contents,
-                              blink::WebInputEvent::Type type,
-                              blink::WebMouseEvent::Button button,
-                              const gfx::Point& point);
+void SimulateMouseEvent(WebContents* web_contents,
+                        blink::WebInputEvent::Type type,
+                        blink::WebMouseEvent::Button button,
+                        const gfx::Point& point);
 
 // Simulate a mouse wheel event.
 void SimulateMouseWheelEvent(WebContents* web_contents,
@@ -991,26 +981,6 @@ bool IsRenderWidgetHostFocused(const RenderWidgetHost*);
 
 // Returns the focused WebContents.
 WebContents* GetFocusedWebContents(WebContents* web_contents);
-
-// Route the |event| through the RenderWidgetHostInputEventRouter. This allows
-// correct targeting of events to out of process iframes.
-void RouteMouseEvent(WebContents* web_contents, blink::WebMouseEvent* event);
-
-#if defined(USE_AURA)
-// The following two methods allow a test to send a touch tap sequence, and
-// a corresponding gesture tap sequence, by sending it to the top-level
-// WebContents for the page.
-
-// Send a TouchStart/End sequence routed via the main frame's
-// RenderWidgetHostViewAura.
-void SendRoutedTouchTapSequence(content::WebContents* web_contents,
-                                gfx::Point point);
-
-// Send a GestureTapDown/GestureTap sequence routed via the main frame's
-// RenderWidgetHostViewAura.
-void SendRoutedGestureTapSequence(content::WebContents* web_contents,
-                                  gfx::Point point);
-#endif  // defined(USE_AURA)
 
 // Watches title changes on a WebContents, blocking until an expected title is
 // set.

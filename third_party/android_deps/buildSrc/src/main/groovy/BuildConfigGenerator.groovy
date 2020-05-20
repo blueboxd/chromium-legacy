@@ -198,9 +198,10 @@ class BuildConfigGenerator extends DefaultTask {
                 if (dependency.supportsAndroid) {
                     sb.append("  supports_android = true\n")
                 } else {
-                    // No point in enabling asserts third-party prebuilts.
-                    // Also required to break a dependency cycle for errorprone.
-                    sb.append("  enable_bytecode_rewriter = false\n")
+                    // Save some time by not validating classpaths of desktop
+                    // .jars. Also required to break a dependency cycle for
+                    // errorprone.
+                    sb.append("  enable_bytecode_checks = false\n")
                 }
             } else if (dependency.extension == 'aar') {
                 sb.append("""\
@@ -387,7 +388,7 @@ class BuildConfigGenerator extends DefaultTask {
             case 'com_googlecode_java_diff_utils_diffutils':
                 sb.append('\n')
                 sb.append('  # Needed to break dependency cycle for errorprone_plugin_java.\n')
-                sb.append('  no_build_hooks = true\n')
+                sb.append('  enable_bytecode_checks = false\n')
                 break
             case 'androidx_test_rules':
                 // Target needs Android SDK deps which exist in third_party/android_sdk.

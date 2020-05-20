@@ -209,6 +209,11 @@ class FetchEventServiceWorker : public FakeServiceWorker {
     if (params->request->body)
       request_body_ = params->request->body;
 
+    auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
+    auto now = base::TimeTicks::Now();
+    timing->dispatch_event_time = now;
+    timing->respond_with_settled_time = now;
+
     mojo::Remote<blink::mojom::ServiceWorkerFetchResponseCallback>
         response_callback(std::move(pending_response_callback));
     switch (response_mode_) {
@@ -218,29 +223,25 @@ class FetchEventServiceWorker : public FakeServiceWorker {
             std::move(finish_callback));
         break;
       case ResponseMode::kBlob:
-        response_callback->OnResponse(
-            OkResponse(std::move(blob_body_)),
-            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        response_callback->OnResponse(OkResponse(std::move(blob_body_)),
+                                      std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kStream:
-        response_callback->OnResponseStream(
-            OkResponse(nullptr /* blob_body */), std::move(stream_handle_),
-            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        response_callback->OnResponseStream(OkResponse(nullptr /* blob_body */),
+                                            std::move(stream_handle_),
+                                            std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kFallbackResponse:
-        response_callback->OnFallback(
-            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        response_callback->OnFallback(std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kErrorResponse:
-        response_callback->OnResponse(
-            ErrorResponse(),
-            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        response_callback->OnResponse(ErrorResponse(), std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::REJECTED);
         break;
@@ -267,22 +268,19 @@ class FetchEventServiceWorker : public FakeServiceWorker {
         break;
       case ResponseMode::kEarlyResponse:
         finish_callback_ = std::move(finish_callback);
-        response_callback->OnResponse(
-            OkResponse(nullptr /* blob_body */),
-            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        response_callback->OnResponse(OkResponse(nullptr /* blob_body */),
+                                      std::move(timing));
         // Now the caller must call FinishWaitUntil() to finish the event.
         break;
       case ResponseMode::kRedirect:
-        response_callback->OnResponse(
-            RedirectResponse(redirected_url_.spec()),
-            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        response_callback->OnResponse(RedirectResponse(redirected_url_.spec()),
+                                      std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
       case ResponseMode::kHeaders:
-        response_callback->OnResponse(
-            HeadersResponse(headers_),
-            blink::mojom::ServiceWorkerFetchEventTiming::New());
+        response_callback->OnResponse(HeadersResponse(headers_),
+                                      std::move(timing));
         std::move(finish_callback)
             .Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED);
         break;
@@ -474,8 +472,15 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
     EXPECT_EQ(expected_info.response_type, info.response_type);
     EXPECT_FALSE(info.load_timing.service_worker_start_time.is_null());
     EXPECT_FALSE(info.load_timing.service_worker_ready_time.is_null());
+    EXPECT_FALSE(info.load_timing.service_worker_fetch_start.is_null());
+    EXPECT_FALSE(
+        info.load_timing.service_worker_respond_with_settled.is_null());
     EXPECT_LT(info.load_timing.service_worker_start_time,
               info.load_timing.service_worker_ready_time);
+    EXPECT_LE(info.load_timing.service_worker_ready_time,
+              info.load_timing.service_worker_fetch_start);
+    EXPECT_LE(info.load_timing.service_worker_fetch_start,
+              info.load_timing.service_worker_respond_with_settled);
     EXPECT_EQ(expected_info.is_in_cache_storage, info.is_in_cache_storage);
     EXPECT_EQ(expected_info.cache_storage_cache_name,
               info.cache_storage_cache_name);

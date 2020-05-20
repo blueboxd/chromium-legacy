@@ -14,10 +14,12 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/sessions/content/session_tab_helper_delegate.h"
 #include "components/sessions/core/command_storage_manager_delegate.h"
 #include "components/sessions/core/session_service_commands.h"
+#include "weblayer/browser/tab_impl.h"
 #include "weblayer/public/browser_observer.h"
 
 class SessionID;
@@ -29,7 +31,6 @@ class SessionCommand;
 namespace weblayer {
 
 class BrowserImpl;
-class TabImpl;
 
 // BrowserPersister is responsible for maintaining the state of tabs in a
 // single Browser so that they can be restored at a later date. The state is
@@ -40,7 +41,8 @@ class TabImpl;
 // current state.
 class BrowserPersister : public sessions::CommandStorageManagerDelegate,
                          public sessions::SessionTabHelperDelegate,
-                         public BrowserObserver {
+                         public BrowserObserver,
+                         public TabImpl::DataObserver {
  public:
   BrowserPersister(const base::FilePath& path,
                    BrowserImpl* browser,
@@ -71,6 +73,10 @@ class BrowserPersister : public sessions::CommandStorageManagerDelegate,
   void OnTabAdded(Tab* tab) override;
   void OnTabRemoved(Tab* tab, bool active_tab_changed) override;
   void OnActiveTabChanged(Tab* tab) override;
+
+  // TabImpl::DataObserver:
+  void OnDataChanged(TabImpl* tab,
+                     const std::map<std::string, std::string>& data) override;
 
   // sessions::SessionTabHelperDelegate:
   void SetTabUserAgentOverride(const SessionID& window_id,
@@ -126,6 +132,12 @@ class BrowserPersister : public sessions::CommandStorageManagerDelegate,
   bool rebuild_on_next_save_;
 
   std::vector<uint8_t> crypto_key_;
+
+  ScopedObserver<TabImpl,
+                 TabImpl::DataObserver,
+                 &TabImpl::AddDataObserver,
+                 &TabImpl::RemoveDataObserver>
+      data_observer_{this};
 
   base::CancelableTaskTracker cancelable_task_tracker_;
 };

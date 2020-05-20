@@ -237,13 +237,18 @@ junit_binary("cast_shell_junit_tests") {
   srcjar_deps = [ ":cast_shell_build_config_gen" ]
 
   deps = [
+    ":cast_audio_manager_java",
     ":cast_intents_java",
     ":cast_shell_java",
+    ":reactive_android_java",
+    "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//chromecast/base:base_java",
     "//chromecast/base:cast_base_test_utils_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_legacy_legacy_support_core_utils_java",
+    "//third_party/android_deps:androidx_localbroadcastmanager_localbroadcastmanager_java",
     "//third_party/hamcrest:hamcrest_java",
   ]
 }

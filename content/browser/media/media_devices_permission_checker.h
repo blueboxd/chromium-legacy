@@ -57,6 +57,12 @@ class CONTENT_EXPORT MediaDevicesPermissionChecker {
       base::OnceCallback<void(const MediaDevicesManager::BoolDeviceTypes&)>
           callback) const;
 
+  // Returns true if the origin associated to a render frame identified by
+  // |render_process_id| and |render_frame_id| is allowed to control camera
+  // movement (pan, tilt, and zoom). Otherwise, returns false.
+  static bool HasPanTiltZoomPermissionGrantedOnUIThread(int render_process_id,
+                                                        int render_frame_id);
+
  private:
   const bool use_override_;
   const bool override_value_;

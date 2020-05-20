@@ -18,6 +18,8 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -170,5 +172,44 @@ public class TabTest {
             mActivity.destroyFragment();
         });
         callbackHelper.waitForFirst();
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void testSetData() {
+        String startupUrl = "about:blank";
+        mActivity = mActivityTestRule.launchShellWithUrl(startupUrl);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("foo", "bar");
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = mActivity.getTab();
+            tab.setData(data);
+            Assert.assertEquals(data.get("foo"), tab.getData().get("foo"));
+
+            tab.setData(new HashMap<>());
+            Assert.assertTrue(tab.getData().isEmpty());
+        });
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void testSetDataMaxSize() {
+        String startupUrl = "about:blank";
+        mActivity = mActivityTestRule.launchShellWithUrl(startupUrl);
+
+        Map<String, String> data = new HashMap<>();
+        data.put("big", new String(new char[10000]));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            try {
+                mActivity.getTab().setData(data);
+            } catch (IllegalArgumentException e) {
+                // Expected exception.
+                return;
+            }
+            Assert.fail("Expected IllegalArgumentException.");
+        });
     }
 }

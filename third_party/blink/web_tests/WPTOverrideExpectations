@@ -575,7 +575,7 @@ external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-br
 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ] # wpt_subtest_failure
 external/wpt/html/cross-origin-embedder-policy/coep-frame-javascript.https.html [ Pass Timeout ] # wpt_subtest_failure
 external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Pass Timeout ] # wpt_subtest_failure
-external/wpt/html/cross-origin-embedder-policy/reporting.https.html [ Pass Failure ] # wpt_subtest_failure
+external/wpt/html/cross-origin-embedder-policy/reporting-to-endpoint.https.html [ Pass Failure ] # wpt_subtest_failure
 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass ] # wpt_subtest_failure
 external/wpt/html/cross-origin-opener-policy/blob-popup.https.html [ Pass Failure ]
 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ] # wpt_subtest_failure

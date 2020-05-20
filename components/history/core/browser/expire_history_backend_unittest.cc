@@ -303,19 +303,19 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
 
   // Four times for each visit.
   VisitRow visit_row1(url_id, last_visit_time - base::TimeDelta::FromDays(4), 0,
-                      ui::PAGE_TRANSITION_TYPED, 0, true);
+                      ui::PAGE_TRANSITION_TYPED, 0, true, false);
   main_db_->AddVisit(&visit_row1, SOURCE_SYNCED);
 
   VisitRow visit_row2(url_id, last_visit_time - base::TimeDelta::FromDays(3), 0,
-                      ui::PAGE_TRANSITION_TYPED, 0, true);
+                      ui::PAGE_TRANSITION_TYPED, 0, true, false);
   main_db_->AddVisit(&visit_row2, SOURCE_BROWSED);
 
   VisitRow visit_row3(url_id, last_visit_time - base::TimeDelta::FromDays(2), 0,
-                      ui::PAGE_TRANSITION_TYPED, 0, true);
+                      ui::PAGE_TRANSITION_TYPED, 0, true, false);
   main_db_->AddVisit(&visit_row3, SOURCE_EXTENSION);
 
   VisitRow visit_row4(url_id, last_visit_time, 0, ui::PAGE_TRANSITION_TYPED, 0,
-                      true);
+                      true, false);
   main_db_->AddVisit(&visit_row4, SOURCE_FIREFOX_IMPORTED);
 }
 

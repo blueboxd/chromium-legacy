@@ -102,6 +102,10 @@ void FilesSection::AddHandlers(content::WebUI* web_ui) {
       profile(), base::DoNothing()));
 }
 
+int FilesSection::GetSectionNameMessageId() const {
+  return IDS_OS_SETTINGS_FILES;
+}
+
 void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kGoogleDriveConnection);
 

@@ -392,6 +392,8 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
                                               false, false, false));
   EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
 
+#if !defined(OS_MACOSX)
+  // TODO(crbug.com/1055150): Get this working for Mac.
   // Hitting the escape key should remove focus from the view, so arrows no
   // longer work.
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_ESCAPE, false,
@@ -400,6 +402,7 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest,
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_UP, false,
                                               false, false, false));
   EXPECT_EQ(bounds, GetCaptionWidget()->GetClientAreaBoundsInScreen());
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, FocusableInTabOrder) {
@@ -412,10 +415,9 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, FocusableInTabOrder) {
   EXPECT_FALSE(GetBubble()->GetFocusManager()->GetFocusedView());
 
   // Press tab until we enter the bubble.
-  while (!GetBubble()->HasFocus()) {
+  while (!GetBubble()->HasFocus())
     EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_TAB, false,
                                                 false, false, false));
-  }
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   // Check the native widget has focus.
   aura::client::FocusClient* focus_client =

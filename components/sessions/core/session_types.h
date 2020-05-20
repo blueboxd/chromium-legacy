@@ -101,6 +101,9 @@ struct SESSIONS_EXPORT SessionTab {
   // guid associated with the tab, may be empty.
   std::string guid;
 
+  // Data associated with the tab by the embedder.
+  std::map<std::string, std::string> data;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SessionTab);
 };

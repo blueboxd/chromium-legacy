@@ -137,6 +137,10 @@ void DateTimeSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<DateTimeHandler>());
 }
 
+int DateTimeSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_DATE_TIME;
+}
+
 void DateTimeSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::k24HourClock);
 

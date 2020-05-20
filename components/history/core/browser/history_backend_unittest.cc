@@ -352,7 +352,7 @@ class HistoryBackendTest : public HistoryBackendTestBase {
     ContextID context_id = reinterpret_cast<ContextID>(1);
     history::HistoryAddPageArgs request(
         redirects.back(), time, context_id, nav_entry_id, GURL(), redirects,
-        transition, false, history::SOURCE_BROWSED, true, true);
+        transition, false, history::SOURCE_BROWSED, true, true, false);
     backend_->AddPage(request);
   }
 
@@ -377,7 +377,8 @@ class HistoryBackendTest : public HistoryBackendTestBase {
       redirects.push_back(url2);
     HistoryAddPageArgs request(url2, time, dummy_context_id, 0, url1, redirects,
                                ui::PAGE_TRANSITION_CLIENT_REDIRECT, false,
-                               history::SOURCE_BROWSED, did_replace, true);
+                               history::SOURCE_BROWSED, did_replace, true,
+                               false);
     backend_->AddPage(request);
 
     if (transition1)
@@ -769,7 +770,7 @@ TEST_F(HistoryBackendTest, DeleteAllThenAddData) {
   HistoryAddPageArgs request(url, visit_time, nullptr, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_KEYWORD_GENERATED, false,
-                             history::SOURCE_BROWSED, false, true);
+                             history::SOURCE_BROWSED, false, true, false);
   backend_->AddPage(request);
 
   // Check that a row was added.
@@ -902,7 +903,7 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   HistoryAddPageArgs request(url, visit_time, nullptr, 0, GURL(),
                              history::RedirectList(),
                              ui::PAGE_TRANSITION_KEYWORD_GENERATED, false,
-                             history::SOURCE_BROWSED, false, true);
+                             history::SOURCE_BROWSED, false, true, false);
   backend_->AddPage(request);
 
   // A row should have been added for the url.
@@ -932,9 +933,9 @@ TEST_F(HistoryBackendTest, KeywordGenerated) {
   // Going back to the same entry should not increment the typed count.
   ui::PageTransition back_transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FORWARD_BACK);
-  HistoryAddPageArgs back_request(url, visit_time, nullptr, 0, GURL(),
-                                  history::RedirectList(), back_transition,
-                                  false, history::SOURCE_BROWSED, false, true);
+  HistoryAddPageArgs back_request(
+      url, visit_time, nullptr, 0, GURL(), history::RedirectList(),
+      back_transition, false, history::SOURCE_BROWSED, false, true, false);
   backend_->AddPage(back_request);
   url_id = backend_->db()->GetRowForURL(url, &row);
   ASSERT_NE(0, url_id);
@@ -1229,7 +1230,7 @@ TEST_F(HistoryBackendTest, StripUsernamePasswordTest) {
 
   // Visit the url with username, password.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_BROWSED, true);
+                         false, history::SOURCE_BROWSED, true, false);
 
   // Fetch the row information about stripped url from history db.
   VisitVector visits;
@@ -1250,7 +1251,7 @@ TEST_F(HistoryBackendTest, AddPageVisitBackForward) {
 
   // Visit the url after typing it.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_BROWSED, true);
+                         false, history::SOURCE_BROWSED, true, false);
 
   // Ensure both the typed count and visit count are 1.
   VisitVector visits;
@@ -1265,7 +1266,7 @@ TEST_F(HistoryBackendTest, AddPageVisitBackForward) {
       url, base::Time::Now(), 0,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FORWARD_BACK),
-      false, history::SOURCE_BROWSED, false);
+      false, history::SOURCE_BROWSED, false, false);
 
   // Ensure the typed count is still 1 but the visit count is 2.
   id = backend_->db()->GetRowForURL(url, &row);
@@ -1285,12 +1286,12 @@ TEST_F(HistoryBackendTest, AddPageVisitRedirectBackForward) {
 
   // Visit a typed URL with a redirect.
   backend_->AddPageVisit(url1, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_BROWSED, true);
+                         false, history::SOURCE_BROWSED, true, false);
   backend_->AddPageVisit(
       url2, base::Time::Now(), 0,
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_CLIENT_REDIRECT),
-      false, history::SOURCE_BROWSED, false);
+      false, history::SOURCE_BROWSED, false, false);
 
   // Ensure the redirected URL does not count as typed.
   VisitVector visits;
@@ -1306,7 +1307,7 @@ TEST_F(HistoryBackendTest, AddPageVisitRedirectBackForward) {
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
                                 ui::PAGE_TRANSITION_FORWARD_BACK |
                                 ui::PAGE_TRANSITION_CLIENT_REDIRECT),
-      false, history::SOURCE_BROWSED, false);
+      false, history::SOURCE_BROWSED, false, false);
 
   // Ensure the typed count is still 1 but the visit count is 2.
   id = backend_->db()->GetRowForURL(url2, &row);
@@ -1325,13 +1326,13 @@ TEST_F(HistoryBackendTest, AddPageVisitSource) {
 
   // Assume visiting the url from an externsion.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_EXTENSION, true);
+                         false, history::SOURCE_EXTENSION, true, false);
   // Assume the url is imported from Firefox.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_FIREFOX_IMPORTED, true);
+                         false, history::SOURCE_FIREFOX_IMPORTED, true, false);
   // Assume this url is also synced.
   backend_->AddPageVisit(url, base::Time::Now(), 0, ui::PAGE_TRANSITION_TYPED,
-                         false, history::SOURCE_SYNCED, true);
+                         false, history::SOURCE_SYNCED, true, false);
 
   // Fetch the row information about the url from history db.
   VisitVector visits;
@@ -1377,12 +1378,12 @@ TEST_F(HistoryBackendTest, AddPageVisitNotLastVisit) {
 
   // Visit the url with recent time.
   backend_->AddPageVisit(url, recent_time, 0, ui::PAGE_TRANSITION_TYPED, false,
-                         history::SOURCE_BROWSED, true);
+                         history::SOURCE_BROWSED, true, false);
 
   // Add to the url a visit with older time (could be syncing from another
   // client, etc.).
   backend_->AddPageVisit(url, older_time, 0, ui::PAGE_TRANSITION_TYPED, false,
-                         history::SOURCE_SYNCED, true);
+                         history::SOURCE_SYNCED, true, false);
 
   // Fetch the row information about url from history db.
   VisitVector visits;
@@ -1408,11 +1409,11 @@ TEST_F(HistoryBackendTest, AddPageVisitFiresNotificationWithCorrectDetails) {
 
   // Visit two distinct URLs, the second one twice.
   backend_->AddPageVisit(url1, base::Time::Now(), 0, ui::PAGE_TRANSITION_LINK,
-                         false, history::SOURCE_BROWSED, false);
+                         false, history::SOURCE_BROWSED, false, false);
   for (int i = 0; i < 2; ++i) {
     backend_->AddPageVisit(url2, base::Time::Now(), 0,
                            ui::PAGE_TRANSITION_TYPED, false,
-                           history::SOURCE_BROWSED, true);
+                           history::SOURCE_BROWSED, true, false);
   }
 
   URLRow stored_row1, stored_row2;
@@ -1447,17 +1448,19 @@ TEST_F(HistoryBackendTest, AddPageArgsSource) {
   HistoryAddPageArgs request1(url, base::Time::Now(), nullptr, 0, GURL(),
                               history::RedirectList(),
                               ui::PAGE_TRANSITION_KEYWORD_GENERATED, false,
-                              history::SOURCE_BROWSED, false, true);
+                              history::SOURCE_BROWSED, false, true, false);
   backend_->AddPage(request1);
   // Assume this page is synced.
   HistoryAddPageArgs request2(url, base::Time::Now(), nullptr, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-                              false, history::SOURCE_SYNCED, false, true);
+                              false, history::SOURCE_SYNCED, false, true,
+                              false);
   backend_->AddPage(request2);
   // Assume this page is browsed again.
-  HistoryAddPageArgs request3(
-      url, base::Time::Now(), nullptr, 0, GURL(), history::RedirectList(),
-      ui::PAGE_TRANSITION_TYPED, false, history::SOURCE_BROWSED, false, true);
+  HistoryAddPageArgs request3(url, base::Time::Now(), nullptr, 0, GURL(),
+                              history::RedirectList(),
+                              ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, false);
   backend_->AddPage(request3);
 
   // Three visits should be added with proper sources.
@@ -1799,7 +1802,8 @@ TEST_F(HistoryBackendTest, RecentRedirectsForClientRedirects) {
   HistoryAddPageArgs request(
       client_redirect_url, base::Time::Now(), nullptr, 0, GURL(),
       /*redirects=*/{server_redirect_url, client_redirect_url},
-      ui::PAGE_TRANSITION_TYPED, false, history::SOURCE_BROWSED, false, true);
+      ui::PAGE_TRANSITION_TYPED, false, history::SOURCE_BROWSED, false, true,
+      false);
   backend_->AddPage(request);
 
   // Client redirect to page C (non-user initiated).
@@ -3248,22 +3252,22 @@ TEST_F(HistoryBackendTest, GetCountsAndLastVisitForOrigins) {
 
   backend_->AddPageVisit(GURL("http://cnn.com/intl"), yesterday, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED, false);
+                         history::SOURCE_BROWSED, false, false);
   backend_->AddPageVisit(GURL("http://cnn.com/us"), last_week, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED, false);
+                         history::SOURCE_BROWSED, false, false);
   backend_->AddPageVisit(GURL("http://cnn.com/ny"), now, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED, false);
+                         history::SOURCE_BROWSED, false, false);
   backend_->AddPageVisit(GURL("https://cnn.com/intl"), yesterday, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED, false);
+                         history::SOURCE_BROWSED, false, false);
   backend_->AddPageVisit(GURL("http://cnn.com:8080/path"), yesterday, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED, false);
+                         history::SOURCE_BROWSED, false, false);
   backend_->AddPageVisit(GURL("http://dogtopia.com/pups?q=poods"), now, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED, false);
+                         history::SOURCE_BROWSED, false, false);
 
   std::set<GURL> origins;
   origins.insert(GURL("http://cnn.com/"));
@@ -3277,7 +3281,7 @@ TEST_F(HistoryBackendTest, GetCountsAndLastVisitForOrigins) {
   origins.insert(GURL("http://notpresent.com/"));
   backend_->AddPageVisit(GURL("http://cnn.com/"), tomorrow, 0,
                          ui::PAGE_TRANSITION_LINK, false,
-                         history::SOURCE_BROWSED, false);
+                         history::SOURCE_BROWSED, false, false);
 
   EXPECT_THAT(
       backend_->GetCountsAndLastVisitForOrigins(origins),
@@ -3754,7 +3758,7 @@ TEST_F(HistoryBackendTest, ClientRedirectScoring) {
   // Initial typed page visit, with no server redirects.
   HistoryAddPageArgs request(typed_url, base::Time::Now(), nullptr, 0, GURL(),
                              {}, ui::PAGE_TRANSITION_TYPED, false,
-                             history::SOURCE_BROWSED, false, true);
+                             history::SOURCE_BROWSED, false, true, false);
   backend_->AddPage(request);
 
   // Client redirect to HTTPS (non-user initiated).
@@ -3766,6 +3770,107 @@ TEST_F(HistoryBackendTest, ClientRedirectScoring) {
   EXPECT_EQ(1, url_row.typed_count());
   ASSERT_TRUE(backend_->GetURL(redirected_url, &url_row));
   EXPECT_EQ(0, url_row.typed_count());
+}
+
+TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
+  const GURL url1("http://foo1.com");
+  const GURL url2("http://foo2.com");
+  const GURL url3("http://foo3.com");
+  const GURL url4("http://foo4.com");
+  const GURL url5("http://foo5.com");
+
+  // Add a page visit to url1 that has a private IP address.
+  HistoryAddPageArgs request1(url1, base::Time::FromDoubleT(1), nullptr, 0,
+                              GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, false);
+  backend_->AddPage(request1);
+
+  URLRow url_row1;
+  VisitVector visits1;
+  ASSERT_TRUE(backend_->GetURL(url1, &url_row1));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row1.id(), &visits1));
+  ASSERT_EQ(1u, visits1.size());
+  ASSERT_FALSE(visits1[0].publicly_routable);
+
+  // Add a page visit to url2 that has a publicly routable IP address.
+  HistoryAddPageArgs request2(url2, base::Time::FromDoubleT(2), nullptr, 0,
+                              GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, true);
+  backend_->AddPage(request2);
+
+  URLRow url_row2;
+  VisitVector visits2;
+  ASSERT_TRUE(backend_->GetURL(url2, &url_row2));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row2.id(), &visits2));
+  ASSERT_EQ(1u, visits2.size());
+  ASSERT_TRUE(visits2[0].publicly_routable);
+
+  // Add a page visit to url5 that has a publicly routable IP address, with
+  // direct chain url3->url4->url5.
+  HistoryAddPageArgs request3(url5, base::Time::FromDoubleT(3), nullptr, 0,
+                              GURL(), {url3, url4, url5},
+                              ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, true);
+  backend_->AddPage(request3);
+
+  URLRow url_row3;
+  VisitVector visits3;
+  ASSERT_TRUE(backend_->GetURL(url3, &url_row3));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row3.id(), &visits3));
+  ASSERT_EQ(1u, visits3.size());
+  ASSERT_FALSE(visits3[0].publicly_routable);
+
+  URLRow url_row4;
+  VisitVector visits4;
+  ASSERT_TRUE(backend_->GetURL(url4, &url_row4));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row4.id(), &visits4));
+  ASSERT_EQ(1u, visits4.size());
+  ASSERT_FALSE(visits4[0].publicly_routable);
+
+  URLRow url_row5;
+  VisitVector visits5;
+  ASSERT_TRUE(backend_->GetURL(url5, &url_row5));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row5.id(), &visits5));
+  ASSERT_EQ(1u, visits5.size());
+  ASSERT_TRUE(visits5[0].publicly_routable);
+
+  // Add a page visit to url1 that has a publicly routable IP address.
+  HistoryAddPageArgs request4(url1, base::Time::FromDoubleT(4), nullptr, 0,
+                              GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, true);
+  backend_->AddPage(request4);
+
+  ASSERT_TRUE(backend_->GetURL(url1, &url_row1));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row1.id(), &visits1));
+  ASSERT_EQ(2u, visits1.size());
+  ASSERT_FALSE(visits1[0].publicly_routable);
+  ASSERT_TRUE(visits1[1].publicly_routable);
+
+  // Add a page visit to url3 that has a publicly routable IP address, with
+  // direct chain url5->url4->url3.
+  HistoryAddPageArgs request5(url3, base::Time::FromDoubleT(5), nullptr, 0,
+                              GURL(), {url5, url4, url3},
+                              ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, true);
+  backend_->AddPage(request5);
+
+  ASSERT_TRUE(backend_->GetURL(url3, &url_row3));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row3.id(), &visits3));
+  ASSERT_EQ(2u, visits3.size());
+  ASSERT_FALSE(visits3[0].publicly_routable);
+  ASSERT_TRUE(visits3[1].publicly_routable);
+
+  ASSERT_TRUE(backend_->GetURL(url4, &url_row4));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row4.id(), &visits4));
+  ASSERT_EQ(2u, visits4.size());
+  ASSERT_FALSE(visits4[0].publicly_routable);
+  ASSERT_FALSE(visits4[1].publicly_routable);
+
+  ASSERT_TRUE(backend_->GetURL(url5, &url_row5));
+  ASSERT_TRUE(backend_->GetVisitsForURL(url_row5.id(), &visits5));
+  ASSERT_EQ(2u, visits5.size());
+  ASSERT_TRUE(visits5[0].publicly_routable);
+  ASSERT_FALSE(visits5[1].publicly_routable);
 }
 
 // Common implementation for the two tests below, given that the only difference

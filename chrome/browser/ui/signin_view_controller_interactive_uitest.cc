@@ -5,6 +5,8 @@
 #include <utility>
 
 #include "base/callback.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -13,15 +15,18 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/signin_view_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "content/public/test/browser_test.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/events/keycodes/keyboard_codes.h"
 
 class SignInViewControllerBrowserTest : public InProcessBrowserTest {
  public:
@@ -65,10 +70,33 @@ IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, Accelerators) {
 IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, AbortOngoingReauth) {
   base::MockCallback<base::OnceCallback<void(signin::ReauthResult)>>
       reauth_callback;
-  signin::MakePrimaryAccountAvailable(GetIdentityManager(), "alice@gmail.com");
+  signin::MakeAccountAvailable(GetIdentityManager(), "alice@gmail.com");
   std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
       browser()->signin_view_controller()->ShowReauthPrompt(
-          GetIdentityManager()->GetPrimaryAccountId(), reauth_callback.Get());
+          GetIdentityManager()->GetPrimaryAccountId(
+              signin::ConsentLevel::kNotRequired),
+          reauth_callback.Get());
   EXPECT_CALL(reauth_callback, Run(signin::ReauthResult::kCancelled));
   abort_handle.reset();
+}
+
+// Tests that the confirm button is focused by default in the reauth dialog.
+IN_PROC_BROWSER_TEST_F(SignInViewControllerBrowserTest, ReauthDefaultFocus) {
+  signin::ReauthResult reauth_result;
+  base::RunLoop run_loop;
+  std::unique_ptr<SigninViewController::ReauthAbortHandle> abort_handle =
+      browser()->signin_view_controller()->ShowReauthPrompt(
+          GetIdentityManager()->GetPrimaryAccountId(
+              signin::ConsentLevel::kNotRequired),
+          base::BindLambdaForTesting([&](signin::ReauthResult result) {
+            reauth_result = result;
+            run_loop.Quit();
+          }));
+  login_ui_test_utils::WaitUntilReauthUIIsReady(browser());
+  ASSERT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_RETURN,
+                                              /*control=*/false,
+                                              /*shift=*/false, /*alt=*/false,
+                                              /*command=*/false));
+  run_loop.Run();
+  EXPECT_EQ(reauth_result, signin::ReauthResult::kSuccess);
 }

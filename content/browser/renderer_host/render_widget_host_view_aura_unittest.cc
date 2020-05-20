@@ -6416,12 +6416,12 @@ class RenderWidgetHostViewAuraKeyboardTest
 TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverDestroyed) {
   parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
-  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   EXPECT_EQ(IsKeyboardVisible(), true);
   // Detach the RenderWidgetHostViewAura from the IME.
   parent_view_->DetachFromInputMethod();
-  EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_EQ(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }
 
@@ -6433,7 +6433,6 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest, NoKeyboardObserverForMouseInput) {
   // Do not show virtual keyboard for mouse inputs.
   parent_view_->SetLastPointerType(ui::EventPointerType::kMouse);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
-  EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
   EXPECT_EQ(IsKeyboardVisible(), false);
 }
@@ -6443,7 +6442,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
   // Show virtual keyboard for touch inputs.
   parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
-  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   EXPECT_EQ(IsKeyboardVisible(), true);
 }
@@ -6454,18 +6453,18 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest,
   parent_view_->SetLastPointerType(ui::EventPointerType::kTouch);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
   EXPECT_EQ(IsKeyboardVisible(), true);
-  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
 
   // Change the focused node to a read-only node so the keyboard is dismissed,
   // but the keyboard observer should still be valid.
   parent_view_->FocusedNodeChanged(false, gfx::Rect());
-  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
   EXPECT_EQ(IsKeyboardVisible(), false);
   // Detaching the input method should destroy the keyboard observer.
   parent_view_->DetachFromInputMethod();
-  EXPECT_EQ(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_EQ(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 0u);
 }
 
@@ -6473,7 +6472,7 @@ TEST_F(RenderWidgetHostViewAuraKeyboardTest, KeyboardObserverForPenInput) {
   // Show virtual keyboard for pen inputs.
   parent_view_->SetLastPointerType(ui::EventPointerType::kPen);
   ActivateViewForTextInputManager(parent_view_, ui::TEXT_INPUT_TYPE_TEXT);
-  EXPECT_NE(parent_view_->keyboard_observer_.get(), nullptr);
+  EXPECT_NE(parent_view_->virtual_keyboard_controller_win_.get(), nullptr);
   EXPECT_EQ(keyboard_controller_observer_count(), 1u);
 }
 

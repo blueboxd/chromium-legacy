@@ -1782,7 +1782,7 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends Command {
 CommandHandler.COMMANDS_['share'] = new class extends Command {
   execute(event, fileManager) {
     const entries = CommandUtil.getCommandEntries(fileManager, event.target);
-    FileTasks.recordSharingAction(
+    FileTasks.recordSharingActionUMA_(
         CommandUtil.getSharingActionSource(event), entries);
     const actionsController = fileManager.actionsController;
 

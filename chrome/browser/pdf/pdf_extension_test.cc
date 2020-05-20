@@ -470,6 +470,34 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
           .ExtractBool());
 }
 
+// This test verifies that when a PDF is served with a restrictive
+// Content-Security-Policy, the embed tag is still sized correctly.
+// Regression test for https://crbug.com/271452.
+IN_PROC_BROWSER_TEST_F(PDFExtensionTestWithTestGuestViewManager,
+                       CSPDoesNotBlockEmbedStyles) {
+  GURL main_url(embedded_test_server()->GetURL("/pdf/test-csp.pdf"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+  auto* embedder_web_contents = GetActiveWebContents();
+  ASSERT_TRUE(embedder_web_contents);
+
+  // Verify the pdf has loaded.
+  auto* guest_web_contents = GetGuestViewManager()->WaitForSingleGuestCreated();
+  ASSERT_TRUE(guest_web_contents);
+  EXPECT_NE(embedder_web_contents, guest_web_contents);
+  EXPECT_TRUE(content::WaitForLoadStop(guest_web_contents));
+
+  // Verify the extension was loaded.
+  const GURL extension_url(
+      "chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai/index.html");
+  EXPECT_EQ(extension_url, guest_web_contents->GetURL());
+  EXPECT_EQ(main_url, embedder_web_contents->GetURL());
+
+  // Verify that the plugin occupies all of the page area.
+  const gfx::Rect embedder_rect = embedder_web_contents->GetContainerBounds();
+  const gfx::Rect guest_rect = guest_web_contents->GetContainerBounds();
+  EXPECT_EQ(embedder_rect, guest_rect);
+}
+
 class PDFExtensionLoadTest : public PDFExtensionTest,
                              public testing::WithParamInterface<int> {
  public:
@@ -619,9 +647,9 @@ IN_PROC_BROWSER_TEST_F(PDFPluginDisabledTest, EmbedPdfPlaceholderWithCSP) {
 
   // Fake a click on the <embed>, then press Enter to trigger the download.
   gfx::Point point_in_pdf(100, 100);
-  content::SimulateRoutedMouseClickAt(
-      GetActiveWebContents(), kDefaultKeyModifier,
-      blink::WebMouseEvent::Button::kLeft, point_in_pdf);
+  content::SimulateMouseClickAt(GetActiveWebContents(), kDefaultKeyModifier,
+                                blink::WebMouseEvent::Button::kLeft,
+                                point_in_pdf);
   content::SimulateKeyPress(GetActiveWebContents(), ui::DomKey::ENTER,
                             ui::DomCode::ENTER, ui::VKEY_RETURN, false, false,
                             false, false);
@@ -2120,14 +2148,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, DISABLED_MouseLeave) {
       "});"));
 
   // Inject some MouseMoves to invoke a MouseLeave in the PDF.
-  content::SimulateRoutedMouseEvent(embedder_contents,
-                                    blink::WebInputEvent::Type::kMouseMove,
-                                    point_in_parent);
-  content::SimulateRoutedMouseEvent(
+  content::SimulateMouseEvent(embedder_contents,
+                              blink::WebInputEvent::Type::kMouseMove,
+                              point_in_parent);
+  content::SimulateMouseEvent(
       embedder_contents, blink::WebInputEvent::Type::kMouseMove, point_in_pdf);
-  content::SimulateRoutedMouseEvent(embedder_contents,
-                                    blink::WebInputEvent::Type::kMouseMove,
-                                    point_in_parent);
+  content::SimulateMouseEvent(embedder_contents,
+                              blink::WebInputEvent::Type::kMouseMove,
+                              point_in_parent);
 
   // Verify MouseEnter, MouseLeave received.
   int leave_count = 0;
@@ -2172,9 +2200,9 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionHitTestTest, ContextMenuCoordinates) {
 
   ContextMenuWaiter menu_observer;
   // Send mouse right-click to activate context menu.
-  content::SimulateRoutedMouseClickAt(embedder_contents, kDefaultKeyModifier,
-                                      blink::WebMouseEvent::Button::kRight,
-                                      root_context_menu_position);
+  content::SimulateMouseClickAt(embedder_contents, kDefaultKeyModifier,
+                                blink::WebMouseEvent::Button::kRight,
+                                root_context_menu_position);
 
   // We expect the context menu, invoked via the RenderFrameHost, to be using
   // root view coordinates.

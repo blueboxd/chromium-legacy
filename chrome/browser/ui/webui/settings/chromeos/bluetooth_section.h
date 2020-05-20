@@ -31,6 +31,7 @@ class BluetoothSection : public OsSettingsSection,
  private:
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
+  int GetSectionNameMessageId() const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
 
   // device::BluetoothAdapter::Observer:

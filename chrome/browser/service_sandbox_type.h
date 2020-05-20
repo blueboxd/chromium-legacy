@@ -9,6 +9,10 @@
 #include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/services/speech/buildflags.h"
+#endif  // !defined(OS_ANDROID)
+
 // This file maps service classes to sandbox types.  Services which
 // require a non-utility sandbox can be added here.  See
 // ServiceProcessHost::Launch() for how these templates are consumed.
@@ -57,6 +61,23 @@ inline content::SandboxType
 content::GetServiceSandboxType<chrome::mojom::ProfileImport>() {
   return content::SandboxType::kNoSandbox;
 }
+
+// media::mojom::SpeechRecognitionService
+#if !defined(OS_ANDROID)
+#if BUILDFLAG(ENABLE_SODA)
+namespace media {
+namespace mojom {
+class SpeechRecognitionService;
+}
+}  // namespace media
+
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<media::mojom::SpeechRecognitionService>() {
+  return content::SandboxType::kSpeechRecognition;
+}
+#endif  // BUILDFLAG(ENABLE_SODA)
+#endif  // !defined(OS_ANDROID)
 
 // printing::mojom::PrintingService
 #if defined(OS_WIN)

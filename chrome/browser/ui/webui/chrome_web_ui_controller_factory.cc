@@ -221,6 +221,7 @@
 #include "chrome/browser/ui/webui/signin/profile_picker_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_email_confirmation_ui.h"
 #include "chrome/browser/ui/webui/signin/signin_error_ui.h"
+#include "chrome/browser/ui/webui/signin/signin_reauth_ui.h"
 #include "chrome/browser/ui/webui/signin/user_manager_ui.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
@@ -715,6 +716,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host_piece() == chrome::kChromeUISigninEmailConfirmationHost &&
       !profile->IsOffTheRecord())
     return &NewWebUI<SigninEmailConfirmationUI>;
+  if (url.host_piece() == chrome::kChromeUISigninReauthHost &&
+      !profile->IsOffTheRecord()) {
+    return &NewWebUI<SigninReauthUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIWelcomeHost &&
       welcome::IsEnabled(profile))
     return &NewWebUI<WelcomeUI>;

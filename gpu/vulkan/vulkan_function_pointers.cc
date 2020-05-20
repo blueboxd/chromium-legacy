@@ -27,39 +27,41 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   // vkGetInstanceProcAddr must be handled specially since it gets its function
   // pointer through base::GetFunctionPOinterFromNativeLibrary(). Other Vulkan
   // functions don't do this.
-  vkGetInstanceProcAddrFn = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+  vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
       base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library,
                                                 "vkGetInstanceProcAddr"));
-  if (!vkGetInstanceProcAddrFn)
+  if (!vkGetInstanceProcAddr)
     return false;
+  vkEnumerateInstanceVersion = reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
+      vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
+  if (!vkEnumerateInstanceVersion) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkEnumerateInstanceVersion";
+    return false;
+  }
 
-  vkEnumerateInstanceVersionFn =
-      reinterpret_cast<PFN_vkEnumerateInstanceVersion>(
-          vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceVersion"));
-  // vkEnumerateInstanceVersion didn't exist in Vulkan 1.0, so we should
-  // proceed even if we fail to get vkEnumerateInstanceVersion pointer.
-  vkCreateInstanceFn = reinterpret_cast<PFN_vkCreateInstance>(
+  vkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(
       vkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
-  if (!vkCreateInstanceFn) {
+  if (!vkCreateInstance) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateInstance";
     return false;
   }
 
-  vkEnumerateInstanceExtensionPropertiesFn =
+  vkEnumerateInstanceExtensionProperties =
       reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(
           vkGetInstanceProcAddr(nullptr,
                                 "vkEnumerateInstanceExtensionProperties"));
-  if (!vkEnumerateInstanceExtensionPropertiesFn) {
+  if (!vkEnumerateInstanceExtensionProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkEnumerateInstanceExtensionProperties";
     return false;
   }
 
-  vkEnumerateInstanceLayerPropertiesFn =
+  vkEnumerateInstanceLayerProperties =
       reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(
           vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceLayerProperties"));
-  if (!vkEnumerateInstanceLayerPropertiesFn) {
+  if (!vkEnumerateInstanceLayerProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkEnumerateInstanceLayerProperties";
     return false;
@@ -72,102 +74,101 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     VkInstance vk_instance,
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
-  vkCreateDeviceFn = reinterpret_cast<PFN_vkCreateDevice>(
+  vkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(
       vkGetInstanceProcAddr(vk_instance, "vkCreateDevice"));
-  if (!vkCreateDeviceFn) {
+  if (!vkCreateDevice) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateDevice";
     return false;
   }
 
-  vkDestroyInstanceFn = reinterpret_cast<PFN_vkDestroyInstance>(
+  vkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(
       vkGetInstanceProcAddr(vk_instance, "vkDestroyInstance"));
-  if (!vkDestroyInstanceFn) {
+  if (!vkDestroyInstance) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyInstance";
     return false;
   }
 
-  vkEnumerateDeviceExtensionPropertiesFn =
+  vkEnumerateDeviceExtensionProperties =
       reinterpret_cast<PFN_vkEnumerateDeviceExtensionProperties>(
           vkGetInstanceProcAddr(vk_instance,
                                 "vkEnumerateDeviceExtensionProperties"));
-  if (!vkEnumerateDeviceExtensionPropertiesFn) {
+  if (!vkEnumerateDeviceExtensionProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkEnumerateDeviceExtensionProperties";
     return false;
   }
 
-  vkEnumerateDeviceLayerPropertiesFn =
+  vkEnumerateDeviceLayerProperties =
       reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
           vkGetInstanceProcAddr(vk_instance,
                                 "vkEnumerateDeviceLayerProperties"));
-  if (!vkEnumerateDeviceLayerPropertiesFn) {
+  if (!vkEnumerateDeviceLayerProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkEnumerateDeviceLayerProperties";
     return false;
   }
 
-  vkEnumeratePhysicalDevicesFn =
-      reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
-          vkGetInstanceProcAddr(vk_instance, "vkEnumeratePhysicalDevices"));
-  if (!vkEnumeratePhysicalDevicesFn) {
+  vkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
+      vkGetInstanceProcAddr(vk_instance, "vkEnumeratePhysicalDevices"));
+  if (!vkEnumeratePhysicalDevices) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkEnumeratePhysicalDevices";
     return false;
   }
 
-  vkGetDeviceProcAddrFn = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
+  vkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
       vkGetInstanceProcAddr(vk_instance, "vkGetDeviceProcAddr"));
-  if (!vkGetDeviceProcAddrFn) {
+  if (!vkGetDeviceProcAddr) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetDeviceProcAddr";
     return false;
   }
 
-  vkGetPhysicalDeviceFeaturesFn =
+  vkGetPhysicalDeviceFeatures =
       reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures>(
           vkGetInstanceProcAddr(vk_instance, "vkGetPhysicalDeviceFeatures"));
-  if (!vkGetPhysicalDeviceFeaturesFn) {
+  if (!vkGetPhysicalDeviceFeatures) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetPhysicalDeviceFeatures";
     return false;
   }
 
-  vkGetPhysicalDeviceFormatPropertiesFn =
+  vkGetPhysicalDeviceFormatProperties =
       reinterpret_cast<PFN_vkGetPhysicalDeviceFormatProperties>(
           vkGetInstanceProcAddr(vk_instance,
                                 "vkGetPhysicalDeviceFormatProperties"));
-  if (!vkGetPhysicalDeviceFormatPropertiesFn) {
+  if (!vkGetPhysicalDeviceFormatProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetPhysicalDeviceFormatProperties";
     return false;
   }
 
-  vkGetPhysicalDeviceMemoryPropertiesFn =
+  vkGetPhysicalDeviceMemoryProperties =
       reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties>(
           vkGetInstanceProcAddr(vk_instance,
                                 "vkGetPhysicalDeviceMemoryProperties"));
-  if (!vkGetPhysicalDeviceMemoryPropertiesFn) {
+  if (!vkGetPhysicalDeviceMemoryProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetPhysicalDeviceMemoryProperties";
     return false;
   }
 
-  vkGetPhysicalDevicePropertiesFn =
+  vkGetPhysicalDeviceProperties =
       reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(
           vkGetInstanceProcAddr(vk_instance, "vkGetPhysicalDeviceProperties"));
-  if (!vkGetPhysicalDevicePropertiesFn) {
+  if (!vkGetPhysicalDeviceProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetPhysicalDeviceProperties";
     return false;
   }
 
-  vkGetPhysicalDeviceQueueFamilyPropertiesFn =
+  vkGetPhysicalDeviceQueueFamilyProperties =
       reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
           vkGetInstanceProcAddr(vk_instance,
                                 "vkGetPhysicalDeviceQueueFamilyProperties"));
-  if (!vkGetPhysicalDeviceQueueFamilyPropertiesFn) {
+  if (!vkGetPhysicalDeviceQueueFamilyProperties) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetPhysicalDeviceQueueFamilyProperties";
     return false;
@@ -176,21 +177,21 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 #if DCHECK_IS_ON()
   if (gfx::HasExtension(enabled_extensions,
                         VK_EXT_DEBUG_REPORT_EXTENSION_NAME)) {
-    vkCreateDebugReportCallbackEXTFn =
+    vkCreateDebugReportCallbackEXT =
         reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkCreateDebugReportCallbackEXT"));
-    if (!vkCreateDebugReportCallbackEXTFn) {
+    if (!vkCreateDebugReportCallbackEXT) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkCreateDebugReportCallbackEXT";
       return false;
     }
 
-    vkDestroyDebugReportCallbackEXTFn =
+    vkDestroyDebugReportCallbackEXT =
         reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkDestroyDebugReportCallbackEXT"));
-    if (!vkDestroyDebugReportCallbackEXTFn) {
+    if (!vkDestroyDebugReportCallbackEXT) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkDestroyDebugReportCallbackEXT";
       return false;
@@ -199,39 +200,39 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 #endif  // DCHECK_IS_ON()
 
   if (gfx::HasExtension(enabled_extensions, VK_KHR_SURFACE_EXTENSION_NAME)) {
-    vkDestroySurfaceKHRFn = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
+    vkDestroySurfaceKHR = reinterpret_cast<PFN_vkDestroySurfaceKHR>(
         vkGetInstanceProcAddr(vk_instance, "vkDestroySurfaceKHR"));
-    if (!vkDestroySurfaceKHRFn) {
+    if (!vkDestroySurfaceKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkDestroySurfaceKHR";
       return false;
     }
 
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn =
+    vkGetPhysicalDeviceSurfaceCapabilitiesKHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
-    if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn) {
+    if (!vkGetPhysicalDeviceSurfaceCapabilitiesKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR";
       return false;
     }
 
-    vkGetPhysicalDeviceSurfaceFormatsKHRFn =
+    vkGetPhysicalDeviceSurfaceFormatsKHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkGetPhysicalDeviceSurfaceFormatsKHR"));
-    if (!vkGetPhysicalDeviceSurfaceFormatsKHRFn) {
+    if (!vkGetPhysicalDeviceSurfaceFormatsKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceSurfaceFormatsKHR";
       return false;
     }
 
-    vkGetPhysicalDeviceSurfaceSupportKHRFn =
+    vkGetPhysicalDeviceSurfaceSupportKHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkGetPhysicalDeviceSurfaceSupportKHR"));
-    if (!vkGetPhysicalDeviceSurfaceSupportKHRFn) {
+    if (!vkGetPhysicalDeviceSurfaceSupportKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceSurfaceSupportKHR";
       return false;
@@ -241,19 +242,19 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 #if defined(USE_VULKAN_XLIB)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_XLIB_SURFACE_EXTENSION_NAME)) {
-    vkCreateXlibSurfaceKHRFn = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
+    vkCreateXlibSurfaceKHR = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
         vkGetInstanceProcAddr(vk_instance, "vkCreateXlibSurfaceKHR"));
-    if (!vkCreateXlibSurfaceKHRFn) {
+    if (!vkCreateXlibSurfaceKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkCreateXlibSurfaceKHR";
       return false;
     }
 
-    vkGetPhysicalDeviceXlibPresentationSupportKHRFn =
+    vkGetPhysicalDeviceXlibPresentationSupportKHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
             vkGetInstanceProcAddr(
                 vk_instance, "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
-    if (!vkGetPhysicalDeviceXlibPresentationSupportKHRFn) {
+    if (!vkGetPhysicalDeviceXlibPresentationSupportKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceXlibPresentationSupportKHR";
       return false;
@@ -264,19 +265,19 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 #if defined(OS_WIN)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_WIN32_SURFACE_EXTENSION_NAME)) {
-    vkCreateWin32SurfaceKHRFn = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(
+    vkCreateWin32SurfaceKHR = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(
         vkGetInstanceProcAddr(vk_instance, "vkCreateWin32SurfaceKHR"));
-    if (!vkCreateWin32SurfaceKHRFn) {
+    if (!vkCreateWin32SurfaceKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkCreateWin32SurfaceKHR";
       return false;
     }
 
-    vkGetPhysicalDeviceWin32PresentationSupportKHRFn =
+    vkGetPhysicalDeviceWin32PresentationSupportKHR =
         reinterpret_cast<PFN_vkGetPhysicalDeviceWin32PresentationSupportKHR>(
             vkGetInstanceProcAddr(
                 vk_instance, "vkGetPhysicalDeviceWin32PresentationSupportKHR"));
-    if (!vkGetPhysicalDeviceWin32PresentationSupportKHRFn) {
+    if (!vkGetPhysicalDeviceWin32PresentationSupportKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceWin32PresentationSupportKHR";
       return false;
@@ -287,10 +288,9 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 #if defined(OS_ANDROID)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_ANDROID_SURFACE_EXTENSION_NAME)) {
-    vkCreateAndroidSurfaceKHRFn =
-        reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
-            vkGetInstanceProcAddr(vk_instance, "vkCreateAndroidSurfaceKHR"));
-    if (!vkCreateAndroidSurfaceKHRFn) {
+    vkCreateAndroidSurfaceKHR = reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
+        vkGetInstanceProcAddr(vk_instance, "vkCreateAndroidSurfaceKHR"));
+    if (!vkCreateAndroidSurfaceKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkCreateAndroidSurfaceKHR";
       return false;
@@ -301,11 +301,11 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 #if defined(OS_FUCHSIA)
   if (gfx::HasExtension(enabled_extensions,
                         VK_FUCHSIA_IMAGEPIPE_SURFACE_EXTENSION_NAME)) {
-    vkCreateImagePipeSurfaceFUCHSIAFn =
+    vkCreateImagePipeSurfaceFUCHSIA =
         reinterpret_cast<PFN_vkCreateImagePipeSurfaceFUCHSIA>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkCreateImagePipeSurfaceFUCHSIA"));
-    if (!vkCreateImagePipeSurfaceFUCHSIAFn) {
+    if (!vkCreateImagePipeSurfaceFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkCreateImagePipeSurfaceFUCHSIA";
       return false;
@@ -314,11 +314,11 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 #endif  // defined(OS_FUCHSIA)
 
   if (api_version >= VK_API_VERSION_1_1) {
-    vkGetPhysicalDeviceImageFormatProperties2Fn =
+    vkGetPhysicalDeviceImageFormatProperties2 =
         reinterpret_cast<PFN_vkGetPhysicalDeviceImageFormatProperties2>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkGetPhysicalDeviceImageFormatProperties2"));
-    if (!vkGetPhysicalDeviceImageFormatProperties2Fn) {
+    if (!vkGetPhysicalDeviceImageFormatProperties2) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceImageFormatProperties2";
       return false;
@@ -326,10 +326,10 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
   }
 
   if (api_version >= VK_API_VERSION_1_1) {
-    vkGetPhysicalDeviceFeatures2Fn =
+    vkGetPhysicalDeviceFeatures2 =
         reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(
             vkGetInstanceProcAddr(vk_instance, "vkGetPhysicalDeviceFeatures2"));
-    if (!vkGetPhysicalDeviceFeatures2Fn) {
+    if (!vkGetPhysicalDeviceFeatures2) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceFeatures2";
       return false;
@@ -338,11 +338,11 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
   } else if (gfx::HasExtension(
                  enabled_extensions,
                  VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-    vkGetPhysicalDeviceFeatures2Fn =
+    vkGetPhysicalDeviceFeatures2 =
         reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures2>(
             vkGetInstanceProcAddr(vk_instance,
                                   "vkGetPhysicalDeviceFeatures2KHR"));
-    if (!vkGetPhysicalDeviceFeatures2Fn) {
+    if (!vkGetPhysicalDeviceFeatures2) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetPhysicalDeviceFeatures2KHR";
       return false;
@@ -357,489 +357,489 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
   // Device functions
-  vkAllocateCommandBuffersFn = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
+  vkAllocateCommandBuffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
       vkGetDeviceProcAddr(vk_device, "vkAllocateCommandBuffers"));
-  if (!vkAllocateCommandBuffersFn) {
+  if (!vkAllocateCommandBuffers) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkAllocateCommandBuffers";
     return false;
   }
 
-  vkAllocateDescriptorSetsFn = reinterpret_cast<PFN_vkAllocateDescriptorSets>(
+  vkAllocateDescriptorSets = reinterpret_cast<PFN_vkAllocateDescriptorSets>(
       vkGetDeviceProcAddr(vk_device, "vkAllocateDescriptorSets"));
-  if (!vkAllocateDescriptorSetsFn) {
+  if (!vkAllocateDescriptorSets) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkAllocateDescriptorSets";
     return false;
   }
 
-  vkAllocateMemoryFn = reinterpret_cast<PFN_vkAllocateMemory>(
+  vkAllocateMemory = reinterpret_cast<PFN_vkAllocateMemory>(
       vkGetDeviceProcAddr(vk_device, "vkAllocateMemory"));
-  if (!vkAllocateMemoryFn) {
+  if (!vkAllocateMemory) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkAllocateMemory";
     return false;
   }
 
-  vkBeginCommandBufferFn = reinterpret_cast<PFN_vkBeginCommandBuffer>(
+  vkBeginCommandBuffer = reinterpret_cast<PFN_vkBeginCommandBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkBeginCommandBuffer"));
-  if (!vkBeginCommandBufferFn) {
+  if (!vkBeginCommandBuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkBeginCommandBuffer";
     return false;
   }
 
-  vkBindBufferMemoryFn = reinterpret_cast<PFN_vkBindBufferMemory>(
+  vkBindBufferMemory = reinterpret_cast<PFN_vkBindBufferMemory>(
       vkGetDeviceProcAddr(vk_device, "vkBindBufferMemory"));
-  if (!vkBindBufferMemoryFn) {
+  if (!vkBindBufferMemory) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkBindBufferMemory";
     return false;
   }
 
-  vkBindImageMemoryFn = reinterpret_cast<PFN_vkBindImageMemory>(
+  vkBindImageMemory = reinterpret_cast<PFN_vkBindImageMemory>(
       vkGetDeviceProcAddr(vk_device, "vkBindImageMemory"));
-  if (!vkBindImageMemoryFn) {
+  if (!vkBindImageMemory) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkBindImageMemory";
     return false;
   }
 
-  vkCmdBeginRenderPassFn = reinterpret_cast<PFN_vkCmdBeginRenderPass>(
+  vkCmdBeginRenderPass = reinterpret_cast<PFN_vkCmdBeginRenderPass>(
       vkGetDeviceProcAddr(vk_device, "vkCmdBeginRenderPass"));
-  if (!vkCmdBeginRenderPassFn) {
+  if (!vkCmdBeginRenderPass) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCmdBeginRenderPass";
     return false;
   }
 
-  vkCmdCopyBufferFn = reinterpret_cast<PFN_vkCmdCopyBuffer>(
+  vkCmdCopyBuffer = reinterpret_cast<PFN_vkCmdCopyBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkCmdCopyBuffer"));
-  if (!vkCmdCopyBufferFn) {
+  if (!vkCmdCopyBuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCmdCopyBuffer";
     return false;
   }
 
-  vkCmdCopyBufferToImageFn = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(
+  vkCmdCopyBufferToImage = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(
       vkGetDeviceProcAddr(vk_device, "vkCmdCopyBufferToImage"));
-  if (!vkCmdCopyBufferToImageFn) {
+  if (!vkCmdCopyBufferToImage) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCmdCopyBufferToImage";
     return false;
   }
 
-  vkCmdEndRenderPassFn = reinterpret_cast<PFN_vkCmdEndRenderPass>(
+  vkCmdEndRenderPass = reinterpret_cast<PFN_vkCmdEndRenderPass>(
       vkGetDeviceProcAddr(vk_device, "vkCmdEndRenderPass"));
-  if (!vkCmdEndRenderPassFn) {
+  if (!vkCmdEndRenderPass) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCmdEndRenderPass";
     return false;
   }
 
-  vkCmdExecuteCommandsFn = reinterpret_cast<PFN_vkCmdExecuteCommands>(
+  vkCmdExecuteCommands = reinterpret_cast<PFN_vkCmdExecuteCommands>(
       vkGetDeviceProcAddr(vk_device, "vkCmdExecuteCommands"));
-  if (!vkCmdExecuteCommandsFn) {
+  if (!vkCmdExecuteCommands) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCmdExecuteCommands";
     return false;
   }
 
-  vkCmdNextSubpassFn = reinterpret_cast<PFN_vkCmdNextSubpass>(
+  vkCmdNextSubpass = reinterpret_cast<PFN_vkCmdNextSubpass>(
       vkGetDeviceProcAddr(vk_device, "vkCmdNextSubpass"));
-  if (!vkCmdNextSubpassFn) {
+  if (!vkCmdNextSubpass) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCmdNextSubpass";
     return false;
   }
 
-  vkCmdPipelineBarrierFn = reinterpret_cast<PFN_vkCmdPipelineBarrier>(
+  vkCmdPipelineBarrier = reinterpret_cast<PFN_vkCmdPipelineBarrier>(
       vkGetDeviceProcAddr(vk_device, "vkCmdPipelineBarrier"));
-  if (!vkCmdPipelineBarrierFn) {
+  if (!vkCmdPipelineBarrier) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCmdPipelineBarrier";
     return false;
   }
 
-  vkCreateBufferFn = reinterpret_cast<PFN_vkCreateBuffer>(
+  vkCreateBuffer = reinterpret_cast<PFN_vkCreateBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkCreateBuffer"));
-  if (!vkCreateBufferFn) {
+  if (!vkCreateBuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateBuffer";
     return false;
   }
 
-  vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
+  vkCreateCommandPool = reinterpret_cast<PFN_vkCreateCommandPool>(
       vkGetDeviceProcAddr(vk_device, "vkCreateCommandPool"));
-  if (!vkCreateCommandPoolFn) {
+  if (!vkCreateCommandPool) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateCommandPool";
     return false;
   }
 
-  vkCreateDescriptorPoolFn = reinterpret_cast<PFN_vkCreateDescriptorPool>(
+  vkCreateDescriptorPool = reinterpret_cast<PFN_vkCreateDescriptorPool>(
       vkGetDeviceProcAddr(vk_device, "vkCreateDescriptorPool"));
-  if (!vkCreateDescriptorPoolFn) {
+  if (!vkCreateDescriptorPool) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateDescriptorPool";
     return false;
   }
 
-  vkCreateDescriptorSetLayoutFn =
+  vkCreateDescriptorSetLayout =
       reinterpret_cast<PFN_vkCreateDescriptorSetLayout>(
           vkGetDeviceProcAddr(vk_device, "vkCreateDescriptorSetLayout"));
-  if (!vkCreateDescriptorSetLayoutFn) {
+  if (!vkCreateDescriptorSetLayout) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateDescriptorSetLayout";
     return false;
   }
 
-  vkCreateFenceFn = reinterpret_cast<PFN_vkCreateFence>(
+  vkCreateFence = reinterpret_cast<PFN_vkCreateFence>(
       vkGetDeviceProcAddr(vk_device, "vkCreateFence"));
-  if (!vkCreateFenceFn) {
+  if (!vkCreateFence) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateFence";
     return false;
   }
 
-  vkCreateFramebufferFn = reinterpret_cast<PFN_vkCreateFramebuffer>(
+  vkCreateFramebuffer = reinterpret_cast<PFN_vkCreateFramebuffer>(
       vkGetDeviceProcAddr(vk_device, "vkCreateFramebuffer"));
-  if (!vkCreateFramebufferFn) {
+  if (!vkCreateFramebuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateFramebuffer";
     return false;
   }
 
-  vkCreateImageFn = reinterpret_cast<PFN_vkCreateImage>(
+  vkCreateImage = reinterpret_cast<PFN_vkCreateImage>(
       vkGetDeviceProcAddr(vk_device, "vkCreateImage"));
-  if (!vkCreateImageFn) {
+  if (!vkCreateImage) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateImage";
     return false;
   }
 
-  vkCreateImageViewFn = reinterpret_cast<PFN_vkCreateImageView>(
+  vkCreateImageView = reinterpret_cast<PFN_vkCreateImageView>(
       vkGetDeviceProcAddr(vk_device, "vkCreateImageView"));
-  if (!vkCreateImageViewFn) {
+  if (!vkCreateImageView) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateImageView";
     return false;
   }
 
-  vkCreateRenderPassFn = reinterpret_cast<PFN_vkCreateRenderPass>(
+  vkCreateRenderPass = reinterpret_cast<PFN_vkCreateRenderPass>(
       vkGetDeviceProcAddr(vk_device, "vkCreateRenderPass"));
-  if (!vkCreateRenderPassFn) {
+  if (!vkCreateRenderPass) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateRenderPass";
     return false;
   }
 
-  vkCreateSamplerFn = reinterpret_cast<PFN_vkCreateSampler>(
+  vkCreateSampler = reinterpret_cast<PFN_vkCreateSampler>(
       vkGetDeviceProcAddr(vk_device, "vkCreateSampler"));
-  if (!vkCreateSamplerFn) {
+  if (!vkCreateSampler) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateSampler";
     return false;
   }
 
-  vkCreateSemaphoreFn = reinterpret_cast<PFN_vkCreateSemaphore>(
+  vkCreateSemaphore = reinterpret_cast<PFN_vkCreateSemaphore>(
       vkGetDeviceProcAddr(vk_device, "vkCreateSemaphore"));
-  if (!vkCreateSemaphoreFn) {
+  if (!vkCreateSemaphore) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateSemaphore";
     return false;
   }
 
-  vkCreateShaderModuleFn = reinterpret_cast<PFN_vkCreateShaderModule>(
+  vkCreateShaderModule = reinterpret_cast<PFN_vkCreateShaderModule>(
       vkGetDeviceProcAddr(vk_device, "vkCreateShaderModule"));
-  if (!vkCreateShaderModuleFn) {
+  if (!vkCreateShaderModule) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkCreateShaderModule";
     return false;
   }
 
-  vkDestroyBufferFn = reinterpret_cast<PFN_vkDestroyBuffer>(
+  vkDestroyBuffer = reinterpret_cast<PFN_vkDestroyBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyBuffer"));
-  if (!vkDestroyBufferFn) {
+  if (!vkDestroyBuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyBuffer";
     return false;
   }
 
-  vkDestroyCommandPoolFn = reinterpret_cast<PFN_vkDestroyCommandPool>(
+  vkDestroyCommandPool = reinterpret_cast<PFN_vkDestroyCommandPool>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyCommandPool"));
-  if (!vkDestroyCommandPoolFn) {
+  if (!vkDestroyCommandPool) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyCommandPool";
     return false;
   }
 
-  vkDestroyDescriptorPoolFn = reinterpret_cast<PFN_vkDestroyDescriptorPool>(
+  vkDestroyDescriptorPool = reinterpret_cast<PFN_vkDestroyDescriptorPool>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyDescriptorPool"));
-  if (!vkDestroyDescriptorPoolFn) {
+  if (!vkDestroyDescriptorPool) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyDescriptorPool";
     return false;
   }
 
-  vkDestroyDescriptorSetLayoutFn =
+  vkDestroyDescriptorSetLayout =
       reinterpret_cast<PFN_vkDestroyDescriptorSetLayout>(
           vkGetDeviceProcAddr(vk_device, "vkDestroyDescriptorSetLayout"));
-  if (!vkDestroyDescriptorSetLayoutFn) {
+  if (!vkDestroyDescriptorSetLayout) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyDescriptorSetLayout";
     return false;
   }
 
-  vkDestroyDeviceFn = reinterpret_cast<PFN_vkDestroyDevice>(
+  vkDestroyDevice = reinterpret_cast<PFN_vkDestroyDevice>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyDevice"));
-  if (!vkDestroyDeviceFn) {
+  if (!vkDestroyDevice) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyDevice";
     return false;
   }
 
-  vkDestroyFenceFn = reinterpret_cast<PFN_vkDestroyFence>(
+  vkDestroyFence = reinterpret_cast<PFN_vkDestroyFence>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyFence"));
-  if (!vkDestroyFenceFn) {
+  if (!vkDestroyFence) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyFence";
     return false;
   }
 
-  vkDestroyFramebufferFn = reinterpret_cast<PFN_vkDestroyFramebuffer>(
+  vkDestroyFramebuffer = reinterpret_cast<PFN_vkDestroyFramebuffer>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyFramebuffer"));
-  if (!vkDestroyFramebufferFn) {
+  if (!vkDestroyFramebuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyFramebuffer";
     return false;
   }
 
-  vkDestroyImageFn = reinterpret_cast<PFN_vkDestroyImage>(
+  vkDestroyImage = reinterpret_cast<PFN_vkDestroyImage>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyImage"));
-  if (!vkDestroyImageFn) {
+  if (!vkDestroyImage) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyImage";
     return false;
   }
 
-  vkDestroyImageViewFn = reinterpret_cast<PFN_vkDestroyImageView>(
+  vkDestroyImageView = reinterpret_cast<PFN_vkDestroyImageView>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyImageView"));
-  if (!vkDestroyImageViewFn) {
+  if (!vkDestroyImageView) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyImageView";
     return false;
   }
 
-  vkDestroyRenderPassFn = reinterpret_cast<PFN_vkDestroyRenderPass>(
+  vkDestroyRenderPass = reinterpret_cast<PFN_vkDestroyRenderPass>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyRenderPass"));
-  if (!vkDestroyRenderPassFn) {
+  if (!vkDestroyRenderPass) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyRenderPass";
     return false;
   }
 
-  vkDestroySamplerFn = reinterpret_cast<PFN_vkDestroySampler>(
+  vkDestroySampler = reinterpret_cast<PFN_vkDestroySampler>(
       vkGetDeviceProcAddr(vk_device, "vkDestroySampler"));
-  if (!vkDestroySamplerFn) {
+  if (!vkDestroySampler) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroySampler";
     return false;
   }
 
-  vkDestroySemaphoreFn = reinterpret_cast<PFN_vkDestroySemaphore>(
+  vkDestroySemaphore = reinterpret_cast<PFN_vkDestroySemaphore>(
       vkGetDeviceProcAddr(vk_device, "vkDestroySemaphore"));
-  if (!vkDestroySemaphoreFn) {
+  if (!vkDestroySemaphore) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroySemaphore";
     return false;
   }
 
-  vkDestroyShaderModuleFn = reinterpret_cast<PFN_vkDestroyShaderModule>(
+  vkDestroyShaderModule = reinterpret_cast<PFN_vkDestroyShaderModule>(
       vkGetDeviceProcAddr(vk_device, "vkDestroyShaderModule"));
-  if (!vkDestroyShaderModuleFn) {
+  if (!vkDestroyShaderModule) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDestroyShaderModule";
     return false;
   }
 
-  vkDeviceWaitIdleFn = reinterpret_cast<PFN_vkDeviceWaitIdle>(
+  vkDeviceWaitIdle = reinterpret_cast<PFN_vkDeviceWaitIdle>(
       vkGetDeviceProcAddr(vk_device, "vkDeviceWaitIdle"));
-  if (!vkDeviceWaitIdleFn) {
+  if (!vkDeviceWaitIdle) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkDeviceWaitIdle";
     return false;
   }
 
-  vkFlushMappedMemoryRangesFn = reinterpret_cast<PFN_vkFlushMappedMemoryRanges>(
+  vkFlushMappedMemoryRanges = reinterpret_cast<PFN_vkFlushMappedMemoryRanges>(
       vkGetDeviceProcAddr(vk_device, "vkFlushMappedMemoryRanges"));
-  if (!vkFlushMappedMemoryRangesFn) {
+  if (!vkFlushMappedMemoryRanges) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkFlushMappedMemoryRanges";
     return false;
   }
 
-  vkEndCommandBufferFn = reinterpret_cast<PFN_vkEndCommandBuffer>(
+  vkEndCommandBuffer = reinterpret_cast<PFN_vkEndCommandBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkEndCommandBuffer"));
-  if (!vkEndCommandBufferFn) {
+  if (!vkEndCommandBuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkEndCommandBuffer";
     return false;
   }
 
-  vkFreeCommandBuffersFn = reinterpret_cast<PFN_vkFreeCommandBuffers>(
+  vkFreeCommandBuffers = reinterpret_cast<PFN_vkFreeCommandBuffers>(
       vkGetDeviceProcAddr(vk_device, "vkFreeCommandBuffers"));
-  if (!vkFreeCommandBuffersFn) {
+  if (!vkFreeCommandBuffers) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkFreeCommandBuffers";
     return false;
   }
 
-  vkFreeDescriptorSetsFn = reinterpret_cast<PFN_vkFreeDescriptorSets>(
+  vkFreeDescriptorSets = reinterpret_cast<PFN_vkFreeDescriptorSets>(
       vkGetDeviceProcAddr(vk_device, "vkFreeDescriptorSets"));
-  if (!vkFreeDescriptorSetsFn) {
+  if (!vkFreeDescriptorSets) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkFreeDescriptorSets";
     return false;
   }
 
-  vkFreeMemoryFn = reinterpret_cast<PFN_vkFreeMemory>(
+  vkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(
       vkGetDeviceProcAddr(vk_device, "vkFreeMemory"));
-  if (!vkFreeMemoryFn) {
+  if (!vkFreeMemory) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkFreeMemory";
     return false;
   }
 
-  vkInvalidateMappedMemoryRangesFn =
+  vkInvalidateMappedMemoryRanges =
       reinterpret_cast<PFN_vkInvalidateMappedMemoryRanges>(
           vkGetDeviceProcAddr(vk_device, "vkInvalidateMappedMemoryRanges"));
-  if (!vkInvalidateMappedMemoryRangesFn) {
+  if (!vkInvalidateMappedMemoryRanges) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkInvalidateMappedMemoryRanges";
     return false;
   }
 
-  vkGetBufferMemoryRequirementsFn =
+  vkGetBufferMemoryRequirements =
       reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(
           vkGetDeviceProcAddr(vk_device, "vkGetBufferMemoryRequirements"));
-  if (!vkGetBufferMemoryRequirementsFn) {
+  if (!vkGetBufferMemoryRequirements) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetBufferMemoryRequirements";
     return false;
   }
 
-  vkGetDeviceQueueFn = reinterpret_cast<PFN_vkGetDeviceQueue>(
+  vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(
       vkGetDeviceProcAddr(vk_device, "vkGetDeviceQueue"));
-  if (!vkGetDeviceQueueFn) {
+  if (!vkGetDeviceQueue) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetDeviceQueue";
     return false;
   }
 
-  vkGetFenceStatusFn = reinterpret_cast<PFN_vkGetFenceStatus>(
+  vkGetFenceStatus = reinterpret_cast<PFN_vkGetFenceStatus>(
       vkGetDeviceProcAddr(vk_device, "vkGetFenceStatus"));
-  if (!vkGetFenceStatusFn) {
+  if (!vkGetFenceStatus) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetFenceStatus";
     return false;
   }
 
-  vkGetImageMemoryRequirementsFn =
+  vkGetImageMemoryRequirements =
       reinterpret_cast<PFN_vkGetImageMemoryRequirements>(
           vkGetDeviceProcAddr(vk_device, "vkGetImageMemoryRequirements"));
-  if (!vkGetImageMemoryRequirementsFn) {
+  if (!vkGetImageMemoryRequirements) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkGetImageMemoryRequirements";
     return false;
   }
 
-  vkMapMemoryFn = reinterpret_cast<PFN_vkMapMemory>(
+  vkMapMemory = reinterpret_cast<PFN_vkMapMemory>(
       vkGetDeviceProcAddr(vk_device, "vkMapMemory"));
-  if (!vkMapMemoryFn) {
+  if (!vkMapMemory) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkMapMemory";
     return false;
   }
 
-  vkQueueSubmitFn = reinterpret_cast<PFN_vkQueueSubmit>(
+  vkQueueSubmit = reinterpret_cast<PFN_vkQueueSubmit>(
       vkGetDeviceProcAddr(vk_device, "vkQueueSubmit"));
-  if (!vkQueueSubmitFn) {
+  if (!vkQueueSubmit) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkQueueSubmit";
     return false;
   }
 
-  vkQueueWaitIdleFn = reinterpret_cast<PFN_vkQueueWaitIdle>(
+  vkQueueWaitIdle = reinterpret_cast<PFN_vkQueueWaitIdle>(
       vkGetDeviceProcAddr(vk_device, "vkQueueWaitIdle"));
-  if (!vkQueueWaitIdleFn) {
+  if (!vkQueueWaitIdle) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkQueueWaitIdle";
     return false;
   }
 
-  vkResetCommandBufferFn = reinterpret_cast<PFN_vkResetCommandBuffer>(
+  vkResetCommandBuffer = reinterpret_cast<PFN_vkResetCommandBuffer>(
       vkGetDeviceProcAddr(vk_device, "vkResetCommandBuffer"));
-  if (!vkResetCommandBufferFn) {
+  if (!vkResetCommandBuffer) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkResetCommandBuffer";
     return false;
   }
 
-  vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
+  vkResetFences = reinterpret_cast<PFN_vkResetFences>(
       vkGetDeviceProcAddr(vk_device, "vkResetFences"));
-  if (!vkResetFencesFn) {
+  if (!vkResetFences) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkResetFences";
     return false;
   }
 
-  vkUnmapMemoryFn = reinterpret_cast<PFN_vkUnmapMemory>(
+  vkUnmapMemory = reinterpret_cast<PFN_vkUnmapMemory>(
       vkGetDeviceProcAddr(vk_device, "vkUnmapMemory"));
-  if (!vkUnmapMemoryFn) {
+  if (!vkUnmapMemory) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkUnmapMemory";
     return false;
   }
 
-  vkUpdateDescriptorSetsFn = reinterpret_cast<PFN_vkUpdateDescriptorSets>(
+  vkUpdateDescriptorSets = reinterpret_cast<PFN_vkUpdateDescriptorSets>(
       vkGetDeviceProcAddr(vk_device, "vkUpdateDescriptorSets"));
-  if (!vkUpdateDescriptorSetsFn) {
+  if (!vkUpdateDescriptorSets) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkUpdateDescriptorSets";
     return false;
   }
 
-  vkWaitForFencesFn = reinterpret_cast<PFN_vkWaitForFences>(
+  vkWaitForFences = reinterpret_cast<PFN_vkWaitForFences>(
       vkGetDeviceProcAddr(vk_device, "vkWaitForFences"));
-  if (!vkWaitForFencesFn) {
+  if (!vkWaitForFences) {
     DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                   << "vkWaitForFences";
     return false;
   }
 
   if (api_version >= VK_API_VERSION_1_1) {
-    vkGetDeviceQueue2Fn = reinterpret_cast<PFN_vkGetDeviceQueue2>(
+    vkGetDeviceQueue2 = reinterpret_cast<PFN_vkGetDeviceQueue2>(
         vkGetDeviceProcAddr(vk_device, "vkGetDeviceQueue2"));
-    if (!vkGetDeviceQueue2Fn) {
+    if (!vkGetDeviceQueue2) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetDeviceQueue2";
       return false;
     }
 
-    vkGetBufferMemoryRequirements2Fn =
+    vkGetBufferMemoryRequirements2 =
         reinterpret_cast<PFN_vkGetBufferMemoryRequirements2>(
             vkGetDeviceProcAddr(vk_device, "vkGetBufferMemoryRequirements2"));
-    if (!vkGetBufferMemoryRequirements2Fn) {
+    if (!vkGetBufferMemoryRequirements2) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetBufferMemoryRequirements2";
       return false;
     }
 
-    vkGetImageMemoryRequirements2Fn =
+    vkGetImageMemoryRequirements2 =
         reinterpret_cast<PFN_vkGetImageMemoryRequirements2>(
             vkGetDeviceProcAddr(vk_device, "vkGetImageMemoryRequirements2"));
-    if (!vkGetImageMemoryRequirements2Fn) {
+    if (!vkGetImageMemoryRequirements2) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetImageMemoryRequirements2";
       return false;
@@ -850,11 +850,11 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   if (gfx::HasExtension(
           enabled_extensions,
           VK_ANDROID_EXTERNAL_MEMORY_ANDROID_HARDWARE_BUFFER_EXTENSION_NAME)) {
-    vkGetAndroidHardwareBufferPropertiesANDROIDFn =
+    vkGetAndroidHardwareBufferPropertiesANDROID =
         reinterpret_cast<PFN_vkGetAndroidHardwareBufferPropertiesANDROID>(
             vkGetDeviceProcAddr(vk_device,
                                 "vkGetAndroidHardwareBufferPropertiesANDROID"));
-    if (!vkGetAndroidHardwareBufferPropertiesANDROIDFn) {
+    if (!vkGetAndroidHardwareBufferPropertiesANDROID) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetAndroidHardwareBufferPropertiesANDROID";
       return false;
@@ -865,17 +865,17 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME)) {
-    vkGetSemaphoreFdKHRFn = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
+    vkGetSemaphoreFdKHR = reinterpret_cast<PFN_vkGetSemaphoreFdKHR>(
         vkGetDeviceProcAddr(vk_device, "vkGetSemaphoreFdKHR"));
-    if (!vkGetSemaphoreFdKHRFn) {
+    if (!vkGetSemaphoreFdKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetSemaphoreFdKHR";
       return false;
     }
 
-    vkImportSemaphoreFdKHRFn = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
+    vkImportSemaphoreFdKHR = reinterpret_cast<PFN_vkImportSemaphoreFdKHR>(
         vkGetDeviceProcAddr(vk_device, "vkImportSemaphoreFdKHR"));
-    if (!vkImportSemaphoreFdKHRFn) {
+    if (!vkImportSemaphoreFdKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkImportSemaphoreFdKHR";
       return false;
@@ -886,19 +886,19 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #if defined(OS_WIN)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME)) {
-    vkGetSemaphoreWin32HandleKHRFn =
+    vkGetSemaphoreWin32HandleKHR =
         reinterpret_cast<PFN_vkGetSemaphoreWin32HandleKHR>(
             vkGetDeviceProcAddr(vk_device, "vkGetSemaphoreWin32HandleKHR"));
-    if (!vkGetSemaphoreWin32HandleKHRFn) {
+    if (!vkGetSemaphoreWin32HandleKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetSemaphoreWin32HandleKHR";
       return false;
     }
 
-    vkImportSemaphoreWin32HandleKHRFn =
+    vkImportSemaphoreWin32HandleKHR =
         reinterpret_cast<PFN_vkImportSemaphoreWin32HandleKHR>(
             vkGetDeviceProcAddr(vk_device, "vkImportSemaphoreWin32HandleKHR"));
-    if (!vkImportSemaphoreWin32HandleKHRFn) {
+    if (!vkImportSemaphoreWin32HandleKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkImportSemaphoreWin32HandleKHR";
       return false;
@@ -909,18 +909,18 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME)) {
-    vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
+    vkGetMemoryFdKHR = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
         vkGetDeviceProcAddr(vk_device, "vkGetMemoryFdKHR"));
-    if (!vkGetMemoryFdKHRFn) {
+    if (!vkGetMemoryFdKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetMemoryFdKHR";
       return false;
     }
 
-    vkGetMemoryFdPropertiesKHRFn =
+    vkGetMemoryFdPropertiesKHR =
         reinterpret_cast<PFN_vkGetMemoryFdPropertiesKHR>(
             vkGetDeviceProcAddr(vk_device, "vkGetMemoryFdPropertiesKHR"));
-    if (!vkGetMemoryFdPropertiesKHRFn) {
+    if (!vkGetMemoryFdPropertiesKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetMemoryFdPropertiesKHR";
       return false;
@@ -931,20 +931,19 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #if defined(OS_WIN)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME)) {
-    vkGetMemoryWin32HandleKHRFn =
-        reinterpret_cast<PFN_vkGetMemoryWin32HandleKHR>(
-            vkGetDeviceProcAddr(vk_device, "vkGetMemoryWin32HandleKHR"));
-    if (!vkGetMemoryWin32HandleKHRFn) {
+    vkGetMemoryWin32HandleKHR = reinterpret_cast<PFN_vkGetMemoryWin32HandleKHR>(
+        vkGetDeviceProcAddr(vk_device, "vkGetMemoryWin32HandleKHR"));
+    if (!vkGetMemoryWin32HandleKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetMemoryWin32HandleKHR";
       return false;
     }
 
-    vkGetMemoryWin32HandlePropertiesKHRFn =
+    vkGetMemoryWin32HandlePropertiesKHR =
         reinterpret_cast<PFN_vkGetMemoryWin32HandlePropertiesKHR>(
             vkGetDeviceProcAddr(vk_device,
                                 "vkGetMemoryWin32HandlePropertiesKHR"));
-    if (!vkGetMemoryWin32HandlePropertiesKHRFn) {
+    if (!vkGetMemoryWin32HandlePropertiesKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetMemoryWin32HandlePropertiesKHR";
       return false;
@@ -955,21 +954,21 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #if defined(OS_FUCHSIA)
   if (gfx::HasExtension(enabled_extensions,
                         VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME)) {
-    vkImportSemaphoreZirconHandleFUCHSIAFn =
+    vkImportSemaphoreZirconHandleFUCHSIA =
         reinterpret_cast<PFN_vkImportSemaphoreZirconHandleFUCHSIA>(
             vkGetDeviceProcAddr(vk_device,
                                 "vkImportSemaphoreZirconHandleFUCHSIA"));
-    if (!vkImportSemaphoreZirconHandleFUCHSIAFn) {
+    if (!vkImportSemaphoreZirconHandleFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkImportSemaphoreZirconHandleFUCHSIA";
       return false;
     }
 
-    vkGetSemaphoreZirconHandleFUCHSIAFn =
+    vkGetSemaphoreZirconHandleFUCHSIA =
         reinterpret_cast<PFN_vkGetSemaphoreZirconHandleFUCHSIA>(
             vkGetDeviceProcAddr(vk_device,
                                 "vkGetSemaphoreZirconHandleFUCHSIA"));
-    if (!vkGetSemaphoreZirconHandleFUCHSIAFn) {
+    if (!vkGetSemaphoreZirconHandleFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetSemaphoreZirconHandleFUCHSIA";
       return false;
@@ -980,10 +979,10 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #if defined(OS_FUCHSIA)
   if (gfx::HasExtension(enabled_extensions,
                         VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME)) {
-    vkGetMemoryZirconHandleFUCHSIAFn =
+    vkGetMemoryZirconHandleFUCHSIA =
         reinterpret_cast<PFN_vkGetMemoryZirconHandleFUCHSIA>(
             vkGetDeviceProcAddr(vk_device, "vkGetMemoryZirconHandleFUCHSIA"));
-    if (!vkGetMemoryZirconHandleFUCHSIAFn) {
+    if (!vkGetMemoryZirconHandleFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetMemoryZirconHandleFUCHSIA";
       return false;
@@ -994,39 +993,39 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #if defined(OS_FUCHSIA)
   if (gfx::HasExtension(enabled_extensions,
                         VK_FUCHSIA_BUFFER_COLLECTION_EXTENSION_NAME)) {
-    vkCreateBufferCollectionFUCHSIAFn =
+    vkCreateBufferCollectionFUCHSIA =
         reinterpret_cast<PFN_vkCreateBufferCollectionFUCHSIA>(
             vkGetDeviceProcAddr(vk_device, "vkCreateBufferCollectionFUCHSIA"));
-    if (!vkCreateBufferCollectionFUCHSIAFn) {
+    if (!vkCreateBufferCollectionFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkCreateBufferCollectionFUCHSIA";
       return false;
     }
 
-    vkSetBufferCollectionConstraintsFUCHSIAFn =
+    vkSetBufferCollectionConstraintsFUCHSIA =
         reinterpret_cast<PFN_vkSetBufferCollectionConstraintsFUCHSIA>(
             vkGetDeviceProcAddr(vk_device,
                                 "vkSetBufferCollectionConstraintsFUCHSIA"));
-    if (!vkSetBufferCollectionConstraintsFUCHSIAFn) {
+    if (!vkSetBufferCollectionConstraintsFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkSetBufferCollectionConstraintsFUCHSIA";
       return false;
     }
 
-    vkGetBufferCollectionPropertiesFUCHSIAFn =
+    vkGetBufferCollectionPropertiesFUCHSIA =
         reinterpret_cast<PFN_vkGetBufferCollectionPropertiesFUCHSIA>(
             vkGetDeviceProcAddr(vk_device,
                                 "vkGetBufferCollectionPropertiesFUCHSIA"));
-    if (!vkGetBufferCollectionPropertiesFUCHSIAFn) {
+    if (!vkGetBufferCollectionPropertiesFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetBufferCollectionPropertiesFUCHSIA";
       return false;
     }
 
-    vkDestroyBufferCollectionFUCHSIAFn =
+    vkDestroyBufferCollectionFUCHSIA =
         reinterpret_cast<PFN_vkDestroyBufferCollectionFUCHSIA>(
             vkGetDeviceProcAddr(vk_device, "vkDestroyBufferCollectionFUCHSIA"));
-    if (!vkDestroyBufferCollectionFUCHSIAFn) {
+    if (!vkDestroyBufferCollectionFUCHSIA) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkDestroyBufferCollectionFUCHSIA";
       return false;
@@ -1035,41 +1034,41 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
 #endif  // defined(OS_FUCHSIA)
 
   if (gfx::HasExtension(enabled_extensions, VK_KHR_SWAPCHAIN_EXTENSION_NAME)) {
-    vkAcquireNextImageKHRFn = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
+    vkAcquireNextImageKHR = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
         vkGetDeviceProcAddr(vk_device, "vkAcquireNextImageKHR"));
-    if (!vkAcquireNextImageKHRFn) {
+    if (!vkAcquireNextImageKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkAcquireNextImageKHR";
       return false;
     }
 
-    vkCreateSwapchainKHRFn = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
+    vkCreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
         vkGetDeviceProcAddr(vk_device, "vkCreateSwapchainKHR"));
-    if (!vkCreateSwapchainKHRFn) {
+    if (!vkCreateSwapchainKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkCreateSwapchainKHR";
       return false;
     }
 
-    vkDestroySwapchainKHRFn = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
+    vkDestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
         vkGetDeviceProcAddr(vk_device, "vkDestroySwapchainKHR"));
-    if (!vkDestroySwapchainKHRFn) {
+    if (!vkDestroySwapchainKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkDestroySwapchainKHR";
       return false;
     }
 
-    vkGetSwapchainImagesKHRFn = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
+    vkGetSwapchainImagesKHR = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
         vkGetDeviceProcAddr(vk_device, "vkGetSwapchainImagesKHR"));
-    if (!vkGetSwapchainImagesKHRFn) {
+    if (!vkGetSwapchainImagesKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkGetSwapchainImagesKHR";
       return false;
     }
 
-    vkQueuePresentKHRFn = reinterpret_cast<PFN_vkQueuePresentKHR>(
+    vkQueuePresentKHR = reinterpret_cast<PFN_vkQueuePresentKHR>(
         vkGetDeviceProcAddr(vk_device, "vkQueuePresentKHR"));
-    if (!vkQueuePresentKHRFn) {
+    if (!vkQueuePresentKHR) {
       DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
                     << "vkQueuePresentKHR";
       return false;

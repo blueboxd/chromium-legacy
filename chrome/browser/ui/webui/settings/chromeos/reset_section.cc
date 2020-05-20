@@ -94,6 +94,10 @@ void ResetSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::ResetSettingsHandler>(profile()));
 }
 
+int ResetSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_RESET;
+}
+
 void ResetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kPowerwash);
 }

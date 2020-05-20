@@ -32,6 +32,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
+#include "content/browser/media/media_devices_permission_checker.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_service_listener.h"
 #include "content/browser/renderer_host/media/in_process_video_capture_provider.h"
@@ -605,7 +606,8 @@ class MediaStreamManager::DeviceRequest {
     if (generate_stream_cb) {
       std::move(generate_stream_cb)
           .Run(MediaStreamRequestResult::FAILED_DUE_TO_SHUTDOWN, std::string(),
-               MediaStreamDevices(), MediaStreamDevices());
+               MediaStreamDevices(), MediaStreamDevices(),
+               /*pan_tilt_zoom_allowed=*/false);
     }
 
     if (open_device_cb) {
@@ -1763,8 +1765,38 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
       NOTREACHED();
   }
 
+  // It is safe to bind base::Unretained(this) because MediaStreamManager is
+  // owned by BrowserMainLoop and so guaranteed to be approximately immortal.
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&MediaDevicesPermissionChecker::
+                         HasPanTiltZoomPermissionGrantedOnUIThread,
+                     request->requesting_process_id,
+                     request->requesting_frame_id),
+      base::BindOnce(&MediaStreamManager::PanTiltZoomPermissionChecked,
+                     base::Unretained(this), label, audio_devices,
+                     video_devices));
+}
+
+void MediaStreamManager::PanTiltZoomPermissionChecked(
+    const std::string& label,
+    MediaStreamDevices audio_devices,
+    MediaStreamDevices video_devices,
+    bool pan_tilt_zoom_allowed) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DeviceRequest* request = FindRequest(label);
+  if (!request)
+    return;
+
+  SendLogMessage(base::StringPrintf(
+      "PanTiltZoomPermissionChecked({label=%s}, {requester_id="
+      "%d}, {request_type=%s}, {pan_tilt_zoom_allowed=%d})",
+      label.c_str(), request->requester_id,
+      RequestTypeToString(request->request_type()), pan_tilt_zoom_allowed));
+
   std::move(request->generate_stream_cb)
-      .Run(MediaStreamRequestResult::OK, label, audio_devices, video_devices);
+      .Run(MediaStreamRequestResult::OK, label, audio_devices, video_devices,
+           pan_tilt_zoom_allowed);
 }
 
 void MediaStreamManager::FinalizeRequestFailed(
@@ -1781,7 +1813,7 @@ void MediaStreamManager::FinalizeRequestFailed(
       DCHECK(request->generate_stream_cb);
       std::move(request->generate_stream_cb)
           .Run(result, std::string(), MediaStreamDevices(),
-               MediaStreamDevices());
+               MediaStreamDevices(), /*pan_tilt_zoom_allowed=*/false);
       break;
     }
     case blink::MEDIA_OPEN_DEVICE_PEPPER_ONLY: {

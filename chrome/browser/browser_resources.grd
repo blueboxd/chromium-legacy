@@ -195,6 +195,11 @@
         <include name="IDR_SIGNIN_ERROR_HTML" file="resources\signin\signin_error\signin_error.html" type="BINDATA" />
         <include name="IDR_SIGNIN_ERROR_JS" file="resources\signin\signin_error\signin_error.js" type="BINDATA" />
         <include name="IDR_SIGNIN_ERROR_APP_JS" file="${root_gen_dir}\chrome\browser\resources\signin\signin_error\signin_error_app.js" use_base_dir="false" preprocess="true" type="BINDATA" />
+        <include name="IDR_SIGNIN_REAUTH_HTML" file="resources\signin\signin_reauth\signin_reauth.html" type="BINDATA" />
+        <include name="IDR_SIGNIN_REAUTH_APP_JS" file="${root_gen_dir}\chrome\browser\resources\signin\signin_reauth\signin_reauth_app.js" use_base_dir="false" preprocess="true" type="BINDATA" />
+        <include name="IDR_SIGNIN_REAUTH_BROWSER_PROXY_JS" file="resources/signin/signin_reauth/signin_reauth_browser_proxy.js" type="BINDATA" />
+        <include name="IDR_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_SVG" file="resources\signin\signin_reauth\images\account_passwords_reauth_illustration.svg" type="BINDATA" compress="gzip" />
+        <include name="IDR_SIGNIN_REAUTH_IMAGES_ACCOUNT_PASSWORDS_REAUTH_ILLUSTRATION_DARK_SVG" file="resources\signin\signin_reauth\images\account_passwords_reauth_illustration_dark.svg" type="BINDATA" compress="gzip" />
       </if>
       <include name="IDR_USB_ENUMERATION_OPTIONS_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_enumeration_options.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
       <include name="IDR_USB_DEVICE_MANAGER_CLIENT_MOJOM_LITE_JS" file="${root_gen_dir}\services\device\public\mojom\usb_manager_client.mojom-lite.js" use_base_dir="false" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />

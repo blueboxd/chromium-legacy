@@ -10,12 +10,15 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/task/post_task.h"
+#include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_controller.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "third_party/blink/public/common/mediastream/media_devices.h"
 #include "url/gurl.h"
@@ -142,6 +145,44 @@ void MediaDevicesPermissionChecker::CheckPermissions(
       base::BindOnce(&DoCheckPermissionsOnUIThread, requested,
                      render_process_id, render_frame_id),
       std::move(callback));
+}
+
+// static
+bool MediaDevicesPermissionChecker::HasPanTiltZoomPermissionGrantedOnUIThread(
+    int render_process_id,
+    int render_frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_ANDROID)
+  // Camera PTZ is desktop only at the moment.
+  return true;
+#else
+  // TODO(crbug.com/934063): Remove when MediaCapturePanTilt Blink feature is
+  // enabled by default.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures)) {
+    return false;
+  }
+  RenderFrameHostImpl* frame_host =
+      RenderFrameHostImpl::FromID(render_process_id, render_frame_id);
+
+  if (!frame_host)
+    return false;
+
+  auto* web_contents = WebContents::FromRenderFrameHost(frame_host);
+  if (!web_contents)
+    return false;
+
+  auto* permission_controller = BrowserContext::GetPermissionController(
+      web_contents->GetBrowserContext());
+  DCHECK(permission_controller);
+
+  const GURL& origin = web_contents->GetLastCommittedURL();
+  blink::mojom::PermissionStatus status =
+      permission_controller->GetPermissionStatusForFrame(
+          PermissionType::CAMERA_PAN_TILT_ZOOM, frame_host, origin);
+
+  return status == blink::mojom::PermissionStatus::GRANTED;
+#endif
 }
 
 }  // namespace content

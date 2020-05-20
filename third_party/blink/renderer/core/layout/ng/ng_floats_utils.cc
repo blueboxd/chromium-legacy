@@ -196,9 +196,9 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
                                 NGExclusionSpace* exclusion_space) {
   DCHECK(unpositioned_float);
   const NGConstraintSpace& parent_space = unpositioned_float->parent_space;
+  NGBlockNode node = unpositioned_float->node;
   bool is_same_writing_mode =
-      unpositioned_float->node.Style().GetWritingMode() ==
-      parent_space.GetWritingMode();
+      node.Style().GetWritingMode() == parent_space.GetWritingMode();
 
   bool is_fragmentable =
       is_same_writing_mode && parent_space.HasBlockFragmentation();
@@ -206,6 +206,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
   scoped_refptr<const NGLayoutResult> layout_result;
   NGBoxStrut fragment_margins;
   NGLayoutOpportunity opportunity;
+  bool need_break_before = false;
 
   if (!is_fragmentable) {
     // We may be able to re-use the fragment from when we calculated the
@@ -223,8 +224,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
         float_fragment.InlineSize());
   } else {
     fragment_margins = ComputeMarginsFor(
-        unpositioned_float->node.Style(),
-        unpositioned_float->percentage_size.inline_size,
+        node.Style(), unpositioned_float->percentage_size.inline_size,
         parent_space.GetWritingMode(), parent_space.Direction());
     AdjustForFragmentation(unpositioned_float->token.get(), &fragment_margins);
 
@@ -250,8 +250,7 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
       NGConstraintSpace space = CreateConstraintSpaceForFloat(
           *unpositioned_float, fragmentainer_delta);
 
-      layout_result = unpositioned_float->node.Layout(
-          space, unpositioned_float->token.get());
+      layout_result = node.Layout(space, unpositioned_float->token.get());
 
       // If we knew the right block-offset up front, we're done.
       if (!optimistically_placed)
@@ -282,9 +281,22 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
       break;
     } while (true);
 
-    if (const NGBreakToken* break_token =
-            layout_result->PhysicalFragment().BreakToken())
+    LayoutUnit fragmentainer_block_offset =
+        parent_space.FragmentainerOffsetAtBfc() +
+        opportunity.rect.start_offset.block_offset;
+
+    // Note that we don't check if we're at a valid class A, B or C breakpoint
+    // (we only check that we're not at the start of the fragmentainer). While
+    // no other browsers do this either, we should consider doing this in the
+    // future. But for now, don't let the float affect the appeal of breaking
+    // inside this container.
+    if (!MovePastBreakpoint(parent_space, node, *layout_result,
+                            fragmentainer_block_offset, kBreakAppealPerfect,
+                            /* builder */ nullptr)) {
+      need_break_before = true;
+    } else if (layout_result->PhysicalFragment().BreakToken()) {
       fragment_margins.block_end = LayoutUnit();
+    }
   }
 
   NGFragment float_fragment(parent_space.GetWritingMode(),
@@ -300,13 +312,25 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
   }
 
   // Add the float as an exclusion.
-  scoped_refptr<const NGExclusion> exclusion =
-      CreateExclusion(float_fragment, float_margin_bfc_offset, fragment_margins,
-                      *unpositioned_float,
-                      unpositioned_float->IsLineRight(parent_space.Direction())
-                          ? EFloat::kRight
-                          : EFloat::kLeft);
-  exclusion_space->Add(std::move(exclusion));
+  if (need_break_before) {
+    // Create a special exclusion past everything. This will prevent us from
+    // adding any more floats in this formatting context to the current
+    // fragmentainer, and also make clearance behave correctly (e.g. an in-flow
+    // block with clear:left after a float:left that got pushed to the next
+    // fragmentainer means that the in-flow block also needs to be pushed, while
+    // if the in-flow block has clear:right, it may still be allowed in the
+    // current fragmentainer).
+    NGBfcOffset past_everything(LayoutUnit(), LayoutUnit::Max());
+    scoped_refptr<const NGExclusion> exclusion =
+        NGExclusion::Create(NGBfcRect(past_everything, past_everything),
+                            node.Style().Floating(parent_space.Direction()));
+    exclusion_space->Add(std::move(exclusion));
+  } else {
+    scoped_refptr<const NGExclusion> exclusion = CreateExclusion(
+        float_fragment, float_margin_bfc_offset, fragment_margins,
+        *unpositioned_float, node.Style().Floating(parent_space.Direction()));
+    exclusion_space->Add(std::move(exclusion));
+  }
 
   // Adjust the float's bfc_offset to its border-box (instead of margin-box).
   NGBfcOffset float_bfc_offset(
@@ -314,7 +338,8 @@ NGPositionedFloat PositionFloat(NGUnpositionedFloat* unpositioned_float,
           fragment_margins.LineLeft(parent_space.Direction()),
       float_margin_bfc_offset.block_offset + fragment_margins.block_start);
 
-  return NGPositionedFloat(std::move(layout_result), float_bfc_offset);
+  return NGPositionedFloat(std::move(layout_result), float_bfc_offset,
+                           need_break_before);
 }
 
 }  // namespace blink

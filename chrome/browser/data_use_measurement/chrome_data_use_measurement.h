@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/sequence_checker.h"
 #include "components/data_use_measurement/core/data_use_measurement.h"
 
 class PrefService;
@@ -43,6 +44,8 @@ class ChromeDataUseMeasurement : public DataUseMeasurement {
                                bool is_metrics_service_usage);
 
   PrefService* local_state_ = nullptr;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace data_use_measurement

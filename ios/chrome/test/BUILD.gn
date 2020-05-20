@@ -328,6 +328,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/common/ui/reauthentication:unit_tests",
     "//ios/chrome/common/ui/util:unit_tests",
     "//ios/chrome/content_widget_extension:unit_tests",
+    "//ios/chrome/credential_provider_extension:unit_tests",
     "//ios/chrome/search_widget_extension:unit_tests",
     "//ios/testing:http_server_bundle_data",
   ]

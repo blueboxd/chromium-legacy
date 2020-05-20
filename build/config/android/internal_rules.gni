@@ -1673,36 +1673,22 @@ if (enable_java_templates) {
     _input_jar_path = invoker.input_jar_path
     _output_jar_path = invoker.output_jar_path
 
-    # Turned off because of existing code which fails the assertion
-    _enable_thread_annotations = false
-
     _jacoco_instrument = invoker.jacoco_instrument
     _enable_jetify = defined(invoker.enable_jetify) && invoker.enable_jetify
 
-    _enable_bytecode_rewriter = _enable_thread_annotations
-    _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
-    _enable_bytecode_checks = !defined(invoker.enable_bytecode_checks) ||
-                              invoker.enable_bytecode_checks
-    _missing_classes_allowlist = []
-    if (defined(invoker.missing_classes_allowlist)) {
-      _missing_classes_allowlist = invoker.missing_classes_allowlist
+    _enable_bytecode_rewriter = !defined(invoker.enable_bytecode_checks) ||
+                                invoker.enable_bytecode_checks
+    if (defined(invoker.enable_bytecode_rewriter)) {
+      _enable_bytecode_rewriter = invoker.enable_bytecode_rewriter
     }
 
-    # Release builds don't have asserts enabled, so they often will not run the
-    # bytecode rewriter. We are okay with having release builds not run the
-    # bytecode checks at all, since the dependency errors can be caught in debug
-    # mode.
-    not_needed([
-                 "_is_prebuilt",
-                 "_enable_bytecode_checks",
-                 "_missing_classes_allowlist",
-               ])
-    if (defined(invoker.enable_bytecode_rewriter)) {
-      not_needed([
-                   "_enable_custom_resources",
-                   "_enable_thread_annotations",
-                 ])
-      _enable_bytecode_rewriter = invoker.enable_bytecode_rewriter
+    # TODO(crbug.com/1080903): Fix account_switcher_java properly.
+    if (string_replace(target_name, "account_switcher_java", "") !=
+        target_name) {
+      _enable_bytecode_rewriter = false
+    }
+    if (string_replace(target_name, "clank_junit_tests", "") != target_name) {
+      _enable_bytecode_rewriter = false
     }
 
     _jar_excluded_patterns = []
@@ -1786,34 +1772,34 @@ if (enable_java_templates) {
           rebase_path(_java_bytecode_rewriter_input_jar, root_build_dir),
           "--output-jar",
           rebase_path(_java_bytecode_rewriter_output_jar, root_build_dir),
-        ]
-        if (_is_prebuilt) {
-          args += [ "--is-prebuilt" ]
-        }
-        if (defined(_enable_custom_resources) && _enable_custom_resources) {
-          args += [ "--enable-custom-resources" ]
-        }
-        if (_enable_thread_annotations) {
-          args += [ "--enable-thread-annotations" ]
-        }
-        if (_enable_bytecode_checks) {
-          args += [ "--enable-check-class-path" ]
-        }
-        args += [
-          "--missing-classes-allowlist",
-          "${_missing_classes_allowlist}",
+          "--enable-check-class-path",
           "--direct-classpath-jars",
           "@FileArg($_rebased_build_config:javac:classpath)",
-          "--sdk-classpath-jars",
-          "@FileArg($_rebased_build_config:android:sdk_jars)",
           "--extra-classpath-jars",
           "@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
         ]
+        if (invoker.supports_android) {
+          args += [ "--sdk-classpath-jars=@FileArg($_rebased_build_config:android:sdk_jars)" ]
+        }
+        if (defined(invoker.is_prebuilt) && invoker.is_prebuilt) {
+          args += [ "--is-prebuilt" ]
+        }
+        if (defined(invoker.missing_classes_allowlist)) {
+          args += [
+            "--missing-classes-allowlist=${invoker.missing_classes_allowlist}",
+          ]
+        }
       }
 
       _deps = []
       _deps = [ ":$_java_bytecode_rewriter_target" ]
       _previous_output_jar = _java_bytecode_rewriter_output_jar
+    } else {
+      not_needed(invoker,
+                 [
+                   "is_prebuilt",
+                   "supports_android",
+                 ])
     }
 
     if (invoker.enable_desugar) {
@@ -3437,7 +3423,8 @@ if (enable_java_templates) {
     }
 
     # TODO(crbug.com/1078484): Don't use desugared .jar files for java binaries.
-    if (_is_java_binary && enable_bazel_desugar) {
+    if (_is_java_binary && enable_bazel_desugar &&
+        (!defined(invoker.enable_desugar) || invoker.enable_desugar)) {
       _accumulated_deps +=
           [ "//third_party/bazel/desugar:desugar_runtime_java" ]
     }
@@ -3743,6 +3730,7 @@ if (enable_java_templates) {
                                  ])
           enable_desugar = _enable_desugar && enable_bazel_desugar
           is_prebuilt = _is_prebuilt
+          supports_android = _supports_android
           build_config = _build_config
           input_jar_path = _unprocessed_jar_path
           jacoco_instrument = _jacoco_instrument

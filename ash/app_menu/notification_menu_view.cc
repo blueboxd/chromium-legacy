@@ -27,14 +27,16 @@ NotificationMenuView::NotificationMenuView(
     : app_id_(app_id),
       notification_item_view_delegate_(notification_item_view_delegate),
       slide_out_controller_delegate_(slide_out_controller_delegate),
-      double_separator_(AddChildView(std::make_unique<views::MenuSeparator>(
-          ui::MenuSeparatorType::DOUBLE_SEPARATOR))),
-      header_view_(
-          AddChildView(std::make_unique<NotificationMenuHeaderView>())) {
+      double_separator_(
+          new views::MenuSeparator(ui::MenuSeparatorType::DOUBLE_SEPARATOR)),
+      header_view_(new NotificationMenuHeaderView()) {
   DCHECK(notification_item_view_delegate_);
   DCHECK(slide_out_controller_delegate_);
   DCHECK(!app_id_.empty())
       << "Only context menus for applications can show notifications.";
+
+  AddChildView(double_separator_);
+  AddChildView(header_view_);
 }
 
 NotificationMenuView::~NotificationMenuView() = default;
@@ -84,8 +86,9 @@ void NotificationMenuView::AddNotificationItemView(
       notification_item_view_delegate_, slide_out_controller_delegate_,
       notification.title(), notification.message(), notification.icon(),
       notification.id());
-  notification_item_views_.push_front(
-      AddChildView(std::move(notification_view)));
+  notification_view->set_owned_by_client();
+  AddChildView(notification_view.get());
+  notification_item_views_.push_front(std::move(notification_view));
 
   header_view_->UpdateCounter(notification_item_views_.size());
 
@@ -93,12 +96,14 @@ void NotificationMenuView::AddNotificationItemView(
     return;
 
   // Push |old_displayed_notification_item_view| to |overflow_view_|.
-  old_displayed_item->SetVisible(false);
+  RemoveChildView(old_displayed_item);
 
   const bool overflow_view_created = !overflow_view_;
-  if (!overflow_view_)
-    overflow_view_ = AddChildView(std::make_unique<NotificationOverflowView>());
-
+  if (!overflow_view_) {
+    overflow_view_ = std::make_unique<NotificationOverflowView>();
+    overflow_view_->set_owned_by_client();
+    AddChildView(overflow_view_.get());
+  }
   overflow_view_->AddIcon(old_displayed_item->proportional_image_view(),
                           old_displayed_item->notification_id());
 
@@ -110,7 +115,6 @@ void NotificationMenuView::AddNotificationItemView(
   }
   Layout();
 }
-
 void NotificationMenuView::UpdateNotificationItemView(
     const message_center::Notification& notification) {
   // Find the view which corresponds to |notification|.
@@ -129,9 +133,8 @@ void NotificationMenuView::OnNotificationRemoved(
   if (i == notification_item_views_.end())
     return;
   const bool removed_displayed_notification =
-      *i == GetDisplayedNotificationItemView();
+      i->get() == GetDisplayedNotificationItemView();
 
-  RemoveChildViewT(*i);
   notification_item_views_.erase(i);
   header_view_->UpdateCounter(notification_item_views_.size());
 
@@ -139,7 +142,7 @@ void NotificationMenuView::OnNotificationRemoved(
     // Display the next notification.
     auto* item = GetDisplayedNotificationItemView();
     if (item) {
-      item->SetVisible(true);
+      AddChildView(item);
       if (overflow_view_)
         overflow_view_->RemoveIcon(item->notification_id());
     }
@@ -148,9 +151,7 @@ void NotificationMenuView::OnNotificationRemoved(
   }
 
   if (overflow_view_ && overflow_view_->is_empty()) {
-    // Remove and delete |overflow_view_|.
-    RemoveChildViewT(overflow_view_);
-    overflow_view_ = nullptr;
+    overflow_view_.reset();
     PreferredSizeChanged();
     notification_item_view_delegate_->OnOverflowAddedOrRemoved();
   }
@@ -163,8 +164,9 @@ ui::Layer* NotificationMenuView::GetSlideOutLayer() {
 
 const NotificationItemView*
 NotificationMenuView::GetDisplayedNotificationItemView() const {
-  return notification_item_views_.empty() ? nullptr
-                                          : notification_item_views_.front();
+  return notification_item_views_.empty()
+             ? nullptr
+             : notification_item_views_.front().get();
 }
 
 const std::string& NotificationMenuView::GetDisplayedNotificationID() const {

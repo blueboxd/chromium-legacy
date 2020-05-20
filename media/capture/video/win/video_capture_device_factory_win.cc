@@ -240,6 +240,10 @@ std::string GetDeviceModelId(const std::string& device_id) {
 }
 
 HRESULT EnumerateDirectShowDevices(IEnumMoniker** enum_moniker) {
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
   ComPtr<ICreateDevEnum> dev_enum;
   HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
                                   IID_PPV_ARGS(&dev_enum));

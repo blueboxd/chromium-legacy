@@ -168,6 +168,9 @@ class HistoryService : public KeyedService {
   // should be the unique ID of the current navigation entry in the given
   // process.
   //
+  // |publicly_routable| is a property of the IP address at the URL visit time.
+  // See VisitRow for more details about this field.
+  //
   // TODO(avi): This is no longer true. 'page id' was removed years ago, and
   // their uses replaced by globally-unique nav_entry_ids. Is ContextID still
   // needed? https://crbug.com/859902
@@ -190,7 +193,8 @@ class HistoryService : public KeyedService {
                const RedirectList& redirects,
                ui::PageTransition transition,
                VisitSource visit_source,
-               bool did_replace_entry);
+               bool did_replace_entry,
+               bool publicly_routable);
 
   // For adding pages to history where no tracking information can be done.
   void AddPage(const GURL& url, base::Time time, VisitSource visit_source);

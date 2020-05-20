@@ -382,6 +382,7 @@ TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
 // properly.
 TEST_F(URLDatabaseTest, MigrationURLTableForAddingAUTOINCREMENT) {
   CreateVersion33URLTable();
+
   // First, add two URLs.
   const GURL url1("http://www.google.com/");
   URLRow url_info1(url1);

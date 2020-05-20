@@ -28,7 +28,7 @@ int NotificationMenuViewTestAPI::GetItemViewCount() const {
 }
 
 NotificationOverflowView* NotificationMenuViewTestAPI::GetOverflowView() const {
-  return notification_menu_view_->overflow_view_;
+  return notification_menu_view_->overflow_view_.get();
 }
 
 }  // namespace ash

@@ -185,6 +185,11 @@ const char kReportUploadFrequency[] =
 // should be recorded and reported along with device policy requests.
 const char kReportDeviceAppInfo[] = "cros.device_status.report_device_app_info";
 
+// A boolean pref that determines whether the device Bluetooth information
+// should be included in status reports to the device management server.
+const char kReportDeviceBluetoothInfo[] =
+    "cros.device_status.report_device_bluetooth_info";
+
 // Determines whether heartbeats should be sent to the policy service via
 // the GCM channel.
 const char kHeartbeatEnabled[] = "cros.device_status.heartbeat_enabled";

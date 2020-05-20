@@ -339,21 +339,26 @@ void HistoryService::AddPage(const GURL& url,
                              const RedirectList& redirects,
                              ui::PageTransition transition,
                              VisitSource visit_source,
-                             bool did_replace_entry) {
+                             bool did_replace_entry,
+                             bool publicly_routable) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  AddPage(HistoryAddPageArgs(url, time, context_id, nav_entry_id, referrer,
-                             redirects, transition,
-                             !ui::PageTransitionIsMainFrame(transition),
-                             visit_source, did_replace_entry, true));
+  AddPage(HistoryAddPageArgs(
+      url, time, context_id, nav_entry_id, referrer, redirects, transition,
+      !ui::PageTransitionIsMainFrame(transition), visit_source,
+      did_replace_entry, /*consider_for_ntp_most_visited=*/true,
+      publicly_routable));
 }
 
 void HistoryService::AddPage(const GURL& url,
                              base::Time time,
                              VisitSource visit_source) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  AddPage(HistoryAddPageArgs(url, time, nullptr, 0, GURL(), RedirectList(),
-                             ui::PAGE_TRANSITION_LINK, false, visit_source,
-                             false, true));
+  AddPage(HistoryAddPageArgs(
+      url, time, /*context_id=*/nullptr, /*nav_entry_id=*/0,
+      /*referrer=*/GURL(), RedirectList(), ui::PAGE_TRANSITION_LINK,
+      /*hidden=*/false, visit_source,
+      /*did_replace_entry=*/false, /*consider_for_ntp_most_visited=*/true,
+      /*publicly_routable=*/false));
 }
 
 void HistoryService::AddPage(const HistoryAddPageArgs& add_page_args) {

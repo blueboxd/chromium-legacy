@@ -195,11 +195,10 @@ void AddToHistory(history::HistoryService* service,
                   ui::PageTransition transition,
                   history::VisitSource source,
                   const base::Time& timestamp) {
-  service->AddPage(url, timestamp,
-                   nullptr,  // scope
-                   1234,     // nav_entry_id
-                   GURL(),   // referrer
-                   history::RedirectList(), transition, source, false);
+  service->AddPage(url, timestamp, /*scope=*/nullptr, /*nav_entry_id=*/1234,
+                   /*referrer=*/GURL(), history::RedirectList(), transition,
+                   source, /*did_replace_entry=*/false,
+                   /*publicly_routable=*/false);
 }
 
 history::URLRows GetTypedUrlsFromHistoryService(

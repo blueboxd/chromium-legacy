@@ -258,7 +258,7 @@ class FileTasks {
    *     the UI element that triggered the share action.
    * @param {!Array<!FileEntry>} entries File entries to be shared.
    */
-  static recordSharingAction(source, entries) {
+  static recordSharingActionUMA_(source, entries) {
     metrics.recordEnum(
         'Share.ActionSource', source, FileTasks.ValidSharingActionSource);
     metrics.recordSmallCount('Share.FileCount', entries.length);
@@ -267,7 +267,6 @@ class FileTasks {
           'Share.FileType', FileTasks.getViewFileType(entry),
           FileTasks.UMA_INDEX_KNOWN_EXTENSIONS);
     }
-    // TODO(crbug.com/1063169): record Share.AppId AppID for each entity.
   }
 
   /**
@@ -356,6 +355,14 @@ class FileTasks {
     // - Files app's internal tasks
     // - file_handler tasks with OPEN_WITH verb
     return !task.verb || task.verb == chrome.fileManagerPrivate.Verb.OPEN_WITH;
+  }
+
+  /**
+   * @param {!chrome.fileManagerPrivate.FileTask} task The task checked.
+   * @return {boolean} Whether or not this task is a file sharing task.
+   */
+  static isShareTask(task) {
+    return task.verb === chrome.fileManagerPrivate.Verb.SHARE_WITH;
   }
 
   /**
@@ -654,6 +661,10 @@ class FileTasks {
     FileTasks.recordViewingFileTypeUMA_(this.volumeManager_, this.entries_);
     FileTasks.recordViewingRootTypeUMA_(
         this.volumeManager_, this.directoryModel_.getCurrentRootType());
+    if (FileTasks.isShareTask(task)) {
+      FileTasks.recordSharingActionUMA_(
+          FileTasks.SharingActionSourceForUMA.SHARE_BUTTON, this.entries_);
+    }
     this.executeInternal_(task);
   }
 

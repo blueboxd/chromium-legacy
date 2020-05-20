@@ -38,4 +38,9 @@ KeyedService* TranslateRankerFactory::BuildServiceInstanceFor(
       translate::TranslateRankerImpl::GetModelURL(), ukm::UkmRecorder::Get());
 }
 
+content::BrowserContext* TranslateRankerFactory::GetBrowserContextToUse(
+    content::BrowserContext* context) const {
+  return context;
+}
+
 }  // namespace weblayer

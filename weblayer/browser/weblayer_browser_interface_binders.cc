@@ -37,11 +37,6 @@ void BindContentTranslateDriver(
   if (!contents)
     return;
 
-  // TODO(crbug.com/1072334): Resolve incorporation of translate in incognito
-  // mode.
-  if (contents->GetBrowserContext()->IsOffTheRecord())
-    return;
-
   TranslateClientImpl* const translate_client =
       TranslateClientImpl::FromWebContents(contents);
   translate_client->translate_driver()->AddReceiver(std::move(receiver));

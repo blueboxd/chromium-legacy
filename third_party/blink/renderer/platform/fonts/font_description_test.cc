@@ -249,4 +249,18 @@ TEST(FontDescriptionTest, DefaultHashTrait) {
   EXPECT_FALSE(map.Contains(description3));
 }
 
+// https://crbug.com/1081017
+TEST(FontDescriptionTest, NegativeZeroEmFontSize) {
+  // 'font-size: -0.0em' sets the following
+  FontDescription description1;
+  description1.SetSpecifiedSize(-0.0);
+
+  FontDescription description2;
+  description2.SetSpecifiedSize(0.0);
+
+  // Equal font descriptions must have equal hash values
+  EXPECT_EQ(description1, description2);
+  EXPECT_EQ(description1.GetHash(), description2.GetHash());
+}
+
 }  // namespace blink

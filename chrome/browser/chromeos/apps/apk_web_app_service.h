@@ -98,6 +98,8 @@ class ApkWebAppService : public KeyedService,
                           const base::Optional<std::string> sha256_fingerprint,
                           web_app::InstallResultCode code);
   bool IsWebAppInstalledFromArc(const web_app::AppId& web_app_id);
+  void UpdatePackageInfo(const std::string& app_id,
+                         const arc::mojom::WebAppInfoPtr& web_app_info);
 
   WebAppCallbackForTesting web_app_installed_callback_;
   WebAppCallbackForTesting web_app_uninstalled_callback_;

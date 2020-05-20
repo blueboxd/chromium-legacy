@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 class Browser;
@@ -62,7 +63,7 @@ class BrowserAppLauncher {
 
  private:
   Profile* const profile_;
-  std::unique_ptr<web_app::WebAppLaunchManager> web_app_launch_manager_;
+  web_app::WebAppLaunchManager web_app_launch_manager_;
 };
 
 }  // namespace apps

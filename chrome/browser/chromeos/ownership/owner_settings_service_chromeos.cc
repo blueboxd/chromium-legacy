@@ -643,6 +643,7 @@ void OwnerSettingsServiceChromeOS::UpdateDeviceSettings(
     //   kReleaseChannelDelegated
     //   kReportDeviceActivityTimes
     //   KReportDeviceBacklightInfo
+    //   kReportDeviceBluetoothInfo
     //   kReportDeviceBoardStatus
     //   kReportDeviceBootMode
     //   kReportDeviceCpuInfo

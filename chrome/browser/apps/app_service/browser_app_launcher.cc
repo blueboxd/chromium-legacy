@@ -10,20 +10,14 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/web_applications/web_app_launch_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 namespace apps {
 
-BrowserAppLauncher::BrowserAppLauncher(Profile* profile) : profile_(profile) {
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions) ||
-      base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedLaunch)) {
-    web_app_launch_manager_ =
-        std::make_unique<web_app::WebAppLaunchManager>(profile);
-  }
-}
+BrowserAppLauncher::BrowserAppLauncher(Profile* profile)
+    : profile_(profile), web_app_launch_manager_(profile) {}
 
 BrowserAppLauncher::~BrowserAppLauncher() = default;
 
@@ -32,8 +26,8 @@ content::WebContents* BrowserAppLauncher::LaunchAppWithParams(
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
           params.app_id);
-  if ((!extension || extension->from_bookmark()) && web_app_launch_manager_) {
-    return web_app_launch_manager_->OpenApplication(params);
+  if (!extension || extension->from_bookmark()) {
+    return web_app_launch_manager_.OpenApplication(params);
   }
 
   if (params.container ==
@@ -60,8 +54,8 @@ void BrowserAppLauncher::LaunchAppWithCallback(
   const extensions::Extension* extension =
       extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
           app_id);
-  if ((!extension || extension->from_bookmark()) && web_app_launch_manager_) {
-    web_app_launch_manager_->LaunchApplication(
+  if (!extension || extension->from_bookmark()) {
+    web_app_launch_manager_.LaunchApplication(
         app_id, command_line, current_directory, std::move(callback));
     return;
   }

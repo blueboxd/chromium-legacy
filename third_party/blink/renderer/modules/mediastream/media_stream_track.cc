@@ -219,11 +219,21 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component)
     : MediaStreamTrack(context,
                        component,
-                       component->Source()->GetReadyState()) {}
+                       component->Source()->GetReadyState(),
+                       /*pan_tilt_zoom_allowed=*/false) {}
 
 MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
                                    MediaStreamComponent* component,
-                                   MediaStreamSource::ReadyState ready_state)
+                                   bool pan_tilt_zoom_allowed)
+    : MediaStreamTrack(context,
+                       component,
+                       component->Source()->GetReadyState(),
+                       pan_tilt_zoom_allowed) {}
+
+MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
+                                   MediaStreamComponent* component,
+                                   MediaStreamSource::ReadyState ready_state,
+                                   bool pan_tilt_zoom_allowed)
     : ready_state_(ready_state),
       component_(component),
       execution_context_(context) {
@@ -236,9 +246,8 @@ MediaStreamTrack::MediaStreamTrack(ExecutionContext* context,
 
   if (component_->Source() &&
       component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
-    // ImageCapture::create() only throws if |this| track is not of video type.
-    NonThrowableExceptionState exception_state;
-    image_capture_ = ImageCapture::Create(context, this, exception_state);
+    image_capture_ = MakeGarbageCollected<ImageCapture>(context, this,
+                                                        pan_tilt_zoom_allowed);
   }
 }
 
@@ -393,8 +402,12 @@ void MediaStreamTrack::stopTrack(ExecutionContext* execution_context) {
 
 MediaStreamTrack* MediaStreamTrack::clone(ScriptState* script_state) {
   MediaStreamComponent* cloned_component = Component()->Clone();
+  bool pan_tilt_zoom_allowed =
+      image_capture_ ? image_capture_->HasPanTiltZoomPermissionGranted()
+                     : false;
   MediaStreamTrack* cloned_track = MakeGarbageCollected<MediaStreamTrack>(
-      ExecutionContext::From(script_state), cloned_component, ready_state_);
+      ExecutionContext::From(script_state), cloned_component, ready_state_,
+      pan_tilt_zoom_allowed);
   DidCloneMediaStreamTrack(Component(), cloned_component);
   return cloned_track;
 }

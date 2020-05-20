@@ -137,7 +137,8 @@ interface MediaStreamDispatcherHost {
                  StreamSelectionInfo audio_stream_selection_info)
       => (MediaStreamRequestResult result, string label,
          array<MediaStreamDevice> audio_devices,
-         array<MediaStreamDevice> video_devices);
+         array<MediaStreamDevice> video_devices,
+         bool pan_tilt_zoom_allowed);
 
   // Cancels the request for a new media stream or opening a device.
   CancelRequest(int32 request_id);

@@ -149,6 +149,8 @@ android_library("java") {
     "//services/network/public/mojom:cookies_mojom_java",
     "//services/network/public/mojom:mojom_java",
     "//third_party/android_deps:androidx_core_core_java",
+    "//third_party/android_deps:androidx_fragment_fragment_java",
+    "//third_party/android_deps:androidx_preference_preference_java",
     "//ui/android:ui_full_java",
     "//ui/android:ui_java",
     "//url:gurl_java",
@@ -184,6 +186,7 @@ android_library("test_java") {
   testonly = true
   sources = [ "org/chromium/weblayer_private/test/TestWebLayerImpl.java" ]
   deps = [
+    ":interfaces_java",
     ":java",
     ":weblayer_test_resources",
     "//base:jni_java",

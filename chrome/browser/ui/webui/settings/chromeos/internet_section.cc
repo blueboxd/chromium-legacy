@@ -631,6 +631,10 @@ void InternetSection::AddHandlers(content::WebUI* web_ui) {
   web_ui->AddMessageHandler(std::make_unique<InternetHandler>(profile()));
 }
 
+int InternetSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_INTERNET;
+}
+
 void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Ethernet details.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kEthernetDetails);

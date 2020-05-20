@@ -165,6 +165,10 @@ void BluetoothSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   chromeos::bluetooth_dialog::AddLocalizedStrings(html_source);
 }
 
+int BluetoothSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_BLUETOOTH;
+}
+
 void BluetoothSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSubpage(mojom::Subpage::kBluetoothDevices);
   static constexpr mojom::Setting kBluetoothDevicesSettings[] = {

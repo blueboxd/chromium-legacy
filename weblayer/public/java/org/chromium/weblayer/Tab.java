@@ -344,6 +344,50 @@ public class Tab {
         }
     }
 
+    /**
+     * Set arbitrary data on the tab. This will be saved and restored with the browser, so it is
+     * important to keep this data as small as possible.
+     *
+     * @param data The data to set, must be smaller than 4K when serialized. A snapshot of this data
+     *   is taken, so any changes to the passed in object after this call will not be reflected.
+     *
+     * @throws IllegalArgumentException if the serialzed size of the data exceeds 4K.
+     *
+     * @since 85
+     */
+    public void setData(@NonNull Map<String, String> data) {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 85) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            if (!mImpl.setData(data)) {
+                throw new IllegalArgumentException("Data given to Tab.setData() was too large.");
+            }
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Get arbitrary data set on the tab with setData().
+     *
+     * @return the data or an empty map if no data was set.
+     * @since 85
+     */
+    @NonNull
+    public Map<String, String> getData() {
+        ThreadCheck.ensureOnUiThread();
+        if (WebLayer.getSupportedMajorVersionInternal() < 85) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return (Map<String, String>) mImpl.getData();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
     private final class TabClientImpl extends ITabClient.Stub {
         @Override
         public void visibleUriChanged(String uriString) {

@@ -237,6 +237,10 @@ class VisitDatabase {
   // don't have incremented_omnibox_typed_score column yet.
   bool MigrateVisitsWithoutIncrementedOmniboxTypedScore();
 
+  // Called by the derived classes to migrate the older visits table which
+  // don't have publicly_routable column yet.
+  bool MigrateVisitsWithoutPubliclyRoutableColumn();
+
   // A subprocedure in the process of migration to version 40.
   bool GetAllVisitedURLRowidsForMigrationToVersion40(
       std::vector<URLID>* visited_url_rowids_sorted);
@@ -248,7 +252,7 @@ class VisitDatabase {
 // Columns, in order, of the visit table.
 #define HISTORY_VISIT_ROW_FIELDS                                        \
   " id,url,visit_time,from_visit,transition,segment_id,visit_duration," \
-  "incremented_omnibox_typed_score "
+  "incremented_omnibox_typed_score,publicly_routable "
 
 }  // namespace history
 

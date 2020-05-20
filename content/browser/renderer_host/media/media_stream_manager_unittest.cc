@@ -325,7 +325,8 @@ class MediaStreamManagerTest : public ::testing::Test {
       blink::mojom::MediaStreamRequestResult result,
       const std::string& label,
       const blink::MediaStreamDevices& audio_devices,
-      const blink::MediaStreamDevices& video_devices) {
+      const blink::MediaStreamDevices& video_devices,
+      bool pan_tilt_zoom_allowed) {
     if (request_audio) {
       EXPECT_EQ(1u, audio_devices.size());
       *audio_device = audio_devices[0];
@@ -697,7 +698,8 @@ TEST_F(MediaStreamManagerTest, GetDisplayMediaRequestCallsUIProxy) {
       base::BindOnce([](blink::mojom::MediaStreamRequestResult result,
                         const std::string& label,
                         const blink::MediaStreamDevices& audio_devices,
-                        const blink::MediaStreamDevices& video_devices) {});
+                        const blink::MediaStreamDevices& video_devices,
+                        bool pan_tilt_zoom_allowed) {});
   EXPECT_CALL(
       *media_observer_,
       OnMediaRequestStateChanged(

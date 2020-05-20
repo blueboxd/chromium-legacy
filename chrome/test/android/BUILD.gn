@@ -65,6 +65,7 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_tests") {
   deps = [
     ":chrome_java_test_pagecontroller",
     "//base:base_java_test_support",
+    "//chrome/browser/flags:java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/junit",
   ]
@@ -85,11 +86,17 @@ instrumentation_test_apk("chrome_java_test_wpr_tests") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//chrome/android:chrome_java",
+    "//chrome/browser/tab:java",
+    "//chrome/browser/ui/android/native_page:java",
+    "//components/embedder_support/android:util_java",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_deps:androidx_recyclerview_recyclerview_java",
     "//third_party/android_deps:com_android_support_drawerlayout_java",
     "//third_party/android_deps:com_android_support_recyclerview_v7_java",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/espresso:espresso_all_java",
     "//third_party/guava:guava_android_java",
+    "//third_party/hamcrest:hamcrest_library_java",
     "//third_party/junit",
   ]
 

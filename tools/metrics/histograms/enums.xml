@@ -20308,6 +20308,7 @@ Called by update_document_policy_enum.py.-->
   <int value="705" label="UserPluginVmAllowed"/>
   <int value="706" label="PrintRasterizationMode"/>
   <int value="707" label="AutoOpenAllowedForURLs"/>
+  <int value="708" label="ReportDeviceBluetoothInfo"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">

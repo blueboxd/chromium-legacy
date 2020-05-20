@@ -55,8 +55,9 @@ Color SelectionBackgroundColor(const Document& document,
 
 // TODO(yosin): Remove |AsDisplayItemClient| once the transition to
 // |NGFragmentItem| is done. http://crbug.com/982194
-inline const NGFragmentItem& AsDisplayItemClient(const NGInlineCursor& cursor) {
-  return *cursor.CurrentItem();
+inline const DisplayItemClient& AsDisplayItemClient(
+    const NGInlineCursor& cursor) {
+  return *cursor.Current().GetDisplayItemClient();
 }
 
 inline const NGPaintFragment& AsDisplayItemClient(

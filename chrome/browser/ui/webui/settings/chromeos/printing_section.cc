@@ -246,6 +246,10 @@ void PrintingSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<CupsPrintersHandler>(profile(), printers_manager_));
 }
 
+int PrintingSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_PRINTING;
+}
+
 void PrintingSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kPrintJobs);
 

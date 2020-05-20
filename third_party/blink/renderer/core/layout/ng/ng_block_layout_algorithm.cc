@@ -1083,16 +1083,6 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   DCHECK(!IsResumingLayout(child_break_token) ||
          container_builder_.BfcBlockOffset());
 
-  if (broke_before_float_) {
-    // We have already broken before a float. This means that we cannot place
-    // any more floats now, as a float isn't allowed to start before any
-    // preceding float.
-    DCHECK(!child_break_token);
-    container_builder_.AddBreakBeforeChild(child, base::nullopt,
-                                           /* is_forced_break */ false);
-    return;
-  }
-
   // If we don't have a BFC block-offset yet, the "expected" BFC block-offset
   // is used to optimistically place floats.
   NGBfcOffset origin_bfc_offset = {
@@ -1127,39 +1117,27 @@ void NGBlockLayoutAlgorithm::HandleFloat(
   // TODO(mstensho): Handle abortions caused by block fragmentation.
   DCHECK_EQ(layout_result.Status(), NGLayoutResult::kSuccess);
 
-  const auto& physical_fragment = layout_result.PhysicalFragment();
-  if (const NGBreakToken* token = physical_fragment.BreakToken()) {
+  if (positioned_float.need_break_before) {
     DCHECK(ConstraintSpace().HasBlockFragmentation());
-    if (!child_break_token && token->BreakAppeal() != kBreakAppealPerfect) {
-      LayoutUnit fragmentainer_block_offset =
-          ConstraintSpace().FragmentainerOffsetAtBfc() +
-          positioned_float.bfc_offset.block_offset;
-      if (fragmentainer_block_offset > LayoutUnit()) {
-        // The float broke inside, and not at an ideal breakpoint. Break before
-        // the float instead. Note that we don't check if we're at a valid class
-        // A or C breakpoint (we only check that we're not at the start of the
-        // fragmentainer (in which case breaking typically wouldn't eliminate
-        // the unappealing break inside the float)). While no other browsers do
-        // this either, we should consider doing this in the future. For now,
-        // don't let the float affect the appeal of breaking inside this
-        // container.
-        BreakBeforeChild(ConstraintSpace(), child, layout_result,
-                         fragmentainer_block_offset,
-                         /* appeal */ base::nullopt,
-                         /* is_forced_break */ false, &container_builder_);
+    LayoutUnit fragmentainer_block_offset =
+        ConstraintSpace().FragmentainerOffsetAtBfc() +
+        positioned_float.bfc_offset.block_offset;
+    BreakBeforeChild(ConstraintSpace(), child, *positioned_float.layout_result,
+                     fragmentainer_block_offset,
+                     /* appeal */ base::nullopt,
+                     /* is_forced_break */ false, &container_builder_);
 
-        // Then carry on with layout of this container. The float constitutes a
-        // parallel flow, and there may be siblings that could still fit in the
-        // current fragmentainer.
-        broke_before_float_ = true;
-        return;
-      }
-    }
+    // After breaking before the float, carry on with layout of this
+    // container. The float constitutes a parallel flow, and there may be
+    // siblings that could still fit in the current fragmentainer.
+    return;
   }
 
   // TODO(mstensho): There should be a class A breakpoint between a float and
   // another float, and also between a float and an in-flow block.
 
+  const NGPhysicalFragment& physical_fragment =
+      positioned_float.layout_result->PhysicalFragment();
   LayoutUnit float_inline_size =
       NGFragment(ConstraintSpace().GetWritingMode(), physical_fragment)
           .InlineSize();

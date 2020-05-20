@@ -26,7 +26,7 @@ def main(argv):
   parser.add_argument('--input-jar', required=True)
   parser.add_argument('--output-jar', required=True)
   parser.add_argument('--direct-classpath-jars', required=True)
-  parser.add_argument('--sdk-classpath-jars', required=True)
+  parser.add_argument('--sdk-classpath-jars')
   parser.add_argument('--extra-classpath-jars', dest='extra_jars',
                       action='append', default=[],
                       help='Extra inputs, passed last to the binary script.')
@@ -38,14 +38,8 @@ def main(argv):
   args = parser.parse_args(argv)
 
   sdk_jars = build_utils.ParseGnList(args.sdk_classpath_jars)
-  assert len(sdk_jars) > 0
-
   direct_jars = build_utils.ParseGnList(args.direct_classpath_jars)
-  assert len(direct_jars) > 0
-
-  extra_classpath_jars = []
-  for a in args.extra_jars:
-    extra_classpath_jars.extend(build_utils.ParseGnList(a))
+  extra_classpath_jars = build_utils.ParseGnList(args.extra_jars)
   args.missing_classes_allowlist = build_utils.ParseGnList(
       args.missing_classes_allowlist)
 

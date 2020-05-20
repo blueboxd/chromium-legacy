@@ -295,6 +295,13 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
           ? "true"
           : "false";
 
+  // Ensure passing off-the-record profile; |profile_| is not an OTR profile.
+  DCHECK(!profile_->IsOffTheRecord());
+  DCHECK(profile_->HasPrimaryOTRProfile());
+  CookieControlsService* cookie_controls_service =
+      CookieControlsServiceFactory::GetForProfile(
+          profile_->GetPrimaryOTRProfile());
+
   replacements["incognitoTabDescription"] =
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_SUBTITLE);
   replacements["incognitoTabHeading"] =
@@ -308,29 +315,18 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
   replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
   replacements["title"] = l10n_util::GetStringUTF8(IDS_NEW_TAB_TITLE);
   replacements["hideCookieControls"] =
-      CookieControlsServiceFactory::GetForProfile(profile_)
-              ->ShouldHideCookieControlsUI()
-          ? "hidden"
-          : "";
+      cookie_controls_service->ShouldHideCookieControlsUI() ? "hidden" : "";
   replacements["cookieControlsTitle"] =
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE);
   replacements["cookieControlsDescription"] =
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_THIRD_PARTY_COOKIE_SUBLABEL);
-  // Ensure passing off-the-record profile; |profile_| might not be incognito.
-  DCHECK(profile_->HasPrimaryOTRProfile());
   replacements["cookieControlsToggleChecked"] =
-      CookieControlsServiceFactory::GetForProfile(
-          profile_->GetPrimaryOTRProfile())
-              ->GetToggleCheckedValue()
-          ? "checked"
-          : "";
+      cookie_controls_service->GetToggleCheckedValue() ? "checked" : "";
   replacements["hideTooltipIcon"] =
-      CookieControlsServiceFactory::GetForProfile(profile_)
-              ->ShouldEnforceCookieControls()
-          ? ""
-          : "hidden";
+      cookie_controls_service->ShouldEnforceCookieControls() ? "" : "hidden";
   replacements["cookieControlsToolTipIcon"] =
-      CookieControlsHandler::GetEnforcementIcon(profile_);
+      CookieControlsHandler::GetEnforcementIcon(
+          cookie_controls_service->GetCookieControlsEnforcement());
   replacements["cookieControlsTooltipText"] = l10n_util::GetStringUTF8(
       IDS_NEW_TAB_OTR_COOKIE_CONTROLS_CONTROLLED_TOOLTIP_TEXT);
 

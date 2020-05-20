@@ -96,6 +96,10 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   ::settings::AddPersonalizationOptionsStrings(html_source);
 }
 
+int PrivacySection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_PRIVACY;
+}
+
 void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kVerifiedAccess);
   generator->RegisterTopLevelSetting(mojom::Setting::kKeepWifiOnDuringSleep);

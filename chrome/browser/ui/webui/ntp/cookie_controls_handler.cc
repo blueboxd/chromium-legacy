@@ -62,10 +62,9 @@ void CookieControlsHandler::HandleObserveCookieControlsSettingsChanges(
   SendCookieControlsUIChanges();
 }
 
-const char* CookieControlsHandler::GetEnforcementIcon(Profile* profile) {
-  CookieControlsService* service =
-      CookieControlsServiceFactory::GetForProfile(profile);
-  switch (service->GetCookieControlsEnforcement()) {
+const char* CookieControlsHandler::GetEnforcementIcon(
+    CookieControlsEnforcement enforcement) {
+  switch (enforcement) {
     case CookieControlsEnforcement::kEnforcedByPolicy:
       return kPolicyIcon;
     case CookieControlsEnforcement::kEnforcedByExtension:
@@ -86,11 +85,11 @@ void CookieControlsHandler::OnThirdPartyCookieBlockingPolicyChanged() {
 }
 
 void CookieControlsHandler::SendCookieControlsUIChanges() {
-  Profile* profile = Profile::FromWebUI(web_ui());
   base::DictionaryValue dict;
   dict.SetBoolKey("enforced", service_->ShouldEnforceCookieControls());
   dict.SetBoolKey("checked", service_->GetToggleCheckedValue());
-  dict.SetStringKey("icon", CookieControlsHandler::GetEnforcementIcon(profile));
+  dict.SetStringKey(
+      "icon", GetEnforcementIcon(service_->GetCookieControlsEnforcement()));
   bool use_new_cookie_page =
       base::FeatureList::IsEnabled(features::kPrivacySettingsRedesign);
   dict.SetString("cookieSettingsUrl",

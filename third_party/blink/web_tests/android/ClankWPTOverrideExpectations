@@ -1996,7 +1996,7 @@ crbug.com/1050754 external/wpt/html/browsers/windows/embedded-opener-remove-fram
 crbug.com/1050754 external/wpt/html/browsers/windows/embedded-opener.html [ Failure ]
 crbug.com/1050754 external/wpt/html/browsers/windows/noreferrer-window-name.html [ Timeout ]
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Failure ]
-crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/reporting.https.html [ Failure ]
+crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/reporting-to-endpoint.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/blob-popup.https.html [ Failure ]
 crbug.com/1050754 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ]

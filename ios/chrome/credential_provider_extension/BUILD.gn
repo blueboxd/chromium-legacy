@@ -98,6 +98,22 @@ generate_localizable_strings("system_strings") {
   deps = [ _packed_resources_target ]
 }
 
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "metrics_util_unittest.mm",
+    "password_util_unittest.mm",
+  ]
+  deps = [
+    ":metrics_util",
+    ":password_util",
+    "//base",
+    "//ios/chrome/common/app_group",
+    "//testing/gtest",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("reauthentication_handler") {
   sources = [
     "reauthentication_handler.h",

@@ -21,4 +21,5 @@ from translate_enabled.translate_enabled import *
 from url_blacklist.url_blacklist import *
 from url_whitelist.url_whitelist import *
 from user_data_dir.user_data_dir import *
+from webprotect_file_download.webprotect_file_download import *
 from youtube_restrict.youtube_restrict import *

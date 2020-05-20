@@ -1241,7 +1241,8 @@ TEST_F(TemplateURLServiceTest, GenerateVisitOnKeyword) {
                        TemplateURLRef::SearchTermsArgs(ASCIIToUTF16("blah")),
                        search_terms_data())),
                    Time::Now(), NULL, 0, GURL(), history::RedirectList(),
-                   ui::PAGE_TRANSITION_KEYWORD, history::SOURCE_BROWSED, false);
+                   ui::PAGE_TRANSITION_KEYWORD, history::SOURCE_BROWSED, false,
+                   false);
 
   // Wait for history to finish processing the request.
   test_util()->profile()->BlockUntilHistoryProcessesPendingRequests();

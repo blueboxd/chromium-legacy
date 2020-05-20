@@ -641,8 +641,10 @@ TypedURLSyncBridge::MergeResult TypedURLSyncBridge::MergeUrls(
       }
       visit_ix = visits->insert(
           visit_ix,
-          VisitRow(url.id(), new_visit->first, 0, new_visit->second, 0,
-                   HistoryBackend::IsTypedIncrement(new_visit->second)));
+          VisitRow(url.id(), new_visit->first, /*referring_visit=*/0,
+                   new_visit->second, /*segment_id=*/0,
+                   HistoryBackend::IsTypedIncrement(new_visit->second),
+                   /*publicly_routable=*/false));
       ++visit_ix;
     }
   }
@@ -1098,8 +1100,10 @@ bool TypedURLSyncBridge::FixupURLAndGetVisits(URLRow* url,
       return false;
     }
 
-    VisitRow visit(url->id(), url->last_visit(), 0, ui::PAGE_TRANSITION_TYPED,
-                   0, true);
+    VisitRow visit(url->id(), url->last_visit(), /*referring_visit=*/0,
+                   ui::PAGE_TRANSITION_TYPED,
+                   /*segment_id=*/0, /*incremented_omnibox_typed_score=*/true,
+                   /*publicly_routable=*/false);
     visits->push_back(visit);
   }
 

@@ -26,6 +26,7 @@ class MainSection : public OsSettingsSection {
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
+  int GetSectionNameMessageId() const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
 
   void AddChromeOSUserStrings(content::WebUIDataSource* html_source);

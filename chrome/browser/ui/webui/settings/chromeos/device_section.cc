@@ -830,6 +830,10 @@ void DeviceSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<chromeos::settings::StylusHandler>());
 }
 
+int DeviceSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_DEVICE_TITLE;
+}
+
 void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Pointers.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kPointers);

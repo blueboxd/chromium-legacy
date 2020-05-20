@@ -149,6 +149,8 @@ extern const char kChromeUISigninEmailConfirmationHost[];
 extern const char kChromeUISigninEmailConfirmationURL[];
 extern const char kChromeUISigninErrorHost[];
 extern const char kChromeUISigninErrorURL[];
+extern const char kChromeUISigninReauthHost[];
+extern const char kChromeUISigninReauthURL[];
 extern const char kChromeUISiteDetailsPrefixURL[];
 extern const char kChromeUISiteEngagementHost[];
 extern const char kChromeUISuggestionsHost[];

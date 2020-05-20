@@ -9,6 +9,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/cookie_controls/cookie_controls_service.h"
 #include "components/content_settings/browser/tab_specific_content_settings.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/cookie_controls_enforcement.h"
 #include "components/content_settings/core/common/cookie_controls_status.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -23,10 +24,12 @@ class CookieSettings;
 }
 
 class CookieControlsView;
-class CookieControlsController {
+
+// Handles the tab specific state for cookie controls.
+class CookieControlsController : content_settings::CookieSettings::Observer {
  public:
   explicit CookieControlsController(content::WebContents* web_contents);
-  ~CookieControlsController();
+  ~CookieControlsController() override;
 
   // Called when the web_contents has changed.
   void Update(content::WebContents* web_contents);
@@ -64,6 +67,10 @@ class CookieControlsController {
     DISALLOW_COPY_AND_ASSIGN(TabObserver);
   };
 
+  void OnThirdPartyCookieBlockingChanged(
+      bool block_third_party_cookies) override;
+  void OnCookieSettingChanged() override;
+
   // Determine the CookieControlsStatus based on |web_contents|.
   std::pair<CookieControlsStatus, CookieControlsEnforcement> GetStatus(
       content::WebContents* web_contents);
@@ -74,16 +81,16 @@ class CookieControlsController {
   // Returns the number of blocked cookies.
   int GetBlockedCookieCount();
 
-  // Callback for when the cookie controls or third-party cookie blocking
-  // preference changes.
-  void OnPrefChanged();
-
   content::WebContents* GetWebContents();
 
   std::unique_ptr<TabObserver> tab_observer_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
+  // Setting for regular profile if cookie_settings_ is for incognito profile.
   scoped_refptr<content_settings::CookieSettings> regular_cookie_settings_;
-  PrefChangeRegistrar pref_change_registrar_;
+
+  ScopedObserver<content_settings::CookieSettings,
+                 content_settings::CookieSettings::Observer>
+      cookie_observer_{this};
 
   bool should_reload_ = false;
 

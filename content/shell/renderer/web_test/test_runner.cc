@@ -1752,8 +1752,9 @@ std::string TestRunnerBindings::PlatformName() {
 }
 
 std::string TestRunnerBindings::TooltipText() {
-  blink::WebString tooltip_text = static_cast<RenderFrameImpl*>(frame_)
-                                      ->GetLocalRootRenderWidget()
+  auto* main_frame = static_cast<RenderFrameImpl*>(
+      frame_->GetRenderView()->GetMainRenderFrame());
+  blink::WebString tooltip_text = main_frame->GetLocalRootRenderWidget()
                                       ->GetWebWidget()
                                       ->GetLastToolTipTextForTesting();
   return tooltip_text.Utf8();

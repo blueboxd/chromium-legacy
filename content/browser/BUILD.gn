@@ -2170,6 +2170,8 @@ jumbo_source_set("browser") {
     sources += [
       "installedapp/installed_app_provider_impl_win.cc",
       "installedapp/installed_app_provider_impl_win.h",
+      "renderer_host/virtual_keyboard_controller_win.cc",
+      "renderer_host/virtual_keyboard_controller_win.h",
     ]
     defines += [
       # This prevents the inclusion of atlhost.h which paired

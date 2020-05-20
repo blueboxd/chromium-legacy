@@ -25,17 +25,3 @@ declare_args() {
 assert(!(is_win && host_os != "win") || !enable_nacl,
        "NaCl doesn't work in win cross builds, crbug.com/774186")
 assert(!enable_nacl || checkout_nacl)
-
-if (is_mac && enable_nacl && machine_os_build_major >= 19) {
-  print(
-      "********************************************************************************")
-  print(
-      " WARNING: The NaCL SDK is 32-bit only. macOS 10.15+ removed support for 32-bit")
-  print(
-      "          executables. To fix, set enable_nacl=false in args.gn, or downgrade to")
-  print(
-      "          macOS 10.14. For more information, see https://crbug.com/1049832.")
-  print(
-      "********************************************************************************")
-  assert(false, "NaCL SDK is incompatible with host macOS version")
-}

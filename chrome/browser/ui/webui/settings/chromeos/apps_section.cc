@@ -220,6 +220,10 @@ void AppsSection::AddHandlers(content::WebUI* web_ui) {
   }
 }
 
+int AppsSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_APPS_TITLE;
+}
+
 void AppsSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Manage apps.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kAppManagement);

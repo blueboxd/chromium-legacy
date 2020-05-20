@@ -81,9 +81,11 @@
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
+#include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/base64.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
@@ -458,6 +460,22 @@ std::unique_ptr<protocol::Network::WebSocketFrame> WebSocketMessageToProtocol(
       .build();
 }
 
+void SetNetworkStateOverride(bool offline,
+                             double latency,
+                             double download_throughput,
+                             double upload_throughput,
+                             WebConnectionType type) {
+  // TODO(dgozman): networkStateNotifier is per-process. It would be nice to
+  // have per-frame override instead.
+  if (offline || latency || download_throughput || upload_throughput) {
+    GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
+        !offline, type, base::nullopt, latency,
+        download_throughput / (1024 * 1024 / 8));
+  } else {
+    GetNetworkStateNotifier().ClearOverride();
+  }
+}
+
 }  // namespace
 
 void InspectorNetworkAgent::Restore() {
@@ -479,6 +497,10 @@ static std::unique_ptr<protocol::Network::ResourceTiming> BuildObjectForTiming(
       .setSslEnd(timing.CalculateMillisecondDelta(timing.SslEnd()))
       .setWorkerStart(timing.CalculateMillisecondDelta(timing.WorkerStart()))
       .setWorkerReady(timing.CalculateMillisecondDelta(timing.WorkerReady()))
+      .setWorkerFetchStart(
+          timing.CalculateMillisecondDelta(timing.WorkerFetchStart()))
+      .setWorkerRespondWithSettled(
+          timing.CalculateMillisecondDelta(timing.WorkerRespondWithSettled()))
       .setSendStart(timing.CalculateMillisecondDelta(timing.SendStart()))
       .setSendEnd(timing.CalculateMillisecondDelta(timing.SendEnd()))
       .setReceiveHeadersEnd(
@@ -1567,24 +1589,31 @@ Response InspectorNetworkAgent::emulateNetworkConditions(
     double download_throughput,
     double upload_throughput,
     Maybe<String> connection_type) {
-  if (!IsMainThread())
-    return Response::ServerError("Not supported");
-
   WebConnectionType type = kWebConnectionTypeUnknown;
   if (connection_type.isJust()) {
     type = ToWebConnectionType(connection_type.fromJust());
     if (type == kWebConnectionTypeUnknown)
       return Response::ServerError("Unknown connection type");
   }
-  // TODO(dgozman): networkStateNotifier is per-process. It would be nice to
-  // have per-frame override instead.
-  if (offline || latency || download_throughput || upload_throughput) {
-    GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
-        !offline, type, base::nullopt, latency,
-        download_throughput / (1024 * 1024 / 8));
-  } else {
-    GetNetworkStateNotifier().ClearOverride();
+
+  if (worker_global_scope_) {
+    if (worker_global_scope_->IsServiceWorkerGlobalScope() ||
+        worker_global_scope_->IsSharedWorkerGlobalScope()) {
+      // In service workers and shared workers, we don't inspect the main thread
+      // so we must post a task there to make it possible to use
+      // NetworkStateNotifier.
+      PostCrossThreadTask(
+          *Thread::MainThread()->GetTaskRunner(), FROM_HERE,
+          CrossThreadBindOnce(SetNetworkStateOverride, offline, latency,
+                              download_throughput, upload_throughput, type));
+      return Response::Success();
+    }
+    return Response::ServerError("Not supported");
   }
+
+  SetNetworkStateOverride(offline, latency, download_throughput,
+                          upload_throughput, type);
+
   return Response::Success();
 }
 

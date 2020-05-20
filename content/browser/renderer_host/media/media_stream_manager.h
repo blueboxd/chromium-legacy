@@ -90,7 +90,8 @@ class CONTENT_EXPORT MediaStreamManager
       base::OnceCallback<void(blink::mojom::MediaStreamRequestResult result,
                               const std::string& label,
                               const blink::MediaStreamDevices& audio_devices,
-                              const blink::MediaStreamDevices& video_devices)>;
+                              const blink::MediaStreamDevices& video_devices,
+                              bool pan_tilt_zoom_allowed)>;
 
   using OpenDeviceCallback =
       base::OnceCallback<void(bool success,
@@ -456,6 +457,10 @@ class CONTENT_EXPORT MediaStreamManager
       MediaRequestState* existing_request_state) const;
 
   void FinalizeGenerateStream(const std::string& label, DeviceRequest* request);
+  void PanTiltZoomPermissionChecked(const std::string& label,
+                                    blink::MediaStreamDevices audio_devices,
+                                    blink::MediaStreamDevices video_devices,
+                                    bool pan_tilt_zoom_allowed);
   void FinalizeRequestFailed(const std::string& label,
                              DeviceRequest* request,
                              blink::mojom::MediaStreamRequestResult result);

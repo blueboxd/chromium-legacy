@@ -480,6 +480,10 @@ void ServiceWorkerSubresourceLoader::UpdateResponseTiming(
   // dispatching the fetch event, so set it to |dispatch_event_time|.
   response_head_->load_timing.service_worker_ready_time =
       timing->dispatch_event_time;
+  response_head_->load_timing.service_worker_fetch_start =
+      timing->dispatch_event_time;
+  response_head_->load_timing.service_worker_respond_with_settled =
+      timing->respond_with_settled_time;
   fetch_event_timing_ = std::move(timing);
 }
 

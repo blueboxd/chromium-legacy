@@ -112,6 +112,7 @@ const char* const kKnownSettings[] = {
     kReleaseChannel,
     kReleaseChannelDelegated,
     kReportDeviceActivityTimes,
+    kReportDeviceBluetoothInfo,
     kReportDeviceBoardStatus,
     kReportDeviceBootMode,
     kReportDeviceCrashReportInfo,
@@ -606,6 +607,10 @@ void DecodeReportingPolicies(const em::ChromeDeviceSettingsProto& policy,
     if (reporting_policy.has_report_app_info()) {
       new_values_cache->SetBoolean(kReportDeviceAppInfo,
                                    reporting_policy.report_app_info());
+    }
+    if (reporting_policy.has_report_bluetooth_info()) {
+      new_values_cache->SetBoolean(kReportDeviceBluetoothInfo,
+                                   reporting_policy.report_bluetooth_info());
     }
   }
 }

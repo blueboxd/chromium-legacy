@@ -8,14 +8,14 @@ dictionary SecurityPolicyViolationEventInit : EventInit {
               // TODO(foolip): The spec says "USVString documentURL".
     required  DOMString documentURI;
               // TODO(foolip): The spec says USVString.
-              DOMString referrer;
+              DOMString referrer = "";
               // TODO(foolip): The spec says "USVString blockedURL".
               DOMString blockedURI = "";
     required  DOMString effectiveDirective;
     required  DOMString originalPolicy;
               // TODO(foolip): The spec says USVString.
               DOMString sourceFile = "";
-              DOMString sample;
+              DOMString sample = "";
     required  SecurityPolicyViolationEventDisposition disposition;
     required  unsigned short statusCode;
               // TODO(foolip): The spec says "unsigned long lineno"

@@ -111,6 +111,9 @@ void WebURLResponse::SetLoadTiming(
   timing->SetConnectEnd(mojo_timing.connect_timing.connect_end);
   timing->SetWorkerStart(mojo_timing.service_worker_start_time);
   timing->SetWorkerReady(mojo_timing.service_worker_ready_time);
+  timing->SetWorkerFetchStart(mojo_timing.service_worker_fetch_start);
+  timing->SetWorkerRespondWithSettled(
+      mojo_timing.service_worker_respond_with_settled);
   timing->SetSendStart(mojo_timing.send_start);
   timing->SetSendEnd(mojo_timing.send_end);
   timing->SetReceiveHeadersStart(mojo_timing.receive_headers_start);

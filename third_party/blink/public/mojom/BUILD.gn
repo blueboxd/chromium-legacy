@@ -176,7 +176,10 @@ mojom("mojom_platform") {
     "worker/worker_options.mojom",
   ]
 
-  if (!is_android) {
+  if (is_android) {
+    # TODO(crbug.com/1080903): Figure out how to satisfy deps checker properly.
+    enable_bytecode_checks = false
+  } else {
     sources += [ "serial/serial.mojom" ]
   }
 
@@ -389,6 +392,10 @@ mojom("mojom_core") {
     "//url/mojom:url_mojom_origin",
   ]
 
+  if (is_android) {
+    # TODO(crbug.com/1080903): Figure out how to satisfy deps checker properly.
+    enable_bytecode_checks = false
+  }
   if (is_mac) {
     public_deps += [ "//ui/gfx/range/mojom" ]
   }

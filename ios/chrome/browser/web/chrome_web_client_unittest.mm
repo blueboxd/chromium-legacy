@@ -341,11 +341,14 @@ TEST_F(ChromeWebClientTest, PrepareErrorPageForSafeBrowsingError) {
   SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state);
   security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
       &web_state);
+
   security_interstitials::UnsafeResource resource;
   resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
   resource.url = GURL("http://www.chromium.test");
   resource.resource_type = safe_browsing::ResourceType::kMainFrame;
   resource.web_state_getter = web_state.CreateDefaultGetter();
+  SafeBrowsingUrlAllowList::FromWebState(&web_state)
+      ->AddPendingUnsafeNavigationDecision(resource.url, resource.threat_type);
   SafeBrowsingUnsafeResourceContainer::FromWebState(&web_state)
       ->StoreUnsafeResource(resource);
 

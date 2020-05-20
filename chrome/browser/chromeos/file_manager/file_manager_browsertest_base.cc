@@ -1536,33 +1536,32 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   std::vector<base::Feature> disabled_features;
 
   if (opts.files_ng) {
-    enabled_features.emplace_back(chromeos::features::kFilesNG);
+    enabled_features.push_back(chromeos::features::kFilesNG);
   } else {
-    disabled_features.emplace_back(chromeos::features::kFilesNG);
+    disabled_features.push_back(chromeos::features::kFilesNG);
   }
 
   if (opts.arc) {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }
+
   // Make sure to run the ARC storage UI toast tests.
-  enabled_features.emplace_back(arc::kUsbStorageUIFeature);
+  enabled_features.push_back(arc::kUsbStorageUIFeature);
 
   if (opts.documents_provider) {
-    enabled_features.emplace_back(
-        arc::kEnableDocumentsProviderInFilesAppFeature);
+    enabled_features.push_back(arc::kEnableDocumentsProviderInFilesAppFeature);
   } else {
-    disabled_features.emplace_back(
-        arc::kEnableDocumentsProviderInFilesAppFeature);
+    disabled_features.push_back(arc::kEnableDocumentsProviderInFilesAppFeature);
   }
 
   if (opts.unified_media_view) {
-    enabled_features.emplace_back(chromeos::features::kUnifiedMediaView);
+    enabled_features.push_back(chromeos::features::kUnifiedMediaView);
   } else {
-    disabled_features.emplace_back(chromeos::features::kUnifiedMediaView);
+    disabled_features.push_back(chromeos::features::kUnifiedMediaView);
   }
 
   if (opts.smbfs) {
-    enabled_features.emplace_back(features::kSmbFs);
+    enabled_features.push_back(features::kSmbFs);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the

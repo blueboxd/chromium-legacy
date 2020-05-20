@@ -498,7 +498,6 @@ public class OverlayPanel extends OverlayPanelAnimation implements ActivityState
     protected void destroyOverlayPanelContent() {
         // It is possible that an OverlayPanelContent was never created for this panel.
         if (mContent != null) {
-            mActivity.getCompositorViewHolder().removeView(getContainerView());
             mContent.destroy();
             mContent = null;
         }

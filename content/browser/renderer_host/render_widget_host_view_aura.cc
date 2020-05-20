@@ -153,64 +153,6 @@ mojom::FrameInputHandler* GetFrameInputHandlerForFocusedFrame(
 
 }  // namespace
 
-#if defined(OS_WIN)
-
-// This class implements the ui::InputMethodKeyboardControllerObserver interface
-// which provides notifications about the on screen keyboard on Windows getting
-// displayed or hidden in response to taps on editable fields.
-// It provides functionality to request blink to scroll the input field if it
-// is obscured by the on screen keyboard.
-class WinScreenKeyboardObserver
-    : public ui::InputMethodKeyboardControllerObserver {
- public:
-  explicit WinScreenKeyboardObserver(RenderWidgetHostViewAura* host_view)
-      : host_view_(host_view) {
-    host_view_->SetInsets(gfx::Insets());
-    if (auto* input_method = host_view_->GetInputMethod())
-      input_method->GetInputMethodKeyboardController()->AddObserver(this);
-  }
-
-  ~WinScreenKeyboardObserver() override {
-    if (auto* input_method = host_view_->GetInputMethod())
-      input_method->GetInputMethodKeyboardController()->RemoveObserver(this);
-  }
-
-  // InputMethodKeyboardControllerObserver overrides.
-  void OnKeyboardVisible(const gfx::Rect& keyboard_rect) override {
-    // If the software input panel(SIP) is manually raised by the user, the flag
-    // should be set so we don't call TryShow API again.
-    host_view_->SetVirtualKeyboardRequested(true);
-    if (!host_view_->ShouldVirtualKeyboardOverlayContent()) {
-      host_view_->SetInsets(gfx::Insets(
-          0, 0, keyboard_rect.IsEmpty() ? 0 : keyboard_rect.height(), 0));
-    } else {
-      host_view_->NotifyVirtualKeyboardOverlayRect(keyboard_rect);
-    }
-  }
-
-  void OnKeyboardHidden() override {
-    // If the software input panel(SIP) is manually closed by the user, the flag
-    // should be reset so we don't call TryHide API again. Also,
-    // next time user taps on an editable element after manually dismissing the
-    // keyboard, this flag is used to determine whether TryShow needs to be
-    // called or not. Calling TryShow/TryHide multiple times leads to SIP
-    // flickering.
-    host_view_->SetVirtualKeyboardRequested(false);
-    if (!host_view_->ShouldVirtualKeyboardOverlayContent()) {
-      // Restore the viewport.
-      host_view_->SetInsets(gfx::Insets());
-    } else {
-      host_view_->NotifyVirtualKeyboardOverlayRect(gfx::Rect());
-    }
-  }
-
- private:
-  RenderWidgetHostViewAura* host_view_;
-
-  DISALLOW_COPY_AND_ASSIGN(WinScreenKeyboardObserver);
-};
-#endif  // defined(OS_WIN)
-
 // We need to watch for mouse events outside a Web Popup or its parent
 // and dismiss the popup for certain events.
 class RenderWidgetHostViewAura::EventObserverForPopupExit
@@ -375,7 +317,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 #if defined(OS_WIN)
       legacy_render_widget_host_HWND_(nullptr),
       legacy_window_destroyed_(false),
-      virtual_keyboard_requested_(false),
 #endif
       device_scale_factor_(0.0f),
       event_handler_(new RenderWidgetHostViewEventHandler(host(), this, this)),
@@ -1792,13 +1733,8 @@ void RenderWidgetHostViewAura::FocusedNodeChanged(
   has_composition_text_ = false;
 
 #if defined(OS_WIN)
-  bool dismiss_virtual_keyboard =
-      last_pointer_type_ == ui::EventPointerType::kTouch;
-  if (dismiss_virtual_keyboard && !editable && virtual_keyboard_requested_ &&
-      window_) {
-    virtual_keyboard_requested_ = false;
-    if (auto* controller = GetInputMethod()->GetInputMethodKeyboardController())
-      controller->DismissVirtualKeyboard();
+  if (window_ && virtual_keyboard_controller_win_) {
+    virtual_keyboard_controller_win_->FocusedNodeChanged(editable);
   }
 #elif defined(OS_FUCHSIA)
   if (!editable && window_) {
@@ -2363,8 +2299,7 @@ void RenderWidgetHostViewAura::DetachFromInputMethod() {
 
 #if defined(OS_WIN)
   // Reset the keyboard observer because it attaches to the input method.
-  virtual_keyboard_requested_ = false;
-  keyboard_observer_.reset();
+  virtual_keyboard_controller_win_.reset();
 #endif  // defined(OS_WIN)
 }
 
@@ -2449,11 +2384,8 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
       state->mode != ui::TEXT_INPUT_MODE_NONE) {
     bool show_virtual_keyboard = true;
 #if defined(OS_FUCHSIA)
-    show_virtual_keyboard = last_pointer_type_ == ui::EventPointerType::kTouch;
-#elif defined(OS_WIN)
     show_virtual_keyboard =
-        last_pointer_type_ == ui::EventPointerType::kTouch ||
-        last_pointer_type_ == ui::EventPointerType::kPen;
+        GetLastPointerType() == ui::EventPointerType::kTouch;
 #endif
 
 #if !defined(OS_WIN)
@@ -2465,14 +2397,12 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
 // TODO(crbug.com/1031786): Remove this once TSF fix for input pane policy
 // is serviced
 #elif defined(OS_WIN)
-    auto* controller = GetInputMethod()->GetInputMethodKeyboardController();
-    if (controller && state->show_ime_if_needed && host()->GetView() &&
-        host()->delegate()) {
-      if (show_virtual_keyboard && !virtual_keyboard_requested_) {
-        keyboard_observer_.reset(new WinScreenKeyboardObserver(this));
-        GetInputMethod()->ShowVirtualKeyboardIfEnabled();
-        virtual_keyboard_requested_ = keyboard_observer_.get();
+    if (GetInputMethod() && show_virtual_keyboard) {
+      if (!virtual_keyboard_controller_win_) {
+        virtual_keyboard_controller_win_.reset(
+            new VirtualKeyboardControllerWin(this, GetInputMethod()));
       }
+      virtual_keyboard_controller_win_->UpdateTextInputState(state);
     }
 #endif
     // Ensure that accessibility events are fired when the selection location

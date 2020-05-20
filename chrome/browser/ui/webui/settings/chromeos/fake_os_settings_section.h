@@ -25,6 +25,9 @@ class FakeOsSettingsSection : public OsSettingsSection {
   void AddLoadTimeData(content::WebUIDataSource* html_source) override {}
   void RegisterHierarchy(HierarchyGenerator* generator) const override {}
 
+  // Returns the settings app name as a default value.
+  int GetSectionNameMessageId() const override;
+
   // Prepends the section name and "::" to the URL in |concept|. For example, if
   // the URL is "networkDetails" and the section is mojom::Section::kNetwork,
   // the returned URL is "Section::kNetwork::networkDetails".

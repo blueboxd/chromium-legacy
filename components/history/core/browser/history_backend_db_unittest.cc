@@ -1701,6 +1701,57 @@ TEST_F(HistoryBackendDBTest,
   EXPECT_FALSE(visit_row.incremented_omnibox_typed_score);
 }
 
+TEST_F(HistoryBackendDBTest, MigrateVisitsWithoutPubliclyRoutableColumn) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(42));
+
+  // Define common uninteresting data for visits.
+  const VisitID referring_visit = 0;
+  const ui::PageTransition transition = ui::PAGE_TRANSITION_TYPED;
+  const base::Time visit_time(base::Time::Now());
+  const base::TimeDelta visit_duration(base::TimeDelta::FromSeconds(30));
+
+  // The first visit has both a DB entry and a metadata entry.
+  const VisitID visit_id1 = 1;
+  const URLID url_id1 = 10;
+  const SegmentID segment_id1 = 20;
+  const std::string metadata_value1 = "BLOB1";
+
+  // Open the db for manual manipulation.
+  sql::Database db;
+  ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+
+  const char kInsertVisitStatement[] =
+      "INSERT INTO visits "
+      "(id, url, visit_time, from_visit, transition, segment_id, "
+      "visit_duration) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+  // Add an entry to "visits" table.
+  {
+    sql::Statement s(db.GetUniqueStatement(kInsertVisitStatement));
+    s.BindInt64(0, visit_id1);
+    s.BindInt64(1, url_id1);
+    s.BindInt64(2, visit_time.ToDeltaSinceWindowsEpoch().InMicroseconds());
+    s.BindInt64(3, referring_visit);
+    s.BindInt64(4, transition);
+    s.BindInt64(5, segment_id1);
+    s.BindInt64(6, visit_duration.InMicroseconds());
+    ASSERT_TRUE(s.Run());
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  // The version should have been updated.
+  ASSERT_GE(HistoryDatabase::GetCurrentVersion(), 43);
+
+  // After the migration, the publicly_routable value should be false.
+  {
+    VisitRow visit_row;
+    db_->GetRowForVisit(visit_id1, &visit_row);
+    EXPECT_FALSE(visit_row.publicly_routable);
+  }
+}
+
 // Tests that the migration code correctly replaces the lower_term column in the
 // keyword search terms table which normalized_term which contains the
 // normalized search term during migration to version 42.

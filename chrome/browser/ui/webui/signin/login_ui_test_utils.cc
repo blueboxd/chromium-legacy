@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
 
+#include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
@@ -52,9 +53,7 @@ class SignInObserver : public signin::IdentityManager::Observer {
   SignInObserver() : seen_(false), running_(false), signed_in_(false) {}
 
   // Returns whether a GoogleSigninSucceeded event has happened.
-  bool DidSignIn() {
-    return signed_in_;
-  }
+  bool DidSignIn() { return signed_in_; }
 
   // Blocks and waits until the user signs in. Wait() does not block if a
   // GoogleSigninSucceeded has already occurred.
@@ -233,6 +232,23 @@ std::string GetButtonSelectorForApp(const std::string& app,
       "document.querySelector('%s').shadowRoot.querySelector('#%s'))",
       app.c_str(), app.c_str(), button_id.c_str());
 }
+
+bool IsElementReady(content::WebContents* web_contents,
+                    const std::string& element_selector) {
+  std::string message;
+  std::string find_element_js = base::StringPrintf(
+      "if (document.readyState != 'complete') {"
+      "  window.domAutomationController.send('DocumentNotReady');"
+      "} else if (%s == null) {"
+      "  window.domAutomationController.send('NotFound');"
+      "} else {"
+      "  window.domAutomationController.send('Ok');"
+      "}",
+      element_selector.c_str());
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, find_element_js, &message));
+  return message == "Ok";
+}
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
@@ -258,19 +274,7 @@ class SigninViewControllerTestUtil {
     std::string button_selector = GetButtonSelectorForApp(
         "sync-confirmation-app",
         GetButtonIdForSyncConfirmationDialogAction(action));
-    std::string message;
-    std::string find_button_js = base::StringPrintf(
-        "if (document.readyState != 'complete') {"
-        "  window.domAutomationController.send('DocumentNotReady');"
-        "} else if (%s == null) {"
-        "  window.domAutomationController.send('NotFound');"
-        "} else {"
-        "  window.domAutomationController.send('Ok');"
-        "}",
-        button_selector.c_str());
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        dialog_web_contents, find_button_js, &message));
-    if (message != "Ok")
+    if (!IsElementReady(dialog_web_contents, button_selector))
       return false;
 
     // This cannot be a synchronous call, because it closes the window as a side
@@ -302,19 +306,7 @@ class SigninViewControllerTestUtil {
     std::string button_selector = GetButtonSelectorForApp(
         "signin-email-confirmation-app",
         GetButtonIdForSigninEmailConfirmationDialogAction(action));
-    std::string message;
-    std::string find_button_js = base::StringPrintf(
-        "if (document.readyState != 'complete') {"
-        "  window.domAutomationController.send('DocumentNotReady');"
-        "} else if (%s == null || %s == null) {"
-        "  window.domAutomationController.send('NotFound');"
-        "} else {"
-        "  window.domAutomationController.send('Ok');"
-        "}",
-        radio_button_selector.c_str(), button_selector.c_str());
-    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
-        dialog_web_contents, find_button_js, &message));
-    if (message != "Ok")
+    if (!IsElementReady(dialog_web_contents, button_selector))
       return false;
 
     // This cannot be a synchronous call, because it closes the window as a side
@@ -324,6 +316,25 @@ class SigninViewControllerTestUtil {
                                                 radio_button_selector.c_str(),
                                                 button_selector.c_str()));
     return true;
+#endif
+  }
+
+  static bool IsReauthConfirmationDialogReady(Browser* browser) {
+#if defined(OS_CHROMEOS)
+    NOTREACHED();
+    return false;
+#else
+    SigninViewController* signin_view_controller =
+        browser->signin_view_controller();
+    DCHECK(signin_view_controller);
+    if (!signin_view_controller->ShowsModalDialog())
+      return false;
+    content::WebContents* dialog_web_contents =
+        signin_view_controller->GetModalDialogWebContentsForTesting();
+    DCHECK(dialog_web_contents);
+    const std::string button_selector =
+        GetButtonSelectorForApp("signin-reauth-app", "confirmButton");
+    return IsElementReady(dialog_web_contents, button_selector);
 #endif
   }
 };
@@ -470,6 +481,14 @@ bool CompleteSigninEmailConfirmationDialog(
     RunLoopFor(base::TimeDelta::FromMilliseconds(1000));
   }
   return false;
+}
+
+void WaitUntilReauthUIIsReady(Browser* browser) {
+  WaitUntilCondition(
+      base::BindRepeating(
+          &SigninViewControllerTestUtil::IsReauthConfirmationDialogReady,
+          base::Unretained(browser)),
+      "Could not find reauth confirm button");
 }
 
 }  // namespace login_ui_test_utils

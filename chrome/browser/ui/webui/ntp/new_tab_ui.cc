@@ -59,7 +59,10 @@ NewTabUI::NewTabUI(content::WebUI* web_ui) : content::WebUIController(web_ui) {
 
   if (!profile->IsGuestSession()) {
     web_ui->AddMessageHandler(std::make_unique<ThemeHandler>());
-    web_ui->AddMessageHandler(std::make_unique<CookieControlsHandler>(profile));
+    if (profile->IsOffTheRecord()) {
+      web_ui->AddMessageHandler(
+          std::make_unique<CookieControlsHandler>(profile));
+    }
   }
 
   // content::URLDataSource assumes the ownership of the html source.

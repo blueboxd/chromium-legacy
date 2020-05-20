@@ -409,6 +409,11 @@ class UserMediaProcessor::RequestInfo final
     return request_->has_transient_user_activation();
   }
 
+  bool pan_tilt_zoom_allowed() const { return pan_tilt_zoom_allowed_; }
+  void set_pan_tilt_zoom_allowed(bool pan_tilt_zoom_allowed) {
+    pan_tilt_zoom_allowed_ = pan_tilt_zoom_allowed;
+  }
+
   void Trace(Visitor* visitor) const { visitor->Trace(request_); }
 
  private:
@@ -438,6 +443,7 @@ class UserMediaProcessor::RequestInfo final
   HashMap<String, Vector<media::VideoCaptureFormat>> video_formats_map_;
   Vector<MediaStreamDevice> audio_devices_;
   Vector<MediaStreamDevice> video_devices_;
+  bool pan_tilt_zoom_allowed_ = false;
 };
 
 // TODO(guidou): Initialize request_result_name_ as a null WTF::String.
@@ -945,8 +951,12 @@ void UserMediaProcessor::OnStreamGenerated(
     MediaStreamRequestResult result,
     const String& label,
     const Vector<MediaStreamDevice>& audio_devices,
-    const Vector<MediaStreamDevice>& video_devices) {
+    const Vector<MediaStreamDevice>& video_devices,
+    bool pan_tilt_zoom_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // TODO(crbug.com/934063): Reject the request if the PTZ permission is denied
+  // and the request requires it.
   if (result != MediaStreamRequestResult::OK) {
     OnStreamGenerationFailed(request_id, result);
     return;
@@ -963,6 +973,7 @@ void UserMediaProcessor::OnStreamGenerated(
   }
 
   current_request_info_->set_state(RequestInfo::State::GENERATED);
+  current_request_info_->set_pan_tilt_zoom_allowed(pan_tilt_zoom_allowed);
 
   for (const auto* devices : {&audio_devices, &video_devices}) {
     for (const auto& device : *devices) {
@@ -1463,7 +1474,8 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
       request_info->request_id(), label.Utf8().c_str()));
   if (result == MediaStreamRequestResult::OK) {
     GetUserMediaRequestSucceeded(*request_info->web_stream(),
-                                 request_info->request());
+                                 request_info->request(),
+                                 request_info->pan_tilt_zoom_allowed());
     GetMediaStreamDispatcherHost()->OnStreamStarted(label);
   } else {
     GetUserMediaRequestFailed(result, constraint_name);
@@ -1488,7 +1500,8 @@ void UserMediaProcessor::OnCreateNativeTracksCompleted(
 
 void UserMediaProcessor::GetUserMediaRequestSucceeded(
     const blink::WebMediaStream& stream,
-    UserMediaRequest* user_media_request) {
+    UserMediaRequest* user_media_request,
+    bool pan_tilt_zoom_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsCurrentRequestInfo(user_media_request));
   SendLogMessage(
@@ -1503,13 +1516,15 @@ void UserMediaProcessor::GetUserMediaRequestSucceeded(
       FROM_HERE,
       WTF::Bind(&UserMediaProcessor::DelayedGetUserMediaRequestSucceeded,
                 WrapWeakPersistent(this), current_request_info_->request_id(),
-                stream, WrapPersistent(user_media_request)));
+                stream, WrapPersistent(user_media_request),
+                pan_tilt_zoom_allowed));
 }
 
 void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
     int request_id,
     const blink::WebMediaStream& stream,
-    UserMediaRequest* user_media_request) {
+    UserMediaRequest* user_media_request,
+    bool pan_tilt_zoom_allowed) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   SendLogMessage(base::StringPrintf(
       "DelayedGetUserMediaRequestSucceeded({request_id=%d}, {result=%s})",
@@ -1517,7 +1532,7 @@ void UserMediaProcessor::DelayedGetUserMediaRequestSucceeded(
       MediaStreamRequestResultToString(MediaStreamRequestResult::OK)));
   blink::LogUserMediaRequestResult(MediaStreamRequestResult::OK);
   DeleteUserMediaRequest(user_media_request);
-  user_media_request->Succeed(stream);
+  user_media_request->Succeed(stream, pan_tilt_zoom_allowed);
 }
 
 void UserMediaProcessor::GetUserMediaRequestFailed(

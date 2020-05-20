@@ -68,7 +68,7 @@ Example:
 """
 
 import base64
-import BaseHTTPServer
+from six.moves import BaseHTTPServer
 import cgi
 import glob
 import google.protobuf.text_format
@@ -78,15 +78,16 @@ import logging
 import os
 import random
 import re
+import six
 import sys
 import time
 import tlslite
 import tlslite.api
 import tlslite.utils
 import tlslite.utils.cryptomath
-import urllib
-import urllib2
-import urlparse
+from six.moves import urllib
+from six.moves.urllib import request as urllib_request
+from six.moves.urllib import parse as urlparse
 
 import asn1der
 import testserver_base
@@ -108,7 +109,7 @@ except ImportError:
   dp = None
 
 # ASN.1 object identifier for PKCS#1/RSA.
-PKCS1_RSA_OID = '\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
+PKCS1_RSA_OID = b'\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01'
 
 # List of machines that trigger the server to send kiosk enrollment response
 # for the register request.
@@ -267,6 +268,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       raw_reply = 'Invalid path'
     self.send_response(http_response)
     self.end_headers()
+    if six.PY3 and isinstance(raw_reply, str):
+      raw_reply = raw_reply.encode()
     self.wfile.write(raw_reply)
 
   def do_POST(self):
@@ -275,6 +278,8 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if (http_response == 200):
       self.send_header('Content-Type', 'application/x-protobuffer')
     self.end_headers()
+    if six.PY3 and isinstance(raw_reply, str):
+      raw_reply = raw_reply.encode()
     self.wfile.write(raw_reply)
 
   def HandleExternalPolicyDataRequest(self):
@@ -297,11 +302,11 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       A tuple of HTTP status code and response data to send to the client.
     """
     rmsg = dm.DeviceManagementRequest()
-    length = int(self.headers.getheader('content-length'))
+    length = int(self.headers.get('content-length'))
     rmsg.ParseFromString(self.rfile.read(length))
 
     logging.debug('gaia auth token -> ' +
-                  self.headers.getheader('Authorization', ''))
+                  self.headers.get('Authorization', ''))
     logging.debug('oauth token -> ' + str(self.GetUniqueParam('oauth_token')))
     logging.debug('deviceid -> ' + str(self.GetUniqueParam('deviceid')))
     self.DumpMessage('Request', rmsg)
@@ -363,7 +368,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     else:
       return (400, 'Invalid request parameter')
 
-    if isinstance(response[1], basestring):
+    if isinstance(response[1], str):
       body = response[1]
     elif isinstance(response[1], google.protobuf.message.Message):
       self.DumpMessage('Response', response[1])
@@ -406,7 +411,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       return oauth_token
 
     match = re.match('GoogleLogin auth=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       return match.group(1)
 
@@ -418,7 +423,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if no token is present.
     """
     match = re.match('GoogleEnrollmentToken token=(\\S+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       return match.group(1)
 
@@ -837,7 +842,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """
     enrollment_token = None
     match = re.match('GoogleEnrollmentToken token=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       enrollment_token = match.group(1)
     if not enrollment_token:
@@ -914,9 +919,15 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     if field.type == field.TYPE_BOOL:
       assert type(field_value) == bool
     elif field.type == field.TYPE_STRING:
-      assert type(field_value) in [str, unicode]
+      if six.PY3:
+        assert isinstance(field_value, str)
+      else:
+        assert type(field_value) in [str, unicode]
     elif field.type == field.TYPE_BYTES:
-      assert type(field_value) in [str, unicode]
+      if six.PY3:
+        assert isinstance(field_value, str)
+      else:
+        assert type(field_value) in [str, unicode]
       field_value = field_value.decode('hex')
     elif (field.type == field.TYPE_INT64 or
           field.type == field.TYPE_INT32 or
@@ -1055,7 +1066,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
       # Fetch the ids from the policy JSON, if none in the config directory.
       policy = self.server.GetPolicies()
       ext_policies = policy.get(request.policy_type, {})
-      ids = ext_policies.keys()
+      ids = list(ext_policies.keys())
 
     for settings_entity_id in ids:
       # Reuse the extension policy request, to trigger the same signature
@@ -1245,7 +1256,7 @@ class PolicyRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     dmtoken = None
     request_device_id = self.GetUniqueParam('deviceid')
     match = re.match('GoogleDMToken token=(\\w+)',
-                     self.headers.getheader('Authorization', ''))
+                     self.headers.get('Authorization', ''))
     if match:
       dmtoken = match.group(1)
     if not dmtoken:
@@ -1323,7 +1334,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
         try:
           key_str = open(key_path).read()
         except IOError:
-          print 'Failed to load private key from %s' % key_path
+          print('Failed to load private key from %s' % key_path)
           continue
         try:
           key = tlslite.api.parsePEMKey(key_str, private=True)
@@ -1340,7 +1351,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
           # Create a dictionary with the wildcard domain + signature
           key_info['signatures'] = {'*': key_sig}
         except IOError:
-          print 'Failed to read validation signature from %s.sig' % key_path
+          print('Failed to read validation signature from %s.sig' % key_path)
         self.keys.append(key_info)
     else:
       # Use the canned private keys if none were passed from the command line.
@@ -1364,7 +1375,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
 
       algorithm = asn1der.Sequence(
           [ asn1der.Data(asn1der.OBJECT_IDENTIFIER, PKCS1_RSA_OID),
-            asn1der.Data(asn1der.NULL, '') ])
+            asn1der.Data(asn1der.NULL, b'') ])
       rsa_pubkey = asn1der.Sequence([ asn1der.Integer(key.n),
                                       asn1der.Integer(key.e) ])
       pubkey = asn1der.Sequence([ algorithm, asn1der.Bitstring(rsa_pubkey) ])
@@ -1443,8 +1454,8 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     token_info_url = config.get('token_info_url')
     if token_info_url is not None:
       try:
-        token_info = urllib2.urlopen(token_info_url + '?' +
-            urllib.urlencode({'access_token': auth_token})).read()
+        token_info = urllib_request.urlopen(token_info_url + '?' +
+            urlparse.urlencode({'access_token': auth_token})).read()
         return json.loads(token_info)['email']
       except Exception as e:
         logging.info('Failed to resolve user: %s', e)
@@ -1519,8 +1530,8 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       state_keys: The state keys to set.
     """
     if dmtoken in self._registered_tokens:
-      self._registered_tokens[dmtoken]['state_keys'] = map(
-          lambda key : key.encode('hex'), state_keys)
+      self._registered_tokens[dmtoken]['state_keys'] = [key.encode('hex')
+              for key in state_keys]
       self.WriteClientState()
 
   def LookupToken(self, dmtoken):
@@ -1547,7 +1558,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
       no matching record.
     """
     self.ReadClientStateFile()
-    for client in self._registered_tokens.values():
+    for client in list(self._registered_tokens.values()):
       if state_key.encode('hex') in client.get('state_keys', []):
         return client
 
@@ -1561,12 +1572,11 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     """
     self.ReadClientStateFile()
     state_keys = sum([ c.get('state_keys', [])
-                       for c in self._registered_tokens.values() ], [])
-    hashed_keys = map(lambda key: hashlib.sha256(key.decode('hex')).digest(),
-                      set(state_keys))
-    return filter(
-        lambda hash : int(hash.encode('hex'), 16) % modulus == remainder,
-        hashed_keys)
+                       for c in list(self._registered_tokens.values()) ], [])
+    hashed_keys = [hashlib.sha256(key.decode('hex')).digest() for key in
+               set(state_keys)]
+    return [hash for hash in hashed_keys if int(hash.encode('hex'), 16)
+        % modulus == remainder]
 
   def GetMatchingSerialHashes(self, modulus, remainder):
     """Returns all serial hashes from configuration.
@@ -1574,13 +1584,12 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     Returns:
       The list of hashes
     """
-    brand_serial_keys = (self.GetPolicies().get('initial_enrollment_state', {}).
-                         keys())
-    hashed_keys = map(lambda key: hashlib.sha256(key).digest()[0:8],
-                      brand_serial_keys)
-    return filter(
-        lambda hash : int(hash.encode('hex'), 16) % modulus == remainder,
-        hashed_keys)
+    brand_serial_keys = \
+        list(self.GetPolicies().get('initial_enrollment_state', {}).keys())
+    hashed_keys = [hashlib.sha256(key).digest()[0:8] for key in
+               brand_serial_keys]
+    return [hash for hash in hashed_keys if int(hash.encode('hex'), 16)
+        % modulus == remainder]
 
 
   def UnregisterDevice(self, dmtoken):
@@ -1589,7 +1598,7 @@ class PolicyTestServer(testserver_base.BrokenPipeHandlerMixIn,
     Args:
       dmtoken: The device management token provided by the client.
     """
-    if dmtoken in self._registered_tokens.keys():
+    if dmtoken in list(self._registered_tokens.keys()):
       del self._registered_tokens[dmtoken]
       self.WriteClientState()
 

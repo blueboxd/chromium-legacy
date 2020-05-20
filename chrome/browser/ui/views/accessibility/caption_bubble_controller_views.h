@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 
 namespace views {
-class View;
 class Widget;
 }
 
@@ -37,8 +36,6 @@ struct CaptionText {
 class CaptionBubbleControllerViews : public CaptionBubbleController,
                                      public TabStripModelObserver {
  public:
-  static views::View* GetCaptionBubbleAccessiblePane(Browser* browser);
-
   explicit CaptionBubbleControllerViews(Browser* browser);
   ~CaptionBubbleControllerViews() override;
   CaptionBubbleControllerViews(const CaptionBubbleControllerViews&) = delete;
@@ -53,10 +50,6 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   // Called when the caption style changes.
   void UpdateCaptionStyle(
       base::Optional<ui::CaptionStyle> caption_style) override;
-
-  // Returns the view of the caption bubble which should receive focus, if one
-  // exists.
-  views::View* GetFocusableCaptionBubble();
 
  private:
   friend class CaptionBubbleControllerViewsTest;
@@ -88,6 +81,7 @@ class CaptionBubbleControllerViews : public CaptionBubbleController,
   // transcription in a while.
   std::unordered_map<content::WebContents*, CaptionText> caption_texts_;
 };
+
 }  // namespace captions
 
 #endif  // CHROME_BROWSER_UI_VIEWS_ACCESSIBILITY_CAPTION_BUBBLE_CONTROLLER_VIEWS_H_

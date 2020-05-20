@@ -416,8 +416,7 @@ void ExtensionAppsBase::Initialize(
     app_registrar_observer_.Add(&provider->registrar());
   }
 
-  if (app_type_ == apps::mojom::AppType::kWeb &&
-      base::FeatureList::IsEnabled(features::kDesktopPWAsUnifiedLaunch)) {
+  if (app_type_ == apps::mojom::AppType::kWeb) {
     web_app_launch_manager_ =
         std::make_unique<web_app::WebAppLaunchManager>(profile_);
   }

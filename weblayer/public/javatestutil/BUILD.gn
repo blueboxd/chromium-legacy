@@ -12,6 +12,7 @@ android_library("test_java") {
   deps = [
     "//base:base_java_test_support",
     "//third_party/junit:junit",
+    "//weblayer/browser/java:interfaces_java",
     "//weblayer/browser/java:test_java",
     "//weblayer/public/java",
   ]

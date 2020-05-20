@@ -5013,6 +5013,8 @@
 
   "ReportDeviceAppInfo": {},
 
+  "ReportDeviceBluetoothInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},

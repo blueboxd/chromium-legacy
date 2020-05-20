@@ -240,6 +240,7 @@ class FakeControllerServiceWorker
 
     auto timing = blink::mojom::ServiceWorkerFetchEventTiming::New();
     timing->dispatch_event_time = base::TimeTicks::Now();
+    timing->respond_with_settled_time = base::TimeTicks::Now();
 
     switch (response_mode_) {
       case ResponseMode::kDefault:
@@ -546,6 +547,10 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
               info.load_timing.service_worker_start_time);
     EXPECT_NE(expected_info.load_timing.service_worker_ready_time,
               info.load_timing.service_worker_ready_time);
+    EXPECT_NE(expected_info.load_timing.service_worker_fetch_start,
+              info.load_timing.service_worker_fetch_start);
+    EXPECT_NE(expected_info.load_timing.service_worker_respond_with_settled,
+              info.load_timing.service_worker_respond_with_settled);
   }
 
   network::ResourceRequest CreateRequest(const GURL& url) {

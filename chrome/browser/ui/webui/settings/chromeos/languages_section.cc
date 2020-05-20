@@ -161,6 +161,10 @@ void LanguagesSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::LanguagesHandler>(profile()));
 }
 
+int LanguagesSection::GetSectionNameMessageId() const {
+  return IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE;
+}
+
 void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Languages and input details.
   generator->RegisterTopLevelSubpage(mojom::Subpage::kLanguagesAndInputDetails);

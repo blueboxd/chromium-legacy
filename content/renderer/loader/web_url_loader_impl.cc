@@ -120,7 +120,9 @@ network::mojom::LoadTimingInfo ToMojoLoadTiming(
       load_timing.receive_headers_start, load_timing.receive_headers_end,
       load_timing.push_start, load_timing.push_end,
       load_timing.service_worker_start_time,
-      load_timing.service_worker_ready_time);
+      load_timing.service_worker_ready_time,
+      load_timing.service_worker_fetch_start,
+      load_timing.service_worker_respond_with_settled);
 }
 
 // This is complementary to ConvertNetPriorityToWebKitPriority, defined in

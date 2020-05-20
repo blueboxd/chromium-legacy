@@ -14,7 +14,6 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/accessibility/caption_controller.h"
-#include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/re2/src/re2/re2.h"
@@ -155,20 +154,16 @@ class CaptionBubbleFrameView : public views::BubbleFrameView {
 };
 
 CaptionBubble::CaptionBubble(views::View* anchor,
-                             BrowserView* browser_view,
                              base::OnceClosure destroyed_callback)
     : BubbleDialogDelegateView(anchor,
                                views::BubbleBorder::FLOAT,
                                views::BubbleBorder::Shadow::NO_SHADOW),
       destroyed_callback_(std::move(destroyed_callback)),
       ratio_in_parent_x_(kDefaultRatioInParentX),
-      ratio_in_parent_y_(kDefaultRatioInParentY),
-      browser_view_(browser_view) {
+      ratio_in_parent_y_(kDefaultRatioInParentY) {
   SetButtons(ui::DIALOG_BUTTON_NONE);
   set_draggable(true);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
-  AddAccelerator(ui::Accelerator(ui::VKEY_F6, ui::EF_NONE));
-  AddAccelerator(ui::Accelerator(ui::VKEY_F6, ui::EF_SHIFT_DOWN));
   // The CaptionBubble is focusable. It will alert the CaptionBubbleFrameView
   // when its focus changes so that the focus ring can be updated.
   // TODO(crbug.com/1055150): Consider using
@@ -383,25 +378,14 @@ void CaptionBubble::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 bool CaptionBubble::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  if (accelerator.key_code() == ui::VKEY_ESCAPE) {
-    // We don't want to close when the user hits "escape", because this isn't a
-    // normal dialog bubble -- it's meant to be up all the time. We just want to
-    // release focus back to the page in that case.
-    // Users should use the "close" button to close the bubble.
-    GetAnchorView()->RequestFocus();
-    GetAnchorView()->GetWidget()->Activate();
-    return true;
-  }
-  if (accelerator.key_code() == ui::VKEY_F6) {
-    // F6 rotates focus through the panes in the browser. Use
-    // BrowserView::AcceleratorPressed so that metrics are logged appropriately.
-    browser_view_->AcceleratorPressed(accelerator);
-    // Remove focus from this widget.
-    browser_view_->GetWidget()->Activate();
-    return true;
-  }
-  NOTREACHED();
-  return false;
+  DCHECK_EQ(accelerator.key_code(), ui::VKEY_ESCAPE);
+  // We don't want to close when the user hits "escape", because this isn't a
+  // normal dialog bubble -- it's meant to be up all the time. We just want to
+  // release focus back to the page in that case.
+  // Users should use the "close" button to close the bubble.
+  // TODO(crbug.com/1055150): This doesn't work in Mac.
+  GetAnchorView()->RequestFocus();
+  return true;
 }
 
 void CaptionBubble::OnFocus() {
@@ -512,10 +496,6 @@ void CaptionBubble::Show() {
 void CaptionBubble::Hide() {
   should_show_ = false;
   UpdateBubbleVisibility();
-}
-
-const char* CaptionBubble::GetClassName() const {
-  return "CaptionBubble";
 }
 
 double CaptionBubble::GetTextScaleFactor() {

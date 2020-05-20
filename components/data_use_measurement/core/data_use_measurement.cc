@@ -25,6 +25,20 @@ namespace data_use_measurement {
 
 namespace {
 
+#if defined(OS_ANDROID)
+bool IsInForeground(base::android::ApplicationState state) {
+  switch (state) {
+    case base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES:
+      return true;
+    case base::android::APPLICATION_STATE_UNKNOWN:
+    case base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES:
+    case base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES:
+      return false;
+  }
+}
+#endif
+
 // Records the occurrence of |sample| in |name| histogram. Conventional UMA
 // histograms are not used because the |name| is not static.
 void RecordUMAHistogramCount(const std::string& name, int64_t sample) {
@@ -44,21 +58,10 @@ DataUseMeasurement::DataUseMeasurement(
     PrefService* pref_service,
     network::NetworkConnectionTracker* network_connection_tracker)
     :
-#if defined(OS_ANDROID)
-      app_state_(base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES),
-      app_listener_(base::android::ApplicationStatusListener::New(
-          base::BindRepeating(&DataUseMeasurement::OnApplicationStateChange,
-                              base::Unretained(this)))),
-      rx_bytes_os_(0),
-      tx_bytes_os_(0),
-      no_reads_since_background_(false),
-#endif
       network_connection_tracker_(network_connection_tracker),
       connection_type_(network::mojom::ConnectionType::CONNECTION_UNKNOWN) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_connection_tracker_);
-
-  network_connection_tracker_->AddLeakyNetworkConnectionObserver(this);
 
 #if defined(OS_ANDROID)
   int64_t bytes = 0;
@@ -69,10 +72,29 @@ DataUseMeasurement::DataUseMeasurement(
   if (net::android::traffic_stats::GetCurrentUidTxBytes(&bytes))
     tx_bytes_os_ = bytes;
 #endif
+
+  network_connection_tracker_->AddLeakyNetworkConnectionObserver(this);
+
+  network_connection_tracker_->GetConnectionType(
+      &connection_type_,
+      base::BindOnce(&DataUseMeasurement::OnConnectionChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+
+#if defined(OS_ANDROID)
+  app_state_ = base::android::ApplicationStatusListener::GetState();
+
+  app_listener_ = base::android::ApplicationStatusListener::New(
+      base::BindRepeating(&DataUseMeasurement::OnApplicationStateChange,
+                          base::Unretained(this)));
+#endif
 }
 
 DataUseMeasurement::~DataUseMeasurement() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+#if defined(OS_ANDROID)
+  if (app_listener_)
+    app_listener_.reset();
+#endif
   network_connection_tracker_->RemoveNetworkConnectionObserver(this);
   DCHECK(!services_data_use_observer_list_.might_have_observers());
 }
@@ -85,6 +107,8 @@ void DataUseMeasurement::RecordDownstreamUserTrafficSizeMetric(
                        CurrentAppState(), IsCurrentNetworkCellular()),
       bytes);
   RecordTabStateHistogram(DOWNSTREAM, CurrentAppState(), is_tab_visible, bytes);
+  bytes_transferred_since_last_traffic_stats_query_ += bytes;
+  MaybeRecordNetworkBytesOS(/*force_record_metrics=*/false);
 }
 
 #if defined(OS_ANDROID)
@@ -96,17 +120,18 @@ void DataUseMeasurement::OnApplicationStateChangeForTesting(
 
 DataUseUserData::AppState DataUseMeasurement::CurrentAppState() const {
 #if defined(OS_ANDROID)
-  if (app_state_ != base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES)
-    return DataUseUserData::BACKGROUND;
+  return IsInForeground(app_state_) ? DataUseUserData::FOREGROUND
+                                    : DataUseUserData::BACKGROUND;
 #endif
   // If the OS is not Android, all the requests are considered Foreground.
   return DataUseUserData::FOREGROUND;
 }
 
+// static
 std::string DataUseMeasurement::GetHistogramNameWithConnectionType(
     const char* prefix,
     TrafficDirection dir,
-    DataUseUserData::AppState app_state) const {
+    DataUseUserData::AppState app_state) {
   return base::StringPrintf(
       "%s.%s.%s", prefix, dir == UPSTREAM ? "Upstream" : "Downstream",
       app_state == DataUseUserData::UNKNOWN
@@ -115,11 +140,12 @@ std::string DataUseMeasurement::GetHistogramNameWithConnectionType(
                                                       : "Background"));
 }
 
+// static
 std::string DataUseMeasurement::GetHistogramName(
     const char* prefix,
     TrafficDirection dir,
     DataUseUserData::AppState app_state,
-    bool is_connection_cellular) const {
+    bool is_connection_cellular) {
   return base::StringPrintf(
       "%s.%s.%s.%s", prefix, dir == UPSTREAM ? "Upstream" : "Downstream",
       app_state == DataUseUserData::UNKNOWN
@@ -133,24 +159,24 @@ std::string DataUseMeasurement::GetHistogramName(
 void DataUseMeasurement::OnApplicationStateChange(
     base::android::ApplicationState application_state) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  app_state_ = application_state;
-  if (app_state_ != base::android::APPLICATION_STATE_HAS_RUNNING_ACTIVITIES) {
-    last_app_background_time_ = base::TimeTicks::Now();
-    no_reads_since_background_ = true;
-    MaybeRecordNetworkBytesOS();
-  } else {
-    last_app_background_time_ = base::TimeTicks();
-  }
-}
 
-void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
+  if (app_state_ == application_state)
+    return;
+  MaybeRecordNetworkBytesOS(/*force_record_metrics=*/true);
+  app_state_ = application_state;
+}
+#endif
+
+void DataUseMeasurement::MaybeRecordNetworkBytesOS(bool force_record_metrics) {
+#if defined(OS_ANDROID)
   // Minimum number of bytes that should be reported by the network delegate
   // before Android's TrafficStats API is queried (if Chrome is not in
   // background). This reduces the overhead of repeatedly calling the API.
   static const int64_t kMinDelegateBytes = 25000;
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (bytes_transferred_since_last_traffic_stats_query_ < kMinDelegateBytes &&
+  if (!force_record_metrics &&
+      bytes_transferred_since_last_traffic_stats_query_ < kMinDelegateBytes &&
       CurrentAppState() == DataUseUserData::FOREGROUND) {
     return;
   }
@@ -163,9 +189,16 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
     if (rx_bytes_os_ != 0) {
       DCHECK_GE(bytes, rx_bytes_os_);
       if (bytes > rx_bytes_os_) {
+        int64_t incremental_bytes = bytes - rx_bytes_os_;
         // Do not record samples with value 0.
-        UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.OS",
-                                bytes - rx_bytes_os_);
+        UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.OS", incremental_bytes);
+        if (IsInForeground(app_state_)) {
+          UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.OS.Foreground",
+                                  incremental_bytes);
+        } else {
+          UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.OS.Background",
+                                  incremental_bytes);
+        }
       }
     }
     rx_bytes_os_ = bytes;
@@ -175,29 +208,44 @@ void DataUseMeasurement::MaybeRecordNetworkBytesOS() {
     if (tx_bytes_os_ != 0) {
       DCHECK_GE(bytes, tx_bytes_os_);
       if (bytes > tx_bytes_os_) {
+        int64_t incremental_bytes = bytes - tx_bytes_os_;
         // Do not record samples with value 0.
-        UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.OS", bytes - tx_bytes_os_);
+        UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.OS", incremental_bytes);
+        if (IsInForeground(app_state_)) {
+          UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.OS.Foreground",
+                                  incremental_bytes);
+        } else {
+          UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.OS.Background",
+                                  incremental_bytes);
+        }
       }
     }
     tx_bytes_os_ = bytes;
   }
-}
 #endif
+}
 
 void DataUseMeasurement::ReportDataUsageServices(
     int32_t traffic_annotation_hash,
     TrafficDirection dir,
     DataUseUserData::AppState app_state,
-    int64_t message_size_bytes) const {
-  if (message_size_bytes > 0) {
-    // Conventional UMA histograms are not used because name is not static.
-    base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
-        GetHistogramNameWithConnectionType("DataUse.AllServicesKB", dir,
-                                           app_state),
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->AddKiB(traffic_annotation_hash,
-                      base::saturated_cast<int>(message_size_bytes));
-  }
+    int64_t message_size_bytes) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (message_size_bytes <= 0)
+    return;
+
+  // Conventional UMA histograms are not used because name is not static.
+  base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
+      GetHistogramNameWithConnectionType("DataUse.AllServicesKB", dir,
+                                         app_state),
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  // AddKiB method takes value in bytes.
+  histogram->AddKiB(traffic_annotation_hash,
+                    base::saturated_cast<int>(message_size_bytes));
+
+  bytes_transferred_since_last_traffic_stats_query_ += message_size_bytes;
+  MaybeRecordNetworkBytesOS(/*force_record_metrics=*/false);
 }
 
 void DataUseMeasurement::RecordTabStateHistogram(
@@ -205,6 +253,8 @@ void DataUseMeasurement::RecordTabStateHistogram(
     DataUseUserData::AppState app_state,
     bool is_tab_visible,
     int64_t bytes) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (app_state == DataUseUserData::UNKNOWN)
     return;
 
@@ -285,6 +335,10 @@ bool DataUseMeasurement::IsCurrentNetworkCellular() const {
 void DataUseMeasurement::OnConnectionChanged(
     network::mojom::ConnectionType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  if (connection_type_ != network::mojom::ConnectionType::CONNECTION_UNKNOWN)
+    MaybeRecordNetworkBytesOS(/*force_record_metrics=*/true);
+
   connection_type_ = type;
 }
 

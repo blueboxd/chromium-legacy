@@ -23,6 +23,9 @@ import org.chromium.weblayer.NavigationController;
 import org.chromium.weblayer.Tab;
 import org.chromium.weblayer.shell.InstrumentationActivity;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Tests that fragment lifecycle works as expected.
  */
@@ -178,5 +181,45 @@ public class BrowserFragmentLifecycleTest {
         final String restoredTabId = TestThreadUtils.runOnUiThreadBlockingNoException(
                 () -> { return restoredTab.getGuid(); });
         Assert.assertEquals(initialTabId, restoredTabId);
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void restoresTabData() throws Throwable {
+        Bundle extras = new Bundle();
+        extras.putString(InstrumentationActivity.EXTRA_PERSISTENCE_ID, "x");
+
+        Map<String, String> initialData = new HashMap<>();
+        initialData.put("foo", "bar");
+        restoresTabData(extras, initialData);
+    }
+
+    @Test
+    @SmallTest
+    @MinWebLayerVersion(85)
+    public void restoreTabDataAfterRecreate() throws Throwable {
+        Map<String, String> initialData = new HashMap<>();
+        initialData.put("foo", "bar");
+        restoresTabData(new Bundle(), initialData);
+    }
+
+    private void restoresTabData(Bundle extras, Map<String, String> initialData) {
+        String url = mActivityTestRule.getTestDataURL("simple_page.html");
+        mActivityTestRule.launchShellWithUrl(url, extras);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Tab tab = mActivityTestRule.getActivity().getTab();
+            Assert.assertTrue(tab.getData().isEmpty());
+            tab.setData(initialData);
+        });
+
+        mActivityTestRule.recreateActivity();
+
+        Tab tab = getTab();
+        Assert.assertNotNull(tab);
+        waitForTabToFinishRestore(tab, url);
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> Assert.assertEquals(initialData, tab.getData()));
     }
 }

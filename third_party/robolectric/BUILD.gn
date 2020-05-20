@@ -21,41 +21,49 @@ java_group("robolectric_all_java") {
 }
 
 java_prebuilt("android-all-4.4_r1-robolectric-r2_java") {
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/android-all-4.4_r1-robolectric-r2.jar"
 }
 
 java_prebuilt("android-all-5.0.2_r3-robolectric-r0_java") {
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/android-all-5.0.2_r3-robolectric-r0.jar"
 }
 
 java_prebuilt("android-all-7.1.0_r7-robolectric-r1_java") {
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/android-all-7.1.0_r7-robolectric-r1.jar"
 }
 
 java_prebuilt("android-all-8.0.0_r4-robolectric-r1_java") {
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/android-all-8.0.0_r4-robolectric-r1.jar"
 }
 
 java_prebuilt("android-all-8.1.0-robolectric-4611349_java") {
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/android-all-8.1.0-robolectric-4611349.jar"
 }
 
 java_prebuilt("android-all-9-robolectric-4913185-2_java") {
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/android-all-9-robolectric-4913185-2.jar"
 }
 
 java_prebuilt("android-all-10-robolectric-5803371_java") {
+  enable_bytecode_checks = false
   testonly = true
   jar_path = "lib/android-all-10-robolectric-5803371.jar"
 }
 
 java_library("robolectric_java") {
+  enable_bytecode_checks = false
   testonly = true
 
   # Skip platform checks since we must depend on shadows_core_java here which
@@ -167,6 +175,7 @@ java_library("robolectric_java") {
 
 java_library("robolectric_annotations_java") {
   testonly = true
+  enable_bytecode_checks = false
   deps = [
     ":android-all-10-robolectric-5803371_java",
     ":robolectric_shadowapi_java",
@@ -190,6 +199,7 @@ java_library("robolectric_annotations_java") {
 
 java_annotation_processor("robolectric_processor") {
   testonly = true
+  enable_bytecode_checks = false
   deps = [
     ":robolectric_annotations_java",
     ":sdk_list_txt",
@@ -261,6 +271,7 @@ group("sdk_list_txt") {
 
 java_library("robolectric_resources_java") {
   testonly = true
+  enable_bytecode_checks = false
   bypass_platform_checks = true
   deps = [
     ":android-all-10-robolectric-5803371_java",
@@ -377,6 +388,7 @@ java_library("robolectric_resources_java") {
 
 java_library("robolectric_utils_java") {
   testonly = true
+  enable_bytecode_checks = false
   bypass_platform_checks = true
   deps = [
     ":robolectric_annotations_java",
@@ -429,6 +441,7 @@ java_library("robolectric_utils_java") {
 
 java_library("robolectric_sandbox_java") {
   testonly = true
+  enable_bytecode_checks = false
   bypass_platform_checks = true
   provider_configurations = [ "local/shadows/sandbox/src/main/resources/META-INF/services/org.robolectric.internal.bytecode.ClassInstrumentor\$Decorator" ]
   deps = [
@@ -490,6 +503,7 @@ java_library("robolectric_sandbox_java") {
 java_library("robolectric_junit_java") {
   bypass_platform_checks = true
   testonly = true
+  enable_bytecode_checks = false
   deps = [
     ":robolectric_annotations_java",
     ":robolectric_sandbox_java",
@@ -504,6 +518,7 @@ java_library("robolectric_junit_java") {
 
 java_library("robolectric_pluginapi_java") {
   testonly = true
+  enable_bytecode_checks = false
   deps = [ ":robolectric_annotations_java" ]
 
   sources = [
@@ -527,6 +542,7 @@ java_library("robolectric_pluginapi_java") {
 
 java_library("robolectric_shadowapi_java") {
   testonly = true
+  enable_bytecode_checks = false
   deps = [ "//third_party/android_deps:com_google_code_findbugs_jsr305_java" ]
 
   sources = [
@@ -551,6 +567,7 @@ java_library("shadows_core_java") {
   # here which requires_android.
   bypass_platform_checks = true
   testonly = true
+  enable_bytecode_checks = false
   processor_args_javac =
       [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric" ]
   provider_configurations = [
@@ -1078,6 +1095,7 @@ java_library("shadows_multidex_java") {
   enable_turbine = false
 
   testonly = true
+  enable_bytecode_checks = false
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.multidex" ]
   provider_configurations = [ "local/shadows/multidex/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
   sources = [
@@ -1123,6 +1141,7 @@ java_library("shadows_play_services_java") {
   enable_turbine = false
 
   testonly = true
+  enable_bytecode_checks = false
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms" ]
   provider_configurations = [ "local/shadows/playservices/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
   sources = [

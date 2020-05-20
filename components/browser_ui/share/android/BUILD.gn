@@ -18,6 +18,7 @@ android_library("java") {
     "//components/dom_distiller/core/android:dom_distiller_core_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/android_deps:androidx_appcompat_appcompat_java",
     "//third_party/android_deps:androidx_core_core_java",
     "//ui/android:ui_java",
   ]

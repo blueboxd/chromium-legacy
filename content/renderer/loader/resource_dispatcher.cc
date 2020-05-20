@@ -603,6 +603,9 @@ void ResourceDispatcher::ToLocalURLResponseHead(
   RemoteToLocalTimeTicks(converter, &load_timing->push_end);
   RemoteToLocalTimeTicks(converter, &load_timing->service_worker_start_time);
   RemoteToLocalTimeTicks(converter, &load_timing->service_worker_ready_time);
+  RemoteToLocalTimeTicks(converter, &load_timing->service_worker_fetch_start);
+  RemoteToLocalTimeTicks(converter,
+                         &load_timing->service_worker_respond_with_settled);
 }
 
 // TODO(dgozman): this is not used for navigation anymore, only for worker

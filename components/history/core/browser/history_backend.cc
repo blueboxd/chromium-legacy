@@ -587,9 +587,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
         ui::PAGE_TRANSITION_CHAIN_END);
 
     // No redirect case (one element means just the page itself).
-    last_ids = AddPageVisit(request.url, request.time, last_ids.second, t,
-                            request.hidden, request.visit_source,
-                            IsTypedIncrement(t), request.title);
+    last_ids =
+        AddPageVisit(request.url, request.time, last_ids.second, t,
+                     request.hidden, request.visit_source, IsTypedIncrement(t),
+                     request.publicly_routable, request.title);
 
     // Update the segment for this visit. KEYWORD_GENERATED visits should not
     // result in changing most visited, so we don't update segments (most
@@ -680,9 +681,15 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       ui::PageTransition t = ui::PageTransitionFromInt(
           ui::PageTransitionStripQualifier(request_transition) | redirect_info);
 
+      bool publicly_routable = false;
+
       // If this is the last transition, add a CHAIN_END marker
       if (redirect_index == (redirects.size() - 1)) {
         t = ui::PageTransitionFromInt(t | ui::PAGE_TRANSITION_CHAIN_END);
+
+        // Since request.publicly_routable is a property of the visit to
+        // request.url, it only applies to the final redirect.
+        publicly_routable = request.publicly_routable;
       }
 
       bool should_increment_typed_count = IsTypedIncrement(t);
@@ -696,10 +703,10 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       // Record all redirect visits with the same timestamp. We don't display
       // them anyway, and if we ever decide to, we can reconstruct their order
       // from the redirect chain.
-      last_ids =
-          AddPageVisit(redirects[redirect_index], request.time, last_ids.second,
-                       t, request.hidden, request.visit_source,
-                       should_increment_typed_count, request.title);
+      last_ids = AddPageVisit(
+          redirects[redirect_index], request.time, last_ids.second, t,
+          request.hidden, request.visit_source, should_increment_typed_count,
+          publicly_routable, request.title);
 
       if (t & ui::PAGE_TRANSITION_CHAIN_START) {
         if (request.consider_for_ntp_most_visited) {
@@ -906,6 +913,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
     bool hidden,
     VisitSource visit_source,
     bool should_increment_typed_count,
+    bool publicly_routable,
     base::Optional<base::string16> title) {
   // See if this URL is already in the DB.
   URLRow url_info(url);
@@ -945,7 +953,7 @@ std::pair<URLID, VisitID> HistoryBackend::AddPageVisit(
 
   // Add the visit with the time to the database.
   VisitRow visit_info(url_id, time, referring_visit, transition, 0,
-                      should_increment_typed_count);
+                      should_increment_typed_count, publicly_routable);
   VisitID visit_id = db_->AddVisit(&visit_info, visit_source);
 
   if (visit_info.visit_time < first_recorded_time_)
@@ -999,11 +1007,12 @@ void HistoryBackend::AddPagesWithDetails(const URLRows& urls,
     if (visit_source != SOURCE_SYNCED) {
       // Make up a visit to correspond to the last visit to the page.
       VisitRow visit_info(
-          url_id, i->last_visit(), 0,
+          url_id, i->last_visit(), /*referring_visit=*/0,
           ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
                                     ui::PAGE_TRANSITION_CHAIN_START |
                                     ui::PAGE_TRANSITION_CHAIN_END),
-          0, false);
+          /*segment_id=*/0, /*incremented_omnibox_typed_score=*/false,
+          /*publicly_routable=*/false);
       if (!db_->AddVisit(&visit_info, visit_source)) {
         NOTREACHED() << "Adding visit failed.";
         return;
@@ -1163,7 +1172,8 @@ bool HistoryBackend::AddVisits(const GURL& url,
     for (auto visit = visits.begin(); visit != visits.end(); ++visit) {
       if (!AddPageVisit(url, visit->first, 0, visit->second,
                         !ui::PageTransitionIsMainFrame(visit->second),
-                        visit_source, IsTypedIncrement(visit->second))
+                        visit_source, IsTypedIncrement(visit->second),
+                        /*publicly_routable=*/false)
                .first) {
         return false;
       }

@@ -12,16 +12,10 @@ GEN('#include "build/branding_buildflags.h"');
 GEN('#include "content/public/test/browser_test.h"');
 GEN('#include "services/network/public/cpp/features.h"');
 
-/**
- * Test fixture for
- * chrome/browser/resources/signin/sync_confirmation/sync_confirmation.html.
- * This has to be declared as a variable for TEST_F to find it correctly.
- */
-// eslint-disable-next-line no-var
-var SigninSyncConfirmationTest = class extends PolymerTest {
+class SigninBrowserTest extends PolymerTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://sync-confirmation/test_loader.html?module=signin/sync_confirmation_test.js';
+    throw 'this is abstract and should be overriden by subclasses';
   }
 
   /** @override */
@@ -36,8 +30,37 @@ var SigninSyncConfirmationTest = class extends PolymerTest {
   get featureList() {
     return {enabled: ['network::features::kOutOfBlinkCors']};
   }
+}
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/signin/sync_confirmation/sync_confirmation.html.
+ * This has to be declared as a variable for TEST_F to find it correctly.
+ */
+// eslint-disable-next-line no-var
+var SigninSyncConfirmationTest = class extends SigninBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://sync-confirmation/test_loader.html?module=signin/sync_confirmation_test.js';
+  }
 };
 
 TEST_F('SigninSyncConfirmationTest', 'Dialog', function() {
+  mocha.run();
+});
+
+/**
+ * Test fixture for
+ * chrome/browser/resources/signin/signin_reauth/signin_reauth.html.
+ */
+// eslint-disable-next-line no-var
+var SigninReauthTest = class extends SigninBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://signin-reauth/test_loader.html?module=signin/signin_reauth_test.js';
+  }
+};
+
+TEST_F('SigninReauthTest', 'Dialog', function() {
   mocha.run();
 });

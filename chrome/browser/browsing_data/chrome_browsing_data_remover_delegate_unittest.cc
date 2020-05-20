@@ -405,7 +405,7 @@ class RemoveHistoryTester {
   void AddHistory(const GURL& url, base::Time time) {
     history_service_->AddPage(url, time, nullptr, 0, GURL(),
                               history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-                              history::SOURCE_BROWSED, false);
+                              history::SOURCE_BROWSED, false, false);
   }
 
  private:
@@ -455,8 +455,8 @@ class RemoveFaviconTester {
   // |page_url|.
   void VisitAndAddFavicon(const GURL& page_url) {
     history_service_->AddPage(page_url, base::Time::Now(), nullptr, 0, GURL(),
-        history::RedirectList(), ui::PAGE_TRANSITION_LINK,
-        history::SOURCE_BROWSED, false);
+                              history::RedirectList(), ui::PAGE_TRANSITION_LINK,
+                              history::SOURCE_BROWSED, false, false);
 
     SkBitmap bitmap;
     bitmap.allocN32Pixels(gfx::kFaviconSize, gfx::kFaviconSize);

@@ -4,6 +4,9 @@
 
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
 
+#include <list>
+
+#include "base/callback.h"
 #include "base/check.h"
 #include "base/memory/ptr_util.h"
 #import "ios/web/public/navigation/navigation_item.h"
@@ -40,28 +43,30 @@ class UnsafeSubresourceContainer : public base::SupportsUserData::Data {
     return stack;
   }
 
-  // Returns a pointer to unsafe resource, or null if one is not stored.
-  const security_interstitials::UnsafeResource* GetUnsafeResource() const {
-    return unsafe_subresource_.get();
+  // Returns a pointer to the first pending unsafe resource, if any.  Clears any
+  // stored resources that are no longer pending.
+  const UnsafeResource* GetUnsafeResource() {
+    auto it = unsafe_resources_.begin();
+    while (it != unsafe_resources_.end()) {
+      const UnsafeResource* resource = it->resource();
+      if (resource)
+        return resource;
+      it = unsafe_resources_.erase(it);
+    }
+    return nullptr;
   }
 
-  // Stores a copy of |subresource| in the container.
-  void StoreUnsafeSubresource(std::unique_ptr<UnsafeResource> subresource) {
-    unsafe_subresource_ = std::move(subresource);
-  }
-
-  // Returns the unsafe subresource, transferring ownership to the caller.
-  // Returns null if thre is no subresource in the container.
-  std::unique_ptr<UnsafeResource> ReleaseUnsafeSubresource() {
-    return std::move(unsafe_subresource_);
+  // Stores |resource| in the container.
+  void StoreUnsafeResource(const UnsafeResource& resource) {
+    unsafe_resources_.push_back(PendingUnsafeResourceStorage(resource));
   }
 
  private:
   UnsafeSubresourceContainer() = default;
 
-  std::unique_ptr<security_interstitials::UnsafeResource> unsafe_subresource_;
+  std::list<PendingUnsafeResourceStorage> unsafe_resources_;
 };
-}
+}  // namespace
 
 #pragma mark - SafeBrowsingUnsafeResourceContainer
 
@@ -85,36 +90,26 @@ void SafeBrowsingUnsafeResourceContainer::StoreUnsafeResource(
     const UnsafeResource& resource) {
   DCHECK(!resource.web_state_getter.is_null() &&
          resource.web_state_getter.Run() == web_state_);
-  // Store a copy of the resource, but reset the callback to prevent misuse.
-  std::unique_ptr<UnsafeResource> resource_copy =
-      std::make_unique<UnsafeResource>(resource);
-  resource_copy->callback = UnsafeResource::UrlCheckCallback();
   if (resource.resource_type == safe_browsing::ResourceType::kMainFrame) {
     // For main frame navigations, the copy is stored in
-    // |main_frame_unsafe_resource_| it corresponds with the pending
-    // NavigationItem, which is discarded when the navigation is cancelled.
-    DCHECK(!GetMainFrameUnsafeResource());
-    main_frame_unsafe_resource_ = std::move(resource_copy);
+    // |main_frame_unsafe_resource_|.  It corresponds with the pending
+    // NavigationItem, which may have not been created yet and will be discarded
+    // after navigation failures.
+    main_frame_unsafe_resource_ = PendingUnsafeResourceStorage(resource);
   } else {
-    // Unsafe subresources are caused by loads triggered by the committed main
-    // frame navigation.  These are associated with the NavigationItem stack so
+    // Unsafe sub frame resources are caused by loads triggered by the committed
+    // main frame navigation.  These are associated with the NavigationItem so
     // that they persist past reloads.
     web::NavigationItem* item =
         web_state_->GetNavigationManager()->GetLastCommittedItem();
-    DCHECK(!GetSubFrameUnsafeResource(item));
-    UnsafeSubresourceContainer::FromNavigationItem(item)
-        ->StoreUnsafeSubresource(std::move(resource_copy));
+    UnsafeSubresourceContainer::FromNavigationItem(item)->StoreUnsafeResource(
+        resource);
   }
 }
 
 const security_interstitials::UnsafeResource*
 SafeBrowsingUnsafeResourceContainer::GetMainFrameUnsafeResource() const {
-  return main_frame_unsafe_resource_.get();
-}
-
-std::unique_ptr<UnsafeResource>
-SafeBrowsingUnsafeResourceContainer::ReleaseMainFrameUnsafeResource() {
-  return std::move(main_frame_unsafe_resource_);
+  return main_frame_unsafe_resource_.resource();
 }
 
 const security_interstitials::UnsafeResource*
@@ -122,11 +117,4 @@ SafeBrowsingUnsafeResourceContainer::GetSubFrameUnsafeResource(
     web::NavigationItem* item) const {
   return UnsafeSubresourceContainer::FromNavigationItem(item)
       ->GetUnsafeResource();
-}
-
-std::unique_ptr<security_interstitials::UnsafeResource>
-SafeBrowsingUnsafeResourceContainer::ReleaseSubFrameUnsafeResource(
-    web::NavigationItem* item) {
-  return UnsafeSubresourceContainer::FromNavigationItem(item)
-      ->ReleaseUnsafeSubresource();
 }

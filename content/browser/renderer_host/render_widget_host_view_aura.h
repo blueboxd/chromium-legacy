@@ -29,6 +29,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
 #include "content/browser/renderer_host/text_input_manager.h"
+#include "content/browser/renderer_host/virtual_keyboard_controller_win.h"
 #include "content/common/content_export.h"
 #include "content/common/cursors/webcursor.h"
 #include "content/public/browser/context_menu_params.h"
@@ -304,10 +305,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void OnLegacyWindowDestroyed();
 
   gfx::NativeViewAccessible GetParentNativeViewAccessible();
-
-  void SetVirtualKeyboardRequested(bool virtual_keyboard_requested) {
-    virtual_keyboard_requested_ = virtual_keyboard_requested;
-  }
 #endif
 
   // Method to indicate if this instance is shutting down or closing.
@@ -350,6 +347,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void SetLastPointerType(ui::EventPointerType last_pointer_type) {
     last_pointer_type_ = last_pointer_type;
   }
+  ui::EventPointerType GetLastPointerType() const { return last_pointer_type_; }
 
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
@@ -640,11 +638,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // we receive a request to show the context menu on a long press.
   std::unique_ptr<ContextMenuParams> last_context_menu_params_;
 
-  // Set to true if we requested the on screen keyboard to be displayed.
-  bool virtual_keyboard_requested_;
-
-  friend class WinScreenKeyboardObserver;
-  std::unique_ptr<WinScreenKeyboardObserver> keyboard_observer_;
+  // Handles the showing/hiding of the VK on Windows.
+  friend class VirtualKeyboardControllerWin;
+  std::unique_ptr<VirtualKeyboardControllerWin>
+      virtual_keyboard_controller_win_;
 
   gfx::Point last_mouse_move_location_;
 #endif

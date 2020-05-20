@@ -98,7 +98,14 @@ ImageCapture* ImageCapture::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  return MakeGarbageCollected<ImageCapture>(context, track);
+  // The initial PTZ permission comes from the internal ImageCapture object of
+  // the track, if already created.
+  bool pan_tilt_zoom_allowed =
+      (track->GetImageCapture() &&
+       track->GetImageCapture()->HasPanTiltZoomPermissionGranted());
+
+  return MakeGarbageCollected<ImageCapture>(context, track,
+                                            pan_tilt_zoom_allowed);
 }
 
 ImageCapture::~ImageCapture() {
@@ -794,10 +801,15 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
     settings->setTorch(settings_->torch());
 }
 
-ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
+ImageCapture::ImageCapture(ExecutionContext* context,
+                           MediaStreamTrack* track,
+                           bool pan_tilt_zoom_allowed)
     : ExecutionContextLifecycleObserver(context),
       stream_track_(track),
       service_(context),
+      pan_tilt_zoom_permission_(pan_tilt_zoom_allowed
+                                    ? mojom::blink::PermissionStatus::GRANTED
+                                    : mojom::blink::PermissionStatus::ASK),
       permission_service_(context),
       permission_observer_receiver_(this, context),
       capabilities_(MediaTrackCapabilities::Create()),

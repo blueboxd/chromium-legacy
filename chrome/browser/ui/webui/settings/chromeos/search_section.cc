@@ -248,6 +248,11 @@ void SearchSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<chromeos::settings::GoogleAssistantHandler>());
 }
 
+int SearchSection::GetSectionNameMessageId() const {
+  return IsAssistantAllowed() ? IDS_SETTINGS_SEARCH_AND_ASSISTANT
+                              : IDS_SETTINGS_SEARCH;
+}
+
 void SearchSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kPreferredSearchEngine);
 
@@ -281,7 +286,7 @@ void SearchSection::OnAssistantHotwordEnabled(bool enabled) {
   UpdateAssistantSearchTags();
 }
 
-bool SearchSection::IsAssistantAllowed() {
+bool SearchSection::IsAssistantAllowed() const {
   // NOTE: This will be false when the flag is disabled.
   return ::assistant::IsAssistantAllowedForProfile(profile()) ==
          chromeos::assistant::AssistantAllowedState::ALLOWED;

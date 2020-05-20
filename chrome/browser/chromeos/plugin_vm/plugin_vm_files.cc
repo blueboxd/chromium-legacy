@@ -79,7 +79,7 @@ void FocusAllPluginVmWindows() {
 // LaunchPluginVmApp will run before this and try to start Plugin VM.
 void LaunchPluginVmAppImpl(Profile* profile,
                            std::string app_id,
-                           const std::vector<storage::FileSystemURL>& files,
+                           std::vector<std::string> file_paths,
                            LaunchPluginVmAppCallback callback,
                            bool plugin_vm_is_running) {
   if (!plugin_vm_is_running) {
@@ -92,19 +92,6 @@ void LaunchPluginVmAppImpl(Profile* profile,
   if (!registration) {
     return std::move(callback).Run(
         false, "LaunchPluginVmApp called with an unknown app_id: " + app_id);
-  }
-
-  std::vector<std::string> file_paths;
-  file_paths.reserve(files.size());
-  for (const auto& file : files) {
-    auto file_path =
-        ConvertFileSystemURLToPathInsidePluginVmSharedDir(profile, file);
-    if (!file_path) {
-      return std::move(callback).Run(
-          false, "Only files in the shared dir are supported. Got: " +
-                     file.DebugString());
-    }
-    file_paths.push_back(std::move(*file_path));
   }
 
   vm_tools::cicerone::LaunchContainerApplicationRequest request;
@@ -185,7 +172,7 @@ base::Optional<std::string> ConvertFileSystemURLToPathInsidePluginVmSharedDir(
 
 void LaunchPluginVmApp(Profile* profile,
                        std::string app_id,
-                       std::vector<storage::FileSystemURL> files,
+                       const std::vector<storage::FileSystemURL>& files,
                        LaunchPluginVmAppCallback callback) {
   if (!plugin_vm::IsPluginVmEnabled(profile)) {
     return std::move(callback).Run(false,
@@ -198,9 +185,22 @@ void LaunchPluginVmApp(Profile* profile,
     return std::move(callback).Run(false, "Could not get PluginVmManager");
   }
 
-  manager->LaunchPluginVm(base::BindOnce(&LaunchPluginVmAppImpl, profile,
-                                         std::move(app_id), std::move(files),
-                                         std::move(callback)));
+  std::vector<std::string> file_paths;
+  file_paths.reserve(files.size());
+  for (const auto& file : files) {
+    auto file_path =
+        ConvertFileSystemURLToPathInsidePluginVmSharedDir(profile, file);
+    if (!file_path) {
+      return std::move(callback).Run(
+          false, "Only files in the shared dir are supported. Got: " +
+                     file.DebugString());
+    }
+    file_paths.push_back(std::move(*file_path));
+  }
+
+  manager->LaunchPluginVm(
+      base::BindOnce(&LaunchPluginVmAppImpl, profile, std::move(app_id),
+                     std::move(file_paths), std::move(callback)));
 }
 
 }  // namespace plugin_vm

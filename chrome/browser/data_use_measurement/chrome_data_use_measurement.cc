@@ -127,10 +127,6 @@ void ChromeDataUseMeasurement::ReportNetworkServiceDataUse(
   }
   UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesReceived.Delegate", recv_bytes);
   UMA_HISTOGRAM_COUNTS_1M("DataUse.BytesSent.Delegate", sent_bytes);
-#if defined(OS_ANDROID)
-  bytes_transferred_since_last_traffic_stats_query_ += recv_bytes + sent_bytes;
-  MaybeRecordNetworkBytesOS();
-#endif
 }
 
 void ChromeDataUseMeasurement::ReportUserTrafficDataUse(bool is_tab_visible,

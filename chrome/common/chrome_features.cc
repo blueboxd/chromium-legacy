@@ -250,14 +250,6 @@ const base::Feature kDesktopPWAsTabStripLinkCapturing{
 const base::Feature kDesktopPWAsAppIconShortcutsMenu{
     "DesktopPWAsAppIconShortcutsMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables or disables use of new Desktop PWAs launch manager by
-// extensions-based bookmark apps. (Note that Bookmark apps not based
-// on extensions unconditionally use the new launch manager.)
-// TODO(crbug.com/877898): Enable and delete this feature flag before
-// kDesktopPWAsWithoutExtensions launch.
-const base::Feature kDesktopPWAsUnifiedLaunch{"DesktopPWAsUnifiedLaunch",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables usage of shared LevelDB instance (ModelTypeStoreService).
 // If this flag is disabled, the new Web Apps system uses its own isolated
 // LevelDB instance for manual testing purposes. Requires

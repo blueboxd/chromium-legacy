@@ -45,7 +45,9 @@ class MODULES_EXPORT ImageCapture final
                               MediaStreamTrack*,
                               ExceptionState&);
 
-  ImageCapture(ExecutionContext*, MediaStreamTrack*);
+  ImageCapture(ExecutionContext*,
+               MediaStreamTrack*,
+               bool pan_tilt_zoom_allowed);
   ~ImageCapture() override;
 
   // EventTarget implementation.
@@ -80,6 +82,8 @@ class MODULES_EXPORT ImageCapture final
   void ClearMediaTrackConstraints();
   void GetMediaTrackSettings(MediaTrackSettings*) const;
 
+  bool HasPanTiltZoomPermissionGranted() const;
+
   void Trace(Visitor*) const override;
 
  private:
@@ -89,8 +93,6 @@ class MODULES_EXPORT ImageCapture final
   // mojom::blink::PermissionObserver implementation.
   // Called when we get an updated PTZ permission value from the browser.
   void OnPermissionStatusChange(mojom::blink::PermissionStatus) override;
-
-  bool HasPanTiltZoomPermissionGranted() const;
 
   void OnMojoGetPhotoState(ScriptPromiseResolver*,
                            PromiseResolverFunction,
@@ -115,10 +117,7 @@ class MODULES_EXPORT ImageCapture final
       service_;
 
   // Whether the user has granted permission for the user to control camera PTZ.
-  // TODO(crbug.com/934063): This should be initialized with cached PTZ
-  // permission status.
-  mojom::blink::PermissionStatus pan_tilt_zoom_permission_ =
-      mojom::blink::PermissionStatus::ASK;
+  mojom::blink::PermissionStatus pan_tilt_zoom_permission_;
   // The permission service, enabling us to check for the PTZ permission.
   HeapMojoRemote<mojom::blink::PermissionService> permission_service_;
   HeapMojoReceiver<mojom::blink::PermissionObserver, ImageCapture>

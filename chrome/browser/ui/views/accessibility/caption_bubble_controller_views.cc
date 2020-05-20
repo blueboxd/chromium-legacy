@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "chrome/browser/accessibility/caption_controller.h"
-#include "chrome/browser/accessibility/caption_controller_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/accessibility/caption_bubble.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -21,26 +19,11 @@ std::unique_ptr<CaptionBubbleController> CaptionBubbleController::Create(
   return std::make_unique<CaptionBubbleControllerViews>(browser);
 }
 
-// Static
-views::View* CaptionBubbleControllerViews::GetCaptionBubbleAccessiblePane(
-    Browser* browser) {
-  CaptionController* caption_controller =
-      CaptionControllerFactory::GetForProfileIfExists(browser->profile());
-  if (caption_controller) {
-    CaptionBubbleControllerViews* bubble_controller =
-        static_cast<CaptionBubbleControllerViews*>(
-            caption_controller->GetCaptionBubbleControllerForBrowser(browser));
-    if (bubble_controller)
-      return bubble_controller->GetFocusableCaptionBubble();
-  }
-  return nullptr;
-}
-
 CaptionBubbleControllerViews::CaptionBubbleControllerViews(Browser* browser)
     : CaptionBubbleController(browser), browser_(browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
   caption_bubble_ = new CaptionBubble(
-      browser_view->GetContentsView(), browser_view,
+      browser_view->GetContentsView(),
       base::BindOnce(&CaptionBubbleControllerViews::OnCaptionBubbleDestroyed,
                      base::Unretained(this)));
   caption_widget_ =
@@ -116,12 +99,6 @@ void CaptionBubbleControllerViews::SetCaptionBubbleText() {
 void CaptionBubbleControllerViews::UpdateCaptionStyle(
     base::Optional<ui::CaptionStyle> caption_style) {
   caption_bubble_->UpdateCaptionStyle(caption_style);
-}
-
-views::View* CaptionBubbleControllerViews::GetFocusableCaptionBubble() {
-  if (caption_widget_ && caption_widget_->IsVisible())
-    return caption_bubble_;
-  return nullptr;
 }
 
 }  // namespace captions

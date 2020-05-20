@@ -36,6 +36,7 @@ class InternetSection
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
+  int GetSectionNameMessageId() const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
   std::string ModifySearchResultUrl(
       const SearchConcept& concept) const override;

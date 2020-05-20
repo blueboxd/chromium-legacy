@@ -1458,6 +1458,7 @@ template("mojom") {
 
       java_target_name = target_name + "_java"
       android_library(java_target_name) {
+        forward_variables_from(invoker, [ "enable_bytecode_checks" ])
         deps = [
           "//base:base_java",
           "//mojo/public/java:bindings_java",

@@ -3,12 +3,42 @@
 // found in the LICENSE file.
 
 /**
+ * Utility function that appends value under a given name in the store.
+ * @param {!Map<string, !Array<string|number>>} store
+ * @param {string} name
+ * @param {string|number} value
+ */
+function record(store, name, value) {
+  let recorded = store.get(name);
+  if (!recorded) {
+    recorded = [];
+    store.set(name, recorded);
+  }
+  recorded.push(value);
+}
+
+/**
+ * A map from histogram name to all enums recorded for it.
+ */
+const enumMap = new Map();
+
+/**
+ * A map from histogram name to all counts recorded for it.
+ */
+const countMap = new Map();
+
+/**
  * Mock metrics
  * @type {!Object}
  */
 window.metrics = {
-  recordEnum: function() {},
-  recordSmallCount: function() {},
+  recordEnum: (name, value, valid) => {
+    assertTrue(valid.includes(value));
+    record(enumMap, name, value);
+  },
+  recordSmallCount: (name, value) => {
+    record(countMap, name, value);
+  },
 };
 
 /**
@@ -57,6 +87,9 @@ function setUp() {
         NO_NETWORK: 'NO_NETWORK',
         NO_SERVICE: 'NO_SERVICE',
       },
+      Verb: {
+        SHARE_WITH: 'share_with',
+      },
       getFileTasks: function(entries, callback) {
         setTimeout(callback.bind(null, [mockTask]), 0);
       },
@@ -73,6 +106,8 @@ function setUp() {
   };
 
   installMockChrome(mockChrome);
+  enumMap.clear();
+  countMap.clear();
 }
 
 /**
@@ -239,21 +274,6 @@ function showImportCrostiniImageDialogIsCalled(entries) {
           tasks.executeDefault();
         });
   });
-}
-
-/**
- * Utility function that appends value under a given name in the store.
- * @param {!Map<string, !Array<string|number>>} store
- * @param {string} name
- * @param {string|number} value
- */
-function record(store, name, value) {
-  let recorded = store.get(name);
-  if (!recorded) {
-    recorded = [];
-    store.set(name, recorded);
-  }
-  recorded.push(value);
 }
 
 /**
@@ -650,21 +670,10 @@ function testGetViewFileType() {
  */
 function testRecordSharingAction() {
   // Setup: create a fake metrics object that can be examined for content.
-  const enumMap = new Map();
-  const countMap = new Map();
-  window.metrics = {
-    recordEnum: (name, value, valid) => {
-      assertTrue(valid.includes(value));
-      record(enumMap, name, value);
-    },
-    recordSmallCount: (name, value) => {
-      record(countMap, name, value);
-    },
-  };
   const mockFileSystem = new MockFileSystem('volumeId');
 
   // Actual tests.
-  FileTasks.recordSharingAction(
+  FileTasks.recordSharingActionUMA_(
       FileTasks.SharingActionSourceForUMA.CONTEXT_MENU, [
         MockFileEntry.create(mockFileSystem, '/test.log'),
         MockFileEntry.create(mockFileSystem, '/test.doc'),
@@ -676,7 +685,7 @@ function testRecordSharingAction() {
   assertArrayEquals(countMap.get('Share.FileCount'), [3]);
   assertArrayEquals(enumMap.get('Share.FileType'), ['.log', '.doc', 'other']);
 
-  FileTasks.recordSharingAction(
+  FileTasks.recordSharingActionUMA_(
       FileTasks.SharingActionSourceForUMA.SHARE_BUTTON, [
         MockFileEntry.create(mockFileSystem, '/test.log'),
       ]);
@@ -687,4 +696,48 @@ function testRecordSharingAction() {
   assertArrayEquals(countMap.get('Share.FileCount'), [3, 1]);
   assertArrayEquals(
       enumMap.get('Share.FileType'), ['.log', '.doc', 'other', '.log']);
+}
+
+/**
+ * Checks that file task is correctly recognized as a file sharing task.
+ */
+function testIsSharingTask() {
+  const mockShareTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
+    verb: chrome.fileManagerPrivate.Verb.SHARE_WITH,
+  });
+  assertTrue(FileTasks.isShareTask(mockShareTask));
+  const mockPackTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
+    verb: '__no_such_verb__',
+  });
+  assertFalse(FileTasks.isShareTask(mockPackTask));
+}
+
+/**
+ * Checks that a task sharing files with external apps correctly records
+ * UMA statistics.
+ */
+async function testShareWith(done) {
+  const fileManager = getMockFileManager();
+  const mockFileSystem = new MockFileSystem('volumeId');
+  const entries = [
+    MockFileEntry.create(mockFileSystem, '/image1.jpg'),
+    MockFileEntry.create(mockFileSystem, '/image2.jpg'),
+  ];
+
+  const tasks = await FileTasks.create(
+      fileManager.volumeManager, fileManager.metadataModel,
+      fileManager.directoryModel, fileManager.ui, entries, ['application/jpg'],
+      mockTaskHistory, fileManager.namingController, fileManager.crostini);
+
+  const mockTask = /** @type {!chrome.fileManagerPrivate.FileTask} */ ({
+    taskId: 'com.acme/com.acme.android.PhotosApp|arc|send_multiple',
+    isDefault: false,
+    verb: chrome.fileManagerPrivate.Verb.SHARE_WITH,
+    isGenericFileHandler: true,
+  });
+  tasks.execute(mockTask);
+  assertArrayEquals(['.jpg', '.jpg'], enumMap.get('Share.FileType'));
+  assertArrayEquals([2], countMap.get('Share.FileCount'));
+
+  done();
 }

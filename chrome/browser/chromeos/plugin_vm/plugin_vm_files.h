@@ -33,7 +33,7 @@ using LaunchPluginVmAppCallback =
 // the VM. Will start Plugin VM if it is not already running.
 void LaunchPluginVmApp(Profile* profile,
                        std::string app_id,
-                       std::vector<storage::FileSystemURL> files,
+                       const std::vector<storage::FileSystemURL>& files,
                        LaunchPluginVmAppCallback callback);
 
 }  // namespace plugin_vm

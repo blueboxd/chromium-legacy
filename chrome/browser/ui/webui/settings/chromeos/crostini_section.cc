@@ -448,6 +448,10 @@ void CrostiniSection::AddHandlers(content::WebUI* web_ui) {
   }
 }
 
+int CrostiniSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_CROSTINI_TITLE;
+}
+
 void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpCrostini);
 

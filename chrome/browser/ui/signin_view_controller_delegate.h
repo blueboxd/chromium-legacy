@@ -52,22 +52,19 @@ class SigninViewControllerDelegate {
       Browser* browser);
 
   // Returns a platform-specific SigninViewContolllerDelegate instance that
-  // displays the reauth modal dialog. The returned object should delete itself
-  // when the window it's managing is closed.
-  static SigninViewControllerDelegate* CreateReauthDelegate(
+  // displays the Gaia reauth modal dialog. The returned object should delete
+  // itself when the window it's managing is closed.
+  static SigninViewControllerDelegate* CreateGaiaReauthDelegate(
       Browser* browser,
       const CoreAccountId& account_id,
       base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 
   // Returns a platform-specific SigninViewContolllerDelegate instance that
-  // displays the fake reauth modal dialog. The returned object should delete
-  // itself when the window it's managing is closed.
-  // WARNING: This dialog is for development use only and should not be used in
-  // production.
-  static SigninViewControllerDelegate* CreateFakeReauthDelegate(
+  // displays the reauth confirmation modal dialog. The returned object should
+  // delete itself when the window it's managing is closed.
+  static SigninViewControllerDelegate* CreateReauthConfirmationDelegate(
       Browser* browser,
-      const CoreAccountId& account_id,
-      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
+      const CoreAccountId& account_id);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

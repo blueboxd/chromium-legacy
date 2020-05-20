@@ -73,7 +73,8 @@ class VisitRow {
            VisitID arg_referring_visit,
            ui::PageTransition arg_transition,
            SegmentID arg_segment_id,
-           bool arg_incremented_omnibox_typed_score);
+           bool arg_incremented_omnibox_typed_score,
+           bool publicly_routable);
   ~VisitRow();
 
   // ID of this row (visit ID, used a a referrer for other visits).
@@ -103,6 +104,18 @@ class VisitRow {
 
   // Records whether the visit incremented the omnibox typed score.
   bool incremented_omnibox_typed_score = false;
+
+  // Indicates whether the IP of this url visit was publicly routable. According
+  // to the IETF document RFC-1918 (https://tools.ietf.org/html/rfc1918), the IP
+  // addresses within certain ranges are reserved for "private" internets, and
+  // the remaining addresses are considered "publicly routable".
+  //
+  // It’s a property of the visit because it can change depending on the network
+  // situation at navigation time. A value of “false” can mean several things:
+  // the IP was not publicly routable; this was not a committed navigation; this
+  // runs on iOS (unimplemented for iOS at this point); or the visit was
+  // migrated.
+  bool publicly_routable = false;
 
   // Compares two visits based on dates, for sorting.
   bool operator<(const VisitRow& other) const {
@@ -370,6 +383,7 @@ struct HistoryAddPageArgs {
                      VisitSource source,
                      bool did_replace_entry,
                      bool consider_for_ntp_most_visited,
+                     bool publicly_routable,
                      base::Optional<base::string16> title = base::nullopt);
   HistoryAddPageArgs(const HistoryAddPageArgs& other);
   ~HistoryAddPageArgs();
@@ -389,6 +403,9 @@ struct HistoryAddPageArgs {
   // doesn't guarantee it's relevant for Most Visited, since other requirements
   // exist (e.g. certain page transition types).
   bool consider_for_ntp_most_visited;
+  // Indicates whether the IP of this URL was publicly routable. It’s a property
+  // of the visit. See VisitRow for more details.
+  bool publicly_routable;
   base::Optional<base::string16> title;
 };
 

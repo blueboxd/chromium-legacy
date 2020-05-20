@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/safe_browsing/fake_safe_browsing_service.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
@@ -38,6 +39,7 @@ class SafeBrowsingTabHelperTest
     feature_list_.InitAndEnableFeature(
         safe_browsing::kSafeBrowsingAvailableOnIOS);
     SafeBrowsingTabHelper::CreateForWebState(&web_state_);
+    SafeBrowsingUrlAllowList::CreateForWebState(&web_state_);
     SafeBrowsingUnsafeResourceContainer::CreateForWebState(&web_state_);
     std::unique_ptr<web::TestNavigationManager> navigation_manager =
         std::make_unique<web::TestNavigationManager>();
@@ -364,8 +366,11 @@ TEST_P(SafeBrowsingTabHelperTest, UnsafeSubFrameRequestAndResponse) {
   // container before the URL check completes.
   security_interstitials::UnsafeResource resource;
   resource.url = url;
+  resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
   resource.resource_type = safe_browsing::ResourceType::kSubFrame;
   resource.web_state_getter = web_state_.CreateDefaultGetter();
+  SafeBrowsingUrlAllowList::FromWebState(&web_state_)
+      ->AddPendingUnsafeNavigationDecision(url, resource.threat_type);
   SafeBrowsingUnsafeResourceContainer::FromWebState(&web_state_)
       ->StoreUnsafeResource(resource);
 
@@ -423,8 +428,11 @@ TEST_P(SafeBrowsingTabHelperTest,
   // container before the URL check completes.
   security_interstitials::UnsafeResource resource;
   resource.url = request_url;
+  resource.threat_type = safe_browsing::SB_THREAT_TYPE_URL_PHISHING;
   resource.resource_type = safe_browsing::ResourceType::kSubFrame;
   resource.web_state_getter = web_state_.CreateDefaultGetter();
+  SafeBrowsingUrlAllowList::FromWebState(&web_state_)
+      ->AddPendingUnsafeNavigationDecision(request_url, resource.threat_type);
   SafeBrowsingUnsafeResourceContainer::FromWebState(&web_state_)
       ->StoreUnsafeResource(resource);
 

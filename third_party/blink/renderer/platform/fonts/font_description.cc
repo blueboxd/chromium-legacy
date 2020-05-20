@@ -314,6 +314,18 @@ void FontDescription::UpdateTypesettingFeatures() {
     fields_.typesetting_features_ |= blink::kCaps;
 }
 
+namespace {
+
+// This converts -0.0 to 0.0, so that they have the same hash value. This
+// ensures that equal FontDescription have the same hash value.
+float NormalizeSign(float number) {
+  if (UNLIKELY(number == 0.0))
+    return 0.0;
+  return number;
+}
+
+}  // namespace
+
 unsigned FontDescription::StyleHashWithoutFamilyList() const {
   unsigned hash = 0;
   StringHasher string_hasher;
@@ -338,12 +350,12 @@ unsigned FontDescription::StyleHashWithoutFamilyList() const {
   }
   WTF::AddIntToHash(hash, string_hasher.GetHash());
 
-  WTF::AddFloatToHash(hash, specified_size_);
-  WTF::AddFloatToHash(hash, computed_size_);
-  WTF::AddFloatToHash(hash, adjusted_size_);
-  WTF::AddFloatToHash(hash, size_adjust_);
-  WTF::AddFloatToHash(hash, letter_spacing_);
-  WTF::AddFloatToHash(hash, word_spacing_);
+  WTF::AddFloatToHash(hash, NormalizeSign(specified_size_));
+  WTF::AddFloatToHash(hash, NormalizeSign(computed_size_));
+  WTF::AddFloatToHash(hash, NormalizeSign(adjusted_size_));
+  WTF::AddFloatToHash(hash, NormalizeSign(size_adjust_));
+  WTF::AddFloatToHash(hash, NormalizeSign(letter_spacing_));
+  WTF::AddFloatToHash(hash, NormalizeSign(word_spacing_));
   WTF::AddIntToHash(hash, fields_as_unsigned_.parts[0]);
   WTF::AddIntToHash(hash, fields_as_unsigned_.parts[1]);
   WTF::AddIntToHash(hash, font_selection_request_.GetHash());

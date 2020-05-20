@@ -227,6 +227,10 @@ void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {
                                : nullptr));
 }
 
+int MultiDeviceSection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_MULTIDEVICE;
+}
+
 void MultiDeviceSection::RegisterHierarchy(
     HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpMultiDevice);

@@ -333,7 +333,7 @@ void WebAppMetrics::UpdateUkmData(WebContents* web_contents,
       if (mode == TabSwitching::kTo)
         features.num_sessions = 1;
     }
-  } else if (app_banner_manager->IsProbablyPromotableWebApp()) {
+  } else if (app_banner_manager->IsPromotableWebApp()) {
     // App is not installed, but is promotable. Record a subset of features.
     features.start_url = app_banner_manager->GetManifestStartUrl();
     DCHECK(features.start_url.is_valid());

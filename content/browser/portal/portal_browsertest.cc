@@ -408,9 +408,8 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, DispatchInputEvent) {
       portal_view->TransformPointToRootCoordSpace(gfx::Point(5, 5));
   InputEventAckWaiter waiter(main_frame->GetRenderWidgetHost(),
                              blink::WebInputEvent::Type::kMouseDown);
-  SimulateRoutedMouseEvent(
-      web_contents_impl, blink::WebInputEvent::Type::kMouseDown,
-      blink::WebPointerProperties::Button::kLeft, root_location);
+  SimulateMouseEvent(web_contents_impl, blink::WebInputEvent::Type::kMouseDown,
+                     blink::WebPointerProperties::Button::kLeft, root_location);
   waiter.Wait();
 
   // Check that the click event was only received by the main frame.
@@ -488,9 +487,8 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
       oopif_view->TransformPointToRootCoordSpace(gfx::Point(5, 5));
   InputEventAckWaiter waiter(main_frame->GetRenderWidgetHost(),
                              blink::WebInputEvent::Type::kMouseDown);
-  SimulateRoutedMouseEvent(
-      web_contents_impl, blink::WebInputEvent::Type::kMouseDown,
-      blink::WebPointerProperties::Button::kLeft, root_location);
+  SimulateMouseEvent(web_contents_impl, blink::WebInputEvent::Type::kMouseDown,
+                     blink::WebPointerProperties::Button::kLeft, root_location);
   waiter.Wait();
 
   // Check that the click event was only received by the main frame.
@@ -603,9 +601,9 @@ IN_PROC_BROWSER_TEST_F(PortalHitTestBrowserTest,
       oopif_view->TransformPointToRootCoordSpace(gfx::Point(10, 10));
   InputEventAckWaiter waiter(oopif->GetRenderWidgetHost(),
                              blink::WebInputEvent::Type::kMouseDown);
-  SimulateRoutedMouseEvent(
-      shell()->web_contents(), blink::WebInputEvent::Type::kMouseDown,
-      blink::WebPointerProperties::Button::kLeft, root_location);
+  SimulateMouseEvent(shell()->web_contents(),
+                     blink::WebInputEvent::Type::kMouseDown,
+                     blink::WebPointerProperties::Button::kLeft, root_location);
   waiter.Wait();
 
   // Check that the click event was received by the iframe.

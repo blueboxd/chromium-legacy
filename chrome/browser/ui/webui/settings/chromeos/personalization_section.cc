@@ -197,6 +197,10 @@ void PersonalizationSection::AddHandlers(content::WebUI* web_ui) {
   }
 }
 
+int PersonalizationSection::GetSectionNameMessageId() const {
+  return IDS_OS_SETTINGS_PERSONALIZATION;
+}
+
 void PersonalizationSection::RegisterHierarchy(
     HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kOpenWallpaper);

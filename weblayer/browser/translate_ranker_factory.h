@@ -20,12 +20,6 @@ namespace weblayer {
 
 // TranslateRankerFactory is a way to associate a TranslateRanker instance to a
 // BrowserContext.
-// TODO(crbug.com/1072334): In //chrome, when the service is requested for a
-// Profile in incognito mode the factory supplies the associated original
-// Profile. However, WebLayer doesn't have a concept of incognito profiles being
-// associated with regular profiles. For now, we just stay with
-// GetBrowserContextToUse()'s default behavior of returning nullptr in this case
-// pending resolution of this question.
 class TranslateRankerFactory : public BrowserContextKeyedServiceFactory {
  public:
   TranslateRankerFactory(const TranslateRankerFactory&) = delete;
@@ -43,6 +37,14 @@ class TranslateRankerFactory : public BrowserContextKeyedServiceFactory {
 
   // BrowserContextKeyedServiceFactory:
   KeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* context) const override;
+
+  // Note: In //chrome, when the service is requested for a
+  // Profile in incognito mode the factory supplies the associated original
+  // Profile. However, WebLayer doesn't have a concept of incognito profiles
+  // being associated with regular profiles, so the service gets its own
+  // instance in incognito mode.
+  content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 };
 

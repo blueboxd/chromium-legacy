@@ -60,6 +60,9 @@ bool CompleteSigninEmailConfirmationDialog(
     base::TimeDelta timeout,
     SigninEmailConfirmationDialog::Action action);
 
+// Waits for the reauth confirmation dialog to get displayed.
+void WaitUntilReauthUIIsReady(Browser* browser);
+
 }  // namespace login_ui_test_utils
 
 #endif  // CHROME_BROWSER_UI_WEBUI_SIGNIN_LOGIN_UI_TEST_UTILS_H_

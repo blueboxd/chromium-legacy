@@ -7671,6 +7671,20 @@ the Bookmarks menu.">
         Continue
       </message>
 
+      <!-- Account password storage reauth tab modal dialog -->
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_TITLE" desc="Title of the account password storage reauth tab modal dialog.">
+        Store once, use everywhere
+      </message>
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_DESC" desc="Body of the account password storage reauth tab modal dialog.">
+        To continue, enter your Google Account password to make passwords from your Google Account available on this device.
+      </message>
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CONFIRM_BUTTON_LABEL" desc="Label of the confirmation button in the account password storage reauth tab modal dialog.">
+        Next
+      </message>
+      <message name="IDS_ACCOUNT_PASSWORDS_REAUTH_CLOSE_BUTTON_LABEL" desc="Label of the close button in the account password storage reauth tab modal dialog.">
+        No thanks
+      </message>
+
       <message name="IDS_PLUGIN_OUTDATED_PROMPT" desc="Infobar message when an outdated plugin was disabled">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> was blocked because it is out of date
       </message>

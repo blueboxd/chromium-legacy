@@ -56,15 +56,11 @@ public class IncognitoNewTabPageTest {
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
-    private void setThirdPartyCookieBlocking(boolean enabled) {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            PrefServiceBridge.getInstance().setBoolean(Pref.BLOCK_THIRD_PARTY_COOKIES, enabled);
-        });
-    }
-
     private void setCookieControlsMode(@CookieControlsMode int mode) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrefServiceBridge.getInstance().setInteger(Pref.COOKIE_CONTROLS_MODE, mode);
+            PrefServiceBridge.getInstance().setBoolean(
+                    Pref.BLOCK_THIRD_PARTY_COOKIES, mode == CookieControlsMode.BLOCK_THIRD_PARTY);
         });
     }
 
@@ -93,7 +89,6 @@ public class IncognitoNewTabPageTest {
     @Test
     @SmallTest
     public void testCookieControlsToggleStartsOn() throws Exception {
-        setThirdPartyCookieBlocking(false);
         setCookieControlsMode(CookieControlsMode.INCOGNITO_ONLY);
         mActivityTestRule.newIncognitoTabFromMenu();
 
@@ -110,7 +105,6 @@ public class IncognitoNewTabPageTest {
     @Test
     @SmallTest
     public void testCookieControlsToggleChanges() throws Exception {
-        setThirdPartyCookieBlocking(false);
         setCookieControlsMode(CookieControlsMode.OFF);
         mActivityTestRule.newIncognitoTabFromMenu();
         onView(withId(R.id.cookie_controls_card))
@@ -135,7 +129,6 @@ public class IncognitoNewTabPageTest {
     @Test
     @SmallTest
     public void testCookieControlsToggleManaged() throws Exception {
-        setThirdPartyCookieBlocking(false);
         setCookieControlsMode(CookieControlsMode.INCOGNITO_ONLY);
         mActivityTestRule.newIncognitoTabFromMenu();
         onView(withId(R.id.cookie_controls_card))
@@ -145,18 +138,18 @@ public class IncognitoNewTabPageTest {
         // Toggle should start checked and enabled
         onView(withId(toggle_id)).check(matches(allOf(isChecked(), isEnabled())));
         // Toggle should be disabled if managed by setting
-        setThirdPartyCookieBlocking(true);
+        setCookieControlsMode(CookieControlsMode.BLOCK_THIRD_PARTY);
         onView(withId(toggle_id)).check(matches(not(isEnabled())));
         // Toggle should be enabled and remain checked
-        setThirdPartyCookieBlocking(false);
+        setCookieControlsMode(CookieControlsMode.INCOGNITO_ONLY);
         onView(withId(toggle_id)).check(matches(allOf(isChecked(), isEnabled())));
 
         // Repeat of above but toggle should remain unchecked
         onView(withId(toggle_id)).perform(scrollTo(), click());
         onView(withId(toggle_id)).check(matches(allOf(isNotChecked(), isEnabled())));
-        setThirdPartyCookieBlocking(true);
+        setCookieControlsMode(CookieControlsMode.BLOCK_THIRD_PARTY);
         onView(withId(toggle_id)).check(matches(not(isEnabled())));
-        setThirdPartyCookieBlocking(false);
+        setCookieControlsMode(CookieControlsMode.OFF);
         onView(withId(toggle_id)).check(matches(allOf(isNotChecked(), isEnabled())));
     }
 }

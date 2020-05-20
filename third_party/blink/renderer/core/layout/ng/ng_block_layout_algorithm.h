@@ -389,12 +389,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // A or B breakpoint (between block-level siblings or line box siblings).
   bool has_processed_first_child_ = false;
 
-  // Set once we've inserted a break before a float. We need to know this, so
-  // that we don't attempt to lay out any more floats in the current
-  // fragmentainer. Floats aren't allowed have an earlier block-start offset
-  // than earlier floats.
-  bool broke_before_float_ = false;
-
   bool did_break_before_child_ = false;
 
   NGExclusionSpace exclusion_space_;

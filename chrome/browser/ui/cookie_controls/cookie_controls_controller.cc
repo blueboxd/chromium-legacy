@@ -34,20 +34,11 @@ CookieControlsController::CookieControlsController(
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   cookie_settings_ = CookieSettingsFactory::GetForProfile(profile);
+  cookie_observer_.Add(cookie_settings_.get());
   if (profile->IsOffTheRecord()) {
     regular_cookie_settings_ =
         CookieSettingsFactory::GetForProfile(profile->GetOriginalProfile());
   }
-
-  pref_change_registrar_.Init(profile->GetPrefs());
-  pref_change_registrar_.Add(
-      prefs::kCookieControlsMode,
-      base::BindRepeating(&CookieControlsController::OnPrefChanged,
-                          base::Unretained(this)));
-  pref_change_registrar_.Add(
-      prefs::kBlockThirdPartyCookies,
-      base::BindRepeating(&CookieControlsController::OnPrefChanged,
-                          base::Unretained(this)));
 }
 
 CookieControlsController::~CookieControlsController() = default;
@@ -122,7 +113,6 @@ void CookieControlsController::OnCookieBlockingEnabledForSite(
     cookie_settings_->SetThirdPartyCookieSetting(
         GetWebContents()->GetURL(), ContentSetting::CONTENT_SETTING_ALLOW);
   }
-  Update(GetWebContents());
 }
 
 int CookieControlsController::GetBlockedCookieCount() {
@@ -138,7 +128,13 @@ void CookieControlsController::PresentBlockedCookieCounter() {
     observer.OnBlockedCookiesCountChanged(blocked_cookies);
 }
 
-void CookieControlsController::OnPrefChanged() {
+void CookieControlsController::OnThirdPartyCookieBlockingChanged(
+    bool block_third_party_cookies) {
+  if (GetWebContents())
+    Update(GetWebContents());
+}
+
+void CookieControlsController::OnCookieSettingChanged() {
   if (GetWebContents())
     Update(GetWebContents());
 }

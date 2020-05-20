@@ -391,6 +391,7 @@ if (is_android) {
     deps = [
       ":base_java",
       ":cast_base_test_utils_java",
+      "//base:base_java",
       "//base:base_junit_test_support",
       "//third_party/hamcrest:hamcrest_java",
     ]

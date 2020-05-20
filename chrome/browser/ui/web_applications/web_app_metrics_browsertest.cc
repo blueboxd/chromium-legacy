@@ -6,9 +6,8 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/scoped_mock_clock_override.h"
-#include "build/build_config.h"
-#include "chrome/browser/banners/test_app_banner_manager_desktop.h"
 #include "chrome/browser/installable/installable_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -40,7 +39,6 @@ class WebAppMetricsBrowserTest : public WebAppControllerBrowserTest {
 
   void SetUp() override {
     WebAppControllerBrowserTest::SetUp();
-    banners::TestAppBannerManagerDesktop::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -64,27 +62,17 @@ class WebAppMetricsBrowserTest : public WebAppControllerBrowserTest {
 
   void ForceEmitMetricsNow() {
     FlushAllRecordsForTesting(profile());
-    base::RunLoop loop;
-    profile()->GetPrefs()->CommitPendingWrite(
-        base::BindOnce([](base::RunLoop* loop) { loop->Quit(); }, &loop));
-    loop.Run();
+    // Ensure async call for origin check in daily_metrics_helper completes.
+    base::ThreadPoolInstance::Get()->FlushForTesting();
+    base::RunLoop().RunUntilIdle();
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebAppMetricsBrowserTest);
 };
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_NonInstalledWebApp_RecordsDailyInteraction \
-  DISABLED_NonInstalledWebApp_RecordsDailyInteraction
-#else
-#define MAYBE_NonInstalledWebApp_RecordsDailyInteraction \
-  NonInstalledWebApp_RecordsDailyInteraction
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
-                       MAYBE_NonInstalledWebApp_RecordsDailyInteraction) {
+                       NonInstalledWebApp_RecordsDailyInteraction) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   AddBlankTabAndShow(browser());
@@ -116,17 +104,8 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
       entry, UkmEntry::kNumSessionsName));
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_InstalledWebAppInTab_RecordsDailyInteraction \
-  DISABLED_InstalledWebAppInTab_RecordsDailyInteraction
-#else
-#define MAYBE_InstalledWebAppInTab_RecordsDailyInteraction \
-  InstalledWebAppInTab_RecordsDailyInteraction
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
-                       MAYBE_InstalledWebAppInTab_RecordsDailyInteraction) {
+                       InstalledWebAppInTab_RecordsDailyInteraction) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -167,18 +146,9 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
       entry, UkmEntry::kNumSessionsName));
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_InstalledWebAppInWindow_RecordsDailyInteractionWithSessionDurations \
-  DISABLED_InstalledWebAppInWindow_RecordsDailyInteractionWithSessionDurations
-#else
-#define MAYBE_InstalledWebAppInWindow_RecordsDailyInteractionWithSessionDurations \
-  InstalledWebAppInWindow_RecordsDailyInteractionWithSessionDurations
-#endif
-
 IN_PROC_BROWSER_TEST_P(
     WebAppMetricsBrowserTest,
-    MAYBE_InstalledWebAppInWindow_RecordsDailyInteractionWithSessionDurations) {
+    InstalledWebAppInWindow_RecordsDailyInteractionWithSessionDurations) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   auto web_app_info = std::make_unique<WebApplicationInfo>();
@@ -219,15 +189,7 @@ IN_PROC_BROWSER_TEST_P(
                                                  UkmEntry::kNumSessionsName, 1);
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_NonWebApp_RecordsNothing DISABLED_NonWebApp_RecordsNothing
-#else
-#define MAYBE_NonWebApp_RecordsNothing NonWebApp_RecordsNothing
-#endif
-
-IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
-                       MAYBE_NonWebApp_RecordsNothing) {
+IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest, NonWebApp_RecordsNothing) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   NavigateAndAwaitInstallabilityCheck(browser(), GetNonWebAppUrl());
@@ -238,18 +200,8 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
   ASSERT_EQ(entries.size(), 0U);
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_NavigationsWithinInstalledWebApp_RecordsOneSession \
-  DISABLED_NavigationsWithinInstalledWebApp_RecordsOneSession
-#else
-#define MAYBE_NavigationsWithinInstalledWebApp_RecordsOneSession \
-  NavigationsWithinInstalledWebApp_RecordsOneSession
-#endif
-
-IN_PROC_BROWSER_TEST_P(
-    WebAppMetricsBrowserTest,
-    MAYBE_NavigationsWithinInstalledWebApp_RecordsOneSession) {
+IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
+                       NavigationsWithinInstalledWebApp_RecordsOneSession) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
 
   AppId app_id = InstallWebApp();
@@ -267,17 +219,8 @@ IN_PROC_BROWSER_TEST_P(
   EXPECT_THAT(metrics, Contains(Pair(UkmEntry::kNumSessionsNameHash, 1)));
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_InstalledWebApp_RecordsTimeAndSessions \
-  DISABLED_InstalledWebApp_RecordsTimeAndSessions
-#else
-#define MAYBE_InstalledWebApp_RecordsTimeAndSessions \
-  InstalledWebApp_RecordsTimeAndSessions
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
-                       MAYBE_InstalledWebApp_RecordsTimeAndSessions) {
+                       InstalledWebApp_RecordsTimeAndSessions) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   AppId app_id = InstallWebApp();
   Browser* app_browser;
@@ -330,20 +273,11 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
   EXPECT_THAT(metrics, Contains(Pair(UkmEntry::kNumSessionsNameHash, 2)));
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_MultipleWebAppInstances_StillRecordsTime \
-  DISABLED_MultipleWebAppInstances_StillRecordsTime
-#else
-#define MAYBE_MultipleWebAppInstances_StillRecordsTime \
-  MultipleWebAppInstances_StillRecordsTime
-#endif
-
 // Verify that the behavior with multiple web app instances is as expected, even
 // though that behavior isn't completely accurate in recording time
 // (crbug.com/1081187).
 IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
-                       MAYBE_MultipleWebAppInstances_StillRecordsTime) {
+                       MultipleWebAppInstances_StillRecordsTime) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   AppId app_id = InstallWebApp();
   Browser* app_browser;
@@ -401,17 +335,8 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
               Not(Contains(Key(UkmEntry::kBackgroundDurationNameHash))));
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_InstalledWebApp_RecordsZeroTimeIfOverLimit \
-  DISABLED_InstalledWebApp_RecordsZeroTimeIfOverLimit
-#else
-#define MAYBE_InstalledWebApp_RecordsZeroTimeIfOverLimit \
-  InstalledWebApp_RecordsZeroTimeIfOverLimit
-#endif
-
 IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
-                       MAYBE_InstalledWebApp_RecordsZeroTimeIfOverLimit) {
+                       InstalledWebApp_RecordsZeroTimeIfOverLimit) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   AppId app_id = InstallWebApp();
   Browser* app_browser;
@@ -452,15 +377,7 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
   EXPECT_THAT(metrics, Contains(Pair(UkmEntry::kNumSessionsNameHash, 1)));
 }
 
-// TODO(crbug.com/1083813): Very flaky on Mac.
-#if defined(OS_MACOSX)
-#define MAYBE_Suspend_FlushesSessionTimes DISABLED_Suspend_FlushesSessionTimes
-#else
-#define MAYBE_Suspend_FlushesSessionTimes Suspend_FlushesSessionTimes
-#endif
-
-IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
-                       MAYBE_Suspend_FlushesSessionTimes) {
+IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest, Suspend_FlushesSessionTimes) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   AppId app_id = InstallWebApp();
   Browser* app_browser;

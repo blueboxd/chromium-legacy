@@ -386,7 +386,7 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
   NGFragment fragment(space.GetWritingMode(), physical_fragment);
 
   if (!space.HasKnownFragmentainerBlockSize()) {
-    if (space.IsInitialColumnBalancingPass()) {
+    if (space.IsInitialColumnBalancingPass() && builder) {
       if (child.IsMonolithic() ||
           (child.IsBlock() &&
            IsAvoidBreakValue(space, child.Style().BreakInside()))) {
@@ -408,13 +408,13 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
   // If we haven't used any space at all in the fragmentainer yet, we cannot
   // break before this child, or there'd be no progress. We'd risk creating an
   // infinite number of fragmentainers without putting any content into them.
-  bool refuse_break = space_left >= space.FragmentainerBlockSize();
+  bool refuse_break_before = space_left >= space.FragmentainerBlockSize();
 
   // If the child starts past the end of the fragmentainer (probably due to a
   // block-start margin), we must break before it.
   bool must_break_before = space_left < LayoutUnit();
   if (must_break_before) {
-    DCHECK(!refuse_break);
+    DCHECK(!refuse_break_before);
     return false;
   }
 
@@ -426,15 +426,20 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
     // Allow breaking inside if it has the same appeal or higher than breaking
     // before or breaking earlier. Also, if breaking before is impossible, break
     // inside regardless of appeal.
-    if (refuse_break || (appeal_inside >= appeal_before &&
-                         (!builder->HasEarlyBreak() ||
-                          appeal_inside >= builder->BreakAppeal()))) {
-      builder->SetBreakAppeal(appeal_inside);
+    bool want_break_inside = refuse_break_before;
+    if (!want_break_inside && appeal_inside >= appeal_before) {
+      if (!builder || !builder->HasEarlyBreak() ||
+          appeal_inside >= builder->BreakAppeal())
+        want_break_inside = true;
+    }
+    if (want_break_inside) {
+      if (builder)
+        builder->SetBreakAppeal(appeal_inside);
       return true;
     }
   } else {
     bool need_break;
-    if (refuse_break) {
+    if (refuse_break_before) {
       need_break = false;
     } else if (child.IsMonolithic()) {
       // If the monolithic piece of content (e.g. a line, or block-level
@@ -451,7 +456,7 @@ bool MovePastBreakpoint(const NGConstraintSpace& space,
     }
 
     if (!need_break) {
-      if (child.IsBlock()) {
+      if (child.IsBlock() && builder) {
         // If this doesn't happen, though, we're tentatively not going to break
         // before or inside this child, but we'll check the appeal of breaking
         // there anyway. It may be the best breakpoint we'll ever find. (Note

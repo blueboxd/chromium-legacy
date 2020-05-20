@@ -111,6 +111,7 @@ junit_binary("keyboard_accessory_junit_tests") {
     "//chrome/test/android:chrome_java_test_support",
     "//components/autofill/android:autofill_java",
     "//components/embedder_support/android:content_view_java",
+    "//components/feature_engagement/public:public_java",
     "//components/module_installer/android:module_installer_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_recyclerview_recyclerview_java",

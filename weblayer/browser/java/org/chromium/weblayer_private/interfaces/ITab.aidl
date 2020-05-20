@@ -51,4 +51,10 @@ interface ITab {
 
   // Added in 84
   void captureScreenShot(in float scale, in IObjectWrapper resultCallback) = 16;
+
+  // Added in 85
+  boolean setData(in Map data) = 17;
+
+  // Added in 85
+  Map getData() = 18;
 }

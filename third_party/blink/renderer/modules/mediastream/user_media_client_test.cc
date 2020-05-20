@@ -406,7 +406,8 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
   }
 
   void GetUserMediaRequestSucceeded(const blink::WebMediaStream& stream,
-                                    UserMediaRequest* request_info) override {
+                                    UserMediaRequest* request_info,
+                                    bool pan_tilt_zoom_allowed) override {
     last_generated_stream_ = stream;
     *state_ = REQUEST_SUCCEEDED;
   }

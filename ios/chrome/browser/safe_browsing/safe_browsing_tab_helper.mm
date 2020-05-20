@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/safe_browsing/safe_browsing_error.h"
 #include "ios/chrome/browser/safe_browsing/safe_browsing_service.h"
 #import "ios/chrome/browser/safe_browsing/safe_browsing_unsafe_resource_container.h"
+#import "ios/chrome/browser/safe_browsing/safe_browsing_url_allow_list.h"
 #import "ios/web/public/navigation/navigation_context.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -302,9 +303,13 @@ void SafeBrowsingTabHelper::PolicyDecider::OnMainFrameUrlQueryDecided(
     const GURL& url,
     web::WebStatePolicyDecider::PolicyDecision decision) {
   // If the pending main frame URL query has been removed or replaced with one
-  // for a new URL, ignore the result.
-  if (!pending_main_frame_query_ || pending_main_frame_query_->url != url)
+  // for a new URL, |decision| can be ignored and the pending allow list
+  // decision for |url| can be removed.
+  if (!pending_main_frame_query_ || pending_main_frame_query_->url != url) {
+    SafeBrowsingUrlAllowList::FromWebState(web_state())
+        ->RemovePendingUnsafeNavigationDecisions(url);
     return;
+  }
 
   pending_main_frame_query_->decision = decision;
   // If ShouldAllowResponse() has already been called for this URL, invoke
@@ -324,9 +329,13 @@ void SafeBrowsingTabHelper::PolicyDecider::OnSubFrameUrlQueryDecided(
       navigation_manager->GetLastCommittedItem();
 
   // If the URL check for a sub frame completes after a new main frame has been
-  // committed, ignore the result.
-  if (navigation_item_id != main_frame_item->GetUniqueID())
+  // committed, |decision| can be ignored and the pending allow list decision
+  // for |url| can be removed.
+  if (navigation_item_id != main_frame_item->GetUniqueID()) {
+    SafeBrowsingUrlAllowList::FromWebState(web_state())
+        ->RemovePendingUnsafeNavigationDecisions(url);
     return;
+  }
 
   // The URL check is expected to have been registered for the sub frame.
   DCHECK(pending_sub_frame_queries_.find(url) !=

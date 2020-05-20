@@ -686,11 +686,23 @@ bool AppBannerManager::IsProbablyPromotableWebApp(
   }
 }
 
-const GURL& AppBannerManager::GetManifestStartUrl() {
+bool AppBannerManager::IsPromotableWebApp() const {
+  switch (installable_web_app_check_result_) {
+    case InstallableWebAppCheckResult::kUnknown:
+    case InstallableWebAppCheckResult::kNo:
+    case InstallableWebAppCheckResult::kNoAlreadyInstalled:
+    case InstallableWebAppCheckResult::kByUserRequest:
+      return false;
+    case InstallableWebAppCheckResult::kPromotable:
+      return true;
+  }
+}
+
+const GURL& AppBannerManager::GetManifestStartUrl() const {
   return manifest_.start_url;
 }
 
-blink::mojom::DisplayMode AppBannerManager::GetManifestDisplayMode() {
+blink::mojom::DisplayMode AppBannerManager::GetManifestDisplayMode() const {
   return manifest_.display;
 }
 

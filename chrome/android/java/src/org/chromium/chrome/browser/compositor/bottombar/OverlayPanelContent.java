@@ -404,6 +404,8 @@ public class OverlayPanelContent {
      */
     private void destroyWebContents() {
         if (mWebContents != null) {
+            mActivity.getCompositorViewHolder().removeView(mContainerView);
+
             // Native destroy will call up to destroy the Java WebContents.
             OverlayPanelContentJni.get().destroyWebContents(
                     mNativeOverlayPanelContentPtr, OverlayPanelContent.this);

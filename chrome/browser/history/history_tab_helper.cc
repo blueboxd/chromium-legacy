@@ -88,6 +88,7 @@ HistoryTabHelper::CreateHistoryAddPageArgs(
       navigation_handle->GetRedirectChain(),
       navigation_handle->GetPageTransition(), hidden, history::SOURCE_BROWSED,
       navigation_handle->DidReplaceEntry(), !content_suggestions_navigation,
+      navigation_handle->GetSocketAddress().address().IsPubliclyRoutable(),
       navigation_handle->IsSameDocument()
           ? base::Optional<base::string16>(
                 navigation_handle->GetWebContents()->GetTitle())
@@ -201,7 +202,7 @@ void HistoryTabHelper::DidActivatePortal(
       /* redirects */ {}, ui::PAGE_TRANSITION_LINK,
       /* hidden */ false, history::SOURCE_BROWSED, did_replace_entry,
       /* consider_for_ntp_most_visited */ true,
-      last_committed_entry->GetTitle());
+      /* publicly_routable */ false, last_committed_entry->GetTitle());
   hs->AddPage(add_page_args);
 }
 

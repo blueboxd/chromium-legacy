@@ -30,6 +30,7 @@ class SearchSection : public OsSettingsSection,
   // OsSettingsSection:
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
+  int GetSectionNameMessageId() const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
 
   // ash::AssistantStateObserver:
@@ -38,7 +39,7 @@ class SearchSection : public OsSettingsSection,
   void OnAssistantSettingsEnabled(bool enabled) override;
   void OnAssistantHotwordEnabled(bool enabled) override;
 
-  bool IsAssistantAllowed();
+  bool IsAssistantAllowed() const;
   void UpdateAssistantSearchTags();
 };
 

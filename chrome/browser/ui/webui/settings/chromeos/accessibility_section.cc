@@ -510,6 +510,10 @@ void AccessibilitySection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<::settings::FontHandler>(profile()));
 }
 
+int AccessibilitySection::GetSectionNameMessageId() const {
+  return IDS_SETTINGS_ACCESSIBILITY;
+}
+
 void AccessibilitySection::RegisterHierarchy(
     HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kA11yQuickSettings);

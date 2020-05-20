@@ -483,7 +483,7 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestContextMenu) {
   gfx::Point guest_context_menu_position(5, 5);
   gfx::Point root_context_menu_position =
       guest_view->TransformPointToRootCoordSpace(guest_context_menu_position);
-  content::SimulateRoutedMouseClickAt(
+  content::SimulateMouseClickAt(
       root_web_contents, blink::WebInputEvent::kNoModifiers,
       blink::WebMouseEvent::Button::kRight, root_context_menu_position);
   context_menu_filter->Wait();

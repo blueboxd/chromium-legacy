@@ -60,7 +60,8 @@ void MockMojoMediaStreamDispatcherHost::GenerateStream(
   } else {
     std::move(callback).Run(mojom::blink::MediaStreamRequestResult::OK,
                             String("dummy") + String::Number(request_id_),
-                            audio_devices_, video_devices_);
+                            audio_devices_, video_devices_,
+                            /*pan_tilt_zoom_allowed=*/false);
   }
 }
 

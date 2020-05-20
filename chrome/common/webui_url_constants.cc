@@ -139,6 +139,8 @@ const char kChromeUISigninEmailConfirmationURL[] =
     "chrome://signin-email-confirmation";
 const char kChromeUISigninErrorHost[] = "signin-error";
 const char kChromeUISigninErrorURL[] = "chrome://signin-error/";
+const char kChromeUISigninReauthHost[] = "signin-reauth";
+const char kChromeUISigninReauthURL[] = "chrome://signin-reauth/";
 const char kChromeUISiteDetailsPrefixURL[] =
     "chrome://settings/content/siteDetails?site=";
 const char kChromeUISiteEngagementHost[] = "site-engagement";

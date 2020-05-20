@@ -238,7 +238,6 @@ TEST_F(CookieControlsTest, Incognito) {
       OnStatusChanged(CookieControlsStatus::kDisabledForSite,
                       CookieControlsEnforcement::kEnforcedByCookieSetting, 0));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
-  incognito_cookie_controls.Update(incognito_web_contents.get());
   testing::Mock::VerifyAndClearExpectations(mock());
   testing::Mock::VerifyAndClearExpectations(&incognito_mock_);
 }

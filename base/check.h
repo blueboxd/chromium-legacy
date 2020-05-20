@@ -52,22 +52,12 @@ class VoidifyStream {
 // Helper macro which avoids evaluating the arguents to a stream if the
 // condition is false.
 #define LAZY_CHECK_STREAM(stream, condition) \
-_Pragma("clang diagnostic push") \
-_Pragma("clang diagnostic ignored \"-Wunreachable-code\"") \
-_Pragma("clang diagnostic ignored \"-Wtautological-compare\"") \
-_Pragma("clang diagnostic ignored \"-Wundefined-bool-conversion\"") \
-  !( (condition) ) ? (void)0 : ::logging::VoidifyStream() & (stream) \
-_Pragma("clang diagnostic pop")
+  !(condition) ? (void)0 : ::logging::VoidifyStream() & (stream)
 
 // Macro which uses but does not evaluate expr and any stream parameters.
 #define EAT_CHECK_STREAM_PARAMS(expr) \
-_Pragma("clang diagnostic push") \
-_Pragma("clang diagnostic ignored \"-Wunreachable-code\"") \
-_Pragma("clang diagnostic ignored \"-Wtautological-compare\"") \
-_Pragma("clang diagnostic ignored \"-Wundefined-bool-conversion\"") \
-  (true) ? (void)0                      \
-       : ::logging::VoidifyStream(expr) & (*::logging::g_swallow_stream) \
-_Pragma("clang diagnostic pop")
+  true ? (void)0                      \
+       : ::logging::VoidifyStream(expr) & (*::logging::g_swallow_stream)
 BASE_EXPORT extern std::ostream* g_swallow_stream;
 
 class CheckOpResult;
@@ -137,9 +127,9 @@ class BASE_EXPORT CheckError {
 #endif
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
-#define DCHECK_IS_ON() (false)
+#define DCHECK_IS_ON() false
 #else
-#define DCHECK_IS_ON() (true)
+#define DCHECK_IS_ON() true
 #endif
 
 #if DCHECK_IS_ON()

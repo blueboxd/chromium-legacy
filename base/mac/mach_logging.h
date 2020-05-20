@@ -50,7 +50,7 @@ class BASE_EXPORT MachLogMessage : public logging::LogMessage {
 }  // namespace logging
 
 #if defined(NDEBUG)
-#define MACH_DVLOG_IS_ON(verbose_level) (false)
+#define MACH_DVLOG_IS_ON(verbose_level) 0
 #else
 #define MACH_DVLOG_IS_ON(verbose_level) VLOG_IS_ON(verbose_level)
 #endif

@@ -31,7 +31,6 @@
 #include "chrome/install_static/initialize_from_primary_module.h"
 #include "chrome/install_static/install_details.h"
 
-
 #define DLLEXPORT __declspec(dllexport)
 
 // We use extern C for the prototype DLLEXPORT to avoid C++ name mangling.
@@ -87,7 +86,6 @@ int ChromeMain(int argc, const char** argv) {
   params.argc = argc;
   params.argv = argv;
   base::CommandLine::Init(params.argc, params.argv);
-  
 #endif  // defined(OS_WIN)
   base::CommandLine::Init(0, nullptr);
   base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
@@ -97,7 +95,6 @@ int ChromeMain(int argc, const char** argv) {
     command_line->AppendSwitch(service_manager::switches::kNoSandbox);
   }
 #endif
-
   ALLOW_UNUSED_LOCAL(command_line);
 
 #if defined(OS_MACOSX)

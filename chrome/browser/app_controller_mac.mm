@@ -1662,8 +1662,7 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 - (BOOL)application:(NSApplication*)application
     willContinueUserActivityWithType:(NSString*)userActivityType {
-//  return [userActivityType isEqualToString:NSUserActivityTypeBrowsingWeb];
-return NO;
+  return NO;
 }
 
 - (BOOL)application:(NSApplication*)application
@@ -1671,10 +1670,6 @@ return NO;
       restorationHandler:
           (void (^)(NSArray<id<NSUserActivityRestoring>>*))restorationHandler
 {
-//  if (![userActivity.activityType
-//          isEqualToString:NSUserActivityTypeBrowsingWeb]) {
-//    return NO;
-//  }
 
   NSString* originString = base::mac::ObjCCast<NSString>(
       [userActivity.userInfo objectForKey:handoff::kOriginKey]);

@@ -241,7 +241,7 @@
 	<key>LSHasLocalizedDisplayName</key>
 	<string>1</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.7</string>
+	<string>${CHROMIUM_MIN_SYSTEM_VERSION}</string>
 	<key>NSPrincipalClass</key>
 	<string>BrowserCrApplication</string>
 	<key>NSSupportsAutomaticGraphicsSwitching</key>

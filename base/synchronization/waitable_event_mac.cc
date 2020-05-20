@@ -228,7 +228,6 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
   const WaitManyPrimitive kPrimitive =
       mac::IsAtLeastOS10_12() ? KQUEUE
 								: DISPATCH;
-//                              : (mac::IsOS10_11() ? DISPATCH : PORT_SET);
 #endif
   if (kPrimitive == KQUEUE) {
     std::vector<kevent64_s> events(count);

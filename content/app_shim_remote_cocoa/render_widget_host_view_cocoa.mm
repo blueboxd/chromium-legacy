@@ -324,7 +324,7 @@ void ExtractUnderlines(NSAttributedString* string,
   [self.spellChecker
       showCorrectionIndicatorOfType:NSCorrectionIndicatorTypeDefault
                       primaryString:candidateResult.replacementString
-                 alternativeStrings:@[]//candidateResult.alternativeStrings
+                 alternativeStrings:@[]
                     forStringInRect:textRectInViewCoordinates
                                view:self
                   completionHandler:^(NSString* acceptedString) {
@@ -1343,34 +1343,6 @@ void ExtractUnderlines(NSAttributedString* string,
 
 // Called repeatedly during a pinch gesture, with incremental change values.
 - (void)magnifyWithEvent:(NSEvent*)event {
-#if 0
-#if defined(MAC_OS_X_VERSION_10_11) && \
-    MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_11
-  // When linking against the 10.11 (or later) SDK and running on 10.11 or
-  // later, check the phase of the event and specially handle the "begin" and
-  // "end" phases.
-  if (base::mac::IsAtLeastOS10_11()) {
-    if (event.phase == NSEventPhaseBegan) {
-      [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
-      return;
-    }
-
-    if (event.phase == NSEventPhaseEnded ||
-        event.phase == NSEventPhaseCancelled) {
-      [self handleEndGestureWithEvent:event];
-      return;
-    }
-  }
-#endif
-
-  // If this conditional evalutes to true, and the function has not
-  // short-circuited from the previous block, then this event is a duplicate of
-  // a gesture event, and should be ignored.
-  if (event.phase == NSEventPhaseBegan || event.phase == NSEventPhaseEnded ||
-      event.phase == NSEventPhaseCancelled) {
-    return;
-  }
-#endif
   WebGestureEvent updateEvent = WebGestureEventBuilder::Build(event, self);
   _hostHelper->GestureUpdate(updateEvent);
 }

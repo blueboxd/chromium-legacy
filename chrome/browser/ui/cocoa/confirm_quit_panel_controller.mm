@@ -408,11 +408,6 @@ ConfirmQuitPanelController* g_confirmQuitPanelController = nil;
       IDS_CONFIRM_TO_QUIT_DESCRIPTION,
       base::SysNSStringToUTF16([[self class] keyCommandString]));
 
-//  NSAccessibilityPostNotificationWithUserInfo(
-//      [NSApp mainWindow], NSAccessibilityAnnouncementRequestedNotification, @{
-//        NSAccessibilityAnnouncementKey : message,
-//        NSAccessibilityPriorityKey : @(NSAccessibilityPriorityHigh),
-//      });
 }
 
 @end

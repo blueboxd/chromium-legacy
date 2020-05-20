@@ -541,38 +541,6 @@ bool NotificationPlatformBridgeMac::SupportsAlerts() {
 
 - (instancetype)init {
 	return nil;
-  if ((self = [super init])) {
-    _xpcConnection.reset([[NSXPCConnection alloc]
-        initWithServiceName:
-            [NSString
-                stringWithFormat:notification_constants::kAlertXPCServiceName,
-                                 [base::mac::OuterBundle() bundleIdentifier]]]);
-    _xpcConnection.get().remoteObjectInterface =
-        [NSXPCInterface interfaceWithProtocol:@protocol(NotificationDelivery)];
-
-    _xpcConnection.get().interruptionHandler = ^{
-      // We will be getting this handler both when the XPC server crashes or
-      // when it decides to close the connection.
-      LOG(WARNING) << "AlertNotificationService: XPC connection interrupted.";
-      RecordXPCEvent(INTERRUPTED);
-      _setExceptionPort = NO;
-    };
-
-    _xpcConnection.get().invalidationHandler = ^{
-      // This means that the connection should be recreated if it needs
-      // to be used again.
-      LOG(WARNING) << "AlertNotificationService: XPC connection invalidated.";
-      RecordXPCEvent(INVALIDATED);
-      _setExceptionPort = NO;
-    };
-
-    _xpcConnection.get().exportedInterface =
-        [NSXPCInterface interfaceWithProtocol:@protocol(NotificationReply)];
-    _xpcConnection.get().exportedObject = self;
-    [_xpcConnection resume];
-  }
-
-  return self;
 }
 
 // AlertDispatcher:

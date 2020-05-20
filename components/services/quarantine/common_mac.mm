@@ -19,38 +19,7 @@ namespace quarantine {
 bool GetQuarantineProperties(
     const base::FilePath& file,
     base::scoped_nsobject<NSMutableDictionary>* properties) {
-	return false;
-  base::scoped_nsobject<NSURL> file_url([[NSURL alloc]
-      initFileURLWithPath:base::SysUTF8ToNSString(file.value())]);
-  if (!file_url)
-    return false;
-
-  NSError* error = nil;
-  id quarantine_properties = nil;
-  BOOL success = [file_url getResourceValue:&quarantine_properties
-                                     forKey:NSURLQuarantinePropertiesKey
-                                      error:&error];
-  if (!success) {
-    std::string error_message(error ? error.description.UTF8String : "");
-    LOG(WARNING) << "Unable to get quarantine attributes for file "
-                 << file.value() << ". Error: " << error_message;
-    return false;
-  }
-
-  if (!quarantine_properties)
-    return true;
-
-  NSDictionary* quarantine_properties_dict =
-      base::mac::ObjCCast<NSDictionary>(quarantine_properties);
-  if (!quarantine_properties_dict) {
-    LOG(WARNING) << "Quarantine properties have wrong class: "
-                 << base::SysNSStringToUTF8(
-                        [[quarantine_properties class] description]);
-    return false;
-  }
-
-  properties->reset([quarantine_properties_dict mutableCopy]);
-  return true;
+  return false;
 }
 
 }  // namespace quarantine

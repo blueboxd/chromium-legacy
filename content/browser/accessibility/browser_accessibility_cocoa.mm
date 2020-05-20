@@ -849,8 +849,6 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
 - (void)detach {
   if (!_owner)
     return;
-//  NSAccessibilityPostNotification(
-//      self, NSAccessibilityUIElementDestroyedNotification);
   _owner = nullptr;
 }
 

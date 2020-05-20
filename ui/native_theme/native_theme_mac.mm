@@ -289,16 +289,6 @@ NativeThemeMac::NativeThemeMac(bool configure_web_instance,
   if (!IsForcedHighContrast()) {
     set_high_contrast(IsHighContrast());
     __block auto theme = this;
-//    high_contrast_notification_token_ =
-//        [[[NSWorkspace sharedWorkspace] notificationCenter]
-//            addObserverForName:
-//                NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
-//                        object:nil
-//                         queue:nil
-//                    usingBlock:^(NSNotification* notification) {
-//                      theme->set_high_contrast(IsHighContrast());
-//                      theme->NotifyObservers();
-//                    }];
   }
 
   if (configure_web_instance)

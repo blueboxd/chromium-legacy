@@ -683,7 +683,7 @@ OSStatus status=-1;
   // VideoToolbox scales the visible rect to the output size, so we set the
   // output size for a 1:1 ratio. (Note though that VideoToolbox does not handle
   // top or left crops correctly.) We expect the visible rect to be integral.
-  CGRect visible_rect;// = CMVideoFormatDescriptionGetCleanAperture(format_, true);
+  CGRect visible_rect;
   CMVideoDimensions visible_dimensions = {visible_rect.size.width,
                                           visible_rect.size.height};
   base::ScopedCFTypeRef<CFMutableDictionaryRef> image_config(

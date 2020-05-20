@@ -30,7 +30,6 @@ source_set("mac") {
     "Foundation.framework",
     "IOSurface.framework",
     "QuartzCore.framework",
-#    "VideoToolbox.framework",
   ]
   ldflags = [
     "-weak_framework",

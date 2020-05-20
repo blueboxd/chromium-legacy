@@ -318,16 +318,6 @@ const ActionList& GetActionList() {
 void PostAnnouncementNotification(NSString* announcement,
                                   NSWindow* window,
                                   bool is_polite) {
-//  NSAccessibilityPriorityLevel priority =
-//      is_polite ? NSAccessibilityPriorityMedium : NSAccessibilityPriorityHigh;
-//  NSDictionary* notification_info = @{
-//    NSAccessibilityAnnouncementKey : announcement,
-//    NSAccessibilityPriorityKey : @(priority)
-//  };
-//  // On Mojave, announcements from an inactive window aren't spoken.
-//  NSAccessibilityPostNotificationWithUserInfo(
-//      window, NSAccessibilityAnnouncementRequestedNotification,
-//      notification_info);
 }
 void NotifyMacEvent(AXPlatformNodeCocoa* target, ax::mojom::Event event_type) {
   NSString* notification =

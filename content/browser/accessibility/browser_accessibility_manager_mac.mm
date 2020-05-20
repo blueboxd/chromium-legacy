@@ -295,14 +295,8 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         if (!root)
           return;
 
-//        NSAccessibilityPostNotificationWithUserInfo(
-//            ToBrowserAccessibilityCocoa(focus), mac_notification, user_info);
-//        NSAccessibilityPostNotificationWithUserInfo(
-//            ToBrowserAccessibilityCocoa(root), mac_notification, user_info);
         return;
       } else {
-//        NSAccessibilityPostNotification(ToBrowserAccessibilityCocoa(focus),
-//                                        mac_notification);
       }
       break;
     }
@@ -329,10 +323,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
         if (!root)
           return;
 
-//        NSAccessibilityPostNotificationWithUserInfo(
-//            native_node, mac_notification, user_info);
-//        NSAccessibilityPostNotificationWithUserInfo(
-//            ToBrowserAccessibilityCocoa(root), mac_notification, user_info);
         return;
       }
       break;
@@ -340,8 +330,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       mac_notification = NSAccessibilityLiveRegionCreatedNotification;
       break;
     case ui::AXEventGenerator::Event::ALERT:
-//      NSAccessibilityPostNotification(
-//          native_node, NSAccessibilityLiveRegionCreatedNotification);
       // Voiceover requires a live region changed notification to actually
       // announce the live region.
       FireGeneratedEvent(ui::AXEventGenerator::Event::LIVE_REGION_CHANGED,
@@ -353,8 +341,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
       // TODO(nektar): Limit the number of changed notifications as well.
 
       if (never_suppress_or_delay_events_for_testing_) {
-//        NSAccessibilityPostNotification(
-//            native_node, NSAccessibilityLiveRegionChangedNotification);
         return;
       }
 
@@ -377,8 +363,6 @@ void BrowserAccessibilityManagerMac::FireGeneratedEvent(
           base::BindOnce(
               [](base::scoped_nsobject<BrowserAccessibilityCocoa> node) {
                 if (node && [node instanceActive]) {
-//                  NSAccessibilityPostNotification(
-//                      node, NSAccessibilityLiveRegionChangedNotification);
                 }
               },
               std::move(retained_node)),
@@ -469,7 +453,6 @@ void BrowserAccessibilityManagerMac::FireNativeMacNotification(
   DCHECK(mac_notification);
   auto native_node = ToBrowserAccessibilityCocoa(node);
   DCHECK(native_node);
-//  NSAccessibilityPostNotification(native_node, mac_notification);
 }
 
 bool BrowserAccessibilityManagerMac::OnAccessibilityEvents(

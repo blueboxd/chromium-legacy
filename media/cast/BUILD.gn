@@ -182,7 +182,6 @@ jumbo_source_set("sender") {
       "CoreFoundation.framework",
       "CoreMedia.framework",
       "CoreVideo.framework",
-#     "VideoToolbox.framework",
     ]
   }
 }

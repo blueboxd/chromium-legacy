@@ -36,6 +36,12 @@ component("mirroring_service") {
     "wifi_status_monitor.h",
   ]
 
+  if (is_mac) {
+    weak_frameworks = [
+      "VideoToolbox.framework",
+    ]
+  }
+
   public_deps = [ "//base" ]
 
   deps = [

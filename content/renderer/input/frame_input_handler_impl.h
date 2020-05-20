@@ -8,10 +8,10 @@
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
 namespace content {
 class MainThreadEventQueue;
@@ -38,11 +38,12 @@ class MainThreadEventQueue;
 //
 // When a compositor thread isn't used the mojo channel is just bound
 // on the main thread and messages are handled right away.
-class CONTENT_EXPORT FrameInputHandlerImpl : public mojom::FrameInputHandler {
+class CONTENT_EXPORT FrameInputHandlerImpl
+    : public blink::mojom::FrameInputHandler {
  public:
   static void CreateMojoService(
       base::WeakPtr<RenderFrameImpl> render_frame,
-      mojo::PendingReceiver<mojom::FrameInputHandler> receiver);
+      mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver);
 
   void SetCompositionFromExistingText(
       int32_t start,
@@ -79,8 +80,9 @@ class CONTENT_EXPORT FrameInputHandlerImpl : public mojom::FrameInputHandler {
   void ScrollFocusedEditableNodeIntoRect(const gfx::Rect& rect) override;
   void MoveCaret(const gfx::Point& point) override;
   void GetWidgetInputHandler(
-      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
-      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
+          receiver,
+      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) override;
 
  private:
   ~FrameInputHandlerImpl() override;
@@ -100,15 +102,15 @@ class CONTENT_EXPORT FrameInputHandlerImpl : public mojom::FrameInputHandler {
 
   FrameInputHandlerImpl(
       base::WeakPtr<RenderFrameImpl> render_frame,
-      mojo::PendingReceiver<mojom::FrameInputHandler> receiver);
+      mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver);
 
   void RunOnMainThread(base::OnceClosure closure);
-  void BindNow(mojo::PendingReceiver<mojom::FrameInputHandler> receiver);
+  void BindNow(mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver);
   void ExecuteCommandOnMainThread(const std::string& command,
                                   UpdateState state);
   void Release();
 
-  mojo::Receiver<mojom::FrameInputHandler> receiver_{this};
+  mojo::Receiver<blink::mojom::FrameInputHandler> receiver_{this};
 
   // |render_frame_| should only be accessed on the main thread. Use
   // GetRenderFrame so that it will DCHECK this for you.

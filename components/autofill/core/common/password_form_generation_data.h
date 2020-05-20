@@ -22,7 +22,6 @@ struct PasswordFormGenerationData {
                              FieldRendererId confirmation_password_renderer_id);
 #if defined(OS_IOS)
   PasswordFormGenerationData(FormRendererId form_renderer_id,
-                             base::string16 new_password_element,
                              FieldRendererId new_password_renderer_id,
                              FieldRendererId confirmation_password_renderer_id);
 
@@ -33,9 +32,6 @@ struct PasswordFormGenerationData {
   ~PasswordFormGenerationData();
 
   FormRendererId form_renderer_id;
-  // TODO(crbug.com/1075444): Remove this once VotesUploader starts to use
-  // unique renderer IDs.
-  base::string16 new_password_element;
 #endif
   FieldRendererId new_password_renderer_id;
   FieldRendererId confirmation_password_renderer_id;

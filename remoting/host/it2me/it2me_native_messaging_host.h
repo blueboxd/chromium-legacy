@@ -147,7 +147,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
 #endif
 
   // Cached, read-only copies of |it2me_host_| session state.
-  It2MeHostState state_;
+  It2MeHostState state_ = It2MeHostState::kDisconnected;
   std::string access_code_;
   base::TimeDelta access_code_lifetime_;
   std::string client_username_;

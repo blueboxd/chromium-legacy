@@ -717,6 +717,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
         DirtyObject dirty_object;
         dirty_object.obj = obj;
         dirty_object.event_from = event.event_from;
+        dirty_object.event_intents = event.event_intents;
         dirty_objects.push_back(dirty_object);
       }
       obj = obj.ParentObject();
@@ -736,6 +737,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     DirtyObject dirty_object;
     dirty_object.obj = obj;
     dirty_object.event_from = event.event_from;
+    dirty_object.event_intents = event.event_intents;
     dirty_objects.push_back(dirty_object);
   }
 
@@ -786,6 +788,7 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
 
     AXContentTreeUpdate update;
     update.event_from = dirty_objects[i].event_from;
+    update.event_intents = dirty_objects[i].event_intents;
     // If there's a plugin, force the tree data to be generated in every
     // message so the plugin can merge its own tree data changes.
     if (plugin_tree_source_)
@@ -1207,5 +1210,10 @@ blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
     return popup->GetDocument();
   return WebDocument();
 }
+
+RenderAccessibilityImpl::DirtyObject::DirtyObject() = default;
+RenderAccessibilityImpl::DirtyObject::DirtyObject(const DirtyObject& other) =
+    default;
+RenderAccessibilityImpl::DirtyObject::~DirtyObject() = default;
 
 }  // namespace content

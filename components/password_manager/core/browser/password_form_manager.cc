@@ -34,8 +34,10 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "google_apis/gaia/core_account_id.h"
 
+using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormFieldData;
+using autofill::FormRendererId;
 using autofill::FormSignature;
 using autofill::FormStructure;
 using autofill::GaiaIdHash;
@@ -497,7 +499,7 @@ void PasswordFormManager::SetGenerationPopupWasShown(
 }
 
 void PasswordFormManager::SetGenerationElement(
-    const base::string16& generation_element) {
+    FieldRendererId generation_element) {
   votes_uploader_.set_generation_element(generation_element);
 }
 
@@ -523,22 +525,22 @@ void PasswordFormManager::PresaveGeneratedPassword(
     PasswordManagerDriver* driver,
     const FormData& form,
     const base::string16& generated_password,
-    const base::string16& generation_element) {
+    FieldRendererId generation_element) {
   observed_form_ = form;
   PresaveGeneratedPasswordInternal(form, generated_password);
   votes_uploader_.set_generation_element(generation_element);
 }
 
 bool PasswordFormManager::UpdateStateOnUserInput(
-    const base::string16& form_identifier,
-    const base::string16& field_identifier,
+    FormRendererId form_id,
+    FieldRendererId field_id,
     const base::string16& field_value) {
-  if (observed_form_.name != form_identifier)
+  if (observed_form_.unique_renderer_id != form_id)
     return false;
 
   bool form_data_changed = false;
   for (FormFieldData& field : observed_form_.fields) {
-    if (field.unique_id == field_identifier) {
+    if (field.unique_renderer_id == field_id) {
       field.value = field_value;
       form_data_changed = true;
       break;
@@ -550,7 +552,7 @@ bool PasswordFormManager::UpdateStateOnUserInput(
 
   base::string16 generated_password =
       password_save_manager_->GetGeneratedPassword();
-  if (votes_uploader_.get_generation_element() == field_identifier) {
+  if (votes_uploader_.get_generation_element() == field_id) {
     generated_password = field_value;
     form_data_changed = true;
   }
@@ -788,7 +790,6 @@ void PasswordFormManager::Fill() {
     driver_->FormEligibleForGenerationFound(
         {/*form_renderer_id*/ observed_password_form->form_data
              .unique_renderer_id,
-         /*new_password_element*/ observed_password_form->new_password_element,
          /*new_password_element_renderer_id*/
          observed_password_form->new_password_element_renderer_id,
          /*confirmation_password_element_renderer_id*/

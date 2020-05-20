@@ -276,10 +276,12 @@ int AboutSection::GetSectionNameMessageId() const {
 
 void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // About Chrome OS.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kAboutChromeOsDetails);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_ABOUT_OS,
+                                     mojom::Subpage::kAboutChromeOsDetails);
 
   // Detailed build info.
-  generator->RegisterNestedSubpage(mojom::Subpage::kDetailedBuildInfo,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO,
+                                   mojom::Subpage::kDetailedBuildInfo,
                                    mojom::Subpage::kAboutChromeOsDetails);
   static constexpr mojom::Setting kDetailedBuildInfoSettings[] = {
       mojom::Setting::kChangeChromeChannel,

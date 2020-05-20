@@ -130,11 +130,11 @@ class VotesUploader {
     is_manual_generation_ = is_manual_generation;
   }
 
-  const base::string16& get_generation_element() const {
+  autofill::FieldRendererId get_generation_element() const {
     return generation_element_;
   }
 
-  void set_generation_element(const base::string16& generation_element) {
+  void set_generation_element(autofill::FieldRendererId generation_element) {
     generation_element_ = generation_element;
   }
 
@@ -213,8 +213,7 @@ class VotesUploader {
   bool is_manual_generation_ = false;
 
   // A password field name that is used for generation.
-  // TODO(crbug.com/1075444): Use unique renderer id of a field instead.
-  base::string16 generation_element_;
+  autofill::FieldRendererId generation_element_;
 
   // True iff a user edited the username value in a prompt and new username is
   // the value of another field of the observed form.

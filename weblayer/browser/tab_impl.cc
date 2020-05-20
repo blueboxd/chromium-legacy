@@ -151,7 +151,7 @@ void OpenCaptivePortalLoginTabInWebContents(
 constexpr int kWebContentsUserDataKey = 0;
 
 struct UserData : public base::SupportsUserData::Data {
-  TabImpl* controller = nullptr;
+  TabImpl* tab = nullptr;
 };
 
 #if defined(OS_ANDROID)
@@ -249,7 +249,7 @@ TabImpl::TabImpl(ProfileImpl* profile,
           &TabImpl::UpdateRendererPrefs, base::Unretained(this), true));
 
   std::unique_ptr<UserData> user_data = std::make_unique<UserData>();
-  user_data->controller = this;
+  user_data->tab = this;
   web_contents_->SetUserData(&kWebContentsUserDataKey, std::move(user_data));
 
   web_contents_->SetDelegate(this);
@@ -325,9 +325,9 @@ TabImpl* TabImpl::FromWebContents(content::WebContents* web_contents) {
   if (!web_contents)
     return nullptr;
 
-  return reinterpret_cast<UserData*>(
-             web_contents->GetUserData(&kWebContentsUserDataKey))
-      ->controller;
+  UserData* user_data = reinterpret_cast<UserData*>(
+      web_contents->GetUserData(&kWebContentsUserDataKey));
+  return user_data ? user_data->tab : nullptr;
 }
 
 void TabImpl::AddDataObserver(DataObserver* observer) {

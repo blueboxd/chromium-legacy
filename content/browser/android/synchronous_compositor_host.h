@@ -19,11 +19,11 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/common/content_export.h"
-#include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/public/browser/android/synchronous_compositor.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/synchronous_compositor.mojom.h"
 #include "ui/android/view_android.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -41,7 +41,7 @@ class SynchronousCompositorSyncCallBridge;
 
 class CONTENT_EXPORT SynchronousCompositorHost
     : public SynchronousCompositor,
-      public mojom::SynchronousCompositorHost,
+      public blink::mojom::SynchronousCompositorHost,
       public viz::BeginFrameObserver {
  public:
   static std::unique_ptr<SynchronousCompositorHost> Create(
@@ -88,10 +88,10 @@ class CONTENT_EXPORT SynchronousCompositorHost
 
   void AddBeginFrameCompletionCallback(base::OnceClosure callback);
 
-  // mojom::SynchronousCompositorHost overrides.
+  // blink::mojom::SynchronousCompositorHost overrides.
   void LayerTreeFrameSinkCreated() override;
   void UpdateState(
-      mojom::SyncCompositorCommonRendererParamsPtr params) override;
+      blink::mojom::SyncCompositorCommonRendererParamsPtr params) override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
 
   // viz::BeginFrameObserver implementation.
@@ -123,7 +123,7 @@ class CONTENT_EXPORT SynchronousCompositorHost
   bool DemandDrawSwInProc(SkCanvas* canvas);
   void SetSoftwareDrawSharedMemoryIfNeeded(size_t stride, size_t buffer_size);
   void SendZeroMemory();
-  mojom::SynchronousCompositor* GetSynchronousCompositor();
+  blink::mojom::SynchronousCompositor* GetSynchronousCompositor();
   // Whether the synchronous compositor host is ready to
   // handle blocking calls.
   bool IsReadyForSynchronousCall();
@@ -139,9 +139,9 @@ class CONTENT_EXPORT SynchronousCompositorHost
   SynchronousCompositorClient* const client_;
   const viz::FrameSinkId frame_sink_id_;
   const bool use_in_process_zero_copy_software_draw_;
-  mojo::AssociatedRemote<mojom::SynchronousCompositor> sync_compositor_;
-  mojo::AssociatedReceiver<mojom::SynchronousCompositorHost> host_receiver_{
-      this};
+  mojo::AssociatedRemote<blink::mojom::SynchronousCompositor> sync_compositor_;
+  mojo::AssociatedReceiver<blink::mojom::SynchronousCompositorHost>
+      host_receiver_{this};
 
   bool registered_with_filter_ = false;
 

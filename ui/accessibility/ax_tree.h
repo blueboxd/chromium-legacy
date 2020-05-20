@@ -174,6 +174,11 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
   //                  When should we initialize this?
   std::unique_ptr<AXLanguageDetectionManager> language_detection_manager;
 
+  // A list of intents active during a tree update/unserialization.
+  const std::vector<AXEventIntent>& event_intents() const {
+    return event_intents_;
+  }
+
  private:
   friend class AXTableInfoTest;
 
@@ -388,6 +393,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Indicates if the tree represents a paginated document
   bool has_pagination_support_ = false;
+
+  std::vector<AXEventIntent> event_intents_;
 };
 
 }  // namespace ui

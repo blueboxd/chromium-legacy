@@ -1694,6 +1694,10 @@ void QuicChromiumClientSession::OnConnectionClosed(
       UMA_HISTOGRAM_COUNTS_1000(
           "Net.QuicSession.ClosedByRtoAtClient.SentPacketCount",
           connection()->GetStats().packets_sent);
+      UMA_HISTOGRAM_COUNTS_100(
+          "Net.QuicSession."
+          "MaxConsecutiveRtoWithForwardProgressAndBlackholeDetected",
+          connection()->GetStats().max_consecutive_rto_with_forward_progress);
     }
   }
 
@@ -1740,6 +1744,9 @@ void QuicChromiumClientSession::OnConnectionClosed(
     UMA_HISTOGRAM_COUNTS_100(
         "Net.QuicSession.CryptoRetransmitCount.HandshakeConfirmed",
         connection()->GetStats().crypto_retransmit_count);
+    UMA_HISTOGRAM_COUNTS_100(
+        "Net.QuicSession.MaxConsecutiveRtoWithForwardProgress",
+        connection()->GetStats().max_consecutive_rto_with_forward_progress);
   } else {
     if (error == quic::QUIC_PUBLIC_RESET) {
       RecordHandshakeFailureReason(HANDSHAKE_FAILURE_PUBLIC_RESET);

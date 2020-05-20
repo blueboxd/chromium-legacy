@@ -863,7 +863,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         @Override
-        public void performSearchQuery(String query) {}
+        public void performSearchQuery(String query, List<String> searchParams) {}
 
         @Override
         public void setUrlBarFocus(boolean shouldBeFocused, @Nullable String pastedText,

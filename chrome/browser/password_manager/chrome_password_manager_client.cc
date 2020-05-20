@@ -1338,7 +1338,7 @@ void ChromePasswordManagerClient::ShowPasswordGenerationPopup(
   gfx::RectF element_bounds_in_screen_space =
       GetBoundsInScreenSpace(element_bounds_in_top_frame_space);
   password_manager_.SetGenerationElementAndReasonForForm(
-      driver, ui_data.form_data, ui_data.generation_element,
+      driver, ui_data.form_data, ui_data.generation_element_id,
       is_manually_triggered);
 
   popup_controller_ = PasswordGenerationPopupControllerImpl::GetOrCreate(

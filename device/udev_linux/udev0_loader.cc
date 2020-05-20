@@ -27,6 +27,10 @@ const char* Udev0Loader::udev_device_get_devnode(udev_device* udev_device) {
   return lib_loader_->udev_device_get_devnode(udev_device);
 }
 
+const char* Udev0Loader::udev_device_get_devtype(udev_device* udev_device) {
+  return lib_loader_->udev_device_get_devtype(udev_device);
+}
+
 udev_device* Udev0Loader::udev_device_get_parent(udev_device* udev_device) {
   return lib_loader_->udev_device_get_parent(udev_device);
 }

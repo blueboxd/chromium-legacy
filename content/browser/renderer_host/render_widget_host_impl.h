@@ -45,7 +45,6 @@
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/drag_event_source_info.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/render_process_host_observer.h"
@@ -61,6 +60,7 @@
 #include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_context.mojom.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom.h"
@@ -704,7 +704,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void DidProcessFrame(uint32_t frame_token);
 
   // Indicate the frame input handler is now available.
-  void SetFrameInputHandler(mojom::FrameInputHandler*);
+  void SetFrameInputHandler(blink::mojom::FrameInputHandler*);
   void SetWidget(mojo::PendingRemote<mojom::Widget> widget_remote);
 
   viz::mojom::InputTargetClient* input_target_client() {
@@ -715,7 +715,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       mojo::Remote<viz::mojom::InputTargetClient> input_target_client);
 
   // InputRouterImplClient overrides.
-  mojom::WidgetInputHandler* GetWidgetInputHandler() override;
+  blink::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
   void OnImeCompositionRangeChanged(
       const gfx::Range& range,
       const std::vector<gfx::Rect>& character_bounds) override;
@@ -1278,9 +1278,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // at the frame input level; see FrameInputHandler. Note that when the
   // RWHI wraps a WebPagePopup widget it will only have a
   // a |widget_input_handler_|.
-  mojo::AssociatedRemote<mojom::WidgetInputHandler>
+  mojo::AssociatedRemote<blink::mojom::WidgetInputHandler>
       associated_widget_input_handler_;
-  mojo::Remote<mojom::WidgetInputHandler> widget_input_handler_;
+  mojo::Remote<blink::mojom::WidgetInputHandler> widget_input_handler_;
   mojo::Remote<viz::mojom::InputTargetClient> input_target_client_;
 
   base::Optional<uint16_t> screen_orientation_angle_for_testing_;

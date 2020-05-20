@@ -12,10 +12,12 @@
 #include <utility>
 
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/ambient/ambient_mode_state.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_client.h"
+#include "ash/public/cpp/autotest_ambient_api.h"
 #include "ash/public/cpp/autotest_desks_api.h"
 #include "ash/public/cpp/autotest_private_api_utils.h"
 #include "ash/public/cpp/default_frame_header.h"
@@ -4446,6 +4448,55 @@ AutotestPrivateStopSmoothnessTrackingFunction::Run() {
     return RespondNow(Error("Could not compute smoothness."));
 
   return RespondNow(OneArgument(std::make_unique<base::Value>(smoothness)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateWaitForAmbientPhotoAnimationFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateWaitForAmbientPhotoAnimationFunction::
+    AutotestPrivateWaitForAmbientPhotoAnimationFunction() = default;
+
+AutotestPrivateWaitForAmbientPhotoAnimationFunction::
+    ~AutotestPrivateWaitForAmbientPhotoAnimationFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateWaitForAmbientPhotoAnimationFunction::Run() {
+  std::unique_ptr<api::autotest_private::WaitForAmbientPhotoAnimation::Params>
+      params(
+          api::autotest_private::WaitForAmbientPhotoAnimation::Params::Create(
+              *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  // Wait for photo transition animation completed in ambient mode.
+  ash::AutotestAmbientApi().WaitForPhotoTransitionAnimationCompleted(
+      params->photo_refresh_interval, params->num_completions,
+      base::BindOnce(&AutotestPrivateWaitForAmbientPhotoAnimationFunction::
+                         OnPhotoTransitionAnimationCompleted,
+                     this));
+
+  // Set up a timer to finish waiting after |timeout_s|.
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(params->timeout),
+      base::BindOnce(
+          &AutotestPrivateWaitForAmbientPhotoAnimationFunction::Timeout, this));
+
+  return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+void AutotestPrivateWaitForAmbientPhotoAnimationFunction::
+    OnPhotoTransitionAnimationCompleted() {
+  if (did_respond())
+    return;
+
+  Respond(NoArguments());
+}
+
+void AutotestPrivateWaitForAmbientPhotoAnimationFunction::Timeout() {
+  if (did_respond())
+    return;
+
+  Respond(Error("No enough animations completed before time out."));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -38,10 +38,7 @@ ShelfLayoutManager* GetShelfLayoutManager() {
 class DragHandleContextualNudgeTest : public ShelfLayoutManagerTestBase {
  public:
   DragHandleContextualNudgeTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {ash::features::kContextualNudges,
-         ash::features::kHideShelfControlsInTabletMode},
-        {});
+    scoped_feature_list_.InitAndEnableFeature(ash::features::kContextualNudges);
   }
   ~DragHandleContextualNudgeTest() override = default;
 

@@ -36,6 +36,7 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/screen_info.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -500,10 +501,10 @@ class CONTENT_EXPORT RenderWidget
 
   // Widget mojom overrides.
   void SetupWidgetInputHandler(
-      mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
-      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
+      mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) override;
 
-  mojom::WidgetInputHandlerHost* GetInputHandlerHost();
+  blink::mojom::WidgetInputHandlerHost* GetInputHandlerHost();
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 

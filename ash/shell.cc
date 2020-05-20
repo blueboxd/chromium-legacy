@@ -1071,7 +1071,10 @@ void Shell::Init(
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
   assistant_controller_ = std::make_unique<AssistantControllerImpl>();
-  quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
+  if (chromeos::features::IsQuickAnswersEnabled() &&
+      chromeos::features::IsQuickAnswersRichUiEnabled()) {
+    quick_answers_controller_ = std::make_unique<QuickAnswersControllerImpl>();
+  }
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.

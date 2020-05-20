@@ -138,17 +138,30 @@ struct PreprocessedOutput {
   std::string query;
 };
 
-// Structure to describe an quick answer request including selected content and
-// context.
-struct QuickAnswersRequest {
-  // The selected Text.
-  std::string selected_text;
-
+// Structure of quick answers request context, including device properties and
+// surrounding text.
+struct Context {
   // Device specific properties.
   DeviceProperties device_properties;
 
+  std::string surrounding_text;
+};
+
+// Structure to describe an quick answer request including selected content and
+// context.
+struct QuickAnswersRequest {
+  QuickAnswersRequest();
+  QuickAnswersRequest(const QuickAnswersRequest& other);
+  ~QuickAnswersRequest();
+
+  // The selected Text.
+  std::string selected_text;
+
   // Output of processed result.
   PreprocessedOutput preprocessed_output;
+
+  // Context information.
+  Context context;
 
   // TODO(llin): Add context and other targeted objects (e.g: images, links,
   // etc).

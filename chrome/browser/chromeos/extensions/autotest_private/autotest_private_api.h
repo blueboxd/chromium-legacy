@@ -1244,6 +1244,27 @@ class AutotestPrivateStopSmoothnessTrackingFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateWaitForAmbientPhotoAnimationFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateWaitForAmbientPhotoAnimationFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForAmbientPhotoAnimation",
+                             AUTOTESTPRIVATE_WAITFORAMBIENTPHOTOANIMATION)
+
+ private:
+  ~AutotestPrivateWaitForAmbientPhotoAnimationFunction() override;
+  ResponseAction Run() override;
+
+  // Called when photo transition animations completed.
+  void OnPhotoTransitionAnimationCompleted();
+
+  // Called when photo transition animations fail to finish in a certain amount
+  // of time. We will respond with an error.
+  void Timeout();
+
+  base::OneShotTimer timeout_timer_;
+};
+
 template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(

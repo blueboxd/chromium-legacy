@@ -24,8 +24,8 @@ namespace content {
 MockWidgetInputHandler::MockWidgetInputHandler() = default;
 
 MockWidgetInputHandler::MockWidgetInputHandler(
-    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host)
+    mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host)
     : receiver_(this, std::move(receiver)), host_(std::move(host)) {}
 
 MockWidgetInputHandler::~MockWidgetInputHandler() {
@@ -121,9 +121,10 @@ MockWidgetInputHandler::GetAndResetDispatchedMessages() {
 }
 
 void MockWidgetInputHandler::AttachSynchronousCompositor(
-    mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-    mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-    mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+    mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+        control_host,
+    mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
         compositor_request) {}
 
 MockWidgetInputHandler::DispatchedMessage::DispatchedMessage(

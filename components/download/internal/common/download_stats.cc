@@ -28,7 +28,6 @@
 #endif
 
 namespace download {
-
 namespace {
 
 // All possible error codes from the network module. Note that the error codes
@@ -134,6 +133,18 @@ std::string CreateHistogramNameWithSuffix(const std::string& name,
   return name + "." + suffix;
 }
 
+void RecordConnectionType(
+    const std::string& name,
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    DownloadSource download_source) {
+  using ConnectionType = net::NetworkChangeNotifier::ConnectionType;
+  base::UmaHistogramExactLinear(name, connection_type,
+                                ConnectionType::CONNECTION_LAST + 1);
+  base::UmaHistogramExactLinear(
+      CreateHistogramNameWithSuffix(name, download_source), connection_type,
+      ConnectionType::CONNECTION_LAST + 1);
+}
+
 }  // namespace
 
 void RecordDownloadCount(DownloadCountTypes type) {
@@ -150,9 +161,19 @@ void RecordDownloadCountWithSource(DownloadCountTypes type,
   base::UmaHistogramEnumeration(name, type, DOWNLOAD_COUNT_TYPES_LAST_ENTRY);
 }
 
-void RecordDownloadCompleted(int64_t download_len,
-                             bool is_parallelizable,
-                             DownloadSource download_source) {
+void RecordNewDownloadStarted(
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    DownloadSource download_source) {
+  RecordDownloadCountWithSource(NEW_DOWNLOAD_COUNT, download_source);
+  RecordConnectionType("Download.NetworkConnectionType.StartNew",
+                       connection_type, download_source);
+}
+
+void RecordDownloadCompleted(
+    int64_t download_len,
+    bool is_parallelizable,
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    DownloadSource download_source) {
   RecordDownloadCountWithSource(COMPLETED_COUNT, download_source);
   int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
   download_len /= 1024;              // In Kilobytes
@@ -162,6 +183,9 @@ void RecordDownloadCompleted(int64_t download_len,
     UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize.Parallelizable",
                                 download_len, 1, max, 256);
   }
+
+  RecordConnectionType("Download.NetworkConnectionType.Complete",
+                       connection_type, download_source);
 }
 
 void RecordDownloadInterrupted(DownloadInterruptReason reason,

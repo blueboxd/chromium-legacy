@@ -5015,6 +5015,10 @@
 
   "ReportDeviceBluetoothInfo": {},
 
+  "ReportDeviceFanInfo": {},
+
+  "ReportDeviceVpdInfo": {},
+
   "ReportUploadFrequency": {},
 
   "DeviceAllowNewUsers": {},

@@ -40,6 +40,9 @@ message TileInfo {
 
   // A list sub tiles.
   repeated string sub_tile_ids = 7;
+
+  // Additional params for the search query.
+  repeated string search_params = 8;
 }
 
 // A group of tile info for a given locale.

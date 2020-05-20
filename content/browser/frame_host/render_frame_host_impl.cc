@@ -129,7 +129,6 @@
 #include "content/common/content_navigation_policy.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params_mojom_traits.h"
@@ -2004,7 +2003,7 @@ bool RenderFrameHostImpl::SchemeShouldBypassCSP(
   return base::Contains(bypassing_schemes, scheme);
 }
 
-mojom::FrameInputHandler* RenderFrameHostImpl::GetFrameInputHandler() {
+blink::mojom::FrameInputHandler* RenderFrameHostImpl::GetFrameInputHandler() {
   if (!frame_input_handler_)
     return nullptr;
   return frame_input_handler_.get();
@@ -5101,6 +5100,7 @@ void RenderFrameHostImpl::HandleAXEvents(
     dst_update->root_id = src_update.root_id;
     dst_update->node_id_to_clear = src_update.node_id_to_clear;
     dst_update->event_from = src_update.event_from;
+    dst_update->event_intents = src_update.event_intents;
     dst_update->nodes.resize(src_update.nodes.size());
     for (size_t j = 0; j < src_update.nodes.size(); ++j) {
       AXContentNodeDataToAXNodeData(src_update.nodes[j], &dst_update->nodes[j]);

@@ -110,11 +110,13 @@ SpellcheckHunspellDictionary::DictionaryFile::operator=(
 
 SpellcheckHunspellDictionary::SpellcheckHunspellDictionary(
     const std::string& language,
+    const std::string& platform_spellcheck_language,
     content::BrowserContext* browser_context,
     SpellcheckService* spellcheck_service)
     : task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()})),
       language_(language),
+      platform_spellcheck_language_(platform_spellcheck_language),
       use_browser_spellchecker_(false),
       browser_context_(browser_context),
       spellcheck_service_(spellcheck_service),
@@ -129,9 +131,11 @@ SpellcheckHunspellDictionary::~SpellcheckHunspellDictionary() {
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   // Disable the language from platform spellchecker.
-  if (spellcheck::UseBrowserSpellChecker())
+  if (spellcheck::UseBrowserSpellChecker() && HasPlatformSupport()) {
     spellcheck_platform::DisableLanguage(
-        spellcheck_service_->platform_spell_checker(), language_);
+        spellcheck_service_->platform_spell_checker(),
+        GetPlatformSpellcheckLanguage());
+  }
 #endif  // BUILDFLAG(USE_BROWSER_SPELLCHECKER)
 }
 
@@ -140,9 +144,10 @@ void SpellcheckHunspellDictionary::Load() {
 
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
   if (spellcheck::UseBrowserSpellChecker() &&
-      spellcheck_platform::SpellCheckerAvailable()) {
+      spellcheck_platform::SpellCheckerAvailable() && HasPlatformSupport()) {
     spellcheck_platform::PlatformSupportsLanguage(
-        spellcheck_service_->platform_spell_checker(), language_,
+        spellcheck_service_->platform_spell_checker(),
+        GetPlatformSpellcheckLanguage(),
         base::BindOnce(
             &SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete,
             weak_ptr_factory_.GetWeakPtr()));
@@ -175,6 +180,21 @@ const base::File& SpellcheckHunspellDictionary::GetDictionaryFile() const {
 
 const std::string& SpellcheckHunspellDictionary::GetLanguage() const {
   return language_;
+}
+
+const std::string& SpellcheckHunspellDictionary::GetPlatformSpellcheckLanguage()
+    const {
+#if defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+  // Currently the platform spellcheck language is only distinguished for
+  // Windows.
+  return platform_spellcheck_language_;
+#else
+  return language_;
+#endif  // defined(OS_WIN) && BUILDFLAG(USE_BROWSER_SPELLCHECKER)
+}
+
+bool SpellcheckHunspellDictionary::HasPlatformSupport() const {
+  return !GetPlatformSpellcheckLanguage().empty();
 }
 
 bool SpellcheckHunspellDictionary::IsUsingPlatformChecker() const {
@@ -443,9 +463,10 @@ void SpellcheckHunspellDictionary::PlatformSupportsLanguageComplete(
 
   if (platform_supports_language) {
 #if BUILDFLAG(USE_BROWSER_SPELLCHECKER)
-    if (spellcheck::UseBrowserSpellChecker()) {
+    if (spellcheck::UseBrowserSpellChecker() && HasPlatformSupport()) {
       spellcheck_platform::SetLanguage(
-          spellcheck_service_->platform_spell_checker(), language_,
+          spellcheck_service_->platform_spell_checker(),
+          GetPlatformSpellcheckLanguage(),
           base::BindOnce(&SpellcheckHunspellDictionary::
                              SpellCheckPlatformSetLanguageComplete,
                          weak_ptr_factory_.GetWeakPtr()));

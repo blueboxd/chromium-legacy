@@ -95,9 +95,12 @@ class ASH_EXPORT WindowResizer {
   // just under the touch point.
   void AdjustDeltaForTouchResize(int* delta_x, int* delta_y);
 
-  // Returns the new origin of the window. The arguments are the difference
-  // between the current location and the initial location.
-  gfx::Point GetOriginForDrag(int delta_x, int delta_y);
+  // Returns the new origin of the window. |delta_x| and |delta_y| are the
+  // difference between the current location and the initial location.
+  // |event_location| is the current location of the mouse or touch event.
+  gfx::Point GetOriginForDrag(int delta_x,
+                              int delta_y,
+                              const gfx::PointF& event_location);
 
   // Returns the size of the window for the drag.
   gfx::Size GetSizeForDrag(int* delta_x, int* delta_y);

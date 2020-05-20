@@ -19,11 +19,9 @@ PasswordFormGenerationData::PasswordFormGenerationData(
 #if defined(OS_IOS)
 PasswordFormGenerationData::PasswordFormGenerationData(
     FormRendererId form_renderer_id,
-    base::string16 new_password_element,
     FieldRendererId new_password_renderer_id,
     FieldRendererId confirmation_password_renderer_id)
     : form_renderer_id(form_renderer_id),
-      new_password_element(new_password_element),
       new_password_renderer_id(new_password_renderer_id),
       confirmation_password_renderer_id(confirmation_password_renderer_id) {}
 

@@ -15,7 +15,6 @@
 #include "base/profiler/stack_copier_signal.h"
 #include "base/profiler/stack_sampling_profiler_test_util.h"
 #include "base/profiler/thread_delegate_posix.h"
-#include "base/profiler/unwindstack_internal_android.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"

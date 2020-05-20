@@ -445,9 +445,7 @@ mojom("mojo_bindings") {
     "frame_proxy.mojom",
     "frame_sink_provider.mojom",
     "histogram_fetcher.mojom",
-    "input/input_handler.mojom",
     "input/input_injector.mojom",
-    "input/synchronous_compositor.mojom",
     "media/media_log_records.mojom",
     "media/renderer_audio_input_stream_factory.mojom",
     "media/renderer_audio_output_stream_factory.mojom",
@@ -545,11 +543,6 @@ mojom("mojo_bindings") {
         {
           mojom = "content.mojom.ContentSecurityPolicy"
           cpp = "::content::ContentSecurityPolicy"
-        },
-        {
-          mojom = "blink.mojom.Event"
-          cpp = "::std::unique_ptr<::blink::WebCoalescedInputEvent>"
-          move_only = true
         },
         {
           mojom = "content.mojom.FrameReplicationState"

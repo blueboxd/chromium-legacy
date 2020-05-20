@@ -66,7 +66,7 @@ void EstablishGpuChannelToEstablishVizConnection() {
 // This class runs on the IO thread and is destroyed when the renderer
 // side closes the mojo channel.
 class SynchronousCompositorControlHost
-    : public mojom::SynchronousCompositorControlHost {
+    : public blink::mojom::SynchronousCompositorControlHost {
  public:
   SynchronousCompositorControlHost(
       scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
@@ -78,7 +78,8 @@ class SynchronousCompositorControlHost
   }
 
   static void Create(
-      mojo::PendingReceiver<mojom::SynchronousCompositorControlHost> receiver,
+      mojo::PendingReceiver<blink::mojom::SynchronousCompositorControlHost>
+          receiver,
       scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
       int process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -88,7 +89,8 @@ class SynchronousCompositorControlHost
   }
 
   static void CreateOnIOThread(
-      mojo::PendingReceiver<mojom::SynchronousCompositorControlHost> receiver,
+      mojo::PendingReceiver<blink::mojom::SynchronousCompositorControlHost>
+          receiver,
       scoped_refptr<SynchronousCompositorSyncCallBridge> bridge,
       int process_id) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -113,7 +115,7 @@ class SynchronousCompositorControlHost
   }
 
   void BeginFrameResponse(
-      mojom::SyncCompositorCommonRendererParamsPtr params) override {
+      blink::mojom::SyncCompositorCommonRendererParamsPtr params) override {
     if (!bridge_->BeginFrameResponseOnIOThread(std::move(params))) {
       bad_message::ReceivedBadMessage(
           process_id_, bad_message::SYNC_COMPOSITOR_NO_BEGIN_FRAME);
@@ -168,7 +170,8 @@ SynchronousCompositorHost::~SynchronousCompositorHost() {
 }
 
 void SynchronousCompositorHost::InitMojo() {
-  mojo::PendingRemote<mojom::SynchronousCompositorControlHost> host_control;
+  mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+      host_control;
 
   SynchronousCompositorControlHost::Create(
       host_control.InitWithNewPipeAndPassReceiver(), bridge_,
@@ -201,11 +204,11 @@ SynchronousCompositorHost::DemandDrawHwAsync(
     return frame_future;
   }
 
-  mojom::SyncCompositorDemandDrawHwParamsPtr params =
-      mojom::SyncCompositorDemandDrawHwParams::New(
+  blink::mojom::SyncCompositorDemandDrawHwParamsPtr params =
+      blink::mojom::SyncCompositorDemandDrawHwParams::New(
           viewport_size, viewport_rect_for_tile_priority,
           transform_for_tile_priority);
-  mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
+  blink::mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
   if (!bridge_->SetFrameFutureOnUIThread(frame_future)) {
     frame_future->SetFrame(nullptr);
   } else {
@@ -219,15 +222,15 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
     const gfx::Size& viewport_size,
     const gfx::Rect& viewport_rect_for_tile_priority,
     const gfx::Transform& transform_for_tile_priority) {
-  mojom::SyncCompositorDemandDrawHwParamsPtr params =
-      mojom::SyncCompositorDemandDrawHwParams::New(
+  blink::mojom::SyncCompositorDemandDrawHwParamsPtr params =
+      blink::mojom::SyncCompositorDemandDrawHwParams::New(
           viewport_size, viewport_rect_for_tile_priority,
           transform_for_tile_priority);
   uint32_t layer_tree_frame_sink_id;
   uint32_t metadata_version = 0u;
   base::Optional<viz::CompositorFrame> compositor_frame;
   base::Optional<viz::HitTestRegionList> hit_test_region_list;
-  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
+  blink::mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
 
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -290,11 +293,11 @@ bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
   base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
       allow_base_sync_primitives;
-  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
+  blink::mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   base::Optional<viz::CompositorFrameMetadata> metadata;
   ScopedSetSkCanvas set_sk_canvas(canvas);
-  mojom::SyncCompositorDemandDrawSwParamsPtr params =
-      mojom::SyncCompositorDemandDrawSwParams::New();  // Unused.
+  blink::mojom::SyncCompositorDemandDrawSwParamsPtr params =
+      blink::mojom::SyncCompositorDemandDrawSwParams::New();  // Unused.
   uint32_t metadata_version = 0u;
   invalidate_needs_draw_ = false;
   if (!IsReadyForSynchronousCall() ||
@@ -336,8 +339,8 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
   if (use_in_process_zero_copy_software_draw_)
     return DemandDrawSwInProc(canvas);
 
-  mojom::SyncCompositorDemandDrawSwParamsPtr params =
-      mojom::SyncCompositorDemandDrawSwParams::New();
+  blink::mojom::SyncCompositorDemandDrawSwParamsPtr params =
+      blink::mojom::SyncCompositorDemandDrawSwParams::New();
   params->size = gfx::Size(canvas->getBaseLayerSize().width(),
                            canvas->getBaseLayerSize().height());
   SkIRect canvas_clip = canvas->getDeviceClipBounds();
@@ -360,7 +363,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
 
   base::Optional<viz::CompositorFrameMetadata> metadata;
   uint32_t metadata_version = 0u;
-  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
+  blink::mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
@@ -418,7 +421,7 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
   }
 
   bool success = false;
-  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
+  blink::mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
@@ -436,7 +439,8 @@ void SynchronousCompositorHost::SetSoftwareDrawSharedMemoryIfNeeded(
 
 void SynchronousCompositorHost::SendZeroMemory() {
   // No need to check return value.
-  if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
+  if (blink::mojom::SynchronousCompositor* compositor =
+          GetSynchronousCompositor())
     compositor->ZeroSharedMemory();
 }
 
@@ -444,7 +448,8 @@ void SynchronousCompositorHost::ReturnResources(
     uint32_t layer_tree_frame_sink_id,
     const std::vector<viz::ReturnedResource>& resources) {
   DCHECK(!resources.empty());
-  if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
+  if (blink::mojom::SynchronousCompositor* compositor =
+          GetSynchronousCompositor())
     compositor->ReclaimResources(layer_tree_frame_sink_id, resources);
 }
 
@@ -472,7 +477,8 @@ void SynchronousCompositorHost::SetMemoryPolicy(size_t bytes_limit) {
     return;
 
   bytes_limit_ = bytes_limit;
-  if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
+  if (blink::mojom::SynchronousCompositor* compositor =
+          GetSynchronousCompositor())
     compositor->SetMemoryPolicy(bytes_limit_);
 }
 
@@ -481,13 +487,14 @@ void SynchronousCompositorHost::DidChangeRootLayerScrollOffset(
   if (root_scroll_offset_ == root_offset)
     return;
   root_scroll_offset_ = root_offset;
-  if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
+  if (blink::mojom::SynchronousCompositor* compositor =
+          GetSynchronousCompositor())
     compositor->SetScroll(root_scroll_offset_);
 }
 
 void SynchronousCompositorHost::SynchronouslyZoomBy(float zoom_delta,
                                                     const gfx::Point& anchor) {
-  mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
+  blink::mojom::SyncCompositorCommonRendererParamsPtr common_renderer_params;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
     base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope
@@ -535,7 +542,7 @@ void SynchronousCompositorHost::LayerTreeFrameSinkCreated() {
 
   // New LayerTreeFrameSink is not aware of state from Browser side. So need to
   // re-send all browser side state here.
-  mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
+  blink::mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
   DCHECK(compositor);
   compositor->SetMemoryPolicy(bytes_limit_);
 
@@ -544,7 +551,7 @@ void SynchronousCompositorHost::LayerTreeFrameSinkCreated() {
 }
 
 void SynchronousCompositorHost::UpdateState(
-    mojom::SyncCompositorCommonRendererParamsPtr params) {
+    blink::mojom::SyncCompositorCommonRendererParamsPtr params) {
   // Ignore if |renderer_param_version_| is newer than |params.version|. This
   // comparison takes into account when the unsigned int wraps.
   if ((renderer_param_version_ - params->version) < 0x80000000) {
@@ -597,7 +604,7 @@ RenderProcessHost* SynchronousCompositorHost::GetRenderProcessHost() {
   return rwhva_->GetRenderWidgetHost()->GetProcess();
 }
 
-mojom::SynchronousCompositor*
+blink::mojom::SynchronousCompositor*
 SynchronousCompositorHost::GetSynchronousCompositor() {
   if (!sync_compositor_)
     return nullptr;
@@ -652,7 +659,8 @@ bool SynchronousCompositorHost::WantsAnimateOnlyBeginFrames() const {
 }
 
 void SynchronousCompositorHost::SendBeginFramePaused() {
-  if (mojom::SynchronousCompositor* compositor = GetSynchronousCompositor())
+  if (blink::mojom::SynchronousCompositor* compositor =
+          GetSynchronousCompositor())
     compositor->SetBeginFrameSourcePaused(begin_frame_paused_);
 }
 
@@ -663,7 +671,7 @@ void SynchronousCompositorHost::SendBeginFrame(viz::BeginFrameArgs args) {
 
   if (!bridge_->WaitAfterVSyncOnUIThread())
     return;
-  mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
+  blink::mojom::SynchronousCompositor* compositor = GetSynchronousCompositor();
   DCHECK(compositor);
   compositor->BeginFrame(args, timing_details_);
   timing_details_.clear();

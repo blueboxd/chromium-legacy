@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.ntp;
 
+import org.chromium.chrome.browser.query_tiles.QueryTileSection.QueryInfo;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 
 /**
@@ -25,9 +26,9 @@ public interface NewTabPageManager extends SuggestionsUiDelegate {
 
     /**
      * Performs a search query on the current {@link Tab}.
-     * @param query The {@link String} representing the query text.
+     * @param queryInfo Object containing the query text and additional search params.
      */
-    void performSearchQuery(String query);
+    void performSearchQuery(QueryInfo queryInfo);
 
     /**
      * @return whether the {@link NewTabPage} associated with this manager is the current page

@@ -97,7 +97,7 @@ void PasswordGenerationControllerImpl::OnAutomaticGenerationAvailable(
   active_frame_driver_->GetPasswordManager()
       ->SetGenerationElementAndReasonForForm(
           active_frame_driver_.get(), ui_data.form_data,
-          ui_data.generation_element, false /* is_manually_triggered */);
+          ui_data.generation_element_id, false /* is_manually_triggered */);
 
   if (!base::FeatureList::IsEnabled(
           autofill::features::kAutofillKeyboardAccessory)) {

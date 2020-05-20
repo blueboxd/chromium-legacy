@@ -750,10 +750,10 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
-    public void performSearchQuery(String query) {
+    public void performSearchQuery(String query, List<String> searchParams) {
         if (TextUtils.isEmpty(query)) return;
 
-        String queryUrl = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query);
+        String queryUrl = TemplateUrlServiceFactory.get().getUrlForSearchQuery(query, searchParams);
 
         if (!TextUtils.isEmpty(queryUrl)) {
             loadUrl(queryUrl, PageTransition.GENERATED, 0);

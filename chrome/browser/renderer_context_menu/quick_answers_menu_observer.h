@@ -56,6 +56,11 @@ class QuickAnswersMenuObserver
   bool IsRichUiEnabled();
   void SendAssistantQuery(const std::string& query);
   std::string GetDeviceLanguage();
+  void OnTextSurroundingSelectionAvailable(
+      const std::string& selected_text,
+      const base::string16& surrounding_text,
+      uint32_t start_offset,
+      uint32_t end_offset);
 
   // The interface to add a context-menu item and update it.
   RenderViewContextMenuProxy* proxy_;
@@ -70,12 +75,16 @@ class QuickAnswersMenuObserver
   // Query used to retrieve quick answer.
   std::string query_;
 
+  gfx::Rect bounds_in_screen_;
+
   std::unique_ptr<chromeos::quick_answers::QuickAnswer> quick_answer_;
 
   ash::QuickAnswersController* quick_answers_controller_ = nullptr;
 
   // Whether commands other than quick answers is executed.
   bool is_other_command_executed_ = false;
+
+  base::WeakPtrFactory<QuickAnswersMenuObserver> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_RENDERER_CONTEXT_MENU_QUICK_ANSWERS_MENU_OBSERVER_H_

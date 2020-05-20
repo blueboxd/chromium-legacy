@@ -98,7 +98,7 @@ WebInputEvent& GetEventWithType(WebInputEvent::Type type) {
 // of InputRouters.
 class MockInputRouterImplClient : public InputRouterImplClient {
  public:
-  mojom::WidgetInputHandler* GetWidgetInputHandler() override {
+  blink::mojom::WidgetInputHandler* GetWidgetInputHandler() override {
     return &widget_input_handler_;
   }
 
@@ -110,11 +110,12 @@ class MockInputRouterImplClient : public InputRouterImplClient {
 
   void SetMouseCapture(bool capture) override {}
 
-  void RequestMouseLock(bool from_user_gesture,
-                        bool privileged,
-                        bool unadjusted_movement,
-                        mojom::WidgetInputHandlerHost::RequestMouseLockCallback
-                            response) override {}
+  void RequestMouseLock(
+      bool from_user_gesture,
+      bool privileged,
+      bool unadjusted_movement,
+      blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback response)
+      override {}
 
   gfx::Size GetRootWidgetViewportSize() override {
     return gfx::Size(1920, 1080);

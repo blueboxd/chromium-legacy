@@ -41,7 +41,6 @@ class AssistantOptInFlowScreenView {
   DISALLOW_COPY_AND_ASSIGN(AssistantOptInFlowScreenView);
 };
 
-// TODO(updowndota): Refactor to reuse AssistantOptInHandler methods.
 class AssistantOptInFlowScreenHandler
     : public BaseScreenHandler,
       public AssistantOptInFlowScreenView,

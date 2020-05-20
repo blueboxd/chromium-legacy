@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/scoped_observer.h"
+#include "ui/accessibility/ax_event_intent.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_observer.h"
@@ -90,9 +91,13 @@ class AX_EXPORT AXEventGenerator : public AXTreeObserver {
   };
 
   struct EventParams {
-    EventParams(Event event, ax::mojom::EventFrom event_from);
+    EventParams(Event event,
+                ax::mojom::EventFrom event_from,
+                const std::vector<AXEventIntent>& event_intents);
+    ~EventParams();
     Event event;
     ax::mojom::EventFrom event_from;
+    std::vector<AXEventIntent> event_intents;
 
     bool operator==(const EventParams& rhs);
     bool operator<(const EventParams& rhs) const;

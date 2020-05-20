@@ -1794,7 +1794,10 @@ TEST_F(PasswordControllerTest, SavingOnNavigateMainFrame) {
 
   ON_CALL(*store_, GetLogins)
       .WillByDefault(WithArg<1>(InvokeEmptyConsumerWithForms()));
-
+  ExecuteJavaScript(@"__gCrWeb.fill.setUpForUniqueIDs(0);");
+  FormRendererId form_id = FormRendererId(0);
+  FieldRendererId username_id = FieldRendererId(1);
+  FieldRendererId password_id = FieldRendererId(2);
   for (bool has_commited : {false, true}) {
     for (bool is_same_document : {false, true}) {
       for (bool is_renderer_initiated : {false, true}) {
@@ -1802,12 +1805,13 @@ TEST_F(PasswordControllerTest, SavingOnNavigateMainFrame) {
                      << has_commited << " is_same_document=" << is_same_document
                      << " is_renderer_initiated=" << is_renderer_initiated);
         LoadHtml(SysUTF8ToNSString(kHtml));
+
         std::string main_frame_id = web::GetMainWebFrameId(web_state());
 
-        SimulateUserTyping("login_form", FormRendererId(0), "username",
-                           FieldRendererId(1), "user1", main_frame_id);
-        SimulateUserTyping("login_form", FormRendererId(0), "pw",
-                           FieldRendererId(2), "password1", main_frame_id);
+        SimulateUserTyping("login_form", form_id, "username", username_id,
+                           "user1", main_frame_id);
+        SimulateUserTyping("login_form", form_id, "pw", password_id,
+                           "password1", main_frame_id);
 
         bool prompt_should_be_shown =
             has_commited && !is_same_document && is_renderer_initiated;
@@ -1820,7 +1824,9 @@ TEST_F(PasswordControllerTest, SavingOnNavigateMainFrame) {
           EXPECT_CALL(*weak_client_, PromptUserToSaveOrUpdatePasswordPtr)
               .Times(0);
         }
-
+        form_id.value() += 3;
+        username_id.value() += 3;
+        password_id.value() += 3;
         web::FakeNavigationContext context;
         context.SetHasCommitted(has_commited);
         context.SetIsSameDocument(is_same_document);

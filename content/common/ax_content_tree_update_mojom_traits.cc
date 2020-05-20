@@ -22,7 +22,7 @@ bool StructTraits<ax::mojom::AXContentTreeUpdateDataView,
   out->root_id = data.root_id();
   out->event_from = data.event_from();
 
-  return true;
+  return data.ReadEventIntents(&out->event_intents);
 }
 
 }  // namespace mojo

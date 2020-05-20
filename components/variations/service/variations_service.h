@@ -235,8 +235,7 @@ class VariationsService
                          const std::string& country_code,
                          base::Time date_fetched,
                          bool is_delta_compressed,
-                         bool is_gzip_compressed,
-                         bool fetched_insecurely);
+                         bool is_gzip_compressed);
 
   // Create an entropy provider based on low entropy. This is used to create
   // trials for studies that should only depend on low entropy, such as studies

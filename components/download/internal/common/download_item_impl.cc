@@ -56,6 +56,7 @@
 #include "components/download/public/common/download_ukm_helper.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -1551,7 +1552,8 @@ void DownloadItemImpl::Start(
   }
 
   if (state_ == INITIAL_INTERNAL) {
-    RecordDownloadCountWithSource(NEW_DOWNLOAD_COUNT, download_source_);
+    RecordNewDownloadStarted(net::NetworkChangeNotifier::GetConnectionType(),
+                             download_source_);
     if (job_->IsParallelizable()) {
       RecordParallelizableDownloadCount(NEW_DOWNLOAD_COUNT,
                                         IsParallelDownloadEnabled());
@@ -1948,6 +1950,7 @@ void DownloadItemImpl::Completed() {
 
   bool is_parallelizable = job_ && job_->IsParallelizable();
   RecordDownloadCompleted(GetReceivedBytes(), is_parallelizable,
+                          net::NetworkChangeNotifier::GetConnectionType(),
                           download_source_);
   if (!delegate_->IsOffTheRecord()) {
     RecordDownloadCountWithSource(COMPLETED_COUNT_NORMAL_PROFILE,

@@ -2,9 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
 /** Maximum recording index. */
 const MAX_INDEX = 4;
+
+/**
+ * Name of the screen.
+ * @type {string}
+ */
+const VOICE_MATCH_SCREEN_ID = 'VoiceMatchScreen';
 
 /**
  * @fileoverview Polymer element for displaying material design assistant
@@ -36,6 +41,9 @@ Polymer({
    */
   doneActionDelayMs_: 3000,
 
+  /** @private {?assistant.BrowserProxy} */
+  browserProxy_: null,
+
   /**
    * Overrides the default delay for sending voice-match-done action.
    * @param {number} delay The delay to be used in tests.
@@ -52,9 +60,7 @@ Polymer({
   onSkipTap_() {
     this.$['voice-match-lottie'].setPlay(false);
     this.$['already-setup-lottie'].setPlay(false);
-    chrome.send(
-        'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
-        ['skip-pressed']);
+    this.browserProxy_.userActed(VOICE_MATCH_SCREEN_ID, ['skip-pressed']);
   },
 
   /**
@@ -66,9 +72,7 @@ Polymer({
     this.removeClass_('intro');
     this.addClass_('recording');
     this.fire('loading');
-    chrome.send(
-        'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
-        ['record-pressed']);
+    this.browserProxy_.userActed(VOICE_MATCH_SCREEN_ID, ['record-pressed']);
   },
 
   /**
@@ -89,6 +93,11 @@ Polymer({
    */
   removeClass_(className) {
     this.$['voice-match-dialog'].classList.remove(className);
+  },
+
+  /** @override */
+  created() {
+    this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
   },
 
   /**
@@ -154,9 +163,7 @@ Polymer({
     window.setTimeout(function() {
       this.$['voice-match-lottie'].setPlay(false);
       this.$['already-setup-lottie'].setPlay(false);
-      chrome.send(
-          'login.AssistantOptInFlowScreen.VoiceMatchScreen.userActed',
-          ['voice-match-done']);
+      this.browserProxy_.userActed(VOICE_MATCH_SCREEN_ID, ['voice-match-done']);
     }.bind(this), this.doneActionDelayMs_);
   },
 
@@ -173,7 +180,7 @@ Polymer({
       }.bind(this), 100);
     }
 
-    chrome.send('login.AssistantOptInFlowScreen.VoiceMatchScreen.screenShown');
+    this.browserProxy_.screenShown(VOICE_MATCH_SCREEN_ID);
     this.$['voice-match-lottie'].setPlay(true);
     this.$['already-setup-lottie'].setPlay(true);
     this.$['agree-button'].focus();

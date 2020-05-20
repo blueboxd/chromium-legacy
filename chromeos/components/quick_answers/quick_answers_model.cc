@@ -13,5 +13,10 @@ PreprocessedOutput::PreprocessedOutput() = default;
 PreprocessedOutput::PreprocessedOutput(const PreprocessedOutput& other) =
     default;
 PreprocessedOutput::~PreprocessedOutput() = default;
+
+QuickAnswersRequest::QuickAnswersRequest() = default;
+QuickAnswersRequest::QuickAnswersRequest(const QuickAnswersRequest& other) =
+    default;
+QuickAnswersRequest::~QuickAnswersRequest() = default;
 }  // namespace quick_answers
 }  // namespace chromeos

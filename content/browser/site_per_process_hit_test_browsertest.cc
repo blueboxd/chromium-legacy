@@ -27,7 +27,6 @@
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/site_per_process_browsertest.h"
 #include "content/common/frame_messages.h"
-#include "content/common/input/input_handler.mojom-test-utils.h"
 #include "content/common/view_messages.h"
 #include "content/common/widget_messages.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -47,6 +46,7 @@
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_overscroll_observer.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-test-utils.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
@@ -589,7 +589,7 @@ bool ConvertJSONToRect(const std::string& str, gfx::Rect* rect) {
 // use different bindings.
 class SetMouseCaptureInterceptor
     : public base::RefCountedThreadSafe<SetMouseCaptureInterceptor>,
-      public mojom::WidgetInputHandlerHostInterceptorForTesting {
+      public blink::mojom::WidgetInputHandlerHostInterceptorForTesting {
  public:
   SetMouseCaptureInterceptor(RenderWidgetHostImpl* host)
       : msg_received_(false),
@@ -612,8 +612,8 @@ class SetMouseCaptureInterceptor
   }
 
  protected:
-  // mojom::WidgetInputHandlerHostInterceptorForTesting:
-  mojom::WidgetInputHandlerHost* GetForwardingInterface() override {
+  // blink::mojom::WidgetInputHandlerHostInterceptorForTesting:
+  blink::mojom::WidgetInputHandlerHost* GetForwardingInterface() override {
     return impl_;
   }
   void SetMouseCapture(bool capturing) override {
@@ -631,7 +631,7 @@ class SetMouseCaptureInterceptor
     receiver().internal_state()->SwapImplForTesting(impl_);
   }
 
-  mojo::Receiver<mojom::WidgetInputHandlerHost>& receiver() {
+  mojo::Receiver<blink::mojom::WidgetInputHandlerHost>& receiver() {
     return static_cast<InputRouterImpl*>(host_->input_router())
         ->frame_host_receiver_for_testing();
   }
@@ -640,7 +640,7 @@ class SetMouseCaptureInterceptor
   bool msg_received_;
   bool capturing_;
   RenderWidgetHostImpl* host_;
-  mojom::WidgetInputHandlerHost* impl_;
+  blink::mojom::WidgetInputHandlerHost* impl_;
 
   DISALLOW_COPY_AND_ASSIGN(SetMouseCaptureInterceptor);
 };

@@ -62,11 +62,11 @@ LayoutUnit NGFlexLayoutAlgorithm::MainAxisContentExtent(
     // We add border_scrollbar_padding to the fourth parameter because
     // |content_size| needs to be the size of the border box. We've overloaded
     // the term "content".
-    return ComputeBlockSizeForFragment(ConstraintSpace(), Style(),
-                                       border_padding_,
-                                       sum_hypothetical_main_size +
-                                           border_scrollbar_padding_.BlockSum(),
-                                       border_box_size_.inline_size) -
+    return ComputeBlockSizeForFragment(
+               ConstraintSpace(), Style(), border_padding_,
+               sum_hypothetical_main_size.ClampNegativeToZero() +
+                   border_scrollbar_padding_.BlockSum(),
+               border_box_size_.inline_size) -
            border_scrollbar_padding_.BlockSum();
   }
   return content_box_size_.inline_size;

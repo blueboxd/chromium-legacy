@@ -170,7 +170,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void PasswordNoLongerGenerated();
   bool HasGeneratedPassword() const;
   void SetGenerationPopupWasShown(bool is_manual_generation);
-  void SetGenerationElement(const base::string16& generation_element);
+  void SetGenerationElement(autofill::FieldRendererId generation_element);
   bool IsPossibleChangePasswordFormWithoutUsername() const;
   bool IsPasswordUpdate() const;
   base::WeakPtr<PasswordManagerDriver> GetDriver() const;
@@ -186,14 +186,14 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void PresaveGeneratedPassword(PasswordManagerDriver* driver,
                                 const autofill::FormData& form,
                                 const base::string16& generated_password,
-                                const base::string16& generation_element);
+                                autofill::FieldRendererId generation_element);
 
   // Return false and do nothing if |form_identifier| does not correspond to
   // |observed_form_|. Otherwise set a value of the field with
   // |field_identifier| of |observed_form_| to |field_value|. In case if there
   // is a presaved credential this function updates the presaved credential.
-  bool UpdateStateOnUserInput(const base::string16& form_identifier,
-                              const base::string16& field_identifier,
+  bool UpdateStateOnUserInput(autofill::FormRendererId form_id,
+                              autofill::FieldRendererId field_id,
                               const base::string16& field_value);
 
   void SetDriver(const base::WeakPtr<PasswordManagerDriver>& driver);

@@ -17,6 +17,7 @@ void DeepCopyTiles(const Tile& input, Tile* out) {
   out->query_text = input.query_text;
   out->accessibility_text = input.accessibility_text;
   out->image_metadatas = input.image_metadatas;
+  out->search_params = input.search_params;
   out->sub_tiles.clear();
   for (const auto& child : input.sub_tiles) {
     auto entry = std::make_unique<Tile>();
@@ -44,7 +45,8 @@ bool Tile::operator==(const Tile& other) const {
          query_text == other.query_text &&
          accessibility_text == other.accessibility_text &&
          image_metadatas.size() == other.image_metadatas.size() &&
-         sub_tiles.size() == other.sub_tiles.size();
+         sub_tiles.size() == other.sub_tiles.size() &&
+         search_params == other.search_params;
 }
 
 bool Tile::operator!=(const Tile& other) const {

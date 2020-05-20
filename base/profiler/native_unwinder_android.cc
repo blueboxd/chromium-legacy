@@ -10,15 +10,12 @@
 #include <sys/mman.h>
 
 #include "third_party/libunwindstack/src/libunwindstack/include/unwindstack/Elf.h"
-#include "third_party/libunwindstack/src/libunwindstack/include/unwindstack/Maps.h"
-#include "third_party/libunwindstack/src/libunwindstack/include/unwindstack/Memory.h"
 #include "third_party/libunwindstack/src/libunwindstack/include/unwindstack/Regs.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/profiler/module_cache.h"
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/profile_builder.h"
-#include "base/profiler/unwindstack_internal_android.h"
 #include "build/build_config.h"
 
 #if defined(ARCH_CPU_ARM_FAMILY) && defined(ARCH_CPU_32_BITS)
@@ -87,6 +84,23 @@ void CopyToRegisterContext(unwindstack::Regs* regs,
 }
 
 }  // namespace
+
+UnwindStackMemoryAndroid::UnwindStackMemoryAndroid(uintptr_t stack_ptr,
+                                                   uintptr_t stack_top)
+    : stack_ptr_(stack_ptr), stack_top_(stack_top) {
+  DCHECK_LE(stack_ptr_, stack_top_);
+}
+
+UnwindStackMemoryAndroid::~UnwindStackMemoryAndroid() = default;
+
+size_t UnwindStackMemoryAndroid::Read(uint64_t addr, void* dst, size_t size) {
+  if (addr < stack_ptr_)
+    return 0;
+  if (size >= stack_top_ || addr > stack_top_ - size)
+    return 0;
+  memcpy(dst, reinterpret_cast<void*>(addr), size);
+  return size;
+}
 
 // static
 std::unique_ptr<unwindstack::Maps> NativeUnwinderAndroid::CreateMaps() {

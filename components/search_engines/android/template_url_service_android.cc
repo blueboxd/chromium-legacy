@@ -136,7 +136,8 @@ base::android::ScopedJavaLocalRef<jstring>
 TemplateUrlServiceAndroid::GetUrlForSearchQuery(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& jquery) {
+    const JavaParamRef<jstring>& jquery,
+    const JavaParamRef<jobjectArray>& jsearch_params) {
   const TemplateURL* default_provider =
       template_url_service_->GetDefaultSearchProvider();
 
@@ -147,9 +148,17 @@ TemplateUrlServiceAndroid::GetUrlForSearchQuery(
       default_provider->url_ref().SupportsReplacement(
           template_url_service_->search_terms_data()) &&
       !query.empty()) {
+    std::string additional_params;
+    if (jsearch_params) {
+      std::vector<std::string> params;
+      base::android::AppendJavaStringArrayToStringVector(env, jsearch_params,
+                                                         &params);
+      additional_params = base::JoinString(params, "&");
+    }
+    TemplateURLRef::SearchTermsArgs args(query);
+    args.additional_query_params = std::move(additional_params);
     url = default_provider->url_ref().ReplaceSearchTerms(
-        TemplateURLRef::SearchTermsArgs(query),
-        template_url_service_->search_terms_data());
+        args, template_url_service_->search_terms_data());
   }
 
   return base::android::ConvertUTF8ToJavaString(env, url);

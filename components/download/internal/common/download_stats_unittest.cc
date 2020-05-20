@@ -8,8 +8,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace download {
+using ConnectionType = net::NetworkChangeNotifier::ConnectionType;
 
+namespace download {
 namespace {
 
 void VerfiyParallelizableAverageStats(int64_t bytes_downloaded,
@@ -34,6 +35,39 @@ TEST(DownloadStatsTest, ParallelizableAverageStats) {
                                    base::TimeDelta::FromSeconds(10));
   VerfiyParallelizableAverageStats(1024 * 1024 * 1024,
                                    base::TimeDelta::FromSeconds(1));
+}
+
+TEST(DownloadStatsTest, RecordNewDownloadStarted) {
+  base::HistogramTester histogram_tester;
+  RecordNewDownloadStarted(ConnectionType::CONNECTION_WIFI,
+                           DownloadSource::NAVIGATION);
+  histogram_tester.ExpectBucketCount("Download.Counts",
+                                     DownloadCountTypes::NEW_DOWNLOAD_COUNT, 1);
+  histogram_tester.ExpectBucketCount("Download.Counts.Navigation",
+                                     DownloadCountTypes::NEW_DOWNLOAD_COUNT, 1);
+  histogram_tester.ExpectBucketCount("Download.NetworkConnectionType.StartNew",
+                                     ConnectionType::CONNECTION_WIFI, 1);
+  histogram_tester.ExpectBucketCount(
+      "Download.NetworkConnectionType.StartNew.Navigation",
+      ConnectionType::CONNECTION_WIFI, 1);
+}
+
+TEST(DownloadStatsTest, RecordDownloadCompleted) {
+  base::HistogramTester histogram_tester;
+  RecordDownloadCompleted(1, true, ConnectionType::CONNECTION_WIFI,
+                          DownloadSource::NAVIGATION);
+  histogram_tester.ExpectBucketCount("Download.Counts",
+                                     DownloadCountTypes::COMPLETED_COUNT, 1);
+  histogram_tester.ExpectBucketCount("Download.Counts.Navigation",
+                                     DownloadCountTypes::COMPLETED_COUNT, 1);
+  histogram_tester.ExpectBucketCount("Download.DownloadSize", 0, 1);
+  histogram_tester.ExpectBucketCount("Download.DownloadSize.Parallelizable", 0,
+                                     1);
+  histogram_tester.ExpectBucketCount("Download.NetworkConnectionType.Complete",
+                                     ConnectionType::CONNECTION_WIFI, 1);
+  histogram_tester.ExpectBucketCount(
+      "Download.NetworkConnectionType.Complete.Navigation",
+      ConnectionType::CONNECTION_WIFI, 1);
 }
 
 }  // namespace download

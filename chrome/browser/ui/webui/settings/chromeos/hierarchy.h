@@ -19,7 +19,9 @@ namespace settings {
 class OsSettingsSections;
 
 // Tracks the OS settings page hierarchy. Settings is composed of a group of
-// sections containing subpages and/or settings.
+// sections containing subpages and/or settings, and this class provides
+// metadata for where these subpages/settings reside and what localized strings
+// are used to describe them.
 //
 // A subpage can either be a direct child of a section or can be a nested
 // subpage, meaning that its parent is another subpage.
@@ -39,7 +41,11 @@ class Hierarchy {
   virtual ~Hierarchy();
 
   struct SubpageMetadata {
-    explicit SubpageMetadata(mojom::Section section);
+    SubpageMetadata(int name_message_id, mojom::Section section);
+
+    // Message ID corresponding to the localized string used to describe this
+    // subpage.
+    int name_message_id;
 
     // The section in which the subpage appears.
     mojom::Section section;

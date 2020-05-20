@@ -136,6 +136,7 @@
 #include "components/prefs/pref_value_store.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/translate/core/browser/translate_download_manager.h"
@@ -299,6 +300,13 @@
 #if defined(USE_AURA)
 #include "ui/aura/env.h"
 #endif
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "components/spellcheck/browser/pref_names.h"
+#include "components/spellcheck/common/spellcheck_features.h"
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 using content::BrowserThread;
 
@@ -1358,6 +1366,16 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
                                   parsed_command_line());
   if (!profile_)
     return service_manager::RESULT_CODE_NORMAL_EXIT;
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+  // Create the spellcheck service. This will asynchronously retrieve the
+  // Windows platform spellcheck dictionary language tags used to populate the
+  // context menu for editable content.
+  if (spellcheck::UseWinHybridSpellChecker() &&
+      profile_->GetPrefs()->GetBoolean(spellcheck::prefs::kSpellCheckEnable)) {
+    SpellcheckServiceFactory::GetForContext(profile_);
+  }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 #if !defined(OS_ANDROID)
   // The first run sentinel must be created after the process singleton was

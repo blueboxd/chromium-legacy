@@ -9,11 +9,11 @@
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/render_frame_impl.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/platform/input/input_handler_proxy.h"
 #include "third_party/blink/public/platform/input/input_handler_proxy_client.h"
 
@@ -68,11 +68,13 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       blink::scheduler::WebThreadScheduler* main_thread_scheduler,
       bool needs_input_handler);
   void AddAssociatedInterface(
-      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
-      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host);
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
+          receiver,
+      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host);
 
-  void AddInterface(mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
-                    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host);
+  void AddInterface(
+      mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host);
 
   // InputHandlerProxyClient overrides.
   void WillShutdown() override;
@@ -94,17 +96,20 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       const blink::WebGestureEvent& gesture_event,
       const cc::InputHandlerScrollResult& scroll_result);
 
-  void DispatchEvent(std::unique_ptr<blink::WebCoalescedInputEvent> event,
-                     mojom::WidgetInputHandler::DispatchEventCallback callback);
+  void DispatchEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
+      blink::mojom::WidgetInputHandler::DispatchEventCallback callback);
 
   void ProcessTouchAction(cc::TouchAction touch_action);
 
-  mojom::WidgetInputHandlerHost* GetWidgetInputHandlerHost();
+  blink::mojom::WidgetInputHandlerHost* GetWidgetInputHandlerHost();
 
   void AttachSynchronousCompositor(
-      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+      mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+          control_host,
+      mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost>
+          host,
+      mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
           compositor_request);
 
 #if defined(OS_ANDROID)
@@ -153,8 +158,10 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       const base::WeakPtr<cc::InputHandler>& input_handler,
       bool sync_compositing);
   void BindAssociatedChannel(
-      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver);
-  void BindChannel(mojo::PendingReceiver<mojom::WidgetInputHandler> receiver);
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
+          receiver);
+  void BindChannel(
+      mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver);
 
   // This method skips the input handler proxy and sends the event directly to
   // the RenderWidget (main thread). Should only be used by non-frame
@@ -164,7 +171,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // thread if needed.
   void DispatchDirectlyToWidget(
       std::unique_ptr<blink::WebCoalescedInputEvent> event,
-      mojom::WidgetInputHandler::DispatchEventCallback callback);
+      blink::mojom::WidgetInputHandler::DispatchEventCallback callback);
 
   // This method is the callback used by the compositor input handler to
   // communicate back whether the event was successfully handled on the
@@ -174,7 +181,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // on the input handling thread (i.e. if a compositor thread exists, it'll be
   // called from it).
   void DidHandleInputEventSentToCompositor(
-      mojom::WidgetInputHandler::DispatchEventCallback callback,
+      blink::mojom::WidgetInputHandler::DispatchEventCallback callback,
       blink::InputHandlerProxy::EventDisposition event_disposition,
       std::unique_ptr<blink::WebCoalescedInputEvent> event,
       std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
@@ -186,7 +193,7 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
   // called on either thread as non-blocking events sent to the main thread
   // will be ACKed immediately when added to the main thread event queue.
   void DidHandleInputEventSentToMain(
-      mojom::WidgetInputHandler::DispatchEventCallback callback,
+      blink::mojom::WidgetInputHandler::DispatchEventCallback callback,
       blink::mojom::InputEventResultState ack_state,
       const ui::LatencyInfo& latency_info,
       blink::mojom::DidOverscrollParamsPtr overscroll_params,
@@ -213,11 +220,11 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
 
   // The WidgetInputHandlerHost is bound on the compositor task runner
   // but class can be called on the compositor and main thread.
-  mojo::SharedRemote<mojom::WidgetInputHandlerHost> host_;
+  mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost> host_;
 
   // Host that was passed as part of the FrameInputHandler associated
   // channel.
-  mojo::SharedRemote<mojom::WidgetInputHandlerHost> associated_host_;
+  mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost> associated_host_;
 
   // Any thread can access these variables.
   scoped_refptr<MainThreadEventQueue> input_event_queue_;

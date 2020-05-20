@@ -42,11 +42,12 @@ class MockInputRouterClient : public InputRouterClient,
   bool IsWheelScrollInProgress() override;
   bool IsAutoscrollInProgress() override;
   void SetMouseCapture(bool capture) override {}
-  void RequestMouseLock(bool user_gesture,
-                        bool privileged,
-                        bool unadjusted_movement,
-                        mojom::WidgetInputHandlerHost::RequestMouseLockCallback
-                            response) override {}
+  void RequestMouseLock(
+      bool user_gesture,
+      bool privileged,
+      bool unadjusted_movement,
+      blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback response)
+      override {}
   gfx::Size GetRootWidgetViewportSize() override;
   void OnInvalidInputEventSource() override {}
 

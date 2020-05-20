@@ -792,7 +792,8 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpParentalControls);
 
   // My accounts.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kMyAccounts);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE,
+                                     mojom::Subpage::kMyAccounts);
   static constexpr mojom::Setting kMyAccountsSettings[] = {
       mojom::Setting::kAddAccount,
       mojom::Setting::kRemoveAccount,
@@ -802,17 +803,23 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   // Combined browser/OS sync (deprecated). Note that settings are not
   // registered for these subpages since they'll be removed shortly.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kSyncDeprecated);
-  generator->RegisterNestedSubpage(mojom::Subpage::kSyncDeprecatedAdvanced,
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES,
+      mojom::Subpage::kSyncDeprecated);
+  generator->RegisterNestedSubpage(IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE,
+                                   mojom::Subpage::kSyncDeprecatedAdvanced,
                                    mojom::Subpage::kSyncDeprecated);
 
   // OS sync.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kSync);
+  generator->RegisterTopLevelSubpage(IDS_OS_SETTINGS_SYNC_PAGE_TITLE,
+                                     mojom::Subpage::kSync);
   generator->RegisterNestedSetting(mojom::Setting::kSyncOnOff,
                                    mojom::Subpage::kSync);
 
   // Security and sign-in.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kSecurityAndSignIn);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK,
+      mojom::Subpage::kSecurityAndSignIn);
   static constexpr mojom::Setting kSecurityAndSignInSettings[] = {
       mojom::Setting::kLockScreen,
       mojom::Setting::kChangeAuthPin,
@@ -821,8 +828,9 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kSecurityAndSignInSettings, generator);
 
   // Fingerprint.
-  generator->RegisterNestedSubpage(mojom::Subpage::kFingerprint,
-                                   mojom::Subpage::kSecurityAndSignIn);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SUBPAGE_TITLE,
+      mojom::Subpage::kFingerprint, mojom::Subpage::kSecurityAndSignIn);
   static constexpr mojom::Setting kFingerprintSettings[] = {
       mojom::Setting::kAddFingerprint,
       mojom::Setting::kRemoveFingerprint,
@@ -831,7 +839,8 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Manage other people.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kManageOtherPeople);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE,
+                                     mojom::Subpage::kManageOtherPeople);
   static constexpr mojom::Setting kManageOtherPeopleSettings[] = {
       mojom::Setting::kGuestBrowsing,
       mojom::Setting::kShowUsernamesAndPhotosAtSignIn,
@@ -843,7 +852,8 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kManageOtherPeopleSettings, generator);
 
   // Kerberos.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kKerberos);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE,
+                                     mojom::Subpage::kKerberos);
   static constexpr mojom::Setting kKerberosSettings[] = {
       mojom::Setting::kAddKerberosTicket,
       mojom::Setting::kRemoveKerberosTicket,

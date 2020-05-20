@@ -25,6 +25,7 @@ namespace ash {
 class AmbientBackendController;
 class AmbientContainerView;
 class AmbientPhotoController;
+class AmbientViewDelegateObserver;
 
 // Class to handle all ambient mode functionalities.
 class ASH_EXPORT AmbientController : public views::WidgetObserver,
@@ -55,6 +56,9 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
 
   void RequestAccessToken(
       AmbientAccessTokenController::AccessTokenCallback callback);
+
+  void AddAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
+  void RemoveAmbientViewDelegateObserver(AmbientViewDelegateObserver* observer);
 
   AmbientBackendModel* ambient_backend_model();
 

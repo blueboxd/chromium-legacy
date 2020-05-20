@@ -98,9 +98,11 @@ group("telemetry_chrome_test_without_chrome") {
   testonly = true
 
   data = [
-    "//tools/perf/core/",  # chrome_telemetry_build/ depends on core/
-    "//tools/perf/chrome_telemetry_build/",
     "//components/crash/content/tools/generate_breakpad_symbols.py",
+    "//testing/scripts/common.py",
+    "//testing/xvfb.py",
+    "//tools/perf/chrome_telemetry_build/",
+    "//tools/perf/core/",  # chrome_telemetry_build/ depends on core/
   ]
   data_deps = [
     "//third_party/catapult:telemetry_chrome_test_support",

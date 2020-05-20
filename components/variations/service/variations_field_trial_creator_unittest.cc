@@ -487,7 +487,8 @@ TEST_F(FieldTrialCreatorTest, SetupFieldTrials_LoadsCountryOnFirstRun) {
   // the interaction between these two classes is what's being tested.
   auto seed_store = std::make_unique<VariationsSeedStore>(
       &prefs_, std::move(initial_seed),
-      /*on_initial_seed_stored=*/base::DoNothing());
+      /*on_initial_seed_stored=*/base::DoNothing(),
+      /*signature_verification_enabled=*/false);
   VariationsFieldTrialCreator field_trial_creator(
       &prefs_, &variations_service_client, std::move(seed_store),
       UIStringOverrider());

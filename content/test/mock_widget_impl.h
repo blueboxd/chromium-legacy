@@ -18,8 +18,8 @@ class MockWidgetImpl : public mojom::Widget {
   ~MockWidgetImpl() override;
 
   void SetupWidgetInputHandler(
-      mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
-      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) override;
+      mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) override;
 
   MockWidgetInputHandler* input_handler() { return input_handler_.get(); }
 

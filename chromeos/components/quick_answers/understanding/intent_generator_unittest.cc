@@ -99,7 +99,7 @@ TEST_F(IntentGeneratorTest, TranslationIntent) {
 
   QuickAnswersRequest request;
   request.selected_text = "quick answers";
-  request.device_properties.language = "es";
+  request.context.device_properties.language = "es";
   intent_generator_->GenerateIntent(request);
 
   task_environment_.RunUntilIdle();
@@ -113,7 +113,7 @@ TEST_F(IntentGeneratorTest, TranslationIntentSameLanguage) {
 
   QuickAnswersRequest request;
   request.selected_text = "quick answers";
-  request.device_properties.language = "en";
+  request.context.device_properties.language = "en";
   intent_generator_->GenerateIntent(request);
 
   task_environment_.RunUntilIdle();
@@ -129,7 +129,7 @@ TEST_F(IntentGeneratorTest, TranslationIntentTextLengthAboveThreshold) {
   request.selected_text =
       "Search the world's information, including webpages, images, videos and "
       "more.";
-  request.device_properties.language = "es";
+  request.context.device_properties.language = "es";
   intent_generator_->GenerateIntent(request);
 
   task_environment_.RunUntilIdle();

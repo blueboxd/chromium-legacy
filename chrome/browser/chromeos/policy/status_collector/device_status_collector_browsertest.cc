@@ -3019,7 +3019,11 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceStorageStatus, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceFanInfo, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceBluetoothInfo, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceVpdInfo, false);
   GetStatus();
   ASSERT_EQ(device_status_.cpu_info_size(), 0);
   EXPECT_FALSE(device_status_.has_power_status());
@@ -3045,7 +3049,11 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceTimezoneInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceFanInfo, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceBluetoothInfo, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceVpdInfo, true);
   GetStatus();
 
   // Check that the CPU temperature samples are stored correctly.

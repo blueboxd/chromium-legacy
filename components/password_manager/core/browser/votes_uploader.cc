@@ -523,7 +523,7 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
   DCHECK(form_structure);
   DCHECK(generation_popup_was_shown_);
 
-  if (generation_element_.empty())
+  if (!generation_element_)
     return;
 
   AutofillUploadContents::Field::PasswordGenerationType type =
@@ -551,7 +551,7 @@ void VotesUploader::AddGeneratedVote(FormStructure* form_structure) {
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     AutofillField* field = form_structure->field(i);
-    if (field->name == generation_element_) {
+    if (field->unique_renderer_id == generation_element_) {
       field->set_generation_type(type);
       if (has_generated_password_) {
         field->set_generated_password_changed(generated_password_changed_);

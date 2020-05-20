@@ -183,7 +183,7 @@ WebUILoginView::~WebUILoginView() {
   ChromeKeyboardControllerClient::Get()->RemoveObserver(this);
 
   // Clear any delegates we have set on the WebView.
-  WebContents* web_contents = web_view()->GetWebContents();
+  WebContents* web_contents = web_view_->GetWebContents();
   WebContentsModalDialogManager::FromWebContents(web_contents)
       ->SetDelegate(nullptr);
   web_contents->SetDelegate(nullptr);
@@ -226,17 +226,16 @@ void WebUILoginView::InitializeWebView(views::WebView* web_view,
 }
 
 void WebUILoginView::Init() {
-  Profile* signin_profile = ProfileHelper::GetSigninProfile();
-  if (!webui_login_) {
-    webui_login_ = std::make_unique<views::WebView>(signin_profile);
-    webui_login_->set_owned_by_client();
-  }
+  // Init() should only be called once.
+  DCHECK(!web_view_);
+  auto web_view =
+      std::make_unique<views::WebView>(ProfileHelper::GetSigninProfile());
+  WebContents* web_contents = web_view->GetWebContents();
 
-  WebContents* web_contents = web_view()->GetWebContents();
-  InitializeWebView(web_view(), settings_.web_view_title);
+  InitializeWebView(web_view.get(), settings_.web_view_title);
+  web_view->set_allow_accelerators(true);
 
-  web_view()->set_allow_accelerators(true);
-  AddChildView(web_view());
+  web_view_ = AddChildView(std::move(web_view));
 
   WebContentsModalDialogManager::FromWebContents(web_contents)
       ->SetDelegate(this);
@@ -248,7 +247,7 @@ const char* WebUILoginView::GetClassName() const {
 }
 
 void WebUILoginView::RequestFocus() {
-  web_view()->RequestFocus();
+  web_view_->RequestFocus();
 }
 
 web_modal::WebContentsModalDialogHost*
@@ -286,7 +285,7 @@ bool WebUILoginView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   if (entry == accel_map_.end())
     return false;
 
-  if (!web_view())
+  if (!web_view_)
     return true;
 
   content::WebUI* web_ui = GetWebUI();
@@ -304,16 +303,16 @@ gfx::NativeWindow WebUILoginView::GetNativeWindow() const {
 }
 
 void WebUILoginView::LoadURL(const GURL& url) {
-  web_view()->LoadInitialURL(url);
-  web_view()->RequestFocus();
+  web_view_->LoadInitialURL(url);
+  web_view_->RequestFocus();
 }
 
 content::WebUI* WebUILoginView::GetWebUI() {
-  return web_view()->web_contents()->GetWebUI();
+  return web_view_->web_contents()->GetWebUI();
 }
 
 content::WebContents* WebUILoginView::GetWebContents() {
-  return web_view()->web_contents();
+  return web_view_->web_contents();
 }
 
 OobeUI* WebUILoginView::GetOobeUI() {
@@ -341,8 +340,8 @@ void WebUILoginView::SetUIEnabled(bool enabled) {
 // WebUILoginView protected: ---------------------------------------------------
 
 void WebUILoginView::Layout() {
-  DCHECK(web_view());
-  web_view()->SetBoundsRect(bounds());
+  DCHECK(web_view_);
+  web_view_->SetBoundsRect(bounds());
 
   for (auto& observer : observer_list_)
     observer.OnPositionRequiresUpdate();
@@ -355,9 +354,9 @@ void WebUILoginView::ChildPreferredSizeChanged(View* child) {
 
 void WebUILoginView::AboutToRequestFocusFromTabTraversal(bool reverse) {
   // Return the focus to the web contents.
-  web_view()->web_contents()->FocusThroughTabTraversal(reverse);
+  web_view_->web_contents()->FocusThroughTabTraversal(reverse);
   GetWidget()->Activate();
-  web_view()->web_contents()->Focus();
+  web_view_->web_contents()->Focus();
 
   content::WebUI* web_ui = GetWebUI();
   if (web_ui)
@@ -390,10 +389,6 @@ void WebUILoginView::Observe(int type,
     default:
       NOTREACHED() << "Unexpected notification " << type;
   }
-}
-
-views::WebView* WebUILoginView::web_view() {
-  return webui_login_.get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

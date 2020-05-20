@@ -615,7 +615,7 @@ Polymer({
      */
     const actionButtons = {
       FIND: {
-        label: this.i18n('chromeCleanupFindButtonLable'),
+        label: this.i18n('chromeCleanupFindButtonLabel'),
         doAction: this.startScanning_.bind(this),
       },
 

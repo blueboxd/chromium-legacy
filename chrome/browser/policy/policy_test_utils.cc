@@ -65,6 +65,39 @@ void PolicyTest::SetUp() {
   InProcessBrowserTest::SetUp();
 }
 
+void PolicyTest::CheckURLIsBlockedInWebContents(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  EXPECT_EQ(url, web_contents->GetURL());
+
+  base::string16 blocked_page_title;
+  if (url.has_host()) {
+    blocked_page_title = base::UTF8ToUTF16(url.host());
+  } else {
+    // Local file paths show the full URL.
+    blocked_page_title = base::UTF8ToUTF16(url.spec());
+  }
+  EXPECT_EQ(blocked_page_title, web_contents->GetTitle());
+
+  // Verify that the expected error page is being displayed.
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "var textContent = document.body.textContent;"
+      "var hasError = textContent.indexOf('ERR_BLOCKED_BY_ADMINISTRATOR') >= 0;"
+      "domAutomationController.send(hasError);",
+      &result));
+  EXPECT_TRUE(result);
+}
+
+void PolicyTest::CheckURLIsBlocked(Browser* browser, const std::string& spec) {
+  GURL url(spec);
+  ui_test_utils::NavigateToURL(browser, url);
+  content::WebContents* contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  PolicyTest::CheckURLIsBlockedInWebContents(contents, url);
+}
+
 void PolicyTest::SetUpInProcessBrowserTestFixture() {
   base::CommandLine::ForCurrentProcess()->AppendSwitch("noerrdialogs");
   EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -350,6 +383,14 @@ void PolicyTest::SendInterstitialCommand(
   helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting()
       ->CommandReceived(base::NumberToString(command));
   return;
+}
+
+void PolicyTest::FlushBlacklistPolicy() {
+  // Updates of the URLBlacklist are done on IO, after building the blacklist
+  // on the blocking pool, which is initiated from IO.
+  content::RunAllPendingInMessageLoop(BrowserThread::IO);
+  content::RunAllTasksUntilIdle();
+  content::RunAllPendingInMessageLoop(BrowserThread::IO);
 }
 
 }  // namespace policy

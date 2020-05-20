@@ -836,7 +836,8 @@ int DeviceSection::GetSectionNameMessageId() const {
 
 void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Pointers.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kPointers);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE,
+                                     mojom::Subpage::kPointers);
   static constexpr mojom::Setting kPointersSettings[] = {
       mojom::Setting::kTouchpadTapToClick,
       mojom::Setting::kTouchpadTapDragging,
@@ -854,7 +855,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Keyboard.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kKeyboard);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_KEYBOARD_TITLE,
+                                     mojom::Subpage::kKeyboard);
   static constexpr mojom::Setting kKeyboardSettings[] = {
       mojom::Setting::kKeyboardFunctionKeys,
       mojom::Setting::kKeyboardAutoRepeat,
@@ -864,7 +866,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Stylus.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kStylus);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_STYLUS_TITLE,
+                                     mojom::Subpage::kStylus);
   static constexpr mojom::Setting kStylusSettings[] = {
       mojom::Setting::kStylusToolsInShelf,
       mojom::Setting::kStylusNoteTakingApp,
@@ -875,7 +878,8 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Display.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kDisplay);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_DISPLAY_TITLE,
+                                     mojom::Subpage::kDisplay);
   static constexpr mojom::Setting kDisplaySettings[] = {
       mojom::Setting::kDisplaySize,        mojom::Setting::kNightLight,
       mojom::Setting::kDisplayOrientation, mojom::Setting::kDisplayArrangement,
@@ -885,14 +889,18 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Storage.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kStorage);
-  generator->RegisterNestedSubpage(mojom::Subpage::kExternalStorage,
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_STORAGE_TITLE,
+                                     mojom::Subpage::kStorage);
+  generator->RegisterNestedSubpage(IDS_SETTINGS_STORAGE_EXTERNAL,
+                                   mojom::Subpage::kExternalStorage,
                                    mojom::Subpage::kStorage);
-  generator->RegisterNestedSubpage(mojom::Subpage::kDlc,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_DLC_SUBPAGE_TITLE,
+                                   mojom::Subpage::kDlc,
                                    mojom::Subpage::kStorage);
 
   // Power.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kPower);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_POWER_TITLE,
+                                     mojom::Subpage::kPower);
   static constexpr mojom::Setting kPowerSettings[] = {
       mojom::Setting::kPowerIdleBehavior,
       mojom::Setting::kPowerSource,

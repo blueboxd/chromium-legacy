@@ -206,12 +206,14 @@ void PersonalizationSection::RegisterHierarchy(
   generator->RegisterTopLevelSetting(mojom::Setting::kOpenWallpaper);
 
   // Change picture.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kChangePicture);
+  generator->RegisterTopLevelSubpage(IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE,
+                                     mojom::Subpage::kChangePicture);
   generator->RegisterNestedSetting(mojom::Setting::kChangeDeviceAccountImage,
                                    mojom::Subpage::kChangePicture);
 
   // Ambient mode.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kAmbientMode);
+  generator->RegisterTopLevelSubpage(IDS_OS_SETTINGS_AMBIENT_MODE_TITLE,
+                                     mojom::Subpage::kAmbientMode);
   static constexpr mojom::Setting kAmbientModeSettings[] = {
       mojom::Setting::kAmbientModeOnOff,
       mojom::Setting::kAmbientModeSource,

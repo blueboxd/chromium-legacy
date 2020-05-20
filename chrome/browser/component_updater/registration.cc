@@ -47,7 +47,6 @@
 #if !defined(OS_ANDROID)
 #include "chrome/browser/component_updater/intervention_policy_database_component_installer.h"
 #include "chrome/browser/component_updater/soda_component_installer.h"
-#include "chrome/browser/enterprise/connectors/service_providers.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #endif
 
@@ -193,10 +192,6 @@ void RegisterComponentsForUpdate(bool is_off_the_record_profile,
 #if defined(OS_CHROMEOS)
   RegisterSmartDimComponent(cus);
 #endif  // !defined(OS_CHROMEOS)
-
-#if !defined(OS_ANDROID)
-  enterprise_connectors::RegisterServiceProvidersComponent(cus);
-#endif
 }
 
 }  // namespace component_updater

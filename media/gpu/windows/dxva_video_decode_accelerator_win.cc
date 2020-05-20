@@ -1512,17 +1512,15 @@ bool DXVAVideoDecodeAccelerator::InitDecoder(VideoCodecProfile profile) {
     CHECK(create_dxgi_device_manager_);
     if (media_log_)
       MEDIA_LOG(INFO, media_log_) << "Using D3D11 device for DXVA";
-    RETURN_AND_NOTIFY_ON_FAILURE(CreateDX11DevManager(),
-                                 "Failed to initialize DX11 device and manager",
-                                 PLATFORM_FAILURE, false);
+    RETURN_ON_FAILURE(CreateDX11DevManager(),
+                      "Failed to initialize DX11 device and manager", false);
     device_manager_to_use =
         reinterpret_cast<ULONG_PTR>(d3d11_device_manager_.Get());
   } else {
     if (media_log_)
       MEDIA_LOG(INFO, media_log_) << "Using D3D9 device for DXVA";
-    RETURN_AND_NOTIFY_ON_FAILURE(CreateD3DDevManager(),
-                                 "Failed to initialize D3D device and manager",
-                                 PLATFORM_FAILURE, false);
+    RETURN_ON_FAILURE(CreateD3DDevManager(),
+                      "Failed to initialize D3D device and manager", false);
     device_manager_to_use = reinterpret_cast<ULONG_PTR>(device_manager_.Get());
   }
 

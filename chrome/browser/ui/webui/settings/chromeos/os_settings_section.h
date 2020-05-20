@@ -57,10 +57,12 @@ class OsSettingsSection {
     virtual ~HierarchyGenerator() = default;
 
     // Registers a subpage whose parent is this section.
-    virtual void RegisterTopLevelSubpage(mojom::Subpage subpage) = 0;
+    virtual void RegisterTopLevelSubpage(int name_message_id,
+                                         mojom::Subpage subpage) = 0;
 
     // Registers a subpage whose paernt is another subpage in this section.
-    virtual void RegisterNestedSubpage(mojom::Subpage subpage,
+    virtual void RegisterNestedSubpage(int name_message_id,
+                                       mojom::Subpage subpage,
                                        mojom::Subpage parent_subpage) = 0;
 
     // Registers a setting embedded directly in the section (i.e., not within a

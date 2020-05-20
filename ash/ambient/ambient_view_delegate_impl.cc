@@ -17,12 +17,27 @@ AmbientViewDelegateImpl::AmbientViewDelegateImpl(
 
 AmbientViewDelegateImpl::~AmbientViewDelegateImpl() = default;
 
+void AmbientViewDelegateImpl::AddObserver(
+    AmbientViewDelegateObserver* observer) {
+  view_delegate_observers_.AddObserver(observer);
+}
+
+void AmbientViewDelegateImpl::RemoveObserver(
+    AmbientViewDelegateObserver* observer) {
+  view_delegate_observers_.RemoveObserver(observer);
+}
+
 AmbientBackendModel* AmbientViewDelegateImpl::GetAmbientBackendModel() {
   return ambient_controller_->ambient_backend_model();
 }
 
 void AmbientViewDelegateImpl::OnBackgroundPhotoEvents() {
   ambient_controller_->OnBackgroundPhotoEvents();
+}
+
+void AmbientViewDelegateImpl::OnPhotoTransitionAnimationCompleted() {
+  for (auto& observer : view_delegate_observers_)
+    observer.OnPhotoTransitionAnimationCompleted();
 }
 
 }  // namespace ash

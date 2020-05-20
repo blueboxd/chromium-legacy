@@ -79,7 +79,8 @@ MockRenderWidgetHost* MockRenderWidgetHost::Create(
                                   std::move(widget_impl), std::move(widget));
 }
 
-mojom::WidgetInputHandler* MockRenderWidgetHost::GetWidgetInputHandler() {
+blink::mojom::WidgetInputHandler*
+MockRenderWidgetHost::GetWidgetInputHandler() {
   return &mock_widget_input_handler_;
 }
 

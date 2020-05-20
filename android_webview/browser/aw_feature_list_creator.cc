@@ -165,7 +165,8 @@ void AwFeatureListCreator::SetUpFieldTrials() {
   client_ = std::make_unique<AwVariationsServiceClient>();
   auto seed_store = std::make_unique<variations::VariationsSeedStore>(
       local_state_.get(), /*initial_seed=*/std::move(seed),
-      /*on_initial_seed_stored=*/base::DoNothing());
+      /*on_initial_seed_stored=*/base::DoNothing(),
+      /*signature_verification_enabled=*/true);
 
   // We set the seed fetch time to when the service downloaded the seed rather
   // than base::Time::Now() because we want to compute seed freshness based on

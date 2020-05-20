@@ -669,8 +669,8 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
   base::string16 username = form_data.fields[0].value;
   base::string16 generated_password =
       form_data.fields[1].value + ASCIIToUTF16("1");
-  const base::string16 username_element = form_data.fields[0].name;
-  const base::string16 generation_element = form_data.fields[1].name;
+  FieldRendererId username_element = form_data.fields[0].unique_renderer_id;
+  FieldRendererId generation_element = form_data.fields[1].unique_renderer_id;
 
   // A form is found by PasswordManager.
   EXPECT_CALL(*store_, GetLogins(_, _))
@@ -695,7 +695,7 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
                            FormHasUniqueKey(presaved_form)))
       .WillOnce(SaveArg<0>(&presaved_form));
 
-  manager()->UpdateStateOnUserInput(&driver_, form_data.name,
+  manager()->UpdateStateOnUserInput(&driver_, form_data.unique_renderer_id,
                                     generation_element, generated_password);
   Mock::VerifyAndClearExpectations(store_.get());
 
@@ -707,8 +707,8 @@ TEST_F(PasswordManagerTest, EditingGeneratedPasswordOnIOS) {
                   FormUsernamePasswordAre(username, generated_password),
                   FormHasUniqueKey(presaved_form)));
 
-  manager()->UpdateStateOnUserInput(&driver_, form_data.name, username_element,
-                                    username);
+  manager()->UpdateStateOnUserInput(&driver_, form_data.unique_renderer_id,
+                                    username_element, username);
 }
 
 TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
@@ -719,7 +719,7 @@ TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
   const base::string16 username = form_data.fields[0].value;
   base::string16 generated_password =
       form_data.fields[1].value + ASCIIToUTF16("1");
-  const base::string16 generation_element = form_data.fields[1].name;
+  FieldRendererId generation_element = form_data.fields[1].unique_renderer_id;
 
   // A form is found by PasswordManager.
   EXPECT_CALL(*store_, GetLogins(_, _))
@@ -734,7 +734,7 @@ TEST_F(PasswordManagerTest, SavingGeneratedPasswordOnIOS) {
 
   EXPECT_CALL(*store_, UpdateLoginWithPrimaryKey(_, _));
   // Test when the user is changing the generated password.
-  manager()->UpdateStateOnUserInput(&driver_, form_data.name,
+  manager()->UpdateStateOnUserInput(&driver_, form_data.unique_renderer_id,
                                     generation_element, generated_password);
 
   // The user is submitting the form.
@@ -760,7 +760,7 @@ TEST_F(PasswordManagerTest, PasswordNoLongerGeneratedOnIOS) {
 
   FormData form_data = MakeSimpleFormData();
   const base::string16 generated_password = form_data.fields[1].value;
-  const base::string16 generation_element = form_data.fields[1].name;
+  FieldRendererId generation_element = form_data.fields[1].unique_renderer_id;
 
   // A form is found by PasswordManager.
   EXPECT_CALL(*store_, GetLogins(_, _))
@@ -782,7 +782,7 @@ TEST_F(PasswordManagerTest, ShowHideManualFallbackOnIOS) {
   ON_CALL(client_, IsSavingAndFillingEnabled(_)).WillByDefault(Return(true));
 
   FormData form_data = MakeSimpleFormData();
-  const base::string16 password_element = form_data.fields[1].name;
+  FieldRendererId password_element = form_data.fields[1].unique_renderer_id;
 
   // A form is found by PasswordManager.
   EXPECT_CALL(*store_, GetLogins(_, _))
@@ -795,8 +795,8 @@ TEST_F(PasswordManagerTest, ShowHideManualFallbackOnIOS) {
   EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, false))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
   base::string16 typed_password = ASCIIToUTF16("password");
-  manager()->UpdateStateOnUserInput(&driver_, form_data.name, password_element,
-                                    typed_password);
+  manager()->UpdateStateOnUserInput(&driver_, form_data.unique_renderer_id,
+                                    password_element, typed_password);
   Mock::VerifyAndClearExpectations(&client_);
 
   ASSERT_TRUE(form_manager_to_save);
@@ -806,8 +806,8 @@ TEST_F(PasswordManagerTest, ShowHideManualFallbackOnIOS) {
   // Check that the saving manual is hidden when the user cleared the password
   // field value.
   EXPECT_CALL(client_, HideManualFallbackForSaving());
-  manager()->UpdateStateOnUserInput(&driver_, form_data.name, password_element,
-                                    base::string16());
+  manager()->UpdateStateOnUserInput(&driver_, form_data.unique_renderer_id,
+                                    password_element, base::string16());
 }
 #endif  // defined(OS_IOS)
 
@@ -2192,8 +2192,9 @@ TEST_F(PasswordManagerTest, SetGenerationElementAndReasonForForm) {
   EXPECT_CALL(*store_, GetLogins(PasswordStore::FormDigest(form), _));
   manager()->OnPasswordFormsParsed(&driver_, {form.form_data});
 
-  manager()->SetGenerationElementAndReasonForForm(&driver_, form.form_data,
-                                                  ASCIIToUTF16("psw"), false);
+  manager()->SetGenerationElementAndReasonForForm(
+      &driver_, form.form_data, form.form_data.fields[1].unique_renderer_id,
+      false);
   EXPECT_CALL(*store_, AddLogin(_));
   manager()->OnPresaveGeneratedPassword(&driver_, form.form_data,
                                         form.password_value);

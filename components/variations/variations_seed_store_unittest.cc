@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
@@ -51,15 +52,16 @@ constexpr char kIdenticalToSafeSeedSentinel[] = "safe_seed_content";
 class TestVariationsSeedStore : public VariationsSeedStore {
  public:
   explicit TestVariationsSeedStore(PrefService* local_state)
-      : VariationsSeedStore(local_state) {}
-  ~TestVariationsSeedStore() override {}
+      : VariationsSeedStore(local_state,
+                            nullptr,
+                            base::DoNothing(),
+                            /*signature_verification_enabled=*/false) {}
+  ~TestVariationsSeedStore() override = default;
 
   bool StoreSeedForTesting(const std::string& seed_data) {
     return StoreSeedData(seed_data, std::string(), std::string(),
-                         base::Time::Now(), false, false, false, nullptr);
+                         base::Time::Now(), false, false, nullptr);
   }
-
-  bool SignatureVerificationEnabled() override { return false; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestVariationsSeedStore);
@@ -72,9 +74,7 @@ class SignatureVerifyingVariationsSeedStore : public VariationsSeedStore {
  public:
   explicit SignatureVerifyingVariationsSeedStore(PrefService* local_state)
       : VariationsSeedStore(local_state) {}
-  ~SignatureVerifyingVariationsSeedStore() override {}
-
-  bool SignatureVerificationEnabled() override { return true; }
+  ~SignatureVerifyingVariationsSeedStore() override = default;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignatureVerifyingVariationsSeedStore);
@@ -348,7 +348,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_ParsedSeed) {
   VariationsSeed parsed_seed;
   EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(),
                                        std::string(), base::Time::Now(), false,
-                                       false, false, &parsed_seed));
+                                       false, &parsed_seed));
   EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
 }
 
@@ -360,13 +360,13 @@ TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
   // Test with a valid header value.
   std::string seed = SerializeSeed(CreateTestSeed());
   EXPECT_TRUE(seed_store.StoreSeedData(seed, std::string(), "test_country",
-                                       base::Time::Now(), false, false, false,
+                                       base::Time::Now(), false, false,
                                        nullptr));
   EXPECT_EQ("test_country", prefs.GetString(prefs::kVariationsCountry));
 
   // Test with no country code specified - which should preserve the old value.
   EXPECT_TRUE(seed_store.StoreSeedData(seed, std::string(), std::string(),
-                                       base::Time::Now(), false, false, false,
+                                       base::Time::Now(), false, false,
                                        nullptr));
   EXPECT_EQ("test_country", prefs.GetString(prefs::kVariationsCountry));
 }
@@ -384,7 +384,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_GzippedSeed) {
   VariationsSeed parsed_seed;
   EXPECT_TRUE(seed_store.StoreSeedData(compressed_seed, std::string(),
                                        std::string(), base::Time::Now(), false,
-                                       true, false, &parsed_seed));
+                                       true, &parsed_seed));
   EXPECT_EQ(serialized_seed, SerializeSeed(parsed_seed));
 }
 
@@ -920,7 +920,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_GzippedEmptySeed) {
   VariationsSeed parsed_seed;
   EXPECT_FALSE(seed_store.StoreSeedData(compressed_seed, std::string(),
                                         std::string(), base::Time::Now(), false,
-                                        true, false, &parsed_seed));
+                                        true, &parsed_seed));
 }
 
 TEST(VariationsSeedStoreTest, VerifySeedSignature) {

@@ -29,14 +29,18 @@ class VariationsSeed;
 // seed from Local State.
 class VariationsSeedStore {
  public:
+  // Standard constructor. Enables signature verification.
   explicit VariationsSeedStore(PrefService* local_state);
   // |initial_seed| may be null. If not null, then it will be stored in this
   // seed store. This is used by Android Chrome to supply the first run seed,
   // and by Android WebView to supply the seed on every run.
   // |on_initial_seed_stored| will be called the first time a seed is stored.
+  // |signature_verification_enabled| can be used in unit tests to disable
+  // signature checks on the seed.
   VariationsSeedStore(PrefService* local_state,
                       std::unique_ptr<SeedResponse> initial_seed,
-                      base::OnceCallback<void()> on_initial_seed_stored);
+                      base::OnceCallback<void()> on_initial_seed_stored,
+                      bool signature_verification_enabled);
   virtual ~VariationsSeedStore();
 
   // Loads the variations seed data from local state into |seed|, as well as the
@@ -65,7 +69,6 @@ class VariationsSeedStore {
                      const base::Time& date_fetched,
                      bool is_delta_compressed,
                      bool is_gzip_compressed,
-                     bool fetched_insecurely,
                      VariationsSeed* parsed_seed) WARN_UNUSED_RESULT;
 
   // Loads the safe variations seed data from local state into |seed| and
@@ -119,10 +122,6 @@ class VariationsSeedStore {
 
   PrefService* local_state() { return local_state_; }
   const PrefService* local_state() const { return local_state_; }
-
- protected:
-  // Whether signature verification is enabled. Overridable for tests.
-  virtual bool SignatureVerificationEnabled();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedStoreTest, VerifySeedSignature);
@@ -179,21 +178,17 @@ class VariationsSeedStore {
                             const std::string& base64_seed_signature,
                             const std::string& country_code,
                             const base::Time& date_fetched,
-                            bool fetched_insecurely,
                             VariationsSeed* parsed_seed) WARN_UNUSED_RESULT;
 
   // Validates the |seed_data|, comparing it (if enabled) against the provided
   // cryptographic signature. Returns the result of the operation. On success,
   // fills |base64_seed_data| with the compressed and base64-encoded seed data;
   // and if |parsed_seed| is non-null, fills it with the parsed seed data.
-  // |fetched_insecurely| indicates whether |seed_data| was just fetched from
-  // the server over an insecure channel (i.e. over HTTP rathern than HTTPS).
   // |seed_type| specifies whether |seed_data| is for the safe seed (vs. the
   // regular/normal seed).
   StoreSeedResult VerifyAndCompressSeedData(
       const std::string& seed_data,
       const std::string& base64_seed_signature,
-      bool fetched_insecurely,
       SeedType seed_type,
       std::string* base64_seed_data,
       VariationsSeed* parsed_seed) WARN_UNUSED_RESULT;
@@ -211,6 +206,9 @@ class VariationsSeedStore {
   std::string latest_serial_number_;
 
   base::OnceCallback<void()> on_initial_seed_stored_;
+
+  // Whether to validate signatures on the seed. Always on except in tests.
+  bool signature_verification_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(VariationsSeedStore);
 };

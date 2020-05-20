@@ -134,7 +134,7 @@ void InputRouterImpl::SendKeyboardEvent(
     const NativeWebKeyboardEventWithLatencyInfo& key_event,
     KeyboardEventCallback event_result_callback) {
   gesture_event_queue_.StopFling();
-  mojom::WidgetInputHandler::DispatchEventCallback callback =
+  blink::mojom::WidgetInputHandler::DispatchEventCallback callback =
       base::BindOnce(&InputRouterImpl::KeyboardEventHandled, weak_this_,
                      key_event, std::move(event_result_callback));
   FilterAndSendWebInputEvent(key_event.event, key_event.latency,
@@ -256,13 +256,13 @@ base::Optional<cc::TouchAction> InputRouterImpl::ActiveTouchAction() {
   return touch_action_filter_.active_touch_action();
 }
 
-mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
 InputRouterImpl::BindNewHost() {
   host_receiver_.reset();
   return host_receiver_.BindNewPipeAndPassRemote();
 }
 
-mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
 InputRouterImpl::BindNewFrameHost() {
   frame_host_receiver_.reset();
   return frame_host_receiver_.BindNewPipeAndPassRemote();
@@ -376,7 +376,7 @@ void InputRouterImpl::SetMovementXYForTouchPoints(blink::WebTouchEvent* event) {
 void InputRouterImpl::SendMouseEventImmediately(
     const MouseEventWithLatencyInfo& mouse_event,
     MouseEventCallback event_result_callback) {
-  mojom::WidgetInputHandler::DispatchEventCallback callback =
+  blink::mojom::WidgetInputHandler::DispatchEventCallback callback =
       base::BindOnce(&InputRouterImpl::MouseEventHandled, weak_this_,
                      mouse_event, std::move(event_result_callback));
   FilterAndSendWebInputEvent(mouse_event.event, mouse_event.latency,
@@ -385,8 +385,9 @@ void InputRouterImpl::SendMouseEventImmediately(
 
 void InputRouterImpl::SendTouchEventImmediately(
     const TouchEventWithLatencyInfo& touch_event) {
-  mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
-      &InputRouterImpl::TouchEventHandled, weak_this_, touch_event);
+  blink::mojom::WidgetInputHandler::DispatchEventCallback callback =
+      base::BindOnce(&InputRouterImpl::TouchEventHandled, weak_this_,
+                     touch_event);
   FilterAndSendWebInputEvent(touch_event.event, touch_event.latency,
                              std::move(callback));
 }
@@ -433,8 +434,9 @@ void InputRouterImpl::OnFilteringTouchEvent(const WebTouchEvent& touch_event) {
 
 void InputRouterImpl::SendGestureEventImmediately(
     const GestureEventWithLatencyInfo& gesture_event) {
-  mojom::WidgetInputHandler::DispatchEventCallback callback = base::BindOnce(
-      &InputRouterImpl::GestureEventHandled, weak_this_, gesture_event);
+  blink::mojom::WidgetInputHandler::DispatchEventCallback callback =
+      base::BindOnce(&InputRouterImpl::GestureEventHandled, weak_this_,
+                     gesture_event);
   FilterAndSendWebInputEvent(gesture_event.event, gesture_event.latency,
                              std::move(callback));
 }
@@ -467,7 +469,7 @@ void InputRouterImpl::SendMouseWheelEventImmediately(
     const MouseWheelEventWithLatencyInfo& wheel_event,
     MouseWheelEventQueueClient::MouseWheelEventHandledCallback
         callee_callback) {
-  mojom::WidgetInputHandler::DispatchEventCallback callback =
+  blink::mojom::WidgetInputHandler::DispatchEventCallback callback =
       base::BindOnce(&InputRouterImpl::MouseWheelEventHandled, weak_this_,
                      wheel_event, std::move(callee_callback));
   FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency,
@@ -512,7 +514,7 @@ bool InputRouterImpl::IsAutoscrollInProgress() {
 void InputRouterImpl::FilterAndSendWebInputEvent(
     const WebInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
-    mojom::WidgetInputHandler::DispatchEventCallback callback) {
+    blink::mojom::WidgetInputHandler::DispatchEventCallback callback) {
   TRACE_EVENT1("input", "InputRouterImpl::FilterAndSendWebInputEvent", "type",
                WebInputEvent::GetName(input_event.GetType()));
   TRACE_EVENT("input,benchmark,devtools.timeline", "LatencyInfo.Flow",
@@ -549,9 +551,9 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
     TRACE_EVENT_INSTANT0("input", "InputEventSentBlocking",
                          TRACE_EVENT_SCOPE_THREAD);
     client_->IncrementInFlightEventCount();
-    mojom::WidgetInputHandler::DispatchEventCallback renderer_callback =
+    blink::mojom::WidgetInputHandler::DispatchEventCallback renderer_callback =
         base::BindOnce(
-            [](mojom::WidgetInputHandler::DispatchEventCallback callback,
+            [](blink::mojom::WidgetInputHandler::DispatchEventCallback callback,
                base::WeakPtr<InputRouterImpl> input_router,
                blink::mojom::InputEventResultSource source,
                const ui::LatencyInfo& latency,

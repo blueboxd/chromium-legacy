@@ -24,13 +24,16 @@
 #include "components/prefs/pref_service.h"
 #include "components/renderer_context_menu/render_view_context_menu_proxy.h"
 #include "content/public/browser/context_menu_params.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/gfx/text_elider.h"
 
 namespace {
 
+using chromeos::quick_answers::Context;
 using chromeos::quick_answers::QuickAnswer;
 using chromeos::quick_answers::QuickAnswersClient;
 using chromeos::quick_answers::QuickAnswersRequest;
@@ -42,6 +45,7 @@ constexpr char kNoResult[] = "See result in Assistant";
 constexpr char kNetworkError[] = "Cannot connect to internet.";
 
 constexpr size_t kMaxDisplayTextLength = 70;
+constexpr int kMaxSurroundingTextLength = 300;
 
 base::string16 TruncateString(const std::string& text) {
   return gfx::TruncateString(base::UTF8ToUTF16(text), kMaxDisplayTextLength,
@@ -78,7 +82,8 @@ QuickAnswersMenuObserver::QuickAnswersMenuObserver(
             .get(),
         assistant_state, /*delegate=*/this);
     quick_answers_controller_ = ash::QuickAnswersController::Get();
-    DCHECK(quick_answers_controller_);
+    if (!quick_answers_controller_)
+      return;
     quick_answers_controller_->SetClient(std::make_unique<QuickAnswersClient>(
         content::BrowserContext::GetDefaultStoragePartition(browser_context)
             ->GetURLLoaderFactoryForBrowserProcess()
@@ -122,7 +127,7 @@ void QuickAnswersMenuObserver::InitMenu(
   // Fetch Quick Answer.
   QuickAnswersRequest request;
   request.selected_text = selected_text;
-  request.device_properties.language = GetDeviceLanguage();
+  request.context.device_properties.language = GetDeviceLanguage();
   query_ = request.selected_text;
   quick_answers_client_->SendRequest(request);
 }
@@ -144,12 +149,24 @@ void QuickAnswersMenuObserver::OnContextMenuShown(
   if (selected_text.empty())
     return;
 
-  quick_answers_controller_->MaybeShowQuickAnswers(
-      bounds_in_screen, selected_text, GetDeviceLanguage());
+  bounds_in_screen_ = bounds_in_screen;
+
+  content::RenderFrameHost* focused_frame =
+      proxy_->GetWebContents()->GetFocusedFrame();
+  if (focused_frame) {
+    focused_frame->RequestTextSurroundingSelection(
+        base::BindOnce(
+            &QuickAnswersMenuObserver::OnTextSurroundingSelectionAvailable,
+            weak_factory_.GetWeakPtr(), selected_text),
+        kMaxSurroundingTextLength);
+  }
 }
 
 void QuickAnswersMenuObserver::OnContextMenuViewBoundsChanged(
     const gfx::Rect& bounds_in_screen) {
+  bounds_in_screen_ = bounds_in_screen;
+  if (!quick_answers_controller_)
+    return;
   quick_answers_controller_->UpdateQuickAnswersAnchorBounds(bounds_in_screen);
 }
 
@@ -246,4 +263,16 @@ void QuickAnswersMenuObserver::SendAssistantQuery(const std::string& query) {
 
 std::string QuickAnswersMenuObserver::GetDeviceLanguage() {
   return l10n_util::GetLanguage(g_browser_process->GetApplicationLocale());
+}
+
+void QuickAnswersMenuObserver::OnTextSurroundingSelectionAvailable(
+    const std::string& selected_text,
+    const base::string16& surrounding_text,
+    uint32_t start_offset,
+    uint32_t end_offset) {
+  Context context;
+  context.surrounding_text = base::UTF16ToUTF8(surrounding_text);
+  context.device_properties.language = GetDeviceLanguage();
+  quick_answers_controller_->MaybeShowQuickAnswers(bounds_in_screen_,
+                                                   selected_text, context);
 }

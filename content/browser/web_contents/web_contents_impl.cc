@@ -7406,7 +7406,8 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
     NotifyPreferencesChanged();
 }
 
-mojom::FrameInputHandler* WebContentsImpl::GetFocusedFrameInputHandler() {
+blink::mojom::FrameInputHandler*
+WebContentsImpl::GetFocusedFrameInputHandler() {
   auto* focused_frame = GetFocusedFrame();
   if (!focused_frame)
     return nullptr;

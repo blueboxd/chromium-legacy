@@ -20,6 +20,7 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/optional.h"
 #include "base/token.h"
+#include "base/trace_event/trace_event.h"
 #include "chromecast/external_mojo/public/cpp/common.h"
 #include "chromecast/external_mojo/public/mojom/connector.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -223,6 +224,8 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
       LOG(ERROR) << "Duplicate service " << service_name;
       return;
     }
+    TRACE_EVENT_INSTANT1("mojom", "RegisterService", TRACE_EVENT_SCOPE_THREAD,
+                         "service", service_name);
     LOG(INFO) << "Register service " << service_name;
     mojo::Remote<mojom::ExternalService> service(std::move(service_remote));
     service.set_disconnect_handler(base::BindOnce(
@@ -248,6 +251,8 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
                      const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override {
     LOG(INFO) << "Request for " << service_name << ":" << interface_name;
+    TRACE_EVENT_INSTANT1("mojom", "BindToService", TRACE_EVENT_SCOPE_THREAD,
+                         "service", service_name);
     auto it = services_.find(service_name);
     if (it != services_.end()) {
       LOG(INFO) << "Found externally-registered " << service_name;
@@ -322,6 +327,8 @@ class ExternalMojoBroker::ConnectorImpl : public mojom::ExternalConnector {
 
   void OnServiceLost(const std::string& service_name) {
     LOG(INFO) << service_name << " disconnected";
+    TRACE_EVENT_INSTANT1("mojom", "ServiceDisconnected",
+                         TRACE_EVENT_SCOPE_THREAD, "service", service_name);
     services_.erase(service_name);
     services_info_[service_name].disconnect_time = base::TimeTicks::Now();
   }

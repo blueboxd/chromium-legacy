@@ -12,10 +12,10 @@
 #include "components/viz/host/hit_test/hit_test_query.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/public/common/screen_info.h"
 #include "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-shared.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "ui/gfx/geometry/rect.h"
 

@@ -11,6 +11,12 @@
  * Event 'loaded' will be fired when the page has been successfully loaded.
  */
 
+/**
+ * Name of the screen.
+ * @type {string}
+ */
+const VALUE_PROP_SCREEN_ID = 'ValuePropScreen';
+
 Polymer({
   is: 'assistant-value-prop',
 
@@ -118,6 +124,9 @@ Polymer({
    */
   sanitizer_: new HtmlSanitizer(),
 
+  /** @private {?assistant.BrowserProxy} */
+  browserProxy_: null,
+
   /**
    * On-tap event handler for skip button.
    *
@@ -128,9 +137,7 @@ Polymer({
       return;
     }
     this.buttonsDisabled = true;
-    chrome.send(
-        'login.AssistantOptInFlowScreen.ValuePropScreen.userActed',
-        ['skip-pressed']);
+    this.browserProxy_.userActed(VALUE_PROP_SCREEN_ID, ['skip-pressed']);
   },
 
   /**
@@ -143,9 +150,12 @@ Polymer({
       return;
     }
     this.buttonsDisabled = true;
-    chrome.send(
-        'login.AssistantOptInFlowScreen.ValuePropScreen.userActed',
-        ['next-pressed']);
+    this.browserProxy_.userActed(VALUE_PROP_SCREEN_ID, ['next-pressed']);
+  },
+
+  /** @override */
+  created() {
+    this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
   },
 
   /**
@@ -181,9 +191,7 @@ Polymer({
     this.fire('loading');
 
     if (this.initialized_) {
-      chrome.send(
-          'login.AssistantOptInFlowScreen.ValuePropScreen.userActed',
-          ['reload-requested']);
+      this.browserProxy_.userActed(VALUE_PROP_SCREEN_ID, ['reload-requested']);
       this.settingZippyLoaded_ = false;
       this.consentStringLoaded_ = false;
     }
@@ -331,7 +339,7 @@ Polymer({
     this.$['next-button'].focus();
 
     if (!this.hidden && !this.screenShown_) {
-      chrome.send('login.AssistantOptInFlowScreen.ValuePropScreen.screenShown');
+      this.browserProxy_.screenShown(VALUE_PROP_SCREEN_ID);
       this.screenShown_ = true;
     }
   },

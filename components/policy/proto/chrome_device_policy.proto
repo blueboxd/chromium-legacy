@@ -125,6 +125,8 @@ message DeviceReportingProto {
   optional bool report_backlight_info = 20 [default = false];
   optional bool report_app_info = 21 [default = false];
   optional bool report_bluetooth_info = 22 [default = false];
+  optional bool report_fan_info = 23 [default = false];
+  optional bool report_vpd_info = 24 [default = false];
 
   // Frequency to report device status, default to 3 hours.
   optional int64 device_status_frequency = 9 [default = 10800000];

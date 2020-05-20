@@ -46,6 +46,7 @@
 
 using autofill::AutofillUploadContents;
 using autofill::FieldPropertiesFlags;
+using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormRendererId;
@@ -559,7 +560,6 @@ TEST_P(PasswordFormManagerTest, AutofillSignUpForm) {
 #if defined(OS_IOS)
   EXPECT_EQ(observed_form_.unique_renderer_id,
             generation_data.form_renderer_id);
-  EXPECT_EQ(ASCIIToUTF16("password"), generation_data.new_password_element);
 #else
   EXPECT_EQ(observed_form_.fields.back().unique_renderer_id,
             generation_data.new_password_renderer_id);
@@ -594,7 +594,6 @@ TEST_P(PasswordFormManagerTest, GenerationOnNewAndConfirmPasswordFields) {
 #if defined(OS_IOS)
   EXPECT_EQ(observed_form_.unique_renderer_id,
             generation_data.form_renderer_id);
-  EXPECT_EQ(ASCIIToUTF16("password"), generation_data.new_password_element);
 #else
   EXPECT_EQ(new_password_render_id, generation_data.new_password_renderer_id);
   EXPECT_EQ(confirm_password_render_id,
@@ -1829,7 +1828,7 @@ TEST_P(PasswordFormManagerTest, GenerationUploadOnNoInteraction) {
     fetcher_->NotifyFetchCompleted();
 
     if (generation_popup_shown) {
-      form_manager_->SetGenerationElement(ASCIIToUTF16("password"));
+      form_manager_->SetGenerationElement(FieldRendererId(3));
       form_manager_->SetGenerationPopupWasShown(false /*is_manual_generation*/);
     }
     EXPECT_TRUE(
@@ -1852,7 +1851,7 @@ TEST_P(PasswordFormManagerTest, GenerationUploadOnNeverClicked) {
     fetcher_->NotifyFetchCompleted();
 
     if (generation_popup_shown) {
-      form_manager_->SetGenerationElement(ASCIIToUTF16("password"));
+      form_manager_->SetGenerationElement(FieldRendererId(3));
       form_manager_->SetGenerationPopupWasShown(false /*is_manual_generation*/);
     }
     EXPECT_TRUE(
@@ -1999,7 +1998,7 @@ TEST_P(PasswordFormManagerTest, iOSPresavedGeneratedPassword) {
   const base::string16 generated_password = ASCIIToUTF16("gen_pw");
   // Use different |unique_id| and |name| to test that |unique_id| is taken.
   password_field.unique_id = password_field.name + ASCIIToUTF16("1");
-  const base::string16 generation_element = password_field.unique_id;
+  FieldRendererId generation_element = password_field.unique_renderer_id;
 
   PasswordForm saved_form;
   EXPECT_CALL(form_saver, Save(_, IsEmpty(), base::string16()))
@@ -2015,7 +2014,7 @@ TEST_P(PasswordFormManagerTest, iOSPresavedGeneratedPassword) {
   EXPECT_CALL(form_saver, UpdateReplace(_, _, base::string16(), _))
       .WillOnce(SaveArg<0>(&saved_form));
 
-  form_manager_->UpdateStateOnUserInput(form_to_presave.name,
+  form_manager_->UpdateStateOnUserInput(form_to_presave.unique_renderer_id,
                                         generation_element, changed_password);
   EXPECT_EQ(username_field.value, saved_form.username_value);
   EXPECT_EQ(changed_password, saved_form.password_value);
@@ -2025,15 +2024,15 @@ TEST_P(PasswordFormManagerTest, iOSUpdateStateWithoutPresaving) {
   fetcher_->NotifyFetchCompleted();
   MockFormSaver& form_saver = MockFormSaver::Get(form_manager_.get());
 
-  const base::string16 password_field =
-      observed_form_.fields[kPasswordFieldIndex].unique_id;
+  FieldRendererId password_field =
+      observed_form_.fields[kPasswordFieldIndex].unique_renderer_id;
   const base::string16 new_field_value = ASCIIToUTF16("some_password");
 
   // Check that nothing is saved on changing password, in case when there was no
   // pre-saving.
   EXPECT_CALL(form_saver, Save(_, _, _)).Times(0);
   EXPECT_TRUE(form_manager_->UpdateStateOnUserInput(
-      observed_form_.name, password_field, new_field_value));
+      observed_form_.unique_renderer_id, password_field, new_field_value));
 
   EXPECT_EQ(new_field_value,
             form_manager_->observed_form().fields[kPasswordFieldIndex].value);

@@ -9,16 +9,21 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_api.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate.h"
 #include "chrome/browser/extensions/api/language_settings_private/language_settings_private_delegate_factory.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_service_test_base.h"
+#include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/crx_file/id_util.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_prefs.h"
 
@@ -82,12 +87,22 @@ std::unique_ptr<KeyedService> BuildLanguageSettingsPrivateDelegate(
   return std::make_unique<MockLanguageSettingsPrivateDelegate>(profile);
 }
 
+std::unique_ptr<KeyedService> BuildSpellcheckService(
+    content::BrowserContext* profile) {
+  return std::make_unique<SpellcheckService>(static_cast<Profile*>(profile));
+}
+
 }  // namespace
 
 class LanguageSettingsPrivateApiTest : public ExtensionServiceTestBase {
  public:
   LanguageSettingsPrivateApiTest() = default;
   ~LanguageSettingsPrivateApiTest() override = default;
+
+ protected:
+#if defined(OS_WIN)
+  base::test::ScopedFeatureList feature_list_;
+#endif  // defined(OS_WIN)
 
  private:
   void SetUp() override {
@@ -96,8 +111,17 @@ class LanguageSettingsPrivateApiTest : public ExtensionServiceTestBase {
     EventRouterFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildEventRouter));
 
+#if defined(OS_WIN)
+    // Force Windows hybrid spellcheck to be enabled.
+    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+#endif  // defined(OS_WIN)
+
     LanguageSettingsPrivateDelegateFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&BuildLanguageSettingsPrivateDelegate));
+
+    // Use SetTestingFactoryAndUse to force creation and initialization.
+    SpellcheckServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+        profile(), base::BindRepeating(&BuildSpellcheckService));
   }
 
   std::unique_ptr<TestBrowserWindow> browser_window_;
@@ -144,6 +168,119 @@ TEST_F(LanguageSettingsPrivateApiTest, GetSpellcheckDictionaryStatusesTest) {
   expected_status->SetBoolean("downloadFailed", false);
   expected.Append(std::move(expected_status));
   EXPECT_EQ(expected, *actual);
+}
+
+TEST_F(LanguageSettingsPrivateApiTest, GetLanguageListTest) {
+  struct LanguageToTest {
+    std::string accept_language;
+    std::string windows_dictionary_name;  // Empty string indicates to not use
+                                          // fake Windows dictionary
+    bool is_preferred_language;
+    bool is_spellcheck_support_expected;
+  };
+
+  std::vector<LanguageToTest> languages_to_test = {
+      // Languages with both Windows and Hunspell spellcheck support.
+      // GetLanguageList should always report spellchecking to be supported for
+      // these languages, regardless of whether a language pack is installed or
+      // if it is a preferred language.
+      {"fr", "fr-FR", true, true},
+      {"de", "de-DE", false, true},
+      {"es-MX", "", true, true},
+      {"fa", "", false, true},
+      {"gl", "", true, false},
+      {"zu", "", false, false},
+      // Finnish with Filipino language pack (string in string).
+      {"fi", "fil", true, false},
+      // Sesotho with Asturian language pack (string in string).
+      {"st", "ast", true, false},
+  };
+
+  // A few more test cases for non-Hunspell languages. These languages do have
+  // Windows spellcheck support depending on the OS version. GetLanguageList
+  // only reports spellchecking is supported for these languages if the language
+  // pack is installed.
+#if defined(OS_WIN)
+  if (spellcheck::WindowsVersionSupportsSpellchecker()) {
+    languages_to_test.push_back({"ar", "ar-SA", true, true});
+    languages_to_test.push_back({"bn", "bn-IN", false, true});
+  } else {
+    languages_to_test.push_back({"ar", "ar-SA", true, false});
+    languages_to_test.push_back({"bn", "bn-IN", false, false});
+  }
+#else
+  languages_to_test.push_back({"ar", "ar-SA", true, false});
+  languages_to_test.push_back({"bn", "bn-IN", false, false});
+#endif  // defined(OS_WIN)
+
+  // Initialize accept languages prefs.
+  std::vector<std::string> accept_languages;
+  for (auto& language_to_test : languages_to_test) {
+    if (language_to_test.is_preferred_language) {
+      accept_languages.push_back(language_to_test.accept_language);
+    }
+  }
+
+  std::string accept_languages_string = base::JoinString(accept_languages, ",");
+  DVLOG(2) << "Setting accept languages preferences to: "
+           << accept_languages_string;
+  profile()->GetPrefs()->SetString(language::prefs::kAcceptLanguages,
+                                   accept_languages_string);
+
+#if defined(OS_WIN)
+  // Add fake Windows dictionaries using InitWindowsDictionaryLanguages.
+  std::vector<std::string> windows_spellcheck_languages_for_testing;
+  for (auto& language_to_test : languages_to_test) {
+    if (!language_to_test.windows_dictionary_name.empty()) {
+      windows_spellcheck_languages_for_testing.push_back(
+          language_to_test.windows_dictionary_name);
+      DVLOG(2) << "Will set fake Windows spellcheck dictionary for testing: "
+               << language_to_test.windows_dictionary_name;
+    }
+  }
+  SpellcheckServiceFactory::GetInstance()
+      ->GetForContext(profile())
+      ->InitWindowsDictionaryLanguages(
+          windows_spellcheck_languages_for_testing);
+#endif  // defined(OS_WIN)
+
+  auto function =
+      base::MakeRefCounted<LanguageSettingsPrivateGetLanguageListFunction>();
+
+  std::unique_ptr<base::Value> result =
+      api_test_utils::RunFunctionAndReturnSingleResult(function.get(), "[]",
+                                                       profile());
+
+  ASSERT_NE(nullptr, result) << function->GetError();
+  EXPECT_TRUE(result->is_list());
+
+  size_t languages_to_test_found_count = 0;
+  for (auto& language_val : result->GetList()) {
+    EXPECT_TRUE(language_val.is_dict());
+    std::string* language_code_ptr = language_val.FindStringKey("code");
+    ASSERT_NE(nullptr, language_code_ptr);
+    std::string language_code = *language_code_ptr;
+    EXPECT_FALSE(language_code.empty());
+
+    const base::Optional<bool> maybe_supports_spellcheck =
+        language_val.FindBoolKey("supportsSpellcheck");
+    const bool supports_spellcheck = maybe_supports_spellcheck.has_value()
+                                         ? maybe_supports_spellcheck.value()
+                                         : false;
+
+    for (auto& language_to_test : languages_to_test) {
+      if (language_to_test.accept_language == language_code) {
+        DVLOG(2) << "*** Found language code being tested=" << language_code
+                 << ", supportsSpellcheck=" << supports_spellcheck << " ***";
+        EXPECT_EQ(language_to_test.is_spellcheck_support_expected,
+                  supports_spellcheck);
+        languages_to_test_found_count++;
+        break;
+      }
+    }
+  }
+
+  EXPECT_EQ(languages_to_test.size(), languages_to_test_found_count);
 }
 
 #if defined(OS_CHROMEOS)

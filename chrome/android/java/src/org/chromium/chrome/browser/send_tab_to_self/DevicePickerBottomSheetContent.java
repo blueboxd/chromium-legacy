@@ -69,8 +69,6 @@ public class DevicePickerBottomSheetContent implements BottomSheetContent, OnIte
     }
 
     private void createContentView() {
-        SendTabToSelfShareClickResult.recordClickResult(
-                SendTabToSelfShareClickResult.ClickType.CLICK_ITEM);
         List<TargetDeviceInfo> targetDeviceList = new ArrayList<TargetDeviceInfo>();
         SendTabToSelfAndroidBridgeJni.get().getAllTargetDeviceInfos(mProfile, targetDeviceList);
 

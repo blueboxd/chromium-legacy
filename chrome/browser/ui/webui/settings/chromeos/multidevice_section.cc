@@ -237,7 +237,8 @@ void MultiDeviceSection::RegisterHierarchy(
   generator->RegisterTopLevelSetting(mojom::Setting::kVerifyMultiDeviceSetup);
 
   // MultiDevice features.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kMultiDeviceFeatures);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_MULTIDEVICE,
+                                     mojom::Subpage::kMultiDeviceFeatures);
   static constexpr mojom::Setting kMultiDeviceFeaturesSettings[] = {
       mojom::Setting::kMultiDeviceOnOff,
       mojom::Setting::kMessagesSetUp,
@@ -253,7 +254,8 @@ void MultiDeviceSection::RegisterHierarchy(
                                       mojom::Subpage::kMultiDeviceFeatures);
 
   // Smart Lock.
-  generator->RegisterNestedSubpage(mojom::Subpage::kSmartLock,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_EASY_UNLOCK_SECTION_TITLE,
+                                   mojom::Subpage::kSmartLock,
                                    mojom::Subpage::kMultiDeviceFeatures);
   static constexpr mojom::Setting kSmartLockSettings[] = {
       mojom::Setting::kSmartLockOnOff,

@@ -5,8 +5,6 @@
 // Include test fixture.
 GEN_INCLUDE(['../testing/chromevox_next_e2e_test_base.js']);
 
-GEN_INCLUDE(['../testing/assert_additions.js']);
-
 /**
  * Test fixture for braille_command_data.js.
  */

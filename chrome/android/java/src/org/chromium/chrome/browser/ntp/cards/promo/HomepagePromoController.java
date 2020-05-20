@@ -201,7 +201,7 @@ public class HomepagePromoController implements HomepageStateListener {
     /**
      * Dismissed the promo and record the user action.
      */
-    private void dismissPromo() {
+    public void dismissPromo() {
         HomepagePromoUtils.setPromoDismissedInSharedPreference(true);
         HomepagePromoUtils.recordHomepagePromoEvent(HomepagePromoAction.DISMISSED);
         dismissPromoInternal();

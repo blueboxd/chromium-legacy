@@ -13,12 +13,12 @@
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/optional.h"
 #include "components/viz/common/frame_timing_details_map.h"
-#include "content/common/input/synchronous_compositor.mojom.h"
 #include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/synchronous_compositor.mojom.h"
 #include "third_party/blink/public/platform/input/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -33,7 +33,7 @@ class SynchronousLayerTreeFrameSink;
 
 class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
                                    public SynchronousLayerTreeFrameSinkClient,
-                                   public mojom::SynchronousCompositor {
+                                   public blink::mojom::SynchronousCompositor {
  public:
   SynchronousCompositorProxy(
       blink::SynchronousInputHandlerProxy* input_handler_proxy);
@@ -41,9 +41,11 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
 
   void Init();
   void BindChannel(
-      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+      mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+          control_host,
+      mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost>
+          host,
+      mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
           compositor_request);
 
   // blink::SynchronousInputHandler overrides.
@@ -67,16 +69,16 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
   void SetLayerTreeFrameSink(
       SynchronousLayerTreeFrameSink* layer_tree_frame_sink);
 
-  mojom::SyncCompositorCommonRendererParamsPtr PopulateNewCommonParams();
+  blink::mojom::SyncCompositorCommonRendererParamsPtr PopulateNewCommonParams();
 
-  // mojom::SynchronousCompositor overrides.
+  // blink::mojom::SynchronousCompositor overrides.
   void DemandDrawHwAsync(
-      mojom::SyncCompositorDemandDrawHwParamsPtr draw_params) final;
-  void DemandDrawHw(mojom::SyncCompositorDemandDrawHwParamsPtr params,
+      blink::mojom::SyncCompositorDemandDrawHwParamsPtr draw_params) final;
+  void DemandDrawHw(blink::mojom::SyncCompositorDemandDrawHwParamsPtr params,
                     DemandDrawHwCallback callback) final;
   void SetSharedMemory(base::WritableSharedMemoryRegion shm_region,
                        SetSharedMemoryCallback callback) final;
-  void DemandDrawSw(mojom::SyncCompositorDemandDrawSwParamsPtr params,
+  void DemandDrawSw(blink::mojom::SyncCompositorDemandDrawSwParamsPtr params,
                     DemandDrawSwCallback callback) final;
   void WillSkipDraw() final;
   void ZeroSharedMemory() final;
@@ -93,9 +95,10 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
  protected:
   void SendAsyncRendererStateIfNeeded();
   void LayerTreeFrameSinkCreated();
-  void SendBeginFrameResponse(mojom::SyncCompositorCommonRendererParamsPtr);
+  void SendBeginFrameResponse(
+      blink::mojom::SyncCompositorCommonRendererParamsPtr);
   void SendDemandDrawHwAsyncReply(
-      mojom::SyncCompositorCommonRendererParamsPtr,
+      blink::mojom::SyncCompositorCommonRendererParamsPtr,
       uint32_t layer_tree_frame_sink_id,
       uint32_t metadata_version,
       base::Optional<viz::CompositorFrame>,
@@ -108,16 +111,16 @@ class SynchronousCompositorProxy : public blink::SynchronousInputHandler,
   bool begin_frame_paused_ = false;
 
  private:
-  void DoDemandDrawSw(mojom::SyncCompositorDemandDrawSwParamsPtr params);
+  void DoDemandDrawSw(blink::mojom::SyncCompositorDemandDrawSwParamsPtr params);
   uint32_t NextMetadataVersion();
   void HostDisconnected();
 
   struct SharedMemoryWithSize;
 
   blink::SynchronousInputHandlerProxy* const input_handler_proxy_;
-  mojo::Remote<mojom::SynchronousCompositorControlHost> control_host_;
-  mojo::AssociatedRemote<mojom::SynchronousCompositorHost> host_;
-  mojo::AssociatedReceiver<mojom::SynchronousCompositor> receiver_{this};
+  mojo::Remote<blink::mojom::SynchronousCompositorControlHost> control_host_;
+  mojo::AssociatedRemote<blink::mojom::SynchronousCompositorHost> host_;
+  mojo::AssociatedReceiver<blink::mojom::SynchronousCompositor> receiver_{this};
   const bool use_in_process_zero_copy_software_draw_;
 
   const bool viz_frame_submission_enabled_;

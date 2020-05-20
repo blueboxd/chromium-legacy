@@ -50,7 +50,6 @@
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_replication_state.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/input_injector.mojom-forward.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/render_accessibility.mojom.h"
@@ -112,6 +111,7 @@
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-forward.h"
@@ -440,7 +440,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void PerformAction(const ui::AXActionData& data) override;
   bool RequiresPerformActionPointInPixels() const override;
 
-  mojom::FrameInputHandler* GetFrameInputHandler();
+  blink::mojom::FrameInputHandler* GetFrameInputHandler();
 
   viz::mojom::InputTargetClient* GetInputTargetClient() {
     return input_target_client_;
@@ -2792,7 +2792,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const base::UnguessableToken frame_token_;
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
-  mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;
+  mojo::Remote<blink::mojom::FrameInputHandler> frame_input_handler_;
 
   // Binding to remote implementation of mojom::RenderAccessibility. Note that
   // this binding is done on-demand (in UpdateAccessibilityMode()) and will only

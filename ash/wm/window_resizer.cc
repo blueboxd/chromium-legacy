@@ -160,7 +160,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   // position.  For example, dragging the left edge to the right should stop
   // repositioning the window when the minimize size is reached.
   gfx::Size size = GetSizeForDrag(&delta_x, &delta_y);
-  gfx::Point origin = GetOriginForDrag(delta_x, delta_y);
+  gfx::Point origin = GetOriginForDrag(delta_x, delta_y, passed_location);
   gfx::Rect new_bounds(origin, size);
 
   gfx::SizeF* aspect_ratio_size =
@@ -218,17 +218,6 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   }
 
   if (details().bounds_change & kBoundsChange_Repositions) {
-    // When we might want to reposition a window which is also restored to its
-    // previous size, to keep the cursor within the dragged window.
-    if (!details().restore_bounds.IsEmpty()) {
-      // However - it is not desirable to change the origin if the window would
-      // be still hit by the cursor.
-      if (details().initial_location_in_parent.x() >
-          details().initial_bounds_in_parent.x() +
-              details().restore_bounds.width())
-        new_bounds.set_x(location.x() - details().restore_bounds.width() / 2);
-    }
-
     // Make sure that |new_bounds| doesn't leave any of the displays.  Note that
     // the |work_area| above isn't good for this check since it is the work area
     // for the current display but the window can move to a different one.
@@ -306,16 +295,35 @@ void WindowResizer::AdjustDeltaForTouchResize(int* delta_x, int* delta_y) {
   }
 }
 
-gfx::Point WindowResizer::GetOriginForDrag(int delta_x, int delta_y) {
+gfx::Point WindowResizer::GetOriginForDrag(int delta_x,
+                                           int delta_y,
+                                           const gfx::PointF& event_location) {
   gfx::Point origin = details().initial_bounds_in_parent.origin();
-  if (details().bounds_change & kBoundsChange_Repositions) {
-    int pos_change_direction = GetPositionChangeDirectionForWindowComponent(
-        details().window_component);
-    if (pos_change_direction & kBoundsChangeDirection_Horizontal)
-      origin.Offset(delta_x, 0);
-    if (pos_change_direction & kBoundsChangeDirection_Vertical)
-      origin.Offset(0, delta_y);
+  if (!(details().bounds_change & kBoundsChange_Repositions))
+    return origin;
+
+  int pos_change_direction =
+      GetPositionChangeDirectionForWindowComponent(details().window_component);
+  if (pos_change_direction & kBoundsChangeDirection_Horizontal)
+    origin.Offset(delta_x, 0);
+  if (pos_change_direction & kBoundsChangeDirection_Vertical)
+    origin.Offset(0, delta_y);
+
+  // If the window gets respoitioned and changes to it's restored bounds,
+  // modify the origin so that the cursor remains within the dragged window.
+  // The ratio of the new origin to the new location should match the ratio
+  // from the initial origin to the initial location.
+  if (!details().restore_bounds.IsEmpty()) {
+    // The ratios that should match is the (drag location x - bounds origin x) /
+    // bounds width.
+    const float ratio = (details().initial_location_in_parent.x() -
+                         float{details().initial_bounds_in_parent.x()}) /
+                        details().initial_bounds_in_parent.width();
+    const int new_origin_x = gfx::ToRoundedInt(
+        event_location.x() - ratio * details().restore_bounds.width());
+    origin.set_x(new_origin_x);
   }
+
   return origin;
 }
 

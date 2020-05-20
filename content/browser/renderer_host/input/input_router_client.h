@@ -8,10 +8,10 @@
 #include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
 namespace ui {
 class LatencyInfo;
@@ -82,7 +82,8 @@ class CONTENT_EXPORT InputRouterClient {
       bool from_user_gesture,
       bool privileged,
       bool unadjusted_movement,
-      mojom::WidgetInputHandlerHost::RequestMouseLockCallback response) = 0;
+      blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback
+          response) = 0;
 
   // Returns the size of visible viewport in screen space, in DIPs.
   virtual gfx::Size GetRootWidgetViewportSize() = 0;

@@ -784,30 +784,30 @@ ci.clang_builder(
 
 ci.clang_builder(
     name = 'ToTiOS',
-    caches = [xcode_cache.x11c29],
+    caches = [xcode_cache.x11e146],
     console_view_entry = ci.console_view_entry(
         category = 'iOS|public',
         short_name = 'sim',
     ),
     cores = None,
-    os = os.MAC_10_14,
+    os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11c29'
+        'xcode_build_version': '11e146'
     },
     ssd=True
 )
 
 ci.clang_builder(
     name = 'ToTiOSDevice',
-    caches = [xcode_cache.x11c29],
+    caches = [xcode_cache.x11e146],
     console_view_entry = ci.console_view_entry(
         category = 'iOS|public',
         short_name = 'dev',
     ),
     cores = None,
-    os = os.MAC_10_14,
+    os = os.MAC_10_15,
     properties = {
-        'xcode_build_version': '11c29'
+        'xcode_build_version': '11e146'
     },
     ssd=True
 )
@@ -1650,18 +1650,18 @@ ci.fyi_coverage_builder(
 
 ci.fyi_coverage_builder(
     name = 'ios-simulator-code-coverage',
-    caches = [xcode_cache.x11c29],
+    caches = [xcode_cache.x11e146],
     console_view_entry = ci.console_view_entry(
         category = 'code_coverage',
         short_name = 'ios',
     ),
     cores = None,
-    os = os.MAC_ANY,
+    os = os.MAC_10_15,
     use_clang_coverage = True,
     coverage_exclude_sources = 'ios_test_files_and_test_utils',
     coverage_test_types = ['overall', 'unit'],
     properties = {
-        'xcode_build_version': '11c29',
+        'xcode_build_version': '11e146',
     },
 )
 
@@ -1730,7 +1730,7 @@ ci.fyi_ios_builder(
     ),
     executable = 'recipe:chromium',
     properties = {
-        'xcode_build_version': '11c29',
+        'xcode_build_version': '11e146',
     },
 )
 
@@ -1757,7 +1757,7 @@ ci.fyi_ios_builder(
     ),
     executable = 'recipe:chromium',
     properties = {
-        'xcode_build_version': '11c29',
+        'xcode_build_version': '11e146',
     },
 )
 
@@ -1769,7 +1769,7 @@ ci.fyi_ios_builder(
     ),
     executable = 'recipe:chromium',
     properties = {
-        'xcode_build_version': '11c29',
+        'xcode_build_version': '11e146',
     },
 )
 

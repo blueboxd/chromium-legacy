@@ -456,7 +456,8 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpCrostini);
 
   // Crostini details.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kCrostiniDetails);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_CROSTINI_LABEL,
+                                     mojom::Subpage::kCrostiniDetails);
   static constexpr mojom::Setting kCrostiniDetailsSettings[] = {
       mojom::Setting::kCrostiniContainerUpgrade,
       mojom::Setting::kCrostiniDiskResize,
@@ -467,15 +468,19 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kCrostiniDetailsSettings, generator);
 
   // Manage shared folders.
-  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniManageSharedFolders,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_CROSTINI_SHARED_PATHS,
+                                   mojom::Subpage::kCrostiniManageSharedFolders,
                                    mojom::Subpage::kCrostiniDetails);
 
   // USB preferences.
-  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniUsbPreferences,
-                                   mojom::Subpage::kCrostiniDetails);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_CROSTINI_SHARED_USB_DEVICES_LABEL,
+      mojom::Subpage::kCrostiniUsbPreferences,
+      mojom::Subpage::kCrostiniDetails);
 
   // Backup and restore.
-  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniBackupAndRestore,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_CROSTINI_EXPORT_IMPORT_TITLE,
+                                   mojom::Subpage::kCrostiniBackupAndRestore,
                                    mojom::Subpage::kCrostiniDetails);
   static constexpr mojom::Setting kCrostiniBackupAndRestoreSettings[] = {
       mojom::Setting::kBackupLinuxAppsAndFiles,
@@ -485,13 +490,15 @@ void CrostiniSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kCrostiniBackupAndRestoreSettings, generator);
 
   // Develop Android apps.
-  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniDevelopAndroidApps,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_CROSTINI_ARC_ADB_TITLE,
+                                   mojom::Subpage::kCrostiniDevelopAndroidApps,
                                    mojom::Subpage::kCrostiniDetails);
   generator->RegisterNestedSetting(mojom::Setting::kCrostiniAdbDebugging,
                                    mojom::Subpage::kCrostiniDevelopAndroidApps);
 
   // Port forwarding.
-  generator->RegisterNestedSubpage(mojom::Subpage::kCrostiniPortForwarding,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_CROSTINI_PORT_FORWARDING,
+                                   mojom::Subpage::kCrostiniPortForwarding,
                                    mojom::Subpage::kCrostiniDetails);
 }
 

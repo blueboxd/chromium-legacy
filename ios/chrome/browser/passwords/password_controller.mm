@@ -202,7 +202,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   // Form data for password generation on this page.
   std::map<FormRendererId, PasswordFormGenerationData> _formGenerationData;
 
-  NSString* _lastTypedfieldIdentifier;
+  FieldRendererId _lastTypedfieldIdentifier;
   NSString* _lastTypedValue;
 }
 
@@ -369,7 +369,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
   _credentialManager.reset();
   _formGenerationData.clear();
   _isPasswordGenerated = NO;
-  _lastTypedfieldIdentifier = nil;
+  _lastTypedfieldIdentifier = FieldRendererId();
   _lastTypedValue = nil;
 }
 
@@ -418,17 +418,16 @@ NSString* const kSuggestionSuffix = @" ••••••••";
     }
   }
 
-  if (![formQuery.fieldIdentifier isEqual:_lastTypedfieldIdentifier] ||
+  if (formQuery.uniqueFieldID != _lastTypedfieldIdentifier ||
       ![formQuery.typedValue isEqual:_lastTypedValue]) {
     // This method is called multiple times for the same user keystroke. Inform
     // only once the keystroke.
-    _lastTypedfieldIdentifier = formQuery.fieldIdentifier;
+    _lastTypedfieldIdentifier = formQuery.uniqueFieldID;
     _lastTypedValue = formQuery.typedValue;
 
     self.passwordManager->UpdateStateOnUserInput(
-        self.passwordManagerDriver, SysNSStringToUTF16(formQuery.formName),
-        SysNSStringToUTF16(formQuery.fieldIdentifier),
-        SysNSStringToUTF16(formQuery.typedValue));
+        self.passwordManagerDriver, formQuery.uniqueFormID,
+        formQuery.uniqueFieldID, SysNSStringToUTF16(formQuery.typedValue));
   }
 }
 
@@ -990,8 +989,6 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       [self getFormForGenerationFromFormId:formIdentifier];
   if (!generation_data)
     return;
-  NSString* newPasswordIdentifier =
-      SysUTF16ToNSString(generation_data->new_password_element);
   FieldRendererId newPasswordUniqueId =
       generation_data->new_password_renderer_id;
   FieldRendererId confirmPasswordUniqueId =
@@ -1002,8 +999,7 @@ NSString* const kSuggestionSuffix = @" ••••••••";
       if (found) {
         self.passwordManager->PresaveGeneratedPassword(
             self.passwordManagerDriver, form,
-            SysNSStringToUTF16(generatedPassword),
-            SysNSStringToUTF16(newPasswordIdentifier));
+            SysNSStringToUTF16(generatedPassword), newPasswordUniqueId);
       }
       // If the form isn't found, it disappeared between fillPasswordForm below
       // and here. There isn't much that can be done.

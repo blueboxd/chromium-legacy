@@ -48,7 +48,9 @@
 #endif
 
 using autofill::ACCOUNT_CREATION_PASSWORD;
+using autofill::FieldRendererId;
 using autofill::FormData;
+using autofill::FormRendererId;
 using autofill::FormStructure;
 using autofill::NEW_PASSWORD;
 using autofill::NOT_USERNAME;
@@ -293,7 +295,7 @@ void PasswordManager::OnPasswordNoLongerGenerated(PasswordManagerDriver* driver,
 void PasswordManager::SetGenerationElementAndReasonForForm(
     password_manager::PasswordManagerDriver* driver,
     const FormData& form_data,
-    const base::string16& generation_element,
+    FieldRendererId generation_element,
     bool is_manually_triggered) {
   DCHECK(client_->IsSavingAndFillingEnabled(form_data.url));
 
@@ -667,7 +669,7 @@ void PasswordManager::PresaveGeneratedPassword(
     PasswordManagerDriver* driver,
     const FormData& form,
     const base::string16& generated_password,
-    const base::string16& generation_element) {
+    FieldRendererId generation_element) {
   PasswordFormManager* form_manager = GetMatchedManager(driver, form);
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.GeneratedFormHasNoFormManager",
                         !form_manager);
@@ -681,12 +683,11 @@ void PasswordManager::PresaveGeneratedPassword(
 
 void PasswordManager::UpdateStateOnUserInput(
     PasswordManagerDriver* driver,
-    const base::string16& form_identifier,
-    const base::string16& field_identifier,
+    FormRendererId form_id,
+    FieldRendererId field_id,
     const base::string16& field_value) {
   for (std::unique_ptr<PasswordFormManager>& manager : form_managers_) {
-    if (manager->UpdateStateOnUserInput(form_identifier, field_identifier,
-                                        field_value)) {
+    if (manager->UpdateStateOnUserInput(form_id, field_id, field_value)) {
       ProvisionallySaveForm(manager->observed_form(), driver, true);
       if (manager->is_submitted() && !manager->HasGeneratedPassword()) {
         ShowManualFallbackForSavingImpl(manager.get(),

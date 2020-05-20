@@ -4293,10 +4293,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                          DeclarativeNetRequestBrowserTest_Packed,
                          ::testing::Values(ExtensionLoadType::PACKED));
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeclarativeNetRequestBrowserTest_Unpacked,
-                         ::testing::Values(ExtensionLoadType::UNPACKED));
-
 }  // namespace
 }  // namespace declarative_net_request
 }  // namespace extensions

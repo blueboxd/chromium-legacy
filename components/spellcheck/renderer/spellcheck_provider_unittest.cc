@@ -146,29 +146,6 @@ TEST_F(SpellCheckProviderTest, ShouldNotUseBrowserSpellCheck) {
   EXPECT_EQ(completion.cancellation_count_, 0U);
 }
 
-// Tests that the SpellCheckProvider calls into the native spell checker when
-// the browser spell checker flag is enabled, but the hybrid spell checker flag
-// isn't.
-TEST_F(SpellCheckProviderTest, ShouldUseBrowserSpellCheck) {
-  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
-    return;
-  }
-
-  base::test::ScopedFeatureList local_features;
-  local_features.InitWithFeatures({spellcheck::kWinUseBrowserSpellChecker},
-                                  {spellcheck::kWinUseHybridSpellChecker});
-
-  FakeTextCheckingResult completion;
-  base::string16 text = base::ASCIIToUTF16("This is a test");
-  provider_.RequestTextChecking(
-      text, std::make_unique<FakeTextCheckingCompletion>(&completion));
-
-  EXPECT_EQ(provider_.spelling_service_call_count_, 0U);
-  EXPECT_EQ(provider_.text_check_requests_.size(), 1U);
-  EXPECT_EQ(completion.completion_count_, 0U);
-  EXPECT_EQ(completion.cancellation_count_, 0U);
-}
-
 // Tests that the SpellCheckProvider calls into the native spell checker only
 // when needed.
 INSTANTIATE_TEST_SUITE_P(

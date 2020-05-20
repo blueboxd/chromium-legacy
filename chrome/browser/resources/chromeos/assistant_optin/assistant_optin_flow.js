@@ -5,6 +5,7 @@
 // <include src="utils.js">
 // <include src="setting_zippy.js">
 // <include src="voice_match_entry.js">
+// <include src="browser_proxy.js">
 // <include src="assistant_get_more.js">
 // <include src="assistant_loading.js">
 // <include src="assistant_third_party.js">
@@ -21,6 +22,14 @@ Polymer({
   is: 'assistant-optin-flow',
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+
+  /** @private {?assistant.BrowserProxy} */
+  browserProxy_: null,
+
+  /** @override */
+  created() {
+    this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
+  },
 
   /**
    * Indicates the type of the opt-in flow.
@@ -74,7 +83,7 @@ Polymer({
       default:
         this.showScreen(this.$['value-prop']);
     }
-    chrome.send('login.AssistantOptInFlowScreen.initialized', [this.flowType]);
+    this.browserProxy_.initialized([this.flowType]);
   },
 
   /**
@@ -130,6 +139,7 @@ Polymer({
         if (this.flowType == this.FlowType.SPEAKER_ID_ENROLLMENT ||
             this.flowType == this.FlowType.SPEAKER_ID_RETRAIN) {
           chrome.send('login.AssistantOptInFlowScreen.flowFinished');
+          this.browserProxy_.flowFinished();
         } else {
           this.showScreen(this.$['get-more']);
         }
@@ -139,7 +149,7 @@ Polymer({
         break;
       default:
         console.error('Undefined');
-        chrome.send('dialogClose');
+        this.browserProxy_.dialogClose();
     }
   },
 

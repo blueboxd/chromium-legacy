@@ -67,21 +67,16 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
-#include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/chrome_extensions_api_client.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/net/prediction_options.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/tab_load_tracker_test_support.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/task_manager/task_manager_interface.h"
@@ -89,7 +84,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/search/instant_test_utils.h"
@@ -104,7 +98,6 @@
 #include "chrome/common/net/safe_search_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -118,7 +111,6 @@
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/download/public/common/download_item.h"
 #include "components/google/core/common/google_util.h"
-#include "components/language/core/browser/pref_names.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
@@ -137,7 +129,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
-#include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/unified_consent/pref_names.h"
@@ -157,7 +148,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -167,7 +157,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/network_service_util.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/test/browser_test.h"
@@ -189,10 +178,8 @@
 #include "extensions/common/switches.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/base/hash_value.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
-#include "net/cert/x509_util.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -221,8 +208,6 @@
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
-#include "chrome/browser/chromeos/policy/login_policy_test_base.h"
-#include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
@@ -234,7 +219,6 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/user_manager.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/snapshot/screenshot_grabber.h"
 #endif
 
@@ -312,40 +296,6 @@ void CheckCanOpenURL(Browser* browser, const std::string& spec) {
   EXPECT_NE(blocked_page_title, contents->GetTitle());
 }
 
-// Verifies that access to the given url |spec| is blocked.
-void CheckURLIsBlockedInWebContents(content::WebContents* web_contents,
-                                    const GURL& url) {
-  EXPECT_EQ(url, web_contents->GetURL());
-
-  base::string16 blocked_page_title;
-  if (url.has_host()) {
-    blocked_page_title = base::UTF8ToUTF16(url.host());
-  } else {
-    // Local file paths show the full URL.
-    blocked_page_title = base::UTF8ToUTF16(url.spec());
-  }
-  EXPECT_EQ(blocked_page_title, web_contents->GetTitle());
-
-  // Verify that the expected error page is being displayed.
-  bool result = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents,
-      "var textContent = document.body.textContent;"
-      "var hasError = textContent.indexOf('ERR_BLOCKED_BY_ADMINISTRATOR') >= 0;"
-      "domAutomationController.send(hasError);",
-      &result));
-  EXPECT_TRUE(result);
-}
-
-// Verifies that access to the given url |spec| is blocked.
-void CheckURLIsBlocked(Browser* browser, const std::string& spec) {
-  GURL url(spec);
-  ui_test_utils::NavigateToURL(browser, url);
-  content::WebContents* contents =
-      browser->tab_strip_model()->GetActiveWebContents();
-  CheckURLIsBlockedInWebContents(contents, url);
-}
-
 // Downloads a file named |file| and expects it to be saved to |dir|, which
 // must be empty.
 void DownloadAndVerifyFile(Browser* browser,
@@ -403,14 +353,6 @@ bool IsWebGLEnabled(content::WebContents* contents) {
 bool IsNetworkPredictionEnabled(PrefService* prefs) {
   return chrome_browser_net::CanPrefetchAndPrerenderUI(prefs) ==
       chrome_browser_net::NetworkPredictionStatus::ENABLED;
-}
-
-void FlushBlacklistPolicy() {
-  // Updates of the URLBlacklist are done on IO, after building the blacklist
-  // on the blocking pool, which is initiated from IO.
-  content::RunAllPendingInMessageLoop(BrowserThread::IO);
-  content::RunAllTasksUntilIdle();
-  content::RunAllPendingInMessageLoop(BrowserThread::IO);
 }
 
 bool ContainsVisibleElement(content::WebContents* contents,
@@ -559,230 +501,6 @@ IN_PROC_BROWSER_TEST_F(LocalePolicyTest, ApplicationLocaleValue) {
   EXPECT_NE(french_title, english_title);
 }
 #endif
-
-#if defined(OS_CHROMEOS)
-IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, PRE_AllowedLanguages) {
-  SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  Profile* const profile = GetProfileForActiveUser();
-  PrefService* prefs = profile->GetPrefs();
-
-  // Set locale and preferred languages to "en-US".
-  prefs->SetString(language::prefs::kApplicationLocale, "en-US");
-  prefs->SetString(language::prefs::kPreferredLanguages, "en-US");
-
-  // Set policy to only allow "fr" as locale.
-  std::unique_ptr<base::DictionaryValue> policy =
-      std::make_unique<base::DictionaryValue>();
-  base::ListValue allowed_languages;
-  allowed_languages.AppendString("fr");
-  policy->SetKey(key::kAllowedLanguages, std::move(allowed_languages));
-  user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
-                                         profile);
-}
-
-IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedLanguages) {
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  Profile* const profile = GetProfileForActiveUser();
-  const PrefService* prefs = profile->GetPrefs();
-
-  // Verifies that the default locale has been overridden by policy
-  // (see |GetMandatoryPoliciesValue|)
-  Browser* browser = CreateBrowser(profile);
-  EXPECT_EQ("fr", prefs->GetString(language::prefs::kApplicationLocale));
-  ui_test_utils::NavigateToURL(browser, GURL(chrome::kChromeUINewTabURL));
-  base::string16 french_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
-  base::string16 title;
-  EXPECT_TRUE(ui_test_utils::GetCurrentTabTitle(browser, &title));
-  EXPECT_EQ(french_title, title);
-
-  // Make sure this is really French and differs from the English title.
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  std::string loaded =
-      ui::ResourceBundle::GetSharedInstance().ReloadLocaleResources("en-US");
-  EXPECT_EQ("en-US", loaded);
-  base::string16 english_title = l10n_util::GetStringUTF16(IDS_NEW_TAB_TITLE);
-  EXPECT_NE(french_title, english_title);
-
-  // Verifiy that the enforced locale is added into the list of
-  // preferred languages.
-  EXPECT_EQ("fr", prefs->GetString(language::prefs::kPreferredLanguages));
-}
-
-IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
-  SkipToLoginScreen();
-  LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-  Profile* const profile = GetProfileForActiveUser();
-
-  chromeos::input_method::InputMethodManager* imm =
-      chromeos::input_method::InputMethodManager::Get();
-  ASSERT_TRUE(imm);
-  scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
-      imm->GetActiveIMEState();
-  ASSERT_TRUE(ime_state.get());
-
-  std::vector<std::string> input_methods;
-  input_methods.emplace_back("xkb:us::eng");
-  input_methods.emplace_back("xkb:fr::fra");
-  input_methods.emplace_back("xkb:de::ger");
-  EXPECT_TRUE(imm->MigrateInputMethods(&input_methods));
-
-  // No restrictions and current input method should be "xkb:us::eng" (default).
-  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
-  EXPECT_EQ(input_methods[0], ime_state->GetCurrentInputMethod().id());
-  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[1]));
-  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
-
-  // Set policy to only allow "xkb:fr::fra", "xkb:de::ger" an an invalid value
-  // as input method.
-  std::unique_ptr<base::DictionaryValue> policy =
-      std::make_unique<base::DictionaryValue>();
-  base::ListValue allowed_input_methods;
-  allowed_input_methods.AppendString("xkb:fr::fra");
-  allowed_input_methods.AppendString("xkb:de::ger");
-  allowed_input_methods.AppendString("invalid_value_will_be_ignored");
-  policy->SetKey(key::kAllowedInputMethods, std::move(allowed_input_methods));
-  user_policy_helper()->SetPolicyAndWait(*policy, base::DictionaryValue(),
-                                         profile);
-
-  // Only "xkb:fr::fra", "xkb:de::ger" should be allowed, current input method
-  // should be "xkb:fr::fra", enabling "xkb:us::eng" should not be possible,
-  // enabling "xkb:de::ger" should be possible.
-  EXPECT_EQ(2U, ime_state->GetAllowedInputMethods().size());
-  EXPECT_EQ(2U, ime_state->GetActiveInputMethods()->size());
-  EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
-  EXPECT_FALSE(ime_state->EnableInputMethod(input_methods[0]));
-  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
-
-  // Set policy to only allow an invalid value as input method.
-  std::unique_ptr<base::DictionaryValue> policy_invalid =
-      std::make_unique<base::DictionaryValue>();
-  base::ListValue invalid_input_methods;
-  invalid_input_methods.AppendString("invalid_value_will_be_ignored");
-  policy_invalid->SetKey(key::kAllowedInputMethods,
-                         std::move(invalid_input_methods));
-  user_policy_helper()->SetPolicyAndWait(*policy_invalid,
-                                         base::DictionaryValue(), profile);
-
-  // No restrictions and current input method should still be "xkb:fr::fra".
-  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
-  EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
-  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
-  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
-
-  // Allow all input methods again.
-  user_policy_helper()->SetPolicyAndWait(base::DictionaryValue(),
-                                         base::DictionaryValue(), profile);
-
-  // No restrictions and current input method should still be "xkb:fr::fra".
-  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
-  EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
-  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
-  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
-}
-
-class StartupBrowserWindowLaunchSuppressedTest : public LoginPolicyTestBase {
- public:
-  StartupBrowserWindowLaunchSuppressedTest() = default;
-
-  void SetUpPolicy(bool enabled) {
-    std::unique_ptr<base::DictionaryValue> policy =
-        std::make_unique<base::DictionaryValue>();
-
-    policy->SetKey(key::kStartupBrowserWindowLaunchSuppressed,
-                   base::Value(enabled));
-
-    user_policy_helper()->SetPolicy(*policy, base::DictionaryValue());
-  }
-
-  void CheckLaunchedBrowserCount(unsigned int count) {
-    SkipToLoginScreen();
-    LogIn(kAccountId, kAccountPassword, kEmptyServices);
-
-    Profile* const profile = GetProfileForActiveUser();
-
-    ASSERT_EQ(count, chrome::GetBrowserCount(profile));
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StartupBrowserWindowLaunchSuppressedTest);
-};
-
-// Test that the browser window is not launched when
-// StartupBrowserWindowLaunchSuppressed is set to true.
-IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
-                       TrueDoesNotAllowBrowserWindowLaunch) {
-  SetUpPolicy(true);
-  CheckLaunchedBrowserCount(0u);
-}
-
-// Test that the browser window is launched when
-// StartupBrowserWindowLaunchSuppressed is set to false.
-IN_PROC_BROWSER_TEST_F(StartupBrowserWindowLaunchSuppressedTest,
-                       FalseAllowsBrowserWindowLaunch) {
-  SetUpPolicy(false);
-  CheckLaunchedBrowserCount(1u);
-}
-
-class PrimaryUserPoliciesProxiedTest : public LoginPolicyTestBase {
- public:
-  PrimaryUserPoliciesProxiedTest() = default;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(PrimaryUserPoliciesProxiedTest);
-};
-
-IN_PROC_BROWSER_TEST_F(PrimaryUserPoliciesProxiedTest,
-                       AvailableInLocalStateEarly) {
-  PolicyService* const device_wide_policy_service =
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetPolicyService();
-
-  // Sanity check default state without a policy active.
-  EXPECT_FALSE(device_wide_policy_service
-                   ->GetPolicies(PolicyNamespace(
-                       POLICY_DOMAIN_CHROME, std::string() /* component_id */))
-                   .GetValue(key::kAudioOutputAllowed));
-  const PrefService::Preference* pref =
-      g_browser_process->local_state()->FindPreference(
-          chromeos::prefs::kAudioOutputAllowed);
-  EXPECT_FALSE(pref->IsManaged());
-  EXPECT_TRUE(pref->GetValue()->GetBool());
-
-  base::DictionaryValue policy;
-  policy.SetKey(key::kAudioOutputAllowed, base::Value(false));
-  user_policy_helper()->SetPolicy(policy, base::DictionaryValue());
-
-  SkipToLoginScreen();
-
-  content::WindowedNotificationObserver profile_created_observer(
-      chrome::NOTIFICATION_PROFILE_CREATED,
-      content::NotificationService::AllSources());
-  TriggerLogIn(kAccountId, kAccountPassword, kEmptyServices);
-  profile_created_observer.Wait();
-
-  const base::Value* policy_value =
-      device_wide_policy_service
-          ->GetPolicies(PolicyNamespace(POLICY_DOMAIN_CHROME,
-                                        std::string() /* component_id */))
-          .GetValue(key::kAudioOutputAllowed);
-  ASSERT_TRUE(policy_value);
-  EXPECT_FALSE(policy_value->GetBool());
-
-  EXPECT_TRUE(pref->IsManaged());
-  EXPECT_FALSE(pref->GetValue()->GetBool());
-
-  // Make sure that session startup finishes before letting chrome exit.
-  // Rationale: We've seen CHECK-failures when exiting chrome right after
-  // NOTIFICATION_PROFILE_CREATED, see e.g. https://crbug.com/1002066 .
-  chromeos::test::WaitForPrimaryUserSessionStart();
-}
-
-#endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   // Verifies that the bookmarks bar can be forced to always or never show up.
@@ -2191,167 +1909,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
 
 #endif  // defined(OS_CHROMEOS)
 
-namespace {
-
-constexpr const char* kRestoredURLs[] = {
-    "http://aaa.com/empty.html", "http://bbb.com/empty.html",
-};
-
-bool IsNonSwitchArgument(const base::CommandLine::StringType& s) {
-  return s.empty() || s[0] != '-';
-}
-
-}  // namespace
-
-// Similar to PolicyTest but allows setting policies before the browser is
-// created. Each test parameter is a method that sets up the early policies
-// and stores the expected startup URLs in |expected_urls_|.
-class RestoreOnStartupPolicyTest
-    : public PolicyTest,
-      public testing::WithParamInterface<
-          void (RestoreOnStartupPolicyTest::*)(void)> {
- public:
-  RestoreOnStartupPolicyTest() = default;
-  virtual ~RestoreOnStartupPolicyTest() = default;
-
-#if defined(OS_CHROMEOS)
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(nkostylev): Investigate if we can remove this switch.
-    command_line->AppendSwitch(switches::kCreateBrowserOnStartupForTests);
-    PolicyTest::SetUpCommandLine(command_line);
-  }
-#endif
-
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    // Set early policies now, before the browser is created.
-    (this->*(GetParam()))();
-
-    // Remove the non-switch arguments, so that session restore kicks in for
-    // these tests.
-    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-    base::CommandLine::StringVector argv = command_line->argv();
-    base::EraseIf(argv, IsNonSwitchArgument);
-    command_line->InitFromArgv(argv);
-    ASSERT_TRUE(std::equal(argv.begin(), argv.end(),
-                           command_line->argv().begin()));
-  }
-
-  void ListOfURLs() {
-    // Verifies that policy can set the startup pages to a list of URLs.
-    base::ListValue urls;
-    for (size_t i = 0; i < base::size(kRestoredURLs); ++i) {
-      urls.AppendString(kRestoredURLs[i]);
-      expected_urls_.push_back(GURL(kRestoredURLs[i]));
-    }
-    PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueURLs)),
-        nullptr);
-    policies.Set(key::kRestoreOnStartupURLs, POLICY_LEVEL_MANDATORY,
-                 POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD, urls.CreateDeepCopy(),
-                 nullptr);
-    provider_.UpdateChromePolicy(policies);
-  }
-
-  void NTP() {
-    // Verifies that policy can set the startup page to the NTP.
-    PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueNewTab)),
-        nullptr);
-    provider_.UpdateChromePolicy(policies);
-    expected_urls_.push_back(GURL(chrome::kChromeUINewTabURL));
-  }
-
-  void Last() {
-    // Verifies that policy can set the startup pages to the last session.
-    PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        base::WrapUnique(new base::Value(SessionStartupPref::kPrefValueLast)),
-        nullptr);
-    provider_.UpdateChromePolicy(policies);
-    // This should restore the tabs opened at PRE_RunTest below.
-    for (size_t i = 0; i < base::size(kRestoredURLs); ++i)
-      expected_urls_.push_back(GURL(kRestoredURLs[i]));
-  }
-
-  void Blocked() {
-    // Verifies that URLs are blocked during session restore.
-    PolicyMap policies;
-    policies.Set(
-        key::kRestoreOnStartup, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-        POLICY_SOURCE_CLOUD,
-        std::make_unique<base::Value>(SessionStartupPref::kPrefValueLast),
-        nullptr);
-    auto urls = std::make_unique<base::Value>(base::Value::Type::LIST);
-    for (const auto* url_string : kRestoredURLs)
-      urls->Append(url_string);
-    policies.Set(key::kURLBlacklist, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                 POLICY_SOURCE_CLOUD, std::move(urls), nullptr);
-    provider_.UpdateChromePolicy(policies);
-    // This should restore the tabs opened at PRE_RunTest below, yet all should
-    // be blocked.
-    blocked_ = true;
-    for (size_t i = 0; i < base::size(kRestoredURLs); ++i)
-      expected_urls_.emplace_back(kRestoredURLs[i]);
-  }
-
-  // URLs that are expected to be loaded.
-  std::vector<GURL> expected_urls_;
-
-  // True if the loaded URLs should be blocked by policy.
-  bool blocked_ = false;
-};
-
-IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, PRE_RunTest) {
-  // Do not show Welcome Page.
-  browser()->profile()->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage,
-                                               true);
-
-  // Open some tabs to verify if they are restored after the browser restarts.
-  // Most policy settings override this, except kPrefValueLast which enforces
-  // a restore.
-  ui_test_utils::NavigateToURL(browser(), GURL(kRestoredURLs[0]));
-  for (size_t i = 1; i < base::size(kRestoredURLs); ++i) {
-    content::WindowedNotificationObserver observer(
-        content::NOTIFICATION_LOAD_STOP,
-        content::NotificationService::AllSources());
-    chrome::AddSelectedTabWithURL(browser(), GURL(kRestoredURLs[i]),
-                                  ui::PAGE_TRANSITION_LINK);
-    observer.Wait();
-  }
-}
-
-IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, RunTest) {
-  TabStripModel* model = browser()->tab_strip_model();
-  int size = static_cast<int>(expected_urls_.size());
-  EXPECT_EQ(size, model->count());
-  resource_coordinator::WaitForTransitionToLoaded(model);
-  for (int i = 0; i < size && i < model->count(); ++i) {
-    content::WebContents* web_contents = model->GetWebContentsAt(i);
-    if (blocked_)
-      CheckURLIsBlockedInWebContents(web_contents, expected_urls_[i]);
-    else if (expected_urls_[i] == GURL(chrome::kChromeUINewTabURL))
-      EXPECT_TRUE(search::IsInstantNTP(web_contents));
-    else
-      EXPECT_EQ(expected_urls_[i], web_contents->GetURL());
-  }
-}
-
-INSTANTIATE_TEST_SUITE_P(
-    RestoreOnStartupPolicyTestInstance,
-    RestoreOnStartupPolicyTest,
-    testing::Values(&RestoreOnStartupPolicyTest::ListOfURLs,
-                    &RestoreOnStartupPolicyTest::NTP,
-                    &RestoreOnStartupPolicyTest::Last,
-                    &RestoreOnStartupPolicyTest::Blocked));
 
 // Similar to PolicyTest but sets a couple of policies before the browser is
 // started.
@@ -2503,134 +2060,6 @@ IN_PROC_BROWSER_TEST_F(PolicyWebStoreIconHiddenTest, NTPWebStoreIconHidden) {
   // Applying the policy before the browser started, the web store icon should
   // now be hidden.
   EXPECT_FALSE(ContainsWebstoreTile(iframe));
-}
-
-class CertificateTransparencyPolicyTest : public PolicyTest {
- public:
-  CertificateTransparencyPolicyTest() : PolicyTest() {
-    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-        true);
-  }
-
-  ~CertificateTransparencyPolicyTest() override {
-    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
-        base::nullopt);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
-                       CertificateTransparencyEnforcementDisabledForUrls) {
-  net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  https_server_ok.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server_ok.Start());
-
-  // Require CT for all hosts (in the absence of policy).
-  SetRequireCTForTesting(true);
-
-  ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
-
-  // The page should initially be blocked.
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  WaitForInterstitial(tab);
-
-  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      tab->GetMainFrame(), "proceed-link"));
-  EXPECT_NE(base::UTF8ToUTF16("OK"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-
-  // Now exempt the URL from being blocked by setting policy.
-  std::unique_ptr<base::ListValue> disabled_urls =
-      std::make_unique<base::ListValue>();
-  disabled_urls->AppendString(https_server_ok.host_port_pair().HostForURL());
-
-  PolicyMap policies;
-  policies.Set(key::kCertificateTransparencyEnforcementDisabledForUrls,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::move(disabled_urls), nullptr);
-  UpdateProviderPolicy(policies);
-  FlushBlacklistPolicy();
-
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_ok.GetURL("/simple.html"));
-
-  // There should be no interstitial after the page loads.
-  EXPECT_FALSE(IsShowingInterstitial(tab));
-  EXPECT_EQ(base::UTF8ToUTF16("OK"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-
-  // Now ensure that this setting still works after a network process crash.
-  if (!content::IsOutOfProcessNetworkService())
-    return;
-
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_ok.GetURL("/title1.html"));
-
-  SimulateNetworkServiceCrash();
-  SetRequireCTForTesting(true);
-
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_ok.GetURL("/simple.html"));
-
-  // There should be no interstitial after the page loads.
-  EXPECT_FALSE(IsShowingInterstitial(tab));
-  EXPECT_EQ(base::UTF8ToUTF16("OK"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-}
-
-IN_PROC_BROWSER_TEST_F(CertificateTransparencyPolicyTest,
-                       CertificateTransparencyEnforcementDisabledForCas) {
-  net::EmbeddedTestServer https_server_ok(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server_ok.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
-  https_server_ok.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server_ok.Start());
-
-  // Require CT for all hosts (in the absence of policy).
-  SetRequireCTForTesting(true);
-
-  ui_test_utils::NavigateToURL(browser(), https_server_ok.GetURL("/"));
-
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  // The page should initially be blocked.
-  content::RenderFrameHost* main_frame;
-  security_interstitials::SecurityInterstitialTabHelper* helper =
-      security_interstitials::SecurityInterstitialTabHelper::FromWebContents(
-          web_contents);
-  ASSERT_TRUE(helper);
-  ASSERT_TRUE(
-      helper->GetBlockingPageForCurrentlyCommittedNavigationForTesting());
-  main_frame = web_contents->GetMainFrame();
-  ASSERT_TRUE(content::WaitForRenderFrameReady(main_frame));
-  EXPECT_TRUE(chrome_browser_interstitials::IsInterstitialDisplayingText(
-      main_frame, "proceed-link"));
-
-  EXPECT_NE(base::UTF8ToUTF16("OK"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
-
-  // Now exempt the leaf SPKI from being blocked by setting policy.
-  net::HashValue leaf_hash;
-  ASSERT_TRUE(net::x509_util::CalculateSha256SpkiHash(
-      https_server_ok.GetCertificate()->cert_buffer(), &leaf_hash));
-  std::unique_ptr<base::ListValue> disabled_spkis =
-      std::make_unique<base::ListValue>();
-  disabled_spkis->AppendString(leaf_hash.ToString());
-
-  PolicyMap policies;
-  policies.Set(key::kCertificateTransparencyEnforcementDisabledForCas,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               std::move(disabled_spkis), nullptr);
-  UpdateProviderPolicy(policies);
-  FlushBlacklistPolicy();
-
-  ui_test_utils::NavigateToURL(browser(),
-                               https_server_ok.GetURL("/simple.html"));
-
-  // Check we are no longer in the interstitial.
-  EXPECT_EQ(base::UTF8ToUTF16("OK"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
 }
 
 // Test that when SSL error overriding is allowed by policy (default), the

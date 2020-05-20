@@ -38,7 +38,7 @@ declare_args() {
   # Pattern used to select the identity to use for codesigning. If defined,
   # must be a substring of the description of exactly one of the identities by
   # `security find-identity -v -p codesigning`.
-  ios_code_signing_identity_description = ""
+  ios_code_signing_identity_description = "Apple Development"
 
   # Prefix for CFBundleIdentifier property of iOS bundles (correspond to the
   # "Organization Identifier" in Xcode). Code signing will fail if no mobile

@@ -480,7 +480,8 @@ RenderFrameHost* ImeAdapterAndroid::GetFocusedFrame() {
   return nullptr;
 }
 
-mojom::FrameInputHandler* ImeAdapterAndroid::GetFocusedFrameInputHandler() {
+blink::mojom::FrameInputHandler*
+ImeAdapterAndroid::GetFocusedFrameInputHandler() {
   auto* focused_frame = static_cast<RenderFrameHostImpl*>(GetFocusedFrame());
   if (!focused_frame)
     return nullptr;

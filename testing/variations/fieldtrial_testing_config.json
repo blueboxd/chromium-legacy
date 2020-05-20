@@ -2396,6 +2396,28 @@
             ]
         }
     ],
+    "ForegroundVideoCaptureService": [
+        {
+            "platforms": [
+                "android",
+                "android_weblayer",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "ForegroundVideoCaptureService"
+                    ]
+                }
+            ]
+        }
+    ],
     "FormControlsRefresh": [
         {
             "platforms": [

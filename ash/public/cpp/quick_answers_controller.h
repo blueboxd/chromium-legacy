@@ -14,6 +14,7 @@ namespace chromeos {
 namespace quick_answers {
 class QuickAnswersClient;
 class QuickAnswersDelegate;
+struct Context;
 }  // namespace quick_answers
 }  // namespace chromeos
 
@@ -25,6 +26,8 @@ class ASH_PUBLIC_EXPORT QuickAnswersController {
   QuickAnswersController();
   virtual ~QuickAnswersController();
 
+  // Get the instance of |QuickAnswersController|. It is only available when
+  // quick answers rich UI is enabled.
   static QuickAnswersController* Get();
 
   // Passes in a client instance for the controller to use.
@@ -34,10 +37,13 @@ class ASH_PUBLIC_EXPORT QuickAnswersController {
   // Show the quick-answers view (and/or any accompanying/associated views like
   // user-consent view instead, if consent is not yet granted). |anchor_bounds|
   // is the bounds of the anchor view (which is the context menu for browser).
-  // |title| is the text selected by the user.
-  virtual void MaybeShowQuickAnswers(const gfx::Rect& anchor_bounds,
-                                     const std::string& title,
-                                     const std::string& device_language) = 0;
+  // |title| is the text selected by the user. |context| is the context
+  // information which will be used as part of the request for getting more
+  // relevant result.
+  virtual void MaybeShowQuickAnswers(
+      const gfx::Rect& anchor_bounds,
+      const std::string& title,
+      const chromeos::quick_answers::Context& context) = 0;
 
   // Dismiss the quick-answers view (and/or any associated views like
   // user-consent view) currently shown. |is_active| is true if the quick-answer

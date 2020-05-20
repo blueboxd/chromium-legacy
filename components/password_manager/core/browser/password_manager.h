@@ -105,7 +105,7 @@ class PasswordManager : public FormSubmissionObserver {
   void SetGenerationElementAndReasonForForm(
       PasswordManagerDriver* driver,
       const autofill::FormData& form_data,
-      const base::string16& generation_element,
+      autofill::FieldRendererId generation_element,
       bool is_manually_triggered);
 
   // FormSubmissionObserver:
@@ -221,14 +221,14 @@ class PasswordManager : public FormSubmissionObserver {
   void PresaveGeneratedPassword(PasswordManagerDriver* driver,
                                 const autofill::FormData& form,
                                 const base::string16& generated_password,
-                                const base::string16& generation_element);
+                                autofill::FieldRendererId generation_element);
 
   // Updates the state if the PasswordFormManager which corresponds to the form
   // with |form_identifier|. In case if there is a presaved credential it
   // updates the presaved credential.
   void UpdateStateOnUserInput(PasswordManagerDriver* driver,
-                              const base::string16& form_identifier,
-                              const base::string16& field_identifier,
+                              autofill::FormRendererId form_id,
+                              autofill::FieldRendererId field_id,
                               const base::string16& field_value);
 
   // Stops treating a password as generated. |driver| corresponds to the

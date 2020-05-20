@@ -21,6 +21,7 @@ class FakeHierarchy : public Hierarchy {
   ~FakeHierarchy() override;
 
   void AddSubpageMetadata(
+      int name_message_id,
       mojom::Section section,
       mojom::Subpage subpage,
       base::Optional<mojom::Subpage> parent_subpage = base::nullopt);

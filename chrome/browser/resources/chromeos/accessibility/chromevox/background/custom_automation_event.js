@@ -25,11 +25,14 @@ CustomAutomationEvent = class {
    * @param {chrome.automation.EventType} type The event type.
    * @param {!chrome.automation.AutomationNode} target The event target.
    * @param {string} eventFrom The source of this event.
+   * @param {!Array<chrome.automation.AutomationIntent>} intents Intents for
+   *     this event.
    */
-  constructor(type, target, eventFrom) {
+  constructor(type, target, eventFrom, intents) {
     this.type = type;
     this.target = target;
     this.eventFrom = eventFrom;
+    this.intents = intents;
   }
 
   /**

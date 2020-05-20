@@ -1641,6 +1641,27 @@
   <message name="IDS_SETTINGS_INTERNET_DETAIL" desc="Name of the settings page which displays network details.">
     Network Details
   </message>
+  <message name="IDS_SETTINGS_INTERNET_ETHERNET_DETAILS" desc="Name of the settings page which displays details about an Ethernet network.">
+    Ethernet details
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_WIFI_DETAILS" desc="Name of the settings page which displays details about a Wi-Fi network.">
+    Wi-Fi details
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_CELLULAR_DETAILS" desc="Name of the settings page which displays details about a cellular network (e.g., an LTE network).">
+    Cellular details
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_INSTANT_TETHERING_DETAILS" desc="Name of the settings page which displays details about an Instant Tethering network (i.e., using a phone's internet through the Instant Tethering feature).">
+    Instant Tethering details
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_VPN_DETAILS" desc="Name of the settings page which displays details about a VPN connection.">
+    VPN details
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_WIFI_NETWORKS" desc="Name of the settings page which displays a list of Wi-Fi networks which the user can choose to connect to.">
+    Wi-Fi networks
+  </message>
+  <message name="IDS_SETTINGS_INTERNET_MOBILE_DATA_NETWORKS" desc="Name of the settings page which displays a list of mobile data networks which the user can choose to connect to.">
+    Mobile data networks
+  </message>
   <message name="IDS_SETTINGS_INTERNET_DEVICE_ENABLING" desc="Settings > Internet > Message when a device (e.g a Cellular modem) is enabling.">
     Enabling
   </message>
@@ -2659,6 +2680,9 @@
     Content you’ve purchased such as movies, TV shows, music, books, or other in-app purchases may also be deleted.
     <ph name="LINE_BREAKS2">&lt;br&gt;&lt;br&gt;</ph>
     This doesn’t affect apps or content on other devices.
+  </message>
+  <message name="IDS_SETTINGS_APP_DETAILS_TITLE" desc="The title of app details subpage, which displays details about a specific app.">
+    App details
   </message>
 
   <!-- Apps > Manage your apps > Plugin VM > Shared folders -->

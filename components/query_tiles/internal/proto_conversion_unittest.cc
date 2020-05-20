@@ -42,6 +42,8 @@ void InitResponseProto(ResponseGroupProto* response,
       auto* new_tile = info_group->add_tiles();
       new_tile->set_tile_id(new_tile_id);
       new_tile->set_is_top_level(false);
+      auto* param = new_tile->add_search_params();
+      *param = "xyz=1";
     }
   }
 }

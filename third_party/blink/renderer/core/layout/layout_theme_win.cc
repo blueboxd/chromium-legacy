@@ -22,10 +22,6 @@ LayoutTheme& LayoutTheme::NativeTheme() {
 
 Color LayoutThemeWin::SystemColor(CSSValueID css_value_id,
                                   WebColorScheme color_scheme) const {
-  if (!RuntimeEnabledFeatures::UseWindowsSystemColorsEnabled()) {
-    return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
-  }
-
   blink::WebThemeEngine::SystemThemeColor theme_color;
   switch (css_value_id) {
     case CSSValueID::kActivetext:

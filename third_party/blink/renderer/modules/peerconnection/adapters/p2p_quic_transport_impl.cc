@@ -116,11 +116,11 @@ class P2PQuicPacketWriter : public quic::QuicPacketWriter,
     return false;
   }
 
-  char* GetNextWriteLocation(
+  quic::QuicPacketBuffer GetNextWriteLocation(
       const quic::QuicIpAddress& self_address,
       const quic::QuicSocketAddress& peer_address) override {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-    return nullptr;
+    return {nullptr, nullptr};
   }
 
   quic::WriteResult Flush() override {

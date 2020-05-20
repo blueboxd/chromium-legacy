@@ -20309,6 +20309,8 @@ Called by update_document_policy_enum.py.-->
   <int value="706" label="PrintRasterizationMode"/>
   <int value="707" label="AutoOpenAllowedForURLs"/>
   <int value="708" label="ReportDeviceBluetoothInfo"/>
+  <int value="709" label="ReportDeviceFanInfo"/>
+  <int value="710" label="ReportDeviceVpdInfo"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -23013,6 +23015,7 @@ Called by update_extension_histograms.py.-->
   <int value="1475" label="AUTOTESTPRIVATE_SHOWPLUGINVMINSTALLER"/>
   <int value="1476" label="PASSWORDSPRIVATE_REMOVESAVEDPASSWORDS"/>
   <int value="1477" label="PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTIONS"/>
+  <int value="1478" label="AUTOTESTPRIVATE_WAITFORAMBIENTPHOTOANIMATION"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -40954,6 +40957,7 @@ from previous Chrome versions.
   <int value="860336036" label="ChromeModernDesign:enabled"/>
   <int value="862453793" label="TranslateUI2016Q2:enabled"/>
   <int value="864024033" label="IsolatePrerendersMustProbeOrigin:enabled"/>
+  <int value="866536801" label="PDFViewerUpdate:disabled"/>
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="868009556" label="AutofillUpstream:enabled"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
@@ -41629,6 +41633,7 @@ from previous Chrome versions.
   <int value="1630159957" label="SharingSendViaSync:disabled"/>
   <int value="1630988998" label="VrBrowsingExperimentalRendering:disabled"/>
   <int value="1632112977" label="ash-disable-tablet-autohide-titlebars"/>
+  <int value="1632176267" label="PDFViewerUpdate:enabled"/>
   <int value="1633456034" label="chrome-home-swipe-logic"/>
   <int value="1634732103" label="PassiveDocumentWheelEventListeners:enabled"/>
   <int value="1634884226"
@@ -56696,6 +56701,25 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="5" label="NOTIFY_FACTORY_OF_SESSION_CLOSED"/>
 </enum>
 
+<enum name="QuicTransportClientConnectState">
+  <int value="0" label="CONNECT_STATE_NONE"/>
+  <int value="1" label="CONNECT_STATE_INIT"/>
+  <int value="2" label="CONNECT_STATE_CHECK_PROXY"/>
+  <int value="3" label="CONNECT_STATE_CHECK_PROXY_COMPLETE"/>
+  <int value="4" label="CONNECT_STATE_RESOLVE_HOST"/>
+  <int value="5" label="CONNECT_STATE_RESOLVE_HOST_COMPLETE"/>
+  <int value="6" label="CONNECT_STATE_CONNECT"/>
+  <int value="7" label="CONNECT_STATE_CONFIRM_CONNECTION"/>
+</enum>
+
+<enum name="QuicTransportClientState">
+  <int value="0" label="NEW"/>
+  <int value="1" label="CONNECTING"/>
+  <int value="2" label="CONNECTED"/>
+  <int value="3" label="CLOSED"/>
+  <int value="4" label="FAILED"/>
+</enum>
+
 <enum name="QuicTransportErrorCodes">
   <int value="0" label="NO_ERROR"/>
   <int value="1" label="INTERNAL_ERROR"/>
@@ -67469,6 +67493,14 @@ Full version information for the fingerprint enum values:
   <int value="8" label="Not matched"/>
   <int value="9" label="Empty URL"/>
   <int value="10" label="Rejected by filter"/>
+</enum>
+
+<enum name="UkmEventNameHash">
+<!-- Placeholder enum. The values are UKM event name hashes truncated to 31
+     bits. -->
+
+<!-- TODO(jwd@chromium.org): Automatically populate this enum from ukm.xml. -->
+
 </enum>
 
 <enum name="UkmResetReason">

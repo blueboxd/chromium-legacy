@@ -21,6 +21,7 @@
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_source.h"
+#include "net/base/network_change_notifier.h"
 #include "net/http/http_response_info.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -250,10 +251,16 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCountWithSource(
     DownloadCountTypes type,
     DownloadSource download_source);
 
+// Record metrics when a new download is started.
+COMPONENTS_DOWNLOAD_EXPORT void RecordNewDownloadStarted(
+    net::NetworkChangeNotifier::ConnectionType connection_type,
+    DownloadSource download_source);
+
 // Record COMPLETED_COUNT and how long the download took.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadCompleted(
     int64_t download_len,
     bool is_parallelizable,
+    net::NetworkChangeNotifier::ConnectionType connection_type,
     DownloadSource download_source);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.

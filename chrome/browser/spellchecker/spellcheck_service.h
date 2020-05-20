@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -31,7 +32,6 @@ class SpellCheckHostMetrics;
 
 namespace base {
 class WaitableEvent;
-class SupportsUserData;
 }
 
 namespace content {
@@ -84,7 +84,7 @@ class SpellcheckService : public KeyedService,
   // Returns all currently configured |dictionaries| to display in the context
   // menu over a text area. The context menu is used for selecting the
   // dictionaries used for spellcheck.
-  static void GetDictionaries(base::SupportsUserData* browser_context,
+  static void GetDictionaries(content::BrowserContext* browser_context,
                               std::vector<Dictionary>* dictionaries);
 #endif  // !OS_MACOSX
 
@@ -152,6 +152,18 @@ class SpellcheckService : public KeyedService,
   void OnHunspellDictionaryDownloadFailure(
       const std::string& language) override;
 
+#if defined(OS_WIN)
+  // Callback for spellcheck_platform::RetrieveSpellcheckLanguages. Populates
+  // map of preferred languages to available platform dictionaries then
+  // loads the dictionaries.
+  void InitWindowsDictionaryLanguages(
+      const std::vector<std::string>& windows_spellcheck_languages);
+
+  // Indicates whether given accept language has Windows spellcheck platform
+  // support.
+  bool UsesWindowsDictionary(std::string accept_language) const;
+#endif  // defined(OS_WIN)
+
   // The returned pointer can be null if the current platform doesn't need a
   // per-profile, platform-specific spell check object. Currently, only Windows
   // requires one, and only on certain versions.
@@ -167,11 +179,31 @@ class SpellcheckService : public KeyedService,
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);
+#if defined(OS_WIN)
+  FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsHybridBrowserTest,
+                           WindowsHybridSpellcheck);
+  FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsDictionaryMappingUnitTest,
+                           CheckMappings);
+#endif  // defined(OS_WIN)
 
   // Parses a full BCP47 language tag to return just the language subtag,
   // optionally with a hyphen and script subtag appended.
   static std::string GetLanguageAndScriptTag(const std::string& full_tag,
                                              bool include_script_tag);
+
+  // Returns true if full BCP47 language tag contains private use subtag (e.g in
+  // the tag "ja-Latn-JP-x-ext"), indicating the tag is only for use by private
+  // agreement.
+  static bool HasPrivateUseSubTag(const std::string& full_tag);
+
+#if defined(OS_WIN)
+  // Returns the BCP47 language tag to pass to the Windows spellcheck API, based
+  // on the accept language and full tag, with special logic for languages that
+  // can be written in different scripts.
+  static std::string GetTagToPassToWindowsSpellchecker(
+      const std::string& accept_language,
+      const std::string& supported_language_full_tag);
+#endif  // defined(OS_WIN)
 
   // Attaches an event so browser tests can listen the status events.
   static void AttachStatusEvent(base::WaitableEvent* status_event);
@@ -213,6 +245,22 @@ class SpellcheckService : public KeyedService,
   // Records statistics about which spell checker supports which of the user's
   // enabled spell check locales.
   void RecordSpellcheckLocalesStats();
+
+  // Adds an item to the cached collection mapping an accept language from
+  // language settings to a BCP47 language tag to be passed to the Windows
+  // spellchecker API, guarding against duplicate entries for the same accept
+  // language.
+  void AddWindowsSpellcheckDictionary(
+      const std::string& accept_language,
+      const std::string& supported_language_full_tag);
+
+  // Gets the BCP47 language tag to pass to Windows spellcheck API, by
+  // searching through the collection of languages already known to have
+  // Windows spellchecker support on the system. Can return an empty string
+  // if there is no Windows spellchecker support for this language on the
+  // system.
+  std::string GetSupportedWindowsDictionaryLanguage(
+      const std::string& accept_language) const;
 #endif  // defined(OS_WIN)
 
   // WindowsSpellChecker must be created before the dictionary instantiation and
@@ -231,6 +279,14 @@ class SpellcheckService : public KeyedService,
 
   std::vector<std::unique_ptr<SpellcheckHunspellDictionary>>
       hunspell_dictionaries_;
+
+#if defined(OS_WIN)
+  // Maps accept language tags to Windows spellcheck BCP47 tags, an analog
+  // of the hardcoded kSupportedSpellCheckerLanguages used for Hunspell,
+  // with the difference that only language packs installed on the system
+  // with spellchecker support are included.
+  std::map<std::string, std::string> windows_spellcheck_dictionary_map_;
+#endif  // defined(OS_WIN)
 
   base::WeakPtrFactory<SpellcheckService> weak_ptr_factory_{this};
 

@@ -2423,14 +2423,12 @@ if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
     sources = [
       "profiler/native_unwinder_android.cc",
       "profiler/native_unwinder_android.h",
-      "profiler/unwindstack_internal_android.cc",
-      "profiler/unwindstack_internal_android.h",
     ]
 
-    include_dirs = [ "//third_party/libunwindstack/src/libunwindstack/include" ]
-
-    public_deps = [ ":base" ]
-    deps = [ "//third_party/libunwindstack" ]
+    public_deps = [
+      ":base",
+      "//third_party/libunwindstack",
+    ]
   }
 }
 
@@ -2979,8 +2977,6 @@ test("base_unittests") {
     if (!exclude_unwind_tables &&
         (current_cpu == "arm" || current_cpu == "arm64")) {
       sources += [ "profiler/native_unwinder_android_unittest.cc" ]
-      include_dirs =
-          [ "//third_party/libunwindstack/src/libunwindstack/include" ]
       deps += [
         ":base_profiler_test_support_java",
         ":base_profiler_test_support_jni_headers",

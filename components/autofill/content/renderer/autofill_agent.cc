@@ -87,6 +87,7 @@ using blink::WebVector;
 
 namespace autofill {
 
+using form_util::ExtractMask;
 using form_util::FindFormAndFieldForFormControlElement;
 using form_util::UnownedCheckoutFormElementsAndFieldSetsToFormData;
 using mojom::SubmissionSource;
@@ -98,6 +99,14 @@ namespace {
 // Time to wait, in ms, o ensure that only a single select change will be acted
 // upon, instead of multiple in close succession (debounce time).
 size_t kWaitTimeForSelectOptionsChangesMs = 50;
+
+// Helper function to return EXTRACT_DATALIST if kAutofillExtractAllDatalist is
+// enabled, otherwise EXTRACT_NONE is returned.
+ExtractMask GetExtractDatalistMask() {
+  return base::FeatureList::IsEnabled(features::kAutofillExtractAllDatalists)
+             ? form_util::EXTRACT_DATALIST
+             : form_util::EXTRACT_NONE;
+}
 
 }  // namespace
 
@@ -264,9 +273,11 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
 
   FormData form;
   FormFieldData field;
-  if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
-                                            form_util::EXTRACT_BOUNDS, &form,
-                                            &field)) {
+  if (FindFormAndFieldForFormControlElement(
+          element_, field_data_manager_.get(),
+          static_cast<ExtractMask>(form_util::EXTRACT_BOUNDS |
+                                   GetExtractDatalistMask()),
+          &form, &field)) {
     form_dynamicity_logger_.LogForm(form);
     GetAutofillDriver()->TextFieldDidScroll(form, field, field.bounds);
   }
@@ -314,9 +325,11 @@ void AutofillAgent::FocusedElementChanged(const WebElement& element) {
 
   FormData form;
   FormFieldData field;
-  if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
-                                            form_util::EXTRACT_BOUNDS, &form,
-                                            &field)) {
+  if (FindFormAndFieldForFormControlElement(
+          element_, field_data_manager_.get(),
+          static_cast<ExtractMask>(form_util::EXTRACT_BOUNDS |
+                                   GetExtractDatalistMask()),
+          &form, &field)) {
     form_dynamicity_logger_.LogForm(form);
     GetAutofillDriver()->FocusOnFormField(form, field, field.bounds);
   }
@@ -397,9 +410,11 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
 
   FormData form;
   FormFieldData field;
-  if (FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
-                                            form_util::EXTRACT_BOUNDS, &form,
-                                            &field)) {
+  if (FindFormAndFieldForFormControlElement(
+          element, field_data_manager_.get(),
+          static_cast<ExtractMask>(form_util::EXTRACT_BOUNDS |
+                                   GetExtractDatalistMask()),
+          &form, &field)) {
     form_dynamicity_logger_.LogForm(form);
     GetAutofillDriver()->TextFieldDidChange(form, field, field.bounds,
                                             AutofillTickClock::NowTicks());
@@ -660,9 +675,8 @@ bool AutofillAgent::CollectFormlessElements(FormData* output) {
   if (control_elements.size() > kMaxParseableFields)
     return false;
 
-  const form_util::ExtractMask extract_mask =
-      static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
-                                          form_util::EXTRACT_OPTIONS);
+  const ExtractMask extract_mask = static_cast<ExtractMask>(
+      form_util::EXTRACT_VALUE | form_util::EXTRACT_OPTIONS);
 
   return UnownedCheckoutFormElementsAndFieldSetsToFormData(
       fieldsets, control_elements, nullptr, document, field_data_manager_.get(),
@@ -829,15 +843,18 @@ void AutofillAgent::QueryAutofillSuggestions(
 
   FormData form;
   FormFieldData field;
-  if (!FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
-                                             form_util::EXTRACT_BOUNDS, &form,
-                                             &field)) {
+  if (!FindFormAndFieldForFormControlElement(
+          element, field_data_manager_.get(),
+          static_cast<ExtractMask>(form_util::EXTRACT_BOUNDS |
+                                   GetExtractDatalistMask()),
+          &form, &field)) {
     // If we didn't find the cached form, at least let autocomplete have a shot
     // at providing suggestions.
     WebFormControlElementToFormField(
         element, nullptr,
-        static_cast<form_util::ExtractMask>(form_util::EXTRACT_VALUE |
-                                            form_util::EXTRACT_BOUNDS),
+        static_cast<ExtractMask>(form_util::EXTRACT_VALUE |
+                                 form_util::EXTRACT_BOUNDS |
+                                 GetExtractDatalistMask()),
         &field);
   }
   form_dynamicity_logger_.LogForm(form);
@@ -849,10 +866,12 @@ void AutofillAgent::QueryAutofillSuggestions(
     return;
   }
 
-  if (const WebInputElement* input_element = ToWebInputElement(&element)) {
-    // Find the datalist values and send them to the browser process.
-    form_util::GetDataListSuggestions(*input_element, &field.datalist_values,
-                                      &field.datalist_labels);
+  if (!base::FeatureList::IsEnabled(features::kAutofillExtractAllDatalists)) {
+    if (const WebInputElement* input_element = ToWebInputElement(&element)) {
+      // Find the datalist values and send them to the browser process.
+      form_util::GetDataListSuggestions(*input_element, &field.datalist_values,
+                                        &field.datalist_labels);
+    }
   }
 
   is_popup_possibly_visible_ = true;
@@ -1085,7 +1104,9 @@ void AutofillAgent::OnProvisionallySaveForm(
       FormData form;
       FormFieldData field;
       if (FindFormAndFieldForFormControlElement(
-              element, field_data_manager_.get(), form_util::EXTRACT_BOUNDS,
+              element, field_data_manager_.get(),
+              static_cast<ExtractMask>(form_util::EXTRACT_BOUNDS |
+                                       GetExtractDatalistMask()),
               &form, &field)) {
         form_dynamicity_logger_.LogForm(form);
         GetAutofillDriver()->SelectControlDidChange(form, field, field.bounds);

@@ -10,6 +10,7 @@
 #include "ash/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/ambient/model/ambient_backend_model_observer.h"
 #include "ash/ambient/ui/ambient_container_view.h"
+#include "ash/ambient/ui/ambient_view_delegate.h"
 #include "ash/ambient/util/ambient_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
@@ -192,6 +193,16 @@ void AmbientController::StartFadeOutAnimation() {
 void AmbientController::RequestAccessToken(
     AmbientAccessTokenController::AccessTokenCallback callback) {
   access_token_controller_.RequestAccessToken(std::move(callback));
+}
+
+void AmbientController::AddAmbientViewDelegateObserver(
+    AmbientViewDelegateObserver* observer) {
+  delegate_.AddObserver(observer);
+}
+
+void AmbientController::RemoveAmbientViewDelegateObserver(
+    AmbientViewDelegateObserver* observer) {
+  delegate_.RemoveObserver(observer);
 }
 
 void AmbientController::CreateContainerView() {

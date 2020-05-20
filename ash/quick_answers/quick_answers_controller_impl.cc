@@ -10,12 +10,12 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "chromeos/components/quick_answers/quick_answers_consents.h"
-#include "chromeos/components/quick_answers/quick_answers_model.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "url/gurl.h"
 
 // TODO(yanxiao):Add a unit test for QuickAnswersControllerImpl.
 namespace {
+using chromeos::quick_answers::Context;
 using chromeos::quick_answers::QuickAnswer;
 using chromeos::quick_answers::QuickAnswersClient;
 using chromeos::quick_answers::QuickAnswersRequest;
@@ -48,15 +48,14 @@ void QuickAnswersControllerImpl::SetClient(
 void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
     const gfx::Rect& anchor_bounds,
     const std::string& title,
-    const std::string& device_language) {
+    const Context& context) {
   // Cache anchor-bounds and query.
   anchor_bounds_ = anchor_bounds;
   // Initially, title is same as query. Title and query can be overridden based
   // on text annotation result at |OnRequestPreprocessFinish|.
   title_ = title;
   query_ = title;
-
-  device_language_ = device_language;
+  context_ = context;
 
   // Show user-consent notice informing user about the feature if required.
   if (consent_controller_->ShouldShowConsent()) {
@@ -80,7 +79,7 @@ void QuickAnswersControllerImpl::MaybeShowQuickAnswers(
 
   QuickAnswersRequest request;
   request.selected_text = title;
-  request.device_properties.language = device_language;
+  request.context = context;
   quick_answers_client_->SendRequest(request);
 }
 
@@ -172,7 +171,7 @@ void QuickAnswersControllerImpl::OnUserConsentGranted() {
       chromeos::quick_answers::ConsentInteractionType::kAccept);
 
   // Display Quick-Answer for the cached query when user consents.
-  MaybeShowQuickAnswers(anchor_bounds_, title_, device_language_);
+  MaybeShowQuickAnswers(anchor_bounds_, title_, context_);
 }
 
 void QuickAnswersControllerImpl::OnConsentSettingsRequestedByUser() {

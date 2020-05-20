@@ -8,9 +8,7 @@
  */
 
 // Include test fixture.
-GEN_INCLUDE([
-  '../testing/chromevox_e2e_test_base.js', '../testing/assert_additions.js'
-]);
+GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
 
 ChromeVoxLibLouisTest = class extends ChromeVoxE2ETest {
   createLiblouis() {

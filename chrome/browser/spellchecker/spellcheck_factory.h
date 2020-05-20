@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "build/build_config.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class SpellcheckService;
@@ -39,6 +40,10 @@ class SpellcheckServiceFactory : public BrowserContextKeyedServiceFactory {
   bool ServiceIsNULLWhileTesting() const override;
 
   FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceBrowserTest, DeleteCorruptedBDICT);
+#if defined(OS_WIN)
+  FRIEND_TEST_ALL_PREFIXES(SpellcheckServiceWindowsHybridBrowserTest,
+                           WindowsHybridSpellcheck);
+#endif  // defined(OS_WIN)
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceFactory);
 };

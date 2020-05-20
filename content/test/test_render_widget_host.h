@@ -25,7 +25,7 @@ class TestRenderWidgetHost : public RenderWidgetHostImpl {
   ~TestRenderWidgetHost() override;
 
   // RenderWidgetHostImpl overrides.
-  mojom::WidgetInputHandler* GetWidgetInputHandler() override;
+  blink::mojom::WidgetInputHandler* GetWidgetInputHandler() override;
 
   MockWidgetInputHandler* GetMockWidgetInputHandler();
 

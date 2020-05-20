@@ -69,7 +69,7 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
 }
 
 bool SynchronousCompositorSyncCallBridge::BeginFrameResponseOnIOThread(
-    mojom::SyncCompositorCommonRendererParamsPtr render_params) {
+    blink::mojom::SyncCompositorCommonRendererParamsPtr render_params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(lock_);
   if (begin_frame_response_valid_)
@@ -125,7 +125,7 @@ bool SynchronousCompositorSyncCallBridge::IsRemoteReadyOnUIThread() {
 void SynchronousCompositorSyncCallBridge::BeginFrameCompleteOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  mojom::SyncCompositorCommonRendererParamsPtr render_params;
+  blink::mojom::SyncCompositorCommonRendererParamsPtr render_params;
   {
     base::AutoLock lock(lock_);
     if (remote_state_ != RemoteState::READY)

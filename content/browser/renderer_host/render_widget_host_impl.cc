@@ -238,7 +238,7 @@ std::vector<DropData::Metadata> DropDataToMetaData(const DropData& drop_data) {
   return metadata;
 }
 
-class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
+class UnboundWidgetInputHandler : public blink::mojom::WidgetInputHandler {
  public:
   void SetFocus(bool focused) override {
     DLOG(WARNING) << "Input request on unbound interface";
@@ -289,9 +289,11 @@ class UnboundWidgetInputHandler : public mojom::WidgetInputHandler {
     DLOG(WARNING) << "Input request on unbound interface";
   }
   void AttachSynchronousCompositor(
-      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+      mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+          control_host,
+      mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost>
+          host,
+      mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
           compositor_request) override {
     NOTREACHED() << "Input request on unbound interface";
   }
@@ -1782,7 +1784,8 @@ void RenderWidgetHostImpl::RenderProcessExited(
     Destroy(true);
 }
 
-mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {
+blink::mojom::WidgetInputHandler*
+RenderWidgetHostImpl::GetWidgetInputHandler() {
   if (associated_widget_input_handler_)
     return associated_widget_input_handler_.get();
   if (widget_input_handler_)
@@ -3106,7 +3109,7 @@ void RenderWidgetHostImpl::SetForceEnableZoom(bool enabled) {
 }
 
 void RenderWidgetHostImpl::SetFrameInputHandler(
-    mojom::FrameInputHandler* frame_input_handler) {
+    blink::mojom::FrameInputHandler* frame_input_handler) {
   if (!frame_input_handler)
     return;
   frame_input_handler->GetWidgetInputHandler(

@@ -1613,7 +1613,6 @@ void TabStrip::AddSelectionFromAnchorTo(Tab* tab) {
 }
 
 void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
-  int model_index = GetModelIndexOf(tab);
   if (tab->closing()) {
     // If the tab is already closing, close the next tab. We do this so that the
     // user can rapidly close tabs by clicking the close button and not have
@@ -1624,37 +1623,12 @@ void TabStrip::CloseTab(Tab* tab, CloseTabSource source) {
       it++;
     }
 
-    model_index =
-        it != all_tabs.end() ? GetModelIndexOf(*it) : TabStripModel::kNoTab;
+    if (it == all_tabs.end())
+      return;
+    tab = *it;
   }
 
-  if (!IsValidModelIndex(model_index))
-    return;
-
-  // If we're not allowed to close this tab for whatever reason, we should not
-  // proceed.
-  if (!controller_->BeforeCloseTab(model_index, source))
-    return;
-
-  if (!in_tab_close_ && IsAnimating()) {
-    // Cancel any current animations. We do this as remove uses the current
-    // ideal bounds and we need to know ideal bounds is in a good state.
-    StopAnimating(true);
-  }
-
-  if (GetWidget()) {
-    in_tab_close_ = true;
-    resize_layout_timer_.Stop();
-    if (source == CLOSE_TAB_FROM_TOUCH)
-      StartResizeLayoutTabsFromTouchTimer();
-    else
-      AddMessageLoopObserver();
-  }
-
-  UpdateHoverCard(nullptr);
-  if (tab->group().has_value())
-    base::RecordAction(base::UserMetricsAction("CloseGroupedTab"));
-  controller_->CloseTab(model_index);
+  CloseTabInternal(GetModelIndexOf(tab), source);
 }
 
 void TabStrip::ShiftTabLeft(Tab* tab) {
@@ -2674,6 +2648,36 @@ int TabStrip::GetViewInsertionIndex(Tab* tab,
     return other_view_index - 1;
 
   return other_view_index;
+}
+
+void TabStrip::CloseTabInternal(int model_index, CloseTabSource source) {
+  if (!IsValidModelIndex(model_index))
+    return;
+
+  // If we're not allowed to close this tab for whatever reason, we should not
+  // proceed.
+  if (!controller_->BeforeCloseTab(model_index, source))
+    return;
+
+  if (!in_tab_close_ && IsAnimating()) {
+    // Cancel any current animations. We do this as remove uses the current
+    // ideal bounds and we need to know ideal bounds is in a good state.
+    StopAnimating(true);
+  }
+
+  if (GetWidget()) {
+    in_tab_close_ = true;
+    resize_layout_timer_.Stop();
+    if (source == CLOSE_TAB_FROM_TOUCH)
+      StartResizeLayoutTabsFromTouchTimer();
+    else
+      AddMessageLoopObserver();
+  }
+
+  UpdateHoverCard(nullptr);
+  if (tab_at(model_index)->group().has_value())
+    base::RecordAction(base::UserMetricsAction("CloseGroupedTab"));
+  controller_->CloseTab(model_index);
 }
 
 void TabStrip::RemoveTabFromViewModel(int index) {

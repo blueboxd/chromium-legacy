@@ -1244,7 +1244,7 @@ void RenderWidget::ClearEditCommands() {
 
 void RenderWidget::OnDidOverscroll(
     blink::mojom::DidOverscrollParamsPtr params) {
-  if (mojom::WidgetInputHandlerHost* host =
+  if (blink::mojom::WidgetInputHandlerHost* host =
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
     host->DidOverscroll(std::move(params));
   }
@@ -1910,7 +1910,7 @@ void RenderWidget::OnImeSetComposition(
     // If we failed to set the composition text, then we need to let the browser
     // process to cancel the input method's ongoing composition session, to make
     // sure we are in a consistent state.
-    if (mojom::WidgetInputHandlerHost* host =
+    if (blink::mojom::WidgetInputHandlerHost* host =
             widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
       host->ImeCancelComposition();
     }
@@ -2202,7 +2202,7 @@ void RenderWidget::UpdateCompositionInfo(bool immediate_request) {
   }
   composition_character_bounds_ = character_bounds;
   composition_range_ = range;
-  if (mojom::WidgetInputHandlerHost* host =
+  if (blink::mojom::WidgetInputHandlerHost* host =
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
     host->ImeCompositionRangeChanged(composition_range_,
                                      composition_character_bounds_);
@@ -3173,8 +3173,8 @@ blink::WebInputMethodController* RenderWidget::GetInputMethodController()
 }
 
 void RenderWidget::SetupWidgetInputHandler(
-    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
+    mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
   widget_input_handler_manager_->AddInterface(std::move(receiver),
                                               std::move(host));
 }
@@ -3187,12 +3187,12 @@ void RenderWidget::SetWidgetReceiver(
   widget_receiver_.Bind(std::move(recevier));
 }
 
-mojom::WidgetInputHandlerHost* RenderWidget::GetInputHandlerHost() {
+blink::mojom::WidgetInputHandlerHost* RenderWidget::GetInputHandlerHost() {
   return widget_input_handler_manager_->GetWidgetInputHandlerHost();
 }
 
 void RenderWidget::SetMouseCapture(bool capture) {
-  if (mojom::WidgetInputHandlerHost* host =
+  if (blink::mojom::WidgetInputHandlerHost* host =
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
     host->SetMouseCapture(capture);
   }

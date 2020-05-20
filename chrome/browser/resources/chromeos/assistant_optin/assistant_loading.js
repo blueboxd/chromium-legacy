@@ -45,6 +45,9 @@ Polymer({
    */
   loadingTimeout_: null,
 
+  /** @private {?assistant.BrowserProxy} */
+  browserProxy_: null,
+
   /**
    * On-tap event handler for retry button.
    *
@@ -64,7 +67,7 @@ Polymer({
       return;
     }
     this.buttonsDisabled = true;
-    chrome.send('login.AssistantOptInFlowScreen.flowFinished');
+    this.browserProxy_.flowFinished();
   },
 
   /**
@@ -85,6 +88,11 @@ Polymer({
    */
   removeClass_(className) {
     this.$['loading-dialog'].classList.remove(className);
+  },
+
+  /** @override */
+  created() {
+    this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
   },
 
   /**
@@ -138,7 +146,7 @@ Polymer({
    * Called when the loading timeout is triggered.
    */
   onLoadingTimeout() {
-    chrome.send('login.AssistantOptInFlowScreen.LoadingScreen.timeout');
+    this.browserProxy_.timeout();
     this.onErrorOccurred();
   },
 

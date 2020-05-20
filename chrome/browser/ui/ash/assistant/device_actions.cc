@@ -208,7 +208,6 @@ void DeviceActions::LaunchAndroidIntent(const std::string& intent) {
     return;
   }
 
-  // TODO(updowndota): Launch the intent in current active display.
   app->LaunchIntent(intent, display::kDefaultDisplayId);
 }
 

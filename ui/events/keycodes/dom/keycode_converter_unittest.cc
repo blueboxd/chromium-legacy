@@ -24,10 +24,10 @@ namespace {
 // These are in the same order as the columns in dom_code_data.inc
 // as reflected in the DOM_CODE() macro below.
 const size_t expected_mapped_key_count[] = {
-  214,  // evdev
-  214,  // xkb
-  157,  // windows
-  119,  // mac
+    216,  // evdev
+    216,  // xkb
+    157,  // windows
+    119,  // mac
 };
 
 const size_t kNativeColumns = base::size(expected_mapped_key_count);

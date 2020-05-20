@@ -144,7 +144,8 @@ int DateTimeSection::GetSectionNameMessageId() const {
 void DateTimeSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::k24HourClock);
 
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kTimeZone);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_TIME_ZONE_SUBPAGE_TITLE,
+                                     mojom::Subpage::kTimeZone);
 
   // When fine-grained time zone is enabled, users change the time zone on the
   // time zone subpage; otherwise, the setting is directly embedded in the

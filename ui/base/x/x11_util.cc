@@ -466,21 +466,21 @@ void HideHostCursor() {
 void SetUseOSWindowFrame(XID window, bool use_os_window_frame) {
   // This data structure represents additional hints that we send to the window
   // manager and has a direct lineage back to Motif, which defined this de facto
-  // standard. This struct doesn't seem 64-bit safe though, but it's what GDK
-  // does.
+  // standard. We define this struct to match the wire-format (32-bit fields)
+  // rather than the Xlib API (XChangeProperty) format (long fields).
   typedef struct {
-    unsigned long flags;
-    unsigned long functions;
-    unsigned long decorations;
-    long input_mode;
-    unsigned long status;
+    uint32_t flags;
+    uint32_t functions;
+    uint32_t decorations;
+    int32_t input_mode;
+    uint32_t status;
   } MotifWmHints;
 
   MotifWmHints motif_hints;
   memset(&motif_hints, 0, sizeof(motif_hints));
   // Signals that the reader of the _MOTIF_WM_HINTS property should pay
   // attention to the value of |decorations|.
-  motif_hints.flags = (1L << 1);
+  motif_hints.flags = (1u << 1);
   motif_hints.decorations = use_os_window_frame ? 1 : 0;
 
   std::vector<uint32_t> hints(sizeof(MotifWmHints) / sizeof(uint32_t));

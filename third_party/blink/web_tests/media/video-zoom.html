@@ -3,27 +3,25 @@
     <style> video { zoom: 150%; border: 3px solid red; } </style>
     <script src=media-file.js></script>
     <script>
+        function waitForVideoPresentation(video) {
+            return new Promise(resolve => {
+                video.requestVideoFrameCallback(resolve);
+            });
+        }
+
         function init()
         {
             setSrcByTagName("video", "content/test.ogv");
 
-            var totalCount = document.getElementsByTagName('video').length;
-            var count = totalCount;
-            document.addEventListener("canplaythrough", function () {
-                if (!--count) {
-                    if (window.testRunner)
-                        setTimeout(function() { testRunner.notifyDone(); }, totalCount * 150);
-                }
-            }, true);
+            if (!window.testRunner)
+                return;
+            testRunner.waitUntilDone();
 
-            if (window.testRunner) {
-                testRunner.waitUntilDone();
-                setTimeout(function() {
-                    document.body.appendChild(document.createTextNode('FAIL'));
-                    if (window.testRunner)
-                        testRunner.notifyDone();
-                }, 1500);
-            }
+            let videos = Array.from(document.getElementsByTagName('video'));
+            Promise.all(videos.map(
+                video => waitForVideoPresentation(video))).then(() => {
+                    testRunner.notifyDone();
+                });
         }
     </script>
 

@@ -35,6 +35,9 @@ message Tile {
 
   // Sub level children.
   repeated Tile sub_tiles = 6;
+
+  // Additional params for the search query.
+  repeated string search_params = 7;
 }
 
 // Data schema of a group of entries and its metadata.

@@ -1190,7 +1190,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   }
 
   // Returns the focused frame's input handler.
-  mojom::FrameInputHandler* GetFocusedFrameInputHandler();
+  blink::mojom::FrameInputHandler* GetFocusedFrameInputHandler();
 
   // A render view-originated drag has ended. Informs the render view host and
   // WebContentsDelegate.

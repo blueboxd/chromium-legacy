@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chromecast/chromecast.gni")
+
 source_set("external_service") {
   sources = [
     "external_connector.h",
@@ -43,20 +45,72 @@ source_set("process_setup") {
   }
 }
 
+source_set("tracing_client_hdr") {
+  sources = [
+    "tracing_client.h",
+  ]
+}
+
+source_set("tracing_client_dummy") {
+  sources = [
+    "tracing_client_dummy.cc",
+    "tracing_client_dummy.h",
+  ]
+  deps = [
+    ":tracing_client_hdr",
+  ]
+}
+
+source_set("tracing_client_impl") {
+  sources = [
+    "tracing_client_impl.cc",
+    "tracing_client_impl.h",
+  ]
+  deps = [
+    ":external_service",
+    ":tracing_client_hdr",
+    "//base",
+    "//chromecast:chromecast_buildflags",
+    "//mojo/public/cpp/bindings",
+    "//services/tracing:lib",
+    "//services/tracing/public/cpp",
+    "//services/tracing/public/cpp:traced_process",
+    "//services/tracing/public/mojom",
+  ]
+}
+
+group("tracing_client") {
+  public_deps = [
+    ":tracing_client_hdr",
+  ]
+  if (enable_external_mojo_tracing) {
+    public_deps += [ ":tracing_client_impl" ]
+  } else {
+    public_deps += [ ":tracing_client_dummy" ]
+  }
+}
+
 source_set("service_process") {
-  sources = [ "service_process.h" ]
+  sources = [
+    "service_process.h",
+  ]
 }
 
 source_set("standalone_service_main") {
-  sources = [ "standalone_service_main.cc" ]
+  sources = [
+    "standalone_service_main.cc",
+  ]
   deps = [
     ":external_service",
     ":process_setup",
+    ":tracing_client",
     "//base",
     "//chromecast/external_mojo/public/cpp:common",
     "//mojo/core/embedder",
   ]
-  public_deps = [ ":service_process" ]
+  public_deps = [
+    ":service_process",
+  ]
 }
 
 source_set("chromium_service") {
@@ -75,9 +129,13 @@ source_set("chromium_service") {
 }
 
 executable("standalone_mojo_broker") {
-  sources = [ "standalone_mojo_broker.cc" ]
+  sources = [
+    "standalone_mojo_broker.cc",
+  ]
   deps = [
+    ":external_service",
     ":process_setup",
+    ":tracing_client",
     "//base",
     "//chromecast/external_mojo/public/cpp:common",
     "//chromecast/external_mojo/public/cpp:external_mojo_broker",

@@ -14,6 +14,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_event_intent.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_data.h"
 
@@ -72,8 +73,11 @@ template<typename AXNodeData, typename AXTreeData> struct AXTreeUpdateBase {
   // A vector of nodes to update, according to the rules above.
   std::vector<AXNodeData> nodes;
 
-  // The source of the event.
+  // The source of the event which generated this tree update.
   ax::mojom::EventFrom event_from = ax::mojom::EventFrom::kNone;
+
+  // The event intents associated with this tree update.
+  std::vector<AXEventIntent> event_intents;
 
   // Return a multi-line indented string representation, for logging.
   std::string ToString() const;

@@ -580,7 +580,10 @@ const struct DomCodeToKeyboardCodeEntry {
 #if defined(OS_POSIX)
     {DomCode::BRIGHTNESS_UP, VKEY_BRIGHTNESS_UP},  // 0x0C006F BrightnessUp
     {DomCode::BRIGHTNESS_DOWN,
-     VKEY_BRIGHTNESS_DOWN},  // 0x0C0070 BrightnessDown
+     VKEY_BRIGHTNESS_DOWN},                           // 0x0C0070 BrightnessDown
+    {DomCode::KBD_ILLUM_UP, VKEY_KBD_BRIGHTNESS_UP},  // 0x0C0079 KbdIllumUp
+    {DomCode::KBD_ILLUM_DOWN,
+     VKEY_KBD_BRIGHTNESS_DOWN},  // 0x0C007a KbdIllumDown
 #endif
     {DomCode::MEDIA_TRACK_NEXT,
      VKEY_MEDIA_NEXT_TRACK},  // 0x0C00B5 MediaTrackNext
@@ -642,8 +645,6 @@ const DomCodeToKeyboardCodeEntry kFallbackKeyboardCodeToDomCodeMap[] = {
     //  VKEY_OEM_104              // 0x0C00B3 MediaFastForward
     //
     // VKEYs with no corresponding DomCode, but a Linux evdev usage code:
-    //  VKEY_KBD_BRIGHTNESS_DOWN  //  evdev KEY_KBDILLUMDOWN
-    //  VKEY_KBD_BRIGHTNESS_UP    //  evdev KEY_KBDILLUMUP
     //  VKEY_WLAN                 //  evdev KEY_WLAN
     //
     // VKEYs with no corresponding DomCode and no obvious USB usage code:

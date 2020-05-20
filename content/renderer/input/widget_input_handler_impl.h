@@ -7,9 +7,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
 namespace content {
 class MainThreadEventQueue;
@@ -20,7 +21,7 @@ class WidgetInputHandlerManager;
 // interface. If threaded compositing is used this thread will live on
 // the compositor thread and proxy events to the main thread. This
 // is done so that events stay in order relative to other events.
-class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
+class WidgetInputHandlerImpl : public blink::mojom::WidgetInputHandler {
  public:
   WidgetInputHandlerImpl(
       scoped_refptr<WidgetInputHandlerManager> manager,
@@ -30,10 +31,10 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   ~WidgetInputHandlerImpl() override;
 
   void SetAssociatedReceiver(
-      mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler>
+      mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
           interface_receiver);
-  void SetReceiver(
-      mojo::PendingReceiver<mojom::WidgetInputHandler> interface_receiver);
+  void SetReceiver(mojo::PendingReceiver<blink::mojom::WidgetInputHandler>
+                       interface_receiver);
 
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
@@ -60,9 +61,11 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
       std::unique_ptr<blink::WebCoalescedInputEvent>) override;
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
   void AttachSynchronousCompositor(
-      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+      mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+          control_host,
+      mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost>
+          host,
+      mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
           compositor_receiver) override;
   void InputWasProcessed();
 
@@ -81,9 +84,9 @@ class WidgetInputHandlerImpl : public mojom::WidgetInputHandler {
   // killed before we actually fully process the input.
   WaitForInputProcessedCallback input_processed_ack_;
 
-  mojo::Receiver<mojom::WidgetInputHandler> receiver_{this};
-  mojo::AssociatedReceiver<mojom::WidgetInputHandler> associated_receiver_{
-      this};
+  mojo::Receiver<blink::mojom::WidgetInputHandler> receiver_{this};
+  mojo::AssociatedReceiver<blink::mojom::WidgetInputHandler>
+      associated_receiver_{this};
 
   base::WeakPtrFactory<WidgetInputHandlerImpl> weak_ptr_factory_{this};
 

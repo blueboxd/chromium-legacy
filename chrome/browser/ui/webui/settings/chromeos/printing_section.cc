@@ -254,7 +254,8 @@ void PrintingSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kPrintJobs);
 
   // Printing details.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kPrintingDetails);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_PRINTING_CUPS_PRINTERS,
+                                     mojom::Subpage::kPrintingDetails);
   static constexpr mojom::Setting kPrintingDetailsSettings[] = {
       mojom::Setting::kAddPrinter,
       mojom::Setting::kSavedPrinters,

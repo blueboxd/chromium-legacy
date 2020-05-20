@@ -91,6 +91,13 @@ const base::Feature kAutofillEnforceMinRequiredFieldsForUpload{
     "AutofillEnforceMinRequiredFieldsForUpload",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether or not all datalist shall be extracted into FormFieldData.
+// This feature is enabled in both WebView and WebLayer where all datalists
+// instead of only the focused one shall be extracted and sent to Android
+// autofill service when the autofill session created.
+const base::Feature kAutofillExtractAllDatalists{
+    "AutofillExtractAllDatalists", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Autofill uses the local heuristic such that address forms are only filled if
 // at least 3 fields are fillable according to local heuristics. Unfortunately,
 // the criterion for fillability is only that the field type is unknown. So many

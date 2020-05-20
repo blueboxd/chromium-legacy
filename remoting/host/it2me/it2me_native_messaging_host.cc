@@ -363,7 +363,12 @@ void It2MeNativeMessagingHost::ProcessIncomingIq(
     return;
   }
 
-  incoming_message_callback_.Run(iq);
+  if (incoming_message_callback_) {
+    incoming_message_callback_.Run(iq);
+  } else {
+    LOG(WARNING) << "Dropping message because signaling is not connected. "
+                 << "Current It2MeHost state: " << state_;
+  }
   SendMessageToClient(std::move(response));
 }
 

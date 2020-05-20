@@ -41,6 +41,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-test-utils.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
@@ -97,7 +98,7 @@ enum {
   PASSIVE_LISTENER_UMA_ENUM_COUNT
 };
 
-class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
+class MockWidgetInputHandlerHost : public blink::mojom::WidgetInputHandlerHost {
  public:
   MockWidgetInputHandlerHost() {}
   MOCK_METHOD1(SetTouchActionFromMain, void(cc::TouchAction));
@@ -122,23 +123,25 @@ class MockWidgetInputHandlerHost : public mojom::WidgetInputHandlerHost {
 
   MOCK_METHOD0(UnlockMouse, void());
 
-  MOCK_METHOD4(RequestMouseLock,
-               void((bool,
-                     bool,
-                     bool,
-                     mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
+  MOCK_METHOD4(
+      RequestMouseLock,
+      void((bool,
+            bool,
+            bool,
+            blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
 
-  MOCK_METHOD2(RequestMouseLockChange,
-               void((bool,
-                     mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
+  MOCK_METHOD2(
+      RequestMouseLockChange,
+      void((bool,
+            blink::mojom::WidgetInputHandlerHost::RequestMouseLockCallback)));
 
-  mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+  mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
   BindNewPipeAndPassRemote() {
     return receiver_.BindNewPipeAndPassRemote();
   }
 
  private:
-  mojo::Receiver<mojom::WidgetInputHandlerHost> receiver_{this};
+  mojo::Receiver<blink::mojom::WidgetInputHandlerHost> receiver_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MockWidgetInputHandlerHost);
 };
@@ -201,7 +204,7 @@ class InteractiveRenderWidget : public RenderWidget {
     mock_input_handler_host_ = std::make_unique<MockWidgetInputHandlerHost>();
 
     widget_input_handler_manager_->AddInterface(
-        mojo::PendingReceiver<mojom::WidgetInputHandler>(),
+        mojo::PendingReceiver<blink::mojom::WidgetInputHandler>(),
         mock_input_handler_host_->BindNewPipeAndPassRemote());
   }
 

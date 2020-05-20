@@ -167,7 +167,9 @@ int LanguagesSection::GetSectionNameMessageId() const {
 
 void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Languages and input details.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kLanguagesAndInputDetails);
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE,
+      mojom::Subpage::kLanguagesAndInputDetails);
   static constexpr mojom::Setting kLanguagesAndInputDetailsSettings[] = {
       mojom::Setting::kAddLanguage,
       mojom::Setting::kShowInputOptionsInShelf,
@@ -176,11 +178,14 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kLanguagesAndInputDetailsSettings, generator);
 
   // Manage input methods.
-  generator->RegisterNestedSubpage(mojom::Subpage::kManageInputMethods,
-                                   mojom::Subpage::kLanguagesAndInputDetails);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE,
+      mojom::Subpage::kManageInputMethods,
+      mojom::Subpage::kLanguagesAndInputDetails);
 
   // Smart inputs.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kSmartInputs);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_SMART_INPUTS_TITLE,
+                                     mojom::Subpage::kSmartInputs);
   generator->RegisterNestedSetting(
       mojom::Setting::kShowPersonalInformationSuggestions,
       mojom::Subpage::kSmartInputs);

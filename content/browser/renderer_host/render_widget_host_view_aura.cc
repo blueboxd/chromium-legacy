@@ -139,7 +139,7 @@ namespace content {
 
 namespace {
 
-mojom::FrameInputHandler* GetFrameInputHandlerForFocusedFrame(
+blink::mojom::FrameInputHandler* GetFrameInputHandlerForFocusedFrame(
     RenderWidgetHostImpl* host) {
   if (!host || !host->delegate()) {
     return nullptr;

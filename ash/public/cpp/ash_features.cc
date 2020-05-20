@@ -4,31 +4,14 @@
 
 #include "ash/public/cpp/ash_features.h"
 
-#include <vector>
-
 #include "ash/public/cpp/ash_switches.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/strings/string_split.h"
-#include "base/system/sys_info.h"
 #include "build/build_config.h"
 #include "chromeos/constants/chromeos_switches.h"
 
 namespace ash {
 namespace features {
-
-namespace {
-
-bool IsBoardKukui() {
-  std::vector<std::string> board =
-      base::SplitString(base::SysInfo::GetLsbReleaseBoard(), "-",
-                        base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (board.empty())
-    return false;
-  return board[0] == "kukui";
-}
-
-}  // namespace
 
 const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -49,7 +32,7 @@ const base::Feature kDisplayChangeModal{"DisplayChangeModal",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDisplayIdentification{"DisplayIdentification",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -136,7 +119,7 @@ const base::Feature kDragFromShelfToHomeOrOverview{
     "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kHideShelfControlsInTabletMode{
-    "HideShelfControlsInTabletMode", base::FEATURE_DISABLED_BY_DEFAULT};
+    "HideShelfControlsInTabletMode", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSystemTrayMicGainSetting{
     "SystemTrayMicGainSetting", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -251,17 +234,8 @@ bool IsReduceDisplayNotificationsEnabled() {
 }
 
 bool IsHideShelfControlsInTabletModeEnabled() {
-  if (!IsDragFromShelfToHomeOrOverviewEnabled())
-    return false;
-
-  // Enable shelf navigation buttons by default on kukui.
-  // TODO(https://crbug.com/1084226): A better approach would be to have login
-  // manager enable the feature by setting an appropriate enable_features flag.
-  static const bool is_kukui = IsBoardKukui();
-  if (is_kukui)
-    return true;
-
-  return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode);
+  return base::FeatureList::IsEnabled(kHideShelfControlsInTabletMode) &&
+         IsDragFromShelfToHomeOrOverviewEnabled();
 }
 
 bool IsDisplayChangeModalEnabled() {
@@ -269,6 +243,8 @@ bool IsDisplayChangeModalEnabled() {
 }
 
 bool AreContextualNudgesEnabled() {
+  if (!IsHideShelfControlsInTabletModeEnabled())
+    return false;
   return base::FeatureList::IsEnabled(kContextualNudges);
 }
 

@@ -35,6 +35,10 @@ TEST(TileTest, CompareOperators) {
   rhs.accessibility_text = "changed";
   EXPECT_NE(lhs, rhs);
   test::ResetTestEntry(&rhs);
+
+  rhs.search_params = {"xyz=1"};
+  EXPECT_NE(lhs, rhs);
+  test::ResetTestEntry(&rhs);
 }
 
 TEST(TileTest, DeepComparison) {

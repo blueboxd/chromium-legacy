@@ -499,6 +499,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 86:
       *update_compatible_version = false;
       return MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns();
+    case 87:
+      *update_compatible_version = false;
+      return MigrateToVersion87AddCreditCardNicknameColumn();
   }
   return true;
 }
@@ -2825,6 +2828,12 @@ bool AutofillTable::MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns() {
          transaction.Commit();
 }
 
+bool AutofillTable::MigrateToVersion87AddCreditCardNicknameColumn() {
+  // Add the nickname column to the credit_card table.
+  return db_->DoesColumnExist("credit_cards", "nickname") ||
+         db_->Execute("ALTER TABLE credit_cards ADD COLUMN nickname VARCHAR");
+}
+
 bool AutofillTable::AddFormFieldValuesTime(
     const std::vector<FormFieldData>& elements,
     std::vector<AutofillChange>* changes,
@@ -3085,7 +3094,8 @@ bool AutofillTable::InitCreditCardsTable() {
                       "origin VARCHAR DEFAULT '', "
                       "use_count INTEGER NOT NULL DEFAULT 0, "
                       "use_date INTEGER NOT NULL DEFAULT 0, "
-                      "billing_address_id VARCHAR) ")) {
+                      "billing_address_id VARCHAR, "
+                      "nickname VARCHAR)")) {
       NOTREACHED();
       return false;
     }

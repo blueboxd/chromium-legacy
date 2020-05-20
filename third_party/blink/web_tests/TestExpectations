@@ -5674,7 +5674,7 @@ crbug.com/1048149 [ Mac ] virtual/form-controls-refresh-disabled/fast/forms/cale
 
 # Upcoming DevTools change
 crbug.com/1006759 http/tests/devtools/profiler/cpu-profiler-save-load.js [ Pass Failure Timeout ]
-crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Failure ]
+crbug.com/1006759 http/tests/devtools/profiler/heap-snapshot-loader.js [ Pass Failure Timeout ]
 
 # Temporarily disabled to land changes in DevTools, multiple dependent CLs
 # [1] https://chromium-review.googlesource.com/c/devtools/devtools-frontend/+/2049183
@@ -5896,6 +5896,3 @@ crbug.com/1084509 [ Win ] fast/forms/select/listbox-appearance-basic.html [ Pass
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
-
-# Sheriff 2020-05-20
-crbug.com/1084448 [ Win ] compositing/overflow/overflow-compositing-descendant.html [ Pass Failure ]

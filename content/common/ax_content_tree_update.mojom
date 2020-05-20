@@ -7,8 +7,9 @@ module ax.mojom;
 import "ui/accessibility/ax_enums.mojom";
 import "content/common/ax_content_node_data.mojom";
 import "content/common/ax_content_tree_data.mojom";
+import "ui/accessibility/mojom/ax_event_intent.mojom";
 
-// See content::AXContentTreeUpdate for comments / explanations of these fields.
+// See ui::AXTreeUpdate for comments / explanations of these fields.
 struct AXContentTreeUpdate {
   bool has_tree_data;
   AXContentTreeData tree_data;
@@ -16,4 +17,5 @@ struct AXContentTreeUpdate {
   int32 root_id;
   array<AXContentNodeData> nodes;
   ax.mojom.EventFrom event_from;
+  array<EventIntent> event_intents;
 };

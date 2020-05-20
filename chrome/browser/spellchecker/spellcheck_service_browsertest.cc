@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -33,6 +34,7 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck.mojom.h"
 #include "components/spellcheck/common/spellcheck_common.h"
+#include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/user_prefs/user_prefs.h"
@@ -55,6 +57,19 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
                                      public spellcheck::mojom::SpellChecker {
  public:
   SpellcheckServiceBrowserTest() = default;
+
+#if defined(OS_WIN)
+  void SetUp() override {
+    // Tests were designed assuming Hunspell dictionary used and many fail when
+    // Windows spellcheck is enabled by default. The feature flag needs to be
+    // disabled in SetUp() instead of the constructor because the derived class
+    // SpellcheckServiceWindowsHybridBrowserTest overrides the base class
+    // behavior and sets the spellcheck::kWinUseBrowserSpellChecker feature
+    // flag. You can't use ScopedFeatureList to initialize a feature flag twice.
+    feature_list_.InitAndDisableFeature(spellcheck::kWinUseBrowserSpellChecker);
+    InProcessBrowserTest::SetUp();
+  }
+#endif  // defined(OS_WIN)
 
   void SetUpOnMainThread() override {
     renderer_.reset(new content::MockRenderProcessHost(GetContext()));
@@ -223,6 +238,10 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
  protected:
   // Quits the RunLoop on Mojo request flow completion.
   base::OnceClosure quit_;
+
+#if defined(OS_WIN)
+  base::test::ScopedFeatureList feature_list_;
+#endif  // defined(OS_WIN)
 
  private:
   // Mocked RenderProcessHost.
@@ -613,3 +632,38 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
                   ->GetString(1, &pref));
   EXPECT_EQ("fr", pref);
 }
+
+#if defined(OS_WIN)
+class SpellcheckServiceWindowsHybridBrowserTest
+    : public SpellcheckServiceBrowserTest {
+ public:
+  SpellcheckServiceWindowsHybridBrowserTest() = default;
+
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+    InProcessBrowserTest::SetUp();
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceWindowsHybridBrowserTest,
+                       WindowsHybridSpellcheck) {
+  if (!spellcheck::WindowsVersionSupportsSpellchecker())
+    return;
+
+  ASSERT_TRUE(spellcheck::UseBrowserSpellChecker());
+
+  // Note that the base class forces dictionary sync to not be performed, which
+  // on its own would have created a SpellcheckService object. So testing here
+  // that we are still instantiating the SpellcheckService as a browser startup
+  // task to support hybrid spellchecking.
+  SpellcheckService* service = static_cast<SpellcheckService*>(
+      SpellcheckServiceFactory::GetInstance()->GetServiceForBrowserContext(
+          GetContext(), /* create */ false));
+  ASSERT_NE(nullptr, service);
+
+  // The list of Windows spellcheck languages should have been populated by at
+  // least one language. This assures that the spellcheck context menu will
+  // include Windows spellcheck languages that lack Hunspell support.
+  ASSERT_FALSE(service->windows_spellcheck_dictionary_map_.empty());
+}
+#endif  // defined(OS_WIN)

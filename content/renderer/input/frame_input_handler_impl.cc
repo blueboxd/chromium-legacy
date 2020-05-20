@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/check.h"
 #include "content/common/input/ime_text_span_conversions.h"
-#include "content/common/input/input_handler.mojom.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_manager.h"
 #include "content/renderer/render_thread_impl.h"
@@ -24,7 +23,7 @@ namespace content {
 
 FrameInputHandlerImpl::FrameInputHandlerImpl(
     base::WeakPtr<RenderFrameImpl> render_frame,
-    mojo::PendingReceiver<mojom::FrameInputHandler> receiver)
+    mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver)
     : render_frame_(render_frame),
       input_event_queue_(
           render_frame->GetLocalRootRenderWidget()->GetInputEventQueue()),
@@ -50,7 +49,7 @@ FrameInputHandlerImpl::~FrameInputHandlerImpl() {}
 // static
 void FrameInputHandlerImpl::CreateMojoService(
     base::WeakPtr<RenderFrameImpl> render_frame,
-    mojo::PendingReceiver<mojom::FrameInputHandler> receiver) {
+    mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver) {
   DCHECK(render_frame);
 
   // Owns itself. Will be deleted when message pipe is destroyed.
@@ -422,8 +421,8 @@ void FrameInputHandlerImpl::MoveCaret(const gfx::Point& point) {
 }
 
 void FrameInputHandlerImpl::GetWidgetInputHandler(
-    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
   if (!main_thread_task_runner_->BelongsToCurrentThread()) {
     main_thread_task_runner_->PostTask(
         FROM_HERE,
@@ -462,7 +461,7 @@ void FrameInputHandlerImpl::Release() {
 }
 
 void FrameInputHandlerImpl::BindNow(
-    mojo::PendingReceiver<mojom::FrameInputHandler> receiver) {
+    mojo::PendingReceiver<blink::mojom::FrameInputHandler> receiver) {
   receiver_.Bind(std::move(receiver));
   receiver_.set_disconnect_handler(
       base::BindOnce(&FrameInputHandlerImpl::Release, base::Unretained(this)));

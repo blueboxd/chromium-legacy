@@ -49,9 +49,13 @@ void RemoveEvent(std::set<AXEventGenerator::EventParams>* node_events,
 
 }  // namespace
 
-AXEventGenerator::EventParams::EventParams(Event event,
-                                           ax::mojom::EventFrom event_from)
-    : event(event), event_from(event_from) {}
+AXEventGenerator::EventParams::EventParams(
+    Event event,
+    ax::mojom::EventFrom event_from,
+    const std::vector<AXEventIntent>& event_intents)
+    : event(event), event_from(event_from), event_intents(event_intents) {}
+
+AXEventGenerator::EventParams::~EventParams() = default;
 
 AXEventGenerator::TargetedEvent::TargetedEvent(AXNode* node,
                                                const EventParams& event_params)
@@ -138,7 +142,8 @@ void AXEventGenerator::AddEvent(AXNode* node, AXEventGenerator::Event event) {
     return;
 
   std::set<EventParams>& node_events = tree_events_[node];
-  node_events.emplace(event, ax::mojom::EventFrom::kNone);
+  node_events.emplace(event, ax::mojom::EventFrom::kNone,
+                      tree_->event_intents());
 }
 
 void AXEventGenerator::OnNodeDataChanged(AXTree* tree,
@@ -154,7 +159,8 @@ void AXEventGenerator::OnNodeDataChanged(AXTree* tree,
       new_node_data.role != ax::mojom::Role::kStaticText) {
     AXNode* node = tree_->GetFromId(new_node_data.id);
     tree_events_[node].emplace(Event::CHILDREN_CHANGED,
-                               ax::mojom::EventFrom::kNone);
+                               ax::mojom::EventFrom::kNone,
+                               tree_->event_intents());
   }
 }
 

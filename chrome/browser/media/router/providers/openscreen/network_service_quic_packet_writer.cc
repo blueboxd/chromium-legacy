@@ -71,11 +71,12 @@ quic::QuicByteCount NetworkServiceQuicPacketWriter::GetMaxPacketSize(
   return quic::kMaxOutgoingPacketSize;
 }
 
-char* NetworkServiceQuicPacketWriter::GetNextWriteLocation(
+quic::QuicPacketBuffer NetworkServiceQuicPacketWriter::GetNextWriteLocation(
     const quic::QuicIpAddress& self_address,
     const quic::QuicSocketAddress& peer_address) {
-  // In PassThrough mode, this method isn't used and should return nullptr.
-  return nullptr;
+  // In PassThrough mode, this method isn't used and should return
+  // a null QuicPacketBuffer.
+  return {nullptr, nullptr};
 }
 
 void NetworkServiceQuicPacketWriter::SetWritable() {

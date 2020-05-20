@@ -15,6 +15,7 @@
 #include "chromecast/external_mojo/external_service_support/external_connector.h"
 #include "chromecast/external_mojo/external_service_support/process_setup.h"
 #include "chromecast/external_mojo/external_service_support/service_process.h"
+#include "chromecast/external_mojo/external_service_support/tracing_client.h"
 #include "chromecast/external_mojo/public/cpp/common.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
@@ -26,6 +27,8 @@ struct GlobalState {
       service_process;
   std::unique_ptr<chromecast::external_service_support::ExternalConnector>
       connector;
+  std::unique_ptr<chromecast::external_service_support::TracingClient>
+      tracing_client;
 };
 
 void OnConnected(
@@ -33,6 +36,9 @@ void OnConnected(
     std::unique_ptr<chromecast::external_service_support::ExternalConnector>
         connector) {
   state->connector = std::move(connector);
+  state->tracing_client =
+      chromecast::external_service_support::TracingClient::Create(
+          state->connector.get());
   state->service_process =
       chromecast::external_service_support::ServiceProcess::Create(
           state->connector.get());

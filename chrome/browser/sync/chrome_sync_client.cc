@@ -110,6 +110,7 @@
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
+#include "components/spellcheck/browser/pref_names.h"
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
 
 #if defined(OS_ANDROID)
@@ -452,7 +453,8 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
 // custom dictionary on platforms that typically don't provide one.
 #if defined(OS_LINUX) || defined(OS_WIN)
   // Dictionary sync is enabled by default.
-  if (!disabled_types.Has(syncer::DICTIONARY)) {
+  if (!disabled_types.Has(syncer::DICTIONARY) &&
+      GetPrefService()->GetBoolean(spellcheck::prefs::kSpellCheckEnable)) {
     controllers.push_back(
         std::make_unique<syncer::SyncableServiceBasedModelTypeController>(
             syncer::DICTIONARY, model_type_store_factory,

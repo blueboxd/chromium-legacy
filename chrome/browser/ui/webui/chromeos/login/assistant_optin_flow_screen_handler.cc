@@ -136,7 +136,7 @@ void AssistantOptInFlowScreenHandler::RegisterMessages() {
               &AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenShown);
   AddCallback("login.AssistantOptInFlowScreen.GetMoreScreen.screenShown",
               &AssistantOptInFlowScreenHandler::HandleGetMoreScreenShown);
-  AddCallback("login.AssistantOptInFlowScreen.LoadingScreen.timeout",
+  AddCallback("login.AssistantOptInFlowScreen.timeout",
               &AssistantOptInFlowScreenHandler::HandleLoadingTimeout);
   AddCallback("login.AssistantOptInFlowScreen.flowFinished",
               &AssistantOptInFlowScreenHandler::HandleFlowFinished);

@@ -925,6 +925,11 @@ const std::set<AXTreeID> AXTree::GetAllChildTreeIds() const {
 }
 
 bool AXTree::Unserialize(const AXTreeUpdate& update) {
+  event_intents_ = update.event_intents;
+  base::ScopedClosureRunner clear_event_intents(base::BindOnce(
+      [](std::vector<AXEventIntent>* event_intents) { event_intents->clear(); },
+      &event_intents_));
+
   AXTreeUpdateState update_state(*this);
   const AXNode::AXID old_root_id = root_ ? root_->id() : AXNode::kInvalidAXID;
 

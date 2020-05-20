@@ -59,7 +59,7 @@ class NetworkServiceQuicPacketWriter : quic::QuicPacketWriter {
 
   quic::QuicByteCount GetMaxPacketSize(
       const quic::QuicSocketAddress& peer_address) const override;
-  char* GetNextWriteLocation(
+  quic::QuicPacketBuffer GetNextWriteLocation(
       const quic::QuicIpAddress& self_address,
       const quic::QuicSocketAddress& peer_address) override;
 

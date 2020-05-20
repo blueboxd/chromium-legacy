@@ -596,17 +596,24 @@ bool WebUITabStripContainerView::EventShouldPropagate(const ui::Event& event) {
   if (!EventTypeCanCloseTabStrip(located_event->type()))
     return true;
 
-  // If the event is in the container or control buttons, let it be handled.
-  for (views::View* view : {static_cast<views::View*>(this), tab_counter_}) {
-    if (!view)
-      continue;
+  const gfx::Point event_location_in_screen =
+      located_event->target()->GetScreenLocation(*located_event);
+  const gfx::Rect container_bounds_in_screen = GetBoundsInScreen();
 
-    const gfx::Rect bounds_in_screen = view->GetBoundsInScreen();
-    const gfx::Point event_location_in_screen =
-        located_event->target()->GetScreenLocation(*located_event);
-    if (bounds_in_screen.Contains(event_location_in_screen))
-      return true;
-  }
+  // Events in the titlebar need to be handled, so that, for example, hitting
+  // close actually closes the window. Since converting into frame coordinates
+  // is fraught, it's easiest to just test relative position - any click above
+  // the tabstrip is in the frame since the tabstrip is the topmost view.
+  if (event_location_in_screen.y() < container_bounds_in_screen.y())
+    return true;
+
+  // Events in the tab strip container need to be handled.
+  if (container_bounds_in_screen.Contains(event_location_in_screen))
+    return true;
+
+  // Events in the tab counter button need to be handled.
+  if (tab_counter_->GetBoundsInScreen().Contains(event_location_in_screen))
+    return true;
 
   // Otherwise, cancel the event and close the container.
   return false;

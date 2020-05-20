@@ -9,6 +9,7 @@
 #include "content/common/ax_content_node_data_mojom_traits.h"
 #include "content/common/ax_content_tree_data_mojom_traits.h"
 #include "content/common/ax_content_tree_update.mojom-shared.h"
+#include "ui/accessibility/mojom/ax_event_intent_mojom_traits.h"
 
 namespace mojo {
 
@@ -36,6 +37,11 @@ struct StructTraits<ax::mojom::AXContentTreeUpdateDataView,
   static ax::mojom::EventFrom event_from(
       const content::AXContentTreeUpdate& p) {
     return p.event_from;
+  }
+
+  static std::vector<ui::AXEventIntent> event_intents(
+      const content::AXContentTreeUpdate& p) {
+    return p.event_intents;
   }
 
   static bool Read(ax::mojom::AXContentTreeUpdateDataView data,

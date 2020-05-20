@@ -675,7 +675,8 @@ class AutocompleteMediator implements OnSuggestionsReceivedListener, StartStopWi
         // For last level tile, start a search query, unless we want to let user have a chance to
         // edit the query.
         if (queryTile.children.isEmpty() && !QueryTileUtils.isQueryEditingEnabled()) {
-            String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(queryTile.queryText);
+            String url = TemplateUrlServiceFactory.get().getUrlForSearchQuery(
+                    queryTile.queryText, queryTile.searchParams);
             mDelegate.loadUrl(url, PageTransition.LINK, mLastActionUpTimestamp);
             mDelegate.setKeyboardVisibility(false);
             return;

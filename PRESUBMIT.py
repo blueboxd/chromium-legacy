@@ -95,6 +95,7 @@ _BANNED_JAVA_IMPORTS = (
         'net/android/javatests/src/org/chromium/net/'
         'AndroidProxySelectorTest.java',
         'components/cronet/',
+        'third_party/robolectric/local/',
       ),
     ),
 )

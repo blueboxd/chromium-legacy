@@ -136,8 +136,7 @@ class TestVariationsService : public VariationsService {
         fetch_attempted_(false),
         seed_stored_(false),
         delta_compressed_seed_(false),
-        gzip_compressed_seed_(false),
-        insecurely_fetched_seed_(false) {
+        gzip_compressed_seed_(false) {
     interception_url_ =
         GetVariationsServerURL(use_secure_url ? USE_HTTPS : USE_HTTP);
     set_variations_server_url(interception_url_);
@@ -160,7 +159,6 @@ class TestVariationsService : public VariationsService {
   const std::string& stored_country() const { return stored_country_; }
   bool delta_compressed_seed() const { return delta_compressed_seed_; }
   bool gzip_compressed_seed() const { return gzip_compressed_seed_; }
-  bool insecurely_fetched_seed() const { return insecurely_fetched_seed_; }
 
   bool CallMaybeRetryOverHTTP() { return CallMaybeRetryOverHTTPForTesting(); }
 
@@ -188,14 +186,12 @@ class TestVariationsService : public VariationsService {
                  const std::string& country_code,
                  base::Time date_fetched,
                  bool is_delta_compressed,
-                 bool is_gzip_compressed,
-                 bool fetched_insecurely) override {
+                 bool is_gzip_compressed) override {
     seed_stored_ = true;
     stored_seed_data_ = seed_data;
     stored_country_ = country_code;
     delta_compressed_seed_ = is_delta_compressed;
     gzip_compressed_seed_ = is_gzip_compressed;
-    insecurely_fetched_seed_ = fetched_insecurely;
     RecordSuccessfulFetch();
     return true;
   }
@@ -223,7 +219,6 @@ class TestVariationsService : public VariationsService {
   std::string stored_country_;
   bool delta_compressed_seed_;
   bool gzip_compressed_seed_;
-  bool insecurely_fetched_seed_;
 
   DISALLOW_COPY_AND_ASSIGN(TestVariationsService);
 };
@@ -942,43 +937,6 @@ TEST_F(VariationsServiceTest, FieldTrialCreatorInitializedCorrectly) {
   // Call will crash in service's VariationsFieldTrialCreator if not initialized
   // correctly.
   service.GetClientFilterableStateForVersionCalledForTesting();
-}
-
-TEST_F(VariationsServiceTest, InsecurelyFetchedSetWhenHTTP) {
-  std::string serialized_seed = SerializeSeed(CreateTestSeed());
-  VariationsService::EnableFetchForTesting();
-  TestVariationsService service(
-      std::make_unique<web_resource::TestRequestAllowedNotifier>(
-          &prefs_, network_tracker_),
-      &prefs_, GetMetricsStateManager(), false);
-  service.set_intercepts_fetch(false);
-  service.test_url_loader_factory()->AddResponse(
-      service.interception_url().spec(), serialized_seed);
-  base::HistogramTester histogram_tester;
-  // Note: We call DoFetchFromURL() here instead of DoActualFetch() since the
-  // latter doesn't pass true to |http_retry|.
-  service.DoFetchFromURL(service.interception_url(), true);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(service.insecurely_fetched_seed());
-  histogram_tester.ExpectUniqueSample(
-      "Variations.SeedFetchResponseOrErrorCode.HTTP", net::HTTP_OK, 1);
-}
-
-TEST_F(VariationsServiceTest, InsecurelyFetchedNotSetWhenHTTPS) {
-  std::string serialized_seed = SerializeSeed(CreateTestSeed());
-  TestVariationsService service(
-      std::make_unique<web_resource::TestRequestAllowedNotifier>(
-          &prefs_, network_tracker_),
-      &prefs_, GetMetricsStateManager(), true);
-  VariationsService::EnableFetchForTesting();
-  service.set_intercepts_fetch(false);
-  service.test_url_loader_factory()->AddResponse(
-      service.interception_url().spec(), serialized_seed);
-  base::HistogramTester histogram_tester;
-  service.DoActualFetch();
-  EXPECT_FALSE(service.insecurely_fetched_seed());
-  histogram_tester.ExpectUniqueSample("Variations.SeedFetchResponseOrErrorCode",
-                                      net::HTTP_OK, 1);
 }
 
 TEST_F(VariationsServiceTest, RetryOverHTTPIfURLisSet) {

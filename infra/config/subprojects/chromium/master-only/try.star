@@ -576,7 +576,7 @@ try_.chromium_mac_ios_builder(
     coverage_exclude_sources = 'ios_test_files_and_test_utils',
     coverage_test_types = ['unit'],
     properties = {
-        'xcode_build_version': '11c29',
+        'xcode_build_version': '11e146',
     },
 )
 

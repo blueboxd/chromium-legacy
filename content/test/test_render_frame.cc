@@ -453,9 +453,9 @@ mojom::FrameHost* TestRenderFrame::GetFrameHost() {
   return mock_frame_host_.get();
 }
 
-mojom::FrameInputHandler* TestRenderFrame::GetFrameInputHandler() {
+blink::mojom::FrameInputHandler* TestRenderFrame::GetFrameInputHandler() {
   if (!frame_input_handler_) {
-    mojo::PendingReceiver<mojom::FrameInputHandler>
+    mojo::PendingReceiver<blink::mojom::FrameInputHandler>
         frame_input_handler_receiver =
             frame_input_handler_.BindNewPipeAndPassReceiver();
     FrameInputHandlerImpl::CreateMojoService(

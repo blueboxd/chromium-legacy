@@ -3523,6 +3523,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "pdf-viewer-update",
+    "owners": ["rbpotter", "thestig"],
+    "expiry_milestone": 89
+  },
+  {
     "name": "per-method-can-make-payment-quota",
     "owners": [ "rouslan" ],
     "expiry_milestone": 78

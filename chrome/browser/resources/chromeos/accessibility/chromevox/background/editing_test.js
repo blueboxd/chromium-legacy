@@ -5,7 +5,6 @@
 // Include test fixture.
 GEN_INCLUDE([
   '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/chromevox_next_e2e_test_base.js',
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js'
 ]);
 
 GEN_INCLUDE([
@@ -1380,4 +1379,61 @@ TEST_F('ChromeVoxEditingTest', 'TextAreaBrailleEmptyLine', function() {
     textarea.focus();
     textarea.setValue('test\n\none\ntwo\n\nthree');
   });
+});
+
+TEST_F('ChromeVoxEditingTest', 'MoveByCharacterIntent', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <div contenteditable role="textbox">
+      <p>123</p>
+      <p>456</p>
+    </div>
+  `,
+      function(root) {
+        const input = root.find({role: RoleType.TEXT_FIELD});
+        this.listenOnce(input, 'focus', function() {
+          mockFeedback.call(this.press(39 /* right */))
+              .expectSpeech('2')
+              .call(this.press(39 /* right */))
+              .expectSpeech('3')
+              .call(this.press(39 /* right */))
+              .expectSpeech('\n')
+              .call(this.press(39 /* right */))
+              .expectSpeech('4')
+              .call(this.press(37 /* left */))
+              .expectSpeech('\n')
+              .call(this.press(37 /* left */))
+              .expectSpeech('3')
+              .replay();
+        });
+        input.focus();
+      });
+});
+
+TEST_F('ChromeVoxEditingTest', 'MoveByLineIntent', function() {
+  const mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(
+      `
+    <div contenteditable role="textbox">
+      <p>123</p>
+      <p>456</p>
+      <p>789</p>
+    </div>
+  `,
+      function(root) {
+        const input = root.find({role: RoleType.TEXT_FIELD});
+        this.listenOnce(input, 'focus', function() {
+          mockFeedback.call(this.press(40 /* down */))
+              .expectSpeech('456')
+              .call(this.press(40 /* down */))
+              .expectSpeech('789')
+              .call(this.press(38 /* up */))
+              .expectSpeech('456')
+              .call(this.press(38 /* up */))
+              .expectSpeech('123')
+              .replay();
+        });
+        input.focus();
+      });
 });

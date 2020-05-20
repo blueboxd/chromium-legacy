@@ -711,7 +711,7 @@ ci.mac_ios_builder(
     ),
     executable = 'recipe:chromium',
     properties = {
-        'xcode_build_version': '11c29',
+        'xcode_build_version': '11e146',
     },
 )
 

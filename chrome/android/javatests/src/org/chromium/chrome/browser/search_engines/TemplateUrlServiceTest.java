@@ -27,7 +27,11 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -95,6 +99,23 @@ public class TemplateUrlServiceTest {
             Assert.assertEquals(PREFETCH_VALUE, uri.getQueryParameter(PREFETCH_PARAMETER));
         } else {
             Assert.assertNull(uri.getQueryParameter(PREFETCH_PARAMETER));
+        }
+    }
+
+    private void validateSearchQuery(final String query, final List<String> searchParams,
+            final Map<String, String> expectedParams) throws ExecutionException {
+        String result = TestThreadUtils.runOnUiThreadBlocking(new Callable<String>() {
+            @Override
+            public String call() {
+                return TemplateUrlServiceFactory.get().getUrlForSearchQuery(query, searchParams);
+            }
+        });
+        Assert.assertNotNull(result);
+        Uri uri = Uri.parse(result);
+        Assert.assertEquals(query, uri.getQueryParameter(QUERY_PARAMETER));
+        if (expectedParams == null) return;
+        for (Map.Entry<String, String> param : expectedParams.entrySet()) {
+            Assert.assertEquals(param.getValue(), uri.getQueryParameter(param.getKey()));
         }
     }
 
@@ -250,6 +271,27 @@ public class TemplateUrlServiceTest {
                     }
                 });
         Assert.assertEquals("keyword1", defaultSearchEngine.getKeyword());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"SearchEngines"})
+    public void testGetUrlForSearchQuery() throws ExecutionException {
+        waitForTemplateUrlServiceToLoad();
+
+        Assert.assertTrue(TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return TemplateUrlServiceFactory.get().isLoaded();
+            }
+        }));
+
+        validateSearchQuery("cat", null, null);
+        Map<String, String> params = new HashMap();
+        params.put("xyz", "a");
+        validateSearchQuery("cat", new ArrayList<String>(Arrays.asList("xyz=a")), params);
+        params.put("abc", "b");
+        validateSearchQuery("cat", new ArrayList<String>(Arrays.asList("xyz=a", "abc=b")), params);
     }
 
     private int getSearchEngineCount(final TemplateUrlService templateUrlService) {

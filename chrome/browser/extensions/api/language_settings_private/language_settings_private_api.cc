@@ -212,7 +212,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
       std::move(spellcheck_languages));
 
   // Build the language list.
-  std::unique_ptr<base::ListValue> language_list(new base::ListValue);
+  auto language_list = std::make_unique<base::ListValue>();
 #if defined(OS_CHROMEOS)
   const std::unordered_set<std::string> allowed_ui_locales(
       GetAllowedLanguages(chrome_details_.GetProfile()->GetPrefs()));
@@ -258,6 +258,18 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     language_list->Append(language.ToValue());
   }
 #endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_WIN)
+  if (spellcheck::UseWinHybridSpellChecker()) {
+    SpellcheckService* service =
+        SpellcheckServiceFactory::GetForContext(browser_context());
+    for (auto& language_val : language_list->GetList()) {
+      if (service->UsesWindowsDictionary(*language_val.FindStringKey("code"))) {
+        language_val.SetBoolKey("supportsSpellcheck", new bool(true));
+      }
+    }
+  }
+#endif  // defined(OS_WIN)
 
   return RespondNow(OneArgument(std::move(language_list)));
 }

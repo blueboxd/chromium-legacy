@@ -52,7 +52,6 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.ResourceBundle;
@@ -211,7 +210,9 @@ public class WebViewChromiumAwInit {
 
             mFactory.getRunQueue().drainQueue();
 
-            maybeLogActiveTrials(context);
+            if (CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_VERBOSE_LOGGING)) {
+                logCommandLineAndActiveTrials();
+            }
         }
     }
 
@@ -457,34 +458,16 @@ public class WebViewChromiumAwInit {
         }
     }
 
-    // If a certain app is installed, log field trials as they become active, for debugging
-    // purposes. Check for the app asyncronously because PackageManager is slow.
-    private static void maybeLogActiveTrials(final Context ctx) {
-        PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
-            boolean shouldLog =
-                    CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_VERBOSE_LOGGING);
-
-            // TODO(ntfschr): deprecate log verbosifier and remove support in M84. See
-            // https://crbug.com/988200.
-            try {
-                // This must match the package name in:
-                // android_webview/tools/webview_log_verbosifier/AndroidManifest.xml
-                ctx.getPackageManager().getPackageInfo(
-                        "org.chromium.webview_log_verbosifier", /*flags=*/0);
-                shouldLog = true;
-            } catch (PackageManager.NameNotFoundException e) {
-            }
-
-            if (!shouldLog) return;
-
-            PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT, () -> {
-                // TODO(ntfschr): CommandLine can change at any time. For simplicity, only log it
-                // once during startup.
-                AwContentsStatics.logCommandLineForDebugging();
-                // Field trials can be activated at any time. We'll continue logging them as they're
-                // activated.
-                FieldTrialList.logActiveTrials();
-            });
+    // Log extra information, for debugging purposes. Do the work asynchronously to avoid blocking
+    // startup.
+    private static void logCommandLineAndActiveTrials() {
+        PostTask.postTask(UiThreadTaskTraits.BEST_EFFORT, () -> {
+            // TODO(ntfschr): CommandLine can change at any time. For simplicity, only log it
+            // once during startup.
+            AwContentsStatics.logCommandLineForDebugging();
+            // Field trials can be activated at any time. We'll continue logging them as they're
+            // activated.
+            FieldTrialList.logActiveTrials();
         });
     }
 

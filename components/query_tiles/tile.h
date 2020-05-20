@@ -56,6 +56,9 @@ struct Tile {
 
   // A list of children of this tile.
   std::vector<std::unique_ptr<Tile>> sub_tiles;
+
+  // Additional params for search query.
+  std::vector<std::string> search_params;
 };
 
 }  // namespace query_tiles

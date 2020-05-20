@@ -67,8 +67,6 @@ vs-chromium-project.txt
 .vscode/
 /_out
 /android_emulator_sdk
-/android_webview/tools/webview_log_verbosifier/.gradle/
-/android_webview/tools/webview_log_verbosifier/.settings/
 /ash/ash_unittests_run.xml
 /base/base_unittests_run.xml
 # See build/.gitignore for entries covering src/build.

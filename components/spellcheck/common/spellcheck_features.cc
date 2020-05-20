@@ -40,8 +40,13 @@ bool WindowsVersionSupportsSpellchecker() {
 
 bool UseWinHybridSpellChecker() {
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  return base::FeatureList::IsEnabled(spellcheck::kWinUseHybridSpellChecker) &&
-         UseBrowserSpellChecker();
+  // The kWinUseHybridSpellChecker feature flag is always treated as
+  // set if UseBrowserSpellChecker returns true. That is, hybrid spell checking
+  // (platform spell checking with a fallback to Hunspell) is always performed
+  // if kWinUseBrowserSpellChecker is set and the Windows version supports spell
+  // checking.
+  // TODO(crbug.com/1074450): Remove hybrid spellcheck feature flag.
+  return UseBrowserSpellChecker();
 #else
   return false;
 #endif

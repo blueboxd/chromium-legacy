@@ -18,10 +18,10 @@ import androidx.preference.CheckBoxPreference;
 import androidx.preference.Preference;
 import androidx.recyclerview.widget.RecyclerView;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -79,19 +79,19 @@ public class ManageSyncSettingsTest {
 
     private SettingsActivity mSettingsActivity;
 
-    @Rule
-    public SyncTestRule mSyncTestRule = new SyncTestRule();
-    @Rule
-    public SettingsActivityTestRule<ManageSyncSettings> mSettingsActivityTestRule =
+    private final SyncTestRule mSyncTestRule = new SyncTestRule();
+
+    private final SettingsActivityTestRule<ManageSyncSettings> mSettingsActivityTestRule =
             new SettingsActivityTestRule<>(ManageSyncSettings.class, true);
+
+    // SettingsActivity needs to be initialized and destroyed with the mock
+    // signin environment setup in SyncTestRule
+    @Rule
+    public final RuleChain mRuleChain =
+            RuleChain.outerRule(mSyncTestRule).around(mSettingsActivityTestRule);
 
     @Rule
     public final ChromeRenderTestRule mRenderTestRule = new ChromeRenderTestRule();
-
-    @After
-    public void tearDown() {
-        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
-    }
 
     @Test
     @SmallTest

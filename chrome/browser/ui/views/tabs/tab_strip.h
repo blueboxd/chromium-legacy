@@ -488,6 +488,9 @@ class TabStrip : public views::AccessiblePaneView,
                             base::Optional<int> from_model_index,
                             int to_model_index) const;
 
+  // Closes the tab at |model_index|.
+  void CloseTabInternal(int model_index, CloseTabSource source);
+
   // Removes the tab at |index| from |tabs_|.
   void RemoveTabFromViewModel(int index);
 

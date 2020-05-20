@@ -409,52 +409,15 @@ static_library("test_support") {
 
 group("telemetry_gpu_integration_test") {
   testonly = true
-  deps = [ "//tools/perf/chrome_telemetry_build:telemetry_chrome_test" ]
-
+  data_deps = [
+    "//content/test:telemetry_gpu_integration_test_support",
+    "//tools/perf/chrome_telemetry_build:telemetry_chrome_test",
+  ]
   data = [
     # For isolate contract.
-    "//testing/scripts/common.py",
-    "//testing/xvfb.py",
     "//testing/scripts/gpu_integration_test_adapter.py",
     "//testing/scripts/run_gpu_integration_test_as_googletest.py",
     "//testing/trigger_scripts/trigger_multiple_dimensions.py",
-
-    "//content/test/gpu/",
-    "//content/test/data/gpu/",
-
-    # For the Maps performance test. Include the entire directory to
-    # avoid having to update this BUILD.gn file if more files are
-    # added in the future.
-    "//tools/perf/page_sets/maps_perf_test/",
-
-    # For depth_capture
-    "//content/test/data/media/depth_stream_test_utilities.js",
-    "//content/test/data/media/getusermedia-depth-capture.html",
-    "//content/test/data/media/webrtc_test_utilities.js",
-
-    # For GpuProcess.video
-    "//content/test/data/media/bear.ogv",
-
-    # For webgl_conformance
-    "//third_party/webgl/",
-    "//content/test/gpu/run_gpu_integration_test.py",
-
-    # For pixel_test and trace_test
-    "//media/test/data/four-colors.mp4",
-    "//media/test/data/four-colors-aspect-4x3.mp4",
-    "//media/test/data/four-colors-rot-90.mp4",
-    "//media/test/data/four-colors-rot-180.mp4",
-    "//media/test/data/four-colors-rot-270.mp4",
-    "//media/test/data/four-colors-vp9.webm",
-    "//media/test/data/four-colors-vp9-i420a.webm",
-
-    # For power
-    "//media/test/data/bear-1280x720.mp4",
-  ]
-
-  data_deps = [
-    # For anything using Skia Gold (pixel, maps).
-    "//ui/base:goldctl",
   ]
 }
 
@@ -1071,6 +1034,7 @@ if (!is_android) {
       "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
       "../browser/policy/autoplay_policy_browsertest.cc",
       "../browser/policy/cast_policy_browsertest.cc",
+      "../browser/policy/certificate_transparency_policy_browsertest.cc",
       "../browser/policy/cloud/chrome_browser_cloud_management_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_manager_browsertest.cc",
@@ -1088,6 +1052,7 @@ if (!is_android) {
       "../browser/policy/policy_startup_browsertest.cc",
       "../browser/policy/policy_test_utils.cc",
       "../browser/policy/policy_test_utils.h",
+      "../browser/policy/restore_on_startup_policy_browsertest.cc",
       "../browser/policy/safe_browsing_policy_browsertest.cc",
       "../browser/policy/site_isolation_policy_browsertest.cc",
       "../browser/portal/portal_browsertest.cc",
@@ -1516,6 +1481,7 @@ if (!is_android) {
         "../browser/policy/accessibility_policy_browsertest.cc",
         "../browser/policy/arc_policy_browsertest.cc",
         "../browser/policy/assistant_policy_browsertest.cc",
+        "../browser/policy/login_policy_test_base_browsertest.cc",
         "../browser/policy/system_features_policy_browsertest.cc",
         "../browser/renderer_context_menu/quick_answers_menu_observer_browsertest.cc",
       ]

@@ -112,6 +112,7 @@ js2gtest("switch_access_extjs_tests") {
     "text_navigation_manager_test.js",
   ]
   gen_include_files = [
+    "../chromevox/testing/assert_additions.js",
     "../chromevox/testing/callback_helper.js",
     "switch_access_e2e_test_base.js",
   ]

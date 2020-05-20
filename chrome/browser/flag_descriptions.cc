@@ -4075,6 +4075,10 @@ const char kPdfTwoUpViewName[] = "PDF Two-up View";
 const char kPdfTwoUpViewDescription[] =
     "Enable a new option to display two pages side by side in the PDF viewer.";
 
+const char kPdfViewerUpdateName[] = "PDF Viewer Update";
+const char kPdfViewerUpdateDescription[] =
+    "When enabled, the PDF viewer will display an updated UI with new "
+    "options and features.";
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)

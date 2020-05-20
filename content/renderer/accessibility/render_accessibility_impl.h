@@ -151,8 +151,12 @@ class CONTENT_EXPORT RenderAccessibilityImpl : public RenderAccessibility,
 
  private:
   struct DirtyObject {
+    DirtyObject();
+    DirtyObject(const DirtyObject& other);
+    ~DirtyObject();
     blink::WebAXObject obj;
     ax::mojom::EventFrom event_from;
+    std::vector<ui::AXEventIntent> event_intents;
   };
 
   // Callback that will be called from the browser upon handling the message

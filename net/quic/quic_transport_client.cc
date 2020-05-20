@@ -4,6 +4,7 @@
 
 #include "net/quic/quic_transport_client.h"
 
+#include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_resolution_request.h"
@@ -292,6 +293,18 @@ void QuicTransportClient::TransitionToState(State next_state) {
         error_.safe_to_report_details = session_->alpn_received();
       }
 
+      base::UmaHistogramEnumeration("Net.QuicTransportClient.FailedAtState",
+                                    last_state, NUM_STATES);
+      base::UmaHistogramSparse("Net.QuicTransportClient.Error",
+                               std::abs(error_.net_error));
+      if (last_state == CONNECTING) {
+        base::UmaHistogramEnumeration(
+            "Net.QuicTransportClient.FailedAtConnectState", next_connect_state_,
+            CONNECT_STATE_NUM_STATES);
+        base::UmaHistogramSparse("Net.QuicTransportClient.ConnectionError",
+                                 std::abs(error_.net_error));
+      }
+
       DCHECK_NE(error_.net_error, OK);
       if (error_.details.empty()) {
         error_.details = ErrorToString(error_.net_error);
@@ -372,7 +385,18 @@ void QuicTransportClient::OnConnectionClosed(
     quic::QuicConnectionId /*server_connection_id*/,
     quic::QuicErrorCode error,
     const std::string& error_details,
-    quic::ConnectionCloseSource /*source*/) {
+    quic::ConnectionCloseSource source) {
+  std::string histogram_name;
+  switch (source) {
+    case quic::ConnectionCloseSource::FROM_SELF:
+      histogram_name = "Net.QuicTransportClient.ConnectionCloseCodeClient";
+      break;
+    case quic::ConnectionCloseSource::FROM_PEER:
+      histogram_name = "Net.QuicTransportClient.ConnectionCloseCodeServer";
+      break;
+  }
+  base::UmaHistogramSparse(histogram_name, error);
+
   if (error == quic::QUIC_NO_ERROR) {
     TransitionToState(CLOSED);
     return;

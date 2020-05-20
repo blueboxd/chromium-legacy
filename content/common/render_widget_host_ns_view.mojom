@@ -5,10 +5,9 @@
 module remote_cocoa.mojom;
 
 import "content/common/native_types.mojom";
-import "content/common/input/input_handler.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "ui/base/ime/mojom/ime_types.mojom";
 import "third_party/blink/public/mojom/input/input_handler.mojom";
+import "ui/base/ime/mojom/ime_types.mojom";
 import "ui/display/mojom/display.mojom";
 import "ui/events/mojom/event.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";

@@ -424,3 +424,13 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_fix_write_pending_crypto_retransmission,
     false)
+
+// If true, clear last_inflight_packets_sent_time_ of a packet number space when
+// there is no bytes in flight.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_fix_last_inflight_packets_sent_time,
+          true)
+
+// If true, QUIC will free writer-allocated packet buffer if writer->WritePacket
+// is not called.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_avoid_leak_writer_buffer, false)

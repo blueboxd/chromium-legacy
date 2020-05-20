@@ -27,10 +27,8 @@ constexpr base::TimeDelta kNoDelay = base::TimeDelta::FromSeconds(0);
 constexpr base::TimeDelta kSmallDelay = base::TimeDelta::FromMilliseconds(300);
 constexpr base::TimeDelta kNormalDelay = base::TimeDelta::FromMilliseconds(500);
 
-enum class ScanType { ONLY_DLP, ONLY_MALWARE, DLP_AND_MALWARE };
-
 // Tests the behavior of the dialog in the following ways:
-// - It shows the appropriate buttons depending on it's state.
+// - It shows the appropriate buttons depending on its state.
 // - It transitions from states in the correct order.
 // - It respects time constraints (minimum shown time, initial delay, timeout)
 // - It is always destroyed, therefore |quit_closure_| is called in the dtor
@@ -39,14 +37,13 @@ class DeepScanningDialogViewsBehaviorBrowserTest
     : public DeepScanningBrowserTestBase,
       public DeepScanningDialogViews::TestObserver,
       public testing::WithParamInterface<
-          std::tuple<ScanType, bool, bool, base::TimeDelta>> {
+          std::tuple<bool, bool, bool, base::TimeDelta>> {
  public:
-  DeepScanningDialogViewsBehaviorBrowserTest() {
+  DeepScanningDialogViewsBehaviorBrowserTest()
+      : DeepScanningBrowserTestBase(std::get<0>(GetParam())) {
     DeepScanningDialogViews::SetObserverForTesting(this);
 
-    bool dlp_result = !dlp_enabled() || dlp_success();
-    bool malware_result = !malware_enabled() || malware_success();
-    expected_scan_result_ = dlp_result && malware_result;
+    expected_scan_result_ = dlp_success() && malware_success();
   }
 
   void ConstructorCalled(DeepScanningDialogViews* views,
@@ -158,14 +155,6 @@ class DeepScanningDialogViewsBehaviorBrowserTest
     CallQuitClosure();
   }
 
-  bool dlp_enabled() const {
-    return std::get<0>(GetParam()) != ScanType::ONLY_MALWARE;
-  }
-
-  bool malware_enabled() const {
-    return std::get<0>(GetParam()) != ScanType::ONLY_DLP;
-  }
-
   bool dlp_success() const { return std::get<1>(GetParam()); }
 
   bool malware_success() const { return std::get<2>(GetParam()); }
@@ -194,9 +183,11 @@ class DeepScanningDialogViewsBehaviorBrowserTest
 // - The "CancelledByUser" metrics are recorded.
 class DeepScanningDialogViewsCancelPendingScanBrowserTest
     : public DeepScanningBrowserTestBase,
+      public testing::WithParamInterface<bool>,
       public DeepScanningDialogViews::TestObserver {
  public:
-  DeepScanningDialogViewsCancelPendingScanBrowserTest() {
+  DeepScanningDialogViewsCancelPendingScanBrowserTest()
+      : DeepScanningBrowserTestBase(GetParam()) {
     DeepScanningDialogViews::SetObserverForTesting(this);
   }
 
@@ -238,9 +229,11 @@ class DeepScanningDialogViewsCancelPendingScanBrowserTest
 class DeepScanningDialogViewsWarningBrowserTest
     : public DeepScanningBrowserTestBase,
       public DeepScanningDialogViews::TestObserver,
-      public testing::WithParamInterface<std::tuple<base::TimeDelta, bool>> {
+      public testing::WithParamInterface<
+          std::tuple<base::TimeDelta, bool, bool>> {
  public:
-  DeepScanningDialogViewsWarningBrowserTest() {
+  DeepScanningDialogViewsWarningBrowserTest()
+      : DeepScanningBrowserTestBase(std::get<2>(GetParam())) {
     DeepScanningDialogViews::SetObserverForTesting(this);
   }
 
@@ -304,9 +297,10 @@ class DeepScanningDialogViewsAppearanceBrowserTest
     : public DeepScanningBrowserTestBase,
       public DeepScanningDialogViews::TestObserver,
       public testing::WithParamInterface<
-          std::tuple<bool, bool, DeepScanAccessPoint>> {
+          std::tuple<bool, bool, DeepScanAccessPoint, bool>> {
  public:
-  DeepScanningDialogViewsAppearanceBrowserTest() {
+  DeepScanningDialogViewsAppearanceBrowserTest()
+      : DeepScanningBrowserTestBase(std::get<3>(GetParam())) {
     DeepScanningDialogViews::SetObserverForTesting(this);
   }
 
@@ -411,28 +405,13 @@ constexpr char kTestUrl[] = "https://google.com";
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
-  // The test is wrong if neither DLP or Malware is enabled. This would imply a
-  // Deep Scanning call site called ShowForWebContents without first checking
-  // IsEnabled returns true.
-  EXPECT_TRUE(dlp_enabled() || malware_enabled());
-
   // Setup policies to enable deep scanning, its UI and the responses to be
   // simulated.
-  base::Optional<bool> dlp = base::nullopt;
-  base::Optional<bool> malware = base::nullopt;
-  if (dlp_enabled()) {
-    dlp = dlp_success();
-    SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
-  }
-  if (malware_enabled()) {
-    malware = malware_success();
-    SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
-    ListPrefUpdate(g_browser_process->local_state(),
-                   prefs::kURLsToCheckForMalwareOfUploadedContent)
-        ->Append("*");
-  }
-  SetStatusCallbackResponse(
-      SimpleDeepScanningClientResponseForTesting(dlp, malware));
+  SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
+  SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
+  AddUrlToCheckForMalwareOfUploads("*");
+  SetStatusCallbackResponse(SimpleDeepScanningClientResponseForTesting(
+      dlp_success(), malware_success()));
 
   // Always set this policy so the UI is shown.
   SetWaitPolicy(DELAY_UPLOADS);
@@ -446,8 +425,8 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
   SetQuitClosure(run_loop.QuitClosure());
 
   DeepScanningDialogDelegate::Data data;
-  data.do_dlp_scan = dlp_enabled();
-  data.do_malware_scan = malware_enabled();
+  data.do_dlp_scan = true;
+  data.do_malware_scan = true;
   CreateFilesForTest({"foo.doc"}, {"content"}, &data);
   ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
       browser()->profile(), GURL(kTestUrl), &data,
@@ -483,18 +462,16 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsBehaviorBrowserTest, Test) {
 //               more than its minimum duration (GetMinimumPendingDialogTime <
 //               kNormalDelay).
 INSTANTIATE_TEST_SUITE_P(
-    DeepScanningDialogViewsBehaviorBrowserTest,
+    ,
     DeepScanningDialogViewsBehaviorBrowserTest,
     testing::Combine(
-        /*scan_type*/ testing::Values(ScanType::ONLY_DLP,
-                                      ScanType::ONLY_MALWARE,
-                                      ScanType::DLP_AND_MALWARE),
+        /*use_legacy_policies*/ testing::Bool(),
         /*dlp_success*/ testing::Bool(),
         /*malware_success*/ testing::Bool(),
         /*response_delay*/
         testing::Values(kNoDelay, kSmallDelay, kNormalDelay)));
 
-IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
+IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsCancelPendingScanBrowserTest,
                        Test) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
@@ -541,6 +518,10 @@ IN_PROC_BROWSER_TEST_F(DeepScanningDialogViewsCancelPendingScanBrowserTest,
 
   ValidateMetrics();
 }
+
+INSTANTIATE_TEST_SUITE_P(,
+                         DeepScanningDialogViewsCancelPendingScanBrowserTest,
+                         /*use_legacy_policies=*/testing::Bool());
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -596,10 +577,12 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsWarningBrowserTest, Test) {
   EXPECT_TRUE(called);
 }
 
-INSTANTIATE_TEST_SUITE_P(
-    DeepScanningDialogViewsWarningBrowserTest,
-    DeepScanningDialogViewsWarningBrowserTest,
-    testing::Combine(testing::Values(kNoDelay, kSmallDelay), testing::Bool()));
+INSTANTIATE_TEST_SUITE_P(,
+                         DeepScanningDialogViewsWarningBrowserTest,
+                         testing::Combine(
+                             /*delay=*/testing::Values(kNoDelay, kSmallDelay),
+                             /*user_bypasses_warning=*/testing::Bool(),
+                             /*use_legacy_policies=*/testing::Bool()));
 
 IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
   base::ScopedAllowBlockingForTesting allow_blocking;
@@ -651,7 +634,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogViewsAppearanceBrowserTest, Test) {
   EXPECT_TRUE(called);
 }
 
-INSTANTIATE_TEST_SUITE_P(DeepScanningDialogViewsAppearanceBrowserTest,
+INSTANTIATE_TEST_SUITE_P(,
                          DeepScanningDialogViewsAppearanceBrowserTest,
                          testing::Combine(
                              /*file_scan=*/testing::Bool(),
@@ -659,6 +642,7 @@ INSTANTIATE_TEST_SUITE_P(DeepScanningDialogViewsAppearanceBrowserTest,
                              /*access_point=*/
                              testing::Values(DeepScanAccessPoint::UPLOAD,
                                              DeepScanAccessPoint::DRAG_AND_DROP,
-                                             DeepScanAccessPoint::PASTE)));
+                                             DeepScanAccessPoint::PASTE),
+                             /*use_legacy_policies=*/testing::Bool()));
 
 }  // namespace safe_browsing

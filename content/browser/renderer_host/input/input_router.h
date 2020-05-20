@@ -86,10 +86,11 @@ class InputRouter {
   virtual void SetForceEnableZoom(bool enabled) = 0;
 
   // Create and bind a new host channel.
-  virtual mojo::PendingRemote<mojom::WidgetInputHandlerHost> BindNewHost() = 0;
+  virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
+  BindNewHost() = 0;
 
   // Create and bind a new frame based host channel.
-  virtual mojo::PendingRemote<mojom::WidgetInputHandlerHost>
+  virtual mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost>
   BindNewFrameHost() = 0;
 
   // Used to stop an active fling if such exists.

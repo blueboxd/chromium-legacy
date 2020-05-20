@@ -135,6 +135,9 @@ void AddAdditionalDataForPdf(base::DictionaryValue* dict) {
   dict->SetKey("pdfTwoUpViewEnabled",
                base::Value(base::FeatureList::IsEnabled(
                    chrome_pdf::features::kPDFTwoUpView)));
+  dict->SetKey("pdfViewerUpdateEnabled",
+               base::Value(base::FeatureList::IsEnabled(
+                   chrome_pdf::features::kPDFViewerUpdate)));
 
   bool enable_printing = true;
 #if defined(OS_CHROMEOS)

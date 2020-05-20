@@ -50,7 +50,8 @@ WidgetInputHandlerImpl::WidgetInputHandlerImpl(
 WidgetInputHandlerImpl::~WidgetInputHandlerImpl() {}
 
 void WidgetInputHandlerImpl::SetAssociatedReceiver(
-    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver) {
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
+        receiver) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   if (content::RenderThreadImpl::current()) {
     blink::scheduler::WebThreadScheduler* scheduler =
@@ -63,7 +64,8 @@ void WidgetInputHandlerImpl::SetAssociatedReceiver(
 }
 
 void WidgetInputHandlerImpl::SetReceiver(
-    mojo::PendingReceiver<mojom::WidgetInputHandler> interface_receiver) {
+    mojo::PendingReceiver<blink::mojom::WidgetInputHandler>
+        interface_receiver) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner;
   if (content::RenderThreadImpl::current()) {
     blink::scheduler::WebThreadScheduler* scheduler =
@@ -187,9 +189,10 @@ void WidgetInputHandlerImpl::InputWasProcessed() {
 }
 
 void WidgetInputHandlerImpl::AttachSynchronousCompositor(
-    mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-    mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-    mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+    mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+        control_host,
+    mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
         compositor_receiver) {
   input_handler_manager_->AttachSynchronousCompositor(
       std::move(control_host), std::move(host), std::move(compositor_receiver));

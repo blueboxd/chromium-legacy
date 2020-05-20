@@ -10,6 +10,12 @@
  * Event 'loaded' will be fired when the page has been successfully loaded.
  */
 
+/**
+ * Name of the screen.
+ * @type {string}
+ */
+const THIRD_PARTY_SCREEN_ID = 'ThirdPartyScreen';
+
 Polymer({
   is: 'assistant-third-party',
 
@@ -53,6 +59,9 @@ Polymer({
    */
   sanitizer_: new HtmlSanitizer(),
 
+  /** @private {?assistant.BrowserProxy} */
+  browserProxy_: null,
+
   /**
    * On-tap event handler for next button.
    *
@@ -63,9 +72,12 @@ Polymer({
       return;
     }
     this.buttonsDisabled = true;
-    chrome.send(
-        'login.AssistantOptInFlowScreen.ThirdPartyScreen.userActed',
-        ['next-pressed']);
+    this.browserProxy_.userActed(THIRD_PARTY_SCREEN_ID, ['next-pressed']);
+  },
+
+  /** @override */
+  created() {
+    this.browserProxy_ = assistant.BrowserProxyImpl.getInstance();
   },
 
   /**
@@ -188,8 +200,7 @@ Polymer({
     this.buttonsDisabled = false;
     this.$['next-button'].focus();
     if (!this.hidden && !this.screenShown_) {
-      chrome.send(
-          'login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown');
+      this.browserProxy_.screenShown(THIRD_PARTY_SCREEN_ID);
       this.screenShown_ = true;
     }
   },
@@ -209,8 +220,7 @@ Polymer({
       this.reloadPage();
     } else {
       this.$['next-button'].focus();
-      chrome.send(
-          'login.AssistantOptInFlowScreen.ThirdPartyScreen.screenShown');
+      this.browserProxy_.screenShown(THIRD_PARTY_SCREEN_ID);
       this.screenShown_ = true;
     }
   },

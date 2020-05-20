@@ -56,8 +56,6 @@ public class SyncAndServicesSettingsTest {
 
     // SettingsActivity needs to be initialized and destroyed with the mock
     // signin environment setup in SyncTestRule
-    // TODO(https://crbug.com/1081153):
-    // Check if to add ProfileSyncService.resetForTests() in SyncTestRule teardown.
     @Rule
     public final RuleChain mRuleChain =
             RuleChain.outerRule(mSyncTestRule).around(mSettingsActivityTestRule);

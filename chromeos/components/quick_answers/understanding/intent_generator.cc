@@ -115,7 +115,7 @@ void IntentGenerator::LoadModelCallback(const QuickAnswersRequest& request,
         machine_learning::mojom::TextAnnotationRequest::New();
     text_annotation_request->text = request.selected_text;
     text_annotation_request->default_locales =
-        request.device_properties.language;
+        request.context.device_properties.language;
 
     text_classifier_->Annotate(
         std::move(text_annotation_request),
@@ -155,21 +155,19 @@ void IntentGenerator::MaybeGenerateTranslationIntent(
 
   // Don't do language detection if no device language is provided or the length
   // of selected text is above the threshold. Returns unknown intent type.
-  if (request.device_properties.language.empty() ||
+  if (request.context.device_properties.language.empty() ||
       request.selected_text.length() > kTranslationTextLengthThreshold) {
     std::move(complete_callback_)
         .Run(request.selected_text, IntentType::kUnknown);
     return;
   }
-
-  // TODO(b/150974962): Investigate improving language detection accuracy using
-  // surrounding text or page content.
-  auto detected_language =
-      language_detector_->DetectLanguage(request.selected_text);
-
+  auto detected_language = language_detector_->DetectLanguage(
+      !request.context.surrounding_text.empty()
+          ? request.context.surrounding_text
+          : request.selected_text);
   auto intent_type = IntentType::kUnknown;
   if (!detected_language.empty() &&
-      detected_language != request.device_properties.language) {
+      detected_language != request.context.device_properties.language) {
     intent_type = IntentType::kTranslation;
   }
   std::move(complete_callback_).Run(request.selected_text, intent_type);

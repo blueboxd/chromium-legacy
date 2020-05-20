@@ -10,18 +10,18 @@
 #include <memory>
 #include <utility>
 
-#include "content/common/input/input_handler.mojom.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom.h"
 
 namespace content {
 
-class MockWidgetInputHandler : public mojom::WidgetInputHandler {
+class MockWidgetInputHandler : public blink::mojom::WidgetInputHandler {
  public:
   MockWidgetInputHandler();
   MockWidgetInputHandler(
-      mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
-      mojo::PendingRemote<mojom::WidgetInputHandlerHost> host);
+      mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
+      mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host);
 
   ~MockWidgetInputHandler() override;
 
@@ -193,7 +193,7 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
     DISALLOW_COPY_AND_ASSIGN(DispatchedRequestCompositionUpdatesMessage);
   };
 
-  // mojom::WidgetInputHandler override.
+  // blink::mojom::WidgetInputHandler override.
   void SetFocus(bool focused) override;
   void MouseCaptureLost() override;
   void SetEditCommandsForNextKeyEvent(
@@ -220,17 +220,19 @@ class MockWidgetInputHandler : public mojom::WidgetInputHandler {
       std::unique_ptr<blink::WebCoalescedInputEvent> event) override;
   void WaitForInputProcessed(WaitForInputProcessedCallback callback) override;
   void AttachSynchronousCompositor(
-      mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-      mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-      mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+      mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+          control_host,
+      mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost>
+          host,
+      mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
           compositor_request) override;
 
   using MessageVector = std::vector<std::unique_ptr<DispatchedMessage>>;
   MessageVector GetAndResetDispatchedMessages();
 
  private:
-  mojo::Receiver<mojom::WidgetInputHandler> receiver_{this};
-  mojo::Remote<mojom::WidgetInputHandlerHost> host_;
+  mojo::Receiver<blink::mojom::WidgetInputHandler> receiver_{this};
+  mojo::Remote<blink::mojom::WidgetInputHandlerHost> host_;
   MessageVector dispatched_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(MockWidgetInputHandler);

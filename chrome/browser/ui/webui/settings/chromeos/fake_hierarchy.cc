@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/fake_hierarchy.h"
 
+#include <utility>
+
 namespace chromeos {
 namespace settings {
 
@@ -12,10 +14,13 @@ FakeHierarchy::FakeHierarchy() = default;
 FakeHierarchy::~FakeHierarchy() = default;
 
 void FakeHierarchy::AddSubpageMetadata(
+    int name_message_id,
     mojom::Section section,
     mojom::Subpage subpage,
     base::Optional<mojom::Subpage> parent_subpage) {
-  auto pair = subpage_map_.emplace(subpage, section);
+  auto pair = subpage_map_.emplace(
+      std::piecewise_construct, std::forward_as_tuple(subpage),
+      std::forward_as_tuple(name_message_id, section));
   DCHECK(pair.second);
   pair.first->second.parent_subpage = parent_subpage;
 }

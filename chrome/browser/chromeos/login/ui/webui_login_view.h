@@ -129,8 +129,6 @@ class WebUILoginView : public views::View,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) override;
 
-  views::WebView* web_view();
-
  private:
   // Map type for the accelerator-to-identifier map.
   typedef std::map<ui::Accelerator, std::string> AccelMap;
@@ -174,7 +172,7 @@ class WebUILoginView : public views::View,
   const WebViewSettings settings_;
 
   // WebView for rendering a webpage as a webui login.
-  std::unique_ptr<views::WebView> webui_login_;
+  views::WebView* web_view_ = nullptr;
 
   // Converts keyboard events on the WebContents to accelerators.
   views::UnhandledKeyboardEventHandler unhandled_keyboard_event_handler_;

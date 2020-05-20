@@ -24,9 +24,15 @@ class AmbientViewDelegateImpl : public AmbientViewDelegate {
   // AmbientViewDelegate:
   AmbientBackendModel* GetAmbientBackendModel() override;
   void OnBackgroundPhotoEvents() override;
+  void OnPhotoTransitionAnimationCompleted() override;
+
+  void AddObserver(AmbientViewDelegateObserver* observer);
+  void RemoveObserver(AmbientViewDelegateObserver* observer);
 
  private:
   AmbientController* const ambient_controller_;  // Owned by Shell.
+
+  base::ObserverList<AmbientViewDelegateObserver> view_delegate_observers_;
 
   base::WeakPtrFactory<AmbientViewDelegateImpl> weak_factory_{this};
 };

@@ -154,6 +154,8 @@ struct PaymentsCustomerData;
 //                      is the billing address for this card. Can be null in the
 //                      database, but always returned as an empty string in
 //                      CreditCard. Added in version 66.
+//   nickname           A nickname for the card, entered by the user. Added in
+//                      version 87.
 //
 // masked_credit_cards
 //                      This table contains "masked" credit card information
@@ -556,6 +558,7 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion84AddNicknameColumn();
   bool MigrateToVersion85AddCardIssuerColumnToMaskedCreditCard();
   bool MigrateToVersion86RemoveUnmaskedCreditCardsUseColumns();
+  bool MigrateToVersion87AddCreditCardNicknameColumn();
 
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.

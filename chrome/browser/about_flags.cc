@@ -3826,6 +3826,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"pdf-two-up-view", flag_descriptions::kPdfTwoUpViewName,
      flag_descriptions::kPdfTwoUpViewDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFTwoUpView)},
+
+    {"pdf-viewer-update", flag_descriptions::kPdfViewerUpdateName,
+     flag_descriptions::kPdfViewerUpdateDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(chrome_pdf::features::kPDFViewerUpdate)},
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 #if BUILDFLAG(ENABLE_PRINTING)

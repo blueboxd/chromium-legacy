@@ -1029,11 +1029,16 @@ TEST_P(TabStripTest, EventsOnClosingTab) {
   controller_->AddTab(1, true);
 
   Tab* first_tab = tab_strip_->tab_at(0);
+  Tab* second_tab = tab_strip_->tab_at(1);
   gfx::Point tab_center = first_tab->bounds().CenterPoint();
 
   EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
   tab_strip_->CloseTab(first_tab, CLOSE_TAB_FROM_MOUSE);
   EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
+
+  // Closing |first_tab| again should forward to |second_tab| instead.
+  tab_strip_->CloseTab(first_tab, CLOSE_TAB_FROM_MOUSE);
+  EXPECT_TRUE(second_tab->closing());
 }
 
 TEST_P(TabStripTest, GroupHeaderBasics) {

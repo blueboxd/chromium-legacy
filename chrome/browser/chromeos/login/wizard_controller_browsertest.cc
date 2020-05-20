@@ -2933,8 +2933,6 @@ IN_PROC_BROWSER_TEST_F(WizardControllerOobeConfigurationTest,
 // TODO(fukino): Add tests for encryption migration UI.
 // http://crbug.com/706017
 
-// TODO(updowndota): Add tests for Voice Interaction/Assistant OptIn flow.
-
 // TODO(alemate): Add tests for Sync Consent UI.
 
 // TODO(rsgingerrs): Add tests for Recommend Apps UI.

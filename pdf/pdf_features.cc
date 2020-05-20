@@ -24,6 +24,9 @@ const base::Feature kPDFAnnotations = {"PDFAnnotations",
 const base::Feature kPDFTwoUpView = {"PDFTwoUpView",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPDFViewerUpdate = {"PDFViewerUpdate",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSaveEditedPDFForm = {"SaveEditedPDFForm",
 #if defined(OS_CHROMEOS)
                                           base::FEATURE_ENABLED_BY_DEFAULT

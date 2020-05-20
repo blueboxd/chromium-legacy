@@ -24,12 +24,17 @@ public class QueryTile extends ImageTile {
     /** The urls of the images to be shown for the tile. */
     public final List<String> urls;
 
+    /** The urls of the images to be shown for the tile. */
+    public final List<String> searchParams;
+
     /** Constructor. */
     public QueryTile(String id, String displayTitle, String accessibilityText, String queryText,
-            String[] urls, List<QueryTile> children) {
+            String[] urls, String[] searchParams, List<QueryTile> children) {
         super(id, displayTitle, accessibilityText);
         this.queryText = queryText;
         this.urls = Arrays.asList(urls);
+        this.searchParams =
+                (searchParams == null) ? new ArrayList<>() : Arrays.asList(searchParams);
         this.children =
                 Collections.unmodifiableList(children == null ? new ArrayList<>() : children);
     }

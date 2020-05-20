@@ -17,6 +17,8 @@ Local Modifications:
   for our own implementation of AsyncTask
 - Added DefaultSdkProvider as a local file with Jellybean references removed.
 - Removed non-compiling JDK9 class from UnsafeAccess.java.
+- Changed SdkStore.java and JavadocJsonGenerator.java to put warnings in logger
+  rather than stout.
 How To Update:
 - Visit the migration guide to see which APIs changed and need updating.
   http://robolectric.org/migrating/

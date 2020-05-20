@@ -198,10 +198,14 @@ java_library("robolectric_annotations_java") {
 }
 
 java_annotation_processor("robolectric_processor") {
+  bypass_platform_checks = true
   testonly = true
   enable_bytecode_checks = false
   deps = [
     ":robolectric_annotations_java",
+
+    # Added to use logger with local file.
+    ":robolectric_utils_java",
     ":sdk_list_txt",
     "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
@@ -218,6 +222,8 @@ java_annotation_processor("robolectric_processor") {
   provider_configurations = [ "local/processor/src/main/resources/META-INF/services/javax.annotation.processing.Processor" ]
   main_class = "org.robolectric.annotation.processing.RobolectricProcessor"
   sources = [
+    "local/processor/src/main/java/org/robolectric/annotation/processing/generator/JavadocJsonGenerator.java",
+    "local/processor/src/main/java/org/robolectric/annotation/processing/validator/SdkStore.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/DocumentedElement.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/DocumentedMethod.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/DocumentedPackage.java",
@@ -226,7 +232,9 @@ java_annotation_processor("robolectric_processor") {
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/RobolectricModel.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/RobolectricProcessor.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/generator/Generator.java",
-    "robolectric/processor/src/main/java/org/robolectric/annotation/processing/generator/JavadocJsonGenerator.java",
+
+    # Provided locally to supress output warnings.
+    # "robolectric/processor/src/main/java/org/robolectric/annotation/processing/generator/JavadocJsonGenerator.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/generator/ServiceLoaderGenerator.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/generator/ShadowProviderGenerator.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/generator/package-info.java",
@@ -236,7 +244,9 @@ java_annotation_processor("robolectric_processor") {
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/validator/ImplementsValidator.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/validator/RealObjectValidator.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/validator/ResetterValidator.java",
-    "robolectric/processor/src/main/java/org/robolectric/annotation/processing/validator/SdkStore.java",
+
+    # Provided locally to supress output warnings.
+    # "robolectric/processor/src/main/java/org/robolectric/annotation/processing/validator/SdkStore.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/validator/Validator.java",
     "robolectric/processor/src/main/java/org/robolectric/annotation/processing/validator/package-info.java",
   ]

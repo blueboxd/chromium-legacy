@@ -350,7 +350,6 @@ void WorkspaceLayoutManager::OnWindowActivating(ActivationReason reason,
   if (window_state && window_state->IsMinimized() &&
       !gaining_active->IsVisible()) {
     window_state->Unminimize();
-    DCHECK(!window_state->IsMinimized());
   }
 }
 

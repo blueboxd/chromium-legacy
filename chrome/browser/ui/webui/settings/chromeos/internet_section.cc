@@ -637,24 +637,28 @@ int InternetSection::GetSectionNameMessageId() const {
 
 void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Ethernet details.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kEthernetDetails);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_INTERNET_ETHERNET_DETAILS,
+                                     mojom::Subpage::kEthernetDetails);
   RegisterNestedSettingBulk(mojom::Subpage::kEthernetDetails,
                             GetEthernetDetailsSettings(), generator);
 
   // Wi-Fi networks.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kWifiNetworks);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_INTERNET_WIFI_NETWORKS,
+                                     mojom::Subpage::kWifiNetworks);
   generator->RegisterNestedSetting(mojom::Setting::kWifiOnOff,
                                    mojom::Subpage::kWifiNetworks);
   generator->RegisterTopLevelAltSetting(mojom::Setting::kWifiOnOff);
 
   // Wi-Fi details.
-  generator->RegisterNestedSubpage(mojom::Subpage::kWifiDetails,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_INTERNET_WIFI_DETAILS,
+                                   mojom::Subpage::kWifiDetails,
                                    mojom::Subpage::kWifiNetworks);
   RegisterNestedSettingBulk(mojom::Subpage::kWifiDetails,
                             GetWifiDetailsSettings(), generator);
 
   // Known networks.
-  generator->RegisterNestedSubpage(mojom::Subpage::kKnownNetworks,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_INTERNET_KNOWN_NETWORKS,
+                                   mojom::Subpage::kKnownNetworks,
                                    mojom::Subpage::kWifiNetworks);
   generator->RegisterNestedAltSetting(mojom::Setting::kPreferWifiNetwork,
                                       mojom::Subpage::kKnownNetworks);
@@ -664,7 +668,8 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Mobile data. If Instant Tethering is available, a mobile data subpage is
   // available which lists both Cellular and Instant Tethering networks. If
   // Instant Tethering is not available, there is no mobile data subpage.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kMobileDataNetworks);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_INTERNET_MOBILE_DATA_NETWORKS,
+                                     mojom::Subpage::kMobileDataNetworks);
   generator->RegisterNestedSetting(mojom::Setting::kMobileOnOff,
                                    mojom::Subpage::kMobileDataNetworks);
   generator->RegisterTopLevelAltSetting(mojom::Setting::kMobileOnOff);
@@ -673,20 +678,23 @@ void InternetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // data subpage. However, note that if Instant Tethering is not available,
   // clicking on "Mobile data" at the Network section navigates users directly
   // to the cellular details page and skips over the mobile data subpage.
-  generator->RegisterNestedSubpage(mojom::Subpage::kCellularDetails,
+  generator->RegisterNestedSubpage(IDS_SETTINGS_INTERNET_CELLULAR_DETAILS,
+                                   mojom::Subpage::kCellularDetails,
                                    mojom::Subpage::kMobileDataNetworks);
   RegisterNestedSettingBulk(mojom::Subpage::kCellularDetails,
                             GetCellularDetailsSettings(), generator);
 
   // Instant Tethering. Although this is a multi-device feature, its UI resides
   // in the network section.
-  generator->RegisterNestedSubpage(mojom::Subpage::kTetherDetails,
-                                   mojom::Subpage::kMobileDataNetworks);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_INTERNET_INSTANT_TETHERING_DETAILS,
+      mojom::Subpage::kTetherDetails, mojom::Subpage::kMobileDataNetworks);
   generator->RegisterNestedSetting(mojom::Setting::kInstantTetheringOnOff,
                                    mojom::Subpage::kMobileDataNetworks);
 
   // VPN.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kVpnDetails);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_INTERNET_VPN_DETAILS,
+                                     mojom::Subpage::kVpnDetails);
 }
 
 std::string InternetSection::ModifySearchResultUrl(

@@ -35,9 +35,11 @@ void ResponseToTile(
   tile->accessibility_text = response.accessibility_text();
   tile->query_text = response.query_string();
 
-  for (const auto& image : response.tile_images()) {
+  for (const auto& image : response.tile_images())
     tile->image_metadatas.emplace_back(GURL(image.url()));
-  }
+
+  for (const auto& search_param : response.search_params())
+    tile->search_params.emplace_back(search_param);
 
   for (const auto& id : response.sub_tile_ids()) {
     if (sub_tiles_from_response.count(id)) {
@@ -66,6 +68,11 @@ void TileToProto(Tile* entry, TileProto* proto) {
     data->set_url(image.url.spec());
   }
 
+  for (auto& search_param : entry->search_params) {
+    auto* param = proto->add_search_params();
+    *param = search_param;
+  }
+
   // Set children.
   for (auto& subtile : entry->sub_tiles) {
     TileToProto(subtile.get(), proto->add_sub_tiles());
@@ -80,9 +87,11 @@ void TileFromProto(TileProto* proto, Tile* entry) {
   entry->display_text = proto->display_text();
   entry->accessibility_text = proto->accessibility_text();
 
-  for (const auto& image_md : proto->image_metadatas()) {
+  for (const auto& image_md : proto->image_metadatas())
     entry->image_metadatas.emplace_back(GURL(image_md.url()));
-  }
+
+  for (const auto& search_param : proto->search_params())
+    entry->search_params.emplace_back(search_param);
 
   for (int i = 0; i < proto->sub_tiles_size(); i++) {
     auto sub_tile_proto = proto->sub_tiles(i);

@@ -463,6 +463,9 @@ DOM_CODE_DECLARATION {
 
   // KEY_BRIGHTNESS* added in Linux 3.16
   // http://www.usb.org/developers/hidpage/HUTRR41.pdf
+  //
+  // Keyboard backlight/illumination spec update.
+  // https://www.usb.org/sites/default/files/hutrr73_-_fn_key_and_keyboard_backlight_brightness_0.pdf
   //            USB     evdev    XKB     Win     Mac   Code
   DOM_CODE(0x0c0060, 0x0166, 0x016e, 0x0000, 0xffff, NULL, INFO),
   DOM_CODE(0x0c0061, 0x0172, 0x017a, 0x0000, 0xffff, NULL, CLOSED_CAPTION_TOGGLE),
@@ -473,6 +476,8 @@ DOM_CODE_DECLARATION {
   DOM_CODE(0x0c0073, 0x0250, 0x0258, 0x0000, 0xffff, NULL, BRIGHTNESS_MINIMIUM),
   DOM_CODE(0x0c0074, 0x0251, 0x0259, 0x0000, 0xffff, NULL, BRIGHTNESS_MAXIMUM),
   DOM_CODE(0x0c0075, 0x00f4, 0x00fc, 0x0000, 0xffff, NULL, BRIGHTNESS_AUTO),
+  DOM_CODE(0x0c0079, 0x00e6, 0x00ee, 0x0000, 0xffff, NULL, KBD_ILLUM_UP),
+  DOM_CODE(0x0c007a, 0x00e5, 0x00ed, 0x0000, 0xffff, NULL, KBD_ILLUM_DOWN),
   DOM_CODE(0x0c0083, 0x0195, 0x019d, 0x0000, 0xffff, NULL, MEDIA_LAST),
   DOM_CODE(0x0c008c, 0x00a9, 0x00b1, 0x0000, 0xffff, NULL, LAUNCH_PHONE),
   DOM_CODE(0x0c008d, 0x016a, 0x0172, 0x0000, 0xffff, NULL, PROGRAM_GUIDE),

@@ -53,6 +53,7 @@ class SpellcheckHunspellDictionary
   };
 
   SpellcheckHunspellDictionary(const std::string& language,
+                               const std::string& platform_spellcheck_language,
                                content::BrowserContext* browser_context,
                                SpellcheckService* spellcheck_service);
   ~SpellcheckHunspellDictionary() override;
@@ -68,6 +69,8 @@ class SpellcheckHunspellDictionary
 
   const base::File& GetDictionaryFile() const;
   const std::string& GetLanguage() const;
+  const std::string& GetPlatformSpellcheckLanguage() const;
+  bool HasPlatformSupport() const;
   bool IsUsingPlatformChecker() const;
 
   // Add an observer for Hunspell dictionary events.
@@ -156,8 +159,13 @@ class SpellcheckHunspellDictionary
   // Task runner where the file operations takes place.
   scoped_refptr<base::SequencedTaskRunner> const task_runner_;
 
-  // The language of the dictionary file.
+  // The language of the dictionary file (passed when loading Hunspell
+  // dictionaries).
   const std::string language_;
+
+  // The spellcheck language passed to platform APIs may differ from the accept
+  // language (can be empty, indicating to use accept language and Hunspell).
+  const std::string platform_spellcheck_language_;
 
   // Whether to use the platform spellchecker instead of Hunspell.
   bool use_browser_spellchecker_;

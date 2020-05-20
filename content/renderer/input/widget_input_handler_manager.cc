@@ -51,11 +51,12 @@ blink::mojom::DidOverscrollParamsPtr ToDidOverscrollParams(
       overscroll_params->overscroll_behavior);
 }
 
-void CallCallback(mojom::WidgetInputHandler::DispatchEventCallback callback,
-                  blink::mojom::InputEventResultState result_state,
-                  const ui::LatencyInfo& latency_info,
-                  blink::mojom::DidOverscrollParamsPtr overscroll_params,
-                  base::Optional<cc::TouchAction> touch_action) {
+void CallCallback(
+    blink::mojom::WidgetInputHandler::DispatchEventCallback callback,
+    blink::mojom::InputEventResultState result_state,
+    const ui::LatencyInfo& latency_info,
+    blink::mojom::DidOverscrollParamsPtr overscroll_params,
+    base::Optional<cc::TouchAction> touch_action) {
   ui::LatencyInfo::TraceIntermediateFlowEvents(
       {latency_info}, ChromeLatencyInfo::STEP_HANDLED_INPUT_EVENT_IMPL);
   std::move(callback).Run(
@@ -199,10 +200,10 @@ void WidgetInputHandlerManager::InitInputHandler() {
 WidgetInputHandlerManager::~WidgetInputHandlerManager() = default;
 
 void WidgetInputHandlerManager::AddAssociatedInterface(
-    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
   if (compositor_task_runner_) {
-    associated_host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(
+    associated_host_ = mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost>(
         std::move(host), compositor_task_runner_);
     // Mojo channel bound on compositor thread.
     compositor_task_runner_->PostTask(
@@ -210,25 +211,26 @@ void WidgetInputHandlerManager::AddAssociatedInterface(
         base::BindOnce(&WidgetInputHandlerManager::BindAssociatedChannel, this,
                        std::move(receiver)));
   } else {
-    associated_host_ =
-        mojo::SharedRemote<mojom::WidgetInputHandlerHost>(std::move(host));
+    associated_host_ = mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost>(
+        std::move(host));
     // Mojo channel bound on main thread.
     BindAssociatedChannel(std::move(receiver));
   }
 }
 
 void WidgetInputHandlerManager::AddInterface(
-    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver,
-    mojo::PendingRemote<mojom::WidgetInputHandlerHost> host) {
+    mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver,
+    mojo::PendingRemote<blink::mojom::WidgetInputHandlerHost> host) {
   if (compositor_task_runner_) {
-    host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(
+    host_ = mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost>(
         std::move(host), compositor_task_runner_);
     // Mojo channel bound on compositor thread.
     compositor_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WidgetInputHandlerManager::BindChannel, this,
                                   std::move(receiver)));
   } else {
-    host_ = mojo::SharedRemote<mojom::WidgetInputHandlerHost>(std::move(host));
+    host_ = mojo::SharedRemote<blink::mojom::WidgetInputHandlerHost>(
+        std::move(host));
     // Mojo channel bound on main thread.
     BindChannel(std::move(receiver));
   }
@@ -269,7 +271,7 @@ void WidgetInputHandlerManager::DidAnimateForInput() {
 }
 
 void WidgetInputHandlerManager::DidStartScrollingViewport() {
-  mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
+  blink::mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost();
   if (!host)
     return;
   host->DidStartScrollingViewport();
@@ -280,13 +282,12 @@ void WidgetInputHandlerManager::GenerateScrollBeginAndSendToMainThread(
     const blink::WebInputEventAttribution& attribution) {
   DCHECK_EQ(update_event.GetType(),
             blink::WebInputEvent::Type::kGestureScrollUpdate);
-  blink::WebGestureEvent scroll_begin =
-      ui::ScrollBeginFromScrollUpdate(update_event);
+  std::unique_ptr<blink::WebCoalescedInputEvent> event =
+      std::make_unique<blink::WebCoalescedInputEvent>(
+          ui::ScrollBeginFromScrollUpdate(update_event).Clone(),
+          ui::LatencyInfo());
 
-  DispatchNonBlockingEventToMainThread(
-      std::make_unique<blink::WebCoalescedInputEvent>(scroll_begin.Clone(),
-                                                      ui::LatencyInfo()),
-      attribution);
+  DispatchNonBlockingEventToMainThread(std::move(event), attribution);
 }
 
 void WidgetInputHandlerManager::SetWhiteListedTouchAction(
@@ -298,11 +299,11 @@ void WidgetInputHandlerManager::SetWhiteListedTouchAction(
 
 void WidgetInputHandlerManager::ProcessTouchAction(
     cc::TouchAction touch_action) {
-  if (mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
+  if (blink::mojom::WidgetInputHandlerHost* host = GetWidgetInputHandlerHost())
     host->SetTouchActionFromMain(touch_action);
 }
 
-mojom::WidgetInputHandlerHost*
+blink::mojom::WidgetInputHandlerHost*
 WidgetInputHandlerManager::GetWidgetInputHandlerHost() {
   if (associated_host_)
     return associated_host_.get();
@@ -312,9 +313,10 @@ WidgetInputHandlerManager::GetWidgetInputHandlerHost() {
 }
 
 void WidgetInputHandlerManager::AttachSynchronousCompositor(
-    mojo::PendingRemote<mojom::SynchronousCompositorControlHost> control_host,
-    mojo::PendingAssociatedRemote<mojom::SynchronousCompositorHost> host,
-    mojo::PendingAssociatedReceiver<mojom::SynchronousCompositor>
+    mojo::PendingRemote<blink::mojom::SynchronousCompositorControlHost>
+        control_host,
+    mojo::PendingAssociatedRemote<blink::mojom::SynchronousCompositorHost> host,
+    mojo::PendingAssociatedReceiver<blink::mojom::SynchronousCompositor>
         compositor_request) {
 #if defined(OS_ANDROID)
   DCHECK(synchronous_compositor_registry_);
@@ -355,7 +357,7 @@ void WidgetInputHandlerManager::LogInputTimingUMA() {
 
 void WidgetInputHandlerManager::DispatchEvent(
     std::unique_ptr<blink::WebCoalescedInputEvent> event,
-    mojom::WidgetInputHandler::DispatchEventCallback callback) {
+    blink::mojom::WidgetInputHandler::DispatchEventCallback callback) {
   bool event_is_move =
       event->Event().GetType() == WebInputEvent::Type::kMouseMove ||
       event->Event().GetType() == WebInputEvent::Type::kPointerMove;
@@ -539,7 +541,8 @@ void WidgetInputHandlerManager::InitOnInputHandlingThread(
 }
 
 void WidgetInputHandlerManager::BindAssociatedChannel(
-    mojo::PendingAssociatedReceiver<mojom::WidgetInputHandler> receiver) {
+    mojo::PendingAssociatedReceiver<blink::mojom::WidgetInputHandler>
+        receiver) {
   if (!receiver.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
@@ -551,7 +554,7 @@ void WidgetInputHandlerManager::BindAssociatedChannel(
 }
 
 void WidgetInputHandlerManager::BindChannel(
-    mojo::PendingReceiver<mojom::WidgetInputHandler> receiver) {
+    mojo::PendingReceiver<blink::mojom::WidgetInputHandler> receiver) {
   if (!receiver.is_valid())
     return;
   // Don't pass the |input_event_queue_| on if we don't have a
@@ -564,7 +567,7 @@ void WidgetInputHandlerManager::BindChannel(
 
 void WidgetInputHandlerManager::DispatchDirectlyToWidget(
     std::unique_ptr<blink::WebCoalescedInputEvent> event,
-    mojom::WidgetInputHandler::DispatchEventCallback callback) {
+    blink::mojom::WidgetInputHandler::DispatchEventCallback callback) {
   // This path should only be taken by non-frame RenderWidgets that don't use a
   // compositor (e.g. popups, plugins). Events bounds for a frame RenderWidget
   // must be passed through the InputHandlerProxy first.
@@ -590,7 +593,7 @@ void WidgetInputHandlerManager::DispatchDirectlyToWidget(
 }
 
 void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
-    mojom::WidgetInputHandler::DispatchEventCallback callback,
+    blink::mojom::WidgetInputHandler::DispatchEventCallback callback,
     blink::InputHandlerProxy::EventDisposition event_disposition,
     std::unique_ptr<blink::WebCoalescedInputEvent> event,
     std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
@@ -642,7 +645,7 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
 }
 
 void WidgetInputHandlerManager::DidHandleInputEventSentToMain(
-    mojom::WidgetInputHandler::DispatchEventCallback callback,
+    blink::mojom::WidgetInputHandler::DispatchEventCallback callback,
     blink::mojom::InputEventResultState ack_state,
     const ui::LatencyInfo& latency_info,
     blink::mojom::DidOverscrollParamsPtr overscroll_params,

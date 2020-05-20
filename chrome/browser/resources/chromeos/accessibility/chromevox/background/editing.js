@@ -22,6 +22,7 @@ goog.require('LibLouis.FormType');
 
 goog.scope(function() {
 const AutomationEvent = chrome.automation.AutomationEvent;
+const AutomationIntent = chrome.automation.AutomationIntent;
 const AutomationNode = chrome.automation.AutomationNode;
 const Cursor = cursors.Cursor;
 const Dir = constants.Dir;
@@ -91,7 +92,7 @@ editing.TextEditHandler = class {
       return;
     }
 
-    this.editableText_.onUpdate(evt.eventFrom);
+    this.editableText_.onUpdate(evt.eventFrom, evt.intents);
   }
 
   /**
@@ -168,8 +169,9 @@ const AutomationEditableText = class extends ChromeVoxEditableTextBase {
   /**
    * Called when the text field has been updated.
    * @param {string|undefined} eventFrom
+   * @param {!Array<AutomationIntent>} intents
    */
-  onUpdate(eventFrom) {
+  onUpdate(eventFrom, intents) {
     const oldValue = this.value;
     const oldStart = this.start;
     const oldEnd = this.end;
@@ -380,7 +382,7 @@ const AutomationRichEditableText = class extends AutomationEditableText {
   }
 
   /** @override */
-  onUpdate(eventFrom) {
+  onUpdate(eventFrom, intents) {
     const root = this.node_.root;
     if (!root.selectionStartObject || !root.selectionEndObject ||
         root.selectionStartOffset === undefined ||
@@ -428,6 +430,12 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       return;
     }
 
+    // Before entering into our state machine below, use selected intents to
+    // decipher ambiguous cases.
+    if (this.maybeOutputUsingIntents_(intents, cur, prev)) {
+      return;
+    }
+
     // Selection stayed within the same line(s) and didn't cross into new lines.
 
     // We must validate the previous lines as state changes in the accessibility
@@ -470,18 +478,8 @@ const AutomationRichEditableText = class extends AutomationEditableText {
       // explicitly call through to it here.
       this.updateIntraLineState_(cur);
 
-      // Finally, queue up any text markers/styles at bounds.
-      const container = cur.startContainer_;
-      if (!container) {
-        return;
-      }
+      this.speakAllMarkers_(cur);
 
-      this.speakTextMarker_(
-          container, cur.localStartOffset, cur.localEndOffset);
-
-      if (localStorage['announceRichTextAttributes'] == 'true') {
-        this.speakTextStyle_(container);
-      }
       return;
     }
 
@@ -907,6 +905,68 @@ const AutomationRichEditableText = class extends AutomationEditableText {
     this.value = text;
     this.start = cur.startOffset;
     this.end = cur.endOffset;
+  }
+
+  /**
+   * @param {!Array<AutomationIntent>} intents
+   * @param {!editing.EditableLine} cur
+   * @param {!editing.EditableLine} prev
+   * @private
+   */
+  maybeOutputUsingIntents_(intents, cur, prev) {
+    if (intents.length == 0) {
+      return false;
+    }
+
+    // Only consider selection moves.
+    const intent = intents.find(
+        i => i.command == chrome.automation.EventCommandType.MOVE_SELECTION);
+    if (!intent) {
+      return false;
+    }
+
+    if (intent.textBoundary ==
+        chrome.automation.EventTextBoundaryType.CHARACTER) {
+      this.updateIntraLineState_(cur);
+
+      // Read character to the right of the cursor. It is assumed to be a new
+      // line if empty.
+      const text =
+          cur.text.substring(cur.startOffset, cur.startOffset + 1) || '\n';
+      ChromeVox.tts.speak(text, QueueMode.CATEGORY_FLUSH);
+      this.speakAllMarkers_(cur);
+      this.brailleCurrentRichLine_();
+      return true;
+    }
+
+    if (intent.textBoundary ==
+            chrome.automation.EventTextBoundaryType.LINE_START ||
+        intent.textBoundary ==
+            chrome.automation.EventTextBoundaryType.LINE_END) {
+      this.updateIntraLineState_(cur);
+      this.speakCurrentRichLine_(prev);
+      this.brailleCurrentRichLine_();
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * @param {!editing.EditableLine} cur
+   * @private
+   */
+  speakAllMarkers_(cur) {
+    const container = cur.startContainer_;
+    if (!container) {
+      return;
+    }
+
+    this.speakTextMarker_(container, cur.localStartOffset, cur.localEndOffset);
+
+    if (localStorage['announceRichTextAttributes'] == 'true') {
+      this.speakTextStyle_(container);
+    }
   }
 };
 

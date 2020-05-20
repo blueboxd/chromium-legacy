@@ -4,7 +4,7 @@
 
 module content.mojom;
 
-import "content/common/input/input_handler.mojom";
+import "third_party/blink/public/mojom/input/input_handler.mojom";
 
 // Interface exposed by the renderer for Widgets.
 interface Widget {
@@ -13,6 +13,7 @@ interface Widget {
   // be obtained using that interface instead. The frame's FrameInputHandler
   // uses associated receivers to ensure serial ordering with the frame
   // input messages.
-  SetupWidgetInputHandler(pending_receiver<WidgetInputHandler> request,
-                          pending_remote<WidgetInputHandlerHost> host);
+  SetupWidgetInputHandler(
+    pending_receiver<blink.mojom.WidgetInputHandler> request,
+    pending_remote<blink.mojom.WidgetInputHandlerHost> host);
 };

@@ -1055,17 +1055,17 @@ cr.define('settings.display', function() {
 
     /**
      * Determines whether width and height should be swapped in the
-     * Logical Resolution Text. Returns true if the aspect ratio of the
-     * display's native pixels is not equal to the aspect ratio of the displays
-     * current bounds.
+     * Logical Resolution Text. Returns true if the longer edge of the
+     * display's native pixels is different than the longer edge of the
+     * display's current bounds.
      * @private
      */
     shouldSwapLogicalResolutionText_() {
       const mode = this.selectedDisplay.modes[this.currentSelectedModeIndex_];
       const bounds = this.selectedDisplay.bounds;
 
-      return (bounds.width / bounds.height).toPrecision(4) !=
-          (mode.widthInNativePixels / mode.heightInNativePixels).toPrecision(4);
+      return bounds.width > bounds.height !=
+          mode.widthInNativePixels > mode.heightInNativePixels;
     },
 
 

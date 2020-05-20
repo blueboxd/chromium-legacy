@@ -25,14 +25,14 @@ struct ASH_EXPORT DragDetails {
               ::wm::WindowMoveSource source);
   ~DragDetails();
 
-  WindowStateType initial_state_type;
+  const WindowStateType initial_state_type;
 
   // Initial bounds of the window in parent coordinates.
   const gfx::Rect initial_bounds_in_parent;
 
   // Restore bounds (in screen coordinates) of the window before the drag
-  // started. Only set if the window is being dragged.
-  gfx::Rect restore_bounds;
+  // started. Only set if the window is being dragged from the caption.
+  const gfx::Rect restore_bounds;
 
   // Location passed to the constructor, in |window->parent()|'s coordinates.
   const gfx::PointF initial_location_in_parent;
@@ -42,9 +42,6 @@ struct ASH_EXPORT DragDetails {
 
   // Bitmask of the |kBoundsChange_| constants.
   const int bounds_change;
-
-  // Bitmask of the |kBoundsChangeDirection_| constants.
-  const int position_change_direction;
 
   // Bitmask of the |kBoundsChangeDirection_| constants.
   const int size_change_direction;

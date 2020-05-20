@@ -4,31 +4,14 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/webui/settings/chromeos/constants/constants_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 
 namespace chromeos {
 namespace settings {
-namespace {
-
-template <typename EnumType, typename MetadataType>
-MetadataType& GetMetadata(EnumType enum_type,
-                          mojom::Section section,
-                          std::unordered_map<EnumType, MetadataType>* map) {
-  auto it = map->find(enum_type);
-
-  // Metadata already exists; return it.
-  if (it != map->end())
-    return it->second;
-
-  // Metadata does not exist yet; insert then return it.
-  auto pair = map->emplace(enum_type, section);
-  CHECK(pair.second);
-  return pair.first->second;
-}
-
-}  // namespace
 
 class Hierarchy::PerSectionHierarchyGenerator
     : public OsSettingsSection::HierarchyGenerator {
@@ -36,15 +19,19 @@ class Hierarchy::PerSectionHierarchyGenerator
   PerSectionHierarchyGenerator(mojom::Section section, Hierarchy* hierarchy)
       : section_(section), hierarchy_(hierarchy) {}
 
-  void RegisterTopLevelSubpage(mojom::Subpage subpage) override {
-    Hierarchy::SubpageMetadata& metadata = GetSubpageMetadata(subpage);
+  void RegisterTopLevelSubpage(int name_message_id,
+                               mojom::Subpage subpage) override {
+    Hierarchy::SubpageMetadata& metadata =
+        GetSubpageMetadata(name_message_id, subpage);
     CHECK_EQ(section_, metadata.section)
         << "Subpage registered in multiple sections: " << subpage;
   }
 
-  void RegisterNestedSubpage(mojom::Subpage subpage,
+  void RegisterNestedSubpage(int name_message_id,
+                             mojom::Subpage subpage,
                              mojom::Subpage parent_subpage) override {
-    Hierarchy::SubpageMetadata& metadata = GetSubpageMetadata(subpage);
+    Hierarchy::SubpageMetadata& metadata =
+        GetSubpageMetadata(name_message_id, subpage);
     CHECK_EQ(section_, metadata.section)
         << "Subpage registered in multiple sections: " << subpage;
     CHECK(!metadata.parent_subpage)
@@ -97,22 +84,46 @@ class Hierarchy::PerSectionHierarchyGenerator
   }
 
  private:
-  Hierarchy::SubpageMetadata& GetSubpageMetadata(mojom::Subpage subpage) {
-    return GetMetadata<mojom::Subpage, Hierarchy::SubpageMetadata>(
-        subpage, section_, &hierarchy_->subpage_map_);
+  Hierarchy::SubpageMetadata& GetSubpageMetadata(int name_message_id,
+                                                 mojom::Subpage subpage) {
+    auto& subpage_map = hierarchy_->subpage_map_;
+
+    auto it = subpage_map.find(subpage);
+
+    // Metadata already exists; return it.
+    if (it != subpage_map.end())
+      return it->second;
+
+    // Metadata does not exist yet; insert then return it.
+    auto pair = subpage_map.emplace(
+        std::piecewise_construct, std::forward_as_tuple(subpage),
+        std::forward_as_tuple(name_message_id, section_));
+    CHECK(pair.second);
+    return pair.first->second;
   }
 
   Hierarchy::SettingMetadata& GetSettingMetadata(mojom::Setting setting) {
-    return GetMetadata<mojom::Setting, Hierarchy::SettingMetadata>(
-        setting, section_, &hierarchy_->setting_map_);
+    auto& settings_map = hierarchy_->setting_map_;
+
+    auto it = settings_map.find(setting);
+
+    // Metadata already exists; return it.
+    if (it != settings_map.end())
+      return it->second;
+
+    // Metadata does not exist yet; insert then return it.
+    auto pair = settings_map.emplace(setting, section_);
+    CHECK(pair.second);
+    return pair.first->second;
   }
 
   mojom::Section section_;
   Hierarchy* hierarchy_;
 };
 
-Hierarchy::SubpageMetadata::SubpageMetadata(mojom::Section section)
-    : section(section) {}
+Hierarchy::SubpageMetadata::SubpageMetadata(int name_message_id,
+                                            mojom::Section section)
+    : name_message_id(name_message_id), section(section) {}
 
 Hierarchy::SettingMetadata::SettingMetadata(mojom::Section primary_section)
     : primary(primary_section, /*subpage=*/base::nullopt) {}

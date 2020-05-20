@@ -79,11 +79,10 @@ class PipeIOBase {
       pipe_io.reset();
     }
     // Post background task that would join and destroy the thread.
-    base::DeleteSoon(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::WithBaseSyncPrimitives(),
-         base::TaskPriority::BEST_EFFORT},
-        std::move(thread));
+    base::ThreadPool::CreateSequencedTaskRunner(
+        {base::MayBlock(), base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
+         base::WithBaseSyncPrimitives(), base::TaskPriority::BEST_EFFORT})
+        ->DeleteSoon(FROM_HERE, std::move(thread));
   }
 
  protected:

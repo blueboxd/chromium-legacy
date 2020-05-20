@@ -1,7 +1,8 @@
 # WebView Log Verbosifier
 
 *** note
-**Deprecated:** The Log Verbosifier app does not work on Android R.
+**Deprecated:** The Log Verbosifier app does not work on Android R. M84 is the
+last milestone to support this for other OS levels.
 
 Instead, use the **webview-verbose-logging** flag in [WebView
 DevTools](/android_webview/docs/developer-ui.md) ([added in
@@ -19,17 +20,11 @@ relevant).
 
 ## Build and install
 
-```shell
-autoninja -C out/Default webview_log_verbosifier_apk
-out/Default/bin/webview_log_verbosifier_apk install
-```
-
-Alternatively, if you do not have a fully set up Chromium build
-environment, you can build with gradle:
-
-```shell
-ANDROID_SDK_ROOT=/path/to/sdk ./gradlew build
-```
+We no longer support building the log verbosifier from source. Googlers can get
+a [prebuilt copy of the log
+verbosifier](http://go/clank-webview/zzarchive/webview-manual-testing). External
+contributors can request a precompiled copy by [emailing the WebView
+team](https://groups.google.com/a/chromium.org/forum/#!forum/android-webview-dev).
 
 ## Searching logcat
 
@@ -49,7 +44,7 @@ When you're done investigating flags/field trials, you can disable the logging
 by uninstalling the app:
 
 ```shell
-out/Default/bin/webview_log_verbosifier_apk uninstall
+adb uninstall org.chromium.webview_log_verbosifier
 ```
 
 ## See also

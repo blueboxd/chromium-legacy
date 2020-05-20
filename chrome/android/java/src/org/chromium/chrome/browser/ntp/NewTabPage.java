@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.ntp.snippets.SectionHeaderView;
 import org.chromium.chrome.browser.omnibox.LocationBar.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.query_tiles.QueryTileSection.QueryInfo;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
@@ -226,9 +227,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
         }
 
         @Override
-        public void performSearchQuery(String query) {
+        public void performSearchQuery(QueryInfo queryInfo) {
             if (mFakeboxDelegate == null) return;
-            mFakeboxDelegate.performSearchQuery(query);
+            mFakeboxDelegate.performSearchQuery(queryInfo.queryText, queryInfo.searchParams);
         }
 
         @Override

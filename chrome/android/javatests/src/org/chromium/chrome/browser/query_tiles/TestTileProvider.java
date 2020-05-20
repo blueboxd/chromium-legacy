@@ -69,7 +69,7 @@ class TestTileProvider implements TileProvider {
         for (int i = 0; i < count; i++) {
             String id = prefix + "_" + i;
             children.add(new QueryTile(id + "_id", id + "_displayTitle", id + "_accessibilityText",
-                    id + "_queryText", new String[] {id + "_url"},
+                    id + "_queryText", new String[] {id + "_url"}, null,
                     buildTiles(id, levelsLeft - 1, count)));
         }
 

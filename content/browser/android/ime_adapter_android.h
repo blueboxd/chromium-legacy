@@ -21,13 +21,15 @@ struct ImeTextSpan;
 
 }  // namespace ui
 
-namespace content {
-
+namespace blink {
 namespace mojom {
 
 class FrameInputHandler;
 
 }  // namespace mojom
+}  // namespace blink
+
+namespace content {
 
 class RenderFrameHost;
 class RenderWidgetHostImpl;
@@ -122,7 +124,7 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
  private:
   RenderWidgetHostImpl* GetFocusedWidget();
   RenderFrameHost* GetFocusedFrame();
-  mojom::FrameInputHandler* GetFocusedFrameInputHandler();
+  blink::mojom::FrameInputHandler* GetFocusedFrameInputHandler();
   std::vector<ui::ImeTextSpan> GetImeTextSpansFromJava(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

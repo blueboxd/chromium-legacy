@@ -40,7 +40,8 @@ TestRenderWidgetHost::TestRenderWidgetHost(
       widget_impl_(std::move(widget_impl)) {}
 
 TestRenderWidgetHost::~TestRenderWidgetHost() {}
-mojom::WidgetInputHandler* TestRenderWidgetHost::GetWidgetInputHandler() {
+blink::mojom::WidgetInputHandler*
+TestRenderWidgetHost::GetWidgetInputHandler() {
   return widget_impl_->input_handler();
 }
 

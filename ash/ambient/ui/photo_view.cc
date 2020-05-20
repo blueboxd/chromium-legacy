@@ -169,6 +169,7 @@ void PhotoView::OnImplicitAnimationsCompleted() {
   // same time.
   this->layer()->SetTransform(gfx::Transform());
   UpdateImages();
+  delegate_->OnPhotoTransitionAnimationCompleted();
 }
 
 bool PhotoView::NeedToAnimateTransition() const {

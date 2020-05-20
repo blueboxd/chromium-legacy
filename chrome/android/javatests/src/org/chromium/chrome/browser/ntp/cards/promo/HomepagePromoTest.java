@@ -16,6 +16,11 @@ import static org.mockito.Mockito.times;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.os.Build.VERSION_CODES;
+import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.action.GeneralLocation;
+import android.support.test.espresso.action.GeneralSwipeAction;
+import android.support.test.espresso.action.Press;
+import android.support.test.espresso.action.Swipe;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,6 +69,8 @@ import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.content_public.browser.test.util.Criteria;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 
@@ -248,6 +255,43 @@ public class HomepagePromoTest {
         mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL);
         Assert.assertNull("Homepage promo should not be added to NTP.",
                 mActivityTestRule.getActivity().findViewById(R.id.homepage_promo));
+    }
+
+    /**
+     * Test dismiss by swipe left. This dismissal works in general for any variations.
+     */
+    @Test
+    @SmallTest
+    public void testDismiss_SwipeToDismiss() {
+        setVariationForTests(LayoutStyle.SLIM);
+
+        SignInPromo.setDisablePromoForTests(true);
+        mActivityTestRule.loadUrl(UrlConstants.NTP_URL);
+
+        scrollToHomepagePromo();
+
+        // Swipe left and wait until the promo is dismissed.
+        ViewAction swipeLeft = new GeneralSwipeAction(
+                Swipe.FAST, GeneralLocation.CENTER, GeneralLocation.CENTER_LEFT, Press.FINGER);
+        onView(instanceOf(RecyclerView.class))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(
+                        NTP_HEADER_POSITION + 1, swipeLeft));
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mActivityTestRule.getActivity().findViewById(R.id.homepage_promo) == null;
+            }
+        });
+
+        // Verification for metrics
+        Assert.assertEquals("Promo dismissed should be recorded once. ", 1,
+                RecordHistogram.getHistogramValueCountForTesting(
+                        METRICS_HOMEPAGE_PROMO, HomepagePromoAction.DISMISSED));
+        Assert.assertEquals("Promo impression until dismissed should be recorded once.", 1,
+                RecordHistogram.getHistogramTotalCountForTesting(
+                        METRICS_HOMEPAGE_PROMO_IMPRESSION_DISMISSAL));
+
+        Mockito.verify(mTracker, times(1)).dismissed(FeatureConstants.HOMEPAGE_PROMO_CARD_FEATURE);
     }
 
     @Test

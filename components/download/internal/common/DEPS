@@ -16,6 +16,7 @@ include_rules = [
   "+net/base/load_flags.h",
   "+net/base/io_buffer.h",
   "+net/base/net_errors.h",
+  "+net/base/network_change_notifier.h",
   "+net/base/isolation_info.h",
   "+net/cookies/site_for_cookies.h",
   "+net/cert/cert_status_flags.h",

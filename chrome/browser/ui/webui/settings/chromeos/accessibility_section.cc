@@ -519,7 +519,9 @@ void AccessibilitySection::RegisterHierarchy(
   generator->RegisterTopLevelSetting(mojom::Setting::kA11yQuickSettings);
 
   // Manage accessibility.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kManageAccessibility);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES,
+      mojom::Subpage::kManageAccessibility);
   static constexpr mojom::Setting kManageAccessibilitySettings[] = {
       mojom::Setting::kChromeVox,
       mojom::Setting::kSelectToSpeak,
@@ -544,7 +546,8 @@ void AccessibilitySection::RegisterHierarchy(
                             kManageAccessibilitySettings, generator);
 
   // Text-to-Speech.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kTextToSpeech);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_MANAGE_TTS_SETTINGS,
+                                     mojom::Subpage::kTextToSpeech);
   static constexpr mojom::Setting kTextToSpeechSettings[] = {
       mojom::Setting::kTextToSpeechRate,    mojom::Setting::kTextToSpeechPitch,
       mojom::Setting::kTextToSpeechVolume,  mojom::Setting::kTextToSpeechVoice,
@@ -554,7 +557,8 @@ void AccessibilitySection::RegisterHierarchy(
                             kTextToSpeechSettings, generator);
 
   // Switch access.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kSwitchAccessOptions);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_MANAGE_SWITCH_ACCESS_SETTINGS,
+                                     mojom::Subpage::kSwitchAccessOptions);
   static constexpr mojom::Setting kSwitchAccessSettings[] = {
       mojom::Setting::kSwitchActionAssignment,
       mojom::Setting::kSwitchActionAutoScan,
@@ -564,7 +568,8 @@ void AccessibilitySection::RegisterHierarchy(
                             kSwitchAccessSettings, generator);
 
   // Captions.
-  generator->RegisterTopLevelSubpage(mojom::Subpage::kCaptions);
+  generator->RegisterTopLevelSubpage(IDS_SETTINGS_CAPTIONS,
+                                     mojom::Subpage::kCaptions);
 }
 
 void AccessibilitySection::UpdateSearchTags() {

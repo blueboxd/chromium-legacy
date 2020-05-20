@@ -232,11 +232,14 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
 
         @Override
         public boolean isDismissible() {
-            return false;
+            return true;
         }
 
         @Override
-        public void onDismissed() {}
+        public void onDismissed() {
+            assert mHomepagePromoController != null;
+            mHomepagePromoController.dismissPromo();
+        }
     }
 
     /**

@@ -43,6 +43,9 @@ class NET_EXPORT QuicTransportClient
   //              |                |
   //              +---> FAILED <---+
   //
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "QuicTransportClientState" in src/tools/metrics/histograms/enums.xml.
   enum State {
     // The client object has been created but Connect() has not been called.
     NEW,
@@ -56,6 +59,9 @@ class NET_EXPORT QuicTransportClient
     CLOSED,
     // The connection has been closed abruptly.
     FAILED,
+
+    // Total number of possible states.
+    NUM_STATES,
   };
 
   class NET_EXPORT Visitor {
@@ -132,6 +138,11 @@ class NET_EXPORT QuicTransportClient
 
  private:
   // State of the connection establishment process.
+  //
+  // These values are logged to UMA. Entries should not be renumbered and
+  // numeric values should never be reused. Please keep in sync with
+  // "QuicTransportClientConnectState" in
+  // src/tools/metrics/histograms/enums.xml.
   enum ConnectState {
     CONNECT_STATE_NONE,
     CONNECT_STATE_INIT,
@@ -141,6 +152,8 @@ class NET_EXPORT QuicTransportClient
     CONNECT_STATE_RESOLVE_HOST_COMPLETE,
     CONNECT_STATE_CONNECT,
     CONNECT_STATE_CONFIRM_CONNECTION,
+
+    CONNECT_STATE_NUM_STATES,
   };
 
   // DoLoop processing the Connect() call.

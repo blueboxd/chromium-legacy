@@ -54,7 +54,7 @@ def verify_image_libraries(image_path, allowed_libraries, binary_path):
     for disallowed_library in disallowed_libraries:
         print('    {}'.format(disallowed_library), file=sys.stderr)
 
-    return False
+    return True
 
 
 def main():

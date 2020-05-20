@@ -32,7 +32,7 @@ let ShowAtConfig;
  *   maxY: (number|undefined),
  * }}
  */
-let ShowAtPositionConfig;
+/* #export */ let ShowAtPositionConfig;
 
 /**
  * @enum {number}

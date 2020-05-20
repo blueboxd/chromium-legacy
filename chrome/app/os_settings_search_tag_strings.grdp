@@ -210,11 +210,8 @@
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_ALT3" desc="Text for search result item which, when clicked, navigates the user to multi-device settings (connects Android phone to Chromebook). Alternate phrase for: 'Connected devices settings', 'Better Together', 'Multi-device'">
     Phone
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK" desc="Text for search result item which, when clicked, navigates the user to Smart Lock settings (unlock Chromebook with Android phone). Alternate phrase for: 'EasyUnlock'">
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK" desc="Text for search result item which, when clicked, navigates the user to Smart Lock settings (unlock Chromebook with Android phone).">
     Smart Lock
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_ALT1" desc="Text for search result item which, when clicked, navigates the user to Smart Lock settings (unlock Chromebook with Android phone). Alternate phrase for: 'Smart Lock settings'">
-    EasyUnlock
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES" desc="Text for search result item which, when clicked, navigates the user to Messages settings (sync SMS between Chromebook and Android phone). Alternate phrase for: 'Android messages'">
     Messages settings
@@ -222,11 +219,8 @@
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_MESSAGES_ALT1" desc="Text for search result item which, when clicked, navigates the user to Messages settings (sync SMS between Chromebook and Android phone). Alternate phrase for: 'Messages settings'">
     Android messages
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS" desc="Text for search result item which, when clicked, navigates the user to Smart Lock screen lock settings (for signing into Chromebook with Android phone). Alternate phrase for: 'EasyUnlock screen lock'">
+  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS" desc="Text for search result item which, when clicked, navigates the user to Smart Lock screen lock settings (for signing into Chromebook with Android phone).">
     Smart Lock screen lock options
-  </message>
-  <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_SMART_LOCK_OPTIONS_ALT1" desc="Text for search result item which, when clicked, navigates the user to Smart Lock screen lock settings (for signing into Chromebook with Android phone). Alternate phrase for: 'Smart Lock screen lock options'">
-    EasyUnlock screen lock
   </message>
   <message name="IDS_OS_SETTINGS_TAG_MULTIDEVICE_FORGET" desc="Text for search result item which, when clicked, navigates the user to multi-device settings, which an option to disconnect the currently-connected Android phone. Alternate phrase for: 'Disconnect connected phone'">
     Forget connected phone
@@ -778,8 +772,8 @@
   <message name="IDS_OS_SETTINGS_TAG_PRIVACY" desc="Text for search result item which, when clicked, navigates the user to privacy settings.">
     Privacy settings
   </message>
-  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_VERIFIED_ACCESS" desc="Text for search result item which, when clicked, navigates the user to pirvacy settings, with a toggle to enable/disable verified access.">
-    Privacy verified access
+  <message name="IDS_OS_SETTINGS_TAG_PRIVACY_VERIFIED_ACCESS" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable verified access.">
+    Verified access
   </message>
   <message name="IDS_OS_SETTINGS_TAG_PRIVACY_WIFI_SLEEP" desc="Text for search result item which, when clicked, navigates the user to privacy settings, with a toggle to enable/disable allowing Wi-Fi to remain active while Chromebook is sleeping. Alternate phrase for: 'Keep Wi-Fi on while idle'">
     Keep Wi-Fi on during sleep

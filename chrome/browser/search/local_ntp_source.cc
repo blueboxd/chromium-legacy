@@ -332,6 +332,14 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR);
     AddString(translated_strings.get(), "removeSuggestion",
               IDS_OMNIBOX_REMOVE_SUGGESTION);
+    AddString(translated_strings.get(), "hideSuggestions",
+              IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON);
+    AddString(translated_strings.get(), "showSuggestions",
+              IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON);
+    AddString(translated_strings.get(), "hideSection",
+              IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON);
+    AddString(translated_strings.get(), "showSection",
+              IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON);
 
     // Promos
     AddString(translated_strings.get(), "dismissPromo", IDS_NTP_DISMISS_PROMO);

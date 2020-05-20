@@ -37,6 +37,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_cloud_external_data_manager.h"
 #include "chrome/browser/chromeos/policy/device_wifi_allowed_handler.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_native_printers_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_wallpaper_image_external_data_handler.h"
 #include "chrome/browser/chromeos/policy/external_data_handlers/device_wilco_dtc_configuration_external_data_handler.h"
@@ -156,6 +157,8 @@ BrowserPolicyConnectorChromeOS::BrowserPolicyConnectorChromeOS() {
           std::move(device_cloud_policy_store),
           std::move(external_data_manager), base::ThreadTaskRunnerHandle::Get(),
           state_keys_broker_.get());
+      enrollment_requisition_manager_ =
+          std::make_unique<EnrollmentRequisitionManager>();
       providers_for_init_.push_back(
           base::WrapUnique<ConfigurationPolicyProvider>(
               device_cloud_policy_manager_));
@@ -185,6 +188,7 @@ void BrowserPolicyConnectorChromeOS::Init(
     // initialized from here instead of BrowserPolicyConnector::Init().
 
     device_cloud_policy_manager_->Initialize(local_state);
+    enrollment_requisition_manager_->Initialize(local_state);
     device_cloud_policy_manager_->AddDeviceCloudPolicyManagerObserver(this);
     RestartDeviceCloudPolicyInitializer();
   }
@@ -496,7 +500,7 @@ void BrowserPolicyConnectorChromeOS::RestartDeviceCloudPolicyInitializer() {
           local_state_, device_management_service(), GetBackgroundTaskRunner(),
           chromeos::InstallAttributes::Get(), state_keys_broker_.get(),
           device_cloud_policy_manager_->device_store(),
-          device_cloud_policy_manager_,
+          device_cloud_policy_manager_, enrollment_requisition_manager_.get(),
           cryptohome::AsyncMethodCaller::GetInstance(), CreateAttestationFlow(),
           chromeos::system::StatisticsProvider::GetInstance());
   device_cloud_policy_initializer_->Init();

@@ -45,6 +45,8 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 // TODO(https://crbug.com/1060801): Here and elsewhere, possibly switch build
 // flag to #if defined(OS_CHROMEOS)
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/supervised_user/supervised_user_constants.h"
@@ -497,7 +499,19 @@ class ExtensionWebstorePrivateApiTestChildInstallDisabled
 // the feature flag is disabled.
 IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallDisabled,
                        InstallBlocked) {
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
   ASSERT_TRUE(RunInstallTest("install_blocked_child.html", "app.crx"));
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kFailedToEnable,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 1);
+  EXPECT_EQ(
+      1,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kFailedToEnableActionName));
 }
 
 static constexpr char kTestAppId[] = "iladmdjkfniedhfhcfoefgojhgaiaccc";
@@ -605,6 +619,36 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
   listener.Wait();
   ASSERT_TRUE(listener.received_success());
   ASSERT_EQ("idlfhncioikpdnlhnmcjogambnefbbfp", listener.id());
+}
+
+// Tests that even if the kSupervisedUserInitiatedExtensionInstall feature flag
+// is enabled, supervised user extension installs are blocked if the
+// "Permissions for sites, apps and extensions" toggle is off.
+IN_PROC_BROWSER_TEST_F(ExtensionWebstorePrivateApiTestChildInstallEnabled,
+                       InstallBlockedWhenPermissionsToggleOff) {
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
+
+  SupervisedUserService* service =
+      SupervisedUserServiceFactory::GetForProfile(profile());
+  service->SetSupervisedUserExtensionsMayRequestPermissionsPrefForTesting(
+      false);
+
+  set_next_dialog_action(NextDialogAction::kAccept);
+  // Tell the Reauth API client to return a success for the next reauth
+  // request.
+  SetNextReAuthStatus(GaiaAuthConsumer::ReAuthProofTokenStatus::kSuccess);
+  ASSERT_TRUE(RunInstallTest("install_blocked_child.html", "app.crx"));
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kFailedToEnable,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 1);
+  EXPECT_EQ(
+      1,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kFailedToEnableActionName));
 }
 
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)

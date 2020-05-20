@@ -57,6 +57,8 @@ using blink::WebView;
 
 namespace {
 
+constexpr int kDelayForDeferredEvents = 350;
+
 void SetAccessibilityCrashKey(ui::AXMode mode) {
   // Add a crash key with the ax_mode, to enable searching for top crashes that
   // occur when accessibility is turned on. This adds it for each renderer,
@@ -177,7 +179,7 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
       serializer_(&tree_source_),
       plugin_tree_source_(nullptr),
       last_scroll_offset_(gfx::Size()),
-      ack_pending_(false),
+      event_schedule_status_(EventScheduleStatus::kNotWaiting),
       reset_token_(0) {
   WebView* web_view = render_frame_->GetRenderView()->GetWebView();
   WebSettings* settings = web_view->GetSettings();
@@ -225,6 +227,14 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
     bool is_same_document_navigation,
     ui::PageTransition transition) {
   has_injected_stylesheet_ = false;
+
+  if (!is_same_document_navigation) {
+    // If we have events scheduled, but not sent, cancel them
+    CancelScheduledEvents();
+    // Defer events during initial page load.
+    event_schedule_mode_ = EventScheduleMode::kDeferEvents;
+  }
+
   // Remove the image annotator if the page is loading and it was added for
   // the one-shot image annotation (i.e. AXMode for image annotation is not
   // set).
@@ -353,6 +363,9 @@ void RenderAccessibilityImpl::PerformAction(const ui::AXActionData& data) {
   auto root = WebAXObject::FromWebDocument(document);
   if (!root.UpdateLayoutAndCheckValidity())
     return;
+
+  // If an action was requested, we no longer want to defer events.
+  event_schedule_mode_ = EventScheduleMode::kProcessEventsImmediately;
 
   std::unique_ptr<ui::AXActionTarget> target =
       AXActionTargetFactory::CreateFromNodeId(document, plugin_tree_source_,
@@ -491,7 +504,7 @@ void RenderAccessibilityImpl::MarkWebAXObjectDirty(const WebAXObject& obj,
   if (subtree)
     serializer_.InvalidateSubtree(obj);
 
-  ScheduleSendAccessibilityEventsIfNeeded();
+  ScheduleSendPendingAccessibilityEvents();
 }
 
 void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
@@ -549,10 +562,15 @@ void RenderAccessibilityImpl::HandleAXEvent(const ui::AXEvent& event) {
   }
   pending_events_.push_back(event);
 
-  ScheduleSendAccessibilityEventsIfNeeded();
+  // Once we get the first load, we should no longer defer events.
+  if (event.event_type == ax::mojom::Event::kLoadComplete)
+    event_schedule_mode_ = EventScheduleMode::kProcessEventsImmediately;
+
+  ScheduleSendPendingAccessibilityEvents();
 }
 
-void RenderAccessibilityImpl::ScheduleSendAccessibilityEventsIfNeeded() {
+void RenderAccessibilityImpl::ScheduleSendPendingAccessibilityEvents(
+    bool scheduling_from_task) {
   // Don't send accessibility events for frames that are not in the frame tree
   // yet (i.e., provisional frames used for remote-to-local navigations, which
   // haven't committed yet).  Doing so might trigger layout, which may not work
@@ -561,16 +579,56 @@ void RenderAccessibilityImpl::ScheduleSendAccessibilityEventsIfNeeded() {
   if (!render_frame_ || !render_frame_->in_frame_tree())
     return;
 
-  if (!ack_pending_ && !weak_factory_.HasWeakPtrs()) {
-    // When no accessibility events are in-flight post a task to send
-    // the events to the browser. We use PostTask so that we can queue
-    // up additional events.
-    render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(
-                       &RenderAccessibilityImpl::SendPendingAccessibilityEvents,
-                       weak_factory_.GetWeakPtr()));
+  switch (event_schedule_status_) {
+    case EventScheduleStatus::kScheduledDeferred:
+      if (event_schedule_mode_ ==
+          EventScheduleMode::kProcessEventsImmediately) {
+        // Cancel scheduled deferred events so we can schedule events to be
+        // sent immediately.
+        CancelScheduledEvents();
+        break;
+      }
+      // We have already scheduled a task to send pending events.
+      return;
+    case EventScheduleStatus::kScheduledImmediate:
+      // The send pending events task have been scheduled, but has not started.
+      return;
+    case EventScheduleStatus::kWaitingForAck:
+      // Events have been sent, wait for ack.
+      return;
+    case EventScheduleStatus::kNotWaiting:
+      // Once the events have been handled, we schedule the pending events from
+      // that task. In this case, there would be a weak ptr still in use.
+      if (!scheduling_from_task &&
+          weak_factory_for_pending_events_.HasWeakPtrs())
+        return;
+      break;
   }
+
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(0);
+  switch (event_schedule_mode_) {
+    case EventScheduleMode::kDeferEvents:
+      event_schedule_status_ = EventScheduleStatus::kScheduledDeferred;
+      // During page load, process changes on a delay so that they occur in
+      // larger batches, which helps improve efficiency of page loads.
+      delay = base::TimeDelta::FromMilliseconds(kDelayForDeferredEvents);
+      break;
+    case EventScheduleMode::kProcessEventsImmediately:
+      event_schedule_status_ = EventScheduleStatus::kScheduledImmediate;
+      delay = base::TimeDelta::FromMilliseconds(0);
+      break;
+  }
+
+  // When no accessibility events are in-flight post a task to send
+  // the events to the browser. We use PostTask so that we can queue
+  // up additional events.
+  render_frame_->GetTaskRunner(blink::TaskType::kInternalDefault)
+      ->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(
+              &RenderAccessibilityImpl::SendPendingAccessibilityEvents,
+              weak_factory_for_pending_events_.GetWeakPtr()),
+          delay);
 }
 
 int RenderAccessibilityImpl::GenerateAXID() {
@@ -633,15 +691,14 @@ std::string RenderAccessibilityImpl::GetLanguage() {
 void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
   TRACE_EVENT0("accessibility",
                "RenderAccessibilityImpl::SendPendingAccessibilityEvents");
-
+  // Clear status here in case we return early.
+  event_schedule_status_ = EventScheduleStatus::kNotWaiting;
   WebDocument document = GetMainDocument();
   if (document.IsNull())
     return;
 
   if (pending_events_.empty() && dirty_objects_.empty())
     return;
-
-  ack_pending_ = true;
 
   // Make a copy of the events, because it's possible that
   // actions inside this loop will cause more events to be
@@ -818,17 +875,20 @@ void RenderAccessibilityImpl::SendPendingAccessibilityEvents() {
     VLOG(1) << "Accessibility tree update:\n" << update.ToString();
   }
 
+  event_schedule_status_ = EventScheduleStatus::kWaitingForAck;
   render_accessibility_manager_->HandleAccessibilityEvents(
       updates, events, reset_token_,
       base::BindOnce(&RenderAccessibilityImpl::OnAccessibilityEventsHandled,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_for_pending_events_.GetWeakPtr()));
   reset_token_ = 0;
 
   if (had_layout_complete_messages)
     SendLocationChanges();
 
-  if (had_load_complete_messages)
+  if (had_load_complete_messages) {
     has_injected_stylesheet_ = false;
+    event_schedule_mode_ = EventScheduleMode::kProcessEventsImmediately;
+  }
 
   if (image_annotation_debugging_)
     AddImageAnnotationDebuggingAttributes(updates);
@@ -889,9 +949,16 @@ void RenderAccessibilityImpl::SendLocationChanges() {
 }
 
 void RenderAccessibilityImpl::OnAccessibilityEventsHandled() {
-  DCHECK(ack_pending_);
-  ack_pending_ = false;
-  SendPendingAccessibilityEvents();
+  DCHECK(event_schedule_status_ == EventScheduleStatus::kWaitingForAck);
+  event_schedule_status_ = EventScheduleStatus::kNotWaiting;
+  switch (event_schedule_mode_) {
+    case EventScheduleMode::kDeferEvents:
+      ScheduleSendPendingAccessibilityEvents(true);
+      break;
+    case EventScheduleMode::kProcessEventsImmediately:
+      SendPendingAccessibilityEvents();
+      break;
+  }
 }
 
 void RenderAccessibilityImpl::OnLoadInlineTextBoxes(
@@ -1206,6 +1273,19 @@ blink::WebDocument RenderAccessibilityImpl::GetPopupDocument() {
   if (popup)
     return popup->GetDocument();
   return WebDocument();
+}
+
+void RenderAccessibilityImpl::CancelScheduledEvents() {
+  switch (event_schedule_status_) {
+    case EventScheduleStatus::kScheduledDeferred:
+    case EventScheduleStatus::kScheduledImmediate:  // Fallthrough
+      weak_factory_for_pending_events_.InvalidateWeakPtrs();
+      event_schedule_status_ = EventScheduleStatus::kNotWaiting;
+      break;
+    case EventScheduleStatus::kWaitingForAck:
+    case EventScheduleStatus::kNotWaiting:  // Fallthrough
+      break;
+  }
 }
 
 }  // namespace content

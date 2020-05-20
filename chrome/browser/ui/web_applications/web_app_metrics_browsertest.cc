@@ -514,8 +514,7 @@ IN_PROC_BROWSER_TEST_P(WebAppMetricsBrowserTest,
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppMetricsBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

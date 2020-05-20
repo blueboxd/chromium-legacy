@@ -47,7 +47,7 @@ EventListener* CreateAttributeEventListener(Node* node,
                                             const AtomicString& value,
                                             JSEventHandler::HandlerType type) {
   DCHECK(node);
-  if (value.IsNull())
+  if (value.IsNull() || !node->GetDocument().GetExecutionContext())
     return nullptr;
 
   // FIXME: Very strange: we initialize zero-based number with '1'.

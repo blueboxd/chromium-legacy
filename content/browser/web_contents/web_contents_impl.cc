@@ -2018,7 +2018,9 @@ void WebContentsImpl::SetPageFrozen(bool frozen) {
   // A visible page is never frozen.
   DCHECK_NE(Visibility::VISIBLE, GetVisibility());
 
-  SendPageMessage(new PageMsg_SetPageFrozen(MSG_ROUTING_NONE, frozen));
+  for (auto& entry : frame_tree_.render_view_hosts()) {
+    entry.second->SetIsFrozen(frozen);
+  }
 }
 
 std::unique_ptr<WebContents> WebContentsImpl::Clone() {

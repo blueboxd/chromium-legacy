@@ -3093,6 +3093,7 @@ interface HTMLElement : Element
     getter tabIndex
     getter title
     getter translate
+    getter virtualKeyboardPolicy
     method attachInternals
     method blur
     method click
@@ -3209,6 +3210,7 @@ interface HTMLElement : Element
     setter tabIndex
     setter title
     setter translate
+    setter virtualKeyboardPolicy
 interface HTMLEmbedElement : HTMLElement
     attribute @@toStringTag
     getter align

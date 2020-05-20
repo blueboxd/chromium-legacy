@@ -194,9 +194,8 @@ class WebView {
                                            const Timeout& timeout,
                                            bool stop_load_on_timeout) = 0;
 
-  // Returns whether the frame is pending navigation.
-  virtual Status IsPendingNavigation(const std::string& frame_id,
-                                     const Timeout* timeout,
+  // Returns whether the current frame is pending navigation.
+  virtual Status IsPendingNavigation(const Timeout* timeout,
                                      bool* is_pending) const = 0;
 
   // Returns the JavaScriptDialogManager. Never null.
@@ -259,7 +258,7 @@ class WebView {
 
   virtual std::unique_ptr<base::Value> GetCastIssueMessage() = 0;
 
-  virtual void ClearNavigationState(const std::string& new_frame_id) = 0;
+  virtual void SetFrame(const std::string& new_frame_id) = 0;
 };
 
 #endif  // CHROME_TEST_CHROMEDRIVER_CHROME_WEB_VIEW_H_

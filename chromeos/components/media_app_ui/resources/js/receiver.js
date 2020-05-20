@@ -19,6 +19,7 @@ class ReceivedFile {
     this.mimeType = this.blob.type;
     this.token = file.token;
     this.error = file.error;
+    this.fromClipboard = false;
   }
 
   /**

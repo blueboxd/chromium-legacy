@@ -30,19 +30,19 @@ constexpr base::char16 kTaskDescription[] = L"Update all applications.";
 
 }  // namespace
 
-bool RegisterUpdateAppsTask(const base::CommandLine& run_command) {
+bool RegisterWakeTask(const base::CommandLine& run_command) {
   auto task_scheduler = TaskScheduler::CreateInstance();
   if (!task_scheduler->RegisterTask(
           kTaskName, kTaskDescription, run_command,
           TaskScheduler::TriggerType::TRIGGER_TYPE_HOURLY, true)) {
-    LOG(ERROR) << "RegisterUpdateAppsTask failed.";
+    LOG(ERROR) << "RegisterWakeTask failed.";
     return false;
   }
-  VLOG(1) << "RegisterUpdateAppsTask succeeded.";
+  VLOG(1) << "RegisterWakeTask succeeded.";
   return true;
 }
 
-void UnregisterUpdateAppsTask() {
+void UnregisterWakeTask() {
   auto task_scheduler = TaskScheduler::CreateInstance();
   task_scheduler->DeleteTask(kTaskName);
 }

@@ -22,6 +22,10 @@ source_set("test_support") {
   if (!is_fuchsia) {
     deps += [ "//chrome/test:sync_integration_test_support" ]
   }
+
+  if (is_android) {
+    deps += [ "//content/public/browser" ]
+  }
 }
 
 generate_expired_histograms_array("expired_histograms_array") {

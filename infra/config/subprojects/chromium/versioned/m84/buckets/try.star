@@ -621,3 +621,43 @@ try_.gpu_chromium_win_builder(
         ],
     ),
 )
+
+# Used for listing chrome trybots in chromium's commit-queue.cfg without also
+# adding them to chromium's cr-buildbucket.cfg. Note that the recipe these
+# builders run allow only known roller accounts when triggered via the CQ.
+def chrome_internal_verifier(
+    *,
+    builder):
+  luci.cq_tryjob_verifier(
+      builder = 'chrome:try/' + builder,
+      cq_group = vars.cq_group,
+      includable_only = True,
+      owner_whitelist = [
+          "googlers",
+          "project-chromium-robot-committers",
+      ],
+  )
+
+chrome_internal_verifier(
+    builder = 'mac-chrome-beta',
+)
+
+chrome_internal_verifier(
+    builder = 'mac-chrome-stable',
+)
+
+chrome_internal_verifier(
+    builder = 'win-chrome-beta',
+)
+
+chrome_internal_verifier(
+    builder = 'win-chrome-stable',
+)
+
+chrome_internal_verifier(
+    builder = 'win64-chrome-beta',
+)
+
+chrome_internal_verifier(
+    builder = 'win64-chrome-stable',
+)

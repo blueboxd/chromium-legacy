@@ -331,6 +331,7 @@ public abstract class ChromeFeatureList {
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
     public static final String OMNIBOX_SEARCH_ENGINE_LOGO = "OmniboxSearchEngineLogo";
     public static final String OMNIBOX_SUGGESTIONS_RECYCLER_VIEW = "OmniboxSuggestionsRecyclerView";
+    public static final String OMNIBOX_SUGGESTIONS_WRAP_AROUND = "OmniboxSuggestionsWrapAround";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
     public static final String OVERSCROLL_HISTORY_NAVIGATION = "OverscrollHistoryNavigation";
     public static final String PAGE_INFO_PERFORMANCE_HINTS = "PageInfoPerformanceHints";

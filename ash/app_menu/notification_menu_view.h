@@ -89,8 +89,7 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
  private:
   friend class NotificationMenuViewTestAPI;
 
-  using NotificationItemViews =
-      std::deque<std::unique_ptr<NotificationItemView>>;
+  using NotificationItemViews = std::deque<NotificationItemView*>;
 
   // Returns an iterator to the notification matching the supplied ID, or
   // notification_item_views_.end() if none.
@@ -107,18 +106,18 @@ class APP_MENU_EXPORT NotificationMenuView : public views::View {
 
   // The deque of NotificationItemViews. The front item in the deque is the view
   // which is shown.
-  std::deque<std::unique_ptr<NotificationItemView>> notification_item_views_;
+  NotificationItemViews notification_item_views_;
 
   // A double separator used to distinguish notifications from context menu
   // options. Owned by views hierarchy.
   views::MenuSeparator* double_separator_;
 
   // Holds the header and counter texts. Owned by views hierarchy.
-  NotificationMenuHeaderView* const header_view_;
+  NotificationMenuHeaderView* header_view_;
 
   // A view that shows icons of notifications for this app that are not being
   // shown.
-  std::unique_ptr<NotificationOverflowView> overflow_view_;
+  NotificationOverflowView* overflow_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationMenuView);
 };

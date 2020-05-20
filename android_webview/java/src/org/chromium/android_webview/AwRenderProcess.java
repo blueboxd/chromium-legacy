@@ -23,6 +23,13 @@ public final class AwRenderProcess extends AwSupportLibIsomorphic {
                 mNativeRenderProcess, AwRenderProcess.this);
     }
 
+    public boolean isLockedToOriginForTesting() {
+        if (mNativeRenderProcess == 0) return false;
+
+        return AwRenderProcessJni.get().isLockedToOriginForTesting(
+                mNativeRenderProcess, AwRenderProcess.this);
+    }
+
     @CalledByNative
     private static AwRenderProcess create() {
         return new AwRenderProcess();
@@ -36,5 +43,6 @@ public final class AwRenderProcess extends AwSupportLibIsomorphic {
     @NativeMethods
     interface Natives {
         boolean terminateChildProcess(long nativeAwRenderProcess, AwRenderProcess caller);
+        boolean isLockedToOriginForTesting(long nativeAwRenderProcess, AwRenderProcess caller);
     }
 }

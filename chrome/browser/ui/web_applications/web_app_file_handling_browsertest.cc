@@ -563,7 +563,6 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppFileHandlingBrowserTest,
     ::testing::Values(
-        web_app::ControllerType::kHostedAppController,
         web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
         web_app::ControllerType::kUnifiedControllerWithWebApp),
     web_app::ControllerTypeParamToString);
@@ -572,7 +571,6 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppFileHandlingOriginTrialBrowserTest,
     ::testing::Values(
-        web_app::ControllerType::kHostedAppController,
         web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
         web_app::ControllerType::kUnifiedControllerWithWebApp),
     web_app::ControllerTypeParamToString);
@@ -581,7 +579,6 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppFileHandlingOriginTrialTest,
     ::testing::Values(
-        web_app::ControllerType::kHostedAppController,
         web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
         web_app::ControllerType::kUnifiedControllerWithWebApp),
     web_app::ControllerTypeParamToString);

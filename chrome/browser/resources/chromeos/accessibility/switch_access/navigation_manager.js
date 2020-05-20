@@ -5,11 +5,11 @@
 /** This class handles navigation amongst the elements onscreen. */
 class NavigationManager {
   /**
-   * @param {!chrome.automation.AutomationNode} desktop
+   * @param {!AutomationNode} desktop
    * @private
    */
   constructor(desktop) {
-    /** @private {!chrome.automation.AutomationNode} */
+    /** @private {!AutomationNode} */
     this.desktop_ = desktop;
 
     /** @private {!SARootNode} */
@@ -129,7 +129,7 @@ class NavigationManager {
     return desktopRoot;
   }
 
-  /** @param {!chrome.automation.AutomationNode} desktop */
+  /** @param {!AutomationNode} desktop */
   static initialize(desktop) {
     NavigationManager.instance = new NavigationManager(desktop);
   }
@@ -209,7 +209,7 @@ class NavigationManager {
 
   /**
    * Returns the desktop automation node object.
-   * @return {!chrome.automation.AutomationNode}
+   * @return {!AutomationNode}
    */
   static get desktopNode() {
     return NavigationManager.instance.desktop_;
@@ -339,7 +339,7 @@ class NavigationManager {
    *
    * This is a "permanent" move, while |jumpTo_| is a "temporary" move.
    *
-   * @param {!chrome.automation.AutomationNode} automationNode
+   * @param {!AutomationNode} automationNode
    * @private
    */
   moveTo_(automationNode) {

@@ -115,6 +115,7 @@
 #include "net/ssl/ssl_server_config.h"
 #include "net/ssl/test_ssl_config_service.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/embedded_test_server_connection_listener.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -161,6 +162,7 @@
 
 using net::test::IsError;
 using net::test::IsOk;
+using net::test_server::RegisterDefaultHandlers;
 using testing::AnyOf;
 
 using base::ASCIIToUTF16;
@@ -324,7 +326,7 @@ class HttpTestServer : public EmbeddedTestServer {
     AddDefaultHandlers(document_root);
   }
 
-  HttpTestServer() { AddDefaultHandlers(base::FilePath()); }
+  HttpTestServer() { RegisterDefaultHandlers(this); }
 };
 
 // Job that allows monitoring of its priority.
@@ -2398,10 +2400,10 @@ TEST_F(URLRequestTest, SameSiteCookiesSpecialScheme) {
   url::AddStandardScheme("chrome", url::SchemeType::SCHEME_WITH_HOST);
 
   EmbeddedTestServer https_test_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.AddDefaultHandlers(base::FilePath());
+  RegisterDefaultHandlers(&https_test_server);
   ASSERT_TRUE(https_test_server.Start());
   EmbeddedTestServer http_test_server(EmbeddedTestServer::TYPE_HTTP);
-  http_test_server.AddDefaultHandlers(base::FilePath());
+  RegisterDefaultHandlers(&http_test_server);
   // Ensure they are on different ports.
   ASSERT_TRUE(http_test_server.Start(https_test_server.port() + 1));
   // Both hostnames should be 127.0.0.1 (so that we can use the same set of
@@ -2488,11 +2490,9 @@ TEST_F(URLRequestTest, SameSiteCookiesSpecialScheme) {
 // Tests that __Secure- cookies can't be set on non-secure origins.
 TEST_F(URLRequestTest, SecureCookiePrefixOnNonsecureOrigin) {
   EmbeddedTestServer http_server;
-  http_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&http_server);
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&https_server);
   ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(https_server.Start());
 
@@ -2531,8 +2531,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixOnNonsecureOrigin) {
 
 TEST_F(URLRequestTest, SecureCookiePrefixNonsecure) {
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&https_server);
   ASSERT_TRUE(https_server.Start());
 
   TestNetworkDelegate network_delegate;
@@ -2570,8 +2569,7 @@ TEST_F(URLRequestTest, SecureCookiePrefixNonsecure) {
 
 TEST_F(URLRequestTest, SecureCookiePrefixSecure) {
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&https_server);
   ASSERT_TRUE(https_server.Start());
 
   TestNetworkDelegate network_delegate;
@@ -2610,11 +2608,9 @@ TEST_F(URLRequestTest, SecureCookiePrefixSecure) {
 // cookies are enabled.
 TEST_F(URLRequestTest, StrictSecureCookiesOnNonsecureOrigin) {
   EmbeddedTestServer http_server;
-  http_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&http_server);
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&https_server);
   ASSERT_TRUE(http_server.Start());
   ASSERT_TRUE(https_server.Start());
 
@@ -5488,7 +5484,7 @@ TEST_F(URLRequestTestHTTP, MultipleExpectCTHeaders) {
 
 TEST_F(URLRequestTestHTTP, NetworkErrorLogging_DontReportIfNetworkNotAccessed) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  RegisterDefaultHandlers(&https_test_server);
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/cachetime");
 
@@ -5552,7 +5548,7 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_BasicSuccess) {
 
 TEST_F(URLRequestTestHTTP, NetworkErrorLogging_BasicError) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  RegisterDefaultHandlers(&https_test_server);
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/close-socket");
 
@@ -5636,7 +5632,7 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_RedirectWithoutLocationHeader) {
 
 TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Auth) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  RegisterDefaultHandlers(&https_test_server);
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/auth-basic");
 
@@ -5667,7 +5663,7 @@ TEST_F(URLRequestTestHTTP, NetworkErrorLogging_Auth) {
 
 TEST_F(URLRequestTestHTTP, NetworkErrorLogging_304Response) {
   EmbeddedTestServer https_test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_test_server.AddDefaultHandlers(base::FilePath(kTestFilePath));
+  RegisterDefaultHandlers(&https_test_server);
   ASSERT_TRUE(https_test_server.Start());
   GURL request_url = https_test_server.GetURL("/auth-basic");
 
@@ -8123,34 +8119,19 @@ class URLRequestTestReferrerPolicy : public URLRequestTest {
   URLRequestTestReferrerPolicy() = default;
 
   void InstantiateSameOriginServers(net::EmbeddedTestServer::Type type) {
-    origin_server_.reset(new EmbeddedTestServer(type));
-    if (type == net::EmbeddedTestServer::TYPE_HTTPS) {
-      origin_server_->AddDefaultHandlers(
-          base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-    } else {
-      origin_server_->AddDefaultHandlers(base::FilePath(kTestFilePath));
-    }
+    origin_server_ = std::make_unique<EmbeddedTestServer>(type);
+    RegisterDefaultHandlers(origin_server_.get());
     ASSERT_TRUE(origin_server_->Start());
   }
 
   void InstantiateCrossOriginServers(net::EmbeddedTestServer::Type origin_type,
                                      net::EmbeddedTestServer::Type dest_type) {
-    origin_server_.reset(new EmbeddedTestServer(origin_type));
-    if (origin_type == net::EmbeddedTestServer::TYPE_HTTPS) {
-      origin_server_->AddDefaultHandlers(
-          base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-    } else {
-      origin_server_->AddDefaultHandlers(base::FilePath(kTestFilePath));
-    }
+    origin_server_ = std::make_unique<EmbeddedTestServer>(origin_type);
+    RegisterDefaultHandlers(origin_server_.get());
     ASSERT_TRUE(origin_server_->Start());
 
-    destination_server_.reset(new EmbeddedTestServer(dest_type));
-    if (dest_type == net::EmbeddedTestServer::TYPE_HTTPS) {
-      destination_server_->AddDefaultHandlers(
-          base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
-    } else {
-      destination_server_->AddDefaultHandlers(base::FilePath(kTestFilePath));
-    }
+    destination_server_ = std::make_unique<EmbeddedTestServer>(dest_type);
+    RegisterDefaultHandlers(destination_server_.get());
     ASSERT_TRUE(destination_server_->Start());
   }
 
@@ -8454,8 +8435,7 @@ class HTTPSRequestTest : public TestWithTaskEnvironment {
 
 TEST_F(HTTPSRequestTest, HTTPSGetTest) {
   EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -8482,8 +8462,7 @@ TEST_F(HTTPSRequestTest, HTTPSGetTest) {
 TEST_F(HTTPSRequestTest, HTTPSMismatchedTest) {
   EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_MISMATCHED_NAME);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   bool err_allowed = true;
@@ -8516,8 +8495,7 @@ TEST_F(HTTPSRequestTest, HTTPSMismatchedTest) {
 TEST_F(HTTPSRequestTest, HTTPSExpiredTest) {
   EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   // Iterate from false to true, just so that we do the opposite of the
@@ -8578,8 +8556,7 @@ class SSLNetErrorTestDelegate : public TestDelegate {
 TEST_F(HTTPSRequestTest, SSLNetErrorReportedToDelegate) {
   EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
   test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   SSLNetErrorTestDelegate d;
@@ -8723,8 +8700,7 @@ TEST_F(HTTPSRequestTest, HSTSPreservesPosts) {
   static const char kData[] = "hello world";
 
   EmbeddedTestServer test_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
 
@@ -8909,8 +8885,7 @@ TEST_F(HTTPSRequestTest, ClientAuthNoCertificate) {
   ssl_config.client_cert_type =
       SSLServerConfig::ClientCertType::OPTIONAL_CLIENT_CERT;
   test_server.SetSSLConfig(EmbeddedTestServer::CERT_OK, ssl_config);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   SSLClientAuthTestDelegate d;
@@ -8956,8 +8931,7 @@ TEST_F(HTTPSRequestTest, ClientAuth) {
   ssl_config.client_cert_type =
       SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
   test_server.SetSSLConfig(EmbeddedTestServer::CERT_OK, ssl_config);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   {
@@ -9038,8 +9012,7 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigning) {
   ssl_config.client_cert_type =
       SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
   test_server.SetSSLConfig(EmbeddedTestServer::CERT_OK, ssl_config);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   {
@@ -9119,8 +9092,7 @@ TEST_F(HTTPSRequestTest, ClientAuthFailSigningRetry) {
   ssl_config.client_cert_type =
       SSLServerConfig::ClientCertType::REQUIRE_CLIENT_CERT;
   test_server.SetSSLConfig(EmbeddedTestServer::CERT_OK, ssl_config);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   // Connect with a client certificate to put it in the client auth cache.
@@ -9587,8 +9559,7 @@ class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
 
     EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
     test_server.SetSSLConfig(cert_config);
-    test_server.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+    RegisterDefaultHandlers(&test_server);
     ASSERT_TRUE(test_server.Start());
 
     delegate->set_allow_certificate_errors(true);
@@ -10287,8 +10258,7 @@ TEST_F(HTTPSAIATest, AIAFetching) {
   EmbeddedTestServer::ServerCertificateConfig cert_config;
   cert_config.intermediate = EmbeddedTestServer::IntermediateType::kByAIA;
   test_server.SetSSLConfig(cert_config);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   TestDelegate d;
@@ -10589,8 +10559,7 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevoked) {
       {{OCSPRevocationStatus::GOOD,
         EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
   test_server.SetSSLConfig(cert_config);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   CertVerifier::Config cert_verifier_config = GetCertVerifierConfig();
@@ -10629,8 +10598,7 @@ TEST_F(HTTPSCRLSetTest, CRLSetRevokedBySubject) {
       {{OCSPRevocationStatus::GOOD,
         EmbeddedTestServer::OCSPConfig::SingleResponse::Date::kValid}});
   test_server.SetSSLConfig(cert_config);
-  test_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&test_server);
   ASSERT_TRUE(test_server.Start());
 
   std::string common_name = test_server.GetCertificate()->subject().common_name;
@@ -10705,8 +10673,7 @@ TEST_F(HTTPSLocalCRLSetTest, KnownInterceptionBlocked) {
 
   // Verify the connection succeeds without being flagged.
   EmbeddedTestServer https_server(EmbeddedTestServer::TYPE_HTTPS);
-  https_server.AddDefaultHandlers(
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  RegisterDefaultHandlers(&https_server);
   https_server.SetSSLConfig(EmbeddedTestServer::CERT_OK_BY_INTERMEDIATE);
   ASSERT_TRUE(https_server.Start());
 
@@ -11770,8 +11737,7 @@ class HTTPSEarlyDataTest : public TestWithTaskEnvironment {
     ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_3;
     ssl_config_.early_data_enabled = true;
     test_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_OK, ssl_config_);
-    test_server_.AddDefaultHandlers(
-        base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+    RegisterDefaultHandlers(&test_server_);
     test_server_.RegisterRequestHandler(
         base::BindRepeating(&HandleZeroRTTRequest));
     test_server_.SetConnectionListener(&listener_);

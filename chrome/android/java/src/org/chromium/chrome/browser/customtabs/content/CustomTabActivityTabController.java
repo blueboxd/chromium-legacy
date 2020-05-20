@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ServiceTabLauncher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
-import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
@@ -71,8 +70,7 @@ import dagger.Lazy;
  * Creates a new Tab or retrieves an existing Tab for the CustomTabActivity, and initializes it.
  */
 @ActivityScope
-public class CustomTabActivityTabController
-        implements InflationObserver, BrowserServicesActivityTabController {
+public class CustomTabActivityTabController implements InflationObserver {
     // For CustomTabs.WebContentsStateOnLaunch, see histograms.xml. Append only.
     @IntDef({WebContentsState.NO_WEBCONTENTS, WebContentsState.PRERENDERED_WEBCONTENTS,
             WebContentsState.SPARE_WEBCONTENTS, WebContentsState.TRANSFERRED_WEBCONTENTS})
@@ -161,7 +159,6 @@ public class CustomTabActivityTabController
                 && !hasSpeculated && !mWarmupManager.hasSpareWebContents();
     }
 
-    @Override
     public void detachAndStartReparenting(
             Intent intent, Bundle startActivityOptions, Runnable finishCallback) {
         Tab tab = mTabProvider.getTab();
@@ -179,24 +176,20 @@ public class CustomTabActivityTabController
      * case links with target="_blank" were followed. See the comment to
      * {@link CustomTabActivityTabProvider.Observer#onAllTabsClosed}.
      */
-    @Override
     public void closeTab() {
         mTabFactory.getTabModelSelector().getCurrentModel().closeTab(mTabProvider.getTab(),
                 false, false, false);
     }
 
-    @Override
     public void closeAndForgetTab() {
         mTabFactory.getTabModelSelector().closeAllTabs(true);
         mTabPersistencePolicy.deleteMetadataStateFileAsync();
     }
 
-    @Override
     public void saveState() {
         mTabFactory.getTabModelSelector().saveState();
     }
 
-    @Override
     public TabModelSelector getTabModelSelector() {
         return mTabFactory.getTabModelSelector();
     }

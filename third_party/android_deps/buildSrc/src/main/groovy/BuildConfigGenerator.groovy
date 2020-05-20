@@ -255,18 +255,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  strip_drawables = true\n')
             }
         }
-        if (dependencyId.startsWith('androidx_') ||
-                dependencyId.startsWith('com_android_support_') ||
-                dependencyId.startsWith('android_arch_') ||
-                dependencyId.startsWith('com_android_tools_build_jetifier')) {
-            sb.append('  skip_jetify  = true\n')
-        }
         if (dependencyId.startsWith('org_robolectric')) {
             // Skip platform checks since it depends on
             // accessibility_test_framework_java which requires_android.
             sb.append('  bypass_platform_checks = true\n')
-            // This saves build time as robolectric 4.3.1 already uses androidx.
-            sb.append('  skip_jetify  = true\n')
         }
         switch(dependencyId) {
             case 'androidx_annotation_annotation':

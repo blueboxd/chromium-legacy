@@ -183,7 +183,7 @@ class MockCastMessageHandler : public CastMessageHandler {
                     const std::string&,
                     base::TimeDelta,
                     const std::vector<std::string>&,
-                    const std::string&,
+                    const base::Optional<base::Value>&,
                     LaunchSessionCallback callback));
   MOCK_METHOD4(StopSession,
                void(int channel_id,

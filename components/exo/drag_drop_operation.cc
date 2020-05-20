@@ -4,7 +4,6 @@
 
 #include "components/exo/drag_drop_operation.h"
 
-#include "ash/drag_drop/drag_drop_controller.h"
 #include "base/barrier_closure.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/exo/data_offer.h"
@@ -18,6 +17,10 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/transform_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "ash/drag_drop/drag_drop_controller.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace exo {
 

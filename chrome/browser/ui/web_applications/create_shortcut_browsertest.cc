@@ -170,8 +170,7 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest, IgnoreInvalidManifestData) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     CreateShortcutBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

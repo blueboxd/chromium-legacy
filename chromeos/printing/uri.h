@@ -307,6 +307,9 @@ class CHROMEOS_EXPORT Uri {
   // Returns false when |port| is invalid. In this case, the current port is
   // not modified.
   bool SetPort(int port);
+  // A version of the method above for a string parameter. Empty string means
+  // "not-specified" and has the same effect as passing -1 to the method above.
+  bool SetPort(const std::string& port);
 
   // These methods return values of components. There is no %-escaped sequences
   // and returned string may contain UTF-8 characters.

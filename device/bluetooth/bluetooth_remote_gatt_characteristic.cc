@@ -107,12 +107,6 @@ void BluetoothRemoteGattCharacteristic::StartNotifySession(
 }
 #endif
 
-bool BluetoothRemoteGattCharacteristic::WriteWithoutResponse(
-    base::span<const uint8_t> value) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 bool BluetoothRemoteGattCharacteristic::AddDescriptor(
     std::unique_ptr<BluetoothRemoteGattDescriptor> descriptor) {
   if (!descriptor)

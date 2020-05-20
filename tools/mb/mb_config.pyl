@@ -94,7 +94,7 @@
       'Android WebLayer P FYI (rel)': 'android_release_bot_minimal_symbols_arm64',
       'Android WebView P Blink-CORS FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
-      'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting',
+      'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google',
       'android-bfcache-rel': 'android_release_bot_minimal_symbols',
       'android-weblayer-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_google',
     },
@@ -300,17 +300,17 @@
       'Linux Builder Goma RBE Canary': 'gpu_tests_release_bot',
       'Linux Builder Goma RBE Latest Client': 'gpu_tests_release_bot',
 
-      'Win Builder (dbg) Goma Canary': 'gpu_tests_debug_bot_x86',
-      'Win Builder (dbg) Goma Latest Client': 'gpu_tests_debug_bot_x86',
-      'Win Builder (dbg) Goma RBE Latest Client': 'gpu_tests_debug_bot_x86',
+      'Win Builder (dbg) Goma Canary': 'gpu_tests_debug_bot_x86_no_symbols',
+      'Win Builder (dbg) Goma Latest Client': 'gpu_tests_debug_bot_x86_no_symbols',
+      'Win Builder (dbg) Goma RBE Latest Client': 'gpu_tests_debug_bot_x86_no_symbols',
       'Win Builder Goma Canary': 'gpu_tests_release_bot_x86_minimal_symbols',
       'Win Builder Goma Latest Client': 'gpu_tests_release_bot_x86_minimal_symbols',
       'Win Builder Goma RBE Latest Client': 'gpu_tests_release_bot_x86_minimal_symbols',
       'win32-archive-rel-goma-canary-localoutputcache': 'release_bot_x86_minimal_symbols_enable_archive_compression',
       'win32-archive-rel-goma-latest-localoutputcache': 'release_bot_x86_minimal_symbols_enable_archive_compression',
 
-      'Win7 Builder (dbg) Goma Canary': 'gpu_tests_debug_bot_x86',
-      'Win7 Builder (dbg) Goma Latest Client': 'gpu_tests_debug_bot_x86',
+      'Win7 Builder (dbg) Goma Canary': 'gpu_tests_debug_bot_x86_no_symbols',
+      'Win7 Builder (dbg) Goma Latest Client': 'gpu_tests_debug_bot_x86_no_symbols',
       'Win7 Builder Goma Canary': 'gpu_tests_release_bot_x86_minimal_symbols',
       'Win7 Builder Goma Latest Client': 'gpu_tests_release_bot_x86_minimal_symbols',
 
@@ -625,8 +625,8 @@
 
     'chromium.win': {
       # Windows bots take too long to link w/ full symbols and time out.
-      'Win Builder': 'gpu_tests_release_bot_x86_minimal_symbols',
-      'Win Builder (dbg)': 'gpu_tests_debug_bot_x86',
+      'Win Builder': 'gpu_tests_release_bot_x86_no_symbols',
+      'Win Builder (dbg)': 'gpu_tests_debug_bot_x86_no_symbols',
       'Win x64 Builder': 'gpu_tests_release_bot_minimal_symbols',
       'Win x64 Builder Code Coverage': 'gpu_tests_release_bot_minimal_symbols_code_coverage',
       'Win x64 Builder (dbg)': 'gpu_tests_debug_bot',
@@ -683,7 +683,7 @@
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
       'android-lollipop-arm-rel': 'android_release_trybot_fastbuild_webview_google',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_fastbuild_java_coverage',
-      'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_resource_whitelisting',
+      'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-pie-arm64-coverage-rel': 'android_release_trybot_arm64_webview_google_native_coverage',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google_expectations',
@@ -981,9 +981,9 @@
       'win7-rel': 'gpu_tests_release_trybot_x86_resource_whitelisting',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
-      'win_chromium_compile_dbg_ng': 'gpu_tests_debug_trybot_x86_compile_only',
+      'win_chromium_compile_dbg_ng': 'gpu_tests_debug_bot_x86_no_symbols',
       'win_chromium_compile_rel_ng': 'gpu_tests_release_trybot_x86_resource_whitelisting',
-      'win_chromium_dbg_ng': 'gpu_tests_debug_bot_x86',
+      'win_chromium_dbg_ng': 'gpu_tests_debug_bot_x86_no_symbols',
       'win_chromium_x64_rel_ng': 'gpu_tests_release_trybot',
       'win_mojo': 'release_trybot_x86',
       'win_optional_gpu_tests_rel': 'gpu_fyi_tests_release_trybot',
@@ -1003,7 +1003,7 @@
 
     'tryserver.webrtc': {
       'win_chromium_compile': 'gpu_tests_release_trybot_resource_whitelisting',
-      'win_chromium_compile_dbg': 'gpu_tests_debug_trybot_x86_compile_only',
+      'win_chromium_compile_dbg': 'gpu_tests_debug_bot_x86_no_symbols',
       'mac_chromium_compile': 'gpu_tests_release_trybot',
       'linux_chromium_compile': 'release_trybot',
       'linux_chromium_compile_dbg': 'debug_bot',
@@ -1208,9 +1208,9 @@
       'strip_debug_info', 'android_fastbuild', 'webview_google',
     ],
 
-    'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting': [
+    'android_release_bot_minimal_symbols_x86_fastbuild_resource_whitelisting_webview_google': [
       'android', 'release_bot', 'minimal_symbols', 'x86',
-      'android_fastbuild', 'resource_whitelisting',
+      'android_fastbuild', 'resource_whitelisting', 'webview_google',
     ],
 
     'android_release_bot_minimal_symbols_x86_fastbuild_webview_google': [
@@ -1252,9 +1252,9 @@
       'android_no_proguard', 'webview_google',
     ],
 
-    'android_release_trybot_x86_fastbuild_resource_whitelisting': [
+    'android_release_trybot_x86_fastbuild_resource_whitelisting_webview_google': [
       'android', 'release_trybot', 'x86', 'android_fastbuild',
-      'resource_whitelisting',
+      'resource_whitelisting', 'webview_google',
     ],
 
     'android_release_trybot_x86_fastbuild_webview_google': [
@@ -1784,8 +1784,8 @@
       'gpu_tests', 'debug_bot', 'x86',
     ],
 
-    'gpu_tests_debug_trybot_x86_compile_only': [
-      'gpu_tests', 'debug_bot', 'x86', 'compile_only',
+    'gpu_tests_debug_bot_x86_no_symbols': [
+      'gpu_tests', 'debug_bot', 'x86', 'no_symbols'
     ],
 
     'gpu_tests_release_bot_minimal_symbols': [
@@ -1806,6 +1806,10 @@
 
     'gpu_tests_release_bot_x86_minimal_symbols': [
       'gpu_tests', 'release_bot', 'x86', 'minimal_symbols',
+    ],
+
+    'gpu_tests_release_bot_x86_no_symbols': [
+      'gpu_tests', 'release_bot', 'x86', 'no_symbols',
     ],
 
     'gpu_tests_release_trybot': [

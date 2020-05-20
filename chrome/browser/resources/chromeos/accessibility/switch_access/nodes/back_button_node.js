@@ -107,7 +107,7 @@ class BackButtonNode extends SAChildNode {
 
   /**
    * Looks for the back button node.
-   * @return {?chrome.automation.AutomationNode}
+   * @return {?AutomationNode}
    */
   static get automationNode() {
     if (BackButtonNode.automationNode_) {

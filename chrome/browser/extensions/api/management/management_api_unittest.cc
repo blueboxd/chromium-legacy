@@ -877,6 +877,12 @@ class TestSupervisedUserServiceDelegate : public SupervisedUserServiceDelegate {
     std::move(done_callback).Run();
   }
 
+  void RecordExtensionEnableBlockedByParentDialogUmaMetric() override {
+    SupervisedUserExtensionsMetricsRecorder::RecordEnablementUmaMetrics(
+        SupervisedUserExtensionsMetricsRecorder::EnablementState::
+            kFailedToEnable);
+  }
+
   void set_next_parent_permission_dialog_result(
       ParentPermissionDialogResult result) {
     dialog_result_ = result;
@@ -949,6 +955,9 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_BlockedByParent) {
   // Preconditions.
   ASSERT_TRUE(profile()->IsChild());
 
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
+
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
 
@@ -985,12 +994,26 @@ TEST_F(ManagementApiSupervisedUserTest, SetEnabled_BlockedByParent) {
     // The block dialog should have been shown.
     EXPECT_EQ(supervised_user_delegate_->show_block_dialog_count(), 1);
   }
+
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kFailedToEnable,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 1);
+  EXPECT_EQ(
+      1,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kFailedToEnableActionName));
 }
 
 TEST_F(ManagementApiSupervisedUserTest,
        SetEnabled_BlockedByParentNoDialogWhenNoDialogManagerAvailable) {
   // Preconditions.
   ASSERT_TRUE(profile()->IsChild());
+
+  base::HistogramTester histogram_tester;
+  base::UserActionTester user_action_tester;
 
   base::FilePath base_path = data_dir().AppendASCII("permissions_increase");
   base::FilePath pem_path = base_path.AppendASCII("permissions.pem");
@@ -1026,6 +1049,17 @@ TEST_F(ManagementApiSupervisedUserTest,
     // The block dialog should not have been shown.
     EXPECT_EQ(supervised_user_delegate_->show_block_dialog_count(), 0);
   }
+
+  histogram_tester.ExpectUniqueSample(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName,
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::kFailedToEnable,
+      1);
+  histogram_tester.ExpectTotalCount(
+      SupervisedUserExtensionsMetricsRecorder::kEnablementHistogramName, 1);
+  EXPECT_EQ(
+      1,
+      user_action_tester.GetActionCount(
+          SupervisedUserExtensionsMetricsRecorder::kFailedToEnableActionName));
 }
 
 // Tests enabling an extension via management API after it was disabled due to

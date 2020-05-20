@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -43,6 +44,7 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Captor;
+import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
@@ -1367,6 +1369,61 @@ public class StartSurfaceMediatorUnitTest {
         assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE),
                 equalTo(false));
         assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
+    }
+
+    @Test
+    public void singleShowingPrevious() {
+        doReturn(false).when(mTabModelSelector).isIncognitoSelected();
+        doReturn(mVoiceRecognitionHandler).when(mFakeBoxDelegate).getVoiceRecognitionHandler();
+        doReturn(true).when(mVoiceRecognitionHandler).isVoiceSearchEnabled();
+
+        StartSurfaceMediator mediator = createStartSurfaceMediator(SurfaceMode.SINGLE_PANE, false);
+        InOrder mainTabGridController = inOrder(mMainTabGridController);
+        mainTabGridController.verify(mMainTabGridController)
+                .addOverviewModeObserver(mOverviewModeObserverCaptor.capture());
+
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.NOT_SHOWN));
+
+        mediator.setSecondaryTasksSurfacePropertyModel(mSecondaryTasksSurfacePropertyModel);
+        mediator.setOverviewState(OverviewModeState.SHOWING_PREVIOUS);
+        mediator.showOverview(false);
+        mainTabGridController.verify(mMainTabGridController).showOverview(eq(false));
+        InOrder fakeboxDelegate = inOrder(mFakeBoxDelegate);
+        fakeboxDelegate.verify(mFakeBoxDelegate)
+                .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
+        assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
+        assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
+
+        mediator.hideOverview(true);
+        mOverviewModeObserverCaptor.getValue().startedHiding();
+        mOverviewModeObserverCaptor.getValue().finishedHiding();
+
+        mediator.setOverviewState(OverviewModeState.SHOWING_PREVIOUS);
+        mediator.showOverview(false);
+        mainTabGridController.verify(mMainTabGridController).showOverview(eq(false));
+        fakeboxDelegate.verify(mFakeBoxDelegate)
+                .addUrlFocusChangeListener(mUrlFocusChangeListenerCaptor.capture());
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_HOMEPAGE));
+        assertThat(mPropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE), equalTo(true));
+        assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
+
+        mediator.setOverviewState(OverviewModeState.SHOWN_TABSWITCHER);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE),
+                equalTo(false));
+        assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_TABSWITCHER));
+
+        mediator.hideOverview(true);
+        mOverviewModeObserverCaptor.getValue().startedHiding();
+        mOverviewModeObserverCaptor.getValue().finishedHiding();
+
+        mediator.setOverviewState(OverviewModeState.SHOWING_PREVIOUS);
+        mediator.showOverview(false);
+        assertThat(mSecondaryTasksSurfacePropertyModel.get(IS_FAKE_SEARCH_BOX_VISIBLE),
+                equalTo(false));
+        assertThat(mediator.shouldShowTabSwitcherToolbar(), equalTo(true));
+        assertThat(mediator.getOverviewState(), equalTo(OverviewModeState.SHOWN_TABSWITCHER));
     }
 
     @Test

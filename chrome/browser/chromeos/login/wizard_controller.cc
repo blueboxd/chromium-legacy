@@ -89,6 +89,7 @@
 #include "chrome/browser/chromeos/net/delay_network_call.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stats_reporting_controller.h"
 #include "chrome/browser/chromeos/system/device_disabling_manager.h"
@@ -299,11 +300,11 @@ void RecordUMAHistogramForOOBEStepCompletionTime(chromeos::OobeScreenId screen,
 }
 
 bool IsRemoraRequisition() {
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::EnrollmentRequisitionManager* requisition_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  return policy_manager && policy_manager->IsRemoraRequisition();
+          ->GetEnrollmentRequisitionManager();
+  return requisition_manager && requisition_manager->IsRemoraRequisition();
 }
 
 chromeos::LoginDisplayHost* GetLoginDisplayHost() {
@@ -1474,13 +1475,13 @@ void WizardController::UpdateOobeConfiguration() {
   auto* requisition_value = oobe_configuration_.FindKeyOfType(
       configuration::kDeviceRequisition, base::Value::Type::STRING);
   if (requisition_value) {
-    auto* policy_manager = g_browser_process->platform_part()
-                               ->browser_policy_connector_chromeos()
-                               ->GetDeviceCloudPolicyManager();
-    if (policy_manager) {
+    auto* requisition_manager = g_browser_process->platform_part()
+                                    ->browser_policy_connector_chromeos()
+                                    ->GetEnrollmentRequisitionManager();
+    if (requisition_manager) {
       VLOG(1) << "Using Device Requisition from configuration"
               << requisition_value->GetString();
-      policy_manager->SetDeviceRequisition(requisition_value->GetString());
+      requisition_manager->SetDeviceRequisition(requisition_value->GetString());
     }
   }
 }

@@ -51,12 +51,12 @@ enum NetworkStatus {
 const bool kDefaultAutoUpdateDisabled = false;
 
 NetworkStatus GetNetworkStatus(bool interactive,
-                               const chromeos::NetworkState* network) {
+                               const chromeos::NetworkState* network,
+                               bool metered) {
   if (!network || !network->IsConnectedState())  // Offline state.
     return NETWORK_STATUS_OFFLINE;
 
-  // Treats tethered networks as cellular networks.
-  if (network->IsUsingMobileData() &&
+  if (metered &&
       !help_utils_chromeos::IsUpdateOverCellularAllowed(interactive)) {
     return NETWORK_STATUS_DISALLOWED;
   }
@@ -76,10 +76,11 @@ bool IsAutoUpdateDisabled() {
   return update_disabled;
 }
 
-base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network) {
+base::string16 GetConnectionTypeAsUTF16(const chromeos::NetworkState* network,
+                                        bool metered) {
   const std::string type = network->type();
   if (chromeos::NetworkTypePattern::WiFi().MatchesType(type)) {
-    if (network->IsUsingMobileData())
+    if (metered)
       return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_METERED_WIFI);
     return l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_WIFI);
   }
@@ -108,17 +109,17 @@ bool EnsureCanUpdate(bool interactive,
       chromeos::NetworkHandler::Get()->network_state_handler();
   const chromeos::NetworkState* network =
       network_state_handler->DefaultNetwork();
-
+  const bool metered = network_state_handler->default_network_is_metered();
   // Don't allow an update if we're currently offline or connected
   // to a network for which updates are disallowed.
-  NetworkStatus status = GetNetworkStatus(interactive, network);
+  NetworkStatus status = GetNetworkStatus(interactive, network, metered);
   if (status == NETWORK_STATUS_OFFLINE) {
     callback.Run(VersionUpdater::FAILED_OFFLINE, 0, false, std::string(), 0,
                  l10n_util::GetStringUTF16(IDS_UPGRADE_OFFLINE));
     return false;
   } else if (status == NETWORK_STATUS_DISALLOWED) {
     base::string16 message = l10n_util::GetStringFUTF16(
-        IDS_UPGRADE_DISALLOWED, GetConnectionTypeAsUTF16(network));
+        IDS_UPGRADE_DISALLOWED, GetConnectionTypeAsUTF16(network, metered));
     callback.Run(VersionUpdater::FAILED_CONNECTION_TYPE_DISALLOWED, 0, false,
                  std::string(), 0, message);
     return false;

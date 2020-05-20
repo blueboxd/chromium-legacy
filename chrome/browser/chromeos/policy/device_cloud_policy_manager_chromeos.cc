@@ -13,7 +13,6 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/logging.h"
 #include "base/macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -24,9 +23,7 @@
 #include "chrome/browser/chromeos/attestation/enrollment_certificate_uploader_impl.h"
 #include "chrome/browser/chromeos/attestation/enrollment_policy_observer.h"
 #include "chrome/browser/chromeos/attestation/machine_certificate_uploader_impl.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_setup_controller.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
-#include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/heartbeat_scheduler.h"
 #include "chrome/browser/chromeos/policy/policy_pref_names.h"
@@ -65,12 +62,6 @@ namespace policy {
 
 namespace {
 
-// Well-known requisition types.
-const char kNoRequisition[] = "none";
-const char kRemoraRequisition[] = "remora";
-const char kSharkRequisition[] = "shark";
-const char kRialtoRequisition[] = "rialto";
-
 // Zero-touch enrollment flag values.
 
 const char kZeroTouchEnrollmentForced[] = "forced";
@@ -80,30 +71,6 @@ const char kZeroTouchEnrollmentHandsOff[] = "hands-off";
 // by Device Policy.
 constexpr base::TimeDelta kDeviceStatusUploadFrequency =
     base::TimeDelta::FromHours(3);
-
-// Fetches a machine statistic value from StatisticsProvider, returns an empty
-// string on failure.
-std::string GetMachineStatistic(const std::string& key) {
-  std::string value;
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineStatistic(key, &value))
-    return std::string();
-
-  return value;
-}
-
-// Gets a machine flag from StatisticsProvider, returns the given
-// |default_value| if not present.
-bool GetMachineFlag(const std::string& key, bool default_value) {
-  bool value = default_value;
-  chromeos::system::StatisticsProvider* provider =
-      chromeos::system::StatisticsProvider::GetInstance();
-  if (!provider->GetMachineFlag(key, &value))
-    return default_value;
-
-  return value;
-}
 
 // Checks whether forced re-enrollment is enabled.
 bool ForcedReEnrollmentEnabled() {
@@ -139,8 +106,6 @@ void DeviceCloudPolicyManagerChromeOS::Initialize(PrefService* local_state) {
   state_keys_update_subscription_ = state_keys_broker_->RegisterUpdateCallback(
       base::Bind(&DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated,
                  base::Unretained(this)));
-
-  InitializeRequisition();
 }
 
 void DeviceCloudPolicyManagerChromeOS::AddDeviceCloudPolicyManagerObserver(
@@ -151,76 +116,6 @@ void DeviceCloudPolicyManagerChromeOS::AddDeviceCloudPolicyManagerObserver(
 void DeviceCloudPolicyManagerChromeOS::RemoveDeviceCloudPolicyManagerObserver(
     Observer* observer) {
   observers_.RemoveObserver(observer);
-}
-
-std::string DeviceCloudPolicyManagerChromeOS::GetDeviceRequisition() const {
-  std::string requisition;
-  const PrefService::Preference* pref = local_state_->FindPreference(
-      prefs::kDeviceEnrollmentRequisition);
-  if (!pref->IsDefaultValue())
-    pref->GetValue()->GetAsString(&requisition);
-
-  if (requisition == kNoRequisition)
-    requisition.clear();
-
-  return requisition;
-}
-
-void DeviceCloudPolicyManagerChromeOS::SetDeviceRequisition(
-    const std::string& requisition) {
-  VLOG(1) << "SetDeviceRequisition " << requisition;
-  if (local_state_) {
-    if (requisition.empty()) {
-      local_state_->ClearPref(prefs::kDeviceEnrollmentRequisition);
-      local_state_->ClearPref(prefs::kDeviceEnrollmentAutoStart);
-      local_state_->ClearPref(prefs::kDeviceEnrollmentCanExit);
-    } else {
-      local_state_->SetString(prefs::kDeviceEnrollmentRequisition, requisition);
-      if (requisition == kNoRequisition) {
-        local_state_->ClearPref(prefs::kDeviceEnrollmentAutoStart);
-        local_state_->ClearPref(prefs::kDeviceEnrollmentCanExit);
-      } else {
-        SetDeviceEnrollmentAutoStart();
-      }
-    }
-  }
-}
-
-bool DeviceCloudPolicyManagerChromeOS::IsRemoraRequisition() const {
-  return GetDeviceRequisition() == kRemoraRequisition;
-}
-
-bool DeviceCloudPolicyManagerChromeOS::IsSharkRequisition() const {
-  return GetDeviceRequisition() == kSharkRequisition;
-}
-
-std::string DeviceCloudPolicyManagerChromeOS::GetSubOrganization() const {
-  if (!local_state_)
-    return std::string();
-  std::string sub_organization;
-  const PrefService::Preference* pref =
-      local_state_->FindPreference(prefs::kDeviceEnrollmentSubOrganization);
-  if (!pref->IsDefaultValue())
-    pref->GetValue()->GetAsString(&sub_organization);
-  return sub_organization;
-}
-
-void DeviceCloudPolicyManagerChromeOS::SetSubOrganization(
-    const std::string& sub_organization) {
-  if (!local_state_)
-    return;
-  if (sub_organization.empty())
-    local_state_->ClearPref(prefs::kDeviceEnrollmentSubOrganization);
-  else
-    local_state_->SetString(prefs::kDeviceEnrollmentSubOrganization,
-                            sub_organization);
-}
-
-void DeviceCloudPolicyManagerChromeOS::SetDeviceEnrollmentAutoStart() {
-  if (local_state_) {
-    local_state_->SetBoolean(prefs::kDeviceEnrollmentAutoStart, true);
-    local_state_->SetBoolean(prefs::kDeviceEnrollmentCanExit, false);
-  }
 }
 
 // Keep clean up order as the reversed creation order.
@@ -237,12 +132,6 @@ void DeviceCloudPolicyManagerChromeOS::Shutdown() {
 // static
 void DeviceCloudPolicyManagerChromeOS::RegisterPrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterStringPref(prefs::kDeviceEnrollmentRequisition,
-                               std::string());
-  registry->RegisterStringPref(prefs::kDeviceEnrollmentSubOrganization,
-                               std::string());
-  registry->RegisterBooleanPref(prefs::kDeviceEnrollmentAutoStart, false);
-  registry->RegisterBooleanPref(prefs::kDeviceEnrollmentCanExit, true);
   registry->RegisterDictionaryPref(prefs::kServerBackedDeviceState);
   registry->RegisterBooleanPref(prefs::kRemoveUsersRemoteCommand, false);
   registry->RegisterStringPref(prefs::kLastRsuDeviceIdUploaded, std::string());
@@ -378,41 +267,6 @@ void DeviceCloudPolicyManagerChromeOS::SetSigninProfileSchemaRegistry(
 void DeviceCloudPolicyManagerChromeOS::OnStateKeysUpdated() {
   if (client() && ForcedReEnrollmentEnabled())
     client()->SetStateKeysToUpload(state_keys_broker_->state_keys());
-}
-
-void DeviceCloudPolicyManagerChromeOS::InitializeRequisition() {
-  // OEM statistics are only loaded when OOBE is not completed.
-  if (chromeos::StartupUtils::IsOobeCompleted())
-    return;
-
-  // Demo requisition may have been set in a prior enrollment attempt that was
-  // interrupted.
-  chromeos::DemoSetupController::ClearDemoRequisition(this);
-  const PrefService::Preference* pref = local_state_->FindPreference(
-      prefs::kDeviceEnrollmentRequisition);
-  if (pref->IsDefaultValue()) {
-    std::string requisition =
-        GetMachineStatistic(chromeos::system::kOemDeviceRequisitionKey);
-
-    if (!requisition.empty()) {
-      local_state_->SetString(prefs::kDeviceEnrollmentRequisition,
-                              requisition);
-      if (requisition == kRemoraRequisition ||
-          requisition == kSharkRequisition ||
-          requisition == kRialtoRequisition) {
-        SetDeviceEnrollmentAutoStart();
-      } else {
-        local_state_->SetBoolean(
-            prefs::kDeviceEnrollmentAutoStart,
-            GetMachineFlag(chromeos::system::kOemIsEnterpriseManagedKey,
-                           false));
-        local_state_->SetBoolean(
-            prefs::kDeviceEnrollmentCanExit,
-            GetMachineFlag(chromeos::system::kOemCanExitEnterpriseEnrollmentKey,
-                           false));
-      }
-    }
-  }
 }
 
 void DeviceCloudPolicyManagerChromeOS::NotifyConnected() {

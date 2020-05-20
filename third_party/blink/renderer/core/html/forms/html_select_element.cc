@@ -229,9 +229,7 @@ int HTMLSelectElement::ActiveSelectionEndListIndex() const {
 }
 
 HTMLOptionElement* HTMLSelectElement::ActiveSelectionEnd() const {
-  if (active_selection_end_)
-    return active_selection_end_.Get();
-  return LastSelectedOption();
+  return select_type_->ActiveSelectionEnd();
 }
 
 void HTMLSelectElement::add(

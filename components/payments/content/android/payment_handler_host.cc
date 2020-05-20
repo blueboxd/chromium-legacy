@@ -24,6 +24,16 @@ jlong JNI_PaymentHandlerHost_Init(
       new PaymentHandlerHost(web_contents, listener));
 }
 
+// static
+base::WeakPtr<payments::PaymentHandlerHost>
+PaymentHandlerHost::FromJavaPaymentHandlerHost(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& payment_handler_host) {
+  return reinterpret_cast<PaymentHandlerHost*>(
+             Java_PaymentHandlerHost_getNativeBridge(env, payment_handler_host))
+      ->payment_handler_host_.AsWeakPtr();
+}
+
 PaymentHandlerHost::PaymentHandlerHost(
     const base::android::JavaParamRef<jobject>& web_contents,
     const base::android::JavaParamRef<jobject>& listener)
@@ -37,10 +47,6 @@ PaymentHandlerHost::~PaymentHandlerHost() {}
 jboolean PaymentHandlerHost::IsWaitingForPaymentDetailsUpdate(
     JNIEnv* env) const {
   return payment_handler_host_.is_waiting_for_payment_details_update();
-}
-
-jlong PaymentHandlerHost::GetNativePaymentHandlerHost(JNIEnv* env) {
-  return reinterpret_cast<intptr_t>(&payment_handler_host_);
 }
 
 void PaymentHandlerHost::Destroy(JNIEnv* env) {

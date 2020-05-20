@@ -16,7 +16,6 @@ android_java_prebuilt("runner_java") {
 }
 
 android_java_prebuilt("exposed_instrumentation_api_publish_java") {
-  skip_jetify = true
   jar_path = "lib/exposed-instrumentation-api-publish-no-dep.jar"
 }
 

@@ -73,6 +73,9 @@ class CaptionController : public BrowserListObserver, public KeyedService {
       content::WebContents* web_contents,
       const chrome::mojom::TranscriptionResultPtr& transcription_result);
 
+  CaptionBubbleController* GetCaptionBubbleControllerForBrowser(
+      Browser* browser);
+
  private:
   friend class CaptionControllerFactory;
 

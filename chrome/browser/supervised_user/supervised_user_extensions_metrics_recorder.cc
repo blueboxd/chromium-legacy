@@ -70,6 +70,9 @@ const char SupervisedUserExtensionsMetricsRecorder::kEnabledActionName[] =
     "SupervisedUsers_Extensions_Enabled";
 const char SupervisedUserExtensionsMetricsRecorder::kDisabledActionName[] =
     "SupervisedUsers_Extensions_Disabled";
+const char
+    SupervisedUserExtensionsMetricsRecorder::kFailedToEnableActionName[] =
+        "SupervisedUsers_Extensions_FailedToEnable";
 
 SupervisedUserExtensionsMetricsRecorder::
     SupervisedUserExtensionsMetricsRecorder()
@@ -171,6 +174,9 @@ void SupervisedUserExtensionsMetricsRecorder::RecordEnablementUmaMetrics(
       break;
     case EnablementState::kDisabled:
       base::RecordAction(base::UserMetricsAction(kDisabledActionName));
+      break;
+    case EnablementState::kFailedToEnable:
+      base::RecordAction(base::UserMetricsAction(kFailedToEnableActionName));
       break;
   }
 }

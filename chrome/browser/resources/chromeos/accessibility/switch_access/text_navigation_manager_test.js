@@ -160,7 +160,7 @@ function generateWebsiteWithTextArea(id, contents, textIndex, cols, wrap) {
  * Check that the node in the JS file matches the node in the test.
  * The nodes can be assumed to be the same if their roles match as there is only
  * one text input node on the generated webpage.
- * @param {!chrome.automation.AutomationNode} inputNode
+ * @param {!AutomationNode} inputNode
  */
 function checkNodeIsFocused(inputNode) {
   chrome.automation.getFocus((focusedNode) => {
@@ -178,7 +178,7 @@ function checkNodeIsFocused(inputNode) {
  * the text navigation and selection actions directly changes the text caret
  * to the correct index (with no intermediate movements).
  * @param {!SwitchAccessE2ETest} testHelper
- * @param {!chrome.automation.AutomationNode} inputNode
+ * @param {!AutomationNode} inputNode
  * @param {number} initialTextIndex
  * @param {number} targetTextStartIndex
  * @param {number} targetTextEndIndex

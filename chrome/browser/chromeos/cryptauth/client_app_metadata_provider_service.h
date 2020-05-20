@@ -18,6 +18,7 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefRegistrySimple;
 class PrefService;
 
 namespace device {
@@ -41,6 +42,8 @@ class ClientAppMetadataProviderService
     : public device_sync::ClientAppMetadataProvider,
       public KeyedService {
  public:
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   ClientAppMetadataProviderService(
       PrefService* pref_service,
       NetworkStateHandler* network_state_handler,

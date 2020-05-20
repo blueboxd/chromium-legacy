@@ -5,13 +5,11 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
 
 #include "base/no_destructor.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/local_search_service/index.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/grit/generated_resources.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -58,13 +56,10 @@ class SearchTagRegistryTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        chromeos::features::kNewOsSettingsSearch);
     index_ = local_search_service_.GetIndex(
         local_search_service::IndexId::kCrosSettings);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
   local_search_service::LocalSearchService local_search_service_;
   SearchTagRegistry search_tag_registry_;
   local_search_service::Index* index_;

@@ -1902,7 +1902,7 @@
   {
     "name": "enable-play-store-search",
     "owners": [ "jennyz", "kaznacheev" ],
-    "expiry_milestone": 83
+    "expiry_milestone": 85
   },
   {
     "name" : "enable-pointer-lock-options",
@@ -3326,6 +3326,11 @@
     "name": "omnibox-suggestions-recycler-view",
     "owners": [ "fgorski", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 89
+  },
+  {
+    "name": "omnibox-suggestions-wrap-around",
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 90
   },
   {
     "name": "omnibox-tab-switch-suggestions",

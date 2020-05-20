@@ -35,7 +35,7 @@ class SAChildNode {
 
   /**
    * Returns the underlying automation node, if one exists.
-   * @return {chrome.automation.AutomationNode}
+   * @return {AutomationNode}
    * @abstract
    */
   get automationNode() {}
@@ -114,7 +114,7 @@ class SAChildNode {
   }
 
   /**
-   * @param {?chrome.automation.AutomationNode|!SAChildNode|!SARootNode} node
+   * @param {?AutomationNode|!SAChildNode|!SARootNode} node
    * @return {boolean}
    * @abstract
    */
@@ -212,7 +212,7 @@ class SARootNode {
 
   // ================= Getters and setters =================
 
-  /** @return {chrome.automation.AutomationNode} */
+  /** @return {AutomationNode} */
   get automationNode() {}
 
   /** @param {!Array<!SAChildNode>} newVal */
@@ -298,7 +298,7 @@ class SARootNode {
   }
 
   /**
-   * @param {?chrome.automation.AutomationNode|!SARootNode|!SAChildNode} node
+   * @param {?AutomationNode|!SARootNode|!SAChildNode} node
    * @return {boolean}
    */
   isEquivalentTo(node) {

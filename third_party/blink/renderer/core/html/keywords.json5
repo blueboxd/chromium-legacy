@@ -90,5 +90,10 @@
     "col",
     "rowgroup",
     "colgroup",
+
+    // This mode corresponds to virtualkeyboardpolicy
+    // https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/master/VirtualKeyboardPolicy/explainer.md
+    "auto",
+    "manual",
   ],
 }

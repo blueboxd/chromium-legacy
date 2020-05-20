@@ -329,12 +329,15 @@ void PaintDocumentMarkers(GraphicsContext& context,
                     styleable_marker.BackgroundColor());
           break;
         }
-        const SimpleFontData* font_data = style.GetFont().PrimaryFont();
-        DocumentMarkerPainter::PaintStyleableMarkerUnderline(
-            context, box_origin, styleable_marker, style,
-            FloatRect(MarkerRectForForeground(
-                text_fragment, text, paint_start_offset, paint_end_offset)),
-            LayoutUnit(font_data->GetFontMetrics().Height()));
+        if (DocumentMarkerPainter::ShouldPaintMarkerUnderline(
+                styleable_marker)) {
+          const SimpleFontData* font_data = style.GetFont().PrimaryFont();
+          DocumentMarkerPainter::PaintStyleableMarkerUnderline(
+              context, box_origin, styleable_marker, style,
+              FloatRect(MarkerRectForForeground(
+                  text_fragment, text, paint_start_offset, paint_end_offset)),
+              LayoutUnit(font_data->GetFontMetrics().Height()));
+        }
       } break;
 
       default:

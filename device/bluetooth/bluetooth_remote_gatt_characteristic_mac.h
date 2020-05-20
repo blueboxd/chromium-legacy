@@ -51,7 +51,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
       const std::vector<uint8_t>& value,
       base::OnceClosure callback,
       ErrorCallback error_callback) override;
-  bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
  protected:
   void SubscribeToNotifications(BluetoothRemoteGattDescriptor* ccc_descriptor,
@@ -87,8 +86,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicMac
   bool IsReadable() const;
   // Returns true if the characteristic is writable.
   bool IsWritable() const;
-  // Returns true if the characteristic is writable without response.
-  bool IsWritableWithoutResponse() const;
   // Returns true if the characteristic supports notifications or indications.
   bool SupportsNotificationsOrIndications() const;
   // Returns the write type (with or without responses).

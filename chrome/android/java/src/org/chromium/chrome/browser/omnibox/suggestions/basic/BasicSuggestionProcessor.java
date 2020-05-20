@@ -12,6 +12,7 @@ import androidx.annotation.DrawableRes;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -33,6 +34,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final Supplier<LargeIconBridge> mIconBridgeSupplier;
     private final int mDesiredFaviconWidthPx;
+    private boolean mEnableSuggestionsWrapAround;
 
     /**
      * @param context An Android context.
@@ -142,13 +144,21 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
+    public void onNativeInitialized() {
+        super.onNativeInitialized();
+        mEnableSuggestionsWrapAround =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SUGGESTIONS_WRAP_AROUND);
+    }
+
+    @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
         super.populateModel(suggestion, model, position);
         final @OmniboxSuggestionType int suggestionType = suggestion.getType();
+        final boolean isSearchSuggestion = suggestion.isSearchSuggestion();
         SuggestionSpannable textLine2 = null;
         boolean urlHighlighted = false;
 
-        if (!suggestion.isSearchSuggestion()) {
+        if (!isSearchSuggestion) {
             if (!suggestion.getUrl().isEmpty()) {
                 SuggestionSpannable str = new SuggestionSpannable(suggestion.getDisplayText());
                 urlHighlighted = applyHighlightToMatchRegions(
@@ -160,15 +170,17 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
         }
 
         final SuggestionSpannable textLine1 =
-                getSuggestedQuery(suggestion, !suggestion.isSearchSuggestion(), !urlHighlighted);
+                getSuggestedQuery(suggestion, !isSearchSuggestion, !urlHighlighted);
 
         updateSuggestionIcon(suggestion, model);
-        model.set(SuggestionViewProperties.IS_SEARCH_SUGGESTION, suggestion.isSearchSuggestion());
+        model.set(SuggestionViewProperties.IS_SEARCH_SUGGESTION, isSearchSuggestion);
         model.set(SuggestionViewProperties.TEXT_LINE_1_TEXT, textLine1);
         model.set(SuggestionViewProperties.TEXT_LINE_2_TEXT, textLine2);
         fetchSuggestionFavicon(model, suggestion.getUrl(), mIconBridgeSupplier.get(), () -> {
             model.set(SuggestionViewProperties.SUGGESTION_ICON_TYPE, SuggestionIcon.FAVICON);
         });
+        model.set(SuggestionViewProperties.ALLOW_WRAP_AROUND,
+                isSearchSuggestion && mEnableSuggestionsWrapAround);
 
         if (!mUrlBarEditingTextProvider.getTextWithoutAutocomplete().trim().equalsIgnoreCase(
                     suggestion.getDisplayText())) {

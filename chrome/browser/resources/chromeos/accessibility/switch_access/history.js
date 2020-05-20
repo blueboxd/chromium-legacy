@@ -32,7 +32,7 @@ class FocusHistory {
    * Creates the restore data to get from the desktop node to the specified
    * automation node.
    * Erases the current history and replaces with the new data.
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {!AutomationNode} node
    */
   buildFromAutomationNode(node) {
     // Create a list of ancestors.

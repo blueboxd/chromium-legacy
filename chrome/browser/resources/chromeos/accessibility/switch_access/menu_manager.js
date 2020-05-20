@@ -18,7 +18,7 @@ class MenuManager {
 
     /**
      * The root node of the menu panel.
-     * @private {chrome.automation.AutomationNode}
+     * @private {AutomationNode}
      */
     this.menuPanelNode_;
 

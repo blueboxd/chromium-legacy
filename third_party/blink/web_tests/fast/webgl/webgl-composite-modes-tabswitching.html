@@ -43,7 +43,6 @@ void main() {
 }
 </script>
 <script src="resources/webgl-test-utils.js"></script>
-<script src="../../resources/run-after-layout-and-paint.js"></script>
 <script>
 
 var ctxs = []
@@ -53,8 +52,11 @@ document.getElementById("description").style.top = "-5000px";
 
 for (var i=0; i<8; ++i) {
     var attrs = {
+        // The bottom row has 'alpha': true.
         'alpha': (i >= 4),
+        // The 3rd and 4th column has 'preserveDrawingBuffer': true.
         'preserveDrawingBuffer': (i % 4) >= 2,
+        // The 2nd and 4th column has 'antialias': true.
         'antialias': (i % 2) == 1
     };
     var can = document.createElement('canvas');
@@ -115,26 +117,38 @@ function repaintOnVisiblePage() {
     // Check if WebGL draws this frame correctly, because WebGL implementation
     // clears temporary cache when page is hidden.
     drawAll(60);
+
     if (window.testRunner) {
         testRunner.notifyDone();
     }
 }
 
 function repaintOnHiddenPage() {
-    setMainWindowHidden(true).then(() => {
-        // Although page is hidden, WebGL must draw this frame.
-        drawAll(30);
-        setMainWindowHidden(false).then(() => {
-            runAfterLayoutAndPaint(repaintOnVisiblePage);
-        });
+    // Although page is hidden, WebGL must draw this frame.
+    drawAll(30);
+
+    setMainWindowHidden(false).then(() => {
+        // If we requestAnimationFrame() here and draw, the triangles drawn
+        // while hidden end up being preserved even when preserveDrawingBuffer
+        // is false. That seems like it may be a bug? If we request a 2nd frame
+        // before we draw, then the triangles drawn while hidden are lost.
+        requestAnimationFrame(() => requestAnimationFrame(repaintOnVisiblePage));
     });
 }
 
-function runRepaintTest() {
+function firstPaintOnVisiblePage() {
     drawAll(0);
+
+    // We can't requestAnimationFrame() here because the window will be hidden
+    // so it won't happen. Instead, we draw without that request.
+    setMainWindowHidden(true).then(repaintOnHiddenPage);
+}
+
+function runRepaintTest() {
     if (window.testRunner) {
         testRunner.waitUntilDone();
     }
-    runAfterLayoutAndPaint(repaintOnHiddenPage);
+
+  requestAnimationFrame(firstPaintOnVisiblePage);
 }
 </script>

@@ -26,8 +26,6 @@ constexpr base::StringPiece kDesktopMediaUrnPrefix =
     "urn:x-org.chromium.media:source:desktop:";
 constexpr base::StringPiece kUnknownDesktopMediaUrn =
     "urn:x-org.chromium.media:source:desktop";
-constexpr char kTabRemotingUrnFormat[] =
-    "urn:x-org.chromium.media:source:tab_content_remoting:%d";
 
 // List of non-http(s) schemes that are allowed in a Presentation URL.
 constexpr std::array<const char* const, 5> kAllowedSchemes{
@@ -75,11 +73,6 @@ MediaSource MediaSource::ForTab(int tab_id) {
 }
 
 // static
-MediaSource MediaSource::ForTabContentRemoting(int tab_id) {
-  return MediaSource(base::StringPrintf(kTabRemotingUrnFormat, tab_id));
-}
-
-// static
 MediaSource MediaSource::ForDesktop(const std::string& desktop_media_id) {
   return MediaSource(kDesktopMediaUrnPrefix.as_string() + desktop_media_id);
 }
@@ -118,8 +111,6 @@ bool MediaSource::IsCastPresentationUrl() const {
 int MediaSource::TabId() const {
   int tab_id;
   if (sscanf(id_.c_str(), kTabMediaUrnFormat, &tab_id) == 1)
-    return tab_id;
-  else if (sscanf(id_.c_str(), kTabRemotingUrnFormat, &tab_id) == 1)
     return tab_id;
   else
     return -1;

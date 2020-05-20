@@ -384,8 +384,7 @@ TEST(CreateChild, IsPendingNavigation_NoErrors) {
 
   Timeout timeout(base::TimeDelta::FromMilliseconds(10));
   bool result;
-  ASSERT_NO_FATAL_FAILURE(
-      child_view->IsPendingNavigation("1234", &timeout, &result));
+  ASSERT_NO_FATAL_FAILURE(child_view->IsPendingNavigation(&timeout, &result));
 }
 
 TEST(ManageCookies, AddCookie_SameSiteTrue) {

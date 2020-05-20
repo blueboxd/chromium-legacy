@@ -14,6 +14,7 @@
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/performance_manager_main_thread_mechanism.h"
 #include "components/performance_manager/public/performance_manager_main_thread_observer.h"
+#include "components/performance_manager/public/performance_manager_owned.h"
 #include "components/performance_manager/service_worker_context_adapter.h"
 #include "components/performance_manager/worker_watcher.h"
 #include "content/public/browser/browser_context.h"
@@ -45,6 +46,10 @@ PerformanceManagerRegistryImpl::~PerformanceManagerRegistryImpl() {
   DCHECK(!g_instance);
   DCHECK(web_contents_.empty());
   DCHECK(render_process_hosts_.empty());
+  DCHECK(pm_owned_.empty());
+  DCHECK(pm_registered_.empty());
+  // TODO(crbug.com/1084611): |observers_| and |mechanisms_| should also be
+  // empty by now!
 }
 
 // static
@@ -80,6 +85,36 @@ bool PerformanceManagerRegistryImpl::HasMechanism(
     PerformanceManagerMainThreadMechanism* mechanism) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return mechanisms_.HasObserver(mechanism);
+}
+
+void PerformanceManagerRegistryImpl::PassToPM(
+    std::unique_ptr<PerformanceManagerOwned> pm_owned) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pm_owned_.PassObject(std::move(pm_owned));
+}
+
+std::unique_ptr<PerformanceManagerOwned>
+PerformanceManagerRegistryImpl::TakeFromPM(PerformanceManagerOwned* pm_owned) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pm_owned_.TakeObject(pm_owned);
+}
+
+void PerformanceManagerRegistryImpl::RegisterObject(
+    PerformanceManagerRegistered* pm_object) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pm_registered_.RegisterObject(pm_object);
+}
+
+void PerformanceManagerRegistryImpl::UnregisterObject(
+    PerformanceManagerRegistered* pm_object) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  pm_registered_.UnregisterObject(pm_object);
+}
+
+PerformanceManagerRegistered*
+PerformanceManagerRegistryImpl::GetRegisteredObject(uintptr_t type_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return pm_registered_.GetRegisteredObject(type_id);
 }
 
 void PerformanceManagerRegistryImpl::CreatePageNodeForWebContents(
@@ -177,11 +212,16 @@ void PerformanceManagerRegistryImpl::NotifyBrowserContextRemoved(
 void PerformanceManagerRegistryImpl::TearDown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  DCHECK_EQ(g_instance, this);
-  g_instance = nullptr;
-
   // The registry should be torn down before the PerformanceManager.
   DCHECK(PerformanceManager::IsAvailable());
+
+  // Notify any observers of the tear down. This lets them unregister things,
+  // etc.
+  for (auto& observer : observers_)
+    observer.OnBeforePerformanceManagerDestroyed();
+
+  DCHECK_EQ(g_instance, this);
+  g_instance = nullptr;
 
   // Destroy WorkerNodes before ProcessNodes, because ProcessNode checks that it
   // has no associated WorkerNode when torn down.
@@ -214,6 +254,15 @@ void PerformanceManagerRegistryImpl::TearDown() {
     render_process_host->RemoveUserData(RenderProcessUserData::UserDataKey());
   }
   render_process_hosts_.clear();
+
+  // Tear down PM owned objects. This lets them clear up object registrations,
+  // observers, mechanisms, etc.
+  pm_owned_.ReleaseObjects();
+
+  DCHECK(pm_owned_.empty());
+  DCHECK(pm_registered_.empty());
+  // TODO(crbug.com/1084611): |observers_| and |mechanisms_| should also be
+  // empty by now!
 }
 
 void PerformanceManagerRegistryImpl::OnPerformanceManagerTabHelperDestroying(

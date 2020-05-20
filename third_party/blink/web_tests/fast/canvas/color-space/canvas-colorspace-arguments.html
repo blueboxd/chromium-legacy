@@ -10,9 +10,6 @@ var testScenarios = [
     ["Test CanvasColorSpace value srgb",
         {colorSpace: "srgb"},
         {colorSpace: "srgb", pixelFormat: "uint8"}],
-    ["Test CanvasColorSpace value linear-rgb, no pixel format, falls back to srgb/uint8",
-        {colorSpace: "linear-rgb"},
-        {colorSpace: "srgb", pixelFormat: "uint8"}],
     ["Test CanvasColorSpace value rec2020, no pixel format, falls back to srgb/uint8",
         {colorSpace: "rec2020"},
         {colorSpace: "srgb", pixelFormat: "uint8"}],
@@ -33,13 +30,6 @@ var testScenarios = [
     ["Test supported color settings srgb/float16",
         {colorSpace: "srgb", pixelFormat: "float16"},
         {colorSpace: "srgb", pixelFormat: "float16"}],
-
-    ["Test not-supported color settings linear-rgb/uint8, falls back to srgb/uint8",
-        {colorSpace: "linear-rgb", pixelFormat: "uint8"},
-        {colorSpace: "srgb", pixelFormat: "uint8"}],
-    ["Test supported color settings linear-rgb/float16",
-        {colorSpace: "linear-rgb", pixelFormat: "float16"},
-        {colorSpace: "linear-rgb", pixelFormat: "float16"}],
 
     ["Test not-supported color settings rec2020/uint8, falls back to srgb/uint8",
         {colorSpace: "rec2020", pixelFormat: "uint8"},

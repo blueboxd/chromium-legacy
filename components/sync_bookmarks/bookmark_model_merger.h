@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_MERGER_H_
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_MERGER_H_
 
+#include <list>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -55,7 +56,7 @@ class BookmarkModelMerger {
   class RemoteTreeNode final {
    private:
     using UpdatesPerParentId =
-        std::unordered_map<std::string, syncer::UpdateResponseDataList>;
+        std::unordered_map<std::string, std::list<syncer::UpdateResponseData>>;
 
    public:
     // Constructs a tree given |update| as root and recursively all descendants

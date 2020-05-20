@@ -55,6 +55,7 @@ class APP_MENU_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
   void OnMenuClosed(views::MenuItemView* menu) override;
 
   ui::SimpleMenuModel* model() { return model_.get(); }
+  views::MenuItemView* root_for_testing() { return root_; }
 
  protected:
   const std::string& app_id() const { return app_id_; }

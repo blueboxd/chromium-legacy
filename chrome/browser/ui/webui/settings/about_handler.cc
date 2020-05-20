@@ -101,15 +101,12 @@ struct RegulatoryLabel {
 // Returns message that informs user that for update it's better to
 // connect to a network of one of the allowed types.
 base::string16 GetAllowedConnectionTypesMessage() {
-  const chromeos::NetworkState* network = chromeos::NetworkHandler::Get()
-                                              ->network_state_handler()
-                                              ->DefaultNetwork();
-  const bool mobile_data =
-      network && network->IsConnectedState() && network->IsUsingMobileData();
-
   if (help_utils_chromeos::IsUpdateOverCellularAllowed(
-          true /* interactive */)) {
-    return mobile_data
+          /*interactive=*/true)) {
+    const bool metered = chromeos::NetworkHandler::Get()
+                             ->network_state_handler()
+                             ->default_network_is_metered();
+    return metered
                ? l10n_util::GetStringUTF16(
                      IDS_UPGRADE_NETWORK_LIST_CELLULAR_ALLOWED_NOT_AUTOMATIC)
                : l10n_util::GetStringUTF16(

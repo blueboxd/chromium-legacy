@@ -295,13 +295,6 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   };
 
   WEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation = nullptr;
-  std::unique_ptr<WEBAUTHN_CREDENTIAL_ATTESTATION,
-                  std::function<void(PWEBAUTHN_CREDENTIAL_ATTESTATION)>>
-      credential_attestation_deleter(
-          credential_attestation,
-          [webauthn_api](PWEBAUTHN_CREDENTIAL_ATTESTATION ptr) {
-            webauthn_api->FreeCredentialAttestation(ptr);
-          });
 
   FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorMakeCredential("
                   << "rp=" << rp_info << ", user=" << user_info
@@ -312,6 +305,14 @@ AuthenticatorMakeCredentialBlocking(WinWebAuthnApi* webauthn_api,
   HRESULT hresult = webauthn_api->AuthenticatorMakeCredential(
       h_wnd, &rp_info, &user_info, &cose_credential_parameters, &client_data,
       &options, &credential_attestation);
+  std::unique_ptr<WEBAUTHN_CREDENTIAL_ATTESTATION,
+                  std::function<void(PWEBAUTHN_CREDENTIAL_ATTESTATION)>>
+      credential_attestation_deleter(
+          credential_attestation,
+          [webauthn_api](PWEBAUTHN_CREDENTIAL_ATTESTATION ptr) {
+            webauthn_api->FreeCredentialAttestation(ptr);
+          });
+
   if (hresult != S_OK) {
     FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorMakeCredential()="
                     << webauthn_api->GetErrorName(hresult);
@@ -403,16 +404,17 @@ AuthenticatorGetAssertionBlocking(WinWebAuthnApi* webauthn_api,
   };
 
   WEBAUTHN_ASSERTION* assertion = nullptr;
-  std::unique_ptr<WEBAUTHN_ASSERTION, std::function<void(PWEBAUTHN_ASSERTION)>>
-      assertion_deleter(assertion, [webauthn_api](PWEBAUTHN_ASSERTION ptr) {
-        webauthn_api->FreeAssertion(ptr);
-      });
 
   FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorGetAssertion("
                   << "rp_id=\"" << rp_id16 << "\", client_data=" << client_data
                   << ", options=" << options << ")";
   HRESULT hresult = webauthn_api->AuthenticatorGetAssertion(
       h_wnd, base::as_wcstr(rp_id16), &client_data, &options, &assertion);
+  std::unique_ptr<WEBAUTHN_ASSERTION, std::function<void(PWEBAUTHN_ASSERTION)>>
+      assertion_deleter(assertion, [webauthn_api](PWEBAUTHN_ASSERTION ptr) {
+        webauthn_api->FreeAssertion(ptr);
+      });
+
   if (hresult != S_OK) {
     FIDO_LOG(DEBUG) << "WebAuthNAuthenticatorGetAssertion()="
                     << webauthn_api->GetErrorName(hresult);

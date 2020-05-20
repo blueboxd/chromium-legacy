@@ -621,6 +621,7 @@ class ListBoxSelectType final : public SelectType {
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
   void SaveLastSelection() override;
   HTMLOptionElement* SpatialNavigationFocusedOption() override;
+  HTMLOptionElement* ActiveSelectionEnd() const override;
   void ScrollToSelection() override;
   void ScrollToOption(HTMLOptionElement* option) override;
   void SelectAll() override;
@@ -951,15 +952,21 @@ void ListBoxSelectType::UpdateMultiSelectFocus() {
 HTMLOptionElement* ListBoxSelectType::SpatialNavigationFocusedOption() {
   if (!IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()))
     return nullptr;
-  if (HTMLOptionElement* option = select_->ActiveSelectionEnd())
+  if (HTMLOptionElement* option = ActiveSelectionEnd())
     return option;
   return FirstSelectableOption();
+}
+
+HTMLOptionElement* ListBoxSelectType::ActiveSelectionEnd() const {
+  if (select_->active_selection_end_)
+    return select_->active_selection_end_.Get();
+  return select_->LastSelectedOption();
 }
 
 void ListBoxSelectType::ScrollToSelection() {
   if (!select_->IsFinishedParsingChildren())
     return;
-  ScrollToOption(select_->ActiveSelectionEnd());
+  ScrollToOption(ActiveSelectionEnd());
   if (AXObjectCache* cache = select_->GetDocument().ExistingAXObjectCache())
     cache->ListboxActiveIndexChanged(select_);
 }
@@ -1243,6 +1250,11 @@ const ComputedStyle* SelectType::OptionStyle() const {
 void SelectType::MaximumOptionWidthMightBeChanged() const {}
 
 HTMLOptionElement* SelectType::SpatialNavigationFocusedOption() {
+  return nullptr;
+}
+
+HTMLOptionElement* SelectType::ActiveSelectionEnd() const {
+  NOTREACHED();
   return nullptr;
 }
 

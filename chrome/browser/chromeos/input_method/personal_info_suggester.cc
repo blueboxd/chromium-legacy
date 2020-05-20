@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -204,6 +205,13 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
 
 void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
                                            const size_t confirmed_length) {
+  auto* keyboard_client = ChromeKeyboardControllerClient::Get();
+  if (keyboard_client->is_keyboard_enabled()) {
+    // TODO(crbug/1042084): Show suggestions in virtual keyboard when the API is
+    // ready.
+    return;
+  }
+
   std::string error;
   bool show_tab = GetTabAcceptanceCount() < kMaxTabAcceptanceCount;
   suggestion_handler_->SetSuggestion(context_id_, text, confirmed_length,

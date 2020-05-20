@@ -7,6 +7,7 @@ const BROWSER_SETTINGS_PATH = '../';
 
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
+GEN('#include "chromeos/constants/chromeos_features.h"');
 GEN('#include "content/public/test/browser_test.h"');
 
 // Only run in release builds because we frequently see test timeouts in debug.
@@ -29,6 +30,11 @@ var OSSettingsUIBrowserTest = class extends PolymerTest {
   /** @override */
   get browsePreload() {
     return 'chrome://os-settings/';
+  }
+
+  /** @override */
+  get featureList() {
+    return {disabled: ['chromeos::features::kNewOsSettingsSearch']};
   }
 
   /** @override */

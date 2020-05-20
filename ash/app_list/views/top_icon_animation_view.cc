@@ -72,9 +72,6 @@ void TopIconAnimationView::RemoveObserver(TopIconAnimationObserver* observer) {
 }
 
 void TopIconAnimationView::TransformView() {
-  // This view will delete itself on animation completion.
-  set_owned_by_client();
-
   // Transform used for scaling down the icon and move it back inside to the
   // original folder icon. The transform's origin is this view's origin.
   gfx::Transform transform;
@@ -140,7 +137,9 @@ void TopIconAnimationView::OnImplicitAnimationsCompleted() {
   SetVisible(false);
   for (auto& observer : observers_)
     observer.OnTopIconAnimationsComplete(this);
-  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+  DCHECK(parent());
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, parent()->RemoveChildViewT(this));
 }
 
 bool TopIconAnimationView::RequiresNotificationWhenAnimatorDestroyed() const {

@@ -10,7 +10,7 @@ import android.os.Handler;
 import android.os.SystemClock;
 
 import androidx.annotation.IntDef;
-import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
@@ -46,11 +46,15 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
         int NUM_ENTRIES = 4;
     }
 
-    private static final int STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
-    private static final int STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS = 5000;
+    static final long STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS = 2000;
+    static final long STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS = 5000;
+
+    private static ConnectivityDetector sMockConnectivityDetector;
+    private static Supplier<Long> sMockElapsedTimeSupplier;
 
     private Context mContext;
     private StatusIndicatorCoordinator mStatusIndicator;
+    private Handler mHandler;
     private ConnectivityDetector mConnectivityDetector;
     private ObservableSupplier<Boolean> mIsUrlBarFocusedSupplier;
     private Supplier<Boolean> mCanAnimateBrowserControlsSupplier;
@@ -81,11 +85,11 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
             Supplier<Boolean> canAnimateNativeBrowserControls) {
         mContext = context;
         mStatusIndicator = statusIndicator;
+        mHandler = new Handler();
 
         // If we're offline at start-up, we should have a small enough last action time so that we
         // don't wait for the cool-down.
-        mLastActionTime =
-                SystemClock.elapsedRealtime() - STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS;
+        mLastActionTime = getElapsedTime() - STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS;
 
         mShowRunnable = () -> {
             RecordUserAction.record("OfflineIndicator.Shown");
@@ -97,8 +101,7 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
                     mContext.getResources(), R.color.offline_indicator_offline_color);
             final int textColor = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.default_text_color_light);
-            final Drawable statusIcon = VectorDrawableCompat.create(
-                    mContext.getResources(), R.drawable.ic_cloud_offline_24dp, mContext.getTheme());
+            final Drawable statusIcon = mContext.getDrawable(R.drawable.ic_cloud_offline_24dp);
             final int iconTint = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.default_icon_color_light);
             mStatusIndicator.show(mContext.getString(R.string.offline_indicator_v2_offline_text),
@@ -119,13 +122,11 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
                     mContext.getResources(), R.color.offline_indicator_back_online_color);
             final int textColor = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.default_text_color_inverse);
-            final Drawable statusIcon = VectorDrawableCompat.create(
-                    mContext.getResources(), R.drawable.ic_globe_24dp, mContext.getTheme());
+            final Drawable statusIcon = mContext.getDrawable(R.drawable.ic_globe_24dp);
             final int iconTint = ApiCompatibilityUtils.getColor(
                     mContext.getResources(), R.color.default_icon_color_inverse);
             Runnable hide = () -> {
-                final Handler handler = new Handler();
-                handler.postDelayed(() -> mStatusIndicator.hide(),
+                mHandler.postDelayed(() -> mStatusIndicator.hide(),
                         STATUS_INDICATOR_WAIT_BEFORE_HIDE_DURATION_MS);
             };
             mStatusIndicator.updateContent(
@@ -151,7 +152,12 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
                 updateStatusIndicator(offline);
             }
         };
-        mConnectivityDetector = new ConnectivityDetector(this);
+
+        if (sMockConnectivityDetector != null) {
+            mConnectivityDetector = sMockConnectivityDetector;
+        } else {
+            mConnectivityDetector = new ConnectivityDetector(this);
+        }
     }
 
     @Override
@@ -161,14 +167,12 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
             return;
         }
 
-        final Handler handler = new Handler();
-        handler.removeCallbacks(mUpdateStatusIndicatorDelayedRunnable);
-
+        mHandler.removeCallbacks(mUpdateStatusIndicatorDelayedRunnable);
         // TODO(crbug.com/1081427): This currently only protects the widget from going into a bad
         // state. We need a better way to handle flaky connections.
-        final long elapsedTimeSinceLastAction = SystemClock.elapsedRealtime() - mLastActionTime;
+        final long elapsedTimeSinceLastAction = getElapsedTime() - mLastActionTime;
         if (elapsedTimeSinceLastAction < STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS) {
-            handler.postDelayed(mUpdateStatusIndicatorDelayedRunnable,
+            mHandler.postDelayed(mUpdateStatusIndicatorDelayedRunnable,
                     STATUS_INDICATOR_COOLDOWN_BEFORE_NEXT_ACTION_MS - elapsedTimeSinceLastAction);
             return;
         }
@@ -220,11 +224,31 @@ public class OfflineIndicatorControllerV2 implements ConnectivityDetector.Observ
                 surfaceState, UmaEnum.NUM_ENTRIES);
     }
 
+    private long getElapsedTime() {
+        return sMockElapsedTimeSupplier != null ? sMockElapsedTimeSupplier.get()
+                                                : SystemClock.elapsedRealtime();
+    }
+
     private void setLastActionTime() {
-        mLastActionTime = SystemClock.elapsedRealtime();
+        mLastActionTime = getElapsedTime();
     }
 
     private boolean isConnectionStateOffline(@ConnectionState int connectionState) {
         return connectionState != ConnectionState.VALIDATED;
+    }
+
+    @VisibleForTesting
+    static void setMockConnectivityDetector(ConnectivityDetector connectivityDetector) {
+        sMockConnectivityDetector = connectivityDetector;
+    }
+
+    @VisibleForTesting
+    static void setMockElapsedTimeSupplier(Supplier<Long> supplier) {
+        sMockElapsedTimeSupplier = supplier;
+    }
+
+    @VisibleForTesting
+    void setHandlerForTesting(Handler handler) {
+        mHandler = handler;
     }
 }

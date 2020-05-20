@@ -29,6 +29,7 @@
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -458,13 +459,13 @@ void DemoSetupController::RegisterLocalStatePrefs(
 
 // static
 void DemoSetupController::ClearDemoRequisition(
-    policy::DeviceCloudPolicyManagerChromeOS* policy_manager) {
-  if (policy_manager->GetDeviceRequisition() == kDemoRequisition) {
-    policy_manager->SetDeviceRequisition(std::string());
+    policy::EnrollmentRequisitionManager* requisition_manager) {
+  if (requisition_manager->GetDeviceRequisition() == kDemoRequisition) {
+    requisition_manager->SetDeviceRequisition(std::string());
     // If device requisition is |kDemoRequisition|, it means the sub
     // organization was also set by the demo setup controller, so remove it as
     // well.
-    policy_manager->SetSubOrganization(std::string());
+    requisition_manager->SetSubOrganization(std::string());
   }
 }
 
@@ -632,13 +633,13 @@ void DemoSetupController::OnDemoResourcesCrOSComponentLoaded() {
 
   enroll_start_time_ = base::TimeTicks::Now();
 
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::EnrollmentRequisitionManager* requisition_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  DCHECK(policy_manager->GetDeviceRequisition().empty());
-  policy_manager->SetDeviceRequisition(kDemoRequisition);
-  policy_manager->SetSubOrganization(GetSubOrganizationEmail());
+          ->GetEnrollmentRequisitionManager();
+  DCHECK(requisition_manager->GetDeviceRequisition().empty());
+  requisition_manager->SetDeviceRequisition(kDemoRequisition);
+  requisition_manager->SetSubOrganization(GetSubOrganizationEmail());
   policy::EnrollmentConfig config;
   config.mode = policy::EnrollmentConfig::MODE_ATTESTATION;
   config.management_domain = policy::kDemoModeDomain;
@@ -853,11 +854,11 @@ void DemoSetupController::Reset() {
     device_local_account_policy_store_->RemoveObserver(this);
     device_local_account_policy_store_ = nullptr;
   }
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::EnrollmentRequisitionManager* requisition_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  ClearDemoRequisition(policy_manager);
+          ->GetEnrollmentRequisitionManager();
+  ClearDemoRequisition(requisition_manager);
 }
 
 void DemoSetupController::OnStoreLoaded(policy::CloudPolicyStore* store) {

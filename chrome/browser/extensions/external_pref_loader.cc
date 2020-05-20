@@ -22,22 +22,21 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/apps/user_type_filter.h"
-#include "chrome/browser/defaults.h"
-#include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/sync/driver/sync_service.h"
-#include "components/sync/driver/sync_service_observer.h"
-#include "components/sync/driver/sync_user_settings.h"
-#include "components/sync_preferences/pref_service_syncable.h"
-#include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/extension_file_task_runner.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/prefs/pref_service_syncable_util.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_service_observer.h"
+#include "components/sync/driver/sync_user_settings.h"
+#include "components/sync_preferences/pref_service_syncable.h"
+#include "components/sync_preferences/pref_service_syncable_observer.h"
 #endif
 
 using content::BrowserThread;
@@ -111,7 +110,8 @@ std::set<base::FilePath> GetPrefsCandidateFilesFromFolder(
 
 namespace extensions {
 
-// Helper class to wait for priority sync to be ready.
+#if defined(OS_CHROMEOS)
+// Helper class to wait for priority pref sync to be ready.
 class ExternalPrefLoader::PrioritySyncReadyWaiter
     : public sync_preferences::PrefServiceSyncableObserver,
       public syncer::SyncServiceObserver {
@@ -119,9 +119,11 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
   explicit PrioritySyncReadyWaiter(Profile* profile)
       : profile_(profile),
         syncable_pref_observer_(this),
-        sync_service_observer_(this) {}
+        sync_service_observer_(this) {
+    DCHECK(profile_);
+  }
 
-  ~PrioritySyncReadyWaiter() override {}
+  ~PrioritySyncReadyWaiter() override = default;
 
   void Start(base::OnceClosure done_closure) {
     if (IsPrioritySyncing()) {
@@ -130,13 +132,10 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
       return;
     }
     // Start observing sync changes.
-    DCHECK(profile_);
     syncer::SyncService* service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
     DCHECK(service);
-    if (service->CanSyncFeatureStart() &&
-        (service->GetUserSettings()->IsFirstSetupComplete() ||
-         browser_defaults::kSyncAutoStarts)) {
+    if (service->CanSyncFeatureStart()) {
       done_closure_ = std::move(done_closure);
       AddObservers();
     } else {
@@ -163,7 +162,6 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
 
  private:
   bool IsPrioritySyncing() {
-    DCHECK(profile_);
     sync_preferences::PrefServiceSyncable* prefs =
         PrefServiceSyncableFromProfile(profile_);
     DCHECK(prefs);
@@ -196,6 +194,7 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
 
   DISALLOW_COPY_AND_ASSIGN(PrioritySyncReadyWaiter);
 };
+#endif  // defined(OS_CHROMEOS)
 
 ExternalPrefLoader::ExternalPrefLoader(int base_path_id,
                                        int options,
@@ -219,6 +218,7 @@ const base::FilePath ExternalPrefLoader::GetBaseCrxFilePath() {
 
 void ExternalPrefLoader::StartLoading() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+#if defined(OS_CHROMEOS)
   if ((options_ & DELAY_LOAD_UNTIL_PRIORITY_SYNC) &&
       (profile_ && ProfileSyncServiceFactory::IsSyncAllowed(profile_))) {
     pending_waiter_list_.push_back(
@@ -226,12 +226,15 @@ void ExternalPrefLoader::StartLoading() {
     PrioritySyncReadyWaiter* waiter_ptr = pending_waiter_list_.back().get();
     waiter_ptr->Start(base::BindOnce(&ExternalPrefLoader::OnPrioritySyncReady,
                                      this, waiter_ptr));
-  } else {
-    GetExtensionFileTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
+    return;
   }
+#endif  // defined(OS_CHROMEOS)
+
+  GetExtensionFileTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
 }
 
+#if defined(OS_CHROMEOS)
 void ExternalPrefLoader::OnPrioritySyncReady(
     ExternalPrefLoader::PrioritySyncReadyWaiter* waiter) {
   // Delete |waiter| from |pending_waiter_list_|.
@@ -244,6 +247,7 @@ void ExternalPrefLoader::OnPrioritySyncReady(
   GetExtensionFileTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ExternalPrefLoader::LoadOnFileThread, this));
 }
+#endif  // defined(OS_CHROMEOS)
 
 // static.
 std::unique_ptr<base::DictionaryValue>

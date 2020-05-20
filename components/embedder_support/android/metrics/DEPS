@@ -5,4 +5,5 @@ include_rules = [
   "+content/public/browser",
   "+content/public/test",
   "+services/resource_coordinator/public/cpp/memory_instrumentation",
+  "+third_party/metrics_proto",
 ]

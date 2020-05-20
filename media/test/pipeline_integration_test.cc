@@ -1855,6 +1855,12 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_AV1_Mp4) {
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
+TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_MonoAV1_Mp4) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-mono-av1.mp4"));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+}
+
 TEST_F(PipelineIntegrationTest, BasicPlayback_Video_AV1_Audio_Opus_Mp4) {
   ASSERT_EQ(PIPELINE_OK, Start("bear-av1-opus.mp4"));
   Play();

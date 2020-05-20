@@ -4,13 +4,11 @@
 
 package org.chromium.chrome.browser.customtabs.dependency_injection;
 
-import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TwaIntentHandlingStrategy;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.TwaVerifier;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.controller.Verifier;
 import org.chromium.chrome.browser.customtabs.CustomTabNightModeStateController;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandlingStrategy;
 import org.chromium.chrome.browser.customtabs.content.DefaultCustomTabIntentHandlingStrategy;
@@ -93,11 +91,5 @@ public class BaseCustomTabActivityModule {
     @Reusable
     public WebApkPostShareTargetNavigator providePostShareTargetNavigator() {
         return new WebApkPostShareTargetNavigator();
-    }
-
-    @Provides
-    public BrowserServicesActivityTabController provideTabController(
-            CustomTabActivityTabController customTabActivityTabController) {
-        return customTabActivityTabController;
     }
 }

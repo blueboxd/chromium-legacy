@@ -775,37 +775,37 @@ void CorePageLoadMetricsObserver::RecordNavigationTimingHistograms(
   // Record only main frame navigation.
   DCHECK(navigation_handle->IsInMainFrame());
 
+  const base::TimeTicks navigation_start_time =
+      navigation_handle->NavigationStart();
+  const content::NavigationHandleTiming& timing =
+      navigation_handle->GetNavigationHandleTiming();
+
   // Record metrics for navigation only when all relevant milestones are
   // recorded and in the expected order. It is allowed that they have the same
   // value for some cases (e.g., internal redirection for HSTS).
-  if (navigation_handle->NavigationStart().is_null() ||
-      navigation_handle->FirstRequestStart().is_null() ||
-      navigation_handle->FirstResponseStart().is_null())
+  if (navigation_start_time.is_null() ||
+      timing.first_request_start_time.is_null() ||
+      timing.first_response_start_time.is_null())
     return;
   // TODO(https://crbug.com/1076710): Change these early-returns to DCHECKs
   // after the issue 1076710 is fixed.
-  if (navigation_handle->NavigationStart() >
-          navigation_handle->FirstRequestStart() ||
-      navigation_handle->FirstRequestStart() >
-          navigation_handle->FirstResponseStart()) {
+  if (navigation_start_time > timing.first_request_start_time ||
+      timing.first_request_start_time > timing.first_response_start_time) {
     return;
   }
 
   // Record the elapsed time from the navigation start milestone.
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramNavigationTimingNavigationStartToFirstRequestStart,
-      navigation_handle->FirstRequestStart() -
-          navigation_handle->NavigationStart());
+      timing.first_request_start_time - navigation_start_time);
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramNavigationTimingNavigationStartToFirstResponseStart,
-      navigation_handle->FirstResponseStart() -
-          navigation_handle->NavigationStart());
+      timing.first_response_start_time - navigation_start_time);
 
   // Record the intervals between milestones.
   PAGE_LOAD_HISTOGRAM(
       internal::kHistogramNavigationTimingFirstRequestStartToFirstResponseStart,
-      navigation_handle->FirstResponseStart() -
-          navigation_handle->FirstRequestStart());
+      timing.first_response_start_time - timing.first_request_start_time);
 }
 
 // This method records values for metrics that were not recorded during any

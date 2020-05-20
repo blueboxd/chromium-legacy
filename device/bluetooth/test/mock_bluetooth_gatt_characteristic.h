@@ -105,7 +105,6 @@ class MockBluetoothGattCharacteristic
                     base::OnceClosure&,
                     ErrorCallback&));
 #endif
-  MOCK_METHOD1(WriteWithoutResponse, bool(base::span<const uint8_t>));
 
   void AddMockDescriptor(
       std::unique_ptr<MockBluetoothGattDescriptor> mock_descriptor);

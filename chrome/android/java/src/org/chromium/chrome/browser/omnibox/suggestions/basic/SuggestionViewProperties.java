@@ -54,8 +54,12 @@ public class SuggestionViewProperties {
     public static final WritableObjectPropertyKey<SuggestionSpannable> TEXT_LINE_2_TEXT =
             new WritableObjectPropertyKey<>();
 
-    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {
-            IS_SEARCH_SUGGESTION, SUGGESTION_ICON_TYPE, TEXT_LINE_1_TEXT, TEXT_LINE_2_TEXT};
+    /** Whether suggestions can wrap-around long search query to second line. */
+    public static final WritableBooleanPropertyKey ALLOW_WRAP_AROUND =
+            new WritableBooleanPropertyKey();
+
+    public static final PropertyKey[] ALL_UNIQUE_KEYS = new PropertyKey[] {IS_SEARCH_SUGGESTION,
+            SUGGESTION_ICON_TYPE, TEXT_LINE_1_TEXT, TEXT_LINE_2_TEXT, ALLOW_WRAP_AROUND};
 
     public static final PropertyKey[] ALL_KEYS =
             PropertyModel.concatKeys(ALL_UNIQUE_KEYS, BaseSuggestionViewProperties.ALL_KEYS);

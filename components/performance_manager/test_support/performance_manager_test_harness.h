@@ -43,6 +43,10 @@ class PerformanceManagerTestHarness
   // via WebContentsTester.
   std::unique_ptr<content::WebContents> CreateTestWebContents();
 
+  // Allows a test to cause the PM to be torn down early, so it can explicitly
+  // test TearDown logic. This may only be called once.
+  void TearDownNow();
+
  private:
   std::unique_ptr<PerformanceManagerTestHarnessHelper> helper_;
 };

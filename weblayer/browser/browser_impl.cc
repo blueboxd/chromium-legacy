@@ -158,7 +158,8 @@ ScopedJavaLocalRef<jbyteArray> BrowserImpl::GetBrowserPersisterCryptoKey(
 
 ScopedJavaLocalRef<jbyteArray> BrowserImpl::GetMinimalPersistenceState(
     JNIEnv* env) {
-  return base::android::ToJavaByteArray(env, GetMinimalPersistenceState());
+  auto state = GetMinimalPersistenceState();
+  return base::android::ToJavaByteArray(env, &(state.front()), state.size());
 }
 
 void BrowserImpl::RestoreStateIfNecessary(

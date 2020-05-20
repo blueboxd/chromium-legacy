@@ -60,7 +60,7 @@ PlaceholderImageSource::PlaceholderImageSource(const gfx::Size& canvas_size,
 void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(color_);
   const int corner_radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
       views::EMPHASIS_MEDIUM);
@@ -98,7 +98,7 @@ EncircledImageSource::EncircledImageSource(int radius,
 void EncircledImageSource::Draw(gfx::Canvas* canvas) {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(color_);
   canvas->DrawCircle(gfx::Point(radius_, radius_), radius_, flags);
   const int x = radius_ - image_.width() / 2;

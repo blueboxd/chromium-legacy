@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
@@ -172,6 +173,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     manager_ = std::make_unique<TestingDeviceCloudPolicyManagerChromeOS>(
         base::WrapUnique(store_), std::move(external_data_manager),
         base::ThreadTaskRunnerHandle::Get(), &state_keys_broker_);
+    requisition_manager_ = std::make_unique<EnrollmentRequisitionManager>();
 
     RegisterLocalState(local_state_.registry());
     manager_->Init(&schema_registry_);
@@ -241,10 +243,11 @@ class DeviceCloudPolicyManagerChromeOSTest
     std::unique_ptr<chromeos::attestation::AttestationFlow> unique_flow(
         CreateAttestationFlow());
     manager_->Initialize(&local_state_);
+    requisition_manager_->Initialize(&local_state_);
     initializer_ = std::make_unique<DeviceCloudPolicyInitializer>(
         &local_state_, &device_management_service_,
         base::ThreadTaskRunnerHandle::Get(), install_attributes_.get(),
-        &state_keys_broker_, store_, manager_.get(),
+        &state_keys_broker_, store_, manager_.get(), requisition_manager_.get(),
         cryptohome::AsyncMethodCaller::GetInstance(), std::move(unique_flow),
         &fake_statistics_provider_);
     initializer_->SetSigningServiceForTesting(
@@ -311,6 +314,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   SchemaRegistry schema_registry_;
   MockCloudExternalDataManager* external_data_manager_;
   std::unique_ptr<TestingDeviceCloudPolicyManagerChromeOS> manager_;
+  std::unique_ptr<EnrollmentRequisitionManager> requisition_manager_;
   std::unique_ptr<DeviceCloudPolicyInitializer> initializer_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 

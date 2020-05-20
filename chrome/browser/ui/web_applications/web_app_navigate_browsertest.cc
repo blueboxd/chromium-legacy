@@ -133,8 +133,7 @@ IN_PROC_BROWSER_TEST_P(WebAppNavigateBrowserTest, NewPopup) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppNavigateBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

@@ -257,7 +257,7 @@ const base::Feature kOobeScreensPriority{"OobeScreensPriority",
 // Controls whether to enable OS Settings fuzzy search, and disable search using
 // exact string matching.
 const base::Feature kNewOsSettingsSearch{"NewOsSettingsSearch",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the Parental Controls section of settings.
 const base::Feature kParentalControlsSettings{

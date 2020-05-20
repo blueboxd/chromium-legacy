@@ -457,7 +457,7 @@ BrowserAccessibility* AccessibilityWinBrowserTest::FindNode(
 BrowserAccessibilityManager* AccessibilityWinBrowserTest::GetManager() {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  return web_contents->GetRootBrowserAccessibilityManager();
+  return web_contents->GetOrCreateRootBrowserAccessibilityManager();
 }
 
 // Retrieve the accessibility node in the subtree that matches the accessibility
@@ -3781,8 +3781,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
   // At this point the root of the accessibility tree shouldn't have an HWND
   // because we never gave a parent window to the RWHVA.
   BrowserAccessibilityManagerWin* manager =
-      static_cast<BrowserAccessibilityManagerWin*>(
-          web_contents->GetRootBrowserAccessibilityManager());
+      static_cast<BrowserAccessibilityManagerWin*>(GetManager());
   ASSERT_EQ(nullptr, manager->GetParentHWND());
 
   // Now add the RWHVA's window to the root window and ensure that we have
@@ -4511,6 +4510,56 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
   EXPECT_EQ(ui::kAXModeComplete,
             content::BrowserAccessibilityStateImpl::GetInstance()
                 ->GetAccessibilityMode());
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinUIABrowserTest,
+                       TabHeuristicForWindowsNarrator) {
+  // Windows Narrator uses certain heuristics to determine where in the UIA
+  // tree a "browser tab" begins and ends, in order to contain the search range
+  // for commands such as "move to next/previous text input field."
+  // This test is used to validate such heuristics.
+  // Specifically: The boundary of a browser tab is the element nearest the
+  // root with a ControlType of Document and an implementation of TextPattern.
+  // In this test, we validate that such an element exists.
+
+  // Load an empty HTML page.
+  LoadInitialAccessibilityTreeFromHtml(
+      R"HTML(<!DOCTYPE html>
+        <html>
+        </html>)HTML");
+
+  // The element exposed by the legacy window is a fragment root whose first
+  // child represents the document root (our tab boundary). First, get the
+  // fragment root using the legacy window's HWND.
+  RenderWidgetHostViewAura* render_widget_host_view_aura =
+      static_cast<RenderWidgetHostViewAura*>(
+          shell()->web_contents()->GetRenderWidgetHostView());
+  HWND hwnd = render_widget_host_view_aura->AccessibilityGetAcceleratedWidget();
+  ASSERT_NE(gfx::kNullAcceleratedWidget, hwnd);
+  Microsoft::WRL::ComPtr<IUIAutomation> uia;
+  ASSERT_HRESULT_SUCCEEDED(CoCreateInstance(CLSID_CUIAutomation, nullptr,
+                                            CLSCTX_INPROC_SERVER,
+                                            IID_IUIAutomation, &uia));
+  Microsoft::WRL::ComPtr<IUIAutomationElement> fragment_root;
+  ASSERT_HRESULT_SUCCEEDED(uia->ElementFromHandle(hwnd, &fragment_root));
+  ASSERT_NE(nullptr, fragment_root.Get());
+
+  // Now get the fragment root's first (only) child.
+  Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker;
+  uia->get_RawViewWalker(&tree_walker);
+  Microsoft::WRL::ComPtr<IUIAutomationElement> first_child;
+  tree_walker->GetFirstChildElement(fragment_root.Get(), &first_child);
+  ASSERT_NE(nullptr, first_child.Get());
+
+  // Validate the control type and presence of TextPattern.
+  CONTROLTYPEID control_type;
+  ASSERT_HRESULT_SUCCEEDED(first_child->get_CurrentControlType(&control_type));
+  EXPECT_EQ(control_type, UIA_DocumentControlTypeId);
+
+  Microsoft::WRL::ComPtr<IUnknown> text_pattern_unknown;
+  ASSERT_HRESULT_SUCCEEDED(
+      first_child->GetCurrentPattern(UIA_TextPatternId, &text_pattern_unknown));
+  EXPECT_NE(nullptr, text_pattern_unknown.Get());
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestOffsetsOfSelectionAll) {

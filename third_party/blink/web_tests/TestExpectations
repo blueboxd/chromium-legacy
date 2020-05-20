@@ -1462,7 +1462,6 @@ crbug.com/1053725 [ Mac ] fast/forms/textarea/textarea-metrics.html [ Skip ]
 
 
 crbug.com/1035582 [ Mac10.10 ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-hover-focused-unselected.html [ Skip ]
-crbug.com/1035582 [ Mac ] virtual/controls-refresh-hc/virtual/controls-refresh/color-scheme/select/select-multiple-appearance-basic.html [ Skip ]
 
 # Bug in FormControlsRefresh <select multiple> tap behavior:
 crbug.com/1045672 fast/forms/select/listbox-tap.html [ Failure ]
@@ -3837,12 +3836,6 @@ crbug.com/789139 http/tests/devtools/sources/debugger/live-edit-no-reveal.js [ F
 # Ignore these - they are tests of the disabled features. Eventually remove these.
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/access-document-of-detached-stylesheetlist-crash.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-after-style.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-media-element.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-meter-element.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-progress-element.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-in-select-element.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-move.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-select-dynamic.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-dynamic-attribute-change.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-reprojection-dynamic.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/distribution-attribute-modified.html [ Skip ]
@@ -3861,7 +3854,6 @@ crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-eleme
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowhost-keyframes.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowroot-keyframes.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/transition-on-shadow-host-createshadowroot.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/transition-on-shadow-host-with-distributed-node.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/gc-treescope.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/StyleSheet/css-insert-import-rule-to-shadow-stylesheets.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-dynamic-class.html [ Skip ]
@@ -3869,13 +3861,9 @@ crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/gesture-tapH
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/import-rule-in-shadow-tree-needs-document-style-recalc.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/scrollbar.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-contents-select.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-insertion-point-rendering.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/style-sharing-with-content-and-host.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/svg-style-in-shadow-tree.xhtml [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/text-node-in-shadow.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-fallback-display-none-dynamic.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-outside-shadow-style.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-element-select-namespace.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-match-all.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-match-descendant.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-pseudo-element-nested.html [ Skip ]
@@ -3894,13 +3882,10 @@ crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/content-whit
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/custom-pseudo-scope.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/dynamically-created-shadow-root.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/new-fallback.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/no-style-sharing-with-distributed-nodes.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-content-crash.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadow-on-image.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-for-button-complex-shadow.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-for-button-without-shadow.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-reprojection-1.html [ Skip ]
-crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowdom-reprojection-2.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/shadowroot-of-insertionpoint.html [ Skip ]
 crbug.com/937746 virtual/web-components-v0-disabled/fast/dom/shadow/table-border.html [ Skip ]
 
@@ -4246,8 +4231,6 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-transforms.html
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Skip ]
-# Fails on Mac but might be removed altogether crbug.com/903837
-crbug.com/903837 [ Mac ] virtual/gpu/fast/canvas/color-space/display_linear-rgb.html [ Skip ]
 
 # Antialiasing error
 crbug.com/845973 virtual/display-compositor-pixel-dump/fast/canvas/display-compositor-pixel-dump/OffscreenCanvas-opaque-background-compositing.html [ Pass Failure ]
@@ -5921,9 +5904,7 @@ crbug.com/1084256 [ Linux ] http/tests/misc/insert-iframe-into-xml-document-befo
 crbug.com/1084276 [ Mac ] http/tests/security/offscreencanvas-placeholder-read-blocked-no-crossorigin.html [ Pass Failure ]
 
 # Sheriff 2020-05-19
-crbug.com/1084448 [ Win ] compositing/overflow/overflow-compositing-descendant.html [ Pass Failure ]
-crbug.com/1084502 fast/forms/select/listbox-appearance-basic.html [ Pass Failure ]
-crbug.com/1084502 [ Mac ] virtual/controls-refresh/color-scheme/select/select-multiple-appearance-basic.html [ Pass Failure ]
+crbug.com/1084509 [ Win ] fast/forms/select/listbox-appearance-basic.html [ Pass Failure ]
 
 # Disabled for landing DevTools change
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]

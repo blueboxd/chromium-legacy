@@ -93,6 +93,7 @@ crbug.com/1082559 conformance/more/functions/texImage2DHTML.html [ RetryOnFailur
 crbug.com/1082559 conformance/more/functions/texSubImage2DHTML.html [ RetryOnFailure ]
 crbug.com/1018028 [ win vulkan ] conformance/rendering/bind-framebuffer-flush-bug.html [ Failure ]
 crbug.com/1082565 [ win intel opengl passthrough ] conformance/canvas/webgl-to-2d-canvas.html [ Failure ]
+crbug.com/1082525 conformance/textures/misc/origin-clean-conformance-offscreencanvas.html [ RetryOnFailure ]
 
 # Need to implement new error semantics
 # https://github.com/KhronosGroup/WebGL/pull/2607

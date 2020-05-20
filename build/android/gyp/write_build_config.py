@@ -884,10 +884,9 @@ def main(argv):
   parser.add_option(
       '--jetified-jar-path',
       help='Path to the jetified.jar to use for javac classpath purposes.')
-  parser.add_option(
-      '--skip-jetify',
-      action='store_true',
-      help='Whether to use jetified or non-jetified classpath.')
+  parser.add_option('--enable-jetify',
+                    action='store_true',
+                    help='Whether to use jetified or non-jetified classpath.')
   parser.add_option('--is-prebuilt', action='store_true',
                     help='Whether the jar was compiled or pre-compiled.')
   parser.add_option('--java-sources-file', help='Path to .sources file')
@@ -1264,10 +1263,10 @@ def main(argv):
       deps_info['jar_path'] = options.jar_path
       deps_info['unprocessed_jar_path'] = options.unprocessed_jar_path
       deps_info['interface_jar_path'] = options.interface_jar_path
-    if options.skip_jetify:
-      deps_info['jetified_jar_path'] = options.interface_jar_path
-    else:
+    if options.enable_jetify:
       deps_info['jetified_jar_path'] = options.jetified_jar_path
+    else:
+      deps_info['jetified_jar_path'] = options.interface_jar_path
     if options.dex_path:
       deps_info['dex_path'] = options.dex_path
       if is_apk_or_module_target:

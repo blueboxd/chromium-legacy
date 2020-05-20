@@ -154,8 +154,8 @@ void UpdateRequiredScreen::RefreshNetworkState() {
   if (!view_ || is_updating_now_)
     return;
 
-  const NetworkState* network =
-      NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
+  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
+  const NetworkState* network = handler->DefaultNetwork();
   // Set the UI state as per the current network state.
   // If device was connected to a good network at the start, we are already
   // showing (by default) the update required screen. If network switches from
@@ -166,7 +166,7 @@ void UpdateRequiredScreen::RefreshNetworkState() {
     // No network is available for the update process to start.
     view_->SetUIState(UpdateRequiredView::UPDATE_NO_NETWORK);
     waiting_for_connection_ = false;
-  } else if (network->IsUsingMobileData()) {
+  } else if (handler->default_network_is_metered()) {
     // The device is either connected to a metered network at the start or has
     // switched to one.
     view_->SetUIState(UpdateRequiredView::UPDATE_NEED_PERMISSION);

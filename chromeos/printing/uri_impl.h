@@ -38,9 +38,11 @@ class Uri::Pim {
   //    default port number, the Port is set to this default value
   //  * Authority: this is Userinfo + Host + Port, see description in uri.h for
   //    the grammar
+  //  * Port: an empty string means -1, see the method SavePort(int) below
   //  * Path: the input string must be empty or starts from '/'
   bool ParseScheme(const Iter& begin, const Iter& end);
   bool ParseAuthority(const Iter& begin, const Iter& end);
+  bool ParsePort(const Iter& begin, const Iter& end);
   bool ParsePath(const Iter& begin, const Iter& end);
   bool ParseQuery(const Iter& begin, const Iter& end);
   bool ParseFragment(const Iter& begin, const Iter& end);

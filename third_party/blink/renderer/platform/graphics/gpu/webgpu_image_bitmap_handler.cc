@@ -66,7 +66,8 @@ bool CopyBytesFromImageBitmapForWebGPU(scoped_refptr<StaticBitmapImage> image,
   // Read pixel request dst info.
   // TODO(shaobo.yan@intel.com): Use Skia to do transform and color conversion.
   SkImageInfo info = SkImageInfo::Make(
-      rect.Width(), rect.Height(), color_type, kUnpremul_SkAlphaType,
+      rect.Width(), rect.Height(), color_type,
+      image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
       color_params.GetSkColorSpaceForSkSurfaces());
 
   sk_sp<SkImage> sk_image = image->PaintImageForCurrentFrame().GetSkImage();

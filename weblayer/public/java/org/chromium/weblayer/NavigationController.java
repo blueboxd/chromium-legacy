@@ -212,6 +212,7 @@ public class NavigationController {
     @NonNull
     public Uri getNavigationEntryDisplayUri(int index) throws IndexOutOfBoundsException {
         ThreadCheck.ensureOnUiThread();
+        checkNavigationIndex(index);
         try {
             return Uri.parse(mNavigationController.getNavigationEntryDisplayUri(index));
         } catch (RemoteException e) {

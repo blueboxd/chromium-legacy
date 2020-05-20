@@ -24,6 +24,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/registry.h"
@@ -42,6 +43,10 @@ namespace {
 base::Optional<uint32_t> GetDeviceUint32Property(HDEVINFO dev_info,
                                                  SP_DEVINFO_DATA* dev_info_data,
                                                  const DEVPROPKEY& property) {
+  // SetupDiGetDeviceProperty() makes an RPC which may block.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   DEVPROPTYPE property_type;
   uint32_t buffer;
   if (!SetupDiGetDeviceProperty(
@@ -58,6 +63,10 @@ base::Optional<base::string16> GetDeviceStringProperty(
     HDEVINFO dev_info,
     SP_DEVINFO_DATA* dev_info_data,
     const DEVPROPKEY& property) {
+  // SetupDiGetDeviceProperty() makes an RPC which may block.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   DEVPROPTYPE property_type;
   DWORD required_size;
   if (SetupDiGetDeviceProperty(dev_info, dev_info_data, &property,
@@ -82,6 +91,10 @@ base::Optional<std::vector<base::string16>> GetDeviceStringListProperty(
     HDEVINFO dev_info,
     SP_DEVINFO_DATA* dev_info_data,
     const DEVPROPKEY& property) {
+  // SetupDiGetDeviceProperty() makes an RPC which may block.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+
   DEVPROPTYPE property_type;
   DWORD required_size;
   if (SetupDiGetDeviceProperty(dev_info, dev_info_data, &property,

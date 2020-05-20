@@ -34,7 +34,7 @@ void BulletView::OnPaint(gfx::Canvas* canvas) {
   path.addCircle(center.x(), center.y(), radius);
 
   cc::PaintFlags flags;
-  flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+  flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(color_);
   flags.setAntiAlias(true);
 

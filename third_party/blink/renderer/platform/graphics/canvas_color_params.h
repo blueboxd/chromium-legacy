@@ -27,7 +27,6 @@ namespace blink {
 
 enum class CanvasColorSpace {
   kSRGB,
-  kLinearRGB,
   kRec2020,
   kP3,
 };

@@ -107,6 +107,9 @@ class ShelfViewTestAPI {
   // An accessor for |shelf_button_pressed_metric_tracker_|.
   ShelfButtonPressedMetricTracker* shelf_button_pressed_metric_tracker();
 
+  // Set callback which will run after showing shelf context menu.
+  void SetShelfContextMenuCallback(base::RepeatingClosure closure);
+
  private:
   ShelfView* shelf_view_;
   int id_ = 0;

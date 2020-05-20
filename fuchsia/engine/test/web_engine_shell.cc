@@ -4,12 +4,12 @@
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <fuchsia/ui/policy/cpp/fidl.h>
-#include <fuchsia/ui/views/cpp/fidl.h>
 #include <fuchsia/web/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 #include <lib/vfs/cpp/pseudo_file.h>
 #include <iostream>
+#include <utility>
 
 #include "base/base_paths_fuchsia.h"
 #include "base/command_line.h"
@@ -241,14 +241,13 @@ int main(int argc, char** argv) {
     frame->EnableHeadlessRendering();
   else {
     // Present a fullscreen view of |frame|.
-    fuchsia::ui::views::ViewToken view_token;
-    fuchsia::ui::views::ViewHolderToken view_holder_token;
-    std::tie(view_token, view_holder_token) = scenic::NewViewTokenPair();
-    frame->CreateView(std::move(view_token));
+    auto view_tokens = scenic::ViewTokenPair::New();
+    frame->CreateView(std::move(view_tokens.view_token));
     auto presenter = base::fuchsia::ComponentContextForCurrentProcess()
                          ->svc()
                          ->Connect<::fuchsia::ui::policy::Presenter>();
-    presenter->PresentView(std::move(view_holder_token), nullptr);
+    presenter->PresentOrReplaceView(std::move(view_tokens.view_holder_token),
+                                    nullptr);
   }
 
   LOG(INFO) << "Launched browser at URL " << url.spec();

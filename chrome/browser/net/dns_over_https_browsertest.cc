@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/net/secure_dns_config.h"
+#include "chrome/browser/net/stub_resolver_config_reader.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -64,6 +67,13 @@ class DohBrowserTest : public InProcessBrowserTest,
 };
 
 IN_PROC_BROWSER_TEST_P(DohBrowserTest, MANUAL_ExternalDohServers) {
+  SecureDnsConfig secure_dns_config =
+      SystemNetworkContextManager::GetStubResolverConfigReader()
+          ->GetSecureDnsConfiguration(
+              false /* force_check_parental_controls_for_automatic_mode */);
+  // Ensure that DoH is enabled in secure mode
+  EXPECT_EQ(net::DnsConfig::SecureDnsMode::SECURE, secure_dns_config.mode());
+
   content::TestNavigationObserver nav_observer(
       browser()->tab_strip_model()->GetActiveWebContents(), 1);
   EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), test_url_));

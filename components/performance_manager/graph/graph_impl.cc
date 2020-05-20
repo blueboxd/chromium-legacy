@@ -153,7 +153,8 @@ GraphImpl::GraphImpl() {
 GraphImpl::~GraphImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // All graph registered objects should have been unregistered.
+  // All graph registered and owned objects should have been cleaned up.
+  DCHECK(graph_owned_.empty());
   DCHECK(registered_objects_.empty());
 
   // At this point, all typed observers should be empty.
@@ -180,8 +181,7 @@ void GraphImpl::TearDown() {
 
   // Clean up graph owned objects. This causes their TakeFromGraph callbacks to
   // be invoked, and ideally they clean up any observers they may have, etc.
-  while (!graph_owned_.empty())
-    auto object = TakeFromGraph(graph_owned_.begin()->first);
+  graph_owned_.ReleaseObjects(this);
 
   // At this point, all typed observers should be empty.
   DCHECK(graph_observers_.empty());
@@ -258,39 +258,22 @@ void GraphImpl::RemoveWorkerNodeObserver(WorkerNodeObserver* observer) {
 
 void GraphImpl::PassToGraph(std::unique_ptr<GraphOwned> graph_owned) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto* raw = graph_owned.get();
-  DCHECK(!base::Contains(graph_owned_, raw));
-  graph_owned_.insert(std::make_pair(raw, std::move(graph_owned)));
-  raw->OnPassedToGraph(this);
+  graph_owned_.PassObject(std::move(graph_owned), this);
 }
 
 std::unique_ptr<GraphOwned> GraphImpl::TakeFromGraph(GraphOwned* graph_owned) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::unique_ptr<GraphOwned> object;
-  auto it = graph_owned_.find(graph_owned);
-  if (it != graph_owned_.end()) {
-    DCHECK_EQ(graph_owned, it->first);
-    DCHECK_EQ(graph_owned, it->second.get());
-    object = std::move(it->second);
-    graph_owned_.erase(it);
-    object->OnTakenFromGraph(this);
-  }
-  return object;
+  return graph_owned_.TakeObject(graph_owned, this);
 }
 
 void GraphImpl::RegisterObject(GraphRegistered* object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(nullptr, GetRegisteredObject(object->GetTypeId()));
-  registered_objects_.insert(object);
-  // If there are ever so many registered objects we should consider changing
-  // data structures.
-  DCHECK_GT(100u, registered_objects_.size());
+  registered_objects_.RegisterObject(object);
 }
 
 void GraphImpl::UnregisterObject(GraphRegistered* object) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK_EQ(object, GetRegisteredObject(object->GetTypeId()));
-  registered_objects_.erase(object);
+  registered_objects_.UnregisterObject(object);
 }
 
 const SystemNode* GraphImpl::FindOrCreateSystemNode() {
@@ -344,11 +327,7 @@ const void* GraphImpl::GetImpl() const {
 
 GraphRegistered* GraphImpl::GetRegisteredObject(uintptr_t type_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  auto it = registered_objects_.find(type_id);
-  if (it == registered_objects_.end())
-    return nullptr;
-  DCHECK_EQ((*it)->GetTypeId(), type_id);
-  return *it;
+  return registered_objects_.GetRegisteredObject(type_id);
 }
 
 // static

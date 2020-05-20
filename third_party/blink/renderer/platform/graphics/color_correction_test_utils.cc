@@ -74,8 +74,6 @@ ColorCorrectionTestUtils::ColorSpaceConversionToSkColorSpace(
       conversion == kColorSpaceConversion_SRGB) {
     return SkColorSpace::MakeSRGB();
   }
-  if (conversion == kColorSpaceConversion_LinearRGB)
-    return SkColorSpace::MakeSRGBLinear();
   if (conversion == kColorSpaceConversion_P3) {
     return SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
                                  SkNamedGamut::kDCIP3);
@@ -89,8 +87,8 @@ ColorCorrectionTestUtils::ColorSpaceConversionToSkColorSpace(
 
 String ColorCorrectionTestUtils::ColorSpaceConversionToString(
     ColorSpaceConversion color_space_conversion) {
-  static const Vector<String> kConversions = {
-      "none", "default", "preserve", "srgb", "linear-rgb", "p3", "rec2020"};
+  static const Vector<String> kConversions = {"none", "default", "preserve",
+                                              "srgb", "p3",      "rec2020"};
   return kConversions[static_cast<uint8_t>(color_space_conversion)];
 }
 

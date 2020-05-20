@@ -30,7 +30,7 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -65,11 +65,11 @@ namespace chromeos {
 namespace {
 
 bool IsRemoraRequisition() {
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::EnrollmentRequisitionManager* requisition_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  return policy_manager && policy_manager->IsRemoraRequisition();
+          ->GetEnrollmentRequisitionManager();
+  return requisition_manager && requisition_manager->IsRemoraRequisition();
 }
 
 void LaunchResetScreen() {
@@ -386,8 +386,9 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
   policy::BrowserPolicyConnectorChromeOS* connector =
       g_browser_process->platform_part()->browser_policy_connector_chromeos();
   std::string initial_requisition =
-      connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition();
-  connector->GetDeviceCloudPolicyManager()->SetDeviceRequisition(requisition);
+      connector->GetEnrollmentRequisitionManager()->GetDeviceRequisition();
+  connector->GetEnrollmentRequisitionManager()->SetDeviceRequisition(
+      requisition);
 
   if (IsRemoraRequisition()) {
     // CfM devices default to static timezone.
@@ -399,7 +400,7 @@ void CoreOobeHandler::HandleSetDeviceRequisition(
 
   // Exit Chrome to force the restart as soon as a new requisition is set.
   if (initial_requisition !=
-      connector->GetDeviceCloudPolicyManager()->GetDeviceRequisition()) {
+      connector->GetEnrollmentRequisitionManager()->GetDeviceRequisition()) {
     chrome::AttemptRestart();
   }
 }
@@ -523,13 +524,13 @@ void CoreOobeHandler::UpdateLabel(const std::string& id,
 }
 
 void CoreOobeHandler::UpdateDeviceRequisition() {
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::EnrollmentRequisitionManager* requisition_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  if (policy_manager) {
+          ->GetEnrollmentRequisitionManager();
+  if (requisition_manager) {
     CallJS("cr.ui.Oobe.updateDeviceRequisition",
-           policy_manager->GetDeviceRequisition());
+           requisition_manager->GetDeviceRequisition());
   }
 }
 

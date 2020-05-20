@@ -6441,6 +6441,14 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="Experiment enabled (sync unknown)"/>
 </enum>
 
+<enum name="BookmarksGUIDDuplicates">
+  <int value="0" label="Matching urls"/>
+  <int value="1" label="Matching folders"/>
+  <int value="2" label="Different urls"/>
+  <int value="3" label="Different folders"/>
+  <int value="4" label="Different types"/>
+</enum>
+
 <enum name="BookmarksOpenAction">
   <int value="0" label="Open in current tab"/>
   <int value="1" label="Open in new tab"/>
@@ -35979,6 +35987,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="5" label="IPV6_INTERFACE_ARRAY_TOO_SHORT"/>
 </enum>
 
+<enum name="IsFullyManagedBoolean">
+  <summary>
+    A boolean for whether a device is &quot;fully managed&quot;.
+  </summary>
+  <int value="0" label="Not fully managed"/>
+  <int value="1" label="Fully managed"/>
+</enum>
+
 <enum name="IsolatedPrerenderPrefetchStatus">
   <int value="0" label="Prefetch Used, No Probe">
     The interceptor used a prefetch.
@@ -40398,6 +40414,7 @@ from previous Chrome versions.
       label="HappinessTrackingSurveysForDesktopDemo:disabled"/>
   <int value="259021228" label="OffMainThreadFetch:disabled"/>
   <int value="259633436" label="AutofillDropdownLayout:disabled"/>
+  <int value="259812169" label="OmniboxSuggestionsWrapAround:disabled"/>
   <int value="262382944" label="GuestViewCrossProcessFrames:disabled"/>
   <int value="265830810" label="BackgroundTaskComponentUpdate:enabled"/>
   <int value="266322815" label="ChromeModernDesign:disabled"/>
@@ -41208,6 +41225,7 @@ from previous Chrome versions.
   <int value="1184093076" label="WebRtcUseMinMaxVEADimensions:enabled"/>
   <int value="1184225265" label="AllowSyncXHRInPageDismissal:enabled"/>
   <int value="1185424279" label="enable-media-router"/>
+  <int value="1187103825" label="OmniboxSuggestionsWrapAround:enabled"/>
   <int value="1188109510" label="AssistantAudioEraser:enabled"/>
   <int value="1190035852" label="MediaRemoting:enabled"/>
   <int value="1191531211" label="RawClipboard:disabled"/>
@@ -42727,7 +42745,7 @@ from previous Chrome versions.
   <int value="20" label="Can't paint scrolling background"/>
   <int value="21" label="Has clip related property"/>
   <int value="22" label="Has box shadow from non-root layer (obsolete)"/>
-  <int value="23" label="Is not stacking context"/>
+  <int value="23" label="Is not stacking context (obsolete)"/>
   <int value="24" label="Blocking wheel event handler region"/>
   <int value="25" label="Blocking touch event handler region"/>
 </enum>
@@ -64941,10 +64959,11 @@ would be helpful to identify which type is being sent.
 
 <enum name="SupervisedUserExtensionEnablement">
   <summary>
-    Tracks supervised user actions to enable or disable approved extensions.
+    Tracks supervised user actions to enable or disable extensions.
   </summary>
   <int value="0" label="Enabled"/>
   <int value="1" label="Disabled"/>
+  <int value="2" label="Enable attempt failed"/>
 </enum>
 
 <enum name="SupervisedUserExtensionInstallDialog">

@@ -19,7 +19,8 @@ void PerformanceManagerTestHarness::SetUp() {
 }
 
 void PerformanceManagerTestHarness::TearDown() {
-  helper_->TearDown();
+  if (helper_)
+    TearDownNow();
   Super::TearDown();
 }
 
@@ -29,6 +30,11 @@ PerformanceManagerTestHarness::CreateTestWebContents() {
       Super::CreateTestWebContents();
   helper_->OnWebContentsCreated(contents.get());
   return contents;
+}
+
+void PerformanceManagerTestHarness::TearDownNow() {
+  helper_->TearDown();
+  helper_.reset();
 }
 
 }  // namespace performance_manager

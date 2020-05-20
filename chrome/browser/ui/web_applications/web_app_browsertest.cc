@@ -427,12 +427,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, UpgradeWithoutCustomTabBar) {
   Browser* const app_browser = LaunchWebAppBrowser(app_id);
   NavigateToURLAndWait(app_browser, secure_app_url);
 
-  // HostedAppBrowserController's IsSameHostAndPort fallback path for Extensions
-  // without URL handlers does not apply for apps created through InstallPWA.
-  const bool expected_visibility =
-      (GetParam() == ControllerType::kHostedAppController);
-  EXPECT_EQ(app_browser->app_controller()->ShouldShowCustomTabBar(),
-            expected_visibility);
+  EXPECT_FALSE(app_browser->app_controller()->ShouldShowCustomTabBar());
 
   const GURL off_origin_url =
       https_server()->GetURL("example.org", "/empty.html");
@@ -841,16 +836,14 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, NewAppWindow) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppTabRestoreBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

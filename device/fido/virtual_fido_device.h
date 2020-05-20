@@ -53,10 +53,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // FreshP256Key returns a randomly generated P-256 PrivateKey.
     static std::unique_ptr<PrivateKey> FreshP256Key();
 
-    // FreshP256Key returns a randomly generated RSA PrivateKey.
+    // FreshRSAKey returns a randomly generated RSA PrivateKey.
     static std::unique_ptr<PrivateKey> FreshRSAKey();
 
-    // FreshP256Key returns a randomly generated Ed25519 PrivateKey.
+    // FreshEd25519Key returns a randomly generated Ed25519 PrivateKey.
     static std::unique_ptr<PrivateKey> FreshEd25519Key();
 
     virtual ~PrivateKey();

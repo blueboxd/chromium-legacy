@@ -24,8 +24,6 @@ using testing::Return;
 
 namespace blink {
 
-static constexpr uint64_t kMaxArrayLength = 40000;
-
 namespace {
 gpu::SyncToken GenTestSyncToken(GLbyte id) {
   gpu::SyncToken token;
@@ -89,7 +87,7 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
                                 CanvasColorParams param,
                                 IntRect copyRect) {
     const uint64_t content_length = width * height * param.BytesPerPixel();
-    std::array<uint8_t, kMaxArrayLength> contents = {0};
+    std::vector<uint8_t> contents(content_length, 0);
     // Initialize contents.
     for (size_t i = 0; i < content_length; ++i) {
       contents[i] = i % std::numeric_limits<uint8_t>::max();
@@ -104,7 +102,7 @@ class WebGPUImageBitmapHandlerTest : public testing::Test {
         ComputeImageBitmapWebGPUUploadSizeInfo(copyRect, param);
 
     const uint64_t result_length = wgpu_info.size_in_bytes;
-    std::array<uint8_t, kMaxArrayLength> results = {0};
+    std::vector<uint8_t> results(result_length, 0);
     bool success = CopyBytesFromImageBitmapForWebGPU(
         image, base::span<uint8_t>(results.data(), result_length), copyRect,
         param);
@@ -171,6 +169,22 @@ TEST_F(WebGPUImageBitmapHandlerTest, VerifyCopyBytesFromSubImageBitmap) {
   CanvasColorParams color_params(CanvasColorSpace::kSRGB,
                                  CanvasPixelFormat::kRGBA8,
                                  OpacityMode::kNonOpaque);
+  VerifyCopyBytesForWebGPU(imageWidth, imageHeight, info, color_params,
+                           image_data_rect);
+}
+
+// Copy image bitmap with premultiply alpha
+TEST_F(WebGPUImageBitmapHandlerTest, VerifyCopyBytesWithPremultiplyAlpha) {
+  uint64_t imageWidth = 2;
+  uint64_t imageHeight = 1;
+  SkImageInfo info = SkImageInfo::Make(
+      imageWidth, imageHeight, SkColorType::kRGBA_8888_SkColorType,
+      SkAlphaType::kPremul_SkAlphaType, SkColorSpace::MakeSRGB());
+
+  IntRect image_data_rect(0, 0, 2, 1);
+  CanvasColorParams color_params(
+      CanvasColorSpace::kSRGB, CanvasPixelFormat::kRGBA8, OpacityMode::kOpaque);
+
   VerifyCopyBytesForWebGPU(imageWidth, imageHeight, info, color_params,
                            image_data_rect);
 }

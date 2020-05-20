@@ -20,6 +20,7 @@
 #include "components/bookmarks/browser/url_and_title.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "components/sync/engine_impl/bookmark_update_preprocessing.h"
 #include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
@@ -385,6 +386,42 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
       title2,
       server_bookmarks[0].specifics().bookmark().legacy_canonicalized_title());
   EXPECT_EQ(lowercase_guid, server_bookmarks[0].specifics().bookmark().guid());
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       DownloadModernBookmarkCollidingPre2015BookmarkId) {
+  const std::string title1 = "Title1";
+  const std::string title2 = "Title2";
+
+  const std::string kOriginalOriginatorCacheGuid = base::GenerateGUID();
+  const std::string kOriginalOriginatorClientItemId = "1";
+
+  // One pre-2015 bookmark, nothing special here.
+  fake_server::BookmarkEntityBuilder bookmark_builder1(
+      title1, kOriginalOriginatorCacheGuid, kOriginalOriginatorClientItemId);
+
+  // A second bookmark, possibly uploaded by a buggy client, happens to use an
+  // originator client item ID that collides with the GUID that would have been
+  // inferred for the original pre-2015 bookmark.
+  fake_server::BookmarkEntityBuilder bookmark_builder2(
+      title2, /*originator_cache_guid=*/base::GenerateGUID(),
+      /*originator_client_item_id=*/
+      syncer::InferGuidForLegacyBookmarkForTesting(
+          kOriginalOriginatorCacheGuid, kOriginalOriginatorClientItemId));
+
+  fake_server_->InjectEntity(bookmark_builder1.BuildBookmark(
+      GURL("http://page1.com"), /*is_legacy=*/true));
+  fake_server_->InjectEntity(bookmark_builder2.BuildBookmark(
+      GURL("http://page2.com"), /*is_legacy=*/true));
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+
+  const BookmarkNode* bookmark_bar_node =
+      GetBookmarkBarNode(kSingleProfileIndex);
+  // Check only number of bookmarks since any of them may be removed as
+  // duplicate.
+  EXPECT_EQ(1u, bookmark_bar_node->children().size());
 }
 
 // Test that a client doesn't mutate the favicon data in the process

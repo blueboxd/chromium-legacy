@@ -256,6 +256,10 @@ bool Uri::SetPort(int val) {
   return pim_->SavePort(val);
 }
 
+bool Uri::SetPort(const std::string& port) {
+  return pim_->ParsePort(port.begin(), port.end());
+}
+
 std::string Uri::GetUserinfo() const {
   return pim_->userinfo();
 }

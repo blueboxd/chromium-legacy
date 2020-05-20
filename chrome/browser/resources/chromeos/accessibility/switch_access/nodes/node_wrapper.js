@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const AutomationNode = chrome.automation.AutomationNode;
-
 /**
  * This class handles interactions with an onscreen element based on a single
  * AutomationNode.
@@ -220,6 +218,8 @@ class NodeWrapper extends SAChildNode {
  */
 class RootNodeWrapper extends SARootNode {
   /**
+   * WARNING: If you call this constructor, you must *explicitly* set children.
+   *     Use the static function RootNodeWrapper.buildTree for most use cases.
    * @param {!AutomationNode} baseNode
    */
   constructor(baseNode) {
@@ -375,17 +375,20 @@ class RootNodeWrapper extends SARootNode {
   }
 
   /**
-   * @param {!RootNodeWrapper} root
+   * @param {!RootNodeWrapper|!AutomationNode} root
    * @return {!Array<!AutomationNode>}
    */
   static getInterestingChildren(root) {
-    if (root.baseNode_.children.length === 0) {
+    if (root instanceof RootNodeWrapper) {
+      root = root.baseNode_;
+    }
+
+    if (root.children.length === 0) {
       return [];
     }
     const interestingChildren = [];
     const treeWalker = new AutomationTreeWalker(
-        root.baseNode_, constants.Dir.FORWARD,
-        SwitchAccessPredicate.restrictions(root));
+        root, constants.Dir.FORWARD, SwitchAccessPredicate.restrictions(root));
     let node = treeWalker.next().node;
 
     while (node) {

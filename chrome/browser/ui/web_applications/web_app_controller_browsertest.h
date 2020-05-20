@@ -27,7 +27,6 @@ namespace web_app {
 class WebAppProviderBase;
 
 enum class ControllerType {
-  kHostedAppController,
   kUnifiedControllerWithBookmarkApp,
   kUnifiedControllerWithWebApp,
 };

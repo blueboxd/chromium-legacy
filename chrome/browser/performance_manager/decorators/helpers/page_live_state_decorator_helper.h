@@ -14,7 +14,7 @@ namespace performance_manager {
 
 class PageLiveStateDecoratorHelper
     : public MediaStreamCaptureIndicator::Observer,
-      public PerformanceManagerMainThreadObserver {
+      public PerformanceManagerMainThreadObserverDefaultImpl {
  public:
   PageLiveStateDecoratorHelper();
   ~PageLiveStateDecoratorHelper() override;

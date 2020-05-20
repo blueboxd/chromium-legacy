@@ -140,6 +140,8 @@ class CastActivityManager : public CastActivityManagerBase,
 
  private:
   friend class CastActivityManagerTest;
+  FRIEND_TEST_ALL_PREFIXES(CastActivityManagerTest,
+                           LaunchSessionTerminatesExistingSessionOnSink);
   using ActivityMap =
       base::flat_map<MediaRoute::Id, std::unique_ptr<ActivityRecord>>;
   using CastActivityMap = base::flat_map<MediaRoute::Id, CastActivityRecord*>;
@@ -147,6 +149,16 @@ class CastActivityManager : public CastActivityManagerBase,
   void SendRouteJsonMessage(const std::string& media_route_id,
                             const std::string& message,
                             data_decoder::DataDecoder::ValueOrError result);
+
+  void LaunchSessionParsed(
+      const CastMediaSource& cast_source,
+      const MediaSinkInternal& sink,
+      const std::string& presentation_id,
+      const url::Origin& origin,
+      int tab_id,
+      bool incognito,
+      mojom::MediaRouteProvider::CreateRouteCallback callback,
+      data_decoder::DataDecoder::ValueOrError result);
 
   // Bundle of parameters for DoLaunchSession().
   struct DoLaunchSessionParams {
@@ -159,6 +171,7 @@ class CastActivityManager : public CastActivityManagerBase,
         const MediaSinkInternal& sink,
         const url::Origin& origin,
         int tab_id,
+        const base::Optional<base::Value> app_params,
         mojom::MediaRouteProvider::CreateRouteCallback callback);
     DoLaunchSessionParams(const DoLaunchSessionParams& other) = delete;
     DoLaunchSessionParams(DoLaunchSessionParams&& other);
@@ -180,6 +193,9 @@ class CastActivityManager : public CastActivityManagerBase,
 
     // The tab ID of the Cast SDK client. Used for auto-join.
     int tab_id;
+
+    // The JSON object sent from the Cast SDK.
+    base::Optional<base::Value> app_params;
 
     // Callback to execute after the launch request has been sent.
     mojom::MediaRouteProvider::CreateRouteCallback callback;

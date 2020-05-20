@@ -559,9 +559,6 @@ android_library("chrome_java") {
   # TODO(crbug/1022172): Instead of adding source files, add it as a separate
   # dependency when circular deps is resolved.
   sources += share_java_sources
-
-  # This is added to speed-up compile time.
-  skip_jetify = true
 }
 
 generate_product_config_srcjar("chrome_product_config") {

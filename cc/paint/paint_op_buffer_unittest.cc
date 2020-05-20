@@ -1126,7 +1126,7 @@ std::vector<PaintFlags> test_flags = {
       flags.setBlendMode(SkBlendMode::kDst);
       flags.setStrokeCap(PaintFlags::kSquare_Cap);
       flags.setStrokeJoin(PaintFlags::kBevel_Join);
-      flags.setStyle(PaintFlags::kStrokeAndFill_Style);
+      flags.setStyle(PaintFlags::kStroke_Style);
       flags.setFilterQuality(SkFilterQuality::kMedium_SkFilterQuality);
       flags.setShader(PaintShader::MakeColor(SkColorSetARGB(1, 2, 3, 4)));
       return flags;

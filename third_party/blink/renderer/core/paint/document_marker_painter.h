@@ -41,6 +41,7 @@ class DocumentMarkerPainter {
   static TextPaintStyle ComputeTextPaintStyleFrom(const ComputedStyle& style,
                                                   const TextMarkerBase& marker,
                                                   bool in_forced_colors_mode);
+  static bool ShouldPaintMarkerUnderline(const StyleableMarker& marker);
 };
 
 }  // namespace blink

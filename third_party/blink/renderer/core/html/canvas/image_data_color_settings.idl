@@ -6,7 +6,6 @@
 
 enum CanvasColorSpace {
     "srgb", // default
-    "linear-rgb",
     "rec2020",
     "p3",
 };

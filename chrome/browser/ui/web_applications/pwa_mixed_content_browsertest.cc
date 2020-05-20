@@ -255,16 +255,14 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
 INSTANTIATE_TEST_SUITE_P(
     All,
     PWAMixedContentBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     PWAMixedContentBrowserTestWithAutoupgradesDisabled,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

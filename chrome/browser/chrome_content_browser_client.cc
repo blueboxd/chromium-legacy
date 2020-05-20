@@ -1670,11 +1670,6 @@ bool ChromeContentBrowserClient::DoesSiteRequireDedicatedProcess(
 bool ChromeContentBrowserClient::ShouldLockToOrigin(
     content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  // Origin lock to the search scheme would kill processes upon legitimate
-  // requests for cookies from the search engine's domain.
-  if (effective_site_url.SchemeIs(chrome::kChromeSearchScheme))
-    return false;
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!ChromeContentBrowserClientExtensionsPart::ShouldLockToOrigin(
           browser_context, effective_site_url)) {
@@ -1690,7 +1685,9 @@ bool ChromeContentBrowserClient::DoesWebUISchemeRequireProcessLock(
   // assume it runs only on the UI thread.
 
   // chrome-search: documents commit only in the NTP instant process and are not
-  // locked to chrome-search: origin.
+  // locked to chrome-search: origin.  Locking to chrome-search would kill
+  // processes upon legitimate requests for cookies from the search engine's
+  // domain.
   if (scheme == chrome::kChromeSearchScheme)
     return false;
 

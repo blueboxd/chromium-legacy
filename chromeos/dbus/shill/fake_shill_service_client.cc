@@ -457,9 +457,13 @@ base::DictionaryValue* FakeShillServiceClient::SetServiceProperties(
     properties->SetKey(shill::kModeProperty, base::Value(shill::kModeManaged));
   }
 
-  // Ethernet is always connectable;
+  // Ethernet is always connectable.
   if (type == shill::kTypeEthernet)
     properties->SetKey(shill::kConnectableProperty, base::Value(true));
+
+  // Cellular is always metered.
+  if (type == shill::kTypeCellular)
+    properties->SetKey(shill::kMeteredProperty, base::Value(true));
 
   return properties;
 }

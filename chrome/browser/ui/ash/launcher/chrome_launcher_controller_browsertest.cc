@@ -19,9 +19,11 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_app_button.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_menu_model_adapter.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shelf/test/widget_animation_waiter.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -107,6 +109,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/base_window.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
@@ -114,6 +117,7 @@
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/types/event_type.h"
+#include "ui/views/controls/menu/menu_item_view.h"
 
 using ash::Shelf;
 using content::WebContents;
@@ -184,9 +188,19 @@ void ExtendHotseat(Browser* browser) {
   // Swipe up for a small distance to bring up the hotseat.
   gfx::Point end_point(start_point.x(), start_point.y() - 80);
 
+  ash::ShelfView* shelf_view = controller->shelf()->GetShelfViewForTesting();
+
+  // Observe hotseat animation before animation starts. Because
+  // ash::WidgetAnimationWaiter only reacts to completion of the animation whose
+  // animation scheduling is recorded in ash::WidgetAnimationWaiter.
+  ash::WidgetAnimationWaiter waiter(shelf_view->GetWidget());
+
   ui::test::EventGenerator event_generator(controller->GetRootWindow());
   event_generator.GestureScrollSequence(
       start_point, end_point, base::TimeDelta::FromMilliseconds(500), 4);
+
+  // Wait until hotseat bounds animation completes.
+  waiter.WaitForAnimation();
 
   EXPECT_EQ(ash::HotseatState::kExtended,
             controller->shelf()->shelf_layout_manager()->hotseat_state());
@@ -2371,6 +2385,51 @@ class HotseatShelfAppBrowserTest : public ShelfAppBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(HotseatShelfAppBrowserTest);
 };
+
+// Verifies that hotseat should be hidden after launching the browser from
+// a context menu (https://crbug.com/1072043).
+IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, LaunchAppFromContextMenu) {
+  ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  ash::RootWindowController* controller =
+      ash::Shell::GetRootWindowControllerWithDisplayId(
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
+  ash::ShelfView* shelf_view = controller->shelf()->GetShelfViewForTesting();
+
+  ash::ShelfModel* model = shelf_view->model();
+  EXPECT_EQ(1, model->item_count());
+
+  ExtendHotseat(browser());
+
+  const ash::ShelfID browser_icon_id = model->items()[0].id;
+  views::View* browser_icon = shelf_view->GetShelfAppButton(browser_icon_id);
+
+  ash::ShelfViewTestAPI test_api(shelf_view);
+  base::RunLoop run_loop;
+  test_api.SetShelfContextMenuCallback(run_loop.QuitClosure());
+
+  ui::test::EventGenerator event_generator(controller->GetRootWindow());
+  event_generator.MoveMouseTo(browser_icon->GetBoundsInScreen().CenterPoint());
+  event_generator.PressRightButton();
+
+  // Wait until the context menu shows.
+  run_loop.Run();
+
+  ash::ShelfMenuModelAdapter* shelf_menu_model_adapter =
+      shelf_view->shelf_menu_model_adapter_for_testing();
+  ASSERT_TRUE(shelf_menu_model_adapter->IsShowingMenu());
+
+  // Click at the menu item whose command is ash::MENU_NEW_WINDOW.
+  event_generator.MoveMouseTo(shelf_menu_model_adapter->root_for_testing()
+                                  ->GetMenuItemByID(ash::MENU_NEW_WINDOW)
+                                  ->GetBoundsInScreen()
+                                  .CenterPoint());
+  event_generator.ClickLeftButton();
+
+  // Verify that hotseat is hidden.
+  EXPECT_EQ(ash::HotseatState::kHidden,
+            controller->shelf()->shelf_layout_manager()->hotseat_state());
+}
 
 // crbug.com/1021011: Disable on ChromeOS
 #if defined(OS_CHROMEOS)

@@ -494,8 +494,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppBadgingBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

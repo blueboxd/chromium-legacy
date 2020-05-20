@@ -37,7 +37,6 @@ enum ColorSpaceConversion {
   kColorSpaceConversion_Default,
   kColorSpaceConversion_Preserve,
   kColorSpaceConversion_SRGB,
-  kColorSpaceConversion_LinearRGB,
   kColorSpaceConversion_P3,
   kColorSpaceConversion_Rec2020,
   kColorSpaceConversion_Last = kColorSpaceConversion_Rec2020,

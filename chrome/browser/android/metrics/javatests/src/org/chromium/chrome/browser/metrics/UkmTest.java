@@ -62,55 +62,7 @@ public class UkmTest {
         closeCurrentTab(true);
     }
 
-    // TODO(rkaplow): Simplify these by running then all in the UI thread via
-    // @UIThreadTest.
-    @Test
-    @SmallTest
-    public void testRegularPlusIncognitoCheck() throws Exception {
-        // Keep in sync with UkmBrowserTest.RegularPlusIncognitoCheck in
-        // chrome/browser/metrics/ukm_browsertest.cc.
-        Tab normalTab = mActivityTestRule.getActivity().getActivityTab();
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
-
-        long originalClientId =
-                TestThreadUtils
-                        .runOnUiThreadBlocking(() -> { return UkmUtilsForTest.getClientId(); })
-                        .longValue();
-        Assert.assertFalse("Non-zero client id: " + originalClientId, originalClientId == 0);
-
-        mActivityTestRule.newIncognitoTabFromMenu();
-
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
-
-        // Opening another regular tab mustn't enable UKM.
-        ChromeTabUtils.newTabFromMenu(
-                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
-
-        // Opening and closing another Incognito tab mustn't enable UKM.
-        mActivityTestRule.newIncognitoTabFromMenu();
-        closeIncognitoTab();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
-
-        closeRegularTab();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertFalse(UkmUtilsForTest.isEnabled()); });
-
-        closeIncognitoTab();
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
-
-        // Client ID should not have been reset.
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals("Client id:", originalClientId, UkmUtilsForTest.getClientId());
-        });
-    }
-
+    // TODO(crbug/1049736): Move this to ukm_browsertest.cc.
     @Test
     @SmallTest
     public void testIncognitoPlusRegularCheck() {
@@ -135,6 +87,7 @@ public class UkmTest {
                 () -> { Assert.assertTrue(UkmUtilsForTest.isEnabled()); });
     }
 
+    // TODO(crbug/1049736): Move this to ukm_browsertest.cc.
     @Test
     @SmallTest
     public void testHistoryDeleteCheck() throws Exception {

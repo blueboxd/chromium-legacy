@@ -175,13 +175,11 @@ class HostedOrWebAppTest : public extensions::ExtensionBrowserTest,
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
     if (GetParam() == AppType::HOSTED_APP) {
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kDesktopPWAsUnifiedUiController,
-               predictors::kSpeculativePreconnectFeature});
+          {}, {predictors::kSpeculativePreconnectFeature});
     } else if (GetParam() == AppType::BOOKMARK_APP) {
       scoped_feature_list_.InitWithFeatures(
-          {features::kDesktopPWAsUnifiedUiController},
-          {features::kDesktopPWAsWithoutExtensions,
-           predictors::kSpeculativePreconnectFeature});
+          {}, {features::kDesktopPWAsWithoutExtensions,
+               predictors::kSpeculativePreconnectFeature});
     } else {
       scoped_feature_list_.InitWithFeatures(
           {features::kDesktopPWAsWithoutExtensions},

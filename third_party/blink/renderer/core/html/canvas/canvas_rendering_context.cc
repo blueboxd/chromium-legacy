@@ -50,8 +50,6 @@ CanvasRenderingContext::CanvasRenderingContext(
   // back to sRGB in uint8 too.
   if (creation_attributes_.pixel_format == kF16CanvasPixelFormatName) {
     color_params_.SetCanvasPixelFormat(CanvasPixelFormat::kF16);
-    if (creation_attributes_.color_space == kLinearRGBCanvasColorSpaceName)
-      color_params_.SetCanvasColorSpace(CanvasColorSpace::kLinearRGB);
     if (creation_attributes_.color_space == kRec2020CanvasColorSpaceName)
       color_params_.SetCanvasColorSpace(CanvasColorSpace::kRec2020);
     else if (creation_attributes_.color_space == kP3CanvasColorSpaceName)
@@ -71,8 +69,6 @@ WTF::String CanvasRenderingContext::ColorSpaceAsString() const {
   switch (color_params_.ColorSpace()) {
     case CanvasColorSpace::kSRGB:
       return kSRGBCanvasColorSpaceName;
-    case CanvasColorSpace::kLinearRGB:
-      return kLinearRGBCanvasColorSpaceName;
     case CanvasColorSpace::kRec2020:
       return kRec2020CanvasColorSpaceName;
     case CanvasColorSpace::kP3:

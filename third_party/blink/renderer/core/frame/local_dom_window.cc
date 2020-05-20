@@ -1618,11 +1618,10 @@ void LocalDOMWindow::SetOriginPolicyIds(const Vector<String>& ids) {
 
 int LocalDOMWindow::requestIdleCallback(V8IdleRequestCallback* callback,
                                         const IdleRequestOptions* options) {
-  if (Document* document = this->document()) {
-    return document->RequestIdleCallback(
-        ScriptedIdleTaskController::V8IdleTask::Create(callback), options);
-  }
-  return 0;
+  if (!GetFrame())
+    return 0;
+  return document_->RequestIdleCallback(
+      ScriptedIdleTaskController::V8IdleTask::Create(callback), options);
 }
 
 void LocalDOMWindow::cancelIdleCallback(int id) {

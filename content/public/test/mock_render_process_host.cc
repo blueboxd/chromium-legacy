@@ -450,6 +450,12 @@ void MockRenderProcessHost::LockToOrigin(
     is_renderer_locked_to_site_ = true;
 }
 
+bool MockRenderProcessHost::IsLockedToOriginForTesting() {
+  GURL lock_url =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());
+  return !lock_url.is_empty();
+}
+
 void MockRenderProcessHost::BindCacheStorage(
     const network::CrossOriginEmbedderPolicy&,
     mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>,

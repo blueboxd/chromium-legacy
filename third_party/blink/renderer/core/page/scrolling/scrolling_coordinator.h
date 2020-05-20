@@ -137,6 +137,7 @@ class CORE_EXPORT ScrollingCoordinator final
   void DidChangeScrollbarsHidden(CompositorElementId, bool hidden) override;
 
   base::WeakPtr<ScrollingCoordinator> GetWeakPtr() {
+    DCHECK(page_);
     return weak_ptr_factory_.GetWeakPtr();
   }
 

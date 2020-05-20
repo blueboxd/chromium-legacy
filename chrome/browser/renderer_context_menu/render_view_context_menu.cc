@@ -108,6 +108,7 @@
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
+#include "components/policy/content/policy_blacklist_service.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -989,6 +990,11 @@ void RenderViewContextMenu::RecordUsedItem(int id) {
     } else if (doc_url.GetOrigin() == chrome::kChromeSearchMostVisitedUrl) {
       base::RecordAction(
           base::UserMetricsAction("MostVisited_ClickedFromContextMenu"));
+    } else if (doc_url.GetOrigin() == GURL(chrome::kChromeUINewTabPageURL) ||
+               doc_url.GetOrigin() ==
+                   GURL(chrome::kChromeUIUntrustedNewTabPageUrl)) {
+      base::RecordAction(base::UserMetricsAction(
+          "NewTabPage.LinkOpenedFromContextMenu.WebUI"));
     }
   }
 
@@ -2574,6 +2580,13 @@ bool RenderViewContextMenu::IsSaveLinkAsEnabled() const {
   // Test if file-selection dialogs are forbidden by policy.
   if (!local_state->GetBoolean(prefs::kAllowFileSelectionDialogs))
     return false;
+
+  PolicyBlacklistService* service =
+      PolicyBlacklistFactory::GetForBrowserContext(browser_context_);
+  if (service->GetURLBlacklistState(params_.link_url) ==
+      policy::URLBlacklist::URLBlacklistState::URL_IN_BLACKLIST) {
+    return false;
+  }
 
   return params_.link_url.is_valid() &&
       ProfileIOData::IsHandledProtocol(params_.link_url.scheme());

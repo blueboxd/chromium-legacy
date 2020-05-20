@@ -3301,6 +3301,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxSuggestionsRecyclerViewName,
      flag_descriptions::kOmniboxSuggestionsRecyclerViewDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionsRecyclerView)},
+    {"omnibox-suggestions-wrap-around",
+     flag_descriptions::kOmniboxSuggestionsWrapAroundName,
+     flag_descriptions::kOmniboxSuggestionsWrapAroundDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxSuggestionsWrapAround)},
 #endif  // defined(OS_ANDROID)
 
     {"omnibox-on-device-head-suggestions-incognito",

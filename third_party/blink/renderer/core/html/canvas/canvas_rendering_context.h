@@ -46,7 +46,6 @@ class HTMLCanvasElement;
 class ImageBitmap;
 
 constexpr const char* kSRGBCanvasColorSpaceName = "srgb";
-constexpr const char* kLinearRGBCanvasColorSpaceName = "linear-rgb";
 constexpr const char* kRec2020CanvasColorSpaceName = "rec2020";
 constexpr const char* kP3CanvasColorSpaceName = "p3";
 

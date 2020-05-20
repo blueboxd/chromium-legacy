@@ -479,6 +479,7 @@ void ScrollingCoordinator::WillCloseAnimationHost(LocalFrameView* view) {
 void ScrollingCoordinator::WillBeDestroyed() {
   DCHECK(page_);
   page_ = nullptr;
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 bool ScrollingCoordinator::CoordinatesScrollingForFrameView(

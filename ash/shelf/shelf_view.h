@@ -270,14 +270,19 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   int number_of_visible_apps() const {
     return std::max(0, last_visible_index_ + 1);
   }
-  views::View* first_visible_button_for_testing() {
-    return view_model_->view_at(first_visible_index());
-  }
   ShelfWidget* shelf_widget() const { return shelf_->shelf_widget(); }
   views::ViewModel* view_model() { return view_model_.get(); }
   const views::ViewModel* view_model() const { return view_model_.get(); }
   bool dragged_off_shelf() const { return dragged_off_shelf_; }
   ShelfID drag_and_drop_shelf_id() const { return drag_and_drop_shelf_id_; }
+
+  views::View* first_visible_button_for_testing() {
+    return view_model_->view_at(first_visible_index());
+  }
+
+  ShelfMenuModelAdapter* shelf_menu_model_adapter_for_testing() {
+    return shelf_menu_model_adapter_.get();
+  }
 
  private:
   friend class ShelfViewTestAPI;
@@ -649,6 +654,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   // The animation metrics reporter for icon fade-out animation.
   std::unique_ptr<ui::AnimationMetricsReporter> fade_out_animation_reporter_;
+
+  // Called when showing shelf context menu.
+  base::RepeatingClosure context_menu_shown_callback_;
 
   base::WeakPtrFactory<ShelfView> weak_factory_{this};
 

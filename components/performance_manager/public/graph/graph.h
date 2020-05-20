@@ -92,8 +92,8 @@ class Graph {
   // registered.
   template <typename DerivedType>
   DerivedType* GetRegisteredObjectAs() {
-    // Be sure to access the TypeId provided GraphRegisteredImpl, in case this
-    // class has other TypeId implementations.
+    // Be sure to access the TypeId provided by GraphRegisteredImpl, in case
+    // this class has other TypeId implementations.
     GraphRegistered* object =
         GetRegisteredObject(GraphRegisteredImpl<DerivedType>::TypeId());
     return static_cast<DerivedType*>(object);

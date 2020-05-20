@@ -389,8 +389,13 @@ TEST_F(HTMLSelectElementTest, PreviousSelectableOption) {
 
 TEST_F(HTMLSelectElementTest, ActiveSelectionEndAfterOptionRemoval) {
   SetHtmlInnerHTML(
-      "<select><optgroup><option selected>o1</option></optgroup></select>");
+      "<select size=4>"
+      "<optgroup><option selected>o1</option></optgroup></select>");
   auto* select = To<HTMLSelectElement>(GetDocument().body()->firstChild());
+  // ActiveSelectionEnd*() work only in the listbox mode, which Android
+  // doesn't have.
+  if (select->UsesMenuList())
+    return;
   auto* option = To<HTMLOptionElement>(select->firstChild()->firstChild());
   EXPECT_EQ(1, select->ActiveSelectionEndListIndex());
   select->firstChild()->removeChild(option);

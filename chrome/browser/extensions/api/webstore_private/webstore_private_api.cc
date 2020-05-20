@@ -181,6 +181,12 @@ void ShowBlockedByParentDialog(const Extension* extension,
   DCHECK(extension);
   DCHECK(contents);
 
+  // Need to record UMA metrics before the ScopedTestDialogAutoConfirm early
+  // return so tests pass.
+  SupervisedUserExtensionsMetricsRecorder::RecordEnablementUmaMetrics(
+      SupervisedUserExtensionsMetricsRecorder::EnablementState::
+          kFailedToEnable);
+
   if (ScopedTestDialogAutoConfirm::GetAutoConfirmValue() !=
       ScopedTestDialogAutoConfirm::NONE) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,

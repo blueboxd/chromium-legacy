@@ -443,7 +443,6 @@ crbug.com/874695 virtual/gpu/fast/canvas/canvas-draw-canvas-on-canvas-shadow.htm
 crbug.com/874695 virtual/gpu/fast/canvas/canvas-filter-modified.html [ Slow ]
 crbug.com/874695 virtual/gpu/fast/canvas/canvas-filter-modified-save-restore.html [ Slow ]
 crbug.com/874695 virtual/gpu/fast/canvas/canvas-filter-stroke-liveness.html [ Slow ]
-crbug.com/874695 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-linear-rgb.html [ Slow ]
 crbug.com/874695 virtual/gpu/fast/canvas/downsample-quality.html [ Slow ]
 crbug.com/874695 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageData-in-worker.html [ Slow ]
 crbug.com/874695 virtual/gpu/fast/canvas/OffscreenCanvas-text-rendering-in-worker.html [ Slow ]

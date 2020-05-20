@@ -60,3 +60,23 @@ utils.setPlatformClass = function(element) {
   element.classList.toggle(
       CLASSES.MAC, navigator.userAgent.indexOf('Mac') > -1);
 };
+
+/**
+ * Returns a formatted localized string where $1 to $9 are replaced by the
+ * second to the tenth argument. Any standalone $ signs must be escaped as
+ * $$.
+ * Copied from //ui/webui/resources/js/load_time_data.js temporarily as the
+ * local NTP will be replaced by the WebUI NTP.
+ * @param {string} label The label to substitute through.
+ *     This is not an resource ID.
+ * @param {...(string|number)} var_args The extra values to include in the
+ *     formatted output.
+ * @return {string} The formatted string.
+ */
+utils.substituteString = function(label, var_args) {
+  const varArgs = arguments;
+  return label.replace(/\$(.|$|\n)/g, function(m) {
+    assert(m.match(/\$[$1-9]/), 'Unescaped $ found in localized string.');
+    return m === '$$' ? '$' : varArgs[m[1]];
+  });
+};

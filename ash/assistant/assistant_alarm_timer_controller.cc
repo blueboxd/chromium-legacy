@@ -37,7 +37,6 @@ using chromeos::assistant::mojom::AssistantNotification;
 using chromeos::assistant::mojom::AssistantNotificationButton;
 using chromeos::assistant::mojom::AssistantNotificationButtonPtr;
 using chromeos::assistant::mojom::AssistantNotificationPtr;
-using chromeos::assistant::mojom::AssistantNotificationType;
 
 // Grouping key and ID prefix for timer notifications.
 constexpr char kTimerNotificationGroupingKey[] = "assistant/timer";
@@ -192,7 +191,6 @@ std::vector<AssistantNotificationButtonPtr> CreateTimerNotificationButtons(
 // Creates a notification for the given |timer|.
 AssistantNotificationPtr CreateTimerNotification(const AssistantTimer& timer) {
   AssistantNotificationPtr notification = AssistantNotification::New();
-  notification->type = AssistantNotificationType::kSystem;
   notification->title = CreateTimerNotificationTitle();
   notification->message = CreateTimerNotificationMessage(timer);
   notification->action_url = CreateTimerNotificationActionUrl(timer);

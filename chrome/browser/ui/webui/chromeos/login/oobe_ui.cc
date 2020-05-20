@@ -31,6 +31,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_handler.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -350,11 +351,11 @@ std::string GetDisplayType(const GURL& url) {
 }
 
 bool IsRemoraRequisitioned() {
-  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+  policy::EnrollmentRequisitionManager* requisition_manager =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->GetDeviceCloudPolicyManager();
-  return policy_manager && policy_manager->IsRemoraRequisition();
+          ->GetEnrollmentRequisitionManager();
+  return requisition_manager && requisition_manager->IsRemoraRequisition();
 }
 
 }  // namespace

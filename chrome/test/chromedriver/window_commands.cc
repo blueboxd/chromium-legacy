@@ -513,8 +513,7 @@ Status ExecuteWindowCommand(const WindowCommand& command,
       // If the command failed while a new page or frame started loading, retry
       // the command after the pending navigation has completed.
       bool is_pending = false;
-      nav_status = web_view->IsPendingNavigation(session->GetCurrentFrameId(),
-                                                 &timeout, &is_pending);
+      nav_status = web_view->IsPendingNavigation(&timeout, &is_pending);
       if (nav_status.IsError())
         return nav_status;
       else if (is_pending)

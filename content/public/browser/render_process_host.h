@@ -468,6 +468,10 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   virtual void LockToOrigin(const IsolationContext& isolation_context,
                             const GURL& lock_url) = 0;
 
+  // Returns true if this process is locked to a particular 'origin'.  See the
+  // LockToOrigin() call above.
+  virtual bool IsLockedToOriginForTesting() = 0;
+
   // The following several methods are for internal use only, and are only
   // exposed here to support MockRenderProcessHost usage in tests.
   virtual void BindCacheStorage(

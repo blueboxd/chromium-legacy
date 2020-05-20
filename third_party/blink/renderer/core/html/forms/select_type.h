@@ -47,6 +47,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void MaximumOptionWidthMightBeChanged() const;
 
   virtual HTMLOptionElement* SpatialNavigationFocusedOption();
+  virtual HTMLOptionElement* ActiveSelectionEnd() const;
   virtual void ScrollToSelection();
   virtual void ScrollToOption(HTMLOptionElement* option);
   virtual void SelectAll();

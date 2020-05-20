@@ -268,7 +268,6 @@ ParentPermissionDialogView::ParentPermissionDialogView(
     ParentPermissionDialogView::Observer* observer)
     : params_(std::move(params)), observer_(observer) {
   SetDefaultButton(ui::DIALOG_BUTTON_OK);
-  set_draggable(true);
   SetButtonLabel(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_PARENT_PERMISSION_PROMPT_APPROVE_BUTTON));

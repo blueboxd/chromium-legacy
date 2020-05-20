@@ -8,7 +8,7 @@
  */
 class TabNode extends NodeWrapper {
   /**
-   * @param {!chrome.automation.AutomationNode} node The node in the automation
+   * @param {!AutomationNode} node The node in the automation
    *    tree
    * @param {?SARootNode} parent
    * @param {!SARootNode} tabAsRoot A pre-calculated object for exploring the
@@ -70,7 +70,7 @@ class TabNode extends NodeWrapper {
 /** This class handles the behavior of tabs as actionable elements */
 class ActionableTabNode extends NodeWrapper {
   /**
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {!AutomationNode} node
    * @param {?SARootNode} parent
    * @param {?SAChildNode} closeButton
    */

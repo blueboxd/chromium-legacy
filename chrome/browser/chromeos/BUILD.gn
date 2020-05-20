@@ -1921,6 +1921,8 @@ source_set("chromeos") {
     "policy/enrollment_config.h",
     "policy/enrollment_handler_chromeos.cc",
     "policy/enrollment_handler_chromeos.h",
+    "policy/enrollment_requisition_manager.cc",
+    "policy/enrollment_requisition_manager.h",
     "policy/extension_install_event_log_collector.cc",
     "policy/extension_install_event_log_collector.h",
     "policy/extension_install_event_logger.cc",

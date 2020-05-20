@@ -74,11 +74,11 @@ SwitchAccessE2ETest.prototype = {
   },
 
   /**
-   * @param {function(chrome.automation.AutomationNode): boolean} predicate A
-   *        predicate that uniquely specifies one automation node.
+   * @param {function(AutomationNode): boolean} predicate A predicate that
+   *     uniquely specifies one automation node.
    * @param {string=} opt_nodeString A string specifying what node was being
-   *        looked for.
-   * @return {!chrome.automation.AutomationNode}
+   *     looked for.
+   * @return {!AutomationNode}
    */
   findNodeMatchingPredicate(predicate, opt_nodeString) {
     const nodeString = opt_nodeString || 'node matching the predicate';
@@ -94,7 +94,7 @@ SwitchAccessE2ETest.prototype = {
 
   /**
    * @param {string} id The HTML id of an element.
-   * @return {!chrome.automation.AutomationNode}
+   * @return {!AutomationNode}
    */
   findNodeById(id) {
     const predicate = (node) => node.htmlAttributes.id === id;
@@ -105,12 +105,33 @@ SwitchAccessE2ETest.prototype = {
   /**
    * @param {string} name The name of the node within the automation tree.
    * @param {string} role The node's role.
-   * @return {!chrome.automation.AutomationNode}
+   * @return {!AutomationNode}
    */
   findNodeByNameAndRole(name, role) {
     const predicate = (node) => node.name === name && node.role === role;
     const nodeString = 'node with name "' + name + '" and role ' + role;
     return this.findNodeMatchingPredicate(predicate, nodeString);
+  },
+
+  /**
+   * @param {function(): boolean} predicate The condition under which the
+   *     callback should be fired.
+   * @param {function()} callback
+   */
+  waitForPredicate(predicate, callback) {
+    if (predicate()) {
+      callback();
+      return;
+    }
+    const listener = () => {
+      if (predicate()) {
+        NavigationManager.desktopNode.removeEventListener(
+            'childrenChanged', listener, false /* capture */);
+        callback();
+      }
+    };
+    NavigationManager.desktopNode.addEventListener(
+        'childrenChanged', listener, false /* capture */);
   },
 
   /**
@@ -123,8 +144,8 @@ SwitchAccessE2ETest.prototype = {
    * |this.newCallback| if passed to asynchonous calls.  Otherwise, the test
    * will be finished prematurely.
    * @param {string} url Url to load and wait for.
-   * @param {function(chrome.automation.AutomationNode)} callback Called with
-   *     the desktop node once the document is ready.
+   * @param {function(AutomationNode)} callback Called with the desktop node
+   *     once the document is ready.
    */
   runWithLoadedTree(url, callback) {
     const prefix = url.substring(0, 4);

@@ -43,6 +43,10 @@ public class SuggestionViewViewBinder {
             } else {
                 tv.setVisibility(View.GONE);
             }
+        } else if (propertyKey == SuggestionViewProperties.ALLOW_WRAP_AROUND) {
+            final boolean allowWrapAround = model.get(SuggestionViewProperties.ALLOW_WRAP_AROUND);
+            TextView tv = view.findViewById(R.id.line_1);
+            tv.setMaxLines(allowWrapAround ? 2 : 1);
         }
     }
 

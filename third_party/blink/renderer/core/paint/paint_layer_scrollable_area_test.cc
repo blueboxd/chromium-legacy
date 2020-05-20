@@ -328,10 +328,7 @@ TEST_P(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {
     EXPECT_TRUE(GraphicsLayerContentsOpaque(scroller));
 }
 
-// Tests that we don't promote scrolling content which would not be contained.
-// Promoting the scroller would also require promoting the positioned div
-// which would lose subpixel anti-aliasing due to its transparent background.
-TEST_P(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
+TEST_P(PaintLayerScrollableAreaTest, NonStackingContextScrollerPromoted) {
   SetBodyInnerHTML(R"HTML(
     <style>
     #scroller { overflow: scroll; height: 200px; width: 200px;
@@ -346,7 +343,7 @@ TEST_P(PaintLayerScrollableAreaTest, NonContainedLayersNotPromoted) {
     </div>
   )HTML");
 
-  EXPECT_FALSE(UsesCompositedScrolling(GetLayoutObjectByElementId("scroller")));
+  EXPECT_TRUE(UsesCompositedScrolling(GetLayoutObjectByElementId("scroller")));
 }
 
 TEST_P(PaintLayerScrollableAreaTest, TransparentLayersNotPromoted) {
@@ -987,15 +984,16 @@ TEST_P(PaintLayerScrollableAreaTest,
   auto* scrollable_area = scroller->GetScrollableArea();
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             scroller->ComputeBackgroundPaintLocationIfComposited());
-  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
             scroller->GetBackgroundPaintLocation());
+  EXPECT_TRUE(UsesCompositedScrolling(scroller));
 
   // Programmatically changing the scroll offset.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
                                    mojom::blink::ScrollType::kProgrammatic);
-  // Full invalidation because there is no separate scrolling contents layer.
-  EXPECT_TRUE(scroller->ShouldDoFullPaintInvalidation());
-  EXPECT_TRUE(scroller->BackgroundNeedsFullPaintInvalidation());
+  // No paint invalidation because it uses composited scrolling.
+  EXPECT_FALSE(scroller->ShouldDoFullPaintInvalidation());
+  EXPECT_FALSE(scroller->BackgroundNeedsFullPaintInvalidation());
 
   EXPECT_TRUE(scroller->NeedsPaintPropertyUpdate());
   UpdateAllLifecyclePhasesForTest();
@@ -1026,8 +1024,9 @@ TEST_P(PaintLayerScrollableAreaTest,
   EXPECT_EQ(
       kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
       scroller->ComputeBackgroundPaintLocationIfComposited());
-  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
-            scroller->GetBackgroundPaintLocation());
+  EXPECT_EQ(
+      kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
+      scroller->GetBackgroundPaintLocation());
 
   // Programmatically changing the scroll offset.
   scrollable_area->SetScrollOffset(ScrollOffset(0, 1),
@@ -1120,7 +1119,7 @@ TEST_P(PaintLayerScrollableAreaTest,
       ToLayoutBox(GetLayoutObjectByElementId("fixed-background"));
   EXPECT_EQ(kBackgroundPaintInScrollingContents,
             fixed_background_div->ComputeBackgroundPaintLocationIfComposited());
-  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+  EXPECT_EQ(kBackgroundPaintInScrollingContents,
             fixed_background_div->GetBackgroundPaintLocation());
   auto* div_scrollable_area = fixed_background_div->GetScrollableArea();
   auto* view_scrollable_area = GetLayoutView().GetScrollableArea();

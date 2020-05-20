@@ -545,6 +545,12 @@ void BlinkTestRunner::OnSetTestConfiguration(
   DCHECK(web_view_test_proxy_->GetMainRenderFrame());
 
   ApplyTestConfiguration(std::move(params));
+
+  // If focus was in a child frame, it gets lost when we navigate to the next
+  // test, but we want to start with focus in the main frame for every test.
+  // Focus is controlled by the renderer, so we must do the reset here.
+  web_view_test_proxy_->GetWebView()->SetFocusedFrame(
+      web_view_test_proxy_->GetMainRenderFrame()->GetWebFrame());
 }
 
 void BlinkTestRunner::OnResetRendererAfterWebTest() {

@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "gpu/config/gpu_preferences.h"
+#include "media/base/bind_to_current_loop.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/bitstream_helpers.h"
@@ -57,12 +58,6 @@ VideoEncoderClient::~VideoEncoderClient() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(test_sequence_checker_);
 
   Destroy();
-
-  // Wait until the bitstream processors are done before destroying them.
-  // This needs to be done after destroying the encoder so no new bitstream
-  // buffers will be queued while waiting.
-  WaitForBitstreamProcessors();
-  bitstream_processors_.clear();
 }
 
 // static
@@ -104,6 +99,12 @@ void VideoEncoderClient::Destroy() {
       FROM_HERE, base::BindOnce(&VideoEncoderClient::DestroyEncoderTask,
                                 weak_this_, &done));
   done.Wait();
+
+  // Wait until the bitstream processors are done before destroying them.
+  // This needs to be done after destroying the encoder so no new bitstream
+  // buffers will be queued while waiting.
+  WaitForBitstreamProcessors();
+  bitstream_processors_.clear();
 
   encoder_client_thread_.Stop();
 }
@@ -170,6 +171,7 @@ scoped_refptr<BitstreamProcessor::BitstreamRef>
 VideoEncoderClient::CreateBitstreamRef(
     int32_t bitstream_buffer_id,
     const BitstreamBufferMetadata& metadata) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_client_sequence_checker_);
   auto it = bitstream_buffers_.find(bitstream_buffer_id);
   LOG_ASSERT(it != bitstream_buffers_.end());
   auto decoder_buffer = DecoderBuffer::FromSharedMemoryRegion(
@@ -178,11 +180,14 @@ VideoEncoderClient::CreateBitstreamRef(
       0u /* offset */, output_buffer_size_);
   if (!decoder_buffer)
     return nullptr;
+  decoder_buffer->set_timestamp(
+      base::TimeDelta::FromMicroseconds(frame_index_));
 
   return BitstreamProcessor::BitstreamRef::Create(
       std::move(decoder_buffer), metadata, bitstream_buffer_id,
-      base::BindOnce(&VideoEncoderClient::BitstreamBufferProcessed, weak_this_,
-                     bitstream_buffer_id));
+      BindToCurrentLoop(
+          base::BindOnce(&VideoEncoderClient::BitstreamBufferProcessed,
+                         weak_this_, bitstream_buffer_id)));
 }
 
 void VideoEncoderClient::BitstreamBufferReady(

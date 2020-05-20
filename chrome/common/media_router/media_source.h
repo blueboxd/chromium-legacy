@@ -91,7 +91,6 @@ class MediaSource {
   // Protocol-specific media source object creation.
   // Returns MediaSource URI depending on the type of source.
   static MediaSource ForTab(int tab_id);
-  static MediaSource ForTabContentRemoting(int tab_id);
   static MediaSource ForPresentationUrl(const GURL& presentation_url);
 
   // Creates a media source for a specific desktop.

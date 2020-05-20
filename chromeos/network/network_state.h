@@ -170,9 +170,6 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkState : public ManagedState {
   // roaming.
   bool IndicateRoaming() const;
 
-  // Returns true if the current connection is using mobile data.
-  bool IsUsingMobileData() const;
-
   // Returns true if the network securty is WEP_8021x (Dynamic WEP)
   bool IsDynamicWep() const;
 

@@ -895,15 +895,6 @@ bool AwContentBrowserClient::ShouldLockToOrigin(
   return false;
 }
 
-bool AwContentBrowserClient::DoesWebUISchemeRequireProcessLock(
-    base::StringPiece scheme) {
-  // TODO(nasko,alexmos): WebView does not currently lock processes for WebUI
-  // navigations, even though it does cross-process navigations. It should be
-  // fixed and this method can be removed.
-  // See https://crbug.com/1071464.
-  return false;
-}
-
 bool AwContentBrowserClient::WillCreateURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,

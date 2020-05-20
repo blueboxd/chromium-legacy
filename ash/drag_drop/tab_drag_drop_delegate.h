@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/wm/splitview/split_view_controller.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace aura {
@@ -21,6 +22,7 @@ class OSExchangeData;
 namespace ash {
 
 class SplitViewDragIndicators;
+class TabletModeBrowserWindowDragSessionWindowsHider;
 
 // Provides special handling for Chrome tab drags on behalf of
 // DragDropController. This must be created at the beginning of a tab drag and
@@ -30,6 +32,9 @@ class ASH_EXPORT TabDragDropDelegate {
   // Determines whether |drag_data| indicates a tab drag from a WebUI tab strip
   // (or simply returns false if the integration is disabled).
   static bool IsChromeTabDrag(const ui::OSExchangeData& drag_data);
+
+  // Returns whether a tab from |window| is actively being dragged.
+  static bool IsSourceWindowForDrag(const aura::Window* window);
 
   // |root_window| is the root window from which the drag originated. The drag
   // is expected to stay in |root_window|. |source_window| is the Chrome window
@@ -54,11 +59,22 @@ class ASH_EXPORT TabDragDropDelegate {
             const ui::OSExchangeData& drop_data);
 
  private:
+  // Scales or transforms the source window if appropriate for this drag.
+  // |candidate_snap_position| is where the dragged tab will be snapped
+  // if dropped immediately.
+  void UpdateSourceWindowBoundsIfNecessary(
+      SplitViewController::SnapPosition candidate_snap_position);
+
+  // Puts the source window back into its original position.
+  void RestoreSourceWindowBounds();
+
   aura::Window* const root_window_;
   aura::Window* const source_window_;
   const gfx::Point start_location_in_screen_;
 
   std::unique_ptr<SplitViewDragIndicators> split_view_drag_indicators_;
+  std::unique_ptr<TabletModeBrowserWindowDragSessionWindowsHider>
+      windows_hider_;
 };
 
 }  // namespace ash

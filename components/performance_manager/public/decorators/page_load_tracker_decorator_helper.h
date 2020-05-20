@@ -12,7 +12,7 @@ namespace performance_manager {
 // This class must be instantiated on the UI thread in order to maintain the
 // PageLoadTracker decorator of PageNodes.
 class PageLoadTrackerDecoratorHelper
-    : public PerformanceManagerMainThreadObserver {
+    : public PerformanceManagerMainThreadObserverDefaultImpl {
  public:
   PageLoadTrackerDecoratorHelper();
   ~PageLoadTrackerDecoratorHelper() override;

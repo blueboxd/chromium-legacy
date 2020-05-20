@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_preferences_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/demo_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
@@ -277,10 +278,10 @@ IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestAcceptEula) {
 IN_PROC_BROWSER_TEST_F(OobeConfigurationTest, TestDeviceRequisition) {
   LoadConfiguration();
   OobeScreenWaiter(EulaView::kScreenId).Wait();
-  auto* policy_manager = g_browser_process->platform_part()
-                             ->browser_policy_connector_chromeos()
-                             ->GetDeviceCloudPolicyManager();
-  EXPECT_EQ(policy_manager->GetDeviceRequisition(), "some_requisition");
+  auto* requisition_manager = g_browser_process->platform_part()
+                                  ->browser_policy_connector_chromeos()
+                                  ->GetEnrollmentRequisitionManager();
+  EXPECT_EQ(requisition_manager->GetDeviceRequisition(), "some_requisition");
 }
 
 // Check that configuration allows to skip Update screen and get to Enrollment

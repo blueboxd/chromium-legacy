@@ -71,16 +71,20 @@
 #else
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_observer.h"
 #include "chrome/test/base/android/android_browser_test.h"
+#include "content/public/browser/web_contents.h"
 #endif  // !defined(OS_ANDROID)
 
 namespace metrics {
 namespace {
 
+class TestTabModel;
+
 #if !defined(OS_ANDROID)
-typedef Browser PlatformBrowser;
+typedef Browser* PlatformBrowser;
 #else
-typedef TabModel PlatformBrowser;
+typedef std::unique_ptr<TestTabModel> PlatformBrowser;
 #endif  // !defined(OS_ANDROID)
 
 // Clears the specified data using BrowsingDataRemover.
@@ -102,6 +106,48 @@ void ClearBrowsingData(Profile* profile) {
 ukm::UkmService* GetUkmService() {
   return g_browser_process->GetMetricsServicesManager()->GetUkmService();
 }
+
+#if defined(OS_ANDROID)
+// TestTabModel provides a means of creating a tab associated with a given
+// profile. The new tab can then be added to Android's TabModelList.
+class TestTabModel : public TabModel {
+ public:
+  explicit TestTabModel(Profile* profile)
+      : TabModel(profile, /*is_tabbed_activity=*/false),
+        web_contents_(content::WebContents::Create(
+            content::WebContents::CreateParams(GetProfile()))) {}
+
+  ~TestTabModel() override = default;
+
+  // TabModel:
+  int GetTabCount() const override { return 0; }
+  int GetActiveIndex() const override { return 0; }
+  content::WebContents* GetActiveWebContents() const override {
+    return web_contents_.get();
+  }
+  content::WebContents* GetWebContentsAt(int index) const override {
+    return nullptr;
+  }
+  TabAndroid* GetTabAt(int index) const override { return nullptr; }
+  void SetActiveIndex(int index) override {}
+  void CloseTabAt(int index) override {}
+  void CreateTab(TabAndroid* parent,
+                 content::WebContents* web_contents) override {}
+  void HandlePopupNavigation(TabAndroid* parent,
+                             NavigateParams* params) override {}
+  content::WebContents* CreateNewTabForDevTools(const GURL& url) override {
+    return nullptr;
+  }
+  bool IsSessionRestoreInProgress() const override { return false; }
+  bool IsCurrentModel() const override { return false; }
+  void AddObserver(TabModelObserver* observer) override {}
+  void RemoveObserver(TabModelObserver* observer) override {}
+
+ private:
+  // The WebContents associated with this tab's profile.
+  std::unique_ptr<content::WebContents> web_contents_;
+};
+#endif  // defined(OS_ANDROID)
 
 }  // namespace
 
@@ -195,28 +241,37 @@ class UkmBrowserTestBase : public SyncTest {
 #endif  // !defined(OS_ANDROID)
 
  protected:
-  // Creates a platform-appropriate browser for |test_profile|. Note that
-  // |test_profile| is unused on Android because there is only one profile
-  // whereas desktop can have multiple profiles.
-  PlatformBrowser* CreatePlatformBrowser(Profile* test_profile) {
+  // Creates and returns a platform-appropriate browser for |profile|.
+  PlatformBrowser CreatePlatformBrowser(Profile* profile) {
 #if !defined(OS_ANDROID)
-    return CreateBrowser(test_profile);
+    return CreateBrowser(profile);
 #else
-    EXPECT_EQ(1U, TabModelList::size());
-    TabModel* tab_model = TabModelList::get(0);
+    std::unique_ptr<TestTabModel> tab_model =
+        std::make_unique<TestTabModel>(profile);
+    TabModelList::AddTabModel(tab_model.get());
     EXPECT_TRUE(content::NavigateToURL(tab_model->GetActiveWebContents(),
                                        GURL("about:blank")));
     return tab_model;
 #endif  // !defined(OS_ANDROID)
   }
 
-  // Closes |browser| in a way that is appropriate for the platform. Note that
-  // this is a no-op on Android.
-  void ClosePlatformBrowser(PlatformBrowser* browser) {
+  // Creates a platform-appropriate incognito browser for |profile|.
+  PlatformBrowser CreateIncognitoPlatformBrowser(Profile* profile) {
+    EXPECT_TRUE(profile->IsOffTheRecord());
+#if !defined(OS_ANDROID)
+    return CreateIncognitoBrowser(profile);
+#else
+    return CreatePlatformBrowser(profile);
+#endif  // !defined(OS_ANDROID)
+  }
+
+  // Closes |browser| in a way that is appropriate for the platform.
+  void ClosePlatformBrowser(PlatformBrowser& browser) {
 #if !defined(OS_ANDROID)
     CloseBrowserSynchronously(browser);
 #else
-    return;
+    TabModelList::RemoveTabModel(browser.get());
+    browser.reset();
 #endif  // !defined(OS_ANDROID)
   }
 
@@ -263,6 +318,22 @@ class UkmBrowserTestBase : public SyncTest {
 class UkmBrowserTest : public UkmBrowserTestBase {
  public:
   UkmBrowserTest() : UkmBrowserTestBase() {}
+
+#if defined(OS_ANDROID)
+  void PreRunTestOnMainThread() override {
+    // At some point during set-up, Android's TabModelList is populated with a
+    // TabModel. However, it is desirable to begin the tests with an empty
+    // TabModelList to avoid complicated logic in CreatePlatformBrowser.
+    //
+    // For example, if the pre-existing TabModel is not deleted and if the first
+    // tab created in a test is an incognito tab, then CreatePlatformBrowser
+    // would need to remove the pre-existing TabModel and add a new one.
+    // Having an empty TabModelList allows us to simply add the appropriate
+    // TabModel.
+    TabModelList::RemoveTabModel(TabModelList::get(0));
+    EXPECT_EQ(0U, TabModelList::size());
+  }
+#endif  // defined(OS_ANDROID)
 
  private:
   DISALLOW_COPY_AND_ASSIGN(UkmBrowserTest);
@@ -385,10 +456,8 @@ class UkmBrowserTestWithDemographics
 };
 
 // Make sure that UKM is disabled while an incognito window is open.
-// Keep in sync with testRegularPlusIncognitoCheck in chrome/android/javatests/
-// src/org/chromium/chrome/browser/metrics/UkmTest.java and with
-// testRegularPlusIncognito in ios/chrome/browser/metrics/ukm_egtest.mm.
-#if !defined(OS_ANDROID)
+// Keep in sync with testRegularPlusIncognito in ios/chrome/browser/metrics/
+// ukm_egtest.mm.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
@@ -397,39 +466,43 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, RegularPlusIncognitoCheck) {
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSyncForProfile(profile);
 
-  Browser* sync_browser = CreateBrowser(profile);
+  PlatformBrowser browser1 = CreatePlatformBrowser(profile);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
 
-  Browser* incognito_browser = CreateIncognitoBrowser();
+  Profile* incognito_profile = profile->GetPrimaryOTRProfile();
+  PlatformBrowser incognito_browser1 =
+      CreateIncognitoPlatformBrowser(incognito_profile);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   // Opening another regular browser mustn't enable UKM.
-  Browser* regular_browser = CreateBrowser(profile);
+  PlatformBrowser browser2 = CreatePlatformBrowser(profile);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
   // Opening and closing another Incognito browser mustn't enable UKM.
-  CloseBrowserSynchronously(CreateIncognitoBrowser());
+  PlatformBrowser incognito_browser2 =
+      CreateIncognitoPlatformBrowser(incognito_profile);
+  ClosePlatformBrowser(incognito_browser2);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
-  CloseBrowserSynchronously(regular_browser);
+  ClosePlatformBrowser(browser2);
   EXPECT_FALSE(ukm_test_helper.IsRecordingEnabled());
 
-  CloseBrowserSynchronously(incognito_browser);
+  ClosePlatformBrowser(incognito_browser1);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   // Client ID should not have been reset.
   EXPECT_EQ(original_client_id, ukm_test_helper.GetClientId());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
-  CloseBrowserSynchronously(sync_browser);
+  ClosePlatformBrowser(browser1);
 }
-#endif  // !defined(OS_ANDROID)
 
 // Make sure opening a real window after Incognito doesn't enable UKM.
 // Keep in sync with testIncognitoPlusRegularCheck in chrome/android/javatests/
 // src/org/chromium/chrome/browser/metrics/UkmTest.java and with
 // testIncognitoPlusRegular in ios/chrome/browser/metrics/ukm_egtest.mm.
+// TODO(crbug/1049736): Enable this on Android.
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, IncognitoPlusRegularCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
@@ -623,7 +696,7 @@ IN_PROC_BROWSER_TEST_P(UkmBrowserTestWithDemographics,
   // birth year and gender.
   ASSERT_EQ(1, num_clients());
 
-  PlatformBrowser* browser = CreatePlatformBrowser(test_profile);
+  PlatformBrowser browser = CreatePlatformBrowser(test_profile);
 
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   uint64_t original_client_id = ukm_test_helper.GetClientId();
@@ -1053,6 +1126,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
 // Keep in sync with testHistoryDeleteCheck in chrome/android/javatests/src/org/
 // chromium/chrome/browser/metrics/UkmTest.java and testHistoryDelete in
 // ios/chrome/browser/metrics/ukm_egtest.mm.
+// TODO(crbug/1049736): Enable this on Android.
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());

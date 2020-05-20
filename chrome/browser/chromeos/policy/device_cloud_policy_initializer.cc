@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 #include "chrome/browser/chromeos/policy/enrollment_handler_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/policy/status_collector/device_status_collector.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -61,8 +62,9 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
     chromeos::InstallAttributes* install_attributes,
     ServerBackedStateKeysBroker* state_keys_broker,
-    DeviceCloudPolicyStoreChromeOS* device_store,
-    DeviceCloudPolicyManagerChromeOS* manager,
+    DeviceCloudPolicyStoreChromeOS* policy_store,
+    DeviceCloudPolicyManagerChromeOS* policy_manager,
+    EnrollmentRequisitionManager* requisition_manager,
     cryptohome::AsyncMethodCaller* async_method_caller,
     std::unique_ptr<chromeos::attestation::AttestationFlow> attestation_flow,
     chromeos::system::StatisticsProvider* statistics_provider)
@@ -71,8 +73,9 @@ DeviceCloudPolicyInitializer::DeviceCloudPolicyInitializer(
       background_task_runner_(background_task_runner),
       install_attributes_(install_attributes),
       state_keys_broker_(state_keys_broker),
-      device_store_(device_store),
-      manager_(manager),
+      policy_store_(policy_store),
+      policy_manager_(policy_manager),
+      requisition_manager_(requisition_manager),
       attestation_flow_(std::move(attestation_flow)),
       statistics_provider_(statistics_provider),
       signing_service_(std::make_unique<TpmEnrollmentKeySigningService>(
@@ -101,7 +104,7 @@ void DeviceCloudPolicyInitializer::Init() {
   DCHECK(!is_initialized_);
 
   is_initialized_ = true;
-  device_store_->AddObserver(this);
+  policy_store_->AddObserver(this);
   state_keys_update_subscription_ = state_keys_broker_->RegisterUpdateCallback(
       base::Bind(&DeviceCloudPolicyInitializer::TryToCreateClient,
                  base::Unretained(this)));
@@ -112,7 +115,7 @@ void DeviceCloudPolicyInitializer::Init() {
 void DeviceCloudPolicyInitializer::Shutdown() {
   DCHECK(is_initialized_);
 
-  device_store_->RemoveObserver(this);
+  policy_store_->RemoveObserver(this);
   enrollment_handler_.reset();
   state_keys_update_subscription_.reset();
   is_initialized_ = false;
@@ -127,14 +130,15 @@ void DeviceCloudPolicyInitializer::PrepareEnrollment(
   DCHECK(is_initialized_);
   DCHECK(!enrollment_handler_);
 
-  manager_->core()->Disconnect();
+  policy_manager_->core()->Disconnect();
 
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
-      device_store_, install_attributes_, state_keys_broker_,
+      policy_store_, install_attributes_, state_keys_broker_,
       attestation_flow_.get(), CreateClient(device_management_service),
       background_task_runner_, ad_join_delegate, enrollment_config,
       std::move(dm_auth), install_attributes_->GetDeviceId(),
-      manager_->GetDeviceRequisition(), manager_->GetSubOrganization(),
+      requisition_manager_->GetDeviceRequisition(),
+      requisition_manager_->GetSubOrganization(),
       base::Bind(&DeviceCloudPolicyInitializer::EnrollmentCompleted,
                  base::Unretained(this), enrollment_callback)));
 }
@@ -344,7 +348,7 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {
-  if (!device_store_->is_initialized() || !device_store_->has_policy() ||
+  if (!policy_store_->is_initialized() || !policy_store_->has_policy() ||
       !state_keys_broker_->available() || enrollment_handler_ ||
       install_attributes_->IsActiveDirectoryManaged()) {
     return;
@@ -354,8 +358,8 @@ void DeviceCloudPolicyInitializer::TryToCreateClient() {
 
 void DeviceCloudPolicyInitializer::StartConnection(
     std::unique_ptr<CloudPolicyClient> client) {
-  if (!manager_->core()->service())
-    manager_->StartConnection(std::move(client), install_attributes_);
+  if (!policy_manager_->core()->service())
+    policy_manager_->StartConnection(std::move(client), install_attributes_);
 }
 
 bool DeviceCloudPolicyInitializer::GetMachineFlag(const std::string& key,

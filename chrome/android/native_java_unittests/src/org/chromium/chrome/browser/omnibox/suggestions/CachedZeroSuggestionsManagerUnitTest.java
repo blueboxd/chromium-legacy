@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -56,7 +57,7 @@ public class CachedZeroSuggestionsManagerUnitTest {
 
         for (int index = 0; index < count; ++index) {
             final int id = index + 1;
-            list.add(createSuggestionBuilder(id)
+            list.add(createSuggestionBuilder(id, OmniboxSuggestionType.HISTORY_URL)
                              .setPostContentType(hasPostData ? "Content Type " + id : null)
                              .setPostData(hasPostData ? new byte[] {4, 5, 6, (byte) id} : null)
                              .build());
@@ -72,7 +73,19 @@ public class CachedZeroSuggestionsManagerUnitTest {
      * @return Newly constructed OmniboxSuggestion.
      */
     private OmniboxSuggestionBuilderForTest createSuggestionBuilder(int id) {
-        return OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.CLIPBOARD_IMAGE)
+        return createSuggestionBuilder(id, OmniboxSuggestionType.HISTORY_URL);
+    }
+
+    /**
+     * Create and partially initialize suggestion builder constructing dummy OmniboxSuggestions.
+     *
+     * @param id Suggestion identifier used to initialize a unique suggestion content.
+     * @param type Suggestion type.
+     * @return Newly constructed OmniboxSuggestion.
+     */
+    private OmniboxSuggestionBuilderForTest createSuggestionBuilder(
+            int id, @OmniboxSuggestionType int type) {
+        return OmniboxSuggestionBuilderForTest.searchWithType(type)
                 .setDisplayText("dummy text " + id)
                 .setDescription("dummy description " + id);
     }
@@ -93,6 +106,24 @@ public class CachedZeroSuggestionsManagerUnitTest {
         CachedZeroSuggestionsManager.saveToCache(dataToCache);
         AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
         assertAutocompleteResultEquals(dataToCache, dataFromCache);
+    }
+
+    @CalledByNativeJavaTest
+    public void setNewSuggestions_DoNotcacheClipboardSuggestions() {
+        List<OmniboxSuggestion> mix_list = Arrays.asList(
+                createSuggestionBuilder(1, OmniboxSuggestionType.CLIPBOARD_IMAGE).build(),
+                createSuggestionBuilder(2, OmniboxSuggestionType.HISTORY_URL).build(),
+                createSuggestionBuilder(3, OmniboxSuggestionType.CLIPBOARD_TEXT).build(),
+                createSuggestionBuilder(4, OmniboxSuggestionType.SEARCH_HISTORY).build());
+        List<OmniboxSuggestion> expected_list =
+                Arrays.asList(createSuggestionBuilder(2, OmniboxSuggestionType.HISTORY_URL).build(),
+                        createSuggestionBuilder(4, OmniboxSuggestionType.SEARCH_HISTORY).build());
+
+        AutocompleteResult dataToCache = new AutocompleteResult(mix_list, null);
+        AutocompleteResult dataToExpected = new AutocompleteResult(expected_list, null);
+        CachedZeroSuggestionsManager.saveToCache(dataToCache);
+        AutocompleteResult dataFromCache = CachedZeroSuggestionsManager.readFromCache();
+        assertAutocompleteResultEquals(dataToExpected, dataFromCache);
     }
 
     @CalledByNativeJavaTest

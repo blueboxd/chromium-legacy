@@ -90,15 +90,20 @@ class SupervisedUserExtensionsMetricsRecorder
   // "SupervisedUserExtensionEnablement" in
   // src/tools/metrics/histograms/enums.xml.
   enum class EnablementState {
-    // Recorded when the child enables an approved extension.
+    // Recorded when the child successfully enables an approved extension.
     kEnabled = 0,
-    // Recorded when the child disables an approved extension.
+    // Recorded when the child successfully disables an approved extension.
+    // Note that a disable attempt can't fail, because there are no
+    // force-enabled extensions for supervised users.
     kDisabled = 1,
+    // Recorded when the child tries to enable a force-disabled extension and
+    // fails.
+    kFailedToEnable = 2,
     // Add future entries above this comment, in sync with
     // "SupervisedUserExtensionEnablement" in
     // src/tools/metrics/histograms/enums.xml.
     // Update kMaxValue to the last value.
-    kMaxValue = kDisabled
+    kMaxValue = kFailedToEnable
   };
 
   // UMA metrics for adding to or removing from the set of approved extension
@@ -129,6 +134,7 @@ class SupervisedUserExtensionsMetricsRecorder
   static const char kEnablementHistogramName[];
   static const char kEnabledActionName[];
   static const char kDisabledActionName[];
+  static const char kFailedToEnableActionName[];
 
   SupervisedUserExtensionsMetricsRecorder();
   ~SupervisedUserExtensionsMetricsRecorder() override = default;

@@ -229,26 +229,6 @@ void BluetoothRemoteGattCharacteristicMac::DeprecatedWriteRemoteCharacteristic(
   }
 }
 
-bool BluetoothRemoteGattCharacteristicMac::WriteWithoutResponse(
-    base::span<const uint8_t> value) {
-  if (!IsWritableWithoutResponse()) {
-    DVLOG(1) << *this << ": Characteristic not writable without response.";
-    return false;
-  }
-  if (HasPendingRead() || HasPendingWrite()) {
-    DVLOG(1) << *this << ": Characteristic write already in progress.";
-    return false;
-  }
-
-  DVLOG(1) << *this << ": Write characteristic without response.";
-  base::scoped_nsobject<NSData> nsdata_value(
-      [[NSData alloc] initWithBytes:value.data() length:value.size()]);
-  [GetCBPeripheral() writeValue:nsdata_value
-              forCharacteristic:cb_characteristic_
-                           type:CBCharacteristicWriteWithoutResponse];
-  return true;
-}
-
 void BluetoothRemoteGattCharacteristicMac::SubscribeToNotifications(
     BluetoothRemoteGattDescriptor* ccc_descriptor,
     base::OnceClosure callback,
@@ -445,10 +425,6 @@ bool BluetoothRemoteGattCharacteristicMac::IsWritable() const {
   BluetoothGattCharacteristic::Properties properties = GetProperties();
   return (properties & BluetoothGattCharacteristic::PROPERTY_WRITE) ||
          (properties & PROPERTY_WRITE_WITHOUT_RESPONSE);
-}
-
-bool BluetoothRemoteGattCharacteristicMac::IsWritableWithoutResponse() const {
-  return (GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE);
 }
 
 bool BluetoothRemoteGattCharacteristicMac::SupportsNotificationsOrIndications()

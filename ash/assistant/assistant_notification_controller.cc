@@ -64,12 +64,6 @@ message_center::NotifierId GetNotifierId() {
       message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId);
 }
 
-bool IsSystemNotification(
-    const chromeos::assistant::mojom::AssistantNotification* notification) {
-  return notification->type ==
-         chromeos::assistant::mojom::AssistantNotificationType::kSystem;
-}
-
 bool IsValidActionUrl(const GURL& action_url) {
   return action_url.is_valid() && (action_url.SchemeIsHTTPOrHTTPS() ||
                                    assistant::util::IsDeepLinkUrl(action_url));
@@ -145,10 +139,6 @@ void AssistantNotificationController::OnNotificationAdded(
   if (!AssistantState::Get()->notification_enabled().value_or(true))
     return;
 
-  // We only show system notifications in the Message Center.
-  if (!IsSystemNotification(notification))
-    return;
-
   message_center::MessageCenter::Get()->AddNotification(
       CreateSystemNotification(notifier_id_, notification));
 }
@@ -158,15 +148,6 @@ void AssistantNotificationController::OnNotificationUpdated(
   // Do not show system notifications if the setting is disabled.
   if (!AssistantState::Get()->notification_enabled().value_or(true))
     return;
-
-  // If the notification that was updated is *not* a system notification, we
-  // need to ensure that it is removed from the Message Center (given that it
-  // may have been a system notification prior to update).
-  if (!IsSystemNotification(notification)) {
-    message_center::MessageCenter::Get()->RemoveNotification(
-        notification->client_id, /*by_user=*/false);
-    return;
-  }
 
   message_center::MessageCenter::Get()->UpdateNotification(
       notification->client_id,
@@ -228,12 +209,8 @@ void AssistantNotificationController::OnNotificationClicked(
 void AssistantNotificationController::OnNotificationRemoved(
     const std::string& notification_id,
     bool by_user) {
-  // If the notification that was removed is a system notification, we need to
-  // update our notification model. If it is *not* a system notification, then
-  // the notification was removed from the Message Center due to a change of
-  // |type| so it should be retained in the model.
-  const auto* notification = model_.GetNotificationById(notification_id);
-  if (notification && IsSystemNotification(notification))
+  // Update our notification model to remain in sync w/ Message Center.
+  if (model_.GetNotificationById(notification_id))
     model_.RemoveNotificationById(notification_id, /*from_server=*/false);
 }
 

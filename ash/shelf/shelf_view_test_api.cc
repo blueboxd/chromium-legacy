@@ -140,4 +140,10 @@ ShelfViewTestAPI::shelf_button_pressed_metric_tracker() {
   return &(shelf_view_->shelf_button_pressed_metric_tracker_);
 }
 
+void ShelfViewTestAPI::SetShelfContextMenuCallback(
+    base::RepeatingClosure closure) {
+  DCHECK(shelf_view_->context_menu_shown_callback_.is_null());
+  shelf_view_->context_menu_shown_callback_ = std::move(closure);
+}
+
 }  // namespace ash

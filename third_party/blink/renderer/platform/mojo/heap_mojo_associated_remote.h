@@ -19,8 +19,7 @@ namespace blink {
 // HeapMojoAssociatedRemote by default. HeapMojoAssociatedRemote must be
 // associated with context. HeapMojoAssociatedRemote's constructor takes context
 // as a mandatory parameter. HeapMojoAssociatedRemote resets the mojo connection
-// when 1) the owner object is garbage-collected and 2) the associated
-// ExecutionContext is detached.
+// when the associated ExecutionContext is detached.
 
 // TODO(crbug.com/1058076) HeapMojoWrapperMode should be removed once we ensure
 // that the interface is not used after ContextDestroyed().
@@ -81,14 +80,13 @@ class HeapMojoAssociatedRemote {
   void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
 
  private:
-  // Garbage collected wrapper class to add a prefinalizer.
+  // Garbage collected wrapper class to add ContextLifecycleObserver.
   class Wrapper final : public GarbageCollected<Wrapper>,
                         public ContextLifecycleObserver {
     USING_GARBAGE_COLLECTED_MIXIN(Wrapper);
 
    public:
     explicit Wrapper(ContextLifecycleNotifier* notifier) {
-      DCHECK(notifier);
       SetContextLifecycleNotifier(notifier);
     }
     Wrapper(const Wrapper&) = delete;

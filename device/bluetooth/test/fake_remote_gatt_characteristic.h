@@ -98,7 +98,6 @@ class FakeRemoteGattCharacteristic
                                         base::OnceClosure callback,
                                         ErrorCallback error_callback) override;
 #endif
-  bool WriteWithoutResponse(base::span<const uint8_t> value) override;
 
  protected:
 #if defined(OS_CHROMEOS)

@@ -231,8 +231,7 @@ class CONTENT_EXPORT NavigationRequest
   RenderFrameHostImpl* GetParentFrame() override;
   base::TimeTicks NavigationStart() override;
   base::TimeTicks NavigationInputStart() override;
-  base::TimeTicks FirstRequestStart() override;
-  base::TimeTicks FirstResponseStart() override;
+  const NavigationHandleTiming& GetNavigationHandleTiming() override;
   bool IsPost() override;
   const blink::mojom::Referrer& GetReferrer() override;
   bool HasUserGesture() override;
@@ -1154,28 +1153,8 @@ class CONTENT_EXPORT NavigationRequest
   // is enabled or TrustableWebBundleFileUrl switch is set.
   std::unique_ptr<WebBundleHandleTracker> web_bundle_handle_tracker_;
 
-  // The time the first HTTP request was sent. This is filled with
-  // net::LoadTimingInfo::send_start during navigation.
-  //
-  // In some cases, this can be the time an internal request started that did
-  // not go to the networking layer. For example,
-  // - Service Worker: the time the fetch event was ready to be dispatched, see
-  //   content::ServiceWorkerNavigationLoader::DidPrepareFetchEvent()).
-  // - HSTS: the time the internal redirect was handled.
-  // - Signed Exchange: the time the SXG was handled.
-  base::TimeTicks first_request_start_;
-
-  // The time the headers of the first HTTP response were received. This is
-  // filled with net::LoadTimingInfo::receive_headers_start on the first HTTP
-  // response during navigation.
-  //
-  // In some cases, this can be the time an internal response was received that
-  // did not come from the networking layer. For example,
-  // - Service Worker: the time the response from the service worker was
-  //   received, see content::ServiceWorkerNavigationLoader::StartResponse().
-  // - HSTS: the time the internal redirect was handled.
-  // - Signed Exchange: the time the SXG was handled.
-  base::TimeTicks first_response_start_;
+  // Timing information of loading for the navigation. Used for recording UMAs.
+  NavigationHandleTiming navigation_handle_timing_;
 
   // The time this navigation was ready to commit.
   base::TimeTicks ready_to_commit_time_;

@@ -136,6 +136,8 @@ static_library("video_encoder") {
   sources = [
     "bitstream_helpers.cc",
     "bitstream_helpers.h",
+    "video_encoder/bitstream_validator.cc",
+    "video_encoder/bitstream_validator.h",
     "video_encoder/decoder_buffer_validator.cc",
     "video_encoder/decoder_buffer_validator.h",
     "video_encoder/video_encoder.cc",

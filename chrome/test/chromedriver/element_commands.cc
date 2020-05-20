@@ -524,39 +524,7 @@ Status ExecuteSendKeysToElement(Session* session,
                                     args, &get_content_editable);
     if (status.IsError())
       return status;
-    bool is_content_editable;
-    if (get_content_editable->GetAsBoolean(&is_content_editable) &&
-        is_content_editable) {
-      // If element is contentEditable, will move caret
-      // at end of element text. W3C mandates that the
-      // caret be moved "after any child content"
-      std::unique_ptr<base::Value> result;
-      status = web_view->CallFunction(
-          session->GetCurrentFrameId(),
-          "function(element) {"
-          "var range = document.createRange();"
-          "range.selectNodeContents(element);"
-          "range.collapse();"
-          "var sel = window.getSelection();"
-          "sel.removeAllRanges();"
-          "sel.addRange(range);"
-          "while (element.parentElement && "
-          "element.parentElement.isContentEditable) {"
-          "    element = element.parentElement;"
-          "  }"
-          "return element;"
-          "}",
-          args, &result);
-      if (status.IsError())
-        return status;
-      const base::DictionaryValue* element_dict;
-      std::string target_element_id;
-      if (!result->GetAsDictionary(&element_dict) ||
-          !element_dict->GetString(GetElementKey(), &target_element_id))
-        return Status(kUnknownError, "no element reference returned by script");
-      return SendKeysToElement(session, web_view, target_element_id, false,
-                               key_list);
-    }
+
     // If element_type is in textControlTypes, sendKeys should append
     bool is_textControlType = is_input && textControlTypes.find(element_type) !=
                                               textControlTypes.end();
@@ -568,6 +536,69 @@ Status ExecuteSendKeysToElement(Session* session,
       return status;
     bool is_text = is_textControlType || is_textarea;
 
+    bool is_content_editable;
+    if (get_content_editable->GetAsBoolean(&is_content_editable) &&
+        is_content_editable) {
+      // If element is contentEditable
+      // check if element is focused
+      bool is_focused = false;
+      status = IsElementFocused(session, web_view, element_id, &is_focused);
+      if (status.IsError())
+        return status;
+
+      // Get top level contentEditable element
+      std::unique_ptr<base::Value> result;
+      status = web_view->CallFunction(
+          session->GetCurrentFrameId(),
+          "function(element) {"
+          "while (element.parentElement && "
+          "element.parentElement.isContentEditable) {"
+          "    element = element.parentElement;"
+          "  }"
+          "return element;"
+          "}",
+          args, &result);
+      if (status.IsError())
+        return status;
+      const base::DictionaryValue* element_dict;
+      std::string top_element_id;
+      if (!result->GetAsDictionary(&element_dict) ||
+          !element_dict->GetString(GetElementKey(), &top_element_id))
+        return Status(kUnknownError, "no element reference returned by script");
+
+      // check if top level contentEditable element is focused
+      bool is_top_focused = false;
+      status =
+          IsElementFocused(session, web_view, top_element_id, &is_top_focused);
+      if (status.IsError())
+        return status;
+      // If is_text we want to send keys to the element
+      // Otherwise, send keys to the top element
+      if ((is_text && !is_focused) || (!is_text && !is_top_focused)) {
+        // If element does not currentley have focus
+        // will move caret
+        // at end of element text. W3C mandates that the
+        // caret be moved "after any child content"
+        // Set selection using the element itself
+        std::unique_ptr<base::Value> unused;
+        status = web_view->CallFunction(session->GetCurrentFrameId(),
+                                        "function(element) {"
+                                        "var range = document.createRange();"
+                                        "range.selectNodeContents(element);"
+                                        "range.collapse();"
+                                        "var sel = window.getSelection();"
+                                        "sel.removeAllRanges();"
+                                        "sel.addRange(range);"
+                                        "}",
+                                        args, &unused);
+        if (status.IsError())
+          return status;
+      }
+      // Use top level element id for the purpose of focusing
+      if (!is_text)
+        return SendKeysToElement(session, web_view, top_element_id, is_text,
+                                 key_list);
+    }
     return SendKeysToElement(session, web_view, element_id, is_text, key_list);
   }
 }

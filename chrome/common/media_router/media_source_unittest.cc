@@ -66,17 +66,6 @@ TEST(MediaSourceTest, ForTab) {
   EXPECT_FALSE(source.IsDialSource());
 }
 
-TEST(MediaSourceTest, ForTabContentRemoting) {
-  auto source = MediaSource::ForTabContentRemoting(123);
-  EXPECT_EQ(123, source.TabId());
-  EXPECT_TRUE(source.IsValid());
-  EXPECT_FALSE(source.IsDesktopMirroringSource());
-  EXPECT_FALSE(source.IsTabMirroringSource());
-  EXPECT_FALSE(source.IsMirroringSource());
-  EXPECT_FALSE(source.IsCastPresentationUrl());
-  EXPECT_FALSE(source.IsDialSource());
-}
-
 TEST(MediaSourceTest, ForDesktop) {
   std::string media_id = "fakeMediaId";
   auto source = MediaSource::ForDesktop(media_id);

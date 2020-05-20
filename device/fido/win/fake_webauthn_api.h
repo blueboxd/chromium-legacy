@@ -95,8 +95,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FakeWinWebAuthnApi : public WinWebAuthnApi {
   int version_ = WEBAUTHN_API_VERSION_2;
   HRESULT result_override_ = S_OK;
 
-  // Owns the fake attestation returned by AuthenticatorMakeCredential().
-  WEBAUTHN_CREDENTIAL_ATTESTATION fake_attestation_ = FakeAttestation();
+  // Owns the attestations returned by AuthenticatorMakeCredential().
+  std::vector<WEBAUTHN_CREDENTIAL_ATTESTATION> returned_attestations_;
 
   // Owns assertions returned by AuthenticatorGetAssertion().
   std::vector<WebAuthnAssertionEx> returned_assertions_;

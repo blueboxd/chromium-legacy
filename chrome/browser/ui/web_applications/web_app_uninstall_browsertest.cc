@@ -122,8 +122,7 @@ IN_PROC_BROWSER_TEST_P(WebAppUninstallBrowserTest,
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppUninstallBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

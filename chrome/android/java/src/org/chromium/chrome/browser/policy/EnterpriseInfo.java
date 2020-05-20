@@ -11,6 +11,7 @@ import android.content.pm.PackageManager;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.SystemClock;
+import android.util.Pair;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
@@ -28,12 +29,13 @@ public final class EnterpriseInfo {
         assert BrowserStartupController.getInstance().isFullBrowserStarted();
 
         try {
-            new AsyncTask<Boolean>() {
-                private Boolean calculateIsRunningOnManagedProfile(Context context) {
+            new AsyncTask<Pair<Boolean, Boolean>>() {
+                private Pair<Boolean, Boolean> calculateIsRunningOnManagedProfile(Context context) {
                     if (VERSION.SDK_INT < VERSION_CODES.M) return null;
 
                     long startTime = SystemClock.elapsedRealtime();
                     boolean hasProfileOwnerApp = false;
+                    boolean hasDeviceOwnerApp = false;
                     PackageManager packageManager = context.getPackageManager();
                     DevicePolicyManager devicePolicyManager =
                             context.getSystemService(DevicePolicyManager.class);
@@ -42,8 +44,11 @@ public final class EnterpriseInfo {
                         assert devicePolicyManager != null;
                         if (devicePolicyManager.isProfileOwnerApp(pkg.packageName)) {
                             hasProfileOwnerApp = true;
-                            break;
                         }
+                        if (devicePolicyManager.isDeviceOwnerApp(pkg.packageName)) {
+                            hasDeviceOwnerApp = true;
+                        }
+                        if (hasProfileOwnerApp && hasDeviceOwnerApp) break;
                     }
 
                     long endTime = SystemClock.elapsedRealtime();
@@ -51,22 +56,24 @@ public final class EnterpriseInfo {
                             "EnterpriseCheck.IsRunningOnManagedProfileDuration",
                             endTime - startTime);
 
-                    return hasProfileOwnerApp;
+                    return new Pair<>(hasProfileOwnerApp, hasDeviceOwnerApp);
                 }
 
                 @Override
-                protected Boolean doInBackground() {
+                protected Pair<Boolean, Boolean> doInBackground() {
                     Context context = ContextUtils.getApplicationContext();
 
                     return calculateIsRunningOnManagedProfile(context);
                 }
 
                 @Override
-                protected void onPostExecute(Boolean isManagedDevice) {
+                protected void onPostExecute(Pair<Boolean, Boolean> isManagedDevice) {
                     if (isManagedDevice == null) return;
 
                     RecordHistogram.recordBooleanHistogram(
-                            "EnterpriseCheck.IsManaged", isManagedDevice);
+                            "EnterpriseCheck.IsManaged", isManagedDevice.first);
+                    RecordHistogram.recordBooleanHistogram(
+                            "EnterpriseCheck.IsFullyManaged", isManagedDevice.second);
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (RejectedExecutionException e) {

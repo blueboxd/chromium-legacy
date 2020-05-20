@@ -807,14 +807,12 @@ Status WebViewImpl::WaitForPendingNavigations(const std::string& frame_id,
   return status;
 }
 
-Status WebViewImpl::IsPendingNavigation(const std::string& frame_id,
-                                        const Timeout* timeout,
+Status WebViewImpl::IsPendingNavigation(const Timeout* timeout,
                                         bool* is_pending) const {
   if (navigation_tracker_)
-    return navigation_tracker_->IsPendingNavigation(frame_id, timeout,
-                                                    is_pending);
+    return navigation_tracker_->IsPendingNavigation(timeout, is_pending);
   else
-    return parent_->IsPendingNavigation(frame_id, timeout, is_pending);
+    return parent_->IsPendingNavigation(timeout, is_pending);
 }
 
 JavaScriptDialogManager* WebViewImpl::GetJavaScriptDialogManager() {
@@ -1126,8 +1124,8 @@ Status WebViewImpl::CallAsyncFunctionInternal(
   }
 }
 
-void WebViewImpl::ClearNavigationState(const std::string& new_frame_id) {
-  navigation_tracker_->ClearState(new_frame_id);
+void WebViewImpl::SetFrame(const std::string& new_frame_id) {
+  navigation_tracker_->SetFrame(new_frame_id);
 }
 
 Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
@@ -1140,7 +1138,7 @@ Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
   }
   bool is_pending;
   Status status =
-      navigation_tracker_->IsPendingNavigation(frame_id, timeout, &is_pending);
+      navigation_tracker_->IsPendingNavigation(timeout, &is_pending);
   if (status.IsError())
     return status;
   // An alert may block the pending navigation.

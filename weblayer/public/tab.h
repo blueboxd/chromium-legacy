@@ -75,12 +75,6 @@ class Tab {
   // Returns the tab's guid.
   virtual const std::string& GetGuid() = 0;
 
-  // Allows the embedder to get and set arbitrary data on the tab. This will be
-  // saved and restored with the browser, so it is important to keep this data
-  // as small as possible.
-  virtual void SetData(const std::map<std::string, std::string>& data) = 0;
-  virtual const std::map<std::string, std::string>& GetData() = 0;
-
 #if !defined(OS_ANDROID)
   // TODO: this isn't a stable API, so use it now for expediency in the C++ API,
   // but if we ever want to have backward or forward compatibility in C++ this

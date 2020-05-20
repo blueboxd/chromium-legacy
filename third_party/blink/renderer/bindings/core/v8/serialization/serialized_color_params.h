@@ -41,8 +41,7 @@ enum class SerializedColorSpace : uint32_t {
   kSRGB = 1,
   kRec2020 = 2,
   kP3 = 3,
-  kLinearRGB = 4,
-  kLast = kLinearRGB,
+  kLast = kP3,
 };
 
 // This enumeration specifies the values used to serialize CanvasPixelFormat.

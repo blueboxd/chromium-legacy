@@ -43,6 +43,8 @@ class SupervisedUserServiceManagementAPIDelegate
       content::WebContents* contents,
       base::OnceClosure done_callback) override;
 
+  void RecordExtensionEnableBlockedByParentDialogUmaMetric() override;
+
  private:
   std::unique_ptr<ParentPermissionDialog> parent_permission_dialog_;
 };

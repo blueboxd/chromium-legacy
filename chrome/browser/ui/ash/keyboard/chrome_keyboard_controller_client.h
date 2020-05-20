@@ -133,6 +133,9 @@ class ChromeKeyboardControllerClient
   bool is_keyboard_loaded() { return is_keyboard_loaded_; }
   bool is_keyboard_visible() { return is_keyboard_visible_; }
 
+  void set_keyboard_enabled_for_test(bool enabled) {
+    is_keyboard_enabled_ = enabled;
+  }
   void set_profile_for_test(Profile* profile) { profile_for_test_ = profile; }
   void set_virtual_keyboard_url_for_test(const GURL& url) {
     virtual_keyboard_url_for_test_ = url;

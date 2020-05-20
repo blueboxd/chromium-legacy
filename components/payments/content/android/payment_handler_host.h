@@ -9,6 +9,7 @@
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/payments/content/android/payment_request_update_event_listener.h"
 #include "components/payments/content/payment_handler_host.h"
 
@@ -42,6 +43,13 @@ namespace android {
 // payment_handler_host.h
 class PaymentHandlerHost {
  public:
+  // Converts a Java PaymentHandlerHost object into a C++ cross-platform
+  // payments::PaymentHandlerHost object. The returned object is ultimately
+  // owned by the Java PaymentHandlerHost.
+  static base::WeakPtr<payments::PaymentHandlerHost> FromJavaPaymentHandlerHost(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& payment_handler_host);
+
   // The |listener| must implement PaymentRequestUpdateEventListener. The
   // |web_contents| should be from the same browser context as the payment
   // handler and are used for logging in developr tools.
@@ -52,10 +60,6 @@ class PaymentHandlerHost {
   // Checks whether any payment method, shipping address or shipping option
   // change is currently in progress.
   jboolean IsWaitingForPaymentDetailsUpdate(JNIEnv* env) const;
-
-  // Returns the pointer to the payments::PaymentHandlerHost for binding to its
-  // IPC endpoint in service_worker_payment_app_bridge.cc.
-  jlong GetNativePaymentHandlerHost(JNIEnv* env);
 
   // Destroys this object.
   void Destroy(JNIEnv* env);

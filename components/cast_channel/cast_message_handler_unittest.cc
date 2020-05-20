@@ -38,6 +38,16 @@ constexpr char kTestUserAgentString[] =
     "Chrome/66.0.3331.0 Safari/537.36";
 constexpr char kSourceId[] = "sourceId";
 constexpr char kDestinationId[] = "destinationId";
+constexpr char kAppParams[] = R"(
+{
+  "requiredFeatures" : ["STREAM_TRANSFER"],
+  "launchCheckerParams" : {
+    "credentialsData" : {
+      "credentialsType" : "mobile", "credentials" : "99843n2idsguyhga"
+    }
+  }
+}
+)";
 
 data_decoder::DataDecoder::ValueOrError ParseJsonLikeDataDecoder(
     base::StringPiece json) {
@@ -136,7 +146,7 @@ class CastMessageHandlerTest : public testing::Test {
   void CreatePendingRequests() {
     EXPECT_CALL(*transport_, SendMessage(_, _)).Times(AnyNumber());
     handler_.LaunchSession(channel_id_, "theAppId", base::TimeDelta::Max(),
-                           {"WEB"}, /* appParams */ "",
+                           {"WEB"}, /* appParams */ base::nullopt,
                            launch_session_callback_.Get());
     for (int i = 0; i < 2; i++) {
       handler_.RequestAppAvailability(&cast_socket_, "theAppId",
@@ -317,9 +327,10 @@ TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
 TEST_F(CastMessageHandlerTest, LaunchSession) {
   ExpectEnsureConnectionThen(CastMessageType::kLaunch);
 
+  const base::Optional<base::Value> json = base::JSONReader().Read(kAppParams);
+
   handler_.LaunchSession(
-      channel_id_, "AAAAAAAA", base::TimeDelta::FromSeconds(30), {"WEB"},
-      /* appParams */ "",
+      channel_id_, "AAAAAAAA", base::TimeDelta::FromSeconds(30), {"WEB"}, json,
       base::BindOnce(&CastMessageHandlerTest::ExpectSessionLaunchResult,
                      base::Unretained(this),
                      LaunchSessionResponse::Result::kOk));
@@ -332,6 +343,9 @@ TEST_F(CastMessageHandlerTest, LaunchSession) {
   ASSERT_TRUE(request_id_value);
   int request_id = request_id_value->GetInt();
   EXPECT_GT(request_id, 0);
+  const base::Value* app_params =
+      dict->FindKeyOfType("appParams", base::Value::Type::DICTIONARY);
+  EXPECT_EQ(json.value(), *app_params);
 
   CastMessage response;
   response.set_namespace_("urn:x-cast:com.google.cast.receiver");
@@ -358,7 +372,7 @@ TEST_F(CastMessageHandlerTest, LaunchSessionTimedOut) {
 
   handler_.LaunchSession(
       channel_id_, "AAAAAAAA", base::TimeDelta::FromSeconds(30), {"WEB"},
-      /* appParams */ "",
+      /* appParams */ base::nullopt,
       base::BindOnce(&CastMessageHandlerTest::ExpectSessionLaunchResult,
                      base::Unretained(this),
                      LaunchSessionResponse::Result::kTimedOut));

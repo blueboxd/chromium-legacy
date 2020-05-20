@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -19,6 +20,10 @@ import org.chromium.ui.widget.ChromeImageButton;
 /**
  * A menu button meant to be used with modern lists throughout Chrome.  Will automatically show and
  * anchor a popup on press and will rely on a delegate for positioning and content of the popup.
+ * You can define your own content description for accessibility through the
+ * android:contentDescription parameter in the XML layout of the ListMenuButton. The default content
+ * description that corresponds to
+ * context.getString(R.string.accessibility_list_menu_button, "") is used otherwise.
  */
 public class ListMenuButton
         extends ChromeImageButton implements AnchoredPopupWindow.LayoutObserver {
@@ -175,7 +180,7 @@ public class ListMenuButton
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        setContentDescriptionContext("");
+        if (TextUtils.isEmpty(getContentDescription())) setContentDescriptionContext("");
         setOnClickListener((view) -> showMenu());
     }
 

@@ -355,20 +355,20 @@ TEST_F('SwitchAccessPredicateTest', 'LeafPredicate', function() {
     const t = getTree(desktop);
 
     // Start with root as scope
-    let leaf = SwitchAccessPredicate.leaf(RootNodeWrapper.buildTree(t.root));
+    let leaf = SwitchAccessPredicate.leaf(t.root);
     assertFalse(leaf(t.root), 'Root should not be a leaf node');
     assertTrue(leaf(t.upper1), 'Upper1 should be a leaf node for root tree');
     assertTrue(leaf(t.upper2), 'Upper2 should be a leaf node for root tree');
 
     // Set upper1 as scope
-    leaf = SwitchAccessPredicate.leaf(RootNodeWrapper.buildTree(t.upper1));
+    leaf = SwitchAccessPredicate.leaf(t.upper1);
     assertFalse(leaf(t.upper1), 'Upper1 should not be a leaf for upper1 tree');
     assertTrue(leaf(t.lower1), 'Lower1 should be a leaf for upper1 tree');
     assertTrue(leaf(t.leaf4), 'leaf4 should be a leaf for upper1 tree');
     assertTrue(leaf(t.leaf5), 'leaf5 should be a leaf for upper1 tree');
 
     // Set lower1 as scope
-    leaf = SwitchAccessPredicate.leaf(RootNodeWrapper.buildTree(t.lower1));
+    leaf = SwitchAccessPredicate.leaf(t.lower1);
     assertFalse(leaf(t.lower1), 'Lower1 should not be a leaf for lower1 tree');
     assertTrue(leaf(t.leaf1), 'Leaf1 should be a leaf for lower1 tree');
     assertTrue(leaf(t.leaf2), 'Leaf2 should be a leaf for lower1 tree');
@@ -381,13 +381,13 @@ TEST_F('SwitchAccessPredicateTest', 'RootPredicate', function() {
     const t = getTree(desktop);
 
     // Start with root as scope
-    let root = SwitchAccessPredicate.root(RootNodeWrapper.buildTree(t.root));
+    let root = SwitchAccessPredicate.root(t.root);
     assertTrue(root(t.root), 'Root should be a root of the root tree');
     assertFalse(root(t.upper1), 'Upper1 should not be a root of the root tree');
     assertFalse(root(t.upper2), 'Upper2 should not be a root of the root tree');
 
     // Set upper1 as scope
-    root = SwitchAccessPredicate.root(RootNodeWrapper.buildTree(t.upper1));
+    root = SwitchAccessPredicate.root(t.upper1);
     assertTrue(root(t.upper1), 'Upper1 should be a root of the upper1 tree');
     assertFalse(
         root(t.lower1), 'Lower1 should not be a root of the upper1 tree');
@@ -395,7 +395,7 @@ TEST_F('SwitchAccessPredicateTest', 'RootPredicate', function() {
         root(t.lower2), 'Lower2 should not be a root of the upper1 tree');
 
     // Set lower1 as scope
-    root = SwitchAccessPredicate.root(RootNodeWrapper.buildTree(t.lower1));
+    root = SwitchAccessPredicate.root(t.lower1);
     assertTrue(root(t.lower1), 'Lower1 should be a root of the lower1 tree');
     assertFalse(root(t.leaf1), 'Leaf1 should not be a root of the lower1 tree');
     assertFalse(root(t.leaf2), 'Leaf2 should not be a root of the lower1 tree');
@@ -408,13 +408,13 @@ TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
     const t = getTree(desktop);
 
     // Start with root as scope
-    let visit = SwitchAccessPredicate.visit(RootNodeWrapper.buildTree(t.root));
+    let visit = SwitchAccessPredicate.visit(t.root);
     assertTrue(visit(t.root), 'Root should be visited in root tree');
     assertTrue(visit(t.upper1), 'Upper1 should be visited in root tree');
     assertTrue(visit(t.upper2), 'Upper2 should be visited in root tree');
 
     // Set upper1 as scope
-    visit = SwitchAccessPredicate.visit(RootNodeWrapper.buildTree(t.upper1));
+    visit = SwitchAccessPredicate.visit(t.upper1);
     assertTrue(visit(t.upper1), 'Upper1 should be visited in upper1 tree');
     assertTrue(visit(t.lower1), 'Lower1 should be visited in upper1 tree');
     assertFalse(visit(t.lower2), 'Lower2 should not be visited in upper1 tree');
@@ -422,7 +422,7 @@ TEST_F('SwitchAccessPredicateTest', 'VisitPredicate', function() {
     assertTrue(visit(t.leaf5), 'Leaf5 should be visited in upper1 tree');
 
     // Set lower1 as scope
-    visit = SwitchAccessPredicate.visit(RootNodeWrapper.buildTree(t.lower1));
+    visit = SwitchAccessPredicate.visit(t.lower1);
     assertTrue(visit(t.lower1), 'Lower1 should be visited in lower1 tree');
     assertTrue(visit(t.leaf1), 'Leaf1 should be visited in lower1 tree');
     assertFalse(visit(t.leaf2), 'Leaf2 should not be visited in lower1 tree');

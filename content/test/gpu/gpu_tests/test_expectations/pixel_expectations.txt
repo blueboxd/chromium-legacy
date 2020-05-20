@@ -22,8 +22,6 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 [ android ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 [ android ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Skip ]
 [ android ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Skip ]
-[ android ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Skip ]
-[ android ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Skip ]
 [ android ] Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing [ Skip ]
 [ android ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
 [ android ] Pixel_CanvasUnacceleratedLowLatency2D [ Skip ]
@@ -161,7 +159,6 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 
 # Producing blank images on Macmini and Macbook Pro
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
-crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 
 # Skia Renderer, producing incorrect color in one quadrant
 crbug.com/1008450 [ android use-vulkan skia-renderer ] Pixel_Video_BackdropFilter [ Skip ]
@@ -228,7 +225,6 @@ crbug.com/1066979 [ win ] Pixel_Canvas2DRedBoxHdr10 [ Skip ]
 # SkiaRenderer Dawn doesn't support accelerated canvas, webgl, video, or
 # direct composition.
 crbug.com/1021566 [ linux use-skia-dawn ] Pixel_Canvas2DTabSwitch [ Skip ]
-crbug.com/1021566 [ linux use-skia-dawn ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 crbug.com/1021566 [ linux use-skia-dawn ] Pixel_CanvasLowLatency2D [ Skip ]
 crbug.com/1021566 [ linux use-skia-dawn ] Pixel_CanvasLowLatencyWebGL [ Skip ]
 crbug.com/1021566 [ linux use-skia-dawn ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
@@ -244,7 +240,6 @@ crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGL2_ClearBufferfv_Result_Disp
 crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGLReadPixelsTabSwitch [ Skip ]
 crbug.com/1021566 [ linux use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_Canvas2DTabSwitch [ Skip ]
-crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2D [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
 crbug.com/1021566 [ win use-skia-dawn ] Pixel_CanvasLowLatencyWebGL [ Skip ]

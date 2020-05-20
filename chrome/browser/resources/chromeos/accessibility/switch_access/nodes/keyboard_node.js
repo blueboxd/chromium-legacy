@@ -8,7 +8,7 @@
  */
 class KeyboardNode extends NodeWrapper {
   /**
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {!AutomationNode} node
    * @param {!SARootNode} parent
    */
   constructor(node, parent) {
@@ -72,7 +72,7 @@ class KeyboardNode extends NodeWrapper {
   static findAndSetChildren(root) {
     const childConstructor = (node) => new KeyboardNode(node, root);
 
-    /** @type {!Array<!chrome.automation.AutomationNode>} */
+    /** @type {!Array<!AutomationNode>} */
     const interestingChildren = RootNodeWrapper.getInterestingChildren(root);
     let children = interestingChildren.map(childConstructor);
     if (interestingChildren.length > SAConstants.KEYBOARD_MAX_ROW_LENGTH) {
@@ -90,7 +90,7 @@ class KeyboardNode extends NodeWrapper {
  */
 class KeyboardRootNode extends RootNodeWrapper {
   /**
-   * @param {!chrome.automation.AutomationNode} groupNode
+   * @param {!AutomationNode} groupNode
    * @private
    */
   constructor(groupNode) {
@@ -190,7 +190,7 @@ class KeyboardRootNode extends RootNodeWrapper {
   }
 
   /**
-   * @return {chrome.automation.AutomationNode}
+   * @return {AutomationNode}
    * @private
    */
   static get keyboardObject_() {

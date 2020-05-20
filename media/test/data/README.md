@@ -117,6 +117,9 @@ ffmpeg -i bear-av1-slowstart.mp4 -vcodec copy -strict -2 -y -f mp4 \
   -movflags frag_keyframe+empty_moov+default_base_moof+faststart bear-av1.mp4
 ```
 
+#### bear-mono-av1.mp4
+Similar to the above but using aomenc for encoding with the --monochrome option.
+
 #### bear-av1.webm
 Created using aomenc with the following command:
 ```

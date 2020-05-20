@@ -246,6 +246,42 @@ class RenderAccessibilityImplTest : public RenderViewTest {
   }
   ~RenderAccessibilityImplTest() override = default;
 
+  void ScheduleSendPendingAccessibilityEvents() {
+    GetRenderAccessibilityImpl()->ScheduleSendPendingAccessibilityEvents();
+  }
+
+  void ExpectScheduleStatusScheduledDeferred() {
+    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_status_,
+              RenderAccessibilityImpl::EventScheduleStatus::kScheduledDeferred);
+  }
+
+  void ExpectScheduleStatusScheduledImmediate() {
+    EXPECT_EQ(
+        GetRenderAccessibilityImpl()->event_schedule_status_,
+        RenderAccessibilityImpl::EventScheduleStatus::kScheduledImmediate);
+  }
+
+  void ExpectScheduleStatusWaitingForAck() {
+    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_status_,
+              RenderAccessibilityImpl::EventScheduleStatus::kWaitingForAck);
+  }
+
+  void ExpectScheduleStatusNotWaiting() {
+    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_status_,
+              RenderAccessibilityImpl::EventScheduleStatus::kNotWaiting);
+  }
+
+  void ExpectScheduleModeDeferEvents() {
+    EXPECT_EQ(GetRenderAccessibilityImpl()->event_schedule_mode_,
+              RenderAccessibilityImpl::EventScheduleMode::kDeferEvents);
+  }
+
+  void ExpectScheduleModeProcessEventsImmediately() {
+    EXPECT_EQ(
+        GetRenderAccessibilityImpl()->event_schedule_mode_,
+        RenderAccessibilityImpl::EventScheduleMode::kProcessEventsImmediately);
+  }
+
  protected:
   RenderViewImpl* view() {
     return static_cast<RenderViewImpl*>(view_);
@@ -402,6 +438,62 @@ TEST_F(RenderAccessibilityImplTest, SendFullAccessibilityTreeOnReload) {
       ui::AXEvent(first_child.AxID(), ax::mojom::Event::kLiveRegionChanged));
   SendPendingAccessibilityEvents();
   EXPECT_EQ(5, CountAccessibilityNodesSentToBrowser());
+}
+
+TEST_F(RenderAccessibilityImplTest, TestDeferred) {
+  constexpr char html[] = R"HTML(
+      <body>
+        <div>
+          a
+        </div>
+      </body>
+      )HTML";
+  LoadHTML(html);
+  task_environment_.RunUntilIdle();
+
+  // We should have had load complete, causing us to send subsequent events
+  // without delay.
+  ExpectScheduleStatusNotWaiting();
+  ExpectScheduleModeProcessEventsImmediately();
+
+  // Simulate a page load to test deferred behavior.
+  GetRenderAccessibilityImpl()->DidCommitProvisionalLoad(
+      false, ui::PageTransition::PAGE_TRANSITION_LINK);
+  ClearHandledUpdates();
+  WebDocument document = GetMainFrame()->GetDocument();
+  EXPECT_FALSE(document.IsNull());
+  WebAXObject root_obj = WebAXObject::FromWebDocument(document);
+  EXPECT_FALSE(root_obj.IsNull());
+
+  // No events should have been scheduled or sent.
+  ExpectScheduleStatusNotWaiting();
+  ExpectScheduleModeDeferEvents();
+
+  // Send an event, it should be scheduled with a delay.
+  GetRenderAccessibilityImpl()->HandleAXEvent(
+      ui::AXEvent(root_obj.AxID(), ax::mojom::Event::kLiveRegionChanged));
+  ExpectScheduleStatusScheduledDeferred();
+  ExpectScheduleModeDeferEvents();
+
+  task_environment_.RunUntilIdle();
+  // Ensure event is not sent as it is scheduled with a delay.
+  ExpectScheduleStatusScheduledDeferred();
+  ExpectScheduleModeDeferEvents();
+
+  // Perform action, causing immediate event processing.
+  ui::AXActionData action;
+  action.action = ax::mojom::Action::kFocus;
+  GetRenderAccessibilityImpl()->PerformAction(action);
+  ScheduleSendPendingAccessibilityEvents();
+
+  // Ensure task has been scheduled without delay.
+  ExpectScheduleStatusScheduledImmediate();
+  ExpectScheduleModeProcessEventsImmediately();
+
+  task_environment_.RunUntilIdle();
+  // Event has been sent, no longer waiting on ack.
+  ExpectScheduleStatusNotWaiting();
+  ExpectScheduleModeProcessEventsImmediately();
 }
 
 TEST_F(RenderAccessibilityImplTest, HideAccessibilityObject) {

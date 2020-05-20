@@ -311,6 +311,11 @@ void ContentPasswordManagerDriver::ShowTouchToFill() {
 void ContentPasswordManagerDriver::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {
+  // Despite the name, this method is only called on password fields.
+  // (See PasswordAutofillAgent::MaybeCheckSafeBrowsingReputation())
+  if (client_->GetMetricsRecorder()) {
+    client_->GetMetricsRecorder()->RecordUserFocusedPasswordField();
+  }
 #if defined(ON_FOCUS_PING_ENABLED)
   client_->CheckSafeBrowsingReputation(form_action, frame_url);
 #endif

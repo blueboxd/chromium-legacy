@@ -254,9 +254,6 @@ ImageDataColorSettings* CanvasColorParamsToImageDataColorSettings(
     case CanvasColorSpace::kSRGB:
       color_settings->setColorSpace(kSRGBCanvasColorSpaceName);
       break;
-    case CanvasColorSpace::kLinearRGB:
-      color_settings->setColorSpace(kLinearRGBCanvasColorSpaceName);
-      break;
     case CanvasColorSpace::kRec2020:
       color_settings->setColorSpace(kRec2020CanvasColorSpaceName);
       break;
@@ -284,9 +281,6 @@ ImageData* ImageData::Create(const IntSize& size,
   switch (color_space) {
     case CanvasColorSpace::kSRGB:
       color_settings->setColorSpace(kSRGBCanvasColorSpaceName);
-      break;
-    case CanvasColorSpace::kLinearRGB:
-      color_settings->setColorSpace(kLinearRGBCanvasColorSpaceName);
       break;
     case CanvasColorSpace::kRec2020:
       color_settings->setColorSpace(kRec2020CanvasColorSpaceName);
@@ -604,8 +598,6 @@ CanvasColorSpace ImageData::GetCanvasColorSpace(
     const String& color_space_name) {
   if (color_space_name == kSRGBCanvasColorSpaceName)
     return CanvasColorSpace::kSRGB;
-  if (color_space_name == kLinearRGBCanvasColorSpaceName)
-    return CanvasColorSpace::kLinearRGB;
   if (color_space_name == kRec2020CanvasColorSpaceName)
     return CanvasColorSpace::kRec2020;
   if (color_space_name == kP3CanvasColorSpaceName)
@@ -618,8 +610,6 @@ String ImageData::CanvasColorSpaceName(CanvasColorSpace color_space) {
   switch (color_space) {
     case CanvasColorSpace::kSRGB:
       return kSRGBCanvasColorSpaceName;
-    case CanvasColorSpace::kLinearRGB:
-      return kLinearRGBCanvasColorSpaceName;
     case CanvasColorSpace::kRec2020:
       return kRec2020CanvasColorSpaceName;
     case CanvasColorSpace::kP3:

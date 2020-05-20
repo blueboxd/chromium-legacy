@@ -126,6 +126,17 @@ void DrawDocumentMarker(GraphicsContext& context,
 
 }  // namespace
 
+bool DocumentMarkerPainter::ShouldPaintMarkerUnderline(
+    const StyleableMarker& marker) {
+  if (marker.HasThicknessNone() ||
+      (marker.UnderlineColor() == Color::kTransparent &&
+       !marker.UseTextColor()) ||
+      marker.UnderlineStyle() == ui::mojom::ImeTextSpanUnderlineStyle::kNone) {
+    return false;
+  }
+  return true;
+}
+
 void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
     GraphicsContext& context,
     const PhysicalOffset& box_origin,
@@ -133,11 +144,6 @@ void DocumentMarkerPainter::PaintStyleableMarkerUnderline(
     const ComputedStyle& style,
     const FloatRect& marker_rect,
     LayoutUnit logical_height) {
-  if (marker.HasThicknessNone() ||
-      (marker.UnderlineColor() == Color::kTransparent &&
-       !marker.UseTextColor()))
-    return;
-
   // start of line to draw, relative to box_origin.X()
   LayoutUnit start = LayoutUnit(marker_rect.X());
   LayoutUnit width = LayoutUnit(marker_rect.Width());

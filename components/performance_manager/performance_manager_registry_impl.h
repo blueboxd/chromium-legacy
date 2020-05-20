@@ -13,8 +13,12 @@
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "components/performance_manager/embedder/performance_manager_registry.h"
+#include "components/performance_manager/owned_objects.h"
 #include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/process_node_source.h"
+#include "components/performance_manager/public/performance_manager_owned.h"
+#include "components/performance_manager/public/performance_manager_registered.h"
+#include "components/performance_manager/registered_objects.h"
 #include "components/performance_manager/render_process_user_data.h"
 #include "components/performance_manager/tab_helper_frame_node_source.h"
 
@@ -57,6 +61,18 @@ class PerformanceManagerRegistryImpl
   void RemoveMechanism(PerformanceManagerMainThreadMechanism* mechanism);
   bool HasMechanism(PerformanceManagerMainThreadMechanism* mechanism);
 
+  // PM owned objects. Forwarded to from the public PerformanceManager
+  // interface. See performance_manager.h for details.
+  void PassToPM(std::unique_ptr<PerformanceManagerOwned> pm_owned);
+  std::unique_ptr<PerformanceManagerOwned> TakeFromPM(
+      PerformanceManagerOwned* pm_owned);
+
+  // PM registered objects. Forwarded to from the public PerformanceManager
+  // interface. See performance_manager.h for details.
+  void RegisterObject(PerformanceManagerRegistered* pm_object);
+  void UnregisterObject(PerformanceManagerRegistered* object);
+  PerformanceManagerRegistered* GetRegisteredObject(uintptr_t type_id);
+
   // PerformanceManagerRegistry:
   void CreatePageNodeForWebContents(
       content::WebContents* web_contents) override;
@@ -87,6 +103,9 @@ class PerformanceManagerRegistryImpl
   void EnsureProcessNodeForRenderProcessHost(
       content::RenderProcessHost* render_process_host);
 
+  size_t GetOwnedCountForTesting() const { return pm_owned_.size(); }
+  size_t GetRegisteredCountForTesting() const { return pm_registered_.size(); }
+
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -111,6 +130,16 @@ class PerformanceManagerRegistryImpl
 
   base::ObserverList<PerformanceManagerMainThreadObserver> observers_;
   base::ObserverList<PerformanceManagerMainThreadMechanism> mechanisms_;
+
+  // Objects owned by the PM.
+  OwnedObjects<PerformanceManagerOwned,
+               /* CallbackArgType = */ void,
+               &PerformanceManagerOwned::OnPassedToPM,
+               &PerformanceManagerOwned::OnTakenFromPM>
+      pm_owned_;
+
+  // Storage for PerformanceManagerRegistered objects.
+  RegisteredObjects<PerformanceManagerRegistered> pm_registered_;
 };
 
 }  // namespace performance_manager

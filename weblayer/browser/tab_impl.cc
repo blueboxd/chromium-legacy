@@ -64,7 +64,6 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/callback_android.h"
-#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/json/json_writer.h"
 #include "base/trace_event/trace_event.h"
@@ -98,9 +97,6 @@ using base::android::ScopedJavaLocalRef;
 namespace weblayer {
 
 namespace {
-
-// Maximum size of data when calling SetData().
-constexpr int kMaxDataSize = 4096;
 
 #if defined(OS_ANDROID)
 bool g_system_autofill_disabled_for_testing = false;
@@ -333,14 +329,6 @@ TabImpl* TabImpl::FromWebContents(content::WebContents* web_contents) {
       ->controller;
 }
 
-void TabImpl::AddDataObserver(DataObserver* observer) {
-  data_observers_.AddObserver(observer);
-}
-
-void TabImpl::RemoveDataObserver(DataObserver* observer) {
-  data_observers_.RemoveObserver(observer);
-}
-
 void TabImpl::SetErrorPageDelegate(ErrorPageDelegate* delegate) {
   error_page_delegate_ = delegate;
 }
@@ -397,14 +385,6 @@ void TabImpl::ExecuteScript(const base::string16& script,
 
 const std::string& TabImpl::GetGuid() {
   return guid_;
-}
-
-void TabImpl::SetData(const std::map<std::string, std::string>& data) {
-  DCHECK(SetDataInternal(data));
-}
-
-const std::map<std::string, std::string>& TabImpl::GetData() {
-  return data_;
 }
 
 void TabImpl::ExecuteScriptWithUserGestureForTests(
@@ -615,27 +595,6 @@ void TabImpl::CaptureScreenShot(
       src_rect, output_size,
       base::BindOnce(&OnScreenShotCaptured,
                      ScopedJavaGlobalRef<jobject>(value_callback)));
-}
-
-jboolean TabImpl::SetData(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobjectArray>& data) {
-  std::vector<std::string> flattened_map;
-  base::android::AppendJavaStringArrayToStringVector(env, data, &flattened_map);
-  std::map<std::string, std::string> data_map;
-  for (size_t i = 0; i < flattened_map.size(); i += 2) {
-    data_map.insert({flattened_map[i], flattened_map[i + 1]});
-  }
-  return SetDataInternal(data_map);
-}
-
-base::android::ScopedJavaLocalRef<jobjectArray> TabImpl::GetData(JNIEnv* env) {
-  std::vector<std::string> flattened_map;
-  for (const auto& kv : data_) {
-    flattened_map.push_back(kv.first);
-    flattened_map.push_back(kv.second);
-  }
-  return base::android::ToJavaArrayOfStrings(env, flattened_map);
 }
 #endif  // OS_ANDROID
 
@@ -1022,18 +981,6 @@ sessions::SessionTabHelperDelegate* TabImpl::GetSessionServiceTabHelperDelegate(
     content::WebContents* web_contents) {
   DCHECK_EQ(web_contents, web_contents_.get());
   return browser_ ? browser_->browser_persister() : nullptr;
-}
-
-bool TabImpl::SetDataInternal(const std::map<std::string, std::string>& data) {
-  int total_size = 0;
-  for (const auto& kv : data)
-    total_size += kv.first.size() + kv.second.size();
-  if (total_size > kMaxDataSize)
-    return false;
-  data_ = data;
-  for (auto& observer : data_observers_)
-    observer.OnDataChanged(this, data_);
-  return true;
 }
 
 }  // namespace weblayer

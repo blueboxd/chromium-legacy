@@ -3,19 +3,24 @@
 // found in the LICENSE file.
 import {isChromeOS} from 'chrome://resources/js/cr.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {DragManager, PLACEHOLDER_GROUP_ID, PLACEHOLDER_TAB_ID} from 'chrome://tab-strip/drag_manager.js';
+import {DragManager, DragManagerDelegate, PLACEHOLDER_GROUP_ID, PLACEHOLDER_TAB_ID} from 'chrome://tab-strip/drag_manager.js';
 import {TabElement} from 'chrome://tab-strip/tab.js';
 import {TabGroupElement} from 'chrome://tab-strip/tab_group.js';
-import {TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
+import {TabData, TabsApiProxyImpl} from 'chrome://tab-strip/tabs_api_proxy.js';
+
+import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 
 import {TestTabsApiProxy} from './test_tabs_api_proxy.js';
 
+/** @implements {DragManagerDelegate} */
 class MockDelegate extends HTMLElement {
+  /** @override */
   getIndexOfTab(tabElement) {
     return Array.from(this.querySelectorAll('tabstrip-tab'))
         .indexOf(tabElement);
   }
 
+  /** @override */
   placeTabElement(element, index, pinned, groupId) {
     element.remove();
 
@@ -24,13 +29,10 @@ class MockDelegate extends HTMLElement {
     parent.insertBefore(element, this.children[index]);
   }
 
+  /** @override */
   placeTabGroupElement(element, index) {
     element.remove();
     this.insertBefore(element, this.children[index]);
-  }
-
-  showDropPlaceholder(element) {
-    this.appendChild(element);
   }
 }
 customElements.define('mock-delegate', MockDelegate);
@@ -39,32 +41,41 @@ class MockDataTransfer extends DataTransfer {
   constructor() {
     super();
 
+    /** @private {!Object} */
     this.dragImageData = {
       image: undefined,
       offsetX: undefined,
       offsetY: undefined,
     };
 
+    /** @private {string} */
     this.dropEffect_ = 'none';
+
+    /** @private {string} */
     this.effectAllowed_ = 'none';
   }
 
+  /** @override */
   get dropEffect() {
     return this.dropEffect_;
   }
 
+  /** @override */
   set dropEffect(effect) {
     this.dropEffect_ = effect;
   }
 
+  /** @override */
   get effectAllowed() {
     return this.effectAllowed_;
   }
 
+  /** @override */
   set effectAllowed(effect) {
     this.effectAllowed_ = effect;
   }
 
+  /** @override */
   setDragImage(image, offsetX, offsetY) {
     this.dragImageData.image = image;
     this.dragImageData.offsetX = offsetX;
@@ -107,11 +118,13 @@ suite('DragManager', () => {
    * @return {!TabGroupElement}
    */
   function groupTab(tabElement, groupId) {
-    const groupElement = document.createElement('tabstrip-tab-group');
+    const groupElement = /** @type {!TabGroupElement} */ (
+        document.createElement('tabstrip-tab-group'));
     groupElement.setAttribute('data-group-id', groupId);
     delegate.replaceChild(groupElement, tabElement);
 
-    tabElement.tab = Object.assign({}, tabElement.tab, {groupId});
+    tabElement.tab =
+        /** @type {!TabData} */ (Object.assign({}, tabElement.tab, {groupId}));
     groupElement.appendChild(tabElement);
     return groupElement;
   }

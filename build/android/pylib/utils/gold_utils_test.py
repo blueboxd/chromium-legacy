@@ -533,13 +533,19 @@ class SkiaGoldSessionCompareTest(unittest.TestCase):
 
   @mock.patch('devil.utils.cmd_helper.GetCmdStatusOutputAndError')
   def test_validOmissionOnIoError(self, cmd_mock):
+    def open_impl(_, *args):
+      # This handles the call to _ClearTriageLinkFile()
+      if args and args[0] == 'w':
+        return mock.Mock()
+      raise IOError('No read today')
+
     cmd_mock.return_value = (1, None, None)
     args = createSkiaGoldArgs(git_revision='a')
     sgp = gold_utils.SkiaGoldProperties(args)
     with tempfile_ext.NamedTemporaryDirectory() as working_dir:
       session = gold_utils.SkiaGoldSession(working_dir, sgp, 'keys_file', None)
       m = mock.mock_open()
-      m.side_effect = IOError('No read today')
+      m.side_effect = open_impl
       with mock.patch('__builtin__.open', m, create=True):
         rc, _ = session.Compare('name', 'png_file')
     self.assertEqual(rc, 1)

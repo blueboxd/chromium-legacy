@@ -104,8 +104,6 @@ scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(
 
 //============================================================================
 
-enum LinearPixelMathState { kLinearPixelMathDisabled, kLinearPixelMathEnabled };
-
 class CanvasRenderingContext2DTest : public ::testing::Test {
  protected:
   CanvasRenderingContext2DTest();
@@ -844,12 +842,6 @@ static void TestDrawHighBitDepthPNGsOnWideGamutCanvas(
   }
 }
 
-TEST_F(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnLinearRGBCanvas) {
-  TestDrawHighBitDepthPNGsOnWideGamutCanvas(
-      "linear-rgb", GetDocument(),
-      Persistent<HTMLCanvasElement>(CanvasElement()), GetScriptState());
-}
-
 TEST_F(CanvasRenderingContext2DTest, DrawHighBitDepthPngOnP3Canvas) {
   TestDrawHighBitDepthPNGsOnWideGamutCanvas(
       "p3", GetDocument(), Persistent<HTMLCanvasElement>(CanvasElement()),
@@ -945,9 +937,8 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
 // tests.
 enum class CanvasColorSpaceSettings : uint8_t {
   CANVAS_SRGB = 0,
-  CANVAS_LINEARSRGB = 1,
-  CANVAS_REC2020 = 2,
-  CANVAS_P3 = 3,
+  CANVAS_REC2020 = 1,
+  CANVAS_P3 = 2,
 
   LAST = CANVAS_P3
 };
@@ -957,10 +948,9 @@ enum class CanvasColorSpaceSettings : uint8_t {
 void TestPutImageDataOnCanvasWithColorSpaceSettings(
     HTMLCanvasElement& canvas_element,
     CanvasColorSpaceSettings canvas_colorspace_setting) {
-  unsigned num_image_data_color_spaces = 4;
+  unsigned num_image_data_color_spaces = 3;
   CanvasColorSpace image_data_color_spaces[] = {
       CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kLinearRGB,
       CanvasColorSpace::kRec2020,
       CanvasColorSpace::kP3,
   };
@@ -972,19 +962,20 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
   };
 
   CanvasColorSpace canvas_color_spaces[] = {
-      CanvasColorSpace::kSRGB,      CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kLinearRGB, CanvasColorSpace::kRec2020,
+      CanvasColorSpace::kSRGB,
+      CanvasColorSpace::kSRGB,
+      CanvasColorSpace::kRec2020,
       CanvasColorSpace::kP3,
   };
 
   String canvas_color_space_names[] = {
       kSRGBCanvasColorSpaceName, kSRGBCanvasColorSpaceName,
-      kLinearRGBCanvasColorSpaceName, kRec2020CanvasColorSpaceName,
-      kP3CanvasColorSpaceName};
+      kRec2020CanvasColorSpaceName, kP3CanvasColorSpaceName};
 
   CanvasPixelFormat canvas_pixel_formats[] = {
-      CanvasPixelFormat::kRGBA8, CanvasPixelFormat::kF16,
-      CanvasPixelFormat::kF16,   CanvasPixelFormat::kF16,
+      CanvasPixelFormat::kRGBA8,
+      CanvasPixelFormat::kF16,
+      CanvasPixelFormat::kF16,
       CanvasPixelFormat::kF16,
   };
 
@@ -1101,12 +1092,6 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnSRGBCanvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
       CanvasElement(), CanvasColorSpaceSettings::CANVAS_SRGB);
-}
-
-TEST_F(CanvasRenderingContext2DTest,
-       ColorManagedPutImageDataOnLinearSRGBCanvas) {
-  TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_LINEARSRGB);
 }
 
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnRec2020Canvas) {

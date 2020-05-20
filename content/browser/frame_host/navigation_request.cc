@@ -1634,10 +1634,14 @@ void NavigationRequest::OnRequestRedirected(
     common_params_->post_data.reset();
 
   // Record the first request start time and response start time.
-  if (first_request_start_.is_null())
-    first_request_start_ = response_head_->load_timing.send_start;
-  if (first_response_start_.is_null())
-    first_response_start_ = response_head_->load_timing.receive_headers_start;
+  if (navigation_handle_timing_.first_request_start_time.is_null()) {
+    navigation_handle_timing_.first_request_start_time =
+        response_head_->load_timing.send_start;
+  }
+  if (navigation_handle_timing_.first_response_start_time.is_null()) {
+    navigation_handle_timing_.first_response_start_time =
+        response_head_->load_timing.receive_headers_start;
+  }
 
   // Mark time for the Navigation Timing API.
   if (commit_params_->navigation_timing->redirect_start.is_null()) {
@@ -1895,10 +1899,14 @@ void NavigationRequest::OnResponseStarted(
 
   // Record the first request start time and first response start time. Skip if
   // the timings are already recorded for redirection etc.
-  if (first_request_start_.is_null())
-    first_request_start_ = response_head_->load_timing.send_start;
-  if (first_response_start_.is_null())
-    first_response_start_ = response_head_->load_timing.receive_headers_start;
+  if (navigation_handle_timing_.first_request_start_time.is_null()) {
+    navigation_handle_timing_.first_request_start_time =
+        response_head_->load_timing.send_start;
+  }
+  if (navigation_handle_timing_.first_response_start_time.is_null()) {
+    navigation_handle_timing_.first_response_start_time =
+        response_head_->load_timing.receive_headers_start;
+  }
 
   // Update fetch start timing. While NavigationRequest updates fetch start
   // timing for redirects, it's not aware of service worker interception so
@@ -4026,12 +4034,8 @@ base::TimeTicks NavigationRequest::NavigationInputStart() {
   return common_params().input_start;
 }
 
-base::TimeTicks NavigationRequest::FirstRequestStart() {
-  return first_request_start_;
-}
-
-base::TimeTicks NavigationRequest::FirstResponseStart() {
-  return first_response_start_;
+const NavigationHandleTiming& NavigationRequest::GetNavigationHandleTiming() {
+  return navigation_handle_timing_;
 }
 
 bool NavigationRequest::IsPost() {

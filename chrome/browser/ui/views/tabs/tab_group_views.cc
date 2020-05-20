@@ -23,17 +23,19 @@
 TabGroupViews::TabGroupViews(TabStrip* tab_strip,
                              const tab_groups::TabGroupId& group)
     : tab_strip_(tab_strip), group_(group) {
-  header_ = std::make_unique<TabGroupHeader>(tab_strip_, group_);
-  header_->set_owned_by_client();
-
-  underline_ = std::make_unique<TabGroupUnderline>(this, group_);
-  underline_->set_owned_by_client();
-
-  highlight_ = std::make_unique<TabGroupHighlight>(this, group_);
-  highlight_->set_owned_by_client();
+  header_ = tab_strip_->AddChildView(
+      std::make_unique<TabGroupHeader>(tab_strip_, group_));
+  underline_ = tab_strip_->AddChildView(
+      std::make_unique<TabGroupUnderline>(this, group_));
+  highlight_ = tab_strip_->AddChildView(
+      std::make_unique<TabGroupHighlight>(this, group_));
 }
 
-TabGroupViews::~TabGroupViews() {}
+TabGroupViews::~TabGroupViews() {
+  tab_strip_->RemoveChildViewT(header_);
+  tab_strip_->RemoveChildViewT(underline_);
+  tab_strip_->RemoveChildViewT(highlight_);
+}
 
 void TabGroupViews::UpdateVisuals() {
   header_->VisualsChanged();
@@ -46,40 +48,29 @@ void TabGroupViews::UpdateVisuals() {
 }
 
 gfx::Rect TabGroupViews::GetBounds() const {
-  if (tab_strip_->controller()->IsGroupCollapsed(group_))
-    return header_->bounds();
+  gfx::Rect bounds = header_->bounds();
 
-  const Tab* last_tab = GetLastTabInGroup();
-  if (!last_tab)
-    return header_->bounds();
-
-  const int start_x = header_->x();
-  const int end_x = last_tab->bounds().right();
-
-  if (end_x <= start_x)
-    return header_->bounds();
-
-  const int y = header_->y();
-  const int height = header_->height();
-
-  return gfx::Rect(start_x, y, end_x - start_x, height);
+  if (!tab_strip_->controller()->IsGroupCollapsed(group_)) {
+    const Tab* last_tab = GetLastTabInGroup();
+    if (last_tab) {
+      const int width = last_tab->bounds().right() - bounds.x();
+      if (width > 0)
+        bounds.set_width(width);
+    }
+  }
+  return bounds;
 }
 
-Tab* TabGroupViews::GetLastTabInGroup() const {
+const Tab* TabGroupViews::GetLastTabInGroup() const {
   const std::vector<int> tabs_in_group =
       tab_strip_->controller()->ListTabsInGroup(group_);
-
-  if (tabs_in_group.size() <= 0)
-    return nullptr;
-
-  const int last_tab_index = tabs_in_group[tabs_in_group.size() - 1];
-  return tab_strip_->tab_at(last_tab_index);
+  return tabs_in_group.empty() ? nullptr
+                               : tab_strip_->tab_at(tabs_in_group.back());
 }
 
 SkColor TabGroupViews::GetGroupColor() const {
-  const tab_groups::TabGroupColorId color_id =
-      tab_strip_->controller()->GetGroupColorId(group_);
-  return tab_strip_->GetPaintedGroupColor(color_id);
+  return tab_strip_->GetPaintedGroupColor(
+      tab_strip_->controller()->GetGroupColorId(group_));
 }
 
 SkColor TabGroupViews::GetTabBackgroundColor() const {

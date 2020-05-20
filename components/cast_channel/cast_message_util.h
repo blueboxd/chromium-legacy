@@ -253,7 +253,8 @@ CastMessage CreateLaunchRequest(
     int request_id,
     const std::string& app_id,
     const std::string& locale,
-    const std::vector<std::string>& supported_app_types);
+    const std::vector<std::string>& supported_app_types,
+    const base::Optional<base::Value>& app_params);
 
 CastMessage CreateStopRequest(const std::string& source_id,
                               int request_id,

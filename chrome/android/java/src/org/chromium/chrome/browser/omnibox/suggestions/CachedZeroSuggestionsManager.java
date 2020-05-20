@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.url.GURL;
@@ -67,33 +68,45 @@ public class CachedZeroSuggestionsManager {
      */
     private static void cacheSuggestionList(
             SharedPreferencesManager prefs, List<OmniboxSuggestion> suggestions) {
-        final int size = suggestions.size();
-        prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE, size);
-        for (int i = 0; i < size; i++) {
-            OmniboxSuggestion suggestion = suggestions.get(i);
-            if (suggestion.hasAnswer()) continue;
+        int numCachableSuggestions = 0;
 
+        // Write 0 here to avoid something wrong in the for loop, and the real size will be updated
+        // after the for loop.
+        prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE, 0);
+        for (int i = 0; i < suggestions.size(); i++) {
+            OmniboxSuggestion suggestion = suggestions.get(i);
+            if (!shouldCacheSuggestion(suggestion)) continue;
+
+            prefs.writeString(KEY_ZERO_SUGGEST_URL_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getUrl().serialize());
             prefs.writeString(
-                    KEY_ZERO_SUGGEST_URL_PREFIX.createKey(i), suggestion.getUrl().serialize());
-            prefs.writeString(
-                    KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX.createKey(i), suggestion.getDisplayText());
-            prefs.writeString(
-                    KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX.createKey(i), suggestion.getDescription());
-            prefs.writeInt(KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX.createKey(i), suggestion.getType());
-            prefs.writeBoolean(KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX.createKey(i),
+                    KEY_ZERO_SUGGEST_DISPLAY_TEXT_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getDisplayText());
+            prefs.writeString(KEY_ZERO_SUGGEST_DESCRIPTION_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getDescription());
+            prefs.writeInt(KEY_ZERO_SUGGEST_NATIVE_TYPE_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getType());
+            prefs.writeBoolean(
+                    KEY_ZERO_SUGGEST_IS_SEARCH_TYPE_PREFIX.createKey(numCachableSuggestions),
                     suggestion.isSearchSuggestion());
             prefs.writeBoolean(
-                    KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX.createKey(i), suggestion.isDeletable());
-            prefs.writeBoolean(
-                    KEY_ZERO_SUGGEST_IS_STARRED_PREFIX.createKey(i), suggestion.isStarred());
-            prefs.writeString(KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX.createKey(i),
+                    KEY_ZERO_SUGGEST_IS_DELETABLE_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.isDeletable());
+            prefs.writeBoolean(KEY_ZERO_SUGGEST_IS_STARRED_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.isStarred());
+            prefs.writeString(
+                    KEY_ZERO_SUGGEST_POST_CONTENT_TYPE_PREFIX.createKey(numCachableSuggestions),
                     suggestion.getPostContentType());
-            prefs.writeString(KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX.createKey(i),
+            prefs.writeString(
+                    KEY_ZERO_SUGGEST_POST_CONTENT_DATA_PREFIX.createKey(numCachableSuggestions),
                     suggestion.getPostData() == null
                             ? null
                             : Base64.encodeToString(suggestion.getPostData(), Base64.DEFAULT));
-            prefs.writeInt(KEY_ZERO_SUGGEST_GROUP_ID_PREFIX.createKey(i), suggestion.getGroupId());
+            prefs.writeInt(KEY_ZERO_SUGGEST_GROUP_ID_PREFIX.createKey(numCachableSuggestions),
+                    suggestion.getGroupId());
+            numCachableSuggestions++;
         }
+        prefs.writeInt(ChromePreferenceKeys.KEY_ZERO_SUGGEST_LIST_SIZE, numCachableSuggestions);
     }
 
     /**
@@ -224,5 +237,18 @@ public class CachedZeroSuggestionsManager {
                 suggestions.remove(index);
             }
         }
+    }
+
+    /**
+     * Check if the suggestion is needed to be cached.
+     *
+     * @param suggestion The OmniboxSuggestion to check.
+     * @return Whether or not the suggestion can be cached.
+     */
+    private static boolean shouldCacheSuggestion(OmniboxSuggestion suggestion) {
+        return !suggestion.hasAnswer()
+                && suggestion.getType() != OmniboxSuggestionType.CLIPBOARD_URL
+                && suggestion.getType() != OmniboxSuggestionType.CLIPBOARD_TEXT
+                && suggestion.getType() != OmniboxSuggestionType.CLIPBOARD_IMAGE;
     }
 }

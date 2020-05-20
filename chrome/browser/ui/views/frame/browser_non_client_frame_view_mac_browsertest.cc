@@ -116,7 +116,6 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewMacBrowserTest, TitleUpdates) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     BrowserNonClientFrameViewMacBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     web_app::ControllerTypeParamToString);

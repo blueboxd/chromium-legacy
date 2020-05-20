@@ -45,7 +45,6 @@ constexpr const char* kImageBitmapOptionResizeQualityMedium = "medium";
 constexpr const char* kImageBitmapOptionResizeQualityPixelated = "pixelated";
 constexpr const char* kPreserveImageBitmapColorSpaceConversion = "preserve";
 constexpr const char* kSRGBImageBitmapColorSpaceConversion = "srgb";
-constexpr const char* kLinearRGBImageBitmapColorSpaceConversion = "linear-rgb";
 constexpr const char* kP3ImageBitmapColorSpaceConversion = "p3";
 constexpr const char* kRec2020ImageBitmapColorSpaceConversion = "rec2020";
 
@@ -103,10 +102,6 @@ ImageBitmap::ParsedOptions ParseOptions(const ImageBitmapOptions* options,
       options->colorSpaceConversion() != kImageBitmapOptionDefault) {
     parsed_options.color_params.SetCanvasPixelFormat(CanvasPixelFormat::kF16);
     if (options->colorSpaceConversion() ==
-        kLinearRGBImageBitmapColorSpaceConversion) {
-      parsed_options.color_params.SetCanvasColorSpace(
-          CanvasColorSpace::kLinearRGB);
-    } else if (options->colorSpaceConversion() ==
                kP3ImageBitmapColorSpaceConversion) {
       parsed_options.color_params.SetCanvasColorSpace(CanvasColorSpace::kP3);
     } else if (options->colorSpaceConversion() ==

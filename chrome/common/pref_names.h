@@ -879,6 +879,8 @@ extern const char kForceBrowserSignin[];
 extern const char kSigninAllowedOnNextStartup[];
 
 extern const char kCryptAuthDeviceId[];
+extern const char kCryptAuthInstanceId[];
+extern const char kCryptAuthInstanceIdToken[];
 extern const char kEasyUnlockHardlockState[];
 extern const char kEasyUnlockLocalStateTpmKeys[];
 extern const char kEasyUnlockLocalStateUserPrefs[];

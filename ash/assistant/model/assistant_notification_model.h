@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
+#include "chromeos/services/assistant/public/mojom/assistant_notification.mojom-forward.h"
 
 namespace ash {
 
@@ -26,8 +26,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
       chromeos::assistant::mojom::AssistantNotification;
   using AssistantNotificationPtr =
       chromeos::assistant::mojom::AssistantNotificationPtr;
-  using AssistantNotificationType =
-      chromeos::assistant::mojom::AssistantNotificationType;
 
   AssistantNotificationModel();
   ~AssistantNotificationModel();
@@ -56,11 +54,6 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantNotificationModel {
 
   // Returns the notification uniquely identified by |id|.
   const AssistantNotification* GetNotificationById(const std::string& id) const;
-
-  // Returns all notifications matching the specified |type|.
-  // Use base::nullopt to return all notifications independent of their type.
-  std::vector<const AssistantNotification*> GetNotificationsByType(
-      base::Optional<AssistantNotificationType> type) const;
 
   // Returns all notifications (that have not been removed).
   std::vector<const AssistantNotification*> GetNotifications() const;

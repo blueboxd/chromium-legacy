@@ -470,7 +470,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   }
 
   const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info() const {
-    return ycbcr_info_;
+    return wrapped_frame_ ? wrapped_frame_->ycbcr_info() : ycbcr_info_;
   }
 
   // Returns pointer to the data in the visible region of the frame, for

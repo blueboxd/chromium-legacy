@@ -251,6 +251,7 @@ class SkiaGoldSession(object):
     if self._gold_properties.local_pixel_tests:
       compare_cmd.append('--dryrun')
 
+    self._ClearTriageLinkFile()
     rc, stdout, _ = cmd_helper.GetCmdStatusOutputAndError(
         compare_cmd, merge_stderr=True)
 
@@ -439,6 +440,15 @@ class SkiaGoldSession(object):
     """
     assert name in self._comparison_results
     return self._comparison_results[name].local_diff_diff_image
+
+  def _ClearTriageLinkFile(self):
+    """Clears the contents of the triage link file.
+
+    This should be done before every comparison since goldctl appends to the
+    file instead of overwriting its contents, which results in multiple triage
+    links getting concatenated together if there are multiple failures.
+    """
+    open(self._triage_link_file, 'w').close()
 
 
 class SkiaGoldSessionManager(object):

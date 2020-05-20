@@ -31,9 +31,11 @@ class ExternalPrefLoader : public ExternalLoader {
     // owned by root and not writable by any non-root user.
     ENSURE_PATH_CONTROLLED_BY_ADMIN = 1 << 0,
 
+#if defined(OS_CHROMEOS)
     // Delay external preference load. It delays default apps installation
     // to not overload the system on first time user login.
     DELAY_LOAD_UNTIL_PRIORITY_SYNC = 1 << 1,
+#endif
 
     // Use profile user type filter to load extensions.
     USE_USER_TYPE_PROFILE_FILTER = 1 << 2,
@@ -67,7 +69,9 @@ class ExternalPrefLoader : public ExternalLoader {
   friend class ExternalTestingLoader;
   friend class TestExternalPrefLoader;
 
+#if defined(OS_CHROMEOS)
   class PrioritySyncReadyWaiter;
+#endif
 
   // Extracts extension information from a json file serialized by |serializer|.
   // |path| is only used for informational purposes (outputted when an error
@@ -102,7 +106,9 @@ class ExternalPrefLoader : public ExternalLoader {
   // Must be called from the File thread.
   void ReadStandaloneExtensionPrefFiles(base::DictionaryValue* prefs);
 
+#if defined(OS_CHROMEOS)
   void OnPrioritySyncReady(PrioritySyncReadyWaiter* waiter);
+#endif
 
   // The path (coresponding to |base_path_id_| containing the json files
   // describing which extensions to load.
@@ -116,7 +122,9 @@ class ExternalPrefLoader : public ExternalLoader {
   // tests may not be set.
   const std::string user_type_;
 
+#if defined(OS_CHROMEOS)
   std::vector<std::unique_ptr<PrioritySyncReadyWaiter>> pending_waiter_list_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoader);
 };

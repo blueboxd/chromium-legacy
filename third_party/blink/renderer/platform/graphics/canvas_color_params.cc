@@ -21,7 +21,6 @@ gfx::ColorSpace::PrimaryID GetPrimaryID(CanvasColorSpace color_space) {
   gfx::ColorSpace::PrimaryID primary_id = gfx::ColorSpace::PrimaryID::BT709;
   switch (color_space) {
     case CanvasColorSpace::kSRGB:
-    case CanvasColorSpace::kLinearRGB:
       primary_id = gfx::ColorSpace::PrimaryID::BT709;
       break;
     case CanvasColorSpace::kRec2020:
@@ -123,9 +122,6 @@ sk_sp<SkColorSpace> CanvasColorParams::GetSkColorSpace() const {
   switch (color_space_) {
     case CanvasColorSpace::kSRGB:
       break;
-    case CanvasColorSpace::kLinearRGB:
-      transferFn = SkNamedTransferFn::kLinear;
-      break;
     case CanvasColorSpace::kRec2020:
       gamut = SkNamedGamut::kRec2020;
       transferFn = SkNamedTransferFn::kLinear;
@@ -214,10 +210,6 @@ CanvasColorParams::CanvasColorParams(const sk_sp<SkColorSpace> color_space,
   // CanvasColorSpace::kSRGB covers sRGB and e-sRGB. We need to check for
   // linear-rgb, rec2020 and p3.
   if (SkColorSpace::Equals(color_space.get(),
-                           SkColorSpace::MakeSRGB()->makeLinearGamma().get())) {
-    color_space_ = CanvasColorSpace::kLinearRGB;
-  } else if (SkColorSpace::Equals(
-                 color_space.get(),
                  SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
                                        SkNamedGamut::kRec2020)
                      .get())) {

@@ -1362,7 +1362,7 @@ def watch_for_resolution_changes(initial_size):
 
     xrandr_output = subprocess.Popen(["xrandr"],
                                      stdout=subprocess.PIPE).communicate()[0]
-    matches = re.search(r'current (\d+) x (\d+), maximum (\d+) x (\d+)',
+    matches = re.search(br'current (\d+) x (\d+), maximum (\d+) x (\d+)',
                         xrandr_output)
 
     # No need to handle ValueError. If xrandr fails to give valid output,
@@ -1530,7 +1530,7 @@ Web Store: https://chrome.google.com/remotedesktop"""
     return 0
 
   if options.watch_resolution:
-    watch_for_resolution_changes(options.watch_resolution)
+    watch_for_resolution_changes(tuple(options.watch_resolution))
     return 0
 
   if not options.start:

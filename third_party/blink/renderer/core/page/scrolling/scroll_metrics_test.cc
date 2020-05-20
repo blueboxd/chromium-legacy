@@ -259,9 +259,8 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
   // inner box itself has no reason because it's composited. Other scrollable
   // areas from the chain have corresponding reasons.
   EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kIsNotStackingContextAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 0);
-  EXPECT_WHEEL_TOTAL(2);
+  EXPECT_WHEEL_TOTAL(1);
 }
 
 }  // namespace

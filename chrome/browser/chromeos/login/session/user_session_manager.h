@@ -42,7 +42,6 @@
 
 class AccountId;
 class GURL;
-class LacrosLoader;
 class PrefRegistrySimple;
 class PrefService;
 class Profile;
@@ -635,8 +634,6 @@ class UserSessionManager
 
   // Mapped to |chrome::AttemptRestart|, except in tests.
   base::RepeatingClosure attempt_restart_closure_;
-
-  std::unique_ptr<LacrosLoader> lacros_loader_;
 
   std::unique_ptr<arc::AlwaysOnVpnManager> always_on_vpn_manager_;
 

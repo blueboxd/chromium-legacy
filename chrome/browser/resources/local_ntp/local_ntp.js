@@ -1682,13 +1682,13 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
   suggestionGroupElsMap = {};
 
   /**
-   * Creates and returns a remove button that once clicked invokes |callback|.
+   * Creates and returns an action button that once clicked invokes |callback|.
    * @param {!function()} callback
    */
-  function createRemoveButton(callback) {
+  function createActionButton(callback) {
     const icon = document.createElement('button');
-    icon.title = configData.translatedStrings.removeSuggestion;
     icon.classList.add(CLASSES.REMOVE_ICON);
+    icon.tabIndex = -1;
     icon.onmousedown = e => {
       e.preventDefault();  // Stops default browser action (focus)
     };
@@ -1703,10 +1703,13 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
       e.preventDefault();  // Stops default browser action (navigation)
     };
 
-    const remove = document.createElement('div');
-    remove.classList.add(CLASSES.REMOVE_MATCH);
-    remove.appendChild(icon);
-    return remove;
+    const action = document.createElement('div');
+
+    action.classList.add(CLASSES.REMOVE_MATCH);
+    action.tabIndex = 0;
+    action.setAttribute('role', 'button');
+    action.appendChild(icon);
+    return action;
   }
 
   /**
@@ -1721,6 +1724,21 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
 
     const suggestionGroup = assert(suggestionGroupsMap[suggestionGroupId]);
 
+    /**
+     * Updates the tooltip and a11y label of the suggestion group toggle button.
+     * @param {!Element} toggleButtonEl
+     * @param {boolean} groupIsHidden
+     */
+    function updateToggleButtonA11y(toggleButtonEl, groupIsHidden) {
+      toggleButtonEl.title = groupIsHidden ?
+          configData.translatedStrings.showSuggestions :
+          configData.translatedStrings.hideSuggestions;
+      toggleButtonEl.ariaLabel = utils.substituteString(
+          groupIsHidden ? configData.translatedStrings.showSection :
+                          configData.translatedStrings.hideSection,
+          suggestionGroup.header);
+    }
+
     const groupEl = document.createElement('div');
     groupEl.classList.toggle(CLASSES.COLLAPSED, suggestionGroup.hidden);
     const headerEl = document.createElement('a');
@@ -1730,12 +1748,15 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
     headerEl.tabIndex = -1;
     headerEl.append(document.createTextNode(suggestionGroup.header));
     if (configData.suggestionTransparencyEnabled) {
-      const remove = createRemoveButton(() => {
+      const toggle = createActionButton(() => {
         groupEl.classList.toggle(CLASSES.COLLAPSED);
+        updateToggleButtonA11y(
+            toggle, groupEl.classList.contains(CLASSES.COLLAPSED));
         window.chrome.embeddedSearch.searchBox
             .toggleSuggestionGroupIdVisibility(suggestionGroupId);
       });
-      headerEl.appendChild(remove);
+      updateToggleButtonA11y(toggle, suggestionGroup.hidden);
+      headerEl.appendChild(toggle);
       realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
     }
     groupEl.appendChild(headerEl);
@@ -1832,9 +1853,10 @@ function renderAutocompleteMatches(matches, suggestionGroupsMap) {
     }
 
     if (match.supportsDeletion && configData.suggestionTransparencyEnabled) {
-      const remove = createRemoveButton(() => {
+      const remove = createActionButton(() => {
         window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(i);
       });
+      remove.title = configData.translatedStrings.removeSuggestion;
       matchEl.appendChild(remove);
       realboxMatchesEl.classList.add(CLASSES.REMOVABLE);
     }

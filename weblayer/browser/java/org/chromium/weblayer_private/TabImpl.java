@@ -535,27 +535,6 @@ public final class TabImpl extends ITab.Stub {
     }
 
     @Override
-    public boolean setData(Map data) {
-        String[] flattenedMap = new String[data.size() * 2];
-        int i = 0;
-        for (Map.Entry<String, String> entry : ((Map<String, String>) data).entrySet()) {
-            flattenedMap[i++] = entry.getKey();
-            flattenedMap[i++] = entry.getValue();
-        }
-        return TabImplJni.get().setData(mNativeTab, flattenedMap);
-    }
-
-    @Override
-    public Map getData() {
-        String[] data = TabImplJni.get().getData(mNativeTab);
-        Map<String, String> map = new HashMap<>();
-        for (int i = 0; i < data.length; i += 2) {
-            map.put(data[i], data[i + 1]);
-        }
-        return map;
-    }
-
-    @Override
     public void captureScreenShot(float scale, IObjectWrapper valueCallback) {
         StrictModeWorkaround.apply();
         ValueCallback<Pair<Bitmap, Integer>> unwrappedCallback =
@@ -783,7 +762,5 @@ public final class TabImpl extends ITab.Stub {
         String getGuid(long nativeTabImpl);
         void captureScreenShot(long nativeTabImpl, float scale,
                 ValueCallback<Pair<Bitmap, Integer>> valueCallback);
-        boolean setData(long nativeTabImpl, String[] data);
-        String[] getData(long nativeTabImpl);
     }
 }

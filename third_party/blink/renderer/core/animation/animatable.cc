@@ -61,6 +61,8 @@ Animation* Animatable::animate(
     const ScriptValue& keyframes,
     const UnrestrictedDoubleOrKeyframeAnimationOptions& options,
     ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid())
+    return nullptr;
   Element* element = GetAnimationTarget();
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes,
@@ -79,6 +81,8 @@ Animation* Animatable::animate(
 Animation* Animatable::animate(ScriptState* script_state,
                                const ScriptValue& keyframes,
                                ExceptionState& exception_state) {
+  if (!script_state->ContextIsValid())
+    return nullptr;
   Element* element = GetAnimationTarget();
   KeyframeEffect* effect =
       KeyframeEffect::Create(script_state, element, keyframes, exception_state);

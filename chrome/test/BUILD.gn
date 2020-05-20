@@ -4743,7 +4743,6 @@ test("unit_tests") {
       "../browser/extensions/extension_web_ui_unittest.cc",
       "../browser/extensions/external_install_error_unittest.cc",
       "../browser/extensions/external_policy_loader_unittest.cc",
-      "../browser/extensions/external_pref_loader_unittest.cc",
       "../browser/extensions/external_provider_impl_chromeos_unittest.cc",
       "../browser/extensions/external_provider_impl_unittest.cc",
       "../browser/extensions/forced_extensions/installation_tracker_unittest.cc",
@@ -4957,6 +4956,7 @@ test("unit_tests") {
         "../browser/chromeos/login/easy_unlock/easy_unlock_screenlock_state_handler_unittest.cc",
         "../browser/chromeos/login/easy_unlock/easy_unlock_service_regular_unittest.cc",
         "../browser/extensions/api/file_system/consent_provider_unittest.cc",
+        "../browser/extensions/external_pref_loader_unittest.cc",
         "../browser/media_galleries/chromeos/mtp_device_object_enumerator_unittest.cc",
         "../browser/ui/webui/about_ui_unittest.cc",
       ]

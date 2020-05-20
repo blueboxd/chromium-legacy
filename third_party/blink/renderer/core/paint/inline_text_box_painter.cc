@@ -618,7 +618,8 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
               paint_info.context, box_origin, style, font,
               styleable_marker.BackgroundColor(), marker_offsets.start,
               marker_offsets.end);
-        } else {
+        } else if (DocumentMarkerPainter::ShouldPaintMarkerUnderline(
+                       styleable_marker)) {
           PaintStyleableMarkerUnderline(paint_info.context, box_origin,
                                         styleable_marker, style, font);
         }

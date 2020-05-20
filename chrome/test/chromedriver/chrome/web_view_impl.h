@@ -135,8 +135,7 @@ class WebViewImpl : public WebView {
   Status WaitForPendingNavigations(const std::string& frame_id,
                                    const Timeout& timeout,
                                    bool stop_load_on_timeout) override;
-  Status IsPendingNavigation(const std::string& frame_id,
-                             const Timeout* timeout,
+  Status IsPendingNavigation(const Timeout* timeout,
                              bool* is_pending) const override;
   JavaScriptDialogManager* GetJavaScriptDialogManager() override;
   Status OverrideGeolocation(const Geoposition& geoposition) override;
@@ -167,7 +166,7 @@ class WebViewImpl : public WebView {
   FrameTracker* GetFrameTracker() const override;
   std::unique_ptr<base::Value> GetCastSinks() override;
   std::unique_ptr<base::Value> GetCastIssueMessage() override;
-  void ClearNavigationState(const std::string& new_frame_id) override;
+  void SetFrame(const std::string& new_frame_id) override;
 
   const WebViewImpl* GetParent() const;
   bool Lock();

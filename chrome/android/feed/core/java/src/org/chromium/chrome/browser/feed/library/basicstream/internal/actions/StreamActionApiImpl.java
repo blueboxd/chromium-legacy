@@ -334,7 +334,7 @@ public class StreamActionApiImpl implements StreamActionApi {
     @Override
     public void reportClickAction(String contentId, ActionPayload payload) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.REPORT_FEED_USER_ACTIONS)) {
-            mActionManager.createAndStoreAction(contentId, payload);
+            mActionManager.createAndUploadAction(contentId, payload);
         }
     }
 

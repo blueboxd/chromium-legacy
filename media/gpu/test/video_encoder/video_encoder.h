@@ -47,6 +47,8 @@ class VideoEncoder {
   using EventCallback = base::RepeatingCallback<bool(EncoderEvent)>;
 
   // Create an instance of the video encoder.
+  // TODO(hiroh): Take raw pointers of bitstream_processors so that they are
+  // destroyed on the same sequence where they are created.
   static std::unique_ptr<VideoEncoder> Create(
       const VideoEncoderClientConfig& config,
       std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors =

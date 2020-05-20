@@ -445,11 +445,6 @@ bool NetworkState::IsManagedByPolicy() const {
          onc_source_ == ::onc::ONCSource::ONC_SOURCE_USER_POLICY;
 }
 
-bool NetworkState::IsUsingMobileData() const {
-  return type() == shill::kTypeCellular || type() == chromeos::kTypeTether ||
-         tethering_state() == shill::kTetheringConfirmedState;
-}
-
 bool NetworkState::IndicateRoaming() const {
   return type() == shill::kTypeCellular &&
          roaming_ == shill::kRoamingStateRoaming && !provider_requires_roaming_;

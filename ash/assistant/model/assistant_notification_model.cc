@@ -6,6 +6,7 @@
 
 #include "ash/assistant/model/assistant_notification_model_observer.h"
 #include "base/stl_util.h"
+#include "chromeos/services/assistant/public/mojom/assistant_notification.mojom.h"
 
 namespace ash {
 
@@ -80,17 +81,9 @@ AssistantNotificationModel::GetNotificationById(const std::string& id) const {
 
 std::vector<const chromeos::assistant::mojom::AssistantNotification*>
 AssistantNotificationModel::GetNotifications() const {
-  return GetNotificationsByType(base::nullopt);
-}
-
-std::vector<const chromeos::assistant::mojom::AssistantNotification*>
-AssistantNotificationModel::GetNotificationsByType(
-    base::Optional<AssistantNotificationType> type) const {
   std::vector<const AssistantNotification*> notifications;
-  for (const auto& notification : notifications_) {
-    if (!type || notification.second->type == type.value())
-      notifications.push_back(notification.second.get());
-  }
+  for (const auto& notification : notifications_)
+    notifications.push_back(notification.second.get());
   return notifications;
 }
 

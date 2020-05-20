@@ -59,6 +59,14 @@ public class TabSuggestionMessageService extends MessageService implements TabSu
         }
 
         /**
+         * @return The suggested action type.
+         */
+        @TabSuggestion.TabSuggestionAction
+        public int getActionType() {
+            return mTabSuggestion.getAction();
+        }
+
+        /**
          * @return The {@link MessageCardView.ReviewActionProvider} for the associated
          *         {@link TabSuggestion}.
          */

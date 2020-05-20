@@ -33,7 +33,6 @@ class CC_PAINT_EXPORT PaintFlags {
   enum Style {
     kFill_Style = SkPaint::kFill_Style,
     kStroke_Style = SkPaint::kStroke_Style,
-    kStrokeAndFill_Style = SkPaint::kStrokeAndFill_Style,
   };
   bool nothingToDraw() const;
   ALWAYS_INLINE Style getStyle() const {

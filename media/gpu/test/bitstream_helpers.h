@@ -13,7 +13,7 @@ namespace media {
 namespace test {
 
 // This class defines an abstract interface for classes that are interested in
-// processing bitstreams (e.g. StreamValidator, DecoderBufferValidator, ...).
+// processing bitstreams (e.g. BitstreamValidator, DecoderBufferValidator, ...).
 class BitstreamProcessor {
  public:
   struct BitstreamRef : public base::RefCountedThreadSafe<BitstreamRef> {
@@ -26,7 +26,7 @@ class BitstreamProcessor {
     BitstreamRef(const BitstreamRef&) = delete;
     BitstreamRef& operator=(const BitstreamRef&) = delete;
 
-    const scoped_refptr<const DecoderBuffer> buffer;
+    const scoped_refptr<DecoderBuffer> buffer;
     const BitstreamBufferMetadata metadata;
     const int32_t id;
 

@@ -31,6 +31,9 @@ void SetUpHTML(PaintAndRasterInvalidationTest& test) {
       .solid {
         background: blue;
       }
+      .translucent {
+        background: rgba(0, 0, 255, 0.5);
+      }
       .gradient {
         background-image: linear-gradient(blue, yellow);
       }
@@ -640,7 +643,8 @@ TEST_P(PaintAndRasterInvalidationTest,
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
   auto* object = target->GetLayoutObject();
-  target->setAttribute(html_names::kClassAttr, "solid local-attachment scroll");
+  target->setAttribute(html_names::kClassAttr,
+                       "translucent local-attachment scroll");
   target->setInnerHTML(
       "<div id=child style='width: 500px; height: 500px'></div>",
       ASSERT_NO_EXCEPTION);

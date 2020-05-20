@@ -15,7 +15,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/base/filename_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "weblayer/browser/browser_impl.h"
 #include "weblayer/browser/profile_impl.h"
 #include "weblayer/browser/tab_impl.h"
@@ -41,7 +40,6 @@ class BrowserPersisterTestHelper {
 };
 
 namespace {
-using testing::UnorderedElementsAre;
 
 class OneShotNavigationObserver : public NavigationObserver {
  public:
@@ -230,63 +228,6 @@ IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, RestoresGuid) {
   ASSERT_EQ(1u, browser->GetTabs().size());
   EXPECT_EQ(browser->GetTabs()[0], browser->GetActiveTab());
   EXPECT_EQ(original_guid, browser->GetTabs()[0]->GetGuid());
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, RestoresData) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
-  Tab* tab = browser->AddTab(Tab::Create(GetProfile()));
-  tab->SetData({{"abc", "efg"}});
-  const GURL url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateAndWaitForCompletion(url, tab);
-  ShutdownBrowserPersisterAndWait(browser.get());
-  tab = nullptr;
-  browser.reset();
-
-  browser = CreateBrowser(GetProfile(), "x");
-  // Should be no tabs while waiting for restore.
-  EXPECT_TRUE(browser->GetTabs().empty());
-  // Wait for the restore and navigation to complete.
-  BrowserNavigationObserverImpl::WaitForNewTabToCompleteNavigation(
-      browser.get(), url);
-
-  ASSERT_EQ(1u, browser->GetTabs().size());
-  EXPECT_EQ(browser->GetTabs()[0], browser->GetActiveTab());
-  EXPECT_THAT(browser->GetTabs()[0]->GetData(),
-              UnorderedElementsAre(std::make_pair("abc", "efg")));
-}
-
-IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, RestoresMostRecentData) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  std::unique_ptr<BrowserImpl> browser = CreateBrowser(GetProfile(), "x");
-  Tab* tab = browser->AddTab(Tab::Create(GetProfile()));
-  tab->SetData({{"xxx", "xxx"}});
-  const GURL url = embedded_test_server()->GetURL("/simple_page.html");
-  NavigateAndWaitForCompletion(url, tab);
-
-  // Make sure the data has been saved, then set different data on the tab.
-  BrowserPersisterTestHelper::GetCommandStorageManager(
-      browser->browser_persister())
-      ->Save();
-  tab->SetData({{"abc", "efg"}});
-
-  ShutdownBrowserPersisterAndWait(browser.get());
-  tab = nullptr;
-  browser.reset();
-
-  browser = CreateBrowser(GetProfile(), "x");
-  // Should be no tabs while waiting for restore.
-  EXPECT_TRUE(browser->GetTabs().empty());
-  // Wait for the restore and navigation to complete.
-  BrowserNavigationObserverImpl::WaitForNewTabToCompleteNavigation(
-      browser.get(), url);
-
-  ASSERT_EQ(1u, browser->GetTabs().size());
-  EXPECT_EQ(browser->GetTabs()[0], browser->GetActiveTab());
-  EXPECT_THAT(browser->GetTabs()[0]->GetData(),
-              UnorderedElementsAre(std::make_pair("abc", "efg")));
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserPersisterTest, TwoTabs) {

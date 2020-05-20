@@ -1047,7 +1047,8 @@ bool SiteInstanceImpl::ShouldLockToOrigin(
   DCHECK(browser_context);
 
   // Don't lock to origin in --single-process mode, since this mode puts
-  // cross-site pages into the same process.
+  // cross-site pages into the same process.  Note that this also covers the
+  // single-process mode in Android Webview.
   if (RenderProcessHost::run_renderer_in_process())
     return false;
 
@@ -1061,6 +1062,14 @@ bool SiteInstanceImpl::ShouldLockToOrigin(
   // RenderFrame routing id.
   if (is_guest)
     return false;
+
+  // Most WebUI processes should be locked on all platforms.  The only exception
+  // is NTP, handled via the separate callout to the embedder.
+  const auto& webui_schemes = URLDataManagerBackend::GetWebUISchemes();
+  if (base::Contains(webui_schemes, site_url.scheme())) {
+    return GetContentClient()->browser()->DoesWebUISchemeRequireProcessLock(
+        site_url.scheme());
+  }
 
   // TODO(creis, nick): Until we can handle sites with effective URLs at the
   // call sites of ChildProcessSecurityPolicy::CanAccessDataForOrigin, we

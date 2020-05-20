@@ -688,4 +688,28 @@ public class NavigationTest {
         String actualUserAgent = testServer.getLastRequest("/ok.html").headerValue("User-Agent");
         assertEquals(customUserAgent, actualUserAgent);
     }
+
+    @Test
+    @SmallTest
+    public void testIndexOutOfBounds() throws Exception {
+        InstrumentationActivity activity = mActivityTestRule.launchShellWithUrl(null);
+        runOnUiThreadBlocking(() -> {
+            NavigationController controller = activity.getTab().getNavigationController();
+            assertIndexOutOfBoundsException(() -> controller.goBack());
+            assertIndexOutOfBoundsException(() -> controller.goForward());
+            assertIndexOutOfBoundsException(() -> controller.goToIndex(10));
+            assertIndexOutOfBoundsException(() -> controller.getNavigationEntryDisplayUri(10));
+            assertIndexOutOfBoundsException(() -> controller.getNavigationEntryTitle(10));
+        });
+    }
+
+    private static void assertIndexOutOfBoundsException(Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (IndexOutOfBoundsException e) {
+            // Expected exception.
+            return;
+        }
+        Assert.fail("Expected IndexOutOfBoundsException.");
+    }
 }

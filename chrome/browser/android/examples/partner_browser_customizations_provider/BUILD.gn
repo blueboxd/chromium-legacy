@@ -14,7 +14,6 @@ android_resources("partner_browser_customizations_example_apk_resources") {
 }
 
 android_apk("partner_browser_customizations_example_apk") {
-  skip_jetify = true
   sources = [
     "src/org/chromium/example/partnercustomizations/PartnerBookmarksProviderExample.java",
     "src/org/chromium/example/partnercustomizations/PartnerBrowserCustomizationsProviderExample.java",

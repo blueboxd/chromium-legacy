@@ -19,9 +19,11 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/sequence_checker.h"
+#include "components/performance_manager/owned_objects.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/graph_registered.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
+#include "components/performance_manager/registered_objects.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 
 namespace performance_manager {
@@ -187,7 +189,11 @@ class GraphImpl : public Graph {
 
   // Graph-owned objects. For now we only expect O(10) clients, hence the
   // flat_map.
-  base::flat_map<GraphOwned*, std::unique_ptr<GraphOwned>> graph_owned_;
+  OwnedObjects<GraphOwned,
+               /* CallbackArgType = */ Graph*,
+               &GraphOwned::OnPassedToGraph,
+               &GraphOwned::OnTakenFromGraph>
+      graph_owned_;
 
   // Allocated on first use.
   mutable std::unique_ptr<NodeDataDescriberRegistry> describer_registry_;
@@ -199,28 +205,8 @@ class GraphImpl : public Graph {
       std::map<NodeAttachedDataKey, std::unique_ptr<NodeAttachedData>>;
   NodeAttachedDataMap node_attached_data_map_;
 
-  // Comparator for GraphRegistered objects, which sorts by TypeId. This is a
-  // transparent comparator (see base::flat_tree) which allows comparing
-  // GraphRegistered objects and TypeIds with each other.
-  struct GraphRegisteredComparator {
-    using is_transparent = void;
-    bool operator()(const GraphRegistered* gr1,
-                    const GraphRegistered* gr2) const {
-      return gr1->GetTypeId() < gr2->GetTypeId();
-    }
-    bool operator()(const GraphRegistered* gr1, uintptr_t type_id) const {
-      return gr1->GetTypeId() < type_id;
-    }
-    bool operator()(uintptr_t type_id, const GraphRegistered* gr2) const {
-      return type_id < gr2->GetTypeId();
-    }
-  };
-
-  // Storage for GraphRegistered objects. They are stored by pointer to object,
-  // but sorted by their uintptr_t TypeIds. These must all be unregistered
-  // before this object is destroyed.
-  base::flat_set<GraphRegistered*, GraphRegisteredComparator>
-      registered_objects_;
+  // Storage for GraphRegistered objects.
+  RegisteredObjects<GraphRegistered> registered_objects_;
 
   // The most recently assigned serialization ID.
   int64_t current_node_serialization_id_ = 0u;

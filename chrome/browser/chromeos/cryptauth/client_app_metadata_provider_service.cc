@@ -20,6 +20,7 @@
 #include "base/version.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cryptauth/cryptauth_device_id_provider_impl.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/network/network_state_handler.h"
@@ -28,6 +29,7 @@
 #include "chromeos/services/device_sync/public/cpp/gcm_constants.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -97,6 +99,13 @@ void LogInstanceIdTokenFetchRetries(int count) {
 }
 
 }  // namespace
+
+// static
+void ClientAppMetadataProviderService::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterStringPref(prefs::kCryptAuthInstanceId, std::string());
+  registry->RegisterStringPref(prefs::kCryptAuthInstanceIdToken, std::string());
+}
 
 // static
 int64_t ClientAppMetadataProviderService::ConvertVersionCodeToInt64(
@@ -213,6 +222,14 @@ void ClientAppMetadataProviderService::OnInstanceIdFetched(
     const base::SysInfo::HardwareInfo& hardware_info,
     const std::string& instance_id) {
   DCHECK(!instance_id.empty());
+  std::string previous_instance_id =
+      pref_service_->GetString(prefs::kCryptAuthInstanceId);
+  if (!previous_instance_id.empty()) {
+    base::UmaHistogramBoolean("CryptAuth.InstanceId.DidInstanceIdChange",
+                              previous_instance_id != instance_id);
+  }
+  pref_service_->SetString(prefs::kCryptAuthInstanceId, instance_id);
+
   GetInstanceId()->GetToken(
       device_sync::
           kCryptAuthV2EnrollmentAuthorizedEntity /* authorized_entity */,
@@ -260,6 +277,13 @@ void ClientAppMetadataProviderService::OnInstanceIdTokenFetched(
   }
 
   DCHECK(!token.empty());
+  std::string previous_instance_id_token =
+      pref_service_->GetString(prefs::kCryptAuthInstanceIdToken);
+  if (!previous_instance_id_token.empty()) {
+    base::UmaHistogramBoolean("CryptAuth.InstanceId.DidInstanceIdTokenChange",
+                              previous_instance_id_token != token);
+  }
+  pref_service_->SetString(prefs::kCryptAuthInstanceIdToken, token);
 
   cryptauthv2::ClientAppMetadata metadata;
 

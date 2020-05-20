@@ -31,8 +31,6 @@ class ASH_EXPORT AssistantNotificationController
       chromeos::assistant::mojom::AssistantNotification;
   using AssistantNotificationPtr =
       chromeos::assistant::mojom::AssistantNotificationPtr;
-  using AssistantNotificationType =
-      chromeos::assistant::mojom::AssistantNotificationType;
 
   AssistantNotificationController();
   ~AssistantNotificationController() override;

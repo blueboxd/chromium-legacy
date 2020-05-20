@@ -21,49 +21,41 @@ java_group("robolectric_all_java") {
 }
 
 java_prebuilt("android-all-4.4_r1-robolectric-r2_java") {
-  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-4.4_r1-robolectric-r2.jar"
 }
 
 java_prebuilt("android-all-5.0.2_r3-robolectric-r0_java") {
-  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-5.0.2_r3-robolectric-r0.jar"
 }
 
 java_prebuilt("android-all-7.1.0_r7-robolectric-r1_java") {
-  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-7.1.0_r7-robolectric-r1.jar"
 }
 
 java_prebuilt("android-all-8.0.0_r4-robolectric-r1_java") {
-  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-8.0.0_r4-robolectric-r1.jar"
 }
 
 java_prebuilt("android-all-8.1.0-robolectric-4611349_java") {
-  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-8.1.0-robolectric-4611349.jar"
 }
 
 java_prebuilt("android-all-9-robolectric-4913185-2_java") {
-  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-9-robolectric-4913185-2.jar"
 }
 
 java_prebuilt("android-all-10-robolectric-5803371_java") {
-  skip_jetify = true
   testonly = true
   jar_path = "lib/android-all-10-robolectric-5803371.jar"
 }
 
 java_library("robolectric_java") {
-  skip_jetify = true
   testonly = true
 
   # Skip platform checks since we must depend on shadows_core_java here which
@@ -174,7 +166,6 @@ java_library("robolectric_java") {
 }
 
 java_library("robolectric_annotations_java") {
-  skip_jetify = true
   testonly = true
   deps = [
     ":android-all-10-robolectric-5803371_java",
@@ -198,7 +189,6 @@ java_library("robolectric_annotations_java") {
 }
 
 java_annotation_processor("robolectric_processor") {
-  skip_jetify = true
   testonly = true
   deps = [
     ":robolectric_annotations_java",
@@ -270,7 +260,6 @@ group("sdk_list_txt") {
 }
 
 java_library("robolectric_resources_java") {
-  skip_jetify = true
   testonly = true
   bypass_platform_checks = true
   deps = [
@@ -387,7 +376,6 @@ java_library("robolectric_resources_java") {
 }
 
 java_library("robolectric_utils_java") {
-  skip_jetify = true
   testonly = true
   bypass_platform_checks = true
   deps = [
@@ -440,7 +428,6 @@ java_library("robolectric_utils_java") {
 }
 
 java_library("robolectric_sandbox_java") {
-  skip_jetify = true
   testonly = true
   bypass_platform_checks = true
   provider_configurations = [ "local/shadows/sandbox/src/main/resources/META-INF/services/org.robolectric.internal.bytecode.ClassInstrumentor\$Decorator" ]
@@ -502,7 +489,6 @@ java_library("robolectric_sandbox_java") {
 
 java_library("robolectric_junit_java") {
   bypass_platform_checks = true
-  skip_jetify = true
   testonly = true
   deps = [
     ":robolectric_annotations_java",
@@ -540,7 +526,6 @@ java_library("robolectric_pluginapi_java") {
 }
 
 java_library("robolectric_shadowapi_java") {
-  skip_jetify = true
   testonly = true
   deps = [ "//third_party/android_deps:com_google_code_findbugs_jsr305_java" ]
 
@@ -565,7 +550,6 @@ java_library("shadows_core_java") {
   # Skip platform checks since we must depend on accessibility_test_framework_java
   # here which requires_android.
   bypass_platform_checks = true
-  skip_jetify = true
   testonly = true
   processor_args_javac =
       [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric" ]
@@ -1093,7 +1077,6 @@ java_library("shadows_multidex_java") {
   # error: An exception occurred in org.robolectric.annotation.processing.RobolectricProcessor:
   enable_turbine = false
 
-  skip_jetify = true
   testonly = true
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.multidex" ]
   provider_configurations = [ "local/shadows/multidex/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
@@ -1140,7 +1123,6 @@ java_library("shadows_play_services_java") {
   enable_turbine = false
 
   testonly = true
-  skip_jetify = true
   processor_args_javac = [ "org.robolectric.annotation.processing.shadowPackage=org.robolectric.shadows.gms" ]
   provider_configurations = [ "local/shadows/playservices/src/main/resources/META-INF/services/org.robolectric.internal.ShadowProvider" ]
   sources = [

@@ -7,15 +7,19 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/accessibility/caption_controller.h"
+#include "chrome/browser/accessibility/caption_controller_factory.h"
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views/accessibility/caption_bubble_controller_views.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_observer.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -28,13 +32,21 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "media/base/media_switches.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_test_helper.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/client/focus_client.h"
+#include "ui/views/widget/native_widget_aura.h"
+#endif  // USE_AURA
+
 class BrowserViewTest : public InProcessBrowserTest {
  public:
-  BrowserViewTest() : InProcessBrowserTest(), devtools_(nullptr) {}
+  BrowserViewTest() : devtools_(nullptr) {
+    scoped_feature_list_.InitAndEnableFeature(media::kLiveCaption);
+  }
 
  protected:
   BrowserView* browser_view() {
@@ -65,6 +77,8 @@ class BrowserViewTest : public InProcessBrowserTest {
   DevToolsWindow* devtools_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserViewTest);
 };
 
@@ -364,3 +378,55 @@ IN_PROC_BROWSER_TEST_F(BrowserViewTest, GetAccessibleTabModalDialogTree) {
 }
 
 #endif  // !defined(OS_MACOSX)
+
+IN_PROC_BROWSER_TEST_F(BrowserViewTest, F6CyclesThroughCaptionBubbleToo) {
+  captions::CaptionController* caption_controller =
+      captions::CaptionControllerFactory::GetForProfileIfExists(
+          browser()->profile());
+  caption_controller->Init();
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kLiveCaptionEnabled,
+                                               true);
+  // No bubble is shown until a transcription happens.
+  captions::CaptionBubbleControllerViews* bubble_controller =
+      static_cast<captions::CaptionBubbleControllerViews*>(
+          caption_controller->GetCaptionBubbleControllerForBrowser(browser()));
+  EXPECT_FALSE(bubble_controller->GetFocusableCaptionBubble());
+
+  caption_controller->DispatchTranscription(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      chrome::mojom::TranscriptionResult::New("Hello, world", false));
+  // Now the caption bubble exists but is not focused.
+  views::View* bubble = bubble_controller->GetFocusableCaptionBubble();
+  EXPECT_TRUE(bubble);
+  EXPECT_TRUE(bubble->GetWidget()->IsVisible());
+  EXPECT_FALSE(bubble->HasFocus());
+  EXPECT_FALSE(bubble->GetFocusManager()->GetFocusedView());
+
+  // Press F6 until we enter the bubble.
+  while (!bubble->HasFocus()) {
+    EXPECT_TRUE(
+        browser_view()->AcceleratorPressed(ui::Accelerator(ui::VKEY_F6, 0)));
+  }
+
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // Check the native widget has focus.
+  aura::client::FocusClient* focus_client =
+      aura::client::GetFocusClient(bubble->GetWidget()->GetNativeView());
+  EXPECT_TRUE(bubble->GetWidget()->GetNativeView() ==
+              focus_client->GetFocusedWindow());
+#endif
+
+  // F6 again exits the bubble. Because the bubble is focused, it gets the
+  // accelerator event.
+  EXPECT_TRUE(bubble->AcceleratorPressed(ui::Accelerator(ui::VKEY_F6, 0)));
+
+  // Now something else within the browser_view's focus manager is focused.
+  EXPECT_FALSE(bubble->HasFocus());
+  EXPECT_FALSE(bubble->GetFocusManager()->GetFocusedView());
+  EXPECT_TRUE(browser_view()->GetWidget()->GetFocusManager()->GetFocusedView());
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  // The bubble's native widget should no longer have focus.
+  EXPECT_FALSE(bubble->GetWidget()->GetNativeView() ==
+               focus_client->GetFocusedWindow());
+#endif
+}

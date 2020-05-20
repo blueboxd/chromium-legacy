@@ -178,7 +178,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '1b63b4ac6933ccddb15bcf650cd5747d5eba44d0',
+  'skia_revision': '3bcb7bb01b82cac84bbff8d89429c913659ad2c2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -190,7 +190,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'cdfc69c7f0f833e99b435715b3c012a2b61e55b1',
+  'angle_revision': '78ef4133f8de53a0303c92a49c12e6413c5de084',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -225,7 +225,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling NaCl
   # and whatever else without interference from each other.
-  'nacl_revision': '7e802793566c7bafd2c0846595d22bf5f805284e',
+  'nacl_revision': '87616f7ce2ea8383efd3731960c15f4ba5852d93',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '8d6b021a2a134068bc46a7773ae553f8d957b937',
+  'dawn_revision': '78f7e8640f1452eab5a31bd07ec955b3a41d0aba',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -336,7 +336,7 @@ vars = {
   # revisions.
 
   # GN CIPD package version.
-  'gn_version': 'git_revision:ab32747ae7a399c57b04280f38e49b8fdf237a8a',
+  'gn_version': 'git_revision:d0a6f072070988e7b038496c4e7d6c562b649732',
 
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '002f97b35a726ac34335376cc2c5637d31ae2f69',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'd8c6146c0b8be243c0d2d4e207a34e25800bcb33',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c8b57189087c3ee9857694520d5c8668daa5842e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '324f995d282776852761b535497e14e021fd41b4',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1453,7 +1453,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '71e9acb97c7701bf5c9c77e4fc7a525678d65edc',
+    Var('webrtc_git') + '/src.git' + '@' + '4ab61cb9b4499a5e92d29abf5c0df90ca7fdc95c',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@e0d8925a3c32232ce0cdf0396522ef096730d2ee',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@9e4319023a04151f0033876a6a05d5347855d8f3',
     'condition': 'checkout_src_internal',
   },
 

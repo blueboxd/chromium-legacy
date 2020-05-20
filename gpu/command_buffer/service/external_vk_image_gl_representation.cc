@@ -116,11 +116,11 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
       (current_access_mode_ == GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM);
   current_access_mode_ = 0;
 
-  VkSemaphore semaphore = VK_NULL_HANDLE;
   SemaphoreHandle semaphore_handle;
-  GLuint gl_semaphore = 0;
-  if (backing_impl()->need_synchronization()) {
-    semaphore =
+  if (backing_impl()->need_synchronization() &&
+      backing_impl()->gl_reads_in_progress() <= 1) {
+    DCHECK(readonly == !!backing_impl()->gl_reads_in_progress());
+    VkSemaphore semaphore =
         vk_implementation()->CreateExternalSemaphore(backing_impl()->device());
     if (semaphore == VK_NULL_HANDLE) {
       // TODO(crbug.com/933452): We should be able to handle this failure more
@@ -142,7 +142,8 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
     }
 
     SemaphoreHandle dup_semaphore_handle = semaphore_handle.Duplicate();
-    gl_semaphore = ImportVkSemaphoreIntoGL(std::move(dup_semaphore_handle));
+    GLuint gl_semaphore =
+        ImportVkSemaphoreIntoGL(std::move(dup_semaphore_handle));
 
     if (!gl_semaphore) {
       // TODO(crbug.com/933452): We should be able to semaphore_handle this
@@ -152,24 +153,21 @@ void ExternalVkImageGLRepresentationShared::EndAccess() {
                  << "Vulkan";
       return;
     }
-  }
 
-  GrVkImageInfo info;
-  auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
-  DCHECK(result);
-  GLenum dst_layout = ToGLImageLayout(info.fImageLayout);
-  if (backing_impl()->need_synchronization()) {
+    GrVkImageInfo info;
+    auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
+    DCHECK(result);
+    GLenum dst_layout = ToGLImageLayout(info.fImageLayout);
     api()->glSignalSemaphoreEXTFn(gl_semaphore, 0, nullptr, 1,
                                   &texture_service_id_, &dst_layout);
     api()->glDeleteSemaphoresEXTFn(1, &gl_semaphore);
     // Base on the spec, the glSignalSemaphoreEXT() call just inserts signal
     // semaphore command in the gl context. It may or may not flush the context
-    // which depends on the impelemntation. So to make it safe, we always call
+    // which depends on the implementation. So to make it safe, we always call
     // glFlush() here. If the implementation does flush in the
     // glSignalSemaphoreEXT() call, the glFlush() call should be a noop.
     api()->glFlushFn();
   }
-
   backing_impl()->EndAccess(readonly, std::move(semaphore_handle),
                             true /* is_gl */);
 }

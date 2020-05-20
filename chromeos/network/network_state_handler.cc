@@ -899,7 +899,7 @@ void NetworkStateHandler::SetTetherNetworkStateConnecting(
     NET_LOG(EVENT) << "Connecting to Tether network when there is currently no "
                    << "default network; setting as new default network. GUID: "
                    << guid;
-    default_network_path_ = guid;
+    SetDefaultNetworkValues(guid, /*metered=*/true);
   }
 
   SetTetherNetworkStateConnectionState(guid, shill::kStateConfiguration);
@@ -943,7 +943,7 @@ void NetworkStateHandler::SetTetherNetworkStateConnectionState(
                    << "New state: " << connection_state;
     if (!tether_network_state->IsConnectingOrConnected() &&
         tether_network_state->path() == default_network_path_) {
-      default_network_path_.clear();
+      SetDefaultNetworkValues(/*path=*/std::string(), /*metered=*/false);
       NotifyDefaultNetworkChanged(kReasonTether);
     }
     OnNetworkConnectionStateChanged(tether_network_state);
@@ -1360,10 +1360,16 @@ void NetworkStateHandler::UpdateNetworkStateProperties(
   bool network_property_updated = false;
   std::string prev_connection_state = network->connection_state();
   bool prev_is_captive_portal = network->is_captive_portal();
+  bool metered = false;
   for (const auto iter : properties.DictItems()) {
     if (network->PropertyChanged(iter.first, iter.second))
       network_property_updated = true;
+    if (iter.first == shill::kMeteredProperty)
+      metered = iter.second.is_bool() && iter.second.GetBool();
   }
+  if (network->path() == default_network_path_)
+    default_network_is_metered_ = metered && network->IsConnectedState();
+
   if (network->Matches(NetworkTypePattern::WiFi()))
     network_property_updated |= UpdateBlockedByPolicy(network);
   network_property_updated |= network->InitialPropertiesReceived(properties);
@@ -1714,7 +1720,7 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
                  << NetworkPathId(service_path);
   if (new_service_path.empty()) {
     // Notify that there is no default network.
-    default_network_path_.clear();
+    SetDefaultNetworkValues(/*path=*/std::string(), /*metered=*/false);
     NotifyDefaultNetworkChanged(kReasonChange);
     return;
   }
@@ -1725,7 +1731,8 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
     // they will be notified when the state is received.
     NET_LOG(EVENT) << "Default NetworkState not available: "
                    << NetworkPathId(service_path);
-    default_network_path_ = service_path;
+    // Metered will be updated to the correct value when properties arrive.
+    SetDefaultNetworkValues(service_path, /*metered=*/false);
     return;
   }
 
@@ -1737,8 +1744,8 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
     // default network to be the associated Tether network instead.
     network = GetNetworkStateFromGuid(network->tether_guid());
     if (default_network_path_ != network->path()) {
-      default_network_path_ = network->path();
       NET_LOG(DEBUG) << "Tether network is default: " << NetworkId(network);
+      SetDefaultNetworkValues(network->path(), /*metered=*/true);
       NotifyDefaultNetworkChanged(kReasonChange);
     }
     return;
@@ -1746,7 +1753,8 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
 
   // Request the updated default network properties which will trigger
   // NotifyDefaultNetworkChanged().
-  default_network_path_ = service_path;
+  // Metered will be updated to the correct value when properties arrive.
+  SetDefaultNetworkValues(service_path, /*metered=*/false);
   RequestUpdateForNetwork(service_path);
 }
 
@@ -2098,6 +2106,12 @@ std::vector<std::string> NetworkStateHandler::GetTechnologiesForType(
 
   CHECK_GT(technologies.size(), 0ul);
   return technologies;
+}
+
+void NetworkStateHandler::SetDefaultNetworkValues(const std::string& path,
+                                                  bool metered) {
+  default_network_path_ = path;
+  default_network_is_metered_ = metered;
 }
 
 }  // namespace chromeos

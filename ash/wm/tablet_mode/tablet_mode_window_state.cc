@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/drag_drop/tab_drag_drop_delegate.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_animation_types.h"
@@ -327,7 +328,8 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
         return;
 
       if (window_util::IsDraggingTabs(window_state->window()) ||
-          IsTabDraggingSourceWindow(window_state->window())) {
+          IsTabDraggingSourceWindow(window_state->window()) ||
+          TabDragDropDelegate::IsSourceWindowForDrag(window_state->window())) {
         // If the window is the current tab-dragged window or the current tab-
         // dragged window's source window, we may need to update its bounds
         // during dragging.

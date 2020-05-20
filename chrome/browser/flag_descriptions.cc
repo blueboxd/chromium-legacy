@@ -1409,6 +1409,11 @@ const char kOmniboxSuggestionsRecyclerViewName[] =
 const char kOmniboxSuggestionsRecyclerViewDescription[] =
     "Use an Android RecyclerView to render the Omnibox Suggestions drop down.";
 
+const char kOmniboxSuggestionsWrapAroundName[] =
+    "Omnibox Suggestions Wrap-Around";
+const char kOmniboxSuggestionsWrapAroundDescription[] =
+    "Allow long search suggestions to wrap around to reveal their content";
+
 const char kOmniboxUIHideSteadyStateUrlSchemeName[] =
     "Omnibox UI Hide Steady-State URL Scheme";
 const char kOmniboxUIHideSteadyStateUrlSchemeDescription[] =

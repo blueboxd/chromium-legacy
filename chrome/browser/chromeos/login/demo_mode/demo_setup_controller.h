@@ -21,7 +21,7 @@
 class PrefRegistrySimple;
 
 namespace policy {
-class DeviceCloudPolicyManagerChromeOS;
+class EnrollmentRequisitionManager;
 }
 
 namespace chromeos {
@@ -174,7 +174,7 @@ class DemoSetupController
   // Clears demo device enrollment requisition on the given |policy_manager| if
   // it is set.
   static void ClearDemoRequisition(
-      policy::DeviceCloudPolicyManagerChromeOS* policy_manager);
+      policy::EnrollmentRequisitionManager* requisition_manager);
 
   // Utility method that returns whether demo mode is allowed on the device.
   static bool IsDemoModeAllowed();

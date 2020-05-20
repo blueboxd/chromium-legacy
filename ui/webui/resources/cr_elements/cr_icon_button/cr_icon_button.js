@@ -173,9 +173,13 @@ Polymer({
     }
     const icons = (this.ironIcon || '').split(',');
     icons.forEach(icon => {
-      const element = document.createElement('iron-icon');
-      element.icon = icon;
-      this.$.icon.appendChild(element);
+      const ironIcon = document.createElement('iron-icon');
+      ironIcon.icon = icon;
+      this.$.icon.appendChild(ironIcon);
+      if (ironIcon.shadowRoot) {
+        ironIcon.shadowRoot.querySelectorAll('svg', 'img')
+            .forEach(child => child.setAttribute('role', 'none'));
+      }
     });
     if (!this.hasRipple()) {
       return;

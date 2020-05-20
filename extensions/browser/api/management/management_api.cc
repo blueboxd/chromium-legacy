@@ -621,6 +621,9 @@ void ManagementSetEnabledFunction::ShowBlockedByParentDialog(
           ->Get(browser_context())
           ->GetSupervisedUserServiceDelegate();
 
+  supervised_user_service_delegate
+      ->RecordExtensionEnableBlockedByParentDialogUmaMetric();
+
   content::WebContents* contents = GetSenderWebContents();
   web_modal::WebContentsModalDialogManager* manager =
       web_modal::WebContentsModalDialogManager::FromWebContents(contents);

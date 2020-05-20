@@ -107,7 +107,6 @@ editing/selection/select_all/select_all_overflow_hidden_table.html
 editing/selection/selection-forces-unrooted-repaint.html
 editing/selection/set_base_and_extent/set_base_and_extent_uneditable_table.html
 editing/shadow/505092-fieldset-is-not-ua-shadow-crash.html
-editing/shadow/delete-characters-in-distributed-node-crash.html
 editing/shadow/getRangeAt-end-of-text-node.html
 editing/style/apply-style-atomic.html
 editing/style/block-styles-007.html

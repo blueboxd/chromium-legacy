@@ -704,7 +704,6 @@ INSTANTIATE_TEST_SUITE_P(
     All,
     CustomTabBarViewBrowserTest,
     ::testing::Values(
-        web_app::ControllerType::kHostedAppController,
         web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
         web_app::ControllerType::kUnifiedControllerWithWebApp),
     web_app::ControllerTypeParamToString);

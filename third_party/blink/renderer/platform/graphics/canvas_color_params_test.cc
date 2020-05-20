@@ -19,11 +19,10 @@ namespace blink {
 TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
   CanvasColorSpace canvas_color_spaces[] = {
       CanvasColorSpace::kSRGB,
-      CanvasColorSpace::kLinearRGB,
       CanvasColorSpace::kRec2020,
       CanvasColorSpace::kP3,
   };
-  for (int iter_color_space = 0; iter_color_space < 4; iter_color_space++) {
+  for (int iter_color_space = 0; iter_color_space < 3; iter_color_space++) {
     CanvasColorParams color_params(canvas_color_spaces[iter_color_space],
                                    CanvasPixelFormat::kF16, kNonOpaque);
     sk_sp<SkColorSpace> canvas_drawing_color_space =

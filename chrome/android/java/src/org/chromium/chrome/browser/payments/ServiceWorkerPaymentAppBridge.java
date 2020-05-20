@@ -181,8 +181,8 @@ public class ServiceWorkerPaymentAppBridge {
                 swScope, origin, iframeOrigin, paymentRequestId,
                 methodData.toArray(new PaymentMethodData[0]), total,
                 modifiers.toArray(new PaymentDetailsModifier[0]), paymentOptions,
-                shippingOptions.toArray(new PaymentShippingOption[0]),
-                host.getNativePaymentHandlerHost(), canShowOwnUI, callback);
+                shippingOptions.toArray(new PaymentShippingOption[0]), host, canShowOwnUI,
+                callback);
     }
 
     /**
@@ -220,9 +220,8 @@ public class ServiceWorkerPaymentAppBridge {
         ServiceWorkerPaymentAppBridgeJni.get().installAndInvokePaymentApp(webContents, origin,
                 iframeOrigin, paymentRequestId, methodData.toArray(new PaymentMethodData[0]), total,
                 modifiers.toArray(new PaymentDetailsModifier[0]), paymentOptions,
-                shippingOptions.toArray(new PaymentShippingOption[0]),
-                host.getNativePaymentHandlerHost(), callback, appName, icon, swUrl, scope, useCache,
-                method, supportedDelegations.getShippingAddress(),
+                shippingOptions.toArray(new PaymentShippingOption[0]), host, callback, appName,
+                icon, swUrl, scope, useCache, method, supportedDelegations.getShippingAddress(),
                 supportedDelegations.getPayerName(), supportedDelegations.getPayerEmail(),
                 supportedDelegations.getPayerPhone());
     }
@@ -505,13 +504,13 @@ public class ServiceWorkerPaymentAppBridge {
                 String topOrigin, String paymentRequestOrigin, String paymentRequestId,
                 PaymentMethodData[] methodData, PaymentItem total,
                 PaymentDetailsModifier[] modifiers, PaymentOptions paymentOptions,
-                PaymentShippingOption[] shippingOptions, long nativePaymentHandlerObject,
+                PaymentShippingOption[] shippingOptions, PaymentHandlerHost paymentHandlerHost,
                 boolean canShowOwnUI, PaymentApp.InstrumentDetailsCallback callback);
         void installAndInvokePaymentApp(WebContents webContents, String topOrigin,
                 String paymentRequestOrigin, String paymentRequestId,
                 PaymentMethodData[] methodData, PaymentItem total,
                 PaymentDetailsModifier[] modifiers, PaymentOptions paymentOptions,
-                PaymentShippingOption[] shippingOptions, long nativePaymentHandlerObject,
+                PaymentShippingOption[] shippingOptions, PaymentHandlerHost paymentHandlerHost,
                 PaymentApp.InstrumentDetailsCallback callback, String appName,
                 @Nullable Bitmap icon, GURL swUrl, GURL scope, boolean useCache, String method,
                 boolean supportedDelegationsShippingAddress, boolean supportedDelegationsPayerName,

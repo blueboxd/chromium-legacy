@@ -1021,9 +1021,10 @@ void UsbDeviceHandleWin::GotDescriptorFromNodeConnection(
     return;
   }
 
-  DCHECK_GE(bytes_transferred, sizeof(USB_DESCRIPTOR_REQUEST));
+  // Converted to CHECKs to investigate https://crbug.com/1084316.
+  CHECK_GE(bytes_transferred, sizeof(USB_DESCRIPTOR_REQUEST));
   bytes_transferred -= sizeof(USB_DESCRIPTOR_REQUEST);
-  DCHECK_LE(bytes_transferred, original_buffer->size());
+  CHECK_LE(bytes_transferred, original_buffer->size());
   memcpy(original_buffer->front(),
          request_buffer->front() + sizeof(USB_DESCRIPTOR_REQUEST),
          bytes_transferred);

@@ -93,10 +93,6 @@ SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
     const SessionID& tab_id,
     const std::string& guid);
 
-SESSIONS_EXPORT std::unique_ptr<SessionCommand> CreateSetTabDataCommand(
-    const SessionID& tab_id,
-    const std::map<std::string, std::string>& data);
-
 // Searches for a pending command using |command_storage_manager| that can be
 // replaced with |command|. If one is found, pending command is removed, the
 // command is added to the pending commands (taken ownership) and true is

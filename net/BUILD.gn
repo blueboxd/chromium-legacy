@@ -87,10 +87,6 @@ buildflag_header("buildflags") {
 config("net_internal_config") {
   defines = [ "NET_IMPLEMENTATION" ]
 
-  if (use_kerberos && is_android) {
-    include_dirs = [ "/usr/include/kerberosV" ]
-  }
-
   if (enable_built_in_dns) {
     defines += [ "ENABLE_BUILT_IN_DNS" ]
   }

@@ -8,7 +8,9 @@ import static org.chromium.base.ApplicationState.HAS_DESTROYED_ACTIVITIES;
 import static org.chromium.base.ApplicationState.HAS_PAUSED_ACTIVITIES;
 import static org.chromium.base.ApplicationState.HAS_STOPPED_ACTIVITIES;
 
+import android.app.Instrumentation.ActivityMonitor;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Color;
 import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
@@ -26,6 +28,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -42,7 +45,6 @@ import org.chromium.chrome.browser.test.MockCertVerifierRuleAndroid;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.MenuUtils;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
@@ -50,6 +52,7 @@ import org.chromium.chrome.test.util.browser.contextmenu.RevampedContextMenuUtil
 import org.chromium.chrome.test.util.browser.webapps.WebappTestPage;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -263,14 +266,22 @@ public class WebappNavigationTest {
 
         addAnchor("myTestAnchorId", offOriginUrl(), "_self");
 
+        IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
+        filter.addDataScheme("https");
+        final ActivityMonitor monitor =
+                InstrumentationRegistry.getInstrumentation().addMonitor(filter, null, false);
+
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 null /* activity to check for focus after click */,
                 mActivityTestRule.getActivity().getActivityTab(), "myTestAnchorId",
                 R.id.contextmenu_open_in_chrome);
 
-        ChromeTabbedActivity tabbedChrome =
-                ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
-        ChromeTabUtils.waitForTabPageLoaded(tabbedChrome.getActivityTab(), offOriginUrl());
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return InstrumentationRegistry.getInstrumentation().checkMonitorHit(monitor, 1);
+            }
+        });
     }
 
     @Test
@@ -303,8 +314,10 @@ public class WebappNavigationTest {
                 runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                         ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI));
 
-        MenuUtils.invokeCustomMenuActionSync(
-                InstrumentationRegistry.getInstrumentation(), activity, R.id.open_in_browser_id);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getComponent().resolveNavigationController().openCurrentUrlInBrowser(true);
+            Assert.assertNull(activity.getActivityTab());
+        });
 
         ChromeTabbedActivity tabbedChrome =
                 ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);
@@ -323,8 +336,13 @@ public class WebappNavigationTest {
                         .putExtra(ShortcutHelper.EXTRA_DISPLAY_MODE, WebDisplayMode.MINIMAL_UI)
                         .putExtra(ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
 
-        MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
-                mActivityTestRule.getActivity(), R.id.open_in_browser_id);
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+            mActivityTestRule.getActivity()
+                    .getComponent()
+                    .resolveNavigationController()
+                    .openCurrentUrlInBrowser(true);
+            Assert.assertNull(mActivityTestRule.getActivity().getActivityTab());
+        });
 
         ChromeTabbedActivity tabbedChrome =
                 ChromeActivityTestRule.waitFor(ChromeTabbedActivity.class);

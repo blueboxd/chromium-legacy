@@ -588,16 +588,14 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, CommandLineTab) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppEngagementBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(
     All,
     HostedAppEngagementBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp),
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp),
     ControllerTypeParamToString);
 
 }  // namespace web_app

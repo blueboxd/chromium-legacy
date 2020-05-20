@@ -189,8 +189,7 @@ IN_PROC_BROWSER_TEST_P(WebAppAudioFocusBrowserTest, WebAppHasSameAudioFocus) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     WebAppAudioFocusBrowserTest,
-    ::testing::Values(ControllerType::kHostedAppController,
-                      ControllerType::kUnifiedControllerWithBookmarkApp,
+    ::testing::Values(ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),
     ControllerTypeParamToString);
 

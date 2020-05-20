@@ -4,7 +4,7 @@
 
 #include "chrome/browser/sharing/webrtc/sharing_mojo_service.h"
 
-#include "build/build_config.h"
+#include "chrome/browser/service_sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
 
 namespace sharing {
@@ -14,9 +14,6 @@ mojo::PendingRemote<mojom::Sharing> LaunchSharing() {
   content::ServiceProcessHost::Launch<mojom::Sharing>(
       remote.InitWithNewPipeAndPassReceiver(),
       content::ServiceProcessHost::Options()
-#if !defined(OS_MACOSX)
-          .WithSandboxType(service_manager::SandboxType::kSharingService)
-#endif
           .WithDisplayName("Sharing Service")
           .Pass());
   return remote;

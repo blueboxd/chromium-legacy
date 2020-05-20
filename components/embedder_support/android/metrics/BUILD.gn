@@ -29,6 +29,7 @@ static_library("metrics") {
     "//components/version_info/android:channel_getter",
     "//content/public/browser",
     "//services/resource_coordinator/public/cpp/memory_instrumentation:browser",
+    "//third_party/metrics_proto",
   ]
 }
 

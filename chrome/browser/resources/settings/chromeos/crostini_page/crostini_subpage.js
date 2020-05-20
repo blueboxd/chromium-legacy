@@ -247,6 +247,11 @@ Polymer({
             settings.routes.CROSTINI_DETAILS) {
       settings.Router.getInstance().navigateToPreviousRoute();
     }
+    if (enabled) {
+      // The disk size or type could have changed due to the user reinstalling
+      // Crostini, update our info.
+      this.loadDiskInfo_();
+    }
   },
 
   /** @private */

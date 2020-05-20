@@ -100,6 +100,10 @@ class DynamicTcmallocPolicyTest : public ::testing::Test {
 
   void TearDown() override {
     policy_ = nullptr;
+    frame_node_.reset();
+    page_node_.reset();
+    process_node_.reset();
+    graph_.TearDown();
     base::RunLoop().RunUntilIdle();
   }
 

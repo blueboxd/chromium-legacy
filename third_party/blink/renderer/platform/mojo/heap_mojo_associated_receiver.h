@@ -80,7 +80,6 @@ class HeapMojoAssociatedReceiver {
    public:
     Wrapper(Owner* owner, ContextLifecycleNotifier* notifier)
         : owner_(owner), associated_receiver_(owner) {
-      DCHECK(notifier);
       SetContextLifecycleNotifier(notifier);
     }
 

@@ -38,7 +38,7 @@ void TypeText(content::WebContents* web_contents) {
                    ui::DomCodeToUsLayoutKeyboardCode(dom_code), false, false,
                    false, false);
   ASSERT_TRUE(msg_queue.WaitForMessage(&reply));
-  ASSERT_EQ("true", reply);
+  ASSERT_EQ("\"entry\"", reply);
 }
 
 IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest, TestMetrics) {
@@ -131,16 +131,37 @@ IN_PROC_BROWSER_TEST_F(NavigationMetricsRecorderBrowserTest,
   // much.
   SiteEngagementService::Get(browser()->profile())
       ->ResetBaseScoreForURL(url, kHighEngagementScore);
-  base::HistogramTester histograms;
+
+  // Setup handlers:
   const char* const kScript =
       "var f = document.getElementById('password_field');"
+      "f.onfocus = function() { "
+      "  setTimeout(function() { window.domAutomationController.send('focus'); "
+      "}, "
+      "0);};"
       "f.onkeyup = function() { "
-      "  setTimeout(function() { window.domAutomationController.send(true); }, "
-      "0); "
-      "};"
-      "f.focus()";
-  EXPECT_TRUE(content::ExecuteScript(web_contents, kScript));
+      "  setTimeout(function() { window.domAutomationController.send('entry'); "
+      "}, "
+      "0);};"
+      "window.domAutomationController.send('setup');";
+  std::string reply1;
+  EXPECT_TRUE(
+      content::ExecuteScriptAndExtractString(web_contents, kScript, &reply1));
+  EXPECT_EQ("setup", reply1);
+
+  base::HistogramTester histograms;
+  std::string reply;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents, "document.getElementById('password_field').focus()",
+      &reply));
+  EXPECT_EQ("focus", reply);
   TypeText(web_contents);
+  // Navigate away to flush the metrics.
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  histograms.ExpectTotalCount("Security.PasswordFocus.SiteEngagementLevel", 1);
+  histograms.ExpectBucketCount("Security.PasswordFocus.SiteEngagementLevel",
+                               blink::mojom::EngagementLevel::HIGH, 1);
 
   histograms.ExpectTotalCount("Security.PasswordEntry.SiteEngagementLevel", 1);
   histograms.ExpectBucketCount("Security.PasswordEntry.SiteEngagementLevel",

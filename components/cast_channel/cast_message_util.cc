@@ -426,7 +426,8 @@ CastMessage CreateLaunchRequest(
     int request_id,
     const std::string& app_id,
     const std::string& locale,
-    const std::vector<std::string>& supported_app_types) {
+    const std::vector<std::string>& supported_app_types,
+    const base::Optional<base::Value>& app_params) {
   Value dict(Value::Type::DICTIONARY);
   dict.SetKey("type",
               Value(EnumToString<CastMessageType, CastMessageType::kLaunch>()));
@@ -438,6 +439,9 @@ CastMessage CreateLaunchRequest(
     supported_app_types_value.push_back(Value(type));
 
   dict.SetKey("supportedAppTypes", Value(supported_app_types_value));
+  if (app_params) {
+    dict.SetKey("appParams", app_params.value().Clone());
+  }
   return CreateCastMessage(kReceiverNamespace, dict, source_id,
                            kPlatformReceiverId);
 }

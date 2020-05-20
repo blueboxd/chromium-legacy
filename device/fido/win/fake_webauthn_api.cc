@@ -29,7 +29,11 @@ struct FakeWinWebAuthnApi::WebAuthnAssertionEx {
 };
 
 FakeWinWebAuthnApi::FakeWinWebAuthnApi() = default;
-FakeWinWebAuthnApi::~FakeWinWebAuthnApi() = default;
+FakeWinWebAuthnApi::~FakeWinWebAuthnApi() {
+  // Ensure callers free unmanaged pointers returned by the real Windows API.
+  DCHECK(returned_attestations_.empty());
+  DCHECK(returned_assertions_.empty());
+}
 
 bool FakeWinWebAuthnApi::InjectNonDiscoverableCredential(
     base::span<const uint8_t> credential_id,
@@ -81,8 +85,13 @@ HRESULT FakeWinWebAuthnApi::AuthenticatorMakeCredential(
     PWEBAUTHN_CREDENTIAL_ATTESTATION* credential_attestation_ptr) {
   // TODO(martinkr): Implement to create a credential in |registrations_|.
   DCHECK(is_available_);
-  *credential_attestation_ptr = &fake_attestation_;
-  return result_override_;
+  if (result_override_ != S_OK) {
+    return result_override_;
+  }
+
+  returned_attestations_.push_back(FakeAttestation());
+  *credential_attestation_ptr = &returned_attestations_.back();
+  return S_OK;
 }
 
 HRESULT FakeWinWebAuthnApi::AuthenticatorGetAssertion(
@@ -223,12 +232,28 @@ PCWSTR FakeWinWebAuthnApi::GetErrorName(HRESULT hr) {
 }
 
 void FakeWinWebAuthnApi::FreeCredentialAttestation(
-    PWEBAUTHN_CREDENTIAL_ATTESTATION) {
-  // |returned_attestations_| gets freed upon destruction of |this|.
+    PWEBAUTHN_CREDENTIAL_ATTESTATION credential_attestation) {
+  for (auto it = returned_attestations_.begin();
+       it != returned_attestations_.end(); ++it) {
+    if (credential_attestation != &*it) {
+      continue;
+    }
+    returned_attestations_.erase(it);
+    return;
+  }
+  NOTREACHED();
 }
 
-void FakeWinWebAuthnApi::FreeAssertion(PWEBAUTHN_ASSERTION pWebAuthNAssertion) {
-  // |returned_assertions_| gets freed upon destruction of |this|.
+void FakeWinWebAuthnApi::FreeAssertion(PWEBAUTHN_ASSERTION assertion) {
+  for (auto it = returned_assertions_.begin(); it != returned_assertions_.end();
+       ++it) {
+    if (assertion != &it->assertion) {
+      continue;
+    }
+    returned_assertions_.erase(it);
+    return;
+  }
+  NOTREACHED();
 }
 
 int FakeWinWebAuthnApi::Version() {

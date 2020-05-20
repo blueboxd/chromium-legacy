@@ -974,8 +974,12 @@ TabStrip::~TabStrip() {
 
   hover_card_observer_.RemoveAll();
 
-  // The children (tabs) may callback to us from their destructor. Delete them
-  // so that if they call back we aren't in a weird state.
+  // Since TabGroupViews expects be able to remove the views it creates, clear
+  // |group_views_| before removing the remaining children below.
+  group_views_.clear();
+
+  // The child tabs may call back to us from their destructors. Delete them so
+  // that if they call back we aren't in a weird state.
   RemoveAllChildViews(true);
 }
 
@@ -1273,11 +1277,7 @@ void TabStrip::AddTabToGroup(base::Optional<tab_groups::TabGroupId> group,
 }
 
 void TabStrip::OnGroupCreated(const tab_groups::TabGroupId& group) {
-  std::unique_ptr<TabGroupViews> group_view =
-      std::make_unique<TabGroupViews>(this, group);
-  AddChildView(group_view->header());
-  AddChildView(group_view->highlight());
-  AddChildView(group_view->underline());
+  auto group_view = std::make_unique<TabGroupViews>(this, group);
   layout_helper_->InsertGroupHeader(group, group_view->header());
   group_views_[group] = std::move(group_view);
 }

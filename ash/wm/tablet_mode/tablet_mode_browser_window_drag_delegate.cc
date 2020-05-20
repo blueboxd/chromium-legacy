@@ -7,19 +7,9 @@
 #include <vector>
 
 #include "ash/display/screen_orientation_controller.h"
-#include "ash/home_screen/home_screen_controller.h"
-#include "ash/public/cpp/wallpaper_types.h"
-#include "ash/public/cpp/window_backdrop.h"
-#include "ash/root_window_controller.h"
-#include "ash/scoped_animation_disabler.h"
 #include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_view.h"
-#include "ash/wallpaper/wallpaper_widget_controller.h"
-#include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/overview_constants.h"
-#include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_constants.h"
+#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_session_windows_hider.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
@@ -109,112 +99,6 @@ class SourceWindowAnimationObserver : public ui::ImplicitAnimationObserver,
 
 }  // namespace
 
-// WindowsHider hides all visible windows except the currently dragged window
-// and the dragged window's source window upon its creation, and restores the
-// windows' visibility upon its destruction. It also blurs and darkens the
-// background, hides the home launcher if home launcher is enabled. Only need to
-// do so if we need to scale up and down the source window when dragging a tab
-// window out of it.
-class TabletModeBrowserWindowDragDelegate::WindowsHider
-    : public aura::WindowObserver {
- public:
-  explicit WindowsHider(aura::Window* dragged_window)
-      : dragged_window_(dragged_window) {
-    DCHECK(dragged_window);
-    aura::Window* source_window =
-        dragged_window->GetProperty(kTabDraggingSourceWindowKey);
-    DCHECK(source_window);
-
-    // Disable the backdrop for |source_window| during dragging.
-    WindowBackdrop::Get(source_window)->DisableBackdrop();
-
-    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
-
-    aura::Window* root_window = dragged_window->GetRootWindow();
-    std::vector<aura::Window*> windows =
-        Shell::Get()->mru_window_tracker()->BuildMruWindowList(kActiveDesk);
-    for (aura::Window* window : windows) {
-      if (window == dragged_window || window == source_window ||
-          window->GetRootWindow() != root_window) {
-        continue;
-      }
-
-      window_visibility_map_.emplace(window, window->IsVisible());
-      if (window->IsVisible()) {
-        ScopedAnimationDisabler disabler(window);
-        window->Hide();
-      }
-      window->AddObserver(this);
-    }
-
-    // Hide the home launcher if it's enabled during dragging.
-    Shell::Get()->home_screen_controller()->OnWindowDragStarted();
-
-    // Blurs the wallpaper background.
-    RootWindowController::ForWindow(root_window)
-        ->wallpaper_widget_controller()
-        ->SetWallpaperProperty(wallpaper_constants::kOverviewState);
-  }
-
-  ~WindowsHider() override {
-    // It might be possible that |source_window| is destroyed during dragging.
-    aura::Window* source_window =
-        dragged_window_->GetProperty(kTabDraggingSourceWindowKey);
-    if (source_window)
-      WindowBackdrop::Get(source_window)->RestoreBackdrop();
-
-    for (auto iter = window_visibility_map_.begin();
-         iter != window_visibility_map_.end(); ++iter) {
-      iter->first->RemoveObserver(this);
-      if (iter->second) {
-        ScopedAnimationDisabler disabler(iter->first);
-        iter->first->Show();
-      }
-    }
-
-    DCHECK(!Shell::Get()->overview_controller()->InOverviewSession());
-
-    // May reshow the home launcher after dragging.
-    Shell::Get()->home_screen_controller()->OnWindowDragEnded(
-        /*animate=*/false);
-
-    // Clears the background wallpaper blur.
-    RootWindowController::ForWindow(dragged_window_->GetRootWindow())
-        ->wallpaper_widget_controller()
-        ->SetWallpaperProperty(wallpaper_constants::kClear);
-  }
-
-  // aura::WindowObserver:
-  void OnWindowDestroying(aura::Window* window) override {
-    window->RemoveObserver(this);
-    window_visibility_map_.erase(window);
-  }
-
-  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
-    if (visible) {
-      // Do not let |window| change to visible during the lifetime of |this|.
-      // Also update |window_visibility_map_| so that we can restore the window
-      // visibility correctly.
-      window->Hide();
-      window_visibility_map_[window] = visible;
-    }
-    // else do nothing. It must come from Hide() function above thus should be
-    // ignored.
-  }
-
- private:
-  // The currently dragged window. Guaranteed to be non-nullptr during the
-  // lifetime of |this|.
-  aura::Window* dragged_window_;
-
-  // Maintains the map between windows and their visibilities. All windows
-  // except the dragged window and the source window should stay hidden during
-  // dragging.
-  std::map<aura::Window*, bool> window_visibility_map_;
-
-  DISALLOW_COPY_AND_ASSIGN(WindowsHider);
-};
-
 TabletModeBrowserWindowDragDelegate::TabletModeBrowserWindowDragDelegate() =
     default;
 
@@ -279,7 +163,9 @@ void TabletModeBrowserWindowDragDelegate::UpdateSourceWindow(
 
   // Only create WindowHider if we need to scale up/down the source window.
   if (!windows_hider_)
-    windows_hider_ = std::make_unique<WindowsHider>(dragged_window_);
+    windows_hider_ =
+        std::make_unique<TabletModeBrowserWindowDragSessionWindowsHider>(
+            source_window, dragged_window_);
 
   const gfx::Rect work_area_bounds =
       display::Screen::GetScreen()

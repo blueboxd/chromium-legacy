@@ -28,15 +28,10 @@ namespace media_router {
 
 namespace {
 static constexpr char kAppId[] = "ABCDEFGH";
-static constexpr char kAppParams[] =
-    "{requiredFeatures:[\"STREAM_TRANSFER\"],launchCheckerParams:{"
-    "credentialsData:{credentialsType:\"mobile\",credentials:"
-    "\"99843n2idsguyhga\"}}}";
-static constexpr char kCastSource[] =
-    "cast:ABCDEFGH?clientId=123&appParams=%7BrequiredFeatures%3A%5B%22STREAM_"
-    "TRANSFER%22%5D%2ClaunchCheckerParams%3A%7BcredentialsData%3A%"
-    "7BcredentialsType%3A%22mobile%22%2Ccredentials%3A%2299843n2idsguyhga%22%"
-    "7D%7D%7D";
+
+constexpr char kCastSource[] =
+    "cast:ABCDEFGH?clientId=theClientId&appParams={\"credentialsType\":"
+    "\"mobile\"}";
 static constexpr char kPresentationId[] = "presentationId";
 static constexpr char kOrigin[] = "https://www.youtube.com";
 static constexpr int kTabId = 1;
@@ -188,16 +183,17 @@ TEST_F(CastMediaRouteProviderTest, CreateRoute) {
   media_sink_service_.AddOrUpdateSink(sink);
 
   std::vector<std::string> default_supported_app_types = {"WEB"};
-  EXPECT_CALL(message_handler_,
-              LaunchSession(sink.cast_data().cast_channel_id, kAppId,
-                            kDefaultLaunchTimeout, default_supported_app_types,
-                            kAppParams, _));
+  EXPECT_CALL(
+      message_handler_,
+      LaunchSession(sink.cast_data().cast_channel_id, kAppId,
+                    kDefaultLaunchTimeout, default_supported_app_types, _, _));
   provider_->CreateRoute(
       kCastSource, sink.sink().id(), kPresentationId, origin_, kTabId,
       kRouteTimeout, /* incognito */ false,
       base::BindOnce(
           &CastMediaRouteProviderTest::ExpectCreateRouteSuccessAndSetRoute,
           base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CastMediaRouteProviderTest, TerminateRoute) {
@@ -211,6 +207,7 @@ TEST_F(CastMediaRouteProviderTest, TerminateRoute) {
       base::BindOnce(
           &CastMediaRouteProviderTest::ExpectCreateRouteSuccessAndSetRoute,
           base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(route_);
   provider_->TerminateRoute(

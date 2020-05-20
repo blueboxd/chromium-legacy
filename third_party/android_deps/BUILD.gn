@@ -70,7 +70,6 @@ java_prebuilt("android_arch_lifecycle_common_java") {
   output_name = "android_arch_lifecycle_common"
   supports_android = true
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -82,7 +81,6 @@ java_prebuilt("android_arch_lifecycle_common_java8_java") {
     ":android_arch_lifecycle_common_java",
     ":com_android_support_support_annotations_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -95,7 +93,6 @@ android_aar_prebuilt("android_arch_lifecycle_runtime_java") {
     ":android_arch_lifecycle_common_java",
     ":com_android_support_support_annotations_java",
   ]
-  skip_jetify = true
 
   # https://crbug.com/887942#c1
   ignore_proguard_configs = true
@@ -106,7 +103,6 @@ android_aar_prebuilt("android_arch_lifecycle_viewmodel_java") {
   aar_path = "libs/android_arch_lifecycle_viewmodel/viewmodel-1.1.1.aar"
   info_path = "libs/android_arch_lifecycle_viewmodel/android_arch_lifecycle_viewmodel.info"
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 
   # https://crbug.com/887942#c1
   ignore_proguard_configs = true
@@ -117,7 +113,6 @@ java_prebuilt("androidx_annotation_annotation_java") {
   jar_path = "libs/androidx_annotation_annotation/annotation-1.1.0.jar"
   output_name = "androidx_annotation_annotation"
   supports_android = true
-  skip_jetify = true
 
   # https://crbug.com/989505
   jar_excluded_patterns = [ "META-INF/proguard/*" ]
@@ -137,7 +132,6 @@ android_aar_prebuilt("androidx_appcompat_appcompat_java") {
     ":androidx_drawerlayout_drawerlayout_java",
     ":androidx_fragment_fragment_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -151,7 +145,6 @@ android_aar_prebuilt("androidx_appcompat_appcompat_resources_java") {
     ":androidx_vectordrawable_vectordrawable_animated_java",
     ":androidx_vectordrawable_vectordrawable_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -162,7 +155,6 @@ android_aar_prebuilt("androidx_asynclayoutinflater_asynclayoutinflater_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -170,7 +162,6 @@ android_aar_prebuilt("androidx_cardview_cardview_java") {
   aar_path = "libs/androidx_cardview_cardview/cardview-1.0.0.aar"
   info_path = "libs/androidx_cardview_cardview/androidx_cardview_cardview.info"
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -179,7 +170,6 @@ java_prebuilt("androidx_collection_collection_java") {
   output_name = "androidx_collection_collection"
   supports_android = true
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -192,7 +182,6 @@ java_prebuilt("androidx_concurrent_concurrent_futures_java") {
     ":androidx_annotation_annotation_java",
     ":com_google_guava_listenablefuture_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -204,7 +193,6 @@ android_aar_prebuilt("androidx_coordinatorlayout_coordinatorlayout_java") {
     ":androidx_core_core_java",
     ":androidx_customview_customview_java",
   ]
-  skip_jetify = true
 
   # https:crbug.com/954584
   ignore_proguard_configs = true
@@ -220,7 +208,6 @@ android_aar_prebuilt("androidx_core_core_java") {
     ":androidx_lifecycle_lifecycle_runtime_java",
     ":androidx_versionedparcelable_versionedparcelable_java",
   ]
-  skip_jetify = true
 
   # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
@@ -243,7 +230,6 @@ android_aar_prebuilt("androidx_customview_customview_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -255,7 +241,6 @@ android_aar_prebuilt("androidx_drawerlayout_drawerlayout_java") {
     ":androidx_core_core_java",
     ":androidx_customview_customview_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -271,7 +256,6 @@ android_aar_prebuilt("androidx_fragment_fragment_java") {
     ":androidx_loader_loader_java",
     ":androidx_viewpager_viewpager_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -283,7 +267,6 @@ android_aar_prebuilt("androidx_gridlayout_gridlayout_java") {
     ":androidx_core_core_java",
     ":androidx_legacy_legacy_support_core_ui_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -291,7 +274,6 @@ android_aar_prebuilt("androidx_interpolator_interpolator_java") {
   aar_path = "libs/androidx_interpolator_interpolator/interpolator-1.0.0.aar"
   info_path = "libs/androidx_interpolator_interpolator/androidx_interpolator_interpolator.info"
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -307,7 +289,6 @@ android_aar_prebuilt("androidx_leanback_leanback_preference_java") {
     ":androidx_preference_preference_java",
     ":androidx_recyclerview_recyclerview_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -328,7 +309,6 @@ android_aar_prebuilt("androidx_legacy_legacy_support_core_ui_java") {
     ":androidx_swiperefreshlayout_swiperefreshlayout_java",
     ":androidx_viewpager_viewpager_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -343,7 +323,6 @@ android_aar_prebuilt("androidx_legacy_legacy_support_core_utils_java") {
     ":androidx_localbroadcastmanager_localbroadcastmanager_java",
     ":androidx_print_print_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -352,7 +331,6 @@ android_aar_prebuilt("androidx_legacy_legacy_support_v13_java") {
       "libs/androidx_legacy_legacy_support_v13/legacy-support-v13-1.0.0.aar"
   info_path = "libs/androidx_legacy_legacy_support_v13/androidx_legacy_legacy_support_v13.info"
   deps = [ ":androidx_legacy_legacy_support_v4_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -367,7 +345,6 @@ android_aar_prebuilt("androidx_legacy_legacy_support_v4_java") {
     ":androidx_legacy_legacy_support_core_utils_java",
     ":androidx_media_media_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -377,7 +354,6 @@ java_prebuilt("androidx_lifecycle_lifecycle_common_java") {
   output_name = "androidx_lifecycle_lifecycle_common"
   supports_android = true
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -389,7 +365,6 @@ java_prebuilt("androidx_lifecycle_lifecycle_common_java8_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_lifecycle_lifecycle_common_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -402,7 +377,6 @@ android_aar_prebuilt("androidx_lifecycle_lifecycle_runtime_java") {
     ":androidx_arch_core_core_common_java",
     ":androidx_lifecycle_lifecycle_common_java",
   ]
-  skip_jetify = true
 
   # https://crbug.com/887942#c1
   ignore_proguard_configs = true
@@ -413,7 +387,6 @@ android_aar_prebuilt("androidx_lifecycle_lifecycle_viewmodel_java") {
   aar_path = "libs/androidx_lifecycle_lifecycle_viewmodel/lifecycle-viewmodel-2.1.0.aar"
   info_path = "libs/androidx_lifecycle_lifecycle_viewmodel/androidx_lifecycle_lifecycle_viewmodel.info"
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 
   # https://crbug.com/887942#c1
   ignore_proguard_configs = true
@@ -425,7 +398,6 @@ android_aar_prebuilt(
   aar_path = "libs/androidx_localbroadcastmanager_localbroadcastmanager/localbroadcastmanager-1.0.0.aar"
   info_path = "libs/androidx_localbroadcastmanager_localbroadcastmanager/androidx_localbroadcastmanager_localbroadcastmanager.info"
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -438,7 +410,6 @@ android_aar_prebuilt("androidx_mediarouter_mediarouter_java") {
     ":androidx_palette_palette_java",
     ":androidx_recyclerview_recyclerview_java",
   ]
-  skip_jetify = true
 
   # https://crbug.com/1000382
   proguard_configs = [ "androidx_mediarouter.flags" ]
@@ -448,7 +419,6 @@ android_aar_prebuilt("androidx_mediarouter_mediarouter_java") {
 android_aar_prebuilt("androidx_multidex_multidex_java") {
   aar_path = "libs/androidx_multidex_multidex/multidex-2.0.0.aar"
   info_path = "libs/androidx_multidex_multidex/androidx_multidex_multidex.info"
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -463,7 +433,6 @@ android_aar_prebuilt("androidx_preference_preference_java") {
     ":androidx_fragment_fragment_java",
     ":androidx_recyclerview_recyclerview_java",
   ]
-  skip_jetify = true
   ignore_proguard_configs = true
 }
 
@@ -476,7 +445,6 @@ android_aar_prebuilt("androidx_recyclerview_recyclerview_java") {
     ":androidx_core_core_java",
     ":androidx_legacy_legacy_support_core_ui_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -488,7 +456,6 @@ android_aar_prebuilt("androidx_swiperefreshlayout_swiperefreshlayout_java") {
     ":androidx_core_core_java",
     ":androidx_interpolator_interpolator_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -501,7 +468,6 @@ android_aar_prebuilt("androidx_test_core_java") {
     ":androidx_lifecycle_lifecycle_common_java",
     ":androidx_test_monitor_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -518,7 +484,6 @@ android_aar_prebuilt("androidx_test_espresso_espresso_core_java") {
     "//third_party/hamcrest:hamcrest_integration_java",
     "//third_party/hamcrest:hamcrest_library_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -532,7 +497,6 @@ android_aar_prebuilt("androidx_test_ext_junit_java") {
     ":androidx_test_monitor_java",
     "//third_party/junit:junit",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -541,7 +505,6 @@ android_aar_prebuilt("androidx_test_monitor_java") {
   info_path = "libs/androidx_test_monitor/androidx_test_monitor.info"
   testonly = true
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -550,7 +513,6 @@ android_aar_prebuilt("androidx_test_rules_java") {
   info_path = "libs/androidx_test_rules/androidx_test_rules.info"
   testonly = true
   deps = [ ":androidx_test_runner_java" ]
-  skip_jetify = true
   deps += [
     "//third_party/android_sdk:android_test_base_java",
     "//third_party/android_sdk:android_test_mock_java",
@@ -569,7 +531,6 @@ android_aar_prebuilt("androidx_test_runner_java") {
     ":net_sf_kxml_kxml2_java",
     "//third_party/junit:junit",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -577,7 +538,6 @@ android_aar_prebuilt("androidx_test_uiautomator_uiautomator_java") {
   aar_path = "libs/androidx_test_uiautomator_uiautomator/uiautomator-2.2.0.aar"
   info_path = "libs/androidx_test_uiautomator_uiautomator/androidx_test_uiautomator_uiautomator.info"
   testonly = true
-  skip_jetify = true
   deps = [ ":androidx_test_runner_java" ]
 }
 
@@ -590,7 +550,6 @@ android_aar_prebuilt("androidx_tvprovider_tvprovider_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -603,7 +562,6 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_java") {
     ":androidx_collection_collection_java",
     ":androidx_core_core_java",
   ]
-  skip_jetify = true
   create_srcjar = false
 }
 
@@ -616,7 +574,6 @@ android_aar_prebuilt("androidx_vectordrawable_vectordrawable_animated_java") {
     ":androidx_interpolator_interpolator_java",
     ":androidx_vectordrawable_vectordrawable_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -629,7 +586,6 @@ android_aar_prebuilt("androidx_viewpager_viewpager_java") {
     ":androidx_core_core_java",
     ":androidx_customview_customview_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -646,7 +602,6 @@ android_aar_prebuilt("com_android_support_appcompat_v7_java") {
     ":com_android_support_support_fragment_java",
     ":com_android_support_support_vector_drawable_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -657,7 +612,6 @@ android_aar_prebuilt("com_android_support_asynclayoutinflater_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -665,7 +619,6 @@ android_aar_prebuilt("com_android_support_cardview_v7_java") {
   aar_path = "libs/com_android_support_cardview_v7/cardview-v7-28.0.0.aar"
   info_path = "libs/com_android_support_cardview_v7/com_android_support_cardview_v7.info"
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -674,7 +627,6 @@ java_prebuilt("com_android_support_collections_java") {
   output_name = "com_android_support_collections"
   supports_android = true
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -687,7 +639,6 @@ android_aar_prebuilt("com_android_support_coordinatorlayout_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 
   # https:crbug.com/954584
   ignore_proguard_configs = true
@@ -702,7 +653,6 @@ android_aar_prebuilt("com_android_support_customview_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -720,7 +670,6 @@ android_aar_prebuilt("com_android_support_design_java") {
     ":com_android_support_support_fragment_java",
     ":com_android_support_transition_java",
   ]
-  skip_jetify = true
 
   # Reduce binary size. https:crbug.com/954584
   ignore_proguard_configs = true
@@ -735,7 +684,6 @@ android_aar_prebuilt("com_android_support_drawerlayout_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -746,7 +694,6 @@ android_aar_prebuilt("com_android_support_gridlayout_v7_java") {
     ":com_android_support_support_compat_java",
     ":com_android_support_support_core_ui_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -754,7 +701,6 @@ android_aar_prebuilt("com_android_support_interpolator_java") {
   aar_path = "libs/com_android_support_interpolator/interpolator-28.0.0.aar"
   info_path = "libs/com_android_support_interpolator/com_android_support_interpolator.info"
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -762,7 +708,6 @@ android_aar_prebuilt("com_android_support_localbroadcastmanager_java") {
   aar_path = "libs/com_android_support_localbroadcastmanager/localbroadcastmanager-28.0.0.aar"
   info_path = "libs/com_android_support_localbroadcastmanager/com_android_support_localbroadcastmanager.info"
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -775,7 +720,6 @@ android_aar_prebuilt("com_android_support_mediarouter_v7_java") {
     ":com_android_support_recyclerview_v7_java",
     ":com_android_support_support_media_compat_java",
   ]
-  skip_jetify = true
 
   # https://crbug.com/1000382
   proguard_configs = [ "support_mediarouter.flags" ]
@@ -786,7 +730,6 @@ android_aar_prebuilt("com_android_support_multidex_java") {
   aar_path = "libs/com_android_support_multidex/multidex-1.0.0.aar"
   info_path =
       "libs/com_android_support_multidex/com_android_support_multidex.info"
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -801,7 +744,6 @@ android_aar_prebuilt("com_android_support_preference_leanback_v17_java") {
     ":com_android_support_preference_v7_java",
     ":com_android_support_recyclerview_v7_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -815,7 +757,6 @@ android_aar_prebuilt("com_android_support_preference_v7_java") {
     ":com_android_support_support_compat_java",
     ":com_android_support_support_fragment_java",
   ]
-  skip_jetify = true
   ignore_proguard_configs = true
 }
 
@@ -829,7 +770,6 @@ android_aar_prebuilt("com_android_support_recyclerview_v7_java") {
     ":com_android_support_support_compat_java",
     ":com_android_support_support_core_ui_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -837,7 +777,6 @@ java_prebuilt("com_android_support_support_annotations_java") {
   jar_path = "libs/com_android_support_support_annotations/support-annotations-28.0.0.jar"
   output_name = "com_android_support_support_annotations"
   supports_android = true
-  skip_jetify = true
 
   # https://crbug.com/989505
   jar_excluded_patterns = [ "META-INF/proguard/*" ]
@@ -853,7 +792,6 @@ android_aar_prebuilt("com_android_support_support_compat_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_versionedparcelable_java",
   ]
-  skip_jetify = true
 
   # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
@@ -887,7 +825,6 @@ android_aar_prebuilt("com_android_support_support_core_ui_java") {
     ":com_android_support_swiperefreshlayout_java",
     ":com_android_support_viewpager_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -902,7 +839,6 @@ android_aar_prebuilt("com_android_support_support_core_utils_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -918,7 +854,6 @@ android_aar_prebuilt("com_android_support_support_fragment_java") {
     ":com_android_support_support_core_ui_java",
     ":com_android_support_support_core_utils_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -926,7 +861,6 @@ android_aar_prebuilt("com_android_support_support_v13_java") {
   aar_path = "libs/com_android_support_support_v13/support-v13-28.0.0.aar"
   info_path = "libs/com_android_support_support_v13/com_android_support_support_v13.info"
   deps = [ ":com_android_support_support_v4_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -941,7 +875,6 @@ android_aar_prebuilt("com_android_support_support_v4_java") {
     ":com_android_support_support_fragment_java",
     ":com_android_support_support_media_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -953,7 +886,6 @@ android_aar_prebuilt("com_android_support_swiperefreshlayout_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -966,7 +898,6 @@ android_aar_prebuilt("com_android_support_viewpager_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -982,7 +913,6 @@ java_prebuilt("com_android_tools_build_jetifier_jetifier_processor_java") {
     ":org_ow2_asm_asm_java",
     ":org_ow2_asm_asm_util_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1490,7 +1420,6 @@ java_prebuilt("org_robolectric_robolectric_java") {
     "//third_party/bouncycastle:bouncycastle_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1503,7 +1432,6 @@ java_prebuilt("android_arch_core_common_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1518,7 +1446,6 @@ android_aar_prebuilt("android_arch_core_runtime_java") {
     ":android_arch_core_common_java",
     ":com_android_support_support_annotations_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1534,7 +1461,6 @@ android_aar_prebuilt("android_arch_lifecycle_livedata_java") {
     ":android_arch_core_runtime_java",
     ":android_arch_lifecycle_livedata_core_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1550,7 +1476,6 @@ android_aar_prebuilt("android_arch_lifecycle_livedata_core_java") {
     ":android_arch_core_runtime_java",
     ":android_arch_lifecycle_common_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1568,7 +1493,6 @@ android_aar_prebuilt("androidx_activity_activity_java") {
     ":androidx_lifecycle_lifecycle_viewmodel_java",
     ":androidx_savedstate_savedstate_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1581,7 +1505,6 @@ java_prebuilt("androidx_arch_core_core_common_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1596,7 +1519,6 @@ android_aar_prebuilt("androidx_arch_core_core_runtime_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_arch_core_core_common_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1608,7 +1530,6 @@ android_aar_prebuilt("androidx_cursoradapter_cursoradapter_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1620,7 +1541,6 @@ android_aar_prebuilt("androidx_documentfile_documentfile_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1638,7 +1558,6 @@ android_aar_prebuilt("androidx_leanback_leanback_java") {
     ":androidx_media_media_java",
     ":androidx_recyclerview_recyclerview_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1650,7 +1569,6 @@ android_aar_prebuilt("androidx_legacy_legacy_preference_v14_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":androidx_preference_preference_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1667,7 +1585,6 @@ android_aar_prebuilt("androidx_lifecycle_lifecycle_livedata_java") {
     ":androidx_arch_core_core_runtime_java",
     ":androidx_lifecycle_lifecycle_livedata_core_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1683,7 +1600,6 @@ android_aar_prebuilt("androidx_lifecycle_lifecycle_livedata_core_java") {
     ":androidx_arch_core_core_runtime_java",
     ":androidx_lifecycle_lifecycle_common_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1700,7 +1616,6 @@ android_aar_prebuilt("androidx_loader_loader_java") {
     ":androidx_lifecycle_lifecycle_livedata_java",
     ":androidx_lifecycle_lifecycle_viewmodel_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1716,7 +1631,6 @@ android_aar_prebuilt("androidx_media_media_java") {
     ":androidx_core_core_java",
     ":androidx_versionedparcelable_versionedparcelable_java",
   ]
-  skip_jetify = true
 
   # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
@@ -1734,7 +1648,6 @@ android_aar_prebuilt("androidx_palette_palette_java") {
     ":androidx_core_core_java",
     ":androidx_legacy_legacy_support_core_utils_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1746,7 +1659,6 @@ android_aar_prebuilt("androidx_print_print_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":androidx_annotation_annotation_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1763,7 +1675,6 @@ android_aar_prebuilt("androidx_savedstate_savedstate_java") {
     ":androidx_arch_core_core_common_java",
     ":androidx_lifecycle_lifecycle_common_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1779,7 +1690,6 @@ android_aar_prebuilt("androidx_slidingpanelayout_slidingpanelayout_java") {
     ":androidx_core_core_java",
     ":androidx_customview_customview_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1791,7 +1701,6 @@ android_aar_prebuilt("androidx_test_espresso_espresso_idling_resource_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   testonly = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1807,7 +1716,6 @@ android_aar_prebuilt("androidx_transition_transition_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_core_core_java",
   ]
-  skip_jetify = true
   deps += [ ":androidx_fragment_fragment_java" ]
 }
 
@@ -1823,7 +1731,6 @@ android_aar_prebuilt("androidx_versionedparcelable_versionedparcelable_java") {
     ":androidx_annotation_annotation_java",
     ":androidx_collection_collection_java",
   ]
-  skip_jetify = true
 
   # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
@@ -1865,7 +1772,6 @@ android_aar_prebuilt("com_android_support_animated_vector_drawable_java") {
     ":com_android_support_support_core_ui_java",
     ":com_android_support_support_vector_drawable_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1877,7 +1783,6 @@ android_aar_prebuilt("com_android_support_cursoradapter_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1889,7 +1794,6 @@ android_aar_prebuilt("com_android_support_documentfile_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1907,7 +1811,6 @@ android_aar_prebuilt("com_android_support_leanback_v17_java") {
     ":com_android_support_support_fragment_java",
     ":com_android_support_support_media_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1924,7 +1827,6 @@ android_aar_prebuilt("com_android_support_loader_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1940,7 +1842,6 @@ android_aar_prebuilt("com_android_support_palette_v7_java") {
     ":com_android_support_support_compat_java",
     ":com_android_support_support_core_utils_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1952,7 +1853,6 @@ android_aar_prebuilt("com_android_support_preference_v14_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":com_android_support_preference_v7_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1964,7 +1864,6 @@ android_aar_prebuilt("com_android_support_print_java") {
   # //third_party/android_deps/build.gradle.
   visibility = [ ":*" ]
   deps = [ ":com_android_support_support_annotations_java" ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1981,7 +1880,6 @@ android_aar_prebuilt("com_android_support_slidingpanelayout_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1997,7 +1895,6 @@ android_aar_prebuilt("com_android_support_support_media_compat_java") {
     ":com_android_support_support_compat_java",
     ":com_android_support_versionedparcelable_java",
   ]
-  skip_jetify = true
 
   # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
@@ -2015,7 +1912,6 @@ android_aar_prebuilt("com_android_support_support_vector_drawable_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
   create_srcjar = false
 }
 
@@ -2032,7 +1928,6 @@ android_aar_prebuilt("com_android_support_transition_java") {
     ":com_android_support_support_annotations_java",
     ":com_android_support_support_compat_java",
   ]
-  skip_jetify = true
   deps += [ ":com_android_support_support_fragment_java" ]
 }
 
@@ -2048,7 +1943,6 @@ android_aar_prebuilt("com_android_support_versionedparcelable_java") {
     ":com_android_support_collections_java",
     ":com_android_support_support_annotations_java",
   ]
-  skip_jetify = true
 
   # Target has AIDL, but we do not support it yet: http://crbug.com/644439
   ignore_aidl = true
@@ -2071,7 +1965,6 @@ java_prebuilt("com_android_tools_build_jetifier_jetifier_core_java") {
     ":com_google_code_gson_gson_java",
     ":org_jetbrains_kotlin_kotlin_stdlib_java",
   ]
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2909,7 +2802,6 @@ java_prebuilt("org_robolectric_annotations_java") {
   visibility = [ ":*" ]
   testonly = true
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2930,7 +2822,6 @@ java_prebuilt("org_robolectric_junit_java") {
     ":org_robolectric_utils_reflector_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2949,7 +2840,6 @@ java_prebuilt("org_robolectric_pluginapi_java") {
     ":org_robolectric_annotations_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2969,7 +2859,6 @@ java_prebuilt("org_robolectric_plugins_maven_dependency_resolver_java") {
     ":org_robolectric_utils_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -2989,7 +2878,6 @@ java_prebuilt("org_robolectric_resources_java") {
     ":org_robolectric_utils_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -3014,7 +2902,6 @@ java_prebuilt("org_robolectric_sandbox_java") {
     ":org_robolectric_utils_reflector_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -3029,7 +2916,6 @@ java_prebuilt("org_robolectric_shadowapi_java") {
   testonly = true
   deps = [ ":org_robolectric_annotations_java" ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -3057,7 +2943,6 @@ java_prebuilt("org_robolectric_shadows_framework_java") {
     "//third_party/sqlite4java:sqlite4java_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -3079,7 +2964,6 @@ java_prebuilt("org_robolectric_utils_java") {
     ":org_robolectric_utils_reflector_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -3098,6 +2982,5 @@ java_prebuilt("org_robolectric_utils_reflector_java") {
     ":org_ow2_asm_asm_util_java",
   ]
   bypass_platform_checks = true
-  skip_jetify = true
 }
 # === Generated Code End ===

@@ -2843,7 +2843,6 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
           '\'<p contentEditable="true"> <i>hello-></i> '
           '<b>send_this_value </b> </p>\';'
           'var input = document.getElementsByTagName("i")[0];'
-          'input.focus();'
           'return input;')
       element.SendKeys('hello')
       self.assertEquals(u'hello->hello', element.GetText())
@@ -2858,7 +2857,7 @@ class ChromeDriverW3cTest(ChromeDriverBaseTestWithWebServer):
           'input.focus();'
           'return input;')
       element.SendKeys('hello')
-      self.assertEquals(u'hello ->hello', element.GetText())
+      self.assertEquals(u'hellohello ->', element.GetText())
 
   def testUnexpectedAlertOpenExceptionMessage(self):
     self._driver.Load(self.GetHttpUrlForFile('/chromedriver/empty.html'))

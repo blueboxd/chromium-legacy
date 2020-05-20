@@ -274,8 +274,8 @@ TEST_F(ImageBitmapTest, AvoidGPUReadback) {
 
   std::list<String> image_orientations = {"none", "flipY"};
   std::list<String> premultiply_alphas = {"none", "premultiply", "default"};
-  std::list<String> color_space_conversions = {
-      "none", "default", "preserve", "srgb", "linear-rgb", "rec2020", "p3"};
+  std::list<String> color_space_conversions = {"none", "default", "preserve",
+                                               "srgb", "rec2020", "p3"};
   std::list<int> resize_widths = {25, 50, 75};
   std::list<int> resize_heights = {25, 50, 75};
   std::list<String> resize_qualities = {"pixelated", "low", "medium", "high"};

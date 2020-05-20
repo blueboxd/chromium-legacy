@@ -2531,11 +2531,6 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
           cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
       needs_composited_scrolling = false;
     }
-    if (!box->StyleRef().IsStackingContext()) {
-      non_composited_main_thread_scrolling_reasons_ |=
-          cc::MainThreadScrollingReason::kIsNotStackingContextAndLCDText;
-      needs_composited_scrolling = false;
-    }
     if (!(background_paint_location_if_composited &
           kBackgroundPaintInScrollingContents) &&
         box->StyleRef().HasBackground()) {

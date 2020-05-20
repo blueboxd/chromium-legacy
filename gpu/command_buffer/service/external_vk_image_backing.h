@@ -99,6 +99,9 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
     return !context_state()->support_vulkan_external_object();
   }
 
+  uint32_t reads_in_progress() const { return reads_in_progress_; }
+  uint32_t gl_reads_in_progress() const { return gl_reads_in_progress_; }
+
   // Notifies the backing that an access will start. Return false if there is
   // currently any other conflict access in progress. Otherwise, returns true
   // and semaphore handles which will be waited on before accessing.
@@ -181,6 +184,7 @@ class ExternalVkImageBacking final : public ClearTrackingSharedImageBacking {
 
   bool is_write_in_progress_ = false;
   uint32_t reads_in_progress_ = 0;
+  uint32_t gl_reads_in_progress_ = 0;
   gles2::Texture* texture_ = nullptr;
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 

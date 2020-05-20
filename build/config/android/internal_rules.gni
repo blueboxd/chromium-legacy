@@ -208,8 +208,8 @@ template("write_build_config") {
         rebase_path(invoker.java_resources_jar, root_build_dir),
       ]
     }
-    if (defined(invoker.skip_jetify) && invoker.skip_jetify) {
-      args += [ "--skip-jetify" ]
+    if (defined(invoker.enable_jetify) && invoker.enable_jetify) {
+      args += [ "--enable-jetify" ]
     }
     if (defined(invoker.jetified_jar_path)) {
       args += [
@@ -1643,6 +1643,7 @@ if (enable_java_templates) {
   # Variables:
   #  testonly:
   #  build_config:
+  #  enable_jetify: A boolean to enable jetifying.
   #  input_jar_path:
   #  output_jar_path:
   #  supports_android:
@@ -1652,7 +1653,6 @@ if (enable_java_templates) {
   #    from the final .jar file.
   #  jar_included_patterns: Optional list of .class file patterns to include
   #    in the final .jar file. jar_excluded_patterns take precedence over this.
-  #  skip_jetify: A boolean on whether to skip jetifying or not.
   #  strip_resource_classes:
   #  deps:
   #  java_files:
@@ -1677,7 +1677,7 @@ if (enable_java_templates) {
     _enable_thread_annotations = false
 
     _jacoco_instrument = invoker.jacoco_instrument
-    _skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
+    _enable_jetify = defined(invoker.enable_jetify) && invoker.enable_jetify
 
     _enable_bytecode_rewriter = _enable_thread_annotations
     _is_prebuilt = defined(invoker.is_prebuilt) && invoker.is_prebuilt
@@ -1721,7 +1721,7 @@ if (enable_java_templates) {
     _deps = []
     _previous_output_jar = _input_jar_path
 
-    if (!_skip_jetify) {
+    if (_enable_jetify) {
       _jetify_target = "${target_name}__jetify"
       _jetify_input_jar = _previous_output_jar
       _jetify_output_jar = "$target_out_dir/$target_name.jetified.jar"
@@ -3293,8 +3293,6 @@ if (enable_java_templates) {
     # TODO(crbug.com/1042017): Remove.
     not_needed(invoker, [ "no_build_hooks" ])
 
-    # TODO(bjoyce): Remove when able to use.
-    not_needed(invoker, [ "enable_jetify" ])
     set_sources_assignment_filter([])
     forward_variables_from(invoker, [ "testonly" ])
     _is_prebuilt = defined(invoker.jar_path)
@@ -3544,10 +3542,10 @@ if (enable_java_templates) {
       }
       chromium_code = _chromium_code
       build_config = _build_config
+      enable_jetify = defined(invoker.enable_jetify) && invoker.enable_jetify
       is_prebuilt = _is_prebuilt
       jetified_jar_path = _jetified_jar_path
       possible_config_deps = _java_full_deps + _accumulated_deps
-      skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
       if (defined(apk_under_test)) {
         possible_config_deps += [ apk_under_test ]
       }
@@ -3738,10 +3736,10 @@ if (enable_java_templates) {
                                  [
                                    "enable_bytecode_checks",
                                    "enable_bytecode_rewriter",
+                                   "enable_jetify",
                                    "missing_classes_allowlist",
                                    "jar_excluded_patterns",
                                    "jar_included_patterns",
-                                   "skip_jetify",
                                  ])
           enable_desugar = _enable_desugar && enable_bazel_desugar
           is_prebuilt = _is_prebuilt

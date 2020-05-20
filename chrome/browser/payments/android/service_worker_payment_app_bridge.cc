@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "components/payments/content/android/payment_handler_host.h"
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_handler_host.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
@@ -215,8 +216,7 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
     const JavaParamRef<jobjectArray>& jmodifiers,
     const JavaParamRef<jobject>& jpayment_options,
     const JavaParamRef<jobjectArray>& jshipping_options,
-    jlong payment_handler_host) {
-  DCHECK_NE(0, payment_handler_host);
+    base::WeakPtr<payments::PaymentHandlerHost> payment_handler_host) {
   PaymentRequestEventDataPtr event_data = PaymentRequestEventData::New();
 
   event_data->top_origin = GURL(ConvertJavaStringToUTF8(env, jtop_origin));
@@ -324,9 +324,7 @@ PaymentRequestEventDataPtr ConvertPaymentRequestEventDataFromJavaToNative(
     }
   }
 
-  event_data->payment_handler_host =
-      reinterpret_cast<payments::PaymentHandlerHost*>(payment_handler_host)
-          ->Bind();
+  event_data->payment_handler_host = payment_handler_host->Bind();
 
   return event_data;
 }
@@ -433,23 +431,24 @@ static void JNI_ServiceWorkerPaymentAppBridge_InvokePaymentApp(
     const JavaParamRef<jobjectArray>& jmodifiers,
     const JavaParamRef<jobject>& jpayment_options,
     const JavaParamRef<jobjectArray>& jshipping_options,
-    jlong payment_handler_host,
+    const JavaParamRef<jobject>& jpayment_handler_host,
     jboolean can_show_own_ui,
     const JavaParamRef<jobject>& jcallback) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
 
+  auto host = payments::android::PaymentHandlerHost::FromJavaPaymentHandlerHost(
+      env, jpayment_handler_host);
+
   auto event_data = ConvertPaymentRequestEventDataFromJavaToNative(
       env, jtop_origin, jpayment_request_origin, jpayment_request_id,
       jmethod_data, jtotal, jmodifiers, jpayment_options, jshipping_options,
-      payment_handler_host);
+      host);
 
   url::Origin sw_scope_origin = url::Origin::Create(
       *url::GURLAndroid::ToNativeGURL(env, jservice_worker_scope));
   int64_t reg_id = base::checked_cast<int64_t>(registration_id);
 
-  auto* host =
-      reinterpret_cast<payments::PaymentHandlerHost*>(payment_handler_host);
   host->set_sw_origin_for_logs(sw_scope_origin);
   host->set_payment_request_id_for_logs(event_data->payment_request_id);
   host->set_registration_id_for_logs(reg_id);
@@ -474,7 +473,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     const JavaParamRef<jobjectArray>& jmodifiers,
     const JavaParamRef<jobject>& jpayment_options,
     const JavaParamRef<jobjectArray>& jshipping_options,
-    jlong payment_handler_host,
+    const JavaParamRef<jobject>& jpayment_handler_host,
     const JavaParamRef<jobject>& jcallback,
     const JavaParamRef<jstring>& japp_name,
     const JavaParamRef<jobject>& jicon,
@@ -495,16 +494,17 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
     icon_bitmap = gfx::CreateSkBitmapFromJavaBitmap(gfx::JavaBitmap(jicon));
   }
 
+  auto host = payments::android::PaymentHandlerHost::FromJavaPaymentHandlerHost(
+      env, jpayment_handler_host);
+
   auto event_data = ConvertPaymentRequestEventDataFromJavaToNative(
       env, jtop_origin, jpayment_request_origin, jpayment_request_id,
       jmethod_data, jtotal, jmodifiers, jpayment_options, jshipping_options,
-      payment_handler_host);
+      host);
 
   std::unique_ptr<GURL> sw_scope =
       url::GURLAndroid::ToNativeGURL(env, jsw_scope);
 
-  auto* host =
-      reinterpret_cast<payments::PaymentHandlerHost*>(payment_handler_host);
   host->set_sw_origin_for_logs(url::Origin::Create(*sw_scope));
   host->set_payment_request_id_for_logs(event_data->payment_request_id);
 
@@ -521,8 +521,7 @@ static void JNI_ServiceWorkerPaymentAppBridge_InstallAndInvokePaymentApp(
       *url::GURLAndroid::ToNativeGURL(env, jsw_js_url), *sw_scope, juse_cache,
       ConvertJavaStringToUTF8(env, jmethod), supported_delegations,
       base::BindOnce(
-          &payments::PaymentHandlerHost::set_registration_id_for_logs,
-          host->AsWeakPtr()),
+          &payments::PaymentHandlerHost::set_registration_id_for_logs, host),
       base::BindOnce(&OnPaymentAppInvoked,
                      ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }

@@ -50,8 +50,31 @@ const char kBookmarkBarTag[] = "bookmark_bar";
 const char kMobileBookmarksTag[] = "synced_bookmarks";
 const char kOtherBookmarksTag[] = "other_bookmarks";
 
+// The value must be a list since there is a container using pointers to its
+// elements.
 using UpdatesPerParentId =
-    std::unordered_map<std::string, syncer::UpdateResponseDataList>;
+    std::unordered_map<std::string, std::list<syncer::UpdateResponseData>>;
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. When adding values, be certain to also
+// update the corresponding definition in enums.xml and the
+// ExpectedBookmarksGUIDDuplicates in unittests.
+enum class BookmarksGUIDDuplicates {
+  // Both entities are URLs with matching URLs in specifics. Entities may have
+  // different titles or parents.
+  kMatchingUrls = 0,
+  // Both entities are folders with matching titles. Entities may have different
+  // parents.
+  kMatchingFolders = 1,
+  // Both entities are URLs, but they have different URLs.
+  kDifferentUrls = 2,
+  // Both entities are folders with different titles.
+  kDifferentFolders = 3,
+  // Entities have different types.
+  kDifferentTypes = 4,
+
+  kMaxValue = kDifferentTypes,
+};
 
 // Used in metrics: "Sync.ProblematicServerSideBookmarksDuringMerge". These
 // values are persisted to logs. Entries should not be renumbered and numeric
@@ -134,34 +157,80 @@ bool NodeSemanticsMatch(const bookmarks::BookmarkNode* local_node,
   return local_node->url() == GURL(specifics.url());
 }
 
-// Goes through remote updates to detect duplicate GUIDs, which cannot exist
-// because GUIDs are guaranteed to match the originator client item ID (handled
-// in GroupValidUpdatesByParentId()) and duplicates of originator client item
-// ID are sorted out by ModelTypeWorker.
-void CheckNoDuplicatesInRemoteGUIDs(
-    const UpdatesPerParentId& updates_per_parent_id) {
-#if DCHECK_IS_ON()
-  std::unordered_map<std::string, std::string> guid_to_sync_id;
+BookmarksGUIDDuplicates MatchBookmarksGUIDDuplicates(
+    const UpdateResponseData& update,
+    const UpdateResponseData& duplicate_update) {
+  if (update.entity.is_folder != duplicate_update.entity.is_folder) {
+    return BookmarksGUIDDuplicates::kDifferentTypes;
+  }
+  if (update.entity.is_folder) {
+    // Both entities are folders.
+    const bool matching_titles =
+        LegacyCanonicalizedTitleFromSpecifics(
+            update.entity.specifics.bookmark()) ==
+        LegacyCanonicalizedTitleFromSpecifics(
+            duplicate_update.entity.specifics.bookmark());
+    return matching_titles ? BookmarksGUIDDuplicates::kMatchingFolders
+                           : BookmarksGUIDDuplicates::kDifferentFolders;
+  }
+  const bool matching_urls = update.entity.specifics.bookmark().url() ==
+                             duplicate_update.entity.specifics.bookmark().url();
+  return matching_urls ? BookmarksGUIDDuplicates::kMatchingUrls
+                       : BookmarksGUIDDuplicates::kDifferentUrls;
+}
 
-  for (const auto& parent_id_and_updates : updates_per_parent_id) {
-    for (const UpdateResponseData& update : parent_id_and_updates.second) {
-      // |originator_client_item_id| is empty for permanent nodes.
-      if (update.entity.is_deleted() ||
-          !update.entity.server_defined_unique_tag.empty()) {
-        continue;
-      }
+void DeduplicateValidUpdatesByGUID(UpdatesPerParentId* updates_per_parent_id) {
+  DCHECK(updates_per_parent_id);
 
+  std::unordered_map<std::string, std::list<UpdateResponseData>::iterator>
+      guid_to_update;
+  for (auto& parent_id_and_updates : *updates_per_parent_id) {
+    std::list<UpdateResponseData>* updates = &parent_id_and_updates.second;
+    for (auto updates_iter = updates->begin();
+         updates_iter != updates->end();) {
+      const UpdateResponseData& update = *updates_iter;
       const std::string& guid_in_specifics =
           update.entity.specifics.bookmark().guid();
+      DCHECK(!guid_in_specifics.empty());
 
       auto it_and_success =
-          guid_to_sync_id.emplace(guid_in_specifics, update.entity.id);
-      DCHECK(it_and_success.second)
-          << " for new sync ID " << update.entity.id << " and original sync ID "
-          << it_and_success.first->second;
+          guid_to_update.emplace(guid_in_specifics, updates_iter);
+      if (!it_and_success.second) {
+        const UpdateResponseData& duplicate_update =
+            *it_and_success.first->second;
+        DCHECK_EQ(guid_in_specifics,
+                  duplicate_update.entity.specifics.bookmark().guid());
+        DLOG(ERROR) << "Duplicate guid for new sync ID " << update.entity.id
+                    << " and original sync ID " << duplicate_update.entity.id;
+        const BookmarksGUIDDuplicates match_result =
+            MatchBookmarksGUIDDuplicates(update, duplicate_update);
+        base::UmaHistogramEnumeration("Sync.BookmarksGUIDDuplicates",
+                                      match_result);
+        if (match_result == BookmarksGUIDDuplicates::kMatchingUrls ||
+            match_result == BookmarksGUIDDuplicates::kDifferentUrls) {
+          // For folders it is too dangerous to remove them since they may have
+          // many descendants.
+          // TODO(rushans): implement for folders by merging all descendants.
+          if (base::FeatureList::IsEnabled(
+                  switches::kSyncDeduplicateAllBookmarksWithSameGUID)) {
+            // Choose the entity which is created later.
+            if (update.entity.creation_time <
+                duplicate_update.entity.creation_time) {
+              updates_iter = updates->erase(updates_iter);
+              continue;
+            }
+            auto duplicate_updates_iter =
+                updates_per_parent_id->find(duplicate_update.entity.parent_id);
+            DCHECK(duplicate_updates_iter != updates_per_parent_id->end());
+            duplicate_updates_iter->second.erase(
+                guid_to_update[guid_in_specifics]);
+            guid_to_update[guid_in_specifics] = updates_iter;
+          }
+        }
+      }
+      ++updates_iter;
     }
   }
-#endif  // DCHECK_IS_ON()
 }
 
 // Groups all valid updates by the server ID of their parent and moves them away
@@ -351,7 +420,7 @@ BookmarkModelMerger::RemoteForest BookmarkModelMerger::BuildRemoteForest(
   UpdatesPerParentId updates_per_parent_id =
       GroupValidUpdatesByParentId(&updates);
 
-  CheckNoDuplicatesInRemoteGUIDs(updates_per_parent_id);
+  DeduplicateValidUpdatesByGUID(&updates_per_parent_id);
 
   // Construct one tree per permanent entity.
   RemoteForest update_forest;
@@ -584,6 +653,9 @@ BookmarkModelMerger::UpdateBookmarkNodeFromSpecificsIncludingGUID(
     possibly_replaced_local_node =
         ReplaceBookmarkNodeGUID(local_node, specifics.guid(), bookmark_model_);
 
+    // TODO(rushans): remove the code below since DCHECKs above guarantee that
+    // |guid_to_match_map_| has no such GUID.
+    //
     // Update |guid_to_match_map_| to avoid pointing to a deleted node. This
     // should not be required in practice, because the algorithm processes each
     // GUID once, but let's update nevertheless to avoid future issues.

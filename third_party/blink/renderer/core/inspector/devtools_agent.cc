@@ -143,9 +143,12 @@ DevToolsAgent::DevToolsAgent(
       inspector_task_runner_(std::move(inspector_task_runner)),
       io_task_runner_(std::move(io_task_runner)) {}
 
-DevToolsAgent::~DevToolsAgent() {}
+DevToolsAgent::~DevToolsAgent() = default;
 
 void DevToolsAgent::Trace(Visitor* visitor) const {
+  visitor->Trace(associated_receiver_);
+  visitor->Trace(host_remote_);
+  visitor->Trace(associated_host_remote_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(probe_sink_);
   visitor->Trace(sessions_);
@@ -164,7 +167,7 @@ void DevToolsAgent::BindReceiverForWorker(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!associated_receiver_.is_bound());
 
-  host_remote_.Bind(std::move(host_remote));
+  host_remote_.Bind(std::move(host_remote), std::move(task_runner));
   host_remote_.set_disconnect_handler(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
 
@@ -178,8 +181,8 @@ void DevToolsAgent::BindReceiver(
     mojo::PendingAssociatedReceiver<mojom::blink::DevToolsAgent> receiver,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(!associated_receiver_.is_bound());
-  associated_receiver_.Bind(std::move(receiver), std::move(task_runner));
-  associated_host_remote_.Bind(std::move(host_remote));
+  associated_receiver_.Bind(std::move(receiver), task_runner);
+  associated_host_remote_.Bind(std::move(host_remote), task_runner);
   associated_host_remote_.set_disconnect_handler(
       WTF::Bind(&DevToolsAgent::CleanupConnection, WrapWeakPersistent(this)));
 }

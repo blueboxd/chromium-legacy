@@ -11,6 +11,8 @@
 
 namespace ash {
 
+class TabletModeBrowserWindowDragSessionWindowsHider;
+
 // The drag delegate for browser windows. It not only includes the logic in
 // TabletModeWindowDragDelegate, but also has special logic for browser windows,
 // e.g., scales the source window, shows/hides the other windows below the
@@ -22,8 +24,6 @@ class ASH_EXPORT TabletModeBrowserWindowDragDelegate
   ~TabletModeBrowserWindowDragDelegate() override;
 
  private:
-  class WindowsHider;
-
   // TabletModeWindowDragDelegate:
   void PrepareWindowDrag(const gfx::PointF& location_in_screen) override;
   void UpdateWindowDrag(const gfx::PointF& location_in_screen) override;
@@ -52,7 +52,8 @@ class ASH_EXPORT TabletModeBrowserWindowDragDelegate
   // hides the home launcher if home launcher is enabled, blurs and darkens the
   // background upon its creation. All of these will be restored upon its
   // destruction.
-  std::unique_ptr<WindowsHider> windows_hider_;
+  std::unique_ptr<TabletModeBrowserWindowDragSessionWindowsHider>
+      windows_hider_;
 
   // The observer to observe the source window's bounds change animation during
   // dragging. It's used to prevent the dragged window to merge back into the

@@ -27,7 +27,7 @@
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(OZONE_PLATFORM_X11)
 #include "base/command_line.h"
-#include "ui/base/clipboard/clipboard_aura.h"
+#include "ui/base/clipboard/clipboard_non_backed.h"
 #include "ui/base/ui_base_switches.h"
 #endif
 
@@ -296,12 +296,12 @@ class ClipboardOzone::AsyncClipboardOzone {
 
 // Clipboard factory method.
 Clipboard* Clipboard::Create() {
-// linux-chromeos uses aura clipboard by default, but supports ozone x11
+// linux-chromeos uses non-backed clipboard by default, but supports ozone x11
 // with flag --use-system-clipbboard.
 #if defined(OS_CHROMEOS) && BUILDFLAG(OZONE_PLATFORM_X11)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseSystemClipboard)) {
-    return new ClipboardAura;
+    return new ClipboardNonBacked;
   }
 #endif
   return new ClipboardOzone;
@@ -469,8 +469,8 @@ void ClipboardOzone::WritePortableRepresentations(ClipboardBuffer buffer,
 
   async_clipboard_ozone_->OfferData(buffer);
 
-  // Just like Aura/X11 implementation does, copy text data from the copy/paste
-  // selection to the primary selection.
+  // Just like Non-Backed/X11 implementation does, copy text data from the
+  // copy/paste selection to the primary selection.
   if (buffer == ClipboardBuffer::kCopyPaste) {
     auto text_iter = objects.find(PortableFormat::kText);
     if (text_iter != objects.end()) {

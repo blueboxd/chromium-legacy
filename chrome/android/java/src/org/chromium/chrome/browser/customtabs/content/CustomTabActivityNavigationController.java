@@ -25,7 +25,6 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.browserservices.BrowserServicesActivityTabController;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabObserver;
@@ -82,7 +81,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
         void onFinish(@FinishReason int reason);
     }
 
-    private final BrowserServicesActivityTabController mTabController;
+    private final CustomTabActivityTabController mTabController;
     private final CustomTabActivityTabProvider mTabProvider;
     private final BrowserServicesIntentDataProvider mIntentDataProvider;
     private final CustomTabsConnection mConnection;
@@ -115,7 +114,7 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
     };
 
     @Inject
-    public CustomTabActivityNavigationController(BrowserServicesActivityTabController tabController,
+    public CustomTabActivityNavigationController(CustomTabActivityTabController tabController,
             CustomTabActivityTabProvider tabProvider,
             BrowserServicesIntentDataProvider intentDataProvider, CustomTabsConnection connection,
             Lazy<CustomTabObserver> customTabObserver, CloseButtonNavigator closeButtonNavigator,
@@ -241,8 +240,6 @@ public class CustomTabActivityNavigationController implements StartStopWithNativ
      * @return Whether or not the tab was sent over successfully.
      */
     public boolean openCurrentUrlInBrowser(boolean forceReparenting) {
-        assert mIntentDataProvider.getWebappExtras() == null;
-
         Tab tab = mTabProvider.getTab();
         if (tab == null) return false;
 

@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.text.TextUtils;
 
 import androidx.annotation.VisibleForTesting;
@@ -16,7 +15,6 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
-import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.BaseCustomTabActivity;
@@ -25,8 +23,6 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.Int
 import org.chromium.chrome.browser.customtabs.content.TabObserverRegistrar;
 import org.chromium.chrome.browser.customtabs.dependency_injection.BaseCustomTabActivityModule;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityCommonsModule;
-import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.webapps.dependency_injection.WebappActivityComponent;
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -109,7 +105,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), mBookmarkBridgeSupplier,
                 CustomTabsUiType.MINIMAL_UI_WEBAPP, new ArrayList<String>(),
-                true /* is opened by Chrome */, true /* should show share */,
+                false /* is opened by Chrome */, true /* should show share */,
                 false /* should show star (bookmarking) */, false /* should show download */,
                 false /* is incognito */);
     }
@@ -121,7 +117,7 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
             return true;
         }
         if (id == R.id.open_in_browser_id) {
-            openCurrentUrlInChrome();
+            mNavigationController.openCurrentUrlInBrowser(false);
             if (fromMenu) {
                 RecordUserAction.record("WebappMenuOpenInChrome");
             } else {
@@ -130,27 +126,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
             return true;
         }
         return super.onMenuOrKeyboardAction(id, fromMenu);
-    }
-
-    /**
-     * Opens the URL currently being displayed in the browser by reparenting the tab.
-     */
-    private boolean openCurrentUrlInChrome() {
-        Tab tab = getActivityTab();
-        if (tab == null) return false;
-
-        String url = tab.getOriginalUrl();
-        if (TextUtils.isEmpty(url)) {
-            url = IntentHandler.getUrlFromIntent(getIntent());
-        }
-
-        // TODO(piotrs): Bring reparenting back once CCT animation is fixed. See crbug/774326
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.setClass(this, ChromeLauncherActivity.class);
-        IntentHandler.startActivityForTrustedIntent(intent);
-
-        return true;
     }
 
     @Override

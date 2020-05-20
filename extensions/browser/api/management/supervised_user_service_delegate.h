@@ -43,7 +43,7 @@ class SupervisedUserServiceDelegate {
   using ParentPermissionDialogDoneCallback =
       base::OnceCallback<void(ParentPermissionDialogResult)>;
 
-  // Show a parent permission dialog for |extension| and call |done_callback|
+  // Shows a parent permission dialog for |extension| and call |done_callback|
   // when it completes.
   virtual void ShowParentPermissionDialogForExtension(
       const extensions::Extension& extension,
@@ -51,12 +51,16 @@ class SupervisedUserServiceDelegate {
       content::WebContents* contents,
       ParentPermissionDialogDoneCallback done_callback) = 0;
 
-  // Show a dialog indicating that |extension| has been blocked and call
+  // Shows a dialog indicating that |extension| has been blocked and call
   // |done_callback| when it completes.
   virtual void ShowExtensionEnableBlockedByParentDialogForExtension(
       const extensions::Extension* extension,
       content::WebContents* contents,
       base::OnceClosure done_callback) = 0;
+
+  // Records UMA metrics for supervised users trying to install or enable an
+  // extension when this action is blocked by the parent.
+  virtual void RecordExtensionEnableBlockedByParentDialogUmaMetric() = 0;
 };
 
 }  // namespace extensions

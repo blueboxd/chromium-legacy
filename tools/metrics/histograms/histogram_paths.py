@@ -10,10 +10,9 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'common'))
 import path_util
 
-HISTOGRAMS_XML = path_util.GetInputFile(
-    'tools/metrics/histograms/histograms.xml')
-
-ENUMS_XML = path_util.GetInputFile(
-    'tools/metrics/histograms/enums.xml')
-
-ALL_XMLS = [HISTOGRAMS_XML, ENUMS_XML]
+ALL_XMLS_RELATIVE = [
+    'tools/metrics/histograms/enums.xml',
+    'tools/metrics/histograms/histograms.xml'
+]
+ALL_XMLS = [path_util.GetInputFile(f) for f in ALL_XMLS_RELATIVE]
+ENUMS_XML, HISTOGRAMS_XML = ALL_XMLS

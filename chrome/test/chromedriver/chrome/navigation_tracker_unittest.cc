@@ -21,11 +21,9 @@
 namespace {
 
 void AssertPendingState(NavigationTracker* tracker,
-                        const std::string& frame_id,
                         bool expected_is_pending) {
   bool is_pending = !expected_is_pending;
-  ASSERT_EQ(
-      kOk, tracker->IsPendingNavigation(frame_id, nullptr, &is_pending).code());
+  ASSERT_EQ(kOk, tracker->IsPendingNavigation(nullptr, &is_pending).code());
   ASSERT_EQ(expected_is_pending, is_pending);
 }
 
@@ -139,12 +137,10 @@ TEST(NavigationTracker, FrameLoadStartStop) {
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   ASSERT_EQ(kOk,
             tracker.OnEvent(client_ptr, "Page.loadEventFired", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
 // When a frame fails to load due to (for example) a DNS resolution error, we
@@ -170,17 +166,14 @@ TEST(NavigationTracker, FrameLoadStartStartStop) {
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   ASSERT_EQ(kOk,
             tracker.OnEvent(client_ptr, "Page.loadEventFired", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
 TEST(NavigationTracker, MultipleFramesLoad) {
@@ -205,37 +198,36 @@ TEST(NavigationTracker, MultipleFramesLoad) {
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
 
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   params.SetString("frameId", "2");
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
 
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "2", true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   params.SetString("frameId", "2");
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStoppedLoading", params).code());
   // Inner frame stops loading. loading_state_ should remain true
   // since top frame is still loading
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "2", true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   params.SetString("frameId", top_frame_id);
   ASSERT_EQ(kOk,
             tracker.OnEvent(client_ptr, "Page.loadEventFired", params).code());
 
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, top_frame_id, false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
   params.SetString("frameId", "3");
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStoppedLoading", params).code());
 
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "3", false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
 
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "3", false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
 TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
@@ -260,8 +252,7 @@ TEST(NavigationTracker, NavigationScheduledForOtherFrame) {
                      .OnEvent(client_ptr, "Page.frameScheduledNavigation",
                               params_scheduled)
                      .code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
 TEST(NavigationTracker, CurrentFrameLoading) {
@@ -282,40 +273,83 @@ TEST(NavigationTracker, CurrentFrameLoading) {
   params.SetString("frameId", current_frame_id);
 
   // verify initial state
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, current_frame_id, true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
 
-  // loading state should respond to events from new frame after ClearState
-  tracker.ClearState(current_frame_id);
+  // Trigger new frame initialization
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(client_ptr, "Page.frameAttached", params).code());
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
+
+  // loading state should respond to events from new frame after SetFrame
+  tracker.SetFrame(current_frame_id);
   web_view.nextEvaluateScript("uninitialized", kOk);
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, current_frame_id, true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
 
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
   web_view.nextEvaluateScript("loading", kOk);
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, current_frame_id, true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStoppedLoading", params).code());
   web_view.nextEvaluateScript("complete", kOk);
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, current_frame_id, false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 
   // loading state should not respond to unknown frame events
   params.SetString("frameId", "4");
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, current_frame_id, false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStoppedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, current_frame_id, false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
-TEST(NavigationTracker, ClearStateNoFrame) {
+TEST(NavigationTracker, FrameAttachDetach) {
+  base::DictionaryValue dict;
+  BrowserInfo browser_info;
+  std::unique_ptr<DevToolsClient> client_uptr =
+      std::make_unique<DeterminingLoadStateDevToolsClient>(
+          false, false, std::string(), &dict);
+  DevToolsClient* client_ptr = client_uptr.get();
+  JavaScriptDialogManager dialog_manager(client_ptr, &browser_info);
+  EvaluateScriptWebView web_view(kOk);
+  NavigationTracker tracker(client_ptr, &web_view, &browser_info,
+                            &dialog_manager);
+
+  base::DictionaryValue params;
+  std::string top_frame_id = client_ptr->GetId();
+  std::string current_frame_id = "2";
+  params.SetString("frameId", current_frame_id);
+
+  // verify initial state
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
+
+  // Trigger invalid current frame
+  tracker.SetFrame(current_frame_id);
+  web_view.nextEvaluateScript("SetFrame before frameAttached", kOk);
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
+
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(client_ptr, "Page.frameAttached", params).code());
+  web_view.nextEvaluateScript("frameAttached", kOk);
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
+
+  // Trigger frame switch to valid
+  tracker.SetFrame(current_frame_id);
+  web_view.nextEvaluateScript("SetFrame after frameAttached", kOk);
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
+
+  ASSERT_EQ(kOk,
+            tracker.OnEvent(client_ptr, "Page.frameDetached", params).code());
+  web_view.nextEvaluateScript("frameDetached", kOk);
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
+}
+
+TEST(NavigationTracker, SetFrameNoFrame) {
   base::DictionaryValue dict;
   BrowserInfo browser_info;
   std::unique_ptr<DevToolsClient> client_uptr =
@@ -330,27 +364,27 @@ TEST(NavigationTracker, ClearStateNoFrame) {
   base::DictionaryValue params;
   std::string top_frame_id = client_ptr->GetId();
   web_view.nextEvaluateScript("uninitialized", kOk);
-  ASSERT_NO_FATAL_FAILURE(tracker.ClearState(std::string()));
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, top_frame_id, true));
-  ASSERT_NO_FATAL_FAILURE(tracker.ClearState("2"));
-  ASSERT_NO_FATAL_FAILURE(tracker.ClearState(std::string()));
+  ASSERT_NO_FATAL_FAILURE(tracker.SetFrame(std::string()));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
+  ASSERT_NO_FATAL_FAILURE(tracker.SetFrame("2"));
+  ASSERT_NO_FATAL_FAILURE(tracker.SetFrame(std::string()));
   params.SetString("frameId", top_frame_id);
   web_view.nextEvaluateScript("complete", kOk);
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStoppedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "2", false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 
   // loading state should not respond to unknown frame events
   params.SetString("frameId", "2");
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStartedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "2", false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
   ASSERT_EQ(
       kOk,
       tracker.OnEvent(client_ptr, "Page.frameStoppedLoading", params).code());
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "2", false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
 namespace {
@@ -396,7 +430,7 @@ TEST(NavigationTracker, UnknownStateFailsToDetermineState) {
 
   bool is_pending;
   ASSERT_EQ(kUnknownError,
-            tracker.IsPendingNavigation("f", nullptr, &is_pending).code());
+            tracker.IsPendingNavigation(nullptr, &is_pending).code());
 }
 
 TEST(NavigationTracker, UnknownStatePageNotLoadAtAll) {
@@ -413,7 +447,7 @@ TEST(NavigationTracker, UnknownStatePageNotLoadAtAll) {
   NavigationTracker tracker(client_ptr, &web_view, &browser_info,
                             &dialog_manager);
 
-  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, "f", true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
 }
 
 TEST(NavigationTracker, UnknownStateForcesStart) {
@@ -428,8 +462,7 @@ TEST(NavigationTracker, UnknownStateForcesStart) {
   NavigationTracker tracker(client_ptr, &web_view, &browser_info,
                             &dialog_manager);
 
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
 }
 
 TEST(NavigationTracker, UnknownStateForcesStartReceivesStop) {
@@ -450,8 +483,7 @@ TEST(NavigationTracker, UnknownStateForcesStartReceivesStop) {
   params.SetString("frameId", client_ptr->GetId());
   ASSERT_EQ(kOk,
             tracker.OnEvent(client_ptr, "Page.loadEventFired", params).code());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
 TEST(NavigationTracker, OnSuccessfulNavigate) {
@@ -475,12 +507,10 @@ TEST(NavigationTracker, OnSuccessfulNavigate) {
   result.SetString("frameId", client_ptr->GetId());
   web_view.nextEvaluateScript("loading", kOk);
   tracker.OnCommandSuccess(client_ptr, "Page.navigate", result, Timeout());
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), true));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, true));
   web_view.nextEvaluateScript("complete", kOk);
   tracker.OnEvent(client_ptr, "Page.loadEventFired", params);
-  ASSERT_NO_FATAL_FAILURE(
-      AssertPendingState(&tracker, client_ptr->GetId(), false));
+  ASSERT_NO_FATAL_FAILURE(AssertPendingState(&tracker, false));
 }
 
 namespace {
@@ -514,6 +544,6 @@ TEST(NavigationTracker, TargetClosedInIsPendingNavigation) {
                             &dialog_manager);
 
   bool is_pending;
-  ASSERT_EQ(kOk, tracker.IsPendingNavigation("f", nullptr, &is_pending).code());
+  ASSERT_EQ(kOk, tracker.IsPendingNavigation(nullptr, &is_pending).code());
   ASSERT_TRUE(is_pending);
 }

@@ -250,18 +250,18 @@ int Setup(bool is_machine) {
   AddComInterfacesWorkItems(key, product_dir.Append(kUpdaterExe),
                             install_list.get());
 
-  base::CommandLine run_updater_ua_command(product_dir.Append(kUpdaterExe));
-  run_updater_ua_command.AppendSwitch(kUpdateAppsSwitch);
+  base::CommandLine run_updater_wake_command(product_dir.Append(kUpdaterExe));
+  run_updater_wake_command.AppendSwitch(kWakeSwitch);
 
 #if !defined(NDEBUG)
-  run_updater_ua_command.AppendSwitch(kEnableLoggingSwitch);
-  run_updater_ua_command.AppendSwitchASCII(kLoggingModuleSwitch,
-                                           "*/chrome/updater/*=2");
+  run_updater_wake_command.AppendSwitch(kEnableLoggingSwitch);
+  run_updater_wake_command.AppendSwitchASCII(kLoggingModuleSwitch,
+                                             "*/chrome/updater/*=2");
 #endif
-  if (!install_list->Do() || !RegisterUpdateAppsTask(run_updater_ua_command)) {
+  if (!install_list->Do() || !RegisterWakeTask(run_updater_wake_command)) {
     LOG(ERROR) << "Install failed, rolling back...";
     install_list->Rollback();
-    UnregisterUpdateAppsTask();
+    UnregisterWakeTask();
     LOG(ERROR) << "Rollback complete.";
     return -1;
   }

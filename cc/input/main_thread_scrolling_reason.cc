@@ -50,8 +50,6 @@ void MainThreadScrollingReason::AddToTracedValue(
     traced_value.AppendString("Can't paint scrolling background");
   if (reasons & kHasClipRelatedProperty)
     traced_value.AppendString("Has clip related property");
-  if (reasons & kIsNotStackingContextAndLCDText)
-    traced_value.AppendString("Is not stacking context and LCD text");
 
   // Transient scrolling reasons.
   if (reasons & kNonFastScrollableRegion)

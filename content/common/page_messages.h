@@ -31,10 +31,6 @@ IPC_MESSAGE_ROUTED2(PageMsg_SetHistoryOffsetAndLength,
 
 IPC_MESSAGE_ROUTED1(PageMsg_AudioStateChanged, bool /* is_audio_playing */)
 
-// Sent to all renderers, instructing them to freeze or unfreeze all frames that
-// belongs to this page.
-IPC_MESSAGE_ROUTED1(PageMsg_SetPageFrozen, bool /* frozen */)
-
 // Sent to all renderers to freeze all frames and dispatch page visibility
 // events for bfcache.
 IPC_MESSAGE_ROUTED0(PageMsg_PutPageIntoBackForwardCache)

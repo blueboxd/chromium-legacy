@@ -1082,6 +1082,9 @@ void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
                                            aura::Window* gained_active,
                                            aura::Window* lost_active) {
+  if (!IsShelfWindow(gained_active))
+    shelf_->hotseat_widget()->set_manually_extended(/*value=*/false);
+
   UpdateAutoHideStateNow();
 }
 

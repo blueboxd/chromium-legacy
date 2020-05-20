@@ -14954,9 +14954,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MostVisited_ClickedFromContextMenu">
-  <owner>dbeam@chromium.org</owner>
-  <owner>kristipark@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>yyushkina@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     An NTP tile was opened from the context menu. Desktop only.
 
@@ -15227,6 +15228,23 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="NewTabPage.LinkOpenedFromContextMenu.WebUI">
+  <owner>tiborg@chromium.org</owner>
+  <owner>yyushkina@chromium.org</owner>
+  <owner>chrome-analysis-team@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
+  <description>
+    Recorded when a link on the WebUI New Tab Page is opened via the context
+    menu. This can include: Middle-slot promos, Doodles, the One Google Bar,
+    shortcuts and custom background image attributions. Logged only when Google
+    is the default search provider, as these elements only appear on the Google
+    NTP.
+
+    This user action is of special interest to the chrome-analysis-team@. Do not
+    change its semantics or retire it without talking to them first.
+  </description>
+</action>
+
 <action name="NewTabPage_ContentSuggestions_ArticlesUsage"
     not_user_triggered="true">
   <owner>markusheintz@chromium.org</owner>
@@ -15418,9 +15436,10 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NTP_LinkOpenedFromContextMenu">
-  <owner>kmilka@chromium.org</owner>
-  <owner>ramyan@chromium.org</owner>
+  <owner>tiborg@chromium.org</owner>
+  <owner>yyushkina@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
+  <owner>chrome-desktop-ntp@google.com</owner>
   <description>
     Recorded when a link on the New Tab Page is opened via the context menu.
     This can include: Middle-slot promos, Doodles, the One Google Bar, and
@@ -23216,6 +23235,17 @@ should be able to be added at any place in this file.
   <description>
     Emitted when a supervised user tries to install an extension from the Chrome
     Web Store and opens the Extension Install Dialog.
+  </description>
+</action>
+
+<action name="SupervisedUsers_Extensions_FailedToEnable">
+  <owner>tobyhuang@chromium.org</owner>
+  <owner>agawronska@chromium.org</owner>
+  <owner>danan@chromium.org</owner>
+  <owner>cros-families@google.com</owner>
+  <description>
+    Emmitted when a supervised user tries to enable a force-disabled extension
+    and fails.
   </description>
 </action>
 

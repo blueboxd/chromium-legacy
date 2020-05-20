@@ -332,56 +332,6 @@ void BluetoothRemoteGattCharacteristicWinrt::UpdateDescriptors(
   std::swap(descriptors, descriptors_);
 }
 
-bool BluetoothRemoteGattCharacteristicWinrt::WriteWithoutResponse(
-    base::span<const uint8_t> value) {
-  if (!(GetProperties() & PROPERTY_WRITE_WITHOUT_RESPONSE))
-    return false;
-
-  if (pending_read_callbacks_ || pending_write_callbacks_)
-    return false;
-
-  ComPtr<IGattCharacteristic3> characteristic_3;
-  HRESULT hr = characteristic_.As(&characteristic_3);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "As IGattCharacteristic3 failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  ComPtr<IBuffer> buffer;
-  hr = base::win::CreateIBufferFromData(value.data(), value.size(), &buffer);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "base::win::CreateIBufferFromData failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  ComPtr<IAsyncOperation<GattWriteResult*>> write_value_op;
-  // Note: As we are ignoring the result WriteValueWithOptionAsync() would work
-  // as well, but re-using WriteValueWithResultAndOptionAsync() does simplify
-  // the testing code and there is no difference in production.
-  hr = characteristic_3->WriteValueWithResultAndOptionAsync(
-      buffer.Get(), GattWriteOption_WriteWithoutResponse, &write_value_op);
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG)
-        << "GattCharacteristic::WriteValueWithResultAndOptionAsync failed: "
-        << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  // While we are ignoring the response, we still post the async_op in order to
-  // extend its lifetime until the operation has completed.
-  hr =
-      base::win::PostAsyncResults(std::move(write_value_op), base::DoNothing());
-  if (FAILED(hr)) {
-    BLUETOOTH_LOG(DEBUG) << "PostAsyncResults failed: "
-                         << logging::SystemErrorCodeToString(hr);
-    return false;
-  }
-
-  return true;
-}
-
 IGattCharacteristic*
 BluetoothRemoteGattCharacteristicWinrt::GetCharacteristicForTesting() {
   return characteristic_.Get();

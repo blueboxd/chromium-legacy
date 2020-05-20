@@ -739,8 +739,16 @@ class StartSurfaceMediator
     private int computeOverviewStateShown() {
         if (mSurfaceMode == SurfaceMode.SINGLE_PANE) {
             if (mOverviewModeState == OverviewModeState.SHOWING_PREVIOUS) {
-                assert (isShownState(mPreviousOverviewModeState));
-                return mPreviousOverviewModeState;
+                assert mPreviousOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE
+                        || mPreviousOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER
+                        || mPreviousOverviewModeState == OverviewModeState.NOT_SHOWN;
+
+                // This class would be re-instantiated after changing theme, then
+                // mPreviousOverviewModeState will be reset to OverviewModeState.NOT_SHOWN. We
+                // default to OverviewModeState.SHOWN_HOMEPAGE in this case when SHOWING_PREVIOUS.
+                return mPreviousOverviewModeState == OverviewModeState.NOT_SHOWN
+                        ? OverviewModeState.SHOWN_HOMEPAGE
+                        : mPreviousOverviewModeState;
             } else if (mOverviewModeState == OverviewModeState.SHOWING_START) {
                 return OverviewModeState.SHOWN_HOMEPAGE;
             } else if (mOverviewModeState == OverviewModeState.SHOWING_TABSWITCHER) {

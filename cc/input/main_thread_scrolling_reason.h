@@ -47,7 +47,6 @@ struct CC_EXPORT MainThreadScrollingReason {
     kBackgroundNotOpaqueInRectAndLCDText = 1 << 18,
     kCantPaintScrollingBackground = 1 << 19,
     kHasClipRelatedProperty = 1 << 20,
-    kIsNotStackingContextAndLCDText = 1 << 22,
     kNonCompositedReasonsLast = 22,
 
     // Transient scrolling reasons. These are computed for each scroll begin.
@@ -70,8 +69,7 @@ struct CC_EXPORT MainThreadScrollingReason {
 
   static const uint32_t kNonCompositedReasons =
       kHasTransformAndLCDText | kBackgroundNotOpaqueInRectAndLCDText |
-      kCantPaintScrollingBackground | kHasClipRelatedProperty |
-      kIsNotStackingContextAndLCDText;
+      kCantPaintScrollingBackground | kHasClipRelatedProperty;
 
   // Returns true if the given MainThreadScrollingReason can be set by the main
   // thread.

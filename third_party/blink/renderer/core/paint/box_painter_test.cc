@@ -220,7 +220,7 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
         width: 200px;
         height: 200px;
         overflow-y: scroll;
-        background: green;
+        background: rgba(0, 128, 0, 0.5);  /* to prevent compositing */
       }
       #child { width: 100px; height: 300px; background: green; }
     </style>
@@ -235,9 +235,8 @@ TEST_P(BoxPainterTest, ScrollHitTestProperties) {
 
   // The scroll hit test should be after the container background but before the
   // scrolled contents.
-  EXPECT_EQ(
-      kBackgroundPaintInGraphicsLayer | kBackgroundPaintInScrollingContents,
-      container.ComputeBackgroundPaintLocationIfComposited());
+  EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
+            container.ComputeBackgroundPaintLocationIfComposited());
   EXPECT_EQ(kBackgroundPaintInGraphicsLayer,
             container.GetBackgroundPaintLocation());
   EXPECT_THAT(

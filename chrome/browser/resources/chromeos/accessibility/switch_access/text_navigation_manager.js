@@ -15,10 +15,10 @@ class TextNavigationManager {
     /** @private {number} */
     this.selectionEndIndex_ = TextNavigationManager.NO_SELECT_INDEX;
 
-    /** @private {chrome.automation.AutomationNode} */
+    /** @private {AutomationNode} */
     this.selectionStartObject_;
 
-    /** @private {chrome.automation.AutomationNode} */
+    /** @private {AutomationNode} */
     this.selectionEndObject_;
 
     /** @private {boolean} */
@@ -224,7 +224,7 @@ class TextNavigationManager {
   /**
    * Sets the selection start index.
    * @param {number} startIndex
-   * @param {!chrome.automation.AutomationNode} textNode
+   * @param {!AutomationNode} textNode
    */
   setSelStartIndexAndNode(startIndex, textNode) {
     this.selectionStartIndex_ = startIndex;
@@ -251,7 +251,7 @@ class TextNavigationManager {
   /**
    * Returns either the selection start index or the selection end index of the
    * node based on the getStart param.
-   * @param {!chrome.automation.AutomationNode} node
+   * @param {!AutomationNode} node
    * @param {boolean} getStart
    * @return {number} selection start if getStart is true otherwise selection
    * end

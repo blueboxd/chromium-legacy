@@ -1186,7 +1186,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(PageMsg_SetHistoryOffsetAndLength,
                         OnSetHistoryOffsetAndLength)
     IPC_MESSAGE_HANDLER(PageMsg_AudioStateChanged, OnAudioStateChanged)
-    IPC_MESSAGE_HANDLER(PageMsg_SetPageFrozen, SetPageFrozen)
     IPC_MESSAGE_HANDLER(PageMsg_PutPageIntoBackForwardCache,
                         PutPageIntoBackForwardCache)
     IPC_MESSAGE_HANDLER(PageMsg_RestorePageFromBackForwardCache,

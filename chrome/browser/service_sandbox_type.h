@@ -19,6 +19,7 @@ namespace mojom {
 class RemovableStorageWriter;
 }  // namespace mojom
 }  // namespace chrome
+
 template <>
 inline content::SandboxType
 content::GetServiceSandboxType<chrome::mojom::RemovableStorageWriter>() {
@@ -26,7 +27,7 @@ content::GetServiceSandboxType<chrome::mojom::RemovableStorageWriter>() {
   return SandboxType::kNoSandboxAndElevatedPrivileges;
 #else
   return SandboxType::kNoSandbox;
-#endif
+#endif  // !defined(OS_WIN)
 }
 
 // chrome::mojom::UtilWin
@@ -36,12 +37,13 @@ namespace mojom {
 class UtilWin;
 }
 }  // namespace chrome
+
 template <>
 inline content::SandboxType
 content::GetServiceSandboxType<chrome::mojom::UtilWin>() {
   return content::SandboxType::kNoSandbox;
 }
-#endif
+#endif  // defined(OS_WIN)
 
 // chrome::mojom::ProfileImport
 namespace chrome {
@@ -49,6 +51,7 @@ namespace mojom {
 class ProfileImport;
 }
 }  // namespace chrome
+
 template <>
 inline content::SandboxType
 content::GetServiceSandboxType<chrome::mojom::ProfileImport>() {
@@ -62,6 +65,7 @@ namespace mojom {
 class PrintingService;
 }
 }  // namespace printing
+
 template <>
 inline content::SandboxType
 content::GetServiceSandboxType<printing::mojom::PrintingService>() {
@@ -76,11 +80,42 @@ namespace mojom {
 class ProxyResolverFactory;
 }
 }  // namespace proxy_resolver
+
 template <>
 inline content::SandboxType
 content::GetServiceSandboxType<proxy_resolver::mojom::ProxyResolverFactory>() {
   return content::SandboxType::kProxyResolver;
 }
 #endif  // defined(OS_WIN)
+
+// quarantine::mojom::Quarantine
+#if defined(OS_WIN)
+namespace quarantine {
+namespace mojom {
+class Quarantine;
+}
+}  // namespace quarantine
+
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<quarantine::mojom::Quarantine>() {
+  return content::SandboxType::kNoSandbox;
+}
+#endif  // defined(OS_WIN)
+
+// sharing::mojom::Sharing
+#if !defined(OS_MACOSX)
+namespace sharing {
+namespace mojom {
+class Sharing;
+}
+}  // namespace sharing
+
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<sharing::mojom::Sharing>() {
+  return content::SandboxType::kSharingService;
+}
+#endif  // !defined(OS_MACOSX)
 
 #endif  // CHROME_BROWSER_SERVICE_SANDBOX_TYPE_H_

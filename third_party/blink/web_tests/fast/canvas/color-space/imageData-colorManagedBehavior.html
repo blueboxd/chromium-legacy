@@ -95,10 +95,6 @@ function checkImageDataColorValues(canvasColorSettings, imageData, isBlank = '',
           tolerance = colorCorrectionToleranceWCG;
         }
         break;
-      case "linear-rgb":
-        expectedPixels = linearRgbPixels;
-        tolerance = colorCorrectionToleranceWCG;
-        break;
       case "rec2020":
         expectedPixels = rec2020Pixels;
         tolerance = colorCorrectionToleranceWCG;
@@ -109,7 +105,7 @@ function checkImageDataColorValues(canvasColorSettings, imageData, isBlank = '',
         break;
       default:
         assert_true(false,
-          "Expected srgb, linear-rgb, rec2020 or p3 color space, but got invalid value: " +
+          "Expected srgb, rec2020 or p3 color space, but got invalid value: " +
           canvasColorSettings.colorSpace);
     }
     testPixels(data, expectedPixels, tolerance);
@@ -138,15 +134,12 @@ function initializeColorManagedCanvas(canvasColorSettings)
 var canvasColorSettingsSet = [
   {name: "SRGB", colorSettings: {colorSpace: "srgb", pixelFormat: "uint8"}},
   {name: "e-SRGB", colorSettings: {colorSpace: "srgb", pixelFormat: "float16"}},
-  {name: "Linear RGB",
-      colorSettings: {colorSpace: "linear-rgb", pixelFormat: "float16"}},
   {name: "Rec2020",
       colorSettings: {colorSpace: "rec2020", pixelFormat: "float16"}},
   {name: "P3", colorSettings: {colorSpace: "p3", pixelFormat: "float16"}},
 ];
 
 var srgbImageDataU8, e_srgbImageDataU16, e_srgbImageDataF32,
-    linearRgbImageDataU8, linearRgbImageDataU16, linearRgbImageDataF32,
     rec2020ImageDataU8, rec2020ImageDataU16, rec2020ImageDataF32,
     p3ImageDataU8, p3ImageDataU16, p3ImageDataF32;
 
@@ -159,13 +152,6 @@ function PreparePredefinedImageDataObjects() {
     {colorSpace: "srgb", storageFormat: "uint16"});
   e_srgbImageDataF32 = ctx.createImageData(xWidth, xHeight,
     {colorSpace: "srgb", storageFormat: "float32"});
-
-  linearRgbImageDataU8 = ctx.createImageData(xWidth, xHeight,
-    {colorSpace: "linear-rgb", storageFormat: "uint8"});
-  linearRgbImageDataU16 = ctx.createImageData(xWidth, xHeight,
-    {colorSpace: "linear-rgb", storageFormat: "uint16"});
-  linearRgbImageDataF32 = ctx.createImageData(xWidth, xHeight,
-    {colorSpace: "linear-rgb", storageFormat: "float32"});
 
   rec2020ImageDataU8 = ctx.createImageData(xWidth, xHeight,
     {colorSpace: "rec2020", storageFormat: "uint8"});
@@ -188,12 +174,6 @@ function PreparePredefinedImageDataObjects() {
           Math.round(e_srgbPixels[i][j] * 65535);
       e_srgbImageDataF32.dataUnion[i*4+j] = e_srgbPixels[i][j];
 
-      linearRgbImageDataU8.dataUnion[i*4+j] =
-          Math.round(linearRgbPixels[i][j] * 255);
-      linearRgbImageDataU16.dataUnion[i*4+j] =
-          Math.round(linearRgbPixels[i][j] * 65535);
-      linearRgbImageDataF32.dataUnion[i*4+j] = linearRgbPixels[i][j];
-
       rec2020ImageDataU8.dataUnion[i*4+j] =
           Math.round(rec2020Pixels[i][j] * 255);
       rec2020ImageDataU16.dataUnion[i*4+j] =
@@ -214,13 +194,6 @@ var imageDataColorSettingsSet = [
       storageFormat: "uint16"}, imageData: e_srgbImageDataU16},
   {name: "e-SRGB F32", colorSettings: {colorSpace: "srgb",
       storageFormat: "float32"}, imageData: e_srgbImageDataF32},
-
-  {name: "LinearRGB U8", colorSettings: {colorSpace: "linear-rgb",
-      storageFormat: "uint8"}, imageData: linearRgbImageDataU8},
-  {name: "LinearRGB U16", colorSettings: {colorSpace: "linear-rgb",
-      storageFormat: "uint16"}, imageData: linearRgbImageDataU16},
-  {name: "LinearRGB F32", colorSettings: {colorSpace: "linear-rgb",
-      storageFormat: "float32"}, imageData: linearRgbImageDataF32},
 
   {name: "Rec2020 U8", colorSettings: {colorSpace: "rec2020",
       storageFormat: "uint8"}, imageData: rec2020ImageDataU8},

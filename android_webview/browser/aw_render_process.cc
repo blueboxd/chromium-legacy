@@ -79,6 +79,14 @@ bool AwRenderProcess::TerminateChildProcess(
   return render_process_host_->Shutdown(0);
 }
 
+bool AwRenderProcess::IsLockedToOriginForTesting(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  return render_process_host_->IsLockedToOriginForTesting();
+}
+
 base::android::ScopedJavaLocalRef<jobject> AwRenderProcess::GetJavaObject() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 

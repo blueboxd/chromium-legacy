@@ -43,7 +43,7 @@ TEST(MetafileSkiaTest, TestFrameContent) {
   SkPictureRecorder recorder;
   SkCanvas* canvas = recorder.beginRecording(kPictureSideLen, kPictureSideLen);
   SkPaint paint;
-  paint.setStyle(SkPaint::kStrokeAndFill_Style);
+  paint.setStyle(SkPaint::kFill_Style);
   paint.setColor(SK_ColorRED);
   paint.setAlpha(SK_AlphaOPAQUE);
   canvas->drawRect(SkRect::MakeXYWH(0, 0, kPictureSideLen, kPictureSideLen),

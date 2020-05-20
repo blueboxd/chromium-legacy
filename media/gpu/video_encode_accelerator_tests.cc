@@ -6,8 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "media/base/media_util.h"
 #include "media/base/test_data_util.h"
+#include "media/base/video_decoder_config.h"
 #include "media/gpu/test/video.h"
+#include "media/gpu/test/video_encoder/bitstream_validator.h"
 #include "media/gpu/test/video_encoder/decoder_buffer_validator.h"
 #include "media/gpu/test/video_encoder/video_encoder.h"
 #include "media/gpu/test/video_encoder/video_encoder_client.h"
@@ -61,7 +64,8 @@ class VideoEncoderTest : public ::testing::Test {
 
     std::vector<std::unique_ptr<BitstreamProcessor>> bitstream_processors;
     const gfx::Rect visible_rect(video->Resolution());
-    switch (VideoCodecProfileToVideoCodec(config.output_profile)) {
+    VideoCodec codec = VideoCodecProfileToVideoCodec(config.output_profile);
+    switch (codec) {
       case kCodecH264:
         bitstream_processors.emplace_back(
             new H264Validator(config.output_profile, visible_rect));
@@ -78,6 +82,19 @@ class VideoEncoderTest : public ::testing::Test {
                    << GetProfileName(config.output_profile);
         break;
     }
+
+    // Attach a bitstream validator to validate all encoded video frames. The
+    // bitstream validator uses a software video decoder to validate the encoded
+    // buffers by decoding them. Metrics such as the image's SSIM can be
+    // calculated for additional quality checks.
+    VideoDecoderConfig decoder_config(
+        codec, config.output_profile, VideoDecoderConfig::AlphaMode::kIsOpaque,
+        VideoColorSpace(), kNoTransformation, visible_rect.size(), visible_rect,
+        visible_rect.size(), EmptyExtraData(), EncryptionScheme::kUnencrypted);
+    auto bitstream_validator =
+        BitstreamValidator::Create(decoder_config, video->NumFrames() - 1);
+    LOG_ASSERT(bitstream_validator);
+    bitstream_processors.emplace_back(std::move(bitstream_validator));
 
     auto video_encoder =
         VideoEncoder::Create(config, std::move(bitstream_processors));

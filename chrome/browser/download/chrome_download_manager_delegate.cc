@@ -110,6 +110,7 @@
 #endif
 
 #if defined(OS_WIN)
+#include "chrome/browser/service_sandbox_type.h"
 #include "components/services/quarantine/public/cpp/quarantine_features_win.h"
 #endif
 
@@ -277,7 +278,6 @@ void ConnectToQuarantineService(
         std::move(receiver),
         content::ServiceProcessHost::Options()
             .WithDisplayName("Quarantine Service")
-            .WithSandboxType(service_manager::SandboxType::kNoSandbox)
             .Pass());
     return;
   }

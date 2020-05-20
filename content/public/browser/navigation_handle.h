@@ -9,6 +9,7 @@
 #include <string>
 
 #include "content/common/content_export.h"
+#include "content/public/browser/navigation_handle_timing.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/restore_type.h"
@@ -124,13 +125,8 @@ class CONTENT_EXPORT NavigationHandle {
   // set if unknown.
   virtual base::TimeTicks NavigationInputStart() = 0;
 
-  // The time the first HTTP request is sent.
-  // See comments on |NavigationRequest::first_request_start_| for details.
-  virtual base::TimeTicks FirstRequestStart() = 0;
-
-  // The time the headers of the first HTTP response is received.
-  // See comments on |NavigationRequest::first_response_start_| for details.
-  virtual base::TimeTicks FirstResponseStart() = 0;
+  // The timing information of loading for the navigation.
+  virtual const NavigationHandleTiming& GetNavigationHandleTiming() = 0;
 
   // Whether or not the navigation was started within a context menu.
   virtual bool WasStartedFromContextMenu() = 0;

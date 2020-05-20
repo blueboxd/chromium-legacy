@@ -68,7 +68,6 @@ static const SessionCommand::id_type kCommandSetTabGroupMetadata = 26;
 static const SessionCommand::id_type kCommandSetTabGroupMetadata2 = 27;
 static const SessionCommand::id_type kCommandSetTabGuid = 28;
 static const SessionCommand::id_type kCommandSetTabUserAgentOverride2 = 29;
-static const SessionCommand::id_type kCommandSetTabData = 30;
 
 namespace {
 
@@ -808,31 +807,6 @@ bool CreateTabsAndWindows(
         break;
       }
 
-      case kCommandSetTabData: {
-        std::unique_ptr<base::Pickle> pickle(command->PayloadAsPickle());
-        base::PickleIterator it(*pickle);
-        SessionID::id_type tab_id = -1;
-        int size = 0;
-        if (!it.ReadInt(&tab_id) || !it.ReadInt(&size)) {
-          DVLOG(1) << "Failed reading command " << command->id();
-          return true;
-        }
-        std::map<std::string, std::string> data;
-        for (int i = 0; i < size; i++) {
-          std::string key;
-          std::string value;
-          if (!it.ReadString(&key) || !it.ReadString(&value)) {
-            DVLOG(1) << "Failed reading command " << command->id();
-            return true;
-          }
-          data.insert({key, value});
-        }
-
-        GetTab(SessionID::FromSerializedValue(tab_id), tabs)->data =
-            std::move(data);
-        break;
-      }
-
       default:
         DVLOG(1) << "Failed reading an unknown command " << command->id();
         return true;
@@ -1046,19 +1020,6 @@ std::unique_ptr<SessionCommand> CreateSetTabGuidCommand(
   pickle.WriteInt(tab_id.id());
   pickle.WriteString(guid);
   return std::make_unique<SessionCommand>(kCommandSetTabGuid, pickle);
-}
-
-std::unique_ptr<SessionCommand> CreateSetTabDataCommand(
-    const SessionID& tab_id,
-    const std::map<std::string, std::string>& data) {
-  base::Pickle pickle;
-  pickle.WriteInt(tab_id.id());
-  pickle.WriteInt(data.size());
-  for (const auto& kv : data) {
-    pickle.WriteString(kv.first);
-    pickle.WriteString(kv.second);
-  }
-  return std::make_unique<SessionCommand>(kCommandSetTabData, pickle);
 }
 
 bool ReplacePendingCommand(CommandStorageManager* command_storage_manager,

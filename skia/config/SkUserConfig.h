@@ -217,6 +217,10 @@ SK_API void SkDebugf_FileLine(const char* file,
 // Staging for lowp::bilerp_clamp_8888, and for planned misc. others.
 #define SK_DISABLE_LOWP_BILERP_CLAMP_CLAMP_STAGE
 
+#ifndef SK_SUPPORT_LEGACY_MATRIX_FACTORIES
+#define SK_SUPPORT_LEGACY_MATRIX_FACTORIES
+#endif
+
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
 
 /* In some places Skia can use static initializers for global initialization,
@@ -232,5 +236,7 @@ SK_API void SkDebugf_FileLine(const char* file,
 
 #define SK_ATTR_DEPRECATED          SK_NOTHING_ARG1
 #define GR_GL_CUSTOM_SETUP_HEADER   "GrGLConfig_chrome.h"
+
+#define SK_LEGACY_SRGB_STAGES
 
 #endif

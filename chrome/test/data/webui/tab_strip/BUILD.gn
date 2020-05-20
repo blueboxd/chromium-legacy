@@ -16,7 +16,8 @@ js_type_check("closure_compile") {
   deps = [
     #":alert_indicator_test",
     #":alert_indicators_test",
-    #":drag_manager_test",
+    ":drag_manager_test",
+
     #":tab_group_test",
     #":tab_list_test",
     #":tab_swiper_test",
@@ -38,4 +39,18 @@ js_library("test_tabs_api_proxy") {
     "..:test_browser_proxy.m",
     "//chrome/browser/resources/tab_strip:tabs_api_proxy",
   ]
+}
+
+js_library("drag_manager_test") {
+  deps = [
+    ":test_tabs_api_proxy",
+    "..:chai_assert",
+    "//chrome/browser/resources/tab_strip:drag_manager",
+    "//chrome/browser/resources/tab_strip:tab",
+    "//chrome/browser/resources/tab_strip:tab_group",
+    "//chrome/browser/resources/tab_strip:tabs_api_proxy",
+    "//ui/webui/resources/js:cr.m",
+    "//ui/webui/resources/js:load_time_data.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
 }

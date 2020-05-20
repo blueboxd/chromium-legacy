@@ -7,7 +7,7 @@
  */
 class SystemMenuRootNode extends RootNodeWrapper {
   /**
-   * @param {!chrome.automation.AutomationNode} menuNode
+   * @param {!AutomationNode} menuNode
    * @private
    */
   constructor(menuNode) {
@@ -22,7 +22,7 @@ class SystemMenuRootNode extends RootNodeWrapper {
 
   /**
    * Creates the tree structure for the system menu.
-   * @param {!chrome.automation.AutomationNode} menuNode
+   * @param {!AutomationNode} menuNode
    * @return {!SystemMenuRootNode}
    */
   static buildTree(menuNode) {

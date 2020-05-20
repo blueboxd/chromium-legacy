@@ -36,7 +36,7 @@ namespace blink {
 class ComputedStyle;
 class StyleResolverState;
 
-class CachedMatchedProperties final
+class CORE_EXPORT CachedMatchedProperties final
     : public GarbageCollected<CachedMatchedProperties> {
  public:
   // Caches data of MatchedProperties. See |MatchedPropertiesCache::Cache| for
@@ -79,7 +79,13 @@ class CORE_EXPORT MatchedPropertiesCache {
 
    public:
     explicit Key(const MatchResult&);
-    bool IsValid() const { return hash_ != 0; }
+
+    bool IsValid() const {
+      // If hash_ happens to compute to the empty value or the deleted value,
+      // the corresponding MatchResult can't be cached.
+      return hash_ != HashTraits<unsigned>::EmptyValue() &&
+             !HashTraits<unsigned>::IsDeletedValue(hash_);
+    }
 
    private:
     friend class MatchedPropertiesCache;

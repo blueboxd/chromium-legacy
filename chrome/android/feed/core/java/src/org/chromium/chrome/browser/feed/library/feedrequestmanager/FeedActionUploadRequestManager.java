@@ -83,8 +83,8 @@ public final class FeedActionUploadRequestManager implements ActionUploadRequest
                 ConfigKey.FEED_ACTION_SERVER_MAX_ACTIONS_PER_REQUEST, 10L);
         mMaxActionUploadAttempts =
                 configuration.getValueOrDefault(ConfigKey.FEED_ACTION_MAX_UPLOAD_ATTEMPTS, 1L);
-        mMaxActionUploadTtl =
-                configuration.getValueOrDefault(ConfigKey.FEED_ACTION_TTL_SECONDS, 0L);
+        mMaxActionUploadTtl = configuration.getValueOrDefault(
+                ConfigKey.FEED_ACTION_TTL_SECONDS, TimeUnit.DAYS.toSeconds(2));
     }
 
     @Override

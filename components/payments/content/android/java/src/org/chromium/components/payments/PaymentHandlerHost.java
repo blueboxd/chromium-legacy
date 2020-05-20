@@ -4,6 +4,7 @@
 
 package org.chromium.components.payments;
 
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
@@ -43,13 +44,13 @@ public class PaymentHandlerHost {
     }
 
     /**
-     * Returns the pointer to the native payment handler host object. The native bridge owns this
-     * object.
-     * @return The pointer to the native payments::PaymentHandlerHost (not the native bridge
-     *         payments::android::PaymentHandlerHost).
+     * Returns the pointer to the native bridge. The Java object owns this bridge.
+     * @return The pointer to the native bridge payments::android::PaymentHandlerHost (not the
+     *         cross-platform payment handler host payments::PaymentHandlerHost).
      */
-    public long getNativePaymentHandlerHost() {
-        return PaymentHandlerHostJni.get().getNativePaymentHandlerHost(mNativePointer);
+    @CalledByNative
+    public long getNativeBridge() {
+        return mNativePointer;
     }
 
     /**
@@ -98,14 +99,6 @@ public class PaymentHandlerHost {
          * @param nativePaymentHandlerHost The pointer to the native payment handler host bridge.
          */
         boolean isWaitingForPaymentDetailsUpdate(long nativePaymentHandlerHost);
-
-        /**
-         * Returns the native pointer to the payment handler host (not the bridge). The native
-         * bridge owns the returned pointer.
-         * @param nativePaymentHandlerHost The pointer to the native payment handler host bridge.
-         * @return The pointer to the native payment handler host.
-         */
-        long getNativePaymentHandlerHost(long nativePaymentHandlerHost);
 
         /**
          * Notifies the payment handler that the merchant has updated the payment details.

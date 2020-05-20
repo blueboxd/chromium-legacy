@@ -21,6 +21,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
@@ -50,6 +51,8 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/guest_view/browser/guest_view_manager_delegate.h"
 #include "components/guest_view/browser/test_guest_view_manager.h"
+#include "components/policy/core/common/policy_pref_names.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_message_filter.h"
@@ -363,6 +366,23 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
       ui::MENU_SOURCE_TOUCH);
 
   EXPECT_TRUE(menu3->IsCommandIdVisible(IDC_CONTENT_CONTEXT_COPYLINKTEXT));
+}
+
+// Verifies "Save link as" is not enabled for links blacklisted via policy.
+IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest,
+                       SaveLinkAsEntryIsDisabledForBlacklistedUrls) {
+  base::Value value(base::Value::Type::LIST);
+  value.Append(base::Value("google.com"));
+  browser()->profile()->GetPrefs()->Set(policy::policy_prefs::kUrlBlacklist,
+                                        std::move(value));
+  base::RunLoop().RunUntilIdle();
+
+  std::unique_ptr<TestRenderViewContextMenu> menu =
+      CreateContextMenuMediaTypeNone(GURL("http://www.google.com/"),
+                                     GURL("http://www.google.com/"));
+
+  ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_SAVELINKAS));
+  EXPECT_FALSE(menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_SAVELINKAS));
 }
 
 #if defined(OS_CHROMEOS)

@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "chrome/updater/app/app.h"
 #include "chrome/updater/app/app_uninstall.h"
-#include "chrome/updater/app/app_update_all.h"
+#include "chrome/updater/app/app_wake.h"
 #include "chrome/updater/configurator.h"
 #include "chrome/updater/constants.h"
 #include "chrome/updater/crash_client.h"
@@ -111,8 +111,8 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
   if (command_line->HasSwitch(kUninstallSwitch))
     return AppUninstallInstance()->Run();
 
-  if (command_line->HasSwitch(kUpdateAppsSwitch)) {
-    return AppUpdateAllInstance()->Run();
+  if (command_line->HasSwitch(kWakeSwitch)) {
+    return AppWakeInstance()->Run();
   }
 
   VLOG(1) << "Unknown command line switch.";

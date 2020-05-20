@@ -44,7 +44,6 @@
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/child_accounts/child_policy_observer.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
-#include "chrome/browser/chromeos/lacros/lacros_loader.h"
 #include "chrome/browser/chromeos/logging.h"
 #include "chrome/browser/chromeos/login/auth/chrome_cryptohome_authenticator.h"
 #include "chrome/browser/chromeos/login/chrome_restart_request.h"
@@ -586,20 +585,6 @@ void UserSessionManager::DelegateDeleted(UserSessionManagerDelegate* delegate) {
 void UserSessionManager::PerformPostUserLoggedInActions() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager->GetLoggedInUsers().size() == 1) {
-    // Always construct LacrosLoader, even if the lacros flag is disabled, so it
-    // can do cleanup work if needed. Unless cros_component_manager() is
-    // nullptr, which can happen in tests.
-    //
-    // The location for this call is very precise. This class can trigger a
-    // browser restart via RestartToApplyPerSessionFlagsIfNeed. LacrosLoader has
-    // to be initialized exactly once, regardless of whether a restart occurs.
-    // Furthermore, it must be initialized after the user is logged in.
-    if (g_browser_process->platform_part()->cros_component_manager()) {
-      lacros_loader_ = std::make_unique<LacrosLoader>(
-          g_browser_process->platform_part()->cros_component_manager());
-      lacros_loader_->Init();
-    }
-
     if (network_portal_detector::IsInitialized()) {
       network_portal_detector::GetInstance()->SetStrategy(
           PortalDetectorStrategy::STRATEGY_ID_SESSION);
@@ -2268,7 +2253,6 @@ bool UserSessionManager::TokenHandlesEnabled() {
 }
 
 void UserSessionManager::Shutdown() {
-  lacros_loader_.reset();
   turn_sync_on_helper_.reset();
   token_handle_fetcher_.reset();
   token_handle_util_.reset();

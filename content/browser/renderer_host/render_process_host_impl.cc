@@ -3130,6 +3130,12 @@ void RenderProcessHostImpl::LockToOrigin(
   NotifyRendererIfLockedToSite();
 }
 
+bool RenderProcessHostImpl::IsLockedToOriginForTesting() {
+  GURL lock_url =
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());
+  return !lock_url.is_empty();
+}
+
 void RenderProcessHostImpl::NotifyRendererIfLockedToSite() {
   GURL lock_url =
       ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(GetID());

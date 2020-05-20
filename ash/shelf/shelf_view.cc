@@ -2073,6 +2073,9 @@ void ShelfView::ShowMenu(std::unique_ptr<ui::SimpleMenuModel> menu_model,
       shelf_->IsHorizontalAlignment() ? views::MenuAnchorPosition::kBubbleAbove
                                       : views::MenuAnchorPosition::kBubbleLeft,
       run_types);
+
+  if (!context_menu_shown_callback_.is_null())
+    context_menu_shown_callback_.Run();
 }
 
 void ShelfView::OnMenuClosed(views::View* source) {

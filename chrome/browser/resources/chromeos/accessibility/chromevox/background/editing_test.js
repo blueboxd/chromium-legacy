@@ -1207,6 +1207,7 @@ TEST_F('ChromeVoxEditingTest', 'BackwardWordDelete', function() {
         const input = root.find({role: RoleType.TEXT_FIELD});
         this.listenOnce(input, 'focus', function() {
           mockFeedback.call(this.press(35 /* end */, {ctrl: true}))
+              .expectSpeech('test')
               .call(this.press(8 /* backspace */, {ctrl: true}))
               .expectSpeech('test, deleted')
               .expectBraille('a\u00a0', {startIndex: 2, endIndex: 2})

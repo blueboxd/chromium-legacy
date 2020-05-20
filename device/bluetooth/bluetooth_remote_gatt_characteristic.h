@@ -175,15 +175,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
       ErrorCallback error_callback) = 0;
 #endif
 
-  // Sends a write request to a remote characteristic with the value |value|
-  // without waiting for a response. This method returns false to signal
-  // failures. When attempting to write the remote characteristic true is
-  // returned without a guarantee of success. This method only applies to remote
-  // characteristics and will fail for those that are locally hosted.
-  // This method is currently implemented only on macOS.
-  // TODO(https://crbug.com/831524): Implement it on other platforms as well.
-  virtual bool WriteWithoutResponse(base::span<const uint8_t> value);
-
  protected:
   using DescriptorMap =
       base::flat_map<std::string,

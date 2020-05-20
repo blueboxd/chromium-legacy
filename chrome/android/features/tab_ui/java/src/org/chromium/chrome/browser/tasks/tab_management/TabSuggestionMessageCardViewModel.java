@@ -11,6 +11,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabListModel.Card
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 
+import org.chromium.chrome.browser.tasks.tab_management.suggestions.TabSuggestion;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.Locale;
@@ -29,8 +30,7 @@ public class TabSuggestionMessageCardViewModel {
     public static PropertyModel create(Context context,
             MessageCardView.DismissActionProvider uiDismissActionProvider,
             TabSuggestionMessageService.TabSuggestionMessageData data) {
-        String descriptionTextTemplate = context.getString(
-                org.chromium.chrome.tab_ui.R.string.tab_suggestion_close_stale_message);
+        String descriptionTextTemplate = getDescriptionTextTemplate(context, data.getActionType());
         String descriptionText = String.format(Locale.getDefault(), "%d", data.getSize());
         String actionText =
                 context.getString(org.chromium.chrome.tab_ui.R.string.tab_suggestion_review_button);
@@ -56,6 +56,21 @@ public class TabSuggestionMessageCardViewModel {
                 .with(CARD_TYPE, MESSAGE)
                 .with(CARD_ALPHA, 1f)
                 .build();
+    }
+
+    private static String getDescriptionTextTemplate(
+            Context context, @TabSuggestion.TabSuggestionAction int suggestionActionType) {
+        switch (suggestionActionType) {
+            case TabSuggestion.TabSuggestionAction.GROUP:
+                return context.getString(
+                        org.chromium.chrome.tab_ui.R.string.tab_suggestion_group_tabs_message);
+            case TabSuggestion.TabSuggestionAction.CLOSE:
+                return context.getString(
+                        org.chromium.chrome.tab_ui.R.string.tab_suggestion_close_stale_message);
+            default:
+                assert false : "Invalid TabSuggestionAction";
+                return "";
+        }
     }
 
     private static Drawable getIconDrawable() {

@@ -1037,4 +1037,105 @@ public class AwContentsTest {
             // expected
         }
     }
+
+    private static final String HELLO_WORLD_URL = "/android_webview/test/data/hello_world.html";
+    private static final String HELLO_WORLD_TITLE = "Hello, World!";
+    private static final String WEBUI_URL = "chrome://safe-browsing";
+    private static final String WEBUI_TITLE = "Safe Browsing";
+
+    // Check that we can navigate between a regular web page and a WebUI page
+    // that's available on AW (chrome://safe-browsing), and that the WebUI page
+    // loads in its own locked renderer process when in multi-process mode.
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @OnlyRunIn(MULTI_PROCESS)
+    public void testWebUIUsesDedicatedProcessInMultiProcessMode() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            final String pageUrl = testServer.getURL(HELLO_WORLD_URL);
+
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            Assert.assertEquals(
+                    HELLO_WORLD_TITLE, mActivityTestRule.getTitleOnUiThread(awContents));
+
+            final AwRenderProcess rendererProcess1 = getRenderProcessOnUiThread(awContents);
+            Assert.assertNotNull(rendererProcess1);
+
+            // Until AW gets site isolation, ordinary web content should not be
+            // locked to origin.
+            boolean isLocked = TestThreadUtils.runOnUiThreadBlocking(
+                    () -> rendererProcess1.isLockedToOriginForTesting());
+            Assert.assertFalse("Initial renderer process should not be locked", isLocked);
+
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), WEBUI_URL);
+            Assert.assertEquals(WEBUI_TITLE, mActivityTestRule.getTitleOnUiThread(awContents));
+
+            final AwRenderProcess webuiProcess = getRenderProcessOnUiThread(awContents);
+            Assert.assertNotEquals(rendererProcess1, webuiProcess);
+            // WebUI pages should be locked to origin even on AW.
+            isLocked = TestThreadUtils.runOnUiThreadBlocking(
+                    () -> webuiProcess.isLockedToOriginForTesting());
+            Assert.assertTrue("WebUI process should be locked", isLocked);
+
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+
+            final AwRenderProcess rendererProcess2 = getRenderProcessOnUiThread(awContents);
+            Assert.assertEquals(
+                    HELLO_WORLD_TITLE, mActivityTestRule.getTitleOnUiThread(awContents));
+            Assert.assertNotEquals(rendererProcess2, webuiProcess);
+            isLocked = TestThreadUtils.runOnUiThreadBlocking(
+                    () -> rendererProcess2.isLockedToOriginForTesting());
+            Assert.assertFalse("Final renderer process should not be locked", isLocked);
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
+    }
+
+    // In single-process mode, navigations to WebUI should work, but WebUI does
+    // not gets process-isolated.
+    @Test
+    @Feature({"AndroidWebView"})
+    @SmallTest
+    @OnlyRunIn(SINGLE_PROCESS)
+    public void testWebUILoadsWithoutProcessIsolationInSingleProcessMode() throws Throwable {
+        AwTestContainerView testView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(mContentsClient);
+        final AwContents awContents = testView.getAwContents();
+
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
+        try {
+            final String pageUrl = testServer.getURL(HELLO_WORLD_URL);
+
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
+            Assert.assertEquals(
+                    HELLO_WORLD_TITLE, mActivityTestRule.getTitleOnUiThread(awContents));
+
+            final AwRenderProcess rendererProcess1 = getRenderProcessOnUiThread(awContents);
+            Assert.assertNull(rendererProcess1);
+
+            mActivityTestRule.loadUrlSync(
+                    awContents, mContentsClient.getOnPageFinishedHelper(), WEBUI_URL);
+            Assert.assertEquals(WEBUI_TITLE, mActivityTestRule.getTitleOnUiThread(awContents));
+
+            final AwRenderProcess webuiProcess = getRenderProcessOnUiThread(awContents);
+            Assert.assertNull(webuiProcess);
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
+    }
 }

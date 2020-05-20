@@ -61,15 +61,17 @@ def MergeTrees(trees):
   return doc
 
 
-def MergeFiles(filenames):
+def MergeFiles(filenames=[], files=[]):
   """Merges a list of histograms.xml files.
 
   Args:
     filenames: A list of histograms.xml filenames.
+    files: A list of histograms.xml file-like objects.
   Returns:
     A merged DOM tree.
   """
-  trees = [xml.dom.minidom.parse(open(f)) for f in filenames]
+  all_files = files + [open(f) for f in filenames]
+  trees = [xml.dom.minidom.parse(f) for f in all_files]
   return MergeTrees(trees)
 
 

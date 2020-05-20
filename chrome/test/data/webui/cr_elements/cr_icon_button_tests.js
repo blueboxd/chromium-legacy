@@ -4,6 +4,7 @@
 
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+// #import 'chrome://resources/cr_elements/icons.m.js';
 
 // #import {downAndUp, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {eventToPromise, flushTasks} from '../test_util.m.js';
@@ -11,6 +12,12 @@
 
 suite('cr-icon-button', function() {
   let button;
+
+  /** @override */
+  suiteSetup(function() {
+    /* #ignore */ return PolymerTest.importHtml(
+        /* #ignore */ 'chrome://resources/cr_elements/icons.html');
+  });
 
   /** @param {string} key */
   function press(key) {
@@ -43,6 +50,16 @@ suite('cr-icon-button', function() {
     button.$$('iron-icon').icon = 'another-icon-key';
     button.ironIcon = '';
     assertFalse(!!button.$$('iron-icon'));
+  });
+
+  test('iron-icon children svg and img elements have role set to none', () => {
+    button.ironIcon = 'cr:clear';
+    assertTrue(!!button.shadowRoot);
+    const ironIcons = button.shadowRoot.querySelectorAll('iron-icon');
+    assertEquals(1, ironIcons.length);
+    const iconChildren = ironIcons[0].shadowRoot.querySelectorAll('svg', 'img');
+    assertEquals(1, iconChildren.length);
+    assertEquals(iconChildren[0].getAttribute('role'), 'none');
   });
 
   test('enter emits click event', async () => {

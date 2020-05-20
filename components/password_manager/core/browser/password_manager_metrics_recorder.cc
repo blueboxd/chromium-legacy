@@ -51,6 +51,14 @@ void PasswordManagerMetricsRecorder::RecordUserModifiedPasswordField() {
   user_modified_password_field_ = true;
 }
 
+void PasswordManagerMetricsRecorder::RecordUserFocusedPasswordField() {
+  if (!user_focused_password_field_ && navigation_metric_recorder_) {
+    navigation_metric_recorder_->OnUserFocusedPasswordFieldFirstTime(
+        main_frame_url_);
+  }
+  user_focused_password_field_ = true;
+}
+
 void PasswordManagerMetricsRecorder::RecordProvisionalSaveFailure(
     ProvisionalSaveFailure failure,
     const GURL& main_frame_url,

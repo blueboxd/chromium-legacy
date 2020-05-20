@@ -107,11 +107,8 @@ AppBrowserController::MaybeCreateWebAppController(Browser* browser) {
       extensions::ExtensionRegistry::Get(browser->profile())
           ->GetExtensionById(app_id, extensions::ExtensionRegistry::EVERYTHING);
   if (extension && extension->is_hosted_app()) {
-    if (base::FeatureList::IsEnabled(
-            features::kDesktopPWAsUnifiedUiController) &&
-        extension->from_bookmark()) {
+    if (extension->from_bookmark())
       return std::make_unique<WebAppBrowserController>(browser);
-    }
     return std::make_unique<extensions::HostedAppBrowserController>(browser);
   }
 #endif

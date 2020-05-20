@@ -9,10 +9,12 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/scoped_animation_disabler.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test_shell_delegate.h"
+#include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller_test_api.h"
 #include "base/containers/flat_map.h"
@@ -66,9 +68,17 @@ class TabDragDropDelegateTest : public AshTestBase {
     mock_shell_delegate_ = mock_shell_delegate.get();
     AshTestBase::SetUp(std::move(mock_shell_delegate));
     ash::TabletModeControllerTestApi().EnterTabletMode();
+
+    // Create a dummy window and exit overview mode since drags can't be
+    // initiated from overview mode.
+    dummy_window_ = CreateToplevelTestWindow();
+    ASSERT_TRUE(Shell::Get()->overview_controller()->EndOverview());
   }
 
   void TearDown() override {
+    // Must be deleted before AshTestBase's tear down.
+    dummy_window_.reset();
+
     // Clear our pointer before the object is destroyed.
     mock_shell_delegate_ = nullptr;
     AshTestBase::TearDown();
@@ -79,6 +89,8 @@ class TabDragDropDelegateTest : public AshTestBase {
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   NiceMock<MockShellDelegate>* mock_shell_delegate_ = nullptr;
+
+  std::unique_ptr<aura::Window> dummy_window_;
 };
 
 TEST_F(TabDragDropDelegateTest, ForwardsDragCheckToShellDelegate) {
@@ -91,16 +103,15 @@ TEST_F(TabDragDropDelegateTest, ForwardsDragCheckToShellDelegate) {
 
 TEST_F(TabDragDropDelegateTest, DragToExistingTabStrip) {
   // Create a fake source window. Its details don't matter.
-  aura::Window* const source_window =
-      CreateTestWindowInShellWithBounds(gfx::Rect(0, 0, 1, 1));
+  std::unique_ptr<aura::Window> source_window = CreateToplevelTestWindow();
 
   // A new window shouldn't be created in this case.
   EXPECT_CALL(*mock_shell_delegate(), CreateBrowserForTabDrop(_, _)).Times(0);
 
   // Emulate a drag session whose drop target accepts the drop. In this
   // case, TabDragDropDelegate::Drop() is not called.
-  TabDragDropDelegate delegate(Shell::GetPrimaryRootWindow(), source_window,
-                               gfx::Point(0, 0));
+  TabDragDropDelegate delegate(Shell::GetPrimaryRootWindow(),
+                               source_window.get(), gfx::Point(0, 0));
   delegate.DragUpdate(gfx::Point(1, 0));
   delegate.DragUpdate(gfx::Point(2, 0));
 
@@ -143,6 +154,11 @@ TEST_F(TabDragDropDelegateTest, DropOnEdgeEntersSplitView) {
   // since we're in tablet mode.
   std::unique_ptr<aura::Window> source_window = CreateToplevelTestWindow();
 
+  // We want to avoid entering overview mode between the delegate.Drop()
+  // call and |new_window|'s destruction. So we define it here before
+  // creating it.
+  std::unique_ptr<aura::Window> new_window;
+
   // Emulate a drag to the right edge of the screen.
   const gfx::Point drag_start_location = source_window->bounds().CenterPoint();
   const gfx::Point drag_end_location =
@@ -155,7 +171,7 @@ TEST_F(TabDragDropDelegateTest, DropOnEdgeEntersSplitView) {
   delegate.DragUpdate(drag_start_location);
   delegate.DragUpdate(drag_end_location);
 
-  std::unique_ptr<aura::Window> new_window = CreateToplevelTestWindow();
+  new_window = CreateToplevelTestWindow();
   EXPECT_CALL(*mock_shell_delegate(),
               CreateBrowserForTabDrop(source_window.get(), _))
       .Times(1)
@@ -170,6 +186,85 @@ TEST_F(TabDragDropDelegateTest, DropOnEdgeEntersSplitView) {
                                   SplitViewController::SnapPosition::RIGHT));
   EXPECT_EQ(source_window.get(), split_view_controller->GetSnappedWindow(
                                      SplitViewController::SnapPosition::LEFT));
+}
+
+TEST_F(TabDragDropDelegateTest, SourceWindowBoundsUpdatedWhileDragging) {
+  // Create the source window. This should automatically fill the work area
+  // since we're in tablet mode.
+  std::unique_ptr<aura::Window> source_window = CreateToplevelTestWindow();
+  const gfx::Rect original_bounds = source_window->bounds();
+
+  // Drag a few pixels away to trigger window scaling, then to the
+  // screen edge to visually snap the source window.
+  const gfx::Point drag_start_location = source_window->bounds().CenterPoint();
+  const gfx::Point drag_mid_location =
+      drag_start_location + gfx::Vector2d(10, 0);
+  const gfx::Point drag_end_location =
+      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
+          source_window.get())
+          .left_center();
+
+  {
+    TabDragDropDelegate delegate(Shell::GetPrimaryRootWindow(),
+                                 source_window.get(), drag_start_location);
+    delegate.DragUpdate(drag_start_location);
+    delegate.DragUpdate(drag_mid_location);
+
+    // |source_window| should be shrunk in all directions
+    EXPECT_GT(source_window->bounds().x(), original_bounds.x());
+    EXPECT_GT(source_window->bounds().y(), original_bounds.y());
+    EXPECT_LT(source_window->bounds().right(), original_bounds.right());
+    EXPECT_LT(source_window->bounds().bottom(), original_bounds.bottom());
+
+    delegate.DragUpdate(drag_end_location);
+
+    // |source_window| should appear in the snapped position, but not
+    // actually be snapped.
+    SplitViewController* const split_view_controller =
+        SplitViewController::Get(source_window.get());
+    EXPECT_EQ(
+        source_window->bounds(),
+        split_view_controller->GetSnappedWindowBoundsInParent(
+            SplitViewController::SnapPosition::RIGHT, source_window.get()));
+    EXPECT_FALSE(split_view_controller->InSplitViewMode());
+  }
+
+  // The original bounds should be restored.
+  EXPECT_EQ(source_window->bounds(), original_bounds);
+}
+
+TEST_F(TabDragDropDelegateTest, SnappedSourceWindowNotMoved) {
+  // Create the source window. This should automatically fill the work area
+  // since we're in tablet mode.
+  std::unique_ptr<aura::Window> source_window = CreateToplevelTestWindow();
+
+  SplitViewController* const split_view_controller =
+      SplitViewController::Get(source_window.get());
+  SplitViewController::SnapPosition const snap_position =
+      SplitViewController::SnapPosition::LEFT;
+  split_view_controller->SnapWindow(source_window.get(), snap_position);
+  const gfx::Rect original_bounds = source_window->bounds();
+
+  const gfx::Point drag_start_location = source_window->bounds().CenterPoint();
+  const gfx::Point drag_end_location =
+      drag_start_location + gfx::Vector2d(10, 0);
+
+  {
+    TabDragDropDelegate delegate(Shell::GetPrimaryRootWindow(),
+                                 source_window.get(), drag_start_location);
+    delegate.DragUpdate(drag_start_location);
+    delegate.DragUpdate(drag_end_location);
+
+    // |source_window| should remain snapped and it's bounds should not change.
+    EXPECT_EQ(source_window.get(),
+              split_view_controller->GetSnappedWindow(snap_position));
+    EXPECT_EQ(original_bounds, source_window->bounds());
+  }
+
+  // Everything should still be the same after the drag ends.
+  EXPECT_EQ(source_window.get(),
+            split_view_controller->GetSnappedWindow(snap_position));
+  EXPECT_EQ(original_bounds, source_window->bounds());
 }
 
 }  // namespace ash

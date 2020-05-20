@@ -43,7 +43,7 @@ class BulletView : public views::View {
     path.addCircle(GetLocalBounds().CenterPoint().x(),
                    GetLocalBounds().CenterPoint().y(), radius_);
     cc::PaintFlags flags;
-    flags.setStyle(cc::PaintFlags::kStrokeAndFill_Style);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setColor(color_);
     flags.setAntiAlias(true);
 

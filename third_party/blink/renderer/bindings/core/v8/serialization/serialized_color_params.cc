@@ -19,9 +19,6 @@ SerializedColorParams::SerializedColorParams(CanvasColorParams color_params) {
     case CanvasColorSpace::kSRGB:
       color_space_ = SerializedColorSpace::kSRGB;
       break;
-    case CanvasColorSpace::kLinearRGB:
-      color_space_ = SerializedColorSpace::kLinearRGB;
-      break;
     case CanvasColorSpace::kRec2020:
       color_space_ = SerializedColorSpace::kRec2020;
       break;
@@ -82,9 +79,6 @@ CanvasColorParams SerializedColorParams::GetCanvasColorParams() const {
     case SerializedColorSpace::kLegacyObsolete:
     case SerializedColorSpace::kSRGB:
       color_space = CanvasColorSpace::kSRGB;
-      break;
-    case SerializedColorSpace::kLinearRGB:
-      color_space = CanvasColorSpace::kLinearRGB;
       break;
     case SerializedColorSpace::kRec2020:
       color_space = CanvasColorSpace::kRec2020;

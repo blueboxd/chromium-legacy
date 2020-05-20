@@ -373,7 +373,8 @@ html[dir=rtl] .image-container {
   background-color: var(--search-box-results-bg-hovered, rgb(232, 232, 233));
 }
 
-#realbox-matches a:-webkit-any(:focus-within, .selected) {
+#realbox-matches a:not(.header):-webkit-any(:focus-within, .selected),
+#realbox-matches a.header:focus-within:not(:focus) {
   background-color: var(--search-box-results-bg-selected, rgb(219, 219, 220));
   color: var(--search-box-results-text-selected, rgb(var(--GG900-rgb)));
 }
@@ -401,6 +402,7 @@ html[dir=rtl] .image-container {
 #realbox-matches .remove-match {
   border-radius: 50%;
   height: 24px;
+  outline: none;
   position: absolute;
   right: 16px;
   top: 4px;

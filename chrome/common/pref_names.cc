@@ -264,9 +264,9 @@ const char kDefaultCharset[] = "intl.charset_default";
 // If these change, the corresponding enums in the extension API
 // experimental.fontSettings.json must also change.
 const char* const kWebKitScriptsForFontFamilyMaps[] = {
-#define EXPAND_SCRIPT_FONT(x, script_name) script_name ,
+#define EXPAND_SCRIPT_FONT(x, script_name) script_name,
 #include "chrome/common/pref_font_script_names-inl.h"
-ALL_FONT_SCRIPTS("unused param")
+    ALL_FONT_SCRIPTS("unused param")
 #undef EXPAND_SCRIPT_FONT
 };
 
@@ -276,28 +276,19 @@ const size_t kWebKitScriptsForFontFamilyMapsLength =
 // Strings for WebKit font family preferences. If these change, the pref prefix
 // in pref_names_util.cc and the pref format in font_settings_api.cc must also
 // change.
-const char kWebKitStandardFontFamilyMap[] =
-    WEBKIT_WEBPREFS_FONTS_STANDARD;
-const char kWebKitFixedFontFamilyMap[] =
-    WEBKIT_WEBPREFS_FONTS_FIXED;
-const char kWebKitSerifFontFamilyMap[] =
-    WEBKIT_WEBPREFS_FONTS_SERIF;
-const char kWebKitSansSerifFontFamilyMap[] =
-    WEBKIT_WEBPREFS_FONTS_SANSERIF;
-const char kWebKitCursiveFontFamilyMap[] =
-    WEBKIT_WEBPREFS_FONTS_CURSIVE;
-const char kWebKitFantasyFontFamilyMap[] =
-    WEBKIT_WEBPREFS_FONTS_FANTASY;
-const char kWebKitPictographFontFamilyMap[] =
-    WEBKIT_WEBPREFS_FONTS_PICTOGRAPH;
+const char kWebKitStandardFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_STANDARD;
+const char kWebKitFixedFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_FIXED;
+const char kWebKitSerifFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_SERIF;
+const char kWebKitSansSerifFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_SANSERIF;
+const char kWebKitCursiveFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_CURSIVE;
+const char kWebKitFantasyFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_FANTASY;
+const char kWebKitPictographFontFamilyMap[] = WEBKIT_WEBPREFS_FONTS_PICTOGRAPH;
 const char kWebKitStandardFontFamilyArabic[] =
     "webkit.webprefs.fonts.standard.Arab";
 #if defined(OS_WIN)
-const char kWebKitFixedFontFamilyArabic[] =
-    "webkit.webprefs.fonts.fixed.Arab";
+const char kWebKitFixedFontFamilyArabic[] = "webkit.webprefs.fonts.fixed.Arab";
 #endif
-const char kWebKitSerifFontFamilyArabic[] =
-    "webkit.webprefs.fonts.serif.Arab";
+const char kWebKitSerifFontFamilyArabic[] = "webkit.webprefs.fonts.serif.Arab";
 const char kWebKitSansSerifFontFamilyArabic[] =
     "webkit.webprefs.fonts.sansserif.Arab";
 #if defined(OS_WIN)
@@ -311,10 +302,8 @@ const char kWebKitSansSerifFontFamilyCyrillic[] =
     "webkit.webprefs.fonts.sansserif.Cyrl";
 const char kWebKitStandardFontFamilyGreek[] =
     "webkit.webprefs.fonts.standard.Grek";
-const char kWebKitFixedFontFamilyGreek[] =
-    "webkit.webprefs.fonts.fixed.Grek";
-const char kWebKitSerifFontFamilyGreek[] =
-    "webkit.webprefs.fonts.serif.Grek";
+const char kWebKitFixedFontFamilyGreek[] = "webkit.webprefs.fonts.fixed.Grek";
+const char kWebKitSerifFontFamilyGreek[] = "webkit.webprefs.fonts.serif.Grek";
 const char kWebKitSansSerifFontFamilyGreek[] =
     "webkit.webprefs.fonts.sansserif.Grek";
 #endif
@@ -328,10 +317,8 @@ const char kWebKitSansSerifFontFamilyJapanese[] =
     "webkit.webprefs.fonts.sansserif.Jpan";
 const char kWebKitStandardFontFamilyKorean[] =
     "webkit.webprefs.fonts.standard.Hang";
-const char kWebKitFixedFontFamilyKorean[] =
-    "webkit.webprefs.fonts.fixed.Hang";
-const char kWebKitSerifFontFamilyKorean[] =
-    "webkit.webprefs.fonts.serif.Hang";
+const char kWebKitFixedFontFamilyKorean[] = "webkit.webprefs.fonts.fixed.Hang";
+const char kWebKitSerifFontFamilyKorean[] = "webkit.webprefs.fonts.serif.Hang";
 const char kWebKitSansSerifFontFamilyKorean[] =
     "webkit.webprefs.fonts.sansserif.Hang";
 #if defined(OS_WIN)
@@ -597,8 +584,7 @@ const char kLanguageShouldMergeInputMethods[] =
 
 // A boolean pref that causes top-row keys to be interpreted as function keys
 // instead of as media keys.
-const char kLanguageSendFunctionKeys[] =
-    "settings.language.send_function_keys";
+const char kLanguageSendFunctionKeys[] = "settings.language.send_function_keys";
 
 // A boolean pref which turns on Advanced Filesystem
 // (USB support, SD card, etc).
@@ -1536,8 +1522,7 @@ const char kWebRTCMultipleRoutesEnabled[] = "webrtc.multiple_routes_enabled";
 // proxy is configured, it will not send UDP.  If true, WebRTC will send UDP
 // regardless of whether or not a proxy is configured. TODO(guoweis): Remove
 // this at M50.
-const char kWebRTCNonProxiedUdpEnabled[] =
-    "webrtc.nonproxied_udp_enabled";
+const char kWebRTCNonProxiedUdpEnabled[] = "webrtc.nonproxied_udp_enabled";
 // Define the IP handling policy override that WebRTC should follow. When not
 // set, it defaults to "default".
 const char kWebRTCIPHandlingPolicy[] = "webrtc.ip_handling_policy";
@@ -1707,12 +1692,10 @@ const char kSelectFileLastDirectory[] = "selectfile.last_directory";
 const char kAllowFileSelectionDialogs[] = "select_file_dialogs.allowed";
 
 // Map of default tasks, associated by MIME type.
-const char kDefaultTasksByMimeType[] =
-    "filebrowser.tasks.default_by_mime_type";
+const char kDefaultTasksByMimeType[] = "filebrowser.tasks.default_by_mime_type";
 
 // Map of default tasks, associated by file suffix.
-const char kDefaultTasksBySuffix[] =
-    "filebrowser.tasks.default_by_suffix";
+const char kDefaultTasksBySuffix[] = "filebrowser.tasks.default_by_suffix";
 
 // A flag to enable/disable the Shared Clipboard feature which enables users to
 // send text across devices.
@@ -2232,7 +2215,6 @@ const char kCustomizationDefaultWallpaperURL[] =
 // This is saved to file and cleared after chrome process starts.
 const char kLogoutStartedLast[] = "chromeos.logout-started";
 
-
 // A boolean preference controlling Android status reporting.
 const char kReportArcStatusEnabled[] = "arc.status_reporting_enabled";
 
@@ -2449,12 +2431,12 @@ const char kUserRemovedLoginItem[] = "background_mode.user_removed_login_item";
 // Set to true if Chrome already created a login item, so there's no need to
 // create another one.
 const char kChromeCreatedLoginItem[] =
-  "background_mode.chrome_created_login_item";
+    "background_mode.chrome_created_login_item";
 
 // Set to true once we've initialized kChromeCreatedLoginItem for the first
 // time.
 const char kMigratedLoginItemPref[] =
-  "background_mode.migrated_login_item_pref";
+    "background_mode.migrated_login_item_pref";
 
 // A boolean that tracks whether to show a notification when trying to quit
 // while there are apps running.
@@ -2467,19 +2449,19 @@ const char kBackgroundModeEnabled[] = "background_mode.enabled";
 
 // Set to true if hardware acceleration mode is enabled on this browser.
 const char kHardwareAccelerationModeEnabled[] =
-  "hardware_acceleration_mode.enabled";
+    "hardware_acceleration_mode.enabled";
 
 // Hardware acceleration mode from previous browser launch.
 const char kHardwareAccelerationModePrevious[] =
-  "hardware_acceleration_mode_previous";
+    "hardware_acceleration_mode_previous";
 
 // List of protocol handlers.
 const char kRegisteredProtocolHandlers[] =
-  "custom_handlers.registered_protocol_handlers";
+    "custom_handlers.registered_protocol_handlers";
 
 // List of protocol handlers the user has requested not to be asked about again.
 const char kIgnoredProtocolHandlers[] =
-  "custom_handlers.ignored_protocol_handlers";
+    "custom_handlers.ignored_protocol_handlers";
 
 // List of protocol handlers registered by policy.
 const char kPolicyRegisteredProtocolHandlers[] =
@@ -2612,6 +2594,13 @@ const char kSigninAllowedOnNextStartup[] = "signin.allowed_on_next_startup";
 //       constant contains "easy_unlock".
 const char kCryptAuthDeviceId[] = "easy_unlock.device_id";
 
+// The most recently retrieved Instance ID and Instance ID token for the app ID,
+// "com.google.chrome.cryptauth", used by the CryptAuth client. These prefs are
+// used to track how often (if ever) the Instance ID and Instance ID token
+// rotate because CryptAuth assumes the Instance ID is static.
+const char kCryptAuthInstanceId[] = "cryptauth.instance_id";
+const char kCryptAuthInstanceIdToken[] = "cryptauth.instance_id_token";
+
 // A dictionary that maps user id to hardlock state.
 const char kEasyUnlockHardlockState[] = "easy_unlock.hardlock_state";
 
@@ -2662,8 +2651,7 @@ const char kSecurityKeyPermitAttestation[] = "securitykey.permit_attestation";
 
 const char kBackgroundTracingLastUpload[] = "background_tracing.last_upload";
 
-const char kAllowDinosaurEasterEgg[] =
-    "allow_dinosaur_easter_egg";
+const char kAllowDinosaurEasterEgg[] = "allow_dinosaur_easter_egg";
 
 #if defined(OS_ANDROID)
 // Whether the update menu item was clicked. Used to facilitate logging whether

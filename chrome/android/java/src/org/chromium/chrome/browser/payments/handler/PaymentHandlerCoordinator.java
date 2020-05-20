@@ -22,6 +22,8 @@ import org.chromium.chrome.browser.thinwebview.ThinWebViewFactory;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.SelectionClient;
+import org.chromium.content_public.browser.SelectionPopupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.ViewAndroidDelegate;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -80,11 +82,7 @@ public class PaymentHandlerCoordinator {
 
         mWebContents = WebContentsFactory.createWebContents(isIncognito, /*initiallyHidden=*/false);
         ContentView webContentView = ContentView.createContentView(activity, mWebContents);
-        mWebContents.initialize(ChromeVersionInfo.getProductVersion(),
-                ViewAndroidDelegate.createBasicDelegate(webContentView), webContentView,
-                activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
-        webContentsObserver.onWebContentsInitialized(mWebContents);
-        mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.getSpec()));
+        initializeWebContents(activity, webContentView, webContentsObserver, url);
 
         mToolbarCoordinator = new PaymentHandlerToolbarCoordinator(activity, mWebContents, url);
 
@@ -122,6 +120,21 @@ public class PaymentHandlerCoordinator {
             mWebContents.destroy();
         };
         return bottomSheetController.requestShowContent(view, /*animate=*/true);
+    }
+
+    private void initializeWebContents(ChromeActivity activity, ContentView webContentView,
+            PaymentHandlerWebContentsObserver webContentsObserver, GURL url) {
+        mWebContents.initialize(ChromeVersionInfo.getProductVersion(),
+                ViewAndroidDelegate.createBasicDelegate(webContentView), webContentView,
+                activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
+
+        SelectionPopupController controller =
+                SelectionPopupController.fromWebContents(mWebContents);
+        controller.setActionModeCallback(new PaymentHandlerActionModeCallback(mWebContents));
+        controller.setSelectionClient(SelectionClient.createSmartSelectionClient(mWebContents));
+
+        webContentsObserver.onWebContentsInitialized(mWebContents);
+        mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url.getSpec()));
     }
 
     // TODO(crbug.com/1059269): This approach introduces coupling by assuming BottomSheet toolbar's

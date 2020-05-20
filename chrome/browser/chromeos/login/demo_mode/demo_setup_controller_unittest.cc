@@ -18,7 +18,7 @@
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
-#include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
+#include "chrome/browser/chromeos/policy/enrollment_requisition_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/common/pref_names.h"
@@ -121,7 +121,7 @@ class DemoSetupControllerTest : public testing::Test {
     TestingBrowserProcess::GetGlobal()
         ->platform_part()
         ->browser_policy_connector_chromeos()
-        ->GetDeviceCloudPolicyManager()
+        ->GetEnrollmentRequisitionManager()
         ->Initialize(TestingBrowserProcess::GetGlobal()->local_state());
     helper_ = std::make_unique<DemoSetupControllerTestHelper>();
     tested_controller_ = std::make_unique<DemoSetupController>();
@@ -139,7 +139,7 @@ class DemoSetupControllerTest : public testing::Test {
     return TestingBrowserProcess::GetGlobal()
         ->platform_part()
         ->browser_policy_connector_chromeos()
-        ->GetDeviceCloudPolicyManager()
+        ->GetEnrollmentRequisitionManager()
         ->GetDeviceRequisition();
   }
 

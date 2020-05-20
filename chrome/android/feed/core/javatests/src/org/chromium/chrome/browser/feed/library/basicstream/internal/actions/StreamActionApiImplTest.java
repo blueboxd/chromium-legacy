@@ -297,7 +297,7 @@ public class StreamActionApiImplTest {
         String contentId = "contentId";
         mStreamActionApi.reportClickAction(contentId, ACTION_PAYLOAD);
 
-        verify(mActionManager).createAndStoreAction(contentId, ACTION_PAYLOAD);
+        verify(mActionManager).createAndUploadAction(contentId, ACTION_PAYLOAD);
     }
 
     @Test
@@ -305,7 +305,8 @@ public class StreamActionApiImplTest {
     public void testNoReportClickAction_withoutFeature() {
         mStreamActionApi.reportClickAction("contentId", ACTION_PAYLOAD);
 
-        verify(mActionManager, never()).createAndStoreAction(anyString(), any(ActionPayload.class));
+        verify(mActionManager, never())
+                .createAndUploadAction(anyString(), any(ActionPayload.class));
     }
 
     @Test

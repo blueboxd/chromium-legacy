@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "build/build_config.h"
@@ -197,20 +198,31 @@ class NavigationPasswordMetricsRecorder
   explicit NavigationPasswordMetricsRecorder(content::WebContents* web_contents)
       : web_contents_(web_contents) {}
 
+  void OnUserFocusedPasswordFieldFirstTime(
+      const GURL& main_frame_url) override {
+    RecordEngagementLevel(main_frame_url,
+                          "Security.PasswordFocus.SiteEngagementLevel");
+  }
+
   void OnUserModifiedPasswordFieldFirstTime(
       const GURL& main_frame_url) override {
+    RecordEngagementLevel(main_frame_url,
+                          "Security.PasswordEntry.SiteEngagementLevel");
+  }
+
+ private:
+  void RecordEngagementLevel(const GURL& main_frame_url,
+                             const char* histogram_name) {
     if (main_frame_url.SchemeIsHTTPOrHTTPS()) {
       SiteEngagementService* site_engagement_service =
           SiteEngagementService::Get(
               Profile::FromBrowserContext(web_contents_->GetBrowserContext()));
       blink::mojom::EngagementLevel engagement_level =
           site_engagement_service->GetEngagementLevel(main_frame_url);
-      UMA_HISTOGRAM_ENUMERATION("Security.PasswordEntry.SiteEngagementLevel",
-                                engagement_level);
+      base::UmaHistogramEnumeration(histogram_name, engagement_level);
     }
   }
 
- private:
   content::WebContents* web_contents_;
 };
 

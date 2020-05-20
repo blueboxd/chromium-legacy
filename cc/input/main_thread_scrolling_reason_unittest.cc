@@ -23,7 +23,6 @@ TEST_F(MainThreadScrollingReasonTest, AsText) {
       "Background is not opaque in rect and LCD text, "
       "Can't paint scrolling background, "
       "Has clip related property, "
-      "Is not stacking context and LCD text, "
       "Non fast scrollable region, "
       "Failed hit test, "
       "No scrolling layer, "

@@ -80,6 +80,36 @@ void CastActivityManager::LaunchSession(
     bool incognito,
     mojom::MediaRouteProvider::CreateRouteCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (cast_source.app_params().empty()) {
+    LaunchSessionParsed(cast_source, sink, presentation_id, origin, tab_id,
+                        incognito, std::move(callback),
+                        data_decoder::DataDecoder::ValueOrError());
+  } else {
+    GetDataDecoder().ParseJson(
+        cast_source.app_params(),
+        base::BindOnce(&CastActivityManager::LaunchSessionParsed,
+                       weak_ptr_factory_.GetWeakPtr(), cast_source, sink,
+                       presentation_id, origin, tab_id, incognito,
+                       std::move(callback)));
+  }
+}
+
+void CastActivityManager::LaunchSessionParsed(
+    const CastMediaSource& cast_source,
+    const MediaSinkInternal& sink,
+    const std::string& presentation_id,
+    const url::Origin& origin,
+    int tab_id,
+    bool incognito,
+    mojom::MediaRouteProvider::CreateRouteCallback callback,
+    data_decoder::DataDecoder::ValueOrError result) {
+  if (!cast_source.app_params().empty() && result.error) {
+    DVLOG(1) << "Error parsing JSON data in appParams" << *result.error;
+    std::move(callback).Run(
+        base::nullopt, nullptr, std::string("Invalid JSON Format of appParams"),
+        RouteRequestResult::ResultCode::NO_SUPPORTED_PROVIDER);
+    return;
+  }
 
   // If the sink is already associated with a route, then it will be removed
   // when the receiver sends an updated RECEIVER_STATUS message.
@@ -101,7 +131,7 @@ void CastActivityManager::LaunchSession(
   DVLOG(1) << "LaunchSession: source_id=" << cast_source.source_id()
            << ", route_id: " << route_id << ", sink_id=" << sink_id;
   DoLaunchSessionParams params(route, cast_source, sink, origin, tab_id,
-                               std::move(callback));
+                               std::move(result.value), std::move(callback));
   // If there is currently a session on the sink, it must be terminated before
   // the new session can be launched.
   auto it = std::find_if(
@@ -163,7 +193,7 @@ void CastActivityManager::DoLaunchSession(DoLaunchSessionParams params) {
   }
   message_handler_->LaunchSession(
       sink.cast_data().cast_channel_id, app_id, launch_timeout, type_str,
-      cast_source.app_params(),
+      params.app_params,
       base::BindOnce(&CastActivityManager::HandleLaunchSessionResponse,
                      weak_ptr_factory_.GetWeakPtr(), route_id, sink,
                      cast_source));
@@ -755,13 +785,17 @@ CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
     const MediaSinkInternal& sink,
     const url::Origin& origin,
     int tab_id,
+    const base::Optional<base::Value> app_params,
     mojom::MediaRouteProvider::CreateRouteCallback callback)
     : route(route),
       cast_source(cast_source),
       sink(sink),
       origin(origin),
       tab_id(tab_id),
-      callback(std::move(callback)) {}
+      callback(std::move(callback)) {
+  if (app_params)
+    this->app_params = app_params->Clone();
+}
 
 CastActivityManager::DoLaunchSessionParams::DoLaunchSessionParams(
     DoLaunchSessionParams&& other) = default;

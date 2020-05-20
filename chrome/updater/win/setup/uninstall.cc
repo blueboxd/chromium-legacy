@@ -81,7 +81,7 @@ int Uninstall(bool is_machine) {
       std::make_unique<base::win::ScopedCOMInitializer>(
           base::win::ScopedCOMInitializer::kMTA);
 
-  updater::UnregisterUpdateAppsTask();
+  updater::UnregisterWakeTask();
 
   std::unique_ptr<WorkItemList> uninstall_list(WorkItem::CreateWorkItemList());
   uninstall_list->AddDeleteRegKeyWorkItem(key, base::ASCIIToUTF16(UPDATER_KEY),

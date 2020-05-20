@@ -19,8 +19,8 @@ class FilePath;
 
 namespace updater {
 
-bool RegisterUpdateAppsTask(const base::CommandLine& run_command);
-void UnregisterUpdateAppsTask();
+bool RegisterWakeTask(const base::CommandLine& run_command);
+void UnregisterWakeTask();
 
 base::string16 GetComServerClsidRegistryPath(REFCLSID clsid);
 base::string16 GetComServiceClsid();

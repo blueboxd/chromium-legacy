@@ -94,6 +94,8 @@ bindings_core_generated_union_type_files = [
   "$bindings_core_v8_output_dir/string_or_trusted_html_or_trusted_script_or_trusted_script_url.h",
   "$bindings_core_v8_output_dir/string_or_trusted_script.cc",
   "$bindings_core_v8_output_dir/string_or_trusted_script.h",
+  "$bindings_core_v8_output_dir/string_or_trusted_script_url.cc",
+  "$bindings_core_v8_output_dir/string_or_trusted_script_url.h",
   "$bindings_core_v8_output_dir/string_or_unrestricted_double_sequence.cc",
   "$bindings_core_v8_output_dir/string_or_unrestricted_double_sequence.h",
   "$bindings_core_v8_output_dir/string_or_worker_options.cc",

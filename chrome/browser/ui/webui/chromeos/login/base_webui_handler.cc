@@ -41,8 +41,6 @@ void BaseWebUIHandler::ShowScreen(OobeScreenId screen) {
 
 void BaseWebUIHandler::ShowScreenWithData(OobeScreenId screen,
                                           const base::DictionaryValue* data) {
-  if (!web_ui())
-    return;
   base::DictionaryValue screen_params;
   screen_params.SetString("id", screen.name);
   if (data) {

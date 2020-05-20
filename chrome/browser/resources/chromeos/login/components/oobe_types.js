@@ -136,6 +136,15 @@ OobeTypes.SecurityTokenPinDialogErrorType = {
 OobeTypes.SecurityTokenPinDialogParameters;
 
 /**
+ * Event sent from inner webview to enclosing Recommended apps screen.
+ * @typedef {{
+ *   type: (string|undefined),
+ *   numOfSelected: number,
+ * }}
+ */
+OobeTypes.RecommendedAppsSelectionEventData;
+
+/**
  * Specifies the mechanism for calculating oobe-dialog inner padding.
  * @enum {string}
  */

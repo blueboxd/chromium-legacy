@@ -11,9 +11,9 @@ import android.os.Build;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mockito;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.util.ReflectionHelpers;
@@ -21,20 +21,23 @@ import org.robolectric.util.ReflectionHelpers;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.components.signin.AccountManagerDelegate;
-import org.chromium.components.signin.AccountManagerDelegateException;
-import org.chromium.components.signin.AccountManagerFacadeImpl;
-import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Tests the class {@link ToSAckedReceiver}.
+ */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class ToSAckedReceiverTest {
     private static final String GOOGLE_ACCOUNT = "TestyMcTesterson@gmail.com";
 
     private ToSAckedReceiver mReceiver;
+
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     @Before
     public void setUp() {
@@ -49,7 +52,7 @@ public class ToSAckedReceiverTest {
     }
 
     @Test
-    public void testReceivedToSPing() throws AccountManagerDelegateException {
+    public void testReceivedToSPing() {
         Intent intent = new Intent();
         intent.putExtra(ToSAckedReceiver.EXTRA_ACCOUNT_NAME, GOOGLE_ACCOUNT);
 
@@ -58,13 +61,7 @@ public class ToSAckedReceiverTest {
         Set<String> toSAckedAccounts = SharedPreferencesManager.getInstance().readStringSet(
                 ChromePreferenceKeys.TOS_ACKED_ACCOUNTS, new HashSet<>());
         Assert.assertThat(toSAckedAccounts, Matchers.contains(GOOGLE_ACCOUNT));
-
-        AccountManagerDelegate accountManagerDelegate = Mockito.mock(AccountManagerDelegate.class);
-        Account[] accounts = new Account[1];
-        accounts[0] = new Account(GOOGLE_ACCOUNT, "LegitAccount");
-        Mockito.doReturn(accounts).when(accountManagerDelegate).getAccountsSync();
-        AccountManagerFacadeProvider.setInstanceForTests(
-                new AccountManagerFacadeImpl(accountManagerDelegate));
+        mAccountManagerTestRule.addAccount(new Account(GOOGLE_ACCOUNT, "LegitAccount"));
         Assert.assertTrue(ToSAckedReceiver.checkAnyUserHasSeenToS());
     }
 }

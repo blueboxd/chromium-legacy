@@ -23,7 +23,9 @@ namespace test {
 
 class TestConditionWaiter;
 
-// Utility class for tests that allows us to evalute and check JavaScript
+using UIPath = std::initializer_list<base::StringPiece>;
+
+// Utility class for tests that allows us to evaluate and check JavaScript
 // expressions inside given web contents. All calls are made synchronously.
 class JSChecker {
  public:

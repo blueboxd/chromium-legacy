@@ -81,6 +81,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // WaylandWindowObserver implements:
   void OnWindowAdded(WaylandWindow* window) override;
   void OnWindowRemoved(WaylandWindow* window) override;
+  void OnWindowConfigured(WaylandWindow* window) override;
 
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);

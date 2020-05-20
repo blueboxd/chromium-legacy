@@ -4,13 +4,16 @@
 
 package org.chromium.components.signin.test.util;
 
+import android.accounts.Account;
+
+import androidx.annotation.Nullable;
+
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.ThreadUtils;
-import org.chromium.components.signin.AccountManagerFacadeImpl;
 import org.chromium.components.signin.AccountManagerFacadeProvider;
+import org.chromium.components.signin.AccountUtils;
 import org.chromium.components.signin.ProfileDataSource;
 
 import java.lang.annotation.ElementType;
@@ -22,24 +25,25 @@ import java.lang.annotation.Target;
  * JUnit4 rule for overriding behaviour of {@link AccountManagerFacade} for tests.
  */
 public class AccountManagerTestRule implements TestRule {
-    private FakeAccountManagerDelegate mDelegate;
-    private @FakeAccountManagerDelegate.ProfileDataSourceFlag int mProfileDataSourceFlag;
+    private final FakeAccountManagerFacade mFakeAccountManagerFacade;
 
     /**
      * Test method annotation signaling that the account population should be blocked until {@link
      * #unblockGetAccountsAndWaitForAccountsPopulated()} is called.
+     *
+     * TODO(https://crbug.com/1078342) Cleanup this interface
+     * We should be able to mock isCachePopulated to simulate signin promo shown status.
      */
     @Target(ElementType.METHOD)
     @Retention(RetentionPolicy.RUNTIME)
     public @interface BlockGetAccounts {}
 
-    public AccountManagerTestRule() {
-        this(FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
+    public AccountManagerTestRule(@Nullable FakeProfileDataSource fakeProfileDataSource) {
+        mFakeAccountManagerFacade = new FakeAccountManagerFacade(fakeProfileDataSource);
     }
 
-    public AccountManagerTestRule(
-            @FakeAccountManagerDelegate.ProfileDataSourceFlag int profileDataSourceFlag) {
-        mProfileDataSourceFlag = profileDataSourceFlag;
+    public AccountManagerTestRule() {
+        this(null);
     }
 
     @Override
@@ -47,16 +51,7 @@ public class AccountManagerTestRule implements TestRule {
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
-                final int blockGetAccountsFlag =
-                        description.getAnnotation(BlockGetAccounts.class) == null
-                        ? FakeAccountManagerDelegate.DISABLE_BLOCK_GET_ACCOUNTS
-                        : FakeAccountManagerDelegate.ENABLE_BLOCK_GET_ACCOUNTS;
-                mDelegate = new FakeAccountManagerDelegate(
-                        mProfileDataSourceFlag, blockGetAccountsFlag);
-                ThreadUtils.runOnUiThreadBlocking(() -> {
-                    AccountManagerFacadeProvider.setInstanceForTests(
-                            new AccountManagerFacadeImpl(mDelegate));
-                });
+                AccountManagerFacadeProvider.setInstanceForTests(mFakeAccountManagerFacade);
                 try {
                     statement.evaluate();
                 } finally {
@@ -69,23 +64,38 @@ public class AccountManagerTestRule implements TestRule {
     /**
      * Unblocks all get accounts requests to {@link AccountManagerFacade}.
      * Has no effect in tests that are not annotated with {@link BlockGetAccounts}.
+     *
+     * TODO(https://crbug.com/1078342) Cleanup this method.
      */
     public void unblockGetAccountsAndWaitForAccountsPopulated() {
-        mDelegate.unblockGetAccounts();
         AccountManagerFacadeProvider.getInstance().tryGetGoogleAccounts();
     }
 
-    public void addAccount(AccountHolder accountHolder) {
-        mDelegate.addAccountHolderBlocking(accountHolder);
+    /**
+     * Add an account to the fake AccountManagerFacade.
+     * @return The account added.
+     */
+    public Account addAccount(Account account) {
+        mFakeAccountManagerFacade.addAccount(account);
+        return account;
     }
 
-    public void addAccount(AccountHolder accountHolder, ProfileDataSource.ProfileData profileData) {
-        mDelegate.addAccountHolderBlocking(accountHolder);
-        ThreadUtils.runOnUiThreadBlocking(
-                () -> mDelegate.setProfileData(accountHolder.getAccount().name, profileData));
+    /**
+     * Add an account of the given accountName to the fake AccountManagerFacade.
+     * @return The account added.
+     */
+    public Account addAccount(String accountName) {
+        return addAccount(AccountUtils.createAccountFromName(accountName));
     }
 
-    public void removeAccount(AccountHolder accountHolder) {
-        mDelegate.removeAccountHolderBlocking(accountHolder);
+    /**
+     * Add an account to the fake AccountManagerFacade and its profileData to the
+     * ProfileDataSource of the fake AccountManagerFacade.
+     * @return The account added.
+     */
+    public Account addAccount(String accountName, ProfileDataSource.ProfileData profileData) {
+        Account account = addAccount(accountName);
+        mFakeAccountManagerFacade.setProfileData(accountName, profileData);
+        return account;
     }
 }

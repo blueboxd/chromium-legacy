@@ -112,7 +112,7 @@ void FullscreenClient::Paint(const wl_callback_listener& frame_listener) {
   canvas->drawRect(rect, paint);
 
   if (gr_context_) {
-    gr_context_->flush();
+    gr_context_->flushAndSubmit();
     glFinish();
   }
 

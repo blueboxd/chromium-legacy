@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/network/content_security_policy/csp_source.h"
-#include "services/network/content_security_policy/csp_context.h"
+#include "services/network/public/cpp/content_security_policy/csp_source.h"
+#include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
-namespace content {
+namespace network {
 
 namespace {
 

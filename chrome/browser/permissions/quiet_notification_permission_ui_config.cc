@@ -29,6 +29,10 @@ const char QuietNotificationPermissionUiConfig::kEnableAbusiveRequestWarning[] =
     "enable_abusive_request_warning";
 
 // static
+const char QuietNotificationPermissionUiConfig::kMiniInfobarExpandLinkText[] =
+    "mini_infobar_expand_link_text";
+
+// static
 bool QuietNotificationPermissionUiConfig::IsAdaptiveActivationEnabled() {
   if (!base::FeatureList::IsEnabled(features::kQuietNotificationPrompts))
     return false;
@@ -52,6 +56,15 @@ bool QuietNotificationPermissionUiConfig::IsCrowdDenyTriggeringEnabled() {
 double QuietNotificationPermissionUiConfig::GetCrowdDenyHoldBackChance() {
   return base::GetFieldTrialParamByFeatureAsDouble(
       features::kQuietNotificationPrompts, kCrowdDenyHoldBackChance, 0);
+}
+
+// static
+QuietNotificationPermissionUiConfig::InfobarLinkTextVariation
+QuietNotificationPermissionUiConfig::GetMiniInfobarExpandLinkText() {
+  return base::GetFieldTrialParamByFeatureAsInt(
+             features::kQuietNotificationPrompts, kMiniInfobarExpandLinkText, 0)
+             ? InfobarLinkTextVariation::kManage
+             : InfobarLinkTextVariation::kDetails;
 }
 
 // static

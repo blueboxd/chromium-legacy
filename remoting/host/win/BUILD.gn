@@ -137,6 +137,7 @@ source_set("win") {
     "//remoting/resources",
     "//services/device/wake_lock/power_save_blocker",
     "//third_party/webrtc_overrides:webrtc_component",
+    "//third_party/wtl",
     "//ui/base",
     "//ui/events:dom_keycode_converter",
     "//ui/events/platform",

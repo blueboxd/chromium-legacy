@@ -19,7 +19,8 @@
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
-#import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/application_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_params.h"
@@ -37,6 +38,7 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/window_activities/window_activity_helpers.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/navigation/referrer.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -200,6 +202,13 @@
       withOfflineURL:GURL::EmptyGURL()
             inNewTab:YES
            incognito:YES];
+}
+
+- (void)openURLInNewWindowForContextMenuWithParams:
+    (ReadingListContextMenuParams*)params {
+  id<ApplicationCommands> windowOpener = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), ApplicationCommands);
+  [windowOpener openNewWindowWithActivity:ActivityToLoadURL(params.entryURL)];
 }
 
 - (void)copyURLForContextMenuWithParams:(ReadingListContextMenuParams*)params {

@@ -2862,6 +2862,96 @@ TEST_F(AutofillManagerTest, FillCreditCardForm_SplitName) {
                     response_data.fields[2]);
 }
 
+// Test that only filled selection boxes are counted for the type filling limit.
+TEST_F(AutofillManagerTest, OnlyCountFilledSelectionBoxesForTypeFillingLimit) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.url = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
+  form.fields.push_back(field);
+
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  form.fields.push_back(field);
+
+  // Create a selection box for the state that hat the correct entry to be
+  // filled with user data. Note, TN is the official abbreviation for Tennessee.
+  test::CreateTestSelectField("State", "state", "", {"AA", "BB", "TN"},
+                              {"AA", "BB", "TN"}, 3, &field);
+  form.fields.push_back(field);
+
+  // Add 20 selection boxes that can not be filled since the correct entry
+  // is missing.
+  for (int i = 0; i < 20; i++) {
+    test::CreateTestSelectField("State", "state", "", {"AA", "BB", "CC"},
+                                {"AA", "BB", "CC"}, 3, &field);
+    form.fields.push_back(field);
+  }
+
+  // Add 20 other selection boxes that should be fillable since the correct
+  // entry is present.
+  for (int i = 0; i < 20; i++) {
+    test::CreateTestSelectField("State", "state", "", {"AA", "BB", "TN"},
+                                {"AA", "BB", "TN"}, 3, &field);
+    form.fields.push_back(field);
+  }
+
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  AutofillProfile profile;
+  const char guid[] = "00000000-0000-0000-0000-000000000123";
+  test::SetProfileInfo(&profile, "Elvis", "Aaron", "Presley",
+                       "theking@gmail.com", "1987", "3734 Elvis Presley Blvd.",
+                       "Apt. 10", "Memphis", "Tennessee", "38116", "US",
+                       "12345678901");
+  profile.set_guid(guid);
+  personal_data_.AddProfile(profile);
+
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(std::string(), guid),
+                                     &response_page_id, &response_data);
+
+  // Verify the correct filling of the name entries.
+  ExpectFilledField("First Name", "firstname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Middle Name", "middlename", "Aaron", "text",
+                    response_data.fields[1]);
+  ExpectFilledField("Last Name", "lastname", "Presley", "text",
+                    response_data.fields[2]);
+
+  // Verify that the first selection box is correctly filled.
+  ExpectFilledField("State", "state", "TN", "select-one",
+                    response_data.fields[3]);
+
+  // Verify that the next 20 selection boxes are not filled.
+  for (int i = 0; i < 20; i++) {
+    ExpectFilledField("State", "state", "", "select-one",
+                      response_data.fields[4 + i]);
+  }
+
+  // Verify that the next 8 selection boxes are correctly filled again.
+  for (int i = 0; i < 8; i++) {
+    ExpectFilledField("State", "state", "TN", "select-one",
+                      response_data.fields[24 + i]);
+  }
+
+  // Verify that the last 12 boxes are not filled because the filling limit for
+  // the state type is already reached.
+  for (int i = 0; i < 12; i++) {
+    ExpectFilledField("State", "state", "", "select-one",
+                      response_data.fields[32 + i]);
+  }
+}
+
 // Test that we correctly fill a combined address and credit card form.
 TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
   // Set up our form data.

@@ -110,7 +110,7 @@ TEST_F(MatchedPropertiesCacheTest, ClearEntry) {
   EXPECT_TRUE(entry->parent_computed_style);
   EXPECT_FALSE(entry->matched_properties.IsEmpty());
   EXPECT_FALSE(entry->matched_properties_types.IsEmpty());
-  EXPECT_FALSE(entry->dependencies.IsEmpty());
+  EXPECT_TRUE(entry->dependencies);
 
   entry->Clear();
 
@@ -118,7 +118,57 @@ TEST_F(MatchedPropertiesCacheTest, ClearEntry) {
   EXPECT_FALSE(entry->parent_computed_style);
   EXPECT_TRUE(entry->matched_properties.IsEmpty());
   EXPECT_TRUE(entry->matched_properties_types.IsEmpty());
-  EXPECT_TRUE(entry->dependencies.IsEmpty());
+  EXPECT_FALSE(entry->dependencies);
+}
+
+TEST_F(MatchedPropertiesCacheTest, NoDependencies) {
+  MatchResult result;
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+
+  HashSet<CSSPropertyName> dependencies;
+
+  auto* entry = MakeGarbageCollected<CachedMatchedProperties>();
+  entry->Set(*style, *parent, result.GetMatchedProperties(), dependencies);
+
+  EXPECT_FALSE(entry->dependencies);
+}
+
+TEST_F(MatchedPropertiesCacheTest, OneDependency) {
+  MatchResult result;
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+
+  HashSet<CSSPropertyName> dependencies;
+  dependencies.insert(CSSPropertyName(CSSPropertyID::kTop));
+
+  auto* entry = MakeGarbageCollected<CachedMatchedProperties>();
+  entry->Set(*style, *parent, result.GetMatchedProperties(), dependencies);
+
+  ASSERT_TRUE(entry->dependencies);
+  EXPECT_EQ("top", entry->dependencies[0]);
+  EXPECT_EQ(g_null_atom, entry->dependencies[1]);
+}
+
+TEST_F(MatchedPropertiesCacheTest, TwoDependencies) {
+  MatchResult result;
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+
+  HashSet<CSSPropertyName> dependencies;
+  dependencies.insert(CSSPropertyName(CSSPropertyID::kTop));
+  dependencies.insert(CSSPropertyName(CSSPropertyID::kLeft));
+
+  auto* entry = MakeGarbageCollected<CachedMatchedProperties>();
+  entry->Set(*style, *parent, result.GetMatchedProperties(), dependencies);
+
+  ASSERT_TRUE(entry->dependencies);
+  EXPECT_TRUE(entry->dependencies[0] == "top" ||
+              entry->dependencies[0] == "left");
+  EXPECT_TRUE(entry->dependencies[1] == "top" ||
+              entry->dependencies[1] == "left");
+  EXPECT_NE(entry->dependencies[0], entry->dependencies[1]);
+  EXPECT_TRUE(entry->dependencies[2] == g_null_atom);
 }
 
 TEST_F(MatchedPropertiesCacheTest, AllowedKeyValues) {
@@ -453,6 +503,25 @@ TEST_F(MatchedPropertiesCacheTest, DirectionNotCacheableWithoutFeature) {
   state.SetStyle(style);
 
   EXPECT_FALSE(MatchedPropertiesCache::IsCacheable(state));
+}
+
+TEST_F(MatchedPropertiesCacheTest, EnsuredInDisplayNone) {
+  TestCache cache(GetDocument());
+
+  auto style = CreateStyle();
+  auto parent = CreateStyle();
+  auto ensured_parent = CreateStyle();
+  ensured_parent->SetIsEnsuredInDisplayNone();
+
+  TestKey key1("display:block", 1);
+
+  cache.Add(key1, *style, *parent);
+  EXPECT_TRUE(cache.Find(key1, *style, *parent));
+  EXPECT_TRUE(cache.Find(key1, *style, *ensured_parent));
+
+  cache.Add(key1, *style, *ensured_parent);
+  EXPECT_FALSE(cache.Find(key1, *style, *parent));
+  EXPECT_TRUE(cache.Find(key1, *style, *ensured_parent));
 }
 
 }  // namespace blink

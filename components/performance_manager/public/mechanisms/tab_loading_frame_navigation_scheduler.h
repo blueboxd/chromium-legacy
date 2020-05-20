@@ -64,6 +64,7 @@ class TabLoadingFrameNavigationScheduler
   static bool IsMechanismRegisteredForTesting();
   void StopThrottlingForTesting() { StopThrottlingImpl(); }
   size_t GetThrottleCountForTesting() const { return throttles_.size(); }
+  int64_t GetNavigationIdForTesting() const { return navigation_id_; }
 
  private:
   friend class content::WebContentsUserData<TabLoadingFrameNavigationScheduler>;

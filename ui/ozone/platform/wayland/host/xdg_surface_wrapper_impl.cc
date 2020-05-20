@@ -119,6 +119,8 @@ void XDGSurfaceWrapperImpl::AckConfigure() {
     zxdg_surface_v6_ack_configure(zxdg_surface_v6_.get(),
                                   pending_configure_serial_);
   }
+  connection_->wayland_window_manager()->NotifyWindowConfigured(
+      wayland_window_);
 }
 
 void XDGSurfaceWrapperImpl::SetWindowGeometry(const gfx::Rect& bounds) {

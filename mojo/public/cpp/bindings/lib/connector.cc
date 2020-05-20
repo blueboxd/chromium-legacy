@@ -505,9 +505,9 @@ bool Connector::DispatchMessage(Message message) {
               incoming_serialization_mode_);
   }
 
-  TRACE_EVENT_WITH_FLOW0(
-      TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "mojo::Message Receive",
-      MANGLE_MESSAGE_ID(message.header()->trace_id), TRACE_EVENT_FLAG_FLOW_IN);
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "mojo::Message Receive",
+                         MANGLE_MESSAGE_ID(message.header()->trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN);
 #if !BUILDFLAG(MOJO_TRACE_ENABLED)
   // This emits just full class name, and is inferior to mojo tracing.
   TRACE_EVENT0("mojom", heap_profiler_tag_);

@@ -4,15 +4,37 @@
 
 #include "third_party/blink/renderer/core/svg/svg_animated_string.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_script_url.h"
+#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
+#include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
+
 namespace blink {
 
-String SVGAnimatedString::baseVal() {
-  return SVGAnimatedProperty<SVGString>::baseVal();
+void SVGAnimatedString::setBaseVal(
+    const StringOrTrustedScriptURL& string_or_trusted_script_url,
+    ExceptionState& exception_state) {
+  String value;
+  // See:
+  // https://w3c.github.io/webappsec-trusted-types/dist/spec/#integration-with-svg
+  if (string_or_trusted_script_url.IsTrustedScriptURL()) {
+    value = string_or_trusted_script_url.GetAsTrustedScriptURL()->toString();
+  } else {
+    value = string_or_trusted_script_url.GetAsString();
+    if (ContextElement()->IsScriptElement()) {
+      value = TrustedTypesCheckForScriptURL(
+          value, ContextElement()->GetExecutionContext(), exception_state);
+      if (exception_state.HadException())
+        return;
+    }
+  }
+  SVGAnimatedProperty<SVGString>::setBaseVal(value, exception_state);
 }
 
-void SVGAnimatedString::setBaseVal(const String& value,
-                                   ExceptionState& exception_state) {
-  return SVGAnimatedProperty<SVGString>::setBaseVal(value, exception_state);
+void SVGAnimatedString::baseVal(
+    StringOrTrustedScriptURL& string_or_trusted_script_url) {
+  string_or_trusted_script_url.SetString(
+      SVGAnimatedProperty<SVGString>::baseVal());
 }
 
 String SVGAnimatedString::animVal() {

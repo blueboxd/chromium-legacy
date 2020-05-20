@@ -195,6 +195,10 @@ bool PluginVmInstallerView::Cancel() {
       plugin_vm::RecordPluginVmSetupResultHistogram(
           plugin_vm::PluginVmSetupResult::kUserCancelledWithoutStarting);
       break;
+    case State::CHECKING_LICENSE:
+      plugin_vm::RecordPluginVmSetupResultHistogram(
+          plugin_vm::PluginVmSetupResult::kUserCancelledValidatingLicense);
+      break;
     case State::CHECKING_DISK_SPACE:
       plugin_vm::RecordPluginVmSetupResultHistogram(
           plugin_vm::PluginVmSetupResult::kUserCancelledCheckingDiskSpace);
@@ -240,6 +244,14 @@ gfx::Size PluginVmInstallerView::CalculatePreferredSize() const {
 
 void PluginVmInstallerView::OnProgressUpdated(double fraction_complete) {
   progress_bar_->SetValue(fraction_complete);
+}
+
+void PluginVmInstallerView::OnLicenseChecked() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(state_, State::CHECKING_LICENSE);
+
+  state_ = State::CHECKING_DISK_SPACE;
+  OnStateUpdated();
 }
 
 void PluginVmInstallerView::OnCheckedDiskSpace(bool low_disk_space) {
@@ -350,6 +362,7 @@ base::string16 PluginVmInstallerView::GetBigMessage() const {
     case State::CONFIRM_INSTALL:
       return l10n_util::GetStringFUTF16(
           IDS_PLUGIN_VM_INSTALLER_CONFIRMATION_TITLE, app_name_);
+    case State::CHECKING_LICENSE:
     case State::CHECKING_DISK_SPACE:
     case State::LOW_DISK_SPACE:
     case State::DOWNLOADING_DLC:
@@ -390,6 +403,7 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               ui::DATA_UNITS_GIBIBYTE,
               /*show_units=*/true),
           app_name_);
+    case State::CHECKING_LICENSE:
     case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
@@ -427,6 +441,7 @@ base::string16 PluginVmInstallerView::GetMessage() const {
               IDS_PLUGIN_VM_INSTALLER_NOT_ALLOWED_MESSAGE, app_name_,
               base::NumberToString16(
                   static_cast<std::underlying_type_t<Reason>>(*reason_)));
+        case Reason::INVALID_LICENSE:
         case Reason::INVALID_IMAGE_URL:
         case Reason::HASH_MISMATCH:
           return l10n_util::GetStringFUTF16(
@@ -486,6 +501,7 @@ PluginVmInstallerView::~PluginVmInstallerView() {
 
 int PluginVmInstallerView::GetCurrentDialogButtons() const {
   switch (state_) {
+    case State::CHECKING_LICENSE:
     case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
@@ -516,6 +532,7 @@ base::string16 PluginVmInstallerView::GetCurrentDialogButtonLabel(
           button == ui::DIALOG_BUTTON_OK
               ? IDS_PLUGIN_VM_INSTALLER_INSTALL_BUTTON
               : IDS_APP_CANCEL);
+    case State::CHECKING_LICENSE:
     case State::CHECKING_DISK_SPACE:
     case State::DOWNLOADING_DLC:
     case State::CHECKING_VMS:
@@ -573,6 +590,7 @@ void PluginVmInstallerView::OnStateUpdated() {
   }
 
   const bool progress_bar_visible =
+      state_ == State::CHECKING_LICENSE ||
       state_ == State::CHECKING_DISK_SPACE ||
       state_ == State::DOWNLOADING_DLC || state_ == State::CHECKING_VMS ||
       state_ == State::DOWNLOADING || state_ == State::IMPORTING;
@@ -644,7 +662,7 @@ void PluginVmInstallerView::StartInstallation() {
   // Setup always starts from this function, including retries.
   setup_start_tick_ = base::TimeTicks::Now();
 
-  state_ = State::CHECKING_DISK_SPACE;
+  state_ = State::CHECKING_LICENSE;
   progress_bar_->SetValue(0);
   OnStateUpdated();
 

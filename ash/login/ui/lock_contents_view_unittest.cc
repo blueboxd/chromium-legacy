@@ -2879,10 +2879,6 @@ TEST_F(LockContentsViewUnitTest, ToggleGaiaOnUsersChanged) {
   EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(1);
   AddUsers(0);
   Mock::VerifyAndClearExpectations(client.get());
-
-  // Hide Gaia when users added.
-  EXPECT_CALL(*client, HideGaiaSignin()).Times(1);
-  AddPublicAccountUsers(1);
 }
 
 }  // namespace ash

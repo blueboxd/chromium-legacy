@@ -48,10 +48,7 @@ generate_jni("jni_headers") {
     "java/src/org/chromium/components/payments/PaymentHandlerHost.java",
     "java/src/org/chromium/components/payments/PaymentManifestDownloader.java",
     "java/src/org/chromium/components/payments/PaymentManifestParser.java",
-
-    # TODO(crbug.com/1083242): Use PaymentRequestUpdateEventListener.java after
-    # updating dependencies.
-    "java/src/org/chromium/components/payments/PaymentApp.java",
+    "java/src/org/chromium/components/payments/PaymentRequestUpdateEventListener.java",
     "java/src/org/chromium/components/payments/PaymentValidator.java",
     "java/src/org/chromium/components/payments/UrlUtil.java",
   ]

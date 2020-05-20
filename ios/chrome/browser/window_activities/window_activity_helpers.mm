@@ -59,6 +59,16 @@ NSUserActivity* ActivityToLoadURL(const GURL& url,
   return activity;
 }
 
+NSUserActivity* ActivityToLoadURL(const GURL& url) {
+  NSUserActivity* activity = BaseActivityForURLOpening(false);
+  NSMutableDictionary* params = [[NSMutableDictionary alloc] init];
+  if (!url.is_empty()) {
+    params[kURLKey] = net::NSURLWithGURL(url);
+  }
+  [activity addUserInfoEntriesFromDictionary:params];
+  return activity;
+}
+
 bool ActivityIsURLLoad(NSUserActivity* activity) {
   return [activity.activityType isEqualToString:kLoadURLActivityType] ||
          [activity.activityType isEqualToString:kLoadIncognitoURLActivityType];

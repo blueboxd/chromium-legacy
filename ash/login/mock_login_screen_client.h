@@ -84,7 +84,6 @@ class MockLoginScreenClient : public LoginScreenClient {
               ShowGaiaSignin,
               (const AccountId& prefilled_account),
               (override));
-  MOCK_METHOD(void, HideGaiaSignin, (), (override));
   MOCK_METHOD(void, OnRemoveUserWarningShown, (), (override));
   MOCK_METHOD(void, RemoveUser, (const AccountId& account_id), (override));
   MOCK_METHOD(void,

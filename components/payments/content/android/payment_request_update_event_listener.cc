@@ -6,10 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-
-// TODO(crbug.com/1083242): Use PaymentRequestUpdateEventListener_jni.h after
-// updating dependencies.
-#include "components/payments/content/android/jni_headers/PaymentApp_jni.h"
+#include "components/payments/content/android/jni_headers/PaymentRequestUpdateEventListener_jni.h"
 
 namespace payments {
 namespace android {

@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/metrics/tab_usage_recorder_browser_agent.h"
 #import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #include "ios/chrome/browser/system_flags.h"
-#import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -33,21 +32,16 @@ namespace chrome_test_util {
 
 namespace {
 
-// Returns the tab model for the current mode (incognito or normal).
-TabModel* GetCurrentTabModel() {
-  return GetMainController().interfaceProvider.currentInterface.tabModel;
-}
-
-// Returns the WebStateList for the current mode. Or nullptr of there is no
-// tabModel.
-WebStateList* GetCurrentWebStateList() {
-  TabModel* tab_model = GetCurrentTabModel();
-  return tab_model ? tab_model.webStateList : nullptr;
-}
-
 // Returns the browser for the current mode.
 Browser* GetCurrentBrowser() {
   return GetMainController().interfaceProvider.currentInterface.browser;
+}
+
+// Returns the WebStateList for the current mode. Or nullptr of there is no
+// browser.
+WebStateList* GetCurrentWebStateList() {
+  Browser* browser = GetCurrentBrowser();
+  return browser ? browser->GetWebStateList() : nullptr;
 }
 
 }  // namespace
@@ -154,28 +148,36 @@ void CloseCurrentTab() {
 
 void CloseTabAtIndex(NSUInteger index) {
   @autoreleasepool {  // Make sure that all internals are deallocated.
-    [GetCurrentTabModel() closeTabAtIndex:index];
+    DCHECK_LE(index, static_cast<NSUInteger>(INT_MAX));
+    GetCurrentWebStateList()->CloseWebStateAt(static_cast<int>(index),
+                                              WebStateList::CLOSE_USER_ACTION);
   }
 }
 
 NSUInteger GetIndexOfActiveNormalTab() {
-  TabModel* model = chrome_test_util::GetForegroundActiveSceneController()
-                        .interfaceProvider.mainInterface.tabModel;
-  return model.webStateList->active_index();
+  Browser* browser = chrome_test_util::GetForegroundActiveSceneController()
+                         .interfaceProvider.mainInterface.browser;
+  return browser->GetWebStateList()->active_index();
 }
 
 void CloseAllTabsInCurrentMode() {
-  [GetCurrentTabModel() closeAllTabs];
+  GetCurrentWebStateList()->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
 }
 
 void CloseAllTabs() {
-  if (GetIncognitoTabCount()) {
-    [GetForegroundActiveSceneController()
-            .interfaceProvider.incognitoInterface.tabModel closeAllTabs];
+  if (GetIncognitoTabCount() && GetForegroundActiveSceneController()) {
+    Browser* browser = GetForegroundActiveSceneController()
+                           .interfaceProvider.incognitoInterface.browser;
+    DCHECK(browser);
+    browser->GetWebStateList()->CloseAllWebStates(
+        WebStateList::CLOSE_USER_ACTION);
   }
-  if (GetMainTabCount()) {
-    [GetForegroundActiveScene()
-            .interfaceProvider.mainInterface.tabModel closeAllTabs];
+  if (GetMainTabCount() && GetForegroundActiveScene()) {
+    Browser* browser =
+        GetForegroundActiveScene().interfaceProvider.mainInterface.browser;
+    DCHECK(browser);
+    browser->GetWebStateList()->CloseAllWebStates(
+        WebStateList::CLOSE_USER_ACTION);
   }
 }
 
@@ -188,12 +190,15 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 }
 
 NSUInteger GetMainTabCount() {
-  return GetMainController().interfaceProvider.mainInterface.tabModel.count;
+  return GetMainController()
+      .interfaceProvider.mainInterface.browser->GetWebStateList()
+      ->count();
 }
 
 NSUInteger GetIncognitoTabCount() {
   return GetMainController()
-      .interfaceProvider.incognitoInterface.tabModel.count;
+      .interfaceProvider.incognitoInterface.browser->GetWebStateList()
+      ->count();
 }
 
 BOOL ResetTabUsageRecorder() {
@@ -211,7 +216,7 @@ BOOL SetCurrentTabsToBeColdStartTabs() {
 
   if (!tab_usage_recorder)
     return NO;
-  WebStateList* web_state_list = GetCurrentBrowser()->GetWebStateList();
+  WebStateList* web_state_list = GetCurrentWebStateList();
 
   std::vector<web::WebState*> web_states;
   web_states.reserve(web_state_list->count());
@@ -264,10 +269,11 @@ BOOL CloseAllNormalTabs() {
 BOOL CloseAllIncognitoTabs() {
   MainController* main_controller = GetMainController();
   DCHECK(main_controller);
-  TabModel* tabModel =
-      GetMainController().interfaceProvider.incognitoInterface.tabModel;
-  DCHECK(tabModel);
-  [tabModel closeAllTabs];
+  Browser* browser =
+      GetMainController().interfaceProvider.incognitoInterface.browser;
+  DCHECK(browser);
+  browser->GetWebStateList()->CloseAllWebStates(
+      WebStateList::CLOSE_USER_ACTION);
   return YES;
 }
 

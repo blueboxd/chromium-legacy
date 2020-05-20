@@ -29,6 +29,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/cross_origin_read_blocking.h"
 #include "services/network/keepalive_statistics_recorder.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/initiator_lock_compatibility.h"
 #include "services/network/public/mojom/cookie_access_observer.mojom.h"
 #include "services/network/public/mojom/cross_origin_embedder_policy.mojom-forward.h"
@@ -46,7 +47,7 @@
 namespace net {
 class HttpResponseHeaders;
 class URLRequestContext;
-}
+}  // namespace net
 
 namespace network {
 
@@ -104,6 +105,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       int32_t options,
       const ResourceRequest& request,
       mojo::PendingRemote<mojom::URLLoaderClient> url_loader_client,
+      base::Optional<DataPipeUseTracker> response_body_use_tracker,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const mojom::URLLoaderFactoryParams* factory_params,
       mojom::CrossOriginEmbedderPolicyReporter* reporter,
@@ -358,6 +360,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   int64_t total_written_bytes_ = 0;
 
   mojo::ScopedDataPipeProducerHandle response_body_stream_;
+  base::Optional<DataPipeUseTracker> response_body_use_tracker_;
   scoped_refptr<NetToMojoPendingBuffer> pending_write_;
   uint32_t pending_write_buffer_size_ = 0;
   uint32_t pending_write_buffer_offset_ = 0;

@@ -2581,7 +2581,7 @@
     Connecting and verifying<ph name="ANIMATED_ELLIPSIS">$1<ex>...</ex></ph>
   </message>
   <message name="IDS_DEVICE_DISABLED_HEADING" desc="Heading of the message shown to the user when the device has been disabled by its owner.">
-    Locked
+    Your device is locked
   </message>
   <message name="IDS_DEVICE_DISABLED_EXPLANATION_WITH_DOMAIN" desc="Explanation shown to the user when the device has been disabled by its owner. This version is used when the domain that owns the device is known.">
     This device (SN: <ph name="SERIAL_NUMBER">$1<ex>1234</ex></ph>) was locked by the <ph name="SAML_DOMAIN">$2<ex>example.com</ex></ph> administrator.

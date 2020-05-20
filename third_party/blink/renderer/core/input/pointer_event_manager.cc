@@ -342,8 +342,7 @@ bool PointerEventManager::ShouldAdjustPointerEvent(
       !frame_->GetSettings()->GetTouchAdjustmentEnabled())
     return false;
 
-  return RuntimeEnabledFeatures::UnifiedTouchAdjustmentEnabled() &&
-         pointer_event.pointer_type ==
+  return pointer_event.pointer_type ==
              WebPointerProperties::PointerType::kTouch &&
          pointer_event.GetType() == WebInputEvent::Type::kPointerDown &&
          pointer_event_factory_.IsPrimary(pointer_event);

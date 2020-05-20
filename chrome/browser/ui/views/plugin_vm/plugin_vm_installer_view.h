@@ -35,6 +35,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
   void OnProgressUpdated(double fraction_complete) override;
+  void OnLicenseChecked() override;
   void OnCheckedDiskSpace(bool low_disk_space) override;
   void OnDlcDownloadCompleted() override;
   void OnExistingVmCheckCompleted(bool has_vm) override;
@@ -57,6 +58,7 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   // TODO(crbug.com/1063748): Re-use PluginVmInstaller::InstallingState.
   enum class State {
     CONFIRM_INSTALL,      // Waiting for user to start installation.
+    CHECKING_LICENSE,     // Ensuring the user license is valid.
     CHECKING_DISK_SPACE,  // Checking there is available free disk space.
     LOW_DISK_SPACE,   // Prompt user to continue or abort due to low disk space.
     DOWNLOADING_DLC,  // PluginVm DLC downloading and installing in progress.

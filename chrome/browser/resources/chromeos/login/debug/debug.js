@@ -67,6 +67,9 @@ cr.define('cr.ui.login.debug', function() {
       border-color: #faa !important;
       color: #faa`;
 
+  const RECOMMENDED_APPS_CONTENT = `
+// <include src="../../arc_support/recommend_app_list_view.html">
+  `;
   /**
    * Indicates if screen is present in usual user flow, represents some error
    * state or is shown in some other cases. See KNOWN_SCREENS for more details.
@@ -138,6 +141,25 @@ cr.define('cr.ui.login.debug', function() {
       id: 'device-disabled',
       kind: ScreenKind.ERROR,
       suffix: 'E',
+      states: [
+        {
+          // No enrollment domain specified
+          id: 'no-domain',
+          trigger: (screen) => {
+            screen.setSerialNumberAndEnrollmentDomain('123456789', '');
+            screen.setMessage('Some custom message provided by org admin.');
+          }
+        },
+        {
+          // Enrollment domain was specified
+          id: 'has-domain',
+          trigger: (screen) => {
+            screen.setSerialNumberAndEnrollmentDomain(
+                '123456789', 'example.com');
+            screen.setMessage('Please return this device to the techstop.');
+          }
+        },
+      ]
     },
     {
       id: 'oauth-enrollment',
@@ -394,6 +416,49 @@ cr.define('cr.ui.login.debug', function() {
     {
       id: 'recommend-apps',
       kind: ScreenKind.NORMAL,
+      // Known issue: reset() does not clear list of apps, so loadAppList
+      // will append apps instead of replacing.
+      states: [
+        {
+          id: 'loading',
+          trigger: (screen) => {
+            screen.reset();
+          }
+        },
+        {
+          id: '2-apps',
+          trigger: (screen) => {
+            screen.reset();
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            screen.loadAppList([
+              {
+                name: 'Test app 1',
+                package_name: 'test1.app',
+              },
+              {
+                name: 'Test app 2 with some really long name',
+                package_name: 'test2.app',
+              },
+            ]);
+          }
+        },
+        {
+          id: '21-apps',
+          trigger: (screen) => {
+            // There can be up to 21 apps: see recommend_apps_fetcher_impl
+            screen.reset();
+            screen.setWebview(RECOMMENDED_APPS_CONTENT);
+            let apps = [];
+            for (i = 1; i <= 21; i++) {
+              apps.push({
+                name: 'Test app ' + i,
+                package_name: 'app.test' + i,
+              });
+            }
+            screen.loadAppList(apps);
+          }
+        },
+      ],
     },
     {
       id: 'app-downloading',

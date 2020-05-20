@@ -658,6 +658,7 @@ class FormStructure {
 };
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form);
+std::ostream& operator<<(std::ostream& buffer, const FormStructure& form);
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_FORM_STRUCTURE_H_

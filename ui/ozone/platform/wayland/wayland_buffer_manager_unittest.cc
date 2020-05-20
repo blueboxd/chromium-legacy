@@ -187,11 +187,14 @@ class WaylandBufferManagerTest : public WaylandTest {
     }
   }
 
-  std::unique_ptr<WaylandWindow> CreateWindow() {
+  std::unique_ptr<WaylandWindow> CreateWindow(
+      PlatformWindowType type = PlatformWindowType::kWindow,
+      gfx::AcceleratedWidget parent_widget = gfx::kNullAcceleratedWidget) {
     testing::Mock::VerifyAndClearExpectations(&delegate_);
     PlatformWindowInitProperties properties;
     properties.bounds = gfx::Rect(0, 0, 800, 600);
-    properties.type = PlatformWindowType::kWindow;
+    properties.type = type;
+    properties.parent_widget = parent_widget;
     auto new_window = WaylandWindow::Create(&delegate_, connection_.get(),
                                             std::move(properties));
     EXPECT_TRUE(new_window);
@@ -724,6 +727,77 @@ TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
                                           false /*fail*/);
   DestroyBufferAndSetTerminateExpectation(widget, kDmabufBufferId2,
                                           false /*fail*/);
+}
+
+// Tests the surface does not have buffers attached until it's configured at
+// least once.
+TEST_P(WaylandBufferManagerTest, TestCommitBufferConditionsAckConfigured) {
+  constexpr uint32_t kDmabufBufferId = 1;
+
+  // Exercise three window types that create different windows - toplevel, popup
+  // and subsurface.
+  std::vector<PlatformWindowType> window_types{PlatformWindowType::kWindow,
+                                               PlatformWindowType::kPopup,
+                                               PlatformWindowType::kTooltip};
+
+  for (const auto& type : window_types) {
+    // If the type is not kWindow, provide default created window as parent of
+    // the newly created window.
+    auto temp_window = CreateWindow(type, type != PlatformWindowType::kWindow
+                                              ? widget_
+                                              : gfx::kNullAcceleratedWidget);
+    auto widget = temp_window->GetWidget();
+
+    // Subsurface doesn't have an interface for sending configure events.
+    // Thus, WaylandSubsurface notifies the manager that the window is
+    // activated upon creation of the subsurface. Skip calling Show() and call
+    // later then.
+    if (type != PlatformWindowType::kTooltip)
+      temp_window->Show(false);
+
+    Sync();
+
+    auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+
+    auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
+    EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(1);
+
+    CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/,
+                                                     kDmabufBufferId);
+
+    Sync();
+
+    ProcessCreatedBufferResourcesWithExpectation(1u /* expected size */,
+                                                 false /* fail */);
+
+    EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
+    EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
+    EXPECT_CALL(*mock_surface, Commit()).Times(0);
+
+    buffer_manager_gpu_->CommitBuffer(widget, kDmabufBufferId,
+                                      window_->GetBounds());
+    Sync();
+
+    if (type != PlatformWindowType::kTooltip) {
+      DCHECK(mock_surface->xdg_surface());
+      ActivateSurface(mock_surface->xdg_surface());
+    } else {
+      // See the comment near Show() call above.
+      temp_window->Show(false);
+    }
+
+    EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
+    EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+    EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+    Sync();
+
+    temp_window.reset();
+    DestroyBufferAndSetTerminateExpectation(widget, kDmabufBufferId,
+                                            false /*fail*/);
+
+    Sync();
+  }
 }
 
 // The buffer that is not originally attached to any of the surfaces,

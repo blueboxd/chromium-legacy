@@ -244,8 +244,10 @@ void HandleRecommendAppsScreen() {
   EXPECT_FALSE(ash::LoginScreenTestApi::IsAddUserButtonShown());
 
   test::OobeJS()
-      .CreateDisplayedWaiter(true, {"recommend-apps-screen", "app-list-view"})
+      .CreateVisibilityWaiter(true, {"recommend-apps", "appsDialog"})
       ->Wait();
+
+  test::OobeJS().ExpectPathDisplayed(true, {"recommend-apps", "appView"});
 
   std::string toggle_apps_script = base::StringPrintf(
       "(function() {"
@@ -263,7 +265,7 @@ void HandleRecommendAppsScreen() {
       "test.package");
 
   const std::string webview_path =
-      test::GetOobeElementPath({"recommend-apps-screen", "app-list-view"});
+      test::GetOobeElementPath({"recommend-apps", "appView"});
   const std::string script = base::StringPrintf(
       "(function() {"
       "  var toggleApp = function() {"
@@ -285,7 +287,7 @@ void HandleRecommendAppsScreen() {
   EXPECT_TRUE(result);
 
   const std::initializer_list<base::StringPiece> install_button = {
-      "recommend-apps-screen", "recommend-apps-install-button"};
+      "recommend-apps", "installButton"};
   test::OobeJS().CreateEnabledWaiter(true, install_button)->Wait();
   test::OobeJS().TapOnPath(install_button);
 

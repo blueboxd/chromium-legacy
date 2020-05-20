@@ -371,6 +371,7 @@ constexpr struct GamepadInfo {
     {0x0f0d, 0x008a, kXInputTypeNone},
     {0x0f0d, 0x008b, kXInputTypeNone},
     {0x0f0d, 0x0090, kXInputTypeNone},
+    {0x0f0d, 0x00c1, kXInputTypeNone},
     {0x0f0d, 0x00ee, kXInputTypeNone},
     // Jess Technology Co., Ltd
     {0x0f30, 0x010b, kXInputTypeXbox},

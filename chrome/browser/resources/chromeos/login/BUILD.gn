@@ -236,8 +236,10 @@ js_library("oobe_update") {
 
 js_library("recommend_apps") {
   deps = [
+    "components:login_screen_behavior",
     "components:oobe_dialog_host_behavior",
     "components:oobe_i18n_behavior",
+    "components:oobe_types",
   ]
 }
 

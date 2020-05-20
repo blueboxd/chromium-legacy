@@ -1797,10 +1797,6 @@
       status: "stable",
     },
     {
-      name: "UnifiedTouchAdjustment",
-      status: "stable",
-    },
-    {
       name: "UnoptimizedImagePolicies",
       status: "experimental",
       origin_trial_feature_name: "UnoptimizedImagePolicies",

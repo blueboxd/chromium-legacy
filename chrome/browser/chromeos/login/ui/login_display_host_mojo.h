@@ -44,8 +44,7 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Called when the gaia dialog is destroyed.
   void OnDialogDestroyed(const OobeUIDialogDelegate* dialog);
 
-  // Set the users in the views login screen.
-  void SetUsers(const user_manager::UserList& users);
+  void SetUserCount(int user_count);
 
   // Show password changed dialog. If |show_password_error| is true, user
   // already tried to enter old password but it turned out to be incorrect.
@@ -83,7 +82,6 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
   void HideOobeDialog() override;
   void UpdateOobeDialogState(ash::OobeDialogState state) override;
-  const user_manager::UserList GetUsers() override;
   void OnCancelPasswordChangedFlow() override;
   void ShowFeedback() override;
   void ShowResetScreen() override;
@@ -169,9 +167,8 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   OobeUIDialogDelegate* dialog_ = nullptr;  // Not owned.
   std::unique_ptr<WizardController> wizard_controller_;
 
-  // Users that are visible in the views login screen.
-  // TODO(crbug.com/808277): consider remove user case.
-  user_manager::UserList users_;
+  // Number of users that are visible in the views login screen.
+  int user_count_ = 0;
 
   // The account id of the user pod that's being focused.
   AccountId focused_pod_account_id_;

@@ -1,0 +1,36 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module id="device-disabled">
+  <template>
+    <style include="oobe-dialog-host">
+      #message {
+        @apply --oobe-default-font;
+        color: var(--oobe-text-color);
+        overflow: auto;
+        text-overflow: clip;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+      }
+    </style>
+
+    <oobe-dialog title-key="deviceDisabledHeading" id="dialog"
+        aria-label$="[[i18nDynamic(locale, 'deviceDisabledHeading')]]">
+      <hd-iron-icon slot="oobe-icon"
+        icon1x="oobe-32:warning" icon2x="oobe-64:warning">
+      </hd-iron-icon>
+      <div slot="subtitle">
+        [[disabledText_(locale, serial_, enrollmentDomain_)]]
+      </div>
+      <div slot="footer" class="flex layout vertical center center-justified">
+        <div id="message">[[message_]]</div>
+        <img class="oobe-illustration flex"
+             srcset="images/1x/device-disabled.svg 1x,
+                     images/2x/device-disabled.svg 2x">
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

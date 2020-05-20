@@ -150,10 +150,10 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   // false.
   base::RunLoop run_loop;
   EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents))
-      .WillOnce(testing::Invoke([&run_loop](content::WebContents*) -> bool {
+      .WillOnce([&run_loop](content::WebContents*) -> bool {
         run_loop.Quit();
         return false;
-      }));
+      });
   StartNavigation(contents, url);
   run_loop.Run();
   auto* scheduler = GetScheduler(contents);
@@ -177,10 +177,10 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   {
     base::RunLoop run_loop;
     EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents1))
-        .WillOnce(testing::Invoke([&run_loop](content::WebContents*) -> bool {
+        .WillOnce([&run_loop](content::WebContents*) -> bool {
           run_loop.Quit();
           return true;
-        }));
+        });
     StartNavigation(contents1, url1);
     run_loop.Run();
     auto* scheduler = GetScheduler(contents1);
@@ -192,10 +192,10 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   {
     base::RunLoop run_loop;
     EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents2))
-        .WillOnce(testing::Invoke([&run_loop](content::WebContents*) -> bool {
+        .WillOnce([&run_loop](content::WebContents*) -> bool {
           run_loop.Quit();
           return true;
-        }));
+        });
     StartNavigation(contents2, url2);
     run_loop.Run();
     auto* scheduler = GetScheduler(contents2);
@@ -225,16 +225,15 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   base::RunLoop run_loop1;
   base::RunLoop run_loop2;
   EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents))
-      .WillOnce(testing::Invoke([&run_loop1](content::WebContents*) -> bool {
+      .WillOnce([&run_loop1](content::WebContents*) -> bool {
         run_loop1.Quit();
         return true;
-      }));
+      });
   EXPECT_CALL(mock_policy_delegate_, ShouldThrottleNavigation(testing::_))
-      .WillOnce(
-          testing::Invoke([&run_loop2](content::NavigationHandle*) -> bool {
-            run_loop2.Quit();
-            return true;
-          }));
+      .WillOnce([&run_loop2](content::NavigationHandle*) -> bool {
+        run_loop2.Quit();
+        return true;
+      });
 
   // Start the navigation, and expect scheduler to have been created.
   StartNavigation(contents, url);
@@ -263,6 +262,68 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
+                       NavigationCancelsThrottling) {
+  GURL url(embedded_test_server()->GetURL("a.com", "/a_embeds_b.html"));
+  auto* contents = shell()->web_contents();
+
+  // Throttle the navigation, and throttle the child frame.
+  base::RunLoop run_loop1;
+  base::RunLoop run_loop2;
+  EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents))
+      .WillOnce([&run_loop1](content::WebContents*) -> bool {
+        run_loop1.Quit();
+        return true;
+      });
+  EXPECT_CALL(mock_policy_delegate_, ShouldThrottleNavigation(testing::_))
+      .WillOnce([&run_loop2](content::NavigationHandle*) -> bool {
+        run_loop2.Quit();
+        return true;
+      });
+
+  // Start the navigation, and expect scheduler to have been created.
+  StartNavigation(contents, url);
+  run_loop1.Run();
+  auto* scheduler = GetScheduler(contents);
+  EXPECT_NE(nullptr, scheduler);
+  EXPECT_EQ(0u, scheduler->GetThrottleCountForTesting());
+  int64_t original_navigation_id = scheduler->GetNavigationIdForTesting();
+
+  // Wait for the child navigation to have started. We'll know once
+  // the policy function has been invoked, which will quit the runloop.
+  run_loop2.Run();
+
+  // At this point the child frame navigation should be throttled, waiting for
+  // the policy object to notify that the throttles should be removed.
+  EXPECT_EQ(1u, scheduler->GetThrottleCountForTesting());
+
+  // Reuse the contents for another navigation. This should result in another
+  // call to ShouldThrottleWebContents (which returns false), and the
+  // scheduler should be deleted.
+  url = embedded_test_server()->GetURL("b.com", "/b.html");
+  base::RunLoop run_loop3;
+  EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents))
+      .WillOnce([&run_loop3](content::WebContents* contents) -> bool {
+        run_loop3.Quit();
+        return false;
+      });
+  StartNavigation(contents, url);
+  run_loop3.Run();
+  scheduler = GetScheduler(contents);
+  EXPECT_EQ(nullptr, scheduler);
+
+  // Simulate a delayed arrival of a policy message for the previous navigation
+  // and expect it to do nothing.
+  TabLoadingFrameNavigationScheduler::StopThrottling(contents,
+                                                     original_navigation_id);
+  scheduler = GetScheduler(contents);
+  EXPECT_EQ(nullptr, scheduler);
+
+  // Wait for the load to finish so that it's not ongoing while the test
+  // fixture tears down.
+  WaitForLoad(contents);
+}
+
+IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
                        NavigationInterruptsThrottling) {
   GURL url(embedded_test_server()->GetURL("a.com", "/a_embeds_b.html"));
   auto* contents = shell()->web_contents();
@@ -271,16 +332,15 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   base::RunLoop run_loop1;
   base::RunLoop run_loop2;
   EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents))
-      .WillOnce(testing::Invoke([&run_loop1](content::WebContents*) -> bool {
+      .WillOnce([&run_loop1](content::WebContents*) -> bool {
         run_loop1.Quit();
         return true;
-      }));
+      });
   EXPECT_CALL(mock_policy_delegate_, ShouldThrottleNavigation(testing::_))
-      .WillOnce(
-          testing::Invoke([&run_loop2](content::NavigationHandle*) -> bool {
-            run_loop2.Quit();
-            return true;
-          }));
+      .WillOnce([&run_loop2](content::NavigationHandle*) -> bool {
+        run_loop2.Quit();
+        return true;
+      });
 
   // Start the navigation, and expect scheduler to have been created.
   StartNavigation(contents, url);
@@ -288,6 +348,7 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   auto* scheduler = GetScheduler(contents);
   EXPECT_NE(nullptr, scheduler);
   EXPECT_EQ(0u, scheduler->GetThrottleCountForTesting());
+  int64_t original_navigation_id = scheduler->GetNavigationIdForTesting();
 
   // Wait for the child navigation to have started. We'll know once
   // the policy function has been invoked, which will quit the runloop.
@@ -303,16 +364,23 @@ IN_PROC_BROWSER_TEST_F(TabLoadingFrameNavigationSchedulerTest,
   url = embedded_test_server()->GetURL("b.com", "/b.html");
   base::RunLoop run_loop3;
   EXPECT_CALL(mock_policy_delegate_, ShouldThrottleWebContents(contents))
-      .WillOnce(
-          testing::Invoke([&run_loop3](content::WebContents* contents) -> bool {
-            run_loop3.Quit();
-            return true;
-          }));
+      .WillOnce([&run_loop3](content::WebContents* contents) -> bool {
+        run_loop3.Quit();
+        return true;
+      });
   StartNavigation(contents, url);
   run_loop3.Run();
   scheduler = GetScheduler(contents);
   EXPECT_NE(nullptr, scheduler);
   EXPECT_EQ(0u, scheduler->GetThrottleCountForTesting());
+
+  // Simulate a delayed arrival of a policy message for the previous navigation
+  // and expect it to do nothing.
+  TabLoadingFrameNavigationScheduler::StopThrottling(contents,
+                                                     original_navigation_id);
+  auto* scheduler2 = GetScheduler(contents);
+  EXPECT_EQ(scheduler, scheduler2);
+  EXPECT_EQ(0u, scheduler2->GetThrottleCountForTesting());
 
   // Wait for the load to finish so that it's not ongoing while the test
   // fixture tears down.

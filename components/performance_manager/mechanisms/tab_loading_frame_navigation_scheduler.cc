@@ -228,8 +228,10 @@ void TabLoadingFrameNavigationScheduler::StopThrottling(
   // a StopThrottling notification.
   auto* scheduler = FromWebContents(contents);
   // There is a race between renavigations and policy messages. Only dispatch
-  // this if its intended for the appropriate navigation ID.
-  if (scheduler->navigation_id_ != last_navigation_id)
+  // this if the contents is still being throttled (the logic in
+  // MaybeCreateThrottleForNavigation can cause the scheduler to be deleted),
+  // and if its intended for the appropriate navigation ID.
+  if (!scheduler || scheduler->navigation_id_ != last_navigation_id)
     return;
   scheduler->StopThrottlingImpl();
 }

@@ -106,7 +106,10 @@ class WaylandBufferManagerHost::Surface {
     // Another case, which always happen is waiting until the frame callback is
     // completed. Thus, wait here when the Wayland compositor fires the frame
     // callback.
-    if (!buffer->wl_buffer || wl_frame_callback_) {
+    //
+    // The third case happens if the window hasn't been configured until a
+    // request to attach a buffer to its surface is sent.
+    if (!buffer->wl_buffer || wl_frame_callback_ || !configured_) {
       pending_buffer_ = buffer;
       return true;
     }
@@ -197,6 +200,12 @@ class WaylandBufferManagerHost::Surface {
     // callback. Check more comments below where the variable is declared.
     contents_reset_ = true;
 
+    // ResetSurfaceContents happens upon WaylandWindow::Hide call, which
+    // destroyes xdg_surface, xdg_popup, etc. They are going to be reinitialized
+    // once WaylandWindow::Show is called. Thus, they will have to be configured
+    // once again before buffers can be attached.
+    configured_ = false;
+
     connection_->ScheduleFlush();
   }
 
@@ -209,6 +218,14 @@ class WaylandBufferManagerHost::Surface {
 
   void OnWindowRemoved() { window_ = nullptr; }
   bool HasWindow() const { return !!window_; }
+
+  void OnWindowConfigured() {
+    if (configured_)
+      return;
+
+    configured_ = true;
+    ProcessPendingBuffer();
+  }
 
  private:
   struct FeedbackInfo {
@@ -313,7 +330,7 @@ class WaylandBufferManagerHost::Surface {
   }
 
   void AttachBuffer(WaylandBuffer* buffer) {
-    DCHECK(window_);
+    DCHECK(window_ && configured_);
 
     // The logic in DamageBuffer currently relies on attachment coordinates of
     // (0, 0). If this changes, then the calculation in DamageBuffer will also
@@ -598,6 +615,11 @@ class WaylandBufferManagerHost::Surface {
   // a need to call submission callback manually.
   bool contents_reset_ = false;
 
+  // If WaylandWindow has never been configured, do not try to attach
+  // buffers to its surface. Otherwise, Wayland server will drop the connection
+  // and send an error - "The surface has never been configured.".
+  bool configured_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(Surface);
 };
 
@@ -630,6 +652,13 @@ void WaylandBufferManagerHost::OnWindowRemoved(WaylandWindow* window) {
     it->second->OnWindowRemoved();
   else
     surfaces_.erase(it);
+}
+
+void WaylandBufferManagerHost::OnWindowConfigured(WaylandWindow* window) {
+  DCHECK(window);
+  auto it = surfaces_.find(window->GetWidget());
+  DCHECK(it != surfaces_.end());
+  it->second->OnWindowConfigured();
 }
 
 void WaylandBufferManagerHost::SetTerminateGpuCallback(
@@ -923,11 +952,10 @@ bool WaylandBufferManagerHost::ValidateBufferIdFromGpu(uint32_t buffer_id) {
   return true;
 }
 
-bool WaylandBufferManagerHost::ValidateDataFromGpu(
-    const base::ScopedFD& fd,
-    size_t length,
-    const gfx::Size& size,
-    uint32_t buffer_id) {
+bool WaylandBufferManagerHost::ValidateDataFromGpu(const base::ScopedFD& fd,
+                                                   size_t length,
+                                                   const gfx::Size& size,
+                                                   uint32_t buffer_id) {
   if (!ValidateBufferIdFromGpu(buffer_id))
     return false;
 
@@ -952,21 +980,20 @@ bool WaylandBufferManagerHost::ValidateDataFromGpu(
 void WaylandBufferManagerHost::OnCreateBufferComplete(
     uint32_t buffer_id,
     wl::Object<struct wl_buffer> new_buffer) {
-    auto it = anonymous_buffers_.find(buffer_id);
-    // It might have already been destroyed or stored by any of the surfaces.
-    if (it != anonymous_buffers_.end()) {
-      it->second->wl_buffer = std::move(new_buffer);
-    } else {
-      for (auto& surface : surfaces_) {
-        if (surface.second->BufferExists(buffer_id)) {
-          surface.second.get()->AttachWlBuffer(buffer_id,
-                                               std::move(new_buffer));
-          break;
-        }
+  auto it = anonymous_buffers_.find(buffer_id);
+  // It might have already been destroyed or stored by any of the surfaces.
+  if (it != anonymous_buffers_.end()) {
+    it->second->wl_buffer = std::move(new_buffer);
+  } else {
+    for (auto& surface : surfaces_) {
+      if (surface.second->BufferExists(buffer_id)) {
+        surface.second.get()->AttachWlBuffer(buffer_id, std::move(new_buffer));
+        break;
       }
     }
-    // There is no need for the buffer anymore. Let it go out of the scope and
-    // be destroyed.
+  }
+  // There is no need for the buffer anymore. Let it go out of the scope and
+  // be destroyed.
 }
 
 void WaylandBufferManagerHost::OnSubmission(

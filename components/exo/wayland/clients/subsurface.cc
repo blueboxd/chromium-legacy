@@ -98,7 +98,7 @@ void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
       canvas->drawIRect(rect, paint);
       canvas->restore();
       if (gr_context_) {
-        gr_context_->flush();
+        gr_context_->flushAndSubmit();
         glFinish();
       }
       wl_surface_damage(child_surface.get(), 0, 0, kSubsurfaceWidth,
@@ -114,7 +114,7 @@ void SubSurfaceClient::Run(const ClientBase::InitParams& params) {
       static const SkColor kColors[] = {SK_ColorRED, SK_ColorBLACK};
       canvas->clear(kColors[frame_count % base::size(kColors)]);
       if (gr_context_) {
-        gr_context_->flush();
+        gr_context_->flushAndSubmit();
         glFinish();
       }
       wl_surface_set_buffer_scale(surface_.get(), scale_);

@@ -25,6 +25,9 @@ class InternetConfigDialog : public SystemWebDialogDelegate {
   // Shows a network configuration dialog for a new network of |network_type|.
   static void ShowDialogForNetworkType(const std::string& network_type);
 
+  // SystemWebDialogDelegate
+  void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
+
  protected:
   // |dialog_id| provides a pre-calculated identifier for the dialog based on
   // the network type and the network id.

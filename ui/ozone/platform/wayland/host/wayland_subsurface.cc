@@ -114,6 +114,11 @@ void WaylandSubsurface::CreateSubsurface() {
   wl_subsurface_set_desync(subsurface_.get());
   wl_surface_commit(parent->surface());
   connection()->ScheduleFlush();
+
+  // Notify the observers the window has been configured. Please note that
+  // subsurface doesn't send ack configure events. Thus, notify the observers as
+  // soon as the subsurface is created.
+  connection()->wayland_window_manager()->NotifyWindowConfigured(this);
 }
 
 bool WaylandSubsurface::OnInitialize(PlatformWindowInitProperties properties) {

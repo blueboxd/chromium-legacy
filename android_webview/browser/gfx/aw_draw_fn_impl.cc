@@ -627,7 +627,7 @@ AwDrawFnImpl::InFlightInteropDraw::~InFlightInteropDraw() {
     // to flush before the vkQueueWaitIdle below.
     if (ahb_skimage) {
       ahb_skimage.reset();
-      vk_context_provider->gr_context()->flush();
+      vk_context_provider->gr_context()->flushAndSubmit();
     }
     // We encountered an error and are not sure when our Vk objects are safe to
     // delete. VkQueueWaitIdle to ensure safety.

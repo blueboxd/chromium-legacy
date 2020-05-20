@@ -20,6 +20,9 @@ class WaylandWindowObserver : public base::CheckedObserver {
   // Called when |window| has been removed.
   virtual void OnWindowRemoved(WaylandWindow* window);
 
+  // Called when |window| has been ack configured.
+  virtual void OnWindowConfigured(WaylandWindow* window);
+
  protected:
   ~WaylandWindowObserver() override;
 };

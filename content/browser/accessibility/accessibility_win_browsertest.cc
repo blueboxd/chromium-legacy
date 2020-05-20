@@ -457,7 +457,7 @@ BrowserAccessibility* AccessibilityWinBrowserTest::FindNode(
 BrowserAccessibilityManager* AccessibilityWinBrowserTest::GetManager() {
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-  return web_contents->GetOrCreateRootBrowserAccessibilityManager();
+  return web_contents->GetRootBrowserAccessibilityManager();
 }
 
 // Retrieve the accessibility node in the subtree that matches the accessibility
@@ -3781,7 +3781,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, HasHWNDAfterNavigation) {
   // At this point the root of the accessibility tree shouldn't have an HWND
   // because we never gave a parent window to the RWHVA.
   BrowserAccessibilityManagerWin* manager =
-      static_cast<BrowserAccessibilityManagerWin*>(GetManager());
+      static_cast<BrowserAccessibilityManagerWin*>(
+          web_contents->GetRootBrowserAccessibilityManager());
   ASSERT_EQ(nullptr, manager->GetParentHWND());
 
   // Now add the RWHVA's window to the root window and ensure that we have

@@ -1678,8 +1678,6 @@ if (!is_android) {
         "../browser/extensions/api/desktop_capture/desktop_capture_apitest.cc",
         "../browser/extensions/api/developer_private/developer_private_apitest.cc",
         "../browser/extensions/api/downloads/downloads_api_browsertest.cc",
-        "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
-        "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
         "../browser/extensions/api/extension_action/browser_action_apitest.cc",
         "../browser/extensions/api/extension_action/browser_action_browsertest.cc",
         "../browser/extensions/api/extension_action/extension_action_apitest.cc",
@@ -1715,9 +1713,6 @@ if (!is_android) {
         "../browser/extensions/api/page_capture/page_capture_apitest.cc",
         "../browser/extensions/api/passwords_private/passwords_private_apitest.cc",
         "../browser/extensions/api/permissions/permissions_apitest.cc",
-        "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
-        "../browser/extensions/api/platform_keys/platform_keys_test_base.cc",
-        "../browser/extensions/api/platform_keys/platform_keys_test_base.h",
         "../browser/extensions/api/preference/preference_apitest.cc",
         "../browser/extensions/api/processes/processes_apitest.cc",
         "../browser/extensions/api/proxy/proxy_apitest.cc",
@@ -1735,7 +1730,6 @@ if (!is_android) {
         "../browser/extensions/api/tab_capture/tab_capture_performance_test_base.h",
         "../browser/extensions/api/tab_capture/tab_capture_performancetest.cc",
         "../browser/extensions/api/tabs/tabs_test.cc",
-        "../browser/extensions/api/terminal/terminal_private_apitest.cc",
         "../browser/extensions/api/test/apitest_apitest.cc",
         "../browser/extensions/api/top_sites/top_sites_apitest.cc",
         "../browser/extensions/api/web_navigation/web_navigation_apitest.cc",
@@ -1887,7 +1881,15 @@ if (!is_android) {
         sources += [
           "../browser/accessibility/accessibility_extension_api_browsertest.cc",
           "../browser/apps/platform_apps/api/arc_apps_private/arc_apps_private_apitest.cc",
+          "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
+          "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
+          "../browser/extensions/api/force_installed_affiliated_extension_apitest.cc",
+          "../browser/extensions/api/force_installed_affiliated_extension_apitest.h",
+          "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
+          "../browser/extensions/api/platform_keys/platform_keys_test_base.cc",
+          "../browser/extensions/api/platform_keys/platform_keys_test_base.h",
           "../browser/extensions/api/system_display/system_display_chromeos_apitest.cc",
+          "../browser/extensions/api/terminal/terminal_private_apitest.cc",
           "../browser/extensions/api/terminal/terminal_private_browsertest.cc",
           "../browser/extensions/clipboard_extension_apitest_chromeos.cc",
         ]
@@ -2551,16 +2553,6 @@ if (!is_android) {
         "data/webui/certificate_viewer_ui_test-inl.h",
       ]
       sources += [ "../browser/profiles/profile_window_browsertest.cc" ]
-      if (enable_extensions) {
-        sources -= [
-          "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
-          "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
-          "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
-          "../browser/extensions/api/platform_keys/platform_keys_test_base.cc",
-          "../browser/extensions/api/platform_keys/platform_keys_test_base.h",
-          "../browser/extensions/api/terminal/terminal_private_apitest.cc",
-        ]
-      }
       if (toolkit_views) {
         sources -= [
           "../browser/ui/views/select_file_dialog_extension_browsertest.cc",

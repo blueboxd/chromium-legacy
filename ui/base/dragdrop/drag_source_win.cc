@@ -24,7 +24,7 @@ HRESULT DragSourceWin::QueryContinueDrag(BOOL escape_pressed, DWORD key_state) {
     return DRAGDROP_S_CANCEL;
   }
 
-  if (!(key_state & MK_LBUTTON)) {
+  if (!(key_state & MK_LBUTTON) && !(key_state & MK_RBUTTON)) {
     OnDragSourceDrop();
     return DRAGDROP_S_DROP;
   }

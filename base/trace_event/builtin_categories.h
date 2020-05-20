@@ -148,6 +148,7 @@
   X("test_gpu")                                                          \
   X("test_tracing")                                                      \
   X("toplevel")                                                          \
+  X("toplevel.flow")                                                     \
   X("ui")                                                                \
   X("v8")                                                                \
   X("v8.execute")                                                        \
@@ -223,7 +224,6 @@
   X(TRACE_DISABLED_BY_DEFAULT("SyncFileSystem"))                         \
   X(TRACE_DISABLED_BY_DEFAULT("system_stats"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("thread_pool_diagnostics"))                \
-  X(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"))                          \
   X(TRACE_DISABLED_BY_DEFAULT("toplevel.ipc"))                           \
   X(TRACE_DISABLED_BY_DEFAULT("user_action_samples"))                    \
   X(TRACE_DISABLED_BY_DEFAULT("v8.compile"))                             \

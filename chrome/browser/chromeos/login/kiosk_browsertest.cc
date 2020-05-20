@@ -702,7 +702,7 @@ class KioskTest : public OobeBaseTest {
     // Check that the app had been informed that it is running in a kiosk
     // session.
     if (check_launch_data)
-      EXPECT_TRUE(launch_data_check_listener.WaitUntilSatisfied());
+      EXPECT_TRUE(launch_data_check_listener.was_satisfied());
   }
 
   void WaitForAppLaunchSuccess() {

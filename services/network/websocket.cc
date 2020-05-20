@@ -206,6 +206,7 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
     impl_->Reset();
     return;
   }
+  impl_->data_pipe_use_tracker_.Activate();
   const MojoResult mojo_result = impl_->writable_watcher_.Watch(
       impl_->writable_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
       MOJO_WATCH_CONDITION_SATISFIED,
@@ -386,6 +387,7 @@ WebSocket::WebSocket(
     mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
     mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
+    DataPipeUseTracker data_pipe_use_tracker,
     base::TimeDelta delay)
     : factory_(factory),
       handshake_client_(std::move(handshake_client)),
@@ -404,7 +406,8 @@ WebSocket::WebSocket(
                         base::ThreadTaskRunnerHandle::Get()),
       readable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                        base::ThreadTaskRunnerHandle::Get()) {
+                        base::ThreadTaskRunnerHandle::Get()),
+      data_pipe_use_tracker_(std::move(data_pipe_use_tracker)) {
   DCHECK(handshake_client_);
   // If |require_network_isolation_key| is set on the URLRequestContext,
   // |isolation_info| must not be empty.
@@ -811,6 +814,7 @@ void WebSocket::Reset() {
   auth_handler_.reset();
   header_client_.reset();
   receiver_.reset();
+  data_pipe_use_tracker_.Reset();
 
   // net::WebSocketChannel requires that we delete it at this point.
   channel_.reset();

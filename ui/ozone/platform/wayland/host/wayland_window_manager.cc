@@ -20,6 +20,11 @@ void WaylandWindowManager::RemoveObserver(WaylandWindowObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void WaylandWindowManager::NotifyWindowConfigured(WaylandWindow* window) {
+  for (WaylandWindowObserver& observer : observers_)
+    observer.OnWindowConfigured(window);
+}
+
 void WaylandWindowManager::GrabLocatedEvents(WaylandWindow* window) {
   DCHECK_NE(located_events_grabber_, window);
 

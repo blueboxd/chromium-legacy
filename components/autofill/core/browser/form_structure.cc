@@ -394,6 +394,22 @@ std::ostream& operator<<(
   return out;
 }
 
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillQueryResponse& response) {
+  for (const auto& form : response.form_suggestions()) {
+    out << "\nForm";
+    for (const auto& field : form.field_suggestions()) {
+      out << "\n Field\n  signature: " << field.field_signature();
+      if (field.has_primary_type_prediction())
+        out << "\n  primary_type_prediction: "
+            << field.primary_type_prediction();
+      for (const auto& prediction : field.predictions())
+        out << "\n  prediction: " << prediction.type();
+    }
+  }
+  return out;
+}
+
 // Returns true iff all form fields autofill types are in |contained_types|.
 bool AllTypesCaptured(const FormStructure& form,
                       const ServerFieldTypeSet& contained_types) {
@@ -790,8 +806,8 @@ void FormStructure::ParseApiQueryResponse(
   if (!response.ParseFromString(decoded_payload))
     return;
 
-  // TODO(vincb): Make an ostream overloaded function for this.
-  VLOG(1) << "Autofill query response from API was successfully parsed";
+  VLOG(1) << "Autofill query response from API was successfully parsed: "
+          << response;
 
   ProcessQueryResponse(CreateLegacyResponseFromApiResponse(response), forms,
                        form_interactions_ukm_logger);
@@ -2271,6 +2287,43 @@ void FormStructure::RationalizeTypeRelationships() {
       }
     }
   }
+}
+
+std::ostream& operator<<(std::ostream& buffer, const FormStructure& form) {
+  buffer << "\nForm signature: "
+         << base::StrCat({base::NumberToString(form.form_signature().value()),
+                          " - ",
+                          base::NumberToString(
+                              HashFormSignature(form.form_signature()))});
+  buffer << "\n Form name: " << form.form_name();
+  buffer << "\n Unique renderer Id: " << form.unique_renderer_id().value();
+  buffer << "\n Target URL:" << form.target_url();
+  for (size_t i = 0; i < form.field_count(); ++i) {
+    buffer << "\n Field " << i << ": ";
+    const AutofillField* field = form.field(i);
+    buffer << "\n  Signature: "
+           << base::StrCat(
+                  {base::NumberToString(field->GetFieldSignature().value()),
+                   " - ",
+                   base::NumberToString(
+                       HashFieldSignature(field->GetFieldSignature()))});
+    buffer << "\n  Name: " << field->parseable_name();
+
+    auto type = field->Type().ToString();
+    auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
+    auto server_type = AutofillType(field->server_type()).ToString();
+
+    buffer << "\n  Type: "
+           << base::StrCat({type, " (heuristic: ", heuristic_type,
+                            ", server: ", server_type, ")"});
+    buffer << "\n  Section: " << field->section;
+
+    constexpr size_t kMaxLabelSize = 100;
+    const base::string16 truncated_label =
+        field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
+    buffer << "\n  Label: " << truncated_label;
+  }
+  return buffer;
 }
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {

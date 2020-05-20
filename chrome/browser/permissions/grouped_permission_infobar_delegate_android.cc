@@ -60,8 +60,17 @@ base::string16 GroupedPermissionInfoBarDelegate::GetCompactMessageText() const {
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetCompactLinkText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_NOTIFICATION_QUIET_PERMISSION_MINI_INFOBAR_DETAILS_LINK);
+  switch (QuietNotificationPermissionUiConfig::GetMiniInfobarExpandLinkText()) {
+    case QuietNotificationPermissionUiConfig::InfobarLinkTextVariation::kManage:
+      return l10n_util::GetStringUTF16(IDS_NOTIFICATION_BUTTON_MANAGE);
+    case QuietNotificationPermissionUiConfig::InfobarLinkTextVariation::
+        kDetails:
+      return l10n_util::GetStringUTF16(
+          IDS_NOTIFICATION_QUIET_PERMISSION_MINI_INFOBAR_DETAILS_LINK);
+  }
+
+  NOTREACHED();
+  return base::string16();
 }
 
 // TODO(crbug.com/1082737): Many methods of this class switches on the quiet UI

@@ -25,6 +25,10 @@ NSUserActivity* ActivityToLoadURL(const GURL& url,
                                   const web::Referrer& referrer,
                                   bool in_incognito);
 
+// Create a new activity that opens a new regular (non-incognito) tab, loading
+// |url|.
+NSUserActivity* ActivityToLoadURL(const GURL& url);
+
 // true if |activity| is one that indicates a URL load (including loading the
 // new tab page in a new tab).
 bool ActivityIsURLLoad(NSUserActivity* activity);

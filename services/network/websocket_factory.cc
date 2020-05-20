@@ -64,6 +64,7 @@ void WebSocketFactory::CreateWebSocket(
       options, has_raw_headers_access, std::move(handshake_client),
       std::move(auth_handler), std::move(header_client),
       throttler_.IssuePendingConnectionTracker(process_id),
+      DataPipeUseTracker(context_->network_service(), DataPipeUser::kWebSocket),
       throttler_.CalculateDelay(process_id)));
 }
 

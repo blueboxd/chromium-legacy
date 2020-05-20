@@ -22,6 +22,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/websockets/websocket_event_interface.h"
+#include "services/network/network_service.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket_throttler.h"
@@ -66,6 +67,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
       WebSocketThrottler::PendingConnection pending_connection_tracker,
+      DataPipeUseTracker,
       base::TimeDelta delay);
   ~WebSocket() override;
 
@@ -210,6 +212,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::SimpleWatcher readable_watcher_;
   base::queue<DataFrame> pending_send_data_frames_;
   bool wait_for_readable_ = false;
+
+  DataPipeUseTracker data_pipe_use_tracker_;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

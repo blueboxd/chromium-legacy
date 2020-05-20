@@ -212,9 +212,8 @@ bool ChannelNacl::Send(Message* message) {
   Logging::GetInstance()->OnSendMessage(message_ptr.get());
 #endif  // BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 
-  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                         "ChannelNacl::Send", message->header()->flags,
-                         TRACE_EVENT_FLAG_FLOW_OUT);
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "ChannelNacl::Send",
+                         message->header()->flags, TRACE_EVENT_FLAG_FLOW_OUT);
   output_queue_.push_back(std::move(message_ptr));
   if (!waiting_connect_)
     return ProcessOutgoingMessages();

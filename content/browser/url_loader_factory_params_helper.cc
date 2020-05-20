@@ -227,7 +227,7 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
   //
   // We may not be able to allow powerful APIs such as memory measurement APIs
   // (see https://crbug.com/887967) without removing this call.
-  net::IsolationInfo isolation_info;
+  net::IsolationInfo isolation_info = net::IsolationInfo::CreateTransient();
   base::Optional<base::UnguessableToken> top_frame_token = base::nullopt;
 
   return CreateParams(

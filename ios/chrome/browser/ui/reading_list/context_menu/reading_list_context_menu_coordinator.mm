@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/context_menu/reading_list_context_menu_params.h"
+#import "ios/chrome/browser/ui/util/multi_window_support.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
@@ -90,6 +91,20 @@ enum UMAContextMenuAction {
                                               NEW_TAB, ENUM_MAX);
                   }
                    style:UIAlertActionStyleDefault];
+
+  if (IsMultiwindowSupported()) {
+    // Add "Open In New Window" option.
+    NSString* openInNewWindowTitle =
+        l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_OPENINNEWWINDOW);
+    [self
+        addItemWithTitle:openInNewWindowTitle
+                  action:^{
+                    [weakDelegate
+                        openURLInNewWindowForContextMenuWithParams:weakParams];
+                    // TODO(crbug.com/1084907): Add metrics.
+                  }
+                   style:UIAlertActionStyleDefault];
+  }
 
   // Add "Open In New Incognito Tab" option;
   NSString* openInNewTabIncognitoTitle =

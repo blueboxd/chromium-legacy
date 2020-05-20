@@ -56,7 +56,6 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(ShowGaiaDialog, void(const AccountId&));
   MOCK_METHOD0(HideOobeDialog, void());
   MOCK_METHOD1(UpdateOobeDialogState, void(ash::OobeDialogState state));
-  MOCK_METHOD0(GetUsers, const user_manager::UserList(void));
 
   MOCK_METHOD1(CompleteLogin, void(const UserContext&));
   MOCK_METHOD0(OnGaiaScreenReady, void());

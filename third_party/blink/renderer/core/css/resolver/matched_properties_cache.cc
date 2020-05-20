@@ -63,8 +63,19 @@ void CachedMatchedProperties::Set(
 
   DCHECK(RuntimeEnabledFeatures::MPCDependenciesEnabled() ||
          dependencies.IsEmpty());
-  for (const CSSPropertyName& name : dependencies)
-    this->dependencies.push_back(name);
+  if (dependencies.size()) {
+    // Plus one for g_null_atom.
+    this->dependencies =
+        std::make_unique<AtomicString[]>(dependencies.size() + 1);
+
+    size_t index = 0;
+    for (const CSSPropertyName& name : dependencies) {
+      DCHECK_LT(index, dependencies.size());
+      this->dependencies[index++] = name.ToAtomicString();
+    }
+    DCHECK_EQ(index, dependencies.size());
+    this->dependencies[index] = g_null_atom;
+  }
 }
 
 void CachedMatchedProperties::Clear() {
@@ -72,16 +83,26 @@ void CachedMatchedProperties::Clear() {
   matched_properties_types.clear();
   computed_style = nullptr;
   parent_computed_style = nullptr;
-  dependencies.clear();
+  dependencies.reset();
 }
 
 bool CachedMatchedProperties::DependenciesEqual(
     const StyleResolverState& state) {
   if (!state.ParentStyle())
     return false;
+  if (parent_computed_style->IsEnsuredInDisplayNone() &&
+      !state.ParentStyle()->IsEnsuredInDisplayNone()) {
+    // If we cached a ComputedStyle in a display:none subtree we would not have
+    // triggered fetches for external resources and have StylePendingImages in
+    // the ComputedStyle. Instead of having to inspect the cached ComputedStyle
+    // for such resources, don't use a cached ComputedStyle when it was cached
+    // in display:none but is now rendered.
+    return false;
+  }
 
-  for (const CSSPropertyName& name : dependencies) {
-    CSSPropertyRef ref(name, state.GetDocument());
+  for (const AtomicString* name = dependencies.get(); name && !name->IsNull();
+       name++) {
+    CSSPropertyRef ref(*name, state.GetDocument());
     DCHECK(ref.IsValid());
     if (!ref.GetProperty().ComputedValuesEqual(*parent_computed_style,
                                                *state.ParentStyle())) {

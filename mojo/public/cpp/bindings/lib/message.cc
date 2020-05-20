@@ -102,8 +102,8 @@ void CreateSerializedMessageObject(uint32_t name,
                                    std::vector<ScopedHandle>* handles,
                                    ScopedMessageHandle* out_handle,
                                    internal::Buffer* out_buffer) {
-  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                         "mojo::Message Send", MANGLE_MESSAGE_ID(trace_id),
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "mojo::Message Send",
+                         MANGLE_MESSAGE_ID(trace_id),
                          TRACE_EVENT_FLAG_FLOW_OUT);
 
   ScopedMessageHandle handle;
@@ -148,8 +148,8 @@ void SerializeUnserializedContext(MojoMessageHandle message,
       reinterpret_cast<internal::UnserializedMessageContext*>(context_value);
   uint32_t trace_id = GetTraceId(context);
 
-  TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                         "mojo::Message Send", MANGLE_MESSAGE_ID(trace_id),
+  TRACE_EVENT_WITH_FLOW0("toplevel.flow", "mojo::Message Send",
+                         MANGLE_MESSAGE_ID(trace_id),
                          TRACE_EVENT_FLAG_FLOW_OUT);
 
   void* buffer;

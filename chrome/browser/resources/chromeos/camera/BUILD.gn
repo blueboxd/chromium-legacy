@@ -109,6 +109,7 @@ copy("chrome_camera_app_js") {
     "src/js/tooltip.js",
     "src/js/type.js",
     "src/js/util.js",
+    "src/js/waitable_event.js",
   ]
 
   outputs = [ "$chrome_camera_app_dir/js/{{source_file_part}}" ]
@@ -155,7 +156,6 @@ copy("chrome_camera_app_js_models") {
     "src/js/models/nop_video_processor.js",
     "src/js/models/result_saver.js",
     "src/js/models/video_saver.js",
-    "src/js/models/waitable_event.js",
   ]
 
   outputs = [ "$chrome_camera_app_dir/js/models/{{source_file_part}}" ]

@@ -10,25 +10,33 @@
   <template>
     <style include="oobe-dialog-host"></style>
     <link rel="stylesheet" href="recommend_apps.css">
-    <oobe-dialog id="recommend-apps-dialog" role="dialog" has-buttons
+    <oobe-dialog id="loadingDialog" role="dialog" no-header
+        no-footer-padding hidden="[[!isStep_(uiState_, 'loading')]]">
+      <div slot="footer" class="flex layout vertical center center-justified">
+        <throbber-notice text-key="recommendAppsLoading">
+        </throbber-notice>
+      </div>
+    </oobe-dialog>
+    <oobe-dialog id="appsDialog" role="dialog" has-buttons
         title-key="recommendAppsScreenTitle"
         aria-label$="[[i18nDynamic(locale, 'recommendAppsScreenTitle')]]"
-        no-footer-padding footer-shrinkable class="recommend-apps-loading">
+        no-footer-padding footer-shrinkable
+        hidden="[[!isStep_(uiState_, 'list')]]">
       <iron-icon src="chrome://oobe/playstore.svg" slot="oobe-icon">
       </iron-icon>
-      <div id="subtitle" slot="subtitle"></div>
-      <div id="app-list-view-container" slot="footer">
-        <webview id="app-list-view"></webview>
+      <div id="subtitle" slot="subtitle">
+        [[i18nDynamic(locale, 'recommendAppsScreenDescription', appCount_)]]
       </div>
-      <div class="app-list-loading" slot="footer">
-        <p>[[i18nDynamic(locale, 'recommendAppsLoading')]]</p>
+      <div id="app-list-view-container" slot="footer">
+        <webview id="appView" on-message="onMessage_"></webview>
       </div>
       <div slot="bottom-buttons" class="layout horizontal end-justified">
-        <oobe-text-button id="recommend-apps-skip-button"
+        <oobe-text-button id="skipButton"
             text-key="recommendAppsSkip" on-tap="onSkip_" border>
         </oobe-text-button>
-        <oobe-next-button id="recommend-apps-install-button"
-            text-key="recommendAppsInstall" on-tap="onInstall_" inverse>
+        <oobe-next-button id="installButton" on-tap="onInstall_" inverse
+            text-key="recommendAppsInstall"
+            disabled="[[!canProceed_(appsSelected_)]]">
         </oobe-next-button>
       </div>
     </oobe-dialog>

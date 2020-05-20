@@ -88,7 +88,7 @@ void ExplicitSynchronizationClient::Run() {
             .toSkColor());
 
     // Create an EGLSyncKHR object to signal when rendering is done.
-    gr_context_->flush();
+    gr_context_->flushAndSubmit();
     buffer->egl_sync.reset(new ScopedEglSync(
         eglCreateSyncKHR(eglGetCurrentDisplay(), egl_sync_type_, nullptr)));
     DCHECK(buffer->egl_sync->is_valid());

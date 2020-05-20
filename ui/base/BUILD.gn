@@ -178,6 +178,8 @@ jumbo_component("base") {
     "window_open_disposition.h",
   ]
 
+  libs = []
+
   if (is_android) {
     sources += [
       "device_form_factor_android.cc",
@@ -207,6 +209,8 @@ jumbo_component("base") {
       "win/accessibility_misc_utils.cc",
       "win/accessibility_misc_utils.h",
       "win/atl_module.h",
+      "win/event_creation_utils.cc",
+      "win/event_creation_utils.h",
       "win/foreground_helper.cc",
       "win/foreground_helper.h",
       "win/hidden_window.cc",
@@ -233,6 +237,11 @@ jumbo_component("base") {
       "win/touch_input.h",
       "win/window_event_target.cc",
       "win/window_event_target.h",
+    ]
+    ldflags = [ "/DELAYLOAD:dwmapi.dll" ]
+    libs += [
+      "dwmapi.lib",
+      "wtsapi32.lib",
     ]
   }
 
@@ -549,29 +558,10 @@ jumbo_component("base") {
     deps += [ "//ui/base/clipboard" ]
   }
 
-  libs = []
   if (is_win) {
     sources += [
       "cursor/cursor_loader_win.cc",
       "cursor/cursor_loader_win.h",
-    ]
-    deps += [ "//third_party/wtl" ]
-    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
-                            # which is uninteresting.
-
-    ldflags = [
-      "/DELAYLOAD:d2d1.dll",
-      "/DELAYLOAD:d3d10_1.dll",
-      "/DELAYLOAD:dwmapi.dll",
-    ]
-    libs += [
-      "d2d1.lib",
-      "d3d10_1.lib",
-      "dwmapi.lib",
-      "d2d1.lib",
-      "dwmapi.lib",
-      "oleacc.lib",
-      "wtsapi32.lib",
     ]
   } else {
     if (!use_aura) {
@@ -1114,23 +1104,9 @@ test("ui_base_unittests") {
   if (is_win) {
     sources += [
       "dragdrop/os_exchange_data_win_unittest.cc",
+      "view_prop_unittest.cc",
       "win/hwnd_subclass_unittest.cc",
     ]
-
-    ldflags = [
-      "/DELAYLOAD:d2d1.dll",
-      "/DELAYLOAD:d3d10_1.dll",
-    ]
-    libs = [
-      "d2d1.lib",
-      "d3d10_1.lib",
-      "imm32.lib",
-      "oleacc.lib",
-    ]
-  }
-
-  if (is_win) {
-    sources += [ "view_prop_unittest.cc" ]
   }
 
   if (is_android) {

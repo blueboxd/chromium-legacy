@@ -107,9 +107,6 @@ class ASH_PUBLIC_EXPORT LoginScreenClient {
   // so the user does not need to type the account email.
   virtual void ShowGaiaSignin(const AccountId& prefilled_account) = 0;
 
-  // Hides the Gaia sign-in dialog if it was open.
-  virtual void HideGaiaSignin() = 0;
-
   // Notification that the remove user warning was shown.
   virtual void OnRemoveUserWarningShown() = 0;
 

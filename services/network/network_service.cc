@@ -188,6 +188,33 @@ void HandleBadMessage(const std::string& error) {
 
 }  // namespace
 
+DataPipeUseTracker::DataPipeUseTracker(NetworkService* network_service,
+                                       DataPipeUser user)
+    : network_service_(network_service), user_(user) {}
+
+DataPipeUseTracker::DataPipeUseTracker(DataPipeUseTracker&& that)
+    : DataPipeUseTracker(that.network_service_, that.user_) {
+  this->state_ = that.state_;
+  that.state_ = State::kReset;
+}
+
+DataPipeUseTracker::~DataPipeUseTracker() {
+  Reset();
+}
+
+void DataPipeUseTracker::Activate() {
+  DCHECK_EQ(state_, State::kInit);
+  network_service_->OnDataPipeCreated(user_);
+  state_ = State::kActivated;
+}
+
+void DataPipeUseTracker::Reset() {
+  if (state_ == State::kActivated) {
+    network_service_->OnDataPipeDropped(user_);
+  }
+  state_ = State::kReset;
+}
+
 // static
 const base::TimeDelta NetworkService::kInitialDohProbeTimeout =
     base::TimeDelta::FromSeconds(5);
@@ -259,6 +286,9 @@ NetworkService::NetworkService(
 
   if (!delay_initialization_until_set_client)
     Initialize(mojom::NetworkServiceParams::New());
+
+  metrics_trigger_timer_.Start(FROM_HERE, base::TimeDelta::FromMinutes(20),
+                               this, &NetworkService::ReportMetrics);
 }
 
 void NetworkService::Initialize(mojom::NetworkServiceParamsPtr params,
@@ -768,6 +798,23 @@ void NetworkService::OnBeforeURLRequest() {
   MaybeStartUpdateLoadInfoTimer();
 }
 
+void NetworkService::OnDataPipeCreated(DataPipeUser user) {
+  auto& entry = data_pipe_use_[user];
+  ++entry.current;
+  entry.max = std::max(entry.max, entry.current);
+}
+
+void NetworkService::OnDataPipeDropped(DataPipeUser user) {
+  auto& entry = data_pipe_use_[user];
+  DCHECK_GT(entry.current, 0);
+  --entry.current;
+  entry.min = std::min(entry.min, entry.current);
+}
+
+void NetworkService::StopMetricsTimerForTesting() {
+  metrics_trigger_timer_.Stop();
+}
+
 void NetworkService::DestroyNetworkContexts() {
   // Delete NetworkContexts. If there's a primary NetworkContext, it must be
   // deleted after all other NetworkContexts, to avoid use-after-frees.
@@ -879,6 +926,23 @@ void NetworkService::AckUpdateLoadInfo() {
   DCHECK(waiting_on_load_state_ack_);
   waiting_on_load_state_ack_ = false;
   MaybeStartUpdateLoadInfoTimer();
+}
+
+void NetworkService::ReportMetrics() {
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForUrlLoader.Min",
+                             data_pipe_use_[DataPipeUser::kUrlLoader].min);
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForUrlLoader.Max",
+                             data_pipe_use_[DataPipeUser::kUrlLoader].max);
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForWebSocket.Min",
+                             data_pipe_use_[DataPipeUser::kWebSocket].min);
+  UMA_HISTOGRAM_COUNTS_10000("Net.DataPipeUseForWebSocket.Max",
+                             data_pipe_use_[DataPipeUser::kWebSocket].max);
+
+  for (auto& pair : data_pipe_use_) {
+    DataPipeUsage& entry = pair.second;
+    entry.max = entry.current;
+    entry.min = entry.current;
+  }
 }
 
 void NetworkService::Bind(

@@ -878,16 +878,12 @@ void KeyEvent::InitializeNative() {
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, time_stamp());
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT);
 
-  KeyEvent** last_key_event = &last_key_event_;
+  // Check if this is a key repeat. This must be called before initial flags
+  // processing, e.g: NormalizeFlags(), to avoid issues like crbug.com/1069690.
+  if (IsRepeated(GetLastKeyEvent()))
+    set_flags(flags() | ui::EF_IS_REPEAT);
 
 #if defined(USE_X11)
-  // Use a different static variable for key events that have non standard
-  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
-  // to detect the re-posted event for example. crbug.com/385873.
-  if (properties() && properties()->contains(kPropertyKeyboardIBusFlag)) {
-    last_key_event = &last_ibus_key_event_;
-  }
-
   NormalizeFlags();
 #elif defined(OS_WIN)
   // Only Windows has native character events.
@@ -900,9 +896,6 @@ void KeyEvent::InitializeNative() {
     set_flags(adjusted_flags);
   }
 #endif
-
-  if (IsRepeated(last_key_event))
-    set_flags(flags() | ui::EF_IS_REPEAT);
 }
 
 void KeyEvent::ApplyLayout() const {
@@ -993,6 +986,19 @@ bool KeyEvent::IsRepeated(KeyEvent** last_key_event) {
   *last_key_event = new KeyEvent(*this);
 
   return false;
+}
+
+KeyEvent** KeyEvent::GetLastKeyEvent() {
+#if defined(USE_X11)
+  // Use a different static variable for key events that have non standard
+  // state masks as it may be reposted by an IME. IBUS-GTK uses this field
+  // to detect the re-posted event for example. crbug.com/385873.
+  return properties() && properties()->contains(kPropertyKeyboardIBusFlag)
+             ? &last_ibus_key_event_
+             : &last_key_event_;
+#else
+  return &last_key_event_;
+#endif
 }
 
 DomKey KeyEvent::GetDomKey() const {

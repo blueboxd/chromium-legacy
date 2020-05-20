@@ -8,12 +8,9 @@ import android.graphics.drawable.Drawable;
 
 import androidx.annotation.Nullable;
 
-import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.task.PostTask;
 import org.chromium.components.autofill.EditableOption;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
-import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -21,7 +18,6 @@ import org.chromium.payments.mojom.PaymentOptions;
 import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
 import org.chromium.payments.mojom.PaymentShippingOption;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +25,6 @@ import java.util.Set;
 /**
  * The base class for a single payment app, e.g., a payment handler.
  */
-@JNINamespace("payments::android")
 public abstract class PaymentApp extends EditableOption {
     /**
      * Whether complete and valid autofill data for merchant's request is available, e.g., if
@@ -38,64 +33,6 @@ public abstract class PaymentApp extends EditableOption {
      * app, such as AutofillPaymentInstrument.
      */
     protected boolean mHaveRequestedAutofillData;
-
-    /**
-     * The interface for listener to payment method, shipping address, and shipping option change
-     * events. Note: What the spec calls "payment methods" in the context of a "change event", this
-     * code calls "apps".
-     * TODO(crbug.com/1083242): Move this interface into PaymentRequestUpdateEventListener.java
-     * after updating dependencies.
-     */
-    public interface PaymentRequestUpdateEventListener {
-        /**
-         * Called to notify merchant of payment method change. The payment app should block user
-         * interaction until updateWith() or onPaymentDetailsNotUpdated().
-         * https://w3c.github.io/payment-request/#paymentmethodchangeevent-interface
-         *
-         * @param methodName         Method name. For example, "https://google.com/pay". Should not
-         *                           be null or empty.
-         * @param stringifiedDetails JSON-serialized object. For example, {"type": "debit"}. Should
-         *                           not be null.
-         * @return Whether the payment state was valid.
-         */
-        @CalledByNative("PaymentRequestUpdateEventListener")
-        boolean changePaymentMethodFromInvokedApp(String methodName, String stringifiedDetails);
-
-        /**
-         * Called to notify merchant of shipping option change. The payment app should block user
-         * interaction until updateWith() or onPaymentDetailsNotUpdated().
-         * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
-         *
-         * @param shippingOptionId Selected shipping option Identifier, Should not be null or
-         *                         empty.
-         * @return Whether the payment state was valid.
-         */
-        @CalledByNative("PaymentRequestUpdateEventListener")
-        boolean changeShippingOptionFromInvokedApp(String shippingOptionId);
-
-        /**
-         * Called to notify merchant of shipping address change. The payment app should block user
-         * interaction until updateWith() or onPaymentDetailsNotUpdated().
-         * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
-         *
-         * @param shippingAddress Selected shipping address. Should not be null.
-         * @return Whether the payment state was valid.
-         */
-        boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress);
-
-        /**
-         * Called to notify merchant of shipping address change. The payment app should block user
-         * interaction until updateWith() or onPaymentDetailsNotUpdated().
-         * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
-         *
-         * @param shippingAddress Selected shipping address in serialized form. Should not be null.
-         * @return Whether the payment state was valid.
-         */
-        @CalledByNative("PaymentRequestUpdateEventListener")
-        default boolean changeShippingAddress(ByteBuffer shippingAddress) {
-            return changeShippingAddressFromInvokedApp(PaymentAddress.deserialize(shippingAddress));
-        }
-    }
 
     /**
      * The interface for the requester of payment details from the app.

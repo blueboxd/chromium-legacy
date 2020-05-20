@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/test/test_predicate_waiter.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/reset_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/policy/core/common/policy_types.h"
@@ -207,10 +209,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest,
 IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, DeviceLocalAccount) {
   EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
   em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
-  auto* account = proto.mutable_device_local_accounts()->add_account();
-  account->set_account_id("test");
-  account->set_type(
-      em::DeviceLocalAccountInfoProto_AccountType_ACCOUNT_TYPE_PUBLIC_SESSION);
+  policy::DeviceLocalAccountTestHelper::AddPublicSession(&proto, "test");
   RefreshDevicePolicy();
 
   // Wait for Gaia dialog to be hidden.
@@ -226,6 +225,35 @@ IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, DeviceLocalAccount) {
   chromeos::test::TestPredicateWaiter(base::BindRepeating([]() {
     return ash::LoginScreenTestApi::IsOobeDialogVisible();
   })).Wait();
+}
+
+// Tests that adding public accounts does not close the Oobe dialog when it
+// shows a screen different from the Gaia login screen.
+IN_PROC_BROWSER_TEST_F(DeviceLoginScreenPolicyBrowsertest, ResetScreen) {
+  chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  EXPECT_EQ(ash::LoginScreenTestApi::GetUsersCount(), 0);
+
+  // Switch to another (Reset) screen.
+  chromeos::LoginDisplayHost::default_host()->StartWizard(
+      chromeos::ResetView::kScreenId);
+  chromeos::OobeScreenWaiter(chromeos::ResetView::kScreenId).Wait();
+
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  policy::DeviceLocalAccountTestHelper::AddPublicSession(&proto, "test");
+  RefreshDevicePolicy();
+
+  // Wait for users to propagate.
+  chromeos::test::TestPredicateWaiter(base::BindRepeating([]() {
+    return ash::LoginScreenTestApi::GetUsersCount() > 0;
+  })).Wait();
+
+  // Oobe dialog should be open.
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+  // Oobe screen should not change.
+  EXPECT_EQ(
+      chromeos::LoginDisplayHost::default_host()->GetOobeUI()->current_screen(),
+      chromeos::ResetView::kScreenId);
 }
 
 }  // namespace policy

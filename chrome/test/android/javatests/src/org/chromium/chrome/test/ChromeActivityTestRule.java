@@ -140,6 +140,10 @@ public class ChromeActivityTestRule<T extends ChromeActivity> extends ActivityTe
     @Override
     protected void afterActivityFinished() {
         try {
+            if (mSetActivity != null) {
+                // Destroy the activity launched manually in this test rule.
+                ApplicationTestUtils.finishActivity(mSetActivity);
+            }
             ApplicationTestUtils.tearDown(InstrumentationRegistry.getTargetContext());
             Thread.setDefaultUncaughtExceptionHandler(mDefaultUncaughtExceptionHandler);
         } catch (Exception e) {

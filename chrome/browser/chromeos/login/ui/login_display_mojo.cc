@@ -64,7 +64,7 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
                             bool show_guest,
                             bool show_users,
                             bool show_new_user) {
-  host_->SetUsers(filtered_users);
+  host_->SetUserCount(filtered_users.size());
   auto* client = LoginScreenClient::Get();
 
   // ExistingUserController::DeviceSettingsChanged and others may initialize the

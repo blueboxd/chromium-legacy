@@ -445,16 +445,19 @@ class GpuIntegrationTest(
             gpu_tags.extend([gpu_vendor, gpu_device_tag])
       # all spaces and underscores in the tag will be replaced by dashes
       tags.extend([re.sub('[ _]', '-', tag) for tag in gpu_tags])
+
+      # Add tags based on GPU feature status.
+      skia_renderer = gpu_helper.GetSkiaRenderer(gpu_info.feature_status)
+      tags.append(skia_renderer)
+      use_vulkan = gpu_helper.GetVulkan(gpu_info.feature_status)
+      tags.append(use_vulkan)
+
     # If additional options have been set via '--extra-browser-args' check for
     # those which map to expectation tags. The '_browser_backend' attribute may
     # not exist in unit tests.
     if hasattr(browser, 'startup_args'):
-      skia_renderer = gpu_helper.GetSkiaRenderer(browser.startup_args)
-      tags.append(skia_renderer)
       use_gl = gpu_helper.GetGL(browser.startup_args)
       tags.append(use_gl)
-      use_vulkan = gpu_helper.GetVulkan(browser.startup_args)
-      tags.append(use_vulkan)
       use_skia_dawn = gpu_helper.GetSkiaDawn(browser.startup_args)
       tags.append(use_skia_dawn)
     return tags

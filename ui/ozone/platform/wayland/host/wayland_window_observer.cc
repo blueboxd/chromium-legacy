@@ -12,4 +12,6 @@ void WaylandWindowObserver::OnWindowAdded(WaylandWindow* window) {}
 
 void WaylandWindowObserver::OnWindowRemoved(WaylandWindow* window) {}
 
+void WaylandWindowObserver::OnWindowConfigured(WaylandWindow* window) {}
+
 }  // namespace ui

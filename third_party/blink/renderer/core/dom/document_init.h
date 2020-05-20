@@ -155,7 +155,6 @@ class CORE_EXPORT DocumentInit final {
   network::mojom::IPAddressSpace GetIPAddressSpace() const;
 
   DocumentInit& WithSrcdocDocument(bool is_srcdoc_document);
-  DocumentInit& WithBlockedByCSP(bool blocked_by_csp);
   DocumentInit& WithGrantLoadLocalResources(bool grant_load_local_resources);
 
   DocumentInit& WithRegistrationContext(V0CustomElementRegistrationContext*);
@@ -248,10 +247,6 @@ class CORE_EXPORT DocumentInit final {
   // affects security checks, since srcdoc's content comes directly from
   // the parent document, not from loading a URL.
   bool is_srcdoc_document_ = false;
-
-  // Whether the actual document was blocked by csp and we are creating a dummy
-  // empty document instead.
-  bool blocked_by_csp_ = false;
 
   // Whether the document should be able to access local file:// resources.
   bool grant_load_local_resources_ = false;

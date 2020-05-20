@@ -34,7 +34,7 @@ public class CustomTabNavigationBarController {
         Window window = activity.getWindow();
 
         boolean needsDarkButtons = !ColorUtils.shouldUseLightForegroundOnBackground(color);
-        boolean supportsDarkButtons = Build.VERSION.SDK_INT > Build.VERSION_CODES.O;
+        boolean supportsDarkButtons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
 
         if (supportsDarkButtons) {
             UiUtils.setNavigationBarIconColor(window.getDecorView().getRootView(),

@@ -663,6 +663,7 @@ TEST_F(NetworkServiceTest, DohProbe_NoPrimaryContext) {
 }
 
 TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
+  service()->StopMetricsTimerForTesting();
   mojom::NetworkContextParamsPtr context_params1 = CreateContextParams();
   context_params1->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context1;
@@ -726,6 +727,7 @@ TEST_F(NetworkServiceTest, DohProbe_ContextAddedBeforeTimeout) {
 }
 
 TEST_F(NetworkServiceTest, DohProbe_ContextAddedAfterTimeout) {
+  service()->StopMetricsTimerForTesting();
   net::DnsConfig config;
   config.nameservers.push_back(net::IPEndPoint());
   config.dns_over_https_servers.emplace_back("example.com",
@@ -752,6 +754,7 @@ TEST_F(NetworkServiceTest, DohProbe_ContextAddedAfterTimeout) {
 }
 
 TEST_F(NetworkServiceTest, DohProbe_ContextRemovedBeforeTimeout) {
+  service()->StopMetricsTimerForTesting();
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context;
@@ -780,6 +783,7 @@ TEST_F(NetworkServiceTest, DohProbe_ContextRemovedBeforeTimeout) {
 }
 
 TEST_F(NetworkServiceTest, DohProbe_ContextRemovedAfterTimeout) {
+  service()->StopMetricsTimerForTesting();
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
   context_params->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context;

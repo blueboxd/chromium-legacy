@@ -32,10 +32,10 @@ js_library("video_saver") {
     "mp4_video_processor.js",
     "nop_video_processor.js",
     "video_saver.js",
-    "waitable_event.js",
   ]
   deps = [
     "..:intent",
+    "..:waitable_event",
     "../externs:w3c_api",
     "../lib:comlink",
     "../lib:ffmpeg",

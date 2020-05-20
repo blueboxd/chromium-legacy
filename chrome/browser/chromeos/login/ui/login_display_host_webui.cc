@@ -1013,10 +1013,6 @@ void LoginDisplayHostWebUI::UpdateOobeDialogState(ash::OobeDialogState state) {
   ash::LoginScreen::Get()->GetModel()->NotifyOobeDialogState(state);
 }
 
-const user_manager::UserList LoginDisplayHostWebUI::GetUsers() {
-  return user_manager::UserList();
-}
-
 void LoginDisplayHostWebUI::ShowFeedback() {
   NOTREACHED();
 }

@@ -15,6 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/events/keycodes/keyboard_code_conversion_xkb.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/keycodes/keysym_to_unicode.h"
 #include "ui/gfx/x/x11.h"
 
@@ -1204,7 +1205,10 @@ int XKeysymForWindowsKeyCode(KeyboardCode keycode, bool shift) {
     case VKEY_RETURN:
       return XK_Return;
     case VKEY_SHIFT:
+    case VKEY_LSHIFT:
       return XK_Shift_L;
+    case VKEY_RSHIFT:
+      return XK_Shift_R;
     case VKEY_CONTROL:
       return XK_Control_L;
     case VKEY_MENU:

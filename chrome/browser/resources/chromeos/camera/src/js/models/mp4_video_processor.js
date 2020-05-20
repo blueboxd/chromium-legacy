@@ -5,11 +5,11 @@
 import {assert, assertNotReached} from '../chrome_util.js';
 import * as Comlink from '../lib/comlink.js';
 import runFFmpeg from '../lib/ffmpeg.js';
+import {WaitableEvent} from '../waitable_event.js';
 import {
   AsyncJobQueue,
   AsyncWriter,  // eslint-disable-line no-unused-vars
 } from './async_writer.js';
-import {WaitableEvent} from './waitable_event.js';
 
 /**
  * A file stream in Emscripten.

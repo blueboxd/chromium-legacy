@@ -114,6 +114,11 @@ const std::string& InternetConfigDialog::Id() {
   return dialog_id_;
 }
 
+void InternetConfigDialog::AdjustWidgetInitParams(
+    views::Widget::InitParams* params) {
+  params->type = views::Widget::InitParams::Type::TYPE_WINDOW_FRAMELESS;
+}
+
 void InternetConfigDialog::GetDialogSize(gfx::Size* size) const {
   const NetworkState* network =
       network_id_.empty() ? nullptr

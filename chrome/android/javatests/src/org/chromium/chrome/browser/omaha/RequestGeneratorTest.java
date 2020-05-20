@@ -13,6 +13,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -27,12 +28,8 @@ import org.chromium.chrome.test.omaha.AttributeFinder;
 import org.chromium.chrome.test.omaha.MockRequestGenerator;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.DeviceType;
 import org.chromium.chrome.test.omaha.MockRequestGenerator.SignedInStatus;
-import org.chromium.components.signin.AccountManagerFacadeImpl;
-import org.chromium.components.signin.AccountManagerFacadeProvider;
 import org.chromium.components.signin.identitymanager.IdentityManager;
-import org.chromium.components.signin.test.util.AccountHolder;
-import org.chromium.components.signin.test.util.FakeAccountManagerDelegate;
-import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.components.signin.test.util.AccountManagerTestRule;
 
 /**
  * Unit tests for the RequestGenerator class.
@@ -40,6 +37,9 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class RequestGeneratorTest {
     private static final String INSTALL_SOURCE = "install_source";
+
+    @Rule
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     @Test
     @SmallTest
@@ -187,15 +187,9 @@ public class RequestGeneratorTest {
         when(IdentityServicesProvider.get().getIdentityManager().hasPrimaryAccount())
                 .thenReturn(true);
 
-        FakeAccountManagerDelegate accountManager = new FakeAccountManagerDelegate(
-                FakeAccountManagerDelegate.DISABLE_PROFILE_DATA_SOURCE);
         for (Account account : accounts) {
-            accountManager.addAccountHolderExplicitly(AccountHolder.builder(account).build());
+            mAccountManagerTestRule.addAccount(account);
         }
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            AccountManagerFacadeProvider.setInstanceForTests(
-                    new AccountManagerFacadeImpl(accountManager));
-        });
 
         String sessionId = "random_session_id";
         String requestId = "random_request_id";

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
 #include "base/containers/unique_ptr_adapters.h"
@@ -59,7 +60,42 @@ class HttpAuthCacheCopier;
 class LegacyTLSConfigDistributor;
 class NetLogProxySink;
 class NetworkContext;
+class NetworkService;
 class NetworkUsageAccumulator;
+
+// DataPipeUseTracker tracks the mojo data pipe usage in the network
+// service.
+class COMPONENT_EXPORT(NETWORK_SERVICE) DataPipeUseTracker final {
+ public:
+  enum DataPipeUser {
+    kUrlLoader = 0,
+    kWebSocket = 1,
+  };
+  // |network_service| must outlive |this|.
+  DataPipeUseTracker(NetworkService* network_service, DataPipeUser user);
+  DataPipeUseTracker(DataPipeUseTracker&&);
+  ~DataPipeUseTracker();
+  DataPipeUseTracker(const DataPipeUseTracker&) = delete;
+  DataPipeUseTracker& operator=(const DataPipeUseTracker&) = delete;
+
+  // Call this when the associated data pipe is created.
+  void Activate();
+  // Call this when (one end of) the associated data pipe is dropped.
+  void Reset();
+
+ private:
+  enum State {
+    kInit,
+    kActivated,
+    kReset,
+  };
+  NetworkService* const network_service_;
+  const DataPipeUser user_;
+
+  State state_ = State::kInit;
+};
+
+using DataPipeUser = DataPipeUseTracker::DataPipeUser;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public mojom::NetworkService {
@@ -247,6 +283,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     return trust_token_key_commitments_.get();
   }
 
+  void OnDataPipeCreated(DataPipeUser user);
+  void OnDataPipeDropped(DataPipeUser user);
+  void StopMetricsTimerForTesting();
+
   static NetworkService* GetNetworkServiceForTesting();
 
  private:
@@ -270,6 +310,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // Invoked once the browser has acknowledged receiving the previous LoadInfo.
   // Starts timer call UpdateLoadInfo() again, if needed.
   void AckUpdateLoadInfo();
+
+  void ReportMetrics();
 
   bool initialized_ = false;
 
@@ -351,7 +393,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // acknowledged.
   bool waiting_on_load_state_ack_ = false;
 
-  // A timer that periodically calls ReportMetrics every hour.
+  // A timer that periodically calls ReportMetrics every 20 minutes.
   base::RepeatingTimer metrics_trigger_timer_;
 
   // Whether new NetworkContexts will be configured to partition their
@@ -369,6 +411,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // that renderer process (the renderer will proxy requests from PPAPI - such
   // requests should have their initiator origin within the set stored here).
   std::map<int, std::set<url::Origin>> plugin_origins_;
+
+  struct DataPipeUsage final {
+    int current = 0;
+    int max = 0;
+    int min = 0;
+  };
+  base::flat_map<DataPipeUser, DataPipeUsage> data_pipe_use_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkService);
 };

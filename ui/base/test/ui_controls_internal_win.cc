@@ -20,6 +20,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/win_util.h"
+#include "ui/base/win/event_creation_utils.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/keycodes/keyboard_code_conversion_win.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -497,48 +498,24 @@ bool SendKeyPressImpl(HWND window,
 bool SendMouseMoveImpl(int screen_x, int screen_y, base::OnceClosure task) {
   gfx::Point screen_point =
       display::win::ScreenWin::DIPToScreenPoint({screen_x, screen_y});
-  screen_x = screen_point.x();
-  screen_y = screen_point.y();
-
-  // Get the max screen coordinate for use in computing the normalized absolute
-  // coordinates required by SendInput.
-  const int max_x = ::GetSystemMetrics(SM_CXSCREEN) - 1;
-  const int max_y = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-
-  // Clamp the inputs.
-  if (screen_x < 0)
-    screen_x = 0;
-  else if (screen_x > max_x)
-    screen_x = max_x;
-  if (screen_y < 0)
-    screen_y = 0;
-  else if (screen_y > max_y)
-    screen_y = max_y;
 
   // Check if the mouse is already there.
   POINT current_pos;
   ::GetCursorPos(&current_pos);
-  if (screen_x == current_pos.x && screen_y == current_pos.y) {
+  if (screen_point.x() == current_pos.x && screen_point.y() == current_pos.y) {
     if (task)
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(task));
     return true;
   }
 
-  // Form the input data containing the normalized absolute coordinates. As of
-  // Windows 10 Fall Creators Update, moving to an absolute position of zero
-  // does not work. It seems that moving to 1,1 does, though.
-  INPUT input = {INPUT_MOUSE};
-  input.mi.dx =
-      static_cast<LONG>(std::max(1.0, std::ceil(screen_x * (65535.0 / max_x))));
-  input.mi.dy =
-      static_cast<LONG>(std::max(1.0, std::ceil(screen_y * (65535.0 / max_y))));
-  input.mi.dwFlags = MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE;
-
-  if (!::SendInput(1, &input, sizeof(input)))
+  if (!ui::SendMouseEvent(screen_point,
+                          MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MOVE)) {
     return false;
+  }
 
   if (task)
-    InputDispatcher::CreateForMouseMove(std::move(task), {screen_x, screen_y});
+    InputDispatcher::CreateForMouseMove(std::move(task),
+                                        {screen_point.x(), screen_point.y()});
   return true;
 }
 

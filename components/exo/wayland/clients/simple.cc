@@ -140,7 +140,7 @@ void Simple::Run(int frames,
     canvas->clear(kColors[++frame_count % base::size(kColors)]);
 
     if (gr_context_) {
-      gr_context_->flush();
+      gr_context_->flushAndSubmit();
       glFinish();
     }
 

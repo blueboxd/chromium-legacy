@@ -113,13 +113,8 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_BasicApiTest) {
 // The following test verifies that key events do not get sent on any page.
 // This is in preparation of deprecating the sendKeyEvents API.
 // TODO(crbug.com/1004628) Flakes on Windows and Linux
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_SendKeyEventsOnNormalPage DISABLED_SendKeyEventsOnNormalPage
-#else
-#define MAYBE_SendKeyEventsOnNormalPage SendKeyEventsOnNormalPage
-#endif
-IN_PROC_BROWSER_TEST_F(InputImeApiTest, MAYBE_SendKeyEventsOnNormalPage) {
-  // Navigates to special page that sendKeyEvents API has limition with.
+IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_SendKeyEventsOnNormalPage) {
+  // Navigates to special page that sendKeyEvents API has limitation with.
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   // Manipulates the focused text input client because the follow cursor
   // window requires the text input focus.
@@ -146,12 +141,8 @@ IN_PROC_BROWSER_TEST_F(InputImeApiTest, MAYBE_SendKeyEventsOnNormalPage) {
 // This is in preparation of deprecating the sendKeyEvents API.
 // TODO(https://crbug.com/795631): This test is failing on the Linux bot.
 // TODO(https://crbug.com/795631): This testis failing on Windows bot.
-#if defined(OS_WIN) || defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(InputImeApiTest, DISABLED_SendKeyEventsOnSpecialPage) {
-#else
-IN_PROC_BROWSER_TEST_F(InputImeApiTest, SendKeyEventsOnSpecialPage) {
-#endif
-  // Navigates to special page that sendKeyEvents API has limition with.
+  // Navigates to special page that sendKeyEvents API has limitation with.
   ui_test_utils::NavigateToURL(browser(), GURL("chrome://flags"));
 
   ui::InputMethod* input_method =

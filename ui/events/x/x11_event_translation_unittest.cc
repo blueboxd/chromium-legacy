@@ -10,7 +10,10 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/events_test_utils_x11.h"
 #include "ui/events/test/keyboard_layout.h"
@@ -152,6 +155,57 @@ TEST(XEventTranslationTest, ChangedMouseButtonFlags) {
   auto mouseev3 = ui::BuildMouseEventFromXEvent(*enter_event);
   EXPECT_TRUE(mouseev3);
   EXPECT_EQ(0, mouseev3->changed_button_flags());
+}
+
+// Verifies 'repeat' flag is properly set when key events for modifiers and
+// their counterparts are mixed. Ensures regressions like crbug.com/1069690
+// are not reintroduced in the future.
+TEST(XEventTranslationTest, KeyModifiersCounterpartRepeat) {
+  using base::TimeDelta;
+
+  // Use a TestTickClock so we have the power to control the time :)
+  test::ScopedEventTestTickClock test_clock;
+
+  // Create and init a XEvent for ShiftLeft key.
+  ui::ScopedXI2Event shift_l_pressed;
+  shift_l_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_LSHIFT, EF_NONE);
+
+  // Press ShiftLeft a first time and hold it.
+  auto keyev_shift_l_pressed = BuildKeyEventFromXEvent(*shift_l_pressed);
+  EXPECT_FALSE(keyev_shift_l_pressed->is_repeat());
+
+  // Create a few more ShiftLeft key events and ensure 'repeat' flag is set.
+  test_clock.Advance(TimeDelta::FromMilliseconds(100));
+  keyev_shift_l_pressed = BuildKeyEventFromXEvent(*shift_l_pressed);
+  EXPECT_TRUE(keyev_shift_l_pressed->is_repeat());
+
+  test_clock.Advance(TimeDelta::FromMilliseconds(200));
+  keyev_shift_l_pressed = BuildKeyEventFromXEvent(*shift_l_pressed);
+  EXPECT_TRUE(keyev_shift_l_pressed->is_repeat());
+
+  test_clock.Advance(TimeDelta::FromMilliseconds(500));
+  keyev_shift_l_pressed = BuildKeyEventFromXEvent(*shift_l_pressed);
+  EXPECT_TRUE(keyev_shift_l_pressed->is_repeat());
+
+  // Press and release ShiftRight and verify 'repeat' flag is not set.
+
+  // Create and init XEvent for emulating a ShiftRight key press.
+  ui::ScopedXI2Event shift_r_pressed;
+  shift_r_pressed.InitKeyEvent(ET_KEY_PRESSED, VKEY_RSHIFT, EF_SHIFT_DOWN);
+
+  test_clock.Advance(TimeDelta::FromSeconds(1));
+  auto keyev_shift_r_pressed = BuildKeyEventFromXEvent(*shift_r_pressed);
+  EXPECT_FALSE(keyev_shift_r_pressed->is_repeat());
+  EXPECT_EQ(ET_KEY_PRESSED, keyev_shift_r_pressed->type());
+
+  // Create and init XEvent for emulating a ShiftRight key release.
+  ui::ScopedXI2Event shift_r_released;
+  shift_r_released.InitKeyEvent(ET_KEY_RELEASED, VKEY_RSHIFT, EF_SHIFT_DOWN);
+
+  test_clock.Advance(TimeDelta::FromMilliseconds(300));
+  auto keyev_shift_r_released = BuildKeyEventFromXEvent(*shift_r_released);
+  EXPECT_FALSE(keyev_shift_r_released->is_repeat());
+  EXPECT_EQ(ET_KEY_RELEASED, keyev_shift_r_released->type());
 }
 
 }  // namespace ui

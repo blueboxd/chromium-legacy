@@ -97,6 +97,8 @@ blink::ContentSecurityPolicyPtr ConvertToBlink(
                               ConvertToBlink(std::move(list.second)));
   }
   policy->upgrade_insecure_requests = policy_in->upgrade_insecure_requests;
+  policy->sandbox = policy_in->sandbox;
+  policy->treat_as_public_address = policy_in->treat_as_public_address;
 
   for (auto& endpoint : policy_in->report_endpoints)
     policy->report_endpoints.push_back(String::FromUTF8(endpoint));

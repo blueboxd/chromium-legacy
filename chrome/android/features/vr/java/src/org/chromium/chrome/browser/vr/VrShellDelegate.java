@@ -1652,7 +1652,10 @@ public class VrShellDelegate
 
         // We get crashes on Android K related to surfaces if we manipulate the view hierarchy while
         // finishing.
-        if (mActivity.isFinishing()) return;
+        if (mActivity.isFinishing()) {
+            if (mVrShell != null) mVrShell.destroyWindowAndroid();
+            return;
+        }
 
         restoreWindowMode();
         mVrShell.pause();

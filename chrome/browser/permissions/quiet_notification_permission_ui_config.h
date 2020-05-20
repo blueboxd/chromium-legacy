@@ -10,6 +10,8 @@
 // Field trial configuration for the quiet notificaiton permission request UI.
 class QuietNotificationPermissionUiConfig {
  public:
+  enum class InfobarLinkTextVariation { kDetails = 0, kManage = 1 };
+
   // Name of the boolean variation parameter that determines if the quiet
   // notification permission prompt UI should be enabled adaptively after three
   // consecutive prompt denies.
@@ -39,6 +41,11 @@ class QuietNotificationPermissionUiConfig {
   // If the quiet UI is enabled in preferences, the quiet UI is always used.
   static const char kCrowdDenyHoldBackChance[];
 
+  // Name of the variation parameter that determines which experimental string
+  // to use for the link in the mini infobar in Android, which upon being
+  // clicked, expands the mini infobar to show more options.
+  static const char kMiniInfobarExpandLinkText[];
+
   // Whether or not adaptive activation is enabled. Adaptive activation means
   // that quiet notifications permission prompts will be turned on after three
   // consecutive prompt denies.
@@ -53,6 +60,9 @@ class QuietNotificationPermissionUiConfig {
   // crowd deny will be replaced by the normal UI. This is per individual
   // permission prompt.
   static double GetCrowdDenyHoldBackChance();
+
+  // The text of the link to be shown in the mini infobar in Android.
+  static InfobarLinkTextVariation GetMiniInfobarExpandLinkText();
 
   // Whether or not triggering via the abusive requests list is enabled. This
   // means that on sites with abusive permission request flows, the quiet UI

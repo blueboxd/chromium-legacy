@@ -59,6 +59,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // A way of converting an HWND into a content window.
   static aura::Window* GetContentWindowForHWND(HWND hwnd);
 
+  // Set to true when DesktopDragDropClientWin starts a touch-initiated drag
+  // drop and false when it finishes. While in touch drag, if pointer events are
+  // received, the equivalent mouse events are generated, because ole32
+  // ::DoDragDrop does not seem to handle pointer events.
+  void SetInTouchDrag(bool in_touch_drag);
+
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;
@@ -311,6 +317,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   // used to generate the OccludedWindowMouseEvents stat and can be removed
   // when that stat is no longer tracked.
   gfx::Point occluded_window_mouse_event_loc_;
+
+  bool in_touch_drag_ = false;
 
   // The z-order level of the window; the window exhibits "always on top"
   // behavior if > 0.

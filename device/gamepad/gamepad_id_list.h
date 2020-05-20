@@ -43,6 +43,7 @@ enum class GamepadId : uint32_t {
   kGoogleProduct2c40 = 0x18d12c40,
   kGoogleProduct9400 = 0x18d19400,
   kGreenAsiaProduct0003 = 0x0e8f0003,
+  kHoriProduct00c1 = 0x0f0d00c1,
   kLakeviewResearchProduct0005 = 0x09250005,
   kLakeviewResearchProduct8866 = 0x09258866,
   kLogitechProductc216 = 0x046dc216,

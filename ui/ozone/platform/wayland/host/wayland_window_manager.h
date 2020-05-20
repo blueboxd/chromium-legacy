@@ -27,6 +27,10 @@ class WaylandWindowManager {
   void AddObserver(WaylandWindowObserver* observer);
   void RemoveObserver(WaylandWindowObserver* observer);
 
+  // Notifies observers that the Window has been ack configured and
+  // WaylandBufferManagerHost can start attaching buffers to the |surface_|.
+  void NotifyWindowConfigured(WaylandWindow* window);
+
   // Stores the window that should grab the located events.
   void GrabLocatedEvents(WaylandWindow* event_grabber);
 

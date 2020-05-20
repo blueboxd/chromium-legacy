@@ -1557,7 +1557,6 @@ void DocumentLoader::InstallNewDocument(
           .WithOriginToCommit(origin_to_commit_)
           .WithIPAddressSpace(ip_address_space_)
           .WithSrcdocDocument(loading_srcdoc_)
-          .WithBlockedByCSP(was_blocked_by_csp_)
           .WithGrantLoadLocalResources(grant_load_local_resources_)
           .WithFramePolicy(frame_policy_)
           .WithNewRegistrationContext()

@@ -59,7 +59,7 @@
       <structure name="IDR_CAMERA_UTIL_JS" file="src/js/util.js" type="chrome_html" />
       <structure name="IDR_CAMERA_VIDEO_SAVER_JS" file="src/js/models/video_saver.js" type="chrome_html" />
       <structure name="IDR_CAMERA_VIEW_JS" file="src/js/views/view.js" type="chrome_html" />
-      <structure name="IDR_CAMERA_WAITABLE_EVENT_JS" file="src/js/models/waitable_event.js" type="chrome_html" />
+      <structure name="IDR_CAMERA_WAITABLE_EVENT_JS" file="src/js/waitable_event.js" type="chrome_html" />
       <structure name="IDR_CAMERA_WARNING_JS" file="src/js/views/warning.js" type="chrome_html" />
       <structure name="IDR_CAMERA_WEBUI_BROWSER_PROXY" file="src/js/browser_proxy/webui_browser_proxy.js" type="chrome_html" />
     </structures>

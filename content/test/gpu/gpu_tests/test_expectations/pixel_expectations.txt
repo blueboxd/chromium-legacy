@@ -2,7 +2,7 @@
 # tags: [ android-chromium android-webview-instrumentation android-not-webview debug ]
 # tags: [ skia-renderer no-skia-renderer ]
 # tags: [ use-gl no-use-gl ]
-# tags: [ use-vulkan no-use-vulkan ]
+# tags: [ vulkan no-vulkan ]
 # tags: [ use-skia-dawn no-use-skia-dawn ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
 #         intel-0xd26 nvidia qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
@@ -117,13 +117,13 @@ crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 
 # Fails on Nexus 5, 6 and 6P
 crbug.com/883500 [ android no-skia-renderer qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
-crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
-crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android no-use-gl no-vulkan qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android no-use-gl no-vulkan qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
 crbug.com/1029389 [ android qualcomm-adreno-(tm)-330 ] Pixel_PrecisionRoundedCorner [ Skip ]
 
 # Flakes on Nexus 5X.
-crbug.com/883500 [ android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
-crbug.com/1068620 [ android android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
+crbug.com/883500 [ android-chromium no-use-gl no-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
+crbug.com/1068620 [ android android-chromium no-use-gl no-vulkan qualcomm-adreno-(tm)-418 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 
 # We do not have software H.264 decoding on Android, so it can't survive a
 # context loss which results in hardware decoder loss.
@@ -161,7 +161,7 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 
 # Skia Renderer, producing incorrect color in one quadrant
-crbug.com/1008450 [ android use-vulkan skia-renderer ] Pixel_Video_BackdropFilter [ Skip ]
+crbug.com/1008450 [ android vulkan skia-renderer ] Pixel_Video_BackdropFilter [ Skip ]
 crbug.com/1008450 [ android skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
 
 # Test is producing a large number of visually identical images with minor (eg.

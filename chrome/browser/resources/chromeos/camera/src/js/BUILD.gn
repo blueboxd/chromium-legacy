@@ -33,6 +33,7 @@ js_type_check("compile_resources") {
     ":tooltip",
     ":type",
     ":util",
+    ":waitable_event",
   ]
 }
 
@@ -147,4 +148,7 @@ js_library("util") {
     "mojo:chrome_helper",
   ]
   externs_list = [ "$externs_path/chrome_extensions.js" ]
+}
+
+js_library("waitable_event") {
 }

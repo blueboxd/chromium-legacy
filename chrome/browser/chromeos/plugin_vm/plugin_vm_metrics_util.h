@@ -49,8 +49,9 @@ enum class PluginVmSetupResult {
   // Failure reasons are broken down in PluginVm.SetupFailureReason.
   kError = 13,
   kUserCancelledWithoutStarting = 14,
+  kUserCancelledValidatingLicense = 15,
 
-  kMaxValue = kUserCancelledWithoutStarting,
+  kMaxValue = kUserCancelledValidatingLicense,
 };
 
 enum class PluginVmDlcUseResult {

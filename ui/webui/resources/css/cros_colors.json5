@@ -72,8 +72,10 @@
     /* button-primary:hover */
     /* TODO(calamity): Generate a linear-gradient() to use for compositing
        backgrounds */
-    cros_default_button_background_color_primary_hover_overlay:
-        "rgba(0, 0, 0, 0.08)",
+    cros_default_button_background_color_primary_hover_overlay: {
+      light: "rgba(255, 255, 255, 0.08)",
+      dark: "rgba(0, 0, 0, 0.08)",
+    },
     /* button-primary[disabled] */
     cros_default_button_background_color_primary_disabled: {
       light: "$google_grey_100",

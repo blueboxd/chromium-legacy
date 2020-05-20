@@ -163,12 +163,6 @@ void LoginScreenClient::ShowGaiaSignin(const AccountId& prefilled_account) {
   }
 }
 
-void LoginScreenClient::HideGaiaSignin() {
-  if (chromeos::LoginDisplayHost::default_host()) {
-    chromeos::LoginDisplayHost::default_host()->HideOobeDialog();
-  }
-}
-
 void LoginScreenClient::OnRemoveUserWarningShown() {
   ProfileMetrics::LogProfileDeleteUser(
       ProfileMetrics::DELETE_PROFILE_USER_MANAGER_SHOW_WARNING);

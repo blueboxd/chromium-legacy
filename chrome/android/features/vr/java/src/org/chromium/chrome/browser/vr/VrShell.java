@@ -785,6 +785,12 @@ public class VrShell extends GvrLayout
         if (mNativeVrShell != 0) VrShellJni.get().onPause(mNativeVrShell, VrShell.this);
     }
 
+    public void destroyWindowAndroid() {
+        reparentAllTabs(mActivity.getWindowAndroid());
+        mCompositorView.onExitVr(mActivity.getWindowAndroid());
+        mContentVrWindowAndroid.destroy();
+    }
+
     @Override
     public void shutdown() {
         if (mVrBrowsingEnabled) {
@@ -822,6 +828,7 @@ public class VrShell extends GvrLayout
         mContentVirtualDisplay.destroy();
 
         mCompositorView.onExitVr(mActivity.getWindowAndroid());
+        mContentVrWindowAndroid.destroy();
 
         if (mActivity.getToolbarManager() != null) {
             mActivity.getToolbarManager().setProgressBarEnabled(true);

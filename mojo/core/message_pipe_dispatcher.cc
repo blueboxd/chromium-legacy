@@ -380,9 +380,8 @@ MojoResult MessagePipeDispatcher::CloseNoLock() {
     base::AutoUnlock unlock(signal_lock_);
     node_controller_->ClosePort(port_);
 
-    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                           "MessagePipe closing", pipe_id_ + endpoint_,
-                           TRACE_EVENT_FLAG_FLOW_OUT);
+    TRACE_EVENT_WITH_FLOW0("toplevel.flow", "MessagePipe closing",
+                           pipe_id_ + endpoint_, TRACE_EVENT_FLAG_FLOW_OUT);
   }
 
   return MOJO_RESULT_OK;
@@ -433,9 +432,9 @@ HandleSignalsState MessagePipeDispatcher::GetHandleSignalsStateNoLock() const {
       rv.satisfied_signals & MOJO_HANDLE_SIGNAL_PEER_CLOSED;
   last_known_satisfied_signals_ = rv.satisfied_signals;
   if (is_peer_closed && !was_peer_closed) {
-    TRACE_EVENT_WITH_FLOW0(
-        TRACE_DISABLED_BY_DEFAULT("toplevel.flow"), "MessagePipe peer closed",
-        pipe_id_ + (1 - endpoint_), TRACE_EVENT_FLAG_FLOW_IN);
+    TRACE_EVENT_WITH_FLOW0("toplevel.flow", "MessagePipe peer closed",
+                           pipe_id_ + (1 - endpoint_),
+                           TRACE_EVENT_FLAG_FLOW_IN);
   }
 
   return rv;

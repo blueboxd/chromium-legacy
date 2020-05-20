@@ -4,7 +4,6 @@
 
 import("linux/buildflags/buildflags.gni")
 
-config("media_player_weak_link") {
   ldflags = [
     "-weak_framework",
     "MediaPlayer",
@@ -13,9 +12,6 @@ config("media_player_weak_link") {
     "-weak_framework",
     "CoreBluetooth",
   ]
-
-  visibility = [ ":system_media_controls" ]
-}
 
 component("system_media_controls") {
   friend = [ ":unit_tests" ]
@@ -65,13 +61,9 @@ component("system_media_controls") {
       "mac/system_media_controls_mac.mm",
     ]
     deps += [ "//build:branding_buildflags" ]
-    libs = [ "Foundation.framework" ]
 
-    # MediaPlayer.framework is only available on macOS 10.12 and higher. In a
-    # release build, component() is a static_library, which does not
-    # transitively carry weak_link information. Ensure that all targets that
-    # directly or indirectly carry the weak_link on the framework.
-    all_dependent_configs = [ ":media_player_weak_link" ]
+    frameworks = [ "Foundation.framework" ]
+    weak_frameworks = [ "MediaPlayer.framework" ]
   } else {
     sources = [ "system_media_controls_stub.cc" ]
   }

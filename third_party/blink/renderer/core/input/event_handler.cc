@@ -1619,8 +1619,6 @@ void EventHandler::CacheTouchAdjustmentResult(uint32_t id,
 
 bool EventHandler::GestureCorrespondsToAdjustedTouch(
     const WebGestureEvent& event) {
-  if (!RuntimeEnabledFeatures::UnifiedTouchAdjustmentEnabled())
-    return false;
   // Gesture events start with a GestureTapDown. If GestureTapDown's unique id
   // matches stored adjusted touchstart event id, then we can use the stored
   // result for following gesture event.

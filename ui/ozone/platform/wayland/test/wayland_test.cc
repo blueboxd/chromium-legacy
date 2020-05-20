@@ -97,17 +97,22 @@ void WaylandTest::SendConfigureEvent(wl::MockXdgSurface* xdg_surface,
                                      int height,
                                      uint32_t serial,
                                      struct wl_array* states) {
-  DCHECK(xdg_surface->xdg_toplevel());
   // In xdg_shell_v6+, both surfaces send serial configure event and toplevel
   // surfaces send other data like states, heights and widths.
+  // Please note that toplevel surfaces may not exist if the surface was created
+  // for the popup role.
   if (GetParam() == kXdgShellV6) {
     zxdg_surface_v6_send_configure(xdg_surface->resource(), serial);
-    zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel()->resource(),
-                                    width, height, states);
+    if (xdg_surface->xdg_toplevel()) {
+      zxdg_toplevel_v6_send_configure(xdg_surface->xdg_toplevel()->resource(),
+                                      width, height, states);
+    }
   } else {
     xdg_surface_send_configure(xdg_surface->resource(), serial);
-    xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(), width,
-                                height, states);
+    if (xdg_surface->xdg_toplevel()) {
+      xdg_toplevel_send_configure(xdg_surface->xdg_toplevel()->resource(),
+                                  width, height, states);
+    }
   }
 }
 

@@ -28,8 +28,6 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
 import org.chromium.components.browser_ui.settings.ChromeBasePreference;
-import org.chromium.components.signin.AccountUtils;
-import org.chromium.components.signin.test.util.AccountHolder;
 import org.chromium.components.signin.test.util.AccountManagerTestRule;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
@@ -45,10 +43,10 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class PasswordViewingTypeTest {
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public final NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
 
     @Rule
-    public AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
+    public final AccountManagerTestRule mAccountManagerTestRule = new AccountManagerTestRule();
 
     private MainSettings mMainSettings;
     private ChromeBasePreference mPasswordsPref;
@@ -59,7 +57,7 @@ public class PasswordViewingTypeTest {
 
     @Before
     public void setUp() {
-        setupTestAccount();
+        mAccount = mAccountManagerTestRule.addAccount("account@example.com");
         mSyncContentResolverDelegate = new MockSyncContentResolverDelegate();
         mContext = InstrumentationRegistry.getTargetContext();
         mMainSettings = (MainSettings) startMainSettings(
@@ -71,12 +69,6 @@ public class PasswordViewingTypeTest {
         mAuthority = AndroidSyncSettings.get().getContractAuthority();
         AndroidSyncSettings.get().updateAccount(mAccount);
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
-    }
-
-    private void setupTestAccount() {
-        mAccount = AccountUtils.createAccountFromName("account@example.com");
-        AccountHolder.Builder accountHolder = AccountHolder.builder(mAccount).alwaysAccept(true);
-        mAccountManagerTestRule.addAccount(accountHolder.build());
     }
 
     @After

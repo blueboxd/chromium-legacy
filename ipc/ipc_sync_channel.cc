@@ -457,7 +457,7 @@ bool SyncChannel::SyncContext::TryToUnblockListener(const Message* msg) {
   }
 
   base::WaitableEvent* done_event = deserializers_.back().done_event;
-  TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+  TRACE_EVENT_FLOW_BEGIN0("toplevel.flow",
                           "SyncChannel::SyncContext::TryToUnblockListener",
                           done_event);
 
@@ -522,7 +522,7 @@ void SyncChannel::SyncContext::CancelPendingSends() {
   PendingSyncMessageQueue::iterator iter;
   DVLOG(1) << "Canceling pending sends";
   for (iter = deserializers_.begin(); iter != deserializers_.end(); iter++) {
-    TRACE_EVENT_FLOW_BEGIN0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
+    TRACE_EVENT_FLOW_BEGIN0("toplevel.flow",
                             "SyncChannel::SyncContext::CancelPendingSends",
                             iter->done_event);
     iter->done_event->Signal();
@@ -644,8 +644,8 @@ bool SyncChannel::Send(Message* message) {
   scoped_refptr<mojo::SyncHandleRegistry> registry = sync_handle_registry_;
   WaitForReply(registry.get(), context.get(), pump_messages);
 
-  TRACE_EVENT_FLOW_END0(TRACE_DISABLED_BY_DEFAULT("toplevel.flow"),
-                        "SyncChannel::Send", context->GetSendDoneEvent());
+  TRACE_EVENT_FLOW_END0("toplevel.flow", "SyncChannel::Send",
+                        context->GetSendDoneEvent());
 
   return context->Pop();
 }

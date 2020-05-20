@@ -63,3 +63,4 @@
 // <include src="gesture_navigation.js">
 // <include src="checking_downloading_update.js">
 // <include src="screen_tpm_error.js">
+// <include src="device_disabled.js">

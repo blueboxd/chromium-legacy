@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_license_checker.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
 #include "chromeos/dbus/concierge_client.h"
 #include "chromeos/dbus/dlcservice/dlcservice_client.h"
@@ -65,12 +66,14 @@ class PluginVmInstaller : public KeyedService,
     DLC_NEED_REBOOT = 21,
     DLC_NEED_SPACE = 22,
     INSUFFICIENT_DISK_SPACE = 23,
+    INVALID_LICENSE = 24,
 
-    kMaxValue = INSUFFICIENT_DISK_SPACE,
+    kMaxValue = INVALID_LICENSE,
   };
 
   enum class InstallingState {
     kInactive,
+    kCheckingLicense,
     kCheckingDiskSpace,
     kPausedLowDiskSpace,
     kDownloadingDlc,
@@ -91,6 +94,8 @@ class PluginVmInstaller : public KeyedService,
     virtual ~Observer() = default;
 
     virtual void OnProgressUpdated(double fraction_complete) = 0;
+
+    virtual void OnLicenseChecked() = 0;
 
     // If |low_disk_space| is true, the device doesn't have the recommended
     // amount of free disk space and the install will pause until Continue() or
@@ -162,6 +167,9 @@ class PluginVmInstaller : public KeyedService,
   std::string GetCurrentDownloadGuidForTesting();
 
  private:
+  void CheckLicense();
+  void OnLicenseChecked(bool license_is_valid);
+  void CheckDiskSpace();
   void OnAvailableDiskSpace(int64_t bytes);
   void StartDlcDownload();
   void OnUpdateVmState(bool default_vm_exists);
@@ -204,6 +212,7 @@ class PluginVmInstaller : public KeyedService,
   bool creating_new_vm_ = false;
   double progress_ = 0;
   std::unique_ptr<PluginVmDriveImageDownloadService> drive_download_service_;
+  std::unique_ptr<PluginVmLicenseChecker> license_checker_;
   bool using_drive_download_service_ = false;
 
   // -1 indicates not set

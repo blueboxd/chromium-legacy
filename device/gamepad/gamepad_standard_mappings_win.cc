@@ -26,6 +26,13 @@ enum StadiaGamepadButtons {
   STADIA_GAMEPAD_BUTTON_COUNT
 };
 
+// The Switch Pro controller has a Capture button that has no equivalent in the
+// Standard Gamepad.
+enum SwitchProButtons {
+  SWITCH_PRO_BUTTON_CAPTURE = BUTTON_INDEX_COUNT,
+  SWITCH_PRO_BUTTON_COUNT
+};
+
 void MapperLogitechDInput(const Gamepad& input, Gamepad* mapped) {
   *mapped = input;
   mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
@@ -392,11 +399,8 @@ void MapperSwitchJoyCon(const Gamepad& input, Gamepad* mapped) {
 }
 
 void MapperSwitchPro(const Gamepad& input, Gamepad* mapped) {
-  // The Switch Pro controller has a Capture button that has no equivalent in
-  // the Standard Gamepad.
-  const size_t kSwitchProExtraButtonCount = 1;
   *mapped = input;
-  mapped->buttons_length = BUTTON_INDEX_COUNT + kSwitchProExtraButtonCount;
+  mapped->buttons_length = SWITCH_PRO_BUTTON_COUNT;
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
@@ -416,6 +420,22 @@ void MapperSwitchComposite(const Gamepad& input, Gamepad* mapped) {
   mapped->axes_length = AXIS_INDEX_COUNT;
 }
 
+void MapperHoripadSwitch(const Gamepad& input, Gamepad* mapped) {
+  *mapped = input;
+  mapped->buttons[BUTTON_INDEX_PRIMARY] = input.buttons[1];
+  mapped->buttons[BUTTON_INDEX_SECONDARY] = input.buttons[2];
+  mapped->buttons[BUTTON_INDEX_TERTIARY] = input.buttons[0];
+  DpadFromAxis(mapped, input.axes[9]);
+  mapped->buttons[BUTTON_INDEX_META] = input.buttons[12];
+  mapped->buttons[SWITCH_PRO_BUTTON_CAPTURE] = input.buttons[13];
+  mapped->axes[AXIS_INDEX_LEFT_STICK_X] = input.axes[0];
+  mapped->axes[AXIS_INDEX_LEFT_STICK_Y] = input.axes[1];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_X] = input.axes[2];
+  mapped->axes[AXIS_INDEX_RIGHT_STICK_Y] = input.axes[5];
+  mapped->buttons_length = SWITCH_PRO_BUTTON_COUNT;
+  mapped->axes_length = AXIS_INDEX_COUNT;
+}
+
 constexpr struct MappingData {
   GamepadId gamepad_id;
   GamepadStandardMappingFunction function;
@@ -424,6 +444,8 @@ constexpr struct MappingData {
     {GamepadId::kPowerALicPro, MapperSwitchPro},
     // 2Axes 8Keys Game Pad
     {GamepadId::kDragonRiseProduct0011, Mapper2Axes8Keys},
+    // HORIPAD for Nintendo Switch
+    {GamepadId::kHoriProduct00c1, MapperHoripadSwitch},
     // Logitech F310, D-mode
     {GamepadId::kLogitechProductc216, MapperLogitechDInput},
     // Logitech F510, D-mode

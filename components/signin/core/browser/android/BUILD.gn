@@ -111,6 +111,7 @@ android_library("signin_java_test_support") {
     "javatests/src/org/chromium/components/signin/test/util/AccountHolder.java",
     "javatests/src/org/chromium/components/signin/test/util/AccountManagerTestRule.java",
     "javatests/src/org/chromium/components/signin/test/util/FakeAccountManagerDelegate.java",
+    "javatests/src/org/chromium/components/signin/test/util/FakeAccountManagerFacade.java",
     "javatests/src/org/chromium/components/signin/test/util/FakeProfileDataSource.java",
   ]
 }

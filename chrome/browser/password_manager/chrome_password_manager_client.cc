@@ -870,7 +870,10 @@ bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
 }
 
 bool ChromePasswordManagerClient::IsNewTabPage() const {
-  return GetMainFrameURL() == chrome::kChromeSearchLocalNtpUrl;
+  auto origin = GetMainFrameURL().GetOrigin();
+  return origin == GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin() ||
+         origin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
+         origin == GURL(chrome::kChromeUINewTabURL).GetOrigin();
 }
 
 FieldInfoManager* ChromePasswordManagerClient::GetFieldInfoManager() const {

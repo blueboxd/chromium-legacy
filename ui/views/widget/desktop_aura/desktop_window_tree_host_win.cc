@@ -25,6 +25,7 @@
 #include "ui/base/cursor/cursor_loader_win.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/base/win/event_creation_utils.h"
 #include "ui/base/win/shell.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/display/win/dpi.h"
@@ -118,6 +119,10 @@ aura::Window* DesktopWindowTreeHostWin::GetContentWindowForHWND(HWND hwnd) {
   return host ? host->window()->GetProperty(kContentWindowForRootWindow) : NULL;
 }
 
+void DesktopWindowTreeHostWin::SetInTouchDrag(bool in_touch_drag) {
+  in_touch_drag_ = in_touch_drag;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, DesktopWindowTreeHost implementation:
 
@@ -185,7 +190,7 @@ std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostWin::CreateTooltip() {
 std::unique_ptr<aura::client::DragDropClient>
 DesktopWindowTreeHostWin::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
-  drag_drop_client_ = new DesktopDragDropClientWin(window(), GetHWND());
+  drag_drop_client_ = new DesktopDragDropClientWin(window(), GetHWND(), this);
   return base::WrapUnique(drag_drop_client_);
 }
 
@@ -967,6 +972,21 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
   if (!GetWidget()->GetNativeView())
     return;
 
+  if (in_touch_drag_) {
+    POINT event_point;
+    event_point.x = event->location().x();
+    event_point.y = event->location().y();
+    ::ClientToScreen(GetHWND(), &event_point);
+    gfx::Point screen_point(event_point);
+    // Send equivalent mouse events, because Ole32 drag drop doesn't seem to
+    // handle pointer events.
+    if (event->type() == ui::ET_TOUCH_MOVED) {
+      ui::SendMouseEvent(screen_point, MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE);
+    } else if (event->type() == ui::ET_TOUCH_RELEASED) {
+      ui::SendMouseEvent(screen_point,
+                         MOUSEEVENTF_RIGHTUP | MOUSEEVENTF_ABSOLUTE);
+    }
+  }
   // Currently we assume the window that has capture gets touch events too.
   aura::WindowTreeHost* host =
       aura::WindowTreeHost::GetForAcceleratedWidget(GetCapture());

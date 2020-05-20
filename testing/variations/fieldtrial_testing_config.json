@@ -5455,7 +5455,7 @@
             ]
         }
     ],
-    "ServiceWorkerStartupOptimizations": [
+    "ServiceWorkerOnUI": [
         {
             "platforms": [
                 "android",
@@ -5468,10 +5468,9 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Ui_Ps3",
+                    "name": "Enabled1",
                     "enable_features": [
-                        "ServiceWorkerOnUI",
-                        "ServiceWorkerPrefersUnusedProcess"
+                        "ServiceWorkerOnUI"
                     ]
                 }
             ]

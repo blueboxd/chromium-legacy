@@ -897,6 +897,9 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // then updated with the new last KeyEvent address.
   bool IsRepeated(KeyEvent** last_key_event);
 
+  // Returns the pointer for the last processed KeyEvent.
+  KeyEvent** GetLastKeyEvent();
+
   KeyboardCode key_code_;
 
 #if defined(USE_OZONE)

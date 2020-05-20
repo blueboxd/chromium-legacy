@@ -7,44 +7,177 @@
  * screen.
  */
 
+'use strict';
+
+(function() {
+
+/**
+ * UI mode for the dialog.
+ * @enum {string}
+ */
+const UIState = {
+  LOADING: 'loading',
+  LIST: 'list',
+};
+
 Polymer({
   is: 'recommend-apps',
 
-  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior],
+  behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
+
+  EXTERNAL_API: [
+    'setWebview',
+    'loadAppList',
+  ],
 
   properties: {
     /**
-     * Reference to OOBE screen object.
-     * @type {!{
-     *     onInstall: function(),
-     *     onRetry: function(),
-     *     onSkip: function(),
-     * }}
+     * Current step being displayed.
+     * @type {UIState}
+     * @private
      */
-    screen: {
-      type: Object,
+    uiState_: {
+      type: String,
+      value: UIState.LOADING,
+    },
+
+    appCount_: {
+      type: Number,
+      value: 0,
+    },
+
+    appsSelected_: {
+      type: Number,
+      value: 0,
     },
   },
 
-  focus() {
-    this.getElement('recommend-apps-dialog').focus();
-  },
+  initialized_: false,
 
-  /** @private */
-  onSkip_() {
-    this.screen.onSkip();
-  },
-
-  /** @private */
-  onInstall_() {
-    this.screen.onInstall();
+  ready() {
+    this.initializeLoginScreen('RecommendAppsScreen', {
+      resetAllowed: true,
+    });
+    window.addEventListener('message', this.onMessage_.bind(this));
   },
 
   /**
-   * Returns element by its id.
-   * @param id String The ID of the element.
+   * Resets screen to initial state.
+   * Currently is used for debugging purposes only.
    */
-  getElement(id) {
-    return this.$[id];
+  reset() {
+    this.uiState_ = UIState.LOADING;
+    this.appCount_ = 0;
+    this.appsSelected_ = 0;
   },
+
+  /**
+   * Returns the control which should receive initial focus.
+   */
+  get defaultControl() {
+    return this.$.appsDialog;
+  },
+
+  /**
+   * Initial UI State for screen
+   */
+  getOobeUIInitialState() {
+    return OOBE_UI_STATE.ONBOARDING;
+  },
+
+  setWebview(contents) {
+    this.$.appsDialog.onBeforeShow();
+    this.$.appView.src =
+        'data:text/html;charset=utf-8,' + encodeURIComponent(contents);
+  },
+
+  /**
+   * Generates the contents in the webview.
+   * It is assumed that |loadAppList| is called only once after |setWebview|.
+   * @suppress {missingProperties} as WebView type has no executeScript defined.
+   */
+  loadAppList(appList) {
+    this.appCount_ = appList.length;
+
+    const appListView = this.$.appView;
+    appListView.addEventListener('contentload', () => {
+      appListView.executeScript({file: 'recommend_app_list_view.js'}, () => {
+        appListView.contentWindow.postMessage('initialMessage', '*');
+
+        appList.forEach(function(app, index) {
+          let generateItemScript = 'generateContents("' + app.icon + '", "' +
+              app.name + '", "' + app.package_name + '");';
+          const generateContents = {code: generateItemScript};
+          appListView.executeScript(generateContents);
+        });
+        const addScrollShadowEffectScript = 'addScrollShadowEffect();';
+        appListView.executeScript({code: addScrollShadowEffectScript});
+
+        const getNumOfSelectedAppsScript = 'sendNumberOfSelectedApps();';
+        appListView.executeScript({code: getNumOfSelectedAppsScript});
+
+        this.onFullyLoaded_();
+      });
+    });
+  },
+
+  /**
+   * Handles event when contents in the webview is generated.
+   */
+  onFullyLoaded_() {
+    this.uiState_ = UIState.LIST;
+    this.$.installButton.focus();
+  },
+
+  /**
+   * Handles Skip button click.
+   */
+  onSkip_() {
+    chrome.send('recommendAppsSkip');
+  },
+
+  /**
+   * Handles Install button click.
+   * @suppress {missingProperties} as WebView type has no executeScript defined.
+   */
+  onInstall_() {
+    // Only start installation if there are apps to install.
+    if (this.appsSelected_ > 0) {
+      var appListView = this.$.appView;
+      appListView.executeScript(
+          {code: 'getSelectedPackages();'}, function(result) {
+            chrome.send('recommendAppsInstall', result[0]);
+          });
+    }
+  },
+
+  /**
+   * Handles the message sent from the WebView.
+   * @param {Event} event
+   */
+  onMessage_(event) {
+    var data =
+        /** type {OobeTypes.RecommendedAppsSelectionEventData} */ event.data;
+    if (data.type && (data.type === 'NUM_OF_SELECTED_APPS')) {
+      this.appsSelected_ = data.numOfSelected;
+    }
+  },
+
+  canProceed_(appsSelected) {
+    return appsSelected > 0;
+  },
+
+  /**
+   * Checks if current step is one of specified steps.
+   * @param {UIState} currentStep Name of current step.
+   * @param {...string} stepsVarArgs List of steps to compare with.
+   * @return {boolean}
+   */
+  isStep_(currentStep, ...stepsVarArgs) {
+    if (stepsVarArgs.length < 1)
+      throw Error('At least one step to compare is required.');
+    return stepsVarArgs.some(step => currentStep === step);
+  },
+
 });
+})();

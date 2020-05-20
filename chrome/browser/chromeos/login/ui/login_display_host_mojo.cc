@@ -97,10 +97,18 @@ void LoginDisplayHostMojo::OnDialogDestroyed(
   }
 }
 
-void LoginDisplayHostMojo::SetUsers(const user_manager::UserList& users) {
-  users_ = users;
+void LoginDisplayHostMojo::SetUserCount(int user_count) {
+  const bool was_zero_users = (user_count_ == 0);
+  user_count_ = user_count;
   if (GetOobeUI())
-    GetOobeUI()->SetLoginUserCount(users_.size());
+    GetOobeUI()->SetLoginUserCount(user_count_);
+
+  // Hide Gaia dialog in case empty list of users switched to a non-empty one.
+  // And if the dialog shows login screen.
+  if (was_zero_users && user_count_ != 0 && dialog_ && dialog_->IsVisible() &&
+      (!wizard_controller_ || wizard_controller_->login_screen_started())) {
+    HideOobeDialog();
+  }
 }
 
 void LoginDisplayHostMojo::ShowPasswordChangedDialog(bool show_password_error,
@@ -274,9 +282,16 @@ void LoginDisplayHostMojo::HideOobeDialog() {
 
   // The dialog can not be hidden if there are no users on the login screen.
   // Reload it instead.
-  if (!login_display_->IsSigninInProgress() && users_.empty()) {
+
+  // As ShowDialogCommon will not reload GAIA upon show for performance reasons,
+  // reload it to ensure that no state is persisted between hide and
+  // subsequent show.
+  const bool no_users =
+      !login_display_->IsSigninInProgress() && user_count_ == 0;
+  if (no_users || GetOobeUI()->current_screen() == GaiaView::kScreenId) {
     GetOobeUI()->GetView<GaiaScreenHandler>()->ShowGaiaAsync(EmptyAccountId());
-    return;
+    if (no_users)
+      return;
   }
 
   user_selection_screen_->OnBeforeShow();
@@ -287,10 +302,6 @@ void LoginDisplayHostMojo::HideOobeDialog() {
 void LoginDisplayHostMojo::UpdateOobeDialogState(ash::OobeDialogState state) {
   if (dialog_)
     dialog_->SetState(state);
-}
-
-const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
-  return users_;
 }
 
 void LoginDisplayHostMojo::ShowFeedback() {

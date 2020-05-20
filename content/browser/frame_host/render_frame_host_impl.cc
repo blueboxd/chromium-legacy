@@ -55,7 +55,6 @@
 #include "content/browser/frame_host/cookie_utils.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 #include "content/browser/frame_host/debug_urls.h"
-#include "content/browser/frame_host/file_chooser_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/input/input_injector_impl.h"
@@ -7242,11 +7241,6 @@ void RenderFrameHostImpl::GetSpeechSynthesis(
   speech_synthesis_impl_->AddReceiver(std::move(receiver));
 }
 
-void RenderFrameHostImpl::GetFileChooser(
-    mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
-  FileChooserImpl::Create(this, std::move(receiver));
-}
-
 void RenderFrameHostImpl::GetSensorProvider(
     mojo::PendingReceiver<device::mojom::SensorProvider> receiver) {
   if (!sensor_provider_proxy_) {
@@ -7256,13 +7250,6 @@ void RenderFrameHostImpl::GetSensorProvider(
         this));
   }
   sensor_provider_proxy_->Bind(std::move(receiver));
-}
-
-mojo::Remote<blink::mojom::FileChooser>
-RenderFrameHostImpl::BindFileChooserForTesting() {
-  mojo::Remote<blink::mojom::FileChooser> chooser;
-  FileChooserImpl::Create(this, chooser.BindNewPipeAndPassReceiver());
-  return chooser;
 }
 
 void RenderFrameHostImpl::BindCacheStorage(

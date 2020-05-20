@@ -41,7 +41,7 @@ const char kHistogramFromGWSParseDuration[] =
 const char kHistogramFromGWSParseStart[] =
     "PageLoad.Clients.FromGoogleSearch.ParseTiming.NavigationToParseStart";
 const char kHistogramFromGWSFirstInputDelay[] =
-    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay3";
+    "PageLoad.Clients.FromGoogleSearch.InteractiveTiming.FirstInputDelay4";
 
 const char kHistogramFromGWSAbortNewNavigationBeforeCommit[] =
     "PageLoad.Clients.FromGoogleSearch.Experimental.AbortTiming.NewNavigation."
@@ -114,6 +114,10 @@ const char kHistogramFromGWSForegroundDurationWithoutPaint[] =
     "WithoutPaint";
 const char kHistogramFromGWSForegroundDurationNoCommit[] =
     "PageLoad.Clients.FromGoogleSearch.PageTiming.ForegroundDuration.NoCommit";
+
+const char kHistogramFromGWSCumulativeLayoutShiftMainFrame[] =
+    "PageLoad.Clients.FromGoogleSearch.LayoutInstability.CumulativeShiftScore."
+    "MainFrame";
 
 }  // namespace internal
 
@@ -320,6 +324,11 @@ bool WasAbortedBeforeInteraction(
   } else {
     return time_to_interaction > abort_info.time_to_abort;
   }
+}
+
+int32_t LayoutShiftUmaValue(float shift_score) {
+  // Report (shift_score * 10) as an int in the range [0, 100].
+  return static_cast<int>(roundf(std::min(shift_score, 10.0f) * 10.0f));
 }
 
 }  // namespace
@@ -621,8 +630,11 @@ void FromGWSPageLoadMetricsLogger::OnFirstInputInPage(
     const page_load_metrics::PageLoadMetricsObserverDelegate& delegate) {
   if (ShouldLogForegroundEventAfterCommit(
           timing.interactive_timing->first_input_delay, delegate)) {
-    PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSFirstInputDelay,
-                        timing.interactive_timing->first_input_delay.value());
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        internal::kHistogramFromGWSFirstInputDelay,
+        timing.interactive_timing->first_input_delay.value(),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
   }
 }
 
@@ -693,4 +705,9 @@ void FromGWSPageLoadMetricsLogger::LogMetricsOnComplete(
     PAGE_LOAD_HISTOGRAM(internal::kHistogramFromGWSLargestContentfulPaint,
                         all_frames_largest_contentful_paint.Time().value());
   }
+
+  UMA_HISTOGRAM_COUNTS_100(
+      internal::kHistogramFromGWSCumulativeLayoutShiftMainFrame,
+      LayoutShiftUmaValue(
+          delegate.GetMainFrameRenderData().layout_shift_score));
 }

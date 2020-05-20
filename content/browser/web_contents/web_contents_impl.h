@@ -28,7 +28,6 @@
 #include "build/build_config.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/accessibility/accessibility_event_recorder.h"
-#include "content/browser/frame_host/file_chooser_impl.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
@@ -42,6 +41,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/wake_lock/wake_lock_context_host.h"
+#include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/accessibility_tree_formatter.h"
 #include "content/public/browser/color_chooser.h"
@@ -565,14 +565,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       RenderFrameHost* render_frame_host,
       bool is_reload,
       JavaScriptDialogCallback response_callback) override;
-  void RunFileChooser(
-      RenderFrameHost* render_frame_host,
-      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
-      const blink::mojom::FileChooserParams& params) override;
-  void EnumerateDirectory(
-      RenderFrameHost* render_frame_host,
-      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
-      const base::FilePath& directory_path) override;
   void DidCancelLoading() override;
   void DidAccessInitialDocument() override;
   void DidChangeName(RenderFrameHost* render_frame_host,
@@ -1134,6 +1126,20 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Sets the spatial navigation state.
   void SetSpatialNavigationDisabled(bool disabled);
+
+  // Called when a file selection is to be done.
+  void RunFileChooser(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
+      const blink::mojom::FileChooserParams& params);
+
+  // Request to enumerate a directory.  This is equivalent to running the file
+  // chooser in directory-enumeration mode and having the user select the given
+  // directory.
+  void EnumerateDirectory(
+      RenderFrameHost* render_frame_host,
+      std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
+      const base::FilePath& directory_path);
 
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.

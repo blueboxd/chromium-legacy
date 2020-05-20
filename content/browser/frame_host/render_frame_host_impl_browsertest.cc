@@ -2866,39 +2866,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Pass if this didn't crash.
 }
 
-void FileChooserCallback(base::RunLoop* run_loop,
-                         blink::mojom::FileChooserResultPtr result) {
-  run_loop->Quit();
-}
-
-IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
-                       FileChooserAfterRfhDeath) {
-  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
-  auto* rfh = static_cast<RenderFrameHostImpl*>(
-      shell()->web_contents()->GetMainFrame());
-  mojo::Remote<blink::mojom::FileChooser> chooser =
-      rfh->BindFileChooserForTesting();
-
-  // Kill the renderer process.
-  RenderProcessHostWatcher crash_observer(
-      rfh->GetProcess(), RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
-  rfh->GetProcess()->Shutdown(0);
-  crash_observer.Wait();
-
-  // Call FileChooser methods.  The browser process should not crash.
-  base::RunLoop run_loop1;
-  chooser->OpenFileChooser(blink::mojom::FileChooserParams::New(),
-                           base::BindOnce(FileChooserCallback, &run_loop1));
-  run_loop1.Run();
-
-  base::RunLoop run_loop2;
-  chooser->EnumerateChosenDirectory(
-      base::FilePath(), base::BindOnce(FileChooserCallback, &run_loop2));
-  run_loop2.Run();
-
-  // Pass if this didn't crash.
-}
-
 // Verify that adding an <object> tag which resource is blocked by the network
 // stack does not result in terminating the renderer process.
 // See https://crbug.com/955777.

@@ -77,6 +77,13 @@ public final class ChromePreferenceKeys {
     public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
     /**
+     * Saves a counter of how many continuous feature sessions in which a user has dismissed
+     * conditional tab strip.
+     */
+    public static final String CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER =
+            "Chrome.ConditionalTabStrip.ContinuousDismissCounter";
+
+    /**
      * Saves the feature status of conditional tab strip.
      */
     public static final String CONDITIONAL_TAB_STRIP_FEATURE_STATUS =
@@ -87,6 +94,11 @@ public final class ChromePreferenceKeys {
      */
     public static final String CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP =
             "Chrome.ConditionalTabStrip.LastShownTimeStamp";
+
+    /**
+     * Saves whether a user has chosen to opt-out the conditional tab strip feature.
+     */
+    public static final String CONDITIONAL_TAB_STRIP_OPT_OUT = "Chrome.ConditionalTabStrip.OptOut";
 
     /**
      * Marks that the content suggestions surface has been shown.
@@ -734,8 +746,10 @@ public final class ChromePreferenceKeys {
     static List<String> getKeysInUse() {
         // clang-format off
         return Arrays.asList(
+                CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER,
                 CONDITIONAL_TAB_STRIP_FEATURE_STATUS,
                 CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP,
+                CONDITIONAL_TAB_STRIP_OPT_OUT,
                 CONTEXT_MENU_OPEN_IMAGE_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_OPEN_IN_EPHEMERAL_TAB_CLICKED,
                 CONTEXT_MENU_SEARCH_WITH_GOOGLE_LENS_CLICKED,

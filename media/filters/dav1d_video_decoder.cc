@@ -427,6 +427,8 @@ scoped_refptr<VideoFrame> Dav1dVideoDecoder::BindImageToVideoFrame(
       config_.natural_size(), pic->stride[0], uv_plane_stride, uv_plane_stride,
       static_cast<uint8_t*>(pic->data[0]), u_plane, v_plane,
       base::TimeDelta::FromMicroseconds(pic->m.timestamp));
+  if (!frame)
+    return nullptr;
 
   // Each frame needs a ref on the fake UV data to keep it alive until done.
   if (needs_fake_uv_planes) {

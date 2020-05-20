@@ -1067,8 +1067,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // for unload handler processing.
   void SetSubframeUnloadTimeoutForTesting(const base::TimeDelta& timeout);
 
-  mojo::Remote<blink::mojom::FileChooser> BindFileChooserForTesting();
-
   // Called when the WebAudio AudioContext given by |audio_context_id| has
   // started (or stopped) playing audible audio.
   void AudioContextPlaybackStarted(int audio_context_id);
@@ -1282,9 +1280,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateIDBFactory(
       mojo::PendingReceiver<blink::mojom::IDBFactory> receiver);
-
-  void GetFileChooser(
-      mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
 
   void GetSensorProvider(
       mojo::PendingReceiver<device::mojom::SensorProvider> receiver);

@@ -8,6 +8,7 @@ import static android.os.Build.VERSION_CODES.M;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.longClick;
+import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -15,8 +16,10 @@ import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID;
@@ -29,6 +32,7 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.e
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabModelTabCount;
 import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.verifyTabStripFaviconCount;
 
+import android.content.Context;
 import android.os.Build;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.contrib.RecyclerViewActions;
@@ -43,6 +47,7 @@ import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.DisabledTest;
@@ -57,9 +62,11 @@ import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
@@ -101,8 +108,11 @@ public class ConditionalTabStripTest {
     @Before
     public void setUp() {
         // For this test suite, the session time is set to be 0 by default so that we can start a
-        // new session by restarting Chrome.
+        // new session by restarting Chrome. Also, the opt-out indicator and the dismiss counter
+        // are reset to the initial state.
         CONDITIONAL_TAB_STRIP_SESSION_TIME_MS.setForTesting(0);
+        ConditionalTabStripUtils.setOptOutIndicator(false);
+        ConditionalTabStripUtils.setContinuousDismissCount(0);
 
         mActivityTestRule.startMainActivityOnBlankPage();
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -437,6 +447,149 @@ public class ConditionalTabStripTest {
         verifyShowingStrip(cta, false, 4);
     }
 
+    @Test
+    @MediumTest
+    public void testStrip_InfoBarOptOut() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        for (int i = 0; i < 3; i++) {
+            createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        }
+        verifyShowingStrip(cta, false, 4);
+
+        // Initially, the continuous dismiss counter is 0, and dismiss the strip should show undo
+        // snackbar.
+        assertEquals(0, ConditionalTabStripUtils.getContinuousDismissCount());
+        assertTrue(ConditionalTabStripUtils.shouldShowSnackbarForDismissal());
+        clickDismissButtonInStrip();
+        CriteriaHelper.pollUiThread(
+                () -> mActivityTestRule.getActivity().getSnackbarManager().isShowing());
+
+        // Update the dismiss counter so that the next dismissal should be the third continuous
+        // dismissal, and we should show opt-out info bar.
+        ConditionalTabStripUtils.setContinuousDismissCount(1);
+        cta = restartChrome();
+        assertEquals(2, ConditionalTabStripUtils.getContinuousDismissCount());
+        assertFalse(ConditionalTabStripUtils.shouldShowSnackbarForDismissal());
+        createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        verifyShowingStrip(cta, false, 5);
+        clickDismissButtonInStrip();
+        verifyShowingInfoBar(cta);
+
+        // Click the opt-out button should have the feature disabled.
+        assertFalse(ConditionalTabStripUtils.getOptOutIndicator());
+        onView(withId(R.id.button_secondary)).perform(click());
+        assertTrue(ConditionalTabStripUtils.getOptOutIndicator());
+        assertEquals(-1, ConditionalTabStripUtils.getContinuousDismissCount());
+        int oldTabStripPermanentlyHiddenCount = RecordHistogram.getHistogramValueCountForTesting(
+                ConditionalTabStripUtils.UMA_USER_STATUS_RESULT,
+                ConditionalTabStripUtils.UserStatus.TAB_STRIP_PERMANENTLY_HIDDEN);
+        cta = restartChrome();
+        createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        onView(allOf(withParent(withId(R.id.toolbar_container_view)), withId(R.id.tab_list_view)))
+                .check(doesNotExist());
+        int currentTabStripPermanentlyHiddenCount =
+                RecordHistogram.getHistogramValueCountForTesting(
+                        ConditionalTabStripUtils.UMA_USER_STATUS_RESULT,
+                        ConditionalTabStripUtils.UserStatus.TAB_STRIP_PERMANENTLY_HIDDEN);
+        assertEquals(1, currentTabStripPermanentlyHiddenCount - oldTabStripPermanentlyHiddenCount);
+    }
+
+    @Test
+    @MediumTest
+    public void testStrip_InfoBarOptIn() throws Exception {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        for (int i = 0; i < 3; i++) {
+            createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        }
+        verifyShowingStrip(cta, false, 4);
+
+        // Initially, the continuous dismiss counter is 0, and dismiss the strip should show undo
+        // snackbar.
+        assertEquals(0, ConditionalTabStripUtils.getContinuousDismissCount());
+        assertTrue(ConditionalTabStripUtils.shouldShowSnackbarForDismissal());
+        clickDismissButtonInStrip();
+        CriteriaHelper.pollUiThread(
+                () -> mActivityTestRule.getActivity().getSnackbarManager().isShowing());
+
+        // Update the dismiss counter so that the next dismissal should be the third continuous
+        // dismissal, and we should show opt-out info bar.
+        ConditionalTabStripUtils.setContinuousDismissCount(1);
+        cta = restartChrome();
+        assertEquals(2, ConditionalTabStripUtils.getContinuousDismissCount());
+        assertFalse(ConditionalTabStripUtils.shouldShowSnackbarForDismissal());
+        createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        verifyShowingStrip(cta, false, 5);
+        clickDismissButtonInStrip();
+        verifyShowingInfoBar(cta);
+
+        // Click the opt-in button should set the dismiss counter to -1.
+        onView(withId(R.id.button_primary)).perform(click());
+        assertEquals(-1, ConditionalTabStripUtils.getContinuousDismissCount());
+
+        // Once the counter is set to -1, the counter should no longer be updated by later
+        // dismissals.
+        cta = restartChrome();
+        assertEquals(-1, ConditionalTabStripUtils.getContinuousDismissCount());
+        assertTrue(ConditionalTabStripUtils.shouldShowSnackbarForDismissal());
+        createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        verifyShowingStrip(cta, false, 6);
+        clickDismissButtonInStrip();
+        CriteriaHelper.pollUiThread(
+                () -> mActivityTestRule.getActivity().getSnackbarManager().isShowing());
+    }
+
+    @Test
+    @MediumTest
+    public void testStrip_ContinuousDismissCounter() throws Exception {
+        // Mock that the tab strip has been dismissed for two continuous sessions.
+        ConditionalTabStripUtils.setContinuousDismissCount(2);
+
+        // Since strip is not activated in current session, the counter will not be updated.
+        assertEquals(ConditionalTabStripUtils.FeatureStatus.DEFAULT,
+                ConditionalTabStripUtils.getFeatureStatus());
+        ChromeTabbedActivity cta = restartChrome();
+        assertEquals(2, ConditionalTabStripUtils.getContinuousDismissCount());
+
+        // Since the strip was triggered in current session, the counter will be reset to 0 in the
+        // next session.
+        createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        verifyShowingStrip(cta, false, 2);
+        assertEquals(ConditionalTabStripUtils.FeatureStatus.ACTIVATED,
+                ConditionalTabStripUtils.getFeatureStatus());
+        cta = restartChrome();
+        assertEquals(0, ConditionalTabStripUtils.getContinuousDismissCount());
+
+        // Dismiss the strip in current session.
+        createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        verifyShowingStrip(cta, false, 3);
+        clickDismissButtonInStrip();
+        CriteriaHelper.pollUiThread(
+                () -> mActivityTestRule.getActivity().getSnackbarManager().isShowing());
+
+        // Update the dismiss counter so that the next dismissal should be the sixth continuous
+        // dismissal, and we should show opt-out info bar.
+        ConditionalTabStripUtils.setContinuousDismissCount(4);
+        cta = restartChrome();
+        assertEquals(5, ConditionalTabStripUtils.getContinuousDismissCount());
+        createBlankPageWithLaunchType(cta, false, TabLaunchType.FROM_CHROME_UI);
+        verifyShowingStrip(cta, false, 4);
+        clickDismissButtonInStrip();
+        verifyShowingInfoBar(cta);
+
+        // Click the info bar close button to dismiss the info bar.
+        onView(withId(R.id.infobar_close_button)).perform(click());
+        CriteriaHelper.pollUiThread(() -> {
+            InfoBarContainer container = InfoBarContainer.get(
+                    mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab());
+            return container.getInfoBarsForTesting().size() == 0;
+        });
+
+        // We no longer keep the dismiss counter when user has dismissed the strip continuously for
+        // 6 sessions, i.e. dismiss the opt-out info bar twice.
+        restartChrome();
+        assertEquals(-1, ConditionalTabStripUtils.getContinuousDismissCount());
+    }
+
     private ChromeTabbedActivity restartChrome() throws Exception {
         TabUiTestHelper.finishActivity(mActivityTestRule.getActivity());
         mActivityTestRule.startMainActivityFromLauncher();
@@ -557,6 +710,24 @@ public class ConditionalTabStripTest {
         // Click the left button should dismiss the tab strip.
         clickDismissButtonInStrip();
         verifyHidingStrip();
+    }
+
+    private void verifyShowingInfoBar(ChromeTabbedActivity cta) {
+        CriteriaHelper.pollUiThread(() -> {
+            InfoBarContainer container =
+                    InfoBarContainer.get(cta.getTabModelSelector().getCurrentTab());
+            return container.getVisibility() == View.VISIBLE && !container.isAnimating();
+        });
+        Context context = (Context) cta;
+        onView(withId(R.id.infobar_message))
+                .check(matches(withText(
+                        containsString(context.getString(R.string.tab_strip_info_bar_question)))));
+        onView(withId(R.id.button_primary))
+                .check(matches(withText(
+                        containsString(context.getString(R.string.tab_strip_info_bar_reshow)))));
+        onView(withId(R.id.button_secondary))
+                .check(matches(withText(
+                        containsString(context.getString(R.string.tab_strip_info_bar_no_reshow)))));
     }
 
     // Utility methods copied from TabsTest.java.

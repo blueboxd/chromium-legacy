@@ -170,6 +170,12 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
   NavigateAndCommit(GURL(kExampleUrl));
 
   tester()->SimulateTimingUpdate(timing);
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0, 0, 0, 0,
+                                                              0);
+  tester()->SimulateRenderDataUpdate(render_data);
+  render_data.layout_shift_delta = 1.5;
+  render_data.layout_shift_delta_before_input_or_scroll = 0.0;
+  tester()->SimulateRenderDataUpdate(render_data);
 
   // Navigate again to force logging.
   tester()->NavigateToUntrackedUrl();
@@ -241,6 +247,11 @@ TEST_F(FromGWSPageLoadMetricsObserverTest, SearchPreviousCommittedUrl1) {
   tester()->histogram_tester().ExpectBucketCount(
       internal::kHistogramFromGWSFirstInputDelay,
       timing.interactive_timing->first_input_delay.value().InMilliseconds(), 1);
+
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSCumulativeLayoutShiftMainFrame, 1);
+  tester()->histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSCumulativeLayoutShiftMainFrame, 25, 1);
 
   auto entries = tester()->test_ukm_recorder().GetEntriesByName(
       ukm::builders::PageLoad_FromGoogleSearch::kEntryName);
@@ -573,9 +584,15 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
 
   NavigateAndCommit(GURL("https://www.google.com/search#q=test"));
   NavigateAndCommit(GURL(kExampleUrl));
+  page_load_metrics::mojom::FrameRenderDataUpdate render_data(1.0, 1.0, 0, 0, 0,
+                                                              0);
+  tester()->SimulateRenderDataUpdate(render_data);
 
   web_contents()->WasHidden();
   tester()->SimulateTimingUpdate(timing);
+  render_data.layout_shift_delta = 1.5;
+  render_data.layout_shift_delta_before_input_or_scroll = 0.0;
+  tester()->SimulateRenderDataUpdate(render_data);
 
   // If the system clock is low resolution PageLoadTracker's background_time_
   // may be < timing.first_image_paint.
@@ -591,6 +608,15 @@ TEST_F(FromGWSPageLoadMetricsObserverTest,
     tester()->histogram_tester().ExpectTotalCount(
         internal::kHistogramFromGWSFirstImagePaint, 0);
   }
+
+  // Navigate again to force logging layout shift score.
+  tester()->NavigateToUntrackedUrl();
+
+  // Layout shift score should still be updated after tab was hidden.
+  tester()->histogram_tester().ExpectTotalCount(
+      internal::kHistogramFromGWSCumulativeLayoutShiftMainFrame, 1);
+  tester()->histogram_tester().ExpectBucketCount(
+      internal::kHistogramFromGWSCumulativeLayoutShiftMainFrame, 25, 1);
 }
 
 TEST_F(FromGWSPageLoadMetricsObserverTest, NewNavigationBeforeCommit) {

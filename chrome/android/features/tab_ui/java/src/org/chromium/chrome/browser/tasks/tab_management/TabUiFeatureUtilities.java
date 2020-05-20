@@ -6,7 +6,9 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import android.os.Build;
 import android.text.TextUtils;
+
 import androidx.annotation.Nullable;
+
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.device.DeviceClassManager;
@@ -16,6 +18,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.DoubleCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.StringCachedFieldTrialParameter;
+import org.chromium.chrome.browser.tasks.ConditionalTabStripUtils;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 
 /**
@@ -131,7 +134,8 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isConditionalTabStripEnabled() {
         return CachedFeatureFlags.isEnabled(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID)
-                && !isGridTabSwitcherEnabled() && isTabManagementModuleSupported();
+                && !isGridTabSwitcherEnabled() && isTabManagementModuleSupported()
+                && !ConditionalTabStripUtils.getOptOutIndicator();
     }
 
     /**

@@ -66190,6 +66190,7 @@ would be helpful to identify which type is being sent.
   <int value="1" label="TabStripNotShown"/>
   <int value="2" label="TabStripShown"/>
   <int value="3" label="TabStripShownAndDismissed"/>
+  <int value="4" label="TabStripPermanentlyHidden"/>
 </enum>
 
 <enum name="TabSwitchedToForegroundLaunchedWithURL">

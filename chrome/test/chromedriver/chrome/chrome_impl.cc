@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
@@ -316,10 +317,14 @@ Status ChromeImpl::SetWindowBounds(
       return status;
   }
 
+  if (state.empty())
+    return Status(kOk);
+
   status = GetWindowBounds(window->id, window);
   if (status.IsError())
     return status;
-  if (window->state == state || state == "")
+
+  if (window->state == state)
     return Status(kOk);
 
   if (state == "maximized" && window->state == "normal") {
@@ -354,10 +359,23 @@ Status ChromeImpl::SetWindowBounds(
     params.Set("bounds", bounds->CreateDeepCopy());
     return devtools_websocket_client_->SendCommand("Browser.setWindowBounds",
                                                    params);
-  } else {
-    return Status(kUnknownError, "failed to change window state to " + state +
-                                     ", current state is " + window->state);
   }
+
+  int retries = 0;
+  // Wait and retry for 1 second
+  for (; retries < 10; ++retries) {
+    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
+
+    status = GetWindowBounds(window->id, window);
+    if (status.IsError())
+      return status;
+    if (window->state == state)
+      return Status(kOk);
+  }
+
+  return Status(kUnknownError, "failed to change window state to '" + state +
+                                   "', current state is '" + window->state +
+                                   "'");
 }
 
 Status ChromeImpl::ParseWindow(std::unique_ptr<base::DictionaryValue> params,

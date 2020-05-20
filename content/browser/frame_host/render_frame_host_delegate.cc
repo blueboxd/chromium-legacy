@@ -38,20 +38,6 @@ bool RenderFrameHostDelegate::DidAddMessageToConsole(
   return false;
 }
 
-void RenderFrameHostDelegate::RunFileChooser(
-    RenderFrameHost* render_frame_host,
-    std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
-    const blink::mojom::FileChooserParams& params) {
-  listener->FileSelectionCanceled();
-}
-
-void RenderFrameHostDelegate::EnumerateDirectory(
-    RenderFrameHost* render_frame_host,
-    std::unique_ptr<FileChooserImpl::FileSelectListenerImpl> listener,
-    const base::FilePath& path) {
-  listener->FileSelectionCanceled();
-}
-
 WebContents* RenderFrameHostDelegate::GetAsWebContents() {
   return nullptr;
 }

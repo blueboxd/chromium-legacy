@@ -163,6 +163,7 @@ class InfoBarDelegate {
     KNOWN_INTERCEPTION_DISCLOSURE_INFOBAR_DELEGATE = 96,
     SYNC_ERROR_INFOBAR_DELEGATE_ANDROID = 97,
     MIXED_CONTENT_DOWNLOAD_INFOBAR_DELEGATE_ANDROID = 98,
+    CONDITIONAL_TAB_STRIP_INFOBAR_ANDROID = 99,
   };
 
   // Describes navigation events, used to decide whether infobars should be

@@ -35,6 +35,7 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
+#include "content/browser/web_contents/file_chooser_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_connector_impl.h"
@@ -295,6 +296,12 @@ void BindNativeIOHost(
     mojo::PendingReceiver<blink::mojom::NativeIOHost> receiver) {
   static_cast<RenderProcessHostImpl*>(host->GetProcess())
       ->BindNativeIOHost(host->GetLastCommittedOrigin(), std::move(receiver));
+}
+
+void BindFileChooser(
+    RenderFrameHostImpl* host,
+    mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
+  FileChooserImpl::Create(host, std::move(receiver));
 }
 
 void BindSharedWorkerConnector(
@@ -568,8 +575,8 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
   map->Add<blink::mojom::IDBFactory>(base::BindRepeating(
       &RenderFrameHostImpl::CreateIDBFactory, base::Unretained(host)));
 
-  map->Add<blink::mojom::FileChooser>(base::BindRepeating(
-      &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
+  map->Add<blink::mojom::FileChooser>(
+      base::BindRepeating(&BindFileChooser, base::Unretained(host)));
 
   map->Add<device::mojom::GamepadMonitor>(
       base::BindRepeating(&device::GamepadMonitor::Create));

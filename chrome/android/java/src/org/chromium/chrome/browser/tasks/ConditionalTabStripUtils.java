@@ -21,16 +21,36 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class ConditionalTabStripUtils {
     public static final int UNDO_DISMISS_SNACKBAR_DURATION = 5000;
-    private static final String FEATURE_STATUS =
+    public static final int CONDITIONAL_TAB_STRIP_DISMISS_COUNTER_ABANDONED = -1;
+    @VisibleForTesting
+    public static final String FEATURE_STATUS =
             ChromePreferenceKeys.CONDITIONAL_TAB_STRIP_FEATURE_STATUS;
+    @VisibleForTesting
+    public static final String CONTINUOUS_DISMISS_COUNTER =
+            ChromePreferenceKeys.CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER;
+    @VisibleForTesting
+    public static final String OPT_OUT_INDICATOR =
+            ChromePreferenceKeys.CONDITIONAL_TAB_STRIP_OPT_OUT;
     private static final String LAST_SHOWN_TIMESTAMP =
             ChromePreferenceKeys.CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP;
+    @VisibleForTesting
+    public static final String UMA_USER_STATUS_RESULT = "TabStrip.UserStatus";
     private static final String CONDITIONAL_TAB_STRIP_SESSION_TIME_MS_PARAM =
             "conditional_tab_strip_session_time_ms";
+    private static final String CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT_PARAM =
+            "conditional_tab_strip_infobar_limit";
+    private static final String CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD_PARAM =
+            "conditional_tab_strip_infobar_period";
     @VisibleForTesting
     public static final IntCachedFieldTrialParameter CONDITIONAL_TAB_STRIP_SESSION_TIME_MS =
             new IntCachedFieldTrialParameter(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID,
                     CONDITIONAL_TAB_STRIP_SESSION_TIME_MS_PARAM, 3600000);
+    public static final IntCachedFieldTrialParameter CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT =
+            new IntCachedFieldTrialParameter(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID,
+                    CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT_PARAM, 6);
+    public static final IntCachedFieldTrialParameter CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD =
+            new IntCachedFieldTrialParameter(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID,
+                    CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD_PARAM, 3);
     /**
      * A series of possible states of the conditional tab strip in a feature session. A feature
      * session is defined as usage of Chrome without a gap of more than an hour, which may include
@@ -55,7 +75,7 @@ public class ConditionalTabStripUtils {
      * per feature session.
      */
     @IntDef({UserStatus.NON_USER, UserStatus.TAB_STRIP_NOT_SHOWN, UserStatus.TAB_STRIP_SHOWN,
-            UserStatus.TAB_STRIP_SHOWN_AND_DISMISSED})
+            UserStatus.TAB_STRIP_SHOWN_AND_DISMISSED, UserStatus.TAB_STRIP_PERMANENTLY_HIDDEN})
     @Retention(RetentionPolicy.SOURCE)
     public @interface UserStatus {
         // User has never seen conditional tab strip in any previous feature sessions.
@@ -67,8 +87,10 @@ public class ConditionalTabStripUtils {
         int TAB_STRIP_SHOWN = 2;
         // User has seen conditional tab strip in current feature session and dismissed it.
         int TAB_STRIP_SHOWN_AND_DISMISSED = 3;
+        // User has opt-outed the conditional tab strip feature.
+        int TAB_STRIP_PERMANENTLY_HIDDEN = 4;
         // Update TabStripUserStatus in enums.xml when adding new items.
-        int NUM_ENTRIES = 4;
+        int NUM_ENTRIES = 5;
     }
 
     /**
@@ -97,6 +119,7 @@ public class ConditionalTabStripUtils {
                 lastBackgroundedTimeMillis + CONDITIONAL_TAB_STRIP_SESSION_TIME_MS.getValue();
         if (lastBackgroundedTimeMillis == -1 || System.currentTimeMillis() > expirationTime) {
             recordUserStatus();
+            updateContinuousDismissCounter();
             setFeatureStatus(FeatureStatus.DEFAULT);
         }
     }
@@ -107,11 +130,11 @@ public class ConditionalTabStripUtils {
         // TODO(yuezhanggg@): Right now we only use the lastShownTimeStamp as a boolean indicator.
         // We want to update the logic below so that these metrics can be recorded on a time window
         // basis, e.g. 28 days.
-        if (lastShownTimeStamp == -1) {
+        if (getOptOutIndicator()) {
+            recordUserStatusEnums(UserStatus.TAB_STRIP_PERMANENTLY_HIDDEN);
+        } else if (lastShownTimeStamp == -1) {
             recordUserStatusEnums(UserStatus.NON_USER);
-            return;
-        }
-        if (previousFeatureStatus == FeatureStatus.DEFAULT) {
+        } else if (previousFeatureStatus == FeatureStatus.DEFAULT) {
             recordUserStatusEnums(UserStatus.TAB_STRIP_NOT_SHOWN);
         } else if (previousFeatureStatus == FeatureStatus.ACTIVATED) {
             recordUserStatusEnums(UserStatus.TAB_STRIP_SHOWN);
@@ -120,9 +143,28 @@ public class ConditionalTabStripUtils {
         }
     }
 
+    private static void updateContinuousDismissCounter() {
+        int count = getContinuousDismissCount();
+        // If the counter is set to -1, the counter is no longer needed and we should never update
+        // it.
+        if (count == CONDITIONAL_TAB_STRIP_DISMISS_COUNTER_ABANDONED) return;
+        if (getFeatureStatus() == FeatureStatus.ACTIVATED) {
+            // If the strip is activated in the previous session, we reset the counter to 0.
+            setContinuousDismissCount(0);
+        } else if (getFeatureStatus() == FeatureStatus.FORBIDDEN) {
+            // We no longer keep the counter when the number of sessions in which user has
+            // continuously dismissed the strip has reached the limit. Otherwise we update the
+            // counter.
+            count += 1;
+            setContinuousDismissCount(count >= CONDITIONAL_TAB_STRIP_INFOBAR_LIMIT.getValue()
+                            ? CONDITIONAL_TAB_STRIP_DISMISS_COUNTER_ABANDONED
+                            : count);
+        }
+    }
+
     private static void recordUserStatusEnums(@UserStatus int userStatus) {
         RecordHistogram.recordEnumeratedHistogram(
-                "TabStrip.UserStatus", userStatus, UserStatus.NUM_ENTRIES);
+                UMA_USER_STATUS_RESULT, userStatus, UserStatus.NUM_ENTRIES);
     }
 
     /**
@@ -130,6 +172,7 @@ public class ConditionalTabStripUtils {
      *
      * @param featureStatus the target {@link FeatureStatus} to set.
      */
+    @VisibleForTesting
     public static void setFeatureStatus(@FeatureStatus int featureStatus) {
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         sharedPreferencesManager.writeInt(FEATURE_STATUS, featureStatus);
@@ -155,13 +198,65 @@ public class ConditionalTabStripUtils {
         return sharedPreferencesManager.readInt(FEATURE_STATUS, FeatureStatus.DEFAULT);
     }
 
-    private static long getLastShownTimeStamp() {
+    @VisibleForTesting
+    public static long getLastShownTimeStamp() {
         SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
         return sharedPreferencesManager.readLong(LAST_SHOWN_TIMESTAMP, -1);
     }
 
+    /**
+     * Get the count that records how many sessions in which user has continuously dismissed the
+     * conditional tab strip from SharedPreference.
+     */
     @VisibleForTesting
-    public static void setFeatureStatusForTesting(@FeatureStatus int featureStatus) {
-        setFeatureStatus(featureStatus);
+    public static int getContinuousDismissCount() {
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        return sharedPreferencesManager.readInt(CONTINUOUS_DISMISS_COUNTER, 0);
+    }
+
+    /**
+     * Set the count that records how many sessions in which user has continuously dismissed the
+     * conditional tab strip in SharedPreference.
+     *
+     * @param count the updated count to save into SharedPreference.
+     */
+    @VisibleForTesting
+    public static void setContinuousDismissCount(int count) {
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        sharedPreferencesManager.writeInt(CONTINUOUS_DISMISS_COUNTER, count);
+    }
+
+    /**
+     * Get the boolean indicator that indicates whether this user has opt-outed the conditional tab
+     * strip feature from SharedPreference.
+     */
+    @VisibleForTesting
+    public static boolean getOptOutIndicator() {
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        return sharedPreferencesManager.readBoolean(OPT_OUT_INDICATOR, false);
+    }
+
+    /**
+     * Set the boolean indicator that indicates whether this user has opt-outed the conditional tab
+     * strip feature in SharedPreference.
+     *
+     * @param isOptOut the boolean indicator to save into SharedPreference.
+     */
+    @VisibleForTesting
+    public static void setOptOutIndicator(boolean isOptOut) {
+        SharedPreferencesManager sharedPreferencesManager = SharedPreferencesManager.getInstance();
+        sharedPreferencesManager.writeBoolean(OPT_OUT_INDICATOR, isOptOut);
+    }
+
+    /**
+     * Get a boolean indicator that indicates whether the undo snackbar will show for a dismissal.
+     * If not, the opt-out infobar should show.
+     *
+     * @return whether the snackbar should show for this dismissal.
+     */
+    public static boolean shouldShowSnackbarForDismissal() {
+        int count = ConditionalTabStripUtils.getContinuousDismissCount();
+        return count == CONDITIONAL_TAB_STRIP_DISMISS_COUNTER_ABANDONED
+                || (count + 1) % CONDITIONAL_TAB_STRIP_INFOBAR_PERIOD.getValue() != 0;
     }
 }

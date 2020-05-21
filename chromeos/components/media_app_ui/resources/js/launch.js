@@ -84,6 +84,15 @@ guestMessagePipe.registerHandler(Message.DELETE_FILE, async (message) => {
   const currentFilename = (await file.handle.getFile()).name;
 
   await directory.removeEntry(currentFilename);
+
+  // Remove the file that was deleted.
+  currentFiles.splice(entryIndex, 1);
+
+  // Attempts to load the file to the right which is at now at
+  // `currentFiles[entryIndex]`, where `entryIndex` was previously the index of
+  // the deleted file.
+  await advance(0);
+
   return {deleteResult: DeleteResult.SUCCESS};
 });
 
@@ -237,8 +246,13 @@ async function sendFilesToGuest() {
   if (currentlyWritableFile) {
     currentlyWritableFile.token = -1;
   }
-  currentlyWritableFile = currentFiles[entryIndex];
-  currentlyWritableFile.token = ++fileToken;
+  if (currentFiles.length) {
+    currentlyWritableFile = currentFiles[entryIndex];
+    currentlyWritableFile.token = ++fileToken;
+  } else {
+    currentlyWritableFile = null;
+  }
+
   return sendSnapshotToGuest([...currentFiles]);  // Shallow copy.
 }
 
@@ -443,12 +457,13 @@ async function launchWithDirectory(directory, handle) {
  * @param {number} direction How far to advance (e.g. +/-1).
  */
 async function advance(direction) {
-  if (!currentFiles.length || entryIndex < 0) {
-    return;
-  }
-  entryIndex = (entryIndex + direction) % currentFiles.length;
-  if (entryIndex < 0) {
-    entryIndex += currentFiles.length;
+  if (currentFiles.length) {
+    entryIndex = (entryIndex + direction) % currentFiles.length;
+    if (entryIndex < 0) {
+      entryIndex += currentFiles.length;
+    }
+  } else {
+    entryIndex = -1;
   }
 
   await sendFilesToGuest();

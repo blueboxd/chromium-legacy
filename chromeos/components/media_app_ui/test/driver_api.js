@@ -24,3 +24,10 @@ let TestMessageQueryData;
 
 /** @typedef {{testCase: string}} */
 let TestMessageRunTestCase;
+
+/**
+ * Return type of `get-last-loaded-files` used to spy on the files sent to the
+ * guest app using `loadFiles()`.
+ * @typedef {{fileList: ?{files: !ReceivedFileList}}}
+ */
+let LastLoadedFilesResponse;

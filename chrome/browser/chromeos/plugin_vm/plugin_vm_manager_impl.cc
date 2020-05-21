@@ -87,6 +87,7 @@ void ShowStartVmFailedNotification(Profile* profile,
           {}, new message_center::NotificationDelegate(),
           kNotificationPluginVmIcon,
           message_center::SystemNotificationWarningLevel::WARNING);
+  notification->set_renotify(true);
   NotificationDisplayServiceFactory::GetForProfile(profile)->Display(
       NotificationHandler::Type::TRANSIENT, *notification,
       /*metadata=*/nullptr);

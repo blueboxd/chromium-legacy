@@ -74,7 +74,7 @@
     <dimen name="promo_slim_button_max_width">84dp</dimen>
     <dimen name="promo_slim_padding_vertical">10dp</dimen>
 
-    <dimen name="promo_large_padding_bottom">8dp</dimen>
+    <dimen name="promo_large_padding_vertical">8dp</dimen>
     <dimen name="promo_large_padding_horizontal">24dp</dimen>
     <dimen name="promo_large_illustration_margin_bottom">16dp</dimen>
     <dimen name="promo_large_text_group_bottom_margin">10dp</dimen>

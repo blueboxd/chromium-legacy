@@ -53,7 +53,7 @@ void WebAppDatabase::Write(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     CompletionCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(opened_);
+  CHECK(opened_);
 
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch =
       store_->CreateWriteBatch();

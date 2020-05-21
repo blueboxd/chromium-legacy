@@ -38,10 +38,10 @@ async function runTestQuery(data) {
     }
   } else if (data.navigate !== undefined) {
     if (data.navigate === 'next') {
-      lastReceivedFileList.loadNext();
+      await lastReceivedFileList.loadNext();
       result = 'loadNext called';
     } else if (data.navigate === 'prev') {
-      lastReceivedFileList.loadPrev();
+      await lastReceivedFileList.loadPrev();
       result = 'loadPrev called';
     } else {
       result = 'nothing called';
@@ -155,6 +155,11 @@ function installTestHandlers() {
 
   parentMessagePipe.registerHandler('run-test-case', (data) => {
     return runTestCase(/** @type{TestMessageRunTestCase} */ (data));
+  });
+
+  parentMessagePipe.registerHandler('get-last-loaded-files', () => {
+    return /** @type {LastLoadedFilesResponse} */ (
+        {fileList: lastReceivedFileList});
   });
 
   // Log errors, rather than send them to console.error. This allows the error

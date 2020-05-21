@@ -28,7 +28,6 @@ class Browser;
 
 namespace views {
 class Button;
-class Label;
 }  // namespace views
 
 // This class provides the UI for different menus that are created by user
@@ -135,14 +134,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                                      SkColor color) const;
   // Should be called inside each button/link action.
   void RecordClick(ActionableItem item);
-
-  views::Label* CreateAndAddLabel(
-      const base::string16& text,
-      int text_context = views::style::CONTEXT_LABEL);
-  views::StyledLabel* CreateAndAddLabelWithLink(const base::string16& text,
-                                                gfx::Range link_range,
-                                                base::RepeatingClosure action);
-  void AddViewItem(std::unique_ptr<views::View> view);
 
   Browser* browser() const { return browser_; }
 

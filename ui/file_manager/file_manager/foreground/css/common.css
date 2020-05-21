@@ -199,6 +199,13 @@ cr-menu.chrome-menu > [checked]::before {
 .cr-dialog-container:not(.files-ng) .cr-dialog-buttons > button.cr-dialog-ok:hover {
   background:
       linear-gradient(var(--cros-default-button-background-color-primary-hover-overlay),
+                      var(--cros-default-button-background-color-primary-hover-overlay));
+              var(--cros-default-button-background-color-primary),
+}
+
+.cr-dialog-container.files-ng .cr-dialog-buttons > button.cr-dialog-ok:hover {
+  background:
+      linear-gradient(var(--cros-default-button-background-color-primary-hover-overlay),
                       var(--cros-default-button-background-color-primary-hover-overlay)),
               var(--cros-default-button-background-color-primary);
 }
@@ -253,7 +260,8 @@ cr-menu.chrome-menu > [checked]::before {
   box-shadow: 0 0 0 2px rgba(51, 103, 214, 0.5);
 }
 
-.cr-dialog-container.files-ng .cr-dialog-buttons > button:not(:active):focus {
+:root.focus-outline-visible .cr-dialog-container.files-ng .cr-dialog-buttons > button:not(:active):focus,
+:host-context(:root.focus-outline-visible) .cr-dialog-container.files-ng .cr-dialog-buttons > button:not(:active):focus {
   box-shadow: 0 0 0 2px var(--google-blue-500-rgb);
   outline: 2px auto rgba(var(--google-blue-600-rgb), 40%);
 }

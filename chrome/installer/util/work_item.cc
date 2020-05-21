@@ -16,7 +16,6 @@
 #include "chrome/installer/util/delete_reg_value_work_item.h"
 #include "chrome/installer/util/delete_tree_work_item.h"
 #include "chrome/installer/util/move_tree_work_item.h"
-#include "chrome/installer/util/self_reg_work_item.h"
 #include "chrome/installer/util/set_reg_value_work_item.h"
 #include "chrome/installer/util/work_item_list.h"
 
@@ -137,12 +136,6 @@ SetRegValueWorkItem* WorkItem::CreateSetRegValueWorkItem(
     GetValueFromExistingCallback get_value_callback) {
   return new SetRegValueWorkItem(predefined_root, key_path, wow64_access,
                                  value_name, std::move(get_value_callback));
-}
-
-SelfRegWorkItem* WorkItem::CreateSelfRegWorkItem(const std::wstring& dll_path,
-                                                 bool do_register,
-                                                 bool user_level_registration) {
-  return new SelfRegWorkItem(dll_path, do_register, user_level_registration);
 }
 
 WorkItemList* WorkItem::CreateWorkItemList() {

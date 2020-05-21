@@ -827,9 +827,12 @@ void InlineFlowBox::PlaceBoxesInBlockDirection(
         // being part of the overall lineTop/lineBottom.
         // Really this is a workaround hack for the fact that ruby should have
         // been done as line layout and not done using inline-block.
-        if (GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode() ==
-            (curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
-             RubyPosition::kAfter))
+        RubyPosition block_start_position =
+            GetLineLayoutItem().StyleRef().IsFlippedLinesWritingMode()
+                ? RubyPosition::kAfter
+                : RubyPosition::kBefore;
+        if (curr->GetLineLayoutItem().StyleRef().GetRubyPosition() ==
+            block_start_position)
           has_annotations_before = true;
         else
           has_annotations_after = true;

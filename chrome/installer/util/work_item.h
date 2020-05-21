@@ -25,7 +25,6 @@ class DeleteTreeWorkItem;
 class DeleteRegKeyWorkItem;
 class DeleteRegValueWorkItem;
 class MoveTreeWorkItem;
-class SelfRegWorkItem;
 class SetRegValueWorkItem;
 class WorkItemList;
 
@@ -188,12 +187,6 @@ class WorkItem {
       REGSAM wow64_access,
       const std::wstring& value_name,
       GetValueFromExistingCallback get_value_callback);
-
-  // Add a SelfRegWorkItem that registers or unregisters a DLL at the
-  // specified path.
-  static SelfRegWorkItem* CreateSelfRegWorkItem(const std::wstring& dll_path,
-                                                bool do_register,
-                                                bool user_level_registration);
 
   // Create an empty WorkItemList. A WorkItemList can recursively contains
   // a list of WorkItems.

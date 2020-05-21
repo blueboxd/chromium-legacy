@@ -20,7 +20,7 @@
 namespace {
 
 #if defined(OS_ANDROID)
-const char kClientDataHeader[] = "X-CCT-Client-Data";
+const char kCCTClientDataHeader[] = "X-CCT-Client-Data";
 #endif
 
 }  // namespace
@@ -30,6 +30,9 @@ void GoogleURLLoaderThrottle::UpdateCorsExemptHeader(
     network::mojom::NetworkContextParams* params) {
   params->cors_exempt_header_list.push_back(
       safe_search_util::kGoogleAppsAllowedDomains);
+#if defined(OS_ANDROID)
+  params->cors_exempt_header_list.push_back(kCCTClientDataHeader);
+#endif
 }
 
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
@@ -82,7 +85,8 @@ void GoogleURLLoaderThrottle::WillStartRequest(
 #if defined(OS_ANDROID)
   if (!client_data_header_.empty() &&
       google_util::IsGoogleAssociatedDomainUrl(request->url)) {
-    request->headers.SetHeader(kClientDataHeader, client_data_header_);
+    request->cors_exempt_headers.SetHeader(kCCTClientDataHeader,
+                                           client_data_header_);
   }
 
   bool is_google_homepage_or_search =
@@ -136,7 +140,7 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
 #if defined(OS_ANDROID)
   if (!client_data_header_.empty() &&
       !google_util::IsGoogleAssociatedDomainUrl(redirect_info->new_url)) {
-    to_be_removed_headers->push_back(kClientDataHeader);
+    to_be_removed_headers->push_back(kCCTClientDataHeader);
   }
 #endif
 }

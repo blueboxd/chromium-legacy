@@ -75,10 +75,10 @@ testcase.sortColumns = async () => {
 
   const isFilesNgEnabled = await isFilesNg(appId);
   const iconSortedAsc = isFilesNgEnabled ?
-      '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]' :
+      '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]' :
       '.table-header-sort-image-asc';
   const iconSortedDesc = isFilesNgEnabled ?
-      '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]' :
+      '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]' :
       '.table-header-sort-image-desc';
 
   let a11yMessages;

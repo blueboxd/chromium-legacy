@@ -57,12 +57,19 @@ class BacklightApp extends HTMLElement {
 
   /** @override  */
   async loadFiles(files) {
+    let child;
     const file = files.item(0);
-    const isVideo = file.mimeType.match('^video/');
-    const factory = isVideo ? createVideoChild : createImgChild;
-    // Note the mock app will just leak this Blob URL.
-    const child = await factory(URL.createObjectURL(file.blob), file.name);
-    // Simulate an app that shows one image at a time.
+    if (file) {
+      const isVideo = file.mimeType.match('^video/');
+      const factory = isVideo ? createVideoChild : createImgChild;
+      // Note the mock app will just leak this Blob URL.
+      child = await factory(URL.createObjectURL(file.blob), file.name);
+    } else {
+      // Emulate zero state.
+      child = document.createElement('img');
+    }
+    // Simulate an app that shows one image (either the loaded image or zero
+    // state) at a time.
     this.replaceChild(child, this.currentMedia);
     this.currentMedia = child;
   }

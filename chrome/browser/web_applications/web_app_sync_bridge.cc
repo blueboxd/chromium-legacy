@@ -129,8 +129,11 @@ WebAppSyncBridge::WebAppSyncBridge(
 WebAppSyncBridge::~WebAppSyncBridge() = default;
 
 std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
+  DCHECK(database_->is_opened());
+
   DCHECK(!is_in_update_);
   is_in_update_ = true;
+
   return std::make_unique<WebAppRegistryUpdate>(
       registrar_, util::PassKey<WebAppSyncBridge>());
 }

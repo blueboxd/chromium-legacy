@@ -121,13 +121,6 @@ class WorkItemList : public WorkItem {
       const std::wstring& value_name,
       WorkItem::GetValueFromExistingCallback get_value_callback);
 
-  // Add a SelfRegWorkItem that registers or unregisters a DLL at the
-  // specified path. If user_level_registration is true, then alternate
-  // registration and unregistration entry point names will be used.
-  virtual WorkItem* AddSelfRegWorkItem(const std::wstring& dll_path,
-                                       bool do_register,
-                                       bool user_level_registration);
-
  protected:
   friend class WorkItem;
 

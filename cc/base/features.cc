@@ -12,6 +12,10 @@ namespace features {
 const base::Feature kImpulseScrollAnimations = {
     "ImpulseScrollAnimations", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Whether the compositor should attempt to sync with the scroll handlers before submitting a frame.
+const base::Feature kSynchronizedScrolling = {"SynchronizedScrolling",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
 // When enabled BeginMainFrame does not wait for activation in the compositor
 // thread for texture layers (crbug.com/1046463)
 const base::Feature kTextureLayerSkipWaitForActivation{

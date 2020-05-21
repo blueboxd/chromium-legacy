@@ -59,6 +59,8 @@ class WebAppDatabase {
   static std::unique_ptr<WebApp> ParseWebApp(const AppId& app_id,
                                              const std::string& value);
 
+  bool is_opened() const { return opened_; }
+
  private:
   static std::unique_ptr<WebApp> CreateWebApp(const WebAppProto& local_data);
 

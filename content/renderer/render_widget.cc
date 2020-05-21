@@ -2530,6 +2530,8 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
   const base::CommandLine& cmd = *base::CommandLine::ForCurrentProcess();
   cc::LayerTreeSettings settings;
 
+  settings.enable_synchronized_scrolling =
+      base::FeatureList::IsEnabled(features::kSynchronizedScrolling);
   settings.use_zoom_for_dsf = compositor_deps->IsUseZoomForDSFEnabled();
   settings.percent_based_scrolling =
       base::FeatureList::IsEnabled(features::kPercentBasedScrolling);

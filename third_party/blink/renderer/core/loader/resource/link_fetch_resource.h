@@ -6,33 +6,29 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_RESOURCE_LINK_FETCH_RESOURCE_H_
 
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 
 namespace blink {
 
 class FetchParameters;
 class ResourceFetcher;
 
+// This is the implementation of Resource for <link rel='prefetch'>.
+// TODO(nhiroki): Rename this to LinkPrefetchResource.
 class LinkFetchResource final : public Resource {
  public:
-  static Resource* Fetch(ResourceType, FetchParameters&, ResourceFetcher*);
+  static Resource* Fetch(FetchParameters&, ResourceFetcher*);
 
   LinkFetchResource(const ResourceRequest&,
-                    ResourceType,
                     const ResourceLoaderOptions&);
   ~LinkFetchResource() override;
 
  private:
-  class LinkResourceFactory : public NonTextResourceFactory {
+  class LinkResourceFactory final : public NonTextResourceFactory {
    public:
-    explicit LinkResourceFactory(ResourceType type)
-        : NonTextResourceFactory(type) {}
+    LinkResourceFactory();
 
     Resource* Create(const ResourceRequest& request,
-                     const ResourceLoaderOptions& options) const override {
-      return MakeGarbageCollected<LinkFetchResource>(request, GetType(),
-                                                     options);
-    }
+                     const ResourceLoaderOptions& options) const override;
   };
 };
 

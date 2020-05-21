@@ -11,7 +11,7 @@
     android:gravity="center_horizontal"
     android:orientation="vertical"
     android:background="@drawable/hairline_border_card_background"
-    android:paddingTop="1dp">
+    android:paddingVertical="@dimen/promo_large_padding_vertical">
 
   <!-- Promo Illustration-->
   <ImageView
@@ -29,8 +29,7 @@
       android:layout_width="match_parent"
       android:layout_height="match_parent"
       android:orientation="vertical"
-      android:paddingHorizontal="@dimen/promo_large_padding_horizontal"
-      android:paddingBottom="@dimen/promo_large_padding_bottom">
+      android:paddingHorizontal="@dimen/promo_large_padding_horizontal">
 
     <org.chromium.ui.widget.TextViewWithLeading
         android:id="@+id/promo_title"

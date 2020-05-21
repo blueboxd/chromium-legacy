@@ -25,7 +25,7 @@ testcase.restoreSortColumn = async () => {
 
   // Check the sorted style of the header.
   const iconSortedAsc = (await isFilesNg(appId)) ?
-      '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]' :
+      '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]' :
       '.table-header-sort-image-asc';
   await remoteCall.waitForElement(appId, iconSortedAsc);
 
@@ -35,7 +35,7 @@ testcase.restoreSortColumn = async () => {
 
   // Check the sorted style of the header.
   const iconSortedDesc = (await isFilesNg(appId)) ?
-      '.table-header-cell .sorted [iron-icon="files16:arrow_up_small"]' :
+      '.table-header-cell .sorted [iron-icon="files16:arrow_down_small"]' :
       '.table-header-sort-image-desc';
   await remoteCall.waitForElement(appId, iconSortedDesc);
 

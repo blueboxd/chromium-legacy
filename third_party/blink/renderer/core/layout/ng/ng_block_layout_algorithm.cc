@@ -2826,8 +2826,10 @@ void NGBlockLayoutAlgorithm::LayoutRubyText(
   LayoutUnit ruby_text_top;
   const NGPhysicalBoxFragment& ruby_text_fragment =
       To<NGPhysicalBoxFragment>(result->PhysicalFragment());
-  if (Style().IsFlippedLinesWritingMode() ==
-      (Style().GetRubyPosition() == RubyPosition::kAfter)) {
+  RubyPosition block_start_position = Style().IsFlippedLinesWritingMode()
+                                          ? RubyPosition::kAfter
+                                          : RubyPosition::kBefore;
+  if (Style().GetRubyPosition() == block_start_position) {
     LayoutUnit last_line_ruby_text_bottom = LastLineTextLogicalBottom(
         ruby_text_fragment, result->IntrinsicBlockSize());
 

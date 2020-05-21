@@ -340,3 +340,16 @@ function assertMatchErrorStack(stackTrace, regexLines, opt_message) {
   const regex = `(.|\\n)*${regexLines.join('(.|\\n)*')}(.|\\n)*`;
   assertMatch(stackTrace, regex, opt_message);
 }
+
+/**
+ * Returns the files loaded in the most recent call to `loadFiles()`.
+ * @return {Promise<?ReceivedFileList>}
+ */
+async function getLoadedFiles() {
+  const response = /** @type {LastLoadedFilesResponse} */ (
+      await guestMessagePipe.sendMessage('get-last-loaded-files'));
+  if (response.fileList) {
+    return response.fileList.files;
+  }
+  return null;
+}

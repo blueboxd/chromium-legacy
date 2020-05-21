@@ -5,9 +5,13 @@
 #ifndef CONTENT_BROWSER_SERVICE_SANDBOX_TYPE_H_
 #define CONTENT_BROWSER_SERVICE_SANDBOX_TYPE_H_
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/sandbox_type.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 
 // This file maps service classes to sandbox types.  Services which
 // require a non-utility sandbox can be added here.  See
@@ -74,5 +78,28 @@ inline content::SandboxType
 content::GetServiceSandboxType<video_capture::mojom::VideoCaptureService>() {
   return content::SandboxType::kVideoCapture;
 }
+
+// storage::mojom::StorageService
+// This service is being moved out of process and will eventually be a utility.
+#if !defined(OS_ANDROID)
+namespace storage {
+namespace mojom {
+class StorageService;
+}
+}  // namespace storage
+
+template <>
+inline content::SandboxType
+content::GetServiceSandboxType<storage::mojom::StorageService>() {
+  const bool should_sandbox =
+      base::FeatureList::IsEnabled(features::kStorageServiceSandbox);
+  const base::FilePath sandboxed_data_dir =
+      GetContentClient()->browser()->GetSandboxedStorageServiceDataDirectory();
+  const bool is_sandboxed = should_sandbox && !sandboxed_data_dir.empty();
+
+  return is_sandboxed ? content::SandboxType::kUtility
+                      : content::SandboxType::kNoSandbox;
+}
+#endif
 
 #endif  // CONTENT_BROWSER_SERVICE_SANDBOX_TYPE_H_

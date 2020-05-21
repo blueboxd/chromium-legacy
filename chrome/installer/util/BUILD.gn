@@ -174,8 +174,6 @@ static_library("with_no_strings") {
       "move_tree_work_item.h",
       "registry_key_backup.cc",
       "registry_key_backup.h",
-      "self_reg_work_item.cc",
-      "self_reg_work_item.h",
       "set_reg_value_work_item.cc",
       "set_reg_value_work_item.h",
       "work_item.cc",

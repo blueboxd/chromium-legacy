@@ -551,8 +551,7 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
             SignedExchangePrefetchCacheForNavigationsEnabled() ||
         RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
             &document));
-    return LinkFetchResource::Fetch(ResourceType::kLinkPrefetch,
-                                    link_fetch_params, document.Fetcher());
+    return LinkFetchResource::Fetch(link_fetch_params, document.Fetcher());
   }
   return nullptr;
 }

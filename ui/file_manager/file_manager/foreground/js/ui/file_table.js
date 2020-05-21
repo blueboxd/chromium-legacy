@@ -278,7 +278,7 @@ function renderHeader_(table) {
 
   if (util.isFilesNg()) {
     const icon = document.createElement('cr-icon-button');
-    const iconName = sortOrder === 'desc' ? 'down' : 'up';
+    const iconName = sortOrder === 'desc' ? 'up' : 'down';
     icon.setAttribute('iron-icon', `files16:arrow_${iconName}_small`);
     icon.setAttribute('tabindex', '-1');
     icon.classList.add('sort-icon', 'no-overlap');

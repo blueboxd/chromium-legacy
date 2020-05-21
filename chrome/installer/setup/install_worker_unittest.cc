@@ -118,9 +118,6 @@ class MockWorkItemList : public WorkItemList {
                          const std::wstring&,
                          DWORD,
                          bool));
-  MOCK_METHOD3(AddSelfRegWorkItem, WorkItem* (const std::wstring&,
-                                              bool,
-                                              bool));
 };
 
 class MockProductState : public ProductState {

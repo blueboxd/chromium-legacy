@@ -431,12 +431,9 @@ TEST_F('MediaAppUIBrowserTest', 'CrossContextErrors', async () => {
 // Tests the IPC behind the implementation of ReceivedFile.deleteOriginalFile()
 // in the untrusted context.
 TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
-  const directory = await createMockTestDirectory();
-  // Simulate steps taken to load a file via a launch event.
-  const firstFile = directory.files[0];
-  await loadFile(await createTestImageFile(), firstFile);
-  // Set `currentDirectoryHandle` in launch.js.
-  currentDirectoryHandle = directory;
+  let directory = await launchWithFiles(
+      [await createTestImageFile(1, 1, 'first_file_name.png')]);
+  const testHandle = directory.files[0];
   let testResponse;
 
   // Nothing should be deleted initially.
@@ -448,23 +445,28 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   // Assertion will fail if exceptions from launch.js are thrown, no exceptions
   // indicates the file was successfully deleted.
   assertEquals(
-      testResponse.testQueryResult, 'deleteOriginalFile resolved success');
-  assertEquals(firstFile, directory.lastDeleted);
+      'deleteOriginalFile resolved success', testResponse.testQueryResult);
+  assertEquals(testHandle, directory.lastDeleted);
   // File removed from `DirectoryHandle` internal state.
-  assertEquals(directory.files.length, 0);
+  assertEquals(0, directory.files.length);
 
-  // Even though the name is the same, the new file shouldn't
-  // be deleted as it has a different `FileHandle` reference.
-  directory.addFileHandleForTest(new FakeFileSystemFileHandle());
+  // Load another file and replace its handle in the underlying
+  // `FileSystemDirectoryHandle`. This gets us into a state where the file on
+  // disk has been deleted and a new file with the same name replaces it without
+  // updating the `FakeSystemDirectoryHandle`. The new file shouldn't be deleted
+  // as it has a different `FileHandle` reference.
+  directory = await launchWithFiles(
+      [await createTestImageFile(1, 1, 'first_file_name.png')]);
+  directory.files[0] = new FakeFileSystemFileHandle('first_file_name.png');
 
   // Try delete the first file again, should result in file moved.
   const messageDeleteMoved = {deleteLastFile: true};
   testResponse = await guestMessagePipe.sendMessage('test', messageDeleteMoved);
 
   assertEquals(
-      testResponse.testQueryResult, 'deleteOriginalFile resolved file moved');
+      'deleteOriginalFile resolved file moved', testResponse.testQueryResult);
   // New file not removed from `DirectoryHandle` internal state.
-  assertEquals(directory.files.length, 1);
+  assertEquals(1, directory.files.length);
 
   // Prevent the trusted context throwing errors resulting JS errors.
   guestMessagePipe.logClientError = error => console.log(JSON.stringify(error));
@@ -476,8 +478,71 @@ TEST_F('MediaAppUIBrowserTest', 'DeleteOriginalIPC', async () => {
   testResponse = await guestMessagePipe.sendMessage('test', messageDeleteNoOp);
 
   assertEquals(
-      testResponse.testQueryResult,
-      'deleteOriginalFile resolved UNKNOWN_ERROR');
+      'deleteOriginalFile resolved UNKNOWN_ERROR',
+      testResponse.testQueryResult);
+  testDone();
+});
+
+// Tests when a file is deleted, the app tries to open the next available file
+// and reloads with those files.
+TEST_F('MediaAppUIBrowserTest', 'DeletionOpensNextFile', async () => {
+  const testFiles = [
+    await createTestImageFile(1, 1, 'test_file_1.png'),
+    await createTestImageFile(1, 1, 'test_file_2.png'),
+    await createTestImageFile(1, 1, 'test_file_3.png'),
+  ];
+  const directory = await launchWithFiles(testFiles);
+  let testResponse;
+  // Shallow copy so mutations to `directory.files` don't effect
+  // `testHandles`.
+  const testHandles = [...directory.files];
+
+  // Check the app loads all 3 files.
+  let lastLoadedFiles = await getLoadedFiles();
+  assertEquals(3, lastLoadedFiles.length);
+  assertEquals('test_file_1.png', lastLoadedFiles[0].name);
+  assertEquals('test_file_2.png', lastLoadedFiles[1].name);
+  assertEquals('test_file_3.png', lastLoadedFiles[2].name);
+
+  // Delete the first file.
+  const messageDelete = {deleteLastFile: true};
+  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+
+  assertEquals(
+      'deleteOriginalFile resolved success', testResponse.testQueryResult);
+  assertEquals(testHandles[0], directory.lastDeleted);
+  assertEquals(directory.files.length, 2);
+
+  // Check the app reloads the file list with the remaining two files.
+  lastLoadedFiles = await getLoadedFiles();
+  assertEquals(2, lastLoadedFiles.length);
+  assertEquals('test_file_2.png', lastLoadedFiles[0].name);
+  assertEquals('test_file_3.png', lastLoadedFiles[1].name);
+
+  // Navigate to the last file (originally the third file) and delete it
+  await guestMessagePipe.sendMessage('test', {navigate: 'next'});
+  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+
+  assertEquals(
+      'deleteOriginalFile resolved success', testResponse.testQueryResult);
+  assertEquals(testHandles[2], directory.lastDeleted);
+  assertEquals(directory.files.length, 1);
+
+  // Check the app reloads the file list with the last remaining file
+  // (originally the second file).
+  lastLoadedFiles = await getLoadedFiles();
+  assertEquals(1, lastLoadedFiles.length);
+  assertEquals(testFiles[1].name, lastLoadedFiles[0].name);
+
+  // Delete the last file, should lead to zero state.
+  testResponse = await guestMessagePipe.sendMessage('test', messageDelete);
+  assertEquals(
+      'deleteOriginalFile resolved success', testResponse.testQueryResult);
+
+  // The app should be in zero state with no media loaded.
+  lastLoadedFiles = await getLoadedFiles();
+  assertEquals(0, lastLoadedFiles.length);
+
   testDone();
 });
 

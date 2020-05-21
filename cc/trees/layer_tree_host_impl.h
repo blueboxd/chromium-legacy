@@ -610,7 +610,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   const ScrollNode* CurrentlyScrollingNode() const;
 
   bool scroll_affects_scroll_handler() const {
-    return scroll_affects_scroll_handler_;
+    return settings_.enable_synchronized_scrolling &&
+           scroll_affects_scroll_handler_;
   }
   void QueueSwapPromiseForMainThreadScrollUpdate(
       std::unique_ptr<SwapPromise> swap_promise);

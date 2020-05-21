@@ -10,18 +10,24 @@
 
 namespace blink {
 
-Resource* LinkFetchResource::Fetch(ResourceType type,
-                                   FetchParameters& params,
+Resource* LinkFetchResource::Fetch(FetchParameters& params,
                                    ResourceFetcher* fetcher) {
-  DCHECK_EQ(type, ResourceType::kLinkPrefetch);
-  return fetcher->RequestResource(params, LinkResourceFactory(type), nullptr);
+  return fetcher->RequestResource(params, LinkResourceFactory(), nullptr);
 }
 
 LinkFetchResource::LinkFetchResource(const ResourceRequest& request,
-                                     ResourceType type,
                                      const ResourceLoaderOptions& options)
-    : Resource(request, type, options) {}
+    : Resource(request, ResourceType::kLinkPrefetch, options) {}
 
 LinkFetchResource::~LinkFetchResource() = default;
+
+LinkFetchResource::LinkResourceFactory::LinkResourceFactory()
+    : NonTextResourceFactory(ResourceType::kLinkPrefetch) {}
+
+Resource* LinkFetchResource::LinkResourceFactory::Create(
+    const ResourceRequest& request,
+    const ResourceLoaderOptions& options) const {
+  return MakeGarbageCollected<LinkFetchResource>(request, options);
+}
 
 }  // namespace blink

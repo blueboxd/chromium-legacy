@@ -59,6 +59,7 @@
 #include "content/browser/network_context_client_base_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/quota/quota_context.h"
+#include "content/browser/service_sandbox_type.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
 #include "content/browser/ssl/ssl_error_handler.h"
@@ -182,8 +183,6 @@ mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
       }
       remote = ServiceProcessHost::Launch<storage::mojom::StorageService>(
           ServiceProcessHost::Options()
-              .WithSandboxType(is_sandboxed ? SandboxType::kUtility
-                                            : SandboxType::kNoSandbox)
               .WithDisplayName("Storage Service")
               .Pass());
       remote.reset_on_disconnect();

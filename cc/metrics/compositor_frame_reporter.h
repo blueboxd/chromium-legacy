@@ -7,6 +7,7 @@
 
 #include <bitset>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/optional.h"
@@ -213,15 +214,9 @@ class CC_EXPORT CompositorFrameReporter {
                                    int stage_type_index,
                                    base::TimeDelta latency) const;
 
-  // Generate a trace event corresponding to a Viz breakdown under
-  // SubmitCompositorFrameToPresentationCompositorFrame stage in
-  // PipelineReporter. This function only generates trace events and does not
-  // report histograms.
-  void ReportVizBreakdownTrace(VizBreakdown substage,
-                               const base::TimeTicks start_time,
-                               const base::TimeTicks end_time) const;
-
-  void ReportAllTraceEvents(const char* termination_status_str) const;
+  void ReportCompositorLatencyTraceEvents(
+      const char* termination_status_str) const;
+  void ReportEventLatencyTraceEvents() const;
 
   void EnableReportType(FrameReportType report_type) {
     report_types_.set(static_cast<size_t>(report_type));
@@ -249,7 +244,7 @@ class CC_EXPORT CompositorFrameReporter {
 
   viz::FrameTimingDetails viz_breakdown_;
   base::TimeTicks viz_start_time_;
-  base::Optional<base::TimeDelta>
+  base::Optional<std::pair<base::TimeTicks, base::TimeTicks>>
       viz_breakdown_list_[static_cast<int>(VizBreakdown::kBreakdownCount)];
 
   // Stage data is recorded here. On destruction these stages will be reported

@@ -64,6 +64,10 @@ ukm::SourceId PaymentApp::UkmSourceId() {
   return ukm::kInvalidSourceId;
 }
 
+bool PaymentApp::IsWaitingForPaymentDetailsUpdate() const {
+  return false;
+}
+
 // static
 void PaymentApp::SortApps(std::vector<std::unique_ptr<PaymentApp>>* apps) {
   DCHECK(apps);

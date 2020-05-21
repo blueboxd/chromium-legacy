@@ -67,7 +67,7 @@ const base::FeatureParam<int>
         &kAssistantProactiveSuggestions, "timeout-threshold-millis", 15 * 1000};
 
 const base::Feature kAssistantResponseProcessingV2{
-    "AssistantResponseProcessingV2", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AssistantResponseProcessingV2", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAssistantRoutines{"AssistantRoutines",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

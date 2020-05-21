@@ -525,7 +525,7 @@ class WizardControllerFlowTest : public WizardControllerTest {
         std::make_unique<MockDeviceDisabledScreenView>();
     MockScreen(std::make_unique<DeviceDisabledScreen>(
         device_disabled_screen_view_.get()));
-    EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(0);
+    EXPECT_CALL(*device_disabled_screen_view_, Show(_, _, _)).Times(0);
 
     mock_network_screen_view_ = std::make_unique<MockNetworkScreenView>();
     mock_network_screen_ =
@@ -1237,9 +1237,8 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   device_state.SetString(policy::kDeviceStateDisabledMessage, kDisabledMessage);
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
-  EXPECT_CALL(*device_disabled_screen_view_, UpdateMessage(kDisabledMessage))
+  EXPECT_CALL(*device_disabled_screen_view_, Show(_, _, kDisabledMessage))
       .Times(1);
-  EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(1);
   mock_auto_enrollment_check_screen_->ExitScreen();
 
   base::RunLoop().RunUntilIdle();
@@ -2776,7 +2775,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDemoSetupDeviceDisabledTest,
   g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
                                         device_state);
 
-  EXPECT_CALL(*device_disabled_screen_view_, Show()).Times(1);
+  EXPECT_CALL(*device_disabled_screen_view_, Show(_, _, _)).Times(1);
   mock_auto_enrollment_check_screen_->ExitScreen();
 
   base::RunLoop().RunUntilIdle();

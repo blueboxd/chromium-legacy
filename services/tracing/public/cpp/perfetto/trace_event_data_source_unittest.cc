@@ -305,8 +305,7 @@ class TraceEventDataSourceTest : public testing::Test {
     ASSERT_EQ(packet->clock_snapshot().clocks().size(), 3);
 
     EXPECT_EQ(packet->clock_snapshot().clocks()[0].clock_id(),
-              static_cast<uint32_t>(
-                  perfetto::protos::pbzero::ClockSnapshot::Clock::BOOTTIME));
+              static_cast<uint32_t>(kTraceClockId));
     EXPECT_FALSE(packet->clock_snapshot().clocks()[0].has_unit_multiplier_ns());
     EXPECT_FALSE(packet->clock_snapshot().clocks()[0].has_is_incremental());
 

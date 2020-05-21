@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_logical_line_item.h"
 
-#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item_result.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_text_fragment_builder.h"
 

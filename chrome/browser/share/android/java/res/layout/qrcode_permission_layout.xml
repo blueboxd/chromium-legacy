@@ -9,9 +9,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
+    <ImageView
+        android:id="@+id/tab_line"
+        android:layout_width="match_parent"
+        style="@style/TabBarShadow"
+        android:importantForAccessibility="no"/>
+
     <org.chromium.ui.widget.ChromeImageView
         android:id="@+id/camera_icon"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="112dp"
         android:layout_gravity="center_horizontal"
         android:layout_width="150dp"
         android:layout_height="150dp"

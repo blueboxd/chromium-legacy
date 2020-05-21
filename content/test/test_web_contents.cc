@@ -15,6 +15,7 @@
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/navigator.h"
+#include "content/browser/portal/portal.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
@@ -447,6 +448,24 @@ void TestWebContents::TestDecrementBluetoothConnectedDeviceCount() {
 
 base::UnguessableToken TestWebContents::GetAudioGroupId() {
   return audio_group_id_;
+}
+
+const base::UnguessableToken& TestWebContents::CreatePortal(
+    std::unique_ptr<WebContents> web_contents) {
+  auto portal =
+      std::make_unique<Portal>(GetMainFrame(), std::move(web_contents));
+  const base::UnguessableToken& token = portal->portal_token();
+  portal->CreateProxyAndAttachPortal();
+  GetMainFrame()->OnPortalCreatedForTesting(std::move(portal));
+  return token;
+}
+
+WebContents* TestWebContents::GetPortalContents(
+    const base::UnguessableToken& portal_token) {
+  Portal* portal = GetMainFrame()->FindPortalByToken(portal_token);
+  if (!portal)
+    return nullptr;
+  return portal->GetPortalContents();
 }
 
 }  // namespace content

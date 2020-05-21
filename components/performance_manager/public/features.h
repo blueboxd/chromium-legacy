@@ -29,6 +29,11 @@ struct TabLoadingFrameNavigationThrottlesParams {
   // non-primary content frames.
   base::TimeDelta minimum_throttle_timeout;
   base::TimeDelta maximum_throttle_timeout;
+
+  // The multiple of elapsed time from navigation start until
+  // FirstContentfulPaint (FCP) that is used in calculating the timeout to apply
+  // to the throttles.
+  double fcp_multiple;
 };
 
 }  // namespace features

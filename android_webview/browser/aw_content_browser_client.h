@@ -233,8 +233,6 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   content::SpeechRecognitionManagerDelegate*
   CreateSpeechRecognitionManagerDelegate() override;
 
-  net::NetLog* GetNonNetworkServiceNetLog();
-
   static void DisableCreatingThreadPool();
 
  private:

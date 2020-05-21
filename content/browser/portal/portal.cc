@@ -179,6 +179,8 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   if (web_contents_created)
     PortalWebContentsCreated(portal_contents_.get());
 
+  outer_contents_impl->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+
   devtools_instrumentation::PortalAttached(outer_contents_impl->GetMainFrame());
 
   return proxy_host;
@@ -542,6 +544,16 @@ void Portal::CloseContents(WebContents* web_contents) {
 
 WebContents* Portal::GetResponsibleWebContents(WebContents* web_contents) {
   return WebContents::FromRenderFrameHost(owner_render_frame_host_);
+}
+
+void Portal::NavigationStateChanged(WebContents* source,
+                                    InvalidateTypes changed_flags) {
+  WebContents* outer_contents =
+      WebContents::FromRenderFrameHost(owner_render_frame_host_);
+  // Can be null in tests.
+  if (!outer_contents->GetDelegate())
+    return;
+  outer_contents->GetDelegate()->NavigationStateChanged(source, changed_flags);
 }
 
 base::UnguessableToken Portal::GetDevToolsFrameToken() const {

@@ -20,7 +20,8 @@
     var resource = Bindings.resourceForURL('http://127.0.0.1:8000/devtools/search/resources/search.js');
     var url = 'http://127.0.0.1:8000/devtools/search/resources/non-existing.js';
     var response = await TestRunner.PageAgent.invoke_searchInResource({frameId: resource.frameId, url, query: text});
-    TestRunner.addResult(response[Protocol.InspectorBackend.ProtocolError]);
+    TestRunner.addResult(
+        response[ProtocolClient.InspectorBackend.ProtocolError]);
     TestRunner.completeTest();
   }
 })();

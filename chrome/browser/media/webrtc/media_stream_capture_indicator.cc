@@ -338,45 +338,60 @@ void MediaStreamCaptureIndicator::ExecuteCommand(int command_id,
     web_contents->GetDelegate()->ActivateContents(web_contents);
 }
 
+bool MediaStreamCaptureIndicator::CheckUsage(
+    content::WebContents* web_contents,
+    const WebContentsDeviceUsagePredicate& pred) const {
+  auto it = usage_map_.find(web_contents);
+  if (it != usage_map_.end() && pred.Run(it->second.get()))
+    return true;
+
+  for (auto* inner_contents : web_contents->GetInnerWebContents()) {
+    if (CheckUsage(inner_contents, pred))
+      return true;
+  }
+
+  return false;
+}
+
 bool MediaStreamCaptureIndicator::IsCapturingUserMedia(
     content::WebContents* web_contents) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto it = usage_map_.find(web_contents);
-  return it != usage_map_.end() &&
-         (it->second->IsCapturingAudio() || it->second->IsCapturingVideo());
+  return CheckUsage(
+      web_contents,
+      base::BindRepeating([](const WebContentsDeviceUsage* usage) {
+        return usage->IsCapturingAudio() || usage->IsCapturingVideo();
+      }));
 }
 
 bool MediaStreamCaptureIndicator::IsCapturingVideo(
     content::WebContents* web_contents) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto it = usage_map_.find(web_contents);
-  return it != usage_map_.end() && it->second->IsCapturingVideo();
+  return CheckUsage(
+      web_contents,
+      base::BindRepeating(&WebContentsDeviceUsage::IsCapturingVideo));
 }
 
 bool MediaStreamCaptureIndicator::IsCapturingAudio(
     content::WebContents* web_contents) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto it = usage_map_.find(web_contents);
-  return it != usage_map_.end() && it->second->IsCapturingAudio();
+  return CheckUsage(
+      web_contents,
+      base::BindRepeating(&WebContentsDeviceUsage::IsCapturingAudio));
 }
 
 bool MediaStreamCaptureIndicator::IsBeingMirrored(
     content::WebContents* web_contents) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto it = usage_map_.find(web_contents);
-  return it != usage_map_.end() && it->second->IsMirroring();
+  return CheckUsage(web_contents,
+                    base::BindRepeating(&WebContentsDeviceUsage::IsMirroring));
 }
 
 bool MediaStreamCaptureIndicator::IsCapturingDesktop(
     content::WebContents* web_contents) const {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  auto it = usage_map_.find(web_contents);
-  return it != usage_map_.end() && it->second->IsCapturingDesktop();
+  return CheckUsage(
+      web_contents,
+      base::BindRepeating(&WebContentsDeviceUsage::IsCapturingDesktop));
 }
 
 void MediaStreamCaptureIndicator::NotifyStopped(
@@ -386,6 +401,9 @@ void MediaStreamCaptureIndicator::NotifyStopped(
   auto it = usage_map_.find(web_contents);
   DCHECK(it != usage_map_.end());
   it->second->NotifyStopped();
+
+  for (auto* inner_contents : web_contents->GetInnerWebContents())
+    NotifyStopped(inner_contents);
 }
 
 void MediaStreamCaptureIndicator::UnregisterWebContents(

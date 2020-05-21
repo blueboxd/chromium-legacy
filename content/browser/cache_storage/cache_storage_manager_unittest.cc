@@ -37,9 +37,7 @@
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
@@ -48,10 +46,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/disk_cache/disk_cache.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "storage/browser/blob/blob_data_builder.h"
-#include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_handle.h"
-#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
@@ -824,7 +818,6 @@ class CacheStorageManagerTest : public testing::Test {
   int callback_bool_;
   CacheStorageError callback_error_;
   blink::mojom::FetchAPIResponsePtr callback_cache_handle_response_;
-  std::unique_ptr<storage::BlobDataHandle> callback_data_handle_;
   std::vector<std::string> cache_names_;
 
   const url::Origin origin1_;
@@ -1058,8 +1051,6 @@ TEST_F(CacheStorageManagerTest, StorageReuseCacheName) {
   EXPECT_TRUE(Open(origin1_, "foo"));
   EXPECT_TRUE(CachePut(callback_cache_handle_.value(), kTestURL));
   EXPECT_TRUE(CacheMatch(callback_cache_handle_.value(), kTestURL));
-  std::unique_ptr<storage::BlobDataHandle> data_handle =
-      std::move(callback_data_handle_);
 
   EXPECT_TRUE(Delete(origin1_, "foo"));
   // The cache is deleted but the handle to one of its entries is still

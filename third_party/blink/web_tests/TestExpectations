@@ -5360,20 +5360,10 @@ crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.h
 
 crbug.com/1031345 media/controls/overlay-play-button-tap-to-hide.html [ Timeout Pass ]
 
-# Tests include race-conditions that will be fixed after DevTools fully uses ES modules
-crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers-in-top-level-function.js [ Pass Failure ]
-crbug.com/1006759 http/tests/devtools/sources/debugger-ui/continue-to-location-markers.js [ Pass Failure ]
-crbug.com/1006759 http/tests/devtools/sources/debugger-ui/popover-for-spread-operator.js [ Pass Failure ]
-crbug.com/1006759 http/tests/devtools/editor/php-highlighter.js [ Pass Failure ]
-
 # Temporary SkiaRenderer regressions
 crbug.com/1029941 [ Linux ] external/wpt/css/css-paint-api/background-image-alpha.https.html [ Failure ]
 crbug.com/1029941 [ Linux ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligible/color-profile-layer-filter.html [ Failure ]
-
-# Disabled for three-way merge after https://crrev.com/c/devtools/devtools-frontend/+/1934218 is submitted
-crbug.com/1006759 http/tests/devtools/modules-load-network.js [ Pass Failure ]
-crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
 
 # Failing document policy tests
 crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
@@ -5712,9 +5702,6 @@ crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/te
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade.https.html [ Failure ]
 
 # DevTools roll
-crbug.com/1006759 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
-
-# DevTools roll
 crbug.com/1052111 http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Skip ]
 
 # Sheriff 2020-02-18
@@ -5735,11 +5722,6 @@ crbug.com/1053903 [ Win ] external/wpt/webxr/events_referenceSpace_reset_inline.
 
 # Sheriff 2020-02-21
 crbug.com/1054977 [ Mac ] media/video-controls-rendering.html [ Pass Failure ]
-
-# DevTools roll
-crbug.com/1006759 http/tests/devtools/agents-enable-disable.js [ Skip ]
-crbug.com/1006759 http/tests/devtools/search/search-in-non-existing-resource.js [ Skip ]
-crbug.com/1006759 http/tests/devtools/sources/debugger-breakpoints/debugger-set-breakpoint-regex.js [ Skip ]
 
 # Sheriff 2020-02-21
 crbug.com/1054916 [ Linux ] external/wpt/webxr/dom-overlay/ar_dom_overlay.https.html [ Pass Failure Timeout ]
@@ -5886,3 +5868,5 @@ crbug.com/1084509 [ Win ] fast/forms/select/select-disabled-appearance.html [ Pa
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
+
+crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]

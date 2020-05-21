@@ -644,8 +644,8 @@ void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefix(
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
-                             base::flat_map<std::string, std::string>(),
-                             ServiceWorkerDatabase::Status::kErrorDisabled));
+                             ServiceWorkerDatabase::Status::kErrorDisabled,
+                             base::flat_map<std::string, std::string>()));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -1523,7 +1523,7 @@ void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefixInDB(
       database->ReadUserKeysAndDataByKeyPrefix(registration_id, key_prefix,
                                                &data_map);
   original_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), data_map, status));
+      FROM_HERE, base::BindOnce(std::move(callback), status, data_map));
 }
 
 void ServiceWorkerStorage::GetUserDataForAllRegistrationsInDB(

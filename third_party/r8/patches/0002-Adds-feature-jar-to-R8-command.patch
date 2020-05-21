@@ -1,7 +1,7 @@
-From 09eaa46b489b08994644822a93a879e3e089f531 Mon Sep 17 00:00:00 2001
+From 78acee122ca6d379c917ed339c54f8909c7953bf Mon Sep 17 00:00:00 2001
 From: Andrew Grieve <agrieve@chromium.org>
 Date: Mon, 27 Apr 2020 15:00:00 -0400
-Subject: [PATCH] Adds --feature-jar to R8 command
+Subject: [PATCH 2/6] Adds --feature-jar to R8 command
 
 Chrome needs this to expose feature splits via command-line
 ---
@@ -10,7 +10,7 @@ Chrome needs this to expose feature splits via command-line
  2 files changed, 21 insertions(+)
 
 diff --git a/src/main/java/com/android/tools/r8/R8Command.java b/src/main/java/com/android/tools/r8/R8Command.java
-index 3e9ae7eb1..898b44255 100644
+index 656f3aa47..909b7bc93 100644
 --- a/src/main/java/com/android/tools/r8/R8Command.java
 +++ b/src/main/java/com/android/tools/r8/R8Command.java
 @@ -70,6 +70,18 @@ public final class R8Command extends BaseCompilerCommand {
@@ -33,7 +33,7 @@ index 3e9ae7eb1..898b44255 100644
      private static class DefaultR8DiagnosticsHandler implements DiagnosticsHandler {
  
 diff --git a/src/main/java/com/android/tools/r8/R8CommandParser.java b/src/main/java/com/android/tools/r8/R8CommandParser.java
-index f04f93722..d1b767725 100644
+index d31606dea..8d286601c 100644
 --- a/src/main/java/com/android/tools/r8/R8CommandParser.java
 +++ b/src/main/java/com/android/tools/r8/R8CommandParser.java
 @@ -24,6 +24,7 @@ public class R8CommandParser extends BaseCompilerCommandParser<R8Command, R8Comm
@@ -60,5 +60,5 @@ index f04f93722..d1b767725 100644
          builder.addMainDexListFiles(Paths.get(nextArg));
        } else if (arg.equals("--main-dex-list-output")) {
 -- 
-2.26.2.303.gf8c07b1a785-goog
+2.26.2.761.g0e0b3e54be-goog
 

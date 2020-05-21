@@ -23,5 +23,4 @@ source_set("module") {
     "//chrome/android/features/stack_unwinder/public:memory_regions_map",
     "//chrome/android/modules/stack_unwinder/provider:jni_headers",
   ]
-  libs = [ "dl" ]
 }

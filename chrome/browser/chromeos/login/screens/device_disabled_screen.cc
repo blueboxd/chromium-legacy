@@ -23,12 +23,12 @@ DeviceDisabledScreen::DeviceDisabledScreen(DeviceDisabledScreenView* view)
     : BaseScreen(DeviceDisabledScreenView::kScreenId,
                  OobeScreenPriority::SCREEN_DEVICE_DISABLED),
       view_(view) {
-  view_->SetDelegate(this);
+  view_->Bind(this);
 }
 
 DeviceDisabledScreen::~DeviceDisabledScreen() {
   if (view_)
-    view_->SetDelegate(nullptr);
+    view_->Bind(nullptr);
 }
 
 void DeviceDisabledScreen::OnViewDestroyed(DeviceDisabledScreenView* view) {
@@ -36,26 +36,14 @@ void DeviceDisabledScreen::OnViewDestroyed(DeviceDisabledScreenView* view) {
     view_ = nullptr;
 }
 
-const std::string& DeviceDisabledScreen::GetEnrollmentDomain() const {
-  return DeviceDisablingManager()->enrollment_domain();
-}
-
-const std::string& DeviceDisabledScreen::GetMessage() const {
-  return DeviceDisablingManager()->disabled_message();
-}
-
-const std::string& DeviceDisabledScreen::GetSerialNumber() const {
-  return DeviceDisablingManager()->serial_number();
-}
-
 void DeviceDisabledScreen::ShowImpl() {
   if (!view_ || !is_hidden())
     return;
 
-  view_->Show();
+  view_->Show(DeviceDisablingManager()->serial_number(),
+              DeviceDisablingManager()->enrollment_domain(),
+              DeviceDisablingManager()->disabled_message());
   DeviceDisablingManager()->AddObserver(this);
-  if (!DeviceDisablingManager()->disabled_message().empty())
-    view_->UpdateMessage(DeviceDisablingManager()->disabled_message());
 }
 
 void DeviceDisabledScreen::HideImpl() {

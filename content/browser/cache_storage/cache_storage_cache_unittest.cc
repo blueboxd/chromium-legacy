@@ -36,9 +36,6 @@
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_cache.h"
 #include "content/common/background_fetch/background_fetch_types.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/referrer.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_utils.h"
@@ -50,10 +47,6 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/url_util.h"
 #include "net/disk_cache/disk_cache.h"
-#include "storage/browser/blob/blob_data_builder.h"
-#include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_data_snapshot.h"
-#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/blob_test_utils.h"
@@ -67,7 +60,6 @@
 using blink::FetchAPIRequestHeadersMap;
 using blink::mojom::CacheStorageError;
 using blink::mojom::CacheStorageVerboseErrorPtr;
-using storage::BlobDataItem;
 
 namespace content {
 namespace cache_storage_cache_unittest {

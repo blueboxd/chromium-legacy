@@ -1195,11 +1195,11 @@ void ServiceWorkerContextWrapper::GetRegistrationUserKeysAndDataByKeyPrefix(
           base::BindOnce(
               [](GetUserKeysAndDataCallback callback,
                  scoped_refptr<base::TaskRunner> callback_runner,
-                 const base::flat_map<std::string, std::string>& data_map,
-                 blink::ServiceWorkerStatusCode status) {
+                 blink::ServiceWorkerStatusCode status,
+                 const base::flat_map<std::string, std::string>& data_map) {
                 callback_runner->PostTask(
                     FROM_HERE,
-                    base::BindOnce(std::move(callback), data_map, status));
+                    base::BindOnce(std::move(callback), status, data_map));
               },
               std::move(callback), base::ThreadTaskRunnerHandle::Get())));
 }
@@ -1211,8 +1211,8 @@ void ServiceWorkerContextWrapper::
         GetUserKeysAndDataCallback callback) {
   DCHECK_CURRENTLY_ON(GetCoreThreadId());
   if (!context_core_) {
-    std::move(callback).Run(base::flat_map<std::string, std::string>(),
-                            blink::ServiceWorkerStatusCode::kErrorAbort);
+    std::move(callback).Run(blink::ServiceWorkerStatusCode::kErrorAbort,
+                            base::flat_map<std::string, std::string>());
     return;
   }
   context_core_->registry()->GetUserKeysAndDataByKeyPrefix(

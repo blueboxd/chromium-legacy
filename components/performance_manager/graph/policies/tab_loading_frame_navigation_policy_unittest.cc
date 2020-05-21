@@ -95,6 +95,28 @@ class TabLoadingFrameNavigationPolicyTest
     quit_closure_.Reset();
   }
 
+  // Returns the scheduled page timeout after simulating FCP.
+  base::TimeTicks SimulateFirstContentfulPaint(content::WebContents* contents,
+                                               base::TimeDelta fcp) {
+    base::RunLoop run_loop;
+    base::TimeTicks timeout;
+
+    auto frame = PerformanceManager::GetFrameNodeForRenderFrameHost(
+        contents->GetMainFrame());
+    PerformanceManager::CallOnGraph(
+        FROM_HERE,
+        base::BindLambdaForTesting(
+            [policy = policy(), fcp, frame, &run_loop, &timeout](Graph* graph) {
+              EXPECT_TRUE(frame.get());
+              policy->OnFirstContentfulPaintForTesting(frame.get(), fcp);
+              timeout = policy->GetPageTimeoutForTesting(frame->GetPageNode());
+              run_loop.Quit();
+            }));
+
+    run_loop.Run();
+    return timeout;
+  }
+
   void ExpectThrottledPageCount(size_t expected_throttled_page_count) {
     base::RunLoop run_loop;
 
@@ -352,24 +374,117 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
   ASSERT_EQ(2.0, GetRelativeTime());
 }
 
+TEST_F(TabLoadingFrameNavigationPolicyTest, MinTimeoutUpdateWorks) {
+  // Navigate and throttle a contents.
+  std::unique_ptr<content::WebContents> contents1 = CreateTestWebContents();
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      contents1.get(), GURL("http://www.foo1.com/"));
+  EXPECT_TRUE(policy()->ShouldThrottleWebContents(contents1.get()));
+  ExpectThrottledPageCount(1);
+
+  // Simulate an FCP that would cause a minimum timeout to be applied.
+  base::TimeDelta fcp = policy()->GetMinTimeoutForTesting() /
+                            policy()->GetFCPMultipleForTesting() -
+                        base::TimeDelta::FromMilliseconds(100);
+  ASSERT_LT(base::TimeDelta(), fcp);
+
+  // Advance time by that amount and simulate FCP. No callbacks should fire.
+  task_environment()->FastForwardBy(fcp);
+  base::TimeTicks now = task_environment()->GetMockTickClock()->NowTicks();
+  base::TimeTicks timeout = SimulateFirstContentfulPaint(contents1.get(), fcp);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // The timeout should be set at the minimum timeout.
+  EXPECT_EQ(now + policy()->GetMinTimeoutForTesting(), timeout);
+}
+
+TEST_F(TabLoadingFrameNavigationPolicyTest, FCPTimeoutUpdateWorks) {
+  // Navigate and throttle a contents.
+  std::unique_ptr<content::WebContents> contents1 = CreateTestWebContents();
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      contents1.get(), GURL("http://www.foo1.com/"));
+  EXPECT_TRUE(policy()->ShouldThrottleWebContents(contents1.get()));
+  ExpectThrottledPageCount(1);
+
+  // Simulate an FCP that will cause a timeout update.
+  base::TimeDelta fcp = policy()->GetMinTimeoutForTesting() +
+                        base::TimeDelta::FromMilliseconds(100);
+
+  // Advance time by that amount and simulate FCP. No callbacks should fire.
+  task_environment()->FastForwardBy(fcp);
+  base::TimeTicks timeout = SimulateFirstContentfulPaint(contents1.get(), fcp);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // The timeout should be set at the expected calculated timeout (to ms
+  // precision).
+  EXPECT_EQ((fcp * policy()->GetFCPMultipleForTesting()).InMilliseconds(),
+            (timeout - start()).InMilliseconds());
+}
+
+TEST_F(TabLoadingFrameNavigationPolicyTest, MaxTimeoutWorks) {
+  // Navigate and throttle a contents.
+  std::unique_ptr<content::WebContents> contents1 = CreateTestWebContents();
+  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+      contents1.get(), GURL("http://www.foo1.com/"));
+  EXPECT_TRUE(policy()->ShouldThrottleWebContents(contents1.get()));
+  ExpectThrottledPageCount(1);
+
+  // Calculate an FCP that would cause a calculated timeout that exceeds the
+  // maximum.
+  base::TimeDelta fcp = policy()->GetMaxTimeoutForTesting() /
+                            policy()->GetFCPMultipleForTesting() +
+                        base::TimeDelta::FromMilliseconds(100);
+
+  // Advance time by that amount and simulate FCP. No callbacks should fire.
+  task_environment()->FastForwardBy(fcp);
+  base::TimeTicks timeout = SimulateFirstContentfulPaint(contents1.get(), fcp);
+  testing::Mock::VerifyAndClearExpectations(this);
+
+  // The timeout should remain at the max timeout it was initially set to.
+  EXPECT_EQ(start() + policy()->GetMaxTimeoutForTesting(), timeout);
+}
+
 TEST(TabLoadingFrameNavigationThrottlesParams, FeatureParamsWork) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       features::kTabLoadingFrameNavigationThrottles,
       {{"MinimumThrottleTimeoutMilliseconds", "2500"},
-       {"MaximumThrottleTimeoutMilliseconds", "25000"}});
+       {"MaximumThrottleTimeoutMilliseconds", "25000"},
+       {"FCPMultiple", "3.14"}});
 
   // Make sure the parsing works.
   auto params = features::TabLoadingFrameNavigationThrottlesParams::GetParams();
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(2500),
             params.minimum_throttle_timeout);
   EXPECT_EQ(base::TimeDelta::FromSeconds(25), params.maximum_throttle_timeout);
+  EXPECT_EQ(3.14, params.fcp_multiple);
 
   // And make sure the plumbing works.
   std::unique_ptr<TabLoadingFrameNavigationPolicy> policy =
       std::make_unique<TabLoadingFrameNavigationPolicy>();
   EXPECT_EQ(params.minimum_throttle_timeout, policy->GetMinTimeoutForTesting());
   EXPECT_EQ(params.maximum_throttle_timeout, policy->GetMaxTimeoutForTesting());
+  EXPECT_EQ(params.fcp_multiple, policy->GetFCPMultipleForTesting());
+
+  // Finally make sure that the calculation is as expected.
+
+  // An FCP of 300ms would yield 942ms, or 642ms of additional timeout. This is
+  // less than timeout_min_, so we should get that.
+  EXPECT_EQ(params.minimum_throttle_timeout,
+            policy->CalculateTimeoutFromFCPForTesting(
+                base::TimeDelta::FromMilliseconds(300)));
+
+  // An FCP of 1000ms would yield 3140ms, or 2140ms of additional timeout. This
+  // is also less than timeout_min_, so we should get that.
+  EXPECT_EQ(params.minimum_throttle_timeout,
+            policy->CalculateTimeoutFromFCPForTesting(
+                base::TimeDelta::FromMilliseconds(1000)));
+
+  // An FCP of 2000ms would yield 6280ms, or 4280ms of additional timeout. We
+  // should get that.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(4280),
+            policy->CalculateTimeoutFromFCPForTesting(
+                base::TimeDelta::FromMilliseconds(2000)));
 }
 
 }  // namespace policies

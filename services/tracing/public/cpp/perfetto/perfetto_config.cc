@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
+#include "services/tracing/public/cpp/perfetto/trace_time.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
 
 namespace tracing {
@@ -65,9 +66,18 @@ perfetto::TraceConfig GetDefaultPerfettoConfig(
       break;
   }
 
-  // Perfetto uses clock_gettime for its internal snapshotting, which gets
-  // blocked by the sandboxed and isn't needed for Chrome regardless.
   auto* builtin_data_sources = perfetto_config.mutable_builtin_data_sources();
+
+  // Chrome uses CLOCK_MONOTONIC as its trace clock on Posix. To avoid that
+  // trace processor converts Chrome's event timestamps into CLOCK_BOOTTIME
+  // during import, we set the trace clock here (the service will emit it into
+  // the trace's ClockSnapshots). See also crbug.com/1060400, where the
+  // conversion to BOOTTIME caused CrOS and chromecast system data source data
+  // to be misaligned.
+  builtin_data_sources->set_primary_trace_clock(
+      static_cast<perfetto::protos::gen::BuiltinClock>(kTraceClockId));
+
+  // Chrome emits system / trace config metadata itself.
   builtin_data_sources->set_disable_trace_config(privacy_filtering_enabled);
   builtin_data_sources->set_disable_system_info(privacy_filtering_enabled);
   builtin_data_sources->set_disable_service_events(privacy_filtering_enabled);

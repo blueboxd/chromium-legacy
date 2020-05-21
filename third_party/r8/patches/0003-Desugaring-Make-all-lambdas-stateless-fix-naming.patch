@@ -1,7 +1,7 @@
-From 6c3009d363b1e50adc83279dba27b4e0a350ead7 Mon Sep 17 00:00:00 2001
-From: Andrew Grieve <agrieve@chromium.org>
-Date: Wed, 1 Apr 2020 10:03:46 -0400
-Subject: [PATCH 3/5] Desugaring: Make all lambdas stateless & fix naming
+From 4fbdadba00834e5fd2f7863ed387bc06c761d37b Mon Sep 17 00:00:00 2001
+From: Sam Maier <smaier@chromium.org>
+Date: Tue, 19 May 2020 15:55:44 -0400
+Subject: [PATCH 3/6] Desugaring: Make all lambdas stateless & fix naming 
  scheme of method references
 
 Statefull lambdas regress dex size.
@@ -12,7 +12,7 @@ Bug: b/129997269
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java b/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
-index 0831e6d93..0abb97180 100644
+index f41bdce43..0dbdc24eb 100644
 --- a/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
 +++ b/src/main/java/com/android/tools/r8/ir/desugar/LambdaClass.java
 @@ -128,7 +128,8 @@ public final class LambdaClass {
@@ -22,7 +22,7 @@ index 0831e6d93..0abb97180 100644
 -    if (match.delegatesToLambdaImplMethod() || match.needsAccessor(accessedFrom)) {
 +    if (true || match.delegatesToLambdaImplMethod() || match.needsAccessor(accessedFrom)) {
 +      // Chrome: This class name is required for supersize to map the symbol to source .java file.
-       lambdaClassDescriptor.append(accessedFrom.getName()).append('$');
+       lambdaClassDescriptor.append(accessedFrom.getHolderType().getName()).append('$');
      }
  
 @@ -206,7 +207,7 @@ public final class LambdaClass {
@@ -30,10 +30,10 @@ index 0831e6d93..0abb97180 100644
  
    public final boolean isStateless() {
 -    return descriptor.isStateless();
-+    return false;  // descriptor.isStateless();
++    return false; // descriptor.isStateless();
    }
  
    void addSynthesizedFrom(DexProgramClass clazz) {
 -- 
-2.26.0.rc2.310.g2932bb562d-goog
+2.26.2.761.g0e0b3e54be-goog
 

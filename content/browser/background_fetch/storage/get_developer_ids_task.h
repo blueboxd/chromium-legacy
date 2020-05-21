@@ -34,8 +34,9 @@ class GetDeveloperIdsTask : public DatabaseTask {
   void Start() override;
 
  private:
-  void DidGetUniqueIds(const base::flat_map<std::string, std::string>& data_map,
-                       blink::ServiceWorkerStatusCode status);
+  void DidGetUniqueIds(
+      blink::ServiceWorkerStatusCode status,
+      const base::flat_map<std::string, std::string>& data_map);
 
   void FinishWithError(blink::mojom::BackgroundFetchError error) override;
 

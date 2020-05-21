@@ -565,8 +565,8 @@ void ServiceWorkerRegistry::GetUserKeysAndDataByKeyPrefix(
       key_prefix.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
-                           base::flat_map<std::string, std::string>(),
-                           blink::ServiceWorkerStatusCode::kErrorFailed));
+                           blink::ServiceWorkerStatusCode::kErrorFailed,
+                           base::flat_map<std::string, std::string>()));
     return;
   }
 
@@ -1242,14 +1242,14 @@ void ServiceWorkerRegistry::DidGetUserData(
 
 void ServiceWorkerRegistry::DidGetUserKeysAndData(
     GetUserKeysAndDataCallback callback,
-    const base::flat_map<std::string, std::string>& data_map,
-    storage::mojom::ServiceWorkerDatabaseStatus status) {
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    const base::flat_map<std::string, std::string>& data_map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();
   }
-  std::move(callback).Run(data_map, DatabaseStatusToStatusCode(status));
+  std::move(callback).Run(DatabaseStatusToStatusCode(status), data_map);
 }
 
 void ServiceWorkerRegistry::DidStoreUserData(

@@ -33,8 +33,8 @@ void GetDeveloperIdsTask::Start() {
 }
 
 void GetDeveloperIdsTask::DidGetUniqueIds(
-    const base::flat_map<std::string, std::string>& data_map,
-    blink::ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status,
+    const base::flat_map<std::string, std::string>& data_map) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
       FinishWithError(blink::mojom::BackgroundFetchError::NONE);

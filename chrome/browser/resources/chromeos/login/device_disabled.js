@@ -11,11 +11,12 @@ Polymer({
 
   behaviors: [OobeI18nBehavior, OobeDialogHostBehavior, LoginScreenBehavior],
 
-  EXTERNAL_API: ['setSerialNumberAndEnrollmentDomain', 'setMessage'],
+  EXTERNAL_API: ['setMessage'],
 
   properties: {
     /**
      * Device serial number
+     * The serial number of the device.
      */
     serial_: {
       type: String,
@@ -23,7 +24,7 @@ Polymer({
     },
 
     /**
-     * Enrollment domain (can be empty)
+     * The domain that owns the device (can be empty).
      */
     enrollmentDomain_: {
       type: String,
@@ -37,7 +38,6 @@ Polymer({
       type: String,
       value: '',
     },
-
   },
 
 
@@ -60,17 +60,14 @@ Polymer({
     return this.$.dialog;
   },
 
-  /**
-   * Updates the explanation shown to the user. The explanation will indicate
-   * the device serial number and that it is owned by |enrollment_domain|. If
-   * |enrollment_domain| is null or empty, a generic explanation will be used
-   * instead that does not reference any domain.
-   * @param {string} serial_number The serial number of the device.
-   * @param {string} enrollment_domain The domain that owns the device.
-   */
-  setSerialNumberAndEnrollmentDomain(serial_number, enrollment_domain) {
-    this.serial_ = serial_number;
-    this.enrollmentDomain_ = enrollment_domain;
+  onBeforeShow(data) {
+    this.behaviors.forEach((behavior) => {
+      if (behavior.onBeforeShow)
+        behavior.onBeforeShow.call(this, data);
+    });
+    this.serial_ = data.serial;
+    this.enrollmentDomain_ = data.domain;
+    this.message_ = data.message;
   },
 
   /**
@@ -81,6 +78,12 @@ Polymer({
     this.message_ = message;
   },
 
+  /**
+   * Updates the explanation shown to the user. The explanation will indicate
+   * the device serial number and that it is owned by |domain|. If |domain| is
+   * null or empty, a generic explanation will be used instead that does not
+   * reference any domain.
+   */
   disabledText_(locale, serial, domain) {
     if (domain) {
       return this.i18n('deviceDisabledExplanationWithDomain', serial, domain);

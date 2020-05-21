@@ -35,7 +35,7 @@
       const response = await agent.invoke_disable({});
       printResult(
           agentName, 'disable',
-          response[Protocol.InspectorBackend.ProtocolError]);
+          response[ProtocolClient.InspectorBackend.ProtocolError]);
     }
 
     async function enableAgent(agentName) {
@@ -43,7 +43,7 @@
       const response = await agent.invoke_enable({});
       printResult(
           agentName, 'enable',
-          response[Protocol.InspectorBackend.ProtocolError]);
+          response[ProtocolClient.InspectorBackend.ProtocolError]);
     }
 
     for (const agentName of agentNames)

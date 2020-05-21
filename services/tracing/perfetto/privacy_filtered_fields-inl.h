@@ -30,8 +30,10 @@ constexpr int kClockIndices[] = {1, 2, 3, 4, -1};
 constexpr MessageInfo kClock = {kClockIndices, nullptr};
 
 // Proto Message: ClockSnapshot
-constexpr int kClockSnapshotIndices[] = {1, -1};
-constexpr MessageInfo const* kClockSnapshotComplexMessages[] = {&kClock};
+// Manually whitelisted: 2 (primary_trace_clock).
+constexpr int kClockSnapshotIndices[] = {1, 2, -1};
+constexpr MessageInfo const* kClockSnapshotComplexMessages[] = {&kClock,
+                                                                nullptr};
 constexpr MessageInfo kClockSnapshot = {kClockSnapshotIndices,
                                         kClockSnapshotComplexMessages};
 

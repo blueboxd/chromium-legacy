@@ -439,6 +439,12 @@ PlatformEventDispatcher* XEventDispatcher::GetPlatformEventDispatcher() {
 
 void X11EventSource::ProcessXEvent(XEvent* xevent) {
   auto translated_event = ui::BuildEventFromXEvent(*xevent);
+  // Ignore native platform-events only if they correspond to mouse events.
+  // Allow other types of events to still be handled
+  if (ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents() &&
+      translated_event && translated_event->IsMouseEvent()) {
+    return;
+  }
   if (translated_event && translated_event->type() != ET_UNKNOWN) {
 #if defined(OS_CHROMEOS)
     if (translated_event->IsLocatedEvent()) {

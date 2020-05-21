@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<body>
+  <script>
+    let adoptionCompletePromise = new Promise(r => {
+      window.onportalactivate = e => {
+        let portal = e.adoptPredecessor();
+        document.body.appendChild(portal);
+        r();
+      };
+    });
+
+    async function waitForAdoption() {
+      await adoptionCompletePromise;
+      domAutomationController.send(true);
+    }
+  </script>
+</body>

@@ -12,15 +12,18 @@
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/test/icu_test_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "content/public/test/browser_test.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "ui/aura/window.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/notification_view_md.h"
 
@@ -29,11 +32,35 @@ namespace assistant {
 
 namespace {
 
+using message_center::MessageCenter;
+using message_center::MessageCenterObserver;
+
 // Please remember to set auth token when *not* running in |kReplay| mode.
 constexpr auto kMode = FakeS3Mode::kReplay;
 
 // Update this when you introduce breaking changes to existing tests.
 constexpr int kVersion = 1;
+
+// Macros ----------------------------------------------------------------------
+
+#define EXPECT_VISIBLE_NOTIFICATIONS_BY_PREFIXED_ID(prefix_)                  \
+  {                                                                           \
+    if (!FindVisibleNotificationsByPrefixedId(prefix_).empty())               \
+      return;                                                                 \
+                                                                              \
+    MockMessageCenterObserver mock;                                           \
+    ScopedObserver<MessageCenter, MessageCenterObserver> observer_{&mock};    \
+    observer_.Add(MessageCenter::Get());                                      \
+                                                                              \
+    base::RunLoop run_loop;                                                   \
+    EXPECT_CALL(mock, OnNotificationAdded)                                    \
+        .WillOnce(                                                            \
+            testing::Invoke([&run_loop](const std::string& notification_id) { \
+              if (!FindVisibleNotificationsByPrefixedId(prefix_).empty())     \
+                run_loop.QuitClosure().Run();                                 \
+            }));                                                              \
+    run_loop.Run();                                                           \
+  }
 
 // TODO(b:153496343): Move generic helpers to a more generic location for reuse.
 // Helpers ---------------------------------------------------------------------
@@ -71,16 +98,14 @@ ash::StatusAreaWidget* FindStatusAreaWidget() {
 
 // Returns the set of Assistant notifications (as indicated by application id).
 message_center::NotificationList::Notifications FindAssistantNotifications() {
-  return message_center::MessageCenter::Get()->FindNotificationsByAppId(
-      "assistant");
+  return MessageCenter::Get()->FindNotificationsByAppId("assistant");
 }
 
 // Returns visible notifications having id starting with |prefix|.
 std::vector<message_center::Notification*> FindVisibleNotificationsByPrefixedId(
     const std::string& prefix) {
   std::vector<message_center::Notification*> notifications;
-  for (auto* notification :
-       message_center::MessageCenter::Get()->GetVisibleNotifications()) {
+  for (auto* notification : MessageCenter::Get()->GetVisibleNotifications()) {
     if (base::StartsWith(notification->id(), prefix,
                          base::CompareCase::SENSITIVE)) {
       notifications.push_back(notification);
@@ -142,6 +167,18 @@ void TapOnAndWait(const views::Widget* widget) {
   base::RunLoop().RunUntilIdle();
 }
 
+// Mocks -----------------------------------------------------------------------
+
+class MockMessageCenterObserver
+    : public testing::NiceMock<MessageCenterObserver> {
+ public:
+  // MessageCenterObserver:
+  MOCK_METHOD(void,
+              OnNotificationAdded,
+              (const std::string& notification_id),
+              (override));
+};
+
 }  // namespace
 
 // AssistantTimersBrowserTest --------------------------------------------------
@@ -191,8 +228,8 @@ IN_PROC_BROWSER_TEST_F(AssistantTimersBrowserTest,
   // Check for a stable substring of the expected answers.
   tester()->ExpectTextResponse("1 min.");
 
-  // Confirm that an Assistant timer notification is now showing.
-  ASSERT_EQ(1u, FindVisibleNotificationsByPrefixedId("assistant/timer").size());
+  // Expect that an Assistant timer notification is now showing.
+  EXPECT_VISIBLE_NOTIFICATIONS_BY_PREFIXED_ID("assistant/timer");
 
   // Disable Assistant.
   tester()->SetAssistantEnabled(false);

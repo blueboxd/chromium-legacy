@@ -15,6 +15,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 
 class Profile;
+class ProfileImpl;
 
 namespace content {
 class RenderProcessHost;
@@ -24,10 +25,14 @@ class RenderProcessHost;
 // sure it gets done asynchronously after all render process hosts are gone.
 class ProfileDestroyer : public content::RenderProcessHostObserver {
  public:
+  // Destroys the given profile either instantly, or after a short delay waiting
+  // for dependent renderer process hosts to destroy.
+  // Ownership of the profile is passed to profile destroyer and the profile
+  // should not be used after this call.
   static void DestroyProfileWhenAppropriate(Profile* const profile);
-  static void DestroyOffTheRecordProfileNow(Profile* const profile);
 
  private:
+  friend class ProfileImpl;
   typedef std::set<content::RenderProcessHost*> HostSet;
   typedef std::set<ProfileDestroyer*> DestroyerSet;
 
@@ -43,6 +48,16 @@ class ProfileDestroyer : public content::RenderProcessHostObserver {
   // |profile_ptr| is a void* because the Profile object may be freed. Only
   // pointer comparison is allowed, it will never be dereferenced as a Profile.
   static HostSet GetHostsForProfile(void* const profile_ptr);
+
+  // Destroys a regular profile immediately.
+  static void DestroyRegularProfileNow(Profile* const profile);
+
+  // Destroys an OffTheRecord profile immediately and removes it from all
+  // pending destroyers.
+  static void DestroyOffTheRecordProfileNow(Profile* const profile);
+
+  // Removes the profile from pending destroyers.
+  static void RemovePendingDestroyers(Profile* const profile);
 
   // We need access to all pending destroyers so we can cancel them.
   static DestroyerSet* pending_destroyers_;

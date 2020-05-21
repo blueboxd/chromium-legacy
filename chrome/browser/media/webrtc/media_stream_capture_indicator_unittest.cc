@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
@@ -74,15 +75,17 @@ class MediaStreamCaptureIndicatorTest : public ChromeRenderViewHostTestHarness {
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
+    content::WebContentsTester::For(web_contents())
+        ->NavigateAndCommit(GURL("https://www.example.com/"));
     indicator_ = MediaCaptureDevicesDispatcher::GetInstance()
                      ->GetMediaStreamCaptureIndicator();
     observer_ = std::make_unique<MockObserver>();
     indicator_->AddObserver(observer());
-    contents_ = CreateTestWebContents();
+    portal_token_ = content::WebContentsTester::For(web_contents())
+                        ->CreatePortal(CreateTestWebContents());
   }
 
   void TearDown() override {
-    contents_.reset();
     indicator_->RemoveObserver(observer());
     observer_.reset();
     indicator_.reset();
@@ -90,7 +93,10 @@ class MediaStreamCaptureIndicatorTest : public ChromeRenderViewHostTestHarness {
   }
 
   MediaStreamCaptureIndicator* indicator() { return indicator_.get(); }
-  content::WebContents* contents() { return contents_.get(); }
+  content::WebContents* portal_contents() {
+    return content::WebContentsTester::For(web_contents())
+        ->GetPortalContents(portal_token_);
+  }
   MockObserver* observer() { return observer_.get(); }
 
   // Test a MediaStreamCaptureIndicator accessor and ensure that the
@@ -98,11 +104,15 @@ class MediaStreamCaptureIndicatorTest : public ChromeRenderViewHostTestHarness {
   void TestObserverMethod(blink::mojom::MediaStreamType stream_type,
                           MockObserverSetExpectationsMethod observer_method,
                           AccessorMethod accessor_method);
+  void TestObserverMethodWithPortal(
+      blink::mojom::MediaStreamType stream_type,
+      MockObserverSetExpectationsMethod observer_method,
+      AccessorMethod accessor_method);
 
  private:
   std::unique_ptr<MockObserver> observer_;
-  std::unique_ptr<content::WebContents> contents_;
   scoped_refptr<MediaStreamCaptureIndicator> indicator_;
+  base::UnguessableToken portal_token_;
 };
 
 }  // namespace
@@ -116,22 +126,50 @@ void MediaStreamCaptureIndicatorTest::TestObserverMethod(
       blink::MediaStreamDevice(stream_type, "fake_device", "fake_device")};
 
   // By default all accessors should return false as there's no stream device.
-  EXPECT_FALSE((indicator()->*accessor_method)(contents()));
+  EXPECT_FALSE((indicator()->*accessor_method)(web_contents()));
   std::unique_ptr<content::MediaStreamUI> ui =
-      indicator()->RegisterMediaStream(contents(), devices);
+      indicator()->RegisterMediaStream(web_contents(), devices);
 
   // Make sure that the observer gets called and that the corresponding accessor
   // gets called when |OnStarted| is called.
-  (observer()->*observer_set_expectations_method)(contents(), true);
+  (observer()->*observer_set_expectations_method)(web_contents(), true);
   ui->OnStarted(base::OnceClosure(), content::MediaStreamUI::SourceCallback());
-  EXPECT_TRUE((indicator()->*accessor_method)(contents()));
+  EXPECT_TRUE((indicator()->*accessor_method)(web_contents()));
   ::testing::Mock::VerifyAndClear(observer());
 
   // Removing the stream device should cause the observer to be notified that
   // the observed property is now set to false.
-  (observer()->*observer_set_expectations_method)(contents(), false);
+  (observer()->*observer_set_expectations_method)(web_contents(), false);
   ui.reset();
-  EXPECT_FALSE((indicator()->*accessor_method)(contents()));
+  EXPECT_FALSE((indicator()->*accessor_method)(web_contents()));
+  ::testing::Mock::VerifyAndClear(observer());
+}
+
+void MediaStreamCaptureIndicatorTest::TestObserverMethodWithPortal(
+    blink::mojom::MediaStreamType stream_type,
+    MockObserverSetExpectationsMethod observer_set_expectations_method,
+    AccessorMethod accessor_method) {
+  // Create the fake stream device.
+  blink::MediaStreamDevices devices{
+      blink::MediaStreamDevice(stream_type, "fake_device", "fake_device")};
+
+  // By default all accessors should return false as there's no stream device.
+  EXPECT_FALSE((indicator()->*accessor_method)(web_contents()));
+  std::unique_ptr<content::MediaStreamUI> ui =
+      indicator()->RegisterMediaStream(portal_contents(), devices);
+
+  // Make sure that the observer gets called and that the corresponding accessor
+  // gets called when |OnStarted| is called.
+  (observer()->*observer_set_expectations_method)(portal_contents(), true);
+  ui->OnStarted(base::OnceClosure(), content::MediaStreamUI::SourceCallback());
+  EXPECT_TRUE((indicator()->*accessor_method)(web_contents()));
+  ::testing::Mock::VerifyAndClear(observer());
+
+  // Removing the stream device should cause the observer to be notified that
+  // the observed property is now set to false.
+  (observer()->*observer_set_expectations_method)(portal_contents(), false);
+  ui.reset();
+  EXPECT_FALSE((indicator()->*accessor_method)(web_contents()));
   ::testing::Mock::VerifyAndClear(observer());
 }
 
@@ -141,10 +179,24 @@ TEST_F(MediaStreamCaptureIndicatorTest, IsCapturingVideo) {
                      &MediaStreamCaptureIndicator::IsCapturingVideo);
 }
 
+TEST_F(MediaStreamCaptureIndicatorTest, IsCapturingVideo_Portal) {
+  TestObserverMethodWithPortal(
+      blink::mojom::MediaStreamType::DEVICE_VIDEO_CAPTURE,
+      &MockObserver::SetOnIsCapturingVideoChangedExpectation,
+      &MediaStreamCaptureIndicator::IsCapturingVideo);
+}
+
 TEST_F(MediaStreamCaptureIndicatorTest, IsCapturingAudio) {
   TestObserverMethod(blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
                      &MockObserver::SetOnIsCapturingAudioChangedExpectation,
                      &MediaStreamCaptureIndicator::IsCapturingAudio);
+}
+
+TEST_F(MediaStreamCaptureIndicatorTest, IsCapturingAudio_Portal) {
+  TestObserverMethodWithPortal(
+      blink::mojom::MediaStreamType::DEVICE_AUDIO_CAPTURE,
+      &MockObserver::SetOnIsCapturingAudioChangedExpectation,
+      &MediaStreamCaptureIndicator::IsCapturingAudio);
 }
 
 TEST_F(MediaStreamCaptureIndicatorTest, IsBeingMirrored) {
@@ -153,8 +205,22 @@ TEST_F(MediaStreamCaptureIndicatorTest, IsBeingMirrored) {
                      &MediaStreamCaptureIndicator::IsBeingMirrored);
 }
 
+TEST_F(MediaStreamCaptureIndicatorTest, IsBeingMirrored_Portal) {
+  TestObserverMethodWithPortal(
+      blink::mojom::MediaStreamType::GUM_TAB_VIDEO_CAPTURE,
+      &MockObserver::SetOnIsBeingMirroredChangedExpectation,
+      &MediaStreamCaptureIndicator::IsBeingMirrored);
+}
+
 TEST_F(MediaStreamCaptureIndicatorTest, IsCapturingDesktop) {
   TestObserverMethod(blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
                      &MockObserver::SetOnIsCapturingDesktopChangedExpectation,
                      &MediaStreamCaptureIndicator::IsCapturingDesktop);
+}
+
+TEST_F(MediaStreamCaptureIndicatorTest, IsCapturingDesktop_Portal) {
+  TestObserverMethodWithPortal(
+      blink::mojom::MediaStreamType::GUM_DESKTOP_VIDEO_CAPTURE,
+      &MockObserver::SetOnIsCapturingDesktopChangedExpectation,
+      &MediaStreamCaptureIndicator::IsCapturingDesktop);
 }

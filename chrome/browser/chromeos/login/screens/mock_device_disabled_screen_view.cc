@@ -13,19 +13,19 @@ using ::testing::NotNull;
 namespace chromeos {
 
 MockDeviceDisabledScreenView::MockDeviceDisabledScreenView()
-    : delegate_(nullptr) {
-  EXPECT_CALL(*this, MockSetDelegate(NotNull())).Times(AtLeast(1));
-  EXPECT_CALL(*this, MockSetDelegate(nullptr)).Times(AtMost(1));
+    : screen_(nullptr) {
+  EXPECT_CALL(*this, MockBind(NotNull())).Times(AtLeast(1));
+  EXPECT_CALL(*this, MockBind(nullptr)).Times(AtMost(1));
 }
 
 MockDeviceDisabledScreenView::~MockDeviceDisabledScreenView() {
-  if (delegate_)
-    delegate_->OnViewDestroyed(this);
+  if (screen_)
+    screen_->OnViewDestroyed(this);
 }
 
-void MockDeviceDisabledScreenView::SetDelegate(DeviceDisabledScreen* delegate) {
-  delegate_ = delegate;
-  MockSetDelegate(delegate);
+void MockDeviceDisabledScreenView::Bind(DeviceDisabledScreen* screen) {
+  screen_ = screen;
+  MockBind(screen);
 }
 
 }  // namespace chromeos

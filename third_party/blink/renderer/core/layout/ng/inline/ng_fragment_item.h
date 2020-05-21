@@ -21,7 +21,6 @@ namespace blink {
 
 class NGFragmentItems;
 class NGInlineBreakToken;
-class NGInlineItem;
 class NGLogicalLineItems;
 class NGPhysicalTextFragment;
 struct NGTextFragmentPaintInfo;
@@ -74,8 +73,6 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   // Create a box item.
   NGFragmentItem(const NGPhysicalBoxFragment& box,
                  TextDirection resolved_direction);
-  // Create a culled box item.
-  NGFragmentItem(const NGInlineItem& inline_item, const PhysicalSize& size);
   // Create a line item.
   NGFragmentItem(const NGPhysicalLineBoxFragment& line, wtf_size_t item_count);
 

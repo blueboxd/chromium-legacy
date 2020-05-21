@@ -785,7 +785,7 @@ ProfileImpl::~ProfileImpl() {
   bool primary_otr_available = false;
 
   // Get a list of existing OTR profiles since |off_the_record_profile_| might
-  // be modified after the call to |DestroyOffTheRecordProfileNow|.
+  // be modified after the call to |DestroyProfileNow|.
   for (auto& otr_profile : otr_profiles_) {
     raw_otr_profiles.push_back(otr_profile.second.get());
     primary_otr_available |= (otr_profile.first == OTRProfileID::PrimaryID());

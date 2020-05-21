@@ -1,7 +1,7 @@
-From 7b3c28d6438661f28ac7125db4ac3ff2d5776ff4 Mon Sep 17 00:00:00 2001
+From d9bab8bcf0e7ae33fb878327b850623cfa0504fe Mon Sep 17 00:00:00 2001
 From: Andrew Grieve <agrieve@chromium.org>
 Date: Mon, 27 Apr 2020 14:53:10 -0400
-Subject: [PATCH 1/5] Chrome: Change meaning of --file-per-class
+Subject: [PATCH 1/6] Chrome: Change meaning of --file-per-class
 
 Make it mean OutputMode.DexFilePerClassFile instead of
 OutputMode.DexFilePerClass.
@@ -12,7 +12,7 @@ Fixes Chrome's incremental dexing logic.
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/src/main/java/com/android/tools/r8/D8CommandParser.java b/src/main/java/com/android/tools/r8/D8CommandParser.java
-index aad3468dd..470a7c44b 100644
+index 3c7fdd2c2..e3d6f1c8f 100644
 --- a/src/main/java/com/android/tools/r8/D8CommandParser.java
 +++ b/src/main/java/com/android/tools/r8/D8CommandParser.java
 @@ -209,7 +209,7 @@ public class D8CommandParser extends BaseCompilerCommandParser<D8Command, D8Comm
@@ -25,5 +25,5 @@ index aad3468dd..470a7c44b 100644
          outputMode = OutputMode.ClassFile;
        } else if (arg.equals("--output")) {
 -- 
-2.26.2.303.gf8c07b1a785-goog
+2.26.2.761.g0e0b3e54be-goog
 

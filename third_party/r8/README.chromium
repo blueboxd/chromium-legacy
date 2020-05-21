@@ -1,7 +1,7 @@
 Name: R8
 URL: https://r8.googlesource.com/r8
-Revision: 80f8cf3e5117f48b7bb8058ce08f554c5df67111
-Version: 2.1.20-dev
+Revision: 924f28bdb1f32b7504d6813ee911ba1949be6130
+Version: 2.1.26-dev
 License: BSD 3-Clause
 License File: NOT_SHIPPED
 Security Critical: no
@@ -34,8 +34,12 @@ tools/gradle.py r8
 java -jar build/libs/r8.jar --debug --classfile --output r8.jar \
     --lib $CHROMIUM_SRC/third_party/jdk/current --pg-conf src/main/keep.txt \
     --no-minification --no-desugaring build/libs/r8.jar
-rm $CHROMIUM_SRC/third_party/r8/libs/r8.jar
-cp r8.jar $CHROMIUM_SRC/third_party/r8/libs/r8.jar
+rm $CHROMIUM_SRC/third_party/r8/lib/r8.jar
+cp r8.jar $CHROMIUM_SRC/third_party/r8/lib/r8.jar
+
+# Create patches if conflicts / new patches. Change number if expecting
+# different amount of patches:
+git format-patch -6 -o $CHROMIUM_SRC/third_party/r8/patches
 
 # Upload to CIPD:
 cipd create --pkg-def cipd.yaml # Make note of the instance ID

@@ -31,73 +31,73 @@ struct TestCase {
   }
 
   TestCase& InGuestMode() {
-    opts.guest_mode = IN_GUEST_MODE;
+    options.guest_mode = IN_GUEST_MODE;
     return *this;
   }
 
   TestCase& InIncognito() {
-    opts.guest_mode = IN_INCOGNITO;
+    options.guest_mode = IN_INCOGNITO;
     return *this;
   }
 
   TestCase& TabletMode() {
-    opts.tablet_mode = true;
+    options.tablet_mode = true;
     return *this;
   }
 
   TestCase& EnableDocumentsProvider() {
-    opts.arc = true;
-    opts.documents_provider = true;
+    options.arc = true;
+    options.documents_provider = true;
     return *this;
   }
 
   TestCase& DisableDocumentsProvider() {
-    opts.documents_provider = false;
+    options.documents_provider = false;
     return *this;
   }
 
   TestCase& EnableArc() {
-    opts.arc = true;
+    options.arc = true;
     return *this;
   }
 
   TestCase& Offline() {
-    opts.offline = true;
+    options.offline = true;
     return *this;
   }
 
   TestCase& FilesNg() {
-    opts.files_ng = true;
+    options.files_ng = true;
     return *this;
   }
 
   TestCase& DisableFilesNg() {
-    opts.files_ng = false;
+    options.files_ng = false;
     return *this;
   }
 
   TestCase& DisableNativeSmb() {
-    opts.native_smb = false;
+    options.native_smb = false;
     return *this;
   }
 
   TestCase& EnableSmbfs() {
-    opts.smbfs = true;
+    options.smbfs = true;
     return *this;
   }
 
   TestCase& EnableUnifiedMediaView() {
-    opts.unified_media_view = true;
+    options.unified_media_view = true;
     return *this;
   }
 
   TestCase& DontMountVolumes() {
-    opts.mount_volumes = false;
+    options.mount_volumes = false;
     return *this;
   }
 
   TestCase& DontObserveFileTasks() {
-    opts.observe_file_tasks = false;
+    options.observe_file_tasks = false;
     return *this;
   }
 
@@ -108,54 +108,54 @@ struct TestCase {
   // active browser in this case, which requires a Browser to be present. See
   // https://crbug.com/736930.
   TestCase& WithBrowser() {
-    opts.browser = true;
+    options.browser = true;
     return *this;
   }
 
   TestCase& ZipNoNaCl() {
-    opts.zip_no_nacl = true;
+    options.zip_no_nacl = true;
     return *this;
   }
 
   std::string GetFullName() const {
     std::string full_name = name;
 
-    if (opts.guest_mode == IN_GUEST_MODE)
+    if (options.guest_mode == IN_GUEST_MODE)
       full_name += "_GuestMode";
 
-    if (opts.guest_mode == IN_INCOGNITO)
+    if (options.guest_mode == IN_INCOGNITO)
       full_name += "_Incognito";
 
-    if (opts.tablet_mode)
+    if (options.tablet_mode)
       full_name += "_TabletMode";
 
-    if (!opts.files_ng)
+    if (!options.files_ng)
       full_name += "_DisableFilesNg";
 
-    if (!opts.native_smb)
+    if (!options.native_smb)
       full_name += "_DisableNativeSmb";
 
-    if (opts.documents_provider)
+    if (options.documents_provider)
       full_name += "_DocumentsProvider";
 
-    if (opts.zip_no_nacl)
+    if (options.zip_no_nacl)
       full_name += "_ZipNoNaCl";
 
     return full_name;
   }
 
   const char* const name;
-  FileManagerBrowserTestBase::Options opts;
+  FileManagerBrowserTestBase::Options options;
 };
 
 std::ostream& operator<<(std::ostream& out, const TestCase& test_case) {
-  return out << test_case.opts;
+  return out << test_case.options;
 }
 
 // FilesAppBrowserTest with zip/unzip support.
 TestCase ZipCase(const char* const name) {
   TestCase test_case(name);
-  test_case.opts.zip = true;
+  test_case.options.zip = true;
   return test_case;
 }
 
@@ -186,7 +186,7 @@ class FilesAppBrowserTest : public FileManagerBrowserTestBase,
     return "file_manager_test_manifest.json";
   }
 
-  Options GetOptions() const override { return GetParam().opts; }
+  Options GetOptions() const override { return GetParam().options; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FilesAppBrowserTest);

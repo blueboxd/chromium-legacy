@@ -27,15 +27,8 @@
 // is part of the error message), but intentionally do not expose the gtest
 // death test's full |regex| parameter to avoid users having to verify the exact
 // syntax of the error message produced by the DCHECK.
-
-// Official builds will eat stream parameters, so don't check the error message.
-#if defined(OFFICIAL_BUILD) && defined(NDEBUG)
-#define EXPECT_DCHECK_DEATH(statement) EXPECT_DEATH(statement, "")
-#define ASSERT_DCHECK_DEATH(statement) ASSERT_DEATH(statement, "")
-#else
 #define EXPECT_DCHECK_DEATH(statement) EXPECT_DEATH(statement, "Check failed")
 #define ASSERT_DCHECK_DEATH(statement) ASSERT_DEATH(statement, "Check failed")
-#endif  // defined(OFFICIAL_BUILD) && defined(NDEBUG)
 
 #else
 // DCHECK_IS_ON() && defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)

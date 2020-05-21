@@ -98,7 +98,7 @@ public class MediaCaptureNotificationService extends Service {
             boolean isIncognito = intent.getBooleanExtra(NOTIFICATION_MEDIA_IS_INCOGNITO, false);
 
             if (ACTION_MEDIA_CAPTURE_UPDATE.equals(action)) {
-                updateNotification(notificationId, mediaType, url, isIncognito);
+                updateNotification(notificationId, mediaType, url, isIncognito, startId);
             } else if (ACTION_SCREEN_CAPTURE_STOP.equals(action)) {
                 // Notify native to stop screen capture when the STOP button in notification
                 // is clicked.
@@ -132,9 +132,10 @@ public class MediaCaptureNotificationService extends Service {
      * @param notificationId Unique id of the notification.
      * @param mediaType Media type of the notification.
      * @param url Url of the current webrtc call.
+     * @param startId Id for the service start request
      */
-    private void updateNotification(
-            int notificationId, @MediaType int mediaType, String url, boolean isIncognito) {
+    private void updateNotification(int notificationId, @MediaType int mediaType, String url,
+            boolean isIncognito, int startId) {
         if (doesNotificationExist(notificationId)
                 && !doesNotificationNeedUpdate(notificationId, mediaType))  {
             return;
@@ -143,7 +144,7 @@ public class MediaCaptureNotificationService extends Service {
         if (mediaType != MediaType.NO_MEDIA) {
             createNotification(notificationId, mediaType, url, isIncognito);
         }
-        if (mNotifications.size() == 0) stopSelf();
+        if (mNotifications.size() == 0) stopSelf(startId);
     }
 
     /**

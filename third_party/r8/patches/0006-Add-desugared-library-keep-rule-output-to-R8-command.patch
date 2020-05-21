@@ -1,0 +1,69 @@
+From 7b68ccb6caa68235fc325c26ec559d9a5f0e116e Mon Sep 17 00:00:00 2001
+From: Sam Maier <smaier@chromium.org>
+Date: Wed, 20 May 2020 15:29:37 -0400
+Subject: [PATCH 6/6] Add --desugared-library-keep-rule-output to R8 command
+
+Chrome needs this to export the keep rule file to optimize
+imported library.
+---
+ src/main/java/com/android/tools/r8/L8CommandParser.java | 2 +-
+ src/main/java/com/android/tools/r8/R8CommandParser.java | 9 ++++++++-
+ 2 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/src/main/java/com/android/tools/r8/L8CommandParser.java b/src/main/java/com/android/tools/r8/L8CommandParser.java
+index 08021272e..6366029c0 100644
+--- a/src/main/java/com/android/tools/r8/L8CommandParser.java
++++ b/src/main/java/com/android/tools/r8/L8CommandParser.java
+@@ -19,7 +19,7 @@ import java.util.Set;
+ public class L8CommandParser extends BaseCompilerCommandParser<L8Command, L8Command.Builder> {
+ 
+   private static final Set<String> OPTIONS_WITH_PARAMETER =
+-      ImmutableSet.of("--output", "--lib", MIN_API_FLAG, "--desugared-lib", THREAD_COUNT_FLAG);
++      ImmutableSet.of("--output", "--lib", MIN_API_FLAG, "--desugared-lib", THREAD_COUNT_FLAG, "--pg-conf");
+ 
+   public static void main(String[] args) throws CompilationFailedException {
+     L8Command command = parse(args, Origin.root()).build();
+diff --git a/src/main/java/com/android/tools/r8/R8CommandParser.java b/src/main/java/com/android/tools/r8/R8CommandParser.java
+index 8d286601c..41aa2ab2d 100644
+--- a/src/main/java/com/android/tools/r8/R8CommandParser.java
++++ b/src/main/java/com/android/tools/r8/R8CommandParser.java
+@@ -3,6 +3,7 @@
+ // BSD-style license that can be found in the LICENSE file.
+ package com.android.tools.r8;
+ 
++import com.android.tools.r8.StringConsumer;
+ import com.android.tools.r8.origin.Origin;
+ import com.android.tools.r8.utils.AndroidApiLevel;
+ import com.android.tools.r8.utils.FlagFile;
+@@ -29,6 +30,7 @@ public class R8CommandParser extends BaseCompilerCommandParser<R8Command, R8Comm
+           "--pg-conf",
+           "--pg-map-output",
+           "--desugared-lib",
++          "--desugared-library-keep-rule-output",
+           THREAD_COUNT_FLAG);
+ 
+   public static void main(String[] args) throws CompilationFailedException {
+@@ -85,7 +87,9 @@ public class R8CommandParser extends BaseCompilerCommandParser<R8Command, R8Comm
+                   "                          # primary dex file.",
+                   "  --main-dex-list <file>  # List of classes to place in the primary dex file.",
+                   "  --main-dex-list-output <file>  ",
+-                  "                          # Output the full main-dex list in <file>."),
++                  "                          # Output the full main-dex list in <file>.",
++                  "  --desugared-library-keep-rule-output <file> # Output the desugared library",
++                  "                          # keep rule to <file>."),
+               ASSERTIONS_USAGE_MESSAGE,
+               Arrays.asList(
+                   "  --version               # Print the version of r8.",
+@@ -237,6 +241,9 @@ public class R8CommandParser extends BaseCompilerCommandParser<R8Command, R8Comm
+         builder.addDesugaredLibraryConfiguration(StringResource.fromFile(Paths.get(nextArg)));
+       } else if (arg.equals("--no-data-resources")) {
+         state.includeDataResources = false;
++      } else if (arg.equals("--desugared-library-keep-rule-output")) {
++        StringConsumer consumer = new StringConsumer.FileConsumer(Paths.get(nextArg));
++        builder.setDesugaredLibraryKeepRuleConsumer(consumer);
+       } else if (arg.startsWith("--")) {
+         if (!tryParseAssertionArgument(builder, arg, argsOrigin)) {
+           builder.error(new StringDiagnostic("Unknown option: " + arg, argsOrigin));
+-- 
+2.26.2.761.g0e0b3e54be-goog
+

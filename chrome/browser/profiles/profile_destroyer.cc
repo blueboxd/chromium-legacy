@@ -27,7 +27,7 @@ const int64_t kTimerDelaySeconds = 1;
 
 }  // namespace
 
-ProfileDestroyer::DestroyerSet* ProfileDestroyer::pending_destroyers_ = NULL;
+ProfileDestroyer::DestroyerSet* ProfileDestroyer::pending_destroyers_ = nullptr;
 
 // static
 void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
@@ -38,60 +38,55 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
   DCHECK(profile);
   profile->MaybeSendDestroyedNotification();
 
-  // Testing profiles can simply be deleted directly. Some tests don't setup
-  // RenderProcessHost correctly and don't necessary run on the UI thread
-  // anyway, so we can't iterate them via AllHostsIterator anyway.
-  if (profile->AsTestingProfile()) {
-    if (profile->IsOffTheRecord())
-      profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
-    else
-      delete profile;
+  // TODO(https://crbug.com/1033903): If regular profile has OTRs and they have
+  // hosts, create a |ProfileDestroyer| instead.
+  if (!profile->IsOffTheRecord()) {
+    DestroyRegularProfileNow(profile);
     return;
   }
-
-  HostSet profile_hosts = GetHostsForProfile(profile);
-  const bool profile_is_off_the_record = profile->IsOffTheRecord();
-  base::debug::Alias(&profile_is_off_the_record);
-  const bool profile_has_off_the_record =
-      !profile_is_off_the_record && profile->HasOffTheRecordProfile();
-  base::debug::Alias(&profile_has_off_the_record);
-
   // Off-the-record profiles have DestroyProfileWhenAppropriate() called before
   // their RenderProcessHosts are destroyed, to ensure private data is erased
   // promptly. In this case, defer deletion until all the hosts are gone.
-  if (profile_is_off_the_record) {
-    DCHECK(!profile_has_off_the_record);
-    if (profile_hosts.size()) {
-      // The instance will destroy itself once all (non-spare) render process
-      // hosts referring to it are properly terminated.
-      new ProfileDestroyer(profile, &profile_hosts);
-    } else {
-      TRACE_EVENT1("shutdown",
-                   "ProfileDestroyer::DestroyProfileWhenAppropriate deleting "
-                   "otr profile",
-                   "profile", profile);
-      profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
-    }
+  HostSet profile_hosts = GetHostsForProfile(profile);
+  if (profile_hosts.empty()) {
+    DestroyOffTheRecordProfileNow(profile);
     return;
   }
+
+  // The instance will destroy itself once all (non-spare) render process
+  // hosts referring to it are properly terminated.
+  new ProfileDestroyer(profile, &profile_hosts);
+}
+
+// static
+void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
+  DCHECK(profile);
+  DCHECK(profile->IsOffTheRecord());
+  TRACE_EVENT1("shutdown", "ProfileDestroyer::DestroyOffTheRecordProfileNow",
+               "profile", profile);
+
+  RemovePendingDestroyers(profile);
+  profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
+}
+
+// static
+void ProfileDestroyer::DestroyRegularProfileNow(Profile* const profile) {
+  DCHECK(profile);
+  DCHECK(profile->IsRegularProfile());
+  TRACE_EVENT1("shutdown", "ProfileDestroyer::DestroyRegularProfileNow",
+               "profile", profile);
 
 #if DCHECK_IS_ON()
   // Save the raw pointers of profile and off-the-record profile for DCHECKing
   // on later.
+  HostSet profile_hosts = GetHostsForProfile(profile);
   void* profile_ptr = profile;
-  void* otr_profile_ptr =
-      profile_has_off_the_record ? profile->GetOffTheRecordProfile() : nullptr;
+  void* otr_profile_ptr = profile->HasOffTheRecordProfile()
+                              ? profile->GetOffTheRecordProfile()
+                              : nullptr;
 #endif  // DCHECK_IS_ON()
 
-  {
-    TRACE_EVENT1(
-        "shutdown",
-        "ProfileDestroyer::DestroyProfileWhenAppropriate deleting profile",
-        "profile", profile);
-    // TODO(https://crbug.com/1033903): If profile has OTRs and they have hosts,
-    // create a |ProfileDestroyer| instead.
-    delete profile;
-  }
+  delete profile;
 
 #if DCHECK_IS_ON()
   // Count the number of hosts that have dangling pointers to the freed Profile
@@ -118,29 +113,19 @@ void ProfileDestroyer::DestroyProfileWhenAppropriate(Profile* const profile) {
 #endif  // DCHECK_IS_ON()
 }
 
-// This can be called to cancel any pending destruction and destroy the profile
-// now, e.g., if the parent profile is being destroyed while the incognito one
-// still pending...
-void ProfileDestroyer::DestroyOffTheRecordProfileNow(Profile* const profile) {
-  TRACE_EVENT1("shutdown", "ProfileDestroyer::DestroyOffTheRecordProfileNow",
-               "profile", profile);
-  DCHECK(profile);
+void ProfileDestroyer::RemovePendingDestroyers(Profile* const profile) {
   DCHECK(profile->IsOffTheRecord());
-  DCHECK(profile->GetOriginalProfile());
   if (pending_destroyers_) {
-    for (auto i = pending_destroyers_->begin(); i != pending_destroyers_->end();
-         ++i) {
-      if ((*i)->profile_ == profile) {
+    for (auto* i : *pending_destroyers_) {
+      if (i->profile_ == profile) {
         // We want to signal this in debug builds so that we don't lose sight of
         // these potential leaks, but we handle it in release so that we don't
         // crash or corrupt profile data on disk.
         LOG(WARNING) << "A render process host wasn't destroyed early enough.";
-        (*i)->profile_ = nullptr;
+        i->profile_ = nullptr;
       }
     }
   }
-
-  profile->GetOriginalProfile()->DestroyOffTheRecordProfile(profile);
 }
 
 ProfileDestroyer::ProfileDestroyer(Profile* const profile, HostSet* hosts)

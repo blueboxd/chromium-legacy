@@ -31,7 +31,7 @@ ExtensionRequestObserverFactory::~ExtensionRequestObserverFactory() {
 
 void ExtensionRequestObserverFactory::OnProfileAdded(Profile* profile) {
   if (profile->IsSystemProfile() || profile->IsGuestSession() ||
-      profile->IsIncognitoProfile()) {
+      profile->IsOffTheRecord()) {
     return;
   }
 

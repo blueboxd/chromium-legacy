@@ -731,7 +731,7 @@ android_java_prebuilt("repackage_native_java") {
 
   # Since only the unprocessed jar is used, no need to complete the bytecode
   # processing steps.
-  enable_bytecode_rewriter = false
+  enable_bytecode_checks = false
   deps = [ ":repackage_native_impl" ]
 }
 

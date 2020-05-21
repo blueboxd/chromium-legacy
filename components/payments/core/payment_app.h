@@ -120,6 +120,11 @@ class PaymentApp {
   virtual void SetPaymentHandlerHost(
       base::WeakPtr<PaymentHandlerHost> payment_handler_host) {}
 
+  // Whether the payment app is waiting for the merchant to update the purchase
+  // price based on the shipping, billing, or contact information that the user
+  // has selected inside of the payment app.
+  virtual bool IsWaitingForPaymentDetailsUpdate() const;
+
  protected:
   PaymentApp(int icon_resource_id, Type type);
 

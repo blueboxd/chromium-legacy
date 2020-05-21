@@ -1,23 +1,20 @@
-From fe0cf2feb23d4cdcf4dc287bddba9ea07538aa35 Mon Sep 17 00:00:00 2001
-From: Andrew Grieve <agrieve@chromium.org>
-Date: Wed, 1 Apr 2020 10:06:57 -0400
-Subject: [PATCH 5/5] Fix up proguard keeps for Chrome
+From bf551ce100964a415341e8c30a067720c4be85eb Mon Sep 17 00:00:00 2001
+From: Sam Maier <smaier@chromium.org>
+Date: Tue, 19 May 2020 16:27:53 -0400
+Subject: [PATCH 5/6] Fix up proguard keeps for Chrome
 
 ---
- src/main/keep.txt | 8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ src/main/keep.txt | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
 diff --git a/src/main/keep.txt b/src/main/keep.txt
-index b0c58c916..5e4405175 100644
+index 7791d4e88..182ea9d37 100644
 --- a/src/main/keep.txt
 +++ b/src/main/keep.txt
-@@ -27,4 +27,10 @@
- -keep public class com.android.tools.r8.compatproguard.CompatProguard { public static void main(java.lang.String[]); }
+@@ -23,3 +23,9 @@
  
- # Compatibility command line program used by in google3.
---keep public class com.android.tools.r8.compatdx.CompatDx { public static void main(java.lang.String[]); }
-\ No newline at end of file
-+-keep public class com.android.tools.r8.compatdx.CompatDx { public static void main(java.lang.String[]); }
+ # Compatibility command line program used by the Android Platform build.
+ -keep public class com.android.tools.r8.compatproguard.CompatProguard { public static void main(java.lang.String[]); }
 +
 +-keep public class com.android.tools.r8.SwissArmyKnife { *; }
 +
@@ -25,5 +22,5 @@ index b0c58c916..5e4405175 100644
 +# optimizations.
 +-dontoptimize
 -- 
-2.26.0.rc2.310.g2932bb562d-goog
+2.26.2.761.g0e0b3e54be-goog
 

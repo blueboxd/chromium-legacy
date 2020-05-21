@@ -334,7 +334,7 @@ void ReportScheduler::RecordUploadTrigger(ReportTrigger trigger) {
 
 void ReportScheduler::OnProfileAdded(Profile* profile) {
   if (profile->IsSystemProfile() || profile->IsGuestSession() ||
-      profile->IsIncognitoProfile()) {
+      profile->IsOffTheRecord()) {
     return;
   }
   DCHECK(stale_profiles_);

@@ -6,21 +6,21 @@
 #define SERVICES_TRACING_PUBLIC_CPP_PERFETTO_TRACE_TIME_H_
 
 #include "build/build_config.h"
-#include "third_party/perfetto/protos/perfetto/trace/clock_snapshot.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/common/builtin_clock.pbzero.h"
 
 namespace tracing {
 
 #if defined(OS_LINUX) || defined(OS_ANDROID) || defined(OS_FUCHSIA)
 // Linux, Android, and Fuchsia all use CLOCK_MONOTONIC. See crbug.com/166153
 // about efforts to unify base::TimeTicks across all platforms.
-constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
-    kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::MONOTONIC;
+constexpr perfetto::protos::pbzero::BuiltinClock kTraceClockId =
+    perfetto::protos::pbzero::BUILTIN_CLOCK_MONOTONIC;
 #else
 // Mac and Windows TimeTicks advance when sleeping, so are closest to BOOTTIME
 // in behavior.
-// TODO(eseckler): Support specifying Mac/Win platform clocks in BuiltinClocks.
-constexpr perfetto::protos::pbzero::ClockSnapshot::Clock::BuiltinClocks
-    kTraceClockId = perfetto::protos::pbzero::ClockSnapshot::Clock::BOOTTIME;
+// TODO(eseckler): Support specifying Mac/Win platform clocks in BuiltinClock.
+constexpr perfetto::protos::pbzero::BuiltinClock kTraceClockId =
+    perfetto::protos::pbzero::BUILTIN_CLOCK_BOOTTIME;
 #endif
 
 // Returns CLOCK_BOOTTIME on systems that support it, otherwise falls back to

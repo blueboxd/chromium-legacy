@@ -3,6 +3,8 @@ This test validates set of loaded modules for Sources panel.
 Loaded modules:
     cm
     color_picker
+    coverage
+    data_grid
     diff
     event_listeners
     formatter

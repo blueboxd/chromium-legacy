@@ -19,9 +19,11 @@ class DeviceDisabledScreenView {
 
   virtual ~DeviceDisabledScreenView() {}
 
-  virtual void Show() = 0;
+  virtual void Show(const std::string& serial,
+                    const std::string& domain,
+                    const std::string& message) = 0;
   virtual void Hide() = 0;
-  virtual void SetDelegate(DeviceDisabledScreen* delegate) = 0;
+  virtual void Bind(DeviceDisabledScreen* screen) = 0;
   virtual void UpdateMessage(const std::string& message) = 0;
 };
 
@@ -35,9 +37,11 @@ class DeviceDisabledScreenHandler : public DeviceDisabledScreenView,
   ~DeviceDisabledScreenHandler() override;
 
   // DeviceDisabledScreenActor:
-  void Show() override;
+  void Show(const std::string& serial,
+            const std::string& domain,
+            const std::string& message) override;
   void Hide() override;
-  void SetDelegate(DeviceDisabledScreen* delegate) override;
+  void Bind(DeviceDisabledScreen* screen) override;
   void UpdateMessage(const std::string& message) override;
 
   // BaseScreenHandler:
@@ -49,10 +53,7 @@ class DeviceDisabledScreenHandler : public DeviceDisabledScreenView,
   // WebUIMessageHandler:
   void RegisterMessages() override;
 
-  DeviceDisabledScreen* delegate_ = nullptr;
-
-  // Indicates whether the screen should be shown right after initialization.
-  bool show_on_init_ = false;
+  DeviceDisabledScreen* screen_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisabledScreenHandler);
 };

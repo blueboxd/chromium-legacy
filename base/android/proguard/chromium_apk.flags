@@ -77,6 +77,6 @@
 }
 
 # Protobuf java lite runtime uses reflection
--keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
+-keepclassmembers,allowaccessmodification class * extends com.google.protobuf.GeneratedMessageLite {
   <fields>;
 }

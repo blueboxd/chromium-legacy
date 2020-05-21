@@ -29,6 +29,8 @@ class Origin;
 
 namespace payments {
 
+class PaymentHandlerHost;
+
 // Represents a service worker based payment app.
 class ServiceWorkerPaymentApp : public PaymentApp {
  public:
@@ -100,6 +102,7 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   ukm::SourceId UkmSourceId() override;
   void SetPaymentHandlerHost(
       base::WeakPtr<PaymentHandlerHost> payment_handler_host) override;
+  bool IsWaitingForPaymentDetailsUpdate() const override;
 
  private:
   friend class ServiceWorkerPaymentAppTest;
@@ -141,7 +144,8 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   // after the service worker is installed.
   IdentityCallback identity_callback_;
 
-  mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host_;
+  base::WeakPtr<PaymentHandlerHost> payment_handler_host_;
+  mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host_remote_;
 
   // PaymentAppProvider::CanMakePayment result of this payment app.
   bool can_make_payment_result_;

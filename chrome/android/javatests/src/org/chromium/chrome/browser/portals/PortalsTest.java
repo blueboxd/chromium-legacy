@@ -4,8 +4,15 @@
 
 package org.chromium.chrome.browser.portals;
 
+import android.annotation.TargetApi;
+import android.app.NotificationManager;
+import android.content.Context;
+import android.os.Build;
+import android.service.notification.StatusBarNotification;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
+import android.text.TextUtils;
 import android.view.View;
 
 import org.junit.After;
@@ -16,11 +23,13 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.history.BrowsingHistoryBridge;
@@ -31,6 +40,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.permissions.PermissionDialogController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Coordinates;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -39,6 +49,7 @@ import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -467,5 +478,56 @@ public class PortalsTest {
         Assert.assertEquals(portalTitle, history.get(0).getTitle());
         Assert.assertEquals(mainUrl, history.get(1).getUrl());
         Assert.assertEquals(mainTitle, history.get(1).getTitle());
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void waitForMediaCaptureNotification() {
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            StatusBarNotification notifications[] =
+                    ((NotificationManager) ContextUtils.getApplicationContext().getSystemService(
+                             Context.NOTIFICATION_SERVICE))
+                            .getActiveNotifications();
+            for (StatusBarNotification statusBarNotification : notifications) {
+                if (TextUtils.equals(
+                            statusBarNotification.getTag(), "MediaCaptureNotificationService")) {
+                    return true;
+                }
+            }
+            return false;
+        });
+    }
+
+    @Test
+    @LargeTest
+    @Feature({"Portals"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M)
+    public void testMediaCaptureNotificationVisibleAfterAdoption() throws Exception {
+        String mainUrl = mTestServer.getURL("/chrome/test/data/android/portals/media-capture.html");
+        mActivityTestRule.startMainActivityWithURL(mainUrl);
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+
+        // Start video capture.
+        JavaScriptUtils.executeJavaScript(tab.getWebContents(), "start()");
+        // Wait for permissions dialog.
+        CriteriaHelper.pollUiThread(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            return permissionDialogController.isDialogShownForTest();
+        });
+        // Accept permissions request by clicking button on permissions dialog.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PermissionDialogController permissionDialogController =
+                    PermissionDialogController.getInstance();
+            permissionDialogController.clickButtonForTest(
+                    ModalDialogProperties.ButtonType.POSITIVE);
+        });
+        // Wait for video capture notification.
+        waitForMediaCaptureNotification();
+        // Activate portal.
+        executeScriptAndAwaitSwap(tab, "activate()");
+        // Wait for adoption to complete.
+        JavaScriptUtils.runJavascriptWithAsyncResult(tab.getWebContents(), "waitForAdoption()");
+        // Check if notification is still shown.
+        waitForMediaCaptureNotification();
     }
 }

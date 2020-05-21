@@ -138,12 +138,11 @@ void TestChildModalParent::Layout() {
   host_->SetBounds(x(), running_y, width(), height() - running_y);
 }
 
-void TestChildModalParent::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this) {
-    host_->Attach(modal_parent_->GetNativeView());
-    GetWidget()->GetNativeView()->SetName("Parent");
-  }
+void TestChildModalParent::AddedToWidget() {
+  // The function requires a Widget be present.
+  DCHECK(GetWidget());
+  host_->Attach(modal_parent_->GetNativeView());
+  GetWidget()->GetNativeView()->SetName("Parent");
 }
 
 void TestChildModalParent::ButtonPressed(views::Button* sender,

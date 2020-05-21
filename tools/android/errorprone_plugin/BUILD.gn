@@ -19,7 +19,7 @@ java_library("errorprone_plugin_java") {
 
   # Necessary to avoid dependency cycle
   enable_errorprone = false
-  enable_bytecode_rewriter = false
+  enable_bytecode_checks = false
 
   # So that we don't need to inject jacoco runtime into the compiler's classpath.
   jacoco_never_instrument = true

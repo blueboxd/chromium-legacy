@@ -346,7 +346,7 @@ ServiceWorkerPaymentApp::CreatePaymentRequestEventData() {
     }
   }
 
-  event_data->payment_handler_host = std::move(payment_handler_host_);
+  event_data->payment_handler_host = std::move(payment_handler_host_remote_);
 
   return event_data;
 }
@@ -552,7 +552,13 @@ ukm::SourceId ServiceWorkerPaymentApp::UkmSourceId() {
 
 void ServiceWorkerPaymentApp::SetPaymentHandlerHost(
     base::WeakPtr<PaymentHandlerHost> payment_handler_host) {
-  payment_handler_host_ = payment_handler_host->Bind();
+  payment_handler_host_ = payment_handler_host;
+  payment_handler_host_remote_ = payment_handler_host_->Bind();
+}
+
+bool ServiceWorkerPaymentApp::IsWaitingForPaymentDetailsUpdate() const {
+  return payment_handler_host_ &&
+         payment_handler_host_->is_waiting_for_payment_details_update();
 }
 
 }  // namespace payments

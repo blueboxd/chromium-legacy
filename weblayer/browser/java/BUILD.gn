@@ -84,6 +84,7 @@ android_library("java") {
     "org/chromium/weblayer_private/NavigationControllerImpl.java",
     "org/chromium/weblayer_private/NavigationImpl.java",
     "org/chromium/weblayer_private/NewTabCallbackProxy.java",
+    "org/chromium/weblayer_private/PageInfoControllerDelegateImpl.java",
     "org/chromium/weblayer_private/ProfileImpl.java",
     "org/chromium/weblayer_private/ProfileManager.java",
     "org/chromium/weblayer_private/RemoteFragmentImpl.java",

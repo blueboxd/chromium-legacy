@@ -81,7 +81,6 @@ struct LegacyCacheStorage::CacheMatchResponse {
 
   CacheStorageError error;
   blink::mojom::FetchAPIResponsePtr response;
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
 
 // Handles the loading and clean up of CacheStorageCache objects.

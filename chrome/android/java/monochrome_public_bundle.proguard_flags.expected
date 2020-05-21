@@ -155,7 +155,7 @@
 }
 
 # Protobuf java lite runtime uses reflection
--keepclassmembers class * extends com.google.protobuf.GeneratedMessageLite {
+-keepclassmembers,allowaccessmodification class * extends com.google.protobuf.GeneratedMessageLite {
   <fields>;
 }
 
@@ -198,13 +198,13 @@
 -keep @org.chromium.base.annotations.UsedByReflection class ** {}
 
 # Keeps for method level annotations.
--keepclasseswithmembers class ** {
+-keepclasseswithmembers,allowaccessmodification class ** {
   @org.chromium.base.annotations.AccessedByNative <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses class ** {
+-keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
   @org.chromium.base.annotations.CalledByNative <methods>;
 }
--keepclasseswithmembers,includedescriptorclasses class ** {
+-keepclasseswithmembers,includedescriptorclasses,allowaccessmodification class ** {
   @org.chromium.base.annotations.CalledByNativeUnchecked <methods>;
 }
 -keepclasseswithmembers class ** {

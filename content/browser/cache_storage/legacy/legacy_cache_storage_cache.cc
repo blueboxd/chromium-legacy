@@ -41,10 +41,6 @@
 #include "content/browser/cache_storage/cache_storage_trace_utils.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/referrer.h"
-#include "content/public/common/referrer_type_converters.h"
 #include "crypto/hmac.h"
 #include "crypto/symmetric_key.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -53,14 +49,13 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/quota/padding_key.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
 #include "third_party/blink/public/common/fetch/fetch_api_request_headers_map.h"
 #include "third_party/blink/public/mojom/quota/quota_types.mojom.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 
 using blink::mojom::CacheStorageError;
 using blink::mojom::CacheStorageVerboseError;

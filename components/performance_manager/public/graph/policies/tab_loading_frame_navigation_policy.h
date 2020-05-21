@@ -39,10 +39,11 @@ namespace policies {
 // - Main frames are never throttled.
 // - Child frames with the same eTLD+1 as the main frame are not throttled.
 // - All other frames are throttled.
-// - Throttling continues until the main frame hits hits LargestContentfulPaint.
+// - Throttling continues until the main frame hits LargestContentfulPaint.
 //   Unfortunately, we can't know LCP in real time, so we use
-//   2 x FirstContentfulPaint as an estimate, with an upper bound of the UMA
-//   measures 95th %ile of LCP.
+//   3 x FirstContentfulPaint as an estimate, with an upper bound of
+//   the UMA measures 95th %ile of LCP (both the multiple and the upper bound
+//   are configurable via Finch).
 //
 // See design document:
 //
@@ -73,11 +74,16 @@ class TabLoadingFrameNavigationPolicy
   // Exposed for testing. Only safe to call on the PM thread.
   size_t GetThrottledPageCountForTesting() const { return timeouts_.size(); }
   bool IsTimerRunningForTesting() const { return timeout_timer_.IsRunning(); }
+  base::TimeTicks GetPageTimeoutForTesting(const PageNode* page_node) const;
 
-  // Exposed for testing. Can be called on any sequence, as this is initialized
-  // at construction and stays constant afterwards.
+  // Exposed for testing. Can be called on any sequence, as these are
+  // initialized at construction and stays constant afterwards.
   base::TimeDelta GetMinTimeoutForTesting() const { return timeout_min_; }
   base::TimeDelta GetMaxTimeoutForTesting() const { return timeout_max_; }
+  double GetFCPMultipleForTesting() const { return fcp_multiple_; }
+  base::TimeDelta CalculateTimeoutFromFCPForTesting(base::TimeDelta fcp) const {
+    return CalculateTimeoutFromFCP(fcp);
+  }
 
   // Exposed for testing. Allows setting a MechanismDelegate. This should be
   // done immediately after construction and *before* passing to the PM graph.
@@ -91,7 +97,16 @@ class TabLoadingFrameNavigationPolicy
     mechanism_ = mechanism;
   }
 
+  // Exposed for testing. Can only be called on PM sequence.
+  void OnFirstContentfulPaintForTesting(
+      const FrameNode* frame_node,
+      base::TimeDelta time_since_navigation_start) {
+    OnFirstContentfulPaint(frame_node, time_since_navigation_start);
+  }
+
  private:
+  base::TimeDelta CalculateTimeoutFromFCP(base::TimeDelta fcp) const;
+
   // PageNodeObserver:
   void OnBeforePageNodeRemoved(const PageNode* page_node) override;
 
@@ -160,6 +175,10 @@ class TabLoadingFrameNavigationPolicy
   // See features.cc.
   base::TimeDelta timeout_min_;
   base::TimeDelta timeout_max_;
+
+  // The multiple applied to FCP to calculate the throttle timeout.
+  // Configured via Finch. See features.cc.
+  double fcp_multiple_;
 
   // A one shot timer that is used to timeout existing throttles. This will be
   // running whenever |timeouts_| is not empty.

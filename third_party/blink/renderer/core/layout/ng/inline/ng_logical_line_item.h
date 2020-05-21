@@ -14,7 +14,6 @@
 namespace blink {
 
 class LayoutObject;
-class NGInlineItem;
 struct NGInlineItemResult;
 
 // This class represents an item in a line, after line break, but still mutable
@@ -28,10 +27,6 @@ struct NGLogicalLineItem {
   // level.
   NGLogicalLineItem(LayoutUnit block_offset, LayoutUnit block_size)
       : rect(LayoutUnit(), block_offset, LayoutUnit(), block_size) {}
-  NGLogicalLineItem(const NGInlineItem& inline_item,
-                    const LogicalRect& rect,
-                    unsigned children_count)
-      : inline_item(&inline_item), rect(rect), children_count(children_count) {}
   // Crete a bidi control. A bidi control does not have a fragment, but has
   // bidi level and affects bidi reordering.
   explicit NGLogicalLineItem(UBiDiLevel bidi_level) : bidi_level(bidi_level) {}
@@ -148,7 +143,6 @@ struct NGLogicalLineItem {
   scoped_refptr<NGFragmentItem> fragment_item;
   scoped_refptr<const NGLayoutResult> layout_result;
   scoped_refptr<const NGPhysicalTextFragment> fragment;
-  const NGInlineItem* inline_item = nullptr;
   // |NGInlineItemResult| to create a text fragment from.
   NGInlineItemResult* item_result = nullptr;
   LayoutObject* out_of_flow_positioned_box = nullptr;
@@ -230,14 +224,6 @@ class NGLogicalLineItems {
     children_.insert(
         index, NGLogicalLineItem(std::move(layout_result), rect, children_count,
                                  /* bidi_level */ 0));
-  }
-  void InsertChild(unsigned index,
-                   const NGInlineItem& inline_item,
-                   const LogicalRect& rect,
-                   unsigned children_count) {
-    WillInsertChild(index);
-    children_.insert(index,
-                     NGLogicalLineItem(inline_item, rect, children_count));
   }
 
   void MoveInInlineDirection(LayoutUnit);

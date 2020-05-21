@@ -1166,7 +1166,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   std::unique_ptr<WebContents> DetachFromOuterWebContents();
 
   // Reattaches this inner WebContents to its outer WebContents.
-  void ReattachToOuterWebContentsFrame();
+  virtual void ReattachToOuterWebContentsFrame();
 
   // Getter/setter for the Portal associated with this WebContents. If non-null
   // then this WebContents is embedded in a portal and its outer WebContents can

@@ -116,24 +116,6 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalBoxFragment& box,
   DCHECK_EQ(IsFormattingContextRoot(), box.IsFormattingContextRoot());
 }
 
-NGFragmentItem::NGFragmentItem(const NGInlineItem& inline_item,
-                               const PhysicalSize& size)
-    : layout_object_(inline_item.GetLayoutObject()),
-      box_({nullptr, 1}),
-      rect_({PhysicalOffset(), size}),
-      type_(kBox),
-      style_variant_(static_cast<unsigned>(inline_item.StyleVariant())),
-      is_hidden_for_paint_(false),
-      text_direction_(static_cast<unsigned>(TextDirection::kLtr)),
-      ink_overflow_computed_(false),
-      is_dirty_(false),
-      is_last_for_node_(true) {
-  DCHECK_EQ(inline_item.Type(), NGInlineItem::kOpenTag);
-  DCHECK(layout_object_);
-  DCHECK(layout_object_->IsLayoutInline());
-  DCHECK(!IsFormattingContextRoot());
-}
-
 // static
 void NGFragmentItem::Create(NGLogicalLineItems* child_list,
                             const String& text_content,
@@ -161,13 +143,6 @@ void NGFragmentItem::Create(NGLogicalLineItems* child_list,
           new NGFragmentItem(fragment, child.ResolvedDirection()));
       continue;
     }
-
-    if (child.inline_item) {
-      child.fragment_item = base::AdoptRef(new NGFragmentItem(
-          *child.inline_item,
-          ToPhysicalSize(child.rect.size,
-                         child.inline_item->Style()->GetWritingMode())));
-    }
   }
 }
 
@@ -192,8 +167,7 @@ bool NGFragmentItem::IsInlineBox() const {
   if (Type() == kBox) {
     if (const NGPhysicalBoxFragment* box = BoxFragment())
       return box->IsInlineBox();
-    DCHECK(GetLayoutObject()->IsLayoutInline());
-    return true;
+    NOTREACHED();
   }
   return false;
 }
@@ -495,7 +469,7 @@ void NGFragmentItem::RecalcInkOverflow(
       DCHECK(box_fragment->IsInlineBox());
       self_rect = box_fragment->ComputeSelfInkOverflow();
     } else {
-      self_rect = LocalRect();
+      NOTREACHED();
     }
     *self_and_contents_rect_out = UnionRect(self_rect, contents_rect);
   } else {

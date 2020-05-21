@@ -27,7 +27,6 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.components.omnibox.SecurityButtonAnimationDelegate;
 import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.page_info.PageInfoController;
-import org.chromium.components.page_info.PageInfoControllerDelegate;
 import org.chromium.components.page_info.PermissionParamsListBuilderDelegate;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
@@ -170,13 +169,10 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
             PageInfoController.show(mBrowserImpl.getWindowAndroid().getActivity().get(),
                     mBrowserImpl.getActiveTab().getWebContents(),
                     /* contentPublisher= */ null, PageInfoController.OpenedFromSource.TOOLBAR,
-                    new PageInfoControllerDelegate(
-                            ((FragmentWindowAndroid)
-                                            mBrowserImpl.getWindowAndroid())::getModalDialogManager,
-                            new AutocompleteSchemeClassifierImpl(),
-                            /** vrHandler= */ null,
-                            /** isSiteSettingsAvailable= */ false,
-                            /** cookieControlsShown= */ false),
+                    new PageInfoControllerDelegateImpl(mBrowserImpl.getContext(),
+                            mBrowserImpl.getProfile().getName(),
+                            mBrowserImpl.getActiveTab().getWebContents().getVisibleUrl(),
+                            mBrowserImpl.getWindowAndroid()::getModalDialogManager),
                     new PermissionParamsListBuilderDelegate(mBrowserImpl.getProfile()));
         }
 

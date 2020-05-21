@@ -135,6 +135,13 @@ class MediaStreamCaptureIndicator
                              gfx::ImageSkia* image,
                              base::string16* tool_tip);
 
+  // Checks if |web_contents| or any portal WebContents in its tree is using
+  // a device for capture. The type of capture is specified using |pred|.
+  using WebContentsDeviceUsagePredicate =
+      base::RepeatingCallback<bool(const WebContentsDeviceUsage*)>;
+  bool CheckUsage(content::WebContents* web_contents,
+                  const WebContentsDeviceUsagePredicate& pred) const;
+
   // Reference to our status icon - owned by the StatusTray. If null,
   // the platform doesn't support status icons.
   StatusIcon* status_icon_ = nullptr;

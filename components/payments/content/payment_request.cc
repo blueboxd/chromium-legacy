@@ -343,7 +343,7 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   }
 
   if (state()->selected_app() && state()->IsPaymentAppInvoked() &&
-      payment_handler_host_.is_waiting_for_payment_details_update()) {
+      state()->selected_app()->IsWaitingForPaymentDetailsUpdate()) {
     payment_handler_host_.UpdateWith(
         PaymentDetailsConverter::ConvertToPaymentRequestDetailsUpdate(
             details, state()->selected_app()->HandlesShippingAddress(),
@@ -386,8 +386,8 @@ void PaymentRequest::OnPaymentDetailsNotUpdated() {
 
   spec_->RecomputeSpecForDetails();
 
-  if (state()->IsPaymentAppInvoked() &&
-      payment_handler_host_.is_waiting_for_payment_details_update()) {
+  if (state()->IsPaymentAppInvoked() && state()->selected_app() &&
+      state()->selected_app()->IsWaitingForPaymentDetailsUpdate()) {
     payment_handler_host_.OnPaymentDetailsNotUpdated();
   }
 }

@@ -189,7 +189,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
 std::ostream& operator<<(std::ostream& out, GuestMode mode);
 std::ostream& operator<<(std::ostream& out,
-                         const FileManagerBrowserTestBase::Options& opts);
+                         const FileManagerBrowserTestBase::Options& options);
 
 }  // namespace file_manager
 

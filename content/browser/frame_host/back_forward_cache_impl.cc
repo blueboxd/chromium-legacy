@@ -333,8 +333,8 @@ BackForwardCacheCanStoreDocumentResult BackForwardCacheImpl::CanStoreDocument(
   if (rfh->last_http_method() != net::HttpRequestHeaders::kGetMethod)
     result.No(BackForwardCacheMetrics::NotRestoredReason::kHTTPMethodNotGET);
 
-  // Do not store main document with non HTTP/HTTPS URL scheme. In particular,
-  // this excludes the new tab page.
+  // Do not store main document with non HTTP/HTTPS URL scheme. Among other
+  // things, this excludes the new tab page and all WebUI pages.
   if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
     result.No(
         BackForwardCacheMetrics::NotRestoredReason::kSchemeNotHTTPOrHTTPS);

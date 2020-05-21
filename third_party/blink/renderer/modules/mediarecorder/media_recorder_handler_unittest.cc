@@ -192,7 +192,7 @@ class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
   // For generating test AudioBuses
   media::SineWaveAudioSource audio_source_;
 
-  MockMediaStreamVideoSource* video_source_ = 0;
+  MockMediaStreamVideoSource* video_source_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaRecorderHandlerTest);

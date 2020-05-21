@@ -178,6 +178,12 @@ class WebContentsTester {
   // Increments/decrements the number of connected Bluetooth devices.
   virtual void TestIncrementBluetoothConnectedDeviceCount() = 0;
   virtual void TestDecrementBluetoothConnectedDeviceCount() = 0;
+
+  // Used to create portals and retrieve their WebContents.
+  virtual const base::UnguessableToken& CreatePortal(
+      std::unique_ptr<WebContents> portal_web_contents) = 0;
+  virtual WebContents* GetPortalContents(
+      const base::UnguessableToken& portal_token) = 0;
 };
 
 }  // namespace content

@@ -162,6 +162,10 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
 
   base::UnguessableToken GetAudioGroupId() override;
 
+  const base::UnguessableToken& CreatePortal(
+      std::unique_ptr<WebContents> portal_web_contents) override;
+  WebContents* GetPortalContents(const base::UnguessableToken&) override;
+
  protected:
   // The deprecated WebContentsTester still needs to subclass this.
   explicit TestWebContents(BrowserContext* browser_context);
@@ -202,6 +206,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                             const Referrer& referrer,
                             const std::string& headers,
                             const base::string16& suggested_filename) override;
+  void ReattachToOuterWebContentsFrame() override {}
 
   RenderViewHostDelegateView* delegate_view_override_;
 

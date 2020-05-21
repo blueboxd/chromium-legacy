@@ -33,6 +33,7 @@
 #include "ui/events/keyboard_hook.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -925,6 +926,9 @@ void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
 }
 
 bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
+  // Ignore native platform events for test purposes
+  if (ui::PlatformEventSource::ShouldIgnoreNativePlatformEvents())
+    return true;
   // Mouse events in occluded windows should be very rare. If this stat isn't
   // very close to 0, that would indicate that windows are incorrectly getting
   // marked occluded, or getting stuck in the occluded state. Event can cause

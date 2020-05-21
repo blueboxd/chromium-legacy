@@ -21,7 +21,6 @@
 #include "content/browser/cache_storage/scoped_writable_entry.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/storage_partition.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "net/disk_cache/disk_cache.h"

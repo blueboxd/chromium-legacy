@@ -56,8 +56,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       base::OnceCallback<void(const std::vector<std::string>& data,
                               blink::ServiceWorkerStatusCode status)>;
   using GetUserKeysAndDataCallback = base::OnceCallback<void(
-      const base::flat_map<std::string, std::string>& data_map,
-      blink::ServiceWorkerStatusCode status)>;
+      blink::ServiceWorkerStatusCode status,
+      const base::flat_map<std::string, std::string>& data_map)>;
   using GetUserDataForAllRegistrationsCallback = base::OnceCallback<void(
       const std::vector<std::pair<int64_t, std::string>>& user_data,
       blink::ServiceWorkerStatusCode status)>;
@@ -315,8 +315,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
                       const std::vector<std::string>& data);
   void DidGetUserKeysAndData(
       GetUserKeysAndDataCallback callback,
-      const base::flat_map<std::string, std::string>& data_map,
-      storage::mojom::ServiceWorkerDatabaseStatus status);
+      storage::mojom::ServiceWorkerDatabaseStatus status,
+      const base::flat_map<std::string, std::string>& data_map);
   void DidStoreUserData(StatusCallback callback,
                         storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidClearUserData(StatusCallback callback,

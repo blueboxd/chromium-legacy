@@ -178,7 +178,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'fe49ce29c3e1028c79b0a50bdb93e978cbedfdaf',
+  'skia_revision': 'b37105ea6ccaab2bf5e39e446c68e00c671e0fa8',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -190,7 +190,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'd10ba166d8655d3cdbd558f8ffbef7742775928d',
+  'angle_revision': 'ce285f432c39c287551bb56868b11a08e769f2af',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'ce0a830cd58216cd27db48430898964e1055e267',
+  'devtools_frontend_revision': 'f045c636f9b436314ca3bbc0cd954e47d1e934ce',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -293,7 +293,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'spirv_cross_revision': 'd638d2df9c8c4a862e0af829cf49cc6dcbb235a2',
+  'spirv_cross_revision': '287e93ff80ee8788f326c9bab46a20645b7595c5',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '8a3cc5c4dfd80725c836c3c3638be40494977ac2',
+  'dawn_revision': '214c71769bbb7271bd6ab14f7d1b8346a09d186b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -524,7 +524,7 @@ deps = {
   },
 
   'src/ios/third_party/material_components_ios/src': {
-      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '9d2398094e6a16497d0985de81c3bbb22cb3249b',
+      'url': Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '9fde103ea50df2f85c3dfc0650fa70a285989cfb',
       'condition': 'checkout_ios',
   },
 
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '169feea71d1f8189a4f516339427430e1e39473c',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'c4e15df5d5dab78ea2da64562353054676475637',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1323,7 +1323,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'UAycWqc5QfELtJhhnoU4jQHjsyxPjRNyZ0EfvlojaY4C',
+              'version': 'bri3RbTe5EACoEqrT7RBNXf6QZ1fIHWpsWpg9lW-JEQC',
           },
       ],
       'condition': 'checkout_android',
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3bc19daeb343da80cb7665e0d379d96f13f493c6',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@4c5b1b3a92782e2d89d3a84ecb9b00c37c5c41ff',
     'condition': 'checkout_src_internal',
   },
 

@@ -251,8 +251,6 @@ jumbo_static_library("net") {
     "net/net_metrics_log_uploader.h",
     "net/network_metrics_provider.cc",
     "net/network_metrics_provider.h",
-    "net/wifi_access_point_info_provider.cc",
-    "net/wifi_access_point_info_provider.h",
   ]
 
   public_deps = [ ":metrics" ]
@@ -269,14 +267,6 @@ jumbo_static_library("net") {
     "//third_party/zlib/google:compression_utils",
     "//url",
   ]
-
-  if (is_chromeos) {
-    sources += [
-      "net/wifi_access_point_info_provider_chromeos.cc",
-      "net/wifi_access_point_info_provider_chromeos.h",
-    ]
-    deps += [ "//chromeos/network" ]
-  }
 }
 
 static_library("ui") {

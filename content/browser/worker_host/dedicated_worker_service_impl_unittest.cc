@@ -161,7 +161,7 @@ class TestDedicatedWorkerServiceObserver
       const TestDedicatedWorkerServiceObserver& other) = delete;
 
   // DedicatedWorkerService::Observer:
-  void OnWorkerStarted(
+  void OnWorkerCreated(
       DedicatedWorkerId dedicated_worker_id,
       int worker_process_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id) override {
@@ -176,7 +176,7 @@ class TestDedicatedWorkerServiceObserver
     if (on_worker_event_callback_)
       std::move(on_worker_event_callback_).Run();
   }
-  void OnBeforeWorkerTerminated(
+  void OnBeforeWorkerDestroyed(
       DedicatedWorkerId dedicated_worker_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id) override {
     size_t removed = dedicated_worker_infos_.erase(dedicated_worker_id);

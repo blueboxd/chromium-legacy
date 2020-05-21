@@ -405,6 +405,11 @@ void CreateOrUpdateShortcuts(const base::FilePath& target,
                                  start_menu_properties, shortcut_operation);
 }
 
+// Registers Chrome on this machine.
+// If |make_chrome_default|, also attempts to make Chrome default where doing so
+// requires no more user interaction than a UAC prompt. In practice, this means
+// on versions of Windows prior to Windows 8.
+// |version| the current version of this install.
 void RegisterChromeOnMachine(const InstallerState& installer_state,
                              bool make_chrome_default,
                              const base::Version& version) {

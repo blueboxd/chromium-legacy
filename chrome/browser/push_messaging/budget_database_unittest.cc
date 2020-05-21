@@ -327,7 +327,7 @@ TEST_F(BudgetDatabaseTest, CheckEngagementHistograms) {
 
 TEST_F(BudgetDatabaseTest, DefaultSiteEngagementInIncognitoProfile) {
   TestingProfile second_profile;
-  Profile* second_profile_incognito = second_profile.GetOffTheRecordProfile();
+  Profile* second_profile_incognito = second_profile.GetPrimaryOTRProfile();
 
   // Create a second BudgetDatabase instance for the off-the-record version of
   // a second profile. This will not have been influenced by the |profile_|.

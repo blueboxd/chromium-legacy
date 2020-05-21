@@ -57,12 +57,11 @@ gfx::NativeWindow WebContentsViewChildFrame::GetTopLevelNativeWindow() const {
   return GetOuterView()->GetTopLevelNativeWindow();
 }
 
-void WebContentsViewChildFrame::GetContainerBounds(gfx::Rect* out) const {
-  RenderWidgetHostView* view = web_contents_->GetRenderWidgetHostView();
-  if (view)
-    *out = view->GetViewBounds();
-  else
-    *out = gfx::Rect();
+gfx::Rect WebContentsViewChildFrame::GetContainerBounds() const {
+  if (RenderWidgetHostView* view = web_contents_->GetRenderWidgetHostView())
+    return view->GetViewBounds();
+
+  return gfx::Rect();
 }
 
 void WebContentsViewChildFrame::SetInitialFocus() {

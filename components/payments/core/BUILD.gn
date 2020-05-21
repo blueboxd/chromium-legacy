@@ -8,8 +8,6 @@ jumbo_static_library("core") {
   sources = [
     "autofill_card_validation.cc",
     "autofill_card_validation.h",
-    "autofill_payment_app.cc",
-    "autofill_payment_app.h",
     "basic_card_response.cc",
     "basic_card_response.h",
     "can_make_payment_query.cc",
@@ -28,8 +26,6 @@ jumbo_static_library("core") {
     "payer_data.h",
     "payment_address.cc",
     "payment_address.h",
-    "payment_app.cc",
-    "payment_app.h",
     "payment_currency_amount.cc",
     "payment_currency_amount.h",
     "payment_details.cc",
@@ -165,7 +161,6 @@ jumbo_source_set("unit_tests") {
 
   if (!is_android) {
     sources += [
-      "autofill_payment_app_unittest.cc",
       "basic_card_response_unittest.cc",
       "payment_address_unittest.cc",
       "payment_options_unittest.cc",

@@ -2597,9 +2597,9 @@ PhysicalRect PaintLayer::BoundingBoxForCompositingOverlapTest() const {
         style.BackdropFilter().MapRect(FloatRect(bounding_box)));
   }
 
-  if (base::FeatureList::IsEnabled(features::kMaxOverlapBoundsForFixed) &&
-      !bounding_box.IsEmpty()) {
-    if (FixedToViewport()) {
+  if (FixedToViewport()) {
+    if (base::FeatureList::IsEnabled(features::kMaxOverlapBoundsForFixed) &&
+        !bounding_box.IsEmpty()) {
       DCHECK_EQ(style.GetPosition(), EPosition::kFixed);
       // Note that we only expand the bounding box for overlap testing when the
       // fixed's containing block is the viewport. This keeps us from expanding

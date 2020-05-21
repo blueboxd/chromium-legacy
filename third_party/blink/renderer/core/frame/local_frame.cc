@@ -135,6 +135,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
@@ -1887,6 +1888,44 @@ void LocalFrame::ForciblyPurgeV8Memory() {
   Loader().StopAllLoaders();
 }
 
+void LocalFrame::OnPageLifecycleStateUpdated() {
+  if (frozen_ != GetPage()->Frozen()) {
+    if (GetPage()->Frozen()) {
+      DidFreeze();
+    } else {
+      DidResume();
+    }
+    // The event handlers might have detached the frame.
+    if (!IsAttached())
+      return;
+
+    frozen_ = GetPage()->Frozen();
+  }
+
+  SetContextPaused(GetPage()->Paused());
+
+  mojom::blink::FrameLifecycleState frame_lifecycle_state =
+      mojom::blink::FrameLifecycleState::kRunning;
+  if (GetPage()->Paused()) {
+    frame_lifecycle_state = mojom::blink::FrameLifecycleState::kPaused;
+  } else if (GetPage()->Frozen()) {
+    frame_lifecycle_state = mojom::blink::FrameLifecycleState::kFrozen;
+  }
+
+  DomWindow()->SetLifecycleState(frame_lifecycle_state);
+}
+
+void LocalFrame::SetContextPaused(bool is_paused) {
+  if (is_paused == paused_)
+    return;
+  paused_ = is_paused;
+
+  GetDocument()->Fetcher()->SetDefersLoading(is_paused);
+  Loader().SetDefersLoading(is_paused);
+  // TODO(altimin): Move this to PageScheduler level.
+  GetFrameScheduler()->SetPaused(is_paused);
+}
+
 void LocalFrame::DidFreeze() {
   DCHECK(IsAttached());
   GetDocument()->DispatchFreezeEvent();
@@ -1916,61 +1955,6 @@ void LocalFrame::DidResume() {
     document_resource_coordinator->SetLifecycleState(
         performance_manager::mojom::LifecycleState::kRunning);
   }
-}
-
-void LocalFrame::PauseContext() {
-  GetDocument()->Fetcher()->SetDefersLoading(true);
-  DomWindow()->SetLifecycleState(lifecycle_state_);
-  Loader().SetDefersLoading(true);
-  GetFrameScheduler()->SetPaused(true);
-}
-
-void LocalFrame::UnpauseContext() {
-  GetDocument()->Fetcher()->SetDefersLoading(false);
-  DomWindow()->SetLifecycleState(mojom::FrameLifecycleState::kRunning);
-  Loader().SetDefersLoading(false);
-  GetFrameScheduler()->SetPaused(false);
-}
-
-void LocalFrame::SetLifecycleState(mojom::FrameLifecycleState state) {
-  // Don't allow lifecycle state changes for detached frames.
-  if (!IsAttached())
-    return;
-
-  if (state == lifecycle_state_)
-    return;
-
-  bool is_frozen = lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
-  bool freeze = state != mojom::FrameLifecycleState::kRunning;
-
-  // TODO(dtapuska): Determine if we should dispatch events if we are
-  // transitioning across frozen states. ie. kPaused->kFrozen should
-  // pause media.
-
-  // If we are transitioning from one frozen state to another just return.
-  if (is_frozen == freeze)
-    return;
-  mojom::FrameLifecycleState old_state = lifecycle_state_;
-  lifecycle_state_ = state;
-
-  if (freeze) {
-    if (lifecycle_state_ != mojom::FrameLifecycleState::kPaused) {
-      DidFreeze();
-      // DidFreeze can dispatch JS events, which may detach |this|.
-      if (!IsAttached())
-        return;
-    }
-    PauseContext();
-  } else {
-    UnpauseContext();
-    if (old_state != mojom::FrameLifecycleState::kPaused) {
-      DidResume();
-      // DidResume can dispatch JS events, which may detach |this|.
-      if (!IsAttached())
-        return;
-    }
-  }
-  GetLocalFrameHostRemote().LifecycleStateChanged(state);
 }
 
 void LocalFrame::MaybeLogAdClickNavigation() {

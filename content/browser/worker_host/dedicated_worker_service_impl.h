@@ -25,13 +25,13 @@ class CONTENT_EXPORT DedicatedWorkerServiceImpl
 
   DedicatedWorkerId GenerateNextDedicatedWorkerId();
 
-  // Notifies all observers about a starting worker.
-  void NotifyWorkerStarted(DedicatedWorkerId dedicated_worker_id,
+  // Notifies all observers about a new worker.
+  void NotifyWorkerCreated(DedicatedWorkerId dedicated_worker_id,
                            int worker_process_id,
                            GlobalFrameRoutingId ancestor_render_frame_host_id);
 
-  // Notifies all observers about a terminating worker.
-  void NotifyWorkerTerminating(
+  // Notifies all observers about a worker being destroyed.
+  void NotifyBeforeWorkerDestroyed(
       DedicatedWorkerId dedicated_worker_id,
       GlobalFrameRoutingId ancestor_render_frame_host_id);
 

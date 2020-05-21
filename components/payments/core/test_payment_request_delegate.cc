@@ -35,7 +35,7 @@ const std::string& TestPaymentRequestDelegate::GetApplicationLocale() const {
   return locale_;
 }
 
-bool TestPaymentRequestDelegate::IsIncognito() const {
+bool TestPaymentRequestDelegate::IsOffTheRecord() const {
   return false;
 }
 

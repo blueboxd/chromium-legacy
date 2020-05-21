@@ -1272,45 +1272,45 @@ class TestSharedWorkerServiceObserver : public SharedWorkerService::Observer {
   ~TestSharedWorkerServiceObserver() override = default;
 
   // SharedWorkerService::Observer:
-  void OnWorkerStarted(SharedWorkerId shared_worker_id,
+  void OnWorkerCreated(SharedWorkerId shared_worker_id,
                        int worker_process_id,
                        const base::UnguessableToken& dev_tools_token) override {
-    EXPECT_TRUE(running_workers_.insert({shared_worker_id, {}}).second);
+    EXPECT_TRUE(shared_workers_.insert({shared_worker_id, {}}).second);
   }
-  void OnBeforeWorkerTerminated(SharedWorkerId shared_worker_id) override {
-    EXPECT_EQ(1u, running_workers_.erase(shared_worker_id));
+  void OnBeforeWorkerDestroyed(SharedWorkerId shared_worker_id) override {
+    EXPECT_EQ(1u, shared_workers_.erase(shared_worker_id));
   }
   void OnFinalResponseURLDetermined(SharedWorkerId shared_worker_id,
                                     const GURL& url) override {}
   void OnClientAdded(
       SharedWorkerId shared_worker_id,
       GlobalFrameRoutingId client_render_frame_host_id) override {
-    auto it = running_workers_.find(shared_worker_id);
-    EXPECT_TRUE(it != running_workers_.end());
+    auto it = shared_workers_.find(shared_worker_id);
+    EXPECT_TRUE(it != shared_workers_.end());
     std::set<GlobalFrameRoutingId>& clients = it->second;
     EXPECT_TRUE(clients.insert(client_render_frame_host_id).second);
   }
   void OnClientRemoved(
       SharedWorkerId shared_worker_id,
       GlobalFrameRoutingId client_render_frame_host_id) override {
-    auto it = running_workers_.find(shared_worker_id);
-    EXPECT_TRUE(it != running_workers_.end());
+    auto it = shared_workers_.find(shared_worker_id);
+    EXPECT_TRUE(it != shared_workers_.end());
     std::set<GlobalFrameRoutingId>& clients = it->second;
     EXPECT_EQ(1u, clients.erase(client_render_frame_host_id));
   }
 
-  size_t GetWorkerCount() { return running_workers_.size(); }
+  size_t GetWorkerCount() { return shared_workers_.size(); }
 
   size_t GetClientCount() {
     size_t client_count = 0;
-    for (const auto& worker : running_workers_)
+    for (const auto& worker : shared_workers_)
       client_count += worker.second.size();
     return client_count;
   }
 
  private:
   base::flat_map<SharedWorkerId, std::set<GlobalFrameRoutingId>>
-      running_workers_;
+      shared_workers_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSharedWorkerServiceObserver);
 };

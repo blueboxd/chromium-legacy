@@ -8,7 +8,7 @@
 
 namespace ui {
 
-base::string16 ComboboxModel::GetDropDownTextAt(int index) {
+base::string16 ComboboxModel::GetDropDownTextAt(int index) const {
   return GetItemAt(index);
 }
 
@@ -24,7 +24,7 @@ ImageModel ComboboxModel::GetDropDownIconAt(int index) const {
   return GetIconAt(index);
 }
 
-bool ComboboxModel::IsItemSeparatorAt(int index) {
+bool ComboboxModel::IsItemSeparatorAt(int index) const {
   return false;
 }
 

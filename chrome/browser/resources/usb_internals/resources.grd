@@ -12,31 +12,25 @@
     <includes>
       <include name="IDR_USB_INTERNALS_CSS"
                file="usb_internals.css"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_USB_INTERNALS_DESCRIPTOR_PANEL_JS"
                file="descriptor_panel.js"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_USB_INTERNALS_DEVICES_PAGE_JS"
                file="devices_page.js"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_USB_INTERNALS_HTML"
                file="usb_internals.html"
                flattenhtml="true"
                allowexternalscript="true"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_USB_INTERNALS_JS"
                file="usb_internals.js"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_USB_INTERNALS_MOJOM_LITE_JS"
                file="${root_gen_dir}\chrome\browser\ui\webui\usb_internals\usb_internals.mojom-lite.js"
                use_base_dir="false"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
     </includes>
   </release>
 </grit>

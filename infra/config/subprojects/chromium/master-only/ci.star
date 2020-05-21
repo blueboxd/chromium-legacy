@@ -8,7 +8,6 @@ load('//project.star', 'settings')
 
 # Execute the versioned files to define all of the per-branch entities
 # (bucket, builders, console, poller, etc.)
-exec('../versioned/m81/buckets/ci.star')
 exec('../versioned/m83/buckets/ci.star')
 exec('../versioned/m84/buckets/ci.star')
 

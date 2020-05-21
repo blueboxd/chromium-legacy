@@ -224,6 +224,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetPreferredColorScheme(PreferredColorScheme) override;
   void SetNavigationControls(NavigationControls) override;
 
+  void SetAriaModalPrunesAXTree(bool) override;
+
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;
   }

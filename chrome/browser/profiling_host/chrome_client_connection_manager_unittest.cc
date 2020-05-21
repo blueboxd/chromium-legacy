@@ -26,7 +26,7 @@ TEST(ChromeClientConnectionManager, ShouldProfileNewRenderer) {
   manager.SetModeForTesting(Mode::kAll);
   EXPECT_TRUE(manager.ShouldProfileNewRenderer(&rph));
 
-  Profile* incognito_profile = testing_profile.GetOffTheRecordProfile();
+  Profile* incognito_profile = testing_profile.GetPrimaryOTRProfile();
   content::MockRenderProcessHost incognito_rph(incognito_profile);
   EXPECT_FALSE(manager.ShouldProfileNewRenderer(&incognito_rph));
 }

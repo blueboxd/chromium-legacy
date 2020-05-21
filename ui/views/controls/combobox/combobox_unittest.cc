@@ -83,14 +83,14 @@ class TestComboboxModel : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override { return item_count_; }
-  base::string16 GetItemAt(int index) override {
+  base::string16 GetItemAt(int index) const override {
     if (IsItemSeparatorAt(index)) {
       NOTREACHED();
       return ASCIIToUTF16("SEPARATOR");
     }
     return ASCIIToUTF16(index % 2 == 0 ? "PEANUT BUTTER" : "JELLY");
   }
-  bool IsItemSeparatorAt(int index) override {
+  bool IsItemSeparatorAt(int index) const override {
     return separators_.find(index) != separators_.end();
   }
 
@@ -147,10 +147,10 @@ class VectorComboboxModel : public ui::ComboboxModel {
   int GetItemCount() const override {
     return static_cast<int>(values_->size());
   }
-  base::string16 GetItemAt(int index) override {
+  base::string16 GetItemAt(int index) const override {
     return ASCIIToUTF16(values_->at(index));
   }
-  bool IsItemSeparatorAt(int index) override { return false; }
+  bool IsItemSeparatorAt(int index) const override { return false; }
   int GetDefaultIndex() const override { return default_index_; }
   void AddObserver(ui::ComboboxModelObserver* observer) override {
     observers_.AddObserver(observer);

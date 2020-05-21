@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Consumer;
 
 /**
  * Checks classpaths (given as ClassLoaders) by reading the constant pool of the class file and
@@ -86,10 +87,10 @@ public class ClassPathValidator {
      *
      * @param classReader .class file interface for reading the constant pool.
      * @param classLoader classpath you wish to validate.
-     * @throws ClassNotLoadedException thrown if it can't load a certain class.
+     * @param errorConsumer Called for each missing class.
      */
-    private static void validateClassPath(ClassReader classReader, ClassLoader classLoader)
-            throws ClassNotLoadedException {
+    private static void validateClassPath(ClassReader classReader, ClassLoader classLoader,
+            Consumer<ClassNotLoadedException> errorConsumer) {
         char[] charBuffer = new char[classReader.getMaxStringLength()];
         // According to the Java spec, the constant pool is indexed from 1 to constant_pool_count -
         // 1. See https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4
@@ -98,7 +99,11 @@ public class ClassPathValidator {
             // Class entries correspond to 7 in the constant pool
             // https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-4.html#jvms-4.4
             if (offset > 0 && classReader.readByte(offset - 1) == 7) {
-                validateClass(classLoader, classReader.readUTF8(offset, charBuffer));
+                try {
+                    validateClass(classLoader, classReader.readUTF8(offset, charBuffer));
+                } catch (ClassNotLoadedException e) {
+                    errorConsumer.accept(e);
+                }
             }
         }
     }
@@ -106,21 +111,17 @@ public class ClassPathValidator {
     public void validateFullClassPath(ClassReader classReader, ClassLoader fullClassLoader,
             Set<String> missingClassAllowlist) {
         // Prebuilts only need transitive dependencies checked, not direct dependencies.
-        try {
-            validateClassPath(classReader, fullClassLoader);
-        } catch (ClassNotLoadedException e) {
+        validateClassPath(classReader, fullClassLoader, (e) -> {
             if (!missingClassAllowlist.contains(e.getClassName())) {
                 addMissingError(classReader.getClassName(), e.getClassName());
             }
-        }
+        });
     }
 
     public void validateDirectClassPath(ClassReader classReader, ClassLoader directClassLoader,
             ClassLoader fullClassLoader, Collection<String> jarsOnlyInFullClassPath,
             Set<String> missingClassAllowlist, boolean verbose) {
-        try {
-            validateClassPath(classReader, directClassLoader);
-        } catch (ClassNotLoadedException e) {
+        validateClassPath(classReader, directClassLoader, (e) -> {
             try {
                 validateClass(fullClassLoader, e.getClassName());
             } catch (ClassNotLoadedException d) {
@@ -146,7 +147,7 @@ public class ClassPathValidator {
                 } catch (ClassNotLoadedException f) {
                 }
             }
-        }
+        });
     }
 
     private void addMissingError(String srcClass, String missingClass) {
@@ -175,9 +176,9 @@ public class ClassPathValidator {
     }
 
     private static void printValidationError(
-            PrintStream out, String jarName, Map<String, Set<String>> missingClasses) {
+            PrintStream out, String gnTarget, Map<String, Set<String>> missingClasses) {
         out.print(" * ");
-        out.println(jarName);
+        out.println(gnTarget);
         int i = 0;
         // The list of missing classes is non-exhaustive because each class that fails to validate
         // reports only the first missing class.
@@ -201,10 +202,11 @@ public class ClassPathValidator {
         }
     }
 
-    public void printAll() {
+    public void printAll(String gnTarget, Map<String, String> jarToGnTarget) {
         String streamer = "=============================";
         System.err.println();
         System.err.println(streamer + " Dependency Checks Failed " + streamer);
+        System.err.println("Target: " + gnTarget);
         if (!mMissingClasses.isEmpty()) {
             int i = 0;
             for (Map.Entry<String, String> entry : mMissingClasses.entrySet()) {
@@ -220,10 +222,10 @@ public class ClassPathValidator {
             System.err.println();
         }
         if (!mDirectErrors.isEmpty()) {
-            System.err.println("Direct classpath is incomplete. To fix, add deps on the "
-                    + "GN target(s) that provide:");
+            System.err.println("Direct classpath is incomplete. To fix, add deps on:");
             for (Map.Entry<String, Map<String, Set<String>>> entry : mDirectErrors.entrySet()) {
-                printValidationError(System.err, entry.getKey(), entry.getValue());
+                printValidationError(
+                        System.err, jarToGnTarget.get(entry.getKey()), entry.getValue());
             }
             System.err.println();
         }

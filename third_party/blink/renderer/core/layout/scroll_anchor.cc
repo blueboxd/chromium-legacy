@@ -377,6 +377,10 @@ ScrollAnchor::ExamineResult ScrollAnchor::ExaminePriorityCandidate(
   while (ancestor && ancestor != scroller_box) {
     if (ancestor->StyleRef().OverflowAnchor() == EOverflowAnchor::kNone)
       return ExamineResult(kSkip);
+
+    if (!CandidateMayMoveWithScroller(ancestor, scroller_))
+      return ExamineResult(kSkip);
+
     ancestor = ancestor->Parent();
   }
   return ancestor ? Examine(candidate) : ExamineResult(kSkip);

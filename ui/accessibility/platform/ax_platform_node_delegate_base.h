@@ -71,6 +71,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // leaf node, meaning that this node is not actually exposed to the
   // platform.
   bool IsChildOfLeaf() const override;
+  bool IsChildOfPlainTextField() const override;
 
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.

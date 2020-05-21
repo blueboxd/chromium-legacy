@@ -18,13 +18,21 @@
         android:id="@+id/qrcode_text_image"
         android:layout_width="250dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
-        android:drawableBottom="@drawable/qrcode_background"
-        android:drawablePadding="24dp"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="135dp"
         android:gravity="center_horizontal"
         android:layout_gravity="center_horizontal"
         android:text="@string/qr_code_share_description"
         android:textAppearance="@style/TextAppearance.TextLarge.Primary"/>
+
+    <org.chromium.ui.widget.ChromeImageView
+        android:id="@+id/qrcode"
+        android:layout_width="228dp"
+        android:layout_height="228dp"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/qrcode_background"
+        android:padding="16dp" />
 
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/download"

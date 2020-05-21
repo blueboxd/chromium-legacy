@@ -74,17 +74,16 @@ class WebLayerNotificationChannels extends ChannelDefinitions {
         static {
             Map<String, PredefinedChannel> map = new HashMap<>();
             map.put(ChannelId.ACTIVE_DOWNLOADS,
-                    new PredefinedChannel(ChannelId.ACTIVE_DOWNLOADS,
+                    PredefinedChannel.create(ChannelId.ACTIVE_DOWNLOADS,
                             R.string.notification_category_downloads,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));
             map.put(ChannelId.COMPLETED_DOWNLOADS,
-                    new PredefinedChannel(ChannelId.COMPLETED_DOWNLOADS,
+                    PredefinedChannel.create(ChannelId.COMPLETED_DOWNLOADS,
                             R.string.notification_category_completed_downloads,
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));
             map.put(ChannelId.WEBRTC_CAM_AND_MIC,
-                    new PredefinedChannel(ChannelId.WEBRTC_CAM_AND_MIC,
+                    PredefinedChannel.create(ChannelId.WEBRTC_CAM_AND_MIC,
                             R.string.notification_category_webrtc_cam_and_mic,
-
                             NotificationManager.IMPORTANCE_LOW, ChannelGroupId.WEBLAYER));
             MAP = Collections.unmodifiableMap(map);
         }

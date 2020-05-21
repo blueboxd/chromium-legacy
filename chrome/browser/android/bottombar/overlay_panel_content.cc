@@ -16,7 +16,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "components/embedder_support/android/delegate/web_contents_delegate_android.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
@@ -120,8 +119,6 @@ void OverlayPanelContent::SetWebContents(
       new web_contents_delegate_android::WebContentsDelegateAndroid(
           env, jweb_contents_delegate));
   web_contents_->SetDelegate(web_contents_delegate_.get());
-  ViewAndroidHelper::FromWebContents(web_contents_.get())
-      ->SetViewAndroid(web_contents_->GetNativeView());
 }
 
 void OverlayPanelContent::DestroyWebContents(

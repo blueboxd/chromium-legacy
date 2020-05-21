@@ -6,8 +6,8 @@
 
 #include "base/feature_list.h"
 #include "components/payments/content/autofill_payment_app_factory.h"
+#include "components/payments/content/payment_app.h"
 #include "components/payments/content/service_worker_payment_app_factory.h"
-#include "components/payments/core/payment_app.h"
 #include "content/public/common/content_features.h"
 
 namespace payments {

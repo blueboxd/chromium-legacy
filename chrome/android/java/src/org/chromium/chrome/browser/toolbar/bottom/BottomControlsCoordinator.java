@@ -73,13 +73,15 @@ public class BottomControlsCoordinator {
      * @param openHomepageAction The action that opens the homepage.
      * @param setUrlBarFocusAction The function that sets Url bar focus. The first argument is
      *         whether the bar should be focused, and the second is the OmniboxFocusReason.
+     * @param overviewModeBehaviorSupplier Supplier for the overview mode manager.
      */
     public BottomControlsCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
             ActivityTabProvider tabProvider, OnLongClickListener tabSwitcherLongclickListener,
             ThemeColorProvider themeColorProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             Supplier<Boolean> showStartSurfaceCallable, Runnable openHomepageAction,
-            Callback<Integer> setUrlBarFocusAction) {
+            Callback<Integer> setUrlBarFocusAction,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         final ScrollingBottomViewResourceFrameLayout root =
                 (ScrollingBottomViewResourceFrameLayout) stub.inflate();
 
@@ -109,10 +111,11 @@ public class BottomControlsCoordinator {
             mTabGroupUi = TabManagementModuleProvider.getDelegate().createTabGroupUi(
                     root.findViewById(R.id.bottom_container_slot), themeColorProvider);
         } else {
-            mBottomToolbarCoordinator = new BottomToolbarCoordinator(
-                    root.findViewById(R.id.bottom_toolbar_stub), tabProvider,
-                    tabSwitcherLongclickListener, themeColorProvider, shareDelegateSupplier,
-                    showStartSurfaceCallable, openHomepageAction, setUrlBarFocusAction);
+            mBottomToolbarCoordinator =
+                    new BottomToolbarCoordinator(root.findViewById(R.id.bottom_toolbar_stub),
+                            tabProvider, tabSwitcherLongclickListener, themeColorProvider,
+                            shareDelegateSupplier, showStartSurfaceCallable, openHomepageAction,
+                            setUrlBarFocusAction, overviewModeBehaviorSupplier);
         }
 
         Toast.setGlobalExtraYOffset(root.getResources().getDimensionPixelSize(
@@ -135,7 +138,6 @@ public class BottomControlsCoordinator {
      *                            bottom toolbar's new tab button is clicked.
      * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
      *                         bottom toolbar's menu button is clicked.
-     * @param overviewModeBehavior The overview mode manager.
      * @param windowAndroid A {@link WindowAndroid} for watching keyboard visibility events.
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
@@ -146,17 +148,17 @@ public class BottomControlsCoordinator {
     public void initializeWithNative(ChromeActivity chromeActivity, ResourceManager resourceManager,
             LayoutManager layoutManager, OnClickListener tabSwitcherListener,
             OnClickListener newTabClickListener, AppMenuButtonHelper menuButtonHelper,
-            OverviewModeBehavior overviewModeBehavior, WindowAndroid windowAndroid,
-            TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
-            ViewGroup topToolbarRoot, Runnable closeAllTabsAction) {
+            WindowAndroid windowAndroid, TabCountProvider tabCountProvider,
+            IncognitoStateProvider incognitoStateProvider, ViewGroup topToolbarRoot,
+            Runnable closeAllTabsAction) {
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setWindowAndroid(windowAndroid);
 
         if (mBottomToolbarCoordinator != null) {
             mBottomToolbarCoordinator.initializeWithNative(tabSwitcherListener, newTabClickListener,
-                    menuButtonHelper, overviewModeBehavior, tabCountProvider,
-                    incognitoStateProvider, topToolbarRoot, closeAllTabsAction);
+                    menuButtonHelper, tabCountProvider, incognitoStateProvider, topToolbarRoot,
+                    closeAllTabsAction);
         }
 
         if (mTabGroupUi != null) {

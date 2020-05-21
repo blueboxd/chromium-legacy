@@ -15,10 +15,13 @@
 */
 
 @media forced-colors {
-  body {
-    background-color: Canvas;
+  html {
     color: CanvasText;
     fill: currentColor;
+  }
+
+  body {
+    background-color: Canvas;
   }
 
   :focus {

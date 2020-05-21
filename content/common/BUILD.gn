@@ -228,7 +228,7 @@ source_set("common") {
     "//third_party/blink/public/common",
     "//ui/accessibility",
     "//ui/accessibility/mojom",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/events/ipc",
   ]
@@ -351,7 +351,9 @@ source_set("common") {
     sources -= [ "cursors/webcursor_ozone.cc" ]
   }
 
-  if (!use_aura) {
+  if (use_aura) {
+    deps += [ "//ui/base/cursor" ]
+  } else {
     sources -= [ "cursors/webcursor_aura.cc" ]
   }
 
@@ -641,7 +643,7 @@ mojom("mojo_bindings") {
         "//services/network/public/cpp",
         "//third_party/blink/public/common",
         "//ui/accessibility",
-        "//ui/base/cursor",
+        "//ui/base/cursor:cursor_base",
         "//ui/base/ime:text_input_types",
         "//ui/events/blink",
         "//ui/gfx/ipc",

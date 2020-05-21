@@ -35,6 +35,7 @@
 
 #include <stdint.h>
 
+#include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -235,6 +236,12 @@ blink::WebMouseEvent::Button ButtonFromButtonNumber(NSEvent* event) {
 
 blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event,
                                                        bool record_debug_uma) {
+  // TODO(bokan) Temporary to debug crbug.com/1039833.
+  // It's assumed that some clients may fall into a bad state and produce these
+  // bad timestamps on lots of subsequent events. To prevent sending an
+  // overwhelming amount of crash reports stop after sending 5.
+  static int dump_without_crashing_throttle = 5;
+
   ui::ComputeEventLatencyOS(event);
   base::TimeTicks now = ui::EventTimeForNow();
   base::TimeTicks hardware_timestamp =
@@ -253,6 +260,16 @@ blink::WebKeyboardEvent WebKeyboardEventBuilder::Build(NSEvent* event,
             "Event.Latency.OS_NO_VALIDATION.NEGATIVE.KEY_PRESSED", diff,
             base::TimeDelta::FromMilliseconds(1),
             base::TimeDelta::FromSeconds(60), 50);
+      }
+
+      // TODO(bokan) Temporary to debug crbug.com/1039833. We've seen in UMA
+      // that we often receive key press events with the OS timestamp differing
+      // from the current timestamp by 60+ seconds. Try to capture a few crash
+      // reports from the wild to see if we can find some pattern.
+      if (diff.magnitude() > base::TimeDelta::FromSeconds(60) &&
+          dump_without_crashing_throttle > 0) {
+        --dump_without_crashing_throttle;
+        base::debug::DumpWithoutCrashing();
       }
     }
   }

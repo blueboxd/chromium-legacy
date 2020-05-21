@@ -254,7 +254,7 @@ class ClientSideDetectionHostTestBase : public ChromeRenderViewHostTestHarness {
     if (is_incognito_) {
       auto incognito_web_contents =
           content::WebContentsTester::CreateTestWebContents(
-              profile()->GetOffTheRecordProfile(), nullptr);
+              profile()->GetPrimaryOTRProfile(), nullptr);
       SetContents(std::move(incognito_web_contents));
     }
 

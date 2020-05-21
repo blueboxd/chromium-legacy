@@ -201,6 +201,16 @@ class PageLoadMetricsObserver {
     kMaxValue = kText,
   };
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class LargestContentState {
+    kReported = 0,
+    kLargestImageLoading = 1,
+    kNotFound = 2,
+    kFoundButNotReported = 3,
+    kMaxValue = kFoundButNotReported,
+  };
+
   using FrameTreeNodeId = int;
 
   virtual ~PageLoadMetricsObserver() {}

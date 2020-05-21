@@ -375,6 +375,7 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     builder.SetPaintTiming_NavigationToLargestContentfulPaint(
         all_frames_largest_contentful_paint.Time().value().InMilliseconds());
   }
+  RecordInternalTimingMetrics(all_frames_largest_contentful_paint);
   if (timing.interactive_timing->first_input_delay) {
     base::TimeDelta first_input_delay =
         timing.interactive_timing->first_input_delay.value();
@@ -423,6 +424,34 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
     ReportMainResourceTimingMetrics(timing, &builder);
 
   builder.Record(ukm::UkmRecorder::Get());
+}
+
+void UkmPageLoadMetricsObserver::RecordInternalTimingMetrics(
+    const page_load_metrics::ContentfulPaintTimingInfo&
+        all_frames_largest_contentful_paint) {
+  ukm::builders::PageLoad_Internal debug_builder(GetDelegate().GetSourceId());
+  LargestContentState lcp_state = LargestContentState::kNotFound;
+  if (all_frames_largest_contentful_paint.ContainsValidTime()) {
+    if (WasStartedInForegroundOptionalEventInForeground(
+            all_frames_largest_contentful_paint.Time(), GetDelegate())) {
+      debug_builder.SetPaintTiming_LargestContentfulPaint_ContentType(
+          static_cast<int>(all_frames_largest_contentful_paint.Type()));
+      lcp_state = LargestContentState::kReported;
+    } else {
+      // TODO(npm): figure out why this code can be reached given that
+      // RecordTimingMetrics() is only called when was_hidden_ is set to false.
+      lcp_state = LargestContentState::kFoundButNotReported;
+    }
+  } else if (all_frames_largest_contentful_paint.Time().has_value()) {
+    DCHECK(all_frames_largest_contentful_paint.Size());
+    lcp_state = LargestContentState::kLargestImageLoading;
+  } else {
+    DCHECK(all_frames_largest_contentful_paint.Empty());
+    lcp_state = LargestContentState::kNotFound;
+  }
+  debug_builder.SetPaintTiming_LargestContentfulPaint_TerminationState(
+      static_cast<int>(lcp_state));
+  debug_builder.Record(ukm::UkmRecorder::Get());
 }
 
 void UkmPageLoadMetricsObserver::RecordPageLoadMetrics(

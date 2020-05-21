@@ -469,7 +469,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // To be called from OomInterventionImpl.
   void ForciblyPurgeV8Memory();
 
-  void SetLifecycleState(mojom::FrameLifecycleState state);
+  void OnPageLifecycleStateUpdated();
 
   void WasHidden();
   void WasShown();
@@ -656,8 +656,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void DidFreeze();
   void DidResume();
-  void PauseContext();
-  void UnpauseContext();
+  void SetContextPaused(bool);
 
   void EvictFromBackForwardCache();
 
@@ -713,6 +712,16 @@ class CORE_EXPORT LocalFrame final : public Frame,
   float text_zoom_factor_;
 
   bool in_view_source_mode_;
+
+  // Whether this frame is frozen or not. This is a copy of Page::IsFrozen()
+  // and is stored here to ensure that we do not dispatch onfreeze() twice
+  // in a row and every onfreeze() has a single corresponding onresume().
+  bool frozen_ = false;
+
+  // Whether this frame is paused or not. This is a copy of Page::IsPaused()
+  // and is stored here to ensure that we do not call SetContextPaused() twice
+  // in a row with the same argument.
+  bool paused_ = false;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;

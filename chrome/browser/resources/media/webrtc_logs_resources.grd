@@ -14,12 +14,10 @@
                file="webrtc_logs.html"
                flattenhtml="true"
                allowexternalscript="true"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_WEBRTC_LOGS_JS"
                file="webrtc_logs.js"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
     </includes>
   </release>
 </grit>

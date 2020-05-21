@@ -14,22 +14,18 @@
     <includes>
       <include name="IDR_EXTENSIONS_EXTENSIONS_HTML"
                file="extensions.html"
-               type="chrome_html"
-               compress="gzip" />
+               type="chrome_html" />
       <include name="IDR_EXTENSIONS_EXTENSIONS_ROLLUP_JS"
                file="${root_gen_dir}\chrome\browser\resources\extensions\extensions.rollup.js"
                use_base_dir="false"
                preprocess="true"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_EXTENSIONS_CHECKUP_IMAGE"
                file="checkup_image.svg"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_EXTENSIONS_CHECKUP_IMAGE_DARK"
                file="checkup_image_dark.svg"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
     </includes>
   </release>
 </grit>

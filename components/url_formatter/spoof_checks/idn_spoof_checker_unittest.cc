@@ -1369,12 +1369,21 @@ TEST_F(IDNSpoofCheckerTest, LookupSkeletonInTopDomains) {
         IDNSpoofChecker().LookupSkeletonInTopDomains("d4OOO.corn");
     EXPECT_EQ("d4000.com", entry.domain);
     EXPECT_TRUE(entry.is_top_500);
+    EXPECT_EQ(entry.skeleton_type, SkeletonType::kFull);
+  }
+  {
+    TopDomainEntry entry = IDNSpoofChecker().LookupSkeletonInTopDomains(
+        "d4OOOcorn", SkeletonType::kSeparatorsRemoved);
+    EXPECT_EQ("d4000.com", entry.domain);
+    EXPECT_TRUE(entry.is_top_500);
+    EXPECT_EQ(entry.skeleton_type, SkeletonType::kSeparatorsRemoved);
   }
   {
     TopDomainEntry entry =
         IDNSpoofChecker().LookupSkeletonInTopDomains("digklrno68.corn");
     EXPECT_EQ("digklmo68.com", entry.domain);
     EXPECT_FALSE(entry.is_top_500);
+    EXPECT_EQ(entry.skeleton_type, SkeletonType::kFull);
   }
 }
 
@@ -1385,6 +1394,14 @@ TEST(IDNSpoofCheckerNoFixtureTest, LookupSkeletonInTopDomains) {
         IDNSpoofChecker().LookupSkeletonInTopDomains("google.corn");
     EXPECT_EQ("google.com", entry.domain);
     EXPECT_TRUE(entry.is_top_500);
+    EXPECT_EQ(entry.skeleton_type, SkeletonType::kFull);
+  }
+  {
+    TopDomainEntry entry = IDNSpoofChecker().LookupSkeletonInTopDomains(
+        "googlecorn", SkeletonType::kSeparatorsRemoved);
+    EXPECT_EQ("google.com", entry.domain);
+    EXPECT_TRUE(entry.is_top_500);
+    EXPECT_EQ(entry.skeleton_type, SkeletonType::kSeparatorsRemoved);
   }
   {
     // This is data dependent, must be updated when the top domain list
@@ -1393,6 +1410,7 @@ TEST(IDNSpoofCheckerNoFixtureTest, LookupSkeletonInTopDomains) {
         IDNSpoofChecker().LookupSkeletonInTopDomains("google.sk");
     EXPECT_EQ("google.sk", entry.domain);
     EXPECT_FALSE(entry.is_top_500);
+    EXPECT_EQ(entry.skeleton_type, SkeletonType::kFull);
   }
 }
 

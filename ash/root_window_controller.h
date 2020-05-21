@@ -229,11 +229,8 @@ class ASH_EXPORT RootWindowController {
   FRIEND_TEST_ALL_PREFIXES(RootWindowControllerTest,
                            ContextMenuDisappearsInTabletMode);
 
-  // Creates a new RootWindowController with the specified host. Only one of
-  // |ash_host| or |window_tree_host| should be specified. This takes ownership
-  // of the supplied arguments.
-  RootWindowController(AshWindowTreeHost* ash_host,
-                       aura::WindowTreeHost* window_tree_host);
+  // Takes ownership of |ash_host|.
+  explicit RootWindowController(AshWindowTreeHost* ash_host);
 
   // Initializes the RootWindowController based on |root_window_type|.
   void Init(RootWindowType root_window_type);
@@ -266,8 +263,7 @@ class ASH_EXPORT RootWindowController {
   void OnFirstWallpaperWidgetSet();
 
   std::unique_ptr<AshWindowTreeHost> ash_host_;
-  std::unique_ptr<aura::WindowTreeHost> mus_window_tree_host_;
-  // This comes from |ash_host_| or |mus_window_tree_host_|.
+  // |ash_host_| as a WindowTreeHost.
   aura::WindowTreeHost* window_tree_host_;
 
   // LayoutManagers are owned by the window they are installed on.

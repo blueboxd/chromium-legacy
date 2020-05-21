@@ -86,6 +86,15 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
 
   bool PropagatesSilence() const override;
 
+  // Compute the output for k-rate AudioParams
+  double ProcessKRate(int n, float* dest_p, double virtual_read_index) const;
+
+  // Compute the output for a-rate AudioParams
+  double ProcessARate(int n,
+                      float* dest_p,
+                      double virtual_read_index,
+                      float* phase_increments) const;
+
   // One of the waveform types defined in the enum.
   uint8_t type_;
 

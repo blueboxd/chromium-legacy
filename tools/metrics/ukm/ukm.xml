@@ -281,22 +281,6 @@ be describing additional metrics about the same event.
       bucket (with a bucket ratio of 1.3).
     </summary>
   </metric>
-  <metric name="MaxAdDensityByArea">
-    <summary>
-      The estimated maximum density of ads on a page by area. Calculated as the
-      area of ads on the page * 100 / page area. This counts each overlapping
-      area once, it may be inaccurate due to updates and calculations being
-      throttled.
-    </summary>
-  </metric>
-  <metric name="MaxAdDensityByHeight">
-    <summary>
-      The estimated maximum density of ads on a page by height. Calculated as
-      the combined height of ads on the page * 100 / page height. This counts
-      each overlapping area once, it may be inaccurate due to updates and
-      calculations being throttled.
-    </summary>
-  </metric>
   <metric name="TotalBytes">
     <summary>
       Amount of network bytes used to load resources on the page. Includes
@@ -8290,6 +8274,37 @@ be describing additional metrics about the same event.
   <summary>
     Recorded for page loads that were navigated to via Google Search.
   </summary>
+</event>
+
+<event name="PageLoad.Internal" singular="True">
+  <owner>npm@chromium.org</owner>
+  <owner>speed-metrics-dev@chromium.org</owner>
+  <summary>
+    Debugging metrics for the PageLoad event that do not require the same amount
+    of sampling.
+  </summary>
+  <metric name="PaintTiming.LargestContentfulPaint.ContentType"
+      enum="LargestContentType">
+    <summary>
+      Records whether the page's largest contentful paint, whose timestamp is
+      measured by PageLoad.PaintTiming.NavigationToLargestContentfulPaint, comes
+      from text or image. This value is sampled and not on the PageLoad event,
+      so it is not always recorded whenever
+      PageLoad.PaintTiming.NavigationToLargestContentfulPaint is recorded.
+    </summary>
+  </metric>
+  <metric name="PaintTiming.LargestContentfulPaint.TerminationState"
+      enum="LargestContentfulPaint.TerminationState">
+    <summary>
+      Records the state of the largest contentful paint algorithm at the time in
+      which the browser attempts to record
+      PageLoad.PaintTiming.NavigationToLargestContentfulPaint. This state
+      depends on whether there was a largest contentful paint candidate or not
+      and the foreground state of the page. This value is sampled and not on the
+      PageLoad event, so it is not always recorded whenever the browser attempts
+      to record PageLoad.PaintTiming.NavigationToLargestContentfulPaint.
+    </summary>
+  </metric>
 </event>
 
 <event name="PageLoad.ServiceWorkerControlled" singular="True">

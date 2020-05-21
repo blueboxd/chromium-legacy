@@ -335,7 +335,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterStatusOneReason) {
             *printer_status_dict.FindDoublePath("timestamp"));
 
   const base::Value* status_reasons =
-      printer_status_dict.FindListPath("status_reasons");
+      printer_status_dict.FindListPath("statusReasons");
   EXPECT_EQ(1u, status_reasons->GetList().size());
 
   for (const base::Value& status_reason : status_reasons->GetList()) {
@@ -363,7 +363,7 @@ TEST(PrinterTranslatorTest, GetCupsPrinterStatusTwoReasons) {
             *printer_status_dict.FindDoublePath("timestamp"));
 
   const base::Value* status_reasons =
-      printer_status_dict.FindListPath("status_reasons");
+      printer_status_dict.FindListPath("statusReasons");
 
   auto status_reasons_list = status_reasons->GetList();
   EXPECT_EQ(2u, status_reasons_list.size());

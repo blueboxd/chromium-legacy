@@ -151,9 +151,7 @@ public class TabSwitcherCoordinator
                 new MultiThumbnailCardProvider(context, tabContentManager, tabModelSelector);
 
         PseudoTab.TitleProvider titleProvider = tab -> {
-            int numRelatedTabs =
-                    PseudoTab.getRelatedTabs(tab, tabModelSelector.getTabModelFilterProvider())
-                            .size();
+            int numRelatedTabs = PseudoTab.getRelatedTabs(tab, tabModelSelector).size();
             if (numRelatedTabs == 1) return tab.getTitle();
             return context.getResources().getQuantityString(
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);

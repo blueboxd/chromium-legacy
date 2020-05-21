@@ -414,6 +414,9 @@ class AX_EXPORT AXNode final {
   // collapsed.
   AXNode* GetCollapsedMenuListPopUpButtonAncestor() const;
 
+  // Returns the text field ancestor of this current node if any.
+  AXNode* GetTextFieldAncestor() const;
+
  private:
   // Computes the text offset where each line starts by traversing all child
   // leaf nodes.

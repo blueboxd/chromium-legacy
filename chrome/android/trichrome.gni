@@ -45,7 +45,6 @@ template("trichrome_library_apk_tmpl") {
                              "android_manifest_dep",
                              "apk_name",
                              "min_sdk_version",
-                             "proguard_jar_path",
                              "target_sdk_version",
                              "verify_manifest",
                              "verify_native_libs_and_assets",

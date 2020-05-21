@@ -9,9 +9,9 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/payment_app.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/web_app_manifest.h"
-#include "components/payments/core/payment_app.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
@@ -103,6 +103,8 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   void SetPaymentHandlerHost(
       base::WeakPtr<PaymentHandlerHost> payment_handler_host) override;
   bool IsWaitingForPaymentDetailsUpdate() const override;
+  void UpdateWith(const mojom::PaymentDetailsPtr& details) override;
+  void OnPaymentDetailsNotUpdated() override;
 
  private:
   friend class ServiceWorkerPaymentAppTest;

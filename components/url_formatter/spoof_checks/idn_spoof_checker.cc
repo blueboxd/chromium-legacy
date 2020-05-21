@@ -24,6 +24,15 @@ namespace url_formatter {
 
 namespace {
 
+uint8_t BitLength(uint32_t input) {
+  uint8_t number_of_bits = 0;
+  while (input != 0) {
+    number_of_bits++;
+    input >>= 1;
+  }
+  return number_of_bits;
+}
+
 class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
  public:
   using net::extras::PreloadDecoder::PreloadDecoder;
@@ -33,14 +42,24 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
                  const std::string& search,
                  size_t current_search_offset,
                  bool* out_found) override {
+    // Make sure the assigned bit length is enough to encode all SkeletonType
+    // values.
+    DCHECK_EQ(kSkeletonTypeBitLength,
+              BitLength(url_formatter::SkeletonType::kMaxValue));
+
     bool is_same_skeleton;
+
     if (!reader->Next(&is_same_skeleton))
       return false;
 
     TopDomainEntry top_domain;
     if (!reader->Next(&top_domain.is_top_500))
       return false;
-
+    uint32_t skeletontype_value;
+    if (!reader->Read(kSkeletonTypeBitLength, &skeletontype_value))
+      return false;
+    top_domain.skeleton_type =
+        static_cast<url_formatter::SkeletonType>(skeletontype_value);
     if (is_same_skeleton) {
       top_domain.domain = search;
     } else {
@@ -56,7 +75,6 @@ class TopDomainPreloadDecoder : public net::extras::PreloadDecoder {
       if (has_com_suffix)
         top_domain.domain += ".com";
     }
-
     if (current_search_offset == 0) {
       *out_found = true;
       DCHECK(!top_domain.domain.empty());
@@ -538,7 +556,8 @@ Skeletons IDNSpoofChecker::GetSkeletons(base::StringPiece16 hostname) {
 }
 
 TopDomainEntry IDNSpoofChecker::LookupSkeletonInTopDomains(
-    const std::string& skeleton) {
+    const std::string& skeleton,
+    SkeletonType skeleton_type) {
   DCHECK(!skeleton.empty());
   // There are no other guarantees about a skeleton string such as not including
   // a dot. Skeleton of certain characters are dots (e.g. "۰" (U+06F0)).
@@ -554,7 +573,11 @@ TopDomainEntry IDNSpoofChecker::LookupSkeletonInTopDomains(
                  labels.begin() + labels.size() - kNumberOfLabelsToCheck);
   }
 
-  while (labels.size() > 1) {
+  while (labels.size() > 0) {
+    // A full skeleton needs at least two labels to match.
+    if (labels.size() == 1 && skeleton_type == SkeletonType::kFull) {
+      break;
+    }
     std::string partial_skeleton = base::JoinString(labels, ".");
     bool match = false;
     bool decoded = preload_decoder.Decode(partial_skeleton, &match);

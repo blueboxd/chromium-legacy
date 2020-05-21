@@ -1124,12 +1124,22 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
   NormalizeAsUnignoredTextRange();
 
   // Do not normalize text ranges when a cursor or selection is visible. ATs
-  // may depend on the specific position that the caret or selection is at.
+  // may depend on the specific position that the caret or selection is at. This
+  // condition fixes issues when the caret is inside a plain text field, but
+  // causes more issues when used inside of a rich text field. For this reason,
+  // if we have a caret or a selection inside of an editable node, restrict this
+  // to a plain text field as we gain nothing from using it in a rich text
+  // field.
   AXPlatformNodeDelegate* start_delegate = GetDelegate(start_.get());
   AXPlatformNodeDelegate* end_delegate = GetDelegate(end_.get());
-  if ((start_delegate && start_delegate->HasVisibleCaretOrSelection()) ||
-      (start_delegate && end_delegate->HasVisibleCaretOrSelection()))
+  if ((start_delegate && start_delegate->HasVisibleCaretOrSelection() &&
+       (!start_delegate->GetData().HasState(ax::mojom::State::kEditable) ||
+        start_delegate->IsChildOfPlainTextField())) ||
+      (end_delegate && end_delegate->HasVisibleCaretOrSelection() &&
+       (!end_delegate->GetData().HasState(ax::mojom::State::kEditable) ||
+        end_delegate->IsChildOfPlainTextField()))) {
     return;
+  }
 
   AXPositionInstance normalized_start =
       start_->AsLeafTextPositionBeforeCharacter();

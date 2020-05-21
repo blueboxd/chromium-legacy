@@ -82,6 +82,10 @@ class WebWidgetTestProxy : public RenderWidget {
   // objects.
   WebViewTestProxy* GetWebViewTestProxy();
 
+  // WebWidgetTestProxy is always a widget for a RenderFrame, so its WebWidget
+  // is always a WebFrameWidget.
+  blink::WebFrameWidget* GetWebFrameWidget();
+
   EventSender* event_sender() { return &event_sender_; }
   void Reset();
   void Install(blink::WebLocalFrame* frame);

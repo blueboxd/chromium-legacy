@@ -62,6 +62,8 @@ class BottomToolbarCoordinator {
     private ObservableSupplierImpl<OnClickListener> mShareButtonListenerSupplier =
             new ObservableSupplierImpl<>();
     private final Supplier<Boolean> mShowStartSurfaceCallable;
+    private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+    private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
 
     /**
      * Build the coordinator that manages the bottom toolbar.
@@ -74,13 +76,18 @@ class BottomToolbarCoordinator {
      * the start surface is shown.
      * @param openHomepageAction The action that opens the homepage.
      * @param setUrlBarFocusAction The function that sets Url bar focus. The first argument is
+     * @param overviewModeBehaviorSupplier Supplier for the overview mode manager.
      */
     BottomToolbarCoordinator(ViewStub stub, ActivityTabProvider tabProvider,
             OnLongClickListener tabsSwitcherLongClickListner, ThemeColorProvider themeColorProvider,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             Supplier<Boolean> showStartSurfaceCallable, Runnable openHomepageAction,
-            Callback<Integer> setUrlBarFocusAction) {
+            Callback<Integer> setUrlBarFocusAction,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         View root = stub.inflate();
+
+        mOverviewModeBehaviorSupplierObserver = this::setOverviewModeBehavior;
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
 
         mShowStartSurfaceCallable = showStartSurfaceCallable;
         final OnClickListener homeButtonListener = v -> {
@@ -101,7 +108,7 @@ class BottomToolbarCoordinator {
 
         mBrowsingModeCoordinator = new BrowsingModeBottomToolbarCoordinator(root, tabProvider,
                 homeButtonListener, searchAcceleratorListener, mShareButtonListenerSupplier,
-                tabsSwitcherLongClickListner);
+                tabsSwitcherLongClickListner, mOverviewModeBehaviorSupplier);
 
         mTabSwitcherModeStub = root.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);
 
@@ -124,7 +131,6 @@ class BottomToolbarCoordinator {
      *                            new tab button is clicked.
      * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
      *                         menu button is clicked.
-     * @param overviewModeBehavior The overview mode manager.
      * @param tabCountProvider Updates the tab count number in the tab switcher button and in the
      *                         incognito toggle tab layout.
      * @param incognitoStateProvider Notifies components when incognito mode is entered or exited.
@@ -133,9 +139,8 @@ class BottomToolbarCoordinator {
      */
     void initializeWithNative(OnClickListener tabSwitcherListener,
             OnClickListener newTabClickListener, AppMenuButtonHelper menuButtonHelper,
-            OverviewModeBehavior overviewModeBehavior, TabCountProvider tabCountProvider,
-            IncognitoStateProvider incognitoStateProvider, ViewGroup topToolbarRoot,
-            Runnable closeAllTabsAction) {
+            TabCountProvider tabCountProvider, IncognitoStateProvider incognitoStateProvider,
+            ViewGroup topToolbarRoot, Runnable closeAllTabsAction) {
         final OnClickListener closeTabsClickListener = v -> {
             recordBottomToolbarUseForIPH();
             final boolean isIncognito = incognitoStateProvider.isIncognitoSelected();
@@ -155,8 +160,7 @@ class BottomToolbarCoordinator {
         newTabClickListener = wrapBottomToolbarClickListenerForIPH(newTabClickListener);
         tabSwitcherListener = wrapBottomToolbarClickListenerForIPH(tabSwitcherListener);
         mBrowsingModeCoordinator.initializeWithNative(newTabClickListener, tabSwitcherListener,
-                menuButtonHelper, tabCountProvider, mThemeColorProvider, incognitoStateProvider,
-                overviewModeBehavior);
+                menuButtonHelper, tabCountProvider, mThemeColorProvider, incognitoStateProvider);
         mTabSwitcherModeCoordinator = new TabSwitcherBottomToolbarCoordinator(mTabSwitcherModeStub,
                 topToolbarRoot, incognitoStateProvider, mThemeColorProvider, newTabClickListener,
                 closeTabsClickListener, menuButtonHelper, tabCountProvider);
@@ -165,7 +169,6 @@ class BottomToolbarCoordinator {
         // customized.
         if (!ReturnToChromeExperimentsUtil.shouldShowStartSurfaceAsTheHomePage()
                 && BottomToolbarVariationManager.shouldBottomToolbarBeVisibleInOverviewMode()) {
-            mOverviewModeBehavior = overviewModeBehavior;
             mOverviewModeObserver = new EmptyOverviewModeObserver() {
                 @Override
                 public void onOverviewModeStartedShowing(boolean showToolbar) {
@@ -192,9 +195,7 @@ class BottomToolbarCoordinator {
                     }
                 }
             };
-            if (mOverviewModeBehavior != null) {
-                mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
-            }
+            mOverviewModeBehaviorSupplier.addObserver(mOverviewModeBehaviorSupplierObserver);
         }
     }
 
@@ -220,7 +221,11 @@ class BottomToolbarCoordinator {
         if (mOverviewModeBehavior != null) {
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
             mOverviewModeBehavior = null;
-            mOverviewModeObserver = null;
+        }
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeBehaviorSupplierObserver);
+            mOverviewModeBehaviorSupplier = null;
+            mOverviewModeBehaviorSupplierObserver = null;
         }
         mThemeColorProvider.destroy();
         mShareDelegateSupplier.removeObserver(mShareDelegateSupplierCallback);
@@ -238,6 +243,15 @@ class BottomToolbarCoordinator {
         };
 
         mShareButtonListenerSupplier.set(shareButtonListener);
+    }
+
+    private void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+        assert mOverviewModeBehavior
+                == null
+            : "TODO(https://crbug.com/1084528): the overview mode manager should set at most once.";
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     /** Record that the bottom toolbar was used for IPH reasons. */

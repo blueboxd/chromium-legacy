@@ -577,7 +577,6 @@ crbug.com/1042011 [ mac intel-0xa2e no-passthrough ] conformance2/textures/canva
 
 
 # Mac Passthrough
-crbug.com/982294 [ mac passthrough ] deqp/functional/gles3/framebufferblit/default_framebuffer_00.html [ Failure ]
 crbug.com/982294 [ mac passthrough ] conformance2/textures/misc/tex-mipmap-levels.html [ Failure ]
 crbug.com/982294 [ mac passthrough ] conformance2/textures/misc/tex-srgb-mipmap.html [ Failure ]
 crbug.com/982294 [ mac passthrough ] conformance2/renderbuffers/multisampled-depth-renderbuffer-initialization.html [ Failure ]

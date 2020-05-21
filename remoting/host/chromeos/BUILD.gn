@@ -29,13 +29,16 @@ source_set("chromeos") {
     "//skia",
     "//third_party/webrtc_overrides:webrtc_component",
     "//ui/aura",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/compositor",
     "//ui/events",
     "//ui/views",
   ]
 
-  deps = [ "//ui/base/cursor/mojom:cursor_type" ]
+  deps = [
+    "//ui/base/cursor",
+    "//ui/base/cursor/mojom:cursor_type",
+  ]
 }
 
 # The host portions of the remoting unit tests.

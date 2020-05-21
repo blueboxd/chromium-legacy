@@ -784,6 +784,10 @@ void WebSettingsImpl::SetNavigationControls(
   settings_->SetNavigationControls(navigation_controls);
 }
 
+void WebSettingsImpl::SetAriaModalPrunesAXTree(bool enabled) {
+  settings_->SetAriaModalPrunesAXTree(enabled);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,

@@ -13,6 +13,7 @@
 #include "ash/public/cpp/window_state_type.h"
 #include "ash/rotator/screen_rotation_animator_observer.h"
 #include "base/compiler_specific.h"
+#include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
@@ -618,7 +619,7 @@ class AutotestPrivateSendAssistantTextQueryFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
   // Called when the interaction finished with non-empty response.
-  void OnInteractionFinishedCallback(bool success);
+  void OnInteractionFinishedCallback(const base::Optional<std::string>& error);
 
   // Called when Assistant service fails to respond in a certain amount of
   // time. We will respond with an error.
@@ -642,7 +643,7 @@ class AutotestPrivateWaitForAssistantQueryStatusFunction
   ResponseAction Run() override;
 
   // Called when the current interaction finished with non-empty response.
-  void OnInteractionFinishedCallback(bool success);
+  void OnInteractionFinishedCallback(const base::Optional<std::string>& error);
 
   // Called when Assistant service fails to respond in a certain amount of
   // time. We will respond with an error.

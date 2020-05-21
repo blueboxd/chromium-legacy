@@ -41,7 +41,7 @@ class WebContentsView {
 
   // Computes the rectangle for the native widget that contains the contents of
   // the tab in the screen coordinate system.
-  virtual void GetContainerBounds(gfx::Rect* out) const = 0;
+  virtual gfx::Rect GetContainerBounds() const = 0;
 
   // Sets focus to the native widget for this tab.
   virtual void Focus() = 0;

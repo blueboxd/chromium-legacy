@@ -8,6 +8,7 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -26,9 +27,10 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
             CustomTabToolbarCoordinator customTabToolbarCoordinator,
             CustomTabActivityNavigationController customTabNavigationController,
             ActivityTabProvider tabProvider, ObservableSupplier<Profile> profileSupplier,
-            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         super(activity, null, shareDelegateSupplier, tabProvider, profileSupplier,
-                bookmarkBridgeSupplier);
+                bookmarkBridgeSupplier, overviewModeBehaviorSupplier);
 
         mToolbarCoordinator = customTabToolbarCoordinator;
         mNavigationController = customTabNavigationController;

@@ -91,7 +91,8 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
 }
 
 void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
-  DCHECK(lifecycle_state_ != state);
+  if (lifecycle_state_ == state)
+    return;
   lifecycle_state_ = state;
   context_lifecycle_observer_list_.ForEachObserver(
       [&](ContextLifecycleObserver* observer) {
@@ -199,7 +200,7 @@ bool ExecutionContext::DispatchErrorEventInternal(
 }
 
 bool ExecutionContext::IsContextPaused() const {
-  return lifecycle_state_ != mojom::FrameLifecycleState::kRunning;
+  return lifecycle_state_ == mojom::blink::FrameLifecycleState::kPaused;
 }
 
 int ExecutionContext::CircularSequentialID() {

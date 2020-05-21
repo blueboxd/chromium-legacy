@@ -79,7 +79,7 @@ int CountryComboboxModel::GetItemCount() const {
   return countries_.size();
 }
 
-base::string16 CountryComboboxModel::GetItemAt(int index) {
+base::string16 CountryComboboxModel::GetItemAt(int index) const {
   AutofillCountry* country = countries_[index].get();
   if (country)
     return countries_[index]->name();
@@ -89,7 +89,7 @@ base::string16 CountryComboboxModel::GetItemAt(int index) {
   return base::ASCIIToUTF16("---");
 }
 
-bool CountryComboboxModel::IsItemSeparatorAt(int index) {
+bool CountryComboboxModel::IsItemSeparatorAt(int index) const {
   return !countries_[index];
 }
 

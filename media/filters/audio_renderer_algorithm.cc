@@ -272,11 +272,11 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
   // chunk of memory. ~56kB for stereo 48kHz, up to ~765kB for 7.1 192kHz.
   if (!ola_window_) {
     ola_window_.reset(new float[ola_window_size_]);
-    internal::GetSymmetricHanningWindow(ola_window_size_, ola_window_.get());
+    internal::GetPeriodicHanningWindow(ola_window_size_, ola_window_.get());
 
     transition_window_.reset(new float[ola_window_size_ * 2]);
-    internal::GetSymmetricHanningWindow(2 * ola_window_size_,
-                                        transition_window_.get());
+    internal::GetPeriodicHanningWindow(2 * ola_window_size_,
+                                       transition_window_.get());
 
     // Initialize for overlap-and-add of the first block.
     wsola_output_ =

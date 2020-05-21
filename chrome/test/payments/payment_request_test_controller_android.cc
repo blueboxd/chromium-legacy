@@ -66,7 +66,7 @@ void PaymentRequestTestController::SetUpOnMainThread() {
                           base::Unretained(this)));
 
   SetUseDelegateOnPaymentRequestForTesting(
-      /*use_delegate_for_test=*/true, is_incognito_, valid_ssl_,
+      /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
       /*skip_ui_for_basic_card=*/false);
 }
@@ -76,10 +76,10 @@ void PaymentRequestTestController::SetObserver(
   observer_ = observer;
 }
 
-void PaymentRequestTestController::SetIncognito(bool is_incognito) {
-  is_incognito_ = is_incognito;
+void PaymentRequestTestController::SetOffTheRecord(bool is_off_the_record) {
+  is_off_the_record_ = is_off_the_record;
   SetUseDelegateOnPaymentRequestForTesting(
-      /*use_delegate_for_test=*/true, is_incognito_, valid_ssl_,
+      /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
       /*skip_ui_for_basic_card=*/false);
 }
@@ -87,7 +87,7 @@ void PaymentRequestTestController::SetIncognito(bool is_incognito) {
 void PaymentRequestTestController::SetValidSsl(bool valid_ssl) {
   valid_ssl_ = valid_ssl;
   SetUseDelegateOnPaymentRequestForTesting(
-      /*use_delegate_for_test=*/true, is_incognito_, valid_ssl_,
+      /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
       /*skip_ui_for_basic_card=*/false);
 }
@@ -96,7 +96,7 @@ void PaymentRequestTestController::SetCanMakePaymentEnabledPref(
     bool can_make_payment_enabled) {
   can_make_payment_pref_ = can_make_payment_enabled;
   SetUseDelegateOnPaymentRequestForTesting(
-      /*use_delegate_for_test=*/true, is_incognito_, valid_ssl_,
+      /*use_delegate_for_test=*/true, is_off_the_record_, valid_ssl_,
       /*is_browser_window_active=*/true, can_make_payment_pref_,
       /*skip_ui_for_basic_card=*/false);
 }

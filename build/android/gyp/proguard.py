@@ -107,9 +107,9 @@ def _ParseOptions():
   args = build_utils.ExpandFileArgs(sys.argv[1:])
   parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(parser)
-  group = parser.add_mutually_exclusive_group(required=True)
-  group.add_argument('--proguard-path', help='Path to the proguard.jar to use.')
-  group.add_argument('--r8-path', help='Path to the R8.jar to use.')
+  parser.add_argument('--r8-path',
+                      required=True,
+                      help='Path to the R8.jar to use.')
   parser.add_argument(
       '--desugar-jdk-libs-json', help='Path to desugar_jdk_libs.json.')
   parser.add_argument('--input-paths',
@@ -212,9 +212,6 @@ def _ParseOptions():
 
   if options.expected_configs_file and not options.output_config:
     parser.error('--expected-configs-file requires --output-config')
-
-  if options.proguard_path and options.disable_outlining:
-    parser.error('--disable-outlining requires --r8-path')
 
   if options.only_verify_expectations and not options.stamp:
     parser.error('--only-verify-expectations requires --stamp')
@@ -393,65 +390,6 @@ def _OptimizeWithR8(options,
       out_file.writelines(l for l in in_file if not l.startswith('#'))
 
 
-def _OptimizeWithProguard(options,
-                          config_paths,
-                          libraries,
-                          dynamic_config_data,
-                          print_stdout=False):
-  with build_utils.TempDir() as tmp_dir:
-    combined_injars_path = os.path.join(tmp_dir, 'injars.jar')
-    combined_libjars_path = os.path.join(tmp_dir, 'libjars.jar')
-    combined_proguard_configs_path = os.path.join(tmp_dir, 'includes.txt')
-    tmp_mapping_path = os.path.join(tmp_dir, 'mapping.txt')
-    tmp_output_jar = os.path.join(tmp_dir, 'output.jar')
-
-    build_utils.MergeZips(combined_injars_path, options.input_paths)
-    build_utils.MergeZips(combined_libjars_path, libraries)
-    with open(combined_proguard_configs_path, 'w') as f:
-      f.write(_CombineConfigs(config_paths, dynamic_config_data))
-
-    if options.proguard_path.endswith('.jar'):
-      cmd = [
-          build_utils.JAVA_PATH, '-jar', options.proguard_path, '-include',
-          combined_proguard_configs_path
-      ]
-    else:
-      cmd = [options.proguard_path, '@' + combined_proguard_configs_path]
-
-    cmd += [
-        '-forceprocessing',
-        '-libraryjars',
-        combined_libjars_path,
-        '-injars',
-        combined_injars_path,
-        '-outjars',
-        tmp_output_jar,
-        '-printmapping',
-        tmp_mapping_path,
-    ]
-
-    # Warning: and Error: are sent to stderr, but messages and Note: are sent
-    # to stdout.
-    stdout_filter = None
-    stderr_filter = None
-    if print_stdout:
-      stdout_filter = _ProguardOutputFilter()
-      stderr_filter = _ProguardOutputFilter()
-    build_utils.CheckOutput(
-        cmd,
-        print_stdout=True,
-        print_stderr=True,
-        stdout_filter=stdout_filter,
-        stderr_filter=stderr_filter)
-
-    # ProGuard will skip writing if the file would be empty.
-    build_utils.Touch(tmp_mapping_path)
-
-    # Copy output files to correct locations.
-    shutil.move(tmp_output_jar, options.output_path)
-    shutil.move(tmp_mapping_path, options.mapping_output)
-
-
 def _CombineConfigs(configs, dynamic_config_data, exclude_generated=False):
   ret = []
 
@@ -597,12 +535,8 @@ def main():
     with open(options.output_config, 'w') as f:
       f.write(merged_configs)
 
-  if options.r8_path:
-    _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
-                    print_stdout)
-  else:
-    _OptimizeWithProguard(options, proguard_configs, libraries,
-                          dynamic_config_data, print_stdout)
+  _OptimizeWithR8(options, proguard_configs, libraries, dynamic_config_data,
+                  print_stdout)
 
   # After ProGuard / R8 has run:
   for output in options.extra_mapping_output_paths:

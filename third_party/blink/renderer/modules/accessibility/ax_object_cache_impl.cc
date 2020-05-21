@@ -137,6 +137,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
     : document_(document),
       modification_count_(0),
       validation_message_axid_(0),
+      active_aria_modal_dialog_(nullptr),
       relation_cache_(std::make_unique<AXRelationCache>(this)),
       accessibility_event_permission_(mojom::blink::PermissionStatus::ASK),
       permission_service_(document.GetExecutionContext()),
@@ -775,6 +776,9 @@ void AXObjectCacheImpl::RemoveAXID(AXObject* object) {
   if (!object)
     return;
 
+  if (active_aria_modal_dialog_ == object)
+    active_aria_modal_dialog_ = nullptr;
+
   AXID obj_id = object->AXObjectID();
   if (!obj_id)
     return;
@@ -860,6 +864,10 @@ void AXObjectCacheImpl::DeferTreeUpdate(
 void AXObjectCacheImpl::SelectionChanged(Node* node) {
   if (!node)
     return;
+
+  Settings* settings = GetSettings();
+  if (settings && settings->GetAriaModalPrunesAXTree())
+    UpdateActiveAriaModalDialog(node);
 
   DeferTreeUpdate(&AXObjectCacheImpl::SelectionChangedWithCleanLayout, node);
 }
@@ -1810,8 +1818,53 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
                     old_focused_element);
   }
 
+  Settings* settings = GetSettings();
+  if (settings && settings->GetAriaModalPrunesAXTree())
+    UpdateActiveAriaModalDialog(new_focused_element);
+
   DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeGainedFocusWithCleanLayout,
                   this->FocusedElement());
+}
+
+// Check if the focused node is inside an active aria-modal dialog. If so, we
+// should mark the cache as dirty to recompute the ignored status of each node.
+void AXObjectCacheImpl::UpdateActiveAriaModalDialog(Node* node) {
+  AXObject* new_active_aria_modal = AncestorAriaModalDialog(node);
+  if (active_aria_modal_dialog_ == new_active_aria_modal)
+    return;
+
+  active_aria_modal_dialog_ = new_active_aria_modal;
+  modification_count_++;
+  MarkAXObjectDirty(Root(), true);
+}
+
+AXObject* AXObjectCacheImpl::AncestorAriaModalDialog(Node* node) {
+  for (Element* ancestor = Traversal<Element>::FirstAncestorOrSelf(*node);
+       ancestor; ancestor = Traversal<Element>::FirstAncestor(*ancestor)) {
+    if (!ancestor->FastHasAttribute(html_names::kAriaModalAttr))
+      continue;
+
+    AtomicString aria_modal =
+        ancestor->FastGetAttribute(html_names::kAriaModalAttr);
+    if (!EqualIgnoringASCIICase(aria_modal, "true")) {
+      continue;
+    }
+
+    AXObject* ancestor_ax_object = GetOrCreate(ancestor);
+    ax::mojom::blink::Role ancestor_role = ancestor_ax_object->RoleValue();
+
+    if (ancestor_role != ax::mojom::blink::Role::kDialog &&
+        ancestor_role != ax::mojom::blink::Role::kAlertDialog) {
+      continue;
+    }
+
+    return ancestor_ax_object;
+  }
+  return nullptr;
+}
+
+AXObject* AXObjectCacheImpl::GetActiveAriaModalDialog() const {
+  return active_aria_modal_dialog_;
 }
 
 void AXObjectCacheImpl::HandleInitialFocus() {
@@ -2051,6 +2104,7 @@ void AXObjectCacheImpl::Trace(Visitor* visitor) const {
   visitor->Trace(document_);
   visitor->Trace(accessible_node_mapping_);
   visitor->Trace(node_object_mapping_);
+  visitor->Trace(active_aria_modal_dialog_);
 
   visitor->Trace(objects_);
   visitor->Trace(notifications_to_post_);

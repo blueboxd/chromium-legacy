@@ -309,6 +309,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Returns the RenderWidget associated with this frame.
   RenderWidget* GetLocalRootRenderWidget();
+  // Returns the blink::WebFrameWidget attached to the RenderWidget that is
+  // associated with this frame.
+  blink::WebFrameWidget* GetLocalRootWebFrameWidget();
 
   // This method must be called after the WebLocalFrame backing this RenderFrame
   // has been created and added to the frame tree. It creates all objects that

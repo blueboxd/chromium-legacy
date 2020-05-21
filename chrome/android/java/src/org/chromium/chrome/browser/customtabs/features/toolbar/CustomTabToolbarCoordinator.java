@@ -175,8 +175,8 @@ public class CustomTabToolbarCoordinator {
 
     private void onCompositorContentInitialized(LayoutManager layoutDriver) {
         mToolbarManager.initializeWithNative(mTabController.getTabModelSelector(),
-                mFullscreenManager.get().getBrowserVisibilityDelegate(), null, layoutDriver, null,
-                null, null, v -> onCloseButtonClick(), null);
+                mFullscreenManager.get().getBrowserVisibilityDelegate(), layoutDriver, null, null,
+                null, v -> onCloseButtonClick(), null);
         mInitializedToolbarWithNative = true;
     }
 

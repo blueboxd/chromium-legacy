@@ -12,8 +12,10 @@ import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.T
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.DISCLOSURE_STATE_SHOWN;
 import static org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityModel.PACKAGE_NAME;
 import static org.chromium.chrome.browser.dependency_injection.ChromeCommonQualifiers.APP_CONTEXT;
-import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE;
+import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL;
+import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT;
 
+import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
 
@@ -78,7 +80,8 @@ public class DisclosureNotification implements
     }
 
     private void dismiss() {
-        mNotificationManager.cancel(mCurrentScope, NOTIFICATION_ID_TWA_DISCLOSURE);
+        mNotificationManager.cancel(mCurrentScope, NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL);
+        mNotificationManager.cancel(mCurrentScope, NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT);
         mCurrentScope = null;
     }
 
@@ -86,31 +89,34 @@ public class DisclosureNotification implements
             String packageName) {
         int umaType;
         int preOPriority;
+        int notificationId;
         String channelId;
         if (firstTime) {
             umaType = NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_INITIAL;
             preOPriority = NotificationCompat.PRIORITY_MAX;
             channelId = ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_INITIAL;
+            notificationId = NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL;
         } else {
             umaType = NotificationUmaTracker.SystemNotificationType.TWA_DISCLOSURE_SUBSEQUENT;
             preOPriority = NotificationCompat.PRIORITY_MIN;
             channelId = ChromeChannelDefinitions.ChannelId.TWA_DISCLOSURE_SUBSEQUENT;
+            notificationId = NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT;
         }
 
         // We use the TWA's package name as the notification tag so that multiple different TWAs
         // don't interfere with each other.
-        NotificationMetadata metadata =
-                new NotificationMetadata(umaType, scope, NOTIFICATION_ID_TWA_DISCLOSURE);
+        NotificationMetadata metadata = new NotificationMetadata(umaType, scope, notificationId);
 
         String title = mResources.getString(R.string.twa_running_in_chrome);
         String text = mResources.getString(R.string.twa_running_in_chrome_v2, scope);
 
-        boolean preferCompat = true;
+        // We're using setStyle, which can't be handled by compat mode.
+        boolean preferCompat = false;
         // The notification is being displayed by Chrome, so we don't need to provide a
         // remoteAppPackageName.
         String remoteAppPackageName = null;
         PendingIntentProvider intent = DisclosureAcceptanceBroadcastReceiver.createPendingIntent(
-                mContext, scope, NOTIFICATION_ID_TWA_DISCLOSURE, packageName);
+                mContext, scope, notificationId, packageName);
 
         // We don't have an icon to display.
         int icon = 0;
@@ -126,6 +132,8 @@ public class DisclosureNotification implements
                         NotificationUmaTracker.ActionType.TWA_NOTIFICATION_ACCEPTANCE)
                 .setShowWhen(false)
                 .setAutoCancel(false)
+                .setSound(null)
+                .setStyle(new Notification.BigTextStyle().bigText(text))
                 .setOngoing(!firstTime)
                 .setPriorityBeforeO(preOPriority)
                 .buildChromeNotification();

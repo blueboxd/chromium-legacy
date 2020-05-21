@@ -20,6 +20,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "base/threading/scoped_thread_priority.h"
 #include "device/bluetooth/bluetooth_classic_win.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_init_win.h"
@@ -644,6 +645,10 @@ int BluetoothTaskManagerWin::DiscoverClassicDeviceServicesWorker(
     const GUID& protocol_uuid,
     bool search_cached_services_only,
     std::vector<std::unique_ptr<ServiceRecordState>>* service_record_states) {
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
   // Bluetooth and WSAQUERYSET for Service Inquiry. See http://goo.gl/2v9pyt.
   WSAQUERYSET sdp_query;
   ZeroMemory(&sdp_query, sizeof(sdp_query));

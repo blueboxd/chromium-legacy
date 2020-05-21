@@ -18,7 +18,7 @@ struct GLVersionInfo;
 class YUVToRGBConverter {
  public:
   explicit YUVToRGBConverter(const GLVersionInfo& gl_version_info,
-                             const gfx::ColorSpace color_space);
+                             const gfx::ColorSpace& color_space);
   ~YUVToRGBConverter();
 
   // The input Y and UV textures should be bound to these texture objects

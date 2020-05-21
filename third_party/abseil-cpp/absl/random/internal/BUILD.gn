@@ -158,9 +158,9 @@ absl_source_set("randen_engine") {
 absl_source_set("platform") {
   public = [
     "platform.h",
-    "randen-keys.inc",
     "randen_traits.h",
   ]
+  sources = [ "randen_round_keys.cc" ]
   deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 

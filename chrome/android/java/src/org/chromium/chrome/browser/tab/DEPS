@@ -62,4 +62,7 @@ specific_include_rules = {
     "+ui/android/java/src/org/chromium/ui/base",
     "+ui/android/java/src/org/chromium/ui/mojom",
   ],
+  'TabViewManager\.java': [
+    "+chrome/android/java/src/org/chromium/chrome/browser/fullscreen/BrowserControlsMarginSupplier.java",
+  ],
 }

@@ -13,8 +13,8 @@ modules_idl_files = [
 ]
 
 modules_callback_function_idl_files = [
-  "video_decoder_output_callback.idl",
   "video_encoder_output_callback.idl",
+  "video_frame_output_callback.idl",
   "web_codecs_error_callback.idl",
 ]
 

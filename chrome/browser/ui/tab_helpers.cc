@@ -122,7 +122,6 @@
 #include "chrome/browser/banners/app_banner_manager_android.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/context_menu_helper.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_tab_modal_dialog_manager_delegate_android.h"
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
@@ -350,7 +349,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     PerformanceHintsObserver::CreateForWebContents(web_contents);
   }
   SearchGeolocationDisclosureTabHelper::CreateForWebContents(web_contents);
-  ViewAndroidHelper::CreateForWebContents(web_contents);
 #else
   banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   BookmarkTabHelper::CreateForWebContents(web_contents);

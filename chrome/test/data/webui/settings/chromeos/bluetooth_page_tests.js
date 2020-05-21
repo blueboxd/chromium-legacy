@@ -215,22 +215,24 @@ suite('Bluetooth', function() {
 
     test('toggle', function() {
       assertTrue(subpage.bluetoothToggleState);
-      assertTrue(subpage.isToggleEnabled_());
+      assertTrue(subpage.isAdapterAvailable_());
 
-      const enableButton = subpage.$.enableBluetooth;
-      assertTrue(!!enableButton);
-      assertTrue(enableButton.checked);
+      const enableToggle = subpage.$.enableToggle;
+      assertTrue(!!enableToggle);
+      assertTrue(enableToggle.checked);
 
       // Changing the toggle should power off the adapter.
       subpage.bluetoothToggleState = false;
-      assertFalse(enableButton.checked);
+      assertFalse(enableToggle.checked);
       assertFalse(
           bluetoothPrivateApi.getLastSetAdapterStateValueForTest().powered);
-      assertFalse(subpage.isToggleEnabled_());
+      assertTrue(subpage.isAdapterAvailable_());
+      assertTrue(subpage.stateChangeInProgress);
 
       bluetoothPrivateApi.simulateSuccessfulSetAdapterStateCallForTest();
       assertFalse(bluetoothPage.bluetoothToggleState_);
-      assertTrue(subpage.isToggleEnabled_());
+      assertTrue(subpage.isAdapterAvailable_());
+      assertFalse(subpage.stateChangeInProgress);
     });
 
     async function waitForListUpdateTimeout() {

@@ -20,11 +20,18 @@ TEST(VerdictCacheManagerFactoryTest, OffTheRecordUseDifferentService) {
 
   // There should be a not null object for off-the-record profile.
   EXPECT_NE(nullptr, VerdictCacheManagerFactory::GetForProfile(
-                         testing_profile->GetOffTheRecordProfile()));
+                         testing_profile->GetPrimaryOTRProfile()));
 
   EXPECT_NE(VerdictCacheManagerFactory::GetForProfile(testing_profile.get()),
             VerdictCacheManagerFactory::GetForProfile(
-                testing_profile->GetOffTheRecordProfile()));
+                testing_profile->GetPrimaryOTRProfile()));
+
+  // Different objects for different off-the-record-profiles.
+  EXPECT_NE(VerdictCacheManagerFactory::GetForProfile(
+                testing_profile->GetPrimaryOTRProfile()),
+            VerdictCacheManagerFactory::GetForProfile(
+                testing_profile->GetOffTheRecordProfile(
+                    Profile::OTRProfileID("Test::VerdictCachecManager"))));
 }
 
 }  // namespace safe_browsing

@@ -18,6 +18,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_cursor_position.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_device_manager.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
@@ -32,7 +33,6 @@ class WaylandOutputManager;
 class WaylandPointer;
 class WaylandShm;
 class WaylandTouch;
-class WaylandWindow;
 class WaylandZwpLinuxDmabuf;
 
 class WaylandConnection {
@@ -82,10 +82,6 @@ class WaylandConnection {
 
   WaylandClipboard* clipboard() const { return clipboard_.get(); }
 
-  WaylandDataSource* drag_data_source() const {
-    return dragdrop_data_source_.get();
-  }
-
   WaylandOutputManager* wayland_output_manager() const {
     return wayland_output_manager_.get();
   }
@@ -111,26 +107,16 @@ class WaylandConnection {
 
   WaylandDataDevice* wayland_data_device() const { return data_device_.get(); }
 
-  // Starts drag with |data| to be delivered, |operation| supported by the
-  // source side initiated the dragging.
-  void StartDrag(const ui::OSExchangeData& data, int operation);
-  // Finishes drag and drop session. It happens when WaylandDataSource gets
-  // 'OnDnDFinished' or 'OnCancel', which means the drop is performed or
-  // canceled on others.
-  void FinishDragSession(uint32_t dnd_action, WaylandWindow* source_window);
-  // Delivers the data owned by Chromium which initiates drag-and-drop. |buffer|
-  // is an output parameter and it should be filled with the data corresponding
-  // to mime_type.
-  void DeliverDragData(const std::string& mime_type, std::string* buffer);
-  // Requests the data to the platform when Chromium gets drag-and-drop started
-  // by others. Once reading the data from platform is done, |callback| should
-  // be called with the data.
-  void RequestDragData(
-      const std::string& mime_type,
-      base::OnceCallback<void(const std::vector<uint8_t>&)> callback);
+  WaylandDataDeviceManager* data_device_manager() const {
+    return data_device_manager_.get();
+  }
+
+  WaylandDataDragController* data_drag_controller() const {
+    return data_drag_controller_.get();
+  }
 
   // Returns true when dragging is entered or started.
-  bool IsDragInProgress();
+  bool IsDragInProgress() const;
 
  private:
   void Flush();
@@ -168,8 +154,8 @@ class WaylandConnection {
   wl::Object<wp_presentation> presentation_;
   wl::Object<zwp_text_input_manager_v1> text_input_manager_v1_;
 
-  // Event source instance. Must be declared before input objects so it outlives
-  // them so thus being able to properly handle their destruction.
+  // Event source instance. Must be declared before input objects so it
+  // outlives them so thus being able to properly handle their destruction.
   std::unique_ptr<WaylandEventSource> event_source_;
 
   // Input device objects.
@@ -181,7 +167,6 @@ class WaylandConnection {
   std::unique_ptr<WaylandDataDeviceManager> data_device_manager_;
   std::unique_ptr<WaylandDataDevice> data_device_;
   std::unique_ptr<WaylandClipboard> clipboard_;
-  std::unique_ptr<WaylandDataSource> dragdrop_data_source_;
   std::unique_ptr<WaylandOutputManager> wayland_output_manager_;
   std::unique_ptr<WaylandCursorPosition> wayland_cursor_position_;
   std::unique_ptr<WaylandZwpLinuxDmabuf> zwp_dmabuf_;
@@ -192,6 +177,8 @@ class WaylandConnection {
   std::unique_ptr<GtkPrimarySelectionDeviceManager>
       primary_selection_device_manager_;
   std::unique_ptr<GtkPrimarySelectionDevice> primary_selection_device_;
+
+  std::unique_ptr<WaylandDataDragController> data_drag_controller_;
 
   // Manages Wayland windows.
   WaylandWindowManager wayland_window_manager_;

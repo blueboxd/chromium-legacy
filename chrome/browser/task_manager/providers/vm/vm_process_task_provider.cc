@@ -14,10 +14,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/process_snapshot_server.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/task_manager/providers/vm/crostini_process_task.h"
 #include "chrome/browser/task_manager/providers/vm/plugin_vm_process_task.h"
-#include "content/public/browser/browser_thread.h"
 
 namespace task_manager {
 
@@ -194,14 +194,7 @@ struct VmProcessData {
 };
 
 VmProcessTaskProvider::VmProcessTaskProvider()
-    : task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN,
-           base::TaskPriority::USER_VISIBLE})),
-      refresh_timer_(
-          FROM_HERE,
-          kRefreshProcessListDelay,
-          base::BindRepeating(&VmProcessTaskProvider::RequestVmProcessList,
-                              base::Unretained(this))) {}
+    : ProcessSnapshotServer::Observer(kRefreshProcessListDelay) {}
 
 VmProcessTaskProvider::~VmProcessTaskProvider() = default;
 
@@ -210,56 +203,58 @@ Task* VmProcessTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   return nullptr;
 }
 
-void VmProcessTaskProvider::StartUpdating() {
-  RequestVmProcessList();
-  refresh_timer_.Reset();
-}
+void VmProcessTaskProvider::OnProcessSnapshotRefreshed(
+    const base::ProcessIterator::ProcessEntries& snapshot) {
+  TRACE_EVENT0("browser", "VmProcessTaskProvider::OnProcessSnapshotRefreshed");
 
-void VmProcessTaskProvider::StopUpdating() {
-  refresh_timer_.Stop();
-  task_map_.clear();
-}
+  // Throttle the refreshes in case the ProcessSnapshotServer has observers with
+  // a much higher desired refresh rates.
+  const auto old_snapshot_time = last_process_snapshot_time_;
+  last_process_snapshot_time_ = base::Time::Now();
+  if ((last_process_snapshot_time_ - old_snapshot_time) <
+      kRefreshProcessListDelay) {
+    return;
+  }
 
-std::vector<VmProcessData> GetVmProcessList() {
-  TRACE_EVENT0("browser", "GetVmProcessList");
-  std::vector<VmProcessData> ret_processes;
-  const base::ProcessIterator::ProcessEntries& entry_list =
-      base::ProcessIterator(nullptr).Snapshot();
-  const base::ProcessId vm_init_pid = GetVmInitProcessId(entry_list);
+  std::vector<VmProcessData> vm_process_list;
+  const base::ProcessId vm_init_pid = GetVmInitProcessId(snapshot);
   if (vm_init_pid == base::kNullProcessId) {
-    return ret_processes;
+    OnUpdateVmProcessList(vm_process_list);
+    return;
   }
 
   // Find all of the child processes of vm_concierge, the ones that are the
   // crosvm program are the VM processes, we can then extract the name of the
   // VM from its command line args.
-  for (const base::ProcessEntry& entry : entry_list) {
+  for (const base::ProcessEntry& entry : snapshot) {
     if (entry.parent_pid() == vm_init_pid && !entry.cmd_line_args().empty() &&
         entry.cmd_line_args()[0] == kVmProcessName) {
       std::string vm_name;
       std::string owner_id;
       bool is_plugin_vm;
       if (ExtractVmNameAndOwnerIdFromCmdLine(entry.cmd_line_args(), &vm_name,
-                                             &owner_id, &is_plugin_vm))
-        ret_processes.emplace_back(vm_name, owner_id, entry.pid(),
-                                   is_plugin_vm);
+                                             &owner_id, &is_plugin_vm)) {
+        vm_process_list.emplace_back(vm_name, owner_id, entry.pid(),
+                                     is_plugin_vm);
+      }
     }
   }
-  return ret_processes;
+
+  OnUpdateVmProcessList(vm_process_list);
 }
 
-void VmProcessTaskProvider::RequestVmProcessList() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskAndReplyWithResult(
-      task_runner_.get(), FROM_HERE, base::BindOnce(&GetVmProcessList),
-      base::BindOnce(&VmProcessTaskProvider::OnUpdateVmProcessList,
-                     weak_ptr_factory_.GetWeakPtr()));
+void VmProcessTaskProvider::StartUpdating() {
+  ProcessSnapshotServer::Get()->AddObserver(this);
+}
+
+void VmProcessTaskProvider::StopUpdating() {
+  ProcessSnapshotServer::Get()->RemoveObserver(this);
+  task_map_.clear();
 }
 
 void VmProcessTaskProvider::OnUpdateVmProcessList(
     const std::vector<VmProcessData>& vm_process_list) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!refresh_timer_.IsRunning())
+  if (!IsUpdating())
     return;
 
   base::flat_set<base::ProcessId> pids_to_remove;

@@ -916,7 +916,7 @@ GURL SiteInstanceImpl::GetSiteForURLInternal(
   }
 
   if (allow_default_site_url &&
-      CanBePlacedInDefaultSiteInstance(isolation_context, url, site_url)) {
+      CanBePlacedInDefaultSiteInstance(isolation_context, real_url, site_url)) {
     return GetDefaultSiteURL();
   }
   return site_url;

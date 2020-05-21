@@ -146,6 +146,10 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_MONTH))));
   card.expiration_year.reset(new std::string(base::UTF16ToUTF8(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR))));
+  if (!credit_card.nickname().empty()) {
+    card.nickname.reset(
+        new std::string(base::UTF16ToUTF8(credit_card.nickname())));
+  }
 
   // Create address metadata and add it to |address|.
   std::unique_ptr<autofill_private::AutofillMetadata> metadata(

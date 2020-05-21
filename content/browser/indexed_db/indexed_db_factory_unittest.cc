@@ -110,8 +110,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void SetupContext() {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
+        temp_dir_.GetPath(), quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
@@ -121,8 +120,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void SetupInMemoryContext() {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        base::FilePath(),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
+        base::FilePath(), quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
@@ -132,8 +130,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void SetupContextWithFactories(LevelDBFactory* factory, base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(),
-        /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
+        temp_dir_.GetPath(), quota_manager_proxy_.get(), clock,
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
         base::SequencedTaskRunnerHandle::Get(),

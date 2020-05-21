@@ -8,6 +8,7 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
 import android.widget.RemoteViews;
@@ -88,6 +89,8 @@ public interface ChromeNotificationBuilder {
     ChromeNotificationBuilder setLargeIcon(Bitmap icon);
 
     ChromeNotificationBuilder setVibrate(long[] vibratePattern);
+
+    ChromeNotificationBuilder setSound(Uri sound);
 
     ChromeNotificationBuilder setDefaults(int defaults);
 

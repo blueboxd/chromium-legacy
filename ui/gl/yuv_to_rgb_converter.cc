@@ -119,7 +119,7 @@ STRINGIZE(
 }  // namespace
 
 YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
-                                     const gfx::ColorSpace color_space) {
+                                     const gfx::ColorSpace& color_space) {
   std::unique_ptr<gfx::ColorTransform> color_transform =
       gfx::ColorTransform::NewColorTransform(
           color_space, color_space.GetAsFullRangeRGB(),

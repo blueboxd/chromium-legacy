@@ -103,10 +103,10 @@ const std::string& ChromePaymentRequestDelegate::GetApplicationLocale() const {
   return g_browser_process->GetApplicationLocale();
 }
 
-bool ChromePaymentRequestDelegate::IsIncognito() const {
+bool ChromePaymentRequestDelegate::IsOffTheRecord() const {
   Profile* profile =
       Profile::FromBrowserContext(web_contents_->GetBrowserContext());
-  return profile && profile->IsIncognitoProfile();
+  return profile && profile->IsOffTheRecord();
 }
 
 const GURL& ChromePaymentRequestDelegate::GetLastCommittedURL() const {

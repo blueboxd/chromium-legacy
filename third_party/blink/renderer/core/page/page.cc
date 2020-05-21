@@ -23,6 +23,7 @@
 
 #include "base/feature_list.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -199,11 +200,9 @@ Page::Page(PageClients& page_clients)
           MakeGarbageCollected<ValidationMessageClientImpl>(*this)),
       opened_by_dom_(false),
       tab_key_cycles_through_elements_(true),
-      paused_(false),
       device_scale_factor_(1),
       visibility_state_(mojom::blink::PageVisibilityState::kVisible),
       is_ordinary_(false),
-      page_lifecycle_state_(kDefaultPageLifecycleState),
       is_cursor_visible_(true),
       subframe_count_(0),
       next_related_page_(this),
@@ -416,13 +415,11 @@ void Page::SetPaused(bool paused) {
     return;
 
   paused_ = paused;
-  mojom::FrameLifecycleState state = paused
-                                         ? mojom::FrameLifecycleState::kPaused
-                                         : mojom::FrameLifecycleState::kRunning;
   for (Frame* frame = MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
-    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-      local_frame->SetLifecycleState(state);
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+      local_frame->OnPageLifecycleStateUpdated();
+    }
   }
 }
 
@@ -540,36 +537,17 @@ bool Page::IsPageVisible() const {
   return visibility_state_ == mojom::blink::PageVisibilityState::kVisible;
 }
 
-void Page::SetLifecycleState(PageLifecycleState state) {
-  if (state == page_lifecycle_state_)
+void Page::OnSetPageFrozen(bool frozen) {
+  if (frozen_ == frozen)
     return;
-  DCHECK_NE(state, PageLifecycleState::kUnknown);
+  frozen_ = frozen;
 
-  base::Optional<mojom::FrameLifecycleState> next_state;
-  if (state == PageLifecycleState::kFrozen) {
-    next_state = mojom::FrameLifecycleState::kFrozen;
-  } else if (page_lifecycle_state_ == PageLifecycleState::kFrozen) {
-    // TODO(fmeawad): Only resume the page that just became visible, blocked
-    // on task queues per frame.
-    DCHECK(state == PageLifecycleState::kActive ||
-           state == PageLifecycleState::kHiddenBackgrounded ||
-           state == PageLifecycleState::kHiddenForegrounded);
-    next_state = mojom::FrameLifecycleState::kRunning;
-  }
-
-  if (next_state) {
-    for (Frame* frame = main_frame_.Get(); frame;
-         frame = frame->Tree().TraverseNext()) {
-      if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
-        local_frame->SetLifecycleState(next_state.value());
-      }
+  for (Frame* frame = main_frame_.Get(); frame;
+       frame = frame->Tree().TraverseNext()) {
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame)) {
+      local_frame->OnPageLifecycleStateUpdated();
     }
   }
-  page_lifecycle_state_ = state;
-}
-
-PageLifecycleState Page::LifecycleState() const {
-  return page_lifecycle_state_;
 }
 
 bool Page::IsCursorVisible() const {

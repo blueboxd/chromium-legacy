@@ -161,6 +161,9 @@ namespace autofillPrivate {
     // Year as a 4-character string (as in "2015").
     DOMString? expirationYear;
 
+    // Credit card's nickname.
+    DOMString? nickname;
+
     AutofillMetadata? metadata;
   };
 

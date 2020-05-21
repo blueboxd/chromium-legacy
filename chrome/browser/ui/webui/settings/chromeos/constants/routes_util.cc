@@ -43,7 +43,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kMyAccountsSubpagePath,
       chromeos::settings::mojom::kSyncSubpagePath,
       chromeos::settings::mojom::kSecurityAndSignInSubpagePath,
-      chromeos::settings::mojom::kFingerprintSubpathPath,
+      chromeos::settings::mojom::kFingerprintSubpagePath,
       chromeos::settings::mojom::kManageOtherPeopleSubpagePath,
       chromeos::settings::mojom::kKerberosSubpagePath,
 
@@ -94,7 +94,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       chromeos::settings::mojom::kLanguagesAndInputSectionPath,
       chromeos::settings::mojom::kLanguagesAndInputDetailsSubpagePath,
       chromeos::settings::mojom::kManageInputMethodsSubpagePath,
-      chromeos::settings::mojom::kSmartInputsSubagePath,
+      chromeos::settings::mojom::kSmartInputsSubpagePath,
 
       // Files section.
       chromeos::settings::mojom::kFilesSectionPath,

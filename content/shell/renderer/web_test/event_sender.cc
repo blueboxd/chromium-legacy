@@ -602,11 +602,6 @@ class EventSenderBindings : public gin::Wrappable<EventSenderBindings> {
   void FireKeyboardEventsToElement();
   void ClearKillRing();
   std::vector<std::string> ContextClick();
-  void TextZoomIn();
-  void TextZoomOut();
-  void ZoomPageIn();
-  void ZoomPageOut();
-  void SetPageZoomFactor(double factor);
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
   void UpdateTouchPoint(unsigned index,
@@ -726,11 +721,6 @@ gin::ObjectTemplateBuilder EventSenderBindings::GetObjectTemplateBuilder(
                  &EventSenderBindings::FireKeyboardEventsToElement)
       .SetMethod("clearKillRing", &EventSenderBindings::ClearKillRing)
       .SetMethod("contextClick", &EventSenderBindings::ContextClick)
-      .SetMethod("textZoomIn", &EventSenderBindings::TextZoomIn)
-      .SetMethod("textZoomOut", &EventSenderBindings::TextZoomOut)
-      .SetMethod("zoomPageIn", &EventSenderBindings::ZoomPageIn)
-      .SetMethod("zoomPageOut", &EventSenderBindings::ZoomPageOut)
-      .SetMethod("setPageZoomFactor", &EventSenderBindings::SetPageZoomFactor)
       .SetMethod("clearTouchPoints", &EventSenderBindings::ClearTouchPoints)
       .SetMethod("releaseTouchPoint", &EventSenderBindings::ReleaseTouchPoint)
       .SetMethod("updateTouchPoint", &EventSenderBindings::UpdateTouchPoint)
@@ -825,31 +815,6 @@ std::vector<std::string> EventSenderBindings::ContextClick() {
   if (sender_)
     return sender_->ContextClick();
   return std::vector<std::string>();
-}
-
-void EventSenderBindings::TextZoomIn() {
-  if (sender_)
-    sender_->TextZoomIn();
-}
-
-void EventSenderBindings::TextZoomOut() {
-  if (sender_)
-    sender_->TextZoomOut();
-}
-
-void EventSenderBindings::ZoomPageIn() {
-  if (sender_)
-    sender_->ZoomPageIn();
-}
-
-void EventSenderBindings::ZoomPageOut() {
-  if (sender_)
-    sender_->ZoomPageOut();
-}
-
-void EventSenderBindings::SetPageZoomFactor(double factor) {
-  if (sender_)
-    sender_->SetPageZoomFactor(factor);
 }
 
 void EventSenderBindings::ClearTouchPoints() {
@@ -1803,53 +1768,6 @@ std::vector<std::string> EventSender::ContextClick() {
       MakeMenuItemStringsFor(last_context_menu_data_.get());
   last_context_menu_data_.reset();
   return menu_items;
-}
-
-void EventSender::TextZoomIn() {
-  view()->SetTextZoomFactor(view()->TextZoomFactor() * 1.2f);
-}
-
-void EventSender::TextZoomOut() {
-  view()->SetTextZoomFactor(view()->TextZoomFactor() / 1.2f);
-}
-
-void EventSender::ZoomPageIn() {
-  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
-    // Only set page zoom on main frames. Any RenderViews that exist for
-    // a proxy main frame will hear about the change as a side effect of
-    // changing the main frame.
-    content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
-    if (main_frame) {
-      main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
-          view_proxy->GetWebView()->ZoomLevel() + 1);
-    }
-  }
-}
-
-void EventSender::ZoomPageOut() {
-  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
-    // Only set page zoom on main frames. Any RenderViews that exist for
-    // a proxy main frame will hear about the change as a side effect of
-    // changing the main frame.
-    content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
-    if (main_frame) {
-      main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
-          view_proxy->GetWebView()->ZoomLevel() - 1);
-    }
-  }
-}
-
-void EventSender::SetPageZoomFactor(double zoom_factor) {
-  for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
-    // Only set page zoom on main frames. Any RenderViews that exist for
-    // a proxy main frame will hear about the change as a side effect of
-    // changing the main frame.
-    content::RenderFrameImpl* main_frame = view_proxy->GetMainRenderFrame();
-    if (main_frame) {
-      main_frame->GetLocalRootRenderWidget()->SetZoomLevelForTesting(
-          std::log(zoom_factor) / std::log(1.2));
-    }
-  }
 }
 
 void EventSender::ClearTouchPoints() {

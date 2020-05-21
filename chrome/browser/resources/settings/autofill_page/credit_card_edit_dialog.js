@@ -19,6 +19,7 @@ import '../settings_vars_css.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {loadTimeData} from '../i18n_setup.js';
 
 Polymer({
   is: 'settings-credit-card-edit-dialog',
@@ -61,6 +62,17 @@ Polymer({
 
     /** @private {string|undefined} */
     expirationMonth_: String,
+
+    /**
+     * True if nickname management is enabled.
+     * @private
+     */
+    nicknameManagementEnabled_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('nicknameManagementEnabled');
+      }
+    },
   },
 
   behaviors: [

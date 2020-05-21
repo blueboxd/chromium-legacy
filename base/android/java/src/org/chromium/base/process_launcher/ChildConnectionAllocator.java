@@ -17,6 +17,7 @@ import android.os.UserManager;
 import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArraySet;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
@@ -128,7 +129,14 @@ public abstract class ChildConnectionAllocator {
             String serviceClassName, boolean bindToCaller, boolean bindAsExternalService,
             boolean useStrongBinding) {
         checkServiceExists(context, packageName, serviceClassName);
-        if (Build.VERSION.SDK_INT == 29) {
+
+        // OnePlus devices are having trouble with app zygote in combination with dynamic
+        // feature modules. See crbug.com/1064314 for details.
+        BuildInfo buildInfo = BuildInfo.getInstance();
+        boolean disableZygote = Build.VERSION.SDK_INT == 29
+                && buildInfo.androidBuildFingerprint.startsWith("OnePlus/");
+
+        if (Build.VERSION.SDK_INT == 29 && !disableZygote) {
             UserManager userManager =
                     (UserManager) ContextUtils.getApplicationContext().getSystemService(
                             Context.USER_SERVICE);
@@ -141,7 +149,8 @@ public abstract class ChildConnectionAllocator {
         // On low end devices, we do not expect to have many renderers. As a consequence, the fixed
         // costs of the app zygote are not recovered. See https://crbug.com/1044579 for context and
         // experimental results.
-        String suffix = SysUtils.isLowEndDevice() ? NON_ZYGOTE_SUFFIX : ZYGOTE_SUFFIX;
+        String suffix =
+                (SysUtils.isLowEndDevice() || disableZygote) ? NON_ZYGOTE_SUFFIX : ZYGOTE_SUFFIX;
         return new VariableSizeAllocatorImpl(launcherHandler, freeSlotCallback, packageName,
                 serviceClassName + suffix, bindToCaller, bindAsExternalService, useStrongBinding,
                 MAX_VARIABLE_ALLOCATED);

@@ -18,7 +18,9 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -40,6 +42,7 @@ class ByteCodeProcessor {
     private static ClassLoader sFullClassPathClassLoader;
     private static Set<String> sFullClassPathJarPaths;
     private static Set<String> sMissingClassesAllowlist;
+    private static Map<String, String> sJarToGnTarget;
     private static ClassPathValidator sValidator;
 
     private static Void processEntry(ZipEntry entry, byte[] data) {
@@ -55,7 +58,7 @@ class ByteCodeProcessor {
         return null;
     }
 
-    private static void process(String inputJarPath)
+    private static void process(String gnTarget, String inputJarPath)
             throws ExecutionException, InterruptedException {
         ExecutorService executorService =
                 Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
@@ -76,7 +79,7 @@ class ByteCodeProcessor {
         }
 
         if (sValidator.hasErrors()) {
-            sValidator.printAll();
+            sValidator.printAll(gnTarget, sJarToGnTarget);
             System.exit(1);
         }
     }
@@ -122,6 +125,7 @@ class ByteCodeProcessor {
                                                   ExecutionException, InterruptedException {
         // Invoke this script using //build/android/gyp/bytecode_processor.py
         int currIndex = 0;
+        String gnTarget = args[currIndex++];
         String inputJarPath = args[currIndex++];
         sVerbose = args[currIndex++].equals("--verbose");
         sIsPrebuilt = args[currIndex++].equals("--is-prebuilt");
@@ -138,19 +142,26 @@ class ByteCodeProcessor {
         currIndex = parseListArgument(args, currIndex, directClassPathJarPaths);
         sDirectClassPathClassLoader = loadJars(directClassPathJarPaths);
 
+        ArrayList<String> fullClassPathJarPaths = new ArrayList<>();
+        currIndex = parseListArgument(args, currIndex, fullClassPathJarPaths);
+        ArrayList<String> gnTargets = new ArrayList<>();
+        parseListArgument(args, currIndex, gnTargets);
+        sJarToGnTarget = new HashMap<>();
+        assert fullClassPathJarPaths.size() == gnTargets.size();
+        for (int i = 0; i < fullClassPathJarPaths.size(); ++i) {
+            sJarToGnTarget.put(fullClassPathJarPaths.get(i), gnTargets.get(i));
+        }
+
         // Load all jars that are on the classpath for the input jar for analyzing class
         // hierarchy.
         sFullClassPathJarPaths = new HashSet<>();
-        sFullClassPathJarPaths.clear();
         sFullClassPathJarPaths.add(inputJarPath);
         sFullClassPathJarPaths.addAll(sdkJarPaths);
-        sFullClassPathJarPaths.addAll(
-                Arrays.asList(Arrays.copyOfRange(args, currIndex, args.length)));
-
+        sFullClassPathJarPaths.addAll(fullClassPathJarPaths);
         sFullClassPathClassLoader = loadJars(sFullClassPathJarPaths);
         sFullClassPathJarPaths.removeAll(directClassPathJarPaths);
 
         sValidator = new ClassPathValidator();
-        process(inputJarPath);
+        process(gnTarget, inputJarPath);
     }
 }

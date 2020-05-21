@@ -15,38 +15,31 @@
       <include name="IDR_GAIA_AUTH_AUTHENTICATOR_M_JS"
                file="${root_gen_dir}/chrome/browser/resources/gaia_auth_host/authenticator.m.js"
                use_base_dir="false"
-               type ="BINDATA"
-               compress="gzip" />
+               type ="BINDATA" />
       <include name="IDR_GAIA_AUTH_SAML_HANDLER_M_JS"
                file="${root_gen_dir}/chrome/browser/resources/gaia_auth_host/saml_handler.m.js"
                use_base_dir="false"
-               type ="BINDATA"
-               compress="gzip" />
+               type ="BINDATA" />
       <include name="IDR_GAIA_AUTH_CHANNEL_M_JS"
                file="${root_gen_dir}/chrome/browser/resources/gaia_auth_host/channel.m.js"
                use_base_dir="false"
-               type ="BINDATA"
-               compress="gzip" />
+               type ="BINDATA" />
       <include name="IDR_GAIA_AUTH_POST_MESSAGE_CHANNEL_M_JS"
                file="${root_gen_dir}/chrome/browser/resources/gaia_auth_host/post_message_channel.m.js"
                use_base_dir="false"
-               type ="BINDATA"
-               compress="gzip" />
+               type ="BINDATA" />
       <include name="IDR_GAIA_AUTH_WEBVIEW_EVENT_MANAGER_M_JS"
                file="${root_gen_dir}/chrome/browser/resources/gaia_auth_host/webview_event_manager.m.js"
                use_base_dir="false"
-               type ="BINDATA"
-               compress="gzip" />
+               type ="BINDATA" />
       <include name="IDR_GAIA_AUTH_SAML_PASSWORD_ATTRIBUTES_M_JS"
                file="${root_gen_dir}/chrome/browser/resources/gaia_auth_host/saml_password_attributes.m.js"
                use_base_dir="false"
-               type ="BINDATA"
-               compress="gzip" />
+               type ="BINDATA" />
       <include name="IDR_GAIA_AUTH_SAML_TIMESTAMPS_M_JS"
                file="${root_gen_dir}/chrome/browser/resources/gaia_auth_host/saml_timestamps.m.js"
                use_base_dir="false"
-               type ="BINDATA"
-               compress="gzip" />
+               type ="BINDATA" />
     </includes>
   </release>
 </grit>

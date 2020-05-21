@@ -1959,6 +1959,12 @@ Unknown properties are collapsed to zero. -->
   <int value="3" label="Refresh the crash list"/>
 </enum>
 
+<enum name="AndroidWebViewDevUiMetricsTransmission">
+  <int value="0" label="Success"/>
+  <int value="1" label="Malformed protobuf"/>
+  <int value="2" label="RemoteException"/>
+</enum>
+
 <enum name="AndroidWebViewProxySchemeFilterType">
   <int value="0" label="HTTP"/>
   <int value="1" label="HTTPS"/>
@@ -37235,6 +37241,17 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="0" label="Main"/>
   <int value="1" label="Add Language"/>
   <int value="2" label="Language Details">iOS only.</int>
+</enum>
+
+<enum name="LargestContentfulPaint.TerminationState">
+  <summary>
+    The state of the largest contentful paint algorithm at the time of
+    reporting.
+  </summary>
+  <int value="0" label="Reported"/>
+  <int value="1" label="LargestImageLoading"/>
+  <int value="2" label="NotFound"/>
+  <int value="3" label="FoundButNotReported"/>
 </enum>
 
 <enum name="LargestContentType">

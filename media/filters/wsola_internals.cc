@@ -308,7 +308,7 @@ int OptimalIndex(const AudioBus* search_block,
                     energy_candidate_blocks.get());
 }
 
-void GetSymmetricHanningWindow(int window_length, float* window) {
+void GetPeriodicHanningWindow(int window_length, float* window) {
   const float scale = 2.0f * base::kPiFloat / window_length;
   for (int n = 0; n < window_length; ++n)
     window[n] = 0.5f * (1.0f - std::cos(n * scale));

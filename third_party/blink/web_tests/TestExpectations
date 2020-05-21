@@ -5323,8 +5323,11 @@ crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none.html [ Pa
 crbug.com/1024976 media/controls/paint-controls-webkit-appearance-none-custom-bg.html [ Pass Failure ]
 crbug.com/1024976 media/video-no-audio.html [ Pass Failure ]
 
-# Sheriff 2019-10-31
-crbug.com/1020036 [ Debug ] external/wpt/lifecycle/freeze.html [ Failure Pass ]
+# iframe.freeze plumbing is not hooked up at the moment.
+crbug.com/907125 external/wpt/lifecycle/freeze.html [ Failure ] # wpt_subtest_failure
+crbug.com/907125 external/wpt/lifecycle/child-out-of-viewport.tentative.html [ Timeout Failure ]
+crbug.com/907125 external/wpt/lifecycle/child-display-none.tentative.html [ Timeout Failure ]
+crbug.com/907125 external/wpt/lifecycle/worker-dispay-none.tentative.html [ Timeout Failure ]
 
 # Tests that json modules load correctly within the context of service workers
 crbug.com/967018 external/wpt/html/semantics/scripting-1/the-script-element/json-module/json-module-service-worker-test.https.tentative.html [ Failure ]

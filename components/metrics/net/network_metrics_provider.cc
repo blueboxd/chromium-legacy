@@ -34,10 +34,6 @@
 #include "services/network/public/cpp/network_connection_tracker.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "components/metrics/net/wifi_access_point_info_provider_chromeos.h"
-#endif  // OS_CHROMEOS
-
 namespace {
 
 #if defined(OS_ANDROID)
@@ -200,21 +196,6 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
   wifi_phy_layer_protocol_is_ambiguous_ = false;
   min_effective_connection_type_ = effective_connection_type_;
   max_effective_connection_type_ = effective_connection_type_;
-
-  if (!wifi_access_point_info_provider_) {
-#if defined(OS_CHROMEOS)
-    wifi_access_point_info_provider_.reset(
-        new WifiAccessPointInfoProviderChromeos());
-#else
-    wifi_access_point_info_provider_.reset(
-        new WifiAccessPointInfoProvider());
-#endif  // OS_CHROMEOS
-  }
-
-  // Connected wifi access point information.
-  WifiAccessPointInfoProvider::WifiAccessPointInfo info;
-  if (wifi_access_point_info_provider_->GetInfo(&info))
-    WriteWifiAccessPointProto(info, network);
 }
 
 void NetworkMetricsProvider::OnConnectionChanged(
@@ -319,85 +300,6 @@ void NetworkMetricsProvider::OnWifiPHYLayerProtocolResult(
     wifi_phy_layer_protocol_is_ambiguous_ = true;
   }
   wifi_phy_layer_protocol_ = mode;
-}
-
-void NetworkMetricsProvider::WriteWifiAccessPointProto(
-    const WifiAccessPointInfoProvider::WifiAccessPointInfo& info,
-    SystemProfileProto::Network* network_proto) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  SystemProfileProto::Network::WifiAccessPoint* access_point_info =
-      network_proto->mutable_access_point_info();
-  SystemProfileProto::Network::WifiAccessPoint::SecurityMode security =
-      SystemProfileProto::Network::WifiAccessPoint::SECURITY_UNKNOWN;
-  switch (info.security) {
-    case WifiAccessPointInfoProvider::WIFI_SECURITY_NONE:
-      security = SystemProfileProto::Network::WifiAccessPoint::SECURITY_NONE;
-      break;
-    case WifiAccessPointInfoProvider::WIFI_SECURITY_WPA:
-      security = SystemProfileProto::Network::WifiAccessPoint::SECURITY_WPA;
-      break;
-    case WifiAccessPointInfoProvider::WIFI_SECURITY_WEP:
-      security = SystemProfileProto::Network::WifiAccessPoint::SECURITY_WEP;
-      break;
-    case WifiAccessPointInfoProvider::WIFI_SECURITY_RSN:
-      security = SystemProfileProto::Network::WifiAccessPoint::SECURITY_RSN;
-      break;
-    case WifiAccessPointInfoProvider::WIFI_SECURITY_802_1X:
-      security = SystemProfileProto::Network::WifiAccessPoint::SECURITY_802_1X;
-      break;
-    case WifiAccessPointInfoProvider::WIFI_SECURITY_PSK:
-      security = SystemProfileProto::Network::WifiAccessPoint::SECURITY_PSK;
-      break;
-    case WifiAccessPointInfoProvider::WIFI_SECURITY_UNKNOWN:
-      security = SystemProfileProto::Network::WifiAccessPoint::SECURITY_UNKNOWN;
-      break;
-  }
-  access_point_info->set_security_mode(security);
-
-  // |bssid| is xx:xx:xx:xx:xx:xx, extract the first three components and
-  // pack into a uint32_t.
-  std::string bssid = info.bssid;
-  if (bssid.size() == 17 && bssid[2] == ':' && bssid[5] == ':' &&
-      bssid[8] == ':' && bssid[11] == ':' && bssid[14] == ':') {
-    std::string vendor_prefix_str;
-    uint32_t vendor_prefix;
-
-    base::RemoveChars(bssid.substr(0, 9), ":", &vendor_prefix_str);
-    DCHECK_EQ(6U, vendor_prefix_str.size());
-    if (base::HexStringToUInt(vendor_prefix_str, &vendor_prefix))
-      access_point_info->set_vendor_prefix(vendor_prefix);
-    else
-      NOTREACHED();
-  }
-
-  // Return if vendor information is not provided.
-  if (info.model_number.empty() && info.model_name.empty() &&
-      info.device_name.empty() && info.oui_list.empty())
-    return;
-
-  SystemProfileProto::Network::WifiAccessPoint::VendorInformation* vendor =
-      access_point_info->mutable_vendor_info();
-  if (!info.model_number.empty())
-    vendor->set_model_number(info.model_number);
-  if (!info.model_name.empty())
-    vendor->set_model_name(info.model_name);
-  if (!info.device_name.empty())
-    vendor->set_device_name(info.device_name);
-
-  // Return if OUI list is not provided.
-  if (info.oui_list.empty())
-    return;
-
-  // Parse OUI list.
-  for (const base::StringPiece& oui_str : base::SplitStringPiece(
-           info.oui_list, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    uint32_t oui;
-    if (base::HexStringToUInt(oui_str, &oui)) {
-      vendor->add_element_identifier(oui);
-    } else {
-      DLOG(WARNING) << "Error when parsing OUI list of the WiFi access point";
-    }
-  }
 }
 
 void NetworkMetricsProvider::LogAggregatedMetrics() {

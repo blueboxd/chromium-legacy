@@ -84,7 +84,6 @@ template("chrome_bundle") {
                              "manifest_package",
                              "min_sdk_version",
                              "proguard_android_sdk_dep",
-                             "proguard_jar_path",
                              "sign_bundle",
                              "static_library_provider",
                              "static_library_synchronized_proguard",

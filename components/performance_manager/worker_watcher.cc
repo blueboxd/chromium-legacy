@@ -129,7 +129,7 @@ void WorkerWatcher::TearDown() {
   service_worker_context_observer_.RemoveAll();
 }
 
-void WorkerWatcher::OnWorkerStarted(
+void WorkerWatcher::OnWorkerCreated(
     content::DedicatedWorkerId dedicated_worker_id,
     int worker_process_id,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
@@ -147,7 +147,7 @@ void WorkerWatcher::OnWorkerStarted(
                  ancestor_render_frame_host_id);
 }
 
-void WorkerWatcher::OnBeforeWorkerTerminated(
+void WorkerWatcher::OnBeforeWorkerDestroyed(
     content::DedicatedWorkerId dedicated_worker_id,
     content::GlobalFrameRoutingId ancestor_render_frame_host_id) {
   auto it = dedicated_worker_nodes_.find(dedicated_worker_id);
@@ -172,7 +172,7 @@ void WorkerWatcher::OnFinalResponseURLDetermined(
   SetFinalResponseURL(GetDedicatedWorkerNode(dedicated_worker_id), url);
 }
 
-void WorkerWatcher::OnWorkerStarted(
+void WorkerWatcher::OnWorkerCreated(
     content::SharedWorkerId shared_worker_id,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
@@ -185,7 +185,7 @@ void WorkerWatcher::OnWorkerStarted(
   DCHECK(inserted);
 }
 
-void WorkerWatcher::OnBeforeWorkerTerminated(
+void WorkerWatcher::OnBeforeWorkerDestroyed(
     content::SharedWorkerId shared_worker_id) {
   auto it = shared_worker_nodes_.find(shared_worker_id);
   DCHECK(it != shared_worker_nodes_.end());

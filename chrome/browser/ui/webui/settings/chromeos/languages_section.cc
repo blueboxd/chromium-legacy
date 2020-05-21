@@ -57,7 +57,7 @@ const std::vector<SearchConcept>& GetLanguagesSearchConcepts() {
 const std::vector<SearchConcept>& GetSmartInputsSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_LANGUAGES_SMART_INPUTS,
-       mojom::kSmartInputsSubagePath,
+       mojom::kSmartInputsSubpagePath,
        mojom::SearchResultIcon::kGlobe,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
@@ -69,7 +69,7 @@ const std::vector<SearchConcept>& GetSmartInputsSearchConcepts() {
 const std::vector<SearchConcept>& GetAssistivePersonalInfoSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_LANGUAGES_PERSONAL_INFORMATION_SUGGESTIONS,
-       mojom::kSmartInputsSubagePath,
+       mojom::kSmartInputsSubpagePath,
        mojom::SearchResultIcon::kGlobe,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
@@ -203,7 +203,7 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_SMART_INPUTS_TITLE, mojom::Subpage::kSmartInputs,
       mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
-      mojom::kSmartInputsSubagePath);
+      mojom::kSmartInputsSubpagePath);
   generator->RegisterNestedSetting(
       mojom::Setting::kShowPersonalInformationSuggestions,
       mojom::Subpage::kSmartInputs);

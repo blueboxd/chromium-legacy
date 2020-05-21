@@ -99,6 +99,8 @@ class NativeDesktopMediaList::Worker
  private:
   typedef std::map<DesktopMediaID, uint32_t> ImageHashesMap;
 
+  bool IsCurrentFrameValid() const;
+
   // webrtc::DesktopCapturer::Callback interface.
   void OnCaptureResult(webrtc::DesktopCapturer::Result result,
                        std::unique_ptr<webrtc::DesktopFrame> frame) override;
@@ -198,7 +200,7 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
     // Expect that DesktopCapturer to always captures frames synchronously.
     // |current_frame_| may be NULL if capture failed (e.g. because window has
     // been closed).
-    if (current_frame_) {
+    if (IsCurrentFrameValid()) {
       uint32_t frame_hash = GetFrameHash(current_frame_.get());
       new_image_hashes[id] = frame_hash;
 
@@ -221,6 +223,15 @@ void NativeDesktopMediaList::Worker::RefreshThumbnails(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&NativeDesktopMediaList::UpdateNativeThumbnailsFinished,
                      media_list_));
+}
+
+bool NativeDesktopMediaList::Worker::IsCurrentFrameValid() const {
+  // These checks ensure invalid data isn't passed along, potentially leading to
+  // crashes, e.g. when we calculate the hash which assumes a positive height
+  // and stride.
+  // TODO(crbug.com/1085230): figure out why the height is sometimes negative.
+  return current_frame_ && current_frame_->data() &&
+         current_frame_->stride() >= 0 && current_frame_->size().height() >= 0;
 }
 
 void NativeDesktopMediaList::Worker::OnCaptureResult(

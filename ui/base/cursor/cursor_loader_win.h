@@ -5,13 +5,14 @@
 #ifndef UI_BASE_CURSOR_CURSOR_LOADER_WIN_H_
 #define UI_BASE_CURSOR_CURSOR_LOADER_WIN_H_
 
-#include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "ui/base/cursor/cursor_loader.h"
 
 namespace ui {
 
-class UI_BASE_EXPORT CursorLoaderWin : public CursorLoader {
+class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderWin : public CursorLoader {
  public:
   CursorLoaderWin();
   ~CursorLoaderWin() override;

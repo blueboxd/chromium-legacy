@@ -184,9 +184,7 @@ public class PageInfoControllerDelegate {
      * Show site settings for the URL passed in.
      * @param url The URL to show site settings for.
      */
-    public void showSiteSettings(String url) {
-        // TODO(crbug.com/1058595): Override for WebLayer once SiteSettingsHelper is componentized.
-    }
+    public void showSiteSettings(String url) {}
 
     // TODO(crbug.com/1052375): Remove the next three methods when cookie controls UI
     // has been componentized.

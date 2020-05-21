@@ -434,3 +434,10 @@ QUIC_FLAG(bool,
 // If true, QUIC will free writer-allocated packet buffer if writer->WritePacket
 // is not called.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_avoid_leak_writer_buffer, false)
+
+// If true, QuicConnection::SendAllPendingAcks will Update instead of Set the
+// ack alarm.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_update_ack_alarm_in_send_all_pending_acks,
+    true)

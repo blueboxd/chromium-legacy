@@ -9,9 +9,9 @@
 #include "base/feature_list.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/payments/content/autofill_payment_app.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/payment_request_spec.h"
-#include "components/payments/core/autofill_payment_app.h"
 #include "components/payments/core/features.h"
 
 namespace payments {

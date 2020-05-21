@@ -15,9 +15,8 @@ namespace media {
 
 class VP9Picture;
 
-// class to share reference frame management code
-// between encoder and decoder classes.
-// TODO(crbug.com/924804): Add the support in Decoder class.
+// This class encapsulates VP9-specific reference frame management code. This
+// class is thread afine.
 class Vp9ReferenceFrameVector {
  public:
   Vp9ReferenceFrameVector();

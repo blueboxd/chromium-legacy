@@ -2330,6 +2330,26 @@
             ]
         }
     ],
+    "FlexNG": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200406",
+                    "enable_features": [
+                        "FlexNG"
+                    ]
+                }
+            ]
+        }
+    ],
     "FontPreloadingDelaysRendering": [
         {
             "platforms": [

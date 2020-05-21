@@ -22,6 +22,8 @@ String IgnoredReasonName(AXIgnoredReason reason) {
   switch (reason) {
     case kAXActiveModalDialog:
       return "activeModalDialog";
+    case kAXAriaModalDialog:
+      return "activeAriaModalDialog";
     case kAXAncestorIsLeafNode:
       return "ancestorIsLeafNode";
     case kAXAriaHiddenElement:

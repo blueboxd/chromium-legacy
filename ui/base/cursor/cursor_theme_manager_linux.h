@@ -7,14 +7,14 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/base/cursor/cursor_theme_manager_linux_observer.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-class UI_BASE_EXPORT CursorThemeManagerLinux {
+class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorThemeManagerLinux {
  public:
   virtual ~CursorThemeManagerLinux();
 

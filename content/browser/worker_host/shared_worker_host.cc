@@ -45,12 +45,9 @@ namespace content {
 // RAII helper class for talking to SharedWorkerDevToolsManager.
 class SharedWorkerHost::ScopedDevToolsHandle {
  public:
-  ScopedDevToolsHandle(SharedWorkerHost* owner,
-                       bool* out_pause_on_start,
-                       base::UnguessableToken* out_devtools_worker_token)
-      : owner_(owner) {
+  explicit ScopedDevToolsHandle(SharedWorkerHost* owner) : owner_(owner) {
     SharedWorkerDevToolsManager::GetInstance()->WorkerCreated(
-        owner, out_pause_on_start, out_devtools_worker_token);
+        owner, &pause_on_start_, &dev_tools_token_);
   }
 
   ~ScopedDevToolsHandle() {
@@ -65,8 +62,22 @@ class SharedWorkerHost::ScopedDevToolsHandle {
         owner_, std::move(agent_remote), std::move(agent_host_receiver));
   }
 
+  bool pause_on_start() const { return pause_on_start_; }
+
+  const base::UnguessableToken& dev_tools_token() const {
+    return dev_tools_token_;
+  }
+
  private:
   SharedWorkerHost* owner_;
+
+  // Indicates if the worker should be paused when it is started. This is set
+  // when a dev tools agent host already exists for that shared worker, which
+  // happens when a shared worker is restarted while it is being debugged.
+  bool pause_on_start_;
+
+  base::UnguessableToken dev_tools_token_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedDevToolsHandle);
 };
 
@@ -99,7 +110,8 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
       scoped_process_host_ref_(
           std::make_unique<ScopedProcessHostRef>(worker_process_host)),
       scoped_process_host_observer_(this),
-      next_connection_request_id_(1) {
+      next_connection_request_id_(1),
+      devtools_handle_(std::make_unique<ScopedDevToolsHandle>(this)) {
   DCHECK(worker_process_host_);
   DCHECK(worker_process_host_->IsInitializedAndNotDead());
 
@@ -109,6 +121,9 @@ SharedWorkerHost::SharedWorkerHost(SharedWorkerServiceImpl* service,
   worker_receiver_ = worker_.BindNewPipeAndPassReceiver();
 
   scoped_process_host_observer_.Add(worker_process_host_);
+
+  service_->NotifyWorkerCreated(id_, worker_process_host_->GetID(),
+                                devtools_handle_->dev_tools_token());
 }
 
 SharedWorkerHost::~SharedWorkerHost() {
@@ -116,18 +131,17 @@ SharedWorkerHost::~SharedWorkerHost() {
     // Attempt to notify the worker before disconnecting.
     if (worker_)
       worker_->Terminate();
-
-    // Notify the service that each client still connected will be removed and
-    // that the worker will terminate.
-    for (const auto& client : clients_) {
-      service_->NotifyClientRemoved(id_, client.render_frame_host_id);
-    }
-    service_->NotifyWorkerTerminating(id_);
   } else {
     // Tell clients that this worker failed to start.
     for (const ClientInfo& info : clients_)
       info.client->OnScriptLoadFailed(/*error_message=*/"");
   }
+
+  // Notify the service that each client still connected will be removed and
+  // that the worker will terminate.
+  for (const auto& client : clients_)
+    service_->NotifyClientRemoved(id_, client.render_frame_host_id);
+  service_->NotifyBeforeWorkerDestroyed(id_);
 }
 
 void SharedWorkerHost::Start(
@@ -155,11 +169,6 @@ void SharedWorkerHost::Start(
       instance_.content_security_policy_type(),
       instance_.creation_address_space(),
       std::move(outside_fetch_client_settings_object)));
-
-  // Register with DevTools.
-  bool pause_on_start;
-  devtools_handle_ = std::make_unique<ScopedDevToolsHandle>(
-      this, &pause_on_start, &dev_tools_token_);
 
   auto renderer_preferences = blink::mojom::RendererPreferences::New();
   GetContentClient()->browser()->UpdateRendererPreferencesForWorker(
@@ -210,10 +219,10 @@ void SharedWorkerHost::Start(
   factory_->CreateSharedWorker(
       std::move(info), instance_.constructor_origin(),
       GetContentClient()->browser()->GetUserAgent(),
-      GetContentClient()->browser()->GetUserAgentMetadata(), pause_on_start,
-      dev_tools_token_, std::move(renderer_preferences),
-      std::move(preference_watcher_receiver), std::move(content_settings),
-      service_worker_handle_->TakeContainerInfo(),
+      GetContentClient()->browser()->GetUserAgentMetadata(),
+      devtools_handle_->pause_on_start(), devtools_handle_->dev_tools_token(),
+      std::move(renderer_preferences), std::move(preference_watcher_receiver),
+      std::move(content_settings), service_worker_handle_->TakeContainerInfo(),
       appcache_handle_
           ? base::make_optional(appcache_handle_->appcache_host_id())
           : base::nullopt,
@@ -239,14 +248,6 @@ void SharedWorkerHost::Start(
   // Monitor the lifetime of the worker.
   worker_.set_disconnect_handler(base::BindOnce(
       &SharedWorkerHost::OnWorkerConnectionLost, weak_factory_.GetWeakPtr()));
-
-  // Notify the service that the worker was started and that some clients were
-  // already connected.
-  service_->NotifyWorkerStarted(id_, worker_process_host_->GetID(),
-                                dev_tools_token_);
-  for (const auto& client : clients_) {
-    service_->NotifyClientAdded(id_, client.render_frame_host_id);
-  }
 }
 
 //  This is similar to
@@ -401,10 +402,8 @@ void SharedWorkerHost::OnReadyForInspection(
     mojo::PendingRemote<blink::mojom::DevToolsAgent> agent_remote,
     mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>
         agent_host_receiver) {
-  if (devtools_handle_) {
-    devtools_handle_->WorkerReadyForInspection(std::move(agent_remote),
-                                               std::move(agent_host_receiver));
-  }
+  devtools_handle_->WorkerReadyForInspection(std::move(agent_remote),
+                                             std::move(agent_host_receiver));
 }
 
 void SharedWorkerHost::OnScriptLoadFailed(const std::string& error_message) {
@@ -466,11 +465,8 @@ void SharedWorkerHost::AddClient(
 
   worker_->Connect(info.connection_request_id, port.ReleaseHandle());
 
-  // Notify that a new client was added now. If the worker is not started, the
-  // Start() function will handle sending a notification for each existing
-  // client.
-  if (started_)
-    service_->NotifyClientAdded(id_, client_render_frame_host_id);
+  // Notify that a new client was added now.
+  service_->NotifyClientAdded(id_, client_render_frame_host_id);
 }
 
 void SharedWorkerHost::SetAppCacheHandle(
@@ -497,6 +493,10 @@ void SharedWorkerHost::PruneNonExistentClients() {
 
 bool SharedWorkerHost::HasClients() const {
   return !clients_.empty();
+}
+
+const base::UnguessableToken& SharedWorkerHost::GetDevToolsToken() const {
+  return devtools_handle_->dev_tools_token();
 }
 
 mojo::Remote<blink::mojom::SharedWorker>

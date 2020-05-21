@@ -16,7 +16,6 @@
 #include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/SSLClientCertificateRequest_jni.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -132,13 +131,7 @@ class SSLClientCertPendingRequests
 
 ui::WindowAndroid* GetWindowFromWebContents(
     content::WebContents* web_contents) {
-  ViewAndroidHelper* view_helper =
-      ViewAndroidHelper::FromWebContents(web_contents);
-  if (view_helper == nullptr) {
-    LOG(ERROR) << "Could not get ViewAndroidHelper";
-    return nullptr;
-  }
-  ui::ViewAndroid* view = view_helper->GetViewAndroid();
+  ui::ViewAndroid* view = web_contents->GetNativeView();
   if (view == nullptr) {
     LOG(ERROR) << "Could not get ViewAndroid";
     return nullptr;

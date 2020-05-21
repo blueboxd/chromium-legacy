@@ -46,7 +46,7 @@ int AddressComboboxModel::GetItemCount() const {
   return addresses_.size() + kNbHeaderEntries;
 }
 
-base::string16 AddressComboboxModel::GetItemAt(int index) {
+base::string16 AddressComboboxModel::GetItemAt(int index) const {
   DCHECK_GE(index, 0);
   // A special entry is always added at index 0 and a separator at index 1.
   DCHECK_LT(static_cast<size_t>(index), addresses_.size() + kNbHeaderEntries);
@@ -66,7 +66,7 @@ base::string16 AddressComboboxModel::GetItemAt(int index) {
   return addresses_[index - kNbHeaderEntries].second;
 }
 
-bool AddressComboboxModel::IsItemSeparatorAt(int index) {
+bool AddressComboboxModel::IsItemSeparatorAt(int index) const {
   // The only separator is between the "Select" entry at 0 and the first address
   // at index 2. So there must be at least one address for a separator to be
   // shown.

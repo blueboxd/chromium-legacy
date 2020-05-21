@@ -46,9 +46,9 @@ int RegionComboboxModel::GetItemCount() const {
   return regions_.size();
 }
 
-base::string16 RegionComboboxModel::GetItemAt(int index) {
+base::string16 RegionComboboxModel::GetItemAt(int index) const {
   DCHECK_GE(index, 0);
-  // This might happen because of the asynchonous nature of the data.
+  // This might happen because of the asynchronous nature of the data.
   if (static_cast<size_t>(index) >= regions_.size())
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_LOADING_REGIONS);
 
@@ -60,8 +60,8 @@ base::string16 RegionComboboxModel::GetItemAt(int index) {
   return base::ASCIIToUTF16("---");
 }
 
-bool RegionComboboxModel::IsItemSeparatorAt(int index) {
-  // This might happen because of the asynchonous nature of the data.
+bool RegionComboboxModel::IsItemSeparatorAt(int index) const {
+  // This might happen because of the asynchronous nature of the data.
   DCHECK_GE(index, 0);
   if (static_cast<size_t>(index) >= regions_.size())
     return false;

@@ -1,5 +1,5 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
+# Copyright 2014 The Chromium Authors. All rights reserved.
 # found in the LICENSE file.
 
 import("//build/android/resource_sizes.gni")
@@ -1966,7 +1966,6 @@ template("monochrome_public_apk_or_module_tmpl") {
                              "include_64_bit_webview",
                              "is_64_bit_browser",
                              "is_base_module",
-                             "proguard_jar_path",
                              "resource_ids_provider_dep",
                              "static_library_provider",
                              "static_library_synchronized_proguard",

@@ -36,7 +36,14 @@
 namespace blink {
 
 WaveShaperDSPKernel::WaveShaperDSPKernel(WaveShaperProcessor* processor)
-    : AudioDSPKernel(processor), tail_time_(0) {
+    : AudioDSPKernel(processor),
+      tail_time_(0),
+      // 4 times render size to handle 4x oversampling.
+      virtual_index_(4 * audio_utilities::kRenderQuantumFrames),
+      index_(4 * audio_utilities::kRenderQuantumFrames),
+      v1_(4 * audio_utilities::kRenderQuantumFrames),
+      v2_(4 * audio_utilities::kRenderQuantumFrames),
+      f_(4 * audio_utilities::kRenderQuantumFrames) {
   if (processor->Oversample() != WaveShaperProcessor::kOverSampleNone)
     LazyInitializeOversampling();
 }
@@ -114,8 +121,9 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
                                                 uint32_t frames_to_process,
                                                 const float* curve_data,
                                                 int curve_length) const {
+  DCHECK_LE(frames_to_process, virtual_index_.size());
   // Index into the array computed from the source value.
-  float virtual_index[frames_to_process];
+  float* virtual_index = virtual_index_.Data();
 
   // virtual_index[k] =
   //   clampTo(0.5 * (source[k] + 1) * (curve_length - 1),
@@ -134,16 +142,20 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
                      frames_to_process);
 
   // index = floor(virtual_index)
-  float index[frames_to_process];
+  DCHECK_LE(frames_to_process, index_.size());
+  float* index = index_.Data();
 
   // v1 and v2 hold the curve_data corresponding to the closest curve
   // values to the source sample.  To save memory, v1 will use the
   // destination array.
-  float* v1 = destination;
-  float v2[frames_to_process];
+  DCHECK_LE(frames_to_process, v1_.size());
+  DCHECK_LE(frames_to_process, v2_.size());
+  float* v1 = v1_.Data();
+  float* v2 = v2_.Data();
 
   // Interpolation factor: virtual_index - index.
-  float f[frames_to_process];
+  DCHECK_LE(frames_to_process, f_.size());
+  float* f = f_.Data();
 
   int max_index = curve_length - 1;
   unsigned k = 0;
@@ -216,9 +228,10 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
       int32x4_t index2 = vaddq_s32(index1, one);
       index2 = vmaxq_s32(vminq_s32(index2, max), zero);
 
-      // Save index1/2 so we can get the individual parts.
-      int32_t i1[4];
-      int32_t i2[4];
+      // Save index1/2 so we can get the individual parts.  Aligned to
+      // 16 bytes for vst1q instruction.
+      int32_t i1[4] __attribute__((aligned(16)));
+      int32_t i2[4] __attribute__((aligned(16)));
       vst1q_s32(i1, index1);
       vst1q_s32(i2, index2);
 
@@ -257,7 +270,7 @@ void WaveShaperDSPKernel::WaveShaperCurveValues(float* destination,
   //                   = v1[k] + f[k]*(v2[k] - v1[k])
   vector_math::Vsub(v2, 1, v1, 1, v2, 1, frames_to_process);
   vector_math::Vmul(f, 1, v2, 1, v2, 1, frames_to_process);
-  vector_math::Vadd(v2, 1, destination, 1, destination, 1, frames_to_process);
+  vector_math::Vadd(v2, 1, v1, 1, destination, 1, frames_to_process);
 }
 
 void WaveShaperDSPKernel::ProcessCurve(const float* source,

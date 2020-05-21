@@ -114,13 +114,6 @@ class EventSender {
 
   std::vector<std::string> ContextClick();
 
-  void TextZoomIn();
-  void TextZoomOut();
-
-  void ZoomPageIn();
-  void ZoomPageOut();
-  void SetPageZoomFactor(double zoom_factor);
-
   void ClearTouchPoints();
   void ReleaseTouchPoint(unsigned index);
   void UpdateTouchPoint(unsigned index, float x, float y, gin::Arguments* args);

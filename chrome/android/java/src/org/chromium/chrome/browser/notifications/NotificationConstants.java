@@ -116,10 +116,16 @@ public class NotificationConstants {
     public static final int NOTIFICATION_ID_CLICK_TO_CALL_ERROR = 12;
 
     /**
-     * Unique identifier for the high priority "Running in Chrome" notification displayed when a
-     * TWA is run. It will be high priority the first time and low priority subsequently.
+     * Unique identifier for the high priority "Running in Chrome" notification displayed the first
+     * time a TWA is run.
      */
-    public static final int NOTIFICATION_ID_TWA_DISCLOSURE = 13;
+    public static final int NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL = 13;
+
+    /**
+     * Unique identifier for the low priority "Running in Chrome" notifications that are disabled
+     * subsequent times a TWA is run.
+     */
+    public static final int NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT = 14;
 
     /**
      * Separator used to separate the notification origin from additional data such as the

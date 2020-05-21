@@ -1343,7 +1343,7 @@ bool MediaFeedsConverter::ConvertMediaFeedImpl(
   }
 
   auto* provider = GetProperty(entity.get(), schema_org::property::kProvider);
-  if (!ValidateProvider(*provider, result)) {
+  if (!provider || !ValidateProvider(*provider, result)) {
     Log("Invalid provider.");
     return false;
   }

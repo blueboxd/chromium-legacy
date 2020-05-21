@@ -15,7 +15,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "components/metrics/metrics_provider.h"
-#include "components/metrics/net/wifi_access_point_info_provider.h"
 #include "net/base/network_interfaces.h"
 #include "net/nqe/effective_connection_type.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
@@ -87,12 +86,6 @@ class NetworkMetricsProvider
   // net::GetWifiPHYLayerProtocol.
   void OnWifiPHYLayerProtocolResult(net::WifiPHYLayerProtocol mode);
 
-  // Writes info about the wireless access points that this system is
-  // connected to.
-  void WriteWifiAccessPointProto(
-      const WifiAccessPointInfoProvider::WifiAccessPointInfo& info,
-      SystemProfileProto::Network* network_proto);
-
   // Logs metrics that are functions of other metrics being uploaded.
   void LogAggregatedMetrics();
 
@@ -127,9 +120,6 @@ class NetworkMetricsProvider
   // The PHY mode of the currently associated access point obtained via
   // net::GetWifiPHYLayerProtocol.
   net::WifiPHYLayerProtocol wifi_phy_layer_protocol_;
-
-  // Helper object for retrieving connected wifi access point information.
-  std::unique_ptr<WifiAccessPointInfoProvider> wifi_access_point_info_provider_;
 
   // These metrics track histogram totals for the Net.ErrorCodesForMainFrame4
   // histogram. They are used to compute deltas at upload time.

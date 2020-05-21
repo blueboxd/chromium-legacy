@@ -368,6 +368,10 @@ void ShillPropertyHandler::ManagerPropertyChanged(const std::string& key,
     const base::ListValue* vlist = GetListValue(key, value);
     if (vlist)
       UpdateUninitializedTechnologies(*vlist);
+  } else if (key == shill::kProhibitedTechnologiesProperty) {
+    const base::ListValue* vlist = GetListValue(key, value);
+    if (vlist)
+      UpdateProhibitedTechnologies(*vlist);
   } else if (key == shill::kProfilesProperty) {
     listener_->ProfileListChanged();
   } else if (key == shill::kCheckPortalListProperty) {
@@ -501,6 +505,18 @@ void ShillPropertyHandler::UpdateUninitializedTechnologies(
   if (new_uninitialized_technologies == uninitialized_technologies_)
     return;
   uninitialized_technologies_.swap(new_uninitialized_technologies);
+  listener_->TechnologyListChanged();
+}
+
+void ShillPropertyHandler::UpdateProhibitedTechnologies(
+    const base::ListValue& technologies) {
+  NET_LOG(EVENT) << "ProhibitedTechnologies:" << technologies;
+  std::set<std::string> new_prohibited_technologies;
+  for (const base::Value& technology : technologies.GetList())
+    new_prohibited_technologies.insert(technology.GetString());
+  if (new_prohibited_technologies == prohibited_technologies_)
+    return;
+  prohibited_technologies_.swap(new_prohibited_technologies);
   listener_->TechnologyListChanged();
 }
 

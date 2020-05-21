@@ -247,7 +247,7 @@ jumbo_source_set("testing") {
     ":core",
     ":generated_testing_idls",
     "//third_party/blink/renderer/bindings/core/v8:testing",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
   ]
 
@@ -1487,7 +1487,7 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/core/editing:unit_tests",
     "//third_party/blink/renderer/core/fileapi:unit_tests",
     "//third_party/blink/renderer/core/html:unit_tests",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
   ]
 

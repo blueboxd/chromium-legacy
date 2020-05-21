@@ -4,5 +4,4 @@
 
 source_set("memory_regions_map") {
   public = [ "memory_regions_map.h" ]
-  sources = [ "memory_regions_map.cc" ]
 }

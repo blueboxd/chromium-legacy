@@ -33,7 +33,7 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
 // Returns the refresh interval of the primary display. If there is no connected
 // primary display, returns the refresh interval of the first connected display.
 COMPONENT_EXPORT(UI_BASE_X)
-base::TimeDelta GetPrimaryDisplayRefreshIntervalFromXrandr(Display* display);
+base::TimeDelta GetPrimaryDisplayRefreshIntervalFromXrandr();
 
 }  // namespace ui
 

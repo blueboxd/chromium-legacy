@@ -20,6 +20,7 @@ class ASH_EXPORT FakeAmbientBackendControllerImpl
 
   // AmbientBackendController:
   void FetchScreenUpdateInfo(
+      int num_topics,
       OnScreenUpdateInfoFetchedCallback callback) override;
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(AmbientModeTopicSource topic_source,

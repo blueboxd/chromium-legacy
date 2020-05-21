@@ -98,7 +98,7 @@ cr.define('settings', function() {
           r.OS_PEOPLE, mojom.SECURITY_AND_SIGN_IN_SUBPAGE_PATH,
           Subpage.kSecurityAndSignIn);
       r.FINGERPRINT = createSubpage(
-          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPATH_PATH, Subpage.kFingerprint);
+          r.LOCK_SCREEN, mojom.FINGERPRINT_SUBPAGE_PATH, Subpage.kFingerprint);
       r.ACCOUNTS = createSubpage(
           r.OS_PEOPLE, mojom.MANAGE_OTHER_PEOPLE_SUBPAGE_PATH,
           Subpage.kManageOtherPeople);
@@ -215,7 +215,7 @@ cr.define('settings', function() {
         r.OS_LANGUAGES_DETAILS, mojom.MANAGE_INPUT_METHODS_SUBPAGE_PATH,
         Subpage.kManageInputMethods);
     r.OS_LANGUAGES_SMART_INPUTS = createSubpage(
-        r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBAGE_PATH, Subpage.kSmartInputs);
+        r.OS_LANGUAGES, mojom.SMART_INPUTS_SUBPAGE_PATH, Subpage.kSmartInputs);
 
     // Files section.
     if (!loadTimeData.getBoolean('isGuest')) {

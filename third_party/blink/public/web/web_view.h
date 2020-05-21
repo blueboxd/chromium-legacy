@@ -195,14 +195,6 @@ class WebView {
   // change.
   virtual double SetZoomLevel(double) = 0;
 
-  // Returns the current text zoom factor, where 1.0 is the normal size, > 1.0
-  // is scaled up and < 1.0 is scaled down.
-  virtual float TextZoomFactor() = 0;
-
-  // Scales the text in the page by a factor of textZoomFactor.
-  // Note: this has no effect on plugins.
-  virtual float SetTextZoomFactor(float) = 0;
-
   // Gets the scale factor of the page, where 1.0 is the normal size, > 1.0
   // is scaled up, < 1.0 is scaled down.
   virtual float PageScaleFactor() const = 0;

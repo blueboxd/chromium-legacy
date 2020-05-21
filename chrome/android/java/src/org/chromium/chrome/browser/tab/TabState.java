@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.tab;
 
 import android.graphics.Color;
-import android.os.Build;
 import android.util.Pair;
 
 import androidx.annotation.Nullable;
@@ -301,15 +300,8 @@ public class TabState {
 
     public static byte[] getContentStateByteArray(ByteBuffer buffer) {
         byte[] contentsStateBytes = new byte[buffer.limit()];
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            buffer.rewind();
-            buffer.get(contentsStateBytes);
-        } else {
-            // For JellyBean and below a bug in MappedByteBufferAdapter causes rewind to not be
-            // propagated to the underlying ByteBuffer, and results in an underflow exception. See:
-            // http://b.android.com/53637.
-            for (int i = 0; i < buffer.limit(); i++) contentsStateBytes[i] = buffer.get(i);
-        }
+        buffer.rewind();
+        buffer.get(contentsStateBytes);
         return contentsStateBytes;
     }
 

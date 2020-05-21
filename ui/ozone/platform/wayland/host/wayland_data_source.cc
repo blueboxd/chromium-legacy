@@ -12,6 +12,7 @@
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_window.h"
 
 namespace ui {
@@ -41,11 +42,15 @@ void WaylandDataSource::WriteToClipboard(
   connection_->ScheduleFlush();
 }
 
-void WaylandDataSource::Offer(const ui::OSExchangeData& data) {
+void WaylandDataSource::Offer(const ui::OSExchangeData& data,
+                              DragDelegate* drag_delegate) {
+  DCHECK(drag_delegate);
+  drag_delegate_ = drag_delegate;
+
   // Drag'n'drop manuals usually suggest putting data in order so the more
-  // specific a MIME type is, the earlier it occurs in the list.  Wayland specs
-  // don't say anything like that, but here we follow that common practice:
-  // begin with URIs and end with plain text.  Just in case.
+  // specific a MIME type is, the earlier it occurs in the list.  Wayland
+  // specs don't say anything like that, but here we follow that common
+  // practice: begin with URIs and end with plain text.  Just in case.
   std::vector<std::string> mime_types;
   if (data.HasFile()) {
     mime_types.push_back(kMimeTypeURIList);
@@ -61,15 +66,8 @@ void WaylandDataSource::Offer(const ui::OSExchangeData& data) {
     mime_types.push_back(kMimeTypeText);
   }
 
-  source_window_ =
-      connection_->wayland_window_manager()->GetCurrentFocusedWindow();
   for (auto& mime_type : mime_types)
     wl_data_source_offer(data_source_.get(), mime_type.data());
-}
-
-void WaylandDataSource::SetDragData(const DragDataMap& data_map) {
-  DCHECK(drag_data_map_.empty());
-  drag_data_map_ = data_map;
 }
 
 void WaylandDataSource::SetAction(int operation) {
@@ -98,9 +96,8 @@ void WaylandDataSource::OnSend(void* data,
                                int32_t fd) {
   WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
   std::string contents;
-  if (self->source_window_) {
-    // If |source_window_| is valid when OnSend() is called, it means that DnD
-    // is working.
+
+  if (self->drag_delegate_) {
     self->GetDragData(mime_type, &contents);
   } else {
     base::Optional<std::vector<uint8_t>> mime_data;
@@ -109,20 +106,18 @@ void WaylandDataSource::OnSend(void* data,
       self->GetClipboardData(kMimeTypeText, &mime_data);
     contents.assign(mime_data->begin(), mime_data->end());
   }
-  bool result =
-      base::WriteFileDescriptor(fd, contents.data(), contents.length());
-  DCHECK(result);
+
+  bool done = base::WriteFileDescriptor(fd, contents.data(), contents.length());
+  DCHECK(done);
   close(fd);
 }
 
 // static
 void WaylandDataSource::OnCancel(void* data, wl_data_source* source) {
   WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
-  if (self->source_window_) {
-    // If it has |source_window_|, it is in the middle of 'drag and drop'. it
-    // cancels 'drag and drop'.
-    self->connection_->FinishDragSession(self->dnd_action_,
-                                         self->source_window_);
+  if (self->drag_delegate_) {
+    self->drag_delegate_->OnDragSourceFinish(/*completed=*/false);
+    self->drag_delegate_ = nullptr;
   } else {
     self->connection_->clipboard()->DataSourceCancelled(
         ClipboardBuffer::kCopyPaste);
@@ -135,7 +130,10 @@ void WaylandDataSource::OnDnDDropPerformed(void* data, wl_data_source* source) {
 
 void WaylandDataSource::OnDnDFinished(void* data, wl_data_source* source) {
   WaylandDataSource* self = static_cast<WaylandDataSource*>(data);
-  self->connection_->FinishDragSession(self->dnd_action_, self->source_window_);
+  if (self->drag_delegate_) {
+    self->drag_delegate_->OnDragSourceFinish(/*completed=*/true);
+    self->drag_delegate_ = nullptr;
+  }
 }
 
 void WaylandDataSource::OnAction(void* data,
@@ -152,8 +150,7 @@ void WaylandDataSource::GetDragData(const std::string& mime_type,
     *contents = it->second;
     return;
   }
-
-  connection_->DeliverDragData(mime_type, contents);
+  drag_delegate_->OnDragSourceSend(mime_type, contents);
 }
 
 }  // namespace ui

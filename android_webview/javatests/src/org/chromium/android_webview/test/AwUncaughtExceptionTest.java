@@ -43,6 +43,13 @@ public class AwUncaughtExceptionTest {
         public boolean needsBrowserProcessStarted() {
             return false;
         }
+        @Override
+        public boolean needsAwContentsCleanup() {
+            // State of VM might be hosed after throwing and not catching exceptions.
+            // Do not assume it is safe to destroy AwContents by posting to the UI thread.
+            // Instead explicitly destroy any AwContents created in this test.
+            return false;
+        }
     };
 
     private class BackgroundThread extends Thread {
@@ -178,6 +185,7 @@ public class AwUncaughtExceptionTest {
             mContentsClient = new TestAwContentsClient() {
                 @Override
                 public boolean shouldOverrideUrlLoading(AwWebResourceRequest request) {
+                    mAwContents.destroyNatives();
                     throw new RuntimeException(msg);
                 }
             };

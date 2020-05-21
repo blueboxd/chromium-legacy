@@ -203,19 +203,19 @@ const std::vector<SearchConcept>& GetKerberosSearchConcepts() {
 const std::vector<SearchConcept>& GetFingerprintSearchConcepts() {
   static const base::NoDestructor<std::vector<SearchConcept>> tags({
       {IDS_OS_SETTINGS_TAG_FINGERPRINT_REMOVE,
-       mojom::kFingerprintSubpathPath,
+       mojom::kFingerprintSubpagePath,
        mojom::SearchResultIcon::kFingerprint,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kRemoveFingerprint}},
       {IDS_OS_SETTINGS_TAG_FINGERPRINT_ADD,
-       mojom::kFingerprintSubpathPath,
+       mojom::kFingerprintSubpagePath,
        mojom::SearchResultIcon::kFingerprint,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSetting,
        {.setting = mojom::Setting::kAddFingerprint}},
       {IDS_OS_SETTINGS_TAG_FINGERPRINT,
-       mojom::kFingerprintSubpathPath,
+       mojom::kFingerprintSubpagePath,
        mojom::SearchResultIcon::kFingerprint,
        mojom::SearchResultDefaultRank::kMedium,
        mojom::SearchResultType::kSubpage,
@@ -854,7 +854,7 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SUBPAGE_TITLE,
       mojom::Subpage::kFingerprint, mojom::Subpage::kSecurityAndSignIn,
       mojom::SearchResultIcon::kFingerprint,
-      mojom::SearchResultDefaultRank::kMedium, mojom::kFingerprintSubpathPath);
+      mojom::SearchResultDefaultRank::kMedium, mojom::kFingerprintSubpagePath);
   static constexpr mojom::Setting kFingerprintSettings[] = {
       mojom::Setting::kAddFingerprint,
       mojom::Setting::kRemoveFingerprint,

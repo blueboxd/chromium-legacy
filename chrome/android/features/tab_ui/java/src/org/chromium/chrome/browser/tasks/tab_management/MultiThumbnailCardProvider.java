@@ -88,8 +88,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
             mCanvas.drawColor(Color.TRANSPARENT);
 
             // Initialize Tabs.
-            List<PseudoTab> relatedTabList =
-                    PseudoTab.getRelatedTabs(tab, mTabModelSelector.getTabModelFilterProvider());
+            List<PseudoTab> relatedTabList = PseudoTab.getRelatedTabs(tab, mTabModelSelector);
             if (relatedTabList.size() <= 4) {
                 mThumbnailsToFetch.set(relatedTabList.size());
 
@@ -306,10 +305,7 @@ public class MultiThumbnailCardProvider implements TabListMediator.ThumbnailProv
     public void getTabThumbnailWithCallback(
             int tabId, Callback<Bitmap> finalCallback, boolean forceUpdate, boolean writeToCache) {
         PseudoTab tab = PseudoTab.fromTabId(tabId);
-        if (tab == null
-                || PseudoTab.getRelatedTabs(tab, mTabModelSelector.getTabModelFilterProvider())
-                                .size()
-                        == 1) {
+        if (tab == null || PseudoTab.getRelatedTabs(tab, mTabModelSelector).size() == 1) {
             mTabContentManager.getTabThumbnailWithCallback(
                     tabId, finalCallback, forceUpdate, writeToCache);
             return;

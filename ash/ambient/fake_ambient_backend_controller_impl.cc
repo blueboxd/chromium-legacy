@@ -25,6 +25,7 @@ FakeAmbientBackendControllerImpl::FakeAmbientBackendControllerImpl() = default;
 FakeAmbientBackendControllerImpl::~FakeAmbientBackendControllerImpl() = default;
 
 void FakeAmbientBackendControllerImpl::FetchScreenUpdateInfo(
+    int num_topics,
     OnScreenUpdateInfoFetchedCallback callback) {
   ash::AmbientModeTopic topic;
   topic.url = kFakeUrl;

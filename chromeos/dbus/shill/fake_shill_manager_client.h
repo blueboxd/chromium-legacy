@@ -73,6 +73,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillManagerClient
   void RemoveTechnology(const std::string& type) override;
   void SetTechnologyInitializing(const std::string& type,
                                  bool initializing) override;
+  void SetTechnologyProhibited(const std::string& type,
+                               bool prohibited) override;
   void AddGeoNetwork(const std::string& technology,
                      const base::DictionaryValue& network) override;
   void AddProfile(const std::string& profile_path) override;

@@ -759,6 +759,10 @@ interface RemoteFrame {
   // Requests that the blink::RemoteFrame updates its opener to the specified
   // frame. The frame token may be "empty" if the opener was disowned.
   UpdateOpener(mojo_base.mojom.UnguessableToken? opener_frame_token);
+
+  // Transfers user activation state from the source frame to the current frame.
+  TransferUserActivationToRenderer(
+      mojo_base.mojom.UnguessableToken source_frame_token);
 };
 
 // Implemented in Blink, this interface defines main-frame-specific methods that

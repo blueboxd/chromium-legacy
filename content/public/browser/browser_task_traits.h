@@ -152,6 +152,12 @@ class CONTENT_EXPORT BrowserTaskTraits : public base::TaskTraits {
     // TODO(1026641): Reconsider whether BrowserTaskTraits should really be
     // supporting base::TaskPriority.
     ValidTrait(base::TaskPriority);
+
+    // TODO(1026641): These traits are meaningless on BrowserThreads but some
+    // callers of post_task.h had been using them in conjunction with
+    // BrowserThread::ID traits. Remove such usage post-migration.
+    ValidTrait(base::MayBlock);
+    ValidTrait(base::TaskShutdownBehavior);
   };
 
   // TODO(1026641): Get rid of BrowserTaskTraitsExtension and store its members

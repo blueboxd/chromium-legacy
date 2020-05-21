@@ -21,6 +21,7 @@
 #include "content/public/browser/native_event_processor_mac.h"
 #include "content/public/browser/native_event_processor_observer_mac.h"
 #include "ui/base/cocoa/accessibility_focus_overrider.h"
+#include "ui/events/base_event_utils.h"
 
 namespace chrome_browser_application_mac {
 
@@ -94,6 +95,16 @@ std::string DescriptionForNSEvent(NSEvent* event) {
     default:
       break;
   }
+
+  // TODO(bokan): Added temporarily to debug https://crbug.com/1039833.
+  base::TimeTicks event_timestamp =
+      ui::EventTimeStampFromSeconds([event timestamp]);
+  base::TimeTicks now = ui::EventTimeForNow();
+  base::TimeDelta diff = now - event_timestamp;
+  desc += base::StringPrintf(" Now: %lld Diff: %lld",
+                             (now - base::TimeTicks()).InSeconds(),
+                             diff.InSeconds());
+
   return desc;
 }
 
@@ -307,27 +318,22 @@ std::string DescriptionForNSEvent(NSEvent* event) {
                                                  DescriptionForNSEvent(event));
 
   base::mac::CallWithEHFrame(^{
-    switch (event.type) {
-      case NSLeftMouseDown:
-      case NSRightMouseDown: {
-        // In kiosk mode, we want to prevent context menus from appearing,
-        // so simply discard menu-generating events instead of passing them
-        // along.
-        bool kioskMode = base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kKioskMode);
-        bool ctrlDown = [event modifierFlags] & NSControlKeyMask;
-        if (kioskMode && ([event type] == NSRightMouseDown || ctrlDown))
-          break;
-        FALLTHROUGH;  // Not menu-generating, so pass on the event.
-      }
-
-      default: {
-        base::mac::ScopedSendingEvent sendingEventScoper;
-        content::ScopedNotifyNativeEventProcessorObserver
-            scopedObserverNotifier(&_observers, event);
-        [super sendEvent:event];
-      }
+    static const bool kKioskMode =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
+    if (kKioskMode) {
+      // In kiosk mode, we want to prevent context menus from appearing,
+      // so simply discard menu-generating events instead of passing them
+      // along.
+      BOOL couldTriggerContextMenu = event.type == NSRightMouseDown ||
+                                     (event.type == NSLeftMouseDown &&
+                                      (event.modifierFlags & NSControlKeyMask));
+      if (couldTriggerContextMenu)
+        return;
     }
+    base::mac::ScopedSendingEvent sendingEventScoper;
+    content::ScopedNotifyNativeEventProcessorObserver scopedObserverNotifier(
+        &_observers, event);
+    [super sendEvent:event];
   });
 }
 

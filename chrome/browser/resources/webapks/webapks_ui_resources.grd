@@ -8,9 +8,9 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_WEBAPKS_UI_CSS" file="about_webapks.css" type="BINDATA" compress="gzip" />
-      <include name="IDR_WEBAPKS_UI_HTML" file="about_webapks.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" compress="gzip" />
-      <include name="IDR_WEBAPKS_UI_JS" file="about_webapks.js" type="BINDATA" compress="gzip" />
+      <include name="IDR_WEBAPKS_UI_CSS" file="about_webapks.css" type="BINDATA" />
+      <include name="IDR_WEBAPKS_UI_HTML" file="about_webapks.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_WEBAPKS_UI_JS" file="about_webapks.js" type="BINDATA" />
     </includes>
   </release>
 </grit>

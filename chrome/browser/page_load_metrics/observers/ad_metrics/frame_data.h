@@ -213,8 +213,6 @@ class FrameData {
 
   gfx::Size frame_size() const { return frame_size_; }
 
-  bool is_display_none() const { return is_display_none_; }
-
   MediaStatus media_status() const { return media_status_; }
 
   void set_media_status(MediaStatus media_status) {

@@ -120,19 +120,23 @@ build_config_target_suffix = "__build_config_crbug_908819"
 # build/android/gyp/util/build_utils.py:ExpandFileArgs
 template("write_build_config") {
   _type = invoker.type
+  _parent_invoker = invoker.invoker
+  _target_label =
+      get_label_info(":${_parent_invoker.target_name}", "label_no_toolchain")
 
   # Don't need to enforce naming scheme for these targets since we never
   # consider them in dependency chains.
   if (_type != "android_apk" && _type != "java_binary" && _type != "dist_jar" &&
       _type != "java_annotation_processor" && _type != "dist_aar" &&
       _type != "android_app_bundle") {
-    _parent_invoker = invoker.invoker
-    _target_label =
-        get_label_info(":${_parent_invoker.target_name}", "label_no_toolchain")
     if (filter_exclude([ _target_label ], _java_target_patterns) != [] &&
         filter_exclude([ _target_label ], _java_target_exceptions) != []) {
       assert(false, "Invalid java target name: $_target_label")
     }
+  }
+
+  if (defined(invoker.public_target_label)) {
+    _target_label = invoker.public_target_label
   }
 
   action_with_pydeps(target_name) {
@@ -156,12 +160,12 @@ template("write_build_config") {
     _deps_configs = []
     if (defined(invoker.possible_config_deps)) {
       foreach(_possible_dep, invoker.possible_config_deps) {
-        _target_label = get_label_info(_possible_dep, "label_no_toolchain")
-        if (filter_exclude([ _target_label ], _java_target_patterns) == [] &&
-            filter_exclude([ _target_label ], _java_target_exceptions) != []) {
+        _dep_label = get_label_info(_possible_dep, "label_no_toolchain")
+        if (filter_exclude([ _dep_label ], _java_target_patterns) == [] &&
+            filter_exclude([ _dep_label ], _java_target_exceptions) != []) {
           # Put the bug number in the target name so that false-positives
           # have a hint in the error message about non-existent dependencies.
-          deps += [ "$_target_label$build_config_target_suffix" ]
+          deps += [ "$_dep_label$build_config_target_suffix" ]
           _dep_gen_dir = get_label_info(_possible_dep, "target_gen_dir")
           _dep_name = get_label_info(_possible_dep, "name")
           _deps_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
@@ -177,6 +181,8 @@ template("write_build_config") {
       "--deps-configs=$_rebased_deps_configs",
       "--build-config",
       rebase_path(invoker.build_config, root_build_dir),
+      "--gn-target",
+      _target_label,
     ]
 
     if (defined(invoker.chromium_code) && !invoker.chromium_code) {
@@ -221,10 +227,10 @@ template("write_build_config") {
         invoker.annotation_processor_deps != []) {
       _processor_configs = []
       foreach(_processor_dep, invoker.annotation_processor_deps) {
-        _target_label = get_label_info(_processor_dep, "label_no_toolchain")
+        _dep_label = get_label_info(_processor_dep, "label_no_toolchain")
         _dep_gen_dir = get_label_info(_processor_dep, "target_gen_dir")
         _dep_name = get_label_info(_processor_dep, "name")
-        deps += [ "$_target_label$build_config_target_suffix" ]
+        deps += [ "$_dep_label$build_config_target_suffix" ]
         _processor_configs += [ "$_dep_gen_dir/$_dep_name.build_config" ]
       }
       _rebased_processor_configs =
@@ -472,12 +478,12 @@ template("write_build_config") {
     }
     if (defined(invoker.static_library_dependent_targets)) {
       _dependent_configs = []
-      foreach(_target, invoker.static_library_dependent_targets) {
-        _target_name = _target.name
-        _target_label = get_label_info(_target_name, "label_no_toolchain")
-        deps += [ "$_target_label$build_config_target_suffix" ]
-        _dep_gen_dir = get_label_info(_target_name, "target_gen_dir")
-        _dep_name = get_label_info(_target_name, "name")
+      foreach(_dep, invoker.static_library_dependent_targets) {
+        _dep_name = _dep.name
+        _dep_label = get_label_info(_dep_name, "label_no_toolchain")
+        deps += [ "$_dep_label$build_config_target_suffix" ]
+        _dep_gen_dir = get_label_info(_dep_name, "target_gen_dir")
+        _dep_name = get_label_info(_dep_name, "name")
         _config =
             rebase_path("$_dep_gen_dir/$_dep_name.build_config", root_build_dir)
         _dependent_configs += [ _config ]
@@ -495,11 +501,11 @@ template("write_build_config") {
       ]
     }
     if (defined(invoker.base_module_target)) {
-      _target_label =
+      _base_label =
           get_label_info(invoker.base_module_target, "label_no_toolchain")
-      _dep_gen_dir = get_label_info(_target_label, "target_gen_dir")
-      _dep_name = get_label_info(_target_label, "name")
-      deps += [ "$_target_label$build_config_target_suffix" ]
+      _dep_gen_dir = get_label_info(_base_label, "target_gen_dir")
+      _dep_name = get_label_info(_base_label, "name")
+      deps += [ "$_base_label$build_config_target_suffix" ]
       args += [
         "--base-module-build-config",
         rebase_path("$_dep_gen_dir/$_dep_name.build_config", root_build_dir),
@@ -524,7 +530,8 @@ template("write_build_config") {
       # }
       _msg = [
         "Tried to build an Android target in a non-default toolchain.",
-        "target: " + get_label_info(":$target_name", "label_with_toolchain"),
+        "target: $_target_label",
+        "current_toolchain: $current_toolchain",
         "default_toolchain: $default_toolchain",
       ]
       args += [ "--fail=$_msg" ]
@@ -974,7 +981,10 @@ if (enable_java_templates) {
     # http://crbug.com/725224. Fix for bots running out of memory.
     _pool = "//build/toolchain:link_pool($default_toolchain)"
 
-    _inputs = [ invoker.build_config ]
+    _inputs = [
+      invoker.build_config,
+      _r8_path,
+    ]
     if (defined(invoker.inputs)) {
       _inputs += invoker.inputs
     }
@@ -1000,6 +1010,8 @@ if (enable_java_templates) {
       "@FileArg($_rebased_build_config:deps_info:proguard_classpath_jars)",
       "--classpath",
       "@FileArg($_rebased_build_config:android:sdk_jars)",
+      "--r8-path",
+      rebase_path(_r8_path, root_build_dir),
     ]
 
     if (enable_proguard_obfuscation) {
@@ -1067,26 +1079,12 @@ if (enable_java_templates) {
       ]
     }
 
-    if (!defined(invoker.proguard_jar_path)) {
+    if (enable_jdk_library_desugaring) {
       _args += [
-        "--r8-path",
-        rebase_path(_r8_path, root_build_dir),
+        "--desugar-jdk-libs-json",
+        rebase_path(_desugar_jdk_libs_json, root_build_dir),
       ]
-      _inputs += [ _r8_path ]
-      if (enable_jdk_library_desugaring) {
-        _args += [
-          "--desugar-jdk-libs-json",
-          rebase_path(_desugar_jdk_libs_json, root_build_dir),
-        ]
-        _inputs += [ _desugar_jdk_libs_json ]
-      }
-    } else {
-      _proguard_jar_path = invoker.proguard_jar_path
-      _args += [
-        "--proguard-path",
-        rebase_path(_proguard_jar_path, root_build_dir),
-      ]
-      _inputs += [ _proguard_jar_path ]
+      _inputs += [ _desugar_jdk_libs_json ]
     }
 
     _enable_assert = is_java_debug || dcheck_always_on
@@ -1215,8 +1213,6 @@ if (enable_java_templates) {
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
     _is_dex_merging = defined(invoker.input_dex_filearg)
-    _proguarding_with_r8 =
-        _proguard_enabled && !defined(invoker.proguard_jar_path)
     _enable_multidex =
         !defined(invoker.enable_multidex) || invoker.enable_multidex
     _enable_main_dex_list = _enable_multidex && _min_sdk_version < 21
@@ -1236,7 +1232,7 @@ if (enable_java_templates) {
     }
 
     assert(defined(invoker.output) ||
-           (_proguarding_with_r8 && defined(invoker.modules)))
+           (_proguard_enabled && defined(invoker.modules)))
     assert(!_proguard_enabled || !(defined(invoker.input_dex_filearg) ||
                                        defined(invoker.input_classes_filearg) ||
                                        defined(invoker.input_class_jars)),
@@ -1258,15 +1254,10 @@ if (enable_java_templates) {
     }
 
     if (_proguard_enabled) {
-      if (_proguarding_with_r8) {
-        if (defined(invoker.output)) {
-          _proguard_output_path = invoker.output
-        }
-        _proguard_target_name = target_name
-      } else {
-        _proguard_output_path = invoker.output + ".proguard.jar"
-        _proguard_target_name = "${target_name}__proguard"
+      if (defined(invoker.output)) {
+        _proguard_output_path = invoker.output
       }
+      _proguard_target_name = target_name
 
       proguard(_proguard_target_name) {
         forward_variables_from(invoker,
@@ -1277,7 +1268,6 @@ if (enable_java_templates) {
                                  "deps",
                                  "modules",
                                  "verify_proguard_flags_target_name",
-                                 "proguard_jar_path",
                                  "proguard_mapping_path",
                                  "proguard_sourcefile_suffix",
                                  "is_static_library",
@@ -1318,7 +1308,7 @@ if (enable_java_templates) {
           args += [ "--apply-mapping=$_rebased_apply_mapping_path" ]
         }
 
-        if (_proguarding_with_r8 && _enable_main_dex_list) {
+        if (_enable_main_dex_list) {
           if (defined(invoker.extra_main_dex_proguard_config)) {
             args += [
               "--main-dex-rules-path",
@@ -1336,30 +1326,18 @@ if (enable_java_templates) {
 
         if (defined(_proguard_output_path)) {
           output_path = _proguard_output_path
-          if (_proguarding_with_r8) {
-            config_output_path = "$_proguard_output_path.proguard_flags"
-          }
+          config_output_path = "$_proguard_output_path.proguard_flags"
         } else {
           mapping_path = "$target_out_dir/$target_name.mapping"
-          if (_proguarding_with_r8) {
-            config_output_path = "$target_out_dir/$target_name.proguard_flags"
-          }
+          config_output_path = "$target_out_dir/$target_name.proguard_flags"
         }
       }
-    }
-
-    if (!_proguarding_with_r8) {
+    } else {  # !_proguard_enabled
       _input_class_jars = []
       if (defined(invoker.input_class_jars)) {
         _input_class_jars = invoker.input_class_jars
       }
-      if (_proguard_enabled) {
-        _input_class_jars += [ _proguard_output_path ]
-      }
       _deps = invoker.deps
-      if (_proguard_enabled) {
-        _deps += [ ":${_proguard_target_name}" ]
-      }
 
       if (_is_dex_merging && enable_bazel_desugar) {
         # It would be more efficient to use the pre-dex'ed copy of the runtime,
@@ -1460,9 +1438,8 @@ if (enable_java_templates) {
           rebase_path(_r8_path, root_build_dir),
         ]
 
-        if (!_proguard_enabled && enable_incremental_d8 &&
-            !(defined(invoker.disable_incremental) &&
-              invoker.disable_incremental)) {
+        if (enable_incremental_d8 && !(defined(invoker.disable_incremental) &&
+                                       invoker.disable_incremental)) {
           # Don't use incremental dexing for ProGuarded inputs as a precaution.
           args += [
             "--incremental-dir",
@@ -1516,13 +1493,6 @@ if (enable_java_templates) {
             invoker.dexlayout_profile,
           ]
           inputs += _default_art_libs
-          if (_proguard_enabled) {
-            args += [
-              "--proguard-mapping-path",
-              rebase_path(invoker.proguard_mapping_path, root_build_dir),
-            ]
-            inputs += [ invoker.proguard_mapping_path ]
-          }
         }
 
         # Never compile intemediates with --release in order to:
@@ -1878,14 +1848,14 @@ if (enable_java_templates) {
       args = [
         "--script",
         rebase_path(_bytecode_checker_script, root_build_dir),
+        "--gn-target=${invoker.target_label}",
         "--input-jar",
         rebase_path(invoker.input_jar, root_build_dir),
         "--stamp",
         rebase_path(outputs[0], root_build_dir),
-        "--direct-classpath-jars",
-        "@FileArg($_rebased_build_config:javac:classpath)",
-        "--full-classpath-jars",
-        "@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
+        "--direct-classpath-jars=@FileArg($_rebased_build_config:javac:classpath)",
+        "--full-classpath-jars=@FileArg($_rebased_build_config:deps_info:javac_full_classpath)",
+        "--full-classpath-gn-targets=@FileArg($_rebased_build_config:deps_info:javac_full_classpath_targets)",
       ]
       if (invoker.is_prebuilt) {
         args += [ "--is-prebuilt" ]
@@ -3469,6 +3439,7 @@ if (enable_java_templates) {
                                "gradle_treat_as_prebuilt",
                                "input_jars_paths",
                                "main_class",
+                               "public_target_label",
                                "proguard_configs",
                                "proguard_enabled",
                                "proguard_mapping_path",
@@ -3770,6 +3741,8 @@ if (enable_java_templates) {
               deps += [ ":$_compile_java_target" ]
             }
             requires_android = _requires_android
+            target_label =
+                get_label_info(":${invoker.target_name}", "label_no_toolchain")
             input_jar = _unprocessed_jar_path
             build_config = _build_config
             is_prebuilt = _is_prebuilt

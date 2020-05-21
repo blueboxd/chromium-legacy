@@ -6,12 +6,16 @@ import("//build/config/jumbo.gni")
 
 jumbo_static_library("content") {
   sources = [
+    "autofill_payment_app.cc",
+    "autofill_payment_app.h",
     "autofill_payment_app_factory.cc",
     "autofill_payment_app_factory.h",
     "can_make_payment_query_factory.cc",
     "can_make_payment_query_factory.h",
     "initialization_task.cc",
     "initialization_task.h",
+    "payment_app.cc",
+    "payment_app.h",
     "payment_app_factory.cc",
     "payment_app_factory.h",
     "payment_app_service.cc",
@@ -137,6 +141,7 @@ jumbo_source_set("unit_tests") {
 
   if (!is_android) {
     sources += [
+      "autofill_payment_app_unittest.cc",
       "payment_app_unittest.cc",
       "payment_request_spec_unittest.cc",
       "payment_request_state_unittest.cc",
@@ -158,7 +163,9 @@ jumbo_source_set("unit_tests") {
     "//components/strings:components_strings_grit",
     "//components/webdata/common",
     "//content/test:test_support",
+    "//net:test_support",
     "//services/metrics/public/cpp:metrics_cpp",
+    "//services/network:test_support",
     "//sql",
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",

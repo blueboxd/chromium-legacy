@@ -2,69 +2,69 @@
 <grit-part>
   <include name="IDR_NEW_TAB_PAGE_SKCOLOR_MOJO_LITE_JS"
       file="${root_gen_dir}/skia/public/mojom/skcolor.mojom-lite.js"
-      use_base_dir="false" type="BINDATA" compress="gzip" />
+      use_base_dir="false" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_MOJO_LITE_JS"
       file="${root_gen_dir}/chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom-lite.js"
-      use_base_dir="false" type="BINDATA" compress="gzip" />
+      use_base_dir="false" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_OMNIBOX_MOJO_LITE_JS"
       file="${root_gen_dir}/chrome/common/search/omnibox.mojom-lite.js"
-      use_base_dir="false" type="BINDATA" compress="gzip" />
+      use_base_dir="false" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_ACCOUNT_CIRCLE_SVG"
-      file="icons/account_circle.svg" type="BINDATA" compress="gzip" />
+      file="icons/account_circle.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_BRUSH_ICON_SVG"
-      file="icons/brush.svg" type="BINDATA" compress="gzip" />
+      file="icons/brush.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_CHECK_CIRCLE_SVG"
-      file="icons/check_circle.svg" type="BINDATA" compress="gzip" />
+      file="icons/check_circle.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_CHEVRON_SVG"
-      file="icons/chevron.svg" type="BINDATA" compress="gzip" />
+      file="icons/chevron.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_GENERIC_GLOBE_SVG"
-      file="icons/generic_globe.svg" type="BINDATA" compress="gzip" />
+      file="icons/generic_globe.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_PENCIL_ICON_SVG"
-      file="icons/icon_pencil.svg" type="BINDATA" compress="gzip" />
+      file="icons/icon_pencil.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_LINK_ICON_SVG"
-      file="icons/link.svg" type="BINDATA" compress="gzip" />
+      file="icons/link.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_BACKGROUNDS_ICON_SVG"
-      file="icons/backgrounds.svg" type="BINDATA" compress="gzip" />
+      file="icons/backgrounds.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_COLORED_HEADER_SVG"
-      file="icons/colored_header.svg" type="BINDATA" compress="gzip" />
+      file="icons/colored_header.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_COLORS_ICON_SVG"
-      file="icons/colors.svg" type="BINDATA" compress="gzip" />
+      file="icons/colors.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_COLORIZE_ICON_SVG"
-      file="icons/colorize.svg" type="BINDATA" compress="gzip" />
+      file="icons/colorize.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_SHORTCUT_CIRCLES_SVG"
-      file="icons/shortcut_circles.svg" type="BINDATA" compress="gzip" />
+      file="icons/shortcut_circles.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_GOOGLE_MIC_SVG"
-      file="icons/googlemic_clr_24px.svg" type="BINDATA" compress="gzip" />
+      file="icons/googlemic_clr_24px.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_MIC_SVG"
-      file="icons/mic.svg" type="BINDATA" compress="gzip" />
+      file="icons/mic.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_COPY_SVG"
-      file="icons/copy.svg" type="BINDATA" compress="gzip" />
+      file="icons/copy.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_FACEBOOK_SVG"
-      file="icons/facebook.svg" type="BINDATA" compress="gzip" />
+      file="icons/facebook.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_TWITTER_SVG"
-      file="icons/twitter.svg" type="BINDATA" compress="gzip" />
+      file="icons/twitter.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_MAIL_SVG"
-      file="icons/mail.svg" type="BINDATA" compress="gzip" />
+      file="icons/mail.svg" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UPLOAD_SVG" file="icons/upload.svg"
-      type="BINDATA" compress="gzip" />
+      type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_NEW_TAB_PAGE_HTML"
-      file="new_tab_page.html" type="BINDATA" compress="gzip" />
+      file="new_tab_page.html" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_SHARED_VARS_CSS"
-      file="shared_vars.css" type="BINDATA" compress="gzip" />
+      file="shared_vars.css" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_HTML"
-      file="untrusted/one_google_bar.html" type="BINDATA" compress="gzip" />
+      file="untrusted/one_google_bar.html" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_ONE_GOOGLE_BAR_JS"
-      file="untrusted/one_google_bar.js" type="BINDATA" compress="gzip" />
+      file="untrusted/one_google_bar.js" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_HTML"
-      file="untrusted/promo.html" type="BINDATA" compress="gzip" />
+      file="untrusted/promo.html" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_PROMO_JS"
-      file="untrusted/promo.js" type="BINDATA" compress="gzip" />
+      file="untrusted/promo.js" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_IMAGE_HTML"
-      file="untrusted/image.html" type="BINDATA" compress="gzip" />
+      file="untrusted/image.html" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_HTML"
-      file="untrusted/background_image.html" type="BINDATA" compress="gzip" />
+      file="untrusted/background_image.html" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_BACKGROUND_IMAGE_JS"
-      file="untrusted/background_image.js" type="BINDATA" compress="gzip" />
+      file="untrusted/background_image.js" type="BINDATA" />
   <include name="IDR_NEW_TAB_PAGE_UNTRUSTED_IFRAME_HTML"
-      file="untrusted/iframe.html" type="BINDATA" compress="gzip" />
+      file="untrusted/iframe.html" type="BINDATA" />
 </grit-part>

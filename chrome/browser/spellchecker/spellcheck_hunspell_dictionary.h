@@ -100,7 +100,7 @@ class SpellcheckHunspellDictionary
   // blocking sequence.
   struct DictionaryFile {
    public:
-    DictionaryFile();
+    explicit DictionaryFile(base::TaskRunner* task_runner);
     ~DictionaryFile();
 
     DictionaryFile(DictionaryFile&& other);
@@ -113,6 +113,9 @@ class SpellcheckHunspellDictionary
     base::File file;
 
    private:
+    // Task runner where the file is created.
+    scoped_refptr<base::TaskRunner> task_runner_;
+
     DISALLOW_COPY_AND_ASSIGN(DictionaryFile);
   };
 
@@ -127,11 +130,12 @@ class SpellcheckHunspellDictionary
 #if !defined(OS_ANDROID)
   // Figures out the location for the dictionary, verifies its contents, and
   // opens it.
-  static DictionaryFile OpenDictionaryFile(const base::FilePath& path);
+  static DictionaryFile OpenDictionaryFile(base::TaskRunner* task_runner,
+                                           const base::FilePath& path);
 
   // Gets the default location for the dictionary file.
   static DictionaryFile InitializeDictionaryLocation(
-      const std::string& language);
+      base::TaskRunner* task_runner, const std::string& language);
 
   // The reply point for PostTaskAndReplyWithResult, called after the dictionary
   // file has been initialized.

@@ -58,6 +58,7 @@ bool IsSameSite(BrowserContext* context, const GURL& url1, const GURL& url2) {
 }  // namespace
 
 const char kPrivilegedScheme[] = "privileged";
+const char kCustomStandardScheme[] = "custom-standard";
 
 class SiteInstanceTestBrowserClient : public TestContentBrowserClient {
  public:
@@ -116,6 +117,7 @@ class SiteInstanceTest : public testing::Test {
  public:
   SiteInstanceTest() : old_browser_client_(nullptr) {
     url::AddStandardScheme(kPrivilegedScheme, url::SCHEME_WITH_HOST);
+    url::AddStandardScheme(kCustomStandardScheme, url::SCHEME_WITH_HOST);
   }
 
   void SetUp() override {
@@ -1373,9 +1375,33 @@ TEST_F(SiteInstanceTest, StartIsolatingSite) {
 }
 
 TEST_F(SiteInstanceTest, CreateForURL) {
+  class CustomBrowserClient : public EffectiveURLContentBrowserClient {
+   public:
+    CustomBrowserClient(const GURL& url_to_modify, const GURL& url_to_return)
+        : EffectiveURLContentBrowserClient(url_to_modify,
+                                           url_to_return,
+                                           false) {}
+
+    void set_should_not_assign_url(const GURL& url) {
+      should_not_assign_url_ = url;
+    }
+
+    bool ShouldAssignSiteForURL(const GURL& url) override {
+      return url != should_not_assign_url_;
+    }
+
+   private:
+    GURL should_not_assign_url_;
+  };
+
   const GURL kNonIsolatedUrl("https://bar.com/");
   const GURL kIsolatedUrl("https://isolated.com/");
   const GURL kFileUrl("file:///C:/Downloads/");
+  const GURL kCustomUrl("http://custom.foo.com");
+  const GURL kCustomAppUrl(std::string(kCustomStandardScheme) + "://custom");
+  CustomBrowserClient modified_client(kCustomUrl, kCustomAppUrl);
+  ContentBrowserClient* regular_client =
+      SetBrowserClientForTesting(&modified_client);
 
   ChildProcessSecurityPolicyImpl::GetInstance()->AddIsolatedOrigins(
       {url::Origin::Create(kIsolatedUrl)}, IsolatedOriginSource::TEST);
@@ -1385,6 +1411,7 @@ TEST_F(SiteInstanceTest, CreateForURL) {
   auto instance3 = SiteInstanceImpl::CreateForURL(context(), kFileUrl);
   auto instance4 =
       SiteInstanceImpl::CreateForURL(context(), GURL(url::kAboutBlankURL));
+  auto instance5 = SiteInstanceImpl::CreateForURL(context(), kCustomUrl);
 
   if (AreDefaultSiteInstancesEnabled()) {
     EXPECT_TRUE(instance1->IsDefaultSiteInstance());
@@ -1392,18 +1419,60 @@ TEST_F(SiteInstanceTest, CreateForURL) {
     EXPECT_FALSE(instance1->IsDefaultSiteInstance());
     EXPECT_EQ(kNonIsolatedUrl, instance1->GetSiteURL());
   }
+  EXPECT_TRUE(instance1->DoesSiteForURLMatch(kNonIsolatedUrl));
+  EXPECT_TRUE(instance1->IsSameSiteWithURL(kNonIsolatedUrl));
 
   EXPECT_FALSE(instance2->IsDefaultSiteInstance());
   EXPECT_EQ(kIsolatedUrl, instance2->GetSiteURL());
+  EXPECT_TRUE(instance2->DoesSiteForURLMatch(kIsolatedUrl));
+  EXPECT_TRUE(instance2->IsSameSiteWithURL(kIsolatedUrl));
 
   EXPECT_FALSE(instance3->IsDefaultSiteInstance());
   EXPECT_EQ(GURL("file:"), instance3->GetSiteURL());
+  EXPECT_TRUE(instance3->DoesSiteForURLMatch(kFileUrl));
+  // Not same site because file URL's don't have a host.
+  EXPECT_FALSE(instance3->IsSameSiteWithURL(kFileUrl));
 
   // about:blank URLs generate a SiteInstance without the site URL set because
   // ShouldAssignSiteForURL() returns false and the expectation is that the
   // site URL will be set at a later time.
   EXPECT_FALSE(instance4->IsDefaultSiteInstance());
   EXPECT_FALSE(instance4->HasSite());
+  EXPECT_FALSE(instance4->DoesSiteForURLMatch(GURL(url::kAboutBlankURL)));
+  EXPECT_FALSE(instance4->IsSameSiteWithURL(GURL(url::kAboutBlankURL)));
+
+  // Test the standard effective URL case.
+  EXPECT_TRUE(instance5->HasSite());
+  if (AreDefaultSiteInstancesEnabled()) {
+    EXPECT_TRUE(instance5->IsDefaultSiteInstance());
+  } else {
+    EXPECT_FALSE(instance5->IsDefaultSiteInstance());
+    EXPECT_EQ("custom-standard://custom/#http://foo.com/",
+              instance5->GetSiteURL());
+  }
+  EXPECT_TRUE(instance5->DoesSiteForURLMatch(kCustomUrl));
+  EXPECT_TRUE(instance5->IsSameSiteWithURL(kCustomUrl));
+
+  // Test the "do not assign site" case with an effective URL.
+  modified_client.set_should_not_assign_url(kCustomUrl);
+
+  if (instance5->IsDefaultSiteInstance()) {
+    // Verify that the default SiteInstance is no longer a site match
+    // with |kCustomUrl| because this URL now requires a SiteInstance that
+    // does not have its site set.
+    EXPECT_FALSE(instance5->DoesSiteForURLMatch(kCustomUrl));
+    EXPECT_FALSE(instance5->IsSameSiteWithURL(kCustomUrl));
+  }
+
+  // Verify that |kCustomUrl| will always construct a SiteInstance without
+  // a site set now.
+  auto instance6 = SiteInstanceImpl::CreateForURL(context(), kCustomUrl);
+  EXPECT_FALSE(instance6->IsDefaultSiteInstance());
+  EXPECT_FALSE(instance6->HasSite());
+  EXPECT_FALSE(instance6->DoesSiteForURLMatch(kCustomUrl));
+  EXPECT_FALSE(instance6->IsSameSiteWithURL(kCustomUrl));
+
+  SetBrowserClientForTesting(regular_client);
 }
 
 TEST_F(SiteInstanceTest, CreateForGuest) {

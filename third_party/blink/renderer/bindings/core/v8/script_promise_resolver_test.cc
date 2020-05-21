@@ -310,7 +310,7 @@ TEST_F(ScriptPromiseResolverTest, suspend) {
       BlinkGC::kNoHeapPointersOnStack);
   ASSERT_TRUE(ScriptPromiseResolverKeepAlive::IsAlive());
 
-  GetExecutionContext()->SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
+  page_holder_->GetPage().SetPaused(true);
   resolver->Resolve("hello");
   ThreadState::Current()->CollectAllGarbageForTesting(
       BlinkGC::kNoHeapPointersOnStack);

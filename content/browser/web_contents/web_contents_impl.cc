@@ -3740,9 +3740,7 @@ gfx::Rect WebContentsImpl::GetViewBounds() {
 }
 
 gfx::Rect WebContentsImpl::GetContainerBounds() {
-  gfx::Rect rv;
-  view_->GetContainerBounds(&rv);
-  return rv;
+  return view_->GetContainerBounds();
 }
 
 DropData* WebContentsImpl::GetDropData() {

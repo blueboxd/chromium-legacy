@@ -65,12 +65,12 @@ DedicatedWorkerHost::DedicatedWorkerHost(
 
   scoped_process_host_observer_.Add(worker_process_host_);
 
-  service_->NotifyWorkerStarted(id_, worker_process_host_->GetID(),
+  service_->NotifyWorkerCreated(id_, worker_process_host_->GetID(),
                                 ancestor_render_frame_host_id_);
 }
 
 DedicatedWorkerHost::~DedicatedWorkerHost() {
-  service_->NotifyWorkerTerminating(id_, ancestor_render_frame_host_id_);
+  service_->NotifyBeforeWorkerDestroyed(id_, ancestor_render_frame_host_id_);
 }
 
 void DedicatedWorkerHost::BindBrowserInterfaceBrokerReceiver(

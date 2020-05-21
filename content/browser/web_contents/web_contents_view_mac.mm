@@ -122,7 +122,7 @@ gfx::NativeWindow WebContentsViewMac::GetTopLevelNativeWindow() const {
   return window ? window : delegate_->GetNativeWindow();
 }
 
-void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
+gfx::Rect WebContentsViewMac::GetContainerBounds() const {
   NSWindow* window = [GetInProcessNSView() window];
   NSRect bounds = [GetInProcessNSView() bounds];
   if (window)  {
@@ -133,7 +133,7 @@ void WebContentsViewMac::GetContainerBounds(gfx::Rect* out) const {
     bounds = [window convertRectToScreen:bounds];
   }
 
-  *out = gfx::ScreenRectFromNSRect(bounds);
+  return gfx::ScreenRectFromNSRect(bounds);
 }
 
 void WebContentsViewMac::StartDragging(

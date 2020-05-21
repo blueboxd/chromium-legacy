@@ -82,7 +82,16 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
 
         @Override
         public Object getSystemService(String name) {
+            if (Context.LAYOUT_INFLATER_SERVICE.equals(name)) {
+                return getLayoutInflater();
+            }
             return getEmbedderActivity().getSystemService(name);
+        }
+
+        @Override
+        public LayoutInflater getLayoutInflater() {
+            return (LayoutInflater) getBaseContext().getSystemService(
+                    Context.LAYOUT_INFLATER_SERVICE);
         }
 
         @Override

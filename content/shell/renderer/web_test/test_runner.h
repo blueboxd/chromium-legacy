@@ -60,6 +60,7 @@ class SpellCheckClient;
 class TestInterfaces;
 class TestRunnerForSpecificView;
 class WebFrameTestProxy;
+class WebWidgetTestProxy;
 class WebViewTestProxy;
 
 // TestRunner class currently has dual purpose:
@@ -80,7 +81,7 @@ class TestRunner {
   explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
 
-  void Install(RenderFrame* frame,
+  void Install(WebFrameTestProxy* frame,
                SpellCheckClient* spell_check,
                TestRunnerForSpecificView* view_test_runner);
 
@@ -91,6 +92,8 @@ class TestRunner {
   void Reset();
   // Resets state on the |web_view_test_proxy| for the next test.
   void ResetWebView(WebViewTestProxy* web_view_test_proxy);
+  // Resets state on the |web_widget_test_proxy| for the next test.
+  void ResetWebWidget(WebWidgetTestProxy* web_widget_test_proxy);
   // Resets state on the |web_frame_test_proxy| for the next test.
   void ResetWebFrame(WebFrameTestProxy* web_frame_test_proxy);
 

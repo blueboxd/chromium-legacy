@@ -1253,4 +1253,51 @@ TEST_F(ScrollAnchorFindInPageTest, FocusPrioritizedOverFindInPage) {
   EXPECT_EQ(old_focus_bounds->y(), new_focus_bounds->y());
   EXPECT_NE(old_find_bounds->y(), new_find_bounds->y());
 }
+
+TEST_F(ScrollAnchorFindInPageTest, FocusedUnderStickyIsSkipped) {
+  ResizeAndFocus();
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    body { height: 4000px; position: relative; }
+    .spacer { height: 100px }
+    #growing { height: 100px }
+    .sticky { position: sticky; top: 10px; }
+    #target { width: 10px; height: 10px; }
+    </style>
+
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+    <div id=growing></div>
+    <div class=spacer></div>
+    <div id=check></div>
+    <div class=sticky>
+      <div id=target tabindex=0></div>
+    </div>
+    <div class=spacer></div>
+    <div class=spacer></div>
+  )HTML");
+
+  LayoutViewport()->SetScrollOffset(ScrollOffset(0, 150),
+                                    mojom::blink::ScrollType::kUser);
+
+  GetDocument().getElementById("target")->focus();
+
+  // Save the old bounds for comparison. Use #check, since sticky won't move
+  // regardless of scroll anchoring.
+  auto* old_bounds =
+      GetDocument().getElementById("check")->getBoundingClientRect();
+
+  GetDocument().getElementById("growing")->setAttribute(html_names::kStyleAttr,
+                                                        "height: 3000px");
+  UpdateAllLifecyclePhasesForTest();
+
+  auto* new_bounds =
+      GetDocument().getElementById("check")->getBoundingClientRect();
+
+  // The y coordinate of #check should change since #target is not a valid
+  // anchor, so we should have selected one of the spacers as the anchor.
+  EXPECT_NE(old_bounds->y(), new_bounds->y());
+}
 }

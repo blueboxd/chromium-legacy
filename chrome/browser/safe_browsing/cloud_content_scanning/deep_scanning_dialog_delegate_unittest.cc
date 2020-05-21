@@ -546,8 +546,14 @@ TEST_F(DeepScanningDialogDelegateIsEnabledTest, NoScanInIncognito) {
 
   // The same URL should not trigger a scan in incognito.
   EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
-      profile()->GetOffTheRecordProfile(), url, &data,
+      profile()->GetPrimaryOTRProfile(), url, &data,
       enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
+
+  // The same URL should not trigger a scan in non-primary OTR profiles
+  EXPECT_FALSE(DeepScanningDialogDelegate::IsEnabled(
+      profile()->GetOffTheRecordProfile(
+          Profile::OTRProfileID("Test::DeepScanning")),
+      url, &data, enterprise_connectors::AnalysisConnector::FILE_ATTACHED));
 }
 
 TEST_F(DeepScanningDialogDelegateIsEnabledTest, MalwareEnabledWithPatterns) {

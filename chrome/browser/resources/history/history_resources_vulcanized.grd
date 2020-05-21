@@ -15,33 +15,27 @@
       <include name="IDR_HISTORY_HISTORY_HTML"
                file="history.html"
                preprocess="true"
-               type="BINDATA"
-               compress="gzip" />
+               type="BINDATA" />
       <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_DARK_SVG"
                file="images\sign_in_promo_dark.svg"
-               compress="gzip"
                type="BINDATA" />
       <include name="IDR_HISTORY_IMAGES_SIGN_IN_PROMO_SVG"
                file="images\sign_in_promo.svg"
-               compress="gzip"
                type="BINDATA" />
       <include name="IDR_HISTORY_HISTORY_ROLLUP_JS"
                file="${root_gen_dir}\chrome\browser\resources\history\history.rollup.js"
                preprocess="true"
                type="BINDATA"
-               compress="gzip"
                use_base_dir="false" />
       <include name="IDR_HISTORY_LAZY_LOAD_ROLLUP_JS"
                file="${root_gen_dir}\chrome\browser\resources\history\lazy_load.rollup.js"
                preprocess="true"
                type="BINDATA"
-               compress="gzip"
                use_base_dir="false" />
       <include name="IDR_HISTORY_SHARED_ROLLUP_JS"
                file="${root_gen_dir}\chrome\browser\resources\history\shared.rollup.js"
                preprocess="true"
                type="BINDATA"
-               compress="gzip"
                use_base_dir="false" />
     </includes>
   </release>

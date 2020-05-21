@@ -63,8 +63,8 @@ const std::string& TestContentPaymentRequestDelegate::GetApplicationLocale()
   return core_delegate_.GetApplicationLocale();
 }
 
-bool TestContentPaymentRequestDelegate::IsIncognito() const {
-  return core_delegate_.IsIncognito();
+bool TestContentPaymentRequestDelegate::IsOffTheRecord() const {
+  return core_delegate_.IsOffTheRecord();
 }
 
 const GURL& TestContentPaymentRequestDelegate::GetLastCommittedURL() const {

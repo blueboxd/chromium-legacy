@@ -7,9 +7,9 @@
   }
 </style>
 <script>
-  if (window.eventSender) {
+  if (window.testRunner) {
     // Zoom the page in to 120%.
-    eventSender.zoomPageIn();
+    testRunner.zoomPageIn();
   }
 
   test(function() {

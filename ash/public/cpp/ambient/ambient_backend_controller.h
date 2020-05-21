@@ -97,11 +97,13 @@ class ASH_PUBLIC_EXPORT AmbientBackendController {
   AmbientBackendController& operator=(const AmbientBackendController&) = delete;
   virtual ~AmbientBackendController();
 
-  // Sends request to retrieve |ScreenUpdate| from the backdrop server.
+  // Sends request to retrieve |num_topics| of |ScreenUpdate| from the backdrop
+  // server.
   // Upon completion, |callback| is run with the parsed |ScreenUpdate|. If any
   // errors happened during the process, e.g. failed to fetch access token, a
   // dummy instance will be returned.
   virtual void FetchScreenUpdateInfo(
+      int num_topics,
       OnScreenUpdateInfoFetchedCallback callback) = 0;
 
   // Get ambient mode Settings from server.

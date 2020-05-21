@@ -11,6 +11,10 @@
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace content {
 
 ContentServiceManagerMainDelegate::ContentServiceManagerMainDelegate(
@@ -70,6 +74,15 @@ void ContentServiceManagerMainDelegate::OverrideMojoConfiguration(
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kProcessType)) {
     config->is_broker_process = true;
+  } else {
+#if defined(OS_WIN)
+    if (base::win::GetVersion() >= base::win::Version::WIN8_1) {
+      // On Windows 8.1 and later it's not necessary to broker shared memory
+      // allocation, as even sandboxed processes can allocate their own without
+      // trouble.
+      config->force_direct_shared_memory_allocation = true;
+    }
+#endif
   }
 }
 

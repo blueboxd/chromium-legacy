@@ -22,7 +22,7 @@ class Node(object):  # pylint: disable=useless-object-inheritance
         self._outbound = set()
         self._inbound = set()
 
-    def __eq__(self, other: "Node"):  # pylint: disable=missing-function-docstring
+    def __eq__(self, other: 'Node'):  # pylint: disable=missing-function-docstring
         return self._unique_key == other._unique_key
 
     def __hash__(self):  # pylint: disable=missing-function-docstring
@@ -43,11 +43,11 @@ class Node(object):  # pylint: disable=useless-object-inheritance
         """A set of Nodes that this Node has a directed edge into."""
         return self._outbound
 
-    def add_outbound(self, node: "Node"):
+    def add_outbound(self, node: 'Node'):
         """Creates an edge from the current node to the provided node."""
         self._outbound.add(node)
 
-    def add_inbound(self, node: "Node"):
+    def add_inbound(self, node: 'Node'):
         """Creates an edge from the provided node to the current node."""
         self._inbound.add(node)
 

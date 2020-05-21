@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/payments/content/payment_details_converter.h"
 #include "components/payments/content/payment_event_response_util.h"
 #include "components/payments/content/payment_handler_host.h"
 #include "components/payments/content/payment_request_converter.h"
@@ -559,6 +560,22 @@ void ServiceWorkerPaymentApp::SetPaymentHandlerHost(
 bool ServiceWorkerPaymentApp::IsWaitingForPaymentDetailsUpdate() const {
   return payment_handler_host_ &&
          payment_handler_host_->is_waiting_for_payment_details_update();
+}
+
+void ServiceWorkerPaymentApp::UpdateWith(
+    const mojom::PaymentDetailsPtr& details) {
+  if (payment_handler_host_) {
+    payment_handler_host_->UpdateWith(
+        PaymentDetailsConverter::ConvertToPaymentRequestDetailsUpdate(
+            details, HandlesShippingAddress(),
+            base::BindRepeating(&PaymentApp::IsValidForPaymentMethodIdentifier,
+                                AsWeakPtr())));
+  }
+}
+
+void ServiceWorkerPaymentApp::OnPaymentDetailsNotUpdated() {
+  if (payment_handler_host_)
+    payment_handler_host_->OnPaymentDetailsNotUpdated();
 }
 
 }  // namespace payments

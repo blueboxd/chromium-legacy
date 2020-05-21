@@ -263,8 +263,8 @@ void FrameLoader::Init() {
   // Suppress finish notifications for initial empty documents, since they don't
   // generate start notifications.
   document_loader_->SetSentDidFinishLoad();
-  if (frame_->GetPage()->Paused())
-    frame_->SetLifecycleState(mojom::FrameLifecycleState::kPaused);
+  // Ensure that the frame sees the correct page lifecycle state.
+  frame_->OnPageLifecycleStateUpdated();
 
   TakeObjectSnapshot();
 }

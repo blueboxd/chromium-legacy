@@ -13,7 +13,7 @@
 #include "media/base/video_decoder.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_output_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_output_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_web_codecs_error_callback.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -86,7 +86,7 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
   void OnOutput(scoped_refptr<media::VideoFrame>);
 
   Member<ScriptState> script_state_;
-  Member<V8VideoDecoderOutputCallback> output_cb_;
+  Member<V8VideoFrameOutputCallback> output_cb_;
   Member<V8WebCodecsErrorCallback> error_cb_;
 
   HeapDeque<Member<Request>> requests_;

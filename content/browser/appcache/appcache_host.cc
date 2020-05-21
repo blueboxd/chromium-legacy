@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -103,6 +104,8 @@ AppCacheHost::AppCacheHost(
     security_policy_handle_ =
         ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
             process_id_);
+    if (!security_policy_handle_.is_valid())
+      base::debug::DumpWithoutCrashing();
   }
   is_origin_trial_required_ =
       service_->appcache_policy()->IsOriginTrialRequiredForAppCache();
@@ -633,6 +636,8 @@ void AppCacheHost::SetProcessId(int process_id) {
   process_id_ = process_id;
   security_policy_handle_ =
       ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(process_id_);
+  if (!security_policy_handle_.is_valid())
+    base::debug::DumpWithoutCrashing();
 }
 
 base::WeakPtr<AppCacheHost> AppCacheHost::GetWeakPtr() {

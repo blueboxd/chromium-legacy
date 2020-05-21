@@ -28,6 +28,7 @@ source_set("password_protection") {
       "//components/password_manager/core/browser:browser",
       "//components/safe_browsing/content/common:interfaces",
       "//components/safe_browsing/content/web_ui:web_ui",
+      "//components/safe_browsing/core:client_model_proto",
       "//components/safe_browsing/core:csd_proto",
       "//components/safe_browsing/core:features",
       "//components/safe_browsing/core/browser:referrer_chain_provider",
@@ -43,7 +44,9 @@ source_set("password_protection") {
       "//components/url_formatter",
       "//content/public/browser:browser",
       "//net:net",
+      "//third_party/opencv:emd",
       "//third_party/protobuf:protobuf_lite",
+      "//ui/gfx:color_utils",
     ]
   }
   if (safe_browsing_mode == 1) {

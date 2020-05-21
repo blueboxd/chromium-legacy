@@ -125,9 +125,9 @@ public class PaymentRequestImpl
      */
     public interface Delegate {
         /**
-         * Returns whether the ChromeActivity is currently showing an incognito tab.
+         * Returns whether the ChromeActivity is currently showing an OffTheRecord tab.
          */
-        boolean isIncognito(ChromeActivity activity);
+        boolean isOffTheRecord(ChromeActivity activity);
         /**
          * Returns a non-null string if there is an invalid SSL certificate on the currently
          * loaded page.
@@ -411,7 +411,7 @@ public class PaymentRequestImpl
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
     private final JourneyLogger mJourneyLogger;
-    private final boolean mIsIncognito;
+    private final boolean mIsOffTheRecord;
 
     private PaymentRequestClient mClient;
     private List<AutofillProfile> mAutofillProfiles;
@@ -584,17 +584,17 @@ public class PaymentRequestImpl
 
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
 
-        mIsIncognito = mDelegate.isIncognito(ChromeActivity.fromWebContents(mWebContents));
+        mIsOffTheRecord = mDelegate.isOffTheRecord(ChromeActivity.fromWebContents(mWebContents));
 
-        // Do not persist changes on disk in incognito mode.
+        // Do not persist changes on disk in OffTheRecord mode.
         mAddressEditor = new AddressEditor(
-                AddressEditor.Purpose.PAYMENT_REQUEST, /*saveToDisk=*/!mIsIncognito);
+                AddressEditor.Purpose.PAYMENT_REQUEST, /*saveToDisk=*/!mIsOffTheRecord);
         // PaymentRequest card editor does not show the organization name in the dropdown with the
         // billing address labels.
         mCardEditor = new CardEditor(
                 mWebContents, mAddressEditor, /*includeOrgLabel=*/false, sObserverForTest);
 
-        mJourneyLogger = new JourneyLogger(mIsIncognito, mWebContents);
+        mJourneyLogger = new JourneyLogger(mIsOffTheRecord, mWebContents);
         mCurrencyFormatterMap = new HashMap<>();
 
         mSkipUiForNonUrlPaymentMethodIdentifiers = mDelegate.skipUiForBasicCard();
@@ -732,9 +732,9 @@ public class PaymentRequestImpl
         }
 
         if (mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
-            // Do not persist changes on disk in incognito mode.
+            // Do not persist changes on disk in OffTheRecord mode.
             mContactEditor = new ContactEditor(mRequestPayerName, mRequestPayerPhone,
-                    mRequestPayerEmail, /*saveToDisk=*/!mIsIncognito);
+                    mRequestPayerEmail, /*saveToDisk=*/!mIsOffTheRecord);
             boolean haveCompleteContactInfo = false;
             for (int i = 0; i < mAutofillProfiles.size(); i++) {
                 AutofillProfile profile = mAutofillProfiles.get(i);
@@ -1337,7 +1337,7 @@ public class PaymentRequestImpl
         ChromeActivity chromeActivity = ChromeActivity.fromWebContents(mWebContents);
         if (chromeActivity == null) return false;
 
-        boolean success = mPaymentHandlerUi.show(chromeActivity, url, mIsIncognito,
+        boolean success = mPaymentHandlerUi.show(chromeActivity, url, mIsOffTheRecord,
                 paymentHandlerWebContentsObserver, /*uiObserver=*/this);
         if (success) {
             // UKM for payment app origin should get recorded only when the origin of the invoked
@@ -2404,7 +2404,7 @@ public class PaymentRequestImpl
         mClient.onCanMakePayment(response ? CanMakePaymentQueryResult.CAN_MAKE_PAYMENT
                                           : CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
 
-        mJourneyLogger.setCanMakePaymentValue(response || mIsIncognito);
+        mJourneyLogger.setCanMakePaymentValue(response || mIsOffTheRecord);
 
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceCanMakePaymentQueryResponded();
@@ -2446,7 +2446,7 @@ public class PaymentRequestImpl
                             : HasEnrolledInstrumentQueryResult.WARNING_HAS_NO_ENROLLED_INSTRUMENT);
         }
 
-        mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsIncognito);
+        mJourneyLogger.setHasEnrolledInstrumentValue(response || mIsOffTheRecord);
 
         if (sObserverForTest != null) {
             sObserverForTest.onPaymentRequestServiceHasEnrolledInstrumentQueryResponded();
@@ -2755,9 +2755,9 @@ public class PaymentRequestImpl
                 // Chrome always refuses payments with invalid SSL and in prohibited origin types.
                 disconnectFromClientWithDebugMessage(
                         mRejectShowErrorMessage, PaymentErrorReason.NOT_SUPPORTED);
-            } else if (mIsIncognito) {
-                // If the user is in the incognito mode, hide the absence of their payment methods
-                // from the merchant site.
+            } else if (mIsOffTheRecord) {
+                // If the user is in the OffTheRecord mode, hide the absence of their payment
+                // methods from the merchant site.
                 disconnectFromClientWithDebugMessage(
                         ErrorStrings.USER_CANCELLED, PaymentErrorReason.USER_CANCEL);
             } else {

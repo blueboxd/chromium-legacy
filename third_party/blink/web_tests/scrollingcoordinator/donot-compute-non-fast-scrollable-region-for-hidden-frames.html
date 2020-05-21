@@ -12,6 +12,13 @@
   }
 </style>
 
+<script>
+  // Prefer non-composited scrolling because this is a test of non-composited
+  // scrollers.
+  if (window.internals)
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
+</script>
+
 <iframe id='iframe' src='resources/iframe-containing-non-fast-scrollables.html'></iframe>
 
 <script src="resources/non-fast-scrollable-region-testing.js"></script>

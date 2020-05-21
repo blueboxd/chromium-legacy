@@ -132,7 +132,7 @@ constexpr std::pair<arc::mojom::ChromePage, const char*> kOSSettingsMapping[] =
      {ChromePage::OSLANGUAGESINPUTMETHODS,
       chromeos::settings::mojom::kManageInputMethodsSubpagePath},
      {ChromePage::OSLANGUAGESSMARTINPUTS,
-      chromeos::settings::mojom::kSmartInputsSubagePath},
+      chromeos::settings::mojom::kSmartInputsSubpagePath},
      {ChromePage::LOCKSCREEN,
       chromeos::settings::mojom::kSecurityAndSignInSubpagePath},
      {ChromePage::MAIN, ""},

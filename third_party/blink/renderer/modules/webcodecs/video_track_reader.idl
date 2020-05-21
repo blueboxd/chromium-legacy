@@ -12,7 +12,7 @@
   constructor(MediaStreamTrack track);
 
   [RaisesException]
-  void start(VideoDecoderOutputCallback callback);
+  void start(VideoFrameOutputCallback callback);
 
   [RaisesException]
   void stop();

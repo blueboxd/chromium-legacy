@@ -7,6 +7,7 @@
 
 #include <map>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
@@ -16,7 +17,7 @@ namespace ui {
 
 class CursorFactoryOzone;
 
-class UI_BASE_EXPORT CursorLoaderOzone : public CursorLoader {
+class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderOzone : public CursorLoader {
  public:
   // CursorLoaderOzone will use CursorFactoryOzone corresponding to the thread
   // it was constructed on.

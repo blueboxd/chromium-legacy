@@ -160,45 +160,43 @@ class StartSurfaceToolbarMediator {
     void onBottomToolbarVisibilityChanged(boolean isVisible) {}
 
     void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
-        assert mOverviewModeBehavior == null;
+        assert overviewModeBehavior != null;
+        assert mOverviewModeBehavior
+                == null
+            : "TODO(https://crbug.com/1084528): the overview mode manager should set at most once.";
 
         mOverviewModeBehavior = overviewModeBehavior;
-        if (mOverviewModeObserver == null) {
-            mOverviewModeObserver = new EmptyOverviewModeObserver() {
-                @Override
-                public void onOverviewModeStateChanged(
-                        @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
-                    mOverviewModeState = overviewModeState;
-                    updateNewTabButtonVisibility();
-                    updateLogoVisibility(mIsGoogleSearchEngine);
-                    updateIdentityDisc(
-                            mIdentityDiscController.getForStartSurface(mOverviewModeState));
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStateChanged(
+                    @OverviewModeState int overviewModeState, boolean showTabSwitcherToolbar) {
+                mOverviewModeState = overviewModeState;
+                updateNewTabButtonVisibility();
+                updateLogoVisibility(mIsGoogleSearchEngine);
+                updateIdentityDisc(mIdentityDiscController.getForStartSurface(mOverviewModeState));
+            }
+            @Override
+            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                if (mHideIncognitoSwitchWhenNoTabs) {
+                    mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
                 }
-                @Override
-                public void onOverviewModeStartedShowing(boolean showToolbar) {
-                    if (mHideIncognitoSwitchWhenNoTabs) {
-                        mPropertyModel.set(INCOGNITO_SWITCHER_VISIBLE, hasIncognitoTabs());
-                    }
-                    if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
-                            || mShowNewTabAndIdentityDiscAtStart) {
-                        mPropertyModel.set(NEW_TAB_BUTTON_AT_START, true);
-                    }
-                    if (mShowNewTabAndIdentityDiscAtStart) {
-                        mPropertyModel.set(IDENTITY_DISC_AT_START, true);
-                    }
+                if (mOverviewModeState == OverviewModeState.SHOWN_TABSWITCHER_OMNIBOX_ONLY
+                        || mShowNewTabAndIdentityDiscAtStart) {
+                    mPropertyModel.set(NEW_TAB_BUTTON_AT_START, true);
                 }
-                @Override
-                public void onOverviewModeFinishedShowing() {
-                    mPropertyModel.set(BUTTONS_CLICKABLE, true);
+                if (mShowNewTabAndIdentityDiscAtStart) {
+                    mPropertyModel.set(IDENTITY_DISC_AT_START, true);
                 }
-                @Override
-                public void onOverviewModeStartedHiding(
-                        boolean showToolbar, boolean delayAnimation) {
-                    mPropertyModel.set(BUTTONS_CLICKABLE, false);
-                }
-
-            };
-        }
+            }
+            @Override
+            public void onOverviewModeFinishedShowing() {
+                mPropertyModel.set(BUTTONS_CLICKABLE, true);
+            }
+            @Override
+            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+                mPropertyModel.set(BUTTONS_CLICKABLE, false);
+            }
+        };
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 

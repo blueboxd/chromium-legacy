@@ -49,8 +49,8 @@ class RegionComboboxModel : public ui::ComboboxModel {
 
   // ui::ComboboxModel implementation:
   int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
-  bool IsItemSeparatorAt(int index) override;
+  base::string16 GetItemAt(int index) const override;
+  bool IsItemSeparatorAt(int index) const override;
   void AddObserver(ui::ComboboxModelObserver* observer) override;
   void RemoveObserver(ui::ComboboxModelObserver* observer) override;
 

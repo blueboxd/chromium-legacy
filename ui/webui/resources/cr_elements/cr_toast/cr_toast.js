@@ -49,6 +49,7 @@ Polymer({
   /**
    * Announce a11y message
    * @param {string} text
+   * @private
    */
   announceA11yMessage_(text) {
     Polymer.IronA11yAnnouncer.requestAvailability();

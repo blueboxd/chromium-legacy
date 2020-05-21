@@ -16,7 +16,8 @@ import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTest
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.createTrustedWebActivityIntent;
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.isTrustedWebActivity;
 import static org.chromium.chrome.browser.browserservices.TrustedWebActivityTestUtil.spoofVerification;
-import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE;
+import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL;
+import static org.chromium.chrome.browser.notifications.NotificationConstants.NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT;
 
 import android.content.Intent;
 import android.support.test.espresso.Espresso;
@@ -143,8 +144,7 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() ->
-                assertTrue(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+        CriteriaHelper.pollUiThread(() -> assertTrue(showingNotification(scope)));
     }
 
     @Test
@@ -156,12 +156,12 @@ public class RunningInChromeTest {
 
         String scope = Origin.createOrThrow(mTestPage).toString();
         CriteriaHelper.pollUiThread(() ->
-                assertTrue(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+                assertTrue(showingNotification(scope)));
 
         mCustomTabActivityTestRule.loadUrl("https://www.example.com/");
 
         CriteriaHelper.pollUiThread(() ->
-                assertFalse(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+                assertFalse(showingNotification(scope)));
     }
 
     @Test
@@ -172,18 +172,19 @@ public class RunningInChromeTest {
         launch(createTrustedWebActivityIntent(mTestPage));
 
         String scope = Origin.createOrThrow(mTestPage).toString();
-        CriteriaHelper.pollUiThread(() ->
-                assertTrue(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+        CriteriaHelper.pollUiThread(() -> assertTrue(showingNotification(scope)));
 
         mCustomTabActivityTestRule.getActivity().finish();
 
-        CriteriaHelper.pollUiThread(() ->
-                assertFalse(showingNotification(scope, NOTIFICATION_ID_TWA_DISCLOSURE)));
+        CriteriaHelper.pollUiThread(() -> assertFalse(showingNotification(scope)));
     }
 
-    private boolean showingNotification(String tag, int id) {
+    private boolean showingNotification(String tag) {
         for (NotificationEntry entry : mMockNotificationManager.getNotifications()) {
-            if (entry.tag.equals(tag) && entry.id == id) return true;
+            if (!entry.tag.equals(tag)) continue;
+
+            if (entry.id == NOTIFICATION_ID_TWA_DISCLOSURE_INITIAL) return true;
+            if (entry.id == NOTIFICATION_ID_TWA_DISCLOSURE_SUBSEQUENT) return true;
         }
 
         return false;

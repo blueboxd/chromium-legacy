@@ -366,7 +366,7 @@ class CORE_EXPORT Document : public ContainerNode,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const;
 
-  String addressSpaceForBindings() const;
+  String addressSpaceForBindings(ScriptState*) const;
 
   bool CanContainRangeEndPoint() const override { return true; }
 

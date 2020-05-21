@@ -53,7 +53,7 @@ class IndexedDBQuotaClientTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get(), nullptr);
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        temp_dir_.GetPath(), nullptr, quota_manager->proxy(),
+        temp_dir_.GetPath(), quota_manager->proxy(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),

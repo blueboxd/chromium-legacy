@@ -7,9 +7,7 @@
 #include <algorithm>
 
 #include "base/check_op.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor_lookup.h"
-#include "ui/base/cursor/cursors_aura.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 
 namespace ui {

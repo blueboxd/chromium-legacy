@@ -1005,7 +1005,7 @@ TEST_F(DownloadProtectionServiceTest,
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetOffTheRecordProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -1020,7 +1020,7 @@ TEST_F(DownloadProtectionServiceTest,
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(false);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetOffTheRecordProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -1149,7 +1149,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetOffTheRecordProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -1189,7 +1189,7 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadSampledFile) {
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(false);
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetOffTheRecordProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(), nullptr);
     RunLoop run_loop;
     download_service_->CheckClientDownload(
         &item,
@@ -2728,7 +2728,7 @@ TEST_F(DownloadProtectionServiceTest,
   // No report sent if user is in incognito mode.
   DownloadProtectionService::SetDownloadPingToken(&item, "token");
   content::DownloadItemUtils::AttachInfo(
-      &item, profile()->GetOffTheRecordProfile(), nullptr);
+      &item, profile()->GetPrimaryOTRProfile(), nullptr);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(0, sb_service_->download_report_count());
 
@@ -2775,7 +2775,7 @@ TEST_F(DownloadProtectionServiceTest, VerifyDangerousDownloadOpenedAPICall) {
 
   // No event is triggered if in incognito mode..
   content::DownloadItemUtils::AttachInfo(
-      &item, profile()->GetOffTheRecordProfile(), nullptr);
+      &item, profile()->GetPrimaryOTRProfile(), nullptr);
   download_service_->MaybeSendDangerousDownloadOpenedReport(&item, false);
   EXPECT_EQ(1, test_event_router_->GetEventCount(
                    OnDangerousDownloadOpened::kEventName));
@@ -2812,7 +2812,12 @@ TEST_F(DownloadProtectionServiceTest, CheckClientDownloadWhitelistedByPolicy) {
 TEST_F(DownloadProtectionServiceTest, CheckOffTheRecordDoesNotSendFeedback) {
   NiceMockDownloadItem item;
   EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
-      profile()->GetOffTheRecordProfile(), &item, DownloadCommands::KEEP));
+      profile()->GetPrimaryOTRProfile(), &item, DownloadCommands::KEEP));
+
+  EXPECT_FALSE(download_service_->MaybeBeginFeedbackForDownload(
+      profile()->GetOffTheRecordProfile(
+          Profile::OTRProfileID("Test::DownloadProtectionService")),
+      &item, DownloadCommands::KEEP));
 }
 
 // ------------ class DownloadProtectionServiceFlagTest ----------------
@@ -3221,7 +3226,7 @@ TEST_F(DownloadProtectionServiceTest,
     // Case (1): is_extended_reporting && is_incognito.
     //           ClientDownloadRequest should NOT be sent.
     SetExtendedReportingPreference(true);
-    item->browser_context = profile()->GetOffTheRecordProfile();
+    item->browser_context = profile()->GetPrimaryOTRProfile();
 
     RunLoop run_loop;
     download_service_->CheckNativeFileSystemWrite(
@@ -3266,7 +3271,7 @@ TEST_F(DownloadProtectionServiceTest,
     item = PrepareBasicNativeFileSystemWriteItem(
         /*tmp_path=*/FILE_PATH_LITERAL("a.txt.crswap"),
         /*final_path=*/FILE_PATH_LITERAL("a.txt"));
-    item->browser_context = profile()->GetOffTheRecordProfile();
+    item->browser_context = profile()->GetPrimaryOTRProfile();
 
     RunLoop run_loop;
     download_service_->CheckNativeFileSystemWrite(
@@ -3726,7 +3731,7 @@ TEST_F(EnhancedProtectionDownloadTest, NoAccessTokenWhileIncognito) {
     SetEnhancedProtectionPref(profile()->GetPrefs(), true);
     NiceMockDownloadItem item;
     content::DownloadItemUtils::AttachInfo(
-        &item, profile()->GetOffTheRecordProfile(), nullptr);
+        &item, profile()->GetPrimaryOTRProfile(), nullptr);
     PrepareBasicDownloadItem(&item,
                              {"http://www.evil.com/bla.exe"},  // url_chain
                              "",                               // referrer

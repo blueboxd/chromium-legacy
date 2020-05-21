@@ -167,7 +167,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private LocationBar mLocationBar;
     private FindToolbarManager mFindToolbarManager;
     private @Nullable AppMenuPropertiesDelegate mAppMenuPropertiesDelegate;
-    private OverviewModeBehavior mOverviewModeBehavior;
+
     private LayoutManager mLayoutManager;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
     private ObservableSupplierImpl<View> mTabGroupPopUiParentSupplier;
@@ -177,6 +177,11 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
     private FindToolbarObserver mFindToolbarObserver;
     private OverviewModeObserver mOverviewModeObserver;
+
+    private OverviewModeBehavior mOverviewModeBehavior;
+    private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
+    private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+
     private SceneChangeObserver mSceneChangeObserver;
     private final ActionBarDelegate mActionBarDelegate;
     private ActionModeController mActionModeController;
@@ -243,6 +248,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      * @param findToolbarManager The manager for the find in page function.
      * @param profileSupplier Supplier of the currently applicable profile.
      * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
+     * TODO(https://crbug.com/1084528): Use OneShotSupplier once it is ready.
+     * @param overviewModeBehaviorSupplier Supplier of the overview mode manager for the current
+     *                                     profile.
      */
     public ToolbarManager(ChromeActivity activity, ChromeFullscreenManager fullscreenManager,
             ToolbarControlContainer controlContainer, Invalidator invalidator,
@@ -255,7 +263,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             ScrimCoordinator scrimCoordinator, ToolbarActionModeCallback toolbarActionModeCallback,
             FindToolbarManager findToolbarManager, ObservableSupplier<Profile> profileSupplier,
             ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
-            @Nullable Supplier<Boolean> canAnimateNativeBrowserControls) {
+            @Nullable Supplier<Boolean> canAnimateNativeBrowserControls,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mActivity = activity;
         mBrowserControlsStateProvider = fullscreenManager;
         mFullscreenManager = fullscreenManager;
@@ -279,6 +288,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         mProfileSupplier = profileSupplier;
         mProfileSupplierObserver = this::setCurrentProfile;
         mProfileSupplier.addObserver(mProfileSupplierObserver);
+
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
+        mOverviewModeBehaviorSupplierObserver = this::setOverviewModeBehavior;
+        mOverviewModeBehaviorSupplier.addObserver(mOverviewModeBehaviorSupplierObserver);
 
         mComponentCallbacks = new ComponentCallbacks() {
             @Override
@@ -312,7 +325,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mToolbar = new TopToolbarCoordinator(controlContainer, mActivity.findViewById(R.id.toolbar),
                 identityDiscController, mLocationBarModel, mToolbarTabController,
-                new UserEducationHelper(mActivity), buttonDataProviders);
+                new UserEducationHelper(mActivity), buttonDataProviders,
+                mOverviewModeBehaviorSupplier);
 
         mActionModeController =
                 new ActionModeController(mActivity, mActionBarDelegate, toolbarActionModeCallback);
@@ -721,7 +735,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                         : BottomTabSwitcherActionMenuCoordinator.createOnLongClickListener(
                                 id -> mActivity.onOptionsItemSelected(id, null)),
                 mAppThemeColorProvider, mShareDelegateSupplier, mShowStartSurfaceSupplier,
-                mToolbarTabController::openHomepage, (reason) -> setUrlBarFocus(true, reason));
+                mToolbarTabController::openHomepage,
+                (reason) -> setUrlBarFocus(true, reason), mOverviewModeBehaviorSupplier);
 
         boolean isBottomToolbarVisible = BottomToolbarConfiguration.isBottomToolbarEnabled()
                 && (!BottomToolbarConfiguration.isAdaptiveToolbarEnabled()
@@ -751,15 +766,14 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      *
      * @param tabModelSelector           The selector that handles tab management.
      * @param controlsVisibilityDelegate The delegate to handle visibility of browser controls.
-     * @param overviewModeBehavior       The overview mode manager.
      * @param layoutManager              A {@link LayoutManager} instance used to watch for scene
      *                                   changes.
      */
     public void initializeWithNative(TabModelSelector tabModelSelector,
             BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate,
-            OverviewModeBehavior overviewModeBehavior, LayoutManager layoutManager,
-            OnClickListener tabSwitcherClickHandler, OnClickListener newTabClickHandler,
-            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler,
+            LayoutManager layoutManager, OnClickListener tabSwitcherClickHandler,
+            OnClickListener newTabClickHandler, OnClickListener bookmarkClickHandler,
+            OnClickListener customTabsBackClickHandler,
             Supplier<Boolean> showStartSurfaceSupplier) {
         assert !mInitializedWithNative;
 
@@ -779,7 +793,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
 
         mToolbar.initializeWithNative(tabModelSelector, layoutManager, tabSwitcherClickHandler,
                 tabSwitcherLongClickHandler, newTabClickHandler, bookmarkClickHandler,
-                customTabsBackClickHandler, overviewModeBehavior);
+                customTabsBackClickHandler);
 
         mToolbar.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
             @Override
@@ -809,13 +823,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
         assert controlsVisibilityDelegate != null;
         mControlsVisibilityDelegate = controlsVisibilityDelegate;
 
-        if (overviewModeBehavior != null) {
-            mOverviewModeBehavior = overviewModeBehavior;
-            mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
-            mAppThemeColorProvider.setOverviewModeBehavior(mOverviewModeBehavior);
-            mLocationBarModel.setOverviewModeBehavior(mOverviewModeBehavior);
-        }
-
         if (layoutManager != null) {
             mLayoutManager = layoutManager;
             mLayoutManager.addSceneChangeObserver(mSceneChangeObserver);
@@ -829,8 +836,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mBottomControlsCoordinator.initializeWithNative(mActivity,
                     mActivity.getCompositorViewHolder().getResourceManager(),
                     mActivity.getCompositorViewHolder().getLayoutManager(), tabSwitcherClickHandler,
-                    newTabClickHandler, mAppMenuButtonHelper, mOverviewModeBehavior,
-                    mActivity.getWindowAndroid(), mTabCountProvider, mIncognitoStateProvider,
+                    newTabClickHandler, mAppMenuButtonHelper, mActivity.getWindowAndroid(),
+                    mTabCountProvider, mIncognitoStateProvider,
                     mActivity.findViewById(R.id.control_container), closeAllTabsAction);
 
             // Allow the bottom toolbar to be focused in accessibility after the top toolbar.
@@ -956,6 +963,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
             mOverviewModeBehavior = null;
         }
+
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeBehaviorSupplierObserver);
+            mOverviewModeBehaviorSupplier = null;
+            mOverviewModeBehaviorSupplierObserver = null;
+        }
+
         if (mLayoutManager != null) {
             mLayoutManager.removeSceneChangeObserver(mSceneChangeObserver);
             mLayoutManager = null;
@@ -1501,6 +1515,18 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private void setBookmarkBridge(BookmarkBridge bookmarkBridge) {
         if (bookmarkBridge == null) return;
         bookmarkBridge.addObserver(mBookmarksObserver);
+    }
+
+    private void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+        assert mOverviewModeBehavior
+                == null
+            : "TODO(https://crbug.com/1084528): the overview mode manager should set at most once.";
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
+
+        mAppThemeColorProvider.setOverviewModeBehavior(mOverviewModeBehavior);
+        mLocationBarModel.setOverviewModeBehavior(mOverviewModeBehavior);
     }
 
     private void updateCurrentTabDisplayStatus() {

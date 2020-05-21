@@ -1161,7 +1161,7 @@ SkColorType ColorTypeForVisual(void* visual) {
   };
   Visual* vis = reinterpret_cast<Visual*>(visual);
   // When running under Xvfb, a visual may not be set.
-  if (!vis->red_mask && !vis->green_mask && !vis->blue_mask)
+  if (!vis || !vis->red_mask || !vis->green_mask || !vis->blue_mask)
     return kUnknown_SkColorType;
   for (const auto& color_info : color_infos) {
     if (vis->red_mask == color_info.red_mask &&

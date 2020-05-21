@@ -98,11 +98,10 @@ class MediaFeedsService : public KeyedService {
           media_history::MediaHistoryKeyedService::MediaFeedFetchDetails>
           details);
 
-  void OnFetchResponse(int64_t feed_id,
-                       base::Optional<base::UnguessableToken> reset_token,
-                       const schema_org::improved::mojom::EntityPtr& response,
-                       MediaFeedsFetcher::Status status,
-                       bool was_fetched_via_cache);
+  void OnFetchResponse(
+      int64_t feed_id,
+      base::Optional<base::UnguessableToken> reset_token,
+      media_history::MediaHistoryKeyedService::MediaFeedFetchResult result);
 
   void OnCompleteFetch(const int64_t feed_id, const bool has_items);
 
@@ -159,8 +158,6 @@ class MediaFeedsService : public KeyedService {
   std::unique_ptr<CookieChangeListener> cookie_change_listener_;
 
   base::OnceClosure cookie_change_callback_;
-
-  MediaFeedsConverter media_feeds_converter_;
 
   std::unique_ptr<safe_search_api::URLChecker> safe_search_url_checker_;
   Profile* const profile_;

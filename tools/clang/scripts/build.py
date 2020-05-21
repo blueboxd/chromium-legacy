@@ -346,24 +346,14 @@ def CopyLibstdcpp(args, build_dir):
   # Copy libstdc++.so.6 into the build dir so that the built binaries can find
   # it. Binaries get their rpath set to $origin/../lib/. For clang, lld,
   # etc. that live in the bin/ directory, this means they expect to find the .so
-  # in their neighbouring lib/ dir. For other tools however, this doesn't work
-  # since those exeuctables are spread out into different directories.
-  # TODO(hans): Unit tests don't get rpath set at all, unittests/ copying
-  # below doesn't help at the moment.
-  for d in ['lib',
-            'test/tools/llvm-isel-fuzzer/lib',
-            'test/tools/llvm-opt-fuzzer/lib',
-            'unittests/CodeGen/lib',
-            'unittests/DebugInfo/lib',
-            'unittests/ExecutionEngine/lib',
-            'unittests/Support/lib',
-            'unittests/Target/lib',
-            'unittests/Transforms/lib',
-            'unittests/lib',
-            'unittests/tools/lib',
-            'unittests/tools/llvm-exegesis/lib']:
-    EnsureDirExists(os.path.join(build_dir, d))
-    CopyFile(libstdcpp, os.path.join(build_dir, d))
+  # in their neighbouring lib/ dir.
+  # For unit tests we pass -Wl,-rpath to the linker pointing to the lib64 dir
+  # in the tcc toolchain. The binaries we distribute also have an rpath
+  # pointing to that dir, which is ugly, but harmless.
+  # TODO(thakis): Add some setting upstream that allows adding an rpath only
+  # to test binaries.
+  EnsureDirExists(os.path.join(build_dir, 'lib'))
+  CopyFile(libstdcpp, os.path.join(build_dir, 'lib'))
 
 
 def gn_arg(v):
@@ -478,14 +468,6 @@ def main():
   # LLVM_ENABLE_LLD).
   cc, cxx, lld = None, None, None
 
-  if args.gcc_toolchain:
-    # Use the specified gcc installation for building.
-    cc = os.path.join(args.gcc_toolchain, 'bin', 'gcc')
-    cxx = os.path.join(args.gcc_toolchain, 'bin', 'g++')
-    if not os.access(cc, os.X_OK):
-      print('Invalid --gcc-toolchain: ' + args.gcc_toolchain)
-      return 1
-
   cflags = []
   cxxflags = []
   ldflags = []
@@ -519,6 +501,16 @@ def main():
       '-DLLVM_INCLUDE_GO_TESTS=OFF',
   ]
 
+  if args.gcc_toolchain:
+    # Use the specified gcc installation for building.
+    cc = os.path.join(args.gcc_toolchain, 'bin', 'gcc')
+    cxx = os.path.join(args.gcc_toolchain, 'bin', 'g++')
+    if not os.access(cc, os.X_OK):
+      print('Invalid --gcc-toolchain: ' + args.gcc_toolchain)
+      return 1
+    ldflags += ['-Wl,-rpath,' + os.path.join(args.gcc_toolchain, 'lib64')]
+
+
   if sys.platform == 'darwin':
     # For libc++, we only want the headers.
     base_cmake_args.extend([
@@ -531,7 +523,7 @@ def main():
   if args.gcc_toolchain:
     # Don't use the custom gcc toolchain when building compiler-rt tests; those
     # tests are built with the just-built Clang, and target both i386 and x86_64
-    # for example, so should ust the system's libstdc++.
+    # for example, so should use the system's libstdc++.
     base_cmake_args.append(
         '-DCOMPILER_RT_TEST_COMPILER_CFLAGS=--gcc-toolchain=')
 
@@ -613,8 +605,6 @@ def main():
     if lld is not None: bootstrap_args.append('-DCMAKE_LINKER=' + lld)
     RunCommand(['cmake'] + bootstrap_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
-    CopyLibstdcpp(args, LLVM_BOOTSTRAP_DIR)
-    CopyLibstdcpp(args, LLVM_BOOTSTRAP_INSTALL_DIR)
     RunCommand(['ninja'], msvc_arch='x64')
     if args.run_tests:
       test_targets = [ 'check-all' ]
@@ -677,7 +667,6 @@ def main():
 
     RunCommand(['cmake'] + instrument_args + [os.path.join(LLVM_DIR, 'llvm')],
                msvc_arch='x64')
-    CopyLibstdcpp(args, LLVM_INSTRUMENTED_DIR)
     RunCommand(['ninja'], msvc_arch='x64')
     print('Instrumented compiler built.')
 

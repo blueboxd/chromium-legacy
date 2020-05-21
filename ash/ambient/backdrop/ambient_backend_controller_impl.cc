@@ -176,12 +176,13 @@ AmbientBackendControllerImpl::AmbientBackendControllerImpl() = default;
 AmbientBackendControllerImpl::~AmbientBackendControllerImpl() = default;
 
 void AmbientBackendControllerImpl::FetchScreenUpdateInfo(
+    int num_topics,
     OnScreenUpdateInfoFetchedCallback callback) {
   // Consolidate the functions of FetchScreenUpdateInfoInternal,
   // StartToGetSettings, and StartToUpdateSettings after this is done.
   Shell::Get()->ambient_controller()->RequestAccessToken(base::BindOnce(
       &AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal,
-      weak_factory_.GetWeakPtr(), std::move(callback)));
+      weak_factory_.GetWeakPtr(), num_topics, std::move(callback)));
 }
 
 void AmbientBackendControllerImpl::GetSettings(GetSettingsCallback callback) {
@@ -207,6 +208,7 @@ void AmbientBackendControllerImpl::SetPhotoRefreshInterval(
 }
 
 void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
+    int num_topics,
     OnScreenUpdateInfoFetchedCallback callback,
     const std::string& gaia_id,
     const std::string& access_token) {
@@ -220,7 +222,7 @@ void AmbientBackendControllerImpl::FetchScreenUpdateInfoInternal(
   std::string client_id = GetClientId();
   BackdropClientConfig::Request request =
       backdrop_client_config_.CreateFetchScreenUpdateRequest(
-          gaia_id, access_token, client_id);
+          num_topics, gaia_id, access_token, client_id);
   auto resource_request = CreateResourceRequest(request);
 
   auto backdrop_url_loader = std::make_unique<BackdropURLLoader>();

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBCODECS_VIDEO_TRACK_READER_H_
 
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
-#include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_output_callback.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_output_callback.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -30,7 +30,7 @@ class MODULES_EXPORT VideoTrackReader final
   VideoTrackReader(ScriptState*, MediaStreamTrack*);
 
   // Connects |this| to |track_| and starts delivering frames via |callback_|.
-  void start(V8VideoDecoderOutputCallback*, ExceptionState&);
+  void start(V8VideoFrameOutputCallback*, ExceptionState&);
 
   // Disconnects from |track_| and clears |callback_|.
   void stop(ExceptionState&);
@@ -62,7 +62,7 @@ class MODULES_EXPORT VideoTrackReader final
 
   const scoped_refptr<base::SingleThreadTaskRunner>
       real_time_media_task_runner_;
-  Member<V8VideoDecoderOutputCallback> callback_;
+  Member<V8VideoFrameOutputCallback> callback_;
   Member<MediaStreamTrack> track_;
 };
 

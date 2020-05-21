@@ -34,8 +34,6 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/common/importer/profile_import.mojom.h"
-#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
-#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 #include "chrome/services/sharing/public/mojom/sharing.mojom.h"
 #include "chrome/services/sharing/sharing_impl.h"
 #include "chrome/services/speech/speech_recognition_service_impl.h"
@@ -54,6 +52,9 @@
 #if BUILDFLAG(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
 #include "chrome/services/file_util/file_util_service.h"  // nogncheck
 #endif
+
+#include "chrome/services/qrcode_generator/public/mojom/qrcode_generator.mojom.h"  // nogncheck
+#include "chrome/services/qrcode_generator/qrcode_generator_service_impl.h"  // nogncheck
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/services/removable_storage_writer/public/mojom/removable_storage_writer.mojom.h"
@@ -106,6 +107,13 @@ auto RunLanguageDetectionService(
       std::move(receiver));
 }
 
+auto RunQRCodeGeneratorService(
+    mojo::PendingReceiver<qrcode_generator::mojom::QRCodeGeneratorService>
+        receiver) {
+  return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
+      std::move(receiver));
+}
+
 #if defined(OS_WIN)
 auto RunQuarantineService(
     mojo::PendingReceiver<quarantine::mojom::Quarantine> receiver) {
@@ -129,13 +137,6 @@ auto RunProxyResolver(
 auto RunProfileImporter(
     mojo::PendingReceiver<chrome::mojom::ProfileImport> receiver) {
   return std::make_unique<ProfileImportImpl>(std::move(receiver));
-}
-
-auto RunQRCodeGeneratorService(
-    mojo::PendingReceiver<qrcode_generator::mojom::QRCodeGeneratorService>
-        receiver) {
-  return std::make_unique<qrcode_generator::QRCodeGeneratorServiceImpl>(
-      std::move(receiver));
 }
 
 auto RunMirroringService(
@@ -248,10 +249,10 @@ mojo::ServiceFactory* GetMainThreadServiceFactory() {
     RunFilePatcher,
     RunUnzipper,
     RunLanguageDetectionService,
+    RunQRCodeGeneratorService,
 
 #if !defined(OS_ANDROID)
     RunProfileImporter,
-    RunQRCodeGeneratorService,
     RunMirroringService,
     RunSharing,
     RunSpeechRecognitionService,

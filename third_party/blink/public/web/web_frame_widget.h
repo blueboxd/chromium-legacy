@@ -154,6 +154,20 @@ class WebFrameWidget : public WebWidget {
       WebReportTimeCallback swap_callback,
       WebReportTimeCallback presentation_callback) = 0;
 
+  // Instructs devtools to pause loading of the frame as soon as it's shown
+  // until explicit command from the devtools client.
+  virtual void WaitForDebuggerWhenShown() = 0;
+
+  // Scales the text in the frame by a factor of text_zoom_factor.
+  virtual void SetTextZoomFactor(float text_zoom_factor) = 0;
+  // Returns the current text zoom factor, where 1.0 is the normal size, > 1.0
+  // is scaled up and < 1.0 is scaled down.
+  virtual float TextZoomFactor() = 0;
+
+  // Overlay this frame with a solid color. Only valid for the main frame's
+  // widget.
+  virtual void SetMainFrameOverlayColor(SkColor) = 0;
+
  private:
   // This private constructor and the class/friend declaration ensures that
   // WebFrameWidgetBase is the only concrete subclass that implements

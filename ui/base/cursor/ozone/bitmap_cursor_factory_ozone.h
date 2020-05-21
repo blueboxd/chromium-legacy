@@ -6,20 +6,21 @@
 #define UI_BASE_CURSOR_OZONE_BITMAP_CURSOR_FACTORY_OZONE_H_
 
 #include <map>
+#include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
 
 // A cursor that is an SkBitmap combined with a gfx::Point hotspot.
-class UI_BASE_EXPORT BitmapCursorOzone
+class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorOzone
     : public base::RefCounted<BitmapCursorOzone> {
  public:
   BitmapCursorOzone(const SkBitmap& bitmap, const gfx::Point& hotspot);
@@ -52,7 +53,8 @@ class UI_BASE_EXPORT BitmapCursorOzone
 //
 // Subclasses need only implement SetBitmapCursor() as everything else is
 // implemented here.
-class UI_BASE_EXPORT BitmapCursorFactoryOzone : public CursorFactoryOzone {
+class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorFactoryOzone
+    : public CursorFactoryOzone {
  public:
   BitmapCursorFactoryOzone();
   ~BitmapCursorFactoryOzone() override;

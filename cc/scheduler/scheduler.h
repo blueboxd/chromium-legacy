@@ -281,7 +281,8 @@ class CC_EXPORT Scheduler : public viz::BeginFrameObserverBase {
   // What the latest deadline was, and when it was scheduled.
   base::TimeTicks deadline_;
   base::TimeTicks deadline_scheduled_at_;
-  SchedulerStateMachine::BeginImplFrameDeadlineMode deadline_mode_;
+  SchedulerStateMachine::BeginImplFrameDeadlineMode deadline_mode_ =
+      SchedulerStateMachine::BeginImplFrameDeadlineMode::NONE;
 
   BeginFrameTracker begin_impl_frame_tracker_;
   viz::BeginFrameAck last_begin_frame_ack_;

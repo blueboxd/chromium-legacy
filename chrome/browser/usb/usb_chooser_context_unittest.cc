@@ -304,7 +304,7 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
       device_manager_.CreateAndAddDevice(0, 0, "Google", "Gizmo", "");
   UsbChooserContext* store = GetChooserContext(profile());
   UsbChooserContext* incognito_store =
-      GetChooserContext(profile()->GetOffTheRecordProfile());
+      GetChooserContext(profile()->GetPrimaryOTRProfile());
 
   EXPECT_CALL(
       mock_permission_observer_,

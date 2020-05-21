@@ -104,8 +104,9 @@ public class RootUiCoordinator
     private OverlayPanelManager mOverlayPanelManager;
     private OverlayPanelManager.OverlayPanelManagerObserver mOverlayPanelManagerObserver;
 
-    private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierCallback;
     private OverviewModeBehavior mOverviewModeBehavior;
+    private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
+    private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
     /** A means of providing the theme color to different features. */
@@ -144,12 +145,15 @@ public class RootUiCoordinator
      * @param tabProvider The {@link ActivityTabProvider} to get current tab of the activity.
      * @param profileSupplier Supplier of the currently applicable profile.
      * @param bookmarkBridgeSupplier Supplier of the bookmark bridge for the current profile.
+     * @param overviewModeBehaviorSupplier Supplier of the overview mode manager for the current
+     *                                     profile.
      */
     public RootUiCoordinator(ChromeActivity activity,
             @Nullable Callback<Boolean> onOmniboxFocusChangedListener,
             ObservableSupplier<ShareDelegate> shareDelegateSupplier,
             ActivityTabProvider tabProvider, ObservableSupplier<Profile> profileSupplier,
-            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier) {
+            ObservableSupplier<BookmarkBridge> bookmarkBridgeSupplier,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mActivity = activity;
         mOnOmniboxFocusChangedListener = onOmniboxFocusChangedListener;
         mActivity.getLifecycleDispatcher().register(this);
@@ -170,7 +174,9 @@ public class RootUiCoordinator
 
         mOmniboxFocusStateSupplier.set(false);
 
-        initOverviewModeSupplierObserver();
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
+        mOverviewModeBehaviorSupplierObserver = this::setOverviewModeBehavior;
+        mOverviewModeBehaviorSupplier.addObserver(mOverviewModeBehaviorSupplierObserver);
     }
 
     // TODO(pnoland, crbug.com/865801): remove this in favor of wiring it directly.
@@ -188,13 +194,17 @@ public class RootUiCoordinator
             mOverlayPanelManager.removeObserver(mOverlayPanelManagerObserver);
         }
 
-        if (mActivity.getOverviewModeBehaviorSupplier() != null) {
-            mActivity.getOverviewModeBehaviorSupplier().removeObserver(
-                    mOverviewModeBehaviorSupplierCallback);
-        }
         if (mOverviewModeBehavior != null) {
             mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+            mOverviewModeBehavior = null;
         }
+
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeBehaviorSupplierObserver);
+            mOverviewModeBehaviorSupplier = null;
+            mOverviewModeBehaviorSupplierObserver = null;
+        }
+
         if (mToolbarManager != null) {
             mToolbarManager.destroy();
             mToolbarManager = null;
@@ -472,61 +482,51 @@ public class RootUiCoordinator
                     mShareDelegateSupplier, bottomToolbarVisibilitySupplier,
                     mIdentityDiscController, mButtonDataProviders, mActivityTabProvider,
                     mScrimCoordinator, mActionModeControllerCallback, mFindToolbarManager,
-                    mProfileSupplier, mBookmarkBridgeSupplier, mCanAnimateBrowserControls);
+                    mProfileSupplier, mBookmarkBridgeSupplier, mCanAnimateBrowserControls,
+                    mOverviewModeBehaviorSupplier);
             if (!mActivity.supportsAppMenu()) {
                 mToolbarManager.getToolbar().disableMenuButton();
             }
         }
     }
 
-    // Private class methods
+    private void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
+        assert mOverviewModeBehavior
+                == null
+            : "TODO(https://crbug.com/1084528): the overview mode manager should set at most once.";
 
-    private void initOverviewModeSupplierObserver() {
-        if (mActivity.getOverviewModeBehaviorSupplier() != null) {
-            mOverviewModeBehaviorSupplierCallback = overviewModeBehavior -> {
-                if (mOverviewModeBehavior != null) {
-                    mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
-                }
+        mOverviewModeBehavior = overviewModeBehavior;
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedShowing(boolean showToolbar) {
+                if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
+                hideAppMenu();
+            }
 
-                mOverviewModeBehavior = overviewModeBehavior;
+            @Override
+            public void onOverviewModeFinishedShowing() {
+                // Ideally we wouldn't allow the app menu to show while animating the
+                // overview mode. This is hard to track, however, because in some
+                // instances #onOverviewModeStartedShowing is called after
+                // #onOverviewModeFinishedShowing (see https://crbug.com/969047).
+                // Once that bug is fixed, we can remove this call to hide in favor of
+                // disallowing app menu shows during animation. Alternatively, we
+                // could expose a way to query whether an animation is in progress.
+                hideAppMenu();
+            }
 
-                if (mOverviewModeObserver == null) {
-                    mOverviewModeObserver = new EmptyOverviewModeObserver() {
-                        @Override
-                        public void onOverviewModeStartedShowing(boolean showToolbar) {
-                            if (mFindToolbarManager != null) mFindToolbarManager.hideToolbar();
-                            hideAppMenu();
-                        }
+            @Override
+            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+                hideAppMenu();
+            }
 
-                        @Override
-                        public void onOverviewModeFinishedShowing() {
-                            // Ideally we wouldn't allow the app menu to show while animating the
-                            // overview mode. This is hard to track, however, because in some
-                            // instances #onOverviewModeStartedShowing is called after
-                            // #onOverviewModeFinishedShowing (see https://crbug.com/969047).
-                            // Once that bug is fixed, we can remove this call to hide in favor of
-                            // disallowing app menu shows during animation. Alternatively, we
-                            // could expose a way to query whether an animation is in progress.
-                            hideAppMenu();
-                        }
-
-                        @Override
-                        public void onOverviewModeStartedHiding(
-                                boolean showToolbar, boolean delayAnimation) {
-                            hideAppMenu();
-                        }
-
-                        @Override
-                        public void onOverviewModeFinishedHiding() {
-                            hideAppMenu();
-                        }
-                    };
-                }
-                mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
-            };
-            mActivity.getOverviewModeBehaviorSupplier().addObserver(
-                    mOverviewModeBehaviorSupplierCallback);
-        }
+            @Override
+            public void onOverviewModeFinishedHiding() {
+                hideAppMenu();
+            }
+        };
+        mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     private void initAppMenu() {

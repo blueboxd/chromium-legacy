@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
 #include "ui/ozone/public/cursor_factory_ozone.h"

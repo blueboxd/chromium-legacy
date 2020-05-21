@@ -1339,9 +1339,9 @@ WebView* RenderViewImpl::CreateView(
       creator->GetTaskRunner(blink::TaskType::kInternalDefault));
 
   if (reply->wait_for_debugger) {
-    blink::WebLocalFrame* main_frame =
-        view->GetWebView()->MainFrame()->ToWebLocalFrame();
-    main_frame->WaitForDebuggerWhenShown();
+    blink::WebFrameWidget* frame_widget =
+        view->GetMainRenderFrame()->GetLocalRootWebFrameWidget();
+    frame_widget->WaitForDebuggerWhenShown();
   }
 
   return view->GetWebView();

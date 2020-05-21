@@ -206,7 +206,7 @@ const AcceleratorMapping kAcceleratorMap[] = {
      IDC_ZOOM_MINUS},
     {ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN, IDC_ZOOM_PLUS},
 #endif  // !OS_CHROMEOS
-#endif  // OS_MACOSX
+#endif  // !OS_MACOSX
 };
 
 const int kRepeatableCommandIds[] = {

@@ -297,6 +297,7 @@ class WebSettings {
   virtual void SetForceDarkModeEnabled(bool) = 0;
   virtual void SetPreferredColorScheme(PreferredColorScheme) = 0;
   virtual void SetNavigationControls(NavigationControls) = 0;
+  virtual void SetAriaModalPrunesAXTree(bool) = 0;
 
  protected:
   ~WebSettings() = default;

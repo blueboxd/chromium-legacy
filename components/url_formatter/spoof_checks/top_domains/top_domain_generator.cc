@@ -51,6 +51,37 @@ void CheckName(const std::string& name) {
   }
 }
 
+std::unique_ptr<TopDomainEntry> MakeEntry(
+    const std::string& hostname,
+    const std::string& skeleton,
+    url_formatter::SkeletonType skeleton_type,
+    bool is_top_500,
+    std::set<std::string>* all_skeletons) {
+  auto entry = std::make_unique<TopDomainEntry>();
+  // Another site has the same skeleton. This is low proability so stop now.
+  CHECK(all_skeletons->find(skeleton) == all_skeletons->end())
+      << "A domain with the same skeleton is already in the list (" << skeleton
+      << ").";
+
+  all_skeletons->insert(skeleton);
+
+  // TODO: Should we lowercase these?
+  entry->skeleton = skeleton;
+
+  // There might be unicode domains in the list. Store them in punycode in
+  // the trie.
+  const GURL domain(std::string("http://") + hostname);
+  entry->top_domain = domain.host();
+
+  entry->is_top_500 = is_top_500;
+  entry->skeleton_type = skeleton_type;
+
+  CheckName(entry->skeleton);
+  CheckName(entry->top_domain);
+
+  return entry;
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
@@ -97,7 +128,7 @@ int main(int argc, char* argv[]) {
 
   bool is_top_500 = true;
   TopDomainEntries entries;
-  std::set<std::string> skeletons;
+  std::set<std::string> all_skeletons;
   for (std::string line : lines) {
     base::TrimWhitespaceASCII(line, base::TRIM_ALL, &line);
 
@@ -109,35 +140,27 @@ int main(int argc, char* argv[]) {
     if (line.empty() || line[0] == '#') {
       continue;
     }
-    auto entry = std::make_unique<TopDomainEntry>();
 
     std::vector<std::string> tokens = base::SplitString(
         line, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    // Top 500 domains will have full skeletons as well as skeletons without
+    // label separators (e.g. '.' and '-').
+    if (is_top_500) {
+      CHECK_EQ(3u, tokens.size()) << "Invalid line: " << tokens[0];
 
-    CHECK_EQ(2u, tokens.size()) << "Invalid line: " << tokens[0];
-    const std::string skeleton = tokens[0];
+      entries.push_back(MakeEntry(tokens[2], tokens[0],
+                                  url_formatter::SkeletonType::kFull,
+                                  /*is_top_500=*/true, &all_skeletons));
+      entries.push_back(MakeEntry(
+          tokens[2], tokens[1], url_formatter::SkeletonType::kSeparatorsRemoved,
+          /*is_top_500=*/true, &all_skeletons));
+    } else {
+      CHECK_EQ(2u, tokens.size()) << "Invalid line: " << tokens[0];
 
-    // Another site has the same skeleton. This is low proability so stop now.
-    CHECK(skeletons.find(skeleton) == skeletons.end())
-        << "A domain with the same skeleton is already in the list ("
-        << skeleton << ").";
-
-    skeletons.insert(skeleton);
-
-    // TODO: Should we lowercase these?
-    entry->skeleton = skeleton;
-
-    // There might be unicode domains in the list. Store them in punycode in the
-    // trie.
-    const GURL domain(std::string("http://") + tokens[1]);
-    entry->top_domain = domain.host();
-
-    entry->is_top_500 = is_top_500;
-
-    CheckName(entry->skeleton);
-    CheckName(entry->top_domain);
-
-    entries.push_back(std::move(entry));
+      entries.push_back(MakeEntry(tokens[1], tokens[0],
+                                  url_formatter::SkeletonType::kFull,
+                                  /*is_top_500=*/false, &all_skeletons));
+    }
   }
 
   base::FilePath template_path = base::FilePath::FromUTF8Unsafe(args[1]);

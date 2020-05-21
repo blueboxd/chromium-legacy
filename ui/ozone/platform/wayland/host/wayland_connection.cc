@@ -23,6 +23,7 @@
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_cursor.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/ozone/platform/wayland/host/wayland_input_method_context.h"
@@ -128,39 +129,10 @@ void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
   cursor_->UpdateBitmap(bitmaps, location, serial_);
 }
 
-void WaylandConnection::StartDrag(const ui::OSExchangeData& data,
-                                  int operation) {
-  if (!dragdrop_data_source_)
-    dragdrop_data_source_ = data_device_manager_->CreateSource();
-  dragdrop_data_source_->Offer(data);
-  dragdrop_data_source_->SetAction(operation);
-  data_device_->StartDrag(dragdrop_data_source_->data_source(), data);
-}
-
-void WaylandConnection::FinishDragSession(uint32_t dnd_action,
-                                          WaylandWindow* source_window) {
-  if (source_window)
-    source_window->OnDragSessionClose(dnd_action);
-  data_device_->ResetSourceData();
-  dragdrop_data_source_.reset();
-}
-
-void WaylandConnection::DeliverDragData(const std::string& mime_type,
-                                        std::string* buffer) {
-  data_device_->DeliverDragData(mime_type, buffer);
-}
-
-void WaylandConnection::RequestDragData(
-    const std::string& mime_type,
-    base::OnceCallback<void(const std::vector<uint8_t>&)> callback) {
-  data_device_->RequestDragData(mime_type, std::move(callback));
-}
-
-bool WaylandConnection::IsDragInProgress() {
+bool WaylandConnection::IsDragInProgress() const {
   // |data_device_| can be null when running on headless weston.
-  if (!data_device_)
-    return false;
-  return data_device_->IsDragEntered() || drag_data_source();
+  return data_drag_controller_ && data_drag_controller_->state() !=
+                                      WaylandDataDragController::State::kIdle;
 }
 
 void WaylandConnection::Flush() {
@@ -214,6 +186,7 @@ void WaylandConnection::EnsureDataDevice() {
   DCHECK(!data_device_);
   wl_data_device* data_device = data_device_manager_->GetDevice();
   data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
+  data_drag_controller_ = std::make_unique<WaylandDataDragController>(this);
 
   if (primary_selection_device_manager_) {
     primary_selection_device_ = std::make_unique<GtkPrimarySelectionDevice>(

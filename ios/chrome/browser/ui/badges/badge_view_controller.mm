@@ -128,6 +128,9 @@ const CGFloat kUpdateDisplayedBadgeAnimationDamping = 0.85;
                     animated:NO];
       self.displayedBadge = newButton;
     }
+    // Disable button if banner is being displayed.
+    [self.displayedBadge
+        setEnabled:!(displayedBadgeItem.badgeState & BadgeStatePresented)];
   } else {
     self.displayedBadge = nil;
   }

@@ -10,7 +10,8 @@ usage: generate_token.py [-h] [--key-file KEY_FILE]
                           --expire-timestamp EXPIRE_TIMESTAMP]
                          [--is_subdomain | --no-subdomain]
                          [--is_third-party | --no-third-party]
-                         version origin trial_name
+                         --version=VERSION
+                         origin trial_name
 
 Run "generate_token.py -h" for more help on usage.
 """
@@ -131,11 +132,10 @@ def main():
 
   parser = argparse.ArgumentParser(
       description="Generate tokens for enabling experimental features")
-  parser.add_argument(
-      "version",
-      help="Token version to use. Currently only version 2"
-      "and version 3 are supported.",
-      type=VersionFromArg)
+  parser.add_argument("--version",
+                      help="Token version to use. Currently only version 2"
+                      "and version 3 are supported.",
+                      type=VersionFromArg)
   parser.add_argument("origin",
                       help="Origin for which to enable the feature. This can "
                            "be either a hostname (default scheme HTTPS, "

@@ -12,6 +12,7 @@
 #include "ui/ozone/platform/wayland/host/shell_surface_wrapper.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_event_source.h"
 #include "ui/platform_window/platform_window_handler/wm_drop_handler.h"
 
@@ -82,7 +83,7 @@ void WaylandSurface::StartDrag(const ui::OSExchangeData& data,
                                base::OnceCallback<void(int)> callback) {
   DCHECK(!drag_closed_callback_);
   drag_closed_callback_ = std::move(callback);
-  connection()->StartDrag(data, operation);
+  connection()->data_drag_controller()->StartSession(data, operation);
 }
 
 void WaylandSurface::Show(bool inactive) {

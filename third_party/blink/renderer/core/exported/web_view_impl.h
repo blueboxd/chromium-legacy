@@ -156,8 +156,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       bool zoom_into_legible_scale) override;
   double ZoomLevel() override;
   double SetZoomLevel(double) override;
-  float TextZoomFactor() override;
-  float SetTextZoomFactor(float) override;
   float PageScaleFactor() const override;
   float MinimumPageScaleFactor() const override;
   float MaximumPageScaleFactor() const override;

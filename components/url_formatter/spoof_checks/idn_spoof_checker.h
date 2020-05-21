@@ -33,12 +33,31 @@ FORWARD_DECLARE_TEST(UrlFormatterTest, IDNToUnicode);
 
 using Skeletons = base::flat_set<std::string>;
 
+// The |SkeletonType| and |TopDomainEntry| are mirrored in trie_entry.h. These
+// are used to insert and read nodes from the Trie.
+// The type of skeleton in the trie node.
+enum SkeletonType {
+  // The skeleton represents the full domain (e.g. google.corn).
+  kFull = 0,
+  // The skeleton represents the domain with '.'s and '-'s removed (e.g.
+  // googlecorn).
+  kSeparatorsRemoved = 1,
+  // Max value used to determine the number of different types. Update this and
+  // |kSkeletonTypeBitLength| when new SkeletonTypes are added.
+  kMaxValue = kSeparatorsRemoved
+
+};
+
+const uint8_t kSkeletonTypeBitLength = 1;
+
 // Represents a top domain entry in the trie.
 struct TopDomainEntry {
   // The domain name.
   std::string domain;
   // True if the domain is in the top 500.
   bool is_top_500 = false;
+  // Type of the skeleton stored in the trie node.
+  SkeletonType skeleton_type;
 };
 
 // A helper class for IDN Spoof checking, used to ensure that no IDN input is
@@ -84,7 +103,11 @@ class IDNSpoofChecker {
   Skeletons GetSkeletons(base::StringPiece16 hostname);
 
   // Returns a top domain from the top 10K list matching the given |skeleton|.
-  TopDomainEntry LookupSkeletonInTopDomains(const std::string& skeleton);
+  // If |without_separators| is set, the skeleton will be compared against
+  // skeletons without '.' and '-'s as well.
+  TopDomainEntry LookupSkeletonInTopDomains(
+      const std::string& skeleton,
+      SkeletonType skeleton_type = SkeletonType::kFull);
 
   // Used for unit tests.
   static void SetTrieParamsForTesting(const HuffmanTrieParams& trie_params);

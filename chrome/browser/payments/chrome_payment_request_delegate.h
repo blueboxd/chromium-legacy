@@ -32,7 +32,7 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   void ShowProcessingSpinner() override;
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   const std::string& GetApplicationLocale() const override;
-  bool IsIncognito() const override;
+  bool IsOffTheRecord() const override;
   const GURL& GetLastCommittedURL() const override;
   void DoFullCardRequest(
       const autofill::CreditCard& credit_card,

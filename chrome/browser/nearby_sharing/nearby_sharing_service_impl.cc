@@ -5,8 +5,14 @@
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
 
 #include "base/logging.h"
+#include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 
-NearbySharingServiceImpl::NearbySharingServiceImpl(Profile* profile) {}
+NearbySharingServiceImpl::NearbySharingServiceImpl(
+    Profile* profile,
+    std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager)
+    : nearby_connections_manager_(std::move(nearby_connections_manager)) {}
+
+NearbySharingServiceImpl::~NearbySharingServiceImpl() = default;
 
 void NearbySharingServiceImpl::RegisterSendSurface(
     TransferUpdateCallback* transferCallback,

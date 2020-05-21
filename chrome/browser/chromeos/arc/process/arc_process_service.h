@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <queue>
 #include <vector>
 
 #include "base/callback.h"
@@ -17,6 +18,7 @@
 #include "base/process/process_iterator.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
+#include "chrome/browser/chromeos/process_snapshot_server.h"
 #include "components/arc/mojom/process.mojom-forward.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -62,7 +64,8 @@ class ArcBridgeService;
 // as System Process. RequestAppProcessList() is responsible for app processes
 // while RequestSystemProcessList() is responsible for System Processes.
 class ArcProcessService : public KeyedService,
-                          public ConnectionObserver<mojom::ProcessInstance> {
+                          public ConnectionObserver<mojom::ProcessInstance>,
+                          public ProcessSnapshotServer::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -79,17 +82,32 @@ class ArcProcessService : public KeyedService,
                     ArcBridgeService* bridge_service);
   ~ArcProcessService() override;
 
+  // TODO(afakhry): The value of this delay was chosen to match the refresh time
+  // of crostini and vm tasks in the task manager (See VmProcessTaskProvider).
+  // Check if we need to pick a different value.
+  // Also consider making ArcProcessService a push service rather than a pull
+  // service.
+  static constexpr base::TimeDelta kProcessSnapshotRefreshTime =
+      base::TimeDelta::FromSeconds(5);
+
   // Returns nullptr before the global instance is ready.
   static ArcProcessService* Get();
 
   // If ARC IPC is ready for the process list request, the result is returned
   // as the argument of |callback|. Otherwise, |callback| is called with
   // base::nullopt.
+  // The process list maybe stale of up to |kProcessSnapshotRefreshTime|.
   void RequestAppProcessList(RequestProcessListCallback callback);
   void RequestSystemProcessList(RequestProcessListCallback callback);
 
-  bool RequestAppMemoryInfo(RequestMemoryInfoCallback callback);
-  bool RequestSystemMemoryInfo(RequestMemoryInfoCallback callback);
+  // An empty result will be returned in the argument of |callback| if ARC IPC
+  // is not ready.
+  void RequestAppMemoryInfo(RequestMemoryInfoCallback callback);
+  void RequestSystemMemoryInfo(RequestMemoryInfoCallback callback);
+
+  // ProcessSnapshotServer::Observer:
+  void OnProcessSnapshotRefreshed(
+      const base::ProcessIterator::ProcessEntries& snapshot) override;
 
   using PidMap = std::map<base::ProcessId, base::ProcessId>;
 
@@ -132,10 +150,45 @@ class ArcProcessService : public KeyedService,
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
+  // Returns true if |cached_process_snapshot_| is recent enough.
+  bool CanUseStaleProcessSnapshot() const;
+
+  // Called when a request is handled to stop observing the
+  // ProcessSnapshotServer if possible.
+  void MaybeStopObservingProcessSnapshots();
+
+  // Handles the given |request|, either immediately if
+  // |cached_process_snapshot_| is recent enough, or defers it until a new
+  // updated process snapshot is received.
+  void HandleRequest(base::OnceClosure request);
+
+  // The actual handlers of RequestAppProcessList() and
+  // RequestSystemProcessList() calls.
+  void ContinueAppProcessListRequest(RequestProcessListCallback callback);
+  void ContinueSystemProcessListRequest(RequestProcessListCallback callback);
+
+  // The actual handlers of RequestAppMemoryInfo() and
+  // RequestSystemMemoryInfo() calls.
+  void ContinueAppMemoryInfoRequest(RequestMemoryInfoCallback callback);
+  void ContinueSystemMemoryInfoRequest(RequestMemoryInfoCallback callback);
+
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
+
+  // The most recent process snapshot received from the ProcessSnapshotServer.
+  base::ProcessIterator::ProcessEntries cached_process_snapshot_;
+
+  // The time at which the current |cached_process_snapshot_| was received.
+  base::Time last_process_snapshot_time_;
 
   // Whether ARC is ready to request its process list.
   bool connection_ready_ = false;
+
+  // True if the ProcessSnapshotServer is currently being observed.
+  bool is_observing_process_snapshot_ = false;
+
+  // A FIFO queue of pending requests that were received before getting a recent
+  // enough process snapshot.
+  std::queue<base::OnceClosure> pending_requests_;
 
   // There are some expensive tasks such as traverse whole process tree that
   // we can't do it on the UI thread.

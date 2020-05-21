@@ -919,6 +919,23 @@ WebFrameWidgetBase::RendererWidgetSchedulingState() {
   return widget_base_->RendererWidgetSchedulingState();
 }
 
+void WebFrameWidgetBase::WaitForDebuggerWhenShown() {
+  local_root_->WaitForDebuggerWhenShown();
+}
+
+void WebFrameWidgetBase::SetTextZoomFactor(float text_zoom_factor) {
+  local_root_->GetFrame()->SetTextZoomFactor(text_zoom_factor);
+}
+
+float WebFrameWidgetBase::TextZoomFactor() {
+  return local_root_->GetFrame()->TextZoomFactor();
+}
+
+void WebFrameWidgetBase::SetMainFrameOverlayColor(SkColor color) {
+  DCHECK(!local_root_->Parent());
+  local_root_->GetFrame()->SetMainFrameColorOverlay(color);
+}
+
 void WebFrameWidgetBase::SetToolTipText(const String& tooltip_text,
                                         TextDirection dir) {
   widget_base_->SetToolTipText(tooltip_text, dir);

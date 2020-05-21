@@ -22,6 +22,8 @@ namespace ash {
 
 namespace {
 
+constexpr int kNumberTopics = 100;
+
 using DownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
 
 void DownloadImageFromUrl(const std::string& url, DownloadCallback callback) {
@@ -44,6 +46,7 @@ void AmbientPhotoController::StartScreenUpdate() {
       ->ambient_controller()
       ->ambient_backend_controller()
       ->FetchScreenUpdateInfo(
+          kNumberTopics,
           base::BindOnce(&AmbientPhotoController::OnScreenUpdateInfoFetched,
                          weak_factory_.GetWeakPtr()));
 }

@@ -10,44 +10,50 @@ import subprocess
 import class_dependency
 
 SRC_PATH = pathlib.Path(__file__).resolve().parents[3]  # src/
-JDEPS_PATH = SRC_PATH.joinpath("third_party/jdk/current/bin/jdeps")
+JDEPS_PATH = SRC_PATH.joinpath('third_party/jdk/current/bin/jdeps')
 
 
 def class_is_interesting(name: str):
     """Checks if a jdeps class is a class we are actually interested in."""
-    if name.startswith("org.chromium."):
+    if name.startswith('org.chromium.'):
         return True
     return False
 
 
 class JavaClassJdepsParser(object):  # pylint: disable=useless-object-inheritance
-    """A parser for jdeps class-level dependency output."""
+    """A parser for jdeps class-level dependency output.
+
+    Attributes:
+        graph: The dependency graph of the jdeps output. Initialized as empty
+            and updated using parse_raw_jdeps_output.
+    """
     def __init__(self):  # pylint: disable=missing-function-docstring
         self._graph = class_dependency.JavaClassDependencyGraph()
 
-    def parse_raw_jdeps_output(self, jdeps_output: str):
-        """Parses the entirety of the jdeps output."""
-        for line in jdeps_output.split("\n"):
-            self.parse_line(line)
+    @property
+    def graph(self):
+        """The dependency graph of the jdeps output.
 
-    def get_resulting_graph(self):
-        """Returns the dependency graph of the parsed output.
-
-        parse_raw_jdeps_output should be called before this method.
+        Initialized as empty and updated using parse_raw_jdeps_output.
         """
         return self._graph
+
+    def parse_raw_jdeps_output(self, jdeps_output: str):
+        """Parses the entirety of the jdeps output."""
+        for line in jdeps_output.split('\n'):
+            self.parse_line(line)
 
     def parse_line(self, line: str):
         """Parses a line of jdeps output.
 
-        The assumed format of the line starts with "name_1 -> name_2".
+        The assumed format of the line starts with 'name_1 -> name_2'.
         """
         parsed = line.split()
         if len(parsed) <= 3:
             return
-        if "not found" in line:
+        if parsed[2] == 'not' and parsed[3] == 'found':
             return
-        if parsed[1] != "->":
+        if parsed[1] != '->':
             return
 
         dep_from = parsed[0]
@@ -74,7 +80,7 @@ class JavaClassJdepsParser(object):  # pylint: disable=useless-object-inheritanc
 
 def run_jdeps(filepath: str):
     """Runs jdeps on the given filepath and returns the output."""
-    jdeps_res = subprocess.run([JDEPS_PATH, "-R", "-verbose:class", filepath],
+    jdeps_res = subprocess.run([JDEPS_PATH, '-R', '-verbose:class', filepath],
                                capture_output=True,
                                text=True,
                                check=True)
@@ -89,18 +95,18 @@ def main():
     constructed graph, but currently we just print its number of nodes/edges.
     """
     arg_parser = argparse.ArgumentParser(
-        description="Run jdeps and process output")
-    arg_parser.add_argument("filepath", help="Path of the JAR to run jdeps on")
+        description='Run jdeps and process output')
+    arg_parser.add_argument('filepath', help='Path of the JAR to run jdeps on')
     arguments = arg_parser.parse_args()
 
     raw_jdeps_output = run_jdeps(arguments.filepath)
     jdeps_parser = JavaClassJdepsParser()
     jdeps_parser.parse_raw_jdeps_output(raw_jdeps_output)
-    graph = jdeps_parser.get_resulting_graph()
+    graph = jdeps_parser.graph
 
-    print(f"Parsed graph, got {graph.num_nodes} nodes "
-          f"and {graph.num_edges} edges.")
+    print(f'Parsed graph, got {graph.num_nodes} nodes '
+          f'and {graph.num_edges} edges.')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

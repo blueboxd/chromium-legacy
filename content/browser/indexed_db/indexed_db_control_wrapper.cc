@@ -4,23 +4,50 @@
 
 #include "content/browser/indexed_db/indexed_db_control_wrapper.h"
 
+#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
+
 namespace content {
 
 IndexedDBControlWrapper::IndexedDBControlWrapper(
-    scoped_refptr<IndexedDBContextImpl> context)
-    : context_(std::move(context)) {}
+    const base::FilePath& data_path,
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
+    scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
+    base::Clock* clock,
+    mojo::PendingRemote<storage::mojom::BlobStorageContext>
+        blob_storage_context,
+    mojo::PendingRemote<storage::mojom::NativeFileSystemContext>
+        native_file_system_context,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> custom_task_runner)
+    : special_storage_policy_(std::move(special_storage_policy)) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  context_ = base::MakeRefCounted<IndexedDBContextImpl>(
+      data_path, std::move(quota_manager_proxy), clock,
+      std::move(blob_storage_context), std::move(native_file_system_context),
+      std::move(io_task_runner), std::move(custom_task_runner));
+  if (special_storage_policy_)
+    special_storage_policy_->AddObserver(this);
+}
 
-IndexedDBControlWrapper::~IndexedDBControlWrapper() = default;
+IndexedDBControlWrapper::~IndexedDBControlWrapper() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (special_storage_policy_)
+    special_storage_policy_->RemoveObserver(this);
+}
 
 void IndexedDBControlWrapper::BindIndexedDB(
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::IDBFactory> receiver) {
-  // TODO(enne): track special storage policy here.
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
+  TrackOriginPolicyState(origin);
   indexed_db_control_->BindIndexedDB(origin, std::move(receiver));
 }
 
 void IndexedDBControlWrapper::GetUsage(GetUsageCallback usage_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->GetUsage(std::move(usage_callback));
 }
@@ -28,6 +55,7 @@ void IndexedDBControlWrapper::GetUsage(GetUsageCallback usage_callback) {
 void IndexedDBControlWrapper::DeleteForOrigin(
     const url::Origin& origin,
     DeleteForOriginCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->DeleteForOrigin(origin, std::move(callback));
 }
@@ -36,6 +64,7 @@ void IndexedDBControlWrapper::ForceClose(
     const url::Origin& origin,
     storage::mojom::ForceCloseReason reason,
     base::OnceClosure callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->ForceClose(origin, reason, std::move(callback));
 }
@@ -43,6 +72,7 @@ void IndexedDBControlWrapper::ForceClose(
 void IndexedDBControlWrapper::GetConnectionCount(
     const url::Origin& origin,
     GetConnectionCountCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->GetConnectionCount(origin, std::move(callback));
 }
@@ -50,34 +80,96 @@ void IndexedDBControlWrapper::GetConnectionCount(
 void IndexedDBControlWrapper::DownloadOriginData(
     const url::Origin& origin,
     DownloadOriginDataCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->DownloadOriginData(origin, std::move(callback));
 }
 
 void IndexedDBControlWrapper::GetAllOriginsDetails(
     GetAllOriginsDetailsCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->GetAllOriginsDetails(std::move(callback));
 }
 
 void IndexedDBControlWrapper::SetForceKeepSessionState() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->SetForceKeepSessionState();
 }
 
+void IndexedDBControlWrapper::ApplyPolicyUpdates(
+    std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr>
+        policy_updates) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindRemoteIfNeeded();
+  indexed_db_control_->ApplyPolicyUpdates(std::move(policy_updates));
+}
+
 void IndexedDBControlWrapper::BindTestInterface(
     mojo::PendingReceiver<storage::mojom::IndexedDBControlTest> receiver) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->BindTestInterface(std::move(receiver));
 }
 
 void IndexedDBControlWrapper::AddObserver(
     mojo::PendingRemote<storage::mojom::IndexedDBObserver> observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindRemoteIfNeeded();
   indexed_db_control_->AddObserver(std::move(observer));
 }
 
+void IndexedDBControlWrapper::OnPolicyChanged() {
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&IndexedDBControlWrapper::OnPolicyChangedOnUI,
+                                weak_factory_.GetWeakPtr()));
+}
+
+void IndexedDBControlWrapper::OnPolicyChangedOnUI() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindRemoteIfNeeded();
+
+  std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr> policy_updates;
+  for (auto& entry : origin_state_) {
+    const GURL& origin = entry.first;
+    OriginState& state = entry.second;
+    state.should_purge_on_shutdown = ShouldPurgeOnShutdown(origin);
+
+    if (state.should_purge_on_shutdown != state.will_purge_on_shutdown) {
+      state.will_purge_on_shutdown = state.should_purge_on_shutdown;
+      policy_updates.push_back(
+          storage::mojom::IndexedDBStoragePolicyUpdate::New(
+              url::Origin::Create(origin), state.should_purge_on_shutdown));
+    }
+  }
+  if (!policy_updates.empty())
+    ApplyPolicyUpdates(std::move(policy_updates));
+}
+
+void IndexedDBControlWrapper::TrackOriginPolicyState(
+    const url::Origin& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const GURL origin_url = GURL(origin.Serialize());
+  auto it = origin_state_.find(origin_url);
+  if (it == origin_state_.end())
+    origin_state_[origin_url] = {};
+  OnPolicyChangedOnUI();
+}
+
+bool IndexedDBControlWrapper::ShouldPurgeOnShutdown(const GURL& origin) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (!special_storage_policy_)
+    return false;
+  if (!special_storage_policy_->IsStorageSessionOnly(origin))
+    return false;
+  if (special_storage_policy_->IsStorageProtected(origin))
+    return false;
+  return true;
+}
+
 void IndexedDBControlWrapper::BindRemoteIfNeeded() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(
       !(indexed_db_control_.is_bound() && !indexed_db_control_.is_connected()))
       << "Rebinding is not supported yet.";

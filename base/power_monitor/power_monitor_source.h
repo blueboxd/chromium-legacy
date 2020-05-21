@@ -31,10 +31,8 @@ class BASE_EXPORT PowerMonitorSource {
   // Is the computer currently on battery power. Can be called on any thread.
   bool IsOnBatteryPower();
 
-#if DCHECK_IS_ON()
-  static std::string DeviceThermalStateToString(
+  static const char* DeviceThermalStateToString(
       PowerObserver::DeviceThermalState state);
-#endif
 
  protected:
   friend class PowerMonitorTest;

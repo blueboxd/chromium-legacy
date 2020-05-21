@@ -90,7 +90,7 @@ TEST_F(SharedClipboardUtilsTest, UIFlagDisabled_DoNotShowMenu) {
 
 TEST_F(SharedClipboardUtilsTest, IncognitoProfile_DoNotShowMenu) {
   scoped_feature_list_.InitAndEnableFeature(kSharedClipboardUI);
-  EXPECT_FALSE(ShouldOfferSharedClipboard(profile_.GetOffTheRecordProfile(),
+  EXPECT_FALSE(ShouldOfferSharedClipboard(profile_.GetPrimaryOTRProfile(),
                                           base::ASCIIToUTF16(kText)));
 }
 

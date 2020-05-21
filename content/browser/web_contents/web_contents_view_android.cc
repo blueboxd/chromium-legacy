@@ -148,8 +148,8 @@ gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
   return view_.GetWindowAndroid();
 }
 
-void WebContentsViewAndroid::GetContainerBounds(gfx::Rect* out) const {
-  *out = GetViewBounds();
+gfx::Rect WebContentsViewAndroid::GetContainerBounds() const {
+  return GetViewBounds();
 }
 
 void WebContentsViewAndroid::SetPageTitle(const base::string16& title) {

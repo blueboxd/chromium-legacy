@@ -31,16 +31,14 @@ class CONTENT_EXPORT SharedWorkerService {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Called when a shared worker has started/stopped. This means that Start()
-    // was called for that worker and it got assigned its DevTools token. Note
-    // that it may still be evaluating the script and thus it could not be yet
-    // running in the renderer. This differs a bit from the "started" state of
-    // the embedded worker.
-    virtual void OnWorkerStarted(
+    // Called when a shared worker is created/destroyed. Note that it is not yet
+    // started in the renderer since its script still has to be downloaded and
+    // evaluated.
+    virtual void OnWorkerCreated(
         SharedWorkerId shared_worker_id,
         int worker_process_id,
         const base::UnguessableToken& dev_tools_token) = 0;
-    virtual void OnBeforeWorkerTerminated(SharedWorkerId shared_worker_id) = 0;
+    virtual void OnBeforeWorkerDestroyed(SharedWorkerId shared_worker_id) = 0;
 
     // Called when the final response URL (the URL after redirects) was
     // determined when fetching the worker's script.
@@ -50,7 +48,7 @@ class CONTENT_EXPORT SharedWorkerService {
                                               const GURL& url) {}
 
     // Called when a frame starts/stop being a client of a shared worker. It is
-    // guaranteed that OnWorkerStarted() is called before receiving these
+    // guaranteed that OnWorkerCreated() is called before receiving these
     // notifications.
     virtual void OnClientAdded(
         SharedWorkerId shared_worker_id,
@@ -64,13 +62,13 @@ class CONTENT_EXPORT SharedWorkerService {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Invokes OnWorkerStarted() on |observer| for all existing shared workers.
+  // Invokes OnWorkerCreated() on |observer| for all existing shared workers.
   //
   // This function must be invoked in conjunction with AddObserver(). It is
   // meant to be used by an observer that dynamically subscribe to the
-  // SharedWorkerService while some workers are already running. It avoids
-  // receiving a OnBeforeWorkerTerminated() event without having received the
-  // corresponding OnWorkerStart() event.
+  // SharedWorkerService while some workers already exist. It avoids
+  // receiving a OnBeforeWorkerDestroyed() event without having received the
+  // corresponding OnWorkerCreated() event.
   //
   // Note: Due to current callers not needing it, this function does NOT call
   //       OnClientAdded() for each worker's clients.

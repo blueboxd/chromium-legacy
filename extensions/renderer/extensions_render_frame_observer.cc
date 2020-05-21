@@ -14,8 +14,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/stack_frame.h"
+#include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_view.h"
 
 namespace extensions {
 
@@ -108,7 +108,7 @@ void ExtensionsRenderFrameObserver::SetVisuallyDeemphasized(bool deemphasized) {
 
   SkColor color =
       deemphasized ? SkColorSetARGB(178, 0, 0, 0) : SK_ColorTRANSPARENT;
-  render_frame()->GetWebFrame()->SetMainFrameOverlayColor(color);
+  render_frame()->GetWebFrame()->FrameWidget()->SetMainFrameOverlayColor(color);
 }
 
 void ExtensionsRenderFrameObserver::DetailedConsoleMessageAdded(

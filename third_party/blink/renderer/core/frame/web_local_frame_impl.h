@@ -286,12 +286,10 @@ class CORE_EXPORT WebLocalFrameImpl final
                                       WebPrintPresetOptions*) override;
   bool CapturePaintPreview(const WebRect& bounds,
                            cc::PaintCanvas* canvas) override;
-  void SetMainFrameOverlayColor(SkColor) override;
   bool ShouldSuppressKeyboardForFocusedElement() override;
   WebPerformance Performance() const override;
   bool IsAdSubframe() const override;
   void SetIsAdSubframe(blink::mojom::AdFrameType ad_frame_type) override;
-  void WaitForDebuggerWhenShown() override;
   WebSize SpoolSizeInPixelsForTesting(const WebSize& page_size_in_pixels,
                                       int page_count) override;
   void PrintPagesForTesting(cc::PaintCanvas*,
@@ -406,6 +404,11 @@ class CORE_EXPORT WebLocalFrameImpl final
 
   void SetDevToolsAgentImpl(WebDevToolsAgentImpl*);
   WebDevToolsAgentImpl* DevToolsAgentImpl();
+
+  // Instructs devtools to pause loading of the frame as soon as it's shown
+  // until explicit command from the devtools client. May only be called on a
+  // local root.
+  void WaitForDebuggerWhenShown();
 
   // When a Find operation ends, we want to set the selection to what was active
   // and set focus to the first focusable node we find (starting with the first

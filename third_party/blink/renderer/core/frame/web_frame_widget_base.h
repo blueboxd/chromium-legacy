@@ -153,6 +153,10 @@ class CORE_EXPORT WebFrameWidgetBase
       WebReportTimeCallback presentation_callback) override;
   scheduler::WebRenderWidgetSchedulingState* RendererWidgetSchedulingState()
       override;
+  void WaitForDebuggerWhenShown() override;
+  void SetTextZoomFactor(float text_zoom_factor) override;
+  float TextZoomFactor() override;
+  void SetMainFrameOverlayColor(SkColor) override;
 
   // Called when a drag-n-drop operation should begin.
   void StartDragging(network::mojom::ReferrerPolicy,

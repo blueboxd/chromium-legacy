@@ -105,8 +105,8 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
      */
     public static class PaymentRequestDelegateImpl implements PaymentRequestImpl.Delegate {
         @Override
-        public boolean isIncognito(@Nullable ChromeActivity activity) {
-            return activity != null && activity.getCurrentTabModel().isIncognito();
+        public boolean isOffTheRecord(@Nullable ChromeActivity activity) {
+            return activity != null && activity.getCurrentTabModel().getProfile().isOffTheRecord();
         }
 
         @Override

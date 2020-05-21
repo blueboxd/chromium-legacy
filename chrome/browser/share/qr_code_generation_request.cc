@@ -44,12 +44,10 @@ QRCodeGenerationRequest::QRCodeGenerationRequest(
   // base::Unretained(this) is safe here because the callback won't be invoked
   // after |remote_| is destroyed, and |remote_| will be destroyed if this
   // object is destroyed.
-  // TODO(skare): Reenable this handler.
-  /*
   remote_.set_disconnect_handler(
       base::BindOnce(&QRCodeGenerationRequest::OnGenerateCodeResponse,
                      base::Unretained(this), nullptr));
-  */
+
   auto callback = base::BindOnce(
       &QRCodeGenerationRequest::OnGenerateCodeResponse, base::Unretained(this));
   remote_.get()->GenerateQRCode(std::move(request), std::move(callback));
@@ -65,8 +63,9 @@ void QRCodeGenerationRequest::OnGenerateCodeResponse(
     const qrcode_generator::mojom::GenerateQRCodeResponsePtr service_response) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
-  if (service_response->error_code !=
-      qrcode_generator::mojom::QRCodeGeneratorError::NONE) {
+  if (!service_response ||
+      service_response->error_code !=
+          qrcode_generator::mojom::QRCodeGeneratorError::NONE) {
     Java_QRCodeGenerationRequest_onQRCodeAvailable(
         env, java_qr_code_generation_request_, nullptr);
     return;

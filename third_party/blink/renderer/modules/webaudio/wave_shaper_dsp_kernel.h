@@ -104,6 +104,16 @@ class WaveShaperDSPKernel final : public AudioDSPKernel {
   // has an infinite tail so that silent input continues to produce non-silent
   // output.
   double tail_time_;
+
+  // Work arrays needed by WaveShaperCurveValues().  Mutable so this
+  // const function can modify these arrays.  There's no state or
+  // anything kept here.  See WaveShaperCurveValues() for details on
+  // what these hold.
+  mutable AudioFloatArray virtual_index_;
+  mutable AudioFloatArray index_;
+  mutable AudioFloatArray v1_;
+  mutable AudioFloatArray v2_;
+  mutable AudioFloatArray f_;
 };
 
 }  // namespace blink

@@ -20,12 +20,14 @@ class CONTENT_EXPORT DedicatedWorkerService {
  public:
   class Observer : public base::CheckedObserver {
    public:
-    // Called when a dedicated worker has started/stopped.
-    virtual void OnWorkerStarted(
+    // Called when a dedicated worker is created/destroyed. Note that it is not
+    // yet started in the renderer since its script still has to be downloaded
+    // and evaluated.
+    virtual void OnWorkerCreated(
         DedicatedWorkerId dedicated_worker_id,
         int worker_process_id,
         GlobalFrameRoutingId ancestor_render_frame_host_id) = 0;
-    virtual void OnBeforeWorkerTerminated(
+    virtual void OnBeforeWorkerDestroyed(
         DedicatedWorkerId dedicated_worker_id,
         GlobalFrameRoutingId ancestor_render_frame_host_id) = 0;
 
@@ -42,13 +44,13 @@ class CONTENT_EXPORT DedicatedWorkerService {
   virtual void AddObserver(Observer* observer) = 0;
   virtual void RemoveObserver(Observer* observer) = 0;
 
-  // Invokes OnWorkerStarted() on |observer| for all existing dedicated workers.
+  // Invokes OnWorkerCreated() on |observer| for all existing dedicated workers.
   //
   // This function must be invoked in conjunction with AddObserver(). It is
   // meant to be used by an observer that dynamically subscribes to the
   // DedicatedWorkerService while some workers are already running. It avoids
-  // receiving a OnBeforeWorkerTerminated() event without having received the
-  // corresponding OnWorkerStart() event.
+  // receiving a OnBeforeWorkerDestroyed() event without having received the
+  // corresponding OnWorkerCreated() event.
   virtual void EnumerateDedicatedWorkers(Observer* observer) = 0;
 
  protected:

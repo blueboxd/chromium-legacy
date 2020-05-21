@@ -67,13 +67,6 @@ void CreateOrUpdateShortcuts(
     InstallShortcutLevel install_level,
     InstallShortcutOperation install_operation);
 
-// Registers Chrome on this machine.
-// If |make_chrome_default|, also attempts to make Chrome default where doing so
-// requires no more user interaction than a UAC prompt. In practice, this means
-// on versions of Windows prior to Windows 8.
-void RegisterChromeOnMachine(const InstallerState& installer_state,
-                             bool make_chrome_default);
-
 // This function installs or updates a new version of Chrome. It returns
 // install status (failed, new_install, updated etc).
 //

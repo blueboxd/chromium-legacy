@@ -18,25 +18,15 @@ namespace network_health {
 class NetworkHealth : public mojom::NetworkHealthService,
                       public network_config::mojom::CrosNetworkConfigObserver {
  public:
-  // Structure containing the current snapshot of the state of Network Health.
-  struct NetworkHealthState {
-    NetworkHealthState();
-    NetworkHealthState(const NetworkHealthState&) = delete;
-    ~NetworkHealthState();
-
-    std::vector<mojom::NetworkPtr> active_networks;
-    std::vector<mojom::DevicePtr> devices;
-  };
-
   NetworkHealth();
 
   ~NetworkHealth() override;
 
   // Returns the current NetworkHealthState.
-  const NetworkHealthState& GetNetworkHealthState();
+  const mojom::NetworkHealthStatePtr GetNetworkHealthState();
 
-  // Handler for receiving active networks.
-  void OnActiveNetworksReceived(
+  // Handler for receiving the network state list.
+  void OnNetworkStateListReceived(
       std::vector<network_config::mojom::NetworkStatePropertiesPtr>);
 
   // Handler for receiving networking devices.
@@ -44,25 +34,28 @@ class NetworkHealth : public mojom::NetworkHealthService,
       std::vector<network_config::mojom::DeviceStatePropertiesPtr>);
 
   // NetworkHealthService implementation
-  void GetDeviceList(GetDeviceListCallback) override;
-  void GetActiveNetworkList(GetActiveNetworkListCallback) override;
+  void GetNetworkList(GetNetworkListCallback) override;
+  void GetHealthSnapshot(GetHealthSnapshotCallback) override;
 
   // CrosNetworkConfigObserver implementation
-  void OnActiveNetworksChanged(
-      std::vector<network_config::mojom::NetworkStatePropertiesPtr>) override;
+  void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
 
   // CrosNetworkConfigObserver unimplemented callbacks
-  void OnNetworkStateListChanged() override {}
+  void OnActiveNetworksChanged(
+      std::vector<network_config::mojom::NetworkStatePropertiesPtr>) override {}
   void OnNetworkStateChanged(
       network_config::mojom::NetworkStatePropertiesPtr) override {}
   void OnVpnProvidersChanged() override {}
   void OnNetworkCertificatesChanged() override {}
 
  private:
+  // Creates the NetworkHealthState structure from cached network information.
+  void CreateNetworkHealthState();
+
   // Asynchronous call that refreshes the current Network Health State.
   void RefreshNetworkHealthState();
-  void RequestActiveNetworks();
+  void RequestNetworkStateList();
   void RequestDeviceStateList();
 
   mojo::Remote<network_config::mojom::CrosNetworkConfig>
@@ -70,7 +63,12 @@ class NetworkHealth : public mojom::NetworkHealthService,
   mojo::Receiver<network_config::mojom::CrosNetworkConfigObserver>
       cros_network_config_observer_receiver_{this};
 
-  NetworkHealthState network_health_state_;
+  mojom::NetworkHealthState network_health_state_;
+
+  std::vector<network_config::mojom::DeviceStatePropertiesPtr>
+      device_properties_;
+  std::vector<network_config::mojom::NetworkStatePropertiesPtr>
+      network_properties_;
 };
 
 }  // namespace network_health

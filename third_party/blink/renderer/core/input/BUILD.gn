@@ -38,7 +38,7 @@ blink_core_sources("input") {
     "touch_list.h",
   ]
 
-  public_deps = [ "//ui/base/cursor" ]
+  public_deps = [ "//ui/base/cursor:cursor_base" ]
 
   deps = [
     "//skia",

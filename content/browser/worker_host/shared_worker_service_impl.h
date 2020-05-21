@@ -71,10 +71,10 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
   // Virtual for testing.
   virtual void DestroyHost(SharedWorkerHost* host);
 
-  void NotifyWorkerStarted(SharedWorkerId shared_worker_id,
+  void NotifyWorkerCreated(SharedWorkerId shared_worker_id,
                            int worker_process_id,
                            const base::UnguessableToken& dev_tools_token);
-  void NotifyWorkerTerminating(SharedWorkerId shared_worker_id);
+  void NotifyBeforeWorkerDestroyed(SharedWorkerId shared_worker_id);
   void NotifyClientAdded(SharedWorkerId shared_worker_id,
                          GlobalFrameRoutingId render_frame_host_id);
   void NotifyClientRemoved(SharedWorkerId shared_worker_id,

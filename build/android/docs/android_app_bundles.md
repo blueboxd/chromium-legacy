@@ -167,8 +167,8 @@ performed, which consists of the following steps:
 This synchronized proguarding step is added by the `android_app_bundle()` GN
 template. In practice this means the following:
 
-  - If `proguard_enabled` and `proguard_jar_path` must be passed to
-    `android_app_bundle` targets, but not to `android_app_bundle_module` ones.
+  - `proguard_enabled` must be passed to `android_app_bundle` targets, but not
+    to `android_app_bundle_module` ones.
 
   - `proguard_configs` can be still passed to individual modules, just
     like regular APKs. All proguard configs will be merged during the

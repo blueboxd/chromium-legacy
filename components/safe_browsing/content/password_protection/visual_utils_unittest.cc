@@ -252,5 +252,264 @@ TEST_F(VisualUtilsTest, BlockMeanAveragePartialBlocks) {
   EXPECT_EQ(*blocks->getAddr32(1, 1), kBlue);
 }
 
+TEST_F(VisualUtilsTest, IsVisualMatchHash) {
+  {
+    // An all-white image should hash to all 1-bits.
+    for (int x = 0; x < 1000; x++)
+      for (int y = 0; y < 1000; y++)
+        *bitmap_.getAddr32(x, y) = kWhite;
+
+    std::vector<unsigned char> target_hash;
+    target_hash.push_back('\x30');
+    for (int i = 0; i < 288; i++)
+      target_hash.push_back('\xff');
+
+    VisualTarget target;
+    target.set_hash(target_hash.data(), target_hash.size());
+    target.mutable_match_config()->add_match_rule()->set_hash_distance(0.0);
+    EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+  }
+
+  {
+    // Make the top quarter black, and the corresponding bits of the hash should
+    // be 0.
+    for (int x = 0; x < 1000; x++)
+      for (int y = 0; y < 250; y++)
+        *bitmap_.getAddr32(x, y) = kBlack;
+
+    std::vector<unsigned char> target_hash;
+    target_hash.push_back('\x30');
+    for (int i = 0; i < 72; i++)
+      target_hash.push_back('\x00');
+    for (int i = 0; i < 216; i++)
+      target_hash.push_back('\xff');
+    VisualTarget target;
+    target.set_hash(target_hash.data(), target_hash.size());
+
+    target.mutable_match_config()->add_match_rule()->set_hash_distance(0.0);
+    EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+  }
+}
+
+TEST_F(VisualUtilsTest, IsVisualMatchHashPartialMatch) {
+  // Make the top quarter black, and the corresponding bits of the hash should
+  // be 0.
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 250; y++)
+      *bitmap_.getAddr32(x, y) = kBlack;
+  for (int x = 0; x < 1000; x++)
+    for (int y = 250; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+
+  std::vector<unsigned char> target_hash;
+  target_hash.push_back('\x30');
+  for (int i = 0; i < 75; i++)
+    target_hash.push_back('\x00');
+  for (int i = 0; i < 213; i++)
+    target_hash.push_back('\xff');
+
+  VisualTarget target;
+  target.set_hash(target_hash.data(), target_hash.size());
+  target.mutable_match_config()->add_match_rule()->set_hash_distance(23.0);
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+  target.mutable_match_config()->add_match_rule()->set_hash_distance(24.0);
+  EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+}
+
+TEST_F(VisualUtilsTest, IsVisualMatchHashStrideComparison) {
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+
+  std::vector<unsigned char> target_hash;
+  target_hash.push_back('\x30');
+  for (int i = 0; i < 288; i++)
+    target_hash.push_back('\xff');
+
+  VisualTarget target;
+  target.set_hash(target_hash.data(), target_hash.size());
+  target.mutable_match_config()->add_match_rule()->set_hash_distance(0.0);
+  EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+  target_hash[0] = '\x00';
+  target.set_hash(target_hash.data(), target_hash.size());
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+}
+
+TEST_F(VisualUtilsTest, IsVisualMatchHistogramOnly) {
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+
+  {
+    VisualTarget target;
+    VisualFeatures::ColorHistogramBin* bin = target.add_bins();
+    // Our coordinates range from 0 to 999, giving an average of 0.4995 instead
+    // of 0.5.
+    bin->set_centroid_x(0.4995);
+    bin->set_centroid_y(0.4995);
+    bin->set_quantized_r(7);
+    bin->set_quantized_g(7);
+    bin->set_quantized_b(7);
+    bin->set_weight(1.0);
+    target.mutable_match_config()->add_match_rule()->set_color_distance(0.0);
+    EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+  }
+
+  {
+    // Move the target histogram to have centroid 0,0. This leads to a distance
+    // just under 0.5 between the actual and target histograms.
+    VisualTarget target;
+    VisualFeatures::ColorHistogramBin* bin = target.add_bins();
+    bin->set_centroid_x(0);
+    bin->set_centroid_y(0);
+    bin->set_quantized_r(7);
+    bin->set_quantized_g(7);
+    bin->set_quantized_b(7);
+    bin->set_weight(1.0);
+
+    MatchRule* match_rule = target.mutable_match_config()->add_match_rule();
+    match_rule->set_color_distance(0.5);
+    EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+    match_rule->set_color_distance(0.4);
+    EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+  }
+
+  {
+    // Change the target histogram color slightly. This leads to a distance
+    // of roughly 0.12 between the actual and target histogram.
+    VisualTarget target;
+    VisualFeatures::ColorHistogramBin* bin = target.add_bins();
+    bin->set_centroid_x(0.4995);
+    bin->set_centroid_y(0.4995);
+    bin->set_quantized_r(6);
+    bin->set_quantized_g(6);
+    bin->set_quantized_b(6);
+    bin->set_weight(1.0);
+
+    MatchRule* match_rule = target.mutable_match_config()->add_match_rule();
+    match_rule->set_color_distance(0.2);
+    EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+    match_rule->set_color_distance(0.1);
+    EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+  }
+}
+
+TEST_F(VisualUtilsTest, IsVisualMatchColorRange) {
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+  *bitmap_.getAddr32(0, 0) = kBlue;
+
+  SkScalar hsv[3];
+  SkColorToHSV(bitmap_.getColor(0, 0), hsv);
+  SkScalar target_hue = hsv[0];
+  VisualTarget target;
+  MatchRule::ColorRange* color_range =
+      target.mutable_match_config()->add_match_rule()->add_color_range();
+  color_range->set_low(target_hue);
+  color_range->set_high(target_hue);
+
+  // Blue hue present
+  EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+  // Color range too high
+  color_range->set_low(target_hue + 1);
+  color_range->set_high(target_hue + 1);
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+
+  // Color range too low
+  color_range->set_low(target_hue - 1);
+  color_range->set_high(target_hue - 1);
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+
+  // No blue hue present
+  *bitmap_.getAddr32(0, 0) = kWhite;
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+}
+
+TEST_F(VisualUtilsTest, IsVisualMatchMultipleColorRanges) {
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+  *bitmap_.getAddr32(0, 0) = kBlue;
+  *bitmap_.getAddr32(1, 0) = kGreen;
+
+  SkScalar hsv[3];
+  SkColorToHSV(bitmap_.getColor(0, 0), hsv);
+  SkScalar blue_hue = hsv[0];
+  VisualTarget target;
+  MatchRule* match_rule = target.mutable_match_config()->add_match_rule();
+  MatchRule::ColorRange* color_range = match_rule->add_color_range();
+  color_range->set_low(blue_hue);
+  color_range->set_high(blue_hue);
+
+  SkColorToHSV(bitmap_.getColor(1, 0), hsv);
+  SkScalar green_hue = hsv[0];
+  color_range = match_rule->add_color_range();
+  color_range->set_low(green_hue);
+  color_range->set_high(green_hue);
+
+  // Both hues present
+  EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+  // No blue hue present
+  *bitmap_.getAddr32(0, 0) = kWhite;
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+
+  // No green hue present
+  *bitmap_.getAddr32(0, 0) = kBlue;
+  *bitmap_.getAddr32(1, 0) = kWhite;
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+
+  // Neither hue present
+  *bitmap_.getAddr32(0, 0) = kWhite;
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+}
+
+TEST_F(VisualUtilsTest, IsVisualMatchMultipleMatchRules) {
+  for (int x = 0; x < 1000; x++)
+    for (int y = 0; y < 1000; y++)
+      *bitmap_.getAddr32(x, y) = kWhite;
+  *bitmap_.getAddr32(0, 0) = kBlue;
+  *bitmap_.getAddr32(1, 0) = kGreen;
+
+  // Create a target with two match rules, one matching blue pixels and one
+  // matching green.
+  VisualTarget target;
+  MatchRule* match_rule_blue = target.mutable_match_config()->add_match_rule();
+  MatchRule::ColorRange* color_range = match_rule_blue->add_color_range();
+  SkScalar hsv[3];
+  SkColorToHSV(bitmap_.getColor(0, 0), hsv);
+  SkScalar blue_hue = hsv[0];
+  color_range->set_low(blue_hue);
+  color_range->set_high(blue_hue);
+
+  MatchRule* match_rule_green = target.mutable_match_config()->add_match_rule();
+  color_range = match_rule_green->add_color_range();
+  SkColorToHSV(bitmap_.getColor(1, 0), hsv);
+  SkScalar green_hue = hsv[0];
+  color_range->set_low(green_hue);
+  color_range->set_high(green_hue);
+
+  // Both hues present
+  EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+  // No blue hue present
+  *bitmap_.getAddr32(0, 0) = kWhite;
+  EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+  // No green hue present
+  *bitmap_.getAddr32(0, 0) = kBlue;
+  *bitmap_.getAddr32(1, 0) = kWhite;
+  EXPECT_TRUE(IsVisualMatch(bitmap_, target));
+
+  // Neither hue present
+  *bitmap_.getAddr32(0, 0) = kWhite;
+  EXPECT_FALSE(IsVisualMatch(bitmap_, target));
+}
+
 }  // namespace visual_utils
 }  // namespace safe_browsing

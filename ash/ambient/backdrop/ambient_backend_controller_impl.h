@@ -26,6 +26,7 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
 
   // AmbientBackendController:
   void FetchScreenUpdateInfo(
+      int num_topics,
       OnScreenUpdateInfoFetchedCallback callback) override;
   void GetSettings(GetSettingsCallback callback) override;
   void UpdateSettings(AmbientModeTopicSource topic_source,
@@ -36,7 +37,8 @@ class AmbientBackendControllerImpl : public AmbientBackendController {
   using BackdropClientConfig = chromeos::ambient::BackdropClientConfig;
   void RequestAccessToken(AmbientClient::GetAccessTokenCallback callback);
 
-  void FetchScreenUpdateInfoInternal(OnScreenUpdateInfoFetchedCallback callback,
+  void FetchScreenUpdateInfoInternal(int num_topics,
+                                     OnScreenUpdateInfoFetchedCallback callback,
                                      const std::string& gaia_id,
                                      const std::string& access_token);
 

@@ -28,16 +28,16 @@ public class PaymentRequestTestBridge {
      * PaymentRequestImpl.
      */
     private static class PaymentRequestDelegateForTest implements PaymentRequestImpl.Delegate {
-        private final boolean mIsIncognito;
+        private final boolean mIsOffTheRecord;
         private final boolean mIsValidSsl;
         private final boolean mIsWebContentsActive;
         private final boolean mPrefsCanMakePayment;
         private final boolean mSkipUiForBasicCard;
 
-        PaymentRequestDelegateForTest(boolean isIncognito, boolean isValidSsl,
+        PaymentRequestDelegateForTest(boolean isOffTheRecord, boolean isValidSsl,
                 boolean isWebContentsActive, boolean prefsCanMakePayment,
                 boolean skipUiForBasicCard) {
-            mIsIncognito = isIncognito;
+            mIsOffTheRecord = isOffTheRecord;
             mIsValidSsl = isValidSsl;
             mIsWebContentsActive = isWebContentsActive;
             mPrefsCanMakePayment = prefsCanMakePayment;
@@ -45,8 +45,8 @@ public class PaymentRequestTestBridge {
         }
 
         @Override
-        public boolean isIncognito(@Nullable ChromeActivity activity) {
-            return mIsIncognito;
+        public boolean isOffTheRecord(@Nullable ChromeActivity activity) {
+            return mIsOffTheRecord;
         }
 
         @Override
@@ -151,12 +151,13 @@ public class PaymentRequestTestBridge {
     private static final String TAG = "PaymentRequestTestBridge";
 
     @CalledByNative
-    public static void setUseDelegateForTest(boolean useDelegate, boolean isIncognito,
+    public static void setUseDelegateForTest(boolean useDelegate, boolean isOffTheRecord,
             boolean isValidSsl, boolean isWebContentsActive, boolean prefsCanMakePayment,
             boolean skipUiForBasicCard) {
         if (useDelegate) {
-            PaymentRequestFactory.sDelegateForTest = new PaymentRequestDelegateForTest(isIncognito,
-                    isValidSsl, isWebContentsActive, prefsCanMakePayment, skipUiForBasicCard);
+            PaymentRequestFactory.sDelegateForTest =
+                    new PaymentRequestDelegateForTest(isOffTheRecord, isValidSsl,
+                            isWebContentsActive, prefsCanMakePayment, skipUiForBasicCard);
         } else {
             PaymentRequestFactory.sDelegateForTest = null;
         }

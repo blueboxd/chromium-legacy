@@ -27,7 +27,7 @@ AnalysisServiceSettings::AnalysisServiceSettings(
   matcher_ = std::make_unique<url_matcher::URLMatcher>();
   url_matcher::URLMatcherConditionSet::ID id(0);
   const base::Value* enable = settings_value.FindListKey(kKeyEnable);
-  if (enable && enable->is_list()) {
+  if (enable && enable->is_list() && !enable->GetList().empty()) {
     for (const base::Value& value : enable->GetList())
       AddUrlPatternSettings(value, true, &id);
   } else {

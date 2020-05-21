@@ -526,10 +526,16 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
             <input type='text' aria-label='input_text'><span
               style="font-size: 12pt">Text1</span>
           </div>
+          <div contenteditable="true">
+            <ul><li>item</li></ul>3.14
+          </div>
         </body>
       </html>
   )HTML"));
 
+  // Case 1: Inside of a plain text field, NormalizeTextRange shouldn't modify
+  //         the text range endpoints.
+  //
   // In order for the test harness to effectively simulate typing in a text
   // input, first change the value of the text input and then focus it. Only
   // editing the value won't show the cursor and only focusing will put the
@@ -570,7 +576,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       /*expected_text*/ L"",
       /*expected_count*/ 4);
 
-  // Clone the original text range so we can keep track if NormalizeEndpoints
+  // Clone the original text range so we can keep track if NormalizeTextRange
   // causes a change in position.
   ComPtr<ITextRangeProvider> text_range_provider_clone;
   text_range_provider->Clone(&text_range_provider_clone);
@@ -584,15 +590,10 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
   ASSERT_EQ(0, result);
 
   // Calling GetAttributeValue will call NormalizeTextRange, which shouldn't
-  // change the result of CompareEndpoints below.
+  // change the result of CompareEndpoints below since the range is inside a
+  // plain text field.
   base::win::ScopedVariant value;
   EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
-      UIA_IsReadOnlyAttributeId, value.Receive()));
-  EXPECT_EQ(value.type(), VT_BOOL);
-  EXPECT_EQ(V_BOOL(value.ptr()), VARIANT_FALSE);
-  value.Reset();
-
-  EXPECT_HRESULT_SUCCEEDED(text_range_provider_clone->GetAttributeValue(
       UIA_IsReadOnlyAttributeId, value.Receive()));
   EXPECT_EQ(value.type(), VT_BOOL);
   EXPECT_EQ(V_BOOL(value.ptr()), VARIANT_FALSE);
@@ -602,6 +603,52 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       TextPatternRangeEndpoint_End, text_range_provider_clone.Get(),
       TextPatternRangeEndpoint_Start, &result));
   ASSERT_EQ(0, result);
+
+  // Case 2: Inside of a rich text field, NormalizeTextRange should modify the
+  //         text range endpoints.
+  auto* node = FindNode(ax::mojom::Role::kStaticText, "item");
+  ASSERT_NE(nullptr, node);
+  EXPECT_TRUE(node->PlatformIsLeaf());
+  EXPECT_EQ(0u, node->PlatformChildCount());
+
+  GetTextRangeProviderFromTextNode(*node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"item");
+
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 4,
+      /*expected_text*/ L"",
+      /*expected_count*/ 4);
+  // Make the range degenerate.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_End, TextUnit_Character,
+      /*count*/ 1,
+      /*expected_text*/ L"\n3",
+      /*expected_count*/ 1);
+
+  // The range should now span two nodes: start: "item<>", end: "<3>.14".
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"\n3");
+
+  // Clone the original text range so we can keep track if NormalizeTextRange
+  // causes a change in position.
+  text_range_provider->Clone(&text_range_provider_clone);
+
+  // Calling GetAttributeValue will call NormalizeTextRange, which should
+  // change the result of CompareEndpoints below since we are in a rich text
+  // field.
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
+      UIA_IsReadOnlyAttributeId, value.Receive()));
+  EXPECT_EQ(value.type(), VT_BOOL);
+  EXPECT_EQ(V_BOOL(value.ptr()), VARIANT_FALSE);
+  value.Reset();
+
+  // Since text_range_provider has been modified by NormalizeTextRange, we
+  // expect a difference here.
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->CompareEndpoints(
+      TextPatternRangeEndpoint_End, text_range_provider_clone.Get(),
+      TextPatternRangeEndpoint_Start, &result));
+  ASSERT_EQ(1, result);
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

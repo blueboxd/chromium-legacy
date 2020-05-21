@@ -784,8 +784,6 @@ static_library("ui") {
       "android/tab_model/tab_model_observer_jni_bridge.h",
       "android/toolbar/location_bar_model_android.cc",
       "android/toolbar/location_bar_model_android.h",
-      "android/view_android_helper.cc",
-      "android/view_android_helper.h",
       "browser_otr_state_android.cc",
       "screen_capture_notification_ui_stub.cc",
       "webui/explore_sites_internals/explore_sites_internals_page_handler.cc",

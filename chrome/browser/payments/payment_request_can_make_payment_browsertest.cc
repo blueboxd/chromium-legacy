@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_Supported_InIncognitoMode) {
   NavigateTo("/payment_request_can_make_payment_query_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   const autofill::CreditCard card = autofill::test::GetCreditCard();  // Visa.
   AddCreditCard(card);
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryTest,
                        CanMakePayment_NotSupported_InIncognitoMode) {
   NavigateTo("/payment_request_can_make_payment_query_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   const autofill::CreditCard card = autofill::test::GetCreditCard2();  // Amex.
   AddCreditCard(card);
@@ -344,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryCCTest,
                        QueryQuotaInIncognito) {
   NavigateTo("/payment_request_can_make_payment_query_cc_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   CallHasEnrolledInstrument(/*visa=*/true);
   ExpectBodyContains("false");
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITest,
                        QueryQuotaForBasicCardsInIncognito) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   // User starts off without having a visa card.
   CallCanMakePayment(CheckFor::BASIC_VISA);
@@ -591,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(
     PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuotaAndServiceWorkerPayment,
     QueryQuotaForPaymentAppsInIncognitoMode) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   CallCanMakePayment(CheckFor::ALICE_PAY);
   ExpectBodyContains("false");
@@ -621,7 +621,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(PaymentRequestCanMakePaymentQueryPMITestWithPaymentQuota,
                        NoQueryQuotaForPaymentAppsAndCardsInIncognito) {
   NavigateTo("/payment_request_payment_method_identifier_test.html");
-  test_controller()->SetIncognito(true);
+  test_controller()->SetOffTheRecord(true);
 
   CallCanMakePayment(CheckFor::BOB_PAY_AND_VISA);
   ExpectBodyContains("true");

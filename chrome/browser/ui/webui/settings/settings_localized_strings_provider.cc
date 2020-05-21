@@ -820,8 +820,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_COMPROMISED_EDIT_PASSWORD_APP},
       {"alreadyChangedPasswordLink",
        IDS_SETTINGS_COMPROMISED_ALREADY_CHANGED_PASSWORD},
-      {"editDisclaimerTitle",
-       IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_TITLE},
+      {"editDisclaimerTitle", IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_TITLE},
       {"editDisclaimerDescription",
        IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_DESCRIPTION},
       {"creditCards", IDS_AUTOFILL_PAYMENT_METHODS},
@@ -849,6 +848,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"creditCardType", IDS_SETTINGS_AUTOFILL_CREDIT_CARD_TYPE_COLUMN_LABEL},
       {"creditCardExpiration", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_DATE},
       {"creditCardName", IDS_SETTINGS_NAME_ON_CREDIT_CARD},
+      {"creditCardNickname", IDS_SETTINGS_CREDIT_CARD_NICKNAME},
       {"creditCardNumber", IDS_SETTINGS_CREDIT_CARD_NUMBER},
       {"creditCardExpirationMonth", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_MONTH},
       {"creditCardExpirationYear", IDS_SETTINGS_CREDIT_CARD_EXPIRATION_YEAR},
@@ -987,6 +987,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
                           base::FeatureList::IsEnabled(
                               autofill::features::kAutofillSaveAndFillVPA));
 
+  html_source->AddBoolean(
+      "nicknameManagementEnabled",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableCardNicknameManagement));
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 }
 

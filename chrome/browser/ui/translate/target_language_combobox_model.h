@@ -23,7 +23,7 @@ class TargetLanguageComboboxModel : public ui::ComboboxModel {
 
   // Overridden from ui::ComboboxModel:
   int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
+  base::string16 GetItemAt(int index) const override;
   int GetDefaultIndex() const override;
 
  private:

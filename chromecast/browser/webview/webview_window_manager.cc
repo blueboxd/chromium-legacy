@@ -4,6 +4,7 @@
 
 #include "chromecast/browser/webview/webview_window_manager.h"
 
+#include "base/stl_util.h"
 #include "chromecast/graphics/cast_window_manager.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
@@ -18,36 +19,54 @@ class RoundedCornersObserver : public WebviewWindowManager::Observer,
                                public aura::WindowObserver {
  public:
   explicit RoundedCornersObserver(CastWindowManager* cast_window_manager)
-      : cast_window_manager_(cast_window_manager) {}
+      : cast_window_manager_(cast_window_manager) {
+    DCHECK(cast_window_manager);
+  }
 
   ~RoundedCornersObserver() override {}
 
   // WebviewWindowManager::Observer implementation
   void OnNewWebviewContainerWindow(aura::Window* window, int app_id) override {
-    // Observe the lifecycle of this window so we can remove rounded corners
-    // when it goes away.
+    // Observe the lifecycle of this window so we can add rounded corners
+    // when it is visible.
     window->AddObserver(this);
-
-    // Add rounded corners on the first created window.
-    if (cast_window_manager_ && !num_container_windows_) {
-      cast_window_manager_->SetEnableRoundedCorners(true);
-    }
-    num_container_windows_++;
+    observed_container_windows_.insert(window);
+    if (window->IsVisible())
+      OnWindowVisibilityChanged(window, true);
   }
 
   // aura::WindowObserver implementation
+  void OnWindowVisibilityChanged(aura::Window* window, bool visible) override {
+    if (!base::Contains(observed_container_windows_, window))
+      return;
+
+    num_visible_container_windows_ += visible ? 1 : -1;
+    DCHECK_GE(num_visible_container_windows_, 0);
+    cast_window_manager_->SetEnableRoundedCorners(
+        num_visible_container_windows_);
+  }
+
   void OnWindowDestroyed(aura::Window* window) override {
+    if (!base::Contains(observed_container_windows_, window))
+      return;
+
+    observed_container_windows_.erase(window);
+    if (window->IsVisible()) {
+      num_visible_container_windows_--;
+      DCHECK_GE(num_visible_container_windows_, 0);
+    } else {
+      return;
+    }
     // Remove the rounded corners when we're out of container windows.
-    num_container_windows_--;
-    DCHECK_GE(num_container_windows_, 0);
-    if (cast_window_manager_ && !num_container_windows_) {
+    if (!num_visible_container_windows_) {
       cast_window_manager_->SetEnableRoundedCorners(false);
     }
   }
 
  private:
   CastWindowManager* cast_window_manager_;
-  int num_container_windows_ = 0;
+  int num_visible_container_windows_ = 0;
+  std::unordered_set<aura::Window*> observed_container_windows_;
 
   DISALLOW_COPY_AND_ASSIGN(RoundedCornersObserver);
 };

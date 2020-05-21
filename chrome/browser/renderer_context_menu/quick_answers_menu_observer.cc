@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/assistant/controller/assistant_interaction_controller.h"
-#include "ash/public/cpp/quick_answers_controller.h"
+#include "ash/public/cpp/quick_answers/controller/quick_answers_controller.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"

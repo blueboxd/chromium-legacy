@@ -11,11 +11,7 @@ namespace stack_unwinder {
 // It must only be subclassed within the module implementation.
 class MemoryRegionsMap {
  public:
-  MemoryRegionsMap();
   virtual ~MemoryRegionsMap() = 0;
-
-  MemoryRegionsMap(const MemoryRegionsMap&) = delete;
-  MemoryRegionsMap& operator=(const MemoryRegionsMap&) = delete;
 };
 
 }  // namespace stack_unwinder

@@ -5,7 +5,7 @@
 #ifndef UI_BASE_CURSOR_CURSOR_LOOKUP_H_
 #define UI_BASE_CURSOR_CURSOR_LOOKUP_H_
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 class SkBitmap;
 
@@ -16,9 +16,11 @@ class Point;
 namespace ui {
 class Cursor;
 
-SkBitmap UI_BASE_EXPORT GetCursorBitmap(const Cursor& cursor);
+COMPONENT_EXPORT(UI_BASE_CURSOR)
+SkBitmap GetCursorBitmap(const Cursor& cursor);
 
-gfx::Point UI_BASE_EXPORT GetCursorHotspot(const Cursor& cursor);
+COMPONENT_EXPORT(UI_BASE_CURSOR)
+gfx::Point GetCursorHotspot(const Cursor& cursor);
 
 }  // namespace ui
 

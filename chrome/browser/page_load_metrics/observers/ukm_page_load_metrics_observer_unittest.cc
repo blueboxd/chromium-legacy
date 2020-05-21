@@ -23,6 +23,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "components/prefs/pref_service.h"
@@ -47,8 +48,13 @@ using testing::Return;
 
 namespace {
 
-using PageLoad = ukm::builders::PageLoad;
 using GeneratedNavigation = ukm::builders::GeneratedNavigation;
+using LargestContentState =
+    page_load_metrics::PageLoadMetricsObserver::LargestContentState;
+using LargestContentType =
+    page_load_metrics::PageLoadMetricsObserver::LargestContentType;
+using PageLoad = ukm::builders::PageLoad;
+using PageLoad_Internal = ukm::builders::PageLoad_Internal;
 
 const char kTestUrl1[] = "https://www.google.com/";
 const char kTestUrl2[] = "https://www.example.com/";
@@ -285,15 +291,31 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestImagePaint) {
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      600);
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName,
+      static_cast<int>(LargestContentType::kImage));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestImageLoading) {
@@ -319,15 +341,30 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestImageLoading) {
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
-  for (const auto& kv : merged_entries) {
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::
-            kPaintTiming_NavigationToLargestContentfulPaint_MainFrameName));
-  }
+  EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry,
+      PageLoad::kPaintTiming_NavigationToLargestContentfulPaint_MainFrameName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kLargestImageLoading));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestImageLoadingSmallerThanText) {
@@ -353,16 +390,31 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestImageLoadingSmallerThanText) {
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      600);
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName,
+      static_cast<int>(LargestContentType::kText));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest,
@@ -388,11 +440,16 @@ TEST_F(UkmPageLoadMetricsObserverTest,
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
-  for (const auto& kv : merged_entries) {
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
-  }
+  EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  // RecordTimingMetrics() is not called in this test.
+  EXPECT_EQ(0ul, internal_merged_entries.size());
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_DiscardBackgroundResult) {
@@ -418,11 +475,16 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_DiscardBackgroundResult) {
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
-  for (const auto& kv : merged_entries) {
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
-  }
+  EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  // RecordTimingMetrics() is not called in this test.
+  EXPECT_EQ(0ul, internal_merged_entries.size());
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_ReportLastCandidate) {
@@ -456,16 +518,30 @@ TEST_F(UkmPageLoadMetricsObserverTest, FCPPlusPlus_ReportLastCandidate) {
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      600);
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  // There's a tie here so not testing the content type value.
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestTextPaint) {
@@ -487,16 +563,32 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestTextPaint) {
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      600);
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName,
+      static_cast<int>(LargestContentType::kText));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestContentfulPaint_Trace) {
@@ -601,16 +693,32 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestContentfulPaint_OnlyText) {
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      600);
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName,
+      static_cast<int>(LargestContentType::kText));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest, LargestContentfulPaint_OnlyImage) {
@@ -632,16 +740,32 @@ TEST_F(UkmPageLoadMetricsObserverTest, LargestContentfulPaint_OnlyImage) {
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      600);
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName,
+      static_cast<int>(LargestContentType::kImage));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest,
@@ -667,16 +791,32 @@ TEST_F(UkmPageLoadMetricsObserverTest,
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 600);
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      600);
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName,
+      static_cast<int>(LargestContentType::kImage));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest,
@@ -713,20 +853,35 @@ TEST_F(UkmPageLoadMetricsObserverTest,
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
   EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
 
-  for (const auto& kv : merged_entries) {
-    tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
-                                                          GURL(kTestUrl1));
-    tester()->test_ukm_recorder().ExpectEntryMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName, 4780);
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::
-            kPaintTiming_NavigationToLargestContentfulPaint_MainFrameName));
-    EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(), PageLoad::kPageTiming_ForegroundDurationName));
-  }
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(entry, GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName,
+      4780);
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry,
+      PageLoad::kPaintTiming_NavigationToLargestContentfulPaint_MainFrameName));
+  EXPECT_TRUE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPageTiming_ForegroundDurationName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  tester()->test_ukm_recorder().ExpectEntrySourceHasUrl(internal_entry,
+                                                        GURL(kTestUrl1));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName,
+      static_cast<int>(LargestContentType::kImage));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kReported));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest,
@@ -766,15 +921,28 @@ TEST_F(UkmPageLoadMetricsObserverTest,
   std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
       tester()->test_ukm_recorder().GetMergedEntriesByName(
           PageLoad::kEntryName);
-  for (const auto& kv : merged_entries) {
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::
-            kPaintTiming_NavigationToLargestContentfulPaint_MainFrameName));
-    EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
-        kv.second.get(),
-        PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
-  }
+  EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry,
+      PageLoad::kPaintTiming_NavigationToLargestContentfulPaint_MainFrameName));
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kLargestImageLoading));
 }
 
 TEST_F(UkmPageLoadMetricsObserverTest,
@@ -1669,6 +1837,42 @@ TEST_F(UkmPageLoadMetricsObserverTest, DefaultSearchReported) {
     tester()->test_ukm_recorder().ExpectEntryMetric(
         kv.second.get(), GeneratedNavigation::kFinalURLIsHomePageName, false);
   }
+}
+
+TEST_F(UkmPageLoadMetricsObserverTest, NoLargestContentfulPaint) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL(kTestUrl1));
+  tester()->SimulateTimingUpdate(timing);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+  const ukm::mojom::UkmEntry* entry = merged_entries.begin()->second.get();
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      entry, PageLoad::kPaintTiming_NavigationToLargestContentfulPaintName));
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> internal_merged_entries =
+      tester()->test_ukm_recorder().GetMergedEntriesByName(
+          PageLoad_Internal::kEntryName);
+  EXPECT_EQ(1ul, internal_merged_entries.size());
+  const ukm::mojom::UkmEntry* internal_entry =
+      internal_merged_entries.begin()->second.get();
+  EXPECT_FALSE(tester()->test_ukm_recorder().EntryHasMetric(
+      internal_entry,
+      PageLoad_Internal::kPaintTiming_LargestContentfulPaint_ContentTypeName));
+  tester()->test_ukm_recorder().ExpectEntryMetric(
+      internal_entry,
+      PageLoad_Internal::
+          kPaintTiming_LargestContentfulPaint_TerminationStateName,
+      static_cast<int>(LargestContentState::kNotFound));
 }
 
 class TestOfflinePreviewsUkmPageLoadMetricsObserver

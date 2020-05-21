@@ -116,5 +116,5 @@ blink_core_sources("page") {
     "viewport_description.h",
   ]
 
-  public_deps = [ "//ui/base/cursor" ]
+  public_deps = [ "//ui/base/cursor:cursor_base" ]
 }

@@ -589,6 +589,14 @@ cast_source_set("unittests") {
       "//ui/events:test_support",
     ]
   }
+
+  if (is_linux && use_ozone) {
+    sources += [ "webview/webview_window_manager_unittest.cc" ]
+    deps += [
+      "//chromecast/graphics",
+      "//components/exo",
+    ]
+  }
 }
 
 if (is_android) {

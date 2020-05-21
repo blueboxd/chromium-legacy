@@ -757,9 +757,9 @@ public class ChromeTabbedActivity
             };
 
             getToolbarManager().initializeWithNative(mTabModelSelectorImpl,
-                    getFullscreenManager().getBrowserVisibilityDelegate(), mOverviewModeController,
-                    mLayoutManager, tabSwitcherClickHandler, newTabClickHandler,
-                    bookmarkClickHandler, null, showStartSurfaceSupplier);
+                    getFullscreenManager().getBrowserVisibilityDelegate(), mLayoutManager,
+                    tabSwitcherClickHandler, newTabClickHandler, bookmarkClickHandler, null,
+                    showStartSurfaceSupplier);
 
             if (!TabUiFeatureUtilities.supportInstantStart(isTablet())) {
                 assert !mOverviewModeController.overviewVisible();
@@ -1538,8 +1538,8 @@ public class ChromeTabbedActivity
     protected RootUiCoordinator createRootUiCoordinator() {
         return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged, mIntentWithEffect,
                 getShareDelegateSupplier(), getActivityTabProvider(),
-                mEphemeralTabCoordinatorSupplier, mTabModelProfileSupplier,
-                mBookmarkBridgeSupplier);
+                mEphemeralTabCoordinatorSupplier, mTabModelProfileSupplier, mBookmarkBridgeSupplier,
+                getOverviewModeBehaviorSupplier());
     }
 
     @Override

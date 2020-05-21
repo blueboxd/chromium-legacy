@@ -7,6 +7,7 @@
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_data_drag_controller.h"
 #include "ui/ozone/platform/wayland/host/wayland_window_manager.h"
 
 namespace ui {
@@ -78,7 +79,7 @@ void WaylandSubsurface::CreateSubsurface() {
     // windows. If we are in a drag process, use the entered window. Otherwise,
     // it must be a tooltip.
     if (connection()->IsDragInProgress()) {
-      parent = connection()->wayland_data_device()->entered_window();
+      parent = connection()->data_drag_controller()->entered_window();
       set_parent_window(parent);
     } else {
       // If Aura does not not provide a reference parent window, needed by

@@ -54,6 +54,8 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillManagerClient {
     virtual void RemoveTechnology(const std::string& type) = 0;
     virtual void SetTechnologyInitializing(const std::string& type,
                                            bool initializing) = 0;
+    virtual void SetTechnologyProhibited(const std::string& type,
+                                         bool prohibited) = 0;
     virtual void AddGeoNetwork(const std::string& technology,
                                const base::DictionaryValue& network) = 0;
 

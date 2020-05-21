@@ -95,7 +95,7 @@ class ComboboxModelExampleList : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override { return example_list_.size(); }
-  base::string16 GetItemAt(int index) override {
+  base::string16 GetItemAt(int index) const override {
     return base::UTF8ToUTF16(example_list_[index]->example_title());
   }
 

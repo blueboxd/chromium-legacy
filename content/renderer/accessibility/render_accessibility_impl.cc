@@ -195,6 +195,11 @@ RenderAccessibilityImpl::RenderAccessibilityImpl(
     settings->SetInlineTextBoxAccessibilityEnabled(true);
 #endif
 
+#if defined(OS_MACOSX)
+  // aria-modal currently prunes the accessibility tree on Mac only.
+  settings->SetAriaModalPrunesAXTree(true);
+#endif
+
   const WebDocument& document = GetMainDocument();
   if (!document.IsNull()) {
     ax_context_ = std::make_unique<WebAXContext>(document);

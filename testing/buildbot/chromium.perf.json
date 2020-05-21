@@ -528,6 +528,10 @@
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_test_suite",
@@ -562,6 +566,14 @@
         }
       }
     ]
+  },
+  "android-pixel2-processor-perf": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "android-pixel2_weblayer-perf": {
     "isolated_scripts": [
@@ -620,6 +632,10 @@
         ],
         "isolate_name": "performance_webview_test_suite",
         "merge": {
+          "args": [
+            "--lightweight",
+            "--skip-perf"
+          ],
           "script": "//tools/perf/process_perf_results.py"
         },
         "name": "performance_webview_test_suite",
@@ -654,6 +670,14 @@
         }
       }
     ]
+  },
+  "android-pixel2_webview-processor-perf": {
+    "merge": {
+      "args": [
+        "--lightweight"
+      ],
+      "script": "//tools/perf/process_perf_results.py"
+    }
   },
   "android_arm64-builder-perf": {
     "additional_compile_targets": [

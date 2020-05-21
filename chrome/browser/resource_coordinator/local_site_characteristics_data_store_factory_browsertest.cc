@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(LocalSiteCharacteristicsDataStoreFactoryTest, EndToEnd) {
   EXPECT_TRUE(DataStoreRespectsOffTheRecordValue(regular_profile,
                                                  recording_data_store));
 
-  Profile* incognito_profile = regular_profile->GetOffTheRecordProfile();
+  Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
   ASSERT_TRUE(incognito_profile);
   SiteCharacteristicsDataStore* incognito_data_store =
       static_cast<SiteCharacteristicsDataStore*>(

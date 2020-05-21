@@ -21,7 +21,7 @@ int TargetLanguageComboboxModel::GetItemCount() const {
   return model_->GetNumberOfLanguages();
 }
 
-base::string16 TargetLanguageComboboxModel::GetItemAt(int index) {
+base::string16 TargetLanguageComboboxModel::GetItemAt(int index) const {
   return model_->GetLanguageNameAt(index);
 }
 

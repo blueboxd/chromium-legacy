@@ -125,6 +125,10 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // platform.
   virtual bool IsChildOfLeaf() const = 0;
 
+  // Returns true if this current node is editable and the root editable node is
+  // a plain text field.
+  virtual bool IsChildOfPlainTextField() const = 0;
+
   // If this object is exposed to the platform, returns this object. Otherwise,
   // returns the platform leaf under which this object is found.
   virtual gfx::NativeViewAccessible GetClosestPlatformObject() const = 0;

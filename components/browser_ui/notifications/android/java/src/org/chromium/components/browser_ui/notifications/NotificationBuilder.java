@@ -10,6 +10,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.media.session.MediaSession;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.media.session.MediaSessionCompat;
@@ -229,6 +230,12 @@ public class NotificationBuilder implements ChromeNotificationBuilder {
     @Override
     public ChromeNotificationBuilder setVibrate(long[] vibratePattern) {
         mBuilder.setVibrate(vibratePattern);
+        return this;
+    }
+
+    @Override
+    public ChromeNotificationBuilder setSound(Uri sound) {
+        mBuilder.setSound(sound);
         return this;
     }
 

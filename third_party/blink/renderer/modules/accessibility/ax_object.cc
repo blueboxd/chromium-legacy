@@ -1257,6 +1257,8 @@ bool AXObject::ComputeIsInertOrAriaHidden(
         }
       }
       return true;
+    } else if (IsBlockedByAriaModalDialog(ignored_reasons)) {
+      return true;
     }
   } else {
     AXObject* parent = ParentObject();
@@ -1281,6 +1283,27 @@ bool AXObject::ComputeIsInertOrAriaHidden(
   }
 
   return false;
+}
+
+bool AXObject::IsBlockedByAriaModalDialog(
+    IgnoredReasons* ignored_reasons) const {
+  AXObject* active_aria_modal_dialog =
+      AXObjectCache().GetActiveAriaModalDialog();
+
+  // On platforms that don't require manual pruning of the accessibility tree,
+  // the active aria modal dialog should never be set, so has no effect.
+  if (!active_aria_modal_dialog)
+    return false;
+
+  if (this == active_aria_modal_dialog ||
+      IsDescendantOf(*active_aria_modal_dialog))
+    return false;
+
+  if (ignored_reasons) {
+    ignored_reasons->push_back(
+        IgnoredReason(kAXAriaModalDialog, active_aria_modal_dialog));
+  }
+  return true;
 }
 
 bool AXObject::IsVisible() const {

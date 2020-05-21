@@ -100,6 +100,7 @@ chrome.autofillPrivate.AddressComponents;
  *   cardNumber: (string|undefined),
  *   expirationMonth: (string|undefined),
  *   expirationYear: (string|undefined),
+ *   nickname: (string|undefined),
  *   metadata: (!chrome.autofillPrivate.AutofillMetadata|undefined)
  * }}
  */

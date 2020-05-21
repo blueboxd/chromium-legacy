@@ -251,7 +251,7 @@ base::Value CreateCupsPrinterStatusDictionary(
                          base::Value(static_cast<int>(reason.GetSeverity())));
     status_reasons.Append(std::move(status_reason));
   }
-  printer_status.SetKey("status_reasons", std::move(status_reasons));
+  printer_status.SetKey("statusReasons", std::move(status_reasons));
 
   return printer_status;
 }

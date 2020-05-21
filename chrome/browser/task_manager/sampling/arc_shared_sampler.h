@@ -57,8 +57,8 @@ class ArcSharedSampler {
 
   // The timestamp of when the last refresh call finished, for system and
   // app processes.
-  base::Time last_system_refresh = base::Time();
-  base::Time last_app_refresh = base::Time();
+  base::Time last_system_refresh_;
+  base::Time last_app_refresh_;
 
   base::WeakPtrFactory<ArcSharedSampler> weak_ptr_factory_{this};
 

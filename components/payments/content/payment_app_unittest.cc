@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/payments/core/payment_app.h"
+#include "components/payments/content/payment_app.h"
 
 #include <vector>
 
@@ -11,8 +11,8 @@
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/payments/content/autofill_payment_app.h"
 #include "components/payments/content/service_worker_payment_app.h"
-#include "components/payments/core/autofill_payment_app.h"
 #include "components/payments/core/features.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/browser/supported_delegations.h"

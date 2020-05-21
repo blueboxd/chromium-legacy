@@ -69,7 +69,7 @@ jumbo_component("wm") {
     "//skia",
     "//ui/aura",
     "//ui/base",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime",
     "//ui/compositor",
@@ -103,7 +103,7 @@ jumbo_static_library("test_support") {
     "test/wm_test_helper.h",
   ]
 
-  public_deps = [ "//ui/base/cursor" ]
+  public_deps = [ "//ui/base/cursor:cursor_base" ]
 
   deps = [
     ":wm",
@@ -144,7 +144,7 @@ test("wm_unittests") {
     "//testing/gtest",
     "//ui/aura:test_support",
     "//ui/base:test_support",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime",
     "//ui/compositor:test_support",

@@ -94,7 +94,8 @@ class TEST_TYPES(object):
 # The perf data will be handled on a separated 'processor' VM.
 # This list will be removed or replace by an opt-out list.
 LIGHTWEIGHT_TESTERS = [
-    'linux-perf', 'android-pixel2-perf-fyi', 'linux-perf-fyi',
+    'android-pixel2-perf', 'android-pixel2_webview-perf', 'linux-perf',
+    'android-pixel2-perf-fyi', 'linux-perf-fyi',
     'win-10_laptop_low_end-perf_HP-Candidate'
 ]
 
@@ -610,6 +611,14 @@ BUILDERS = {
         },
     },
     'linux-processor-perf': {
+        'platform': 'linux',
+        'perf_processor': True,
+    },
+    'android-pixel2-processor-perf': {
+        'platform': 'linux',
+        'perf_processor': True,
+    },
+    'android-pixel2_webview-processor-perf': {
         'platform': 'linux',
         'perf_processor': True,
     },

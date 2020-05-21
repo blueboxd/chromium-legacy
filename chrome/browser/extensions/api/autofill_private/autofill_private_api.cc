@@ -347,6 +347,12 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveCreditCardFunction::Run() {
                            base::UTF8ToUTF16(*card->expiration_year));
   }
 
+  // TODO(crbug.com/1063426): Log nickname management via settings page.
+  // TODO(crbug.com/1063426): add corresponding nickname autofill_private test.
+  if (card->nickname) {
+    credit_card.SetNickname(base::UTF8ToUTF16(*card->nickname));
+  }
+
   if (use_existing_card) {
     personal_data->UpdateCreditCard(credit_card);
   } else {

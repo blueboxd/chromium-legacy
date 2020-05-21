@@ -18,11 +18,11 @@ int SimpleComboboxModel::GetItemCount() const {
   return items_.size();
 }
 
-base::string16 SimpleComboboxModel::GetItemAt(int index) {
+base::string16 SimpleComboboxModel::GetItemAt(int index) const {
   return items_[index];
 }
 
-bool SimpleComboboxModel::IsItemSeparatorAt(int index) {
+bool SimpleComboboxModel::IsItemSeparatorAt(int index) const {
   return items_[index].empty();
 }
 

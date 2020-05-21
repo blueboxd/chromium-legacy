@@ -38,7 +38,6 @@
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -250,8 +249,6 @@ void TabAndroid::InitWebContents(
 
   ContextMenuHelper::FromWebContents(web_contents())->SetPopulator(
       jcontext_menu_populator);
-  ViewAndroidHelper::FromWebContents(web_contents())->
-      SetViewAndroid(web_contents()->GetNativeView());
 
   synced_tab_delegate_->SetWebContents(web_contents(), jparent_tab_id);
 

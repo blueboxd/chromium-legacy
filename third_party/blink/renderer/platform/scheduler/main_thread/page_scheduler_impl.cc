@@ -286,6 +286,9 @@ void PageSchedulerImpl::SetPageFrozenImpl(
     }
     main_thread_scheduler_->OnPageResumed();
   }
+
+  if (delegate_)
+    delegate_->OnSetPageFrozen(frozen);
 }
 
 void PageSchedulerImpl::SetKeepActive(bool keep_active) {
@@ -714,8 +717,6 @@ void PageSchedulerImpl::PageLifecycleStateTracker::SetPageLifecycleState(
         kHistogramPageLifecycleStateTransition,
         static_cast<PageLifecycleStateTransition>(transition.value()));
   }
-  if (page_scheduler_impl_->delegate_)
-    page_scheduler_impl_->delegate_->SetLifecycleState(new_state);
   current_state_ = new_state;
 }
 

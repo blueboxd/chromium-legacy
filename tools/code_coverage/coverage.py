@@ -157,7 +157,8 @@ def _ConfigureLLVMCoverageTools(args):
     LLVM_COV_PATH = os.path.join(llvm_bin_dir, 'llvm-cov')
     LLVM_PROFDATA_PATH = os.path.join(llvm_bin_dir, 'llvm-profdata')
   else:
-    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
+    subprocess.check_call(
+        ['tools/clang/scripts/update.py', '--package', 'coverage_tools'])
 
   if coverage_utils.GetHostPlatform() == 'win':
     LLVM_COV_PATH += '.exe'
@@ -948,18 +949,20 @@ def _ParseCommandArguments():
 
 def Main():
   """Execute tool commands."""
-  # Setup coverage binaries even when script is called with empty params. This
-  # is used by coverage bot for initial setup.
-  if len(sys.argv) == 1:
-    update.UpdatePackage('coverage_tools', coverage_utils.GetHostPlatform())
-    print(__doc__)
-    return
 
   # Change directory to source root to aid in relative paths calculations.
   global SRC_ROOT_PATH
   SRC_ROOT_PATH = coverage_utils.GetFullPath(
       os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir))
   os.chdir(SRC_ROOT_PATH)
+
+  # Setup coverage binaries even when script is called with empty params. This
+  # is used by coverage bot for initial setup.
+  if len(sys.argv) == 1:
+    subprocess.check_call(
+        ['tools/clang/scripts/update.py', '--package', 'coverage_tools'])
+    print(__doc__)
+    return
 
   args = _ParseCommandArguments()
   coverage_utils.ConfigureLogging(verbose=args.verbose, log_file=args.log_file)

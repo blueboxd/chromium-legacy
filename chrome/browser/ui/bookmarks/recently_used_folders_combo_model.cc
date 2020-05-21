@@ -101,7 +101,7 @@ int RecentlyUsedFoldersComboModel::GetItemCount() const {
   return static_cast<int>(items_.size());
 }
 
-base::string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
+base::string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) const {
   switch (items_[index].type) {
     case Item::TYPE_NODE:
       return items_[index].node->GetTitle();
@@ -117,7 +117,7 @@ base::string16 RecentlyUsedFoldersComboModel::GetItemAt(int index) {
   return base::string16();
 }
 
-bool RecentlyUsedFoldersComboModel::IsItemSeparatorAt(int index) {
+bool RecentlyUsedFoldersComboModel::IsItemSeparatorAt(int index) const {
   return items_[index].type == Item::TYPE_SEPARATOR;
 }
 

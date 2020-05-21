@@ -23,10 +23,12 @@ def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--script', required=True,
                       help='Path to the java binary wrapper script.')
+  parser.add_argument('--gn-target', required=True)
   parser.add_argument('--input-jar', required=True)
   parser.add_argument('--direct-classpath-jars')
   parser.add_argument('--sdk-classpath-jars')
-  parser.add_argument('--full-classpath-jars', action='append')
+  parser.add_argument('--full-classpath-jars')
+  parser.add_argument('--full-classpath-gn-targets')
   parser.add_argument('--stamp')
   parser.add_argument('-v', '--verbose', action='store_true')
   parser.add_argument('--missing-classes-allowlist')
@@ -37,19 +39,24 @@ def main(argv):
   args.direct_classpath_jars = build_utils.ParseGnList(
       args.direct_classpath_jars)
   args.full_classpath_jars = build_utils.ParseGnList(args.full_classpath_jars)
+  args.full_classpath_gn_targets = build_utils.ParseGnList(
+      args.full_classpath_gn_targets)
   args.missing_classes_allowlist = build_utils.ParseGnList(
       args.missing_classes_allowlist)
 
   verbose = '--verbose' if args.verbose else '--not-verbose'
 
-  cmd = [args.script, args.input_jar, verbose, args.is_prebuilt]
+  cmd = [args.script, args.gn_target, args.input_jar, verbose, args.is_prebuilt]
   cmd += [str(len(args.missing_classes_allowlist))]
   cmd += args.missing_classes_allowlist
   cmd += [str(len(args.sdk_classpath_jars))]
   cmd += args.sdk_classpath_jars
   cmd += [str(len(args.direct_classpath_jars))]
   cmd += args.direct_classpath_jars
+  cmd += [str(len(args.full_classpath_jars))]
   cmd += args.full_classpath_jars
+  cmd += [str(len(args.full_classpath_gn_targets))]
+  cmd += args.full_classpath_gn_targets
   subprocess.check_call(cmd)
 
   if args.stamp:

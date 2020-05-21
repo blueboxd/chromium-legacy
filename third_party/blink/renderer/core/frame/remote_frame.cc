@@ -662,6 +662,14 @@ void RemoteFrame::UpdateOpener(
   }
 }
 
+void RemoteFrame::TransferUserActivationToRenderer(
+    const base::UnguessableToken& source_frame_token) {
+  RemoteFrame* source_frame = RemoteFrame::FromFrameToken(source_frame_token);
+  if (!source_frame)
+    return;
+  TransferUserActivationFrom(source_frame);
+}
+
 IntSize RemoteFrame::GetMainFrameViewportSize() const {
   HTMLFrameOwnerElement* owner = DeprecatedLocalOwner();
   DCHECK(owner);

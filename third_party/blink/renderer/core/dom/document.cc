@@ -1122,7 +1122,10 @@ bool Document::IsFeatureEnabled(mojom::blink::DocumentPolicyFeature feature,
              feature, threshold_value, report_option, message, source_file);
 }
 
-String Document::addressSpaceForBindings() const {
+String Document::addressSpaceForBindings(ScriptState* script_state) const {
+  // "public" is the lowest-privilege value.
+  if (!script_state->ContextIsValid())
+    return "public";
   return GetExecutionContext()->addressSpaceForBindings();
 }
 

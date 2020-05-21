@@ -1150,4 +1150,17 @@ bool AXNode::IsEmbeddedGroup() const {
   return ui::IsSetLike(parent()->data().role);
 }
 
+AXNode* AXNode::GetTextFieldAncestor() const {
+  AXNode* parent = GetUnignoredParent();
+
+  while (parent && parent->data().HasState(ax::mojom::State::kEditable)) {
+    if (parent->data().IsPlainTextField() || parent->data().IsRichTextField())
+      return parent;
+
+    parent = parent->GetUnignoredParent();
+  }
+
+  return nullptr;
+}
+
 }  // namespace ui

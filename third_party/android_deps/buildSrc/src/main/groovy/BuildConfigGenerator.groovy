@@ -384,6 +384,8 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  jar_excluded_patterns = ["*/ListenableFuture.class"]\n')
                 break
             case 'com_google_code_findbugs_jsr305':
+            case 'com_google_guava_failureaccess':
+            case 'com_google_j2objc_j2objc_annotations':
             case 'com_google_guava_listenablefuture':
             case 'com_googlecode_java_diff_utils_diffutils':
                 sb.append('\n')

@@ -93,9 +93,6 @@ jumbo_component("base") {
   sources = [
     "class_property.cc",
     "class_property.h",
-    "cursor/cursor_loader.h",
-    "cursor/cursor_lookup.cc",
-    "cursor/cursor_lookup.h",
     "default_style.h",
     "device_form_factor.h",
     "device_form_factor_desktop.cc",
@@ -342,8 +339,6 @@ jumbo_component("base") {
       "accelerators/system_media_controls_media_keys_listener.h",
       "base_window.cc",
       "base_window.h",
-      "cursor/cursor_util.cc",
-      "cursor/cursor_util.h",
       "emoji/emoji_panel_helper.h",
       "pointer/pointer_device.h",
       "pointer/pointer_device_util.cc",
@@ -434,11 +429,10 @@ jumbo_component("base") {
     ":ui_data_pack",
     "//base",
     "//skia",
-    "//ui/base/cursor",
-    "//ui/base/cursor/mojom:cursor_type",
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
   deps = [
     "//base:base_static",
     "//base:i18n",
@@ -454,7 +448,7 @@ jumbo_component("base") {
     "//ui/display",
     "//ui/events",
     "//ui/events/devices",
-    "//ui/resources",
+    "//ui/resources:webui_resources_grd",
     "//ui/strings",
     "//url",
   ]
@@ -503,8 +497,6 @@ jumbo_component("base") {
 
   if (use_x11 && use_aura) {
     sources += [
-      "cursor/cursor_loader_x11.cc",
-      "cursor/cursor_loader_x11.h",
       "x/selection_requestor.cc",
       "x/selection_requestor.h",
     ]
@@ -530,14 +522,6 @@ jumbo_component("base") {
     deps += [ "//third_party/fontconfig" ]
   }
 
-  if (is_desktop_linux) {
-    sources += [
-      "cursor/cursor_theme_manager_linux.cc",
-      "cursor/cursor_theme_manager_linux.h",
-      "cursor/cursor_theme_manager_linux_observer.h",
-    ]
-  }
-
   if (use_glib) {
     configs += [ "//build/config/linux:glib" ]
     sources += [
@@ -558,18 +542,11 @@ jumbo_component("base") {
     deps += [ "//ui/base/clipboard" ]
   }
 
-  if (is_win) {
-    sources += [
-      "cursor/cursor_loader_win.cc",
-      "cursor/cursor_loader_win.h",
+  if (!use_aura) {
+    sources -= [
+      "view_prop.cc",
+      "view_prop.h",
     ]
-  } else {
-    if (!use_aura) {
-      sources -= [
-        "view_prop.cc",
-        "view_prop.h",
-      ]
-    }
   }
 
   if (is_mac) {
@@ -583,20 +560,6 @@ jumbo_component("base") {
       "Carbon.framework",
       "CoreVideo.framework",
       "Foundation.framework",
-    ]
-  }
-
-  if (use_ozone) {
-    sources += [
-      "cursor/cursor_loader_ozone.cc",
-      "cursor/cursor_loader_ozone.h",
-      "cursor/ozone/bitmap_cursor_factory_ozone.cc",
-      "cursor/ozone/bitmap_cursor_factory_ozone.h",
-    ]
-
-    deps += [
-      "//ui/events/ozone/layout",
-      "//ui/ozone:ozone_base",
     ]
   }
 
@@ -624,16 +587,6 @@ jumbo_component("base") {
       "pointer/touch_editing_controller.cc",
       "theme_provider.cc",
       "ui_base_types.cc",
-    ]
-  }
-
-  if (use_aura) {
-    # Cursor
-    sources += [
-      "cursor/cursors_aura.cc",
-      "cursor/cursors_aura.h",
-      "cursor/image_cursors.cc",
-      "cursor/image_cursors.h",
     ]
   }
 
@@ -959,6 +912,7 @@ test("ui_base_unittests") {
     "//ui/base:ui_data_pack",
     "//ui/base/clipboard:clipboard_test",
     "//ui/base/clipboard:clipboard_types",
+    "//ui/base/cursor:unittests",
     "//ui/display",
     "//ui/events:events_base",
     "//ui/events:test_support",
@@ -989,18 +943,13 @@ test("ui_base_unittests") {
       "accelerators/accelerator_unittest.cc",
       "accelerators/menu_label_accelerator_util_unittest.cc",
       "accelerators/system_media_controls_media_keys_listener_unittest.cc",
-      "cursor/cursor_unittest.cc",
-      "cursor/cursor_util_unittest.cc",
       "models/list_model_unittest.cc",
       "models/list_selection_model_unittest.cc",
       "models/tree_node_model_unittest.cc",
       "text/bytes_formatting_unittest.cc",
       "webui/web_ui_util_unittest.cc",
     ]
-    deps += [
-      "//components/system_media_controls:test_support",
-      "//ui/base/cursor/mojom:cursor_type",
-    ]
+    deps += [ "//components/system_media_controls:test_support" ]
 
     if (is_linux) {
       sources +=

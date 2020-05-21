@@ -98,6 +98,10 @@ bool AXPlatformNodeDelegateBase::IsChildOfLeaf() const {
   return false;
 }
 
+bool AXPlatformNodeDelegateBase::IsChildOfPlainTextField() const {
+  return false;
+}
+
 gfx::NativeViewAccessible AXPlatformNodeDelegateBase::GetClosestPlatformObject()
     const {
   return nullptr;

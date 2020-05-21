@@ -37,6 +37,9 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.lang.annotation.Annotation;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
@@ -70,6 +73,8 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
     // The browser context needs to be a process-wide singleton.
     private AwBrowserContext mBrowserContext;
 
+    private List<WeakReference<AwContents>> mAwContentsDestroyedInTearDown = new ArrayList<>();
+
     public AwActivityTestRule() {
         super(AwTestRunnerActivity.class, /* initialTouchMode */ false, /* launchActivity */ false);
     }
@@ -82,6 +87,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
             public void evaluate() throws Throwable {
                 setUp();
                 base.evaluate();
+                tearDown();
             }
         }, description);
     }
@@ -93,6 +99,20 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
         if (needsBrowserProcessStarted()) {
             startBrowserProcess();
         }
+    }
+
+    public void tearDown() {
+        if (!needsAwContentsCleanup()) return;
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            for (WeakReference<AwContents> awContentsRef : mAwContentsDestroyedInTearDown) {
+                AwContents awContents = awContentsRef.get();
+                if (awContents == null) continue;
+                awContents.destroy();
+            }
+        });
+        // Flush the UI queue since destroy posts again to UI thread.
+        TestThreadUtils.runOnUiThreadBlocking(() -> { mAwContentsDestroyedInTearDown.clear(); });
     }
 
     public AwTestRunnerActivity launchActivity() {
@@ -127,6 +147,14 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
      *         already be started.
      */
     public boolean needsBrowserProcessStarted() {
+        return true;
+    }
+
+    /**
+     * Override this to return false if test doesn't need all AwContents to be
+     * destroyed explicitly after the test.
+     */
+    public boolean needsAwContentsCleanup() {
         return true;
     }
 
@@ -376,6 +404,7 @@ public class AwActivityTestRule extends ActivityTestRule<AwTestRunnerActivity> {
                 testContainerView.getNativeDrawFunctorFactory(), awContentsClient, awSettings,
                 testDependencyFactory);
         testContainerView.initialize(awContents);
+        mAwContentsDestroyedInTearDown.add(new WeakReference<>(awContents));
         return testContainerView;
     }
 

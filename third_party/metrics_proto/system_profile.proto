@@ -141,7 +141,7 @@ message SystemProfileProto {
   optional OS os = 5;
 
   // Information on the user's hardware.
-  // Next tag: 20
+  // Next tag: 21
   message Hardware {
     // CPU architecture. Taken from uname -m and modified in Chromium logic.
     // Common options are: x86, x86_64, armv7l, armv8l, aarch64.
@@ -252,6 +252,58 @@ message SystemProfileProto {
     // Logged on ChromeOS only.
     optional bool internal_display_supports_touch = 14;
 
+    // Internal storage device information on ChromeOS.
+    // TODO(dlunev): Expand comment about which milestone this
+    // started to be logged on once the client code is submitted.
+    // Next tag: 9
+    message InternalStorageDevice {
+      // Id of the storage device manufcaturer.
+      // Can be vendor_id(32bit), oemid(16bit) etc. depending on the device
+      // type.
+      optional uint32 vendor_id = 1;
+
+      // Id of the storage device product.
+      // Can be product_id(32bit), PNM(48bit) etc. depending on the device type.
+      optional uint64 product_id = 2;
+
+      // Revision of the storage device product.
+      // Can be PCIe rev(8bit), PRV(8bit) etc. depending on the device type.
+      optional uint32 revision = 3;
+
+      // Storage Device model. Comes from /sys/block/<device>/device/model.
+      optional string model = 4;
+
+      // Storage Device capacity in MB.
+      optional uint32 size_mb = 5;
+
+      // 8 byte FW revision of a storage device. Usually a string, but may
+      // contain non-printable characters.
+      optional uint64 firmware_version = 6;
+
+      // Type of the storage device interface.
+      // TYPE_UNKNOWN signifies an error on population side.
+      enum Type {
+        TYPE_UNKNOWN = 0;
+        TYPE_EMMC = 1;
+        TYPE_NVME = 2;
+        TYPE_UFS = 3;
+        TYPE_SD_EXPRESS_INTERNAL = 4;
+      }
+      optional Type type = 7;
+
+      // Purpose defines how the OS uses the device.
+      // PURPOSE_UNKNOWN signifies an error on population side.
+      enum Purpose {
+        PURPOSE_UNKNOWN = 0;
+        PURPOSE_BOOT = 1;
+        PURPOSE_SWAP = 2;
+        PURPOSE_BOOT_SWAP = 3;
+      }
+      optional Purpose purpose = 8;
+    }
+    // List of internal storage devices on a Chrome OS device.
+    repeated InternalStorageDevice internal_storage_devices = 20;
+
     // Drive messages are currently logged on Windows 7+, iOS, and Android.
     message Drive {
       // Whether this drive incurs a time penalty when randomly accessed. This
@@ -308,52 +360,6 @@ message SystemProfileProto {
     }
     // The physical layer mode of the associated wifi access point, if any.
     optional WifiPHYLayerProtocol wifi_phy_layer_protocol = 4;
-
-    // Describe wifi access point information.
-    message WifiAccessPoint {
-      // Vendor prefix of the access point's BSSID. These are OUIs
-      // (Organizationally Unique Identifiers) registered by
-      // the IEEE and are encoded with the first byte in bits 16-23, the
-      // second byte in bits 8-15 and the third byte in bits 0-7.
-      optional uint32 vendor_prefix = 1;
-
-      // Access point security mode definitions.
-      enum SecurityMode {
-        SECURITY_UNKNOWN = 0;
-        SECURITY_WPA = 1;
-        SECURITY_WEP = 2;
-        SECURITY_RSN = 3;
-        SECURITY_802_1X = 4;
-        SECURITY_PSK = 5;
-        SECURITY_NONE = 6;
-      }
-      // The security mode of the access point.
-      optional SecurityMode security_mode = 2;
-
-      // Vendor specific information.
-      message VendorInformation {
-        // The model number, for example "0".
-        optional string model_number = 1;
-
-        // The model name (sometimes the same as the model_number),
-        // for example "WZR-HP-AG300H".
-        optional string model_name = 2;
-
-        // The device name (sometimes the same as the model_number),
-        // for example "Dummynet".
-        optional string device_name = 3;
-
-        // The list of vendor-specific OUIs (Organizationally Unique
-        // Identifiers). These are provided by the vendor through WPS
-        // (Wireless Provisioning Service) information elements, which
-        // identifies the content of the element.
-        repeated uint32 element_identifier = 4;
-      }
-      // The wireless access point vendor information.
-      optional VendorInformation vendor_info = 3;
-    }
-    // Information of the wireless access point that device is connected to.
-    optional WifiAccessPoint access_point_info = 5;
 
     // Derived from net::NetworkQualityEstimator::EffectiveConnectionType
     // translated through NetworkMetricsProvider::GetConnectionType.

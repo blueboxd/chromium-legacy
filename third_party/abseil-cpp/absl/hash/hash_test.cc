@@ -407,7 +407,7 @@ using IntSequenceTypes =
 INSTANTIATE_TYPED_TEST_CASE_P(My, HashValueSequenceTest, IntSequenceTypes);
 
 // Private type that only supports AbslHashValue to make sure our chosen hash
-// implentation is recursive within absl::Hash.
+// implementation is recursive within absl::Hash.
 // It uses std::abs() on the value to provide different bitwise representations
 // of the same logical value.
 struct Private {
@@ -579,6 +579,24 @@ TEST(HashValueTest, Maps) {
       MM{{0, "foo"}, {0, "bar"}}, MM{{0, "bar"}, {0, "foo"}},
       MM{{0, "foo"}, {42, "bar"}}, MM{{1, "foo"}, {42, "bar"}},
       MM{{1, "foo"}, {1, "foo"}, {43, "bar"}}, MM{{1, "foo"}, {43, "baz"}})));
+}
+
+TEST(HashValueTest, ReferenceWrapper) {
+  EXPECT_TRUE(is_hashable<std::reference_wrapper<Private>>::value);
+
+  Private p1{1}, p10{10};
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(std::make_tuple(
+      p1, p10, std::ref(p1), std::ref(p10), std::cref(p1), std::cref(p10))));
+
+  EXPECT_TRUE(is_hashable<std::reference_wrapper<int>>::value);
+  int one = 1, ten = 10;
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(std::make_tuple(
+      one, ten, std::ref(one), std::ref(ten), std::cref(one), std::cref(ten))));
+
+  EXPECT_TRUE(absl::VerifyTypeImplementsAbslHashCorrectly(
+      std::make_tuple(std::tuple<std::reference_wrapper<int>>(std::ref(one)),
+                      std::tuple<std::reference_wrapper<int>>(std::ref(ten)),
+                      std::tuple<int>(one), std::tuple<int>(ten))));
 }
 
 template <typename T, typename = void>

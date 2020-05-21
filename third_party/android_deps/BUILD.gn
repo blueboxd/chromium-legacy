@@ -1265,6 +1265,8 @@ java_prebuilt("com_google_guava_failureaccess_java") {
   jar_path = "libs/com_google_guava_failureaccess/failureaccess-1.0.1.jar"
   output_name = "com_google_guava_failureaccess"
   supports_android = true
+
+  # Needed to break dependency cycle for errorprone_plugin_java.
   enable_bytecode_checks = false
 }
 
@@ -1305,6 +1307,8 @@ java_prebuilt("com_google_j2objc_j2objc_annotations_java") {
       "libs/com_google_j2objc_j2objc_annotations/j2objc-annotations-1.1.jar"
   output_name = "com_google_j2objc_j2objc_annotations"
   supports_android = true
+
+  # Needed to break dependency cycle for errorprone_plugin_java.
   enable_bytecode_checks = false
 }
 

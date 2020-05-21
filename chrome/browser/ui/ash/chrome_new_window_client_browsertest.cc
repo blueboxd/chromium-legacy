@@ -299,7 +299,7 @@ void TestAllOSSettingPages(const GURL& base_url) {
           chromeos::settings::mojom::kManageInputMethodsSubpagePath));
   TestOpenChromePage(
       ChromePage::OSLANGUAGESSMARTINPUTS,
-      base_url.Resolve(chromeos::settings::mojom::kSmartInputsSubagePath));
+      base_url.Resolve(chromeos::settings::mojom::kSmartInputsSubpagePath));
   TestOpenChromePage(
       ChromePage::LOCKSCREEN,
       base_url.Resolve(

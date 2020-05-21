@@ -246,6 +246,10 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   bool Paused() const { return paused_; }
   void SetPaused(bool);
 
+  // Frozen state corresponds to "lifecycle state for CPU suspension"
+  // https://wicg.github.io/page-lifecycle/#sec-lifecycle-states
+  bool Frozen() const { return frozen_; }
+
   void SetPageScaleFactor(float);
   float PageScaleFactor() const;
 
@@ -269,8 +273,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
                           bool is_initial_state);
   mojom::blink::PageVisibilityState GetVisibilityState() const;
   bool IsPageVisible() const;
-
-  PageLifecycleState LifecycleState() const;
 
   bool IsCursorVisible() const;
   void SetIsCursorVisible(bool is_visible) { is_cursor_visible_ = is_visible; }
@@ -317,7 +319,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   bool IsOrdinary() const override;
   void ReportIntervention(const String& message) override;
   bool RequestBeginMainFrameNotExpected(bool new_state) override;
-  void SetLifecycleState(PageLifecycleState) override;
+  void OnSetPageFrozen(bool is_frozen) override;
   bool LocalMainFrameNetworkIsAlmostIdle() const override;
 
   void AddAutoplayFlags(int32_t flags);
@@ -425,7 +427,6 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
   bool is_closing_;
 
   bool tab_key_cycles_through_elements_;
-  bool paused_;
 
   float device_scale_factor_;
 
@@ -433,9 +434,15 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   bool is_ordinary_;
 
-  PageLifecycleState page_lifecycle_state_;
-
   bool is_cursor_visible_;
+
+  // See Page::Paused and Page::Frozen for the detailed description of paused
+  // and frozen state. The main distinction is that "frozen" state is
+  // web-exposed (onfreeze / onresume) and controlled from the browser process,
+  // while "paused" state is an implementation detail of handling sync IPCs and
+  // controlled from the renderer.
+  bool paused_ = false;
+  bool frozen_ = false;
 
 #if DCHECK_IS_ON()
   bool is_painting_ = false;

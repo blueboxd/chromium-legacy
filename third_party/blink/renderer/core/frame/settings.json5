@@ -1082,12 +1082,20 @@
       invalidate: "MediaQuery",
       type: "NavigationControls",
     },
-
     {
       name: "accessibilityAlwaysShowFocus",
       initial: false,
       invalidate: "Style",
       type: "bool"
-    }
+    },
+    // aria-modal="true" on some platforms requires the accessibility tree to
+    // be pruned so no other background content is exposed to assistive
+    // technology.
+    // https://www.w3.org/TR/core-aam-1.1/#ariaModalTrue
+    {
+      name: "ariaModalPrunesAXTree",
+      initial: false,
+      type: "bool",
+    },
   ],
 }

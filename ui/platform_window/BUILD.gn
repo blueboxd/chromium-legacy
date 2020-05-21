@@ -16,6 +16,8 @@ component("platform_window") {
 
   defines = [ "IS_PLATFORM_WINDOW_IMPL" ]
 
+  public_deps = [ "//ui/base/cursor:cursor_base" ]
+
   deps = [
     "//base",
     "//ui/base",
@@ -28,7 +30,7 @@ component("platform_window") {
       "fuchsia/initialize_presenter_api_view.h",
     ]
 
-    public_deps = [
+    public_deps += [
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.views",
       "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",

@@ -15,13 +15,11 @@
       <include name="IDR_PRINT_PREVIEW_PRINT_PREVIEW_HTML"
                file="print_preview.html"
                type="chrome_html"
-               preprocess="true"
-               compress="gzip" />
+               preprocess="true" />
       <include name="IDR_PRINT_PREVIEW_PRINT_PREVIEW_ROLLUP_JS"
                file="${root_gen_dir}\chrome\browser\resources\print_preview\print_preview.rollup.js"
                use_base_dir="false"
                preprocess="true"
-               compress="gzip"
                type="BINDATA" />
       <include name="IDR_PRINT_PREVIEW_PDF_INDEX_PP_HTML"
                file="../pdf/index_pp.html"

@@ -40,6 +40,19 @@ TEST_F('CrSettingsAnimatedPagesV3Test', 'All', function() {
 });
 
 // eslint-disable-next-line no-var
+var CrSettingsPaymentsSectionV3Test =
+    class extends CrSettingsV3InteractiveUITest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/payments_section_interactive_test.js';
+  }
+};
+
+TEST_F('CrSettingsPaymentsSectionV3Test', 'All', function() {
+  mocha.run();
+});
+
+// eslint-disable-next-line no-var
 var CrSettingsSyncPageV3Test = class extends CrSettingsV3InteractiveUITest {
   /** @override */
   get browsePreload() {

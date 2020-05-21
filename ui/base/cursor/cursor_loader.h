@@ -5,18 +5,19 @@
 #ifndef UI_BASE_CURSOR_CURSOR_LOADER_H_
 #define UI_BASE_CURSOR_CURSOR_LOADER_H_
 
-#include "base/logging.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "base/strings/string16.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/display/display.h"
-#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/native_widget_types.h"
+
+namespace gfx {
+class Point;
+}
 
 namespace ui {
 
-class UI_BASE_EXPORT CursorLoader {
+class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoader {
  public:
   CursorLoader() : scale_(1.f), rotation_(display::Display::ROTATE_0) {}
   virtual ~CursorLoader() {}

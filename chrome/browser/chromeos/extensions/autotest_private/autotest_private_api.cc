@@ -720,6 +720,13 @@ DisplaySmoothnessTrackers* GetDisplaySmoothnessTrackers() {
   return trackers.get();
 }
 
+std::string ResolutionToString(
+    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {
+  std::stringstream result;
+  result << resolution;
+  return result.str();
+}
+
 }  // namespace
 
 class WindowStateChangeObserver : public aura::WindowObserver {
@@ -2446,7 +2453,8 @@ void AutotestPrivateEnableAssistantAndWaitForReadyFunction::
 class AssistantInteractionHelper
     : public chromeos::assistant::DefaultAssistantInteractionSubscriber {
  public:
-  using OnInteractionFinishedCallback = base::OnceCallback<void(bool)>;
+  using OnInteractionFinishedCallback =
+      base::OnceCallback<void(const base::Optional<std::string>& error)>;
 
   AssistantInteractionHelper()
       : query_status_(std::make_unique<base::DictionaryValue>()) {}
@@ -2492,10 +2500,13 @@ class AssistantInteractionHelper
         chromeos::assistant::mojom::AssistantInteractionType::kVoice ==
         metadata->type;
     query_status_->SetKey("isMicOpen", base::Value(is_voice_interaction));
+    interaction_in_progress_ = true;
   }
 
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override {
+    interaction_in_progress_ = false;
+
     // Only invoke the callback when |result_| is not empty to avoid an early
     // return before the entire session is completed. This happens when
     // sending queries to modify device settings, e.g. "turn on bluetooth",
@@ -2508,10 +2519,12 @@ class AssistantInteractionHelper
     query_status_->SetKey("queryResponse", std::move(result_));
 
     if (on_interaction_finished_callback_) {
-      const bool success =
-          (resolution == AssistantInteractionResolution::kNormal) ? true
-                                                                  : false;
-      std::move(on_interaction_finished_callback_).Run(success);
+      if (resolution == AssistantInteractionResolution::kNormal) {
+        SendSuccessResponse();
+      } else {
+        SendErrorResponse("Interaction closed with resolution " +
+                          ResolutionToString(resolution));
+      }
     }
   }
 
@@ -2519,10 +2532,12 @@ class AssistantInteractionHelper
                       const std::string& fallback) override {
     result_.SetKey("htmlResponse", base::Value(response));
     result_.SetKey("htmlFallback", base::Value(fallback));
+    CheckResponseIsValid(__FUNCTION__);
   }
 
   void OnTextResponse(const std::string& response) override {
     result_.SetKey("text", base::Value(response));
+    CheckResponseIsValid(__FUNCTION__);
   }
 
   void OnSpeechRecognitionFinalResult(
@@ -2534,11 +2549,30 @@ class AssistantInteractionHelper
                          OnOpenAppResponseCallback callback) override {
     result_.SetKey("openAppResponse", base::Value(app_info->package_name));
     std::move(callback).Run(true);
+    CheckResponseIsValid(__FUNCTION__);
+  }
+
+  void CheckResponseIsValid(const std::string& function_name) {
+    if (!interaction_in_progress_) {
+      // We should only get a response while the interaction is open
+      // (started and not finished).
+      SendErrorResponse(function_name +
+                        " was called after the interaction was closed");
+    }
+  }
+
+  void SendSuccessResponse() {
+    std::move(on_interaction_finished_callback_).Run(base::nullopt);
+  }
+
+  void SendErrorResponse(const std::string& error) {
+    std::move(on_interaction_finished_callback_).Run(error);
   }
 
   mojo::Remote<chromeos::assistant::mojom::Assistant> assistant_;
   std::unique_ptr<base::DictionaryValue> query_status_;
   base::DictionaryValue result_;
+  bool interaction_in_progress_ = false;
 
   // Callback triggered when interaction finished with non-empty response.
   OnInteractionFinishedCallback on_interaction_finished_callback_;
@@ -2593,16 +2627,14 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
 }
 
 void AutotestPrivateSendAssistantTextQueryFunction::
-    OnInteractionFinishedCallback(bool success) {
+    OnInteractionFinishedCallback(const base::Optional<std::string>& error) {
+  if (error)
+    Respond(Error(error.value()));
+  else
+    Respond(OneArgument(interaction_helper_->GetQueryStatus()));
+
   // |timeout_timer_| need to be hold until |Respond(.)| is called to avoid
   // |this| being destructed.
-  if (!success) {
-    Respond(Error("Interaction ends abnormally."));
-    timeout_timer_.AbandonAndStop();
-    return;
-  }
-
-  Respond(OneArgument(interaction_helper_->GetQueryStatus()));
   timeout_timer_.AbandonAndStop();
 }
 
@@ -2651,16 +2683,14 @@ AutotestPrivateWaitForAssistantQueryStatusFunction::Run() {
 }
 
 void AutotestPrivateWaitForAssistantQueryStatusFunction::
-    OnInteractionFinishedCallback(bool success) {
+    OnInteractionFinishedCallback(const base::Optional<std::string>& error) {
+  if (error)
+    Respond(Error(error.value()));
+  else
+    Respond(OneArgument(interaction_helper_->GetQueryStatus()));
+
   // |timeout_timer_| need to be hold until |Respond(.)| is called to avoid
   // |this| being destructed.
-  if (!success) {
-    Respond(Error("Interaction ends abnormally."));
-    timeout_timer_.AbandonAndStop();
-    return;
-  }
-
-  Respond(OneArgument(interaction_helper_->GetQueryStatus()));
   timeout_timer_.AbandonAndStop();
 }
 

@@ -369,7 +369,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         // number of objects that will ultimately be owned by the RootUiCoordinator. This is not
         // a recommended pattern.
         return new RootUiCoordinator(this, null, getShareDelegateSupplier(),
-                getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier);
+                getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier,
+                getOverviewModeBehaviorSupplier());
     }
 
     private C createComponent() {
@@ -1369,6 +1370,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
      * @return {@link ObservableSupplier} for the {@link OverviewModeBehavior} for this activity
      *         if it supports an overview mode, null otherwise.
      */
+    @VisibleForTesting
     public @Nullable ObservableSupplier<OverviewModeBehavior> getOverviewModeBehaviorSupplier() {
         return null;
     }

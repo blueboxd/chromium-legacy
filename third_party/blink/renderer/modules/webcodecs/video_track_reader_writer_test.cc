@@ -61,8 +61,8 @@ class VideoTrackReaderWriterTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  V8VideoDecoderOutputCallback* GetCallback(MockFunction* function) {
-    return V8VideoDecoderOutputCallback::Create(function->Bind());
+  V8VideoFrameOutputCallback* GetCallback(MockFunction* function) {
+    return V8VideoFrameOutputCallback::Create(function->Bind());
   }
 
  private:

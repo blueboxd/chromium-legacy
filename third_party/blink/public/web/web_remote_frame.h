@@ -146,11 +146,6 @@ class WebRemoteFrame : public WebFrame {
   // "local" frame tree (ancestors-only vs all-nodes).
   virtual void UpdateUserActivationState(mojom::UserActivationUpdateType) = 0;
 
-  // Transfers user activation state from |source_frame| to this frame, which
-  // must be in the same frame tree as |source_frame|.
-  virtual void TransferUserActivationFrom(
-      blink::WebRemoteFrame* source_frame) = 0;
-
   virtual void SetHadStickyUserActivationBeforeNavigation(bool value) = 0;
 
   virtual WebRect GetCompositingRect() = 0;

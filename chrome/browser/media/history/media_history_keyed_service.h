@@ -137,6 +137,9 @@ class MediaHistoryKeyedService : public KeyedService,
     // Logs about any errors that may have occurred while fetching or converting
     // the feed data.
     std::string error_logs;
+
+    // If true then the backend returned a 410 Gone error.
+    bool gone = false;
   };
   // Replaces the media items in |result.feed_id|. This will delete any old feed
   // items and store the new ones in |result.items|. This will also update the

@@ -9,6 +9,7 @@
 #include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_features.h"
+#include "chrome/browser/nearby_sharing/nearby_connections_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_prefs.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
@@ -57,7 +58,8 @@ KeyedService* NearbySharingServiceFactory::BuildServiceInstanceFor(
   }
 
   VLOG(1) << __func__ << ": creating NearbySharingService.";
-  return new NearbySharingServiceImpl(Profile::FromBrowserContext(context));
+  return new NearbySharingServiceImpl(Profile::FromBrowserContext(context),
+                                      nullptr /* nearby_connections_manager */);
 }
 
 content::BrowserContext* NearbySharingServiceFactory::GetBrowserContextToUse(

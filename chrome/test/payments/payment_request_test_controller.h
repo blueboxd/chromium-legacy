@@ -54,7 +54,7 @@ class PaymentRequestTestController {
 
   // Sets values that will change the behaviour of PaymentRequests created in
   // the future.
-  void SetIncognito(bool is_incognito);
+  void SetOffTheRecord(bool is_off_the_record);
   void SetValidSsl(bool valid_ssl);
   void SetCanMakePaymentEnabledPref(bool can_make_payment_enabled);
 
@@ -96,7 +96,7 @@ class PaymentRequestTestController {
 
   PaymentRequestTestObserver* observer_ = nullptr;
 
-  bool is_incognito_ = false;
+  bool is_off_the_record_ = false;
   bool valid_ssl_ = true;
   bool can_make_payment_pref_ = true;
 

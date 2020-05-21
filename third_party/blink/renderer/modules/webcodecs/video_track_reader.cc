@@ -25,7 +25,7 @@ VideoTrackReader::VideoTrackReader(ScriptState* script_state,
               ->GetTaskRunner(TaskType::kInternalMediaRealTime)),
       track_(track) {}
 
-void VideoTrackReader::start(V8VideoDecoderOutputCallback* callback,
+void VideoTrackReader::start(V8VideoFrameOutputCallback* callback,
                              ExceptionState& exception_state) {
   DCHECK(real_time_media_task_runner_->BelongsToCurrentThread());
 

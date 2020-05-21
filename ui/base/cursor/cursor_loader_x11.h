@@ -6,23 +6,27 @@
 #define UI_BASE_CURSOR_CURSOR_LOADER_X11_H_
 
 #include <map>
+#include <memory>
+#include <string>
+#include <utility>
 
-#include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_loader.h"
 #include "ui/base/cursor/cursor_theme_manager_linux.h"
 #include "ui/base/cursor/cursor_theme_manager_linux_observer.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/base/x/x11_util.h"
+#include "ui/display/display.h"
 #include "ui/gfx/x/x11.h"
+#include "ui/gfx/x/x11_types.h"
 
 namespace ui {
 
-class UI_BASE_EXPORT CursorLoaderX11 : public CursorLoader,
-                                       public CursorThemeManagerLinuxObserver {
+class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderX11
+    : public CursorLoader,
+      public CursorThemeManagerLinuxObserver {
  public:
   CursorLoaderX11();
   ~CursorLoaderX11() override;

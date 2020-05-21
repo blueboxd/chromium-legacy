@@ -44,10 +44,6 @@
 #include "ui/ozone/public/cursor_factory_ozone.h"
 #endif
 
-#if defined(USE_X11)
-#include "ui/base/cursor/cursor_loader_x11.h"
-#endif
-
 namespace exo {
 
 // Controls Pointer capture in exo/wayland.

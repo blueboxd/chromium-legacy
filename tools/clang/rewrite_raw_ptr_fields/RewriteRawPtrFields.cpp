@@ -92,6 +92,36 @@ AST_MATCHER(clang::Type, anyCharType) {
   return Node.isAnyCharacterType();
 }
 
+// Matcher for FieldDecl that has a TypeLoc with a unique start location
+// (i.e. has a TypeLoc that is not shared with any other FieldDecl).
+//
+// Given
+//   struct MyStrict {
+//     int f;
+//     int f2, f3;
+//   };
+// matches |int f|, but does not match declarations of |f2| and |f3|.
+AST_MATCHER(clang::FieldDecl, hasUniqueTypeLoc) {
+  const clang::FieldDecl& self = Node;
+  const clang::RecordDecl* record_decl = self.getParent();
+  clang::SourceLocation self_type_loc =
+      self.getTypeSourceInfo()->getTypeLoc().getBeginLoc();
+
+  bool has_sibling_with_same_type_loc =
+      std::any_of(record_decl->field_begin(), record_decl->field_end(),
+                  [&](const clang::FieldDecl* f) {
+                    // Is |f| a real sibling?
+                    if (f == &self)
+                      return false;  // Not a sibling.
+
+                    clang::SourceLocation sibling_type_loc =
+                        f->getTypeSourceInfo()->getTypeLoc().getBeginLoc();
+                    return self_type_loc == sibling_type_loc;
+                  });
+
+  return !has_sibling_with_same_type_loc;
+}
+
 class FieldDeclRewriter : public MatchFinder::MatchCallback {
  public:
   explicit FieldDeclRewriter(ReplacementsPrinter* replacements_printer)
@@ -117,7 +147,7 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     //
     // Consider the following example:
     //      const Pointee* const field_name_;
-    //      ^-------------------^   = |replacement_range|
+    //      ^--------------------^  = |replacement_range|
     //                           ^  = |field_decl->getLocation()|
     //      ^                       = |field_decl->getBeginLoc()|
     //                   ^          = PointerTypeLoc::getStarLoc
@@ -126,9 +156,8 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     // We get the |replacement_range| in a bit clumsy way, because clang docs
     // for QualifiedTypeLoc explicitly say that these objects "intentionally do
     // not provide source location for type qualifiers".
-    clang::SourceRange replacement_range(
-        field_decl->getBeginLoc(),
-        field_decl->getLocation().getLocWithOffset(-1));
+    clang::SourceRange replacement_range(field_decl->getBeginLoc(),
+                                         field_decl->getLocation());
 
     // Calculate |replacement_text|.
     std::string replacement_text = GenerateNewText(ast_context, pointer_type);
@@ -161,7 +190,7 @@ class FieldDeclRewriter : public MatchFinder::MatchCallback {
     printing_policy.SuppressScope = 1;  // s/blink::Pointee/Pointee/
     std::string pointee_type_as_string =
         pointee_type.getAsString(printing_policy);
-    result += llvm::formatv("CheckedPtr<{0}>", pointee_type_as_string);
+    result += llvm::formatv("CheckedPtr<{0}> ", pointee_type_as_string);
 
     return result;
   }
@@ -231,7 +260,7 @@ int main(int argc, const char* argv[]) {
   // - fields of lambda-supporting classes
   auto field_decl_matcher =
       fieldDecl(allOf(hasType(supported_pointer_types_matcher),
-                      unless(implicit_field_decl_matcher)))
+                      hasUniqueTypeLoc(), unless(implicit_field_decl_matcher)))
           .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);

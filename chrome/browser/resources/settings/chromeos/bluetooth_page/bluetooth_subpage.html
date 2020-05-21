@@ -39,19 +39,29 @@
       #onOff[on] {
         color: var(--cr-toggle-color);
       }
+
+      /* Disables click events on #enableBluetooth during a state change.
+       * This is added in lieu of disabling #enableToggle to prevent
+       * transient disables from state changes to be varbalized by ChromeVox
+       * (see http://crbug/1007378 for more details). */
+      :host([state-change-in-progress]) #enableBluetooth {
+        cursor: initial;
+        opacity: var(--cr-disabled-opacity);
+        pointer-events: none;
+      }
     </style>
 
-    <div class="cr-row first" actionable on-click="onEnableTap_">
+    <div id="enableBluetooth" class="cr-row first" on-click="onEnableTap_"
+        actionable>
       <div id="onOff" class="flex cr-padded-text"
           on$="[[bluetoothToggleState]]" aria-hidden="true">
         [[getOnOffString_(bluetoothToggleState,
           '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
       </div>
-      <cr-toggle id="enableBluetooth"
+      <cr-toggle id="enableToggle"
           checked="{{bluetoothToggleState}}"
-          disabled$="[[!isToggleEnabled_(adapterState, stateChangeInProgress)]]"
-          aria-label="$i18n{bluetoothToggleA11yLabel}"
-          aria-live="polite" aria-relevant="all">
+          disabled$="[[!isAdapterAvailable_(adapterState)]]"
+          aria-label="$i18n{bluetoothToggleA11yLabel}">
       </cr-toggle>
     </div>
 

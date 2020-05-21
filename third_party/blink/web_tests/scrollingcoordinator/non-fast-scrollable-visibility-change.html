@@ -4,10 +4,10 @@
     margin: 0;
   }
   .container {
-      height: 250px;
-      width: 250px;
-      margin-top: 50px;
-      display: block;
+    height: 250px;
+    width: 250px;
+    margin-top: 50px;
+    display: block;
   }
   .container > div {
     height: 200px;
@@ -26,7 +26,12 @@
     border: none;
   }
 </style>
-
+<script>
+  // Prefer non-composited scrolling because this is a test of non-composited
+  // scrollers.
+  if (window.internals)
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
+</script>
 <section id='div' style="display:none;">
   <div class="to-show container">
   </div>

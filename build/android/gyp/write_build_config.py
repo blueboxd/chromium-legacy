@@ -837,6 +837,15 @@ def _CreateJavaLocaleListFromAssets(assets, locale_paks):
   return '{%s}' % ','.join(['"%s"' % l for l in sorted(locales)])
 
 
+def _AddJarMapping(jar_to_target, configs):
+  for config in configs:
+    jar = config.get('unprocessed_jar_path')
+    if jar:
+      jar_to_target[jar] = config['gn_target']
+    for jar in config.get('extra_classpath_jars', []):
+      jar_to_target[jar] = config['gn_target']
+
+
 def main(argv):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
@@ -844,6 +853,7 @@ def main(argv):
   parser.add_option(
       '--type',
       help='Type of this target (e.g. android_library).')
+  parser.add_option('--gn-target', help='GN label for this target')
   parser.add_option(
       '--deps-configs',
       help='GN-list of dependent build_config files.')
@@ -1151,6 +1161,7 @@ def main(argv):
           'name': os.path.basename(options.build_config),
           'path': options.build_config,
           'type': options.type,
+          'gn_target': options.gn_target,
           'deps_configs': deps.direct_deps_config_paths,
           'chromium_code': not options.non_chromium_code,
       },
@@ -1402,7 +1413,7 @@ def main(argv):
     # Adding base module to classpath to compile against its R.java file
     if base_module_build_config:
       javac_full_classpath.append(
-          base_module_build_config['deps_info']['jar_path'])
+          base_module_build_config['deps_info']['unprocessed_jar_path'])
       javac_full_interface_classpath.append(
           base_module_build_config['deps_info']['interface_jar_path'])
       jetified_full_jar_classpath.append(
@@ -1854,6 +1865,25 @@ def main(argv):
     RemoveObjDups(config, base, 'deps_info', 'jni', 'all_source')
     RemoveObjDups(config, base, 'final_dex', 'all_dex_files')
     RemoveObjDups(config, base, 'extra_android_manifests')
+
+  if is_java_target:
+    jar_to_target = {}
+    _AddJarMapping(jar_to_target, [deps_info])
+    _AddJarMapping(jar_to_target, deps.all_deps_configs)
+    if base_module_build_config:
+      _AddJarMapping(jar_to_target, [base_module_build_config['deps_info']])
+    if options.tested_apk_config:
+      _AddJarMapping(jar_to_target, [tested_apk_config])
+      for jar, target in itertools.izip(
+          tested_apk_config['javac_full_classpath'],
+          tested_apk_config['javac_full_classpath_targets']):
+        jar_to_target[jar] = target
+
+    # Used by bytecode_processor to give better error message when missing
+    # deps are found.
+    config['deps_info']['javac_full_classpath_targets'] = [
+        jar_to_target[x] for x in deps_info['javac_full_classpath']
+    ]
 
   build_utils.WriteJson(config, options.build_config, only_if_changed=True)
 

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelFilter;
 import org.chromium.chrome.browser.tabmodel.TabModelFilterProvider;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabPersistentStore;
 import org.chromium.chrome.browser.tabmodel.TabbedModeTabPersistencePolicy;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
@@ -235,12 +236,12 @@ public class PseudoTab {
      * Get related tabs of a certain {@link PseudoTab}, through {@link TabModelFilter}s if
      * available.
      * @param member The {@link PseudoTab} related to
-     * @param provider The {@link TabModelFilterProvider} to query the tab relation
+     * @param tabModelSelector The {@link TabModelSelector} to query the tab relation
      * @return Related {@link PseudoTab}s
      */
     public static synchronized @NonNull List<PseudoTab> getRelatedTabs(
-            PseudoTab member, @NonNull TabModelFilterProvider provider) {
-        List<Tab> relatedTabs = getRelatedTabList(provider, member.getId());
+            PseudoTab member, @NonNull TabModelSelector tabModelSelector) {
+        List<Tab> relatedTabs = getRelatedTabList(tabModelSelector, member.getId());
         if (relatedTabs != null) return getListOfPseudoTab(relatedTabs);
 
         List<PseudoTab> related = new ArrayList<>();
@@ -261,17 +262,17 @@ public class PseudoTab {
     }
 
     private static @Nullable List<Tab> getRelatedTabList(
-            @NonNull TabModelFilterProvider provider, int tabId) {
-        if (provider.getTabModelFilter(false) != null) {
-            List<Tab> related = provider.getTabModelFilter(false).getRelatedTabList(tabId);
-            if (related.size() > 0) return related;
+            @NonNull TabModelSelector tabModelSelector, int tabId) {
+        if (!tabModelSelector.isTabStateInitialized()) {
+            assert CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START);
+            return null;
         }
-        if (provider.getTabModelFilter(true) != null) {
-            List<Tab> related = provider.getTabModelFilter(true).getRelatedTabList(tabId);
-            assert related.size() > 0;
-            return related;
-        }
-        return null;
+        TabModelFilterProvider provider = tabModelSelector.getTabModelFilterProvider();
+        List<Tab> related = provider.getTabModelFilter(false).getRelatedTabList(tabId);
+        if (related.size() > 0) return related;
+        related = provider.getTabModelFilter(true).getRelatedTabList(tabId);
+        assert related.size() > 0;
+        return related;
     }
 
     @VisibleForTesting
@@ -281,7 +282,6 @@ public class PseudoTab {
 
     @Nullable
     public static List<PseudoTab> getAllPseudoTabsFromStateFile() {
-        assert CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START);
         readAllPseudoTabsFromStateFile();
         return sAllTabsFromStateFile;
     }
@@ -293,6 +293,7 @@ public class PseudoTab {
     }
 
     private static void readAllPseudoTabsFromStateFile() {
+        assert CachedFeatureFlags.isEnabled(ChromeFeatureList.INSTANT_START);
         if (sReadStateFile) return;
         sReadStateFile = true;
 

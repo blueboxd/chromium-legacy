@@ -324,8 +324,7 @@ class SGIVideoSyncProviderThreadShim {
     if (!vsync_thread_->GetGLXContext() || cancel_vsync_flag_.IsSet())
       return;
 
-    base::TimeDelta interval = ui::GetPrimaryDisplayRefreshIntervalFromXrandr(
-        vsync_thread_->GetDisplay());
+    base::TimeDelta interval = ui::GetPrimaryDisplayRefreshIntervalFromXrandr();
 
     glXMakeContextCurrent(vsync_thread_->GetDisplay(), glx_window_, glx_window_,
                           vsync_thread_->GetGLXContext());

@@ -806,8 +806,8 @@ gfx::NativeWindow WebContentsViewAura::GetTopLevelNativeWindow() const {
   return window ? window : delegate_->GetNativeWindow();
 }
 
-void WebContentsViewAura::GetContainerBounds(gfx::Rect* out) const {
-  *out = GetNativeView()->GetBoundsInScreen();
+gfx::Rect WebContentsViewAura::GetContainerBounds() const {
+  return GetNativeView()->GetBoundsInScreen();
 }
 
 void WebContentsViewAura::Focus() {

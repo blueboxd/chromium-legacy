@@ -867,6 +867,26 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaModal) {
   RunAriaTest(FILE_PATH_LITERAL("aria-modal.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaModalFocusableDialog) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-modal-focusable-dialog.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaModalLayered) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-modal-layered.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaModalMoveFocus) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-modal-move-focus.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAriaModalRemoveParentContainer) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-modal-remove-parent-container.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAriaMultiline) {
   RunAriaTest(FILE_PATH_LITERAL("aria-multiline.html"));
 }

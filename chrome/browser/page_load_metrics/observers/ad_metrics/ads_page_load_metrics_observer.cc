@@ -46,8 +46,6 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/base/page_transition_types.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -312,7 +310,6 @@ void AdsPageLoadMetricsObserver::UpdateAdFrameData(
 
     if (should_ignore_detected_ad &&
         (ad_id == previous_data->root_frame_tree_node_id())) {
-      page_ad_density_tracker_.RemoveRect(id_and_data->first);
       ad_frames_data_storage_.erase(id_and_data->second);
       ad_frames_data_.erase(id_and_data);
 
@@ -533,35 +530,6 @@ void AdsPageLoadMetricsObserver::MediaStartedPlaying(
     ancestor_data->set_media_status(FrameData::MediaStatus::kPlayed);
 }
 
-void AdsPageLoadMetricsObserver::OnFrameIntersectionUpdate(
-    content::RenderFrameHost* render_frame_host,
-    const page_load_metrics::mojom::FrameIntersectionUpdate&
-        intersection_update) {
-  if (!intersection_update.main_frame_document_intersection_rect)
-    return;
-
-  int frame_tree_node_id = render_frame_host->GetFrameTreeNodeId();
-  if (render_frame_host == GetDelegate().GetWebContents()->GetMainFrame()) {
-    page_ad_density_tracker_.UpdateMainFrameRect(
-        *intersection_update.main_frame_document_intersection_rect);
-    return;
-  }
-
-  // If the frame whose size has changed is the root of the ad ancestry chain,
-  // then update it.
-  FrameData* ancestor_data = FindFrameData(frame_tree_node_id);
-  if (ancestor_data &&
-      frame_tree_node_id == ancestor_data->root_frame_tree_node_id()) {
-    page_ad_density_tracker_.RemoveRect(frame_tree_node_id);
-    // Only add frames if they are visible.
-    if (!ancestor_data->is_display_none()) {
-      page_ad_density_tracker_.AddRect(
-          frame_tree_node_id,
-          *intersection_update.main_frame_document_intersection_rect);
-    }
-  }
-}
-
 void AdsPageLoadMetricsObserver::OnFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   if (!render_frame_host)
@@ -587,7 +555,6 @@ void AdsPageLoadMetricsObserver::OnFrameDeleted(
     ancestor_data->RecordAdFrameLoadUkmEvent(GetDelegate().GetSourceId());
     DCHECK(id_and_data->second != ad_frames_data_storage_.end());
     ad_frames_data_storage_.erase(id_and_data->second);
-    page_ad_density_tracker_.RemoveRect(id_and_data->first);
   }
 
   // Delete this frame's entry from the map now that the store is deleted.
@@ -718,24 +685,6 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
     return;
   PAGE_BYTES_HISTOGRAM("PageLoad.Clients.Ads.Resources.Bytes.Ads2",
                        aggregate_frame_data_->ad_network_bytes());
-
-  if (page_ad_density_tracker_.MaxPageAdDensityByArea() != -1) {
-    UMA_HISTOGRAM_PERCENTAGE("PageLoad.Clients.Ads.AdDensity.MaxPercentByArea",
-                             page_ad_density_tracker_.MaxPageAdDensityByArea());
-  }
-
-  if (page_ad_density_tracker_.MaxPageAdDensityByHeight() != -1) {
-    UMA_HISTOGRAM_PERCENTAGE(
-        "PageLoad.Clients.Ads.AdDensity.MaxPercentByHeight",
-        page_ad_density_tracker_.MaxPageAdDensityByHeight());
-  }
-
-  // Records true if both of the density calculations succeeded on the page.
-  UMA_HISTOGRAM_BOOLEAN(
-      "PageLoad.Clients.Ads.AdDensity.Recorded",
-      page_ad_density_tracker_.MaxPageAdDensityByArea() != -1 &&
-          page_ad_density_tracker_.MaxPageAdDensityByHeight() != -1);
-
   auto* ukm_recorder = ukm::UkmRecorder::Get();
   ukm::builders::AdPageLoad builder(source_id);
   builder.SetTotalBytes(aggregate_frame_data_->network_bytes() >> 10)
@@ -747,10 +696,7 @@ void AdsPageLoadMetricsObserver::RecordPageResourceTotalHistograms(
                            FrameData::ResourceMimeType::kVideo) >>
                        10)
       .SetMainframeAdBytes(ukm::GetExponentialBucketMinForBytes(
-          main_frame_data_->ad_network_bytes()))
-      .SetMaxAdDensityByArea(page_ad_density_tracker_.MaxPageAdDensityByArea())
-      .SetMaxAdDensityByHeight(
-          page_ad_density_tracker_.MaxPageAdDensityByHeight());
+          main_frame_data_->ad_network_bytes()));
 
   // Record cpu metrics for the page.
   builder.SetAdCpuTime(

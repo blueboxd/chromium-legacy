@@ -22,11 +22,11 @@ class UI_BASE_EXPORT ComboboxModel {
   virtual int GetItemCount() const = 0;
 
   // Returns the string at the specified index.
-  virtual base::string16 GetItemAt(int index) = 0;
+  virtual base::string16 GetItemAt(int index) const = 0;
 
   // Returns the string to be shown in the dropdown for the item at |index|. By
   // default, it returns GetItemAt(index).
-  virtual base::string16 GetDropDownTextAt(int index);
+  virtual base::string16 GetDropDownTextAt(int index) const;
 
   // Returns the secondary string at the specified index. Secondary strings are
   // displayed in a second line inside every menu item.
@@ -42,7 +42,7 @@ class UI_BASE_EXPORT ComboboxModel {
 
   // Should return true if the item at |index| is a non-selectable separator
   // item.
-  virtual bool IsItemSeparatorAt(int index);
+  virtual bool IsItemSeparatorAt(int index) const;
 
   // The index of the item that is selected by default (before user
   // interaction).

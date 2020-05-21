@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/ui/android/chrome_http_auth_handler.h"
-#include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -49,11 +48,7 @@ class LoginHandlerAndroid : public LoginHandler {
 
     content::WebContents* contents =
         web_contents()->GetResponsibleWebContents();
-
-    // Get pointer to TabAndroid
     CHECK(contents);
-    ViewAndroidHelper* view_helper =
-        ViewAndroidHelper::FromWebContents(contents);
 
     if (vr::VrTabHelper::IsUiSuppressedInVr(
             contents, vr::UiSuppressedElement::kHttpAuth)) {
@@ -62,16 +57,16 @@ class LoginHandlerAndroid : public LoginHandler {
     }
 
     TabAndroid* tab = TabAndroid::FromWebContents(contents);
+    ui::ViewAndroid* view = contents->GetNativeView();
+    ui::WindowAndroid* window = view ? view->GetWindowAndroid() : nullptr;
     // Notify WindowAndroid that HTTP authentication is required.
-    if (tab && view_helper->GetViewAndroid() &&
-        view_helper->GetViewAndroid()->GetWindowAndroid()) {
+    if (tab && window) {
       chrome_http_auth_handler_.reset(
           new ChromeHttpAuthHandler(authority, explanation, login_model_data));
       chrome_http_auth_handler_->Init();
       chrome_http_auth_handler_->SetObserver(this);
-      chrome_http_auth_handler_->ShowDialog(
-          tab->GetJavaObject(),
-          view_helper->GetViewAndroid()->GetWindowAndroid()->GetJavaObject());
+      chrome_http_auth_handler_->ShowDialog(tab->GetJavaObject(),
+                                            window->GetJavaObject());
     } else {
       CancelAuth();
       LOG(WARNING) << "HTTP Authentication failed because TabAndroid is "

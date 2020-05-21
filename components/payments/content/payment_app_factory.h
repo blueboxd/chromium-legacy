@@ -11,8 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/payments/content/payment_app.h"
 #include "components/payments/content/service_worker_payment_app_finder.h"
-#include "components/payments/core/payment_app.h"
 #include "content/public/browser/payment_app_provider.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 

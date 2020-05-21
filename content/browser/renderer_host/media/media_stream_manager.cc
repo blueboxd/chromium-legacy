@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/power_monitor/power_monitor.h"
+#include "base/power_monitor/power_monitor_source.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -2098,6 +2099,14 @@ void MediaStreamManager::OnSuspend() {
 
 void MediaStreamManager::OnResume() {
   SendLogMessage(base::StringPrintf("OnResume([this=%p])", this));
+}
+
+void MediaStreamManager::OnThermalStateChange(
+    base::PowerObserver::DeviceThermalState new_state) {
+  const char* state_name =
+      base::PowerMonitorSource::DeviceThermalStateToString(new_state);
+  SendLogMessage(base::StringPrintf(
+      "OnThermalStateChange({this=%p}, {new_state=%s})", this, state_name));
 }
 
 void MediaStreamManager::UseFakeUIFactoryForTests(

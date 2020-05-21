@@ -10,20 +10,20 @@ import graph
 
 # Matches w/o parens: (some.package.name).(class)$($optional$nested$class)
 JAVA_CLASS_FULL_NAME_REGEX = re.compile(
-    r"^(?P<package>.*)\.(?P<class_name>.*?)(\$(?P<nested>.*))?$")
+    r'^(?P<package>.*)\.(?P<class_name>.*?)(\$(?P<nested>.*))?$')
 
 
 def java_class_params_to_key(package: str, class_name: str):
     """Returns the unique key created from a package and class name."""
-    return f"{package}.{class_name}"
+    return f'{package}.{class_name}'
 
 
 def split_nested_class_from_key(key: str) -> Tuple[str, str]:
     """Splits a jdeps class name into its key and nested class, if any."""
     re_match = JAVA_CLASS_FULL_NAME_REGEX.match(key)
-    package = re_match.group("package")
-    class_name = re_match.group("class_name")
-    nested = re_match.group("nested")
+    package = re_match.group('package')
+    class_name = re_match.group('class_name')
+    nested = re_match.group('nested')
     return java_class_params_to_key(package, class_name), nested
 
 
@@ -33,6 +33,9 @@ class JavaClass(graph.Node):
     Some classes may have nested classes (eg. explicitly, or
     implicitly through lambdas). We treat these nested classes as part of
     the outer class, storing only their names as metadata.
+
+    Attributes:
+        nested_classes: A set of nested classes contained within this class.
     """
     def __init__(self, package: str, class_name: str):
         """Initializes a new Java class structure.
@@ -51,6 +54,11 @@ class JavaClass(graph.Node):
 
         self._nested_classes = set()
 
+    @property
+    def nested_classes(self):
+        """A set of nested classes contained within this class."""
+        return self._nested_classes
+
     def add_nested_class(self, nested: str):  # pylint: disable=missing-function-docstring
         self._nested_classes.add(nested)
 
@@ -63,8 +71,8 @@ class JavaClassDependencyGraph(graph.Graph):
     def create_node_from_key(self, key: str):
         """See comment above the regex definition."""
         re_match = JAVA_CLASS_FULL_NAME_REGEX.match(key)
-        package = re_match.group("package")
-        class_name = re_match.group("class_name")
+        package = re_match.group('package')
+        class_name = re_match.group('class_name')
         return JavaClass(package, class_name)
 
     def add_nested_class_to_key(self, key: str, nested: str):  # pylint: disable=missing-function-docstring

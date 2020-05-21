@@ -1693,7 +1693,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_PROMPT_CONFIRM_MIXED_CONTENT_DOWNLOAD"
         desc="Message shown to the user to validate the download when the download content is a mixed-content download.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_BLOCKED_TOO_LARGE"
         desc="Message shown in the download shelf when a download is blocked for being too large">
@@ -1721,11 +1721,11 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_WARNING"
         desc="Message shown in the download shelf when a download is mixed content, and Chrome needs to show a warning.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
       <message name="IDS_PROMPT_DOWNLOAD_MIXED_CONTENT_BLOCKED"
         desc="Message shown in the download shelf when a download is mixed content, and Chrome has blocked it.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely.
+        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> can't be downloaded securely
       </message>
       <message name="IDS_PROMPT_APP_DEEP_SCANNING"
         desc="Message shown in the download shelf when Chrome recommends uploading the file for additional scanning">
@@ -1745,7 +1745,7 @@ are declared in tools/grit/grit_rule.gni.
       </message>
       <message name="IDS_BLOCK_REASON_MIXED_CONTENT"
          desc="Message shown to the user on chrome://downloads page to explain that this download is blocked because it is mixed-content.">
-        This file can't be downloaded securely.
+        This file can't be downloaded securely
       </message>
       <message name="IDS_BLOCK_REASON_DEEP_SCANNING"
         desc="Message shown on chrome://downloads when a download is being scanned">

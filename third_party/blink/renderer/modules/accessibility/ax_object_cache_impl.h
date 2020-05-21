@@ -273,6 +273,8 @@ class MODULES_EXPORT AXObjectCacheImpl
     active_event_from_ = event_from;
   }
 
+  AXObject* GetActiveAriaModalDialog() const;
+
  protected:
   void PostPlatformNotification(
       AXObject* obj,
@@ -348,6 +350,11 @@ class MODULES_EXPORT AXObjectCacheImpl
   // and it will always be related to the currently focused control.
   AXID validation_message_axid_;
 
+  // The currently active aria-modal dialog element, if one has been computed,
+  // null if otherwise. This is only ever computed on platforms that have the
+  // AriaModalPrunesAXTree setting enabled, such as Mac.
+  WeakMember<AXObject> active_aria_modal_dialog_;
+
   std::unique_ptr<AXRelationCache> relation_cache_;
 
 #if DCHECK_IS_ON()
@@ -413,6 +420,19 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ChildrenChangedWithCleanLayout(Node* node);
   void HandleAttributeChangedWithCleanLayout(const QualifiedName& attr_name,
                                              Element* element);
+
+  //
+  // aria-modal support
+  //
+
+  // This function is only ever called on platforms where the
+  // AriaModalPrunesAXTree setting is enabled, and the accessibility tree must
+  // be manually pruned to remove background content.
+  void UpdateActiveAriaModalDialog(Node* element);
+
+  // This will return null on platforms without the AriaModalPrunesAXTree
+  // setting enabled, or where there is no active ancestral aria-modal dialog.
+  AXObject* AncestorAriaModalDialog(Node* node);
 
   void ScheduleVisualUpdate();
   void FireTreeUpdatedEventImmediately(

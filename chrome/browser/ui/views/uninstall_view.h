@@ -40,7 +40,7 @@ class UninstallView : public views::ButtonListener,
 
   // Overridden from ui::ComboboxModel:
   int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
+  base::string16 GetItemAt(int index) const override;
 
  private:
   typedef std::map<base::string16, base::string16> BrowsersMap;

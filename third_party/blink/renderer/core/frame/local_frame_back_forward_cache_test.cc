@@ -59,7 +59,8 @@ TEST_F(LocalFrameBackForwardCacheTest, EvictionOnV8ExecutionAtMicrotask) {
   LocalFrame* frame = web_view_helper.GetWebView()->MainFrameImpl()->GetFrame();
 
   // Freeze the frame and hook eviction.
-  frame->SetLifecycleState(mojom::FrameLifecycleState::kFrozen);
+  frame->GetPage()->GetPageScheduler()->SetPageVisible(false);
+  frame->GetPage()->GetPageScheduler()->SetPageFrozen(true);
   frame->HookBackForwardCacheEviction();
 
   auto* script_state = ToScriptStateForMainWorld(frame);

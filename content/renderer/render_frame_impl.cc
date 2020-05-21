@@ -1983,6 +1983,12 @@ RenderWidget* RenderFrameImpl::GetLocalRootRenderWidget() {
   return GetLocalRoot()->render_widget_;
 }
 
+blink::WebFrameWidget* RenderFrameImpl::GetLocalRootWebFrameWidget() {
+  // This is the same as GetLocalRootRenderWidget()->GetWebWidget() but
+  // avoids casting for type safety, woo.
+  return frame_->LocalRoot()->FrameWidget();
+}
+
 RenderWidget* RenderFrameImpl::GetMainFrameRenderWidget() {
   RenderFrameImpl* local_main_frame = render_view()->GetMainRenderFrame();
   if (!local_main_frame)

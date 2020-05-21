@@ -20,6 +20,21 @@ struct MyStruct {
 
   // No rewrite expected.
   int int_field;
+
+  // "*" next to the field name.  This is non-standard formatting, so
+  // "clang-format off" is used to make sure |git cl format| won't change this
+  // testcase.
+  //
+  // Expected rewrite: CheckedPtr<SomeClass> raw_ptr_field;
+  // clang-format off
+  CheckedPtr<SomeClass> raw_ptr_field2;
+  // clang-format on
+
+  // No rewrite expected.  (The syntax below should be rare + it is difficult to
+  // generate correct, non-overlapping replacements that cover both fields.)
+  SomeClass *overlapping_fields_1a, *overlapping_fields_1b;
+  int overlapping_fields_2a, *overlapping_fields_2b;
+  int *overlapping_fields_3a, overlapping_fields_3b;
 };
 
 template <typename T>

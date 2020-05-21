@@ -321,6 +321,9 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
 #if defined(DCHECK_IS_CONFIGURABLE)
   // Update the behaviour of LOG_DCHECK to match the Feature configuration.
   // DCHECK is also forced to be FATAL if we are running a death-test.
+  // TODO(crbug.com/1057995#c11): --gtest_internal_run_death_test doesn't
+  // currently run through this codepath, mitigated in
+  // base::TestSuite::Initialize() for now.
   // TODO(asvitkine): If we find other use-cases that need integrating here
   // then define a proper API/hook for the purpose.
   if (FeatureList::IsEnabled(kDCheckIsFatalFeature) ||

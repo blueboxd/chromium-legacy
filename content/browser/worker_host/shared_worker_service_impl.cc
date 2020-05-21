@@ -76,10 +76,8 @@ void SharedWorkerServiceImpl::RemoveObserver(Observer* observer) {
 
 void SharedWorkerServiceImpl::EnumerateSharedWorkers(Observer* observer) {
   for (const auto& host : worker_hosts_) {
-    if (host->started()) {
-      observer->OnWorkerStarted(host->id(), host->GetProcessHost()->GetID(),
-                                host->dev_tools_token());
-    }
+    observer->OnWorkerCreated(host->id(), host->GetProcessHost()->GetID(),
+                              host->GetDevToolsToken());
   }
 }
 
@@ -211,20 +209,20 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
   worker_hosts_.erase(worker_hosts_.find(host));
 }
 
-void SharedWorkerServiceImpl::NotifyWorkerStarted(
+void SharedWorkerServiceImpl::NotifyWorkerCreated(
     SharedWorkerId shared_worker_id,
     int worker_process_id,
     const base::UnguessableToken& dev_tools_token) {
   for (Observer& observer : observers_) {
-    observer.OnWorkerStarted(shared_worker_id, worker_process_id,
+    observer.OnWorkerCreated(shared_worker_id, worker_process_id,
                              dev_tools_token);
   }
 }
 
-void SharedWorkerServiceImpl::NotifyWorkerTerminating(
+void SharedWorkerServiceImpl::NotifyBeforeWorkerDestroyed(
     SharedWorkerId shared_worker_id) {
   for (Observer& observer : observers_)
-    observer.OnBeforeWorkerTerminated(shared_worker_id);
+    observer.OnBeforeWorkerDestroyed(shared_worker_id);
 }
 
 void SharedWorkerServiceImpl::NotifyClientAdded(

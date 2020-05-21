@@ -574,6 +574,17 @@ class ApplyReplacementTest(unittest.TestCase):
     with self.assertRaisesRegexp(ValueError, expected_msg_regex):
       _ApplyEdit(old_text, edit)
 
+  def testOverlappingReplacement(self):
+    old_text = "123 456 789"
+    last = _CreateReplacement(old_text, "456 789", "foo")
+    edit = _CreateReplacement(old_text, "123 456", "bar")
+    expected_msg_regex = 'Overlapping replacements'
+    expected_msg_regex += '.*some_file.cc'
+    expected_msg_regex += '.*offset 0, length 7.*"bar"'
+    expected_msg_regex += '.*offset 4, length 7.*"foo"'
+    with self.assertRaisesRegexp(ValueError, expected_msg_regex):
+      _ApplyEdit(old_text, edit, last_edit=last)
+
 
 if __name__ == '__main__':
   unittest.main()

@@ -149,7 +149,7 @@ const string kSyncSubpagePath = "osSync";
 const string kSyncDeprecatedSubpagePath = "syncSetup";
 const string kSyncDeprecatedAdvancedSubpagePath = "syncSetup/advanced";
 const string kSecurityAndSignInSubpagePath = "lockScreen";
-const string kFingerprintSubpathPath = "lockScreen/fingerprint";
+const string kFingerprintSubpagePath = "lockScreen/fingerprint";
 const string kManageOtherPeopleSubpagePath = "accounts";
 const string kKerberosSubpagePath = "kerberosAccounts";
 
@@ -201,7 +201,7 @@ const string kPrivacyAndSecuritySectionPath = "osPrivacy";
 const string kLanguagesAndInputSectionPath = "osLanguages";
 const string kLanguagesAndInputDetailsSubpagePath = "osLanguages/details";
 const string kManageInputMethodsSubpagePath = "osLanguages/inputMethods";
-const string kSmartInputsSubagePath = "osLanguages/smartInputs";
+const string kSmartInputsSubpagePath = "osLanguages/smartInputs";
 
 // Files section.
 const string kFilesSectionPath = "files";

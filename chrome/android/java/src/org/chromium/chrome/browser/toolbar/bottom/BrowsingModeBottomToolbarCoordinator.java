@@ -72,6 +72,9 @@ public class BrowsingModeBottomToolbarCoordinator {
     /** The activity tab provider that used for making the IPH. */
     private final ActivityTabProvider mTabProvider;
 
+    private Callback<OverviewModeBehavior> mOverviewModeBehaviorSupplierObserver;
+    private ObservableSupplier<OverviewModeBehavior> mOverviewModeBehaviorSupplier;
+
     /**
      * Build the coordinator that manages the browsing mode bottom toolbar.
      * @param root The root {@link View} for locating the views to inflate.
@@ -79,11 +82,13 @@ public class BrowsingModeBottomToolbarCoordinator {
      * @param homeButtonListener The {@link OnClickListener} for the home button.
      * @param searchAcceleratorListener The {@link OnClickListener} for the search accelerator.
      * @param shareButtonListener The {@link OnClickListener} for the share button.
+     * @param overviewModeBehaviorSupplier Supplier for the overview mode manager.
      */
     BrowsingModeBottomToolbarCoordinator(View root, ActivityTabProvider tabProvider,
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
             ObservableSupplier<OnClickListener> shareButtonListenerSupplier,
-            OnLongClickListener tabSwitcherLongClickListener) {
+            OnLongClickListener tabSwitcherLongClickListener,
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
         mModel = new BrowsingModeBottomToolbarModel();
         mToolbarRoot = root.findViewById(R.id.bottom_toolbar_browsing);
         mTabProvider = tabProvider;
@@ -130,6 +135,10 @@ public class BrowsingModeBottomToolbarCoordinator {
             mShareButton.setActivityTabProvider(mTabProvider);
             mShareButtonListenerSupplier.addObserver(mShareButtonListenerSupplierCallback);
         }
+
+        mOverviewModeBehaviorSupplier = overviewModeBehaviorSupplier;
+        mOverviewModeBehaviorSupplierObserver = this::setOverviewModeBehavior;
+        mOverviewModeBehaviorSupplier.addObserver(mOverviewModeBehaviorSupplierObserver);
     }
 
     /**
@@ -168,19 +177,15 @@ public class BrowsingModeBottomToolbarCoordinator {
      * Calling this must occur after the native library have completely loaded.
      * @param tabSwitcherListener An {@link OnClickListener} that is triggered when the
      *                            tab switcher button is clicked.
-     * @param tabSwitcherListener An {@link OnClickListener} that is triggered when the
-     *                            tab switcher button is clicked.
      * @param menuButtonHelper An {@link AppMenuButtonHelper} that is triggered when the
      *                         menu button is clicked.
      * @param tabCountProvider Updates the tab count number in the tab switcher button.
      * @param themeColorProvider Notifies components when theme color changes.
      * @param incognitoStateProvider Notifies components when incognito state changes.
-     * @param overviewModeBehavior Notifies components when overview mode changes.
      */
     void initializeWithNative(OnClickListener newTabListener, OnClickListener tabSwitcherListener,
             AppMenuButtonHelper menuButtonHelper, TabCountProvider tabCountProvider,
-            ThemeColorProvider themeColorProvider, IncognitoStateProvider incognitoStateProvider,
-            OverviewModeBehavior overviewModeBehavior) {
+            ThemeColorProvider themeColorProvider, IncognitoStateProvider incognitoStateProvider) {
         mMediator.setThemeColorProvider(themeColorProvider);
         if (BottomToolbarVariationManager.isNewTabButtonOnBottom()) {
             mNewTabButton.setOnClickListener(newTabListener);
@@ -204,6 +209,10 @@ public class BrowsingModeBottomToolbarCoordinator {
             mTabSwitcherButtonCoordinator.setTabCountProvider(tabCountProvider);
             setupIPH(FeatureConstants.CHROME_DUET_TAB_SWITCHER_FEATURE, mTabSwitcherButtonView);
         }
+    }
+
+    private void setOverviewModeBehavior(OverviewModeBehavior overviewModeBehavior) {
+        assert overviewModeBehavior != null;
 
         // If StartSurface is HomePage, BrowsingModeBottomToolbar is shown in browsing mode and in
         // overview mode. We need to pass the OverviewModeBehavior to the buttons so they are
@@ -264,6 +273,11 @@ public class BrowsingModeBottomToolbarCoordinator {
     public void destroy() {
         if (mShareButtonListenerSupplier != null) {
             mShareButtonListenerSupplier.removeObserver(mShareButtonListenerSupplierCallback);
+        }
+        if (mOverviewModeBehaviorSupplier != null) {
+            mOverviewModeBehaviorSupplier.removeObserver(mOverviewModeBehaviorSupplierObserver);
+            mOverviewModeBehaviorSupplier = null;
+            mOverviewModeBehaviorSupplierObserver = null;
         }
         mMediator.destroy();
         mHomeButton.destroy();

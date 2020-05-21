@@ -23,6 +23,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.tab.Tab;
@@ -36,6 +37,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
@@ -214,6 +216,30 @@ public class TabSelectionEditorTest {
         // TODO(1021803): verify the undo snack after the bug is resolved.
         // verifyUndoSnackbarWithTextIsShown(mActivityTestRule.getActivity().getString(
         //     R.string.undo_bar_group_tabs_message, 2));
+    }
+
+    @Test
+    @MediumTest
+    public void testUndoToolbarGroup() {
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        prepareBlankTab(2, false);
+        List<Tab> tabs = getTabsInCurrentTabModel();
+        TabUiTestHelper.enterTabSwitcher(cta);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabSelectionEditorController.show(tabs));
+
+        mRobot.resultRobot.verifyToolbarActionButtonWithResourceId(
+                R.string.tab_selection_editor_group);
+
+        mRobot.actionRobot.clickItemAtAdapterPosition(0)
+                .clickItemAtAdapterPosition(1)
+                .clickToolbarActionButton();
+
+        mRobot.resultRobot.verifyTabSelectionEditorIsHidden();
+        TabUiTestHelper.verifyTabSwitcherCardCount(cta, 1);
+
+        CriteriaHelper.pollInstrumentationThread(TabUiTestHelper::verifyUndoBarShowingAndClickUndo);
+        TabUiTestHelper.verifyTabSwitcherCardCount(cta, 2);
     }
 
     @Test

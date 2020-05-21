@@ -55,7 +55,7 @@ class ComboboxModelAdapter : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
+  base::string16 GetItemAt(int index) const override;
 
  private:
   PermissionMenuModel* model_;
@@ -87,7 +87,7 @@ int ComboboxModelAdapter::GetItemCount() const {
   return model_->GetItemCount();
 }
 
-base::string16 ComboboxModelAdapter::GetItemAt(int index) {
+base::string16 ComboboxModelAdapter::GetItemAt(int index) const {
   return model_->GetLabelAt(index);
 }
 

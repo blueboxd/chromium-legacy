@@ -5,16 +5,21 @@
 #ifndef CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_
 #define CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_
 
+#include <memory>
+
 #include "chrome/browser/nearby_sharing/nearby_sharing_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class NearbyConnectionsManager;
 class Profile;
 
 class NearbySharingServiceImpl : public NearbySharingService,
                                  public KeyedService {
  public:
-  explicit NearbySharingServiceImpl(Profile* profile);
-  ~NearbySharingServiceImpl() override = default;
+  explicit NearbySharingServiceImpl(
+      Profile* profile,
+      std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager);
+  ~NearbySharingServiceImpl() override;
 
   // NearbySharingService:
   void RegisterSendSurface(TransferUpdateCallback* transferCallback,
@@ -44,6 +49,9 @@ class NearbySharingServiceImpl : public NearbySharingService,
               StatusCodesCallback status_codes_callback) override;
   void Open(const ShareTarget& share_target,
             StatusCodesCallback status_codes_callback) override;
+
+ private:
+  std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager_;
 };
 
 #endif  // CHROME_BROWSER_NEARBY_SHARING_NEARBY_SHARING_SERVICE_IMPL_H_

@@ -6,6 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/x/x11_display_util.h"
+#include "ui/gfx/x/randr.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/xproto.h"
 #include "ui/gl/egl_util.h"
@@ -17,12 +18,12 @@ namespace {
 class XrandrIntervalOnlyVSyncProvider : public gfx::VSyncProvider {
  public:
   explicit XrandrIntervalOnlyVSyncProvider(Display* display)
-      : display_(display), interval_(base::TimeDelta::FromSeconds(1 / 60.)) {}
+      : interval_(base::TimeDelta::FromSeconds(1 / 60.)) {}
 
   void GetVSyncParameters(UpdateVSyncCallback callback) override {
     if (++calls_since_last_update_ >= kCallsBetweenUpdates) {
       calls_since_last_update_ = 0;
-      interval_ = ui::GetPrimaryDisplayRefreshIntervalFromXrandr(display_);
+      interval_ = ui::GetPrimaryDisplayRefreshIntervalFromXrandr();
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -37,7 +38,6 @@ class XrandrIntervalOnlyVSyncProvider : public gfx::VSyncProvider {
   bool IsHWClock() const override { return false; }
 
  private:
-  Display* const display_ = nullptr;
   base::TimeDelta interval_;
   static const int kCallsBetweenUpdates = 100;
   int calls_since_last_update_ = kCallsBetweenUpdates;

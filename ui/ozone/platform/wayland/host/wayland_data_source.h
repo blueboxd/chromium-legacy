@@ -7,12 +7,13 @@
 
 #include <wayland-client.h>
 
+#include <cstdint>
 #include <map>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/optional.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/host/wayland_data_source_base.h"
 #include "ui/ozone/public/platform_clipboard.h"
@@ -21,16 +22,26 @@ namespace ui {
 
 class OSExchangeData;
 class WaylandConnection;
-class WaylandWindow;
 
-// The WaylandDataSource object represents the source side of a
-// WaylandDataOffer. It is created by the source client in a data
-// transfer and provides a way to describe the offered data
-// (wl_data_source_offer) // and a way to respond to requests to
-// transfer the data (OnSend listener).
+// WaylandDataSource represents the source side of a WaylandDataOffer. It is
+// created by the source client in a data transfer and provides a way to
+// describe the offered data (wl_data_source_offer) and a way to respond to
+// requests to transfer the data (OnSend listener).
 class WaylandDataSource : public WaylandDataSourceBase {
  public:
   using DragDataMap = std::map<std::string, std::string>;
+
+  // DragDelegate is responsible for handling the wl_data_source events during
+  // drag and drop sessions.
+  class DragDelegate {
+   public:
+    virtual void OnDragSourceFinish(bool completed) = 0;
+    virtual void OnDragSourceSend(const std::string& mime_type,
+                                  std::string* contents) = 0;
+
+   protected:
+    virtual ~DragDelegate() = default;
+  };
 
   // Takes ownership of data_source.
   explicit WaylandDataSource(wl_data_source* data_source,
@@ -43,13 +54,17 @@ class WaylandDataSource : public WaylandDataSourceBase {
   }
 
   void WriteToClipboard(const PlatformClipboard::DataMap& data_map) override;
-  void Offer(const ui::OSExchangeData& data);
+  void Offer(const ui::OSExchangeData& data, DragDelegate* drag_delegate);
   void SetAction(int operation);
-  void SetDragData(const DragDataMap& data_map);
 
   wl_data_source* data_source() const { return data_source_.get(); }
+  uint32_t dnd_action() const { return dnd_action_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest, StartDrag);
+  FRIEND_TEST_ALL_PREFIXES(WaylandDataDragControllerTest,
+                           StartDragWithWrongMimeType);
+
   static void OnTarget(void* data,
                        wl_data_source* source,
                        const char* mime_type);
@@ -66,9 +81,12 @@ class WaylandDataSource : public WaylandDataSourceBase {
 
   wl::Object<wl_data_source> data_source_;
   WaylandConnection* connection_ = nullptr;
-  WaylandWindow* source_window_ = nullptr;
+
+  // Set when this used in DND sessions initiated from Chromium.
+  DragDelegate* drag_delegate_ = nullptr;
 
   DragDataMap drag_data_map_;
+
   // Action selected by the compositor
   uint32_t dnd_action_;
 

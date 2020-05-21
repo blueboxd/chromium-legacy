@@ -66,7 +66,7 @@ int MonthComboboxModel::GetItemCount() const {
   return 13;
 }
 
-base::string16 MonthComboboxModel::GetItemAt(int index) {
+base::string16 MonthComboboxModel::GetItemAt(int index) const {
   return index == 0 ? l10n_util::GetStringUTF16(
                           IDS_AUTOFILL_DIALOG_PLACEHOLDER_EXPIRY_MONTH)
                     : FormatMonth(index);

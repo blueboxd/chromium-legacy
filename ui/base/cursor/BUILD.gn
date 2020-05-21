@@ -4,8 +4,10 @@
 
 import("//build/config/ui.gni")
 
-component("cursor") {
-  output_name = "ui_base_cursor"
+# This component was split from :cursor to allow Blink to depend on it without
+# bringing all of //ui/base/cursor.
+component("cursor_base") {
+  output_name = "ui_base_cursor_base"
 
   sources = [
     "cursor.cc",
@@ -13,7 +15,7 @@ component("cursor") {
     "cursor_size.h",
   ]
 
-  defines = [ "IS_UI_BASE_CURSOR_IMPL" ]
+  defines = [ "IS_UI_BASE_CURSOR_BASE_IMPL" ]
 
   public_deps = [
     "//base",
@@ -38,5 +40,102 @@ component("cursor") {
 
   if (is_win) {
     sources += [ "cursor_win.cc" ]
+  }
+}
+
+if (use_aura) {
+  component("cursor") {
+    output_name = "ui_base_cursor"
+    sources = [
+      "cursor_loader.h",
+      "cursor_lookup.cc",
+      "cursor_lookup.h",
+      "cursor_util.cc",
+      "cursor_util.h",
+      "cursors_aura.cc",
+      "cursors_aura.h",
+      "image_cursors.cc",
+      "image_cursors.h",
+    ]
+    defines = [ "IS_UI_BASE_CURSOR_IMPL" ]
+    public_deps = [
+      ":cursor_base",
+      "//base",
+      "//ui/base/cursor/mojom:cursor_type",
+      "//ui/display",
+      "//ui/gfx:native_widget_types",
+    ]
+    deps = [
+      "//skia",
+      "//ui/base",
+      "//ui/gfx",
+      "//ui/gfx:geometry_skia",
+      "//ui/gfx/geometry",
+      "//ui/resources:ui_resources_grd",
+    ]
+
+    if (is_desktop_linux) {
+      sources += [
+        "cursor_theme_manager_linux.cc",
+        "cursor_theme_manager_linux.h",
+        "cursor_theme_manager_linux_observer.h",
+      ]
+    }
+
+    if (is_win) {
+      sources += [
+        "cursor_loader_win.cc",
+        "cursor_loader_win.h",
+      ]
+      deps += [ "//ui/resources:ui_unscaled_resources_grd" ]
+    }
+
+    if (use_x11) {
+      sources += [
+        "cursor_loader_x11.cc",
+        "cursor_loader_x11.h",
+      ]
+      public_deps += [
+        "//ui/base/x",
+        "//ui/gfx/x",
+      ]
+    }
+
+    if (use_ozone) {
+      sources += [
+        "cursor_loader_ozone.cc",
+        "cursor_loader_ozone.h",
+        "ozone/bitmap_cursor_factory_ozone.cc",
+        "ozone/bitmap_cursor_factory_ozone.h",
+      ]
+      public_deps += [
+        "//ui/gfx/geometry",
+        "//ui/ozone:ozone_base",
+      ]
+    }
+  }
+}
+
+source_set("unittests") {
+  testonly = true
+  sources = []
+  deps = [
+    "//skia",
+    "//testing/gtest",
+    "//ui/gfx/geometry",
+  ]
+
+  if (!is_ios) {
+    sources += [ "cursor_unittest.cc" ]
+    deps += [
+      ":cursor_base",
+      "//ui/base/cursor/mojom:cursor_type",
+      "//ui/gfx:geometry_skia",
+    ]
+  }
+
+  if (use_aura) {
+    sources += [ "cursor_util_unittest.cc" ]
+    deps += [ ":cursor" ]
   }
 }

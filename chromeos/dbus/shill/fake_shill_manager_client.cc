@@ -535,6 +535,23 @@ void FakeShillManagerClient::SetTechnologyInitializing(const std::string& type,
   }
 }
 
+void FakeShillManagerClient::SetTechnologyProhibited(const std::string& type,
+                                                     bool prohibited) {
+  if (prohibited) {
+    if (GetListProperty(shill::kProhibitedTechnologiesProperty)
+            ->AppendIfNotPresent(std::make_unique<base::Value>(type))) {
+      CallNotifyObserversPropertyChanged(
+          shill::kProhibitedTechnologiesProperty);
+    }
+  } else {
+    if (GetListProperty(shill::kProhibitedTechnologiesProperty)
+            ->Remove(base::Value(type), nullptr)) {
+      CallNotifyObserversPropertyChanged(
+          shill::kProhibitedTechnologiesProperty);
+    }
+  }
+}
+
 void FakeShillManagerClient::AddGeoNetwork(
     const std::string& technology,
     const base::DictionaryValue& network) {

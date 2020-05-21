@@ -84,7 +84,7 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
 
   ChromePasswordProtectionService* GetService(bool is_incognito) {
     return ChromePasswordProtectionService::GetPasswordProtectionService(
-        is_incognito ? browser()->profile()->GetOffTheRecordProfile()
+        is_incognito ? browser()->profile()->GetPrimaryOTRProfile()
                      : browser()->profile());
   }
 

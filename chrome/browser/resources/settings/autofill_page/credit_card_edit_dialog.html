@@ -47,12 +47,15 @@
     <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">[[title_]]</div>
       <div slot="body">
-        <cr-input id="nameInput" label="$i18n{creditCardName}"
-            value="{{creditCard.name}}" autofocus spellcheck="false"
+        <!-- Place and autofocus the cardholder name as the first field when
+          nickname management is not enabled. -->
+        <cr-input id="legacyNameInput" label="$i18n{creditCardName}"
+            value="{{creditCard.name}}" spellcheck="false"
+            hidden$="[[nicknameManagementEnabled_]]" autofocus
             on-input="onCreditCardNameOrNumberChanged_">
         </cr-input>
         <cr-input id="numberInput" label="$i18n{creditCardNumber}"
-            value="{{creditCard.cardNumber}}"
+            value="{{creditCard.cardNumber}}" autofocus
             on-input="onCreditCardNameOrNumberChanged_">
         </cr-input>
         <!-- aria-hidden for creditCardExpiration label since
@@ -80,6 +83,20 @@
             >
           $i18n{creditCardExpired}
         </span>
+        <!-- Place cardholder name field and nickname field after expiration
+          when nickname management is enabled.-->
+        <!-- TODO(crbug.com/1063426): Update CSS layout.-->
+        <template is="dom-if" if="[[nicknameManagementEnabled_]]">
+          <cr-input id="nameInput" label="$i18n{creditCardName}"
+              value="{{creditCard.name}}" spellcheck="false"
+              on-input="onCreditCardNameOrNumberChanged_">
+          </cr-input>
+          <!-- TODO(crbug.com/1063426): Limit nickname length and add validation
+            check.-->
+          <cr-input id="nicknameInput" label="$i18n{creditCardNickname}"
+              value="{{creditCard.nickname}}" spellcheck="false">
+          </cr-input>
+        </template>
         <div id="saved-to-this-device-only-label">
           $i18n{savedToThisDeviceOnly}
         </div>

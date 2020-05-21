@@ -1089,8 +1089,7 @@ bool BrowserAccessibility::IsPlainTextField() const {
 }
 
 bool BrowserAccessibility::IsRichTextField() const {
-  return GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot) &&
-         HasState(ax::mojom::State::kRichlyEditable);
+  return GetData().IsRichTextField();
 }
 
 bool BrowserAccessibility::HasExplicitlyEmptyName() const {
@@ -1574,6 +1573,11 @@ bool BrowserAccessibility::IsChildOfLeaf() const {
   }
 
   return false;
+}
+
+bool BrowserAccessibility::IsChildOfPlainTextField() const {
+  ui::AXNode* textfield_node = node()->GetTextFieldAncestor();
+  return textfield_node && textfield_node->data().IsPlainTextField();
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetClosestPlatformObject()

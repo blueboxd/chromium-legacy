@@ -22,13 +22,6 @@
 
 namespace task_manager {
 
-namespace {
-
-const int kUpdateAppProcessListDelaySeconds = 1;
-const int kUpdateSystemProcessListDelaySeconds = 3;
-
-}  // namespace
-
 using std::set;
 using arc::ArcProcess;
 using base::Process;
@@ -36,7 +29,7 @@ using base::ProcessId;
 
 ArcProcessTaskProvider::ArcProcessTaskProvider() : is_updating_(false) {}
 
-ArcProcessTaskProvider::~ArcProcessTaskProvider() {}
+ArcProcessTaskProvider::~ArcProcessTaskProvider() = default;
 
 Task* ArcProcessTaskProvider::GetTaskOfUrlRequest(int child_id, int route_id) {
   // ARC tasks are not associated with any URL request.
@@ -141,28 +134,25 @@ void ArcProcessTaskProvider::StopUpdating() {
   nspid_to_sys_task_.clear();
 }
 
-void ArcProcessTaskProvider::ScheduleNextRequest(const base::Closure& task,
-                                                 const int delaySeconds) {
+void ArcProcessTaskProvider::ScheduleNextRequest(const base::Closure& task) {
   if (!is_updating_)
     return;
   // TODO(nya): Remove this timer once ARC starts to send us UpdateProcessList
   // message when the process list changed. As of today, ARC does not send
   // the process list unless we request it by RequestAppProcessList message.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, task, base::TimeDelta::FromSeconds(delaySeconds));
+      FROM_HERE, task, arc::ArcProcessService::kProcessSnapshotRefreshTime);
 }
 
 void ArcProcessTaskProvider::ScheduleNextAppRequest() {
   ScheduleNextRequest(base::Bind(&ArcProcessTaskProvider::RequestAppProcessList,
-                                 weak_ptr_factory_.GetWeakPtr()),
-                      kUpdateAppProcessListDelaySeconds);
+                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcProcessTaskProvider::ScheduleNextSystemRequest() {
   ScheduleNextRequest(
       base::Bind(&ArcProcessTaskProvider::RequestSystemProcessList,
-                 weak_ptr_factory_.GetWeakPtr()),
-      kUpdateSystemProcessListDelaySeconds);
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace task_manager

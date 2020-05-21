@@ -76,7 +76,7 @@ class MediaComboboxModel : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override;
-  base::string16 GetItemAt(int index) override;
+  base::string16 GetItemAt(int index) const override;
 
  private:
   blink::mojom::MediaStreamType type_;
@@ -182,7 +182,7 @@ int MediaComboboxModel::GetItemCount() const {
   return std::max(1, static_cast<int>(GetDevices().size()));
 }
 
-base::string16 MediaComboboxModel::GetItemAt(int index) {
+base::string16 MediaComboboxModel::GetItemAt(int index) const {
   return GetDevices().empty()
              ? l10n_util::GetStringUTF16(IDS_MEDIA_MENU_NO_DEVICE_TITLE)
              : base::UTF8ToUTF16(GetDevices()[index].name);

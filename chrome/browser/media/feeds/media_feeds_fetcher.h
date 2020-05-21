@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_MEDIA_FEEDS_MEDIA_FEEDS_FETCHER_H_
 
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/media/feeds/media_feeds_converter.h"
+#include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "components/schema_org/common/improved_metadata.mojom.h"
 #include "components/schema_org/extractor.h"
 #include "url/gurl.h"
@@ -30,10 +32,8 @@ class MediaFeedsFetcher {
     kGone,
   };
 
-  using MediaFeedCallback =
-      base::OnceCallback<void(const schema_org::improved::mojom::EntityPtr&,
-                              Status,
-                              /*was_fetched_via_cache=*/bool)>;
+  using MediaFeedCallback = base::OnceCallback<void(
+      media_history::MediaHistoryKeyedService::MediaFeedFetchResult)>;
   explicit MediaFeedsFetcher(
       scoped_refptr<::network::SharedURLLoaderFactory> url_loader_factory);
   ~MediaFeedsFetcher();
@@ -59,6 +59,8 @@ class MediaFeedsFetcher {
   // Contains the current fetch request. Will only have a value while a request
   // is pending, and will be reset by |OnURLFetchComplete| or if cancelled.
   std::unique_ptr<::network::SimpleURLLoader> pending_request_;
+
+  MediaFeedsConverter media_feeds_converter_;
 
   schema_org::Extractor extractor_;
 

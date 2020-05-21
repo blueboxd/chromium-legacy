@@ -329,12 +329,6 @@ void WebRemoteFrameImpl::UpdateUserActivationState(
   GetFrame()->UpdateUserActivationState(update_type);
 }
 
-void WebRemoteFrameImpl::TransferUserActivationFrom(
-    blink::WebRemoteFrame* source_frame) {
-  GetFrame()->TransferUserActivationFrom(
-      To<WebRemoteFrameImpl>(source_frame)->GetFrame());
-}
-
 void WebRemoteFrameImpl::SetHadStickyUserActivationBeforeNavigation(
     bool value) {
   GetFrame()->SetHadStickyUserActivationBeforeNavigation(value);

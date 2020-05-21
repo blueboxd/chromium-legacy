@@ -301,13 +301,18 @@ void AwRenderFrameExt::OnDoHitTest(const gfx::PointF& touch_center,
 }
 
 void AwRenderFrameExt::OnSetTextZoomFactor(float zoom_factor) {
+  // TODO(crbug.com/1085428): This will need to be set on every local root
+  // when site isolation is used in android webview.
+  DCHECK(render_frame()->IsMainFrame());
+
   blink::WebView* webview = GetWebView();
   if (!webview)
     return;
 
   // Hide selection and autofill popups.
   webview->CancelPagePopup();
-  webview->SetTextZoomFactor(zoom_factor);
+
+  render_frame()->GetWebFrame()->FrameWidget()->SetTextZoomFactor(zoom_factor);
 }
 
 void AwRenderFrameExt::OnResetScrollAndScaleState() {

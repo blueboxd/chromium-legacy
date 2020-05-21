@@ -54,7 +54,9 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
  public:
   enum UIControl { BACK_BUTTON, FORWARD_BUTTON, STOP_BUTTON };
 
-  ShellWindowDelegateView(Shell* shell) : shell_(shell) {}
+  explicit ShellWindowDelegateView(Shell* shell) : shell_(shell) {
+    InitShellWindow();
+  }
 
   ~ShellWindowDelegateView() override {}
 
@@ -194,11 +196,11 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     }
 
     layout->AddPaddingRow(0, 5);
-
-    InitAccelerators();
   }
 
   void InitAccelerators() {
+    // This function must be called when part of the widget hierarchy.
+    DCHECK(GetWidget());
     static const ui::KeyboardCode keys[] = {ui::VKEY_F5, ui::VKEY_BROWSER_BACK,
                                             ui::VKEY_BROWSER_FORWARD};
     for (size_t i = 0; i < base::size(keys); ++i) {
@@ -252,12 +254,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     // (preferred) size.
     return gfx::Size();
   }
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override {
-    if (details.is_add && details.child == this) {
-      InitShellWindow();
-    }
-  }
+  void AddedToWidget() override { InitAccelerators(); }
 
   // Overridden from AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override {

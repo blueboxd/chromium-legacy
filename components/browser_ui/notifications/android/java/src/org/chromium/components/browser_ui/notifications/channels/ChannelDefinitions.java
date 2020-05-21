@@ -8,6 +8,8 @@ import android.annotation.TargetApi;
 import android.app.NotificationChannel;
 import android.app.NotificationChannelGroup;
 import android.content.res.Resources;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 
 import java.util.HashSet;
@@ -77,23 +79,42 @@ public abstract class ChannelDefinitions {
      * lazily evaluated only when it is converted to an actual NotificationChannel.
      */
     public static class PredefinedChannel {
+        private static final boolean SHOW_NOTIFICATION_BADGES_DEFAULT = false;
+        private static final boolean SUPPRESS_SOUND_DEFAULT = false;
+
         private final String mId;
         private final int mNameResId;
         private final int mImportance;
         private final String mGroupId;
         private final boolean mShowNotificationBadges;
+        private final boolean mSuppressSound;
 
-        public PredefinedChannel(String id, int nameResId, int importance, String groupId) {
-            this(id, nameResId, importance, groupId, false /* showNotificationBadges */);
+        public static PredefinedChannel create(String id, int nameResId, int importance,
+                String groupId) {
+            return new PredefinedChannel(id, nameResId, importance, groupId,
+                    SHOW_NOTIFICATION_BADGES_DEFAULT, SUPPRESS_SOUND_DEFAULT);
         }
 
-        public PredefinedChannel(String id, int nameResId, int importance, String groupId,
-                boolean showNotificationBadges) {
+        public static PredefinedChannel createBadged(String id, int nameResId, int importance,
+                String groupId) {
+            return new PredefinedChannel(id, nameResId, importance, groupId,
+                    true, SUPPRESS_SOUND_DEFAULT);
+        }
+
+        public static PredefinedChannel createSilenced(String id, int nameResId, int importance,
+                String groupId) {
+            return new PredefinedChannel(id, nameResId, importance, groupId,
+                    SHOW_NOTIFICATION_BADGES_DEFAULT, true);
+        }
+
+        private PredefinedChannel(String id, int nameResId, int importance, String groupId,
+                boolean showNotificationBadges, boolean suppressSound) {
             this.mId = id;
             this.mNameResId = nameResId;
             this.mImportance = importance;
             this.mGroupId = groupId;
             this.mShowNotificationBadges = showNotificationBadges;
+            this.mSuppressSound = suppressSound;
         }
 
         NotificationChannel toNotificationChannel(Resources resources) {
@@ -101,6 +122,18 @@ public abstract class ChannelDefinitions {
             NotificationChannel channel = new NotificationChannel(mId, name, mImportance);
             channel.setGroup(mGroupId);
             channel.setShowBadge(mShowNotificationBadges);
+
+            if (mSuppressSound) {
+                AudioAttributes attributes = new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .build();
+
+                // Passing a null sound causes no sound to be played.
+                Uri sound = null;
+                channel.setSound(sound, attributes);
+            }
+
             return channel;
         }
     }

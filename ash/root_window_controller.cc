@@ -482,7 +482,6 @@ RootWindowController::~RootWindowController() {
   DCHECK(!wallpaper_widget_controller_.get());
   work_area_insets_.reset();
   ash_host_.reset();
-  mus_window_tree_host_.reset();
   // The CaptureClient needs to be around for as long as the RootWindow is
   // valid.
   capture_client_.reset();
@@ -493,14 +492,14 @@ RootWindowController::~RootWindowController() {
 
 RootWindowController* RootWindowController::CreateForPrimaryDisplay(
     AshWindowTreeHost* host) {
-  RootWindowController* controller = new RootWindowController(host, nullptr);
+  RootWindowController* controller = new RootWindowController(host);
   controller->Init(RootWindowType::PRIMARY);
   return controller;
 }
 
 RootWindowController* RootWindowController::CreateForSecondaryDisplay(
     AshWindowTreeHost* host) {
-  RootWindowController* controller = new RootWindowController(host, nullptr);
+  RootWindowController* controller = new RootWindowController(host);
   controller->Init(RootWindowType::SECONDARY);
   return controller;
 }
@@ -824,18 +823,15 @@ RootWindowController::GetAccessibilityPanelLayoutManagerForTest() {
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 
-RootWindowController::RootWindowController(
-    AshWindowTreeHost* ash_host,
-    aura::WindowTreeHost* window_tree_host)
+RootWindowController::RootWindowController(AshWindowTreeHost* ash_host)
     : ash_host_(ash_host),
-      mus_window_tree_host_(window_tree_host),
-      window_tree_host_(ash_host ? ash_host->AsWindowTreeHost()
-                                 : window_tree_host),
+      window_tree_host_(ash_host->AsWindowTreeHost()),
       shelf_(std::make_unique<Shelf>()),
       lock_screen_action_background_controller_(
           LockScreenActionBackgroundController::Create()),
       work_area_insets_(std::make_unique<WorkAreaInsets>(this)) {
-  DCHECK((ash_host && !window_tree_host) || (!ash_host && window_tree_host));
+  DCHECK(ash_host_);
+  DCHECK(window_tree_host_);
 
   if (!root_window_controllers_)
     root_window_controllers_ = new std::vector<RootWindowController*>;

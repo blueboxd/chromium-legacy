@@ -226,6 +226,10 @@
     [[self bubbleParent] commandDispatchUsingKeyModifiers:sender];
 }
 
+- (BOOL)isRedispatchingKeyEvent {
+  return _isRedispatchingKeyEvent;
+}
+
 - (NSWindow<CommandDispatchingWindow>*)bubbleParent {
   NSWindow* parent = [_owner parentWindow];
   if (parent && [parent hasKeyAppearance] &&

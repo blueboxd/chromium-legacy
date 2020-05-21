@@ -772,7 +772,7 @@ class TestComboboxModel : public ui::ComboboxModel {
 
   // ui::ComboboxModel:
   int GetItemCount() const override { return 2; }
-  base::string16 GetItemAt(int index) override {
+  base::string16 GetItemAt(int index) const override {
     return index == 0 ? base::SysNSStringToUTF16(kTestStringValue)
                       : base::ASCIIToUTF16("Second Item");
   }

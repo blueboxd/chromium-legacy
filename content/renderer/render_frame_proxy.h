@@ -225,7 +225,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(
       blink::mojom::InsecureRequestPolicy policy);
-  void OnTransferUserActivationFrom(int32_t source_routing_id);
 
   // mojom::RenderFrameProxy implementation:
   void EnableAutoResize(const gfx::Size& min_size,

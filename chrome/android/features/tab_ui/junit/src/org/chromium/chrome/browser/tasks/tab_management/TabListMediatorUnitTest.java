@@ -781,6 +781,7 @@ public class TabListMediatorUnitTest {
     }
 
     @Test
+    @Features.DisableFeatures({TAB_GROUPS_CONTINUATION_ANDROID})
     public void tabAddition_Redundant() {
         initAndAssertAllProperties();
         doReturn(true).when(mTabModelFilter).isTabModelRestored();
@@ -927,6 +928,37 @@ public class TabListMediatorUnitTest {
         assertThat(mModel.size(), equalTo(1));
         assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
+    }
+
+    @Test
+    public void tabMoveOutOfGroup_GTS_TabAdditionWithSameId() {
+        setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
+
+        // Assume that two tabs are in the same group before ungroup.
+        List<Tab> tabs = new ArrayList<>(Arrays.asList(mTab1));
+        mMediator.resetWithListOfTabs(PseudoTab.getListOfPseudoTab(tabs), false, false);
+
+        assertThat(mModel.size(), equalTo(1));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
+
+        // Assume that TabGroupModelFilter is already updated.
+        doReturn(mTab1).when(mTabGroupModelFilter).getTabAt(POSITION1);
+        doReturn(mTab2).when(mTabGroupModelFilter).getTabAt(POSITION2);
+        doReturn(2).when(mTabGroupModelFilter).getCount();
+
+        // The ungroup will add tab1 to the TabListModel at index 0. Note that before this addition,
+        // there is the PropertyModel represents the group with the same id at the same index. The
+        // addition should still take effect in this case.
+        mMediatorTabGroupModelFilterObserver.didMoveTabOutOfGroup(mTab1, POSITION2);
+
+        assertThat(mModel.size(), equalTo(2));
+        assertThat(mModel.get(0).model.get(TabProperties.TAB_ID), equalTo(TAB1_ID));
+        assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
+        assertThat(mModel.get(0).model.get(TabProperties.IS_SELECTED), equalTo(true));
+        assertThat(mModel.get(1).model.get(TabProperties.TAB_ID), equalTo(TAB2_ID));
+        assertThat(mModel.get(1).model.get(TabProperties.TITLE), equalTo(TAB2_TITLE));
+        assertThat(mModel.get(1).model.get(TabProperties.IS_SELECTED), equalTo(false));
     }
 
     @Test

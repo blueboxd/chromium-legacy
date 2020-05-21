@@ -167,12 +167,17 @@ void CaptionController::DispatchTranscription(
     content::WebContents* web_contents,
     const chrome::mojom::TranscriptionResultPtr& transcription_result) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser)
-    return;
-  if (!caption_bubble_controllers_.count(browser))
+  if (!browser || !caption_bubble_controllers_.count(browser))
     return;
   caption_bubble_controllers_[browser]->OnTranscription(transcription_result,
                                                         web_contents);
+}
+
+CaptionBubbleController*
+CaptionController::GetCaptionBubbleControllerForBrowser(Browser* browser) {
+  if (!browser || !caption_bubble_controllers_.count(browser))
+    return nullptr;
+  return caption_bubble_controllers_[browser].get();
 }
 
 void CaptionController::UpdateCaptionStyle() {

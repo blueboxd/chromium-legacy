@@ -690,11 +690,6 @@ class WebLocalFrame : public WebFrame {
   virtual bool CapturePaintPreview(const WebRect& bounds,
                                    cc::PaintCanvas* canvas) = 0;
 
-  // FrameOverlay ----------------------------------------------------------
-
-  // Overlay this frame with a solid color. Only valid for the main frame.
-  virtual void SetMainFrameOverlayColor(SkColor) = 0;
-
   // Focus --------------------------------------------------------------
 
   // Returns whether the keyboard should be suppressed for the currently focused
@@ -730,12 +725,6 @@ class WebLocalFrame : public WebFrame {
   virtual bool ConsumeTransientUserActivation(
       UserActivationUpdateSource update_source =
           UserActivationUpdateSource::kRenderer) = 0;
-
-  // DevTools -----------------------------------------------------------------
-
-  // Instructs devtools to pause loading of the frame as soon as it's shown
-  // until explicit command from the devtools client.
-  virtual void WaitForDebuggerWhenShown() = 0;
 
   // Testing ------------------------------------------------------------------
 

@@ -2323,20 +2323,6 @@ double WebViewImpl::SetZoomLevel(double zoom_level) {
   return zoom_level_;
 }
 
-float WebViewImpl::TextZoomFactor() {
-  return MainFrameImpl()->GetFrame()->TextZoomFactor();
-}
-
-float WebViewImpl::SetTextZoomFactor(float text_zoom_factor) {
-  LocalFrame* frame = MainFrameImpl()->GetFrame();
-  if (frame->GetWebPluginContainer())
-    return 1;
-
-  frame->SetTextZoomFactor(text_zoom_factor);
-
-  return text_zoom_factor;
-}
-
 float WebViewImpl::PageScaleFactor() const {
   if (!GetPage())
     return 1;

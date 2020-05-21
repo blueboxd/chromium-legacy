@@ -134,7 +134,7 @@ jumbo_component("aura") {
   ]
 
   public_deps = [
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/ime",
     "//ui/compositor",
   ]
@@ -151,6 +151,7 @@ jumbo_component("aura") {
 
     deps += [
       "//ipc",
+      "//ui/base/cursor",
       "//ui/platform_window/win",
     ]
   }
@@ -225,7 +226,7 @@ jumbo_static_library("test_support") {
     "//skia",
     "//testing/gtest",
     "//ui/base:test_support",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/base/ime/init",
     "//ui/compositor:test_support",

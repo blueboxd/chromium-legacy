@@ -59,8 +59,8 @@
       <div id="console"></div>
     `);
   await TestRunner.evaluateInPagePromise(`
-      if (window.eventSender)
-          eventSender.zoomPageIn();
+      if (window.testRunner)
+          testRunner.zoomPageIn();
   `);
 
   ElementsTestRunner.dumpInspectorHighlightJSON('svg-root', TestRunner.completeTest.bind(TestRunner));

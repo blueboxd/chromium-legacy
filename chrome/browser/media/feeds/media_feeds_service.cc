@@ -47,21 +47,6 @@ GURL Normalize(const GURL& url) {
   return url.ReplaceComponents(replacements);
 }
 
-media_feeds::mojom::FetchResult GetFetchResult(
-    MediaFeedsFetcher::Status status) {
-  switch (status) {
-    case MediaFeedsFetcher::Status::kOk:
-      return media_feeds::mojom::FetchResult::kSuccess;
-    case MediaFeedsFetcher::Status::kInvalidFeedData:
-    case MediaFeedsFetcher::Status::kRequestFailed:
-      return media_feeds::mojom::FetchResult::kFailedBackendError;
-    case MediaFeedsFetcher::Status::kNotFound:
-      return media_feeds::mojom::FetchResult::kFailedNetworkError;
-    default:
-      return media_feeds::mojom::FetchResult::kNone;
-  }
-}
-
 class CookieChangeListener : public network::mojom::CookieChangeListener {
  public:
   using CookieCallback =
@@ -411,28 +396,18 @@ void MediaFeedsService::OnGotFetchDetails(
 void MediaFeedsService::OnFetchResponse(
     int64_t feed_id,
     base::Optional<base::UnguessableToken> reset_token,
-    const schema_org::improved::mojom::EntityPtr& response,
-    MediaFeedsFetcher::Status status,
-    bool was_fetched_via_cache) {
+    media_history::MediaHistoryKeyedService::MediaFeedFetchResult result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  if (status == MediaFeedsFetcher::Status::kGone) {
+  if (result.gone) {
     GetMediaHistoryService()->DeleteMediaFeed(
         feed_id, base::BindOnce(&MediaFeedsService::OnCompleteFetch,
                                 weak_factory_.GetWeakPtr(), feed_id, false));
     return;
   }
 
-  media_history::MediaHistoryKeyedService::MediaFeedFetchResult result;
   result.feed_id = feed_id;
-  result.status = GetFetchResult(status);
-  result.was_fetched_from_cache = was_fetched_via_cache;
   result.reset_token = reset_token;
-
-  if (result.status == media_feeds::mojom::FetchResult::kSuccess &&
-      !media_feeds_converter_.ConvertMediaFeed(response, &result)) {
-    result.status = media_feeds::mojom::FetchResult::kInvalidFeed;
-  }
 
   const bool has_items = !result.items.empty();
 

@@ -7,12 +7,10 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
-#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/cursor_size.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/display/display.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -22,7 +20,7 @@ class CursorLoader;
 
 // A utility class that provides cursors for NativeCursors for which we have
 // image resources.
-class UI_BASE_EXPORT ImageCursors {
+class COMPONENT_EXPORT(UI_BASE_CURSOR) ImageCursors {
  public:
   ImageCursors();
   ~ImageCursors();

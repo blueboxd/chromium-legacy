@@ -1597,7 +1597,7 @@ jumbo_component("platform") {
     "//third_party/one_euro_filter",
     "//third_party/webrtc_overrides:webrtc_component",
     "//third_party/zlib/google:compression_utils",
-    "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/cursor/mojom:cursor_type_blink",
     "//ui/events/ipc",
     "//ui/gfx/geometry",

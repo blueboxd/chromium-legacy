@@ -413,7 +413,13 @@ public class BottomSheetControllerTest {
     @MediumTest
     public void testScrimTapClosesSheet() throws TimeoutException, ExecutionException {
         requestContentInSheet(mHighPriorityContent, true);
-        BottomSheetTestRule.Observer observer = new BottomSheetTestRule.Observer();
+        CallbackHelper closedCallbackHelper = new CallbackHelper();
+        BottomSheetObserver observer = new EmptyBottomSheetObserver() {
+            @Override
+            public void onSheetClosed(@BottomSheetController.StateChangeReason int reason) {
+                closedCallbackHelper.notifyCalled();
+            }
+        };
         mSheetController.addObserver(observer);
 
         expandSheet();
@@ -421,7 +427,7 @@ public class BottomSheetControllerTest {
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> ((View) mScrimCoordinator.getViewForTesting()).callOnClick());
 
-        observer.mClosedCallbackHelper.waitForCallback(0);
+        closedCallbackHelper.waitForCallback(0);
     }
 
     @Test

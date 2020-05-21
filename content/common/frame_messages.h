@@ -685,10 +685,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
                     blink::ViewportIntersectionState /* intersection_state */)
 
-// Transfers user activation state from the source frame to the current frame.
-IPC_MESSAGE_ROUTED1(FrameMsg_TransferUserActivationFrom,
-                    int /* source_routing_id */)
-
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params
 // object contains information about the node(s) that were selected when the

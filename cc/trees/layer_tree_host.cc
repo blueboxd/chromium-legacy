@@ -263,14 +263,6 @@ const LayerTreeSettings& LayerTreeHost::GetSettings() const {
 void LayerTreeHost::QueueSwapPromise(
     std::unique_ptr<SwapPromise> swap_promise) {
   swap_promise_manager_.QueueSwapPromise(std::move(swap_promise));
-
-  // Request a main frame if one is not already in progress. This might either
-  // A) request a commit ahead of time or B) request a commit which is not
-  // needed because there are not pending updates. If B) then the frame will
-  // be aborted early and the swap promises will be broken (see
-  // EarlyOut_NoUpdates).
-  if (!inside_main_frame_)
-    SetNeedsAnimate();
 }
 
 void LayerTreeHost::WillBeginMainFrame() {
@@ -607,6 +599,11 @@ void LayerTreeHost::SetNeedsAnimate() {
   proxy_->SetNeedsAnimate();
   swap_promise_manager_.NotifySwapPromiseMonitorsOfSetNeedsCommit();
   events_metrics_manager_.SaveActiveEventMetrics();
+}
+
+void LayerTreeHost::SetNeedsAnimateIfNotInsideMainFrame() {
+  if (!inside_main_frame_)
+    SetNeedsAnimate();
 }
 
 DISABLE_CFI_PERF

@@ -46,6 +46,14 @@ enum HasSecureWiFiConnectionProblem {
   kUnknownSecurityType,
 };
 
+// Messages related to the DnsResolverPresent routine.
+[Extensible]
+enum DnsResolverPresentProblem {
+  kNoNameServersFound,
+  kMalformedNameServers,
+  kEmptyNameServers,
+};
+
 // This interface is to be used by any clients that need to run specific
 // network-related diagnostics. Expected clients of this interface are
 // NetworkHealth, cros_healthd, and a connectivity diagnostics Web UI (to name
@@ -69,4 +77,8 @@ interface NetworkDiagnosticsRoutines {
   // connected, the routine will result in a |kNotRun| verdict.
   HasSecureWiFiConnection() => (RoutineVerdict verdict,
       array<HasSecureWiFiConnectionProblem> problems);
+
+  // Tests whether a DNS resolver is available to the browser.
+  DnsResolverPresent() => (RoutineVerdict verdict,
+      array<DnsResolverPresentProblem> problems);
 };

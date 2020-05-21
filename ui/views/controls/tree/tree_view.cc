@@ -139,6 +139,7 @@ void TreeView::SetModel(TreeModel* model) {
 
   model_ = model;
   selected_node_ = nullptr;
+  active_node_ = nullptr;
   icons_.clear();
   if (model_) {
     model_->AddObserver(this);
@@ -154,18 +155,9 @@ void TreeView::SetModel(TreeModel* model) {
     root_.set_is_expanded(true);
 
     if (root_shown_)
-      selected_node_ = &root_;
+      SetSelectedNode(root_.model_node());
     else if (!root_.children().empty())
-      selected_node_ = root_.children().front().get();
-
-    if (selected_node_) {
-      AXVirtualView* ax_selected_view = selected_node_->accessibility_view();
-      if (ax_selected_view) {
-        GetViewAccessibility().OverrideFocus(ax_selected_view);
-        ax_selected_view->NotifyAccessibilityEvent(
-            ax::mojom::Event::kSelection);
-      }
-    }
+      SetSelectedNode(root_.children().front().get()->model_node());
   }
 
   DrawnNodesChanged();
@@ -252,55 +244,19 @@ TreeModelNode* TreeView::GetEditingNode() {
 }
 
 void TreeView::SetSelectedNode(TreeModelNode* model_node) {
-  if (editing_ || model_node != selected_node_)
-    CancelEdit();
-  if (model_node && model_->GetParent(model_node))
-    Expand(model_->GetParent(model_node));
-  if (model_node && model_node == root_.model_node() && !root_shown_)
-    return;  // Ignore requests to select the root when not shown.
-  InternalNode* node =
-      model_node ? GetInternalNodeForModelNode(model_node, CREATE_IF_NOT_LOADED)
-                 : nullptr;
-  bool was_empty_selection = (selected_node_ == nullptr);
-  bool changed = (selected_node_ != node);
-  if (changed) {
-    SchedulePaintForNode(selected_node_);
-    selected_node_ = node;
-    if (selected_node_ == &root_ && !root_shown_)
-      selected_node_ = nullptr;
-    if (selected_node_ && selected_node_ != &root_)
-      Expand(model_->GetParent(selected_node_->model_node()));
-    SchedulePaintForNode(selected_node_);
-  }
-
-  if (selected_node_) {
-    // GetForegroundBoundsForNode() returns RTL-flipped coordinates for paint.
-    // Un-flip before passing to ScrollRectToVisible(), which uses layout
-    // coordinates.
-    ScrollRectToVisible(
-        GetMirroredRect(GetForegroundBoundsForNode(selected_node_)));
-  }
-
-  // Notify controller if the old selection was empty to handle the case of
-  // remove explicitly resetting selected_node_ before invoking this.
-  if (controller_ && (changed || was_empty_selection))
-    controller_->OnTreeViewSelectionChanged(this);
-
-  if (changed) {
-    AXVirtualView* ax_selected_view =
-        selected_node_ ? selected_node_->accessibility_view() : nullptr;
-    if (ax_selected_view) {
-      GetViewAccessibility().OverrideFocus(ax_selected_view);
-      ax_selected_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection);
-    } else {
-      GetViewAccessibility().OverrideFocus(nullptr);
-      NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-    }
-  }
+  UpdateSelection(model_node, kActiveAndSelected);
 }
 
 const TreeModelNode* TreeView::GetSelectedNode() const {
   return selected_node_ ? selected_node_->model_node() : nullptr;
+}
+
+void TreeView::SetActiveNode(TreeModelNode* model_node) {
+  UpdateSelection(model_node, kActive);
+}
+
+const TreeModelNode* TreeView::GetActiveNode() const {
+  return active_node_ ? active_node_->model_node() : nullptr;
 }
 
 void TreeView::Collapse(ui::TreeModelNode* model_node) {
@@ -315,7 +271,9 @@ void TreeView::Collapse(ui::TreeModelNode* model_node) {
   bool was_expanded = IsExpanded(model_node);
   if (node->is_expanded()) {
     if (selected_node_ && selected_node_->HasAncestor(node))
-      SetSelectedNode(model_node);
+      UpdateSelection(model_node, kActiveAndSelected);
+    else if (active_node_ && active_node_->HasAncestor(node))
+      UpdateSelection(model_node, kActive);
     node->set_is_expanded(false);
   }
   if (was_expanded) {
@@ -392,9 +350,13 @@ void TreeView::SetRootShown(bool root_shown) {
   if (root_shown_ == root_shown)
     return;
   root_shown_ = root_shown;
-  if (!root_shown_ && selected_node_ == &root_) {
+  if (!root_shown_ && (selected_node_ == &root_ || active_node_ == &root_)) {
     const auto& children = model_->GetChildren(root_.model_node());
-    SetSelectedNode(children.empty() ? nullptr : children.front());
+    TreeModelNode* first_child = children.empty() ? nullptr : children.front();
+    if (selected_node_ == &root_)
+      UpdateSelection(first_child, kActiveAndSelected);
+    else if (active_node_ == &root_)
+      UpdateSelection(first_child, kActive);
   }
 
   AXVirtualView* ax_view = root_.accessibility_view();
@@ -491,36 +453,53 @@ bool TreeView::HandleAccessibleAction(const ui::AXActionData& action_data) {
   if (!model_)
     return false;
 
-  switch (action_data.action) {
-    case ax::mojom::Action::kDoDefault: {
-      CommitEdit();
-      RequestFocus();
-      TreeModelNode* selected_model_node = GetSelectedNode();
-      if (!selected_model_node)
+  AXVirtualView* ax_view = AXVirtualView::GetFromId(action_data.target_node_id);
+  InternalNode* node =
+      ax_view ? GetInternalNodeForVirtualView(ax_view) : nullptr;
+  if (!node) {
+    switch (action_data.action) {
+      case ax::mojom::Action::kFocus:
+        if (active_node_)
+          return false;
+        if (!HasFocus())
+          RequestFocus();
         return true;
-
-      if (IsExpanded(selected_model_node))
-        Collapse(selected_model_node);
-      else
-        Expand(selected_model_node);
-      break;
+      case ax::mojom::Action::kBlur:
+      case ax::mojom::Action::kScrollToMakeVisible:
+        return View::HandleAccessibleAction(action_data);
+      default:
+        return false;
     }
+  }
+
+  switch (action_data.action) {
+    case ax::mojom::Action::kDoDefault:
+      SetSelectedNode(node->model_node());
+      if (!HasFocus())
+        RequestFocus();
+      if (IsExpanded(node->model_node()))
+        Collapse(node->model_node());
+      else
+        Expand(node->model_node());
+      break;
 
     case ax::mojom::Action::kFocus:
-      RequestFocus();
+      SetSelectedNode(node->model_node());
+      if (!HasFocus())
+        RequestFocus();
       break;
 
     case ax::mojom::Action::kScrollToMakeVisible:
-      if (selected_node_) {
-        // GetForegroundBoundsForNode() returns RTL-flipped coordinates for
-        // paint. Un-flip before passing to ScrollRectToVisible(), which uses
-        // layout coordinates.
-        ScrollRectToVisible(
-            GetMirroredRect(GetForegroundBoundsForNode(selected_node_)));
-      }
+      // GetForegroundBoundsForNode() returns RTL-flipped coordinates for paint.
+      // Un-flip before passing to ScrollRectToVisible(), which uses layout
+      // coordinates.
+      ScrollRectToVisible(GetMirroredRect(GetForegroundBoundsForNode(node)));
       break;
 
     case ax::mojom::Action::kShowContextMenu:
+      SetSelectedNode(node->model_node());
+      if (!HasFocus())
+        RequestFocus();
       ShowContextMenu(GetBoundsInScreen().CenterPoint(),
                       ui::MENU_SOURCE_KEYBOARD);
       break;
@@ -565,11 +544,14 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
       GetInternalNodeForModelNode(parent, DONT_CREATE_IF_NOT_LOADED);
   if (!parent_node || !parent_node->loaded_children())
     return;
-  bool reset_selection = false;
+  bool reset_selected_node = false;
+  bool reset_active_node = false;
   for (size_t i = 0; i < count; ++i) {
     InternalNode* child_removing = parent_node->children()[start].get();
     if (selected_node_ && selected_node_->HasAncestor(child_removing))
-      reset_selection = true;
+      reset_selected_node = true;
+    if (active_node_ && active_node_->HasAncestor(child_removing))
+      reset_active_node = true;
 
     DCHECK(parent_node->accessibility_view()->Contains(
         child_removing->accessibility_view()));
@@ -578,21 +560,31 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     child_removing->set_accessibility_view(nullptr);
     parent_node->Remove(start);
   }
-  if (reset_selection) {
-    // selected_node_ is no longer valid (at the time we enter this function
-    // its model_node() is likely deleted). Explicitly NULL out the field
-    // rather than invoking SetSelectedNode() otherwise, we'll try and use a
-    // deleted value.
-    selected_node_ = nullptr;
+
+  if (reset_selected_node || reset_active_node) {
+    // selected_node_ or active_node_ or both were no longer valid (i.e. the
+    // model_node() was likely deleted by the time we entered this function).
+    // Explicitly set to nullptr before continuing; otherwise, we might try to
+    // use a deleted value.
+    if (reset_selected_node)
+      selected_node_ = nullptr;
+    if (reset_active_node)
+      active_node_ = nullptr;
+
+    // Replace invalidated states with the nearest valid node.
     const auto& children = model_->GetChildren(parent);
-    TreeModelNode* to_select = nullptr;
+    TreeModelNode* nearest_node = nullptr;
     if (!children.empty()) {
-      to_select = children[std::min(start, children.size() - 1)];
+      nearest_node = children[std::min(start, children.size() - 1)];
     } else if (parent != root_.model_node() || root_shown_) {
-      to_select = parent;
+      nearest_node = parent;
     }
-    SetSelectedNode(to_select);
+    if (reset_selected_node)
+      UpdateSelection(nearest_node, kActiveAndSelected);
+    else if (reset_active_node)
+      UpdateSelection(nearest_node, kActive);
   }
+
   if (IsExpanded(parent)) {
     NotifyAccessibilityEvent(ax::mojom::Event::kRowCountChanged, true);
     DrawnNodesChanged();
@@ -652,11 +644,17 @@ int TreeView::GetRowCount() {
 }
 
 int TreeView::GetSelectedRow() {
-  ui::TreeModelNode* model_node = GetSelectedNode();
+  // Type-ahead searches should be relative to the active node, so return the
+  // row of the active node for |PrefixSelector|.
+  ui::TreeModelNode* model_node = GetActiveNode();
   return model_node ? GetRowForNode(model_node) : -1;
 }
 
 void TreeView::SetSelectedRow(int row) {
+  // Type-ahead manipulates selection because active node is synced to selected
+  // node, so call SetSelectedNode() instead of SetActiveNode().
+  // TODO(crbug.com/1080944): Decouple active node from selected node by adding
+  // new keyboard affordances.
   SetSelectedNode(GetNodeForRow(row));
 }
 
@@ -665,18 +663,20 @@ base::string16 TreeView::GetTextForRow(int row) {
 }
 
 gfx::Point TreeView::GetKeyboardContextMenuLocation() {
-  int y = height() / 2;
-  if (selected_node_) {
-    gfx::Rect node_bounds(GetForegroundBoundsForNode(selected_node_));
-    gfx::Rect vis_bounds(GetVisibleBounds());
-    if (node_bounds.y() >= vis_bounds.y() &&
-        node_bounds.y() < vis_bounds.bottom()) {
-      y = node_bounds.y();
-    }
+  gfx::Rect vis_bounds(GetVisibleBounds());
+  int x = 0;
+  int y = 0;
+  if (active_node_) {
+    gfx::Rect node_bounds(GetForegroundBoundsForNode(active_node_));
+    if (node_bounds.Intersects(vis_bounds))
+      node_bounds.Intersect(vis_bounds);
+    gfx::Point menu_point(node_bounds.CenterPoint());
+    x = base::ClampToRange(menu_point.x(), vis_bounds.x(), vis_bounds.right());
+    y = base::ClampToRange(menu_point.y(), vis_bounds.y(), vis_bounds.bottom());
   }
-  gfx::Point screen_loc(0, y);
+  gfx::Point screen_loc(x, y);
   if (base::i18n::IsRTL())
-    screen_loc.set_x(width());
+    screen_loc.set_x(vis_bounds.width() - screen_loc.x());
   ConvertPointToScreen(this, &screen_loc);
   return screen_loc;
 }
@@ -688,10 +688,10 @@ bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
   switch (event.key_code()) {
     case ui::VKEY_F2:
       if (!editing_) {
-        TreeModelNode* selected_node = GetSelectedNode();
-        if (selected_node &&
-            (!controller_ || controller_->CanEdit(this, selected_node))) {
-          StartEditing(selected_node);
+        TreeModelNode* active_node = GetActiveNode();
+        if (active_node &&
+            (!controller_ || controller_->CanEdit(this, active_node))) {
+          StartEditing(active_node);
         }
       }
       return true;
@@ -762,13 +762,6 @@ void TreeView::OnFocus() {
     GetInputMethod()->OnCaretBoundsChanged(GetPrefixSelector());
 
   SetHasFocusIndicator(true);
-  AXVirtualView* ax_selected_view =
-      selected_node_ ? selected_node_->accessibility_view() : nullptr;
-  if (ax_selected_view) {
-    GetViewAccessibility().OverrideFocus(ax_selected_view);
-  } else {
-    GetViewAccessibility().OverrideFocus(nullptr);
-  }
 }
 
 void TreeView::OnBlur() {
@@ -780,24 +773,82 @@ void TreeView::OnBlur() {
   SetHasFocusIndicator(false);
 }
 
+void TreeView::UpdateSelection(TreeModelNode* model_node,
+                               SelectionType selection_type) {
+  CancelEdit();
+  if (model_node && model_->GetParent(model_node))
+    Expand(model_->GetParent(model_node));
+  if (model_node && model_node == root_.model_node() && !root_shown_)
+    return;  // Ignore requests for the root when not shown.
+  InternalNode* node =
+      model_node ? GetInternalNodeForModelNode(model_node, CREATE_IF_NOT_LOADED)
+                 : nullptr;
+
+  // Force update if old value was nullptr to handle case of TreeNodesRemoved
+  // explicitly resetting selected_node_ or active_node_ before invoking this.
+  bool active_changed = (!active_node_ || active_node_ != node);
+  bool selection_changed = (selection_type == kActiveAndSelected &&
+                            (!selected_node_ || selected_node_ != node));
+
+  // Update tree view states to new values.
+  if (active_changed)
+    active_node_ = node;
+
+  if (selection_changed) {
+    SchedulePaintForNode(selected_node_);
+    selected_node_ = node;
+    SchedulePaintForNode(selected_node_);
+  }
+
+  if (active_changed && node) {
+    // GetForegroundBoundsForNode() returns RTL-flipped coordinates for paint.
+    // Un-flip before passing to ScrollRectToVisible(), which uses layout
+    // coordinates.
+    ScrollRectToVisible(GetMirroredRect(GetForegroundBoundsForNode(node)));
+  }
+
+  // Notify assistive technologies of state changes.
+  if (active_changed) {
+    // Update |ViewAccessibility| so that focus lands directly on this node when
+    // |FocusManager| gives focus to the tree view. This update also fires an
+    // accessible focus event.
+    GetViewAccessibility().OverrideFocus(node ? node->accessibility_view()
+                                              : nullptr);
+  }
+
+  if (selection_changed) {
+    AXVirtualView* ax_selected_view =
+        node ? node->accessibility_view() : nullptr;
+    if (ax_selected_view)
+      ax_selected_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection);
+    else
+      NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+  }
+
+  // Notify controller of state changes.
+  if (selection_changed && controller_)
+    controller_->OnTreeViewSelectionChanged(this);
+}
+
 bool TreeView::OnClickOrTap(const ui::LocatedEvent& event) {
   CommitEdit();
-  RequestFocus();
 
   InternalNode* node = GetNodeAtPoint(event.location());
-  if (!node)
-    return true;
+  if (node) {
+    bool hits_arrow = IsPointInExpandControl(node, event.location());
+    if (!hits_arrow)
+      SetSelectedNode(node->model_node());
 
-  bool hits_arrow = IsPointInExpandControl(node, event.location());
-  if (!hits_arrow)
-    SetSelectedNode(node->model_node());
-
-  if (hits_arrow || EventIsDoubleTapOrClick(event)) {
-    if (node->is_expanded())
-      Collapse(node->model_node());
-    else
-      Expand(node->model_node());
+    if (hits_arrow || EventIsDoubleTapOrClick(event)) {
+      if (node->is_expanded())
+        Collapse(node->model_node());
+      else
+        Expand(node->model_node());
+    }
   }
+
+  if (!HasFocus())
+    RequestFocus();
   return true;
 }
 
@@ -859,6 +910,7 @@ void TreeView::PopulateAccessibilityData(InternalNode* node,
                           : nullptr;
   const bool selected = (node == selected_node);
   data->AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, selected);
+  data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kSelect);
 
   if (node->is_expanded())
     data->AddState(ax::mojom::State::kExpanded);
@@ -916,7 +968,8 @@ void TreeView::PopulateAccessibilityData(InternalNode* node,
     gfx::Rect node_bounds = GetBackgroundBoundsForNode(node);
     data->relative_bounds.bounds = gfx::RectF(node_bounds);
   } else {
-    data->AddState(ax::mojom::State::kInvisible);
+    data->AddState(node != &root_ || root_shown_ ? ax::mojom::State::kInvisible
+                                                 : ax::mojom::State::kIgnored);
   }
 }
 
@@ -1123,6 +1176,22 @@ TreeView::InternalNode* TreeView::GetInternalNodeForModelNode(
   return parent_internal_node->children()[index].get();
 }
 
+TreeView::InternalNode* TreeView::GetInternalNodeForVirtualView(
+    AXVirtualView* ax_view) {
+  if (ax_view == root_.accessibility_view())
+    return &root_;
+  DCHECK(ax_view);
+  InternalNode* parent_internal_node =
+      GetInternalNodeForVirtualView(ax_view->virtual_parent_view());
+  if (!parent_internal_node)
+    return nullptr;
+  DCHECK(parent_internal_node->loaded_children());
+  AXVirtualView* parent_ax_view = parent_internal_node->accessibility_view();
+  DCHECK(parent_ax_view);
+  size_t index = parent_ax_view->GetIndexOf(ax_view);
+  return parent_internal_node->children()[index].get();
+}
+
 gfx::Rect TreeView::GetBoundsForNode(InternalNode* node) {
   int row, ignored_depth;
   row = GetRowForInternalNode(node, &ignored_depth);
@@ -1248,7 +1317,7 @@ void TreeView::IncrementSelection(IncrementType type) {
   if (!model_)
     return;
 
-  if (!GetSelectedNode()) {
+  if (!active_node_) {
     // If nothing is selected select the first or last node.
     if (root_.children().empty())
       return;
@@ -1268,7 +1337,7 @@ void TreeView::IncrementSelection(IncrementType type) {
 
   int depth = 0;
   int delta = type == INCREMENT_PREVIOUS ? -1 : 1;
-  int row = GetRowForInternalNode(selected_node_, &depth);
+  int row = GetRowForInternalNode(active_node_, &depth);
   int new_row = base::ClampToRange(row + delta, 0, GetRowCount() - 1);
   if (new_row == row)
     return;  // At the end/beginning.
@@ -1276,20 +1345,20 @@ void TreeView::IncrementSelection(IncrementType type) {
 }
 
 void TreeView::CollapseOrSelectParent() {
-  if (selected_node_) {
-    if (selected_node_->is_expanded())
-      Collapse(selected_node_->model_node());
-    else if (selected_node_->parent())
-      SetSelectedNode(selected_node_->parent()->model_node());
+  if (active_node_) {
+    if (active_node_->is_expanded())
+      Collapse(active_node_->model_node());
+    else if (active_node_->parent())
+      SetSelectedNode(active_node_->parent()->model_node());
   }
 }
 
 void TreeView::ExpandOrSelectChild() {
-  if (selected_node_) {
-    if (!selected_node_->is_expanded())
-      Expand(selected_node_->model_node());
-    else if (!selected_node_->children().empty())
-      SetSelectedNode(selected_node_->children().front()->model_node());
+  if (active_node_) {
+    if (!active_node_->is_expanded())
+      Expand(active_node_->model_node());
+    else if (!active_node_->children().empty())
+      SetSelectedNode(active_node_->children().front()->model_node());
   }
 }
 

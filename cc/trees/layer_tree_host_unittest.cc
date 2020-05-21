@@ -6187,9 +6187,9 @@ class LayerTreeHostTestSwapPromiseDuringCommit : public LayerTreeHostTest {
                                        &set_needs_commit_count,
                                        &set_needs_redraw_count));
       layer_tree_host()->QueueSwapPromise(std::move(swap_promise));
-      // Queueing a swap promise from DidBeginMainFrame should cause a
+      // Queueing a swap promise from DidBeginMainFrame should not cause a
       // subsequent main frame to be scheduled.
-      EXPECT_EQ(1, set_needs_commit_count);
+      EXPECT_EQ(0, set_needs_commit_count);
     }
 
     EndTest();

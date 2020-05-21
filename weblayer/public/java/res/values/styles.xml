@@ -4,12 +4,21 @@
      found in the LICENSE file. -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.WebLayer.SiteSettings" parent="Theme.AppCompat.Light">
-        <item name="windowActionBar">true</item>
-        <item name="windowNoTitle">false</item>
-        <item name="actionBarStyle">@style/SettingsActionBarModern</item>
+    <style name="Theme.WebLayer" parent="Theme.BrowserUI">
+        <!-- Window Properties -->
+        <item name="android:windowBackground">@color/default_bg_color</item>
+
+        <!-- Action bar color -->
+        <item name="colorPrimary">@color/default_bg_color</item>
+
+        <!-- Status bar color -->
+        <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
+        <item name="colorPrimaryDark">@android:color/black</item>
     </style>
 
-    <style name="SettingsActionBarModern" parent="@style/Widget.AppCompat.Light.ActionBar.Solid">
+    <style name="Theme.WebLayer.SiteSettings">
+        <item name="windowActionBar">true</item>
+        <item name="windowNoTitle">false</item>
     </style>
 </resources>

@@ -28,23 +28,19 @@ base::Optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
 
 base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
     Profile* profile,
-    SystemAppType app_type);
+    SystemAppType app_type,
+    int64_t display_id);
 
 // Launches a System App to the given URL, reusing any existing window for the
 // app. Returns the browser for the System App, or nullptr if launch/focus
-// failed. |did_create| will reflect whether a new window was created if passed.
-//
-// TODO(calamity) Separate this into LaunchSystemWebApp and
-// LaunchSystemWebAppPopup.
-Browser* LaunchSystemWebApp(Profile* profile,
-                            SystemAppType app_type,
-                            const GURL& url = GURL(),
-                            bool* did_create = nullptr);
-Browser* LaunchSystemWebApp(Profile* profile,
-                            SystemAppType app_type,
-                            const GURL& url,
-                            const apps::AppLaunchParams& params,
-                            bool* did_create = nullptr);
+// failed. CreateSystemWebAppLaunchParams() can be used to create |params|.
+// |did_create| will reflect whether a new window was created if passed.
+Browser* LaunchSystemWebApp(
+    Profile* profile,
+    SystemAppType app_type,
+    const GURL& url,
+    base::Optional<apps::AppLaunchParams> params = base::nullopt,
+    bool* did_create = nullptr);
 
 // Returns a browser that is hosting the given system app type and browser type,
 // or nullptr if not found.

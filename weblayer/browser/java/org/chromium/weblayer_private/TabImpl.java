@@ -266,18 +266,24 @@ public final class TabImpl extends ITab.Stub {
                 // The Context and ViewContainer in which Autofill was previously operating have
                 // gone away, so tear down |mAutofillProvider|.
                 mAutofillProvider = null;
+                TabImplJni.get().onAutofillProviderChanged(mNativeTab, null);
                 selectionController.setNonSelectionActionModeCallback(null);
             } else {
-                // Set up |mAutofillProvider| to operate in the new Context.
-                mAutofillProvider = new AutofillProviderImpl(mBrowser.getContext(),
-                        mBrowser.getViewAndroidDelegateContainerView(), "WebLayer");
+                if (mAutofillProvider == null) {
+                    // Set up |mAutofillProvider| to operate in the new Context. It's safe to assume
+                    // the context won't change unless it is first nulled out, since the fragment
+                    // must be detached before it can be reattached to a new Context.
+                    mAutofillProvider = new AutofillProviderImpl(mBrowser.getContext(),
+                            mBrowser.getViewAndroidDelegateContainerView(), "WebLayer");
+                    TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
+                }
+                mAutofillProvider.onContainerViewChanged(
+                        mBrowser.getViewAndroidDelegateContainerView());
                 mAutofillProvider.setWebContents(mWebContents);
 
                 selectionController.setNonSelectionActionModeCallback(
                         new AutofillActionModeCallback(mBrowser.getContext(), mAutofillProvider));
             }
-
-            TabImplJni.get().onAutofillProviderChanged(mNativeTab, mAutofillProvider);
         }
     }
 

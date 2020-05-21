@@ -100,6 +100,18 @@ int PrivacySection::GetSectionNameMessageId() const {
   return IDS_SETTINGS_PRIVACY;
 }
 
+mojom::Section PrivacySection::GetSection() const {
+  return mojom::Section::kPrivacyAndSecurity;
+}
+
+mojom::SearchResultIcon PrivacySection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kShield;
+}
+
+std::string PrivacySection::GetSectionPath() const {
+  return mojom::kPrivacyAndSecuritySectionPath;
+}
+
 void PrivacySection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kVerifiedAccess);
   generator->RegisterTopLevelSetting(mojom::Setting::kKeepWifiOnDuringSleep);

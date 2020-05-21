@@ -96,6 +96,7 @@ _idl_imports = [
   "//third_party/blink/renderer/modules/nfc/idls.gni",
   "//third_party/blink/renderer/modules/notifications/idls.gni",
   "//third_party/blink/renderer/modules/payments/idls.gni",
+  "//third_party/blink/renderer/modules/payments/goods/idls.gni",
   "//third_party/blink/renderer/modules/peerconnection/idls.gni",
   "//third_party/blink/renderer/modules/permissions/idls.gni",
   "//third_party/blink/renderer/modules/picture_in_picture/idls.gni",

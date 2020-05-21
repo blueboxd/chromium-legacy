@@ -55,14 +55,14 @@ void PendingAppInstallTask::CreateTabHelpers(
 PendingAppInstallTask::PendingAppInstallTask(
     Profile* profile,
     AppRegistrar* registrar,
-    AppShortcutManager* shortcut_manger,
+    AppShortcutManager* shortcut_manager,
     FileHandlerManager* file_handler_manager,
     WebAppUiManager* ui_manager,
     InstallFinalizer* install_finalizer,
     ExternalInstallOptions install_options)
     : profile_(profile),
       registrar_(registrar),
-      shortcut_manager_(shortcut_manger),
+      shortcut_manager_(shortcut_manager),
       file_handler_manager_(file_handler_manager),
       install_finalizer_(install_finalizer),
       ui_manager_(ui_manager),

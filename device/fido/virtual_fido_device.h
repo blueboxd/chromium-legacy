@@ -59,6 +59,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
     // FreshEd25519Key returns a randomly generated Ed25519 PrivateKey.
     static std::unique_ptr<PrivateKey> FreshEd25519Key();
 
+    // FreshInvalidForTestingKey returns a dummy |PrivateKey| with a special
+    // algorithm number that is used to test that unknown public keys are
+    // handled correctly.
+    static std::unique_ptr<PrivateKey> FreshInvalidForTestingKey();
+
     virtual ~PrivateKey();
 
     // Sign returns a signature over |message|.

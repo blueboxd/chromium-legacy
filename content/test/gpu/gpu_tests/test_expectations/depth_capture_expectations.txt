@@ -1,4 +1,5 @@
-# tags: [ android linux ]
+# tags: [ android chromeos linux ]
+# tags: [ chromeos-board-kevin ]
 # tags: [ nvidia-0x104a qualcomm-adreno-(tm)-330 ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -7,3 +8,4 @@ crbug.com/765913 [ android qualcomm-adreno-(tm)-330 ] DepthCapture_depthStreamTo
 crbug.com/737410 [ linux nvidia-0x104a ] DepthCapture_depthStreamToRGBAFloatTexture [ RetryOnFailure ]
 crbug.com/737410 [ linux nvidia-0x104a ] DepthCapture_depthStreamToRGBAUint8Texture [ RetryOnFailure ]
 
+crbug.com/1080375 [ chromeos chromeos-board-kevin ] DepthCapture_depthStreamToRGBAFloatTexture [ Failure ]

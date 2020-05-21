@@ -461,7 +461,7 @@ void WebAppsBase::PopulateIntentFilters(
 void WebAppsBase::ConvertWebApps(apps::mojom::Readiness readiness,
                                  std::vector<apps::mojom::AppPtr>* apps_out) {
   for (const web_app::WebApp& web_app : GetRegistrar().AllApps()) {
-    if (!web_app.is_in_sync_install()) {
+    if (!web_app.is_in_sync_install() && Accepts(web_app.app_id())) {
       apps_out->push_back(Convert(&web_app, readiness));
     }
   }

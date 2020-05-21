@@ -21,6 +21,12 @@ import org.chromium.weblayer_private.interfaces.SiteSettingsIntentHelper;
 public class SiteSettingsActivity extends AppCompatActivity {
     private static final String FRAGMENT_TAG = "siteSettingsFragment";
 
+    /** The current instance of SiteSettingsActivity in the resumed state, if any. */
+    private static SiteSettingsActivity sResumedInstance;
+
+    /** Whether this activity has been created for the first time but not yet resumed. */
+    private boolean mIsNewlyCreated;
+
     private static boolean sActivityNotExportedChecked;
 
     /**
@@ -40,6 +46,8 @@ public class SiteSettingsActivity extends AppCompatActivity {
 
         super.onCreate(savedInstanceState);
 
+        mIsNewlyCreated = savedInstanceState == null;
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setElevation(0);
 
@@ -48,8 +56,38 @@ public class SiteSettingsActivity extends AppCompatActivity {
             siteSettingsFragment.setArguments(getIntent().getExtras());
             getSupportFragmentManager()
                     .beginTransaction()
-                    .add(android.R.id.content, siteSettingsFragment)
+                    .add(android.R.id.content, siteSettingsFragment, FRAGMENT_TAG)
                     .commitNow();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Prevent the user from interacting with multiple instances of SiteSettingsActivity at the
+        // same time (e.g. in multi-instance mode on a Samsung device), which would cause many fun
+        // bugs.
+        if (sResumedInstance != null && sResumedInstance.getTaskId() != getTaskId()) {
+            if (mIsNewlyCreated) {
+                // This activity was newly created and takes precedence over sResumedInstance.
+                sResumedInstance.finish();
+            } else {
+                // This activity was unpaused or recreated while another instance of
+                // SiteSettingsActivity was already showing. The existing instance takes precedence.
+                finish();
+                return;
+            }
+        }
+        sResumedInstance = this;
+        mIsNewlyCreated = false;
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (sResumedInstance == this) {
+            sResumedInstance = null;
         }
     }
 

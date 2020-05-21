@@ -4,11 +4,12 @@
 
 #include "ash/wm/collision_detection/collision_detection_utils.h"
 
+#include <memory>
+
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/root_window_controller.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -18,6 +19,7 @@
 #include "ash/wm/wm_event.h"
 #include "base/bind_helpers.h"
 #include "ui/aura/window.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -89,7 +91,8 @@ class CollisionDetectionUtilsDisplayTest
     UpdateWorkArea(display_string);
     ASSERT_LT(root_window_index, Shell::GetAllRootWindows().size());
     root_window_ = Shell::GetAllRootWindows()[root_window_index];
-    scoped_root_.reset(new ScopedRootWindowForNewWindows(root_window_));
+    scoped_display_ =
+        std::make_unique<display::ScopedDisplayForNewWindows>(root_window_);
     for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
       auto* shelf = root_window_controller->shelf();
       shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlwaysHidden);
@@ -97,7 +100,7 @@ class CollisionDetectionUtilsDisplayTest
   }
 
   void TearDown() override {
-    scoped_root_.reset();
+    scoped_display_.reset();
     AshTestBase::TearDown();
   }
 
@@ -125,7 +128,7 @@ class CollisionDetectionUtilsDisplayTest
   }
 
  private:
-  std::unique_ptr<ScopedRootWindowForNewWindows> scoped_root_;
+  std::unique_ptr<display::ScopedDisplayForNewWindows> scoped_display_;
   aura::Window* root_window_;
 };
 

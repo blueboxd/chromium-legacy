@@ -12,10 +12,12 @@ android_resources("weblayer_resources") {
     "res/layout/site_settings_layout.xml",
     "res/layout/weblayer_url_bar.xml",
     "res/values/dimens.xml",
+    "res/values/styles.xml",
   ]
   custom_package = "org.chromium.weblayer_private"
   deps = [
     ":weblayer_strings_grd",
+    "//components/browser_ui/settings/android:java_resources",
     "//components/browser_ui/site_settings/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
@@ -230,6 +232,7 @@ generate_jni("jni") {
     "org/chromium/weblayer_private/WebLayerExceptionFilter.java",
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
+    "org/chromium/weblayer_private/WebLayerSiteSettingsClient.java",
     "org/chromium/weblayer_private/WebViewCompatibilityHelperImpl.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",

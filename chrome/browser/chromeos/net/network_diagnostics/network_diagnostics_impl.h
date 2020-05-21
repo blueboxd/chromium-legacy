@@ -30,6 +30,7 @@ class NetworkDiagnosticsImpl : public mojom::NetworkDiagnosticsRoutines {
   void GatewayCanBePinged(GatewayCanBePingedCallback callback) override;
   void HasSecureWiFiConnection(
       HasSecureWiFiConnectionCallback callback) override;
+  void DnsResolverPresent(DnsResolverPresentCallback callback) override;
 
  private:
   mojo::ReceiverSet<mojom::NetworkDiagnosticsRoutines> receivers_;

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
 #include "ui/display/manager/display_manager.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 
 namespace ash {
 
@@ -44,7 +44,8 @@ TEST_F(ScreenAshTest, GetDisplayForNewWindows) {
 
   // The display for new windows is updated when the root window for new windows
   // changes.
-  ScopedRootWindowForNewWindows scoped_root(Shell::GetAllRootWindows()[1]);
+  display::ScopedDisplayForNewWindows scoped_display(
+      Shell::GetAllRootWindows()[1]);
   EXPECT_EQ(displays[1].id(), screen->GetDisplayForNewWindows().id());
 }
 

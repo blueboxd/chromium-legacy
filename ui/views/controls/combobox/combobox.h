@@ -126,7 +126,7 @@ class VIEWS_EXPORT Combobox : public View,
   void AdjustBoundsForRTLUI(gfx::Rect* rect) const;
 
   // Draws the selected value of the drop down list
-  void PaintText(gfx::Canvas* canvas);
+  void PaintIconAndText(gfx::Canvas* canvas);
 
   // Show the drop down list
   void ShowDropDownMenu(ui::MenuSourceType source_type);

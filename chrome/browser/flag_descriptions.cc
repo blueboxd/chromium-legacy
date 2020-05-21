@@ -2870,6 +2870,13 @@ const char kNtpIframeOneGoogleBarDescription[] =
     "Enables loading the OneGoogleBar in an iframe. Otherwise, the "
     "OneGoogleBar is loaded inline on chrome://new-tab-page.";
 
+const char kNtpOneGoogleBarModalOverlaysName[] =
+    "When OneGoogleBar is loaded in an iframe, overlays are modal";
+const char kNtpOneGoogleBarModalOverlaysDescription[] =
+    "Enables overlays being modal, when the OneGoogleBar is loaded as iframe."
+    "Otherwise, a clip-path definition is used to clip away parts of the"
+    "OneGoogleBar that do not have visible elements.";
+
 const char kNtpRealboxName[] = "Real search box in New Tab Page";
 const char kNtpRealboxDescription[] =
     "Enables a search box in the middle of the NTP that will accept input "

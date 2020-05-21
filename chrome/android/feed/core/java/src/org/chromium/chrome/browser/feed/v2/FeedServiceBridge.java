@@ -8,10 +8,20 @@ import android.util.DisplayMetrics;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.feed.library.common.locale.LocaleUtils;
 
-// Java functionality needed for the native FeedService.
-final class FeedServiceBridge {
+/**
+ * Bridge for FeedService-related calls.
+ */
+@JNINamespace("feed")
+public final class FeedServiceBridge {
+    public static boolean isEnabled() {
+        return FeedServiceBridgeJni.get().isEnabled();
+    }
+
+    // Java functionality needed for the native FeedService.
     @CalledByNative
     public static String getLanguageTag() {
         return LocaleUtils.getLanguageTag(ContextUtils.getApplicationContext());
@@ -22,5 +32,10 @@ final class FeedServiceBridge {
                 ContextUtils.getApplicationContext().getResources().getDisplayMetrics();
         double[] result = {metrics.density, metrics.widthPixels, metrics.heightPixels};
         return result;
+    }
+
+    @NativeMethods
+    interface Natives {
+        boolean isEnabled();
     }
 }

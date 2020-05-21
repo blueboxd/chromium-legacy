@@ -404,8 +404,6 @@ fast/canvas/color-space/imageData-colorSpace.html
 fast/canvas/feimage-with-foreignobject-taint-canvas-2.html
 fast/canvas/imagebitmap/transferFromImageBitmap-drawImage.html
 fast/canvas/script-inside-canvas-fallback.html
-fast/canvas-api/unclosed-canvas-1.html
-fast/canvas-api/unclosed-canvas-2.html
 fast/constructors/blob-sparse-array-assertion-failure.html
 fast/constructors/constructor-as-function-crash.html
 fast/cpu/hardware-concurrency.html

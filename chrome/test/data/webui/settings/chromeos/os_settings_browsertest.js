@@ -524,27 +524,27 @@ var OSSettingsCrostiniPageTest = class extends OSSettingsBrowserTest {
 };
 
 TEST_F('OSSettingsCrostiniPageTest', 'MainPage', function() {
-  mocha.grep('MainPage').run();
+  mocha.grep('\\bMainPage\\b').run();
 });
 
 TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_SubPageDefault', function() {
-  mocha.grep('SubPageDefault').run();
+  mocha.grep('\\bSubPageDefault\\b').run();
 });
 
 TEST_F('OSSettingsCrostiniPageTest', 'SubPagePortForwarding', function() {
-  mocha.grep('SubPagePortForwarding').run();
+  mocha.grep('\\bSubPagePortForwarding\\b').run();
 });
 
 TEST_F('OSSettingsCrostiniPageTest', 'DISABLED_DiskResize', function() {
-  mocha.grep('DiskResize').run();
+  mocha.grep('\\bDiskResize\\b').run();
 });
 
 TEST_F('OSSettingsCrostiniPageTest', 'SubPageSharedPaths', function() {
-  mocha.grep('SubPageSharedPaths').run();
+  mocha.grep('\\bSubPageSharedPaths\\b').run();
 });
 
 TEST_F('OSSettingsCrostiniPageTest', 'SubPageSharedUsbDevices', function() {
-  mocha.grep('SubPageSharedUsbDevices').run();
+  mocha.grep('\\bSubPageSharedUsbDevices\\b').run();
 });
 
 // Test fixture for the Date and Time page.

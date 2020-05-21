@@ -170,8 +170,6 @@ jumbo_component("gfx") {
       "image/image_skia_util_mac.h",
       "image/image_skia_util_mac.mm",
       "image/image_util_mac.mm",
-      "mac/cocoa_scrollbar_painter.cc",
-      "mac/cocoa_scrollbar_painter.h",
       "mac/coordinate_conversion.h",
       "mac/coordinate_conversion.mm",
       "mac/nswindow_frame_controls.h",

@@ -22,7 +22,6 @@
 #include "ash/screen_util.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -4598,8 +4597,7 @@ TEST_F(DisplayManagerTest, UpdateRootWindowForNewWindows) {
   const auto test_removing_secondary = [this](size_t before, size_t after) {
     UpdateDisplay("800x600,800x600,800x600");
     aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-        root_windows[before]);
+    Shell::SetRootWindowForNewWindows(root_windows[before]);
     UpdateDisplay("800x600,800x600");
     EXPECT_EQ(root_windows[after], Shell::GetRootWindowForNewWindows());
   };
@@ -4613,8 +4611,7 @@ TEST_F(DisplayManagerTest, UpdateRootWindowForNewWindows) {
   // primary one.
   for (size_t before = 0u; before < 3u; ++before) {
     UpdateDisplay("800x600,800x600,800x600");
-    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-        Shell::GetAllRootWindows()[before]);
+    Shell::SetRootWindowForNewWindows(Shell::GetAllRootWindows()[before]);
     display_manager()->SetUnifiedDesktopEnabled(true);
     EXPECT_EQ(Shell::GetPrimaryRootWindow(),
               Shell::GetRootWindowForNewWindows());

@@ -93,8 +93,6 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
   __weak id<BrowserLauncher> _browserLauncher;
   // UIApplicationDelegate for the application.
   __weak MainApplicationDelegate* _mainApplicationDelegate;
-  // Window for the application.
-  __weak UIWindow* _window;
 
   // Variables backing properties of same name.
   SafeModeCoordinator* _safeModeCoordinator;
@@ -120,6 +118,9 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 // Safe mode coordinator. If this is non-nil, the app is displaying the safe
 // mode UI.
 @property(nonatomic, strong) SafeModeCoordinator* safeModeCoordinator;
+
+// Flag to track when the app is in safe mode.
+@property(nonatomic, assign, getter=isInSafeMode) BOOL inSafeMode;
 
 // Return value for -requiresHandlingAfterLaunchWithOptions that determines if
 // UIKit should make followup delegate calls such as
@@ -182,12 +183,9 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   _safeModeCoordinator = safeModeCoordinator;
 }
 
-- (void)setWindow:(UIWindow*)window {
-  _window = window;
-}
-
 - (UIWindow*)window {
-  return _window;
+  return self.foregroundActiveScene ? self.foregroundActiveScene.window
+                                    : self.connectedScenes.firstObject.window;
 }
 
 - (void)setsceneShowingBlockingUI:(SceneState*)sceneState {
@@ -497,10 +495,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   return self.shouldPerformAdditionalDelegateHandling;
 }
 
-- (BOOL)isInSafeMode {
-  return self.safeModeCoordinator != nil;
-}
-
 - (void)launchFromURLHandled:(BOOL)URLHandled {
   self.shouldPerformAdditionalDelegateHandling = !URLHandled;
 }
@@ -554,29 +548,41 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 - (void)coordinatorDidExitSafeMode:(nonnull SafeModeCoordinator*)coordinator {
   self.safeModeCoordinator = nil;
+  self.inSafeMode = NO;
   [_browserLauncher startUpBrowserToStage:INITIALIZATION_STAGE_FOREGROUND];
+  [self.observers appStateDidExitSafeMode:self];
+
   [_mainApplicationDelegate
       applicationDidBecomeActive:[UIApplication sharedApplication]];
 }
 
 #pragma mark - Internal methods.
 
+- (void)startSafeMode {
+  DCHECK(self.foregroundActiveScene);
+  SafeModeCoordinator* safeModeCoordinator =
+      [[SafeModeCoordinator alloc] initWithWindow:self.window];
+
+  self.safeModeCoordinator = safeModeCoordinator;
+  [self.safeModeCoordinator setDelegate:self];
+
+  // Activate the main window, which will prompt the views to load.
+  [self.window makeKeyAndVisible];
+
+  [self.safeModeCoordinator start];
+}
+
 - (void)initializeUI {
   _userInteracted = YES;
   [self saveLaunchDetailsToDefaults];
 
-  DCHECK([_window rootViewController] == nil);
   if ([SafeModeCoordinator shouldStart]) {
-    SafeModeCoordinator* safeModeCoordinator =
-        [[SafeModeCoordinator alloc] initWithWindow:_window];
-
-    self.safeModeCoordinator = safeModeCoordinator;
-    [self.safeModeCoordinator setDelegate:self];
-
-    // Activate the main window, which will prompt the views to load.
-    [_window makeKeyAndVisible];
-
-    [self.safeModeCoordinator start];
+    self.inSafeMode = YES;
+    if (!IsMultiwindowSupported()) {
+      // Start safe mode immediately. Otherwise it should only start when a
+      // scene is connected and activates to allow displaying the safe mode UI.
+      [self startSafeMode];
+    }
     return;
   }
 
@@ -617,6 +623,12 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
           base::mac::ObjCCastStrict<SceneDelegate>(scene.delegate);
       [self.observers appState:self
            firstSceneActivated:sceneDelegate.sceneState];
+
+      if (self.isInSafeMode) {
+        // Safe mode can only be started when there's a window, so the actual
+        // safe mode has been postponed until now.
+        [self startSafeMode];
+      }
       sceneDelegate.sceneState.presentingModalOverlay =
           self.sceneShowingBlockingUI &&
           (self.sceneShowingBlockingUI != sceneDelegate.sceneState);

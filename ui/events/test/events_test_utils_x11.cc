@@ -102,7 +102,7 @@ XEvent* CreateXInput2Event(int deviceid,
                            const gfx::Point& location) {
   XEvent* event = new XEvent;
   memset(event, 0, sizeof(*event));
-  event->type = GenericEvent;
+  event->type = x11::XProto::GeGenericEvent::opcode;
   event->xcookie.data = new XIDeviceEvent;
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event->xcookie.data);
   memset(xiev, 0, sizeof(XIDeviceEvent));
@@ -128,7 +128,7 @@ namespace ui {
 // XInput2 events contain additional data that need to be explicitly freed (see
 // |CreateXInput2Event()|.
 void XEventDeleter::operator()(XEvent* event) {
-  if (event->type == GenericEvent) {
+  if (event->type == x11::XProto::GeGenericEvent::opcode) {
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event->xcookie.data);
     if (xiev) {
       delete[] xiev->valuators.mask;
@@ -316,7 +316,9 @@ void ScopedXI2Event::InitTouchEvent(int deviceid,
 
 void ScopedXI2Event::SetUpValuators(const std::vector<Valuator>& valuators) {
   CHECK(event_.get());
-  CHECK_EQ(GenericEvent, event_->type);
+  // Inlining this variable in the CHECK_EQ() causes a mysterious link failure.
+  uint8_t generic_event_opcode = x11::XProto::GeGenericEvent::opcode;
+  CHECK_EQ(generic_event_opcode, event_->type);
   XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(event_->xcookie.data);
   InitValuatorsForXIDeviceEvent(xiev);
   ui::DeviceDataManagerX11* manager = ui::DeviceDataManagerX11::GetInstance();

@@ -603,9 +603,9 @@ public class CustomTabsConnection {
         PackageManager pm = context.getApplicationContext().getPackageManager();
         String[] packages = pm.getPackagesForUid(uid);
 
-        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            if (packages.length == 0) return;
+        if (packages == null || packages.length == 0) return;
 
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             List<String> urlsList = new ArrayList<String>();
             if (url != null) urlsList.add(url);
 

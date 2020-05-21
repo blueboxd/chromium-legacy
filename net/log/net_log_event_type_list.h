@@ -2004,6 +2004,20 @@ EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_RECEIVED)
 //   }
 EVENT_TYPE(QUIC_SESSION_CRYPTO_HANDSHAKE_MESSAGE_SENT)
 
+// A QUIC connection received transport parameters.
+//   {
+//     "quic_transport_parameters": <Human readable view of the transport
+//                                   parameters>
+//   }
+EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_RECEIVED)
+
+// A QUIC connection sent transport parameters.
+//   {
+//     "quic_transport_parameters": <Human readable view of the transport
+//                                   parameters>
+//   }
+EVENT_TYPE(QUIC_SESSION_TRANSPORT_PARAMETERS_SENT)
+
 // A QUIC connection received a PUSH_PROMISE frame.  The following
 // parameters are attached:
 //   {

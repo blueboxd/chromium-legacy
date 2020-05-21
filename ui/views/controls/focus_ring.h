@@ -45,12 +45,12 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
 
   using ViewPredicate = std::function<bool(View* view)>;
 
-  ~FocusRing() override;
-
   // Create a FocusRing and adds it to |parent|. The returned focus ring is
   // owned by the client (the code calling FocusRing::Install), *not* by
   // |parent|.
   static std::unique_ptr<FocusRing> Install(View* parent);
+
+  ~FocusRing() override;
 
   // Sets the HighlightPathGenerator to draw this FocusRing around.
   // Note: This method should only be used if the focus ring needs to differ
@@ -77,6 +77,7 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
   void OnPaint(gfx::Canvas* canvas) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // ViewObserver:
   void OnViewFocused(View* view) override;
@@ -107,6 +108,8 @@ class VIEWS_EXPORT FocusRing : public View, public ViewObserver {
 
   // The predicate used to determine whether the parent has focus.
   base::Optional<ViewPredicate> has_focus_predicate_;
+
+  ScopedObserver<View, ViewObserver> view_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FocusRing);
 };

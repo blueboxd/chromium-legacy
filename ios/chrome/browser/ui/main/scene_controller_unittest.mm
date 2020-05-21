@@ -16,7 +16,7 @@ namespace {
 class SceneControllerTest : public PlatformTest {
  protected:
   SceneControllerTest() {
-    scene_state_ = [[SceneState alloc] init];
+    scene_state_ = [[SceneState alloc] initWithAppState:nil];
     scene_controller_ =
         [[SceneController alloc] initWithSceneState:scene_state_];
   }

@@ -19,7 +19,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/root_window_controller.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shelf/shelf.h"
@@ -43,6 +42,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 #include "ui/events/test/test_event_handler.h"
@@ -259,7 +259,7 @@ TEST_F(ShellTest, CreateWindowWithPreferredSize) {
   UpdateDisplay("1024x768,800x600");
 
   aura::Window* secondary_root = Shell::GetAllRootWindows()[1];
-  ScopedRootWindowForNewWindows scoped_root(secondary_root);
+  display::ScopedDisplayForNewWindows scoped_display(secondary_root);
 
   views::Widget::InitParams params;
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;

@@ -9,7 +9,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/wm/system_modal_container_layout_manager.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_properties.h"
@@ -174,8 +173,7 @@ void SetBoundsInScreen(aura::Window* window,
       // Restore focused/active window.
       if (focused && tracker.Contains(focused)) {
         aura::client::GetFocusClient(focused)->FocusWindow(focused);
-        Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-            focused->GetRootWindow());
+        Shell::SetRootWindowForNewWindows(focused->GetRootWindow());
       } else if (active && tracker.Contains(active)) {
         wm::ActivateWindow(active);
       }

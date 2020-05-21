@@ -227,6 +227,14 @@ base::Value NetLogQuicCryptoHandshakeMessageParams(
   return dict;
 }
 
+base::Value NetLogQuicTransportParametersParams(
+    const quic::TransportParameters& transport_parameters) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetStringKey("quic_transport_parameters",
+                    transport_parameters.ToString());
+  return dict;
+}
+
 base::Value NetLogQuicOnConnectionClosedParams(
     quic::QuicErrorCode error,
     string error_details,
@@ -1140,6 +1148,26 @@ void QuicConnectionLogger::OnRttChanged(quic::QuicTime::Delta rtt) const {
     socket_performance_watcher_->OnUpdatedRTTAvailable(
         base::TimeDelta::FromMicroseconds(rtt.ToMicroseconds()));
   }
+}
+
+void QuicConnectionLogger::OnTransportParametersSent(
+    const quic::TransportParameters& transport_parameters) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_TRANSPORT_PARAMETERS_SENT, [&] {
+        return NetLogQuicTransportParametersParams(transport_parameters);
+      });
+}
+
+void QuicConnectionLogger::OnTransportParametersReceived(
+    const quic::TransportParameters& transport_parameters) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_TRANSPORT_PARAMETERS_RECEIVED, [&] {
+        return NetLogQuicTransportParametersParams(transport_parameters);
+      });
 }
 
 void QuicConnectionLogger::RecordAggregatePacketLossRate() const {

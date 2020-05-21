@@ -438,9 +438,46 @@ class MFVideoCallback final
       ComPtr<IMFMediaBuffer> buffer;
       sample->GetBufferByIndex(i, &buffer);
       if (buffer) {
-        DWORD length = 0, max_length = 0;
-        BYTE* data = NULL;
-        buffer->Lock(&data, &max_length, &length);
+        // Lock the buffer using the fastest method that it supports. The
+        // Lock2DSize() method is faster than Lock2D(), which is faster than
+        // Lock().
+        DWORD length = 0;
+        BYTE* data = nullptr;
+        ComPtr<IMF2DBuffer> buffer_2d;
+        if (SUCCEEDED(buffer.As(&buffer_2d))) {
+          HRESULT lock_result;
+          BYTE* scanline_0 = nullptr;
+          LONG pitch = 0;
+          ComPtr<IMF2DBuffer2> buffer_2d_2;
+          if (SUCCEEDED(buffer.As(&buffer_2d_2))) {
+            BYTE* data_start;
+            lock_result =
+                buffer_2d_2->Lock2DSize(MF2DBuffer_LockFlags_Read, &scanline_0,
+                                        &pitch, &data_start, &length);
+          } else {
+            lock_result = buffer_2d->Lock2D(&scanline_0, &pitch);
+          }
+          if (SUCCEEDED(lock_result)) {
+            // Use |buffer_2d| only if it is contiguous and has positive pitch.
+            BOOL is_contiguous;
+            if (pitch > 0 &&
+                SUCCEEDED(buffer_2d->IsContiguousFormat(&is_contiguous)) &&
+                is_contiguous &&
+                (length ||
+                 SUCCEEDED(buffer_2d->GetContiguousLength(&length)))) {
+              data = scanline_0;
+            } else {
+              buffer_2d->Unlock2D();
+            }
+          }
+        }
+        if (!data) {
+          // If the faster methods fail, fall back to Lock to lock the buffer.
+          buffer_2d = nullptr;
+          DWORD max_length = 0;
+          buffer->Lock(&data, &max_length, &length);
+        }
+
         if (data) {
           observer_->OnIncomingCapturedData(data, length, reference_time,
                                             timestamp);
@@ -449,7 +486,12 @@ class MFVideoCallback final
               VideoCaptureFrameDropReason::
                   kWinMediaFoundationLockingBufferDelieveredNullptr);
         }
-        buffer->Unlock();
+
+        if (buffer_2d)
+          buffer_2d->Unlock2D();
+        else
+          buffer->Unlock();
+
       } else {
         observer_->OnFrameDropped(
             VideoCaptureFrameDropReason::

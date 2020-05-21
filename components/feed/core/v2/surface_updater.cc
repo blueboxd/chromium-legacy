@@ -148,6 +148,7 @@ feedui::ZeroStateSlice::Type GetZeroStateType(LoadStreamStatus status) {
     case LoadStreamStatus::kLoadNotAllowedArticlesListHidden:
     case LoadStreamStatus::kCannotParseNetworkResponseBody:
     case LoadStreamStatus::kLoadMoreModelIsNotLoaded:
+    case LoadStreamStatus::kLoadNotAllowedDisabledByEnterprisePolicy:
       break;
   }
   return feedui::ZeroStateSlice::NO_CARDS_AVAILABLE;

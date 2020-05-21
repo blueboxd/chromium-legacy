@@ -171,7 +171,7 @@ template("gcc_toolchain") {
       # Chrome OS builders. So we pass in an explicit value.
       goma_ld =
           rebase_path("//tools/clang/scripts/goma_ld.py", root_build_dir) +
-          " --gomacc ${goma_path} --jobs 100 -- "
+          " --gomacc ${goma_path} --jobs 200 -- "
     } else {
       goma_ld = ""
       not_needed([ "goma_path" ])

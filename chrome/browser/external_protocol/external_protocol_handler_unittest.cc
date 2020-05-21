@@ -49,6 +49,7 @@ class FakeExternalProtocolHandlerDelegate
   explicit FakeExternalProtocolHandlerDelegate(base::OnceClosure on_complete)
       : block_state_(ExternalProtocolHandler::BLOCK),
         os_state_(shell_integration::UNKNOWN_DEFAULT),
+        complete_on_launch_(false),
         has_launched_(false),
         has_prompted_(false),
         has_blocked_(false),
@@ -94,6 +95,8 @@ class FakeExternalProtocolHandlerDelegate
     EXPECT_NE(os_state_, shell_integration::IS_DEFAULT);
     has_launched_ = true;
     launch_or_prompt_url_ = url;
+    if (complete_on_launch_ && on_complete_)
+      std::move(on_complete_).Run();
   }
 
   void FinishedProcessingCheck() override {
@@ -109,6 +112,11 @@ class FakeExternalProtocolHandlerDelegate
     block_state_ = value;
   }
 
+  // Set this to true if you need the test to be completed upon calling into
+  // LaunchUrlWithoutSecurityCheck which is the case when testing
+  // ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck.
+  void set_complete_on_launch(bool value) { complete_on_launch_ = value; }
+
   bool has_launched() { return has_launched_; }
   bool has_prompted() { return has_prompted_; }
   bool has_blocked() { return has_blocked_; }
@@ -123,6 +131,7 @@ class FakeExternalProtocolHandlerDelegate
  private:
   ExternalProtocolHandler::BlockState block_state_;
   shell_integration::DefaultWebClientState os_state_;
+  bool complete_on_launch_;
   bool has_launched_;
   bool has_prompted_;
   bool has_blocked_;
@@ -281,6 +290,32 @@ TEST_F(ExternalProtocolHandlerTest, TestUrlEscape) {
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
          Action::PROMPT, url, url::Origin::Create(GURL("https://example.test")),
          url::Origin::Create(GURL("https://precursor.test")));
+  // Expect that the "\r\n" has been removed, and all other illegal URL
+  // characters have been escaped.
+  EXPECT_EQ("alert:test%20message%22%20--bad%2B%20%E6%96%87%E6%9C%AC%20%22file",
+            delegate_.launch_or_prompt_url());
+}
+
+TEST_F(ExternalProtocolHandlerTest, TestUrlEscapeNoChecks) {
+  GURL url("alert:test message\" --bad%2B\r\n 文本 \"file");
+
+  EXPECT_FALSE(delegate_.has_prompted());
+  EXPECT_FALSE(delegate_.has_launched());
+  EXPECT_FALSE(delegate_.has_blocked());
+  ExternalProtocolHandler::SetDelegateForTesting(&delegate_);
+  delegate_.set_block_state(ExternalProtocolHandler::DONT_BLOCK);
+  delegate_.set_os_state(shell_integration::NOT_DEFAULT);
+  delegate_.set_complete_on_launch(true);
+  ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url,
+                                                         web_contents_.get());
+  run_loop_.Run();
+  ExternalProtocolHandler::SetDelegateForTesting(nullptr);
+
+  EXPECT_FALSE(delegate_.has_prompted());
+  EXPECT_TRUE(delegate_.has_launched());
+  EXPECT_FALSE(delegate_.has_blocked());
+  EXPECT_FALSE(delegate_.initiating_origin().has_value());
+
   // Expect that the "\r\n" has been removed, and all other illegal URL
   // characters have been escaped.
   EXPECT_EQ("alert:test%20message%22%20--bad%2B%20%E6%96%87%E6%9C%AC%20%22file",

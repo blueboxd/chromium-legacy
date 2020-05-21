@@ -2342,9 +2342,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, NonWhitelisted) {
   EXPECT_FALSE(func->scope_ui_shown());
 }
 
-// TODO(crbug.com/830052): This test is flaky.
-IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest,
-                       DISABLED_Whitelisted) {
+IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionPublicSessionTest, Whitelisted) {
   // GetAuthToken() should return a token for whitelisted extensions.
   user_manager::ScopedUserManager user_manager_enabler(
       base::WrapUnique(user_manager_));

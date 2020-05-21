@@ -24,6 +24,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
+#include "ash/wm/window_animations.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -83,6 +84,11 @@ constexpr char kTabDraggingInClamshellModeHistogram[] =
 constexpr char kTabDraggingInClamshellModeMaxLatencyHistogram[] =
     "Ash.WorkspaceWindowResizer.TabDragging.PresentationTime.MaxLatency."
     "ClamshellMode";
+
+// Duration of the cross fade animation used when dragging to unmaximize or
+// dragging to snap maximize.
+constexpr base::TimeDelta kCrossFadeDuration =
+    base::TimeDelta::FromMilliseconds(120);
 
 // Current instance for use by the WorkspaceWindowResizerTest.
 WorkspaceWindowResizer* instance = nullptr;
@@ -343,6 +349,11 @@ WorkspaceWindowResizer::SnapType GetSnapType(
   return WorkspaceWindowResizer::SnapType::kNone;
 }
 
+void CrossFadeAnimation(aura::Window* window, const gfx::Rect& target_bounds) {
+  CrossFadeAnimationAnimateNewLayerOnly(window, target_bounds,
+                                        kCrossFadeDuration, gfx::Tween::LINEAR);
+}
+
 }  // namespace
 
 std::unique_ptr<WindowResizer> CreateWindowResizer(
@@ -407,10 +418,9 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
       // TODO(afakhry): Maybe use switchable containers?
       (desks_util::IsDeskContainer(parent) ||
        parent->id() == kShellWindowId_AlwaysOnTopContainer)) {
-    window_resizer.reset(WorkspaceWindowResizer::Create(
-        window_state, std::vector<aura::Window*>()));
+    window_resizer = WorkspaceWindowResizer::Create(window_state, {});
   } else {
-    window_resizer.reset(DefaultWindowResizer::Create(window_state));
+    window_resizer = DefaultWindowResizer::Create(window_state);
   }
   return std::make_unique<DragWindowResizer>(std::move(window_resizer),
                                              window_state);
@@ -485,10 +495,11 @@ WorkspaceWindowResizer::~WorkspaceWindowResizer() {
 }
 
 // static
-WorkspaceWindowResizer* WorkspaceWindowResizer::Create(
+std::unique_ptr<WorkspaceWindowResizer> WorkspaceWindowResizer::Create(
     WindowState* window_state,
     const std::vector<aura::Window*>& attached_windows) {
-  return new WorkspaceWindowResizer(window_state, attached_windows);
+  return base::WrapUnique(
+      new WorkspaceWindowResizer(window_state, attached_windows));
 }
 
 void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
@@ -527,6 +538,7 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
           // restored (i.e. update the caption buttons and height of the browser
           // frame).
           window_state()->window()->SetProperty(kFrameRestoreLookKey, true);
+          CrossFadeAnimation(window_state()->window(), bounds);
         }
       }
       RestackWindows();
@@ -624,8 +636,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
         // no-op, so reset the bounds manually here.
         if (window_state()->IsMaximized()) {
           aura::Window* window = window_state()->window();
-          window->SetBounds(
-              screen_util::GetMaximizedWindowBoundsInParent(window));
+          CrossFadeAnimation(
+              window, screen_util::GetMaximizedWindowBoundsInParent(window));
         }
         break;
       default:

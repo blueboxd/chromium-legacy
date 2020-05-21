@@ -313,7 +313,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
 #if defined(OS_ANDROID)
     {wf::EnableWebNfc, features::kWebNfc, kDisableOnly},
 #endif
-    {wf::EnableTrustTokens, network::features::kTrustTokens, kEnableOnly},
     {wf::EnableInstalledApp, features::kInstalledApp, kDisableOnly},
     {wf::EnableWebAuthenticationGetAssertionFeaturePolicy,
      device::kWebAuthGetAssertionFeaturePolicy, kUseFeatureState},
@@ -562,6 +561,34 @@ void SetCustomizedRuntimeFeaturesFromCombinedArgs(
     // their application with AppCache fully disabled.
     if (!base::FeatureList::IsEnabled(blink::features::kAppCache))
       WebRuntimeFeatures::EnableFeatureFromString("AppCache", false);
+  }
+
+  if (base::FeatureList::IsEnabled(network::features::kTrustTokens)) {
+    // See https://bit.ly/configuring-trust-tokens.
+    using network::features::TrustTokenOriginTrialSpec;
+    switch (
+        network::features::kTrustTokenOperationsRequiringOriginTrial.Get()) {
+      case TrustTokenOriginTrialSpec::kOriginTrialNotRequired:
+        // Setting TrustTokens=true enables the Trust Tokens interface;
+        // TrustTokensAlwaysAllowIssuance disables a runtime check during
+        // issuance that the origin trial is active (see
+        // blink/.../trust_token_issuance_authorization.h).
+        WebRuntimeFeatures::EnableTrustTokens(true);
+        WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(true);
+        break;
+      case TrustTokenOriginTrialSpec::kAllOperationsRequireOriginTrial:
+        // The origin trial itself will be responsible for enabling the
+        // TrustTokens RuntimeEnabledFeature.
+        WebRuntimeFeatures::EnableTrustTokens(false);
+        WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(false);
+        break;
+      case TrustTokenOriginTrialSpec::kOnlyIssuanceRequiresOriginTrial:
+        // At issuance, a runtime check will be responsible for checking that
+        // the origin trial is present.
+        WebRuntimeFeatures::EnableTrustTokens(true);
+        WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(false);
+        break;
+    }
   }
 }
 

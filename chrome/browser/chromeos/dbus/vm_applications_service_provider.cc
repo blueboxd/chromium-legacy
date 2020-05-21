@@ -22,6 +22,7 @@
 #include "dbus/bus.h"
 #include "dbus/message.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/display/types/display_constants.h"
 
 namespace chromeos {
 
@@ -110,8 +111,10 @@ void VmApplicationsServiceProvider::LaunchTerminal(
   Profile* profile = ProfileManager::GetPrimaryUserProfile();
   if (crostini::CrostiniFeatures::Get()->IsEnabled(profile) &&
       request.owner_id() == crostini::CryptohomeIdForProfile(profile)) {
+    // kInvalidDisplayId will launch terminal on the current active display.
     crostini::LaunchContainerTerminal(
-        profile, request.vm_name(), request.container_name(),
+        profile, display::kInvalidDisplayId, request.vm_name(),
+        request.container_name(),
         std::vector<std::string>(request.params().begin(),
                                  request.params().end()));
   }

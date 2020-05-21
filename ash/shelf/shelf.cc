@@ -270,21 +270,31 @@ class Shelf::AutoDimEventHandler : public ui::EventHandler {
     }
   }
 
-  void DimShelf() { shelf_->shelf_layout_manager()->SetDimmed(true); }
+  void StartDimShelfTimer() {
+    dim_shelf_timer_.Start(
+        FROM_HERE, kDimDelay,
+        base::BindOnce(&AutoDimEventHandler::DimShelf, base::Unretained(this)));
+  }
+
+  void DimShelf() {
+    // Attempt to dim the shelf. Stop the |dim_shelf_timer_| if successful.
+    if (shelf_->shelf_layout_manager()->SetDimmed(true))
+      dim_shelf_timer_.Stop();
+  }
 
   // Sets shelf as active and sets timer to mark shelf as inactive.
   void UndimShelf() {
     shelf_->shelf_layout_manager()->SetDimmed(false);
-    update_shelf_dim_state_timer_.Start(
-        FROM_HERE, kDimDelay,
-        base::BindOnce(&AutoDimEventHandler::DimShelf, base::Unretained(this)));
+    StartDimShelfTimer();
   }
+
+  bool HasDimShelfTimer() { return dim_shelf_timer_.IsRunning(); }
 
  private:
   // Unowned pointer to the shelf that owns this event handler.
   Shelf* shelf_;
   // OneShotTimer that dims shelf due to inactivity.
-  base::OneShotTimer update_shelf_dim_state_timer_;
+  base::OneShotTimer dim_shelf_timer_;
 
   // Delay before dimming the shelf.
   const base::TimeDelta kDimDelay = base::TimeDelta::FromSeconds(5);
@@ -700,6 +710,10 @@ void Shelf::DimShelf() {
 
 void Shelf::UndimShelf() {
   auto_dim_event_handler_->UndimShelf();
+}
+
+bool Shelf::HasDimShelfTimer() {
+  return auto_dim_event_handler_->HasDimShelfTimer();
 }
 
 WorkAreaInsets* Shelf::GetWorkAreaInsets() const {

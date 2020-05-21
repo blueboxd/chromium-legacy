@@ -315,10 +315,7 @@ size_t SimpleSerialize(const PaintOp* op, void* memory, size_t size) {
 }
 
 PlaybackParams::PlaybackParams(ImageProvider* image_provider)
-    : image_provider(image_provider),
-      original_ctm(SkMatrix::I()),
-      custom_callback(CustomDataRasterCallback()),
-      did_draw_op_callback(DidDrawOpCallback()) {}
+    : PlaybackParams(image_provider, SkMatrix::I()) {}
 
 PlaybackParams::PlaybackParams(ImageProvider* image_provider,
                                const SkMatrix& original_ctm,
@@ -1501,7 +1498,19 @@ void SaveLayerAlphaOp::Raster(const SaveLayerAlphaOp* op,
                               const PlaybackParams& params) {
   // See PaintOp::kUnsetRect
   bool unset = op->bounds.left() == SK_ScalarInfinity;
-  canvas->saveLayerAlpha(unset ? nullptr : &op->bounds, op->alpha);
+  base::Optional<SkPaint> paint;
+  if (op->alpha != 0xFF) {
+    paint.emplace();
+    paint->setAlpha(op->alpha);
+  }
+  SkCanvas::SaveLayerRec rec(unset ? nullptr : &op->bounds,
+                             base::OptionalOrNullptr(paint));
+  if (params.save_layer_alpha_should_preserve_lcd_text.has_value() &&
+      *params.save_layer_alpha_should_preserve_lcd_text) {
+    rec.fSaveLayerFlags = SkCanvas::kPreserveLCDText_SaveLayerFlag |
+                          SkCanvas::kInitWithPrevious_SaveLayerFlag;
+  }
+  canvas->saveLayer(rec);
 }
 
 void ScaleOp::Raster(const ScaleOp* op,
@@ -2273,6 +2282,18 @@ bool DrawRecordOp::HasNonAAPaint() const {
   return record->HasNonAAPaint();
 }
 
+bool DrawRecordOp::HasDrawTextOps() const {
+  return record->has_draw_text_ops();
+}
+
+bool DrawRecordOp::HasSaveLayerAlphaOps() const {
+  return record->has_save_layer_alpha_ops();
+}
+
+bool DrawRecordOp::HasEffectsPreventingLCDTextForSaveLayerAlpha() const {
+  return record->has_effects_preventing_lcd_text_for_save_layer_alpha();
+}
+
 AnnotateOp::AnnotateOp() : PaintOp(kType) {}
 
 AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
@@ -2384,7 +2405,12 @@ PaintOpBuffer::CompositeIterator::CompositeIterator(CompositeIterator&& other) =
     default;
 
 PaintOpBuffer::PaintOpBuffer()
-    : has_non_aa_paint_(false), has_discardable_images_(false) {}
+    : has_non_aa_paint_(false),
+      has_discardable_images_(false),
+      has_draw_ops_(false),
+      has_draw_text_ops_(false),
+      has_save_layer_alpha_ops_(false),
+      has_effects_preventing_lcd_text_for_save_layer_alpha_(false) {}
 
 PaintOpBuffer::PaintOpBuffer(PaintOpBuffer&& other) {
   *this = std::move(other);
@@ -2404,6 +2430,10 @@ PaintOpBuffer& PaintOpBuffer::operator=(PaintOpBuffer&& other) {
   subrecord_op_count_ = other.subrecord_op_count_;
   has_non_aa_paint_ = other.has_non_aa_paint_;
   has_discardable_images_ = other.has_discardable_images_;
+  has_draw_ops_ = other.has_draw_ops_;
+  has_draw_text_ops_ = other.has_draw_text_ops_;
+  has_effects_preventing_lcd_text_for_save_layer_alpha_ =
+      other.has_effects_preventing_lcd_text_for_save_layer_alpha_;
 
   // Make sure the other pob can destruct safely.
   other.used_ = 0;
@@ -2425,6 +2455,9 @@ void PaintOpBuffer::Reset() {
   subrecord_bytes_used_ = 0;
   subrecord_op_count_ = 0;
   has_discardable_images_ = false;
+  has_draw_ops_ = false;
+  has_draw_text_ops_ = false;
+  has_effects_preventing_lcd_text_for_save_layer_alpha_ = false;
 }
 
 // When |op| is a nested PaintOpBuffer, this returns the PaintOp inside
@@ -2551,9 +2584,21 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
     return;
   if (offsets && offsets->empty())
     return;
-
   // Prevent PaintOpBuffers from having side effects back into the canvas.
   SkAutoCanvasRestore save_restore(canvas, true);
+
+  bool save_layer_alpha_should_preserve_lcd_text =
+      (!params.save_layer_alpha_should_preserve_lcd_text.has_value() ||
+       *params.save_layer_alpha_should_preserve_lcd_text) &&
+      has_draw_text_ops_ &&
+      !has_effects_preventing_lcd_text_for_save_layer_alpha_;
+  if (save_layer_alpha_should_preserve_lcd_text) {
+    // Check if the canvas supports LCD text.
+    SkSurfaceProps props(SkSurfaceProps::kLegacyFontHost_InitType);
+    canvas->getProps(&props);
+    if (props.pixelGeometry() == kUnknown_SkPixelGeometry)
+      save_layer_alpha_should_preserve_lcd_text = false;
+  }
 
   // TODO(enne): a PaintRecord that contains a SetMatrix assumes that the
   // SetMatrix is local to that PaintRecord itself.  Said differently, if you
@@ -2563,6 +2608,8 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
   PlaybackParams new_params(params.image_provider, canvas->getTotalMatrix(),
                             params.custom_callback,
                             params.did_draw_op_callback);
+  new_params.save_layer_alpha_should_preserve_lcd_text =
+      save_layer_alpha_should_preserve_lcd_text;
   for (PlaybackFoldingIterator iter(this, offsets); iter; ++iter) {
     const PaintOp* op = *iter;
 
@@ -2586,10 +2633,6 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
       if (const auto* raster_flags = scoped_flags.flags())
         flags_op->RasterWithFlags(canvas, raster_flags, new_params);
     } else {
-      // TODO(enne): skip SaveLayer followed by restore with nothing in
-      // between, however SaveLayer with image filters on it (or maybe
-      // other PaintFlags options) are not a noop.  Figure out what these
-      // are so we can skip them correctly.
       DCHECK_EQ(iter.alpha(), 255);
       op->Raster(canvas, new_params);
     }
@@ -2712,6 +2755,20 @@ bool PaintOpBuffer::operator==(const PaintOpBuffer& other) const {
   DCHECK(left_iter == left_iter.end());
   DCHECK(right_iter == right_iter.end());
   return true;
+}
+
+bool PaintOpBuffer::NeedsAdditionalInvalidationForLCDText(
+    const PaintOpBuffer& old_buffer) const {
+  // We need this in addition to blink's raster invalidation because change of
+  // has_effects_preventing_lcd_text_for_save_layer_alpha() can affect
+  // all SaveLayerAlphaOps of the PaintOpBuffer, not just the area that the
+  // changed effects affected.
+  if (!has_draw_text_ops() || !has_save_layer_alpha_ops())
+    return false;
+  if (!old_buffer.has_draw_text_ops() || !old_buffer.has_save_layer_alpha_ops())
+    return false;
+  return has_effects_preventing_lcd_text_for_save_layer_alpha() !=
+         old_buffer.has_effects_preventing_lcd_text_for_save_layer_alpha();
 }
 
 }  // namespace cc

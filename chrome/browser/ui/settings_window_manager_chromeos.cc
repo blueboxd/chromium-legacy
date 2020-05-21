@@ -78,7 +78,8 @@ void SettingsWindowManager::ShowChromePageForProfile(Profile* profile,
   if (AreSystemWebAppsEnabled(profile)) {
     bool did_create;
     Browser* browser = web_app::LaunchSystemWebApp(
-        profile, web_app::SystemAppType::SETTINGS, gurl, &did_create);
+        profile, web_app::SystemAppType::SETTINGS, gurl,
+        /*params=*/base::nullopt, &did_create);
     ShowSettingsOnCurrentDesktop(browser);
     // Only notify if we created a new browser.
     if (!did_create || !browser)

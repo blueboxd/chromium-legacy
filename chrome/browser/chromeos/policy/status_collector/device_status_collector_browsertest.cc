@@ -185,9 +185,6 @@ constexpr uint32_t kFakeMaxBrightness = 769;
 constexpr uint32_t kFakeBrightness = 124;
 // Fan test values:
 constexpr uint32_t kFakeSpeedRpm = 1225;
-// Stateful partition test values:
-constexpr uint64_t kFakeAvailableSpace = 9238571212ul;
-constexpr uint64_t kFakeTotalSpace = 23420982409ul;
 // Bluetooth test values:
 constexpr char kFakeBluetoothAdapterName[] = "Marty Byrde's BT Adapter";
 constexpr char kFakeBluetoothAdapterAddress[] = "aa:bb:cc:dd:ee:ff";
@@ -542,12 +539,6 @@ cros_healthd::FanResultPtr CreateFanResult() {
   return cros_healthd::FanResult::NewFanInfo(std::move(fan_vector));
 }
 
-cros_healthd::StatefulPartitionResultPtr CreateStatefulPartitionResult() {
-  return cros_healthd::StatefulPartitionResult::NewPartitionInfo(
-      cros_healthd::StatefulPartitionInfo::New(kFakeAvailableSpace,
-                                               kFakeTotalSpace));
-}
-
 cros_healthd::BluetoothResultPtr CreateBluetoothResult() {
   std::vector<cros_healthd::BluetoothAdapterInfoPtr> adapter_info;
   adapter_info.push_back(cros_healthd::BluetoothAdapterInfo::New(
@@ -602,7 +593,6 @@ void FetchFakeFullCrosHealthdData(
       fake_info.memory_result = CreateMemoryResult();
       fake_info.backlight_result = CreateBacklightResult();
       fake_info.fan_result = CreateFanResult();
-      fake_info.stateful_partition_result = CreateStatefulPartitionResult();
       fake_info.bluetooth_result = CreateBluetoothResult();
       std::move(receiver).Run(fake_info.Clone(), CreateFakeSampleData());
       return;
@@ -3006,7 +2996,13 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       base::BindRepeating(&FetchFakeFullCrosHealthdData);
   RestartStatusCollector(std::move(options));
 
-  // If none of the relevant policies are set, expect that the data from
+  // If the ReportDeviceHardwareStatus policy is false, the policies
+  // corresponding to cros_healthd data are ignored. The policy is true by
+  // default, but set it explicitly to ensure the other policies are tested.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceHardwareStatus, true);
+
+  // If none of the relevant policies are set to true, expect that the data from
   // cros_healthd isn't present in the protobuf.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceBacklightInfo, false);
@@ -3018,6 +3014,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
       chromeos::kReportDevicePowerStatus, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceStorageStatus, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceTimezoneInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceFanInfo, false);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -3034,8 +3032,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(device_status_.fan_info_size(), 0);
   EXPECT_EQ(device_status_.bluetooth_adapter_info_size(), 0);
 
-  // When all of the relevant policies are set, expect the protobuf to have the
-  // data from cros_healthd.
+  // When all of the relevant policies are set to true, expect the protobuf to
+  // have the corresponding data from cros_healthd.
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
       chromeos::kReportDeviceBacklightInfo, true);
   scoped_testing_cros_settings_.device_settings()->SetBoolean(

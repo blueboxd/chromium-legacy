@@ -530,7 +530,7 @@ void MultiWindowResizeController::StartResize(
   WindowState* window_state = WindowState::Get(windows_.window1);
   window_state->CreateDragDetails(location_in_parent, component,
                                   ::wm::WINDOW_MOVE_SOURCE_MOUSE);
-  window_resizer_.reset(WorkspaceWindowResizer::Create(window_state, windows));
+  window_resizer_ = WorkspaceWindowResizer::Create(window_state, windows);
 
   // Do not hide the resize widget while a drag is active.
   mouse_watcher_.reset();

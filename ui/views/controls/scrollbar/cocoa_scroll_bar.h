@@ -11,7 +11,6 @@
 #import "components/remote_cocoa/app_shim/views_scrollbar_bridge.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/mac/cocoa_scrollbar_painter.h"
 #include "ui/views/controls/scrollbar/scroll_bar.h"
 #include "ui/views/views_export.h"
 
@@ -63,7 +62,7 @@ class VIEWS_EXPORT CocoaScrollBar : public ScrollBar,
   bool IsScrollbarFullyHidden() const;
 
   // Get the parameters for painting.
-  gfx::CocoaScrollbarPainter::Params GetPainterParams() const;
+  ui::NativeTheme::ExtraParams GetPainterParams() const;
 
  protected:
   // ScrollBar:

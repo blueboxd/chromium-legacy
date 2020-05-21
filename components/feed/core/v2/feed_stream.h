@@ -240,6 +240,8 @@ class FeedStream : public FeedStreamApi,
 
   void ClearAll();
 
+  bool IsFeedEnabledByEnterprisePolicy();
+
   // Unowned.
 
   RefreshTaskScheduler* refresh_task_scheduler_;

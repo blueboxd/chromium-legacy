@@ -215,6 +215,9 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // full commit synchronization or layer updates.
   void SetNeedsAnimate();
 
+  // Calls SetNeedsAnimate() if there is no main frame already in progress.
+  void SetNeedsAnimateIfNotInsideMainFrame();
+
   // Requests a main frame update and also ensure that the host pulls layer
   // updates from the client, even if no content might have changed, without
   // forcing a full commit synchronization.

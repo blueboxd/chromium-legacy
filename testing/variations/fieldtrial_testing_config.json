@@ -1202,20 +1202,19 @@
             ]
         }
     ],
-    "CacheStorageSequence": [
+    "CacheStorageSequenceChromeOS": [
         {
             "platforms": [
-                "windows",
-                "mac",
-                "chromeos",
-                "linux",
-                "android",
-                "android_weblayer"
+                "chromeos"
             ],
             "experiments": [
                 {
-                    "name": "Enabled1",
+                    "name": "Enabled12_v1",
+                    "params": {
+                        "min": "12"
+                    },
                     "enable_features": [
+                        "BrowserThreadPoolAdjustment",
                         "CacheStorageSequence"
                     ]
                 }
@@ -1444,27 +1443,6 @@
                     },
                     "enable_features": [
                         "ClipboardMaximumAge"
-                    ]
-                }
-            ]
-        }
-    ],
-    "CompositeCrossOriginIframes": [
-        {
-            "platforms": [
-                "android",
-                "android_weblayer",
-                "android_webview",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "CompositeCrossOriginIframes"
                     ]
                 }
             ]
@@ -6130,6 +6108,28 @@
                     },
                     "enable_features": [
                         "ThrottleDelayable"
+                    ]
+                }
+            ]
+        }
+    ],
+    "ThrottleInstallingServiceWorker": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Emabled5_v1",
+                    "params": {
+                        "limit": "5"
+                    },
+                    "enable_features": [
+                        "ThrottleInstallingServiceWorker"
                     ]
                 }
             ]

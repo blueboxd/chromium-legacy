@@ -419,11 +419,11 @@ void HotseatWidget::OnTabletModeChanged() {
   GetShelfView()->OnTabletModeChanged();
 }
 
-float HotseatWidget::CalculateOpacity() const {
+float HotseatWidget::CalculateShelfViewOpacity() const {
   const float target_opacity =
       GetShelfView()->shelf()->shelf_layout_manager()->GetOpacity();
-  return (state() == HotseatState::kExtended) ? 1.0f  // fully translucent
-                                              : target_opacity;
+  // Hotseat's shelf view should not be dimmed if hotseat is kExtended.
+  return (state() == HotseatState::kExtended) ? 1.0f : target_opacity;
 }
 
 void HotseatWidget::SetTranslucentBackground(
@@ -532,9 +532,10 @@ void HotseatWidget::UpdateLayout(bool animate) {
   if (!new_layout_inputs.is_active_session_state)
     Hide();
 
-  ui::Layer* layer = GetNativeView()->layer();
+  ui::Layer* shelf_view_layer = GetShelfView()->layer();
   {
-    ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
+    ui::ScopedLayerAnimationSettings animation_setter(
+        shelf_view_layer->GetAnimator());
     animation_setter.SetTransitionDuration(
         animate ? ShelfConfig::Get()->shelf_animation_duration()
                 : base::TimeDelta::FromMilliseconds(0));
@@ -544,7 +545,26 @@ void HotseatWidget::UpdateLayout(bool animate) {
     animation_setter.SetAnimationMetricsReporter(
         shelf_->GetHotseatTransitionMetricsReporter(state_));
 
-    layer->SetOpacity(new_layout_inputs.opacity);
+    shelf_view_layer->SetOpacity(new_layout_inputs.shelf_view_opacity);
+  }
+
+  ui::Layer* hotseat_layer = GetNativeView()->layer();
+  {
+    ui::ScopedLayerAnimationSettings animation_setter(
+        hotseat_layer->GetAnimator());
+    animation_setter.SetTransitionDuration(
+        animate ? ShelfConfig::Get()->shelf_animation_duration()
+                : base::TimeDelta::FromMilliseconds(0));
+    animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+    animation_setter.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    animation_setter.SetAnimationMetricsReporter(
+        shelf_->GetHotseatTransitionMetricsReporter(state_));
+
+    // If shelf view is invisible, the hotseat should be as well. Otherwise the
+    // hotseat opacit should be 1.0f to preserve background blur.
+    hotseat_layer->SetOpacity(
+        new_layout_inputs.shelf_view_opacity == 0.0f ? 0.0f : 1.0f);
     SetBounds(new_layout_inputs.bounds);
     layout_inputs_ = new_layout_inputs;
     delegate_view_->UpdateTranslucentBackground();
@@ -552,7 +572,8 @@ void HotseatWidget::UpdateLayout(bool animate) {
 
   // Setting visibility during an animation causes the visibility property to
   // animate. Set the visibility property without an animation.
-  if (new_layout_inputs.opacity && new_layout_inputs.is_active_session_state) {
+  if (new_layout_inputs.shelf_view_opacity != 0.0f &&
+      new_layout_inputs.is_active_session_state) {
     ShowInactive();
   }
 }
@@ -640,7 +661,7 @@ void HotseatWidget::SetState(HotseatState state) {
 
 HotseatWidget::LayoutInputs HotseatWidget::GetLayoutInputs() const {
   const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
-  return {target_bounds_, CalculateOpacity(),
+  return {target_bounds_, CalculateShelfViewOpacity(),
           layout_manager->is_active_session_state()};
 }
 

@@ -171,6 +171,10 @@ bool FeedStream::IsArticlesListVisible() {
   return profile_prefs_->GetBoolean(prefs::kArticlesListVisible);
 }
 
+bool FeedStream::IsFeedEnabledByEnterprisePolicy() {
+  return profile_prefs_->GetBoolean(prefs::kEnableSnippets);
+}
+
 void FeedStream::LoadMore(SurfaceId surface_id,
                           base::OnceCallback<void(bool)> callback) {
   metrics_reporter_->OnLoadMoreBegin(surface_id);
@@ -314,6 +318,9 @@ LoadStreamStatus FeedStream::ShouldAttemptLoad(bool model_loading) {
 
   if (!IsArticlesListVisible())
     return LoadStreamStatus::kLoadNotAllowedArticlesListHidden;
+
+  if (!IsFeedEnabledByEnterprisePolicy())
+    return LoadStreamStatus::kLoadNotAllowedDisabledByEnterprisePolicy;
 
   if (!delegate_->IsEulaAccepted())
     return LoadStreamStatus::kLoadNotAllowedEulaNotAccepted;

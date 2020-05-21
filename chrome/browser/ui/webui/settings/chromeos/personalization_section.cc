@@ -201,19 +201,35 @@ int PersonalizationSection::GetSectionNameMessageId() const {
   return IDS_OS_SETTINGS_PERSONALIZATION;
 }
 
+mojom::Section PersonalizationSection::GetSection() const {
+  return mojom::Section::kPersonalization;
+}
+
+mojom::SearchResultIcon PersonalizationSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kPaintbrush;
+}
+
+std::string PersonalizationSection::GetSectionPath() const {
+  return mojom::kPersonalizationSectionPath;
+}
+
 void PersonalizationSection::RegisterHierarchy(
     HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kOpenWallpaper);
 
   // Change picture.
-  generator->RegisterTopLevelSubpage(IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE,
-                                     mojom::Subpage::kChangePicture);
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_CHANGE_PICTURE_TITLE, mojom::Subpage::kChangePicture,
+      mojom::SearchResultIcon::kAvatar, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kChangePictureSubpagePath);
   generator->RegisterNestedSetting(mojom::Setting::kChangeDeviceAccountImage,
                                    mojom::Subpage::kChangePicture);
 
   // Ambient mode.
-  generator->RegisterTopLevelSubpage(IDS_OS_SETTINGS_AMBIENT_MODE_TITLE,
-                                     mojom::Subpage::kAmbientMode);
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_AMBIENT_MODE_TITLE, mojom::Subpage::kAmbientMode,
+      mojom::SearchResultIcon::kWallpaper,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kAmbientModeSubpagePath);
   static constexpr mojom::Setting kAmbientModeSettings[] = {
       mojom::Setting::kAmbientModeOnOff,
       mojom::Setting::kAmbientModeSource,

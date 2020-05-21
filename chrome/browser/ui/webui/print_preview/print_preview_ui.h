@@ -16,12 +16,10 @@
 #include "base/macros.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "components/printing/common/print.mojom.h"
-#include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
@@ -62,8 +60,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   // printing::mojo::PrintPreviewUI:
   void SetOptionsFromDocument(const mojom::OptionsFromDocumentParamsPtr params,
                               int32_t request_id) override;
-  void DidPrepareDocumentForPreview(int32_t document_cookie,
-                                    int32_t request_id) override;
   void PrintPreviewFailed(int32_t document_cookie, int32_t request_id) override;
   void PrintPreviewCancelled(int32_t document_cookie,
                              int32_t request_id) override;
@@ -235,8 +231,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   // OnJavascriptDisallowed().
   void ClearPreviewUIId();
 
-  bool ShouldUseCompositor() const;
-
  protected:
   // Alternate constructor for tests
   PrintPreviewUI(content::WebUI* web_ui,
@@ -253,10 +247,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
 
   // Clear the existing print preview data.
   void ClearAllPreviewData();
-
-  void OnDidPrepareDocumentForPreviewDone(
-      int32_t request_id,
-      mojom::PrintCompositor::Status status);
 
   base::TimeTicks initial_preview_start_time_;
 
@@ -308,8 +298,6 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
   gfx::Rect printable_area_;
 
   mojo::AssociatedReceiver<mojom::PrintPreviewUI> receiver_{this};
-
-  base::WeakPtrFactory<PrintPreviewUI> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintPreviewUI);
 };

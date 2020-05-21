@@ -46,6 +46,7 @@ js_library("settings_subpage") {
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:find_shortcut_behavior",
+    "//ui/webui/resources/js:i18n_behavior",
     "//ui/webui/resources/js:load_time_data",
     "//ui/webui/resources/js/cr/ui:focus_without_ink",
   ]
@@ -102,6 +103,7 @@ js_library("settings_subpage.m") {
     "//ui/webui/resources/cr_elements/cr_search_field:cr_search_field.m",
     "//ui/webui/resources/js:assert.m",
     "//ui/webui/resources/js:find_shortcut_behavior.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
     "//ui/webui/resources/js:load_time_data.m",
     "//ui/webui/resources/js/cr/ui:focus_without_ink.m",
   ]

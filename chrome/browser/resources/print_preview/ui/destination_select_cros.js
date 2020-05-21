@@ -7,13 +7,16 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/cr_elements/md_select_css.m.js';
 import 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/iron-iconset-svg/iron-iconset-svg.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import 'chrome://resources/polymer/v3_0/iron-meta/iron-meta.js';
+import './destination_dropdown_cros.js';
 import './destination_select_css.js';
 import './icons.js';
 import './print_preview_shared_css.js';
 import './throbber_css.js';
 import '../strings.m.js';
 
+import {assert} from 'chrome://resources/js/assert.m.js';
 import {I18nBehavior} from 'chrome://resources/js/i18n_behavior.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {Base, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -85,7 +88,7 @@ Polymer({
       Base.create('iron-meta', {type: 'iconset'})),
 
   focus() {
-    this.$$('.md-select').focus();
+    this.$$('#dropdown').focus();
   },
 
   /** Sets the select to the current value of |destination|. */
@@ -172,5 +175,20 @@ Polymer({
     return this.destination.shouldShowInvalidCertificateError ?
         this.i18n('noLongerSupportedFragment') :
         this.destination.connectionStatusText;
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onDropdownValueSelected_(e) {
+    assert(this.printerStatusFlagEnabled_);
+
+    const selectedItem = e.detail;
+    if (!selectedItem || selectedItem.value === this.destination.key) {
+      return;
+    }
+
+    this.fire('selected-option-change', selectedItem.value);
   },
 });

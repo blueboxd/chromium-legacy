@@ -128,9 +128,17 @@ class DISPLAY_EXPORT Screen {
   virtual std::string GetCurrentWorkspace();
 
  private:
+  friend class ScopedDisplayForNewWindows;
+
+  // Used to temporarily override the value from SetDisplayForNewWindows() by
+  // creating an instance of ScopedDisplayForNewWindows. Call with
+  // |kInvalidDisplayId| to unset.
+  void SetScopedDisplayForNewWindows(int64_t display_id);
+
   static gfx::NativeWindow GetWindowForView(gfx::NativeView view);
 
   int64_t display_id_for_new_windows_;
+  int64_t scoped_display_id_for_new_windows_ = display::kInvalidDisplayId;
 
   DISALLOW_COPY_AND_ASSIGN(Screen);
 };

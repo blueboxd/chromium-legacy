@@ -5109,10 +5109,10 @@
   <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_HIDE" desc="A tool tip on a button that hides the saved password that is being shown.">
     Hide password
   </message>
-  <message name="IDS_EDU_LOGIN_COEXISTENCE_TITLE" desc="Title for the screen explaining co-existence to a parent.">
+  <message name="IDS_EDU_LOGIN_INFO_COEXISTENCE_TITLE" desc="Title for the screen explaining co-existence to a parent.">
     School account information for parents
   </message>
-  <message name="IDS_EDU_LOGIN_COEXISTENCE_BODY" desc="Text on the screen explaining co-existence to a parent.">
+  <message name="IDS_EDU_LOGIN_INFO_COEXISTENCE_BODY" desc="Text on the screen explaining co-existence to a parent.">
     Adding a school account to a profile enables easy sign-in to websites and extensions as a student while operating under parental controls. It does not give a child access to bookmarks, passwords, or other browser data synced with the school account.&lt;br&gt;&lt;br&gt;
     If your child uses a Chromebook in school and you wish to mirror the school experience at home to ensure your child has access to all necessary schoolwork, please sign out of this Family Link account and sign in to the school account from the Chrome OS accounts page (note: Family Link parental controls will not apply).&lt;br&gt;&lt;br&gt;
     If your child does not use a Chromebook in school or if you prefer to manage your child’s experience at home using Family Link, please click the Next button below to add a school account to this profile.

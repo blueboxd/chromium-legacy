@@ -16543,5 +16543,10 @@
         "test_id_prefix": "ninja://ios/web/shell/test:ios_web_shell_eg2tests_module/"
       }
     ]
+  },
+  "ios-simulator-noncq": {
+    "additional_compile_targets": [
+      "all"
+    ]
   }
 }

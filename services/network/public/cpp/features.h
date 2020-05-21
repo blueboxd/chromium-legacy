@@ -77,6 +77,16 @@ extern const base::Feature kStrictAccessControlAllowListCheck;
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const base::Feature kTrustTokens;
 
+enum class TrustTokenOriginTrialSpec {
+  // See the .cc file for definitions.
+  kAllOperationsRequireOriginTrial,
+  kOnlyIssuanceRequiresOriginTrial,
+  kOriginTrialNotRequired,
+};
+COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<TrustTokenOriginTrialSpec>
+    kTrustTokenOperationsRequiringOriginTrial;
+
 COMPONENT_EXPORT(NETWORK_CPP)
 bool ShouldEnableOutOfBlinkCorsForTesting();
 

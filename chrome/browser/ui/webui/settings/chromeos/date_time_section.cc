@@ -141,11 +141,25 @@ int DateTimeSection::GetSectionNameMessageId() const {
   return IDS_SETTINGS_DATE_TIME;
 }
 
+mojom::Section DateTimeSection::GetSection() const {
+  return mojom::Section::kDateAndTime;
+}
+
+mojom::SearchResultIcon DateTimeSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kClock;
+}
+
+std::string DateTimeSection::GetSectionPath() const {
+  return mojom::kDateAndTimeSectionPath;
+}
+
 void DateTimeSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::k24HourClock);
 
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_TIME_ZONE_SUBPAGE_TITLE,
-                                     mojom::Subpage::kTimeZone);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_TIME_ZONE_SUBPAGE_TITLE, mojom::Subpage::kTimeZone,
+      mojom::SearchResultIcon::kClock, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kTimeZoneSubpagePath);
 
   // When fine-grained time zone is enabled, users change the time zone on the
   // time zone subpage; otherwise, the setting is directly embedded in the

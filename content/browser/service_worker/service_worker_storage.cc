@@ -576,8 +576,9 @@ void ServiceWorkerStorage::GetUserData(int64_t registration_id,
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), std::vector<std::string>(),
-                             ServiceWorkerDatabase::Status::kErrorDisabled));
+              base::BindOnce(std::move(callback),
+                             ServiceWorkerDatabase::Status::kErrorDisabled,
+                             std::vector<std::string>()));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -608,8 +609,9 @@ void ServiceWorkerStorage::GetUserDataByKeyPrefix(
   switch (state_) {
     case STORAGE_STATE_DISABLED:
       RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), std::vector<std::string>(),
-                             ServiceWorkerDatabase::Status::kErrorDisabled));
+              base::BindOnce(std::move(callback),
+                             ServiceWorkerDatabase::Status::kErrorDisabled,
+                             std::vector<std::string>()));
       return;
     case STORAGE_STATE_INITIALIZING:  // Fall-through.
     case STORAGE_STATE_UNINITIALIZED:
@@ -1494,7 +1496,7 @@ void ServiceWorkerStorage::GetUserDataInDB(
   ServiceWorkerDatabase::Status status =
       database->ReadUserData(registration_id, keys, &values);
   original_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), values, status));
+      FROM_HERE, base::BindOnce(std::move(callback), status, values));
 }
 
 void ServiceWorkerStorage::GetUserDataByKeyPrefixInDB(
@@ -1507,7 +1509,7 @@ void ServiceWorkerStorage::GetUserDataByKeyPrefixInDB(
   ServiceWorkerDatabase::Status status =
       database->ReadUserDataByKeyPrefix(registration_id, key_prefix, &values);
   original_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(std::move(callback), values, status));
+      FROM_HERE, base::BindOnce(std::move(callback), status, values));
 }
 
 void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefixInDB(

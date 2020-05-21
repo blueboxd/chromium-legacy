@@ -104,7 +104,7 @@ Time ExtractTimeFromXEvent(const XEvent& xevent) {
       return xevent.xselectionrequest.time;
     case SelectionNotify:
       return xevent.xselection.time;
-    case GenericEvent:
+    case x11::XProto::GeGenericEvent::opcode:
       if (DeviceDataManagerX11::GetInstance()->IsXIDeviceEvent(xevent))
         return static_cast<XIDeviceEvent*>(xevent.xcookie.data)->time;
       else
@@ -310,7 +310,7 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   XEvent* event = dispatching_event_;
   DCHECK(event);
 
-  bool is_xi2_event = event->type == GenericEvent;
+  bool is_xi2_event = event->type == x11::XProto::GeGenericEvent::opcode;
   int event_type = is_xi2_event
                        ? reinterpret_cast<XIDeviceEvent*>(event)->evtype
                        : event->type;
@@ -459,7 +459,7 @@ void X11EventSource::ProcessXEvent(XEvent* xevent) {
 
 void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
   bool have_cookie = false;
-  if (xevent->type == GenericEvent &&
+  if (xevent->type == x11::XProto::GeGenericEvent::opcode &&
       XGetEventData(xevent->xgeneric.display, &xevent->xcookie)) {
     have_cookie = true;
   }
@@ -478,7 +478,7 @@ void X11EventSource::ExtractCookieDataDispatchEvent(XEvent* xevent) {
 void X11EventSource::PostDispatchEvent(XEvent* xevent) {
   bool should_update_device_list = false;
 
-  if (xevent->type == GenericEvent) {
+  if (xevent->type == x11::XProto::GeGenericEvent::opcode) {
     if (xevent->xgeneric.evtype == XI_HierarchyChanged) {
       should_update_device_list = true;
     } else if (xevent->xgeneric.evtype == XI_DeviceChanged) {

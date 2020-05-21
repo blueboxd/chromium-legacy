@@ -1582,7 +1582,7 @@ TEST_F('ChromeVoxBackgroundTest', 'NavigationEscapesEdit', function() {
       });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NavigationSyncsSelect', function() {
+TEST_F('ChromeVoxBackgroundTest', 'NavigationSyncsSelect', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `

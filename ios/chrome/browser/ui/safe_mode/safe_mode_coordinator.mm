@@ -50,6 +50,7 @@ const int kStartupCrashLoopThreshold = 2;
   // method.
   SafeModeViewController* viewController =
       [[SafeModeViewController alloc] initWithDelegate:self];
+  DCHECK(self.window);
   [self.window setRootViewController:viewController];
 
   // Reset the crash count; the user may change something based on the recovery

@@ -148,6 +148,7 @@ class VIEWS_EXPORT MenuItemView : public View {
   MenuItemView* AddMenuItemAt(int index,
                               int item_id,
                               const base::string16& label,
+                              const base::string16& secondary_label,
                               const base::string16& minor_text,
                               const ui::ThemedVectorIcon& minor_icon,
                               const gfx::ImageSkia& icon,
@@ -213,6 +214,11 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Sets/Gets the title.
   void SetTitle(const base::string16& title);
   const base::string16& title() const { return title_; }
+
+  // Sets/Gets the secondary title. When not empty, they are shown in the line
+  // below the title.
+  void SetSecondaryTitle(const base::string16& secondary_title);
+  const base::string16& secondary_title() const { return secondary_title_; }
 
   // Sets the minor text.
   void SetMinorText(const base::string16& minor_text);
@@ -508,13 +514,9 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Submenu, created via CreateSubmenu.
   SubmenuView* submenu_ = nullptr;
 
-  // Title.
   base::string16 title_;
-
-  // Minor text.
+  base::string16 secondary_title_;
   base::string16 minor_text_;
-
-  // Minor icon.
   ui::ThemedVectorIcon minor_icon_;
 
   // The icon used for |icon_view_| when a vector icon has been set instead of a

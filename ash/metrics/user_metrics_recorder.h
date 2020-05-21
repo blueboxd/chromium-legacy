@@ -34,11 +34,11 @@ class ASH_EXPORT UserMetricsRecorder {
 
   virtual ~UserMetricsRecorder();
 
-  // Record interesting user clicks on tray on lock and login screens.
+  // Record user clicks on tray on lock, login screens and in OOBE.
   static void RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget target);
 
-  // Record interesting user clicks on shelf buttons on lock and login screens.
+  // Record user clicks on shelf buttons on lock, login screens and in OOBE.
   static void RecordUserClickOnShelfButton(
       LoginMetricsRecorder::ShelfButtonClickTarget target);
 

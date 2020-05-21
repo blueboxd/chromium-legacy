@@ -55,7 +55,8 @@ base::Optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
 
 base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
     Profile* profile,
-    SystemAppType app_type) {
+    SystemAppType app_type,
+    int64_t display_id) {
   base::Optional<AppId> app_id = GetAppIdForSystemWebApp(profile, app_type);
   // TODO(calamity): Decide whether to report app launch failure or CHECK fail.
   if (!app_id)
@@ -70,27 +71,11 @@ base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
   // TODO(calamity): Plumb through better launch sources from callsites.
   apps::AppLaunchParams params = apps::CreateAppIdLaunchParamsWithEventFlags(
       app_id.value(), /*event_flags=*/0,
-      apps::mojom::AppLaunchSource::kSourceChromeInternal,
-      display::kInvalidDisplayId, /*fallback_container=*/
+      apps::mojom::AppLaunchSource::kSourceChromeInternal, display_id,
+      /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
 
   return params;
-}
-
-Browser* LaunchSystemWebApp(Profile* profile,
-                            SystemAppType app_type,
-                            const GURL& url,
-                            bool* did_create) {
-  if (did_create)
-    *did_create = false;
-
-  base::Optional<apps::AppLaunchParams> params =
-      CreateSystemWebAppLaunchParams(profile, app_type);
-  if (!params)
-    return nullptr;
-  params->override_url = url;
-
-  return LaunchSystemWebApp(profile, app_type, url, *params, did_create);
 }
 
 namespace {
@@ -117,20 +102,28 @@ base::FilePath GetLaunchDirectory(
 Browser* LaunchSystemWebApp(Profile* profile,
                             SystemAppType app_type,
                             const GURL& url,
-                            const apps::AppLaunchParams& params,
+                            base::Optional<apps::AppLaunchParams> params,
                             bool* did_create) {
   auto* provider = WebAppProvider::Get(profile);
   if (!provider)
     return nullptr;
 
-  DCHECK_EQ(params.app_id, *GetAppIdForSystemWebApp(profile, app_type));
+  if (!params) {
+    params = CreateSystemWebAppLaunchParams(profile, app_type,
+                                            display::kInvalidDisplayId);
+  }
+  if (!params)
+    return nullptr;
+  params->override_url = url;
+
+  DCHECK_EQ(params->app_id, *GetAppIdForSystemWebApp(profile, app_type));
 
   // Make sure we have a browser for app.  Always reuse an existing browser for
   // popups, otherwise check app type whether we should use a single window.
   // TODO(crbug.com/1060423): Allow apps to control whether popups are single.
   Browser* browser = nullptr;
   Browser::Type browser_type = Browser::TYPE_APP;
-  if (params.disposition == WindowOpenDisposition::NEW_POPUP)
+  if (params->disposition == WindowOpenDisposition::NEW_POPUP)
     browser_type = Browser::TYPE_APP_POPUP;
   if (browser_type == Browser::TYPE_APP_POPUP ||
       provider->system_web_app_manager().IsSingleWindow(app_type)) {
@@ -145,38 +138,38 @@ Browser* LaunchSystemWebApp(Profile* profile,
 
   if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
     if (!browser)
-      browser = CreateWebApplicationWindow(profile, params.app_id,
-                                           params.disposition);
+      browser = CreateWebApplicationWindow(profile, params->app_id,
+                                           params->disposition);
 
     // Navigate application window to application's |url| if necessary.
     web_contents = browser->tab_strip_model()->GetWebContentsAt(0);
     if (!web_contents || web_contents->GetURL() != url) {
       web_contents = NavigateWebApplicationWindow(
-          browser, params.app_id, url, WindowOpenDisposition::CURRENT_TAB);
+          browser, params->app_id, url, WindowOpenDisposition::CURRENT_TAB);
     }
   } else {
     if (!browser)
-      browser = CreateApplicationWindow(profile, params, url);
+      browser = CreateApplicationWindow(profile, *params, url);
 
     // Navigate application window to application's |url| if necessary.
     web_contents = browser->tab_strip_model()->GetWebContentsAt(0);
     if (!web_contents || web_contents->GetURL() != url) {
       web_contents = NavigateApplicationWindow(
-          browser, params, url, WindowOpenDisposition::CURRENT_TAB);
+          browser, *params, url, WindowOpenDisposition::CURRENT_TAB);
     }
   }
 
   // Send launch files.
   if (provider->file_handler_manager().IsFileHandlingAPIAvailable(
-          params.app_id)) {
+          params->app_id)) {
     if (provider->system_web_app_manager().AppShouldReceiveLaunchDirectory(
             app_type)) {
       web_launch::WebLaunchFilesHelper::SetLaunchDirectoryAndLaunchPaths(
           web_contents, web_contents->GetURL(),
-          GetLaunchDirectory(params.launch_files), params.launch_files);
+          GetLaunchDirectory(params->launch_files), params->launch_files);
     } else {
       web_launch::WebLaunchFilesHelper::SetLaunchPaths(
-          web_contents, web_contents->GetURL(), params.launch_files);
+          web_contents, web_contents->GetURL(), params->launch_files);
     }
   }
 

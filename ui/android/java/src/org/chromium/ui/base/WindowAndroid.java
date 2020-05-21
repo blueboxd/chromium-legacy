@@ -946,6 +946,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
 
         int preferredModeId = getPreferredModeId(preferredRefreshRate);
         Window window = getWindow();
+        if (window == null) return;
         WindowManager.LayoutParams params = window.getAttributes();
         if (params.preferredDisplayModeId == preferredModeId) return;
 

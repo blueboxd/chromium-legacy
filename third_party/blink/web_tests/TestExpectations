@@ -1529,8 +1529,6 @@ crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html 
 
 # Tests that fail when FormControlsRefresh is enabled:
 crbug.com/1051136 fast/forms/select/listbox-overlay-scrollbar.html [ Failure ]
-crbug.com/1051141 external/wpt/css/selectors/focus-visible-003-manual.html [ Timeout ]
-crbug.com/1051141 external/wpt/css/selectors/focus-visible-004-manual.html [ Timeout ]
 
 # This test needs the fuzzy-diff feature - it has small anti-aliasing failures:
 crbug.com/1051143 external/wpt/css/css-transforms/transform-input-015.html [ Pass Failure ]
@@ -5891,6 +5889,7 @@ crbug.com/1084276 [ Mac ] http/tests/security/offscreencanvas-placeholder-read-b
 
 # Sheriff 2020-05-19
 crbug.com/1084509 [ Win ] fast/forms/select/listbox-appearance-basic.html [ Pass Failure ]
+crbug.com/1084509 [ Win ] fast/forms/select/select-disabled-appearance.html [ Pass Failure ]
 
 # Disabled for landing DevTools change
 crbug.com/1011811 http/tests/devtools/network/network-xhr-data-received-async-response-type-blob.js [ Pass Failure ]

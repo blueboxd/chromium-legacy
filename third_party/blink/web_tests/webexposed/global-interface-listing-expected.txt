@@ -8831,8 +8831,9 @@ interface VideoTrackList : EventTarget
     setter onremovetrack
 interface VideoTrackReader
     attribute @@toStringTag
-    getter readable
     method constructor
+    method start
+    method stop
 interface VideoTrackWriter
     attribute @@toStringTag
     getter track
@@ -11944,6 +11945,7 @@ interface webkitURL
     method gc
     method getComputedAccessibleNode
     method getComputedStyle
+    method getDigitalGoodsService
     method getScreens
     method getSelection
     method matchMedia

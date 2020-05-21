@@ -1,24 +1,15 @@
 <style>
   :host {
-    display: block;
-  }
-
-  #link {
     align-items: center;
-    color: inherit;
+    cursor: default;
     display: flex;
     font-size: 16px;
     line-height: 1;
     outline: none;
-    overflow: hidden;
     padding-bottom: 6px;
     padding-inline-end: 16px;
     padding-inline-start: 12px;
     padding-top: 6px;
-    position: relative;
-    text-decoration: none;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   #container {
@@ -28,6 +19,7 @@
     overflow: hidden;
     padding-inline-end: 8px;
     padding-inline-start: 8px;
+    white-space: nowrap;
   }
 
   #contents,
@@ -55,6 +47,7 @@
 
   :host([has-image]) #description {
     font-size: 14px;
+    line-height: 16px;
     margin-top: 2px;
     width: 100%;
   }
@@ -82,16 +75,15 @@
   }
 
 </style>
-<a id="link" href$="[[match.destinationUrl.url]]">
-  <ntp-realbox-icon match="[[match]]"
-      favicon-data-url="[[faviconDataUrl]]" image-data-url="[[imageDataUrl]]">
-  </ntp-realbox-icon>
-  <div id="container">
-    <span id="contents" inner-h-t-m-l="[[contentsHtml_]]"></span>
-    <span id="separator">[[separatorText_]]</span>
-    <span id="description" inner-h-t-m-l="[[descriptionHtml_]]"></span>
-  </div>
-  <ntp-realbox-button id="remove" on-click="onRemoveButtonClick_"
-      title$="[[removeButtonTitle_]]" hidden$="[[!removeButtonIsVisible_]]">
-  </ntp-realbox-button>
-</a>
+<ntp-realbox-icon id="icon" match="[[match]]"
+    favicon-data-url="[[faviconDataUrl]]" image-data-url="[[imageDataUrl]]">
+</ntp-realbox-icon>
+<div id="container">
+  <span id="contents" inner-h-t-m-l="[[contentsHtml_]]"></span>
+  <span id="separator">[[separatorText_]]</span>
+  <span id="description" inner-h-t-m-l="[[descriptionHtml_]]"></span>
+</div>
+<ntp-realbox-button id="remove" tabindex="0" role="button"
+    on-click="onRemoveButtonClick_" on-keydown="onRemoveButtonKeydown_"
+    title$="[[removeButtonTitle_]]" hidden$="[[!removeButtonIsVisible_]]">
+</ntp-realbox-button>

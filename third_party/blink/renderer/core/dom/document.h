@@ -766,7 +766,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(mkwst): Write a spec for this.
   void write(v8::Isolate*, TrustedHTML*, ExceptionState&);
   void writeln(v8::Isolate*, TrustedHTML*, ExceptionState&);
-  bool IsTrustedTypesEnabledForDoc() const;
 
   bool WellFormed() const { return well_formed_; }
 

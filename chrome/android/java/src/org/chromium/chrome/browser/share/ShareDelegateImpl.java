@@ -24,7 +24,6 @@ import org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity;
 import org.chromium.chrome.browser.share.qrcode.QrCodeShareActivity;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.util.ChromeFileProvider;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
@@ -52,11 +51,11 @@ public class ShareDelegateImpl implements ShareDelegate {
     private static boolean sScreenshotCaptureSkippedForTesting;
 
     /**
-     * Construct a new {@link ShareDelegateImpl}.
-     * @param controller The BottomSheetController for the current activity.
+     * Constructs a new {@link ShareDelegateImpl}.
+     *
+     * @param controller  The BottomSheetController for the current activity.
      * @param tabProvider The ActivityTabProvider for the current visible tab.
-     * @param delegate The ShareSheetDelegate for the current activity.
-     * @param tabCreator The TabCreator for the current selected {@link TabModel}.
+     * @param delegate    The ShareSheetDelegate for the current activity.
      */
     public ShareDelegateImpl(BottomSheetController controller, ActivityTabProvider tabProvider,
             ShareSheetDelegate delegate) {
@@ -87,9 +86,10 @@ public class ShareDelegateImpl implements ShareDelegate {
     /**
      * Triggered when the share menu item is selected.
      * This creates and shows a share intent picker dialog or starts a share intent directly.
+     *
      * @param shareDirectly Whether it should share directly with the activity that was most
      *                      recently used to share.
-     * @param isIncognito Whether currentTab is incognito.
+     * @param isIncognito   Whether currentTab is incognito.
      */
     private void onShareSelected(
             Activity activity, Tab currentTab, boolean shareDirectly, boolean isIncognito) {

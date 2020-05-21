@@ -16,8 +16,9 @@ DefaultWindowResizer::~DefaultWindowResizer() {
 }
 
 // static
-DefaultWindowResizer* DefaultWindowResizer::Create(WindowState* window_state) {
-  return new DefaultWindowResizer(window_state);
+std::unique_ptr<DefaultWindowResizer> DefaultWindowResizer::Create(
+    WindowState* window_state) {
+  return base::WrapUnique(new DefaultWindowResizer(window_state));
 }
 
 void DefaultWindowResizer::Drag(const gfx::PointF& location, int event_flags) {
@@ -45,7 +46,7 @@ void DefaultWindowResizer::RevertDrag() {
 void DefaultWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {}
 
 DefaultWindowResizer::DefaultWindowResizer(WindowState* window_state)
-    : WindowResizer(window_state), did_move_or_resize_(false) {
+    : WindowResizer(window_state) {
   DCHECK(details().is_resizable);
   Shell::Get()->cursor_manager()->LockCursor();
 }

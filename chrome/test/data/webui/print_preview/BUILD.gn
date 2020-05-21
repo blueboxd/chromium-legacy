@@ -73,6 +73,10 @@ js_type_check("closure_compile") {
     #":system_dialog_browsertest",
     #":user_manager_test",
   ]
+
+  if (is_chromeos) {
+    deps += [ ":destination_dropdown_cros_test" ]
+  }
 }
 
 js_library("advanced_dialog_test") {
@@ -127,4 +131,15 @@ js_library("destination_settings_test") {
     "//ui/webui/resources/js:cr.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
+}
+
+if (is_chromeos) {
+  js_library("destination_dropdown_cros_test") {
+    deps = [
+      ":print_preview_test_utils",
+      "..:chai_assert",
+      "//chrome/browser/resources/print_preview:print_preview",
+      "//ui/webui/resources/js:assert.m",
+    ]
+  }
 }

@@ -564,6 +564,16 @@ NSString* const kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix =
       scrollView.contentOffset.y >= [self.headerSynchronizer pinnedOffsetY];
 }
 
+- (BOOL)scrollViewShouldScrollToTop:(UIScrollView*)scrollView {
+  // User has tapped the status bar to scroll to the top.
+  // Prevent scrolling back to pre-focus state, making sure we don't have
+  // two scrolling animations running at the same time.
+  [self.headerSynchronizer resetPreFocusOffset];
+  // Unfocus omnibox without scrolling back.
+  [self.headerSynchronizer unfocusOmnibox];
+  return YES;
+}
+
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   [self.overscrollActionsController scrollViewWillBeginDragging:scrollView];
 }

@@ -58,7 +58,6 @@
 #include "ash/shelf/test/shelf_layout_manager_test_base.h"
 #include "ash/shelf/test/widget_animation_waiter.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -3556,8 +3555,7 @@ TEST_F(ShelfLayoutManagerTest, VerifyAutoHideBehaviorOnMultipleDisplays) {
   // Set focus on the secondary display.
   aura::Window* secondary_root_window =
       Shell::GetRootWindowForDisplayId(GetSecondaryDisplay().id());
-  Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-      secondary_root_window);
+  Shell::SetRootWindowForNewWindows(secondary_root_window);
 
   // Show the system tray on the secondary display.
   Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
@@ -3762,6 +3760,8 @@ class DimShelfLayoutManagerTestBase : public ShelfLayoutManagerTestBase {
 
   void ResetDimShelf() { GetPrimaryShelf()->UndimShelf(); }
 
+  bool HasDimShelfTimer() { return GetPrimaryShelf()->HasDimShelfTimer(); }
+
   float GetWidgetOpacity(views::Widget* widget) {
     return widget->GetNativeView()->layer()->opacity();
   }
@@ -3859,9 +3859,9 @@ TEST_P(DimShelfLayoutManagerTest, MaximizedShelfDimAlpha) {
   ASSERT_FALSE(ShelfDimmed());
 
   if (dim_shelf_enabled) {
-    TriggerDimShelf();
     views::Widget* widget = CreateTestWidget();
     widget->Maximize();
+    TriggerDimShelf();
   }
 
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()),
@@ -3870,8 +3870,11 @@ TEST_P(DimShelfLayoutManagerTest, MaximizedShelfDimAlpha) {
             dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
                               : kExpectedDefaultShelfOpacity);
   EXPECT_EQ(GetWidgetOpacity(GetPrimaryShelf()->hotseat_widget()),
-            dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
-                              : kExpectedDefaultShelfOpacity);
+            kExpectedDefaultShelfOpacity);
+  EXPECT_EQ(
+      GetPrimaryShelf()->hotseat_widget()->GetShelfView()->layer()->opacity(),
+      dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
+                        : kExpectedDefaultShelfOpacity);
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       dim_shelf_enabled ? kExpectedMaximizedShelfDimOpacity
@@ -3955,7 +3958,7 @@ TEST_P(HotseatDimShelfLayoutManagerTest, InAppShelfDimAlpha) {
 TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeHomeShelfDimAlpha) {
   ASSERT_TRUE(AutoDimEventHandlerInitialized());
   TabletModeControllerTestApi().EnterTabletMode();
-  ASSERT_FALSE(ShelfDimmed());
+  EXPECT_FALSE(ShelfDimmed());
 
   const bool shelf_hotseat_enabled = GetParam();
   EXPECT_EQ(shelf_hotseat_enabled,
@@ -3983,6 +3986,57 @@ TEST_P(HotseatDimShelfLayoutManagerTest, TabletModeHomeShelfDimAlpha) {
   EXPECT_EQ(
       GetWidgetOpacity(GetPrimaryShelf()->shelf_widget()->status_area_widget()),
       kExpectedFloatingShelfDimOpacity);
+}
+
+// Shelf dimming should not trigger when shelf is hidden in tablet mode.
+TEST_P(HotseatDimShelfLayoutManagerTest, AutoHiddenShelfTabletModeDimAlpha) {
+  ASSERT_TRUE(AutoDimEventHandlerInitialized());
+  TabletModeControllerTestApi().EnterTabletMode();
+
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_FALSE(ShelfDimmed());
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  // Shelf should not be dimmed when auto hidden.
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  TriggerDimShelf();
+  EXPECT_FALSE(ShelfDimmed());
+
+  // Minimizing the widget should show the shelf. The shelf can now be dimmed.
+  widget->Minimize();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  EXPECT_FALSE(ShelfDimmed());
+  TriggerDimShelf();
+  EXPECT_TRUE(ShelfDimmed());
+}
+
+// Shelf dimming should not trigger when shelf is hidden in clamshell mode.
+TEST_P(HotseatDimShelfLayoutManagerTest, AutoHiddenShelfClamshellModeDimAlpha) {
+  ASSERT_TRUE(AutoDimEventHandlerInitialized());
+
+  Shelf* shelf = GetPrimaryShelf();
+  shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
+  EXPECT_FALSE(ShelfDimmed());
+  views::Widget* widget = CreateTestWidget();
+  widget->Maximize();
+
+  // Shelf should not be dimmed when auto hidden. The dim shelf timer should
+  // persist after failing to dim the shelf.
+  EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
+  TriggerDimShelf();
+  EXPECT_FALSE(ShelfDimmed());
+  EXPECT_TRUE(HasDimShelfTimer());
+
+  // Minimizing the widget should show the shelf. The shelf can now be dimmed
+  // and the dim shelf timer should no longer be active.
+  widget->Minimize();
+  EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
+  ASSERT_FALSE(ShelfDimmed());
+  TriggerDimShelf();
+  EXPECT_TRUE(ShelfDimmed());
+  EXPECT_FALSE(HasDimShelfTimer());
 }
 
 }  // namespace ash

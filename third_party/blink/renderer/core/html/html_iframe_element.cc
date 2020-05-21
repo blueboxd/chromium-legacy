@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser.h"
 #include "third_party/blink/renderer/core/feature_policy/iframe_policy.h"
+#include "third_party/blink/renderer/core/fetch/trust_token_issuance_authorization.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -510,6 +511,18 @@ HTMLIFrameElement::ConstructTrustTokenParams() const {
         mojom::blink::ConsoleMessageLevel::kError,
         "Trust Tokens: Attempted redemption or signing without the "
         "trust-token-redemption Feature Policy feature present."));
+    return nullptr;
+  }
+
+  if (parsed_params->type ==
+          network::mojom::blink::TrustTokenOperationType::kIssuance &&
+      !IsTrustTokenIssuanceAvailableInExecutionContext(
+          *GetExecutionContext())) {
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::blink::ConsoleMessageSource::kOther,
+        mojom::blink::ConsoleMessageLevel::kError,
+        "Trust Tokens issuance is disabled except in "
+        "contexts with the TrustTokens Origin Trial enabled."));
     return nullptr;
   }
 

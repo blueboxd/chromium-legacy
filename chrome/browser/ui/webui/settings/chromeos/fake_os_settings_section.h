@@ -28,11 +28,23 @@ class FakeOsSettingsSection : public OsSettingsSection {
   // Returns the settings app name as a default value.
   int GetSectionNameMessageId() const override;
 
+  mojom::Section GetSection() const override;
+
+  // These functions return arbitrary dummy values.
+  mojom::SearchResultIcon GetSectionIcon() const override;
+  std::string GetSectionPath() const override;
+
   // Prepends the section name and "::" to the URL in |concept|. For example, if
   // the URL is "networkDetails" and the section is mojom::Section::kNetwork,
   // the returned URL is "Section::kNetwork::networkDetails".
   std::string ModifySearchResultUrl(
-      const SearchConcept& concept) const override;
+      mojom::SearchResultType type,
+      OsSettingsIdentifier id,
+      const std::string& url_to_modify) const override;
+
+  // Static function used to implement the function above.
+  static std::string ModifySearchResultUrl(mojom::Section section,
+                                           const std::string& url_to_modify);
 
  private:
   const mojom::Section section_;

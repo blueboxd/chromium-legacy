@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/containers/adapters.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -419,12 +420,32 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::HitTestSync(
   if (!view()->HitTestPoint(point))
     return nullptr;
 
+  // Check if the point is within any of the virtual children of this view.
+  // AXVirtualView's HitTestSync is a recursive function that will return the
+  // deepest child, since it does not support relative bounds.
+  if (!virtual_children().empty()) {
+    // Search the greater indices first, since they're on top in the z-order.
+    for (const std::unique_ptr<AXVirtualView>& child :
+         base::Reversed(virtual_children())) {
+      gfx::NativeViewAccessible result =
+          child->HitTestSync(screen_physical_pixel_x, screen_physical_pixel_y);
+      if (result)
+        return result;
+    }
+    // If it's not inside any of our virtual children, it's inside this view.
+    return GetNativeObject();
+  }
+
   // Check if the point is within any of the immediate children of this
   // view. We don't have to search further because AXPlatformNode will
   // do a recursive hit test if we return anything other than |this| or NULL.
   View* v = view();
   const auto is_point_in_child = [point, v](View* child) {
     if (!child->GetVisible())
+      return false;
+    ui::AXNodeData child_data;
+    child->GetViewAccessibility().GetAccessibleNodeData(&child_data);
+    if (child_data.HasState(ax::mojom::State::kInvisible))
       return false;
     gfx::Point point_in_child_coords = point;
     v->ConvertPointToTarget(v, child, &point_in_child_coords);

@@ -41,6 +41,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/test/test_screen.h"
 
 using web_app::ProviderType;
 
@@ -162,6 +163,7 @@ class AppContextMenuTest : public AppListTestBase,
 
   void SetUp() override {
     AppListTestBase::SetUp();
+    display::Screen::SetScreenInstance(&test_screen_);
     extensions::MenuManagerFactory::GetInstance()->SetTestingFactory(
         profile(), base::BindRepeating(&MenuManagerFactory));
     controller_ = std::make_unique<FakeAppListControllerDelegate>();
@@ -281,6 +283,7 @@ class AppContextMenuTest : public AppListTestBase,
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  display::test::TestScreen test_screen_;
   std::unique_ptr<KeyedService> menu_manager_;
   std::unique_ptr<FakeAppListControllerDelegate> controller_;
   std::unique_ptr<FakeAppContextMenuDelegate> menu_delegate_;

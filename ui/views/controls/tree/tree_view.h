@@ -44,6 +44,13 @@ class TreeViewController;
 // can expand, collapse and edit the items. A Controller may be attached to
 // receive notification of selection changes and restrict editing.
 //
+// In addition to tracking selection, TreeView also tracks the active node,
+// which is the item that receives keyboard input when the tree has focus.
+// Active/focus is like a pointer for keyboard navigation, and operations such
+// as selection are performed at the point of focus. The active node is synced
+// to the selected node. When the active node is nullptr, the TreeView itself is
+// the target of keyboard input.
+//
 // Note on implementation. This implementation doesn't scale well. In particular
 // it does not store any row information, but instead calculates it as
 // necessary. But it's more than adequate for current uses.
@@ -102,6 +109,20 @@ class VIEWS_EXPORT TreeView : public View,
         const_cast<const TreeView*>(this)->GetSelectedNode());
   }
   const ui::TreeModelNode* GetSelectedNode() const;
+
+  // Marks the specified node as active, scrolls it into view, and reports a
+  // keyboard focus update to ATs. Active node should be synced to the selected
+  // node and should be nullptr when the tree is empty.
+  // TODO(crbug.com/1080944): Decouple active node from selected node by adding
+  // new keyboard affordances.
+  void SetActiveNode(ui::TreeModelNode* model_node);
+
+  // Returns the active node, or nullptr if nothing is active.
+  ui::TreeModelNode* GetActiveNode() {
+    return const_cast<ui::TreeModelNode*>(
+        const_cast<const TreeView*>(this)->GetActiveNode());
+  }
+  const ui::TreeModelNode* GetActiveNode() const;
 
   // Marks |model_node| as collapsed. This only effects the UI if node and all
   // its parents are expanded (IsExpanded(model_node) returns true).
@@ -192,6 +213,20 @@ class VIEWS_EXPORT TreeView : public View,
 
  private:
   friend class TreeViewTest;
+
+  // Enumeration of possible changes to tree view state when the UI is updated.
+  enum SelectionType {
+    // Active state is being set to a tree item.
+    kActive,
+
+    // Active and selected states are being set to a tree item.
+    kActiveAndSelected,
+  };
+
+  // Performs active node and selected node state transitions. Updates states
+  // and scrolling before notifying assistive technologies and the controller.
+  void UpdateSelection(ui::TreeModelNode* model_node,
+                       SelectionType selection_type);
 
   // Selects, expands or collapses nodes in the tree.  Consistent behavior for
   // tap gesture and click events.
@@ -354,6 +389,9 @@ class VIEWS_EXPORT TreeView : public View,
       ui::TreeModelNode* model_node,
       GetInternalNodeCreateType create_type);
 
+  // Returns the InternalNode for a virtual view.
+  InternalNode* GetInternalNodeForVirtualView(AXVirtualView* ax_view);
+
   // Returns the bounds for a node. This rectangle contains the node's icon,
   // text, arrow, and auxiliary text (if any). All of the other bounding
   // rectangles computed by the functions below lie inside this rectangle.
@@ -434,6 +472,9 @@ class VIEWS_EXPORT TreeView : public View,
 
   // The selected node, may be null.
   InternalNode* selected_node_ = nullptr;
+
+  // The current active node, may be null.
+  InternalNode* active_node_ = nullptr;
 
   bool editing_ = false;
 

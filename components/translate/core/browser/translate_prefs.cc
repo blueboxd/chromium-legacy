@@ -5,6 +5,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 
 #include <algorithm>
+#include <limits>
 #include <memory>
 #include <set>
 #include <utility>
@@ -803,7 +804,7 @@ int TranslatePrefs::GetForceTriggerOnEnglishPagesCount() const {
 
 void TranslatePrefs::ReportForceTriggerOnEnglishPages() {
   int current_count = GetForceTriggerOnEnglishPagesCount();
-  if (current_count != -1)
+  if (current_count != -1 && current_count < std::numeric_limits<int>::max())
     prefs_->SetInteger(kForceTriggerTranslateCount, current_count + 1);
 }
 

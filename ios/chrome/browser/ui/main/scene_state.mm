@@ -32,9 +32,10 @@
 @synthesize window = _window;
 @synthesize windowID = _windowID;
 
-- (instancetype)init {
+- (instancetype)initWithAppState:(AppState*)appState {
   self = [super init];
   if (self) {
+    _appState = appState;
     _observers = [SceneStateObserverList
         observersWithProtocol:@protocol(SceneStateObserver)];
     if (@available(iOS 13, *)) {

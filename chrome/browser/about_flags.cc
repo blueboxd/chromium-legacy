@@ -1058,6 +1058,10 @@ const FeatureEntry::FeatureParam kOmniboxNTPZPSRemote[] = {
     {"ZeroSuggestVariant:1:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:7:*", "RemoteNoUrl"},
     {"ZeroSuggestVariant:8:*", "RemoteNoUrl"}};
+const FeatureEntry::FeatureParam kOmniboxNTPZPSRemoteLocal[] = {
+    {"ZeroSuggestVariant:1:*", "RemoteNoUrl,Local"},
+    {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"},
+    {"ZeroSuggestVariant:8:*", "RemoteNoUrl,Local"}};
 #else   // !defined(OS_ANDROID)
 const FeatureEntry::FeatureParam kNTPOmniboxZPSRemoteLocal[] = {
     {"ZeroSuggestVariant:1:*", "RemoteNoUrl,Local"},
@@ -1081,6 +1085,8 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
      base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3317456"},
     {"ZPS on NTP: Onboarding", kOmniboxNTPZPSRemote,
      base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3316638"},
+    {"ZPS on NTP: PZPS, Remote, Local", kOmniboxNTPZPSRemoteLocal,
+     base::size(kOmniboxNTPZPSRemoteLocal), /* variation_id */ "t3317569"},
 #else   // !defined(OS_ANDROID)
     {"NTP Omnibox - Remote History, Local History", kNTPOmniboxZPSRemoteLocal,
      base::size(kNTPOmniboxZPSRemoteLocal), "t3316133" /* variation_id */},
@@ -3668,6 +3674,11 @@ const FeatureEntry kFeatureEntries[] = {
     {"ntp-iframe-one-google-bar", flag_descriptions::kNtpIframeOneGoogleBarName,
      flag_descriptions::kNtpIframeOneGoogleBarDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(ntp_features::kIframeOneGoogleBar)},
+
+    {"ntp-one-google-bar-modal-overlays",
+     flag_descriptions::kNtpOneGoogleBarModalOverlaysName,
+     flag_descriptions::kNtpOneGoogleBarModalOverlaysDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(ntp_features::kOneGoogleBarModalOverlays)},
 
     {"ntp-realbox", flag_descriptions::kNtpRealboxName,
      flag_descriptions::kNtpRealboxDescription, kOsDesktop,

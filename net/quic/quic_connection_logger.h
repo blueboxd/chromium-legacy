@@ -109,6 +109,10 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnSuccessfulVersionNegotiation(
       const quic::ParsedQuicVersion& version) override;
   void OnRttChanged(quic::QuicTime::Delta rtt) const override;
+  void OnTransportParametersSent(
+      const quic::TransportParameters& transport_parameters) override;
+  void OnTransportParametersReceived(
+      const quic::TransportParameters& transport_parameters) override;
 
   void OnCryptoHandshakeMessageReceived(
       const quic::CryptoHandshakeMessage& message);

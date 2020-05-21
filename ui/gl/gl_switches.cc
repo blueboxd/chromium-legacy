@@ -201,6 +201,12 @@ const base::Feature kDirectCompositionPresentationFeedback{
 const base::Feature kDirectCompositionSoftwareOverlays{
     "DirectCompositionSoftwareOverlays", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow putting a video swapchain underneath the main swapchain, so overlays
+// can be used even if there are controls on top of the video. It can be
+// enabled only when overlay is supported.
+const base::Feature kDirectCompositionUnderlays{
+    "DirectCompositionUnderlays", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Use decode swap chain created from compatible video decoder buffers.
 const base::Feature kDirectCompositionUseNV12DecodeSwapChain{
     "DirectCompositionUseNV12DecodeSwapChain",

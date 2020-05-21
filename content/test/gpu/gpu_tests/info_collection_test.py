@@ -4,6 +4,7 @@
 
 from gpu_tests import gpu_integration_test
 
+import os
 import sys
 
 
@@ -138,6 +139,13 @@ class InfoCollectionTest(gpu_integration_test.GpuIntegrationTest):
     if type(value) is bool:
       return 'supported' if value else 'unsupported'
     assert False
+
+  @classmethod
+  def ExpectationsFiles(cls):
+    return [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                     'test_expectations', 'info_collection_expectations.txt')
+    ]
 
 
 def load_tests(loader, tests, pattern):

@@ -50,6 +50,13 @@ class AppElement extends PolymerElement {
       },
 
       /** @private */
+      oneGoogleBarModalOverlaysEnabled_: {
+        type: Boolean,
+        value: () =>
+            loadTimeData.getBoolean('oneGoogleBarModalOverlaysEnabled'),
+      },
+
+      /** @private */
       oneGoogleBarIframePath_: {
         type: String,
         value: () => {
@@ -63,6 +70,7 @@ class AppElement extends PolymerElement {
 
       /** @private */
       oneGoogleBarLoaded_: {
+        observer: 'oneGoogleBarLoadedChange_',
         type: Boolean,
         value: false,
       },
@@ -589,13 +597,23 @@ class AppElement extends PolymerElement {
   /**
    * Handles messages from the OneGoogleBar iframe. The messages that are
    * handled include show bar on load and overlay updates.
+   *
    * 'overlaysUpdated' message includes the updated array of overlay rects that
    * are shown.
+   *
+   * When modal overlays are enabled, activate/deactivate controls if the
+   * OneGoogleBar is layered on top of #content with a backdrop. This would
+   * happen when OneGoogleBar has an overlay open.
    * @param {!Object} data
    * @private
    */
   handleOneGoogleBarMessage_(data) {
     if (data.messageType === 'loaded') {
+      if (!this.oneGoogleBarModalOverlaysEnabled_) {
+        const oneGoogleBar = $$(this, '#oneGoogleBar');
+        oneGoogleBar.style.clipPath = 'url(#oneGoogleBarClipPath)';
+        oneGoogleBar.style.zIndex = '1000';
+      }
       this.oneGoogleBarLoaded_ = true;
       BrowserProxy.getInstance().handler.onOneGoogleBarRendered(
           BrowserProxy.getInstance().now());
@@ -615,6 +633,12 @@ class AppElement extends PolymerElement {
         rectElement.setAttribute('height', height + 16);
         this.$.oneGoogleBarClipPath.appendChild(rectElement);
       });
+    } else if (data.messageType === 'activate') {
+      this.$.oneGoogleBarOverlayBackdrop.toggleAttribute('show', true);
+      $$(this, '#oneGoogleBar').style.zIndex = '1000';
+    } else if (data.messageType === 'deactivate') {
+      this.$.oneGoogleBarOverlayBackdrop.toggleAttribute('show', false);
+      $$(this, '#oneGoogleBar').style.zIndex = '0';
     }
   }
 
@@ -641,6 +665,58 @@ class AppElement extends PolymerElement {
       BrowserProxy.getInstance().handler.onPromoLinkClicked(
           BrowserProxy.getInstance().now());
     }
+  }
+
+  /** @private */
+  oneGoogleBarLoadedChange_() {
+    if (this.oneGoogleBarLoaded_ && this.iframeOneGoogleBarEnabled_ &&
+        this.oneGoogleBarModalOverlaysEnabled_) {
+      this.setupShortcutDragDropOneGoogleBarWorkaround_();
+    }
+  }
+
+  /**
+   * During a shortcut drag, an iframe behind ntp-most-visited will prevent
+   * 'dragover' events from firing. To workaround this, 'pointer-events: none'
+   * can be set on the iframe. When doing this after the 'dragstart' event is
+   * fired is too late. We can instead set 'pointer-events: none' when the
+   * pointer enters ntp-most-visited.
+   *
+   * 'pointerenter' and pointerleave' events fire during drag. The iframe
+   * 'pointer-events' needs to be reset to the original value when 'dragend'
+   * fires if the pointer has left ntp-most-visited.
+   * @private
+   */
+  setupShortcutDragDropOneGoogleBarWorkaround_() {
+    const iframe = $$(this, '#oneGoogleBar');
+    let resetAtDragEnd = false;
+    let dragging = false;
+    let originalPointerEvents;
+    this.eventTracker_.add(this.$.mostVisited, 'pointerenter', () => {
+      if (dragging) {
+        resetAtDragEnd = false;
+        return;
+      }
+      originalPointerEvents = getComputedStyle(iframe).pointerEvents;
+      iframe.style.pointerEvents = 'none';
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'pointerleave', () => {
+      if (dragging) {
+        resetAtDragEnd = true;
+        return;
+      }
+      iframe.style.pointerEvents = originalPointerEvents;
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'dragstart', () => {
+      dragging = true;
+    });
+    this.eventTracker_.add(this.$.mostVisited, 'dragend', () => {
+      dragging = false;
+      if (resetAtDragEnd) {
+        resetAtDragEnd = false;
+        iframe.style.pointerEvents = originalPointerEvents;
+      }
+    });
   }
 
   /** @private */

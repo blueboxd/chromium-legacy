@@ -44,6 +44,12 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   SkColor GetSystemButtonPressedColor(SkColor base_color) const override;
 
   // Overridden from NativeThemeBase:
+  void Paint(cc::PaintCanvas* canvas,
+             Part part,
+             State state,
+             const gfx::Rect& rect,
+             const ExtraParams& extra,
+             ColorScheme color_scheme) const override;
   void PaintMenuPopupBackground(
       cc::PaintCanvas* canvas,
       const gfx::Size& size,
@@ -54,6 +60,20 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
                                const gfx::Rect& rect,
                                const MenuItemExtraParams& menu_item,
                                ColorScheme color_scheme) const override;
+  void PaintMacScrollbarThumb(cc::PaintCanvas* canvas,
+                              Part part,
+                              State state,
+                              const gfx::Rect& rect,
+                              const ScrollbarExtraParams& scroll_thumb,
+                              ColorScheme color_scheme) const;
+  // Paint the track. |track_bounds| is the bounds for the track.
+  void PaintMacScrollBarTrackOrCorner(cc::PaintCanvas* canvas,
+                                      Part part,
+                                      State state,
+                                      const ScrollbarExtraParams& extra_params,
+                                      const gfx::Rect& rect,
+                                      ColorScheme color_scheme,
+                                      bool is_corner) const;
 
   // Paints the styled button shape used for default controls on Mac. The basic
   // style is used for dialog buttons, comboboxes, and tabbed pane tabs.
@@ -80,6 +100,22 @@ class NATIVE_THEME_EXPORT NativeThemeMac : public NativeThemeBase {
   void PaintSelectedMenuItem(cc::PaintCanvas* canvas,
                              const gfx::Rect& rect,
                              ColorScheme color_scheme) const;
+
+  void PaintScrollBarTrackGradient(cc::PaintCanvas* canvas,
+                                   const gfx::Rect& rect,
+                                   const ScrollbarExtraParams& extra_params,
+                                   bool is_corner,
+                                   ColorScheme color_scheme) const;
+  void PaintScrollbarTrackInnerBorder(cc::PaintCanvas* canvas,
+                                      const gfx::Rect& rect,
+                                      const ScrollbarExtraParams& extra_params,
+                                      bool is_corner,
+                                      ColorScheme color_scheme) const;
+  void PaintScrollbarTrackOuterBorder(cc::PaintCanvas* canvas,
+                                      const gfx::Rect& rect,
+                                      const ScrollbarExtraParams& extra_params,
+                                      bool is_corner,
+                                      ColorScheme color_scheme) const;
 
   void InitializeDarkModeStateAndObserver();
 

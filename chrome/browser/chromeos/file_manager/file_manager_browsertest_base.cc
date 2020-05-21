@@ -714,6 +714,7 @@ std::ostream& operator<<(std::ostream& out,
   PRINT_IF_NOT_DEFAULT(smbfs)
   PRINT_IF_NOT_DEFAULT(tablet_mode)
   PRINT_IF_NOT_DEFAULT(zip)
+  PRINT_IF_NOT_DEFAULT(zip_no_nacl)
 
 #undef PRINT_IF_NOT_DEFAULT
 
@@ -1562,6 +1563,12 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
 
   if (opts.smbfs) {
     enabled_features.push_back(features::kSmbFs);
+  }
+
+  if (opts.zip_no_nacl) {
+    enabled_features.push_back(chromeos::features::kFilesZipNoNaCl);
+  } else {
+    disabled_features.push_back(chromeos::features::kFilesZipNoNaCl);
   }
 
   // This is destroyed in |TearDown()|. We cannot initialize this in the

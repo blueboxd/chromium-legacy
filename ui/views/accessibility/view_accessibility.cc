@@ -206,7 +206,7 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
     return;
   }
 
-  if (view_->IsAccessibilityFocusable())
+  if (view_->IsAccessibilityFocusable() && !focused_virtual_child_)
     data->AddState(ax::mojom::State::kFocusable);
 
   if (!view_->GetEnabled())
@@ -224,10 +224,13 @@ void ViewAccessibility::OverrideFocus(AXVirtualView* virtual_view) {
       << "|virtual_view| must be nullptr or a descendant of this view.";
   focused_virtual_child_ = virtual_view;
 
-  if (focused_virtual_child_) {
-    focused_virtual_child_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
-  } else {
-    view_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  if (view_->HasFocus()) {
+    if (focused_virtual_child_) {
+      focused_virtual_child_->NotifyAccessibilityEvent(
+          ax::mojom::Event::kFocus);
+    } else {
+      view_->NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+    }
   }
 }
 

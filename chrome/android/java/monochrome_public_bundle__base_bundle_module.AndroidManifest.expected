@@ -506,6 +506,11 @@
         android:theme="@android:style/Theme.NoDisplay"/>
     <activity
         android:excludeFromRecents="true"
+        android:exported="false"
+        android:name="org.chromium.chrome.browser.sync.ui.TrustedVaultKeyRetrievalProxyActivity"
+        android:theme="@android:style/Theme.NoDisplay"/>
+    <activity
+        android:excludeFromRecents="true"
         android:name="org.chromium.chrome.browser.webapps.WebappLauncherActivity"
         android:taskAffinity=""
         android:theme="@android:style/Theme.NoDisplay">

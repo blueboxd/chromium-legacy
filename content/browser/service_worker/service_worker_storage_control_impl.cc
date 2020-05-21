@@ -68,15 +68,6 @@ void DidGetRegistrationsForOrigin(
   std::move(callback).Run(status, std::move(registrations));
 }
 
-void DidGetUserData(
-    ServiceWorkerStorageControlImpl::GetUserDataCallback callback,
-    const std::vector<std::string>& values,
-    storage::mojom::ServiceWorkerDatabaseStatus status) {
-  // TODO(bashi): Change ServiceWorkerStorage::GetUserDataInDBCallback to remove
-  // this indirection (the order of |values| and |status| is different).
-  std::move(callback).Run(status, values);
-}
-
 void DidGetKeysAndUserData(
     ServiceWorkerStorageControlImpl::GetUserKeysAndDataByKeyPrefixCallback
         callback,
@@ -251,8 +242,7 @@ void ServiceWorkerStorageControlImpl::GetUserData(
     int64_t registration_id,
     const std::vector<std::string>& keys,
     GetUserDataCallback callback) {
-  storage_->GetUserData(registration_id, keys,
-                        base::BindOnce(&DidGetUserData, std::move(callback)));
+  storage_->GetUserData(registration_id, keys, std::move(callback));
 }
 
 void ServiceWorkerStorageControlImpl::StoreUserData(
@@ -275,9 +265,8 @@ void ServiceWorkerStorageControlImpl::GetUserDataByKeyPrefix(
     int64_t registration_id,
     const std::string& key_prefix,
     GetUserDataByKeyPrefixCallback callback) {
-  storage_->GetUserDataByKeyPrefix(
-      registration_id, key_prefix,
-      base::BindOnce(&DidGetUserData, std::move(callback)));
+  storage_->GetUserDataByKeyPrefix(registration_id, key_prefix,
+                                   std::move(callback));
 }
 
 void ServiceWorkerStorageControlImpl::GetUserKeysAndDataByKeyPrefix(

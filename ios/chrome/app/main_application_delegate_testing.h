@@ -12,7 +12,6 @@
 
 @interface MainApplicationDelegate ()
 @property(nonatomic, readonly) MainController* mainController;
-@property(nonatomic, readonly) AppState* appState;
 
 + (MainController*)sharedMainController;
 + (AppState*)sharedAppState;

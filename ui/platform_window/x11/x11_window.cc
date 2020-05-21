@@ -93,7 +93,7 @@ ui::XWindow::Configuration ConvertInitPropertiesToXWindowConfig(
 // Coalesce touch/mouse events if needed
 bool CoalesceEventsIfNeeded(XEvent* const xev, EventType type, XEvent* out) {
   if (xev->type == MotionNotify ||
-      (xev->type == GenericEvent &&
+      (xev->type == x11::XProto::GeGenericEvent::opcode &&
        (type == ui::ET_TOUCH_MOVED || type == ui::ET_MOUSE_MOVED ||
         type == ui::ET_MOUSE_DRAGGED))) {
     return ui::CoalescePendingMotionEvents(xev, out) > 0;

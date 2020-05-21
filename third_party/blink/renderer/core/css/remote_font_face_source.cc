@@ -359,7 +359,7 @@ RemoteFontFaceSource::CreateLoadingFallbackFontData(
 }
 
 void RemoteFontFaceSource::BeginLoadIfNeeded() {
-  if (IsLoaded())
+  if (IsLoaded() || !font_selector_->GetExecutionContext())
     return;
   DCHECK(GetResource());
 

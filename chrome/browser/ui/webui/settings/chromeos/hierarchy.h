@@ -10,8 +10,11 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_identifier.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 
 namespace chromeos {
 namespace settings {
@@ -35,23 +38,52 @@ class OsSettingsSections;
 // Wi-Fi, and the alternate location is the one embedded in the Network section.
 class Hierarchy {
  public:
-  explicit Hierarchy(const OsSettingsSections& sections);
+  explicit Hierarchy(const OsSettingsSections* sections);
   Hierarchy(const Hierarchy& other) = delete;
   Hierarchy& operator=(const Hierarchy& other) = delete;
   virtual ~Hierarchy();
 
-  struct SubpageMetadata {
-    SubpageMetadata(int name_message_id, mojom::Section section);
-
-    // Message ID corresponding to the localized string used to describe this
-    // subpage.
-    int name_message_id;
+  class SubpageMetadata {
+   public:
+    SubpageMetadata(int name_message_id,
+                    mojom::Section section,
+                    mojom::Subpage subpage,
+                    mojom::SearchResultIcon icon,
+                    mojom::SearchResultDefaultRank default_rank,
+                    const std::string& url_path_with_parameters,
+                    const Hierarchy* hierarchy);
+    ~SubpageMetadata();
 
     // The section in which the subpage appears.
     mojom::Section section;
 
     // The parent subpage, if applicable. Only applies to nested subpages.
     base::Optional<mojom::Subpage> parent_subpage;
+
+    // Generates a search result for this subpage, using the canonical search
+    // tag as the search result text. |relevance_score| must be passed by the
+    // client, since this result is being created manually instead of via query
+    // matching.
+    mojom::SearchResultPtr ToSearchResult(double relevance_score) const;
+
+   private:
+    mojom::Subpage subpage_;
+
+    // Message ID corresponding to the localized string used to describe this
+    // subpage.
+    int name_message_id_;
+
+    // Icon used for this subpage.
+    mojom::SearchResultIcon icon_;
+
+    // Default rank; used to order returned results.
+    mojom::SearchResultDefaultRank default_rank_;
+
+    // Static URL path, which may need to be modified via
+    // |modify_url_callback_|.
+    std::string unmodified_url_path_with_parameters_;
+
+    const Hierarchy* hierarchy_;
   };
 
   // The location of a setting, which includes its section and, if applicable,
@@ -72,6 +104,13 @@ class Hierarchy {
     std::vector<SettingLocation> alternates;
   };
 
+  // Generates a search result corresponding to |section|. |relevance_score|
+  // must be passed by the client, since this result is being created manually
+  // instead of via query matching.
+  mojom::SearchResultPtr GenerateSectionSearchResult(
+      mojom::Section section,
+      double relevance_score) const;
+
   const SubpageMetadata& GetSubpageMetadata(mojom::Subpage subpage) const;
   const SettingMetadata& GetSettingMetadata(mojom::Setting setting) const;
 
@@ -84,7 +123,19 @@ class Hierarchy {
 
  private:
   class PerSectionHierarchyGenerator;
+
+  virtual std::string ModifySearchResultUrl(
+      mojom::Section section,
+      mojom::SearchResultType type,
+      OsSettingsIdentifier id,
+      const std::string& url_to_modify) const;
+
+  const OsSettingsSections* sections_;
 };
+
+// TODO(https://crbug.com/1071700): Delete this function.
+std::vector<base::string16> GenerateDummySettingsHierarchyStrings(
+    const std::string& url_path_with_parameters);
 
 }  // namespace settings
 }  // namespace chromeos

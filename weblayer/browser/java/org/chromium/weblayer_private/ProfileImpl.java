@@ -119,7 +119,9 @@ public final class ProfileImpl extends IProfile.Stub implements BrowserContextHa
 
     @Override
     public long getNativeBrowserContextPointer() {
-        assert mNativeProfile != 0;
+        if (mNativeProfile == 0) {
+            return 0;
+        }
         return ProfileImplJni.get().getBrowserContext(mNativeProfile);
     }
 

@@ -49,6 +49,9 @@
         <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SELECT_CROS_JS"
                  file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_select_cros.js"
                  use_base_dir="false" compress="false" type="BINDATA"/>
+        <include name="IDR_PRINT_PREVIEW_UI_PRINT_PREVIEW_DESTINATION_DROPDOWN_CROS_JS"
+                 file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_dropdown_cros.js"
+                 use_base_dir="false" compress="false" type="BINDATA"/>
       </if>
       <include name="IDR_PRINT_PREVIEW_UI_DESTINATION_SELECT_CSS_JS"
                file="${root_gen_dir}/chrome/browser/resources/print_preview/ui/destination_select_css.js"

@@ -71,11 +71,31 @@ bool ConnectorsManager::IsConnectorEnabled(AnalysisConnector connector) {
   if (!base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled))
     return false;
 
-  if (connector_settings_.count(connector) == 1)
+  if (analysis_connector_settings_.count(connector) == 1)
     return true;
 
   const char* pref = ConnectorPref(connector);
   return pref && g_browser_process->local_state()->HasPrefPath(pref);
+}
+
+bool ConnectorsManager::IsConnectorEnabled(ReportingConnector connector) {
+  if (!base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled))
+    return false;
+
+  if (reporting_connector_settings_.count(connector) == 1)
+    return true;
+
+  const char* pref = ConnectorPref(connector);
+  return pref && g_browser_process->local_state()->HasPrefPath(pref);
+}
+
+base::Optional<ReportingSettings> ConnectorsManager::GetReportingSettings(
+    ReportingConnector connector) {
+  // Prioritize new Connector policies over legacy ones.
+  if (IsConnectorEnabled(connector))
+    return GetReportingSettingsFromConnectorPolicy(connector);
+
+  return GetReportingSettingsFromLegacyPolicies(connector);
 }
 
 base::Optional<AnalysisSettings> ConnectorsManager::GetAnalysisSettings(
@@ -92,21 +112,22 @@ base::Optional<AnalysisSettings>
 ConnectorsManager::GetAnalysisSettingsFromConnectorPolicy(
     const GURL& url,
     AnalysisConnector connector) {
-  if (connector_settings_.count(connector) == 0)
-    CacheConnectorPolicy(connector);
+  if (analysis_connector_settings_.count(connector) == 0)
+    CacheAnalysisConnectorPolicy(connector);
 
   // If the connector is still not in memory, it means the pref is set to an
   // empty list or that it is not a list.
-  if (connector_settings_.count(connector) == 0)
+  if (analysis_connector_settings_.count(connector) == 0)
     return base::nullopt;
 
   // While multiple services can be set by the connector policies, only the
   // first one is considered for now.
-  return connector_settings_[connector][0].GetAnalysisSettings(url);
+  return analysis_connector_settings_[connector][0].GetAnalysisSettings(url);
 }
 
-void ConnectorsManager::CacheConnectorPolicy(AnalysisConnector connector) {
-  connector_settings_.erase(connector);
+void ConnectorsManager::CacheAnalysisConnectorPolicy(
+    AnalysisConnector connector) {
+  analysis_connector_settings_.erase(connector);
 
   // Connectors with non-existing policies should not reach this code.
   const char* pref = ConnectorPref(connector);
@@ -116,7 +137,23 @@ void ConnectorsManager::CacheConnectorPolicy(AnalysisConnector connector) {
       g_browser_process->local_state()->GetList(pref);
   if (policy_value && policy_value->is_list()) {
     for (const base::Value& service_settings : policy_value->GetList())
-      connector_settings_[connector].emplace_back(service_settings);
+      analysis_connector_settings_[connector].emplace_back(service_settings);
+  }
+}
+
+void ConnectorsManager::CacheReportingConnectorPolicy(
+    ReportingConnector connector) {
+  reporting_connector_settings_.erase(connector);
+
+  // Connectors with non-existing policies should not reach this code.
+  const char* pref = ConnectorPref(connector);
+  DCHECK(pref);
+
+  const base::ListValue* policy_value =
+      g_browser_process->local_state()->GetList(pref);
+  if (policy_value && policy_value->is_list()) {
+    for (const base::Value& service_settings : policy_value->GetList())
+      reporting_connector_settings_[connector].emplace_back(service_settings);
   }
 }
 
@@ -253,12 +290,35 @@ std::set<std::string> ConnectorsManager::MatchURLAgainstLegacyPolicies(
   return tags;
 }
 
+base::Optional<ReportingSettings>
+ConnectorsManager::GetReportingSettingsFromConnectorPolicy(
+    ReportingConnector connector) {
+  if (reporting_connector_settings_.count(connector) == 0)
+    CacheReportingConnectorPolicy(connector);
+
+  // If the connector is still not in memory, it means the pref is set to an
+  // empty list or that it is not a list.
+  if (reporting_connector_settings_.count(connector) == 0)
+    return base::nullopt;
+
+  // While multiple services can be set by the connector policies, only the
+  // first one is considered for now.
+  return reporting_connector_settings_[connector][0].GetReportingSettings();
+}
+
+base::Optional<ReportingSettings>
+ConnectorsManager::GetReportingSettingsFromLegacyPolicies(
+    ReportingConnector connector) const {
+  return ReportingSettings();
+}
+
 void ConnectorsManager::StartObservingPrefs() {
   pref_change_registrar_.Init(g_browser_process->local_state());
   if (base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled)) {
     StartObservingPref(AnalysisConnector::FILE_ATTACHED);
     StartObservingPref(AnalysisConnector::FILE_DOWNLOADED);
     StartObservingPref(AnalysisConnector::BULK_DATA_ENTRY);
+    StartObservingPref(ReportingConnector::SECURITY_EVENT);
   }
 }
 
@@ -267,14 +327,31 @@ void ConnectorsManager::StartObservingPref(AnalysisConnector connector) {
   DCHECK(pref);
   if (!pref_change_registrar_.IsObserved(pref)) {
     pref_change_registrar_.Add(
-        pref, base::BindRepeating(&ConnectorsManager::CacheConnectorPolicy,
-                                  base::Unretained(this), connector));
+        pref,
+        base::BindRepeating(&ConnectorsManager::CacheAnalysisConnectorPolicy,
+                            base::Unretained(this), connector));
+  }
+}
+
+void ConnectorsManager::StartObservingPref(ReportingConnector connector) {
+  const char* pref = ConnectorPref(connector);
+  DCHECK(pref);
+  if (!pref_change_registrar_.IsObserved(pref)) {
+    pref_change_registrar_.Add(
+        pref,
+        base::BindRepeating(&ConnectorsManager::CacheReportingConnectorPolicy,
+                            base::Unretained(this), connector));
   }
 }
 
 const ConnectorsManager::AnalysisConnectorsSettings&
 ConnectorsManager::GetAnalysisConnectorsSettingsForTesting() const {
-  return connector_settings_;
+  return analysis_connector_settings_;
+}
+
+const ConnectorsManager::ReportingConnectorsSettings&
+ConnectorsManager::GetReportingConnectorsSettingsForTesting() const {
+  return reporting_connector_settings_;
 }
 
 void ConnectorsManager::SetUpForTesting() {
@@ -283,7 +360,8 @@ void ConnectorsManager::SetUpForTesting() {
 
 void ConnectorsManager::TearDownForTesting() {
   pref_change_registrar_.RemoveAll();
-  connector_settings_.clear();
+  analysis_connector_settings_.clear();
+  reporting_connector_settings_.clear();
 }
 
 }  // namespace enterprise_connectors

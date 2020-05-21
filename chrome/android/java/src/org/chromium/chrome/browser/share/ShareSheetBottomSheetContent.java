@@ -26,7 +26,7 @@ import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Bottom sheet content to display a 2-row custom share sheet.
@@ -42,7 +42,7 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
      *
      * @param context The context the share sheet was launched from.
      */
-    public ShareSheetBottomSheetContent(Context context) {
+    ShareSheetBottomSheetContent(Context context) {
         mContext = context;
 
         createContentView();
@@ -60,8 +60,8 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
      * @param topRowModels The PropertyModels used to build the top row.
      * @param bottomRowModels The PropertyModels used to build the bottom row.
      */
-    public void createRecyclerViews(
-            ArrayList<PropertyModel> topRowModels, ArrayList<PropertyModel> bottomRowModels) {
+    void createRecyclerViews(
+            List<PropertyModel> topRowModels, List<PropertyModel> bottomRowModels) {
         RecyclerView topRow = this.getContentView().findViewById(R.id.share_sheet_chrome_apps);
         if (topRowModels != null && topRowModels.size() > 0) {
             View divider = this.getContentView().findViewById(R.id.share_sheet_divider);
@@ -78,7 +78,7 @@ public class ShareSheetBottomSheetContent implements BottomSheetContent, OnItemC
                 new ScrollEventReporter("SharingHubAndroid.BottomRowScrolled"));
     }
 
-    private void populateView(ArrayList<PropertyModel> models, RecyclerView view) {
+    private void populateView(List<PropertyModel> models, RecyclerView view) {
         ModelList modelList = new ModelList();
         for (PropertyModel model : models) {
             modelList.add(new ListItem(SHARE_SHEET_ITEM, model));

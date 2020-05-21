@@ -27,6 +27,7 @@ Connection* Connection::Get() {
   return instance;
 }
 
-Connection::Connection(XDisplay* display) : XProto(display) {}
+Connection::Connection(XDisplay* display)
+    : XProto(display), ExtensionManager(this) {}
 
 }  // namespace x11

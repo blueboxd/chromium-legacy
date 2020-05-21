@@ -1231,8 +1231,8 @@ void ServiceWorkerRegistry::DidDoomUncommittedResourceIds(
 
 void ServiceWorkerRegistry::DidGetUserData(
     GetUserDataCallback callback,
-    const std::vector<std::string>& data,
-    storage::mojom::ServiceWorkerDatabaseStatus status) {
+    storage::mojom::ServiceWorkerDatabaseStatus status,
+    const std::vector<std::string>& data) {
   if (status != storage::mojom::ServiceWorkerDatabaseStatus::kOk &&
       status != storage::mojom::ServiceWorkerDatabaseStatus::kErrorNotFound) {
     ScheduleDeleteAndStartOver();

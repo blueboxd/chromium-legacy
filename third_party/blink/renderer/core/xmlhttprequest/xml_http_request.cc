@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/editing/serializers/serialization.h"
 #include "third_party/blink/renderer/core/events/progress_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/fetch/trust_token_issuance_authorization.h"
 #include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -1473,6 +1474,17 @@ void XMLHttpRequest::setTrustToken(const TrustToken* trust_token,
         DOMExceptionCode::kNotAllowedError,
         "Trust Tokens redemption and signing require the "
         "trust-token-redemption Feature Policy feature.");
+    return;
+  }
+
+  if (params->type ==
+          network::mojom::blink::TrustTokenOperationType::kIssuance &&
+      !IsTrustTokenIssuanceAvailableInExecutionContext(
+          *GetExecutionContext())) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotAllowedError,
+        "Trust Tokens issuance is disabled except in "
+        "contexts with the TrustTokens Origin Trial enabled.");
     return;
   }
 

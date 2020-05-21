@@ -74,6 +74,7 @@ void FullscreenElementChanged(Document& document,
     DCHECK_NE(old_element, Fullscreen::FullscreenElementFrom(document));
 
     old_element->PseudoStateChanged(CSSSelector::kPseudoFullScreen);
+    old_element->PseudoStateChanged(CSSSelector::kPseudoFullscreen);
 
     old_element->SetContainsFullScreenElement(false);
     old_element->SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(
@@ -84,6 +85,7 @@ void FullscreenElementChanged(Document& document,
     DCHECK_EQ(new_element, Fullscreen::FullscreenElementFrom(document));
 
     new_element->PseudoStateChanged(CSSSelector::kPseudoFullScreen);
+    new_element->PseudoStateChanged(CSSSelector::kPseudoFullscreen);
 
     // OOPIF: For RequestType::PrefixedForCrossProcessDescendant, |new_element|
     // is the iframe element for the out-of-process frame that contains the

@@ -19,6 +19,7 @@
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_data.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service_factory.h"
 #include "chrome/browser/search/promos/promo_data.h"
@@ -249,6 +250,10 @@ void UntrustedSource::OnOneGoogleBarDataUpdated() {
   if (data.has_value()) {
     ui::TemplateReplacements replacements;
     replacements["textdirection"] = base::i18n::IsRTL() ? "rtl" : "ltr";
+    replacements["modalOverlays"] =
+        base::FeatureList::IsEnabled(ntp_features::kOneGoogleBarModalOverlays)
+            ? "modal-overlays"
+            : "";
     replacements["barHtml"] = data->bar_html;
     replacements["inHeadScript"] = data->in_head_script;
     replacements["inHeadStyle"] = data->in_head_style;

@@ -50,8 +50,15 @@ VirtualAuthenticator* VirtualFidoDiscoveryFactory::CreateAuthenticator(
   auto authenticator = std::make_unique<VirtualAuthenticator>(
       protocol, transport, attachment, has_resident_key, has_user_verification);
   auto* authenticator_ptr = authenticator.get();
-  authenticators_.emplace(authenticator_ptr->unique_id(),
-                          std::move(authenticator));
+  bool was_inserted;
+  std::tie(std::ignore, was_inserted) = authenticators_.insert(
+      {authenticator_ptr->unique_id(), std::move(authenticator)});
+  if (!was_inserted) {
+    // unique_id() is unique, so map insertion should succeed. But let's be
+    // paranoid so we don't accidentally return a dangling pointer.
+    NOTREACHED();
+    return nullptr;
+  }
 
   for (auto* discovery : discoveries_) {
     if (discovery->transport() != authenticator_ptr->transport())
@@ -119,6 +126,10 @@ void VirtualFidoDiscoveryFactory::CreateAuthenticator(
   auto* authenticator = CreateAuthenticator(
       options->protocol, options->transport, options->attachment,
       options->has_resident_key, options->has_user_verification);
+  if (!authenticator) {
+    std::move(callback).Run(mojo::NullRemote());
+    return;
+  }
   authenticator->SetUserPresence(options->is_user_present);
 
   std::move(callback).Run(GetMojoToVirtualAuthenticator(authenticator));

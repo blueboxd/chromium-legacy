@@ -9,8 +9,16 @@
 #include "base/android/jni_string.h"
 #include "base/check_op.h"
 #include "chrome/android/chrome_jni_headers/FeedServiceBridge_jni.h"
+#include "chrome/browser/android/feed/v2/feed_service_factory.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "components/feed/core/v2/public/feed_service.h"
 
 namespace feed {
+
+static jboolean JNI_FeedServiceBridge_IsEnabled(JNIEnv* env) {
+  return FeedServiceBridge::IsEnabled();
+}
 
 std::string FeedServiceBridge::GetLanguageTag() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -29,6 +37,12 @@ DisplayMetrics FeedServiceBridge::GetDisplayMetrics() {
   result.width_pixels = numbers[1];
   result.height_pixels = numbers[2];
   return result;
+}
+
+bool FeedServiceBridge::IsEnabled() {
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  return FeedServiceFactory::GetForBrowserContext(profile)->IsEnabled(
+      *profile->GetPrefs());
 }
 
 }  // namespace feed

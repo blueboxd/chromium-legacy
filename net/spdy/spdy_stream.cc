@@ -35,11 +35,11 @@ namespace {
 
 base::Value NetLogSpdyStreamErrorParams(spdy::SpdyStreamId stream_id,
                                         int net_error,
-                                        const std::string* description) {
+                                        base::StringPiece description) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetIntKey("stream_id", static_cast<int>(stream_id));
   dict.SetStringKey("net_error", ErrorToShortString(net_error));
-  dict.SetStringKey("description", *description);
+  dict.SetStringKey("description", description);
   return dict;
 }
 
@@ -660,9 +660,9 @@ int SpdyStream::OnDataSent(size_t frame_size) {
   }
 }
 
-void SpdyStream::LogStreamError(int error, const std::string& description) {
+void SpdyStream::LogStreamError(int error, base::StringPiece description) {
   net_log_.AddEvent(NetLogEventType::HTTP2_STREAM_ERROR, [&] {
-    return NetLogSpdyStreamErrorParams(stream_id_, error, &description);
+    return NetLogSpdyStreamErrorParams(stream_id_, error, description);
   });
 }
 

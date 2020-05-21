@@ -150,8 +150,8 @@ class ASH_EXPORT ShelfLayoutManager
   void ProcessGestureEventOfInAppHotseat(ui::GestureEvent* event,
                                          aura::Window* target);
 
-  // Updates the auto-dim state.
-  void SetDimmed(bool dimmed);
+  // Updates the auto-dim state. Returns true if successful.
+  bool SetDimmed(bool dimmed);
 
   void AddObserver(ShelfLayoutManagerObserver* observer);
   void RemoveObserver(ShelfLayoutManagerObserver* observer);

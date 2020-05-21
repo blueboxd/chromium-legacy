@@ -50,23 +50,13 @@ void AmbientPhotoController::StartScreenUpdate() {
 
 void AmbientPhotoController::StopScreenUpdate() {
   photo_refresh_timer_.Stop();
+  topic_index_ = 0;
   ambient_backend_model_.Clear();
   weak_factory_.InvalidateWeakPtrs();
 }
 
 void AmbientPhotoController::OnTopicsChanged() {
-  RefreshImage();
-}
-
-void AmbientPhotoController::RefreshImage() {
-  if (ambient_backend_model_.ShouldFetchImmediately()) {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AmbientPhotoController::GetNextImage,
-                                  weak_factory_.GetWeakPtr()));
-  } else {
-    ambient_backend_model_.ShowNextImage();
-    ScheduleRefreshImage();
-  }
+  ScheduleRefreshImage();
 }
 
 void AmbientPhotoController::ScheduleRefreshImage() {
@@ -76,16 +66,26 @@ void AmbientPhotoController::ScheduleRefreshImage() {
 
   // |photo_refresh_timer_| will start immediately if ShouldFetchImmediately()
   // is true.
-  // TODO(b/156271483): Consolidate RefreshImage() and ScheduleRefreshImage() to
-  // only check ShouldFetchImmediately() once.
   photo_refresh_timer_.Start(
       FROM_HERE, refresh_interval,
-      base::BindOnce(&AmbientPhotoController::RefreshImage,
+      base::BindOnce(&AmbientPhotoController::GetNextImage,
                      weak_factory_.GetWeakPtr()));
 }
 
+const AmbientModeTopic& AmbientPhotoController::GetNextTopic() {
+  const auto& topics = ambient_backend_model_.topics();
+  DCHECK(!topics.empty());
+
+  const auto& topic = topics[topic_index_];
+  ++topic_index_;
+  if (topic_index_ == topics.size())
+    topic_index_ = 0;
+
+  return topic;
+}
+
 void AmbientPhotoController::GetNextImage() {
-  const AmbientModeTopic& topic = ambient_backend_model_.GetNextTopic();
+  const AmbientModeTopic& topic = GetNextTopic();
   const std::string& image_url = topic.portrait_image_url.value_or(topic.url);
   DownloadImageFromUrl(
       image_url, base::BindOnce(&AmbientPhotoController::OnPhotoDownloaded,
@@ -104,6 +104,8 @@ void AmbientPhotoController::OnScreenUpdateInfoFetched(
   }
 
   ambient_backend_model_.SetTopics(screen_update.next_topics);
+  topic_index_ = 0;
+
   StartDownloadingWeatherConditionIcon(screen_update);
 }
 

@@ -1218,7 +1218,7 @@ TEST_F('ChromeVoxEditingTest', 'BackwardWordDelete', function() {
               .expectBraille('this\u00a0mled', {startIndex: 5, endIndex: 5})
               .call(this.press(8 /* backspace */, {ctrl: true}))
               .expectSpeech('this , deleted')
-              .expectBraille(' ed mled', {startIndex: 0, endIndex: 0})
+              .expectBraille(' mled', {startIndex: 0, endIndex: 0})
               .replay();
         });
         input.focus();

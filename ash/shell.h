@@ -169,7 +169,6 @@ class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
 class ShellObserver;
-class ShellState;
 class ShutdownControllerImpl;
 class SmsObserver;
 class SnapController;
@@ -238,10 +237,14 @@ class ASH_EXPORT Shell : public SessionObserver,
   // has a launcher.
   static aura::Window* GetPrimaryRootWindow();
 
+  // Sets the root window that newly created windows should be added to.
+  static void SetRootWindowForNewWindows(aura::Window* root);
+
   // Returns the root window that newly created windows should be added to.
-  // Value can be temporarily overridden using ScopedRootWindowForNewWindows.
-  // NOTE: this returns the root, newly created window should be added to the
-  // appropriate container in the returned window.
+  // Value can be temporarily overridden using
+  // display::ScopedDisplayForNewWindows. NOTE: this returns the root, newly
+  // created window should be added to the appropriate container in the returned
+  // window.
   static aura::Window* GetRootWindowForNewWindows();
 
   // Returns all root windows.
@@ -468,7 +471,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   ShelfConfig* shelf_config() { return shelf_config_.get(); }
   ShelfController* shelf_controller() { return shelf_controller_.get(); }
   ShellDelegate* shell_delegate() { return shell_delegate_.get(); }
-  ShellState* shell_state() { return shell_state_.get(); }
   ShutdownControllerImpl* shutdown_controller() {
     return shutdown_controller_.get();
   }
@@ -683,7 +685,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
-  std::unique_ptr<ShellState> shell_state_;
   std::unique_ptr<ShutdownControllerImpl> shutdown_controller_;
   std::unique_ptr<SystemNotificationController> system_notification_controller_;
   std::unique_ptr<SystemTrayModel> system_tray_model_;

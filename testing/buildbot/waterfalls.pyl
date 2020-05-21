@@ -2800,8 +2800,6 @@
           'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       # TODO(crbug.com/1004523) Delete 'Win10 x64 Release (NVIDIA) Code Coverage'
       # when 'Win10 x64 Release (NVIDIA)' has code coverage enabled by default.
@@ -2817,8 +2815,6 @@
           'gpu_telemetry_tests': 'gpu_common_win_and_linux_telemetry_tests',
           'isolated_scripts': 'rendering_desktop_representative_perf_tests_isolated_scripts',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
     },
   },
@@ -3146,7 +3142,7 @@
           'chromeos-amd64-generic',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
         },
       },
       'ChromeOS FYI Release (kevin)': {
@@ -3161,7 +3157,7 @@
           'limited_capacity_bot',
         ],
         'test_suites': {
-          'gpu_telemetry_tests': 'gpu_noop_sleep_telemetry_test',
+          'gpu_telemetry_tests': 'gpu_fyi_chromeos_release_telemetry_tests',
         },
       },
       'GPU FYI Fuchsia Builder' : {
@@ -3614,8 +3610,6 @@
           'isolated_scripts': 'gpu_angle_fyi_win_optional_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_optional_win_telemetry_tests',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       # END Fake builder used as mirror targets for Optional GPU tryservers
       'Win10 FYI x64 DX12 Vulkan Debug (NVIDIA)': {
@@ -3741,8 +3735,6 @@
           'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       'Win10 FYI x64 Release XR Perf (NVIDIA)': {
         'os_type': 'win',
@@ -3799,7 +3791,6 @@
         'test_suites': {
           'gtest_tests': 'gpu_angle_deqp_win_nvidia_gtests',
         },
-        'use_multi_dimension_trigger_script': True,
       },
       'Win10 FYI x86 Release (NVIDIA)': {
         'browser_config': 'release',
@@ -3812,8 +3803,6 @@
           'isolated_scripts': 'gpu_angle_fyi_win_optional_and_representative_perf_isolated_scripts',
           'gpu_telemetry_tests': 'gpu_fyi_win_release_telemetry_tests',
         },
-        # We keep this value enabled to provide minimal regression testing.
-        'use_multi_dimension_trigger_script': True,
       },
       # This tryserver doesn't actually exist; it's a separate
       # configuration from the Win AMD bot on this waterfall because we
@@ -3866,7 +3855,6 @@
           'gtest_tests': 'gpu_fyi_win7_gtests',
           'gpu_telemetry_tests': 'gpu_fyi_win_nvidia_amd_release_telemetry_tests',
         },
-        'use_multi_dimension_trigger_script': True,
       },
       'Win7 FYI dEQP Release (AMD)': {
         'os_type': 'win',
@@ -4252,6 +4240,12 @@
         'test_suites': {
           'isolated_scripts': 'ios_simulator_full_configs_test'
         },
+      },
+      'ios-simulator-noncq': {
+        'additional_compile_targets': [
+          'all'
+        ],
+        'test_suites': {},
       },
     },
   },

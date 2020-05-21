@@ -115,10 +115,11 @@ class ExternalProtocolHandler {
   // Starts a url using the external protocol handler with the help
   // of shellexecute. Should only be called if the protocol is allowlisted
   // (checked in LaunchUrl) or if the user explicitly allows it. (By selecting
-  // "Open Application" in an ExternalProtocolDialog.) It is assumed that the
-  // url has already been escaped, which happens in LaunchUrl.
+  // "Open Application" in an ExternalProtocolDialog.) |url| might be escaped
+  // already when calling into this function but e.g. from LaunchUrl but it
+  // doesn't have to be because is also escaped in it.
   // NOTE: You should NOT call this function directly unless you are sure the
-  // url you have has been checked against the denylist, and has been escaped.
+  // url you have has been checked against the denylist.
   // All calls to this function should originate in some way from LaunchUrl.
   static void LaunchUrlWithoutSecurityCheck(const GURL& url,
                                             content::WebContents* web_contents);

@@ -13,6 +13,7 @@ Polymer({
 
   behaviors: [
     FindShortcutBehavior,
+    I18nBehavior,
     Polymer.IronResizableBehavior,
     settings.RouteObserverBehavior,
   ],
@@ -156,6 +157,16 @@ Polymer({
   /** @private */
   onSearchChanged_(e) {
     this.searchTerm = e.detail;
+  },
+
+  /** @private */
+  getBackButtonAriaLabel_() {
+    return this.i18n('subpageBackButtonAriaLabel', this.pageTitle);
+  },
+
+  /** @private */
+  getBackButtonAriaRoleDescription_() {
+    return this.i18n('subpageBackButtonAriaRoleDescription', this.pageTitle);
   },
 
   // Override FindShortcutBehavior methods.

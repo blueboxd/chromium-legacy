@@ -408,7 +408,8 @@ void LaunchCrostiniAppImpl(
     RecordAppLaunchHistogram(CrostiniAppLaunchAppType::kTerminal);
 
     if (base::FeatureList::IsEnabled(features::kTerminalSystemApp)) {
-      auto* browser = LaunchTerminal(profile, vm_name, container_name);
+      auto* browser =
+          LaunchTerminal(profile, display_id, vm_name, container_name);
       if (browser == nullptr) {
         RecordAppLaunchResultHistogram(crostini::CrostiniResult::UNKNOWN_ERROR);
       } else {
@@ -419,7 +420,8 @@ void LaunchCrostiniAppImpl(
 
     GURL vsh_in_crosh_url = GenerateVshInCroshUrl(
         profile, vm_name, container_name, std::vector<std::string>());
-    apps::AppLaunchParams launch_params = GenerateTerminalAppLaunchParams();
+    apps::AppLaunchParams launch_params =
+        GenerateTerminalAppLaunchParams(display_id);
     // Create the terminal here so it's created in the right display. If the
     // browser creation is delayed into the callback the root window for new
     // windows setting can be changed due to the launcher or shelf dismissal.

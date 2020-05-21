@@ -186,24 +186,6 @@ bool FloatEquals(float f1, float f2) {
          kEpsilonScale * fmaxf(fmaxf(fabsf(f1), fabsf(f2)), kEpsilonScale);
 }
 
-using GetFormFieldPropertyFunction =
-    base::RepeatingCallback<unsigned long(unsigned short* buffer,
-                                          unsigned long buflen)>;
-
-// Helper method to fetch string properties of form fields.
-std::string GetFormFieldProperty(GetFormFieldPropertyFunction function) {
-  base::string16 data;
-  size_t buffer_size = function.Run(nullptr, 0);
-  if (buffer_size > 0) {
-    PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> api_string_adapter(
-        &data, buffer_size, true);
-    api_string_adapter.Close(function.Run(
-        reinterpret_cast<unsigned short*>(api_string_adapter.GetData()),
-        buffer_size));
-  }
-  return base::UTF16ToUTF8(data);
-}
-
 // Count overlaps across text annotations.
 template <typename T, typename U>
 uint32_t CountOverlaps(const std::vector<T>& first_set,
@@ -912,16 +894,11 @@ gfx::PointF PDFiumPage::TransformPageToScreenXY(const gfx::PointF& xy) {
 PDFiumPage::Area PDFiumPage::GetURITarget(FPDF_ACTION uri_action,
                                           LinkTarget* target) const {
   if (target) {
-    size_t buffer_size =
-        FPDFAction_GetURIPath(engine_->doc(), uri_action, nullptr, 0);
-    if (buffer_size > 0) {
-      PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
-          &target->url, buffer_size, true);
-      void* data = api_string_adapter.GetData();
-      size_t bytes_written =
-          FPDFAction_GetURIPath(engine_->doc(), uri_action, data, buffer_size);
-      api_string_adapter.Close(bytes_written);
-    }
+    std::string url = CallPDFiumStringBufferApi(
+        base::BindRepeating(&FPDFAction_GetURIPath, engine_->doc(), uri_action),
+        /*check_expected_size=*/true);
+    if (!url.empty())
+      target->url = url;
   }
   return WEBLINK_AREA;
 }
@@ -968,6 +945,8 @@ void PDFiumPage::PopulateWebLinks() {
   ScopedFPDFPageLink links(FPDFLink_LoadWebLinks(GetTextPage()));
   int count = FPDFLink_CountWebLinks(links.get());
   for (int i = 0; i < count; ++i) {
+    // WARNING: FPDFLink_GetURL() is not compatible with
+    // CallPDFiumWideStringBufferApi().
     base::string16 url;
     int url_length = FPDFLink_GetURL(links.get(), i, nullptr, 0);
     if (url_length > 0) {
@@ -1153,16 +1132,11 @@ void PDFiumPage::PopulateImageAltTextForStructElement(
     auto it = marked_content_id_image_map.find(marked_content_id);
     if (it != marked_content_id_image_map.end() &&
         images_[it->second].alt_text.empty()) {
-      size_t buffer_size =
-          FPDF_StructElement_GetAltText(current_element, nullptr, 0);
-      if (buffer_size > 0) {
-        base::string16 alt_text;
-        PDFiumAPIStringBufferSizeInBytesAdapter<base::string16>
-            api_string_adapter(&alt_text, buffer_size, true);
-        api_string_adapter.Close(FPDF_StructElement_GetAltText(
-            current_element, api_string_adapter.GetData(), buffer_size));
-        images_[it->second].alt_text = base::UTF16ToUTF8(alt_text);
-      }
+      images_[it->second].alt_text =
+          base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+              base::BindRepeating(&FPDF_StructElement_GetAltText,
+                                  current_element),
+              /*check_expected_size=*/true));
     }
   }
   int children_count = FPDF_StructElement_CountChildren(current_element);
@@ -1260,10 +1234,12 @@ void PDFiumPage::PopulateTextField(FPDF_ANNOTATION annot) {
   text_field.bounding_rect =
       PageToScreen(pp::Point(), 1.0, rect.left, rect.top, rect.right,
                    rect.bottom, PageOrientation::kOriginal);
-  text_field.value = GetFormFieldProperty(
-      base::BindRepeating(FPDFAnnot_GetFormFieldValue, form_handle, annot));
-  text_field.name = GetFormFieldProperty(
-      base::BindRepeating(FPDFAnnot_GetFormFieldName, form_handle, annot));
+  text_field.value = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FPDFAnnot_GetFormFieldValue, form_handle, annot),
+      /*check_expected_size=*/true));
+  text_field.name = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FPDFAnnot_GetFormFieldName, form_handle, annot),
+      /*check_expected_size=*/true));
   text_field.flags = FPDFAnnot_GetFormFieldFlags(form_handle, annot);
   text_fields_.push_back(std::move(text_field));
 }

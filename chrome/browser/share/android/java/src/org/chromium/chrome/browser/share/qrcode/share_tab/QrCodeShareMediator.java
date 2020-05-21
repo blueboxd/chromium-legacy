@@ -20,6 +20,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.share.SaveImageNotificationManager;
 import org.chromium.chrome.browser.share.qrcode.QRCodeGenerationRequest;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.browser_ui.share.ShareImageFileUtils;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.widget.Toast;
@@ -49,8 +50,11 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
 
         // TODO(crbug.com/1083351): Get URL from Sharing Hub.
         if (context instanceof ChromeActivity) {
-            mUrl = ((ChromeActivity) context).getActivityTabProvider().get().getUrl().getSpec();
-            refreshQrCode(mUrl);
+            Tab tab = ((ChromeActivity) context).getActivityTabProvider().get();
+            if (tab != null) {
+                mUrl = tab.getUrl().getSpec();
+                refreshQrCode(mUrl);
+            }
         }
     }
 

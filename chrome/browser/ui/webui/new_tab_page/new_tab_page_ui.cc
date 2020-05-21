@@ -78,6 +78,9 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
   source->AddBoolean(
       "iframeOneGoogleBarEnabled",
       base::FeatureList::IsEnabled(ntp_features::kIframeOneGoogleBar));
+  source->AddBoolean(
+      "oneGoogleBarModalOverlaysEnabled",
+      base::FeatureList::IsEnabled(ntp_features::kOneGoogleBarModalOverlays));
 
   static constexpr webui::LocalizedString kStrings[] = {
       {"doneButton", IDS_DONE},
@@ -148,6 +151,10 @@ content::WebUIDataSource* CreateNewTabPageUiHtmlSource(Profile* profile) {
       {"searchBoxHint", IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT_MD},
       {"realboxSeparator", IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR},
       {"removeSuggestion", IDS_OMNIBOX_REMOVE_SUGGESTION},
+      {"hideSuggestions", IDS_TOOLTIP_HEADER_HIDE_SUGGESTIONS_BUTTON},
+      {"showSuggestions", IDS_TOOLTIP_HEADER_SHOW_SUGGESTIONS_BUTTON},
+      {"hideSection", IDS_ACC_HEADER_HIDE_SUGGESTIONS_BUTTON},
+      {"showSection", IDS_ACC_HEADER_SHOW_SUGGESTIONS_BUTTON},
 
       // Logo/doodle.
       {"copyLink", IDS_NTP_DOODLE_SHARE_DIALOG_COPY_LABEL},

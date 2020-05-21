@@ -171,6 +171,11 @@ class VIEWS_EXPORT AXVirtualView : public ui::AXPlatformNodeDelegateBase {
   // via NotifyAccessibilityEvent().
   virtual bool HandleAccessibleAction(const ui::AXActionData& action_data);
 
+ protected:
+  // Forwards a request from assistive technology to perform an action on this
+  // virtual view to the owner view's accessible action handler.
+  bool HandleAccessibleActionInOwnerView(const ui::AXActionData& action_data);
+
  private:
   // Internal class name.
   static const char kViewClassName[];

@@ -11,6 +11,7 @@
 namespace ui {
 
 class ComboboxModelObserver;
+class ImageModel;
 
 // A data model for a combo box.
 class UI_BASE_EXPORT ComboboxModel {
@@ -22,6 +23,22 @@ class UI_BASE_EXPORT ComboboxModel {
 
   // Returns the string at the specified index.
   virtual base::string16 GetItemAt(int index) = 0;
+
+  // Returns the string to be shown in the dropdown for the item at |index|. By
+  // default, it returns GetItemAt(index).
+  virtual base::string16 GetDropDownTextAt(int index);
+
+  // Returns the secondary string at the specified index. Secondary strings are
+  // displayed in a second line inside every menu item.
+  virtual base::string16 GetDropDownSecondaryTextAt(int index) const;
+
+  // Gets the icon for the item at the specified index. ImageModel is empty if
+  // there is no icon.
+  virtual ImageModel GetIconAt(int index) const;
+
+  // Gets the icon for the item at |index|. ImageModel is empty if there is no
+  // icon. By default, it returns GetIconAt(index).
+  virtual ImageModel GetDropDownIconAt(int index) const;
 
   // Should return true if the item at |index| is a non-selectable separator
   // item.

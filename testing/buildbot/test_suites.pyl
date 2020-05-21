@@ -2419,18 +2419,36 @@
     },
 
     'gpu_telemetry_tests': {
-      'context_lost': {},
-      'depth_capture': {},
+      'context_lost': {
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+      },
+      'depth_capture': {
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+      },
       'gpu_process': {
         'name': 'gpu_process_launch_tests',
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
       },
-      'hardware_accelerated_feature': {},
+      'hardware_accelerated_feature': {
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+      },
       'maps': {
         'name': 'maps_pixel_test',
         'args': [
           '--dont-restore-color-profile-after-test',
           '--test-machine-name',
           '${buildername}',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'mixins': [
           'chrome-gpu-gold-service-account',
@@ -2444,6 +2462,9 @@
           '--test-machine-name',
           '${buildername}',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
         'mixins': [
           'chrome-gpu-gold-service-account',
           'skia_gold_test',
@@ -2453,6 +2474,9 @@
       'screenshot_sync': {
         'args': [
           '--dont-restore-color-profile-after-test',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
       },
     },
@@ -4526,6 +4550,13 @@
       'gpu_telemetry_tests',
       'gpu_webgl2_conformance_gles_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
+    ],
+
+    # TODO(crbug.com/1080424): Merge with an existing set of tests such as
+    # gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests once all CrOS tests
+    # have been enabled.
+    'gpu_fyi_chromeos_release_telemetry_tests': [
+      'gpu_telemetry_tests',
     ],
 
     'gpu_fyi_linux_debug_gtests': [

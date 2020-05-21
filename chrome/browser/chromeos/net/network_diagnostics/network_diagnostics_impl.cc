@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "chrome/browser/chromeos/net/network_diagnostics/dns_resolver_present_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/gateway_can_be_pinged_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/has_secure_wifi_connection_routine.h"
 #include "chrome/browser/chromeos/net/network_diagnostics/lan_connectivity_routine.h"
@@ -49,6 +50,12 @@ void NetworkDiagnosticsImpl::HasSecureWiFiConnection(
     HasSecureWiFiConnectionCallback callback) {
   HasSecureWiFiConnectionRoutine has_secure_wifi_connection_routine;
   has_secure_wifi_connection_routine.RunTest(std::move(callback));
+}
+
+void NetworkDiagnosticsImpl::DnsResolverPresent(
+    DnsResolverPresentCallback callback) {
+  DnsResolverPresentRoutine dns_resolver_present_routine;
+  dns_resolver_present_routine.RunTest(std::move(callback));
 }
 
 }  // namespace network_diagnostics

@@ -7,6 +7,7 @@
 
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/os_settings_identifier.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 
@@ -58,7 +59,7 @@ struct SearchConcept {
   // The type and identifier for this search result. The value of the |type|
   // field indicates the union member used by |id|.
   mojom::SearchResultType type;
-  Identifier id;
+  OsSettingsIdentifier id;
 
   // Alternate message IDs (from os_settings_search_tag_strings.grdp)
   // corresponding to this concept. These IDs refer to messages which represent

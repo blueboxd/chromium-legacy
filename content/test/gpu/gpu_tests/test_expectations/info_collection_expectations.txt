@@ -1,0 +1,6 @@
+# tags: [ win ]
+# tags: [ intel-0x3e92 ]
+# results: [ Failure ]
+
+# Incorrectly reporting SCALING instead of DIRECT on Win10 w/ UHD 630 GPUs.
+crbug.com/1079393 [ win intel-0x3e92 ] InfoCollection_direct_composition [ Failure ]

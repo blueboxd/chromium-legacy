@@ -35,6 +35,9 @@ constexpr AnalysisConnector kAllAnalysisConnectors[] = {
     AnalysisConnector::FILE_DOWNLOADED, AnalysisConnector::FILE_ATTACHED,
     AnalysisConnector::BULK_DATA_ENTRY};
 
+constexpr ReportingConnector kAllReportingConnectors[] = {
+    ReportingConnector::SECURITY_EVENT};
+
 constexpr safe_browsing::BlockLargeFileTransferValues
     kAllBlockLargeFilesPolicyValues[] = {
         safe_browsing::BlockLargeFileTransferValues::BLOCK_NONE,
@@ -74,7 +77,7 @@ constexpr safe_browsing::DelayDeliveryUntilVerdictValues
 
 constexpr char kEmptySettingsPref[] = "[]";
 
-constexpr char kNormalSettingsPref[] = R"([
+constexpr char kNormalAnalysisSettingsPref[] = R"([
   {
     "service_provider": "Google",
     "enable": [
@@ -90,6 +93,12 @@ constexpr char kNormalSettingsPref[] = R"([
     "block_large_files": true,
     "block_unsupported_file_types": true,
   },
+])";
+
+constexpr char kNormalReportingSettingsPref[] = R"([
+  {
+    "service_provider": "Google"
+  }
 ])";
 
 constexpr char kDlpAndMalwareUrl[] = "https://foo.com";
@@ -122,6 +131,8 @@ class ConnectorsManagerTest : public testing::Test {
               expected_block_unsupported_file_types_);
     ASSERT_EQ(settings.tags, expected_tags_);
   }
+
+  void ValidateSettings(const ReportingSettings& settings) {}
 
   class ScopedConnectorPref {
    public:
@@ -425,8 +436,8 @@ class ConnectorsManagerConnectorPoliciesTest
 
   const char* pref() const { return ConnectorPref(connector()); }
 
-  void SetUpExpectedSettings(const char* pref) {
-    auto expected_settings = ExpectedSettings(pref, url());
+  void SetUpExpectedAnalysisSettings(const char* pref) {
+    auto expected_settings = ExpectedAnalysisSettings(pref, url());
     expect_settings_ = expected_settings.has_value();
     if (expected_settings.has_value()) {
       expected_tags_ = expected_settings.value().tags;
@@ -440,9 +451,14 @@ class ConnectorsManagerConnectorPoliciesTest
     }
   }
 
+  void SetUpExpectedReportingSettings(const char* pref) {
+    auto expected_settings = ExpectedReportingSettings(pref);
+    expect_settings_ = expected_settings.has_value();
+  }
+
  protected:
-  base::Optional<AnalysisSettings> ExpectedSettings(const char* pref,
-                                                    const char* url) {
+  base::Optional<AnalysisSettings> ExpectedAnalysisSettings(const char* pref,
+                                                            const char* url) {
     if (pref == kEmptySettingsPref || url == kNoTagsUrl)
       return base::nullopt;
 
@@ -463,6 +479,15 @@ class ConnectorsManagerConnectorPoliciesTest
     return settings;
   }
 
+  base::Optional<ReportingSettings> ExpectedReportingSettings(
+      const char* pref) {
+    if (pref == kEmptySettingsPref)
+      return base::nullopt;
+
+    ReportingSettings settings;
+    return settings;
+  }
+
   bool expect_settings_;
 };
 
@@ -470,8 +495,8 @@ TEST_P(ConnectorsManagerConnectorPoliciesTest, NormalPref) {
   ASSERT_TRUE(ConnectorsManager::GetInstance()
                   ->GetAnalysisConnectorsSettingsForTesting()
                   .empty());
-  ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
-  SetUpExpectedSettings(kNormalSettingsPref);
+  ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
+  SetUpExpectedAnalysisSettings(kNormalAnalysisSettingsPref);
 
   // Verify that the expected settings are returned normally.
   auto settings_from_manager =
@@ -543,7 +568,7 @@ TEST_P(ConnectorsManagerAnalysisConnectorsTest, DynamicPolicies) {
   // Once the pref is updated, the settings should be cached, and analysis
   // settings can be obtained.
   {
-    ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
+    ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
 
     const auto& cached_settings =
         manager->GetAnalysisConnectorsSettingsForTesting();
@@ -571,15 +596,15 @@ INSTANTIATE_TEST_CASE_P(ConnectorsManagerAnalysisConnectorsTest,
                         ConnectorsManagerAnalysisConnectorsTest,
                         testing::ValuesIn(kAllAnalysisConnectors));
 
-class ConnectorsManagerNoFeatureTest
+class ConnectorsManagerAnalysisNoFeatureTest
     : public ConnectorsManagerAnalysisConnectorsTest {
  public:
-  ConnectorsManagerNoFeatureTest()
+  ConnectorsManagerAnalysisNoFeatureTest()
       : ConnectorsManagerAnalysisConnectorsTest(false) {}
 };
 
-TEST_P(ConnectorsManagerNoFeatureTest, Test) {
-  ScopedConnectorPref scoped_pref(pref(), kNormalSettingsPref);
+TEST_P(ConnectorsManagerAnalysisNoFeatureTest, Test) {
+  ScopedConnectorPref scoped_pref(pref(), kNormalAnalysisSettingsPref);
 
   if (connector() == AnalysisConnector::FILE_DOWNLOADED)
     expected_tags_ = {"malware"};
@@ -601,7 +626,76 @@ TEST_P(ConnectorsManagerNoFeatureTest, Test) {
 }
 
 INSTANTIATE_TEST_CASE_P(,
-                        ConnectorsManagerNoFeatureTest,
+                        ConnectorsManagerAnalysisNoFeatureTest,
                         testing::ValuesIn(kAllAnalysisConnectors));
+
+class ConnectorsManagerReportingConnectorsTest
+    : public ConnectorsManagerTest,
+      public testing::WithParamInterface<ReportingConnector> {
+ public:
+  explicit ConnectorsManagerReportingConnectorsTest(bool enable = true) {
+    if (enable)
+      scoped_feature_list_.InitWithFeatures({kEnterpriseConnectorsEnabled}, {});
+  }
+
+  ReportingConnector connector() const { return GetParam(); }
+
+  const char* pref() const { return ConnectorPref(connector()); }
+};
+
+TEST_P(ConnectorsManagerReportingConnectorsTest, DynamicPolicies) {
+  // The cache is initially empty.
+  auto* manager = ConnectorsManager::GetInstance();
+  ASSERT_TRUE(manager->GetReportingConnectorsSettingsForTesting().empty());
+
+  // Once the pref is updated, the settings should be cached, and reporting
+  // settings can be obtained.
+  {
+    ScopedConnectorPref scoped_pref(pref(), kNormalReportingSettingsPref);
+
+    const auto& cached_settings =
+        manager->GetReportingConnectorsSettingsForTesting();
+    ASSERT_FALSE(cached_settings.empty());
+    ASSERT_EQ(1u, cached_settings.count(connector()));
+    ASSERT_EQ(1u, cached_settings.at(connector()).size());
+
+    auto settings =
+        cached_settings.at(connector()).at(0).GetReportingSettings();
+    ASSERT_TRUE(settings.has_value());
+    ValidateSettings(settings.value());
+  }
+
+  // The cache should be empty again after the pref is reset.
+  ASSERT_TRUE(manager->GetAnalysisConnectorsSettingsForTesting().empty());
+}
+
+INSTANTIATE_TEST_CASE_P(ConnectorsManagerReportingConnectorsTest,
+                        ConnectorsManagerReportingConnectorsTest,
+                        testing::ValuesIn(kAllReportingConnectors));
+
+class ConnectorsManagerReportingNoFeatureTest
+    : public ConnectorsManagerReportingConnectorsTest {
+ public:
+  ConnectorsManagerReportingNoFeatureTest()
+      : ConnectorsManagerReportingConnectorsTest(false) {}
+};
+
+TEST_P(ConnectorsManagerReportingNoFeatureTest, Test) {
+  ScopedConnectorPref scoped_pref(pref(), kNormalReportingSettingsPref);
+
+  auto settings =
+      ConnectorsManager::GetInstance()->GetReportingSettings(connector());
+  ASSERT_TRUE(settings.has_value());
+  ValidateSettings(settings.value());
+
+  // No cached settings imply the connector value was never read.
+  ASSERT_TRUE(ConnectorsManager::GetInstance()
+                  ->GetAnalysisConnectorsSettingsForTesting()
+                  .empty());
+}
+
+INSTANTIATE_TEST_CASE_P(,
+                        ConnectorsManagerReportingNoFeatureTest,
+                        testing::ValuesIn(kAllReportingConnectors));
 
 }  // namespace enterprise_connectors

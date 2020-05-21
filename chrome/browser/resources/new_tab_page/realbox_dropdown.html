@@ -22,21 +22,27 @@
 
   .header {
     align-items: center;
-    color: rgb(var(--google-grey-refresh-700-rgb));
     display: flex;
-    font-size: 13px;
-    font-weight: 500;
     justify-content: space-between;
-    line-height: 16px;
     margin-top: 8px;
     outline: none;
-    overflow: hidden;
     padding-bottom: 4px;
     padding-inline-end: 16px;
     padding-inline-start: 12px;
     padding-top: 4px;
+  }
+
+  .header .text {
+    color: var(--google-grey-refresh-700);
+    cursor: default;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 16px;
+    overflow: hidden;
+    padding-inline-end: 8px;
     text-overflow: ellipsis;
     text-transform: uppercase;
+    user-select: none;
     white-space: nowrap;
   }
 
@@ -59,18 +65,21 @@
       <!-- Header cannot be tabbed into but gets focus when clicked. This stops
            the dropdown from losing focus and closing as a result. -->
       <div class="header" tabindex="-1" on-focusin="onHeaderFocusin_"
-          group-is-hidden$="[[groupIsHidden_(hiddenGroupIds_.*, groupId)]]">
-        [[headerForGroup_(groupId)]]
-        <ntp-realbox-button data-id$="[[groupId]]"
-            on-click="onToggleButtonClick_">
+          aria-hidden="true"
+          group-is-hidden$="[[groupIsHidden_(groupId, hiddenGroupIds_.*)]]">
+        <span class="text">[[headerForGroup_(groupId)]]</span>
+        <ntp-realbox-button data-id$="[[groupId]]" tabindex="0" role="button"
+            title="[[toggleButtonTitleForGroup_(groupId, hiddenGroupIds_.*)]]"
+            aria-label$="[[toggleButtonA11yLabelForGroup_(groupId, hiddenGroupIds_.*)]]"
+            on-click="onToggleButtonClick_" on-keydown="onToggleButtonKeydown_">
         </ntp-realbox-button>
       </div>
     </template>
-    <template is="dom-if" if="[[!groupIsHidden_(hiddenGroupIds_.*, groupId)]]"
+    <template is="dom-if" if="[[!groupIsHidden_(groupId, hiddenGroupIds_.*)]]"
         restamp>
       <template is="dom-repeat" items="[[result.matches]]"
           filter="[[computeMatchBelongsToGroup_(groupId)]]">
-        <ntp-realbox-match role="option" match="[[item]]"
+        <ntp-realbox-match tabindex="0" role="option" match="[[item]]"
             match-index="[[matchIndex_(item)]]">
         </ntp-realbox-match>
       </template>

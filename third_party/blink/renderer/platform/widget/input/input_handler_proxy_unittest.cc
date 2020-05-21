@@ -554,7 +554,7 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
 // Tests that changing source devices mid gesture scroll is handled gracefully.
 // For example, when a touch scroll is in progress and the user initiates a
 // scrollbar scroll before the touch scroll has had a chance to dispatch a GSE.
-TEST_P(InputHandlerProxyTest, NestedGestureBasedScrolls) {
+TEST_P(InputHandlerProxyTest, NestedGestureBasedScrollsDifferentSourceDevice) {
   // Touchpad initiates a scroll.
   EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
       .WillOnce(testing::Return(kImplThreadScrollState));
@@ -1379,6 +1379,77 @@ TEST_P(InputHandlerProxyTest, HitTestTouchEventNonNullTouchAction) {
   EXPECT_TRUE(is_touching_scrolling_layer);
   EXPECT_EQ(white_listed_touch_action, cc::TouchAction::kPanUp);
   VERIFY_AND_RESET_MOCKS();
+}
+
+// Tests that multiple mousedown(s) on scrollbar are handled gracefully and
+// don't fail any DCHECK(s).
+TEST_F(InputHandlerProxyEventQueueTest,
+       NestedGestureBasedScrollsSameSourceDevice) {
+  // Start with mousedown. Expect CompositorThreadEventQueue to contain [GSB,
+  // GSU].
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput());
+  HandleMouseEvent(WebInputEvent::Type::kMouseDown);
+  EXPECT_EQ(2ul, event_queue().size());
+  EXPECT_EQ(event_queue()[0]->event().GetType(),
+            WebInputEvent::Type::kGestureScrollBegin);
+  EXPECT_EQ(event_queue()[1]->event().GetType(),
+            WebInputEvent::Type::kGestureScrollUpdate);
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
+
+  DeliverInputForBeginFrame();
+  Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // A mouseup adds a GSE to the CompositorThreadEventQueue.
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput());
+  HandleMouseEvent(WebInputEvent::Type::kMouseUp);
+  Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  EXPECT_EQ(1ul, event_queue().size());
+  EXPECT_EQ(event_queue()[0]->event().GetType(),
+            WebInputEvent::Type::kGestureScrollEnd);
+
+  // Called when a mousedown is being handled as it tries to end the ongoing
+  // scroll.
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
+
+  // A mousedown occurs on the scrollbar *before* the GSE is dispatched.
+  HandleMouseEvent(WebInputEvent::Type::kMouseDown);
+  Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  EXPECT_EQ(3ul, event_queue().size());
+  EXPECT_EQ(event_queue()[1]->event().GetType(),
+            WebInputEvent::Type::kGestureScrollBegin);
+  EXPECT_EQ(event_queue()[2]->event().GetType(),
+            WebInputEvent::Type::kGestureScrollUpdate);
+
+  // Called when the GSE is being handled. (Note that ScrollEnd isn't called
+  // when the GSE is being handled as the GSE gets dropped in
+  // HandleGestureScrollEnd because handling_gesture_on_impl_thread_ is false)
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+      .WillOnce(Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, ScrollingShouldSwitchtoMainThread())
+      .WillOnce(Return(false));
+  EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
+
+  DeliverInputForBeginFrame();
+  Mock::VerifyAndClearExpectations(&mock_input_handler_);
+
+  // Finally, a mouseup ends the scroll.
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput());
+  HandleMouseEvent(WebInputEvent::Type::kMouseUp);
+
+  EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(true)).Times(1);
+
+  DeliverInputForBeginFrame();
+  Mock::VerifyAndClearExpectations(&mock_input_handler_);
 }
 
 // Tests that the whitelisted touch action is correctly set when a touch is

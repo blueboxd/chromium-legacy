@@ -18,12 +18,24 @@
   }
 
   #oneGoogleBar {
-    clip-path: url(#oneGoogleBarClipPath);
     height: 100%;
     position: absolute;
     top: 0;
     width: 100%;
-    z-index: 1000;
+  }
+
+  #oneGoogleBarOverlayBackdrop {
+    background: rgba(0, 0, 0, .6);
+    display: none;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
+  }
+
+  #oneGoogleBarOverlayBackdrop[show] {
+    display: block;
   }
 
   #content {
@@ -297,6 +309,7 @@
     </ntp-customize-dialog>
   </template>
 </dom-if>
+<div id="oneGoogleBarOverlayBackdrop"></div>
 <svg>
   <defs>
     <clipPath id="oneGoogleBarClipPath">

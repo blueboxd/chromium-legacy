@@ -5,9 +5,9 @@
 # tags: [ use-vulkan no-use-vulkan ]
 # tags: [ use-skia-dawn no-use-skia-dawn ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
-#         intel-0xd26 nvidia qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
-#         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430
-#         qualcomm-adreno-(tm)-540
+#         intel-0xd26 intel-0x3e92 nvidia qualcomm-adreno-(tm)-330
+#         qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420
+#         qualcomm-adreno-(tm)-430 qualcomm-adreno-(tm)-540
 # ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -187,8 +187,10 @@ crbug.com/976861 [ linux intel-0x5912 no-use-skia-dawn ] Pixel_OffscreenCanvasTr
 [ mac ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
 [ mac ] Pixel_CanvasLowLatencyWebGLSwapChainAlphaFalse [ Skip ]
 
-# Producing incorrect image on Win10 Intel HD 630 w/ 26.20.100.6912 drivers.
+# Producing incorrect image on Win10 Intel HD 630 and UHD 630 w/ 26.20.100.6912
+# or later drivers.
 crbug.com/997313 [ win intel-0x5912 no-use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
+crbug.com/997313 [ win intel-0x3e92 no-use-skia-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
 
 # Flakes on Nexus 9 or NVIDIA Shield TV
 crbug.com/1019462 [ android nvidia no-skia-renderer ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]

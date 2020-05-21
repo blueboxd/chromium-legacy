@@ -1537,29 +1537,19 @@ void QuicChromiumClientSession::OnConfigNegotiated() {
   IPEndPoint old_address;
   GetDefaultSocket()->GetPeerAddress(&old_address);
 
-  // Migrate only if address families match, or if new address family is v6,
-  // since a v4 address should be reachable over a v6 network (using a
-  // v4-mapped v6 address).
+  // Migrate only if address families match.
   IPEndPoint new_address;
   if (old_address.GetFamily() == ADDRESS_FAMILY_IPV6) {
-    if (config()->HasReceivedIPv6AlternateServerAddress()) {
-      new_address =
-          ToIPEndPoint(config()->ReceivedIPv6AlternateServerAddress());
-    } else {
-      new_address =
-          ToIPEndPoint(config()->ReceivedIPv4AlternateServerAddress());
-      // Use a v4-mapped v6 address.
-      new_address =
-          IPEndPoint(ConvertIPv4ToIPv4MappedIPv6(new_address.address()),
-                     new_address.port());
-    }
-  } else if (old_address.GetFamily() == ADDRESS_FAMILY_IPV4) {
-    if (config()->HasReceivedIPv4AlternateServerAddress()) {
-      new_address =
-          ToIPEndPoint(config()->ReceivedIPv4AlternateServerAddress());
-    } else {
+    if (!config()->HasReceivedIPv6AlternateServerAddress()) {
       return;
     }
+      new_address =
+          ToIPEndPoint(config()->ReceivedIPv6AlternateServerAddress());
+  } else if (old_address.GetFamily() == ADDRESS_FAMILY_IPV4) {
+    if (!config()->HasReceivedIPv4AlternateServerAddress()) {
+      return;
+    }
+    new_address = ToIPEndPoint(config()->ReceivedIPv4AlternateServerAddress());
   }
   DCHECK_EQ(new_address.GetFamily(), old_address.GetFamily());
 

@@ -99,8 +99,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   using DatabaseStatusCallback =
       base::OnceCallback<void(ServiceWorkerDatabase::Status status)>;
   using GetUserDataInDBCallback =
-      base::OnceCallback<void(const std::vector<std::string>& data,
-                              ServiceWorkerDatabase::Status)>;
+      storage::mojom::ServiceWorkerStorageControl::GetUserDataCallback;
   using GetUserKeysAndDataInDBCallback = base::OnceCallback<void(
       const base::flat_map<std::string, std::string>& data_map,
       ServiceWorkerDatabase::Status)>;

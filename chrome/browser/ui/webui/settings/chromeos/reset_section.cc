@@ -98,6 +98,18 @@ int ResetSection::GetSectionNameMessageId() const {
   return IDS_SETTINGS_RESET;
 }
 
+mojom::Section ResetSection::GetSection() const {
+  return mojom::Section::kReset;
+}
+
+mojom::SearchResultIcon ResetSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kReset;
+}
+
+std::string ResetSection::GetSectionPath() const {
+  return mojom::kResetSectionPath;
+}
+
 void ResetSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kPowerwash);
 }

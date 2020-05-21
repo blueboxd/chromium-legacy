@@ -65,6 +65,8 @@ class PersonalInfoSuggester : public Suggester {
       std::unique_ptr<TtsHandler> tts_handler = nullptr);
   ~PersonalInfoSuggester() override;
 
+  bool IsFirstShown() { return first_shown_; }
+
   // Suggester overrides:
   void OnFocus(int context_id) override;
   void OnBlur() override;
@@ -105,6 +107,9 @@ class PersonalInfoSuggester : public Suggester {
 
   // If we are showing a suggestion right now.
   bool suggestion_shown_ = false;
+
+  // If we are showing the suggestion for the first time.
+  bool first_shown_ = false;
 
   // The current suggestion text shown.
   base::string16 suggestion_;

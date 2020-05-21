@@ -65,6 +65,10 @@ class UI_BASE_EXPORT MenuModel : public base::SupportsWeakPtr<MenuModel> {
   // Returns the label of the item at the specified index.
   virtual base::string16 GetLabelAt(int index) const = 0;
 
+  // Returns the secondary label of the item at the specified index. Secondary
+  // label is shown below the label.
+  virtual base::string16 GetSecondaryLabelAt(int index) const;
+
   // Returns the minor text of the item at the specified index. The minor text
   // is rendered to the right of the label and using the font GetLabelFontAt().
   virtual base::string16 GetMinorTextAt(int index) const;

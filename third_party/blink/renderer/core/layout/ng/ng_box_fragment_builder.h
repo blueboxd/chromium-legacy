@@ -206,6 +206,11 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     lines_until_clamp_ = value;
   }
 
+  // See NGLayoutResult::AnnotationOverflow().
+  void SetAnnotationOverflow(LayoutUnit overflow) {
+    annotation_overflow_ = overflow;
+  }
+
   void SetEarlyBreak(scoped_refptr<const NGEarlyBreak> breakpoint,
                      NGBreakAppeal appeal) {
     early_break_ = breakpoint;
@@ -367,6 +372,9 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;
   base::Optional<int> lines_until_clamp_;
+
+  // See NGLayoutResult::AnnotationOverflow().
+  LayoutUnit annotation_overflow_;
 
   friend class NGPhysicalBoxFragment;
   friend class NGLayoutResult;

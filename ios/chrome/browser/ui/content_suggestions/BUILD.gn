@@ -419,3 +419,12 @@ source_set("test_support") {
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("feature_flags") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "content_suggestions_feature.h",
+    "content_suggestions_feature.mm",
+  ]
+  public_deps = [ "//base" ]
+}

@@ -708,6 +708,7 @@ ci.mac_ios_builder(
         category = 'ios|default',
         short_name = 'sim',
     ),
+    executable = 'recipe:ios/unified_builder_tester'
 )
 
 ci.mac_ios_builder(
@@ -716,6 +717,7 @@ ci.mac_ios_builder(
         category = 'ios|default',
         short_name = 'ful',
     ),
+    executable = 'recipe:ios/unified_builder_tester',
 )
 
 

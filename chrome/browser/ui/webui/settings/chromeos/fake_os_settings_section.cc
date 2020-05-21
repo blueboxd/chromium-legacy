@@ -20,10 +20,31 @@ int FakeOsSettingsSection::GetSectionNameMessageId() const {
   return IDS_INTERNAL_APP_SETTINGS;
 }
 
+mojom::Section FakeOsSettingsSection::GetSection() const {
+  return section_;
+}
+
+mojom::SearchResultIcon FakeOsSettingsSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kWifi;
+}
+
+std::string FakeOsSettingsSection::GetSectionPath() const {
+  return std::string();
+}
+
 std::string FakeOsSettingsSection::ModifySearchResultUrl(
-    const SearchConcept& concept) const {
+    mojom::SearchResultType type,
+    OsSettingsIdentifier id,
+    const std::string& url_to_modify) const {
+  return ModifySearchResultUrl(section_, url_to_modify);
+}
+
+// static
+std::string FakeOsSettingsSection::ModifySearchResultUrl(
+    mojom::Section section,
+    const std::string& url_to_modify) {
   std::stringstream ss;
-  ss << section_ << "::" << concept.url_path_with_parameters;
+  ss << section << "::" << url_to_modify;
   return ss.str();
 }
 

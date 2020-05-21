@@ -99,7 +99,7 @@ std::unique_ptr<KeyEvent> CreateKeyEvent(EventType event_type,
 
 void SetEventSourceDeviceId(MouseEvent* event, const XEvent& xev) {
   DCHECK(event);
-  if (xev.type == GenericEvent) {
+  if (xev.type == x11::XProto::GeGenericEvent::opcode) {
     XIDeviceEvent* xiev = static_cast<XIDeviceEvent*>(xev.xcookie.data);
     event->set_source_device_id(xiev->sourceid);
   }
@@ -128,7 +128,7 @@ std::unique_ptr<MouseEvent> CreateMouseEvent(EventType type,
 }
 
 std::unique_ptr<MouseWheelEvent> CreateMouseWheelEvent(const XEvent& xev) {
-  int button_flags = (xev.type == GenericEvent)
+  int button_flags = (xev.type == x11::XProto::GeGenericEvent::opcode)
                          ? GetChangedMouseButtonFlagsFromXEvent(xev)
                          : 0;
   auto event = std::make_unique<MouseWheelEvent>(
@@ -241,7 +241,7 @@ std::unique_ptr<Event> TranslateFromXEvent(const XEvent& xev) {
       }
       break;
     }
-    case GenericEvent:
+    case x11::XProto::GeGenericEvent::opcode:
       return TranslateFromXI2Event(xev, event_type);
   }
   return nullptr;

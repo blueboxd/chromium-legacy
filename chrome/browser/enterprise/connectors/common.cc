@@ -28,4 +28,11 @@ const char* ConnectorPref(AnalysisConnector connector) {
   }
 }
 
+const char* ConnectorPref(ReportingConnector connector) {
+  switch (connector) {
+    case ReportingConnector::SECURITY_EVENT:
+      return kOnSecurityEventPref;
+  }
+}
+
 }  // namespace enterprise_connectors

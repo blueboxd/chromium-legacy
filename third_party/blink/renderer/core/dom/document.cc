@@ -4462,10 +4462,6 @@ void Document::writeln(v8::Isolate* isolate,
   writeln(string, EnteredDOMWindow(isolate)->document(), exception_state);
 }
 
-bool Document::IsTrustedTypesEnabledForDoc() const {
-  return GetExecutionContext()->RequireTrustedTypes();
-}
-
 void Document::write(v8::Isolate* isolate,
                      TrustedHTML* text,
                      ExceptionState& exception_state) {

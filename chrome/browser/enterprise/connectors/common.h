@@ -7,7 +7,6 @@
 
 #include <set>
 #include <string>
-#include <vector>
 
 #include "url/gurl.h"
 
@@ -66,11 +65,12 @@ struct ReportingSettings {
   ReportingSettings& operator=(ReportingSettings&&);
   ~ReportingSettings();
 
-  std::vector<GURL> reporting_urls;
+  GURL reporting_url;
 };
 
-// Returns the pref path corresponding to an analysis connector.
+// Returns the pref path corresponding to a connector.
 const char* ConnectorPref(AnalysisConnector connector);
+const char* ConnectorPref(ReportingConnector connector);
 
 }  // namespace enterprise_connectors
 

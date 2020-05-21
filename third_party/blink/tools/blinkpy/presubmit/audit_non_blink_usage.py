@@ -709,13 +709,6 @@ _CONFIG = [
         ],
     },
     {
-        'paths':
-        ['third_party/blink/renderer/core/scroll/scrollbar_theme_mac.mm'],
-        'allowed': [
-            'gfx::CocoaScrollbarPainter',
-        ],
-    },
-    {
         'paths': ['third_party/blink/renderer/core/workers/worker_thread.cc'],
         'allowed': [
             'base::ScopedAllowBaseSyncPrimitives',

@@ -214,6 +214,10 @@ initWithCollectionController:
   [self.headerController updateConstraints];
 }
 
+- (void)resetPreFocusOffset {
+  self.collectionShiftingOffset = 0;
+}
+
 - (void)unfocusOmnibox {
   [self.headerController unfocusOmnibox];
 }

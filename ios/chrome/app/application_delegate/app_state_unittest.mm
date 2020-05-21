@@ -270,7 +270,8 @@ class AppStateTest : public BlockCleanupTest {
                                 memoryHelper:memoryHelper
                                    tabOpener:tabOpener];
     // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
-    app_state_.mainSceneState = [[FakeSceneState alloc] init];
+    app_state_.mainSceneState =
+        [[FakeSceneState alloc] initWithAppState:app_state_];
     initializeIncognitoBlocker(window);
 
     return appState;
@@ -283,8 +284,8 @@ class AppStateTest : public BlockCleanupTest {
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
       // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
-      app_state_.mainSceneState = [[FakeSceneState alloc] init];
-      [app_state_ setWindow:window_];
+      app_state_.mainSceneState =
+          [[FakeSceneState alloc] initWithAppState:app_state_];
     }
     return app_state_;
   }
@@ -296,8 +297,8 @@ class AppStateTest : public BlockCleanupTest {
                                  startupInformation:startup_information_mock_
                                 applicationDelegate:main_application_delegate_];
       // TODO(crbug.com/1065815): Inject scene states for multiwindow as well.
-      app_state_.mainSceneState = [[FakeSceneState alloc] init];
-      [app_state_ setWindow:window];
+      app_state_.mainSceneState =
+          [[FakeSceneState alloc] initWithAppState:app_state_];
       [window makeKeyAndVisible];
     }
     return app_state_;
@@ -350,25 +351,6 @@ class AppStateWithThreadTest : public PlatformTest {
 
 #pragma mark - Tests.
 
-// Tests -isInSafeMode returns true if there is a SafeModeController.
-TEST_F(AppStateTest, isInSafeModeTest) {
-  // Setup.
-  id safeModeContollerMock =
-      [OCMockObject mockForClass:[SafeModeCoordinator class]];
-
-  AppState* appState = getAppStateWithMock();
-
-  appState.safeModeCoordinator = nil;
-  ASSERT_FALSE([appState isInSafeMode]);
-  [appState setSafeModeCoordinator:safeModeContollerMock];
-
-  // Action.
-  BOOL result = [appState isInSafeMode];
-
-  // Test.
-  EXPECT_TRUE(result);
-}
-
 // Tests that if the application is in background
 // -requiresHandlingAfterLaunchWithOptions saves the launchOptions and returns
 // YES (to handle the launch options later).
@@ -418,6 +400,10 @@ TEST_F(AppStateTest, requiresHandlingAfterLaunchWithOptionsForegroundSafeMode) {
   swizzleSafeModeShouldStart(YES);
 
   ASSERT_FALSE([appState isInSafeMode]);
+
+  appState.mainSceneState.activationLevel =
+      SceneActivationLevelForegroundActive;
+  appState.mainSceneState.window = getWindowMock();
 
   // Action.
   BOOL result = [appState requiresHandlingAfterLaunchWithOptions:launchOptions
@@ -484,7 +470,6 @@ TEST_F(AppStateNoFixtureTest, willResignActive) {
 
   id applicationDelegate =
       [OCMockObject mockForClass:[MainApplicationDelegate class]];
-  id window = [OCMockObject mockForClass:[UIWindow class]];
 
   FakeStartupInformation* startupInformation =
       [[FakeStartupInformation alloc] init];
@@ -494,7 +479,6 @@ TEST_F(AppStateNoFixtureTest, willResignActive) {
       [[AppState alloc] initWithBrowserLauncher:browserLauncher
                              startupInformation:startupInformation
                             applicationDelegate:applicationDelegate];
-  [appState setWindow:window];
 
   ASSERT_TRUE([startupInformation isColdStart]);
 
@@ -515,7 +499,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
       [OCMockObject mockForProtocol:@protocol(BrowserLauncher)];
   id applicationDelegate =
       [OCMockObject mockForClass:[MainApplicationDelegate class]];
-  id window = [OCMockObject mockForClass:[UIWindow class]];
   StubBrowserInterfaceProvider* interfaceProvider =
       [[StubBrowserInterfaceProvider alloc] init];
   interfaceProvider.mainInterface.userInteractionEnabled = YES;
@@ -532,7 +515,6 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
       [[AppState alloc] initWithBrowserLauncher:browserLauncher
                              startupInformation:startupInformation
                             applicationDelegate:applicationDelegate];
-  [appState setWindow:window];
 
   id application = [OCMockObject mockForClass:[UIApplication class]];
 
@@ -796,9 +778,18 @@ TEST_F(AppStateTest,
       browserInitializationStage];
 
   [[[window stub] andReturn:nil] rootViewController];
-  [[window expect] makeKeyAndVisible];
   [[window stub] setRootViewController:[OCMArg any]];
   swizzleSafeModeShouldStart(YES);
+
+  // The helper below calls makeKeyAndVisible.
+  [[window expect] makeKeyAndVisible];
+  AppState* appState = getAppStateWithRealWindow(window);
+
+  // Starting safe mode will call makeKeyAndVisible on the window.
+  [[window expect] makeKeyAndVisible];
+  appState.mainSceneState.activationLevel =
+      SceneActivationLevelForegroundActive;
+  appState.mainSceneState.window = window;
 
   // Actions.
   [getAppStateWithMock() applicationWillEnterForeground:application
@@ -809,34 +800,6 @@ TEST_F(AppStateTest,
   // Tests.
   EXPECT_OCMOCK_VERIFY(window);
   EXPECT_TRUE([getAppStateWithMock() isInSafeMode]);
-}
-
-// Tests that -applicationWillEnterForeground returns directly if the
-// application is in safe mode and in foreground
-TEST_F(AppStateTest, applicationWillEnterForegroundFromForegroundSafeMode) {
-  // Setup.
-  id application = [OCMockObject mockForClass:[UIApplication class]];
-  id metricsMediator = [OCMockObject mockForClass:[MetricsMediator class]];
-  id memoryHelper = [OCMockObject mockForClass:[MemoryWarningHelper class]];
-  id tabOpener = [OCMockObject mockForProtocol:@protocol(TabOpening)];
-
-  BrowserInitializationStageType stage = INITIALIZATION_STAGE_FOREGROUND;
-  [[[getBrowserLauncherMock() stub] andReturnValue:@(stage)]
-      browserInitializationStage];
-
-  AppState* appState = getAppStateWithMock();
-
-  UIWindow* window = [[UIWindow alloc] init];
-  appState.safeModeCoordinator =
-      [[SafeModeCoordinator alloc] initWithWindow:window];
-
-  ASSERT_TRUE([appState isInSafeMode]);
-
-  // Actions.
-  [appState applicationWillEnterForeground:application
-                           metricsMediator:metricsMediator
-                              memoryHelper:memoryHelper
-                                 tabOpener:tabOpener];
 }
 
 // Tests that -applicationDidEnterBackground creates an incognito blocker.

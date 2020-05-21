@@ -7,8 +7,8 @@
       <div class="throbber"></div>
     </div>
     <template is="dom-if" if="[[!printerStatusFlagEnabled_]]">
-      <select class="md-select" aria-label$="[[i18n(destinationLabel)]]"
-          hidden$="[[!loaded]]"
+      <select id="dropdown" class="md-select"
+          aria-label$="[[i18n(destinationLabel)]]" hidden$="[[!loaded]]"
           style="background-image:[[backgroundImages_]];"
           disabled$="[[disabled]]"
           value="{{selectedValue::change}}">
@@ -33,7 +33,10 @@
       </select>
     </template>
     <template is="dom-if" if="[[printerStatusFlagEnabled_]]">
-      <div>print-preview-destination-select-cros</div>
+      <print-preview-destination-dropdown-cros id="dropdown"
+          value="[[destination]]" item-list="[[recentDestinationList]]"
+          on-dropdown-value-selected="onDropdownValueSelected_">
+      </print-preview-destination-dropdown-cros>
     </template>
   </div>
 </print-preview-settings-section>

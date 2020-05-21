@@ -165,11 +165,25 @@ int LanguagesSection::GetSectionNameMessageId() const {
   return IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE;
 }
 
+mojom::Section LanguagesSection::GetSection() const {
+  return mojom::Section::kLanguagesAndInput;
+}
+
+mojom::SearchResultIcon LanguagesSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kGlobe;
+}
+
+std::string LanguagesSection::GetSectionPath() const {
+  return mojom::kLanguagesAndInputSectionPath;
+}
+
 void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Languages and input details.
   generator->RegisterTopLevelSubpage(
       IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE,
-      mojom::Subpage::kLanguagesAndInputDetails);
+      mojom::Subpage::kLanguagesAndInputDetails,
+      mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kLanguagesAndInputDetailsSubpagePath);
   static constexpr mojom::Setting kLanguagesAndInputDetailsSettings[] = {
       mojom::Setting::kAddLanguage,
       mojom::Setting::kShowInputOptionsInShelf,
@@ -181,11 +195,15 @@ void LanguagesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterNestedSubpage(
       IDS_SETTINGS_LANGUAGES_MANAGE_INPUT_METHODS_TITLE,
       mojom::Subpage::kManageInputMethods,
-      mojom::Subpage::kLanguagesAndInputDetails);
+      mojom::Subpage::kLanguagesAndInputDetails,
+      mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kManageInputMethodsSubpagePath);
 
   // Smart inputs.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_SMART_INPUTS_TITLE,
-                                     mojom::Subpage::kSmartInputs);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_SMART_INPUTS_TITLE, mojom::Subpage::kSmartInputs,
+      mojom::SearchResultIcon::kGlobe, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kSmartInputsSubagePath);
   generator->RegisterNestedSetting(
       mojom::Setting::kShowPersonalInformationSuggestions,
       mojom::Subpage::kSmartInputs);

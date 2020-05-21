@@ -4506,16 +4506,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/"
       },
       {
         "args": [
@@ -4543,16 +4534,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:browser_tests/"
       },
       {
         "args": [
@@ -4576,16 +4558,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -4609,16 +4582,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       },
       {
         "args": [
@@ -4643,16 +4607,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
-        "test_id_prefix": "ninja://chrome/test:xr_browser_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:xr_browser_tests/"
       }
     ],
     "isolated_scripts": [
@@ -4686,16 +4641,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/"
       },
       {
         "args": [
@@ -4727,16 +4673,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/depth_capture_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/depth_capture_tests/"
       },
       {
         "args": [
@@ -4769,16 +4706,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gl_renderer_screenshot_sync_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gl_renderer_screenshot_sync_tests/"
       },
       {
         "args": [
@@ -4810,16 +4738,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests/"
       },
       {
         "args": [
@@ -4851,16 +4770,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests/"
       },
       {
         "args": [
@@ -4896,16 +4806,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/info_collection_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/info_collection_tests/"
       },
       {
         "args": [
@@ -4946,16 +4847,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/"
       },
       {
         "args": [
@@ -4996,16 +4888,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/"
       },
       {
         "args": [
@@ -5032,16 +4915,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:rendering_representative_perf_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:rendering_representative_perf_tests/"
       },
       {
         "args": [
@@ -5074,16 +4948,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/"
       },
       {
         "args": [
@@ -5115,16 +4980,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/"
       },
       {
         "args": [
@@ -5158,16 +5014,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests/"
       }
     ]
   },
@@ -5197,16 +5044,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "angle_unittests",
-        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/"
       },
       {
         "args": [
@@ -5234,16 +5072,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "browser_tests",
-        "test_id_prefix": "ninja://chrome/test:browser_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:browser_tests/"
       },
       {
         "args": [
@@ -5267,16 +5096,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_tests",
-        "test_id_prefix": "ninja://gpu:gl_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://gpu:gl_tests/"
       },
       {
         "args": [
@@ -5300,16 +5120,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "gl_unittests",
-        "test_id_prefix": "ninja://ui/gl:gl_unittests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://ui/gl:gl_unittests/"
       },
       {
         "args": [
@@ -5334,16 +5145,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "xr_browser_tests",
-        "test_id_prefix": "ninja://chrome/test:xr_browser_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:xr_browser_tests/"
       }
     ],
     "isolated_scripts": [
@@ -5377,16 +5179,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/context_lost_tests/"
       },
       {
         "args": [
@@ -5418,16 +5211,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/depth_capture_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/depth_capture_tests/"
       },
       {
         "args": [
@@ -5460,16 +5244,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gl_renderer_screenshot_sync_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gl_renderer_screenshot_sync_tests/"
       },
       {
         "args": [
@@ -5501,16 +5276,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/gpu_process_launch_tests/"
       },
       {
         "args": [
@@ -5542,16 +5308,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/hardware_accelerated_feature_tests/"
       },
       {
         "args": [
@@ -5587,16 +5344,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/info_collection_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/info_collection_tests/"
       },
       {
         "args": [
@@ -5637,16 +5385,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/maps_pixel_test/"
       },
       {
         "args": [
@@ -5687,16 +5426,7 @@
           "idempotent": false,
           "service_account": "chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/pixel_skia_gold_test/"
       },
       {
         "args": [
@@ -5723,16 +5453,7 @@
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:rendering_representative_perf_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:rendering_representative_perf_tests/"
       },
       {
         "args": [
@@ -5765,16 +5486,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/screenshot_sync_tests/"
       },
       {
         "args": [
@@ -5806,16 +5518,7 @@
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/trace_test/"
       },
       {
         "args": [
@@ -5849,16 +5552,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 2
         },
-        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests/",
-        "trigger_script": {
-          "args": [
-            "--multiple-trigger-configs",
-            "[{\"gpu\": \"10de:1cb3-26.21.14.3102\", \"os\": \"Windows-10\", \"pool\": \"chromium.tests.gpu.template\"}]",
-            "--multiple-dimension-script-verbose",
-            "True"
-          ],
-          "script": "//testing/trigger_scripts/trigger_multiple_dimensions.py"
-        }
+        "test_id_prefix": "ninja://chrome/test:telemetry_gpu_integration_test/webgl_conformance_tests/"
       }
     ]
   }

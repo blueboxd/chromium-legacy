@@ -71,11 +71,6 @@ function setUp() {
 
   // Mock chome APIs.
   mockChrome = {
-    commandLinePrivate: {
-      hasSwitch: function(name, callback) {
-        callback(false);
-      },
-    },
     fileManagerPrivate: {
       DriveConnectionStateType: {
         ONLINE: 'ONLINE',
@@ -507,15 +502,6 @@ function testOpenWithMostRecentlyExecuted(callback) {
  */
 function testOpenZipWithZipArchiver(callback) {
   const zipArchiverTaskId = 'dmboannefpncccogfdikhmhpmdnddgoe|app|open';
-
-  chrome.commandLinePrivate.hasSwitch = (name, callback) => {
-    if (name == 'enable-zip-archiver-unpacker') {
-      // This flag used to exist and was used to switch between the "Zip
-      // Unpacker" and "Zip Archiver" component extensions.
-      failWithMessage('run zip archiver', 'zip archiver flags checked');
-    }
-    callback(false);
-  };
 
   window.chrome.fileManagerPrivate.getFileTasks = (entries, callback) => {
     setTimeout(

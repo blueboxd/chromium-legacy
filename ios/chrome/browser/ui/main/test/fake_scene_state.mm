@@ -29,8 +29,8 @@
 
 @synthesize interfaceProvider = _interfaceProvider;
 
-- (instancetype)init {
-  if (self = [super init]) {
+- (instancetype)initWithAppState:(AppState*)appState {
+  if (self = [super initWithAppState:appState]) {
     self.activationLevel = SceneActivationLevelForegroundInactive;
     self.interfaceProvider = [[StubBrowserInterfaceProvider alloc] init];
     StubBrowserInterface* mainInterface = static_cast<StubBrowserInterface*>(
@@ -44,7 +44,7 @@
 + (NSArray<FakeSceneState*>*)sceneArrayWithCount:(int)count {
   NSMutableArray<SceneState*>* scenes = [NSMutableArray array];
   for (int i = 0; i < count; i++) {
-    [scenes addObject:[[self alloc] init]];
+    [scenes addObject:[[self alloc] initWithAppState:nil]];
   }
   return [scenes copy];
 }

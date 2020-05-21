@@ -475,6 +475,7 @@
       'ios-device': 'ios_device_release_rbe_compile_only',
       'ios-simulator': 'ios_simulator_debug_static_rbe_bot',
       'ios-simulator-full-configs': 'ios_simulator_debug_static_bot',
+      'ios-simulator-noncq': 'ios_simulator_debug_static_rbe_bot',
       'WebKit Mac10.13 (retina)': 'release_bot',
     },
 

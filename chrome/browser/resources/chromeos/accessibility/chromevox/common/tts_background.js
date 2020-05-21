@@ -548,7 +548,7 @@ TtsBackground = class extends ChromeTtsBase {
   /** @override */
   isSpeaking() {
     super.isSpeaking();
-    return this.lastEventType != 'end';
+    return !!this.currentUtterance_;
   }
 
   /** @override */

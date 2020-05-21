@@ -1972,7 +1972,13 @@ void View::OnFocus() {
   // TODO(beng): Investigate whether it's possible for us to move this to
   //             Focus().
   // Notify assistive technologies of the focus change.
-  NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
+  AXVirtualView* focused_virtual_child =
+      view_accessibility_ ? view_accessibility_->FocusedVirtualChild()
+                          : nullptr;
+  if (focused_virtual_child)
+    focused_virtual_child->NotifyAccessibilityEvent(ax::mojom::Event::kFocus);
+  else
+    NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
 void View::OnBlur() {}

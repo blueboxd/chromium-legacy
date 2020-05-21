@@ -1335,6 +1335,9 @@ bool GpuBenchmarking::AddSwapCompletionEventListener(gin::Arguments* args) {
       base::NullCallback(),
       base::BindOnce(&OnSwapCompletedHelper,
                      base::RetainedRef(callback_and_context)));
+  // Request a begin frame explicitly, as the test-api expects a 'swap' to
+  // happen for the above queued swap promise even if there is no actual update.
+  context.layer_tree_host()->SetNeedsAnimateIfNotInsideMainFrame();
   return true;
 }
 

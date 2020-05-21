@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
+#include "third_party/blink/renderer/core/fetch/trust_token_issuance_authorization.h"
 #include "third_party/blink/renderer/core/fetch/trust_token_to_mojom.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
@@ -529,6 +530,16 @@ Request* Request::CreateRequestWithRequestOrString(
           "trustToken: Redemption ('srr-token-redemption') and signing "
           "('send-srr') operations require that the trust-token-redemption "
           "Feature Policy feature be enabled.");
+      return nullptr;
+    }
+
+    VLOG(1) << "a";
+
+    if (params.type == TrustTokenOperationType::kIssuance &&
+        !IsTrustTokenIssuanceAvailableInExecutionContext(*execution_context)) {
+      exception_state.ThrowTypeError(
+          "trustToken: Issuance ('token-request') is disabled except in "
+          "contexts with the TrustTokens Origin Trial enabled.");
       return nullptr;
     }
 

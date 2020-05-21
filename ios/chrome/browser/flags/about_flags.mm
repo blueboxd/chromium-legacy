@@ -59,6 +59,7 @@
 #include "ios/chrome/browser/passwords/password_manager_features.h"
 #include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/download/features.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_features.h"
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
@@ -632,7 +633,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"safety-check-ios", flag_descriptions::kSafetyCheckIOSName,
      flag_descriptions::kSafetyCheckIOSDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kSafetyCheckIOS)},
-
+    {"discover-feed-ntp-ios", flag_descriptions::kDiscoverFeedInNtpName,
+     flag_descriptions::kDiscoverFeedInNtpDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kDiscoverFeedInNtp)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

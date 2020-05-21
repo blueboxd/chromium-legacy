@@ -45,7 +45,7 @@ void ExpandTypes(std::vector<std::string>* list) {
 
 XID FindXEventTarget(const XEvent& xev) {
   XID target = xev.xany.window;
-  if (xev.type == GenericEvent)
+  if (xev.type == x11::XProto::GeGenericEvent::opcode)
     target = static_cast<XIDeviceEvent*>(xev.xcookie.data)->event;
   return target;
 }

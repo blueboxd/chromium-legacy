@@ -10,5 +10,10 @@
 ] interface VideoTrackReader {
   [CallWith=ScriptState, RaisesException]
   constructor(MediaStreamTrack track);
-  readonly attribute ReadableStream readable; // of VideoFrame
+
+  [RaisesException]
+  void start(VideoDecoderOutputCallback callback);
+
+  [RaisesException]
+  void stop();
 };

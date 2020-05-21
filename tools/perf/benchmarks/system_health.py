@@ -15,6 +15,15 @@ from telemetry.web_perf import timeline_based_measurement
 import page_sets
 
 
+SYSTEM_HEALTH_BENCHMARK_UMA = [
+    'Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin2',
+    'Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2',
+    'Graphics.Smoothness.PercentDroppedFrames.AllSequences',
+    'Memory.GPU.PeakMemoryUsage.Scroll',
+    'Memory.GPU.PeakMemoryUsage.PageLoad',
+]
+
+
 class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
   """Chrome Common System Health Benchmark.
 
@@ -30,7 +39,7 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     cat_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
-        filter_string='rail,toplevel')
+        filter_string='rail,toplevel,uma')
     cat_filter.AddIncludedCategory('accessibility')
     # Needed for the metric reported by page.
     cat_filter.AddIncludedCategory('blink.user_timing')
@@ -40,18 +49,26 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     options = timeline_based_measurement.Options(cat_filter)
     options.config.enable_chrome_trace = True
     options.config.enable_cpu_trace = True
+    options.config.chrome_trace_config.EnableUMAHistograms(
+        *SYSTEM_HEALTH_BENCHMARK_UMA)
     options.SetTimelineBasedMetrics([
         'accessibilityMetric',
         'consoleErrorMetric',
         'cpuTimeMetric',
         'limitedCpuTimeMetric',
         'reportedByPageMetric',
-        'tracingMetric'
+        'tracingMetric',
+        'umaMetric',
     ])
     loading_metrics_category.AugmentOptionsForLoadingMetrics(options)
     # The EQT metric depends on the same categories as the loading metric.
     options.AddTimelineBasedMetric('expectedQueueingTimeMetric')
     return options
+
+  def SetExtraBrowserOptions(self, options):
+    # Using the software fallback can skew the rendering related metrics. So
+    # disable that.
+    options.AppendExtraBrowserArgs('--disable-software-compositing-fallback')
 
   def CreateStorySet(self, options):
     return page_sets.SystemHealthStorySet(platform=self.PLATFORM)

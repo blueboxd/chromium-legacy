@@ -65,8 +65,11 @@ public class PreviewTabTest {
     }
 
     private void endAnimations() {
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mEphemeralTabCoordinator.endAnimationsForTesting());
+        TestThreadUtils.runOnUiThreadBlocking(()
+                                                      -> mActivityTestRule.getActivity()
+                                                                 .getRootUiCoordinatorForTesting()
+                                                                 .getBottomSheetController()
+                                                                 .endAnimationsForTesting());
     }
 
     /**

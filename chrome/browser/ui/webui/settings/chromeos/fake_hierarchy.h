@@ -24,11 +24,22 @@ class FakeHierarchy : public Hierarchy {
       int name_message_id,
       mojom::Section section,
       mojom::Subpage subpage,
+      mojom::SearchResultIcon icon,
+      mojom::SearchResultDefaultRank default_rank,
+      const std::string& url_path_with_parameters,
       base::Optional<mojom::Subpage> parent_subpage = base::nullopt);
   void AddSettingMetadata(
       mojom::Section section,
       mojom::Setting setting,
       base::Optional<mojom::Subpage> parent_subpage = base::nullopt);
+
+ private:
+  // Hierarchy:
+  std::string ModifySearchResultUrl(
+      mojom::Section section,
+      mojom::SearchResultType type,
+      OsSettingsIdentifier id,
+      const std::string& url_to_modify) const override;
 };
 
 }  // namespace settings

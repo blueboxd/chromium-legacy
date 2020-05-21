@@ -78,9 +78,6 @@ const base::Feature kAssistantTimersV2{"AssistantTimersV2",
 const base::Feature kAssistantWaitScheduling{"AssistantWaitScheduling",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kEnableClearCutLog{"EnableClearCutLog",
-                                       base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kEnableDspHotword{"EnableDspHotword",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -129,10 +126,6 @@ bool IsAppSupportEnabled() {
 
 bool IsAudioEraserEnabled() {
   return base::FeatureList::IsEnabled(kAssistantAudioEraser);
-}
-
-bool IsClearCutLogEnabled() {
-  return base::FeatureList::IsEnabled(kEnableClearCutLog);
 }
 
 bool IsConversationStartersV2Enabled() {

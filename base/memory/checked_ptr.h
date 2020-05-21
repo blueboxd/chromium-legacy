@@ -5,8 +5,9 @@
 #ifndef BASE_MEMORY_CHECKED_PTR_H_
 #define BASE_MEMORY_CHECKED_PTR_H_
 
-#include <cstddef>
-#include <cstdint>
+#include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -101,7 +102,7 @@ class CheckedPtr {
 
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.
   // NOLINTNEXTLINE(runtime/explicit)
-  constexpr ALWAYS_INLINE CheckedPtr(std::nullptr_t) noexcept
+  constexpr ALWAYS_INLINE CheckedPtr(nullptr_t) noexcept
       : wrapped_ptr_(Impl::GetWrappedNullPtr()) {}
 
   // Deliberately implicit, because CheckedPtr is supposed to resemble raw ptr.

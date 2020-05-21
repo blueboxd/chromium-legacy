@@ -84,17 +84,6 @@
 #include "content/common/pepper_renderer_instance_data.h"
 #endif
 
-// Singly-included section for type definitions.
-#ifndef INTERNAL_CONTENT_COMMON_FRAME_MESSAGES_H_
-#define INTERNAL_CONTENT_COMMON_FRAME_MESSAGES_H_
-
-using FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap =
-    std::map<GURL, base::FilePath>;
-using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameTokenMap =
-    std::map<base::UnguessableToken, base::FilePath>;
-
-#endif  // INTERNAL_CONTENT_COMMON_FRAME_MESSAGES_H_
-
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
@@ -481,13 +470,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
 // Note: this covers only the immediate frame / doesn't cover subframes.
 IPC_MESSAGE_ROUTED0(FrameMsg_GetSavableResourceLinks)
 
-// Get html data by serializing the target frame and replacing all resource
-// links with a path to the local copy passed in the message payload.
-IPC_MESSAGE_ROUTED3(FrameMsg_GetSerializedHtmlWithLocalLinks,
-                    FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap,
-                    FrameMsg_GetSerializedHtmlWithLocalLinks_FrameTokenMap,
-                    bool /* save_with_empty_url */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin allowlist.
 IPC_MESSAGE_ROUTED1(FrameMsg_UpdatePluginContentOriginAllowlist,
@@ -758,11 +740,6 @@ IPC_MESSAGE_ROUTED3(FrameHostMsg_SavableResourceLinksResponse,
 // non-savable content (i.e. from a non-savable scheme) or if there were
 // errors gathering the links.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_SavableResourceLinksError)
-
-// Response to FrameMsg_GetSerializedHtmlWithLocalLinks.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
-                    std::string /* data buffer */,
-                    bool /* end of data? */)
 
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.

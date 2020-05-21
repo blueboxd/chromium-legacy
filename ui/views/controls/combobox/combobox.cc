@@ -132,7 +132,13 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
   }
 
   // Overridden from MenuModel:
-  bool HasIcons() const override { return false; }
+  bool HasIcons() const override {
+    for (int i = 0; i < GetItemCount(); ++i) {
+      if (!GetIconAt(i).IsEmpty())
+        return true;
+    }
+    return false;
+  }
 
   int GetItemCount() const override { return model_->GetItemCount(); }
 
@@ -155,7 +161,13 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
   base::string16 GetLabelAt(int index) const override {
     // Inserting the Unicode formatting characters if necessary so that the
     // text is displayed correctly in right-to-left UIs.
-    base::string16 text = model_->GetItemAt(index);
+    base::string16 text = model_->GetDropDownTextAt(index);
+    base::i18n::AdjustStringForLocaleDirection(&text);
+    return text;
+  }
+
+  base::string16 GetSecondaryLabelAt(int index) const override {
+    base::string16 text = model_->GetDropDownSecondaryTextAt(index);
     base::i18n::AdjustStringForLocaleDirection(&text);
     return text;
   }
@@ -178,7 +190,7 @@ class Combobox::ComboboxMenuModel : public ui::MenuModel {
   int GetGroupIdAt(int index) const override { return -1; }
 
   ui::ImageModel GetIconAt(int index) const override {
-    return ui::ImageModel();
+    return model_->GetDropDownIconAt(index);
   }
 
   ui::ButtonMenuItemModel* GetButtonMenuItemAt(int index) const override {
@@ -443,7 +455,7 @@ bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
 
 void Combobox::OnPaint(gfx::Canvas* canvas) {
   OnPaintBackground(canvas);
-  PaintText(canvas);
+  PaintIconAndText(canvas);
   OnPaintBorder(canvas);
 }
 
@@ -543,7 +555,7 @@ void Combobox::AdjustBoundsForRTLUI(gfx::Rect* rect) const {
   rect->set_x(GetMirroredXForRect(*rect));
 }
 
-void Combobox::PaintText(gfx::Canvas* canvas) {
+void Combobox::PaintIconAndText(gfx::Canvas* canvas) {
   gfx::Insets insets = GetInsets();
   insets += gfx::Insets(0, LayoutProvider::Get()->GetDistanceMetric(
                                DISTANCE_TEXTFIELD_HORIZONTAL_TEXT_PADDING));
@@ -553,7 +565,19 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
 
   int x = insets.left();
   int y = insets.top();
-  int text_height = height() - insets.height();
+  int contents_height = height() - insets.height();
+
+  // Draw the icon.
+  ui::ImageModel icon = model()->GetIconAt(selected_index_);
+  if (!icon.IsEmpty()) {
+    gfx::Image icon_image = icon.GetImage();
+    int icon_y = y + (contents_height - icon_image.Height()) / 2;
+    canvas->DrawImageInt(icon_image.AsImageSkia(), x, icon_y);
+    x += icon_image.Width() + LayoutProvider::Get()->GetDistanceMetric(
+                                  DISTANCE_RELATED_LABEL_HORIZONTAL);
+  }
+
+  // Draw the text.
   SkColor text_color = GetTextColorForEnableState(*this, GetEnabled());
   DCHECK_GE(selected_index_, 0);
   DCHECK_LT(selected_index_, model()->GetItemCount());
@@ -565,10 +589,10 @@ void Combobox::PaintText(gfx::Canvas* canvas) {
 
   const gfx::FontList& font_list = GetFontList();
   int text_width = gfx::GetStringWidth(text, font_list);
-  if ((text_width + insets.width()) > disclosure_arrow_offset)
-    text_width = disclosure_arrow_offset - insets.width();
+  text_width =
+      std::min(text_width, disclosure_arrow_offset - insets.right() - x);
 
-  gfx::Rect text_bounds(x, y, text_width, text_height);
+  gfx::Rect text_bounds(x, y, text_width, contents_height);
   AdjustBoundsForRTLUI(&text_bounds);
   canvas->DrawStringRect(text, font_list, text_color, text_bounds);
 
@@ -633,18 +657,24 @@ void Combobox::OnPerformAction() {
 
 gfx::Size Combobox::GetContentSize() const {
   const gfx::FontList& font_list = GetFontList();
-
+  int height = font_list.GetHeight();
   int width = 0;
   for (int i = 0; i < model()->GetItemCount(); ++i) {
     if (model_->IsItemSeparatorAt(i))
       continue;
 
     if (size_to_largest_label_ || i == selected_index_) {
-      width = std::max(
-          width, gfx::GetStringWidth(menu_model_->GetLabelAt(i), font_list));
+      int item_width = gfx::GetStringWidth(model()->GetItemAt(i), font_list);
+      if (!model()->GetIconAt(i).IsEmpty()) {
+        gfx::Image icon = model()->GetIconAt(i).GetImage();
+        item_width += icon.Width() + LayoutProvider::Get()->GetDistanceMetric(
+                                         DISTANCE_RELATED_LABEL_HORIZONTAL);
+        height = std::max(height, icon.Height());
+      }
+      width = std::max(width, item_width);
     }
   }
-  return gfx::Size(width, font_list.GetHeight());
+  return gfx::Size(width, height);
 }
 
 PrefixSelector* Combobox::GetPrefixSelector() {

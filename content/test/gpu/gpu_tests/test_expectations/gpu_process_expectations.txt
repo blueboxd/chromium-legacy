@@ -1,4 +1,4 @@
-# tags: [ android fuchsia linux mac win ]
+# tags: [ android chromeos fuchsia linux mac win ]
 # tags: [ nvidia ]
 # results: [ Failure RetryOnFailure Skip ]
 
@@ -24,3 +24,9 @@ crbug.com/681341 [ mac nvidia ] GpuProcess_mac_webgl_terminated_high_performance
 [ fuchsia ] GpuProcess_feature_status_under_swiftshader [ Skip ]
 [ fuchsia ] GpuProcess_swiftshader_for_webgl [ Skip ]
 
+# SwiftShader GL does not work on CrOS, wait for it to be replaced by SwANGLE.
+crbug.com/1084794 [ chromeos ] GpuProcess_feature_status_under_swiftshader [ Skip ]
+crbug.com/1084794 [ chromeos ] GpuProcess_swiftshader_for_webgl [ Skip ]
+
+# Consistently crashing on chromeos
+crbug.com/1084796 [ chromeos ] GpuProcess_readback_webgl_gpu_process [ Skip ]

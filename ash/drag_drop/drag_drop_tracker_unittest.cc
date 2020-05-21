@@ -7,12 +7,12 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/events/event_utils.h"
 
 namespace ash {
@@ -83,7 +83,7 @@ TEST_F(DragDropTrackerTest, GetTarget) {
   EXPECT_NE(window1.get(), GetTarget(gfx::Point(50, 250)));
 
   // Make RootWindow1 active so that capture window is parented to it.
-  ScopedRootWindowForNewWindows root_for_new_windows(root_windows[1]);
+  display::ScopedDisplayForNewWindows display_for_new_windows(root_windows[1]);
 
   // Start tracking from the RootWindow1 and check the point on RootWindow0 that
   // |window0| covers.
@@ -145,7 +145,7 @@ TEST_F(DragDropTrackerTest, ConvertEvent) {
   EXPECT_EQ(original01.flags(), converted01->flags());
 
   // Make RootWindow1 active so that capture window is parented to it.
-  ScopedRootWindowForNewWindows root_for_new_windows(root_windows[1]);
+  display::ScopedDisplayForNewWindows display_for_new_windows(root_windows[1]);
 
   // Start tracking from the RootWindow1 and converts the mouse event into
   // |window0|'s coodinates.

@@ -43,8 +43,6 @@
   id<StartupInformation> _startupInformation;
   // Helper to open new tabs.
   id<TabOpening> _tabOpener;
-  // Handles the application stage changes.
-  AppState* _appState;
   // Handles tab switcher.
   id<TabSwitching> _tabSwitcherProtocol;
 }
@@ -79,7 +77,7 @@
       // When the UIScene APU is not supported, this object holds a "scene"
       // state and a "scene" controller. This allows the rest of the app to be
       // mostly multiwindow-agnostic.
-      _sceneState = [[SceneState alloc] init];
+      _sceneState = [[SceneState alloc] initWithAppState:_appState];
       _appState.mainSceneState = _sceneState;
       _sceneController =
           [[SceneController alloc] initWithSceneState:_sceneState];
@@ -117,8 +115,6 @@
   startup_loggers::RegisterAppDidFinishLaunchingTime();
 
   _mainController.window = self.window;
-  // self.window has been set by this time. _appState window can now be set.
-  _appState.window = self.window;
 
   BOOL inBackground =
       [application applicationState] == UIApplicationStateBackground;

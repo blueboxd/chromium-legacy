@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@class AppState;
 @class SceneController;
 @class SceneState;
 @protocol BrowserInterfaceProvider;
@@ -46,6 +47,12 @@ typedef NS_ENUM(NSUInteger, SceneActivationLevel) {
 // An object containing the state of a UIWindowScene. One state object
 // corresponds to one scene.
 @interface SceneState : NSObject
+
+- (instancetype)initWithAppState:(AppState*)appState NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+// The app state for the app that owns this scene. Set in init.
+@property(nonatomic, weak, readonly) AppState* appState;
 
 // The current activation level.
 @property(nonatomic, assign) SceneActivationLevel activationLevel;

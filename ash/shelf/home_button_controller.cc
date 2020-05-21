@@ -13,7 +13,6 @@
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf_button.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/check_op.h"
@@ -105,7 +104,7 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
           "VoiceInteraction.Started.HomeButtonLongPress"));
       assistant_overlay_->BurstAnimation();
       event->SetHandled();
-      Shell::Get()->shell_state()->SetRootWindowForNewWindows(
+      Shell::SetRootWindowForNewWindows(
           button_->GetWidget()->GetNativeWindow()->GetRootWindow());
       AssistantUiController::Get()->ShowUi(
           AssistantEntryPoint::kLongPressLauncher);

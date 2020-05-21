@@ -15,9 +15,9 @@
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/public/cpp/window_pin_type.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"                                  // mash-ok
-#include "ash/wm/overview/overview_controller.h"        // mash-ok
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"  // mash-ok
+#include "ash/shell.h"
+#include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"

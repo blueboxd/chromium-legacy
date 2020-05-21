@@ -7,16 +7,21 @@
 
 #include <stddef.h>
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/numerics/safe_math.h"
+#include "base/strings/string16.h"
 
 namespace chrome_pdf {
 
-// Helper to deal with the fact that many PDFium APIs write the null-terminator
-// into string buffers that are passed to them, but the PDF plugin likes to pass
-// in std::strings / base::string16s, where one should not count on the internal
-// string buffers to be null-terminated.
+namespace internal {
 
+// Helper to deal with the fact that many PDFium APIs write the null-terminator
+// into string buffers that are passed to them, but the PDF code likes to use
+// std::strings / base::string16s, where one should not count on the internal
+// string buffers to be null-terminated.
 template <class StringType>
 class PDFiumAPIStringBufferAdapter {
  public:
@@ -56,11 +61,11 @@ class PDFiumAPIStringBufferAdapter {
 };
 
 // Helper to deal with the fact that many PDFium APIs write the null-terminator
-// into string buffers that are passed to them, but the PDF plugin likes to pass
-// in std::strings / base::string16s, where one should not count on the internal
+// into string buffers that are passed to them, but the PDF code likes to use
+// std::strings / base::string16s, where one should not count on the internal
 // string buffers to be null-terminated. This version is suitable for APIs that
-// work in terms of number of bytes instead of the number of characters.
-template <class StringType>
+// work in terms of number of bytes instead of the number of characters. Though
+// for std::strings, PDFiumAPIStringBufferAdapter is equivalent.
 class PDFiumAPIStringBufferSizeInBytesAdapter {
  public:
   // |str| is the string to write into.
@@ -69,19 +74,19 @@ class PDFiumAPIStringBufferSizeInBytesAdapter {
   // character in bytes.
   // |check_expected_size| whether to check the actual number of bytes
   // written into |str| against |expected_size| when calling Close().
-  PDFiumAPIStringBufferSizeInBytesAdapter(StringType* str,
+  PDFiumAPIStringBufferSizeInBytesAdapter(base::string16* str,
                                           size_t expected_size,
                                           bool check_expected_size);
   ~PDFiumAPIStringBufferSizeInBytesAdapter();
 
   // Returns a pointer to |str_|'s buffer. The buffer's size is large enough to
-  // hold |expected_size_| + sizeof(StringType::value_type) bytes, so the PDFium
-  // API that uses the pointer has space to write a null-terminator.
+  // hold |expected_size_| + sizeof(base::char16) bytes, so the PDFium API that
+  // uses the pointer has space to write a null-terminator.
   void* GetData();
 
-  // Resizes |str_| to |actual_size| - sizeof(StringType::value_type) bytes,
-  // thereby removing the extra null-terminator. This must be called prior to
-  // the adapter's destruction. The pointer returned by GetData() should be
+  // Resizes |str_| to |actual_size| - sizeof(base::char16) bytes, thereby
+  // removing the extra null-terminator. This must be called prior to the
+  // adapter's destruction. The pointer returned by GetData() should be
   // considered invalid.
   void Close(size_t actual_size);
 
@@ -91,8 +96,55 @@ class PDFiumAPIStringBufferSizeInBytesAdapter {
   }
 
  private:
-  PDFiumAPIStringBufferAdapter<StringType> adapter_;
+  PDFiumAPIStringBufferAdapter<base::string16> adapter_;
 };
+
+template <class AdapterType,
+          class StringType,
+          typename BufferType,
+          typename ReturnType>
+StringType CallPDFiumStringBufferApi(
+    base::RepeatingCallback<ReturnType(BufferType*, ReturnType)> api,
+    bool check_expected_size) {
+  StringType str;
+  ReturnType expected_size = api.Run(nullptr, 0);
+  if (expected_size > 0) {
+    AdapterType api_string_adapter(&str, expected_size, check_expected_size);
+    auto* data = reinterpret_cast<BufferType*>(api_string_adapter.GetData());
+    api_string_adapter.Close(api.Run(data, expected_size));
+  }
+  return str;
+}
+
+}  // namespace internal
+
+// Helper function to call PDFium APIs where the output buffer is expected to
+// hold UTF-16 data, and the buffer length is specified in bytes.
+template <typename BufferType>
+base::string16 CallPDFiumWideStringBufferApi(
+    base::RepeatingCallback<unsigned long(BufferType*, unsigned long)> api,
+    bool check_expected_size) {
+  using adapter_type = internal::PDFiumAPIStringBufferSizeInBytesAdapter;
+  return internal::CallPDFiumStringBufferApi<adapter_type, base::string16>(
+      api, check_expected_size);
+}
+
+// Helper function to call PDFium APIs where the output buffer is expected to
+// hold ASCII or UTF-8 data, and the buffer length is specified in bytes.
+template <typename BufferType, typename ReturnType>
+std::string CallPDFiumStringBufferApi(
+    base::RepeatingCallback<ReturnType(BufferType*, ReturnType)> api,
+    bool check_expected_size) {
+  using adapter_type = internal::PDFiumAPIStringBufferAdapter<std::string>;
+  return internal::CallPDFiumStringBufferApi<adapter_type, std::string>(
+      api, check_expected_size);
+}
+
+// Expose internal::PDFiumAPIStringBufferAdapter for special cases that cannot
+// use the CallPDFiumStringBuffer* functions above.
+template <class StringType>
+using PDFiumAPIStringBufferAdapter =
+    internal::PDFiumAPIStringBufferAdapter<StringType>;
 
 }  // namespace chrome_pdf
 

@@ -226,6 +226,36 @@ class Ed25519PrivateKey : public EVPBackedPrivateKey {
   static int ConfigureKeyGen(EVP_PKEY_CTX* ctx) { return 1; }
 };
 
+class InvalidForTestingPrivateKey : public VirtualFidoDevice::PrivateKey {
+ public:
+  InvalidForTestingPrivateKey() = default;
+
+  std::vector<uint8_t> Sign(base::span<const uint8_t> message) override {
+    return {'s', 'i', 'g'};
+  }
+
+  std::vector<uint8_t> GetPKCS8PrivateKey() const override {
+    CHECK(false);
+    return {};
+  }
+
+  std::unique_ptr<PublicKey> GetPublicKey() const override {
+    cbor::Value::MapValue map;
+    map.emplace(
+        static_cast<int64_t>(CoseKeyKey::kAlg),
+        static_cast<int64_t>(CoseAlgorithmIdentifier::kInvalidForTesting));
+    map.emplace(static_cast<int64_t>(CoseKeyKey::kKty),
+                static_cast<int64_t>(CoseKeyTypes::kInvalidForTesting));
+
+    base::Optional<std::vector<uint8_t>> cbor_bytes(
+        cbor::Writer::Write(cbor::Value(std::move(map))));
+
+    return std::make_unique<PublicKey>(
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kInvalidForTesting),
+        *cbor_bytes, base::nullopt);
+  }
+};
+
 }  // namespace
 
 // VirtualFidoDevice::PrivateKey ----------------------------------------------
@@ -281,13 +311,19 @@ VirtualFidoDevice::PrivateKey::FreshP256Key() {
 // static
 std::unique_ptr<VirtualFidoDevice::PrivateKey>
 VirtualFidoDevice::PrivateKey::FreshRSAKey() {
-  return std::unique_ptr<PrivateKey>(new RSAPrivateKey);
+  return std::make_unique<RSAPrivateKey>();
 }
 
 // static
 std::unique_ptr<VirtualFidoDevice::PrivateKey>
 VirtualFidoDevice::PrivateKey::FreshEd25519Key() {
-  return std::unique_ptr<PrivateKey>(new Ed25519PrivateKey);
+  return std::make_unique<Ed25519PrivateKey>();
+}
+
+// static
+std::unique_ptr<VirtualFidoDevice::PrivateKey>
+VirtualFidoDevice::PrivateKey::FreshInvalidForTestingKey() {
+  return std::make_unique<InvalidForTestingPrivateKey>();
 }
 
 // VirtualFidoDevice::RegistrationData ----------------------------------------

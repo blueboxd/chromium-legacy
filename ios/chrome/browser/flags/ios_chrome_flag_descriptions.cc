@@ -178,6 +178,10 @@ const char kDisableAnimationOnLowBatteryName[] =
 const char kDisableAnimationOnLowBatteryDescription[] =
     "Disable animations when battery level goes below 20%";
 
+const char kDiscoverFeedInNtpName[] = "Enable Discover feed in new tab page";
+const char kDiscoverFeedInNtpDescription[] =
+    "When enabled, replaces articles feed with Discover feed in new tab page.";
+
 const char kDownloadInfobarMessagesUIName[] = "Download Infobars Messages UI";
 const char kDownloadInfobarMessagesUIDescription[] =
     "When enabled Downloads use the new Messages UI.";

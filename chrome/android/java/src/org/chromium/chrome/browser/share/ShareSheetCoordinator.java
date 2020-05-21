@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.share;
 
 import android.app.Activity;
 
+import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
@@ -13,14 +14,17 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.share.ShareParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * Coordinator for displaying the share sheet.
@@ -36,16 +40,19 @@ class ShareSheetCoordinator {
     /**
      * Constructs a new ShareSheetCoordinator.
      *
-     * @param controller The BottomSheetController for the current activity.
-     * @param provider   The ActivityTabProvider for the current visible tab.
+     * @param controller        The {@link BottomSheetController} for the current activity.
+     * @param provider          The {@link ActivityTabProvider} for the current visible tab.
+     * @param modelBuilder      The {@link ShareSheetPropertyModelBuilder} for the share sheet.
+     * @param prefServiceBridge The {@link PrefServiceBridge} singleton. This provides preferences
+     *                          for the Chrome-provided property models.
      */
     ShareSheetCoordinator(BottomSheetController controller, ActivityTabProvider provider,
             ShareSheetPropertyModelBuilder modelBuilder, PrefServiceBridge prefServiceBridge) {
         mBottomSheetController = controller;
         mActivityTabProvider = provider;
         mPropertyModelBuilder = modelBuilder;
-        mPrefServiceBridge = prefServiceBridge;
         mExcludeFirstParty = false;
+        mPrefServiceBridge = prefServiceBridge;
     }
 
     void showShareSheet(ShareParams params, boolean saveLastUsed, long shareStartTime) {
@@ -57,8 +64,8 @@ class ShareSheetCoordinator {
         ShareSheetBottomSheetContent bottomSheet = new ShareSheetBottomSheetContent(activity);
 
         mShareStartTime = shareStartTime;
-        ArrayList<PropertyModel> chromeFeatures = createTopRowPropertyModels(bottomSheet, activity);
-        ArrayList<PropertyModel> thirdPartyApps =
+        List<PropertyModel> chromeFeatures = createTopRowPropertyModels(bottomSheet, activity);
+        List<PropertyModel> thirdPartyApps =
                 createBottomRowPropertyModels(bottomSheet, activity, params, saveLastUsed);
 
         bottomSheet.createRecyclerViews(chromeFeatures, thirdPartyApps);
@@ -72,38 +79,29 @@ class ShareSheetCoordinator {
     }
 
     // Used by first party features to share with only non-chrome apps.
-    protected void showThirdPartyShareSheet(ShareParams params, boolean saveLastUsed, long shareStartTime) {
+    protected void showThirdPartyShareSheet(
+            ShareParams params, boolean saveLastUsed, long shareStartTime) {
         mExcludeFirstParty = true;
         showShareSheet(params, saveLastUsed, shareStartTime);
     }
 
-    @VisibleForTesting
-    ArrayList<PropertyModel> createTopRowPropertyModels(
+    List<PropertyModel> createTopRowPropertyModels(
             ShareSheetBottomSheetContent bottomSheet, Activity activity) {
+        if (mExcludeFirstParty) {
+            return new ArrayList<>();
+        }
         ChromeProvidedSharingOptionsProvider chromeProvidedSharingOptionsProvider =
                 new ChromeProvidedSharingOptionsProvider(activity, mActivityTabProvider,
-                        mBottomSheetController, bottomSheet, mShareStartTime);
-        ArrayList<PropertyModel> models = new ArrayList<>();
-        if (mExcludeFirstParty) {
-            return models;
-        }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_SCREENSHOT)) {
-            models.add(chromeProvidedSharingOptionsProvider.createScreenshotPropertyModel());
-        }
-        models.add(chromeProvidedSharingOptionsProvider.createCopyLinkPropertyModel());
-        models.add(chromeProvidedSharingOptionsProvider.createSendTabToSelfPropertyModel());
-        models.add(chromeProvidedSharingOptionsProvider.createQrCodePropertyModel());
-        if (mPrefServiceBridge.getBoolean(Pref.PRINTING_ENABLED)) {
-            models.add(chromeProvidedSharingOptionsProvider.createPrintingPropertyModel());
-        }
-
-        return models;
+                        mBottomSheetController, bottomSheet, mPrefServiceBridge, mShareStartTime);
+        return chromeProvidedSharingOptionsProvider.createPropertyModels(new HashSet<>(
+                Arrays.asList(ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE,
+                        ContentType.TEXT, ContentType.IMAGE, ContentType.OTHER_FILE_TYPE)));
     }
 
     @VisibleForTesting
-    ArrayList<PropertyModel> createBottomRowPropertyModels(ShareSheetBottomSheetContent bottomSheet,
+    List<PropertyModel> createBottomRowPropertyModels(ShareSheetBottomSheetContent bottomSheet,
             Activity activity, ShareParams params, boolean saveLastUsed) {
-        ArrayList<PropertyModel> models = mPropertyModelBuilder.selectThirdPartyApps(
+        List<PropertyModel> models = mPropertyModelBuilder.selectThirdPartyApps(
                 bottomSheet, params, saveLastUsed, mShareStartTime);
         // More...
         PropertyModel morePropertyModel = ShareSheetPropertyModelBuilder.createPropertyModel(
@@ -124,5 +122,16 @@ class ShareSheetCoordinator {
     @VisibleForTesting
     protected void disableFirstPartyFeaturesForTesting() {
         mExcludeFirstParty = true;
+    }
+
+    @IntDef({ContentType.LINK_PAGE_VISIBLE, ContentType.LINK_PAGE_NOT_VISIBLE, ContentType.TEXT,
+            ContentType.IMAGE, ContentType.OTHER_FILE_TYPE})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface ContentType {
+        int LINK_PAGE_VISIBLE = 0;
+        int LINK_PAGE_NOT_VISIBLE = 1;
+        int TEXT = 2;
+        int IMAGE = 3;
+        int OTHER_FILE_TYPE = 4;
     }
 }

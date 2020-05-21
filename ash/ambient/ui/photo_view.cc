@@ -95,17 +95,13 @@ const char* PhotoView::GetClassName() const {
 }
 
 void PhotoView::AddedToWidget() {
-  // Set the bounds to show |image_view_curr_| for the first time.
+  // Set the bounds to show |image_view_current_| for the first time.
   // TODO(b/140066694): Handle display configuration changes, e.g. resolution,
   // rotation, etc.
   const gfx::Size widget_size = GetWidget()->GetRootView()->size();
-  image_view_prev_->SetImageSize(widget_size);
-  image_view_curr_->SetImageSize(widget_size);
+  image_view_current_->SetImageSize(widget_size);
   image_view_next_->SetImageSize(widget_size);
-  gfx::Rect view_bounds = gfx::Rect(GetPreferredSize());
-  const int width = widget_size.width();
-  view_bounds.set_x(-width);
-  SetBoundsRect(view_bounds);
+  SetBoundsRect(gfx::Rect(GetPreferredSize()));
 }
 
 void PhotoView::OnImagesChanged() {
@@ -129,9 +125,7 @@ void PhotoView::Init() {
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kStart);
 
-  image_view_prev_ =
-      AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
-  image_view_curr_ =
+  image_view_current_ =
       AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
   image_view_next_ =
       AddChildView(std::make_unique<AmbientBackgroundImageView>(delegate_));
@@ -143,8 +137,7 @@ void PhotoView::UpdateImages() {
   // TODO(b/140193766): Investigate a more efficient way to update images and do
   // layer animation.
   auto* model = delegate_->GetAmbientBackendModel();
-  image_view_prev_->SetImage(model->GetPrevImage());
-  image_view_curr_->SetImage(model->GetCurrImage());
+  image_view_current_->SetImage(model->GetCurrentImage());
   image_view_next_->SetImage(model->GetNextImage());
 }
 
@@ -158,7 +151,7 @@ void PhotoView::StartTransitionAnimation() {
   animation.SetAnimationMetricsReporter(metrics_reporter_.get());
   animation.AddObserver(this);
 
-  const int x_offset = image_view_curr_->GetPreferredSize().width();
+  const int x_offset = image_view_current_->GetPreferredSize().width();
   gfx::Transform transform;
   transform.Translate(-x_offset, 0);
   layer->SetTransform(transform);

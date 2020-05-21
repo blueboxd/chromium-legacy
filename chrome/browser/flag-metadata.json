@@ -953,6 +953,11 @@
     "expiry_milestone": 80
   },
   {
+    "name": "discover-feed-ntp-ios",
+    "owners": [ "adamta", "sczs" ],
+    "expiry_milestone": 89
+  },
+  {
     "name": "display-change-modal",
     "owners": [ "baileyberro", "zentaro" ],
     "expiry_milestone": 85
@@ -2484,7 +2489,7 @@
   {
     "name": "extensions-toolbar-menu",
     "owners": [ "//extensions/OWNERS", "pbos" ],
-    "expiry_milestone": 84
+    "expiry_milestone": 87
   },
   {
     "name": "file-handling-api",
@@ -3087,6 +3092,11 @@
   },
   {
     "name": "ntp-iframe-one-google-bar",
+    "owners": ["aee", "mahmadi", "tiborg"],
+    "expiry_milestone": 86
+  },
+  {
+    "name": "ntp-one-google-bar-modal-overlays",
     "owners": ["aee", "mahmadi", "tiborg"],
     "expiry_milestone": 86
   },

@@ -274,15 +274,31 @@ int AboutSection::GetSectionNameMessageId() const {
   return IDS_SETTINGS_ABOUT_OS;
 }
 
+mojom::Section AboutSection::GetSection() const {
+  return mojom::Section::kAboutChromeOs;
+}
+
+mojom::SearchResultIcon AboutSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kChrome;
+}
+
+std::string AboutSection::GetSectionPath() const {
+  return mojom::kAboutChromeOsSectionPath;
+}
+
 void AboutSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // About Chrome OS.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_ABOUT_OS,
-                                     mojom::Subpage::kAboutChromeOsDetails);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_ABOUT_OS, mojom::Subpage::kAboutChromeOsDetails,
+      mojom::SearchResultIcon::kChrome, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kAboutChromeOsDetailsSubpagePath);
 
   // Detailed build info.
-  generator->RegisterNestedSubpage(IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO,
-                                   mojom::Subpage::kDetailedBuildInfo,
-                                   mojom::Subpage::kAboutChromeOsDetails);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO,
+      mojom::Subpage::kDetailedBuildInfo, mojom::Subpage::kAboutChromeOsDetails,
+      mojom::SearchResultIcon::kChrome, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kDetailedBuildInfoSubpagePath);
   static constexpr mojom::Setting kDetailedBuildInfoSettings[] = {
       mojom::Setting::kChangeChromeChannel,
       mojom::Setting::kCopyDetailedBuildInfo};

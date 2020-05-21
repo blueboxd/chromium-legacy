@@ -90,6 +90,10 @@ void AddEduStrings(content::WebUIDataSource* source,
           base::ASCIIToUTF16(chrome::kClassroomSigninLearnMoreURL)));
   source->AddLocalizedString("parentInfoResourcesAvailabilityText",
                              IDS_EDU_LOGIN_INFO_RESOURCES_AVAILABILITY);
+  source->AddLocalizedString("coexistenceTitle",
+                             IDS_EDU_LOGIN_INFO_COEXISTENCE_TITLE);
+  source->AddLocalizedString("coexistenceBody",
+                             IDS_EDU_LOGIN_INFO_COEXISTENCE_BODY);
 }
 #endif  // defined(OS_CHROMEOS)
 
@@ -123,6 +127,8 @@ content::WebUIDataSource* CreateWebUIDataSource() {
     {"icons.js", IDR_EDU_LOGIN_ICONS_JS},
     {"browser_proxy.js", IDR_EDU_LOGIN_BROWSER_PROXY_JS},
     {"edu_login_util.js", IDR_EDU_LOGIN_EDU_LOGIN_UTIL_JS},
+    {"edu_login_coexistence_info.js",
+     IDR_EDU_LOGIN_EDU_LOGIN_COEXISTENCE_INFO_JS},
     {"edu_login_parents.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENTS_JS},
     {"edu_login_parent_signin.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_SIGNIN_JS},
     {"edu_login_parent_info.js", IDR_EDU_LOGIN_EDU_LOGIN_PARENT_INFO_JS},

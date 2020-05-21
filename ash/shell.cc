@@ -88,7 +88,6 @@
 #include "ash/shell_delegate.h"
 #include "ash/shell_init_params.h"
 #include "ash/shell_observer.h"
-#include "ash/shell_state.h"
 #include "ash/shutdown_controller_impl.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/style/ash_color_provider.h"
@@ -310,8 +309,15 @@ aura::Window* Shell::GetPrimaryRootWindow() {
 }
 
 // static
+void Shell::SetRootWindowForNewWindows(aura::Window* root) {
+  display::Screen::GetScreen()->SetDisplayForNewWindows(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(root).id());
+}
+
+// static
 aura::Window* Shell::GetRootWindowForNewWindows() {
-  return Shell::Get()->shell_state_->GetRootWindowForNewWindows();
+  return GetRootWindowForDisplayId(
+      display::Screen::GetScreen()->GetDisplayForNewWindows().id());
 }
 
 // static
@@ -544,7 +550,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
       ash_color_provider_(std::make_unique<AshColorProvider>()),
       session_controller_(std::make_unique<SessionControllerImpl>()),
       shell_delegate_(std::move(shell_delegate)),
-      shell_state_(std::make_unique<ShellState>()),
       shutdown_controller_(std::make_unique<ShutdownControllerImpl>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
@@ -981,7 +986,7 @@ void Shell::Init(
   // controller.
   desks_controller_ = std::make_unique<DesksController>();
 
-  shell_state_->SetRootWindowForNewWindows(GetPrimaryRootWindow());
+  Shell::SetRootWindowForNewWindows(GetPrimaryRootWindow());
 
   resolution_notification_controller_ =
       std::make_unique<ResolutionNotificationController>();
@@ -1321,7 +1326,7 @@ void Shell::OnWindowActivated(
   if (!gained_active)
     return;
 
-  shell_state_->SetRootWindowForNewWindows(gained_active->GetRootWindow());
+  Shell::SetRootWindowForNewWindows(gained_active->GetRootWindow());
 }
 
 void Shell::OnFirstSessionStarted() {

@@ -25,20 +25,40 @@ namespace ash {
 
 using AmbientPhotoControllerTest = AmbientAshTestBase;
 
+// Test that topics are downloaded when starting screen update.
+TEST_F(AmbientPhotoControllerTest, ShouldStartToDownloadTopics) {
+  auto topics = photo_controller()->ambient_backend_model()->topics();
+  EXPECT_TRUE(topics.empty());
+
+  // Start to refresh images.
+  photo_controller()->StartScreenUpdate();
+  topics = photo_controller()->ambient_backend_model()->topics();
+  EXPECT_TRUE(topics.empty());
+
+  task_environment()->FastForwardBy(kPhotoRefreshInterval);
+  topics = photo_controller()->ambient_backend_model()->topics();
+  EXPECT_FALSE(topics.empty());
+
+  // Stop to refresh images.
+  photo_controller()->StopScreenUpdate();
+  topics = photo_controller()->ambient_backend_model()->topics();
+  EXPECT_TRUE(topics.empty());
+}
+
 // Test that image is downloaded when starting screen update.
-TEST_F(AmbientPhotoControllerTest, ShouldStartScreenUpdateSuccessfully) {
-  auto image = photo_controller()->ambient_backend_model()->GetCurrImage();
+TEST_F(AmbientPhotoControllerTest, ShouldStartToDownloadImages) {
+  auto image = photo_controller()->ambient_backend_model()->GetCurrentImage();
   EXPECT_TRUE(image.isNull());
 
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
   base::RunLoop().RunUntilIdle();
-  image = photo_controller()->ambient_backend_model()->GetCurrImage();
+  image = photo_controller()->ambient_backend_model()->GetCurrentImage();
   EXPECT_FALSE(image.isNull());
 
   // Stop to refresh images.
   photo_controller()->StopScreenUpdate();
-  image = photo_controller()->ambient_backend_model()->GetCurrImage();
+  image = photo_controller()->ambient_backend_model()->GetCurrentImage();
   EXPECT_TRUE(image.isNull());
 }
 
@@ -51,20 +71,20 @@ TEST_F(AmbientPhotoControllerTest, ShouldUpdatePhotoPeriodically) {
   // Start to refresh images.
   photo_controller()->StartScreenUpdate();
   base::RunLoop().RunUntilIdle();
-  image1 = photo_controller()->ambient_backend_model()->GetCurrImage();
+  image1 = photo_controller()->ambient_backend_model()->GetCurrentImage();
   EXPECT_FALSE(image1.isNull());
   EXPECT_TRUE(image2.isNull());
 
   // Fastforward enough time to update the photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
-  image2 = photo_controller()->ambient_backend_model()->GetCurrImage();
+  image2 = photo_controller()->ambient_backend_model()->GetCurrentImage();
   EXPECT_FALSE(image2.isNull());
   EXPECT_FALSE(image1.BackedBySameObjectAs(image2));
   EXPECT_TRUE(image3.isNull());
 
   // Fastforward enough time to update another photo.
   task_environment()->FastForwardBy(1.2 * kPhotoRefreshInterval);
-  image3 = photo_controller()->ambient_backend_model()->GetCurrImage();
+  image3 = photo_controller()->ambient_backend_model()->GetCurrentImage();
   EXPECT_FALSE(image3.isNull());
   EXPECT_FALSE(image1.BackedBySameObjectAs(image3));
   EXPECT_FALSE(image2.BackedBySameObjectAs(image3));

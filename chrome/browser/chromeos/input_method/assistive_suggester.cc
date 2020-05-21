@@ -22,6 +22,14 @@ namespace {
 const char kMaxTextBeforeCursorLength = 50;
 const char kKeydown[] = "keydown";
 
+void RecordAssistiveMatch(AssistiveType type) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Match", type);
+}
+
+void RecordAssistiveDisabled(AssistiveType type) {
+  base::UmaHistogramEnumeration("InputMethod.Assistive.Disabled", type);
+}
+
 void RecordAssistiveCoverage(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Coverage", type);
 }
@@ -56,6 +64,23 @@ bool AssistiveSuggester::IsEmojiSuggestAdditionEnabled() {
   if (!enabled.has_value())
     return true;
   return enabled.value();
+}
+
+bool AssistiveSuggester::IsActionEnabled(AssistiveType action) {
+  switch (action) {
+    case AssistiveType::kPersonalEmail:
+    case AssistiveType::kPersonalAddress:
+    case AssistiveType::kPersonalPhoneNumber:
+    case AssistiveType::kPersonalName:
+      // TODO: Use value from settings when crbug/1068457 is done.
+      return IsAssistPersonalInfoEnabled();
+      break;
+    case AssistiveType::kEmoji:
+      return IsEmojiSuggestAdditionEnabled();
+    default:
+      break;
+  }
+  return false;
 }
 
 void AssistiveSuggester::OnFocus(int context_id) {
@@ -98,10 +123,9 @@ bool AssistiveSuggester::OnKeyEvent(
   return false;
 }
 
-void AssistiveSuggester::RecordAssistiveCoverageMetrics(
-    const base::string16& text,
-    int cursor_pos,
-    int anchor_pos) {
+void AssistiveSuggester::RecordAssistiveMatchMetrics(const base::string16& text,
+                                                     int cursor_pos,
+                                                     int anchor_pos) {
   int len = static_cast<int>(text.length());
   if (cursor_pos > 0 && cursor_pos <= len && cursor_pos == anchor_pos &&
       (cursor_pos == len || base::IsAsciiWhitespace(text[cursor_pos]))) {
@@ -109,8 +133,11 @@ void AssistiveSuggester::RecordAssistiveCoverageMetrics(
     base::string16 text_before_cursor =
         text.substr(start_pos, cursor_pos - start_pos);
     AssistiveType action = ProposeAssistiveAction(text_before_cursor);
-    if (action != AssistiveType::kGenericAction)
-      RecordAssistiveCoverage(action);
+    if (action != AssistiveType::kGenericAction) {
+      RecordAssistiveMatch(action);
+      if (!IsActionEnabled(action))
+        RecordAssistiveDisabled(action);
+    }
   }
 }
 
@@ -145,6 +172,9 @@ bool AssistiveSuggester::Suggest(const base::string16& text,
     if (IsAssistPersonalInfoEnabled() &&
         personal_info_suggester_.Suggest(text_before_cursor)) {
       current_suggester_ = &personal_info_suggester_;
+      if (personal_info_suggester_.IsFirstShown()) {
+        RecordAssistiveCoverage(current_suggester_->GetProposeActionType());
+      }
       return true;
     } else if (IsEmojiSuggestAdditionEnabled() &&
                emoji_suggester_.Suggest(text_before_cursor)) {

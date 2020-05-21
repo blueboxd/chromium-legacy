@@ -141,7 +141,6 @@ class AnalysisServiceSettingsTest : public testing::TestWithParam<TestParam> {
 };
 
 TEST_P(AnalysisServiceSettingsTest, Test) {
-  // auto value = base::Value::AsDictionaryValue(base::Value(pref_value()));
   auto settings = base::JSONReader::Read(settings_value(),
                                          base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(settings.has_value());

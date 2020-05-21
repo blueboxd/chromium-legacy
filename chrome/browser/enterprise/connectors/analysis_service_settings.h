@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_ENTERPRISE_CONNECTORS_ANALYSIS_SERVICE_SETTINGS_H_
 
 #include <memory>
+#include <string>
 
+#include "base/optional.h"
 #include "base/values.h"
 #include "chrome/browser/enterprise/connectors/common.h"
 #include "components/url_matcher/url_matcher.h"

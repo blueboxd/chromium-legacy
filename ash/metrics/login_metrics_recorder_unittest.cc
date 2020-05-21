@@ -33,6 +33,7 @@ constexpr char kNumAttemptTilFailureHistogramName[] =
     "Ash.Login.Lock.NumPasswordAttempts.UntilFailure";
 constexpr char kUserClicksOnLockHistogramName[] = "Ash.Login.Lock.UserClicks";
 constexpr char kUserClicksOnLoginHistogramName[] = "Ash.Login.Login.UserClicks";
+constexpr char kUserClicksInOobeHistogramName[] = "Ash.Login.OOBE.UserClicks";
 
 // Test fixture for the LoginMetricsRecorder class.
 class LoginMetricsRecorderTest : public LoginTestBase {
@@ -65,6 +66,12 @@ class LoginMetricsRecorderTest : public LoginTestBase {
       const std::string& name,
       LoginMetricsRecorder::LoginScreenUserClickTarget target,
       int count) {
+    histogram_tester_->ExpectBucketCount(name, static_cast<int>(target), count);
+  }
+
+  void ExpectBucketCount(const std::string& name,
+                         LoginMetricsRecorder::OobeUserClickTarget target,
+                         int count) {
     histogram_tester_->ExpectBucketCount(name, static_cast<int>(target), count);
   }
 
@@ -101,7 +108,7 @@ TEST_F(LoginMetricsRecorderTest, NoteActionButtonClick) {
   histogram_tester_->ExpectBucketCount(
       kUserClicksOnLockHistogramName,
       static_cast<int>(LoginMetricsRecorder::LockScreenUserClickTarget::
-                           kLockScreenNoteActionButton),
+                           kTrayActionNoteButton),
       1);
 }
 
@@ -218,10 +225,10 @@ TEST_F(LoginMetricsRecorderTest, RecordUserClickEventOnLockScreen) {
   metrics_recorder()->RecordUserTrayClick(
       LoginMetricsRecorder::TrayClickTarget::kTrayActionNoteButton);
   histogram_tester_->ExpectTotalCount(kUserClicksOnLockHistogramName, 9);
-  ExpectBucketCount(kUserClicksOnLockHistogramName,
-                    LoginMetricsRecorder::LockScreenUserClickTarget::
-                        kLockScreenNoteActionButton,
-                    1);
+  ExpectBucketCount(
+      kUserClicksOnLockHistogramName,
+      LoginMetricsRecorder::LockScreenUserClickTarget::kTrayActionNoteButton,
+      1);
   histogram_tester_->ExpectTotalCount(kUserClicksOnLoginHistogramName, 0);
 }
 
@@ -290,6 +297,45 @@ TEST_F(LoginMetricsRecorderTest, RecordUserClickEventOnLoginScreen) {
                     LoginMetricsRecorder::LoginScreenUserClickTarget::kImeTray,
                     1);
   histogram_tester_->ExpectTotalCount(kUserClicksOnLockHistogramName, 0);
+}
+
+// Verifies that user click events in OOBE is recorded correctly.
+TEST_F(LoginMetricsRecorderTest, RecordUserClickEventInOobe) {
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::OOBE);
+  histogram_tester_->ExpectTotalCount(kUserClicksInOobeHistogramName, 0);
+  metrics_recorder()->RecordUserShelfButtonClick(
+      LoginMetricsRecorder::ShelfButtonClickTarget::kShutDownButton);
+  histogram_tester_->ExpectTotalCount(kUserClicksInOobeHistogramName, 1);
+  ExpectBucketCount(kUserClicksInOobeHistogramName,
+                    LoginMetricsRecorder::OobeUserClickTarget::kShutDownButton,
+                    1);
+
+  metrics_recorder()->RecordUserShelfButtonClick(
+      LoginMetricsRecorder::ShelfButtonClickTarget::kBrowseAsGuestButton);
+  histogram_tester_->ExpectTotalCount(kUserClicksInOobeHistogramName, 2);
+  ExpectBucketCount(
+      kUserClicksInOobeHistogramName,
+      LoginMetricsRecorder::OobeUserClickTarget::kBrowseAsGuestButton, 1);
+
+  metrics_recorder()->RecordUserTrayClick(
+      LoginMetricsRecorder::TrayClickTarget::kSystemTray);
+  histogram_tester_->ExpectTotalCount(kUserClicksInOobeHistogramName, 3);
+  ExpectBucketCount(kUserClicksInOobeHistogramName,
+                    LoginMetricsRecorder::OobeUserClickTarget::kSystemTray, 1);
+
+  metrics_recorder()->RecordUserTrayClick(
+      LoginMetricsRecorder::TrayClickTarget::kVirtualKeyboardTray);
+  histogram_tester_->ExpectTotalCount(kUserClicksInOobeHistogramName, 4);
+  ExpectBucketCount(
+      kUserClicksInOobeHistogramName,
+      LoginMetricsRecorder::OobeUserClickTarget::kVirtualKeyboardTray, 1);
+
+  metrics_recorder()->RecordUserTrayClick(
+      LoginMetricsRecorder::TrayClickTarget::kImeTray);
+  histogram_tester_->ExpectTotalCount(kUserClicksInOobeHistogramName, 5);
+  ExpectBucketCount(kUserClicksInOobeHistogramName,
+                    LoginMetricsRecorder::OobeUserClickTarget::kImeTray, 1);
 }
 
 }  // namespace ash

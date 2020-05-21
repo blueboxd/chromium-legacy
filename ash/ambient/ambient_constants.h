@@ -14,11 +14,6 @@ namespace ash {
 constexpr base::TimeDelta kAnimationDuration =
     base::TimeDelta::FromMilliseconds(250);
 
-// PhotoModel has a local in memory cache of downloaded photos. This is the
-// desired max number of photos stored in cache. If this is an even number,
-// the max number could be one larger.
-constexpr int kImageBufferLength = 5;
-
 // The default interval to refresh photos.
 // TODO(b/139953713): Change to a correct time interval.
 constexpr base::TimeDelta kPhotoRefreshInterval =

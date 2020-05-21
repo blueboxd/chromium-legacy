@@ -6,6 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/display/test/test_screen.h"
 
 namespace display {
@@ -15,6 +16,8 @@ namespace {
 const int DEFAULT_DISPLAY_ID = 0x1337;
 const int DEFAULT_DISPLAY_WIDTH = 2560;
 const int DEFAULT_DISPLAY_HEIGHT = 1440;
+
+const int DISPLAY_2_ID = 0xc001;
 
 }  // namespace
 
@@ -28,6 +31,8 @@ class ScreenTest : public testing::Test {
         gfx::Rect(0, 0, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT));
     test_screen_.display_list().RemoveDisplay(test_display.id());
     test_screen_.display_list().AddDisplay(display, DisplayList::Type::PRIMARY);
+    test_screen_.display_list().AddDisplay(Display(DISPLAY_2_ID),
+                                           DisplayList::Type::NOT_PRIMARY);
     Screen::SetScreenInstance(&test_screen_);
   }
 
@@ -46,7 +51,7 @@ TEST_F(ScreenTest, GetPrimaryDisplaySize) {
 }
 
 TEST_F(ScreenTest, GetNumDisplays) {
-  EXPECT_EQ(Screen::GetScreen()->GetNumDisplays(), 1);
+  EXPECT_EQ(Screen::GetScreen()->GetNumDisplays(), 2);
 }
 
 TEST_F(ScreenTest, GetDisplayWithDisplayId) {
@@ -64,6 +69,22 @@ TEST_F(ScreenTest, GetDisplayForNewWindows) {
   // Display for new windows defaults to the primary display.
   EXPECT_EQ(screen->GetPrimaryDisplay().id(),
             screen->GetDisplayForNewWindows().id());
+}
+
+TEST_F(ScreenTest, ScopedDisplayForNewWindows) {
+  Screen* screen = Screen::GetScreen();
+
+  // Set primary as default;
+  screen->SetDisplayForNewWindows(DEFAULT_DISPLAY_ID);
+  EXPECT_EQ(DEFAULT_DISPLAY_ID, screen->GetDisplayForNewWindows().id());
+
+  // ScopedDisplayForNewWindows overrides while it is in scope.
+  {
+    ScopedDisplayForNewWindows scoped(DISPLAY_2_ID);
+    EXPECT_EQ(DISPLAY_2_ID, screen->GetDisplayForNewWindows().id());
+  }
+
+  EXPECT_EQ(DEFAULT_DISPLAY_ID, screen->GetDisplayForNewWindows().id());
 }
 
 }  // namespace display

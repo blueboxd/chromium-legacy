@@ -27612,6 +27612,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="16"
       label="Failed - cannot load more content because the model is not yet
              loaded"/>
+  <int value="17" label="Failed - feed is disabled by enterprise policy"/>
 </enum>
 
 <enum name="FeedRequestReason">
@@ -38587,6 +38588,7 @@ from previous Chrome versions.
   <int value="-1842511843" label="DiceWebSigninInterception:enabled"/>
   <int value="-1840608422" label="AdvancedPpdAttributes:disabled"/>
   <int value="-1839874877" label="WebXROrientationSensorDevice:enabled"/>
+  <int value="-1839540507" label="OneGoogleBarModalOverlays:enabled"/>
   <int value="-1839496458" label="disable-file-manager-touch-mode"/>
   <int value="-1838482444" label="disable-settings-window"/>
   <int value="-1837401779" label="EnableFileManagerFormatDialog:enabled"/>
@@ -41155,6 +41157,7 @@ from previous Chrome versions.
   <int value="1095706700" label="NavigationPredictor:enabled"/>
   <int value="1096477444" label="AssistantVoiceMatch:enabled"/>
   <int value="1097935876" label="CrostiniShowMicSetting:enabled"/>
+  <int value="1097981222" label="OneGoogleBarModalOverlays:disabled"/>
   <int value="1098823967" label="ash-enable-window-cycle-ui"/>
   <int value="1100244809" label="MacSystemMediaPermissionsInfoUI:disabled"/>
   <int value="1101062411" label="Rar2Fs:disabled"/>
@@ -50051,6 +50054,14 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="requests sent"/>
   <int value="2" label="requests invalidated"/>
   <int value="3" label="(non-invalidated) replies received"/>
+</enum>
+
+<enum name="OobeUserClickTarget">
+  <int value="0" label="Shut down button"/>
+  <int value="1" label="Browse as guest button"/>
+  <int value="2" label="System tray"/>
+  <int value="3" label="Virtual keyboard tray"/>
+  <int value="4" label="IME tray"/>
 </enum>
 
 <enum name="OomInterventionBrowserMonitorStatus">

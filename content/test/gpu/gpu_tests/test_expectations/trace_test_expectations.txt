@@ -1,6 +1,12 @@
-# tags: [ android chromeos linux mac win win10 win7 ]
+# tags: [ android
+#         chromeos
+#         linux
+#         mac
+#         win win10 win7 ]
 # tags: [ debug ]
-# tags: [ intel nvidia qualcomm-adreno-(tm)-418 nvidia-0x1cb3]
+# tags: [ intel intel-0x3e92 intel-0xa2e intel-0x5912 intel-0xd26
+#         nvidia nvidia-0x1cb3
+#         qualcomm-adreno-(tm)-418 ]
 # results: [ Failure RetryOnFailure Skip ]
 
  # TODO(kbr): flakily timing out on this configuration.
@@ -47,5 +53,27 @@ crbug.com/937545 [ win10 nvidia ] VideoPathTraceTest_DirectComposition_ComplexOv
 
 # Flaky for unknown reason.
 crbug.com/960007 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Nonroot [ RetryOnFailure ]
-crbug.com/969117 [ win10 intel ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+# TODO(crbug.com/1079393): Compress down to just "intel" instead of specific
+# GPUs once UHD 630 failures are fixed.
+crbug.com/969117 [ win10 intel-0xa2e ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/969117 [ win10 intel-0x5912 ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/969117 [ win10 intel-0xd26 ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
 crbug.com/978181 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Underlay [ RetryOnFailure ]
+
+# Incorrectly reporting SCALING instead of DIRECT on Windows 10 UHD 630 GPUs.
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Nonroot [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Underlay [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Underlay_DXVA [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Underlay_Fullsize [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_MP4 [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_MP4_DXVA [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_MP4_Fullsize [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_MP4_YUY2 [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_VP9 [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_VP9_DXVA [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_VP9_Fullsize [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] OverlayModeTraceTest_DirectComposition_Video_VP9_YUY2 [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] VideoPathTraceTest_DirectComposition_Underlay_Fullsize [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] VideoPathTraceTest_DirectComposition_Video_MP4_Fullsize [ Failure ]
+crbug.com/1079393 [ win10 intel-0x3e92 ] VideoPathTraceTest_DirectComposition_Video_MP4_YUY2 [ Failure ]

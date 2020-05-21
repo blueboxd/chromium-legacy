@@ -68,6 +68,15 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     return HasRareData() ? rare_data_->lines_until_clamp : 0;
   }
 
+  // How much an annotation box overflow from this box.
+  // This is for LayoutNGRubyRun.
+  // 0 : No overflow
+  // -N : Overflowing by N px at block-start side
+  // N : Overflowing by N px at block-end side
+  LayoutUnit AnnotationOverflow() const {
+    return HasRareData() ? rare_data_->annotation_overflow : LayoutUnit();
+  }
+
   LogicalOffset OutOfFlowPositionedOffset() const {
     DCHECK(bitfields_.has_oof_positioned_offset);
     return HasRareData() ? rare_data_->oof_positioned_offset
@@ -373,6 +382,7 @@ class CORE_EXPORT NGLayoutResult : public RefCounted<NGLayoutResult> {
     NGExclusionSpace exclusion_space;
     scoped_refptr<SerializedScriptValue> custom_layout_data;
     LayoutUnit overflow_block_size = kIndefiniteSize;
+    LayoutUnit annotation_overflow;
 #if DCHECK_IS_ON()
     bool has_tallest_unbreakable_block_size = false;
 #endif

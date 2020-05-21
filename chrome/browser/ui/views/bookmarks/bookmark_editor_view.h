@@ -205,10 +205,9 @@ class BookmarkEditorView : public BookmarkEditor,
   // of Textfields and ok button appropriately.
   void UserInputChanged();
 
-  // Creates a new folder as a child of the selected node. If no node is
-  // selected, the new folder is added as a child of the bookmark node. Starts
-  // editing on the new group as well.
-  void NewFolder();
+  // Creates a new folder as a child of the given node. Starts editing on the
+  // new group as well.
+  void NewFolder(EditorNode* parent);
 
   // Creates a new EditorNode as the last child of parent. The new node is
   // added to the model and returned. This does NOT start editing. This is used

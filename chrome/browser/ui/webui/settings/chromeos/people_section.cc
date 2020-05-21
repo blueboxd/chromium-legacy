@@ -788,12 +788,26 @@ int PeopleSection::GetSectionNameMessageId() const {
   return IDS_OS_SETTINGS_PEOPLE;
 }
 
+mojom::Section PeopleSection::GetSection() const {
+  return mojom::Section::kPeople;
+}
+
+mojom::SearchResultIcon PeopleSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kAvatar;
+}
+
+std::string PeopleSection::GetSectionPath() const {
+  return mojom::kPeopleSectionPath;
+}
+
 void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kSetUpParentalControls);
 
   // My accounts.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE,
-                                     mojom::Subpage::kMyAccounts);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_ACCOUNT_MANAGER_PAGE_TITLE, mojom::Subpage::kMyAccounts,
+      mojom::SearchResultIcon::kAvatar, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kMyAccountsSubpagePath);
   static constexpr mojom::Setting kMyAccountsSettings[] = {
       mojom::Setting::kAddAccount,
       mojom::Setting::kRemoveAccount,
@@ -805,21 +819,29 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // registered for these subpages since they'll be removed shortly.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES,
-      mojom::Subpage::kSyncDeprecated);
-  generator->RegisterNestedSubpage(IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE,
-                                   mojom::Subpage::kSyncDeprecatedAdvanced,
-                                   mojom::Subpage::kSyncDeprecated);
+      mojom::Subpage::kSyncDeprecated, mojom::SearchResultIcon::kSync,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kSyncDeprecatedSubpagePath);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE,
+      mojom::Subpage::kSyncDeprecatedAdvanced, mojom::Subpage::kSyncDeprecated,
+      mojom::SearchResultIcon::kSync, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kSyncDeprecatedAdvancedSubpagePath);
 
   // OS sync.
-  generator->RegisterTopLevelSubpage(IDS_OS_SETTINGS_SYNC_PAGE_TITLE,
-                                     mojom::Subpage::kSync);
+  generator->RegisterTopLevelSubpage(
+      IDS_OS_SETTINGS_SYNC_PAGE_TITLE, mojom::Subpage::kSync,
+      mojom::SearchResultIcon::kSync, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kSyncSubpagePath);
   generator->RegisterNestedSetting(mojom::Setting::kSyncOnOff,
                                    mojom::Subpage::kSync);
 
   // Security and sign-in.
   generator->RegisterTopLevelSubpage(
       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK,
-      mojom::Subpage::kSecurityAndSignIn);
+      mojom::Subpage::kSecurityAndSignIn, mojom::SearchResultIcon::kLock,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kSecurityAndSignInSubpagePath);
   static constexpr mojom::Setting kSecurityAndSignInSettings[] = {
       mojom::Setting::kLockScreen,
       mojom::Setting::kChangeAuthPin,
@@ -830,7 +852,9 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Fingerprint.
   generator->RegisterNestedSubpage(
       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_SUBPAGE_TITLE,
-      mojom::Subpage::kFingerprint, mojom::Subpage::kSecurityAndSignIn);
+      mojom::Subpage::kFingerprint, mojom::Subpage::kSecurityAndSignIn,
+      mojom::SearchResultIcon::kFingerprint,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kFingerprintSubpathPath);
   static constexpr mojom::Setting kFingerprintSettings[] = {
       mojom::Setting::kAddFingerprint,
       mojom::Setting::kRemoveFingerprint,
@@ -840,7 +864,10 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
 
   // Manage other people.
   generator->RegisterTopLevelSubpage(IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE,
-                                     mojom::Subpage::kManageOtherPeople);
+                                     mojom::Subpage::kManageOtherPeople,
+                                     mojom::SearchResultIcon::kAvatar,
+                                     mojom::SearchResultDefaultRank::kMedium,
+                                     mojom::kManageOtherPeopleSubpagePath);
   static constexpr mojom::Setting kManageOtherPeopleSettings[] = {
       mojom::Setting::kGuestBrowsing,
       mojom::Setting::kShowUsernamesAndPhotosAtSignIn,
@@ -852,8 +879,10 @@ void PeopleSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             kManageOtherPeopleSettings, generator);
 
   // Kerberos.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE,
-                                     mojom::Subpage::kKerberos);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_KERBEROS_ACCOUNTS_PAGE_TITLE, mojom::Subpage::kKerberos,
+      mojom::SearchResultIcon::kAvatar, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kKerberosSubpagePath);
   static constexpr mojom::Setting kKerberosSettings[] = {
       mojom::Setting::kAddKerberosTicket,
       mojom::Setting::kRemoveKerberosTicket,

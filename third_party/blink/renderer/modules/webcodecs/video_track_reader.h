@@ -5,24 +5,35 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_WEBCODECS_VIDEO_TRACK_READER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBCODECS_VIDEO_TRACK_READER_H_
 
+#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_video_decoder_output_callback.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
-class ReadableStream;
 class ScriptState;
 
-class MODULES_EXPORT VideoTrackReader final : public ScriptWrappable {
+class MODULES_EXPORT VideoTrackReader final
+    : public ScriptWrappable,
+      public ExecutionContextLifecycleObserver,
+      public MediaStreamVideoSink {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(VideoTrackReader);
 
  public:
-  static VideoTrackReader* Create(ScriptState* script_state,
-                                  MediaStreamTrack* track,
-                                  ExceptionState& exception_state);
-  explicit VideoTrackReader(ReadableStream* readable);
-  ReadableStream* readable() const;
+  static VideoTrackReader* Create(ScriptState*,
+                                  MediaStreamTrack*,
+                                  ExceptionState&);
+  VideoTrackReader(ScriptState*, MediaStreamTrack*);
+
+  // Connects |this| to |track_| and starts delivering frames via |callback_|.
+  void start(V8VideoDecoderOutputCallback*, ExceptionState&);
+
+  // Disconnects from |track_| and clears |callback_|.
+  void stop(ExceptionState&);
 
   void Trace(Visitor* visitor) const override;
 
@@ -30,7 +41,29 @@ class MODULES_EXPORT VideoTrackReader final : public ScriptWrappable {
   VideoTrackReader(const VideoTrackReader&) = delete;
   VideoTrackReader& operator=(const VideoTrackReader&) = delete;
 
-  Member<ReadableStream> readable_;
+  // ExecutionContextLifecycleObserver implementation.
+  void ContextDestroyed() override { DisconnectFromTrack(); }
+
+  // MediaStreamVideoSink implementation.
+  void OnReadyStateChanged(WebMediaStreamSource::ReadyState) override;
+
+  // Callback For MediaStreamVideoSink::ConnectToTrack.
+  void OnFrameFromVideoTrack(scoped_refptr<media::VideoFrame> media_frame,
+                             base::TimeTicks estimated_capture_time);
+
+  void StopInternal();
+
+  void ExecuteCallbackOnMainThread(
+      scoped_refptr<media::VideoFrame> media_frame);
+
+  // Whether we are connected to |track_| and using |callback_| to deliver
+  // frames.
+  bool started_;
+
+  const scoped_refptr<base::SingleThreadTaskRunner>
+      real_time_media_task_runner_;
+  Member<V8VideoDecoderOutputCallback> callback_;
+  Member<MediaStreamTrack> track_;
 };
 
 }  // namespace blink

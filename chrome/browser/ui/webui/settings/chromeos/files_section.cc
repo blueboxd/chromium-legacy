@@ -106,12 +106,26 @@ int FilesSection::GetSectionNameMessageId() const {
   return IDS_OS_SETTINGS_FILES;
 }
 
+mojom::Section FilesSection::GetSection() const {
+  return mojom::Section::kFiles;
+}
+
+mojom::SearchResultIcon FilesSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kFolder;
+}
+
+std::string FilesSection::GetSectionPath() const {
+  return mojom::kFilesSectionPath;
+}
+
 void FilesSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   generator->RegisterTopLevelSetting(mojom::Setting::kGoogleDriveConnection);
 
   // Network file shares.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_DOWNLOADS_SMB_SHARES,
-                                     mojom::Subpage::kNetworkFileShares);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_DOWNLOADS_SMB_SHARES, mojom::Subpage::kNetworkFileShares,
+      mojom::SearchResultIcon::kFolder, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kNetworkFileSharesSubpagePath);
 }
 
 }  // namespace settings

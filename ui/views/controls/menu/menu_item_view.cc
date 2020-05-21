@@ -261,6 +261,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     int index,
     int item_id,
     const base::string16& label,
+    const base::string16& secondary_label,
     const base::string16& minor_text,
     const ui::ThemedVectorIcon& minor_icon,
     const gfx::ImageSkia& icon,
@@ -282,6 +283,7 @@ MenuItemView* MenuItemView::AddMenuItemAt(
     item->SetTitle(GetDelegate()->GetLabel(item_id));
   else
     item->SetTitle(label);
+  item->SetSecondaryTitle(secondary_label);
   item->SetMinorText(minor_text);
   item->SetMinorIcon(minor_icon);
   if (!vector_icon.empty()) {
@@ -337,6 +339,7 @@ void MenuItemView::AppendSeparator() {
 
 void MenuItemView::AddSeparatorAt(int index) {
   AddMenuItemAt(index, /*item_id=*/0, /*label=*/base::string16(),
+                /*secondary_label=*/base::string16(),
                 /*minor_text=*/base::string16(),
                 /*minor_icon=*/ui::ThemedVectorIcon(),
                 /*icon=*/gfx::ImageSkia(),
@@ -351,8 +354,8 @@ MenuItemView* MenuItemView::AppendMenuItemImpl(int item_id,
                                                Type type) {
   const int index = submenu_ ? int{submenu_->children().size()} : 0;
   return AddMenuItemAt(index, item_id, label, base::string16(),
-                       ui::ThemedVectorIcon(), icon, ui::ThemedVectorIcon(),
-                       type, ui::NORMAL_SEPARATOR);
+                       base::string16(), ui::ThemedVectorIcon(), icon,
+                       ui::ThemedVectorIcon(), type, ui::NORMAL_SEPARATOR);
 }
 
 SubmenuView* MenuItemView::CreateSubmenu() {
@@ -380,6 +383,11 @@ bool MenuItemView::SubmenuIsShowing() const {
 
 void MenuItemView::SetTitle(const base::string16& title) {
   title_ = title;
+  invalidate_dimensions();  // Triggers preferred size recalculation.
+}
+
+void MenuItemView::SetSecondaryTitle(const base::string16& secondary_title) {
+  secondary_title_ = secondary_title;
   invalidate_dimensions();  // Triggers preferred size recalculation.
 }
 
@@ -904,16 +912,21 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // selected.
   PaintBackground(canvas, mode, render_selection);
 
-  const int top_margin = GetTopMargin();
-  const int bottom_margin = GetBottomMargin();
-  const int available_height = height() - top_margin - bottom_margin;
-
   // Calculate some colors.
   MenuDelegate::LabelStyle style;
-  style.foreground = GetTextColor(false, render_selection);
+  style.foreground = GetTextColor(/*minor=*/false, render_selection);
   GetLabelStyle(&style);
 
   SkColor icon_color = color_utils::DeriveDefaultIconColor(style.foreground);
+
+  // Calculate the margins.
+  int top_margin = GetTopMargin();
+  const int bottom_margin = GetBottomMargin();
+  const int available_height = height() - top_margin - bottom_margin;
+  const int text_height = style.font_list.GetHeight();
+  const int total_text_height =
+      secondary_title().empty() ? text_height : text_height * 2;
+  top_margin += (available_height - total_text_height) / 2;
 
   // Render the check.
   if (type_ == Type::kCheckbox && delegate->IsItemChecked(GetCommand())) {
@@ -937,13 +950,22 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
               (!delegate || delegate->ShouldReserveSpaceForSubmenuIndicator()
                    ? item_right_margin_
                    : config.arrow_to_edge_padding);
-  gfx::Rect text_bounds(label_start, top_margin, width, available_height);
+  gfx::Rect text_bounds(label_start, top_margin, width, text_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   int flags = GetDrawStringFlags();
   if (mode == PaintButtonMode::kForDrag)
     flags |= gfx::Canvas::NO_SUBPIXEL_RENDERING;
   canvas->DrawStringRectWithFlags(title(), style.font_list, style.foreground,
                                   text_bounds, flags);
+
+  // The rest should be drawn with the minor foreground color.
+  style.foreground = GetTextColor(/*minor=*/true, render_selection);
+  if (!secondary_title().empty()) {
+    text_bounds.set_y(text_bounds.y() + text_height);
+    canvas->DrawStringRectWithFlags(secondary_title(), style.font_list,
+                                    style.foreground, text_bounds, flags);
+  }
+
   PaintMinorIconAndText(canvas, style);
 
   // Set the submenu indicator (arrow) image and color.
@@ -1201,9 +1223,12 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
       minor_text.empty() ? 0 : gfx::GetStringWidth(minor_text, style.font_list);
 
   // Determine the height to use.
+  int label_text_height = secondary_title().empty()
+                              ? style.font_list.GetHeight()
+                              : style.font_list.GetHeight() * 2;
   dimensions.height =
-      std::max(dimensions.height, style.font_list.GetHeight() +
-                                      GetBottomMargin() + GetTopMargin());
+      std::max(dimensions.height,
+               label_text_height + GetBottomMargin() + GetTopMargin());
   dimensions.height =
       std::max(dimensions.height, MenuConfig::instance().item_min_height);
 

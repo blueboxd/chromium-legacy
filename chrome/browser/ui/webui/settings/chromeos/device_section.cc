@@ -379,6 +379,16 @@ const std::vector<SearchConcept>& GetDlcSearchConcepts() {
        {.subpage = mojom::Subpage::kDlc},
        {IDS_OS_SETTINGS_TAG_DOWNLOADED_CONTENT_ALT1,
         SearchConcept::kAltTagEnd}},
+      {IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT,
+       mojom::kDlcSubpagePath,
+       mojom::SearchResultIcon::kHardDrive,
+       mojom::SearchResultDefaultRank::kLow,
+       mojom::SearchResultType::kSetting,
+       {.setting = mojom::Setting::kRemoveDlc},
+       {IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT_ALT1,
+        IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT_ALT2,
+        IDS_OS_SETTINGS_TAG_REMOVE_DOWNLOADED_CONTENT_ALT3,
+        SearchConcept::kAltTagEnd}},
   });
   return *tags;
 }
@@ -834,10 +844,24 @@ int DeviceSection::GetSectionNameMessageId() const {
   return IDS_SETTINGS_DEVICE_TITLE;
 }
 
+mojom::Section DeviceSection::GetSection() const {
+  return mojom::Section::kDevice;
+}
+
+mojom::SearchResultIcon DeviceSection::GetSectionIcon() const {
+  return mojom::SearchResultIcon::kLaptop;
+}
+
+std::string DeviceSection::GetSectionPath() const {
+  return mojom::kDeviceSectionPath;
+}
+
 void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
   // Pointers.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE,
-                                     mojom::Subpage::kPointers);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE, mojom::Subpage::kPointers,
+      mojom::SearchResultIcon::kMouse, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kPointersSubpagePath);
   static constexpr mojom::Setting kPointersSettings[] = {
       mojom::Setting::kTouchpadTapToClick,
       mojom::Setting::kTouchpadTapDragging,
@@ -855,8 +879,10 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Keyboard.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_KEYBOARD_TITLE,
-                                     mojom::Subpage::kKeyboard);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_KEYBOARD_TITLE, mojom::Subpage::kKeyboard,
+      mojom::SearchResultIcon::kKeyboard,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kKeyboardSubpagePath);
   static constexpr mojom::Setting kKeyboardSettings[] = {
       mojom::Setting::kKeyboardFunctionKeys,
       mojom::Setting::kKeyboardAutoRepeat,
@@ -866,8 +892,10 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Stylus.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_STYLUS_TITLE,
-                                     mojom::Subpage::kStylus);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_STYLUS_TITLE, mojom::Subpage::kStylus,
+      mojom::SearchResultIcon::kStylus, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kStylusSubpagePath);
   static constexpr mojom::Setting kStylusSettings[] = {
       mojom::Setting::kStylusToolsInShelf,
       mojom::Setting::kStylusNoteTakingApp,
@@ -878,8 +906,10 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Display.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_DISPLAY_TITLE,
-                                     mojom::Subpage::kDisplay);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_DISPLAY_TITLE, mojom::Subpage::kDisplay,
+      mojom::SearchResultIcon::kDisplay,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kDisplaySubpagePath);
   static constexpr mojom::Setting kDisplaySettings[] = {
       mojom::Setting::kDisplaySize,        mojom::Setting::kNightLight,
       mojom::Setting::kDisplayOrientation, mojom::Setting::kDisplayArrangement,
@@ -889,18 +919,27 @@ void DeviceSection::RegisterHierarchy(HierarchyGenerator* generator) const {
                             generator);
 
   // Storage.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_STORAGE_TITLE,
-                                     mojom::Subpage::kStorage);
-  generator->RegisterNestedSubpage(IDS_SETTINGS_STORAGE_EXTERNAL,
-                                   mojom::Subpage::kExternalStorage,
-                                   mojom::Subpage::kStorage);
-  generator->RegisterNestedSubpage(IDS_SETTINGS_DLC_SUBPAGE_TITLE,
-                                   mojom::Subpage::kDlc,
-                                   mojom::Subpage::kStorage);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_STORAGE_TITLE, mojom::Subpage::kStorage,
+      mojom::SearchResultIcon::kHardDrive,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kStorageSubpagePath);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_STORAGE_EXTERNAL, mojom::Subpage::kExternalStorage,
+      mojom::Subpage::kStorage, mojom::SearchResultIcon::kHardDrive,
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::kExternalStorageSubpagePath);
+  generator->RegisterNestedSubpage(
+      IDS_SETTINGS_DLC_SUBPAGE_TITLE, mojom::Subpage::kDlc,
+      mojom::Subpage::kStorage, mojom::SearchResultIcon::kHardDrive,
+      mojom::SearchResultDefaultRank::kMedium, mojom::kDlcSubpagePath);
+  generator->RegisterNestedSetting(mojom::Setting::kRemoveDlc,
+                                   mojom::Subpage::kDlc);
 
   // Power.
-  generator->RegisterTopLevelSubpage(IDS_SETTINGS_POWER_TITLE,
-                                     mojom::Subpage::kPower);
+  generator->RegisterTopLevelSubpage(
+      IDS_SETTINGS_POWER_TITLE, mojom::Subpage::kPower,
+      mojom::SearchResultIcon::kPower, mojom::SearchResultDefaultRank::kMedium,
+      mojom::kPowerSubpagePath);
   static constexpr mojom::Setting kPowerSettings[] = {
       mojom::Setting::kPowerIdleBehavior,
       mojom::Setting::kPowerSource,

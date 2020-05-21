@@ -990,20 +990,14 @@ bool PDFiumEngine::ReadLoadedBytes(uint32_t length, void* buffer) {
 
 void PDFiumEngine::SetFormSelectedText(FPDF_FORMHANDLE form_handle,
                                        FPDF_PAGE page) {
-  unsigned long form_sel_text_len =
-      FORM_GetSelectedText(form_handle, page, nullptr, 0);
+  base::string16 selected_form_text16 = CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FORM_GetSelectedText, form_handle, page),
+      /*check_expected_size=*/false);
 
   // If form selected text is empty and there was no previous form text
-  // selection, exit early because nothing has changed. When |form_sel_text_len|
-  // is 2, that represents a wide string with just a NUL-terminator.
-  if (form_sel_text_len <= 2 && selected_form_text_.empty())
+  // selection, exit early because nothing has changed.
+  if (selected_form_text16.empty() && selected_form_text_.empty())
     return;
-
-  base::string16 selected_form_text16;
-  PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> string_adapter(
-      &selected_form_text16, form_sel_text_len, false);
-  string_adapter.Close(FORM_GetSelectedText(
-      form_handle, page, string_adapter.GetData(), form_sel_text_len));
 
   // Update previous and current selections, then compare them to check if
   // selection has changed. If so, set plugin text selection.
@@ -2144,14 +2138,9 @@ pp::VarArray PDFiumEngine::GetBookmarks() {
 pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
                                                   unsigned int depth) {
   pp::VarDictionary dict;
-  base::string16 title;
-  unsigned long buffer_size = FPDFBookmark_GetTitle(bookmark, nullptr, 0);
-  if (buffer_size > 0) {
-    PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> api_string_adapter(
-        &title, buffer_size, true);
-    api_string_adapter.Close(FPDFBookmark_GetTitle(
-        bookmark, api_string_adapter.GetData(), buffer_size));
-  }
+  base::string16 title = CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FPDFBookmark_GetTitle, bookmark),
+      /*check_expected_size=*/true);
   dict.Set(pp::Var("title"), pp::Var(base::UTF16ToUTF8(title)));
 
   FPDF_DEST dest = FPDFBookmark_GetDest(doc(), bookmark);
@@ -2175,15 +2164,11 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   } else {
     // Extract URI for bookmarks linking to an external page.
     FPDF_ACTION action = FPDFBookmark_GetAction(bookmark);
-    buffer_size = FPDFAction_GetURIPath(doc(), action, nullptr, 0);
-    if (buffer_size > 0) {
-      std::string uri;
-      PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
-          &uri, buffer_size, true);
-      api_string_adapter.Close(FPDFAction_GetURIPath(
-          doc(), action, api_string_adapter.GetData(), buffer_size));
+    std::string uri = CallPDFiumStringBufferApi(
+        base::BindRepeating(&FPDFAction_GetURIPath, doc(), action),
+        /*check_expected_size=*/true);
+    if (!uri.empty())
       dict.Set(pp::Var("uri"), pp::Var(uri));
-    }
   }
 
   pp::VarArray children;
@@ -3796,17 +3781,9 @@ void PDFiumEngine::LoadDocumentMetadata() {
 std::string PDFiumEngine::GetMetadataByField(FPDF_BYTESTRING field) const {
   DCHECK(doc());
 
-  size_t size =
-      FPDF_GetMetaText(doc(), field, /*buffer=*/nullptr, /*buflen=*/0);
-  if (size == 0)
-    return std::string();
-
-  base::string16 value;
-  PDFiumAPIStringBufferSizeInBytesAdapter<base::string16> string_adapter(
-      &value, size, /*check_expected_size=*/false);
-  string_adapter.Close(
-      FPDF_GetMetaText(doc(), field, string_adapter.GetData(), size));
-  return base::UTF16ToUTF8(value);
+  return base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FPDF_GetMetaText, doc(), field),
+      /*check_expected_size=*/false));
 }
 
 PdfVersion PDFiumEngine::GetDocumentVersion() const {

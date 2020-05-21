@@ -1073,7 +1073,7 @@ void XWindow::OnFocusEvent(bool focus_in, int mode, int detail) {
 
 bool XWindow::IsTargetedBy(const XEvent& xev) const {
   ::Window target_window =
-      (xev.type == GenericEvent)
+      (xev.type == x11::XProto::GeGenericEvent::opcode)
           ? static_cast<XIDeviceEvent*>(xev.xcookie.data)->event
           : xev.xany.window;
   return target_window == xwindow_;
@@ -1134,7 +1134,7 @@ void XWindow::ProcessEvent(XEvent* xev) {
     case ConfigureNotify:
       OnConfigureEvent(xev);
       break;
-    case GenericEvent: {
+    case x11::XProto::GeGenericEvent::opcode: {
       ui::TouchFactory* factory = ui::TouchFactory::GetInstance();
       if (!factory->ShouldProcessXI2Event(xev))
         break;

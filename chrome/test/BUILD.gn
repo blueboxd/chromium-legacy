@@ -417,7 +417,6 @@ group("telemetry_gpu_integration_test") {
     # For isolate contract.
     "//testing/scripts/gpu_integration_test_adapter.py",
     "//testing/scripts/run_gpu_integration_test_as_googletest.py",
-    "//testing/trigger_scripts/trigger_multiple_dimensions.py",
   ]
 }
 
@@ -1055,6 +1054,7 @@ if (!is_android) {
       "../browser/policy/restore_on_startup_policy_browsertest.cc",
       "../browser/policy/safe_browsing_policy_browsertest.cc",
       "../browser/policy/site_isolation_policy_browsertest.cc",
+      "../browser/policy/url_blacklist_policy_browsertest.cc",
       "../browser/portal/portal_browsertest.cc",
       "../browser/predictors/loading_predictor_browsertest.cc",
       "../browser/prefetch/prefetch_browsertest.cc",
@@ -3554,6 +3554,7 @@ test("unit_tests") {
       "../browser/component_updater/soda_component_installer_unittest.cc",
       "../browser/content_settings/generated_cookie_prefs_unittest.cc",
       "../browser/device_identity/device_oauth2_token_service_unittest.cc",
+      "../browser/nearby_sharing/fast_initiation_manager_unittest.cc",
       "../browser/profiles/profile_avatar_icon_util_unittest.cc",
       "../browser/sharing/webrtc/sharing_service_host_unittest.cc",
       "../browser/sharing/webrtc/sharing_webrtc_connection_host_unittest.cc",
@@ -3931,6 +3932,7 @@ test("unit_tests") {
       "../browser/enterprise/connectors/analysis_service_settings_unittest.cc",
       "../browser/enterprise/connectors/connectors_manager_unittest.cc",
       "../browser/enterprise/connectors/enterprise_connectors_policy_handler_unittest.cc",
+      "../browser/enterprise/connectors/reporting_service_settings_unittest.cc",
       "../browser/enterprise/reporting/browser_report_generator_unittest.cc",
       "../browser/enterprise/reporting/extension_info_unittest.cc",
       "../browser/enterprise/reporting/notification/extension_request_notification_unittest.cc",

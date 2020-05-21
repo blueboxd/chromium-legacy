@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.feed.library.api.host.stream.TooltipApi;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceDelegate;
 import org.chromium.chrome.browser.feed.shared.FeedSurfaceProvider;
 import org.chromium.chrome.browser.feed.tooltip.BasicTooltipApi;
+import org.chromium.chrome.browser.feed.v2.FeedServiceBridge;
 import org.chromium.chrome.browser.feed.v2.FeedStreamSurface;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.native_page.ContextMenuManager;
@@ -336,7 +337,7 @@ public class FeedSurfaceCoordinator implements FeedSurfaceProvider {
         }
 
         // Native should already have been loaded because of FeedSurfaceMediator.
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.INTEREST_FEED_V2)) {
+        if (FeedServiceBridge.isEnabled()) {
             // TODO(jianli): Temporary: simulate opening the feed V2 surface. This should probably
             // move to FeedSurfaceMediator.
             mFeedStreamSurface = new FeedStreamSurface(tabModelSelector, tabProvider, mActivity);

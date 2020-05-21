@@ -257,6 +257,20 @@ class RealboxDropdownElement extends PolymerElement {
     }
   }
 
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onToggleButtonKeydown_(e) {
+    if (e.key !== 'Enter' && e.key !== ' ') {
+      return;
+    }
+
+    // Simulate a click so that it gets handled by |onToggleButtonClick_|.
+    e.target.click();
+    e.preventDefault();  // Prevents default browser action.
+  }
+
   //============================================================================
   // Helpers
   //============================================================================
@@ -326,13 +340,12 @@ class RealboxDropdownElement extends PolymerElement {
   }
 
   /**
-   * @param {!Object} hiddenGroupIdsChange
    * @param {string} groupId
    * @returns {boolean} Whether matches with the given suggestion group ID
    *     should be hidden.
    * @private
    */
-  groupIsHidden_(hiddenGroupIdsChange, groupId) {
+  groupIsHidden_(groupId) {
     return this.hiddenGroupIds_.indexOf(groupId) !== -1;
   }
 
@@ -343,9 +356,41 @@ class RealboxDropdownElement extends PolymerElement {
    * @suppress {checkTypes}
    */
   headerForGroup_(groupId) {
-    return this.result && this.groupHasHeader_(groupId) ?
+    if (!this.groupHasHeader_(groupId)) {
+      return '';
+    }
+    return (this.result && this.result.suggestionGroupsMap &&
+            this.result.suggestionGroupsMap[groupId]) ?
         decodeString16(this.result.suggestionGroupsMap[groupId].header) :
         '';
+  }
+
+  /**
+   * @param {string} groupId
+   * @returns {string} Tooltip for suggestion group show/hide toggle button.
+   * @private
+   */
+  toggleButtonTitleForGroup_(groupId) {
+    if (!this.groupHasHeader_(groupId)) {
+      return '';
+    }
+    return loadTimeData.getString(
+        this.groupIsHidden_(groupId) ? 'showSuggestions' : 'hideSuggestions');
+  }
+
+  /**
+   * @param {string} groupId
+   * @returns {string} A11y label for suggestion group show/hide toggle button.
+   * @private
+   */
+  toggleButtonA11yLabelForGroup_(groupId) {
+    if (!this.groupHasHeader_(groupId)) {
+      return '';
+    }
+    return loadTimeData.substituteString(
+        loadTimeData.getString(
+            this.groupIsHidden_(groupId) ? 'showSection' : 'hideSection'),
+        this.headerForGroup_(groupId));
   }
 }
 

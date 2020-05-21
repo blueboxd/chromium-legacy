@@ -32,48 +32,61 @@ config("x11_private_config") {
   defines = [ "IS_X11_IMPL" ]
 }
 
-action_foreach("gen_xprotos") {
+action("gen_xprotos") {
   visibility = [ ":xprotos" ]
   script = "gen_xproto.py"
-  sources = [
-    "$xcbproto_path/bigreq.xml",
-    "$xcbproto_path/composite.xml",
-    "$xcbproto_path/damage.xml",
-    "$xcbproto_path/dpms.xml",
-    "$xcbproto_path/dri2.xml",
-    "$xcbproto_path/dri3.xml",
-    "$xcbproto_path/ge.xml",
-    "$xcbproto_path/glx.xml",
-    "$xcbproto_path/present.xml",
-    "$xcbproto_path/randr.xml",
-    "$xcbproto_path/record.xml",
-    "$xcbproto_path/render.xml",
-    "$xcbproto_path/res.xml",
-    "$xcbproto_path/screensaver.xml",
-    "$xcbproto_path/shape.xml",
-    "$xcbproto_path/shm.xml",
-    "$xcbproto_path/sync.xml",
-    "$xcbproto_path/xc_misc.xml",
-    "$xcbproto_path/xevie.xml",
-    "$xcbproto_path/xf86dri.xml",
-    "$xcbproto_path/xf86vidmode.xml",
-    "$xcbproto_path/xfixes.xml",
-    "$xcbproto_path/xinerama.xml",
-    "$xcbproto_path/xinput.xml",
-    "$xcbproto_path/xkb.xml",
-    "$xcbproto_path/xprint.xml",
-    "$xcbproto_path/xproto.xml",
-    "$xcbproto_path/xselinux.xml",
-    "$xcbproto_path/xtest.xml",
-    "$xcbproto_path/xv.xml",
-    "$xcbproto_path/xvmc.xml",
+  protos = [
+    "bigreq",
+    "composite",
+    "damage",
+    "dpms",
+    "dri2",
+    "dri3",
+    "ge",
+    "glx",
+    "present",
+    "randr",
+    "record",
+    "render",
+    "res",
+    "screensaver",
+    "shape",
+    "shm",
+    "sync",
+    "xc_misc",
+    "xevie",
+    "xf86dri",
+    "xf86vidmode",
+    "xfixes",
+    "xinerama",
+    "xinput",
+    "xkb",
+    "xprint",
+    "xproto",
+    "xselinux",
+    "xtest",
+    "xv",
+    "xvmc",
   ]
+  sources = []
   outputs = [
-    "$target_gen_dir/{{source_name_part}}_undef.h",
-    "$target_gen_dir/{{source_name_part}}.h",
-    "$target_gen_dir/{{source_name_part}}.cc",
+    "$target_gen_dir/extension_manager.h",
+    "$target_gen_dir/extension_manager.cc",
   ]
-  args = [ "{{source}}" ] + rebase_path(outputs, root_build_dir)
+  foreach(proto, protos) {
+    sources += [ "$xcbproto_path/${proto}.xml" ]
+    outputs += [
+      "$target_gen_dir/${proto}_undef.h",
+      "$target_gen_dir/${proto}.h",
+      "$target_gen_dir/${proto}.cc",
+    ]
+  }
+
+  args = rebase_path([
+                       xcbproto_path,
+                       target_gen_dir,
+                     ],
+                     root_build_dir) + protos
   if (use_sysroot) {
     args += [
       "--sysroot",

@@ -43,9 +43,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "ui/gfx/mac/cocoa_scrollbar_painter.h"
-
-using gfx::CocoaScrollbarPainter;
 
 @interface BlinkScrollbarObserver : NSObject {
   blink::Scrollbar* _scrollbar;
@@ -227,21 +224,34 @@ ScrollbarPainter ScrollbarThemeMac::PainterForScrollbar(
       [GetScrollbarPainterMap().at(const_cast<Scrollbar*>(&scrollbar)) painter];
 }
 
-CocoaScrollbarPainter::Params GetPaintParams(const Scrollbar& scrollbar,
-                                             bool overlay) {
-  CocoaScrollbarPainter::Params params;
-  params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnRight;
-  if (scrollbar.Orientation() == kHorizontalScrollbar)
-    params.orientation = CocoaScrollbarPainter::Orientation::kHorizontal;
-  if (scrollbar.IsLeftSideVerticalScrollbar())
-    params.orientation = CocoaScrollbarPainter::Orientation::kVerticalOnLeft;
+WebThemeEngine::ExtraParams GetPaintParams(const Scrollbar& scrollbar,
+                                           bool overlay) {
+  WebThemeEngine::ExtraParams params;
 
-  params.dark_mode = scrollbar.UsedColorScheme() == WebColorScheme::kDark;
-  params.overlay = overlay;
-  if (overlay)
-    params.dark_mode = scrollbar.GetScrollbarOverlayColorTheme() ==
-                       kScrollbarOverlayColorThemeLight;
-  params.hovered = scrollbar.HoveredPart() != ScrollbarPart::kNoPart;
+  params.scrollbar_extra.orientation =
+      WebThemeEngine::ScrollbarOrientation::kVerticalOnRight;
+  if (scrollbar.Orientation() == kHorizontalScrollbar) {
+    params.scrollbar_extra.orientation =
+        WebThemeEngine::ScrollbarOrientation::kHorizontal;
+  } else if (scrollbar.IsLeftSideVerticalScrollbar()) {
+    params.scrollbar_extra.orientation =
+        WebThemeEngine::ScrollbarOrientation::kVerticalOnLeft;
+  }
+
+  params.scrollbar_extra.scrollbar_theme =
+      (scrollbar.UsedColorScheme() == WebColorScheme::kDark) ? kDark : kLight;
+  params.scrollbar_extra.is_overlay = overlay;
+
+  if (overlay) {
+    params.scrollbar_extra.scrollbar_theme =
+        (scrollbar.GetScrollbarOverlayColorTheme() ==
+         kScrollbarOverlayColorThemeLight)
+            ? kDark
+            : kLight;
+  }
+
+  params.scrollbar_extra.is_hovering =
+      scrollbar.HoveredPart() != ScrollbarPart::kNoPart;
   return params;
 }
 
@@ -271,11 +281,18 @@ void ScrollbarThemeMac::PaintTrack(GraphicsContext& context,
 
   if (opacity != 1)
     context.BeginLayer(opacity);
-  CocoaScrollbarPainter::Params params =
+  WebThemeEngine::ExtraParams params =
       GetPaintParams(scrollbar, UsesOverlayScrollbars());
-  SkIRect bounds = SkIRect::MakeXYWH(0, 0, scrollbar.FrameRect().Width(),
-                                     scrollbar.FrameRect().Height());
-  CocoaScrollbarPainter::PaintTrack(context.Canvas(), bounds, params);
+  IntRect bounds(0, 0, scrollbar.FrameRect().Width(),
+                 scrollbar.FrameRect().Height());
+  WebThemeEngine::Part track_part =
+      params.scrollbar_extra.orientation ==
+              WebThemeEngine::ScrollbarOrientation::kHorizontal
+          ? WebThemeEngine::Part::kPartScrollbarHorizontalTrack
+          : WebThemeEngine::Part::kPartScrollbarVerticalTrack;
+  Platform::Current()->ThemeEngine()->Paint(
+      context.Canvas(), track_part, WebThemeEngine::State::kStateNormal,
+      WebRect(bounds), &params, params.scrollbar_extra.scrollbar_theme);
   if (opacity != 1)
     context.EndLayer();
 }
@@ -298,10 +315,13 @@ void ScrollbarThemeMac::PaintScrollCorner(GraphicsContext& context,
 
   GraphicsContextStateSaver state_saver(context);
   context.Translate(rect.X(), rect.Y());
-  SkIRect bounds = SkIRect::MakeXYWH(0, 0, rect.Width(), rect.Height());
-  CocoaScrollbarPainter::Params params =
+  IntRect bounds(0, 0, rect.Width(), rect.Height());
+  WebThemeEngine::ExtraParams params =
       GetPaintParams(*vertical_scrollbar, UsesOverlayScrollbars());
-  CocoaScrollbarPainter::PaintCorner(context.Canvas(), bounds, params);
+  Platform::Current()->ThemeEngine()->Paint(
+      context.Canvas(), WebThemeEngine::Part::kPartScrollbarCorner,
+      WebThemeEngine::State::kStateNormal, WebRect(bounds), &params,
+      params.scrollbar_extra.scrollbar_theme);
 }
 
 void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
@@ -360,22 +380,20 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
   if (!scrollbar.Enabled())
     return;
 
-  CocoaScrollbarPainter::Params params =
+  WebThemeEngine::ExtraParams params =
       GetPaintParams(scrollbar, UsesOverlayScrollbars());
 
   // Compute the bounds for the thumb, accounting for lack of engorgement.
-  SkIRect bounds;
-  switch (params.orientation) {
-    case CocoaScrollbarPainter::Orientation::kVerticalOnRight:
-      bounds = SkIRect::MakeXYWH(rect.Width() - thumb_size, 0, thumb_size,
-                                 rect.Height());
+  IntRect bounds;
+  switch (params.scrollbar_extra.orientation) {
+    case WebThemeEngine::ScrollbarOrientation::kVerticalOnRight:
+      bounds = IntRect(rect.Width() - thumb_size, 0, thumb_size, rect.Height());
       break;
-    case CocoaScrollbarPainter::Orientation::kVerticalOnLeft:
-      bounds = SkIRect::MakeXYWH(0, 0, thumb_size, rect.Height());
+    case WebThemeEngine::ScrollbarOrientation::kVerticalOnLeft:
+      bounds = IntRect(0, 0, thumb_size, rect.Height());
       break;
-    case CocoaScrollbarPainter::Orientation::kHorizontal:
-      bounds = SkIRect::MakeXYWH(0, rect.Height() - thumb_size, rect.Width(),
-                                 thumb_size);
+    case WebThemeEngine::ScrollbarOrientation::kHorizontal:
+      bounds = IntRect(0, rect.Height() - thumb_size, rect.Width(), thumb_size);
       break;
   }
 
@@ -383,7 +401,15 @@ void ScrollbarThemeMac::PaintThumbInternal(GraphicsContext& context,
     FloatRect float_local_rect(local_rect);
     context.BeginLayer(opacity, SkBlendMode::kSrcOver, &float_local_rect);
   }
-  CocoaScrollbarPainter::PaintThumb(context.Canvas(), bounds, params);
+
+  WebThemeEngine::Part thumb_part =
+      params.scrollbar_extra.orientation ==
+              WebThemeEngine::ScrollbarOrientation::kHorizontal
+          ? WebThemeEngine::Part::kPartScrollbarHorizontalThumb
+          : WebThemeEngine::Part::kPartScrollbarVerticalThumb;
+  Platform::Current()->ThemeEngine()->Paint(
+      context.Canvas(), thumb_part, WebThemeEngine::State::kStateNormal,
+      WebRect(bounds), &params, params.scrollbar_extra.scrollbar_theme);
   if (opacity != 1.0f)
     context.EndLayer();
 }

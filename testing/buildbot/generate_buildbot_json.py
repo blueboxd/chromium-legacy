@@ -615,20 +615,7 @@ class BBJSONGenerator(object):
                              tester_name))
 
   def add_common_test_properties(self, test, tester_config):
-    if tester_config.get('use_multi_dimension_trigger_script'):
-      # Assumes update_and_cleanup_test has already been called, so the
-      # builder's mixins have been flattened into the test.
-      test['trigger_script'] = {
-        'script': '//testing/trigger_scripts/trigger_multiple_dimensions.py',
-        'args': [
-          '--multiple-trigger-configs',
-          json.dumps(test['swarming']['dimension_sets'] +
-                     tester_config.get('alternate_swarming_dimensions', [])),
-          '--multiple-dimension-script-verbose',
-          'True'
-        ],
-      }
-    elif self.is_chromeos(tester_config) and tester_config.get('use_swarming',
+    if self.is_chromeos(tester_config) and tester_config.get('use_swarming',
                                                                True):
       # The presence of the "device_type" dimension indicates that the tests
       # are targeting CrOS hardware and so need the special trigger script.

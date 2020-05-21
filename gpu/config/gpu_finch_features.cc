@@ -45,12 +45,6 @@ const base::Feature kDefaultEnableOopRasterization{
     "DefaultEnableOopRasterization", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-// Allow putting a video swapchain underneath the main swapchain, so overlays
-// can be used even if there are controls on top of the video. It can be
-// enabled only when overlay is supported.
-const base::Feature kDirectCompositionUnderlays{
-    "DirectCompositionUnderlays", base::FEATURE_ENABLED_BY_DEFAULT};
-
 #if defined(OS_WIN)
 // Use a high priority for GPU process on Windows.
 const base::Feature kGpuProcessHighPriorityWin{

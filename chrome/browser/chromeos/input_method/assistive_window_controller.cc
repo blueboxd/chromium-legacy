@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"           // mash-ok
-#include "ash/wm/window_util.h"  // mash-ok
+#include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/views/widget/widget.h"

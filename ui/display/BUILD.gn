@@ -36,6 +36,8 @@ jumbo_component("display") {
     "display_switches.h",
     "display_transform.cc",
     "display_transform.h",
+    "scoped_display_for_new_windows.cc",
+    "scoped_display_for_new_windows.h",
     "screen.cc",
     "screen.h",
     "screen_base.cc",

@@ -4,12 +4,10 @@
 
 #include "third_party/blink/renderer/modules/webcodecs/video_track_reader.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/video_frame.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_sink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
-#include "third_party/blink/renderer/core/streams/readable_stream.h"
-#include "third_party/blink/renderer/core/streams/readable_stream_default_controller_with_script_scope.h"
-#include "third_party/blink/renderer/core/streams/underlying_source_base.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -18,70 +16,93 @@
 
 namespace blink {
 
-class VideoTrackReadableStreamSource final : public UnderlyingSourceBase,
-                                             public MediaStreamVideoSink {
- public:
-  VideoTrackReadableStreamSource(ScriptState* script_state,
-                                 MediaStreamTrack* track)
-      : UnderlyingSourceBase(script_state),
-        task_runner_(ExecutionContext::From(script_state)
-                         ->GetTaskRunner(TaskType::kInternalMedia)) {
-    ConnectToTrack(track->Component(),
-                   ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
-                       &VideoTrackReadableStreamSource::OnFrameFromVideoTrack,
-                       WrapCrossThreadPersistent(this))),
-                   false /* is_sink_secure */);
+VideoTrackReader::VideoTrackReader(ScriptState* script_state,
+                                   MediaStreamTrack* track)
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
+      started_(false),
+      real_time_media_task_runner_(
+          ExecutionContext::From(script_state)
+              ->GetTaskRunner(TaskType::kInternalMediaRealTime)),
+      track_(track) {}
+
+void VideoTrackReader::start(V8VideoDecoderOutputCallback* callback,
+                             ExceptionState& exception_state) {
+  DCHECK(real_time_media_task_runner_->BelongsToCurrentThread());
+
+  if (started_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The VideoTrackReader has already been started.");
+    return;
   }
 
-  // Callback of MediaStreamVideoSink::ConnectToTrack
-  void OnFrameFromVideoTrack(scoped_refptr<media::VideoFrame> media_frame,
-                             base::TimeTicks estimated_capture_time) {
-    // The value of estimated_capture_time here seems to almost always be the
-    // system clock and most implementations of this callback ignore it.
-    // So, we will also ignore it.
-    DCHECK(media_frame);
-    PostCrossThreadTask(
-        *task_runner_.get(), FROM_HERE,
-        CrossThreadBindOnce(
-            &VideoTrackReadableStreamSource::OnFrameFromVideoTrackOnTaskRunner,
-            WrapCrossThreadPersistent(this), std::move(media_frame)));
+  started_ = true;
+  callback_ = callback;
+  ConnectToTrack(track_->Component(),
+                 ConvertToBaseRepeatingCallback(CrossThreadBindRepeating(
+                     &VideoTrackReader::OnFrameFromVideoTrack,
+                     WrapCrossThreadPersistent(this))),
+                 false /* is_sink_secure */);
+}
+
+void VideoTrackReader::stop(ExceptionState& exception_state) {
+  DCHECK(real_time_media_task_runner_->BelongsToCurrentThread());
+
+  if (!started_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "The VideoTrackReader has already been stopped.");
+    return;
   }
 
-  void OnFrameFromVideoTrackOnTaskRunner(
-      scoped_refptr<media::VideoFrame> media_frame) {
-    Controller()->Enqueue(
-        MakeGarbageCollected<VideoFrame>(std::move(media_frame)));
+  StopInternal();
+}
+
+void VideoTrackReader::StopInternal() {
+  DCHECK(real_time_media_task_runner_->BelongsToCurrentThread());
+  started_ = false;
+  callback_ = nullptr;
+  DisconnectFromTrack();
+}
+
+void VideoTrackReader::OnFrameFromVideoTrack(
+    scoped_refptr<media::VideoFrame> media_frame,
+    base::TimeTicks estimated_capture_time) {
+  // The value of estimated_capture_time here seems to almost always be the
+  // system clock and most implementations of this callback ignore it.
+  // So, we will also ignore it.
+  DCHECK(media_frame);
+  PostCrossThreadTask(
+      *real_time_media_task_runner_.get(), FROM_HERE,
+      CrossThreadBindOnce(&VideoTrackReader::ExecuteCallbackOnMainThread,
+                          WrapCrossThreadPersistent(this),
+                          std::move(media_frame)));
+}
+
+void VideoTrackReader::ExecuteCallbackOnMainThread(
+    scoped_refptr<media::VideoFrame> media_frame) {
+  DCHECK(real_time_media_task_runner_->BelongsToCurrentThread());
+
+  if (!callback_) {
+    // We may have already been stopped.
+    return;
   }
 
-  // MediaStreamVideoSink override
-  void OnReadyStateChanged(WebMediaStreamSource::ReadyState state) override {
-    if (state == WebMediaStreamSource::kReadyStateEnded)
-      Close();
-  }
+  // If |track_|'s constraints changed (e.g. the resolution changed from a call
+  // to MediaStreamTrack.applyConstraints() in JS), this |media_frame| might
+  // still have the old constraints, due to the thread hop.
+  // We may want to invalidate |media_frames| when constraints change, but it's
+  // unclear whether this is a problem for now.
 
-  // UnderlyingSourceBase overrides.
-  ScriptPromise pull(ScriptState* script_state) override {
-    // Since video tracks are all push-based with no back pressure, there's
-    // nothing to do here.
-    return ScriptPromise::CastUndefined(script_state);
-  }
+  callback_->InvokeAndReportException(
+      nullptr, MakeGarbageCollected<VideoFrame>(std::move(media_frame)));
+}
 
-  ScriptPromise Cancel(ScriptState* script_state, ScriptValue reason) override {
-    Close();
-    return ScriptPromise::CastUndefined(script_state);
-  }
-
-  void ContextDestroyed() override { DisconnectFromTrack(); }
-
-  void Close() {
-    if (Controller())
-      Controller()->Close();
-    DisconnectFromTrack();
-  }
-
-  // VideoFrames will be queue on this task runner.
-  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-};
+void VideoTrackReader::OnReadyStateChanged(
+    WebMediaStreamSource::ReadyState state) {
+  if (state == WebMediaStreamSource::kReadyStateEnded)
+    StopInternal();
+}
 
 VideoTrackReader* VideoTrackReader::Create(ScriptState* script_state,
                                            MediaStreamTrack* track,
@@ -99,23 +120,14 @@ VideoTrackReader* VideoTrackReader::Create(ScriptState* script_state,
     return nullptr;
   }
 
-  auto* source =
-      MakeGarbageCollected<VideoTrackReadableStreamSource>(script_state, track);
-  auto* readable =
-      ReadableStream::CreateWithCountQueueingStrategy(script_state, source, 0);
-  return MakeGarbageCollected<VideoTrackReader>(readable);
-}
-
-VideoTrackReader::VideoTrackReader(ReadableStream* readable)
-    : readable_(readable) {}
-
-ReadableStream* VideoTrackReader::readable() const {
-  return readable_;
+  return MakeGarbageCollected<VideoTrackReader>(script_state, track);
 }
 
 void VideoTrackReader::Trace(Visitor* visitor) const {
-  visitor->Trace(readable_);
+  visitor->Trace(track_);
+  visitor->Trace(callback_);
   ScriptWrappable::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -22,6 +22,7 @@ android_resources("client_resources") {
     "res/values/styles.xml",
     "res/xml/weblayer_file_paths.xml",
   ]
+  deps = [ "//components/browser_ui/styles/android:java_resources" ]
   android_manifest = weblayer_client_manifest
   android_manifest_dep = ":weblayer_client_manifest"
 }

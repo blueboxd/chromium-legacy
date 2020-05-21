@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_track_writer_parameters.h"
@@ -15,9 +17,26 @@
 #include "third_party/blink/renderer/modules/webcodecs/video_track_writer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/bindings/to_v8.h"
 #include "third_party/blink/renderer/platform/testing/io_task_runner_testing_platform_support.h"
 
 namespace blink {
+
+class MockFunction : public ScriptFunction {
+ public:
+  static testing::StrictMock<MockFunction>* Create(ScriptState* script_state) {
+    return MakeGarbageCollected<testing::StrictMock<MockFunction>>(
+        script_state);
+  }
+
+  v8::Local<v8::Function> Bind() { return BindToV8Function(); }
+
+  MOCK_METHOD1(Call, ScriptValue(ScriptValue));
+
+ protected:
+  explicit MockFunction(ScriptState* script_state)
+      : ScriptFunction(script_state) {}
+};
 
 class VideoTrackReaderWriterTest : public testing::Test {
  public:
@@ -42,6 +61,10 @@ class VideoTrackReaderWriterTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
+  V8VideoDecoderOutputCallback* GetCallback(MockFunction* function) {
+    return V8VideoDecoderOutputCallback::Create(function->Bind());
+  }
+
  private:
   ScopedTestingPlatformSupport<IOTaskRunnerTestingPlatformSupport> platform_;
 };
@@ -54,8 +77,12 @@ TEST_F(VideoTrackReaderWriterTest, WriteAndRead) {
   params.setReleaseFrames(false);
   auto* writer =
       VideoTrackWriter::Create(script_state, &params, ASSERT_NO_EXCEPTION);
+
+  auto* read_output_function = MockFunction::Create(script_state);
   auto* reader = VideoTrackReader::Create(script_state, writer->track(),
                                           ASSERT_NO_EXCEPTION);
+
+  reader->start(GetCallback(read_output_function), ASSERT_NO_EXCEPTION);
 
   auto* frame = CreateBlackVideoFrame();
   writer->writable()
@@ -64,24 +91,23 @@ TEST_F(VideoTrackReaderWriterTest, WriteAndRead) {
               ScriptValue(scope.GetIsolate(), ToV8(frame, script_state)),
               ASSERT_NO_EXCEPTION);
 
-  auto read_promise = reader->readable()
-                          ->getReader(script_state, ASSERT_NO_EXCEPTION)
-                          ->read(script_state, ASSERT_NO_EXCEPTION);
-  auto v8_read_promise = read_promise.V8Value().As<v8::Promise>();
-
-  EXPECT_EQ(v8::Promise::kPending, v8_read_promise->State());
+  ScriptValue v8_frame;
+  // We don't care about Call()'s return value, so we use undefined.
+  ScriptValue undefined_value =
+      ScriptValue::From(script_state, ToV8UndefinedGenerator());
+  EXPECT_CALL(*read_output_function, Call(testing::_))
+      .WillOnce(
+          testing::DoAll(testing::SaveArg<0>(&v8_frame),
+                         testing::Return(testing::ByMove(undefined_value))));
 
   RunIOUntilIdle();
 
-  EXPECT_EQ(v8::Promise::kFulfilled, v8_read_promise->State());
+  testing::Mock::VerifyAndClear(read_output_function);
 
-  auto* read_frame = V8VideoFrame::ToImplWithTypeCheck(
-      scope.GetIsolate(),
-      v8_read_promise->Result()
-          ->ToObject(scope.GetContext())
-          .ToLocalChecked()
-          ->Get(scope.GetContext(), V8String(scope.GetIsolate(), "value"))
-          .ToLocalChecked());
+  auto* read_frame =
+      V8VideoFrame::ToImplWithTypeCheck(scope.GetIsolate(), v8_frame.V8Value());
+
+  reader->stop(ASSERT_NO_EXCEPTION);
 
   ASSERT_TRUE(frame);
   EXPECT_EQ(frame->frame(), read_frame->frame());

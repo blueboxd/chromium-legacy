@@ -384,14 +384,8 @@ VirtualCtap2Device::Config& VirtualCtap2Device::Config::operator=(
     const Config&) = default;
 VirtualCtap2Device::Config::~Config() = default;
 
-VirtualCtap2Device::VirtualCtap2Device() : VirtualFidoDevice() {
-  device_info_ =
-      AuthenticatorGetInfoResponse({ProtocolVersion::kCtap2}, kDeviceAaguid);
-  device_info_->algorithms = {
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA),
-      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256),
-  };
+VirtualCtap2Device::VirtualCtap2Device() {
+  Init({ProtocolVersion::kCtap2});
 }
 
 VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
@@ -402,8 +396,7 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
     versions.emplace_back(ProtocolVersion::kU2f);
     u2f_device_.reset(new VirtualU2fDevice(NewReferenceToState()));
   }
-  device_info_ =
-      AuthenticatorGetInfoResponse(std::move(versions), kDeviceAaguid);
+  Init(std::move(versions));
 
   AuthenticatorSupportedOptions options;
   bool options_updated = false;
@@ -502,6 +495,11 @@ VirtualCtap2Device::VirtualCtap2Device(scoped_refptr<State> state,
   if (config.max_credential_id_length > 0) {
     device_info_->max_credential_id_length = config.max_credential_id_length;
   }
+
+  if (config.support_invalid_for_testing_algorithm) {
+    device_info_->algorithms.push_back(
+        static_cast<int32_t>(CoseAlgorithmIdentifier::kInvalidForTesting));
+  }
 }
 
 VirtualCtap2Device::~VirtualCtap2Device() = default;
@@ -589,6 +587,16 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
 
 base::WeakPtr<FidoDevice> VirtualCtap2Device::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
+}
+
+void VirtualCtap2Device::Init(std::vector<ProtocolVersion> versions) {
+  device_info_ =
+      AuthenticatorGetInfoResponse(std::move(versions), kDeviceAaguid);
+  device_info_->algorithms = {
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEs256),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA),
+      static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseRs256),
+  };
 }
 
 base::Optional<CtapDeviceResponseCode>
@@ -765,6 +773,12 @@ base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnMakeCredential(
         break;
       case static_cast<int32_t>(CoseAlgorithmIdentifier::kCoseEdDSA):
         private_key = PrivateKey::FreshEd25519Key();
+        break;
+      case static_cast<int32_t>(CoseAlgorithmIdentifier::kInvalidForTesting):
+        if (!config_.support_invalid_for_testing_algorithm) {
+          continue;
+        }
+        private_key = PrivateKey::FreshInvalidForTestingKey();
         break;
     }
     break;

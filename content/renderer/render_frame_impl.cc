@@ -630,13 +630,41 @@ WebString ConvertRelativePathToHtmlAttribute(const base::FilePath& path) {
       path.NormalizePathSeparatorsTo(FILE_PATH_LITERAL('/')).AsUTF8Unsafe());
 }
 
+class RenderFrameWebFrameSerializerClient
+    : public blink::WebFrameSerializerClient {
+ public:
+  // Callback to report the result of the serialization beyond the scope of the
+  // WebFrameSerializerClient. |data| contains the serialized information and
+  // |end_of_data| reports whether all available data has been serialized.
+  using CompletionCallback =
+      base::OnceCallback<void(const std::string& data, bool end_of_data)>;
+
+  explicit RenderFrameWebFrameSerializerClient(
+      CompletionCallback completion_callback)
+      : completion_callback_(std::move(completion_callback)) {}
+
+  // WebFrameSerializerClient implementation:
+  void DidSerializeDataForFrame(
+      const WebVector<char>& data,
+      WebFrameSerializerClient::FrameSerializationStatus status) override {
+    bool end_of_data =
+        status == WebFrameSerializerClient::kCurrentFrameIsFinished;
+    std::move(completion_callback_)
+        .Run(std::string(data.Data(), data.size()), end_of_data);
+  }
+
+ private:
+  CompletionCallback completion_callback_;
+};
+
 // Implementation of WebFrameSerializer::LinkRewritingDelegate that responds
-// based on the payload of FrameMsg_GetSerializedHtmlWithLocalLinks.
+// based on the payload of mojom::Frame::GetSerializedHtmlWithLocalLinks().
 class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
  public:
-  LinkRewritingDelegate(const std::map<GURL, base::FilePath>& url_to_local_path,
-                        const std::map<base::UnguessableToken, base::FilePath>&
-                            frame_token_to_local_path)
+  LinkRewritingDelegate(
+      const base::flat_map<GURL, base::FilePath>& url_to_local_path,
+      const base::flat_map<base::UnguessableToken, base::FilePath>&
+          frame_token_to_local_path)
       : url_to_local_path_(url_to_local_path),
         frame_token_to_local_path_(frame_token_to_local_path) {}
 
@@ -655,7 +683,7 @@ class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
   }
 
   bool RewriteLink(const WebURL& url, WebString* rewritten_link) override {
-    auto it = url_to_local_path_.find(url);
+    auto it = url_to_local_path_.find(GURL(url));
     if (it == url_to_local_path_.end())
       return false;
 
@@ -665,8 +693,8 @@ class LinkRewritingDelegate : public WebFrameSerializer::LinkRewritingDelegate {
   }
 
  private:
-  const std::map<GURL, base::FilePath>& url_to_local_path_;
-  const std::map<base::UnguessableToken, base::FilePath>&
+  const base::flat_map<GURL, base::FilePath>& url_to_local_path_;
+  const base::flat_map<base::UnguessableToken, base::FilePath>&
       frame_token_to_local_path_;
 };
 
@@ -2194,8 +2222,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
                         OnGetSavableResourceLinks)
-    IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
-                        OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_MixedContentFound, OnMixedContentFound)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_Delete, OnDeleteFrame)
   IPC_END_MESSAGE_MAP()
@@ -2664,6 +2690,21 @@ void RenderFrameImpl::SnapshotAccessibilityTree(
   RenderAccessibilityImpl::SnapshotAccessibilityTree(this, &response,
                                                      ui::AXMode(ax_mode));
   std::move(callback).Run(response);
+}
+
+void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
+    const base::flat_map<GURL, base::FilePath>& url_map,
+    const base::flat_map<base::UnguessableToken, base::FilePath>&
+        frame_token_map,
+    bool save_with_empty_url,
+    mojom::Frame::GetSerializedHtmlWithLocalLinksCallback callback) {
+  // Convert input to the canonical way of passing a map into a Blink API.
+  LinkRewritingDelegate delegate(url_map, frame_token_map);
+  RenderFrameWebFrameSerializerClient client(std::move(callback));
+
+  // Serialize the frame (without recursing into subframes).
+  WebFrameSerializer::Serialize(GetWebFrame(), &client, &delegate,
+                                save_with_empty_url);
 }
 
 #if defined(OS_ANDROID)
@@ -4903,15 +4944,6 @@ void RenderFrameImpl::MarkWebAXObjectDirty(const blink::WebAXObject& obj,
       ->MarkWebAXObjectDirty(obj, subtree);
 }
 
-void RenderFrameImpl::DidSerializeDataForFrame(
-    const WebVector<char>& data,
-    WebFrameSerializerClient::FrameSerializationStatus status) {
-  bool end_of_data =
-      status == WebFrameSerializerClient::kCurrentFrameIsFinished;
-  Send(new FrameHostMsg_SerializedHtmlWithLocalLinksResponse(
-      routing_id_, std::string(data.Data(), data.size()), end_of_data));
-}
-
 void RenderFrameImpl::AddObserver(RenderFrameObserver* observer) {
   observers_.AddObserver(observer);
 }
@@ -5648,20 +5680,6 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
 
   Send(new FrameHostMsg_SavableResourceLinksResponse(
       routing_id_, resources_list, referrer, subframes));
-}
-
-void RenderFrameImpl::OnGetSerializedHtmlWithLocalLinks(
-    const std::map<GURL, base::FilePath>& url_to_local_path,
-    const std::map<base::UnguessableToken, base::FilePath>&
-        frame_token_to_local_path,
-    bool save_with_empty_url) {
-  // Convert input to the canonical way of passing a map into a Blink API.
-  LinkRewritingDelegate delegate(url_to_local_path, frame_token_to_local_path);
-
-  // Serialize the frame (without recursing into subframes).
-  WebFrameSerializer::Serialize(GetWebFrame(),
-                                this,  // WebFrameSerializerClient.
-                                &delegate, save_with_empty_url);
 }
 
 // mojom::MhtmlFileWriter implementation

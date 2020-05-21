@@ -311,8 +311,8 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
       const std::set<int64_t>& resource_ids,
       storage::mojom::ServiceWorkerDatabaseStatus status);
   void DidGetUserData(GetUserDataCallback callback,
-                      const std::vector<std::string>& data,
-                      storage::mojom::ServiceWorkerDatabaseStatus status);
+                      storage::mojom::ServiceWorkerDatabaseStatus status,
+                      const std::vector<std::string>& data);
   void DidGetUserKeysAndData(
       GetUserKeysAndDataCallback callback,
       const base::flat_map<std::string, std::string>& data_map,

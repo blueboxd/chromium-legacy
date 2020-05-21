@@ -395,7 +395,7 @@ bool AXVirtualView::AccessibilityPerformAction(const ui::AXActionData& data) {
   if (custom_data_.HasAction(data.action))
     result = HandleAccessibleAction(data);
   if (!result && GetOwnerView())
-    return GetOwnerView()->HandleAccessibleAction(data);
+    return HandleAccessibleActionInOwnerView(data);
   return result;
 }
 
@@ -449,7 +449,17 @@ bool AXVirtualView::HandleAccessibleAction(
       break;
   }
 
-  return GetOwnerView()->HandleAccessibleAction(action_data);
+  return HandleAccessibleActionInOwnerView(action_data);
+}
+
+bool AXVirtualView::HandleAccessibleActionInOwnerView(
+    const ui::AXActionData& action_data) {
+  DCHECK(GetOwnerView());
+  // Save the node id so that the owner view can determine which virtual view
+  // is being targeted for action.
+  ui::AXActionData forwarded_action_data = action_data;
+  forwarded_action_data.target_node_id = GetData().id;
+  return GetOwnerView()->HandleAccessibleAction(forwarded_action_data);
 }
 
 View* AXVirtualView::GetOwnerView() const {

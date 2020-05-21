@@ -148,6 +148,11 @@ extern const char kDetectMainThreadFreezeDescription[];
 extern const char kDisableAnimationOnLowBatteryName[];
 extern const char kDisableAnimationOnLowBatteryDescription[];
 
+// Title and description for the flag to replace the Zine feed with the
+// Discover feed in the Bling NTP.
+extern const char kDiscoverFeedInNtpName[];
+extern const char kDiscoverFeedInNtpDescription[];
+
 // Title and description for the flag to enable the Messages UI for downloads.
 extern const char kDownloadInfobarMessagesUIName[];
 extern const char kDownloadInfobarMessagesUIDescription[];

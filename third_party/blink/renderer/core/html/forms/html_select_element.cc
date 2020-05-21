@@ -1393,9 +1393,12 @@ void HTMLSelectElement::CloneNonAttributePropertiesFrom(
 
 void HTMLSelectElement::ChangeRendering() {
   select_type_->DidDetachLayoutTree();
+  bool old_uses_menu_list = UsesMenuList();
   UpdateUsesMenuList();
-  select_type_->WillBeDestroyed();
-  select_type_ = SelectType::Create(*this);
+  if (UsesMenuList() != old_uses_menu_list) {
+    select_type_->WillBeDestroyed();
+    select_type_ = SelectType::Create(*this);
+  }
   if (!InActiveDocument())
     return;
   // TODO(futhark): SetForceReattachLayoutTree() should be the correct way to

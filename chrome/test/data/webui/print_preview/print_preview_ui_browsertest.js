@@ -1082,6 +1082,60 @@ TEST_F('PrintPreviewDestinationSelectTestCrOS', 'EulaIsDisplayed', function() {
   this.runMochaTest(destination_select_test_cros.TestNames.EulaIsDisplayed);
 });
 
+// eslint-disable-next-line no-var
+var PrintPreviewDestinationDropdownCrosTest = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/destination_dropdown_cros_test.js';
+  }
+
+  /** @override */
+  get suiteName() {
+    return destination_dropdown_cros_test.suiteName;
+  }
+};
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'CorrectListItems', function() {
+      this.runMochaTest(
+          destination_dropdown_cros_test.TestNames.CorrectListItems);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'ClickRemovesSelected',
+    function() {
+      this.runMochaTest(
+          destination_dropdown_cros_test.TestNames.ClickRemovesSelected);
+    });
+
+TEST_F('PrintPreviewDestinationDropdownCrosTest', 'ClickCloses', function() {
+  this.runMochaTest(destination_dropdown_cros_test.TestNames.ClickCloses);
+});
+
+TEST_F('PrintPreviewDestinationDropdownCrosTest', 'TabCloses', function() {
+  this.runMochaTest(destination_dropdown_cros_test.TestNames.TabCloses);
+});
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'SelectedAfterUpDown',
+    function() {
+      this.runMochaTest(
+          destination_dropdown_cros_test.TestNames.SelectedAfterUpDown);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'EnterOpensCloses', function() {
+      this.runMochaTest(
+          destination_dropdown_cros_test.TestNames.EnterOpensCloses);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDropdownCrosTest', 'SelectedFollowsMouse',
+    function() {
+      this.runMochaTest(
+          destination_dropdown_cros_test.TestNames.SelectedFollowsMouse);
+    });
+
 GEN('#else');
 // eslint-disable-next-line no-var
 var PrintPreviewDestinationSelectTest = class extends PrintPreviewTest {

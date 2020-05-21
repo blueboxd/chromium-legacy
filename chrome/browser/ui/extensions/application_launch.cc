@@ -59,6 +59,7 @@
 #include "extensions/common/manifest_handlers/options_page_info.h"
 #include "third_party/blink/public/common/features.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/geometry/rect.h"
 
 #if defined(OS_MACOSX)
@@ -410,6 +411,9 @@ Browser* CreateApplicationWindow(Profile* profile,
     initial_bounds.set_height(
         extensions::AppLaunchInfo::GetLaunchHeight(extension));
   }
+
+  // Place new windows on the specified display.
+  display::ScopedDisplayForNewWindows scoped_display(params.display_id);
 
   // TODO(erg): AppLaunchParams should pass through the user_gesture from the
   // extension system here.

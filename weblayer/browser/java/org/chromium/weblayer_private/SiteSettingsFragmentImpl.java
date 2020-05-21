@@ -91,6 +91,16 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
         }
 
         @Override
+        public Context getApplicationContext() {
+            return getEmbedderActivity().getApplicationContext();
+        }
+
+        @Override
+        public void startActivity(Intent intent) {
+            getEmbedderActivity().startActivity(intent);
+        }
+
+        @Override
         public void setTitle(int titleId) {
             getEmbedderActivity().setTitle(mFragmentImpl.getWebLayerContext().getString(titleId));
         }
@@ -216,7 +226,7 @@ public class SiteSettingsFragmentImpl extends RemoteFragmentImpl {
 
         mEmbedderContext = context;
         mContext = new ContextThemeWrapper(
-                ClassLoaderContextWrapperFactory.get(context), R.style.Theme_BrowserUI);
+                ClassLoaderContextWrapperFactory.get(context), R.style.Theme_WebLayer_SiteSettings);
         mFragmentController =
                 FragmentController.createController(new SiteSettingsFragmentHostCallback(this));
     }

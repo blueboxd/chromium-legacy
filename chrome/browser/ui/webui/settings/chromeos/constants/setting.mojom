@@ -96,6 +96,7 @@ enum Setting {
   kSleepWhenLaptopLidClosed = 424,
   kDisplayResolution = 425,
   kDisplayRefreshRate = 426,
+  kRemoveDlc = 427,
 
   // Personalization section.
   kOpenWallpaper = 500,

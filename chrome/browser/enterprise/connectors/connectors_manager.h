@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "chrome/browser/enterprise/connectors/analysis_service_settings.h"
 #include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/reporting_service_settings.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "url/gurl.h"
 
@@ -32,11 +33,19 @@ extern const base::Feature kEnterpriseConnectorsEnabled;
 // provide a simple interface to them.
 class ConnectorsManager {
  public:
-  // Map used to cache analysis connectors settings.
+  // Maps used to cache connectors settings.
   using AnalysisConnectorsSettings =
       std::map<AnalysisConnector, std::vector<AnalysisServiceSettings>>;
+  using ReportingConnectorsSettings =
+      std::map<ReportingConnector, std::vector<ReportingServiceSettings>>;
 
   static ConnectorsManager* GetInstance();
+
+  // Validates which settings should be applied to a reporting event
+  // against cached policies. This function will prioritize new connector
+  // policies over legacy ones if they are set.
+  base::Optional<ReportingSettings> GetReportingSettings(
+      ReportingConnector connector);
 
   // Validates which settings should be applied to an analysis connector event
   // against cached policies. This function will prioritize new connector
@@ -47,6 +56,7 @@ class ConnectorsManager {
 
   // Checks if the corresponding connector is enabled.
   bool IsConnectorEnabled(AnalysisConnector connector);
+  bool IsConnectorEnabled(ReportingConnector connector);
 
   bool DelayUntilVerdict(AnalysisConnector connector) const;
 
@@ -61,6 +71,8 @@ class ConnectorsManager {
 
   // Public testing functions.
   const AnalysisConnectorsSettings& GetAnalysisConnectorsSettingsForTesting()
+      const;
+  const ReportingConnectorsSettings& GetReportingConnectorsSettingsForTesting()
       const;
 
   // Helpers to reset the ConnectorManager instance across test since it's a
@@ -84,12 +96,14 @@ class ConnectorsManager {
       AnalysisConnector connector);
 
   // Read and cache the policy corresponding to |connector|.
-  void CacheConnectorPolicy(AnalysisConnector connector);
+  void CacheAnalysisConnectorPolicy(AnalysisConnector connector);
+  void CacheReportingConnectorPolicy(ReportingConnector connector);
 
   // Sets up |pref_change_registrar_| if kEnterpriseConntorsEnabled is true.
   // Used by the constructor and SetUpForTesting.
   void StartObservingPrefs();
   void StartObservingPref(AnalysisConnector connector);
+  void StartObservingPref(ReportingConnector connector);
 
   // Private legacy functions.
   // These functions are used to interact with legacy policies and should stay
@@ -108,9 +122,20 @@ class ConnectorsManager {
   std::set<std::string> MatchURLAgainstLegacyPolicies(const GURL& url,
                                                       bool upload) const;
 
+  // Validates which settings should be applied to an analysis connector event
+  // against connector policies. Cache the policy value the first time this is
+  // called for every different connector.
+  base::Optional<ReportingSettings> GetReportingSettingsFromConnectorPolicy(
+      ReportingConnector connector);
+
+  // Returns reporting settings based on legacy policies.
+  base::Optional<ReportingSettings> GetReportingSettingsFromLegacyPolicies(
+      ReportingConnector connector) const;
+
   // Cached values of the connector policies. Updated when a connector is first
   // used or when a policy is updated.
-  AnalysisConnectorsSettings connector_settings_;
+  AnalysisConnectorsSettings analysis_connector_settings_;
+  ReportingConnectorsSettings reporting_connector_settings_;
 
   // Used to track changes of connector policies and propagate them in
   // |connector_settings_|.

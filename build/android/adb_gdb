@@ -581,32 +581,32 @@ get_ndk_toolchain_prebuilt () {
 get_ndk_toolchain_fullprefix () {
   local NDK_DIR="$1"
   local ARCH="$2"
-  local TARGET NAME HOST_OS HOST_ARCH GCC CONFIG
+  local TARGET NAME HOST_OS HOST_ARCH LD CONFIG
 
   # NOTE: This will need to be updated if the NDK changes the names or moves
   #        the location of its prebuilt toolchains.
   #
-  GCC=
+  LD=
   HOST_OS=$(get_ndk_host_system)
   HOST_ARCH=$(get_ndk_host_arch)
   CONFIG=$(get_arch_gnu_config $ARCH)
-  GCC=$(get_ndk_toolchain_prebuilt \
-        "$NDK_DIR" "$ARCH" "$HOST_OS-$HOST_ARCH/bin/$CONFIG-gcc")
-  if [ -z "$GCC" -a "$HOST_ARCH" = "x86_64" ]; then
-    GCC=$(get_ndk_toolchain_prebuilt \
-          "$NDK_DIR" "$ARCH" "$HOST_OS-x86/bin/$CONFIG-gcc")
+  LD=$(get_ndk_toolchain_prebuilt \
+        "$NDK_DIR" "$ARCH" "$HOST_OS-$HOST_ARCH/bin/$CONFIG-ld")
+  if [ -z "$LD" -a "$HOST_ARCH" = "x86_64" ]; then
+    LD=$(get_ndk_toolchain_prebuilt \
+         "$NDK_DIR" "$ARCH" "$HOST_OS-x86/bin/$CONFIG-ld")
   fi
-  if [ ! -f "$GCC" -a "$ARCH" = "x86" ]; then
+  if [ ! -f "$LD" -a "$ARCH" = "x86" ]; then
     # Special case, the x86 toolchain used to be incorrectly
     # named i686-android-linux-gcc!
-    GCC=$(get_ndk_toolchain_prebuilt \
-          "$NDK_DIR" "$ARCH" "$HOST_OS-x86/bin/i686-android-linux-gcc")
+    LD=$(get_ndk_toolchain_prebuilt \
+         "$NDK_DIR" "$ARCH" "$HOST_OS-x86/bin/i686-android-linux-ld")
   fi
-  if [ -z "$GCC" ]; then
+  if [ -z "$LD" ]; then
     panic "Cannot find Android NDK toolchain for '$ARCH' architecture. \
 Please verify your NDK installation!"
   fi
-  echo "${GCC%%gcc}"
+  echo "${LD%%ld}"
 }
 
 # $1: NDK install path

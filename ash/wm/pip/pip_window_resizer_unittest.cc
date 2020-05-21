@@ -4,6 +4,7 @@
 
 #include "ash/wm/pip/pip_window_resizer.h"
 
+#include <memory>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -12,7 +13,6 @@
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/metrics/pip_uma.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -26,6 +26,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -87,13 +88,13 @@ class PipWindowResizerTest : public AshTestBase,
     const std::size_t root_window_index = std::get<1>(GetParam());
     UpdateWorkArea(display_string);
     ASSERT_LT(root_window_index, Shell::GetAllRootWindows().size());
-    scoped_root_.reset(new ScopedRootWindowForNewWindows(
-        Shell::GetAllRootWindows()[root_window_index]));
+    scoped_display_ = std::make_unique<display::ScopedDisplayForNewWindows>(
+        Shell::GetAllRootWindows()[root_window_index]);
     ForceHideShelvesForTest();
   }
 
   void TearDown() override {
-    scoped_root_.reset();
+    scoped_display_.reset();
     SetVirtualKeyboardEnabled(false);
     AshTestBase::TearDown();
   }
@@ -176,7 +177,7 @@ class PipWindowResizerTest : public AshTestBase,
   aura::Window* window_;
   FakeWindowState* test_state_;
   base::HistogramTester histograms_;
-  std::unique_ptr<ScopedRootWindowForNewWindows> scoped_root_;
+  std::unique_ptr<display::ScopedDisplayForNewWindows> scoped_display_;
 
   void UpdateWorkArea(const std::string& bounds) {
     UpdateDisplay(bounds);

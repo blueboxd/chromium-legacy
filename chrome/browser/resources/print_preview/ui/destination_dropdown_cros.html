@@ -1,0 +1,113 @@
+<style include="cr-shared-style cr-hidden-style md-select">
+  :host([opened_]) cr-input {
+    --cr-input-border-radius: 4px 4px 0 0;
+  }
+
+  iron-dropdown,
+  cr-input {
+    width: var(--md-select-width);
+  }
+
+  cr-input {
+    --cr-input-padding-start: 8px;
+  }
+
+  iron-dropdown {
+    max-height: 270px;
+  }
+
+  iron-dropdown [slot='dropdown-content'] {
+    background-color: white;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 6px var(--google-grey-600);
+    min-width: var(--md-select-width);
+    padding: 8px 0;
+  }
+
+  #input-overlay {
+    border-radius: 4px;
+    height: 100%;
+    left: 0;
+    overflow: hidden;
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    width: 100%;
+  }
+
+  #dropdown-icon {
+    --iron-icon-height: 20px;
+    --iron-icon-width: 20px;
+    margin-top: -10px;
+    padding-inline-end: 6px;
+    position: absolute;
+    right: 0;
+    top: 50%;
+  }
+
+  :host-context([dir='rtl']) #dropdown-icon {
+    left: 0;
+    right: unset;
+  }
+
+  cr-input:focus-within #dropdown-icon {
+    --iron-icon-fill-color: var(--google-blue-600);
+  }
+
+  #input-box {
+    height: 100%;
+    left: 0;
+    pointer-events: none;
+    top: 0;
+    width: 100%;
+  }
+
+  #dropdown-box {
+    pointer-events: initial;
+    width: 100%;
+  }
+
+  .list-item {
+    background: none;
+    border: none;
+    box-sizing: border-box;
+    color: var(--google-grey-600);
+    font: inherit;
+    min-height: 32px;
+    padding: 0 8px;
+    text-align: start;
+    width: 100%;
+  }
+
+  .list-item[selected_] {
+    background-color: rgba(0, 0, 0, .04);
+    outline: none;
+  }
+
+  .list-item:active {
+    background-color: rgba(0, 0, 0, .12);
+    outline: none;
+  }
+</style>
+<cr-input id="dropdownInput" on-keydown="onKeyDown_"
+    value="[[value.displayName]]" readonly>
+  <div id="input-overlay" slot="suffix">
+    <div id="input-box">
+      <iron-icon id="dropdown-icon" icon="cr:arrow-drop-down"></iron-icon>
+    </div>
+    <div id="dropdown-box">
+      <iron-dropdown horizontal-align="left" vertical-align="top"
+          vertical-offset="0" no-cancel-on-outside-click
+          no-cancel-on-esc-key>
+        <div slot="dropdown-content">
+          <template is="dom-repeat" items="[[itemList]]">
+            <button class="list-item" on-click="onSelect_" tabindex="-1"
+                value="[[item.key]]">
+              [[item.displayName]]
+            </button>
+          </template>
+        </div>
+      </iron-dropdown>
+    </div>
+  </div>
+</cr-input>

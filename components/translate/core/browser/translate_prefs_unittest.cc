@@ -5,6 +5,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 
 #include <algorithm>
+#include <limits>
 #include <string>
 #include <utility>
 #include <vector>
@@ -41,6 +42,9 @@ const char* kPreferredLanguagesPref = nullptr;
 const char kAcceptLanguagesPref[] = "intl.accept_languages";
 
 const char kTranslateBlockedLanguagesPref[] = "translate_blocked_languages";
+
+const char kForceTriggerTranslateCountPref[] =
+    "translate_force_trigger_on_english_count_for_backoff_1";
 
 }  // namespace
 
@@ -982,4 +986,30 @@ TEST_F(TranslatePrefsTest, CanTranslateLanguage) {
   EXPECT_TRUE(translate_prefs_->CanTranslateLanguage(
       &translate_accept_languages, "en"));
 }
+
+TEST_F(TranslatePrefsTest, ForceTriggerOnEnglishPagesCount) {
+  prefs_->SetInteger(kForceTriggerTranslateCountPref,
+                     std::numeric_limits<int>::max() - 1);
+  EXPECT_EQ(std::numeric_limits<int>::max() - 1,
+            translate_prefs_->GetForceTriggerOnEnglishPagesCount());
+
+  // The count should increment up to max int.
+  translate_prefs_->ReportForceTriggerOnEnglishPages();
+  EXPECT_EQ(std::numeric_limits<int>::max(),
+            translate_prefs_->GetForceTriggerOnEnglishPagesCount());
+
+  // The count should not increment past max int.
+  translate_prefs_->ReportForceTriggerOnEnglishPages();
+  EXPECT_EQ(std::numeric_limits<int>::max(),
+            translate_prefs_->GetForceTriggerOnEnglishPagesCount());
+
+  translate_prefs_->ReportAcceptedAfterForceTriggerOnEnglishPages();
+  EXPECT_EQ(-1, translate_prefs_->GetForceTriggerOnEnglishPagesCount());
+
+  // Incrementing after force triggering has already been accepted should have
+  // no effect.
+  translate_prefs_->ReportForceTriggerOnEnglishPages();
+  EXPECT_EQ(-1, translate_prefs_->GetForceTriggerOnEnglishPagesCount());
+}
+
 }  // namespace translate

@@ -27,7 +27,7 @@ class ASH_EXPORT LoginMetricsRecorder {
     kVirtualKeyboardTray,
     kImeTray,
     kNotificationTray,
-    kLockScreenNoteActionButton,
+    kTrayActionNoteButton,
     kParentAccessButton,
     kTargetCount,
   };
@@ -39,6 +39,17 @@ class ASH_EXPORT LoginMetricsRecorder {
     kRestartButton,
     kBrowseAsGuestButton,
     kAddUserButton,
+    kSystemTray,
+    kVirtualKeyboardTray,
+    kImeTray,
+    kTargetCount,
+  };
+
+  // User clicks target in OOBE. This enum is used to back an UMA
+  // histogram and new values should be inserted immediately above kTargetCount.
+  enum class OobeUserClickTarget {
+    kShutDownButton = 0,
+    kBrowseAsGuestButton,
     kSystemTray,
     kVirtualKeyboardTray,
     kImeTray,

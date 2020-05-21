@@ -6,6 +6,7 @@
 #define UI_GFX_X_CONNECTION_H_
 
 #include "base/component_export.h"
+#include "ui/gfx/x/extension_manager.h"
 #include "ui/gfx/x/xproto.h"
 
 namespace x11 {
@@ -14,7 +15,8 @@ using Atom = XProto::Atom;
 using Window = XProto::Window;
 
 // Represents a socket to the X11 server.
-class COMPONENT_EXPORT(X11) Connection : public XProto {
+class COMPONENT_EXPORT(X11) Connection : public XProto,
+                                         public ExtensionManager {
  public:
   // Gets or creates the singeton connection.
   static Connection* Get();

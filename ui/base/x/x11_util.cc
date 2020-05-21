@@ -355,7 +355,8 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap& cursor_image,
 }
 
 int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
-  DCHECK(xev->type == MotionNotify || xev->type == GenericEvent);
+  DCHECK(xev->type == MotionNotify ||
+         xev->type == x11::XProto::GeGenericEvent::opcode);
   XDisplay* display = xev->xany.display;
   XEvent next_event;
   bool is_motion = false;
@@ -400,7 +401,7 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
         continue;
       }
 
-      if (next_event.type == GenericEvent &&
+      if (next_event.type == x11::XProto::GeGenericEvent::opcode &&
           next_event.xgeneric.evtype == event_type &&
           !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
               next_event) &&

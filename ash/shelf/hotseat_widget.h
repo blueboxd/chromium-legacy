@@ -60,8 +60,8 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   // Notifies children of tablet mode state changes.
   void OnTabletModeChanged();
 
-  // Returns the target opacity (between 0 and 1) given current conditions.
-  float CalculateOpacity() const;
+  // Returns the target opacity for the shelf view given current conditions.
+  float CalculateShelfViewOpacity() const;
 
   // Sets the bounds of the translucent background which functions as the
   // hotseat background.
@@ -138,11 +138,12 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
 
   struct LayoutInputs {
     gfx::Rect bounds;
-    float opacity = 0.0f;
+    float shelf_view_opacity = 0.0f;
     bool is_active_session_state = false;
 
     bool operator==(const LayoutInputs& other) const {
-      return bounds == other.bounds && opacity == other.opacity &&
+      return bounds == other.bounds &&
+             shelf_view_opacity == other.shelf_view_opacity &&
              is_active_session_state == other.is_active_session_state;
     }
   };

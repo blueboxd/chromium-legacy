@@ -10189,7 +10189,10 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv6ToIPv6) {
   VerifyServerMigration(config, alt_address);
 }
 
-TEST_P(QuicStreamFactoryTest, ServerMigrationIPv6ToIPv4) {
+TEST_P(QuicStreamFactoryTest, ServerMigrationIPv6ToIPv4Fails) {
+  quic_params_->allow_server_migration = true;
+  Initialize();
+
   // Add a resolver rule to make initial connection to an IPv6 address.
   host_resolver_->rules()->AddIPLiteralRule(host_port_pair_.host(),
                                             "fe80::aebc:32ff:febb:1e33", "");
@@ -10197,9 +10200,75 @@ TEST_P(QuicStreamFactoryTest, ServerMigrationIPv6ToIPv4) {
   IPEndPoint alt_address = IPEndPoint(IPAddress(1, 2, 3, 4), 123);
   quic::QuicConfig config;
   config.SetIPv4AlternateServerAddressToSend(ToQuicSocketAddress(alt_address));
-  IPEndPoint expected_address(
-      ConvertIPv4ToIPv4MappedIPv6(alt_address.address()), alt_address.port());
-  VerifyServerMigration(config, expected_address);
+
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  crypto_client_stream_factory_.SetConfig(config);
+
+  // Set up only socket data provider.
+  MockQuicData socket_data1(version_);
+  socket_data1.AddRead(SYNCHRONOUS, ERR_IO_PENDING);
+  int packet_num = 1;
+  if (VersionUsesHttp3(version_.transport_version)) {
+    socket_data1.AddWrite(SYNCHRONOUS,
+                          ConstructInitialSettingsPacket(packet_num++));
+    socket_data1.AddWrite(
+        SYNCHRONOUS, client_maker_.MakeDataPacket(
+                         packet_num++, GetQpackDecoderStreamId(), true, false,
+                         StreamCancellationQpackDecoderInstruction(0)));
+  }
+  socket_data1.AddWrite(
+      SYNCHRONOUS,
+      client_maker_.MakeRstPacket(packet_num++, true,
+                                  GetNthClientInitiatedBidirectionalStreamId(0),
+                                  quic::QUIC_STREAM_CANCELLED));
+  socket_data1.AddSocketDataToFactory(socket_factory_.get());
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      request.Request(
+          host_port_pair_, version_, privacy_mode_, DEFAULT_PRIORITY,
+          SocketTag(), NetworkIsolationKey(), false /* disable_secure_dns */,
+          /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+          failed_on_default_network_callback_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  std::unique_ptr<HttpStream> stream = CreateStream(&request);
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, true, DEFAULT_PRIORITY,
+                                         net_log_, CompletionOnceCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session = GetActiveSession(host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  IPEndPoint actual_address;
+  session->GetDefaultSocket()->GetPeerAddress(&actual_address);
+  // No migration should have happened.
+  IPEndPoint expected_address =
+      IPEndPoint(IPAddress(0xfe, 0x80, 0, 0, 0, 0, 0, 0, 0xae, 0xbc, 0x32, 0xff,
+                           0xfe, 0xbb, 0x1e, 0x33),
+                 kDefaultServerPort);
+  EXPECT_EQ(actual_address, expected_address);
+  DVLOG(1) << "Socket connected to: " << actual_address.address().ToString()
+           << " " << actual_address.port();
+  DVLOG(1) << "Expected address: " << expected_address.address().ToString()
+           << " " << expected_address.port();
+
+  stream.reset();
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, ServerMigrationIPv4ToIPv6Fails) {

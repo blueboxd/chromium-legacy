@@ -906,8 +906,6 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     shell->OnRootWindowAdded(root_window);
   }
 
-  // TODO: TouchExplorationManager doesn't work with mash.
-  // http://crbug.com/679782
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kAshDisableTouchExplorationMode)) {
     touch_exploration_manager_ =

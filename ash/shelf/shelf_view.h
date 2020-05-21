@@ -40,6 +40,10 @@ namespace ui {
 class SimpleMenuModel;
 }
 
+namespace display {
+class ScopedDisplayForNewWindows;
+}
+
 namespace views {
 class BoundsAnimator;
 class MenuRunner;
@@ -48,7 +52,6 @@ class Separator;
 
 namespace ash {
 class DragImageView;
-class ScopedRootWindowForNewWindows;
 class ShelfAppButton;
 class ShelfButton;
 class ShelfModel;
@@ -492,7 +495,7 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
 
   bool ShouldHandleGestures(const ui::GestureEvent& event) const;
 
-  void DestroyScopedRootWindow();
+  void DestroyScopedDisplay();
 
   // Different from GetTitleForView, |view| here must be a child view.
   base::string16 GetTitleForChildView(const views::View* view) const;
@@ -551,9 +554,9 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   std::unique_ptr<ShelfMenuModelAdapter> shelf_menu_model_adapter_;
 
   // Created when a shelf icon is pressed, so that new windows will be on the
-  // same root window as the press event.
-  std::unique_ptr<ScopedRootWindowForNewWindows>
-      scoped_root_window_for_new_windows_;
+  // same display as the press event.
+  std::unique_ptr<display::ScopedDisplayForNewWindows>
+      scoped_display_for_new_windows_;
 
   // True when an item being inserted or removed in the model cancels a drag.
   bool cancelling_drag_model_changed_ = false;

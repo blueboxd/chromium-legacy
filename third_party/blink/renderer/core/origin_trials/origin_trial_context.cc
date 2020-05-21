@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
@@ -365,6 +366,10 @@ bool OriginTrialContext::CanEnableTrialFromName(const StringView& trial_name) {
   }
   if (trial_name == "AppCache" &&
       !base::FeatureList::IsEnabled(features::kAppCache)) {
+    return false;
+  }
+  if (trial_name == "TrustTokens" &&
+      !base::FeatureList::IsEnabled(network::features::kTrustTokens)) {
     return false;
   }
 

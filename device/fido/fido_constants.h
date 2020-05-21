@@ -248,6 +248,9 @@ enum class CoseKeyTypes : int {
   kOKP = 1,
   kEC2 = 2,
   kRSA = 3,
+  // kInvalidForTesting is a random 32-bit number used to test unknown key
+  // types.
+  kInvalidForTesting = 146919568,
 };
 
 // Enumerates COSE elliptic curves. See
@@ -261,6 +264,9 @@ enum class CoseAlgorithmIdentifier : int {
   kCoseEs256 = -7,
   kCoseEdDSA = -8,
   kCoseRs256 = -257,
+  // kInvalidForTesting is a random 32-bit number used to test unknown
+  // algorithms.
+  kInvalidForTesting = 146919568,
 };
 
 // APDU instruction code for U2F request encoding.

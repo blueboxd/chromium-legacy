@@ -64,6 +64,9 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
     // Whether test requires zip/unzip support.
     bool zip = false;
 
+    // Whether test should have zip-no-nacl active.
+    bool zip_no_nacl = false;
+
     // Whether Drive should act as if offline.
     bool offline = false;
 

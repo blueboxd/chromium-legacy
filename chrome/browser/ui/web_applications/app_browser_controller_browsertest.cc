@@ -38,6 +38,7 @@
 #include "extensions/browser/extension_registry.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 
 namespace {
 SkColor GetTabColor(Browser* browser) {
@@ -109,7 +110,8 @@ class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
   void InstallAndLaunchMockPopup() {
     test_system_web_app_installation_->WaitForAppInstall();
     auto params = web_app::CreateSystemWebAppLaunchParams(
-        browser()->profile(), test_system_web_app_installation_->GetType());
+        browser()->profile(), test_system_web_app_installation_->GetType(),
+        display::kInvalidDisplayId);
     params->disposition = WindowOpenDisposition::NEW_POPUP;
     app_browser_ = web_app::LaunchSystemWebApp(
         browser()->profile(), test_system_web_app_installation_->GetType(),

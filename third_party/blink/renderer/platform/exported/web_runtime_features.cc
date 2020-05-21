@@ -666,6 +666,10 @@ void WebRuntimeFeatures::EnableTrustTokens(bool enable) {
   RuntimeEnabledFeatures::SetTrustTokensEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableTrustTokensAlwaysAllowIssuance(bool enable) {
+  RuntimeEnabledFeatures::SetTrustTokensAlwaysAllowIssuanceEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableInstalledApp(bool enable) {
   RuntimeEnabledFeatures::SetInstalledAppEnabled(enable);
 }

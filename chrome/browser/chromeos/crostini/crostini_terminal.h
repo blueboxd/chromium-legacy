@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/point.h"
 
 class GURL;
@@ -105,7 +106,7 @@ GURL GenerateVshInCroshUrl(Profile* profile,
                            const std::vector<std::string>& terminal_args);
 
 // Generate AppLaunchParams for the Crostini terminal application.
-apps::AppLaunchParams GenerateTerminalAppLaunchParams();
+apps::AppLaunchParams GenerateTerminalAppLaunchParams(int64_t display_id);
 
 // Create the crosh-in-a-window that displays a shell in an container on a VM.
 Browser* CreateContainerTerminal(Profile* profile,
@@ -123,6 +124,7 @@ void ShowContainerTerminal(Profile* profile,
 // container on a VM and passes |terminal_args| as parameters to that shell
 // which will cause them to be executed as program inside that shell.
 void LaunchContainerTerminal(Profile* profile,
+                             int64_t display_id,
                              const std::string& vm_name,
                              const std::string& container_name,
                              const std::vector<std::string>& terminal_args);
@@ -130,11 +132,14 @@ void LaunchContainerTerminal(Profile* profile,
 // Launches the terminal tabbed app.
 Browser* LaunchTerminal(
     Profile* profile,
+    int64_t display_id = display::kInvalidDisplayId,
     const std::string& vm_name = kCrostiniDefaultVmName,
     const std::string& container_name = kCrostiniDefaultContainerName);
 
 // Launches the terminal settings popup window.
-Browser* LaunchTerminalSettings(Profile* profile);
+Browser* LaunchTerminalSettings(
+    Profile* profile,
+    int64_t display_id = display::kInvalidDisplayId);
 
 // Record which terminal settings have been changed by users.
 void RecordTerminalSettingsChangesUMAs(Profile* profile);

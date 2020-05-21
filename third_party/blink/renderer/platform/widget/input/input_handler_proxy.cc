@@ -1020,6 +1020,10 @@ InputHandlerProxy::HandleGestureScrollUpdate(
   return scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
 }
 
+// TODO(arakeri): Ensure that redudant GSE(s) in the CompositorThreadEventQueue
+// are handled gracefully. (i.e currently, when an ongoing scroll needs to end,
+// we call RecordScrollEnd and InputHandlerScrollEnd synchronously. Ideally, we
+// should end the scroll when the GSB is being handled).
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
     const WebGestureEvent& gesture_event) {
   TRACE_EVENT0("input", "InputHandlerProxy::HandleGestureScrollEnd");
@@ -1053,6 +1057,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
 void InputHandlerProxy::InputHandlerScrollEnd() {
   input_handler_->ScrollEnd(/*should_snap=*/true);
   handling_gesture_on_impl_thread_ = false;
+
+  DCHECK(!gesture_pinch_in_progress_);
+  currently_active_gesture_device_ = base::nullopt;
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HitTestTouchEvent(

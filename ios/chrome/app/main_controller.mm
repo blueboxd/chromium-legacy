@@ -617,6 +617,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Called when the first scene becomes active.
 - (void)appState:(AppState*)appState
     firstSceneActivated:(SceneState*)sceneState {
+  if (appState.isInSafeMode) {
+    return;
+  }
+  [self startUpAfterFirstWindowCreated];
+}
+
+- (void)appStateDidExitSafeMode:(AppState*)appState {
   [self startUpAfterFirstWindowCreated];
 }
 

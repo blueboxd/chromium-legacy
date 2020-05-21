@@ -44,6 +44,12 @@ Display Screen::GetDisplayNearestView(gfx::NativeView view) const {
 
 display::Display Screen::GetDisplayForNewWindows() const {
   display::Display display;
+  // Scoped value can override if it is set.
+  if (scoped_display_id_for_new_windows_ != kInvalidDisplayId &&
+      GetDisplayWithDisplayId(scoped_display_id_for_new_windows_, &display)) {
+    return display;
+  }
+
   if (GetDisplayWithDisplayId(display_id_for_new_windows_, &display))
     return display;
 
@@ -88,6 +94,17 @@ void Screen::SetPanelRotationForTesting(int64_t display_id,
 std::string Screen::GetCurrentWorkspace() {
   NOTIMPLEMENTED_LOG_ONCE();
   return {};
+}
+
+void Screen::SetScopedDisplayForNewWindows(int64_t display_id) {
+  if (display_id == scoped_display_id_for_new_windows_)
+    return;
+  // Only allow set and clear, not switch.
+  DCHECK(display_id == kInvalidDisplayId ^
+         scoped_display_id_for_new_windows_ == kInvalidDisplayId)
+      << "display_id=" << display_id << ", scoped_display_id_for_new_windows_="
+      << scoped_display_id_for_new_windows_;
+  scoped_display_id_for_new_windows_ = display_id;
 }
 
 }  // namespace display

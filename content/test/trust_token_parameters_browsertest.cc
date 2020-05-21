@@ -34,7 +34,14 @@ class TrustTokenParametersBrowsertest
       public ContentBrowserTest {
  public:
   TrustTokenParametersBrowsertest() {
-    features_.InitAndEnableFeature(network::features::kTrustTokens);
+    auto& field_trial_param =
+        network::features::kTrustTokenOperationsRequiringOriginTrial;
+    features_.InitAndEnableFeatureWithParameters(
+        network::features::kTrustTokens,
+        {{field_trial_param.name,
+          field_trial_param.GetName(
+              network::features::TrustTokenOriginTrialSpec::
+                  kOriginTrialNotRequired)}});
   }
 
  protected:

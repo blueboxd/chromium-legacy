@@ -220,7 +220,10 @@ void PersonalInfoSuggester::ShowSuggestion(const base::string16& text,
     LOG(ERROR) << "Fail to show suggestion. " << error;
   }
 
-  if (!suggestion_shown_) {
+  if (suggestion_shown_) {
+    first_shown_ = false;
+  } else {
+    first_shown_ = true;
     tts_handler_->Announce(
         // TODO(jiwan): Add translation to other languages when we support more
         // than English.

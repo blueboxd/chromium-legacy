@@ -22,6 +22,9 @@
 // Updates the fake omnibox to adapt to the current orientation.
 - (void)updateFakeOmniboxOnNewWidth:(CGFloat)width;
 
+// Sets the amount of scrolling needed when unfocusing the omnibox to 0.
+- (void)resetPreFocusOffset;
+
 // Unfocuses the omnibox.
 - (void)unfocusOmnibox;
 

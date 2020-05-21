@@ -19,6 +19,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/vector_icons.h"
@@ -180,6 +181,9 @@ bool ExtensionAppContextMenu::IsCommandIdEnabled(int command_id) const {
 }
 
 void ExtensionAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
+  // Place new windows on the same display as the context menu.
+  display::ScopedDisplayForNewWindows scoped_display(
+      controller()->GetAppListDisplayId());
   if (command_id == ash::LAUNCH_NEW) {
     delegate()->ExecuteLaunchCommand(event_flags);
   } else if (command_id == ash::SHOW_APP_INFO) {

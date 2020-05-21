@@ -292,9 +292,9 @@ class CONTENT_EXPORT SavePackage
   // Routes html data (sent by renderer process in response to
   // GetSerializedHtmlWithLocalLinksForFrame above) to the associated local file
   // (and also keeps track of when all frames have been completed).
-  void OnSerializedHtmlWithLocalLinksResponse(RenderFrameHostImpl* sender,
-                                              const std::string& data,
-                                              bool end_of_data);
+  void GetSerializedHtmlWithLocalLinksResponse(RenderFrameHostImpl* sender,
+                                               const std::string& data,
+                                               bool end_of_data);
 
   // Look up SaveItem by save item id from in progress map.
   SaveItem* LookupInProgressSaveItem(SaveItemId save_item_id);
@@ -353,7 +353,7 @@ class CONTENT_EXPORT SavePackage
   std::map<GURL, SaveItem*> url_to_save_item_;
 
   // Map used to route responses from a given a subframe (i.e.
-  // OnSerializedHtmlWithLocalLinksResponse) to the right SaveItem.
+  // GetSerializedHtmlWithLocalLinksResponse) to the right SaveItem.
   // Note that |frame_tree_node_id_to_save_item_| does NOT own SaveItems - they
   // remain owned by waiting_item_queue_, in_progress_items_, etc.
   std::unordered_map<int, SaveItem*> frame_tree_node_id_to_save_item_;

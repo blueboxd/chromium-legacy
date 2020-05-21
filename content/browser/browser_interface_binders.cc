@@ -298,12 +298,6 @@ void BindNativeIOHost(
       ->BindNativeIOHost(host->GetLastCommittedOrigin(), std::move(receiver));
 }
 
-void BindFileChooser(
-    RenderFrameHostImpl* host,
-    mojo::PendingReceiver<blink::mojom::FileChooser> receiver) {
-  FileChooserImpl::Create(host, std::move(receiver));
-}
-
 void BindSharedWorkerConnector(
     RenderFrameHostImpl* host,
     mojo::PendingReceiver<blink::mojom::SharedWorkerConnector> receiver) {
@@ -576,7 +570,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
       &RenderFrameHostImpl::CreateIDBFactory, base::Unretained(host)));
 
   map->Add<blink::mojom::FileChooser>(
-      base::BindRepeating(&BindFileChooser, base::Unretained(host)));
+      base::BindRepeating(&FileChooserImpl::Create, base::Unretained(host)));
 
   map->Add<device::mojom::GamepadMonitor>(
       base::BindRepeating(&device::GamepadMonitor::Create));

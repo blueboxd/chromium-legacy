@@ -6,9 +6,12 @@
 
 #include <utility>
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/constants_util.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_section.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace settings {
@@ -19,19 +22,27 @@ class Hierarchy::PerSectionHierarchyGenerator
   PerSectionHierarchyGenerator(mojom::Section section, Hierarchy* hierarchy)
       : section_(section), hierarchy_(hierarchy) {}
 
-  void RegisterTopLevelSubpage(int name_message_id,
-                               mojom::Subpage subpage) override {
-    Hierarchy::SubpageMetadata& metadata =
-        GetSubpageMetadata(name_message_id, subpage);
+  void RegisterTopLevelSubpage(
+      int name_message_id,
+      mojom::Subpage subpage,
+      mojom::SearchResultIcon icon,
+      mojom::SearchResultDefaultRank default_rank,
+      const std::string& url_path_with_parameters) override {
+    Hierarchy::SubpageMetadata& metadata = GetSubpageMetadata(
+        name_message_id, subpage, icon, default_rank, url_path_with_parameters);
     CHECK_EQ(section_, metadata.section)
         << "Subpage registered in multiple sections: " << subpage;
   }
 
-  void RegisterNestedSubpage(int name_message_id,
-                             mojom::Subpage subpage,
-                             mojom::Subpage parent_subpage) override {
-    Hierarchy::SubpageMetadata& metadata =
-        GetSubpageMetadata(name_message_id, subpage);
+  void RegisterNestedSubpage(
+      int name_message_id,
+      mojom::Subpage subpage,
+      mojom::Subpage parent_subpage,
+      mojom::SearchResultIcon icon,
+      mojom::SearchResultDefaultRank default_rank,
+      const std::string& url_path_with_parameters) override {
+    Hierarchy::SubpageMetadata& metadata = GetSubpageMetadata(
+        name_message_id, subpage, icon, default_rank, url_path_with_parameters);
     CHECK_EQ(section_, metadata.section)
         << "Subpage registered in multiple sections: " << subpage;
     CHECK(!metadata.parent_subpage)
@@ -84,8 +95,12 @@ class Hierarchy::PerSectionHierarchyGenerator
   }
 
  private:
-  Hierarchy::SubpageMetadata& GetSubpageMetadata(int name_message_id,
-                                                 mojom::Subpage subpage) {
+  Hierarchy::SubpageMetadata& GetSubpageMetadata(
+      int name_message_id,
+      mojom::Subpage subpage,
+      mojom::SearchResultIcon icon,
+      mojom::SearchResultDefaultRank default_rank,
+      const std::string& url_path_with_parameters) {
     auto& subpage_map = hierarchy_->subpage_map_;
 
     auto it = subpage_map.find(subpage);
@@ -97,7 +112,9 @@ class Hierarchy::PerSectionHierarchyGenerator
     // Metadata does not exist yet; insert then return it.
     auto pair = subpage_map.emplace(
         std::piecewise_construct, std::forward_as_tuple(subpage),
-        std::forward_as_tuple(name_message_id, section_));
+        std::forward_as_tuple(name_message_id, section_, subpage, icon,
+                              default_rank, url_path_with_parameters,
+                              hierarchy_));
     CHECK(pair.second);
     return pair.first->second;
   }
@@ -121,25 +138,60 @@ class Hierarchy::PerSectionHierarchyGenerator
   Hierarchy* hierarchy_;
 };
 
-Hierarchy::SubpageMetadata::SubpageMetadata(int name_message_id,
-                                            mojom::Section section)
-    : name_message_id(name_message_id), section(section) {}
+Hierarchy::SubpageMetadata::SubpageMetadata(
+    int name_message_id,
+    mojom::Section section,
+    mojom::Subpage subpage,
+    mojom::SearchResultIcon icon,
+    mojom::SearchResultDefaultRank default_rank,
+    const std::string& url_path_with_parameters,
+    const Hierarchy* hierarchy)
+    : section(section),
+      subpage_(subpage),
+      name_message_id_(name_message_id),
+      icon_(icon),
+      default_rank_(default_rank),
+      unmodified_url_path_with_parameters_(url_path_with_parameters),
+      hierarchy_(hierarchy) {}
+
+Hierarchy::SubpageMetadata::~SubpageMetadata() = default;
+
+mojom::SearchResultPtr Hierarchy::SubpageMetadata::ToSearchResult(
+    double relevance_score) const {
+  return mojom::SearchResult::New(
+      l10n_util::GetStringUTF16(name_message_id_),
+      hierarchy_->ModifySearchResultUrl(
+          section, mojom::SearchResultType::kSubpage, {.subpage = subpage_},
+          unmodified_url_path_with_parameters_),
+      icon_, relevance_score,
+      GenerateDummySettingsHierarchyStrings(
+          unmodified_url_path_with_parameters_),
+      default_rank_, mojom::SearchResultType::kSubpage,
+      mojom::SearchResultIdentifier::NewSubpage(subpage_));
+}
 
 Hierarchy::SettingMetadata::SettingMetadata(mojom::Section primary_section)
     : primary(primary_section, /*subpage=*/base::nullopt) {}
 
 Hierarchy::SettingMetadata::~SettingMetadata() = default;
 
-Hierarchy::Hierarchy(const OsSettingsSections& sections) {
+Hierarchy::Hierarchy(const OsSettingsSections* sections) : sections_(sections) {
   for (const auto& section : constants::AllSections()) {
     PerSectionHierarchyGenerator generator(section, this);
-    sections.GetSection(section)->RegisterHierarchy(&generator);
+    sections->GetSection(section)->RegisterHierarchy(&generator);
   }
 }
 
 Hierarchy::Hierarchy() = default;
 
 Hierarchy::~Hierarchy() = default;
+
+mojom::SearchResultPtr Hierarchy::GenerateSectionSearchResult(
+    mojom::Section section,
+    double relevance_score) const {
+  return sections_->GetSection(section)->GenerateSectionSearchResult(
+      relevance_score);
+}
 
 const Hierarchy::SubpageMetadata& Hierarchy::GetSubpageMetadata(
     mojom::Subpage subpage) const {
@@ -155,6 +207,23 @@ const Hierarchy::SettingMetadata& Hierarchy::GetSettingMetadata(
   CHECK(it != setting_map_.end())
       << "Setting missing from settings hierarchy: " << setting;
   return it->second;
+}
+
+std::string Hierarchy::ModifySearchResultUrl(
+    mojom::Section section,
+    mojom::SearchResultType type,
+    OsSettingsIdentifier id,
+    const std::string& url_to_modify) const {
+  return sections_->GetSection(section)->ModifySearchResultUrl(type, id,
+                                                               url_to_modify);
+}
+
+std::vector<base::string16> GenerateDummySettingsHierarchyStrings(
+    const std::string& url_path_with_parameters) {
+  std::vector<base::string16> hierarchy;
+  hierarchy.push_back(l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS));
+  hierarchy.push_back(base::ASCIIToUTF16(url_path_with_parameters));
+  return hierarchy;
 }
 
 }  // namespace settings

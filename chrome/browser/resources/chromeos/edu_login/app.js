@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './edu_login_coexistence_info.js';
 import './edu_login_parents.js';
 import './edu_login_parent_signin.js';
 import './edu_login_parent_info.js';
@@ -16,6 +17,7 @@ import {EduLoginParams, ParentAccount} from './edu_login_util.js';
 const Steps = {
   PARENTS: 'parents',
   PARENT_SIGNIN: 'parent-signin',
+  COEXISTENCE_INFO: 'coexistence-info',
   PARENT_INFO: 'parent-info',
   EDU_LOGIN: 'edu-login'
 };

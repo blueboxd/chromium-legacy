@@ -27,54 +27,25 @@ void AmbientBackendModel::RemoveObserver(
 void AmbientBackendModel::SetTopics(
     const std::vector<AmbientModeTopic>& topics) {
   topics_ = topics;
-  topic_index_ = 0;
-
   NotifyTopicsChanged();
 }
 
-const AmbientModeTopic& AmbientBackendModel::GetNextTopic() {
-  DCHECK(!topics_.empty());
-
-  const auto& topic = topics_[topic_index_];
-  ++topic_index_;
-  if (topic_index_ == topics_.size())
-    topic_index_ = 0;
-
-  return topic;
-}
-
 bool AmbientBackendModel::ShouldFetchImmediately() const {
-  // If currently shown image is close to the end of images cache, we prefetch
-  // more image.
-  const int next_load_image_index = GetImageBufferLength() / 2;
-  return images_.empty() ||
-         current_image_index_ >
-             static_cast<int>(images_.size() - 1 - next_load_image_index);
-}
-
-void AmbientBackendModel::ShowNextImage() {
-  // Do not show next if have not downloaded enough images.
-  if (ShouldFetchImmediately())
-    return;
-
-  const int max_current_image_index = GetImageBufferLength() / 2;
-  if (current_image_index_ >= max_current_image_index) {
-    // Pop the first image and keep |current_image_index_| unchanged, will be
-    // equivalent to show next image.
-    images_.pop_front();
-  } else {
-    ++current_image_index_;
-  }
-  NotifyImagesChanged();
+  // Prefetch one image |next_image_| for photo transition animation.
+  return current_image_.isNull() || next_image_.isNull();
 }
 
 void AmbientBackendModel::AddNextImage(const gfx::ImageSkia& image) {
-  images_.emplace_back(image);
+  if (current_image_.isNull()) {
+    current_image_ = image;
+  } else if (next_image_.isNull()) {
+    next_image_ = image;
+  } else {
+    current_image_ = next_image_;
+    next_image_ = image;
+  }
 
-  // Update the first two images. The second image is used for photo transition
-  // animation.
-  if (images_.size() <= 2)
-    NotifyImagesChanged();
+  NotifyImagesChanged();
 }
 
 base::TimeDelta AmbientBackendModel::GetPhotoRefreshInterval() {
@@ -90,31 +61,16 @@ void AmbientBackendModel::SetPhotoRefreshInterval(base::TimeDelta interval) {
 
 void AmbientBackendModel::Clear() {
   topics_.clear();
-  images_.clear();
-  current_image_index_ = 0;
+  current_image_ = gfx::ImageSkia();
+  next_image_ = gfx::ImageSkia();
 }
 
-gfx::ImageSkia AmbientBackendModel::GetPrevImage() const {
-  if (current_image_index_ == 0)
-    return gfx::ImageSkia();
-
-  return images_[current_image_index_ - 1];
-}
-
-gfx::ImageSkia AmbientBackendModel::GetCurrImage() const {
-  if (images_.empty())
-    return gfx::ImageSkia();
-
-  return images_[current_image_index_];
+gfx::ImageSkia AmbientBackendModel::GetCurrentImage() const {
+  return current_image_;
 }
 
 gfx::ImageSkia AmbientBackendModel::GetNextImage() const {
-  if (images_.empty() ||
-      static_cast<int>(images_.size() - current_image_index_) == 1) {
-    return gfx::ImageSkia();
-  }
-
-  return images_[current_image_index_ + 1];
+  return next_image_;
 }
 
 void AmbientBackendModel::UpdateWeatherInfo(
@@ -135,11 +91,6 @@ void AmbientBackendModel::NotifyTopicsChanged() {
 void AmbientBackendModel::NotifyImagesChanged() {
   for (auto& observer : observers_)
     observer.OnImagesChanged();
-}
-
-int AmbientBackendModel::GetImageBufferLength() const {
-  return buffer_length_for_testing_ == -1 ? kImageBufferLength
-                                          : buffer_length_for_testing_;
 }
 
 void AmbientBackendModel::NotifyWeatherInfoUpdated() {

@@ -5,14 +5,12 @@
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_handler.h"
 
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/local_search_service/local_search_service.h"
 #include "chrome/browser/ui/webui/settings/chromeos/hierarchy.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_sections.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_result_icon.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_tag_registry.h"
-#include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
@@ -20,15 +18,6 @@ namespace settings {
 namespace {
 
 const int32_t kLocalSearchServiceMaxResults = 10;
-
-// TODO(https://crbug.com/1071700): Delete this function.
-std::vector<base::string16> GenerateDummySettingsHierarchy(
-    const char* url_path_with_parameters) {
-  std::vector<base::string16> hierarchy;
-  hierarchy.push_back(l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS));
-  hierarchy.push_back(base::ASCIIToUTF16(url_path_with_parameters));
-  return hierarchy;
-}
 
 }  // namespace
 
@@ -137,13 +126,14 @@ mojom::SearchResultPtr SearchHandler::ResultToSearchResult(
   // GenerateDummySettingsHierarchy().
   return mojom::SearchResult::New(
       l10n_util::GetStringUTF16(message_id), url, concept->icon, result.score,
-      GenerateDummySettingsHierarchy(concept->url_path_with_parameters),
+      GenerateDummySettingsHierarchyStrings(concept->url_path_with_parameters),
       concept->default_rank, concept->type, std::move(result_id));
 }
 
 std::string SearchHandler::GetModifiedUrl(const SearchConcept& concept,
                                           mojom::Section section) const {
-  return sections_->GetSection(section)->ModifySearchResultUrl(concept);
+  return sections_->GetSection(section)->ModifySearchResultUrl(
+      concept.type, concept.id, concept.url_path_with_parameters);
 }
 
 }  // namespace settings

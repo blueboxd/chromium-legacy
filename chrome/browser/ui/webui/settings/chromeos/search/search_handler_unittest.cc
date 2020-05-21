@@ -72,9 +72,11 @@ class SearchHandlerTest : public testing::Test {
         chromeos::features::kNewOsSettingsSearch);
     handler_.BindInterface(handler_remote_.BindNewPipeAndPassReceiver());
 
-    fake_hierarchy_.AddSubpageMetadata(IDS_SETTINGS_PRINTING_CUPS_PRINTERS,
-                                       mojom::Section::kPrinting,
-                                       mojom::Subpage::kPrintingDetails);
+    fake_hierarchy_.AddSubpageMetadata(
+        IDS_SETTINGS_PRINTING_CUPS_PRINTERS, mojom::Section::kPrinting,
+        mojom::Subpage::kPrintingDetails, mojom::SearchResultIcon::kPrinter,
+        mojom::SearchResultDefaultRank::kMedium,
+        mojom::kPrintingDetailsSubpagePath);
     fake_hierarchy_.AddSettingMetadata(mojom::Section::kPrinting,
                                        mojom::Setting::kAddPrinter);
     fake_hierarchy_.AddSettingMetadata(mojom::Section::kPrinting,

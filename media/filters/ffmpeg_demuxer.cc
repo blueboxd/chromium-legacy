@@ -214,7 +214,7 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
   std::unique_ptr<VideoDecoderConfig> video_config;
 
   if (stream->codecpar->codec_type == AVMEDIA_TYPE_AUDIO) {
-    audio_config.reset(new AudioDecoderConfig());
+    audio_config = std::make_unique<AudioDecoderConfig>();
 
     // TODO(chcunningham): Change AVStreamToAudioDecoderConfig to check
     // IsValidConfig internally and return a null scoped_ptr if not valid.
@@ -231,7 +231,7 @@ std::unique_ptr<FFmpegDemuxerStream> FFmpegDemuxerStream::Create(
     MEDIA_LOG(INFO, media_log) << "FFmpegDemuxer: created audio stream, config "
                                << audio_config->AsHumanReadableString();
   } else if (stream->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
-    video_config.reset(new VideoDecoderConfig());
+    video_config = std::make_unique<VideoDecoderConfig>();
 
     // TODO(chcunningham): Change AVStreamToVideoDecoderConfig to check
     // IsValidConfig internally and return a null scoped_ptr if not valid.
@@ -781,8 +781,9 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
       // consume that data.
       if (video_config_)
         video_config_->SetExtraData(std::vector<uint8_t>());
-      bitstream_converter_.reset(
-          new FFmpegH264ToAnnexBBitstreamConverter(stream_->codecpar));
+      bitstream_converter_ =
+          std::make_unique<FFmpegH264ToAnnexBBitstreamConverter>(
+              stream_->codecpar);
       break;
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case AV_CODEC_ID_HEVC:
@@ -795,8 +796,8 @@ void FFmpegDemuxerStream::InitBitstreamConverter() {
       // ADTS anyways, so skip bitstream conversion when the profile is
       // unknown.
       if (audio_config_->profile() != AudioCodecProfile::kXHE_AAC) {
-        bitstream_converter_.reset(
-            new FFmpegAACBitstreamConverter(stream_->codecpar));
+        bitstream_converter_ =
+            std::make_unique<FFmpegAACBitstreamConverter>(stream_->codecpar);
       }
       break;
     default:
@@ -953,10 +954,10 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
 
   // Give a WeakPtr to BlockingUrlProtocol since we'll need to release it on the
   // blocking thread pool.
-  url_protocol_.reset(new BlockingUrlProtocol(
+  url_protocol_ = std::make_unique<BlockingUrlProtocol>(
       data_source_, BindToCurrentLoop(base::Bind(
-                        &FFmpegDemuxer::OnDataSourceError, weak_this_))));
-  glue_.reset(new FFmpegGlue(url_protocol_.get()));
+                        &FFmpegDemuxer::OnDataSourceError, weak_this_)));
+  glue_ = std::make_unique<FFmpegGlue>(url_protocol_.get());
   AVFormatContext* format_context = glue_->format_context();
 
   // Disable ID3v1 tag reading to avoid costly seeks to end of file for data we
@@ -1075,9 +1076,12 @@ void FFmpegDemuxer::SeekInternal(base::TimeDelta time,
   // Additionally, to workaround limitations in how we expose seekable ranges to
   // Blink (http://crbug.com/137275), we also want to clamp seeks before the
   // start time to the start time.
-  base::TimeDelta seek_time = start_time_ < base::TimeDelta()
-                                  ? time + start_time_
-                                  : time < start_time_ ? start_time_ : time;
+  base::TimeDelta seek_time;
+  if (start_time_ < base::TimeDelta()) {
+    seek_time = time + start_time_;
+  } else {
+    seek_time = std::max(start_time_, time);
+  }
 
   // When seeking in an opus stream we need to ensure we deliver enough data to
   // satisfy the seek preroll; otherwise the audio at the actual seek time will
@@ -1437,7 +1441,7 @@ void FFmpegDemuxer::OnFindStreamInfoDone(int result) {
 
     // Note: This value is used for seeking, so we must take the true value and
     // not the one possibly clamped to zero below.
-    if (start_time < start_time_)
+    if (start_time != kNoTimestamp && start_time < start_time_)
       start_time_ = start_time;
 
     const bool is_opus_or_vorbis =
@@ -1562,8 +1566,7 @@ void FFmpegDemuxer::LogMetadata(AVFormatContext* avctx,
 
   DCHECK_EQ(avctx->nb_streams, streams_.size());
 
-  for (size_t i = 0; i < streams_.size(); ++i) {
-    FFmpegDemuxerStream* stream = streams_[i].get();
+  for (auto const& stream : streams_) {
     if (!stream)
       continue;
     if (stream->type() == DemuxerStream::AUDIO) {

@@ -115,7 +115,7 @@ class NET_EXPORT HttpNetworkSession {
     // logic from hiding broken servers.
     spdy::SettingsMap http2_settings;
     // If set, an HTTP/2 frame with a reserved frame type will be sent after
-    // every HEADERS and SETTINGS frame.  See
+    // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame.
     // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
     // The same frame will be sent out on all connections to prevent the retry
     // logic from hiding broken servers.

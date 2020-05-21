@@ -10,7 +10,7 @@ calls under one logical step.  It also gives the subclasses the ability to
 define their own logic for pruning the configurations they want to trigger
 jobs on and what configurations to use.
 
-See trigger_multiple_dimensions.py for an example of how to use this base class.
+See perf_device_triggerer.py for an example of how to use this base class.
 
 """
 

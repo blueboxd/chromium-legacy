@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/shell.h"           // mash-ok
-#include "ash/wm/window_util.h"  // mash-ok
+#include "ash/shell.h"
+#include "ash/wm/window_util.h"
 #include "base/logging.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/chromeos/ime/infolist_window.h"

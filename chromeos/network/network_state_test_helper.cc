@@ -39,6 +39,7 @@ NetworkStateTestHelper::NetworkStateTestHelper(
   profile_test_ = ShillProfileClient::Get()->GetTestInterface();
   device_test_ = ShillDeviceClient::Get()->GetTestInterface();
   service_test_ = ShillServiceClient::Get()->GetTestInterface();
+  ip_config_test_ = ShillIPConfigClient::Get()->GetTestInterface();
 
   profile_test_->AddProfile(NetworkProfileHandler::GetSharedProfilePath(),
                             std::string() /* shared profile */);

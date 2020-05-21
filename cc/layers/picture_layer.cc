@@ -137,9 +137,17 @@ bool PictureLayer::Update() {
       &last_updated_invalidation_, layer_size, recorded_viewport);
 
   if (updated) {
-    picture_layer_inputs_.display_list =
-        picture_layer_inputs_.client->PaintContentsToDisplayList(
-            ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+    {
+      auto old_display_list = std::move(picture_layer_inputs_.display_list);
+      picture_layer_inputs_.display_list =
+          picture_layer_inputs_.client->PaintContentsToDisplayList(
+              ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+      if (old_display_list &&
+          picture_layer_inputs_.display_list
+              ->NeedsAdditionalInvalidationForLCDText(*old_display_list)) {
+        last_updated_invalidation_ = gfx::Rect(bounds());
+      }
+    }
 
     // Clear out previous directly composited image state - if the layer
     // qualifies we'll set up the state below.

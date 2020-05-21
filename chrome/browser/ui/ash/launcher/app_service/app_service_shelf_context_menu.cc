@@ -44,6 +44,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/context_menu_params.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/gfx/vector_icon_types.h"
 
 namespace {
@@ -119,6 +120,8 @@ void AppServiceShelfContextMenu::GetMenuModel(GetMenuModelCallback callback) {
 
 void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
                                                 int event_flags) {
+  // Place new windows on the same display as the context menu.
+  display::ScopedDisplayForNewWindows scoped_display(display_id());
   if (ExecuteCommonCommand(command_id, event_flags))
     return;
 
@@ -185,7 +188,7 @@ void AppServiceShelfContextMenu::ExecuteCommand(int command_id,
 
     case ash::SETTINGS:
       if (item().id.app_id == crostini::GetTerminalId())
-        crostini::LaunchTerminalSettings(controller()->profile());
+        crostini::LaunchTerminalSettings(controller()->profile(), display_id());
       return;
 
     default:

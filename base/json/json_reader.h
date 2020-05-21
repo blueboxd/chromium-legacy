@@ -71,6 +71,12 @@ enum JSONParserOptions {
 class BASE_EXPORT JSONReader {
  public:
   // Error codes during parsing.
+  //
+  // TODO(crbug.com/1069271, crbug.com/1070409): move this enum from JSONReader
+  // (a higher level API, which can be backed by multiple implementations) to
+  // JSONParser (a lower level API, a single implementation). Such a move would
+  // also remove the ValueWithError.error_code field and move the
+  // kInvalidEscape, kSyntaxError, etc. strings defined in this .h file.
   enum JsonParseError {
     JSON_NO_ERROR = 0,
     JSON_INVALID_ESCAPE,

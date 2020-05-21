@@ -17,7 +17,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/scoped_root_window_for_new_windows.h"
 #include "ash/screen_util.h"
 #include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/scrollable_shelf_view.h"
@@ -56,6 +55,7 @@
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -678,11 +678,12 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // to destroy the scoped object just in case the window activation event does
   // not get fired.
   aura::Window* window = sender->GetWidget()->GetNativeWindow();
-  scoped_root_window_for_new_windows_ =
-      std::make_unique<ScopedRootWindowForNewWindows>(window->GetRootWindow());
+  scoped_display_for_new_windows_ =
+      std::make_unique<display::ScopedDisplayForNewWindows>(
+          window->GetRootWindow());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&ShelfView::DestroyScopedRootWindow,
+      base::BindOnce(&ShelfView::DestroyScopedDisplay,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMilliseconds(100));
 
@@ -1929,7 +1930,7 @@ void ShelfView::ShelfItemDelegateChanged(const ShelfID& id,
 }
 
 void ShelfView::ShelfItemStatusChanged(const ShelfID& id) {
-  scoped_root_window_for_new_windows_.reset();
+  scoped_display_for_new_windows_.reset();
 
   int index = model_->ItemIndexByID(id);
   if (index < 0)
@@ -2198,8 +2199,8 @@ void ShelfView::UpdateVisibleIndices() {
   last_visible_index_ = model_->item_count() - 1;
 }
 
-void ShelfView::DestroyScopedRootWindow() {
-  scoped_root_window_for_new_windows_.reset();
+void ShelfView::DestroyScopedDisplay() {
+  scoped_display_for_new_windows_.reset();
 }
 
 }  // namespace ash

@@ -22,7 +22,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/root_window_settings.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/wm/window_util.h"
@@ -229,7 +228,7 @@ void WindowTreeHostManager::Shutdown() {
   }
   CHECK(primary_rwc);
 
-  Shell::Get()->shell_state()->SetRootWindowForNewWindows(nullptr);
+  Shell::SetRootWindowForNewWindows(nullptr);
   for (auto* rwc : to_delete)
     delete rwc;
   delete primary_rwc;
@@ -551,8 +550,7 @@ void WindowTreeHostManager::DeleteHost(AshWindowTreeHost* host_to_delete) {
     primary_tree_host_for_replace_ = nullptr;
   DCHECK_EQ(primary_root_after_host_deletion, Shell::GetPrimaryRootWindow());
   if (Shell::GetRootWindowForNewWindows() == root_being_deleted) {
-    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-        primary_root_after_host_deletion);
+    Shell::SetRootWindowForNewWindows(primary_root_after_host_deletion);
   }
   // NOTE: ShelfWidget is gone, but Shelf still exists until this task runs.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, controller);

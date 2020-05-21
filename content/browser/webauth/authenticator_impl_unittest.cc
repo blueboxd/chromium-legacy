@@ -917,15 +917,17 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
 }
 
 TEST_F(AuthenticatorImplTest, TestMakeCredentialOtherAlgorithms) {
-  virtual_device_factory_->SetSupportedProtocol(
-      device::ProtocolVersion::kCtap2);
+  device::VirtualCtap2Device::Config config;
+  config.support_invalid_for_testing_algorithm = true;
+  virtual_device_factory_->SetCtap2Config(config);
   SimulateNavigation(GURL(kTestOrigin1));
 
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
 
   for (auto algorithm : {device::CoseAlgorithmIdentifier::kCoseRs256,
-                         device::CoseAlgorithmIdentifier::kCoseEdDSA}) {
+                         device::CoseAlgorithmIdentifier::kCoseEdDSA,
+                         device::CoseAlgorithmIdentifier::kInvalidForTesting}) {
     SCOPED_TRACE(static_cast<int>(algorithm));
 
     PublicKeyCredentialCreationOptionsPtr options =

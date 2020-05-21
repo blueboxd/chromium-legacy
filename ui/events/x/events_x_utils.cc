@@ -72,7 +72,7 @@ class XModifierStateWatcher {
       case x11::XProto::KeyReleaseEvent::opcode:
         state_ = xev.xkey.state & ~mask;
         break;
-      case GenericEvent: {
+      case x11::XProto::GeGenericEvent::opcode: {
         XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
         switch (xievent->evtype) {
           case XI_KeyPress:
@@ -192,7 +192,7 @@ int GetEventFlagsFromXKeyEvent(const XEvent& xev) {
 }
 
 int GetEventFlagsFromXGenericEvent(const XEvent& xev) {
-  DCHECK(xev.type == GenericEvent);
+  DCHECK(xev.type == x11::XProto::GeGenericEvent::opcode);
   XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
   DCHECK((xievent->evtype == XI_KeyPress) ||
          (xievent->evtype == XI_KeyRelease));
@@ -359,7 +359,7 @@ base::TimeTicks TimeTicksFromXEvent(const XEvent& xev) {
     case EnterNotify:
     case LeaveNotify:
       return TimeTicksFromXEventTime(xev.xcrossing.time);
-    case GenericEvent: {
+    case x11::XProto::GeGenericEvent::opcode: {
       double start, end;
       double touch_timestamp;
       if (GetGestureTimes(xev, &start, &end)) {
@@ -418,7 +418,7 @@ EventType EventTypeFromXEvent(const XEvent& xev) {
       return ET_MOUSE_MOVED;
     case LeaveNotify:
       return ET_MOUSE_EXITED;
-    case GenericEvent: {
+    case x11::XProto::GeGenericEvent::opcode: {
       TouchFactory* factory = TouchFactory::GetInstance();
       if (!factory->ShouldProcessXI2Event(const_cast<XEvent*>(&xev)))
         return ET_UNKNOWN;
@@ -515,7 +515,7 @@ int EventFlagsFromXEvent(const XEvent& xev) {
       return GetEventFlagsFromXState(xev.xcrossing.state);
     case MotionNotify:
       return GetEventFlagsFromXState(xev.xmotion.state);
-    case GenericEvent: {
+    case x11::XProto::GeGenericEvent::opcode: {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
 
       switch (xievent->evtype) {
@@ -573,7 +573,7 @@ gfx::Point EventLocationFromXEvent(const XEvent& xev) {
       return gfx::Point(xev.xbutton.x, xev.xbutton.y);
     case MotionNotify:
       return gfx::Point(xev.xmotion.x, xev.xmotion.y);
-    case GenericEvent: {
+    case x11::XProto::GeGenericEvent::opcode: {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
       float x = xievent->event_x;
       float y = xievent->event_y;
@@ -608,7 +608,7 @@ gfx::Point EventSystemLocationFromXEvent(const XEvent& xev) {
     case MotionNotify: {
       return gfx::Point(xev.xmotion.x_root, xev.xmotion.y_root);
     }
-    case GenericEvent: {
+    case x11::XProto::GeGenericEvent::opcode: {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
       return gfx::Point(xievent->root_x, xievent->root_y);
     }
@@ -632,7 +632,7 @@ int GetChangedMouseButtonFlagsFromXEvent(const XEvent& xev) {
     case x11::XProto::ButtonPressEvent::opcode:
     case x11::XProto::ButtonReleaseEvent::opcode:
       return GetEventFlagsForButton(xev.xbutton.button);
-    case GenericEvent: {
+    case x11::XProto::GeGenericEvent::opcode: {
       XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev.xcookie.data);
       switch (xievent->evtype) {
         case XI_ButtonPress:
@@ -657,8 +657,9 @@ gfx::Vector2d GetMouseWheelOffsetFromXEvent(const XEvent& xev) {
                          static_cast<int>(y_offset));
   }
 
-  int button = xev.type == GenericEvent ? EventButtonFromXEvent(xev)
-                                        : xev.xbutton.button;
+  int button = xev.type == x11::XProto::GeGenericEvent::opcode
+                   ? EventButtonFromXEvent(xev)
+                   : xev.xbutton.button;
 
   // If this is an xinput1 scroll event from an xinput2 mouse then we need to
   // block the legacy scroll events for the necessary axes.

@@ -32,6 +32,7 @@
 #include "media/base/android/media_drm_bridge_delegate.h"
 #include "media/base/android/media_jni_headers/MediaDrmBridge_jni.h"
 #include "media/base/cdm_key_information.h"
+#include "media/base/logging_override_if_enabled.h"
 #include "media/base/media_drm_key_type.h"
 #include "media/base/media_switches.h"
 #include "media/base/provision_fetcher.h"

@@ -48,13 +48,12 @@ metric_template="""
   {event.name}& Set{metric.name}(int64_t value);
 """)
 
-IMPL = codegen.Template(
-basename="ukm_builders.cc",
-file_template="""
+IMPL = codegen.Template(basename="ukm_builders.cc",
+                        file_template="""
 // Generated from gen_builders.py.  DO NOT EDIT!
 // source: ukm.xml
 
-#include "{file.dir_path}/ukm_builders.h"
+#include "{file.dir_path}ukm_builders.h"
 
 namespace ukm {{
 namespace builders {{
@@ -64,8 +63,9 @@ namespace builders {{
 }}  // namespace builders
 }}  // namespace ukm
 """,
-event_template="""
+                        event_template="""
 const char {event.name}::kEntryName[] = "{event.raw_name}";
+const uint64_t {event.name}::kEntryNameHash;
 
 {event.name}::{event.name}(ukm::SourceId source_id) :
   ::ukm::internal::UkmEntryBuilderBase(source_id, kEntryNameHash) {{
@@ -79,8 +79,9 @@ const char {event.name}::kEntryName[] = "{event.raw_name}";
 
 {metric_code}
 """,
-metric_template="""
+                        metric_template="""
 const char {event.name}::k{metric.name}Name[] = "{metric.raw_name}";
+const uint64_t {event.name}::k{metric.name}NameHash;
 
 {event.name}& {event.name}::Set{metric.name}(int64_t value) {{
   SetMetricInternal(k{metric.name}NameHash, value);

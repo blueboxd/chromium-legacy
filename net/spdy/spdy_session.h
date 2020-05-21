@@ -1106,8 +1106,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // and maximum HPACK dynamic table size.
   const spdy::SettingsMap initial_settings_;
 
-  // If set, an HTTP/2 frame with a reserved frame type will be sent after every
-  // valid HTTP/2 frame.  See
+  // If set, an HTTP/2 frame with a reserved frame type will be sent after
+  // every HTTP/2 SETTINGS frame and before every HTTP/2 DATA frame. See
   // https://tools.ietf.org/html/draft-bishop-httpbis-grease-00.
   const base::Optional<SpdySessionPool::GreasedHttp2Frame> greased_http2_frame_;
 

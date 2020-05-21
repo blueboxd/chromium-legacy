@@ -35,9 +35,9 @@ class AssistiveSuggester {
 
   // Checks the text before cursor, emits metric if any assistive prefix is
   // matched.
-  void RecordAssistiveCoverageMetrics(const base::string16& text,
-                                      int cursor_pos,
-                                      int anchor_pos);
+  void RecordAssistiveMatchMetrics(const base::string16& text,
+                                   int cursor_pos,
+                                   int anchor_pos);
 
   // Called when a surrounding text is changed.
   // Returns true if it changes the surrounding text, e.g. a suggestion is
@@ -62,6 +62,8 @@ class AssistiveSuggester {
   bool IsSuggestionShown();
 
   bool IsEmojiSuggestAdditionEnabled();
+
+  bool IsActionEnabled(AssistiveType action);
 
   Profile* profile_;
   PersonalInfoSuggester personal_info_suggester_;

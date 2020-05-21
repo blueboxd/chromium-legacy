@@ -1223,9 +1223,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, NotificationAPI) {
                                   "page.html"));
 }
 
-// Flaky (crbug.com/1006129).
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest,
-                       DISABLED_WebAccessibleResourcesFetch) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, WebAccessibleResourcesFetch) {
   EXPECT_TRUE(RunExtensionSubtest(
       "service_worker/web_accessible_resources/fetch/", "page.html"));
 }

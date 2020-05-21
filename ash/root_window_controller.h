@@ -55,7 +55,6 @@ class TouchExplorationManager;
 class TouchHudDebug;
 class TouchHudProjection;
 class WallpaperWidgetController;
-class WindowManager;
 class WorkAreaInsets;
 
 // This class maintains the per root window state for ash. This class
@@ -94,8 +93,6 @@ class ASH_EXPORT RootWindowController {
                                     : std::vector<RootWindowController*>();
   }
 
-  // TODO(sky): move these to a separate class or use AshWindowTreeHost in
-  // mash. http://crbug.com/671246.
   AshWindowTreeHost* ash_host() { return ash_host_.get(); }
   const AshWindowTreeHost* ash_host() const { return ash_host_.get(); }
 
@@ -232,14 +229,9 @@ class ASH_EXPORT RootWindowController {
   FRIEND_TEST_ALL_PREFIXES(RootWindowControllerTest,
                            ContextMenuDisappearsInTabletMode);
 
-  // TODO(sky): remove this. Temporary during ash-mus unification.
-  // http://crbug.com/671246.
-  friend class WindowManager;
-
   // Creates a new RootWindowController with the specified host. Only one of
   // |ash_host| or |window_tree_host| should be specified. This takes ownership
   // of the supplied arguments.
-  // TODO(sky): mash should create AshWindowTreeHost, http://crbug.com/671246.
   RootWindowController(AshWindowTreeHost* ash_host,
                        aura::WindowTreeHost* window_tree_host);
 

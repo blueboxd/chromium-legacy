@@ -947,11 +947,7 @@ ci.mac_ios_builder(
     console_view_entry = ci.console_view_entry(
         category = 'ios|default',
         short_name = 'sim',
-    ),
-    executable = 'recipe:chromium',
-    properties = {
-        'xcode_build_version': '11e146',
-    },
+    )
 )
 
 ci.mac_ios_builder(
@@ -960,7 +956,6 @@ ci.mac_ios_builder(
         category = 'ios|default',
         short_name = 'ful',
     ),
-    executable = 'recipe:chromium',
 )
 
 

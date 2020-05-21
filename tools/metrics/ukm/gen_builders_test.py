@@ -71,6 +71,7 @@ class {name} final : public ::ukm::internal::UkmEntryBuilderBase {{
     self.assertIn(
         """
 const char {name}::kEntryName[] = "{rawName}";
+const uint64_t {name}::kEntryNameHash;
 
 {name}::{name}(ukm::SourceId source_id) :
   ::ukm::internal::UkmEntryBuilderBase(source_id, kEntryNameHash) {{
@@ -84,6 +85,7 @@ const char {name}::kEntryName[] = "{rawName}";
     self.assertIn(
         """
 const char {eventName}::k{metricName}Name[] = "{metricRawName}";
+const uint64_t {eventName}::k{metricName}NameHash;
 
 {eventName}& {eventName}::Set{metricName}(int64_t value) {{
   SetMetricInternal(k{metricName}NameHash, value);

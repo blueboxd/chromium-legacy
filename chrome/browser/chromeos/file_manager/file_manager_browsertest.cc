@@ -112,6 +112,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& ZipNoNaCl() {
+    opts.zip_no_nacl = true;
+    return *this;
+  }
+
   std::string GetFullName() const {
     std::string full_name = name;
 
@@ -132,6 +137,9 @@ struct TestCase {
 
     if (opts.documents_provider)
       full_name += "_DocumentsProvider";
+
+    if (opts.zip_no_nacl)
+      full_name += "_ZipNoNaCl";
 
     return full_name;
   }
@@ -313,6 +321,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MAYBE_ZipFiles, /* zip_files.js */
     FilesAppBrowserTest,
     ::testing::Values(ZipCase("zipFileOpenDownloads").InGuestMode(),
+                      ZipCase("zipFileOpenDownloads").ZipNoNaCl(),
                       ZipCase("zipFileOpenDownloads"),
                       ZipCase("zipFileOpenDownloadsShiftJIS"),
                       ZipCase("zipFileOpenDownloadsMacOs"),
@@ -321,6 +330,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       ZipCase("zipFileOpenDrive"),
                       ZipCase("zipFileOpenUsb"),
                       ZipCase("zipCreateFileDownloads").InGuestMode(),
+                      ZipCase("zipCreateFileDownloads").ZipNoNaCl(),
                       ZipCase("zipCreateFileDownloads"),
                       ZipCase("zipCreateFileDrive"),
                       ZipCase("zipCreateFileUsb")));

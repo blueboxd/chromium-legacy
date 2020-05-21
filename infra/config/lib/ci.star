@@ -800,7 +800,7 @@ def mac_builder(
 def mac_ios_builder(*,
                     name,
                     caches=None,
-                    executable='recipe:ios/unified_builder_tester',
+                    executable='recipe:chromium',
                     goma_backend=builders.goma.backend.RBE_PROD,
                     properties=None,
                     **kwargs):

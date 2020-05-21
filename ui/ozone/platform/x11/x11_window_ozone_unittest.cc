@@ -94,7 +94,8 @@ class X11WindowOzoneTest : public testing::Test {
   }
 
   void DispatchXEvent(XEvent* event, gfx::AcceleratedWidget widget) {
-    DCHECK_EQ(GenericEvent, event->type);
+    uint8_t ge_opcode = x11::XProto::GeGenericEvent::opcode;
+    DCHECK_EQ(ge_opcode, event->type);
     XIDeviceEvent* device_event =
         static_cast<XIDeviceEvent*>(event->xcookie.data);
     device_event->event = widget;

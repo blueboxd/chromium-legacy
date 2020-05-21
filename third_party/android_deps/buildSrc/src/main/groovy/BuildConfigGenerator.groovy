@@ -415,6 +415,10 @@ class BuildConfigGenerator extends DefaultTask {
                 // Deprecated deps jar but still needed by play services basement.
                 sb.append('  input_jars_paths=["\\$android_sdk/optional/org.apache.http.legacy.jar"]\n')
                 break
+            case 'com_google_android_gms_play_services_maps':
+                sb.append('  # Ignore the dependency to org.apache.http.legacy. See crbug.com/1084879.\n')
+                sb.append('  ignore_manifest = true\n')
+                break
         }
     }
 

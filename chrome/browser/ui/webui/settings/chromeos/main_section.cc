@@ -98,6 +98,10 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"settings", IDS_SETTINGS_SETTINGS},
       {"settingsAltPageTitle", IDS_SETTINGS_ALT_PAGE_TITLE},
       {"subpageArrowRoleDescription", IDS_SETTINGS_SUBPAGE_BUTTON},
+      {"subpageBackButtonAriaLabel",
+       IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_LABEL},
+      {"subpageBackButtonAriaRoleDescription",
+       IDS_SETTINGS_SUBPAGE_BACK_BUTTON_ARIA_ROLE_DESCRIPTION},
       {"notValidWebAddress", IDS_SETTINGS_NOT_VALID_WEB_ADDRESS},
       {"notValidWebAddressForContentType",
        IDS_SETTINGS_NOT_VALID_WEB_ADDRESS_FOR_CONTENT_TYPE},
@@ -163,7 +167,23 @@ void MainSection::AddHandlers(content::WebUI* web_ui) {
 }
 
 int MainSection::GetSectionNameMessageId() const {
-  return IDS_INTERNAL_APP_SETTINGS;
+  NOTIMPLEMENTED();
+  return 0;
+}
+
+mojom::Section MainSection::GetSection() const {
+  NOTIMPLEMENTED();
+  return mojom::Section::kMinValue;
+}
+
+mojom::SearchResultIcon MainSection::GetSectionIcon() const {
+  NOTIMPLEMENTED();
+  return mojom::SearchResultIcon::kMinValue;
+}
+
+std::string MainSection::GetSectionPath() const {
+  NOTIMPLEMENTED();
+  return std::string();
 }
 
 void MainSection::RegisterHierarchy(HierarchyGenerator* generator) const {

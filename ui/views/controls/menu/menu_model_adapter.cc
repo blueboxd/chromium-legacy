@@ -99,16 +99,17 @@ MenuItemView* MenuModelAdapter::AddMenuItemFromModelAt(ui::MenuModel* model,
   }
 
   if (*type == MenuItemView::Type::kSeparator) {
-    return menu->AddMenuItemAt(menu_index, item_id, base::string16(),
-                               base::string16(), ui::ThemedVectorIcon(),
-                               gfx::ImageSkia(), ui::ThemedVectorIcon(), *type,
-                               model->GetSeparatorTypeAt(model_index));
+    return menu->AddMenuItemAt(
+        menu_index, item_id, base::string16(), base::string16(),
+        base::string16(), ui::ThemedVectorIcon(), gfx::ImageSkia(),
+        ui::ThemedVectorIcon(), *type, model->GetSeparatorTypeAt(model_index));
   }
 
   ui::ImageModel icon = model->GetIconAt(model_index);
   ui::ImageModel minor_icon = model->GetMinorIconAt(model_index);
   return menu->AddMenuItemAt(
       menu_index, item_id, model->GetLabelAt(model_index),
+      model->GetSecondaryLabelAt(model_index),
       model->GetMinorTextAt(model_index),
       minor_icon.IsVectorIcon()
           ? ui::ThemedVectorIcon(minor_icon.GetVectorIcon())

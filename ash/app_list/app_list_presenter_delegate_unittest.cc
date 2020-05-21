@@ -1551,7 +1551,6 @@ TEST_F(AppListPresenterDelegateTest, SideShelfAlignmentDragDisabled) {
 // Tests that the app list initializes in fullscreen with side shelf alignment
 // and that the state transitions via text input act properly.
 TEST_F(AppListPresenterDelegateTest, SideShelfAlignmentTextStateTransitions) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
   SetShelfAlignment(ShelfAlignment::kLeft);
 
   // Open the app list with side shelf alignment, then check that it is in
@@ -1578,7 +1577,6 @@ TEST_F(AppListPresenterDelegateTest, SideShelfAlignmentTextStateTransitions) {
 // Tests that the app list initializes in peeking with bottom shelf alignment
 // and that the state transitions via text input act properly.
 TEST_F(AppListPresenterDelegateTest, BottomShelfAlignmentTextStateTransitions) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   AppListView* app_list = GetAppListView();
   EXPECT_FALSE(app_list->is_fullscreen());
@@ -1599,7 +1597,6 @@ TEST_F(AppListPresenterDelegateTest, BottomShelfAlignmentTextStateTransitions) {
 // Tests that the app list initializes in fullscreen with tablet mode active
 // and that the state transitions via text input act properly.
 TEST_F(AppListPresenterDelegateTest, TabletModeTextStateTransitions) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
   EnableTabletMode(true);
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
@@ -1647,7 +1644,6 @@ TEST_F(AppListPresenterDelegateTest, AppListClosesWhenLeavingTabletMode) {
 // Tests that the app list state responds correctly to tablet mode being
 // enabled while the app list is being shown with half launcher.
 TEST_F(AppListPresenterDelegateTest, HalfToFullscreenWhenTabletModeIsActive) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
 
@@ -1666,7 +1662,6 @@ TEST_F(AppListPresenterDelegateTest, HalfToFullscreenWhenTabletModeIsActive) {
 
 // Tests that the app list view handles drag properly in laptop mode.
 TEST_F(AppListPresenterDelegateTest, AppListViewDragHandler) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   GetAppListTestHelper()->CheckState(AppListViewState::kPeeking);
 
@@ -2149,7 +2144,6 @@ TEST_F(AppListPresenterDelegateTest,
 // Tests that the half app list closes itself if the user taps outside its
 // bounds.
 TEST_P(AppListPresenterDelegateTest, TapAndClickOutsideClosesHalfAppList) {
-  // TODO(newcomer): Investigate mash failures crbug.com/726838
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
   ui::test::EventGenerator* generator = GetEventGenerator();
 

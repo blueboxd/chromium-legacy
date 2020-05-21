@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 const oneGoogleBarHeightInPixels = 64;
+let modalOverlays = false;
+let darkThemeEnabled = false;
+let shouldUndoDarkTheme = false;
 
 /**
  * @param {boolean} enabled
@@ -12,6 +15,7 @@ async function enableDarkTheme(enabled) {
   if (!window.gbar) {
     return;
   }
+  darkThemeEnabled = enabled;
   const ogb = await window.gbar.a.bf();
   ogb.pc.call(ogb, enabled ? 1 : 0);
 }
@@ -21,6 +25,11 @@ async function enableDarkTheme(enabled) {
  *  - loaded: sent on initial load.
  *  - overlaysUpdated: sent when an overlay is updated. The overlay bounding
  *       rects are included in the |data|.
+ *  - activate/deactivate: When an overlay is open, 'activate' is sent to the
+ *        to ntp-app so it can layer the OneGoogleBar over the NTP content. When
+ *        no overlays are open, 'deactivate' is sent to ntp-app so the NTP
+ *        content can be on top. The top bar of the OneGoogleBar is always on
+ *        top.
  * @param {string} messageType
  * @param {Object} data
  */
@@ -68,7 +77,24 @@ function sendOverlayUpdate() {
             return true;
           })
           .map(el => el.getBoundingClientRect());
-  postMessage('overlaysUpdated', overlayRects);
+  if (!modalOverlays) {
+    postMessage('overlaysUpdated', overlayRects);
+    return;
+  }
+  const overlayShown = overlayRects.length > 0;
+  postMessage(overlayShown ? 'activate' : 'deactivate');
+  // If the overlays are modal, a dark backdrop is displayed below the
+  // OneGoogleBar iframe. The dark theme for the OneGoogleBar is then enabled
+  // for better visibility.
+  if (overlayShown) {
+    if (!darkThemeEnabled) {
+      shouldUndoDarkTheme = true;
+      enableDarkTheme(true);
+    }
+  } else if (shouldUndoDarkTheme) {
+    shouldUndoDarkTheme = false;
+    enableDarkTheme(false);
+  }
 }
 
 function trackOverlayState() {
@@ -87,6 +113,12 @@ function trackOverlayState() {
     mutations.forEach(({target}) => {
       if (target.id === 'gb' || target.tagName === 'BODY' ||
           overlays.has(target)) {
+        return;
+      }
+      // When overlays are modal, the tooltips should not be treated like an
+      // overlay.
+      if (modalOverlays && target.parentElement &&
+          target.parentElement.tagName === 'BODY') {
         return;
       }
       if (target.offsetTop + target.offsetHeight > oneGoogleBarHeightInPixels) {
@@ -133,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
       el.target = '_top';
     }
   });
+  modalOverlays = document.documentElement.hasAttribute('modal-overlays');
   postMessage('loaded');
   trackOverlayState();
 });

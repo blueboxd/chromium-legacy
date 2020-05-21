@@ -1658,6 +1658,9 @@ extern const char kNtpDismissPromosDescription[];
 extern const char kNtpIframeOneGoogleBarName[];
 extern const char kNtpIframeOneGoogleBarDescription[];
 
+extern const char kNtpOneGoogleBarModalOverlaysName[];
+extern const char kNtpOneGoogleBarModalOverlaysDescription[];
+
 extern const char kNtpRealboxName[];
 extern const char kNtpRealboxDescription[];
 

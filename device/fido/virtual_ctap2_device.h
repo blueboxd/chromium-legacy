@@ -131,6 +131,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
     // unhashed client data for the authenticator to assemble and hash instead
     // of using the regular, already hashed value.
     bool send_unsolicited_android_client_data_extension = false;
+
+    // support_invalid_for_testing_algorithm causes the
+    // |CoseAlgorithmIdentifier::kInvalidForTesting| public-key algorithm to be
+    // advertised and supported to aid testing of unknown public-key types.
+    bool support_invalid_for_testing_algorithm = false;
   };
 
   VirtualCtap2Device();
@@ -144,6 +149,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
+  // Init performs initialization that's common across the constructors.
+  void Init(std::vector<ProtocolVersion> versions);
+
   // CheckUserVerification implements the first, common steps of
   // makeCredential and getAssertion from the CTAP2 spec.
   base::Optional<CtapDeviceResponseCode> CheckUserVerification(

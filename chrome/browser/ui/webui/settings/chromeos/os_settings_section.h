@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/constants/setting.mojom.h"
+#include "chrome/browser/ui/webui/settings/chromeos/search/search.mojom.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
 
 class Profile;
@@ -24,7 +25,6 @@ class WebUIDataSource;
 namespace chromeos {
 namespace settings {
 
-struct SearchConcept;
 class SearchTagRegistry;
 
 // Represents one top-level section of the settings app (i.e., one item on the
@@ -57,13 +57,21 @@ class OsSettingsSection {
     virtual ~HierarchyGenerator() = default;
 
     // Registers a subpage whose parent is this section.
-    virtual void RegisterTopLevelSubpage(int name_message_id,
-                                         mojom::Subpage subpage) = 0;
+    virtual void RegisterTopLevelSubpage(
+        int name_message_id,
+        mojom::Subpage subpage,
+        mojom::SearchResultIcon icon,
+        mojom::SearchResultDefaultRank default_rank,
+        const std::string& url_path_with_parameters) = 0;
 
     // Registers a subpage whose paernt is another subpage in this section.
-    virtual void RegisterNestedSubpage(int name_message_id,
-                                       mojom::Subpage subpage,
-                                       mojom::Subpage parent_subpage) = 0;
+    virtual void RegisterNestedSubpage(
+        int name_message_id,
+        mojom::Subpage subpage,
+        mojom::Subpage parent_subpage,
+        mojom::SearchResultIcon icon,
+        mojom::SearchResultDefaultRank default_rank,
+        const std::string& url_path_with_parameters) = 0;
 
     // Registers a setting embedded directly in the section (i.e., not within a
     // subpage). This functions is for primary locations (see above).
@@ -101,15 +109,33 @@ class OsSettingsSection {
   // Provides the message ID for the name of this section.
   virtual int GetSectionNameMessageId() const = 0;
 
+  // Provides the Section enum for this section.
+  virtual mojom::Section GetSection() const = 0;
+
+  // Provides the icon for this section.
+  virtual mojom::SearchResultIcon GetSectionIcon() const = 0;
+
+  // Provides the path for this section.
+  virtual std::string GetSectionPath() const = 0;
+
   // Registers the subpages and/or settings which reside in this section.
   virtual void RegisterHierarchy(HierarchyGenerator* generator) const = 0;
 
   // Modifies a URL to be used by settings search. Some URLs require dynamic
   // content (e.g., network detail settings use the GUID of the network as a URL
   // parameter to route to details for a specific network). By default, this
-  // function simply returns the URL contained in |concept|, which provides
-  // functionality for static URLs.
-  virtual std::string ModifySearchResultUrl(const SearchConcept& concept) const;
+  // function simply returns |url_to_modify|, which provides  functionality for
+  // static URLs.
+  virtual std::string ModifySearchResultUrl(
+      mojom::SearchResultType type,
+      OsSettingsIdentifier id,
+      const std::string& url_to_modify) const;
+
+  // Generates a search result corresponding to this section. |relevance_score|
+  // must be passed by the client, since this result is being created manually
+  // instead of via query matching.
+  mojom::SearchResultPtr GenerateSectionSearchResult(
+      double relevance_score) const;
 
  protected:
   static base::string16 GetHelpUrlWithBoard(const std::string& original_url);

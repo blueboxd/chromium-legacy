@@ -251,6 +251,25 @@ class NATIVE_THEME_EXPORT NativeTheme {
     ScrollbarOverlayColorTheme scrollbar_theme;
   };
 
+#if defined(OS_MACOSX)
+  enum ScrollbarOrientation {
+    // Vertical scrollbar on the right side of content.
+    kVerticalOnRight,
+    // Vertical scrollbar on the left side of content.
+    kVerticalOnLeft,
+    // Horizontal scrollbar (on the bottom of content).
+    kHorizontal,
+  };
+
+  // A unique set of scrollbar params. Currently needed for Mac.
+  struct ScrollbarExtraParams {
+    bool is_hovering;
+    bool is_overlay;
+    ScrollbarOverlayColorTheme scrollbar_theme;
+    ScrollbarOrientation orientation;  // Used on Mac for drawing gradients.
+  };
+#endif
+
   struct SliderExtraParams {
     bool vertical;
     bool in_drag;
@@ -292,6 +311,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
     MenuBackgroundExtraParams menu_background;
     ProgressBarExtraParams progress_bar;
     ScrollbarArrowExtraParams scrollbar_arrow;
+#if defined(OS_MACOSX)
+    ScrollbarExtraParams scrollbar_extra;
+#endif
     ScrollbarTrackExtraParams scrollbar_track;
     ScrollbarThumbExtraParams scrollbar_thumb;
     SliderExtraParams slider;

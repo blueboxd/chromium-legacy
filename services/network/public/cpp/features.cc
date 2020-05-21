@@ -32,18 +32,12 @@ const base::Feature kNetworkService {
 };
 
 // Out of Blink CORS for browsers is launched at m79 (http://crbug.com/1001450),
-// and one for WebView will be at m83 (http://crbug.com/1035763).
-// The legacy CORS will be also maintained at least until m83 for enterprise
+// and one for WebView will be at m81 (http://crbug.com/1035763).
+// The legacy CORS will be also maintained at least until m81 for enterprise
 // users. See https://sites.google.com/a/chromium.org/dev/Home/loading/oor-cors
 // for FYI Builders information.
-const base::Feature kOutOfBlinkCors {
-  "OutOfBlinkCors",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kOutOfBlinkCors{"OutOfBlinkCors",
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kReporting{"Reporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -205,6 +199,36 @@ const base::Feature kStrictAccessControlAllowListCheck = {
 // (See https://github.com/WICG/trust-token-api.)
 const base::Feature kTrustTokens{"TrustTokens",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Determines which Trust Tokens operations require the TrustTokens origin trial
+// active in order to be used. This is runtime-configurable so that the Trust
+// Tokens operations of issuance, redemption, and signing are compatible with
+// both standard origin trials and third-party origin trials:
+//
+// - For standard origin trials, set kOnlyIssuanceRequiresOriginTrial. In Blink,
+// all of the interface will be enabled (so long as the base::Feature is!), and
+// issuance operations will check at runtime if the origin trial is enabled,
+// returning an error if it is not.
+// - For third-party origin trials, set kAllOperationsRequireOriginTrial. In
+// Blink, the interface will be enabled exactly when the origin trial is present
+// in the executing context (so long as the base::Feature is present).
+//
+// For testing, set kOriginTrialNotRequired. With this option, although all
+// operations will still only be available if the base::Feature is enabled, none
+// will additionally require that the origin trial be active.
+const base::FeatureParam<TrustTokenOriginTrialSpec>::Option
+    kTrustTokenOriginTrialParamOptions[] = {
+        {TrustTokenOriginTrialSpec::kOriginTrialNotRequired,
+         "origin-trial-not-required"},
+        {TrustTokenOriginTrialSpec::kAllOperationsRequireOriginTrial,
+         "all-operations-require-origin-trial"},
+        {TrustTokenOriginTrialSpec::kOnlyIssuanceRequiresOriginTrial,
+         "only-issuance-requires-origin-trial"}};
+const base::FeatureParam<TrustTokenOriginTrialSpec>
+    kTrustTokenOperationsRequiringOriginTrial{
+        &kTrustTokens, "TrustTokenOperationsRequiringOriginTrial",
+        TrustTokenOriginTrialSpec::kOriginTrialNotRequired,
+        &kTrustTokenOriginTrialParamOptions};
 
 bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);

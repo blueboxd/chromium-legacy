@@ -14,7 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/shell.h"  // mash-ok
+#include "ash/shell.h"
 #endif
 
 #if defined(OS_MACOSX)

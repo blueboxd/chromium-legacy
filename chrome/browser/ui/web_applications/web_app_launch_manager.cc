@@ -41,6 +41,7 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/display/scoped_display_for_new_windows.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -123,6 +124,9 @@ content::WebContents* WebAppLaunchManager::OpenApplication(
                 .GetMatchingFileHandlerURL(params.app_id, params.launch_files)
                 .value_or(provider_->registrar().GetAppLaunchURL(params.app_id))
           : params.override_url;
+
+  // Place new windows on the specified display.
+  display::ScopedDisplayForNewWindows scoped_display(params.display_id);
 
   // System Web Apps go through their own launch path.
   base::Optional<SystemAppType> system_app_type =

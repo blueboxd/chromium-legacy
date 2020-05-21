@@ -1310,6 +1310,10 @@ void ShelfLayoutManager::SetState(ShelfVisibilityState visibility_state) {
       observer.OnHotseatStateChanged(previous_hotseat_state, hotseat_state());
   }
 
+  // Shelf should be undimmed when it transitions into a visible state.
+  if (state_.IsShelfVisible())
+    SetDimmed(false);
+
   UpdateContextualNudges();
 }
 
@@ -1485,9 +1489,19 @@ ShelfVisibilityState ShelfLayoutManager::CalculateShelfVisibility() {
   return SHELF_VISIBLE;
 }
 
-void ShelfLayoutManager::SetDimmed(bool dimmed) {
+bool ShelfLayoutManager::SetDimmed(bool dimmed) {
+  // Do nothing if we are already in the correct dim state.
   if (dimmed_for_inactivity_ == dimmed)
-    return;
+    return false;
+
+  // We do not want the auto hide state to change while setting up animations.
+  std::unique_ptr<Shelf::ScopedAutoHideLock> auto_hide_lock =
+      std::make_unique<Shelf::ScopedAutoHideLock>(shelf_);
+
+  // We should not set the dim state if the shelf is hidden. Shelf will be
+  // undimmed when it transitions into a visible state.
+  if (!state_.IsShelfVisible())
+    return false;
 
   dimmed_for_inactivity_ = dimmed;
   CalculateTargetBoundsAndUpdateWorkArea();
@@ -1502,7 +1516,7 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
                  shelf_->GetNavigationWidgetAnimationMetricsReporter());
 
   AnimateOpacity(shelf_->hotseat_widget()->GetShelfView()->layer(),
-                 shelf_->hotseat_widget()->CalculateOpacity(),
+                 shelf_->hotseat_widget()->CalculateShelfViewOpacity(),
                  dim_animation_duration, dim_animation_tween,
                  /*animation_metrics_reporter=*/nullptr);
 
@@ -1511,6 +1525,7 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
                  /*animation_metrics_reporter=*/nullptr);
 
   shelf_widget_->SetLoginShelfButtonOpacity(target_opacity_);
+  return true;
 }
 
 void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {

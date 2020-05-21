@@ -52,6 +52,10 @@ base::string16 MenuModel::GetMinorTextAt(int index) const {
   return base::string16();
 }
 
+base::string16 MenuModel::GetSecondaryLabelAt(int index) const {
+  return base::string16();
+}
+
 ImageModel MenuModel::GetMinorIconAt(int index) const {
   return ImageModel();
 }

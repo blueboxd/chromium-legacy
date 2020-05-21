@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.VisibleForTesting;
 import android.view.View;
 
 import org.chromium.base.Callback;
@@ -242,11 +241,6 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
      */
     public void close() {
         mBottomSheetController.get().hideContent(mSheetContent, /* animate= */ true);
-    }
-
-    @VisibleForTesting
-    public void endAnimationsForTesting() {
-        mBottomSheetController.get().endAnimationsForTesting();
     }
 
     @Override

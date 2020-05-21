@@ -35,6 +35,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
+#include "ui/display/types/display_constants.h"
 
 using crostini::mojom::InstallerError;
 using crostini::mojom::InstallerState;
@@ -661,8 +662,9 @@ void CrostiniInstaller::OnCrostiniRestartFinished(CrostiniResult result) {
   progress_callback_.Reset();
 
   if (!skip_launching_terminal_for_testing_) {
+    // kInvalidDisplayId will launch terminal on the current active display.
     crostini::LaunchContainerTerminal(
-        profile_, crostini::kCrostiniDefaultVmName,
+        profile_, display::kInvalidDisplayId, crostini::kCrostiniDefaultVmName,
         crostini::kCrostiniDefaultContainerName, std::vector<std::string>());
   }
 }

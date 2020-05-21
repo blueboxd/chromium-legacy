@@ -33,7 +33,6 @@
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/print_preview_data_service.h"
-#include "chrome/browser/printing/print_preview_dialog_controller.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -51,8 +50,6 @@
 #include "chrome/grit/print_preview_resources_map.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
-#include "components/printing/browser/print_composite_client.h"
-#include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/user_manager/user_manager.h"
@@ -62,7 +59,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/constants.h"
-#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -497,10 +493,6 @@ void PrintPreviewUI::ClearPreviewUIId() {
   id_.reset();
 }
 
-bool PrintPreviewUI::ShouldUseCompositor() const {
-  return IsOopifEnabled() && source_is_modifiable();
-}
-
 void PrintPreviewUI::GetPrintPreviewDataForIndex(
     int index,
     scoped_refptr<base::RefCountedMemory>* data) const {
@@ -547,15 +539,6 @@ bool PrintPreviewUI::ParseDataPath(const std::string& path,
 
 void PrintPreviewUI::ClearAllPreviewData() {
   PrintPreviewDataService::GetInstance()->RemoveEntry(*id_);
-}
-
-void PrintPreviewUI::OnDidPrepareDocumentForPreviewDone(
-    int32_t request_id,
-    mojom::PrintCompositor::Status status) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (status != mojom::PrintCompositor::Status::kSuccess) {
-    OnPrintPreviewFailed(request_id);
-  }
 }
 
 void PrintPreviewUI::SetInitiatorTitle(
@@ -777,39 +760,6 @@ void PrintPreviewUI::SetOptionsFromDocument(
     int32_t request_id) {
   handler_->SendPrintPresetOptions(params->is_scaling_disabled, params->copies,
                                    params->duplex, request_id);
-}
-
-void PrintPreviewUI::DidPrepareDocumentForPreview(int32_t document_cookie,
-                                                  int32_t request_id) {
-  // Determine if document composition from individual pages with the print
-  // compositor is the desired configuration. Issue a preparation call to the
-  // PrintCompositeClient if that hasn't been done yet. Otherwise, return early.
-  if (!ShouldUseCompositor())
-    return;
-
-  PrintPreviewDialogController* dialog_controller =
-      PrintPreviewDialogController::GetInstance();
-  if (!dialog_controller)
-    return;
-  WebContents* web_contents =
-      dialog_controller->GetInitiator(web_ui()->GetWebContents());
-  if (!web_contents)
-    return;
-
-  // For case of print preview, page metafile is used to composite into
-  // the document PDF at same time.  Need to indicate that this scenario
-  // is at play for the compositor.
-  auto* client = PrintCompositeClient::FromWebContents(web_contents);
-  DCHECK(client);
-  if (client->GetIsDocumentConcurrentlyComposited(document_cookie))
-    return;
-
-  client->DoPrepareForDocumentToPdf(
-      document_cookie,
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          base::BindOnce(&PrintPreviewUI::OnDidPrepareDocumentForPreviewDone,
-                         weak_ptr_factory_.GetWeakPtr(), request_id),
-          mojom::PrintCompositor::Status::kCompositingFailure));
 }
 
 void PrintPreviewUI::PrintPreviewFailed(int32_t document_cookie,

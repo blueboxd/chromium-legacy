@@ -391,8 +391,18 @@ void ExternalProtocolHandler::LaunchUrl(
 void ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
     const GURL& url,
     content::WebContents* web_contents) {
+  // Escape the input scheme to be sure that the command does not
+  // have parameters unexpected by the external program. The url passed in the
+  // |url| parameter might already be escaped but the EscapeExternalHandlerValue
+  // is idempotent so it is safe to apply it again.
+  // TODO(788244): This essentially amounts to "remove illegal characters from
+  // the URL", something that probably should be done by the GURL constructor
+  // itself.
+  std::string escaped_url_string = net::EscapeExternalHandlerValue(url.spec());
+  GURL escaped_url(escaped_url_string);
+
   LaunchUrlWithoutSecurityCheckWithDelegate(
-      url, web_contents, g_external_protocol_handler_delegate);
+      escaped_url, web_contents, g_external_protocol_handler_delegate);
 }
 
 // static

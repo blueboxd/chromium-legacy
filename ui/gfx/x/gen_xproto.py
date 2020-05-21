@@ -177,67 +177,67 @@ import types
 # so this global is unavoidable.
 output = collections.defaultdict(int)
 
-MODULE_NAMES = {
-    'xproto': 'XProto',
-    'glx': 'Glx',
+RENAME = {
+    'ANIMCURSORELT': 'AnimationCursorElement',
+    'CA': 'ChangeAlarmAttribute',
+    'CHAR2B': 'Char16',
+    'CHARINFO': 'CharInfo',
+    'COLORITEM': 'ColorItem',
+    'COLORMAP': 'ColorMap',
+    'CP': 'CreatePictureAttribute',
+    'CW': 'CreateWindowAttribute',
+    'DAMAGE': 'DamageId',
+    'DIRECTFORMAT': 'DirectFormat',
+    'DOTCLOCK': 'DotClock',
+    'FBCONFIG': 'FbConfig',
+    'FLOAT32': 'float',
+    'FLOAT64': 'double',
+    'FONTPROP': 'FontProperty',
+    'GC': 'GraphicsContextAttribute',
+    'GCONTEXT': 'GraphicsContext',
+    'GLYPHINFO': 'GlyphInfo',
+    'GLYPHSET': 'GlyphSet',
+    'INDEXVALUE': 'IndexValue',
+    'KB': 'Keyboard',
+    'KEYCODE': 'KeyCode',
+    'KEYCODE32': 'KeyCode32',
+    'KEYSYM': 'KeySym',
+    'LINEFIX': 'LineFix',
+    'OP': 'Operation',
+    'PBUFFER': 'PBuffer',
+    'PCONTEXT': 'PContext',
+    'PICTDEPTH': 'PictDepth',
+    'PICTFORMAT': 'PictFormat',
+    'PICTFORMINFO': 'PictFormInfo',
+    'PICTSCREEN': 'PictScreen',
+    'PICTVISUAL': 'PictVisual',
+    'POINTFIX': 'PointFix',
+    'SEGMENT': 'SEGMENT',
+    'SPANFIX': 'SpanFix',
+    'SUBPICTURE': 'SubPicture',
+    'SYSTEMCOUNTER': 'SystemCounter',
+    'TIMECOORD': 'TimeCoord',
+    'TIMESTAMP': 'Time',
+    'VISUALID': 'VisualId',
+    'VISUALTYPE': 'VisualType',
+    'WAITCONDITION': 'WaitCondition',
 }
-
-UPPER_CASE_PATTERN = re.compile(r'^[A-Z0-9_]+$')
 
 
 def adjust_type_case(name):
-    if UPPER_CASE_PATTERN.match(name):
-        SPECIAL = {
-            'ANIMCURSORELT': 'AnimationCursorElement',
-            'CA': 'ChangeAlarmAttribute',
-            'CHAR2B': 'Char16',
-            'CHARINFO': 'CharInfo',
-            'COLORITEM': 'ColorItem',
-            'COLORMAP': 'ColorMap',
-            'CP': 'CreatePictureAttribute',
-            'CW': 'CreateWindowAttribute',
-            'DAMAGE': 'DamageId',
-            'DIRECTFORMAT': 'DirectFormat',
-            'DOTCLOCK': 'DotClock',
-            'FBCONFIG': 'FbConfig',
-            'FLOAT32': 'float',
-            'FLOAT64': 'double',
-            'FONTPROP': 'FontProperty',
-            'GC': 'GraphicsContextAttribute',
-            'GCONTEXT': 'GraphicsContext',
-            'GLYPHINFO': 'GlyphInfo',
-            'GLYPHSET': 'GlyphSet',
-            'INDEXVALUE': 'IndexValue',
-            'KB': 'Keyboard',
-            'KEYCODE': 'KeyCode',
-            'KEYCODE32': 'KeyCode32',
-            'KEYSYM': 'KeySym',
-            'LINEFIX': 'LineFix',
-            'OP': 'Operation',
-            'PBUFFER': 'PBuffer',
-            'PCONTEXT': 'PContext',
-            'PICTDEPTH': 'PictDepth',
-            'PICTFORMAT': 'PictFormat',
-            'PICTFORMINFO': 'PictFormInfo',
-            'PICTSCREEN': 'PictScreen',
-            'PICTVISUAL': 'PictVisual',
-            'POINTFIX': 'PointFix',
-            'SEGMENT': 'SEGMENT',
-            'SPANFIX': 'SpanFix',
-            'SUBPICTURE': 'SubPicture',
-            'SYSTEMCOUNTER': 'SystemCounter',
-            'TIMECOORD': 'TimeCoord',
-            'TIMESTAMP': 'Time',
-            'VISUALID': 'VisualId',
-            'VISUALTYPE': 'VisualType',
-            'WAITCONDITION': 'WaitCondition',
-        }
-        if name in SPECIAL:
-            return SPECIAL[name]
+    if name in RENAME:
+        return RENAME[name]
+    # If there's an underscore, then this is either snake case or upper case.
+    if '_' in name:
         return ''.join([
             token[0].upper() + token[1:].lower() for token in name.split('_')
         ])
-    return name
+    if name.isupper():
+        name = name.lower()
+    # Now the only possibilities are caml case and pascal case.  It could also
+    # be snake case with a single word, but that would be same as caml case.
+    # To convert all of these, just capitalize the first letter.
+    return name[0].upper() + name[1:]
 
 
 # Left-pad with 2 spaces while this class is alive.
@@ -296,19 +296,33 @@ def safe_name(name):
     return name
 
 
-class GenXproto:
-    def __init__(self, args, xcbgen):
+class FileWriter:
+    def __init__(self):
+        self.indent = 0
+
+    # Write a line to the current file.
+    def write(self, line=''):
+        indent = self.indent if line and not line.startswith('#') else 0
+        print(('  ' * indent) + line, file=self.file)
+
+
+class GenXproto(FileWriter):
+    def __init__(self, proto, proto_dir, gen_dir, xcbgen):
+        FileWriter.__init__(self)
+
         # Command line arguments
-        self.args = args
+        self.proto = proto
+        self.xml_filename = os.path.join(proto_dir, '%s.xml' % proto)
+        self.header_file = open(os.path.join(gen_dir, '%s.h' % proto), 'w')
+        self.source_file = open(os.path.join(gen_dir, '%s.cc' % proto), 'w')
+        self.undef_file = open(os.path.join(gen_dir, '%s_undef.h' % proto),
+                               'w')
 
         # Top-level xcbgen python module
         self.xcbgen = xcbgen
 
         # The last used UID for making unique names
         self.prev_id = -1
-
-        # Current indentation level
-        self.indent = 0
 
         # Current file to write to
         self.file = None
@@ -335,11 +349,6 @@ class GenXproto:
 
         # Map from (XML tag, XML name) to XML element
         self.module_names = {}
-
-    # Write a line to the current file.
-    def write(self, line=''):
-        indent = self.indent if line and not line.startswith('#') else 0
-        print(('  ' * indent) + line, file=self.file)
 
     # Geenerate an ID suitable for use in temporary variable names.
     def new_uid(self, ):
@@ -436,9 +445,9 @@ class GenXproto:
 
     # Work around conflicts caused by Xlib's liberal use of macros.
     def undef(self, name):
-        print('#ifdef %s' % name, file=self.args.undeffile)
-        print('#undef %s' % name, file=self.args.undeffile)
-        print('#endif', file=self.args.undeffile)
+        print('#ifdef %s' % name, file=self.undef_file)
+        print('#undef %s' % name, file=self.undef_file)
+        print('#endif', file=self.undef_file)
 
     def expr(self, expr):
         if expr.op == 'popcount':
@@ -530,15 +539,11 @@ class GenXproto:
 
         if name in ('major_opcode', 'minor_opcode'):
             assert not self.is_read
-            is_ext = any(
-                [f.field_name == 'minor_opcode' for f in field.parent.fields])
-            if is_ext and name == 'major_opcode':
-                self.write('// Caller fills in extension major opcode.')
-                self.write('Pad(&buf, sizeof(%s));' % type_name)
-            else:
-                self.write('%s %s = %s;' %
-                           (type_name, name, field.parent.opcode))
-                self.copy_primitive(name)
+            is_ext = self.module.namespace.is_ext
+            self.write('%s %s = %s;' %
+                       (type_name, name, 'major_opcode_' if is_ext
+                        and name == 'major_opcode' else field.parent.opcode))
+            self.copy_primitive(name)
         elif name in ('response_type', 'sequence', 'extension'):
             assert self.is_read
             self.write('%s %s;' % (type_name, name))
@@ -927,6 +932,8 @@ class GenXproto:
     # Perform preprocessing like renaming, reordering, and adding additional
     # data fields.
     def resolve(self):
+        self.class_name = (adjust_type_case(self.module.namespace.ext_name)
+                           if self.module.namespace.is_ext else 'XProto')
         for name, t in self.module.all:
             self.resolve_type(t, name)
 
@@ -993,8 +1000,8 @@ class GenXproto:
         self.module.all.sort(cmp=cmp)
 
     def gen_header(self):
-        self.file = self.args.headerfile
-        include_guard = self.args.headerfile.name.replace('/', '_').replace(
+        self.file = self.header_file
+        include_guard = self.header_file.name.replace('/', '_').replace(
             '.', '_').upper() + '_'
         self.write('#ifndef ' + include_guard)
         self.write('#define ' + include_guard)
@@ -1022,7 +1029,10 @@ class GenXproto:
         with Indent(self, 'class COMPONENT_EXPORT(X11) %s {' % name, '};'):
             self.namespace = ['x11', self.class_name]
             self.write('public:')
-            self.write('explicit %s(XDisplay* display);' % name)
+            if self.module.namespace.is_ext:
+                self.write(name + '(XDisplay* display, uint8_t major_opcode);')
+            else:
+                self.write('explicit %s(XDisplay* display);' % name)
             self.write()
             self.write('XDisplay* display() { return display_; }')
             self.write()
@@ -1030,6 +1040,8 @@ class GenXproto:
                 self.declare_type(item, name)
             self.write('private:')
             self.write('XDisplay* const display_;')
+            if self.module.namespace.is_ext:
+                self.write('uint8_t major_opcode_;')
 
         self.write()
         self.write('}  // namespace x11')
@@ -1037,7 +1049,7 @@ class GenXproto:
         self.write('#endif  // ' + include_guard)
 
     def gen_source(self):
-        self.file = self.args.sourcefile
+        self.file = self.source_file
         self.write('#include "%s.h"' % self.module.namespace.header)
         self.write()
         self.write('#include <xcb/xcb.h>')
@@ -1048,33 +1060,116 @@ class GenXproto:
         self.write()
         self.write('namespace x11 {')
         self.write()
-        name = self.class_name
-        self.write('%s::%s(XDisplay* display) : display_(display) {}' %
-                   (name, name))
+        ctor = '%s::%s' % (self.class_name, self.class_name)
+        if self.module.namespace.is_ext:
+            self.write(ctor + '(XDisplay* display, uint8_t opcode)')
+            self.write('    : display_(display), major_opcode_(opcode) {}')
+        else:
+            self.write(ctor + '(XDisplay* display) : display_(display) {}')
         self.write()
         for (name, item) in self.module.all:
             if isinstance(item, self.xcbgen.xtypes.Request):
                 self.define_request(item)
         self.write('}  // namespace x11')
 
-    def generate(self):
-        self.module = self.xcbgen.state.Module(self.args.xmlfile.name, None)
+    def parse(self):
+        self.module = self.xcbgen.state.Module(self.xml_filename, None)
         self.module.register()
         self.module.resolve()
-        self.resolve()
-        self.class_name = (adjust_type_case(self.module.namespace.ext_name)
-                           if self.module.namespace.is_ext else 'XProto')
 
+    def generate(self):
         self.gen_header()
         self.gen_source()
 
 
+class GenExtensionManager(FileWriter):
+    def __init__(self, gen_dir, genprotos):
+        FileWriter.__init__(self)
+
+        self.gen_dir = gen_dir
+        self.genprotos = genprotos
+        self.extensions = [
+            proto for proto in genprotos if proto.module.namespace.is_ext
+        ]
+
+    def gen_header(self):
+        self.file = open(os.path.join(self.gen_dir, 'extension_manager.h'),
+                         'w')
+        self.write('#ifndef UI_GFX_X_EXTENSION_MANAGER_H_')
+        self.write('#define UI_GFX_X_EXTENSION_MANAGER_H_')
+        self.write()
+        self.write('#include <memory>')
+        self.write()
+        self.write('#include "base/component_export.h"')
+        self.write()
+        self.write('// Avoid conflicts caused by the GenericEvent macro.')
+        self.write('#include "ui/gfx/x/ge_undef.h"')
+        self.write()
+        self.write('typedef struct _XDisplay XDisplay;')
+        self.write()
+        self.write('namespace x11 {')
+        self.write()
+        for genproto in self.genprotos:
+            self.write('class %s;' % genproto.class_name)
+        self.write()
+        with Indent(self, 'class COMPONENT_EXPORT(X11) ExtensionManager {',
+                    '};'):
+            self.write('public:')
+            self.write('explicit ExtensionManager(XProto* xproto);')
+            self.write('~ExtensionManager();')
+            self.write()
+            for extension in self.extensions:
+                name = extension.proto
+                self.write('%s* %s() { return %s_.get(); }' %
+                           (extension.class_name, name, name))
+            self.write()
+            self.write('private:')
+            for extension in self.extensions:
+                self.write('std::unique_ptr<%s> %s_;' %
+                           (extension.class_name, extension.proto))
+        self.write()
+        self.write('}  // namespace x11')
+        self.write()
+        self.write('#endif  // UI_GFX_X_EXTENSION_MANAGER_H_')
+
+    def gen_source(self):
+        self.file = open(os.path.join(self.gen_dir, 'extension_manager.cc'),
+                         'w')
+        self.write('#include "ui/gfx/x/extension_manager.h"')
+        self.write()
+        for genproto in self.genprotos:
+            self.write('#include "ui/gfx/x/%s.h"' % genproto.proto)
+        self.write()
+        self.write('namespace x11 {')
+        self.write()
+        ctor = 'ExtensionManager::ExtensionManager'
+        with Indent(self, ctor + '(XProto* xproto) {', '}'):
+            self.write('XDisplay* display = xproto->display();')
+            self.write('if (!display)')
+            self.write('  return;')
+            for extension in self.extensions:
+                self.write(
+                    'auto %s_future = xproto->QueryExtension({"%s"});' %
+                    (extension.proto, extension.module.namespace.ext_xname))
+            self.write()
+            for extension in self.extensions:
+                name = extension.proto
+                self.write('auto {0}_reply = {0}_future.Sync();'.format(name))
+                self.write('if ({0}_reply && {0}_reply->present)'.format(name))
+                args = 'display, %s_reply->major_opcode' % name
+                self.write('  %s_ = std::make_unique<%s>(%s);' %
+                           (name, extension.class_name, args))
+        self.write()
+        self.write('ExtensionManager::~ExtensionManager() = default;')
+        self.write()
+        self.write('}  // namespace x11')
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('xmlfile', type=argparse.FileType('r'))
-    parser.add_argument('undeffile', type=argparse.FileType('w'))
-    parser.add_argument('headerfile', type=argparse.FileType('w'))
-    parser.add_argument('sourcefile', type=argparse.FileType('w'))
+    parser.add_argument('proto_dir', type=str)
+    parser.add_argument('gen_dir', type=str)
+    parser.add_argument('protos', type=str, nargs='*')
     parser.add_argument('--sysroot')
     args = parser.parse_args()
 
@@ -1086,8 +1181,17 @@ def main():
     import xcbgen.xtypes
     import xcbgen.state
 
-    generator = GenXproto(args, xcbgen)
-    generator.generate()
+    genprotos = [
+        GenXproto(proto, args.proto_dir, args.gen_dir, xcbgen)
+        for proto in args.protos
+    ]
+    for genproto in genprotos:
+        genproto.parse()
+        genproto.resolve()
+        genproto.generate()
+    gen_extension_manager = GenExtensionManager(args.gen_dir, genprotos)
+    gen_extension_manager.gen_header()
+    gen_extension_manager.gen_source()
 
     return 0
 

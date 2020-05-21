@@ -40,7 +40,8 @@ enum class LoadStreamStatus {
   // TODO(harringtond): Emit this status value.
   kCannotParseNetworkResponseBody = 15,
   kLoadMoreModelIsNotLoaded = 16,
-  kMaxValue = kLoadMoreModelIsNotLoaded,
+  kLoadNotAllowedDisabledByEnterprisePolicy = 17,
+  kMaxValue = kLoadNotAllowedDisabledByEnterprisePolicy,
 };
 
 std::ostream& operator<<(std::ostream& out, LoadStreamStatus value);

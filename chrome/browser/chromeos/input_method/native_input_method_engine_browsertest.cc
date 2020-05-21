@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -301,6 +302,8 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, NoActiveController) {
 }
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserEmail) {
+  base::HistogramTester histogram_tester;
+
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile_);
   signin::SetPrimaryAccount(identity_manager, "johnwayne@me.xyz");
@@ -316,16 +319,27 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserEmail) {
 
   helper.GetTextInputClient()->InsertText(prefix_text);
   helper.WaitForSurroundingTextChanged(prefix_text);
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Match",
+                                      chromeos::AssistiveType::kPersonalEmail,
+                                      1);
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Coverage",
+                                      chromeos::AssistiveType::kPersonalEmail,
+                                      1);
 
   DispatchKeyPress(ui::VKEY_TAB, false);
   helper.WaitForSurroundingTextChanged(expected_result_text);
 
   EXPECT_EQ(expected_result_text, helper.GetSurroundingText());
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Success",
+                                      chromeos::AssistiveType::kPersonalEmail,
+                                      1);
 
   SetFocus(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, DismissSuggestion) {
+  base::HistogramTester histogram_tester;
+
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfileIfExists(profile_);
   signin::SetPrimaryAccount(identity_manager, "johnwayne@me.xyz");
@@ -349,11 +363,16 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, DismissSuggestion) {
   helper.WaitForSurroundingTextChanged(expected_result_text);
 
   EXPECT_EQ(expected_result_text, helper.GetSurroundingText());
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Success",
+                                      chromeos::AssistiveType::kPersonalEmail,
+                                      0);
 
   SetFocus(nullptr);
 }
 
 IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserName) {
+  base::HistogramTester histogram_tester;
+
   TestPersonalDataManagerObserver personal_data_observer(profile_);
   autofill::AutofillProfile autofill_profile(base::GenerateGUID(),
                                              autofill::test::kEmptyOrigin);
@@ -374,6 +393,11 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserName) {
 
   helper.GetTextInputClient()->InsertText(prefix_text);
   helper.WaitForSurroundingTextChanged(prefix_text);
+  histogram_tester.ExpectUniqueSample(
+      "InputMethod.Assistive.Match", chromeos::AssistiveType::kPersonalName, 1);
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Coverage",
+                                      chromeos::AssistiveType::kPersonalName,
+                                      1);
 
   // Keep typing
   helper.GetTextInputClient()->InsertText(base::UTF8ToUTF16("jo"));
@@ -383,6 +407,14 @@ IN_PROC_BROWSER_TEST_F(NativeInputMethodEngineTest, SuggestUserName) {
   helper.WaitForSurroundingTextChanged(expected_result_text);
 
   EXPECT_EQ(expected_result_text, helper.GetSurroundingText());
+
+  // Make sure we do not emit multiple Coverage metrics when users keep typing.
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Coverage",
+                                      chromeos::AssistiveType::kPersonalName,
+                                      1);
+  histogram_tester.ExpectUniqueSample("InputMethod.Assistive.Success",
+                                      chromeos::AssistiveType::kPersonalName,
+                                      1);
 
   SetFocus(nullptr);
 }

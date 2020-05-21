@@ -2076,6 +2076,7 @@ static_library("ui") {
       "webui/settings/chromeos/multidevice_section.h",
       "webui/settings/chromeos/os_settings_features_util.cc",
       "webui/settings/chromeos/os_settings_features_util.h",
+      "webui/settings/chromeos/os_settings_identifier.h",
       "webui/settings/chromeos/os_settings_manager.cc",
       "webui/settings/chromeos/os_settings_manager.h",
       "webui/settings/chromeos/os_settings_manager_factory.cc",
@@ -4272,7 +4273,6 @@ static_library("ui") {
     ]
     deps += [
       "//components/printing/common:mojo_interfaces",
-      "//components/services/print_compositor/public/mojom",
       "//printing/mojom",
       "//services/device/public/cpp/usb",
       "//services/device/public/mojom:usb",

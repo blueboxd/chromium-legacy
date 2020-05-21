@@ -7,7 +7,8 @@
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "chrome/browser/ui/webui/settings/chromeos/search/search_concept.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 namespace settings {
@@ -40,9 +41,26 @@ OsSettingsSection::OsSettingsSection(Profile* profile,
 OsSettingsSection::OsSettingsSection() = default;
 
 std::string OsSettingsSection::ModifySearchResultUrl(
-    const SearchConcept& concept) const {
+    mojom::SearchResultType type,
+    OsSettingsIdentifier id,
+    const std::string& url_to_modify) const {
   // Default case for static URLs which do not need to be modified.
-  return concept.url_path_with_parameters;
+  return url_to_modify;
+}
+
+mojom::SearchResultPtr OsSettingsSection::GenerateSectionSearchResult(
+    double relevance_score) const {
+  return mojom::SearchResult::New(
+      l10n_util::GetStringUTF16(GetSectionNameMessageId()),
+      ModifySearchResultUrl(mojom::SearchResultType::kSection,
+                            {.section = GetSection()}, GetSectionPath()),
+      GetSectionIcon(), relevance_score,
+      std::vector<base::string16>{
+          l10n_util::GetStringUTF16(IDS_INTERNAL_APP_SETTINGS),
+          l10n_util::GetStringUTF16(GetSectionNameMessageId())},
+      mojom::SearchResultDefaultRank::kMedium,
+      mojom::SearchResultType::kSection,
+      mojom::SearchResultIdentifier::NewSection(GetSection()));
 }
 
 }  // namespace settings

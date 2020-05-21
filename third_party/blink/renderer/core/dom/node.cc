@@ -840,8 +840,9 @@ static Node* ConvertNodesIntoNode(
     const HeapVector<NodeOrStringOrTrustedScript>& nodes,
     Document& document,
     ExceptionState& exception_state) {
-  bool needs_check =
-      IsA<HTMLScriptElement>(parent) && document.IsTrustedTypesEnabledForDoc();
+  bool needs_check = IsA<HTMLScriptElement>(parent) &&
+                     document.GetExecutionContext() &&
+                     document.GetExecutionContext()->RequireTrustedTypes();
 
   if (nodes.size() == 1)
     return NodeOrStringToNode(nodes[0], document, needs_check, exception_state);

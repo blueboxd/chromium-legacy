@@ -1559,6 +1559,13 @@ void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
                        layer_tree_host_->SourceFrameNumber());
   if (swap_promise) {
     layer_tree_host_->QueueSwapPromise(std::move(swap_promise));
+
+    // Request a main frame if one is not already in progress. This might either
+    // A) request a commit ahead of time or B) request a commit which is not
+    // needed because there are not pending updates. If B) then the frame will
+    // be aborted early and the swap promises will be broken (see
+    // EarlyOut_NoUpdates).
+    layer_tree_host_->SetNeedsAnimateIfNotInsideMainFrame();
   }
 }
 

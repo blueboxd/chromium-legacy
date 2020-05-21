@@ -12,7 +12,6 @@
 #include "ash/highlighter/highlighter_view.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/shell_state.h"
 #include "ash/system/palette/palette_utils.h"
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
@@ -191,8 +190,7 @@ void HighlighterController::RecognizeGesture() {
   if (!box.IsEmpty() &&
       gesture_type != HighlighterGestureType::kNotRecognized) {
     // The window for selection should be the root window to show assistant.
-    Shell::Get()->shell_state()->SetRootWindowForNewWindows(
-        current_window->GetRootWindow());
+    Shell::SetRootWindowForNewWindows(current_window->GetRootWindow());
 
     const gfx::Rect selection_rect = gfx::ToEnclosingRect(box);
     for (auto& observer : observers_)

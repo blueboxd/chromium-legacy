@@ -37,9 +37,14 @@ class InternetSection
   void AddLoadTimeData(content::WebUIDataSource* html_source) override;
   void AddHandlers(content::WebUI* web_ui) override;
   int GetSectionNameMessageId() const override;
+  mojom::Section GetSection() const override;
+  mojom::SearchResultIcon GetSectionIcon() const override;
+  std::string GetSectionPath() const override;
   void RegisterHierarchy(HierarchyGenerator* generator) const override;
   std::string ModifySearchResultUrl(
-      const SearchConcept& concept) const override;
+      mojom::SearchResultType type,
+      OsSettingsIdentifier id,
+      const std::string& url_to_modify) const override;
 
   // network_config::mojom::CrosNetworkConfigObserver:
   void OnActiveNetworksChanged(

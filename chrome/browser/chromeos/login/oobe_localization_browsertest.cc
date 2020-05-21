@@ -194,12 +194,12 @@ class OobeLocalizationTest
   // Verifies that the comma-separated |values| corresponds with the first
   // values in |select_id|, optionally checking for an options group label after
   // the first set of options.
-  bool VerifyInitialOptions(const char* select_id,
+  void VerifyInitialOptions(const char* select_id,
                             const char* values,
                             bool check_separator);
 
   // Verifies that |value| exists in |select_id|.
-  bool VerifyOptionExists(const char* select_id, const char* value);
+  void VerifyOptionExists(const char* select_id, const char* value);
 
   // Dumps OOBE select control (language or keyboard) to string.
   std::string DumpOptions(const char* select_id);
@@ -207,19 +207,6 @@ class OobeLocalizationTest
  protected:
   // Runs the test for the given locale and keyboard layout.
   void RunLocalizationTest();
-
-  // Runs until the OOBE UI JS is ready, or the default Run() timeout expires.
-  void RunUntilJSIsReady() {
-    LoginDisplayHost* host = LoginDisplayHost::default_host();
-    ASSERT_TRUE(host);
-
-    OobeUI* oobe_ui = host->GetOobeUI();
-    ASSERT_TRUE(oobe_ui);
-
-    base::RunLoop run_loop;
-    if (!oobe_ui->IsJSReady(run_loop.QuitClosure()))
-      run_loop.Run();
-  }
 
  private:
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
@@ -234,31 +221,41 @@ OobeLocalizationTest::OobeLocalizationTest() : OobeBaseTest() {
                                                 GetParam()->keyboard_layout);
 }
 
-bool OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
+void OobeLocalizationTest::VerifyInitialOptions(const char* select_id,
                                                 const char* values,
                                                 bool check_separator) {
+  const std::string select = GetGetSelectStatement(select_id);
   const std::string expression = base::StringPrintf(
       "(function () {\n"
       "  let select = %s;\n"
-      "  if (!select)\n"
+      "  if (!select) {\n"
+      "    console.error('Could not find ' + `%s`);\n"
       "    return false;\n"
+      "  }\n"
       "  let values = '%s'.split(',');\n"
       "  let correct = select.selectedIndex == 0;\n"
+      "  if (!correct)\n"
+      "    console.error('Wrong selected index ' + select.selectedIndex);\n"
       "  for (var i = 0; i < values.length && correct; i++) {\n"
-      "    if (select.options[i].value != values[i])\n"
+      "    if (select.options[i].value != values[i]) {\n"
       "      correct = false;\n"
+      "      console.error('Values mismatch ' + "
+      "                     select.options[i].value + ' ' + values[i]);\n"
+      "    }\n"
       "  }\n"
-      "  if (%d && correct)\n"
+      "  if (%d && correct) {\n"
       "    correct = select.children[values.length].tagName === 'OPTGROUP';\n"
+      "    if (!correct)\n"
+      "      console.error('Wrong tagname ' + "
+      "                     select.children[values.length].tagName);\n"
+      "  }\n"
       "  return correct;\n"
       "})()",
-      GetGetSelectStatement(select_id).c_str(), values, check_separator);
-  const bool execute_status = test::OobeJS().GetBool(expression);
-  EXPECT_TRUE(execute_status) << expression;
-  return execute_status;
+      select.c_str(), select.c_str(), values, check_separator);
+  test::OobeJS().ExpectTrue(expression);
 }
 
-bool OobeLocalizationTest::VerifyOptionExists(const char* select_id,
+void OobeLocalizationTest::VerifyOptionExists(const char* select_id,
                                               const char* value) {
   const std::string expression = base::StringPrintf(
       "(function () {\n"
@@ -272,9 +269,7 @@ bool OobeLocalizationTest::VerifyOptionExists(const char* select_id,
       "  return false;\n"
       "})()",
       GetGetSelectStatement(select_id).c_str(), value);
-  const bool execute_status = test::OobeJS().GetBool(expression);
-  EXPECT_TRUE(execute_status) << expression;
-  return execute_status;
+  test::OobeJS().ExpectTrue(expression);
 }
 
 std::string OobeLocalizationTest::DumpOptions(const char* select_id) {
@@ -351,66 +346,32 @@ void OobeLocalizationTest::RunLocalizationTest() {
 
   ASSERT_NO_FATAL_FAILURE(LanguageListWaiter().RunUntilLanguageListReady());
 
-  ASSERT_NO_FATAL_FAILURE(RunUntilJSIsReady());
-
   const std::string first_language =
       expected_locale.substr(0, expected_locale.find(','));
-  bool done = false;
   const std::string get_select_statement =
       GetGetSelectStatement(kLanguageSelect);
-  const std::string waiting_script = base::StringPrintf(
-      "function SendReplyIfAcceptEnabled() {"
-      "  if (%s.value != '%s')"
-      "    return false;"
-      "  domAutomationController.send(true);"
-      "  observer.disconnect();"
-      "  return true;"
-      "}"
-      "var observer = new MutationObserver(SendReplyIfAcceptEnabled);"
-      "if (!SendReplyIfAcceptEnabled()) {"
-      "  let options = { attributes: true };"
-      "  observer.observe(%s, options);"
-      "}",
-      get_select_statement.c_str(), first_language.c_str(),
-      get_select_statement.c_str());
 
-  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
-      LoginDisplayHost::default_host()->GetOobeUI()->web_ui()->GetWebContents(),
-      waiting_script, &done));
+  ASSERT_NO_FATAL_FAILURE(
+      VerifyInitialOptions(kLanguageSelect, expected_locale.c_str(), true))
+      << "Actual value of " << kLanguageSelect << ":\n"
+      << DumpOptions(kLanguageSelect);
 
-  if (!VerifyInitialOptions(kLanguageSelect, expected_locale.c_str(), true)) {
-    LOG(ERROR) << "Actual value of " << kLanguageSelect << ":\n"
-               << DumpOptions(kLanguageSelect);
-    EXPECT_TRUE(false);
-  }
-  if (!VerifyInitialOptions(
-          kKeyboardSelect,
-          TranslateXKB2Extension(expected_keyboard_layout).c_str(), false)) {
-    LOG(ERROR) << "Actual value of " << kKeyboardSelect << ":\n"
-               << DumpOptions(kKeyboardSelect);
-    EXPECT_TRUE(false);
-  }
+  ASSERT_NO_FATAL_FAILURE(VerifyInitialOptions(
+      kKeyboardSelect, TranslateXKB2Extension(expected_keyboard_layout).c_str(),
+      false))
+      << "Actual value of " << kKeyboardSelect << ":\n"
+      << DumpOptions(kKeyboardSelect);
 
   // Make sure we have a fallback keyboard.
-  if (!VerifyOptionExists(
-          kKeyboardSelect,
-          extension_ime_util::GetInputMethodIDByEngineID(kUSLayout).c_str())) {
-    LOG(ERROR) << "Actual value of " << kKeyboardSelect << ":\n"
-               << DumpOptions(kKeyboardSelect);
-    EXPECT_TRUE(false);
-  }
+  ASSERT_NO_FATAL_FAILURE(VerifyOptionExists(
+      kKeyboardSelect,
+      extension_ime_util::GetInputMethodIDByEngineID(kUSLayout).c_str()))
+      << "Actual value of " << kKeyboardSelect << ":\n"
+      << DumpOptions(kKeyboardSelect);
 
   // Note, that sort order is locale-specific, but is unlikely to change.
   // Especially for keyboard layouts.
   EXPECT_EQ(expected_keyboard_select, DumpOptions(kKeyboardSelect));
-
-  // Shut down the display host.
-  LoginDisplayHost::default_host()->Finalize(base::OnceClosure());
-  base::RunLoop().RunUntilIdle();
-
-  // Clear the locale pref so the statistics provider is pinged next time.
-  g_browser_process->local_state()->SetString(
-      language::prefs::kApplicationLocale, std::string());
 }
 
 IN_PROC_BROWSER_TEST_P(OobeLocalizationTest, LocalizationTest) {

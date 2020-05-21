@@ -1488,6 +1488,7 @@ void HistoryBackend::QueryHistoryBasic(const QueryOptions& options,
     }
 
     url_result.set_visit_time(visit.visit_time);
+    url_result.set_publicly_routable(visit.publicly_routable);
 
     // Set whether the visit was blocked for a managed user by looking at the
     // transition type.
@@ -1521,6 +1522,7 @@ void HistoryBackend::QueryHistoryText(const base::string16& text_query,
     for (size_t j = 0; j < visits.size(); j++) {
       URLResult url_result(text_match);
       url_result.set_visit_time(visits[j].visit_time);
+      url_result.set_publicly_routable(visits[j].publicly_routable);
       matching_visits.push_back(url_result);
     }
   }

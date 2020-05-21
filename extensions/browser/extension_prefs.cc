@@ -1966,6 +1966,8 @@ ExtensionPrefs::ExtensionPrefs(
   MigrateToNewWithholdingPref();
 
   MigrateToNewExternalUninstallPref();
+
+  MigrateYoutubeOffBookmarkApps();
 }
 
 AppSorting* ExtensionPrefs::app_sorting() const {
@@ -2244,6 +2246,26 @@ void ExtensionPrefs::FinishExtensionInfoPrefs(
 
   for (auto& observer : observer_list_)
     observer.OnExtensionRegistered(extension_id, install_time, is_enabled);
+}
+
+void ExtensionPrefs::MigrateYoutubeOffBookmarkApps() {
+  const base::DictionaryValue* extensions_dictionary =
+      prefs_->GetDictionary(pref_names::kExtensions);
+  DCHECK(extensions_dictionary->is_dict());
+
+  const base::DictionaryValue* youtube_dictionary = nullptr;
+  if (!extensions_dictionary->GetDictionary(extension_misc::kYoutubeAppId,
+                                            &youtube_dictionary)) {
+    return;
+  }
+  int creation_flags = 0;
+  if (!youtube_dictionary->GetInteger(kPrefCreationFlags, &creation_flags) ||
+      (creation_flags & Extension::FROM_BOOKMARK) == 0) {
+    return;
+  }
+  ScopedExtensionPrefUpdate update(prefs_, extension_misc::kYoutubeAppId);
+  creation_flags &= ~Extension::FROM_BOOKMARK;
+  update->SetInteger(kPrefCreationFlags, creation_flags);
 }
 
 void ExtensionPrefs::MigrateObsoleteExtensionPrefs() {

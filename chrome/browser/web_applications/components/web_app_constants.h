@@ -83,8 +83,11 @@ enum class InstallResultCode {
   // App managers are shutting down. For example, when user logs out immediately
   // after login.
   kCancelledOnWebAppProviderShuttingDown = 21,
+  // The Web Apps system is not ready: registry is not yet opened or already
+  // closed.
+  kWebAppProviderNotReady = 22,
 
-  kMaxValue = kCancelledOnWebAppProviderShuttingDown
+  kMaxValue = kWebAppProviderNotReady
 };
 
 // Checks if InstallResultCode is not a failure.

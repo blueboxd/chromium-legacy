@@ -193,6 +193,8 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
         GURL("https://www.chromestatus.com/features"), DisplayMode::kBrowser,
         ExternalInstallSource::kExternalDefault);
     install_options.add_to_applications_menu = true;
+    install_options.add_to_search = true;
+    install_options.add_to_management = true;
     install_options.add_to_desktop = true;
     install_options.add_to_quick_launch_bar = true;
     install_options.require_manifest = true;
@@ -202,7 +204,9 @@ TEST_F(ScanDirForExternalWebAppsTest, GoodJson) {
     ExternalInstallOptions install_options(
         GURL("https://events.google.com/io2016/?utm_source=web_app_manifest"),
         DisplayMode::kStandalone, ExternalInstallSource::kExternalDefault);
-    install_options.add_to_applications_menu = false;
+    install_options.add_to_applications_menu = true;
+    install_options.add_to_search = true;
+    install_options.add_to_management = true;
     install_options.add_to_desktop = false;
     install_options.add_to_quick_launch_bar = false;
     install_options.require_manifest = true;
@@ -268,12 +272,31 @@ TEST_F(ScanDirForExternalWebAppsTest, InvalidAppUrl) {
   EXPECT_EQ(0u, app_infos.size());
 }
 
+TEST_F(ScanDirForExternalWebAppsTest, TrueHideFromUser) {
+  const auto app_infos = ScanTestDirForExternalWebApps("true_hide_from_user");
+
+  EXPECT_EQ(1u, app_infos.size());
+  const auto& app = app_infos[0];
+  EXPECT_FALSE(app.add_to_applications_menu);
+  EXPECT_FALSE(app.add_to_search);
+  EXPECT_FALSE(app.add_to_management);
+}
+
+TEST_F(ScanDirForExternalWebAppsTest, InvalidHideFromUser) {
+  const auto app_infos =
+      ScanTestDirForExternalWebApps("invalid_hide_from_user");
+
+  // The invalid_hide_from_user directory contains on JSON file which is correct
+  // except for an invalid "hide_from_user" field.
+  EXPECT_EQ(0u, app_infos.size());
+}
+
 TEST_F(ScanDirForExternalWebAppsTest, InvalidCreateShortcuts) {
   const auto app_infos =
       ScanTestDirForExternalWebApps("invalid_create_shortcuts");
 
   // The invalid_create_shortcuts directory contains one JSON file which is
-  // correct except for an invalid "create_shortctus" field.
+  // correct except for an invalid "create_shortcuts" field.
   EXPECT_EQ(0u, app_infos.size());
 }
 

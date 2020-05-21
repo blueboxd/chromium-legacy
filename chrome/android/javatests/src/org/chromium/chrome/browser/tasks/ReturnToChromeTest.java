@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks;
 import static com.google.common.truth.Truth.assertThat;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assume.assumeTrue;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS_PARAM;
 
@@ -457,7 +458,7 @@ public class ReturnToChromeTest {
     public void testInitialScrollIndex() throws Exception {
         // clang-format on
         // Instant start is not applicable since we need to create tabs and restart.
-        if (mUseInstantStart) return;
+        assumeTrue(!mUseInstantStart);
 
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());

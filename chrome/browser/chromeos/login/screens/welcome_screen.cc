@@ -76,6 +76,10 @@ void WelcomeScreen::OnViewDestroyed(WelcomeView* view) {
 }
 
 void WelcomeScreen::UpdateLanguageList() {
+  // Bail if there is already pending request.
+  if (weak_factory_.HasWeakPtrs())
+    return;
+
   ScheduleResolveLanguageList(
       std::unique_ptr<locale_util::LanguageSwitchResult>());
 }
@@ -89,6 +93,9 @@ void WelcomeScreen::SetApplicationLocaleAndInputMethod(
     SetInputMethod(input_method);
     return;
   }
+
+  // Cancel pending requests.
+  weak_factory_.InvalidateWeakPtrs();
 
   // Block UI while resource bundle is being reloaded.
   // (InputEventsBlocker will live until callback is finished.)
@@ -112,6 +119,9 @@ void WelcomeScreen::SetApplicationLocale(const std::string& locale) {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   if (app_locale == locale || locale.empty())
     return;
+
+  // Cancel pending requests.
+  weak_factory_.InvalidateWeakPtrs();
 
   // Block UI while resource bundle is being reloaded.
   // (InputEventsBlocker will live until callback is finished.)
@@ -242,6 +252,9 @@ void WelcomeScreen::OnLanguageChangedCallback(
 
 void WelcomeScreen::ScheduleResolveLanguageList(
     std::unique_ptr<locale_util::LanguageSwitchResult> language_switch_result) {
+  // Cancel pending requests.
+  weak_factory_.InvalidateWeakPtrs();
+
   UILanguageListResolvedCallback callback = base::Bind(
       &WelcomeScreen::OnLanguageListResolved, weak_factory_.GetWeakPtr());
   ResolveUILanguageList(std::move(language_switch_result), callback);

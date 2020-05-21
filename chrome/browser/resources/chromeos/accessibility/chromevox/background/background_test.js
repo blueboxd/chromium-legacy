@@ -214,7 +214,7 @@ TEST_F('ChromeVoxBackgroundTest', 'ForwardBackwardNavigation', function() {
 });
 
 TEST_F('ChromeVoxBackgroundTest', 'CaretNavigation', function() {
-  // TODO(plundblad): Add braille expectaions when crbug.com/523285 is fixed.
+  // TODO(plundblad): Add braille expectations when crbug.com/523285 is fixed.
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(this.linksAndHeadingsDoc, function() {
     mockFeedback.expectSpeech('start');
@@ -2565,3 +2565,15 @@ TEST_F('ChromeVoxBackgroundTest', 'MenuItemRadio', function() {
             .replay();
       });
 });
+
+TEST_F(
+    'ChromeVoxBackgroundTest', 'FocusableNamedDivIsNotContainer', function() {
+      this.runWithLoadedTree(
+          `<div aria-label="hello world" tabindex="0">hello world</div>`,
+          function(root) {
+            const genericContainer =
+                root.find({role: RoleType.GENERIC_CONTAINER});
+            assertTrue(AutomationPredicate.object(genericContainer));
+            assertFalse(AutomationPredicate.container(genericContainer));
+          });
+    });

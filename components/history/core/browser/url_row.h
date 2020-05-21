@@ -165,6 +165,11 @@ class URLResult : public URLRow {
   base::Time visit_time() const { return visit_time_; }
   void set_visit_time(base::Time visit_time) { visit_time_ = visit_time; }
 
+  bool publicly_routable() const { return publicly_routable_; }
+  void set_publicly_routable(bool publicly_routable) {
+    publicly_routable_ = publicly_routable;
+  }
+
   const query_parser::Snippet& snippet() const { return snippet_; }
 
   bool blocked_visit() const { return blocked_visit_; }
@@ -188,6 +193,10 @@ class URLResult : public URLRow {
 
   // The time that this result corresponds to.
   base::Time visit_time_;
+
+  // Indicates whether the IP of this URL was publicly routable. See
+  // VisitRow::publicly_routable for details.
+  bool publicly_routable_ = false;
 
   // These values are typically set by HistoryBackend.
   query_parser::Snippet snippet_;

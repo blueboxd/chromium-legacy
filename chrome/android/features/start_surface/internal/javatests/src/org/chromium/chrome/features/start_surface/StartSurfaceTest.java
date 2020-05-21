@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import static org.chromium.chrome.browser.tasks.ReturnToChromeExperimentsUtil.TAB_SWITCHER_ON_RETURN_MS;
 import static org.chromium.chrome.features.start_surface.InstantStartTest.createThumbnailBitmapAndWriteToFile;
@@ -83,7 +84,6 @@ import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
-import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.io.IOException;
@@ -124,7 +124,6 @@ public class StartSurfaceTest {
     public TestRule mProcessor = new Features.InstrumentationProcessor();
 
     private final boolean mImmediateReturn;
-    private String mUrl;
 
     public StartSurfaceTest(boolean useInstantStart, boolean immediateReturn) {
         CachedFeatureFlags.setForTesting(ChromeFeatureList.INSTANT_START, useInstantStart);
@@ -150,11 +149,6 @@ public class StartSurfaceTest {
 
     @Before
     public void setUp() throws IOException {
-        EmbeddedTestServer testServer =
-                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-
-        mUrl = testServer.getURL("/chrome/test/data/android/navigate/simple.html");
-
         // Scrolling tests need more tabs.
         String scrollMode = StartSurfaceConfiguration.START_SURFACE_OMNIBOX_SCROLL_MODE.getValue();
         int expectedTabs = scrollMode.isEmpty() ? 1 : 16;
@@ -617,7 +611,7 @@ public class StartSurfaceTest {
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
-        onView(withId(R.id.search_box_text)).perform(replaceText(mUrl));
+        onView(withId(R.id.search_box_text)).perform(replaceText("about:blank"));
         onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
         hideWatcher.waitForBehavior();
         assertThat(
@@ -650,7 +644,8 @@ public class StartSurfaceTest {
 
         OverviewModeBehaviorWatcher hideWatcher =
                 TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
-        onView(allOf(withId(R.id.search_box_text), isDisplayed())).perform(replaceText(mUrl));
+        onView(allOf(withId(R.id.search_box_text), isDisplayed()))
+                .perform(replaceText("about:blank"));
         onView(withId(R.id.url_bar)).perform(pressKey(KeyEvent.KEYCODE_ENTER));
         hideWatcher.waitForBehavior();
         assertThat(
@@ -778,10 +773,9 @@ public class StartSurfaceTest {
         "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/top"})
     public void testScroll_OmniboxOnly_Top() {
         // clang-format on
-        if (!mImmediateReturn) {
-            // TODO(crbug.com/1082664): Make it work with NoReturn.
-            return;
-        }
+        // TODO(crbug.com/1082664): Make it work with NoReturn.
+        assumeTrue(mImmediateReturn);
+
         onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
 
         onView(withId(R.id.search_box)).check(matches(isDisplayed()));
@@ -802,10 +796,9 @@ public class StartSurfaceTest {
         "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/quick"})
     public void testScroll_OmniboxOnly_Quick() {
         // clang-format on
-        if (!mImmediateReturn) {
-            // TODO(crbug.com/1082664): Make it work with NoReturn.
-            return;
-        }
+        // TODO(crbug.com/1082664): Make it work with NoReturn.
+        assumeTrue(mImmediateReturn);
+
         onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
 
         onView(withId(R.id.search_box)).check(matches(isDisplayed()));
@@ -826,10 +819,9 @@ public class StartSurfaceTest {
         "/hide_switch_when_no_incognito_tabs/true/omnibox_scroll_mode/pinned"})
     public void testScroll_OmniboxOnly_Pinned() {
         // clang-format on
-        if (!mImmediateReturn) {
-            // TODO(crbug.com/1082664): Make it work with NoReturn.
-            return;
-        }
+        // TODO(crbug.com/1082664): Make it work with NoReturn.
+        assumeTrue(mImmediateReturn);
+
         onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
 
         onView(withId(R.id.search_box)).check(matches(isDisplayed()));

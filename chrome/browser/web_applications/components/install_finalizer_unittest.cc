@@ -97,6 +97,7 @@ class InstallFinalizerUnitTest
     finalizer_->SetSubsystems(&registrar(), ui_manager_.get(),
                               &test_registry_controller_->sync_bridge());
     test_registry_controller_->Init();
+    finalizer_->Start();
   }
 
   void TearDown() override {

@@ -11,3 +11,14 @@ enum DuplexMode {
   kLongEdge,
   kShortEdge,
 };
+
+// Struct that holds margin and content area sizes of a page. Units are
+// arbitrary and can be chosen by the programmer.
+struct PageSizeMargins {
+  double content_width;
+  double content_height;
+  double margin_top;
+  double margin_right;
+  double margin_bottom;
+  double margin_left;
+};

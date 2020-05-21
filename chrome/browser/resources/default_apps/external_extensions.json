@@ -7,8 +7,7 @@
 {
   "blpcfgokakmgnkcojhhkbfbldkacnbeo" : {
     "external_crx": "youtube.crx",
-    "external_version": "4.2.5",
-    "is_bookmark_app": true
+    "external_version": "4.2.5"
   },
   "pjkljhegncpnkpknbcohdijeoejaedia" : {
     "external_crx": "gmail.crx",

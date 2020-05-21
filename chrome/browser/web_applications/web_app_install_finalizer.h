@@ -48,6 +48,8 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   void UninstallExternalAppByUser(const AppId& app_id,
                                   UninstallWebAppCallback callback) override;
   bool WasExternalAppUninstalledByUser(const AppId& app_id) const override;
+  void Start() override;
+  void Shutdown() override;
 
  private:
   void UninstallWebApp(const AppId& app_id, UninstallWebAppCallback callback);
@@ -81,6 +83,7 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
 
   Profile* const profile_;
   WebAppIconManager* const icon_manager_;
+  bool started_ = false;
 
   base::WeakPtrFactory<WebAppInstallFinalizer> weak_ptr_factory_{this};
 

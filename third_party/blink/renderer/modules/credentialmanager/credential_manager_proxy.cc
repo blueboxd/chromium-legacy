@@ -12,7 +12,10 @@
 namespace blink {
 
 CredentialManagerProxy::CredentialManagerProxy(LocalDOMWindow& window)
-    : Supplement<LocalDOMWindow>(window) {
+    : Supplement<LocalDOMWindow>(window),
+      authenticator_(window.GetExecutionContext()),
+      credential_manager_(window.GetExecutionContext()),
+      sms_receiver_(window.GetExecutionContext()) {
   LocalFrame* frame = window.GetFrame();
   DCHECK(frame);
   frame->GetBrowserInterfaceBroker().GetInterface(
@@ -26,7 +29,7 @@ CredentialManagerProxy::CredentialManagerProxy(LocalDOMWindow& window)
 CredentialManagerProxy::~CredentialManagerProxy() = default;
 
 mojom::blink::SmsReceiver* CredentialManagerProxy::SmsReceiver() {
-  if (!sms_receiver_) {
+  if (!sms_receiver_.is_bound()) {
     LocalFrame* frame = GetSupplementable()->GetFrame();
     DCHECK(frame);
     frame->GetBrowserInterfaceBroker().GetInterface(
@@ -48,6 +51,13 @@ CredentialManagerProxy* CredentialManagerProxy::From(
     ProvideTo(window, supplement);
   }
   return supplement;
+}
+
+void CredentialManagerProxy::Trace(Visitor* visitor) const {
+  visitor->Trace(authenticator_);
+  visitor->Trace(credential_manager_);
+  visitor->Trace(sms_receiver_);
+  Supplement<LocalDOMWindow>::Trace(visitor);
 }
 
 // static

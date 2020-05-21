@@ -140,6 +140,14 @@ void WebAppInstallFinalizer::FinalizeInstall(
     const FinalizeOptions& options,
     InstallFinalizedCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // TODO(crbug.com/1084939): Implement a before-start queue in
+  // WebAppInstallManager and replace this runtime error in
+  // WebAppInstallFinalizer with DCHECK(started_).
+  if (!started_) {
+    std::move(callback).Run(AppId(),
+                            InstallResultCode::kWebAppProviderNotReady);
+    return;
+  }
 
   // TODO(loyso): Expose Source argument as a field of AppTraits struct.
   const auto source =
@@ -191,6 +199,8 @@ void WebAppInstallFinalizer::FinalizeInstall(
 void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
     const AppId& app_id,
     InstallFinalizedCallback callback) {
+  DCHECK(started_);
+
   const WebApp* app_in_sync_install = GetWebAppRegistrar().GetAppById(app_id);
   DCHECK(app_in_sync_install);
 
@@ -242,6 +252,7 @@ void WebAppInstallFinalizer::FinalizeFallbackInstallAfterSync(
 void WebAppInstallFinalizer::FinalizeUninstallAfterSync(
     const AppId& app_id,
     UninstallWebAppCallback callback) {
+  DCHECK(started_);
   // WebAppSyncBridge::ApplySyncChangesToRegistrar does the actual
   // NotifyWebAppUninstalled and unregistration of the app from the registry.
   DCHECK(!GetWebAppRegistrar().GetAppById(app_id));
@@ -256,6 +267,7 @@ void WebAppInstallFinalizer::UninstallExternalWebApp(
     const AppId& app_id,
     ExternalInstallSource external_install_source,
     UninstallWebAppCallback callback) {
+  DCHECK(started_);
   Source::Type source =
       InferSourceFromExternalInstallSource(external_install_source);
   UninstallWebAppOrRemoveSource(app_id, source, std::move(callback));
@@ -263,6 +275,7 @@ void WebAppInstallFinalizer::UninstallExternalWebApp(
 
 bool WebAppInstallFinalizer::CanUserUninstallFromSync(
     const AppId& app_id) const {
+  DCHECK(started_);
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   return app ? app->IsSynced() : false;
 }
@@ -276,6 +289,7 @@ void WebAppInstallFinalizer::UninstallWebAppFromSyncByUser(
 
 bool WebAppInstallFinalizer::CanUserUninstallExternalApp(
     const AppId& app_id) const {
+  DCHECK(started_);
   // TODO(loyso): Policy Apps: Implement web_app::ManagementPolicy taking
   // extensions::ManagementPolicy::UserMayModifySettings as inspiration.
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
@@ -285,6 +299,8 @@ bool WebAppInstallFinalizer::CanUserUninstallExternalApp(
 void WebAppInstallFinalizer::UninstallExternalAppByUser(
     const AppId& app_id,
     UninstallWebAppCallback callback) {
+  DCHECK(started_);
+
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   DCHECK(app);
   DCHECK(app->CanUserUninstallExternalApp());
@@ -313,6 +329,12 @@ bool WebAppInstallFinalizer::WasExternalAppUninstalledByUser(
 void WebAppInstallFinalizer::FinalizeUpdate(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {
+  if (!started_) {
+    std::move(callback).Run(AppId(),
+                            InstallResultCode::kWebAppProviderNotReady);
+    return;
+  }
+
   const AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
   const WebApp* existing_web_app = GetWebAppRegistrar().GetAppById(app_id);
 
@@ -330,6 +352,15 @@ void WebAppInstallFinalizer::FinalizeUpdate(
   SetWebAppManifestFieldsAndWriteData(web_app_info, std::move(web_app),
                                       /*is_new_install=*/false,
                                       std::move(callback));
+}
+
+void WebAppInstallFinalizer::Start() {
+  DCHECK(!started_);
+  started_ = true;
+}
+
+void WebAppInstallFinalizer::Shutdown() {
+  started_ = false;
 }
 
 void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,

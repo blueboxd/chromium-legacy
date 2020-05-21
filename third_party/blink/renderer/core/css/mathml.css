@@ -65,13 +65,43 @@ mspace {
     overflow: hidden !important;
 }
 
+/* Token elements */
+mi {
+  text-transform: math-auto;
+}
+
+/* Fractions */
 mfrac {
   padding-inline-start: 1px;
   padding-inline-end: 1px;
 }
 
+mfrac > * {
+  font-size: scriptlevel(auto);
+  math-style: inline;
+}
+
 mfrac > :nth-child(2) {
   math-superscript-shift-style: inline;
+}
+
+/* Other rules for scriptlevel, displaystyle and math-superscript-shift-style */
+msub > :not(:first-child),
+msup > :not(:first-child),
+msubsup > :not(:first-child),
+mmultiscripts > :not(:first-child),
+munder > :not(:first-child),
+mover > :not(:first-child),
+munderover > :not(:first-child) {
+  font-size: scriptlevel(add(1));
+  math-style: inline;
+}
+
+munder[accentunder="true" i] > :nth-child(2),
+mover[accent="true" i] > :nth-child(2),
+munderover[accentunder="true" i] > :nth-child(2),
+munderover[accent="true" i] > :nth-child(3) {
+  font-size: inherit;
 }
 
 munder > :nth-child(2),
@@ -79,10 +109,5 @@ munderover > :nth-child(2),
 mover[accent="true" i] > :first-child,
 munderover[accent="true" i] > :first-child {
   math-superscript-shift-style: inline;
-}
-
-/* Token elements */
-mi {
-  text-transform: math-auto;
 }
 

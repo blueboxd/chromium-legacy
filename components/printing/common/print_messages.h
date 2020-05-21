@@ -19,8 +19,8 @@
 #include "ipc/ipc_message_macros.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/common/metafile_utils.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/page_range.h"
-#include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "third_party/blink/public/web/web_print_scaling_option.h"
 #include "ui/accessibility/ax_param_traits.h"
@@ -213,7 +213,7 @@ IPC_STRUCT_TRAITS_BEGIN(PrintHostMsg_PreviewIds)
 IPC_STRUCT_TRAITS_END()
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
-IPC_STRUCT_TRAITS_BEGIN(printing::PageSizeMargins)
+IPC_STRUCT_TRAITS_BEGIN(printing::mojom::PageSizeMargins)
   IPC_STRUCT_TRAITS_MEMBER(content_width)
   IPC_STRUCT_TRAITS_MEMBER(content_height)
   IPC_STRUCT_TRAITS_MEMBER(margin_left)
@@ -400,11 +400,12 @@ IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPrepareDocumentForPreview,
 // |printable_area_in_points| Specifies the printable area in points.
 // |has_custom_page_size_style| is true when the printing frame has a custom
 // page size css otherwise false.
-IPC_MESSAGE_ROUTED4(PrintHostMsg_DidGetDefaultPageLayout,
-                    printing::PageSizeMargins /* page layout in points */,
-                    gfx::Rect /* printable area in points */,
-                    bool /* has custom page size style */,
-                    PrintHostMsg_PreviewIds /* ids */)
+IPC_MESSAGE_ROUTED4(
+    PrintHostMsg_DidGetDefaultPageLayout,
+    printing::mojom::PageSizeMargins /* page layout in points */,
+    gfx::Rect /* printable area in points */,
+    bool /* has custom page size style */,
+    PrintHostMsg_PreviewIds /* ids */)
 
 // Notify the browser a print preview page has been rendered.
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPreviewPage,

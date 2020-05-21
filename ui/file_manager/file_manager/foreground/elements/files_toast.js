@@ -3,29 +3,31 @@
 // found in the LICENSE file.
 
 /**
- * @typedef {{text:string, callback:(function()|undefined)}}
+ * @typedef {{
+ *   text:string,
+ *   callback:(function()|undefined)
+ * }}
  */
-// eslint-disable-next-line no-var
-var FilesToastAction;
+let FilesToastAction;
 
 /**
- * @typedef {{text:string, action:(FilesToastAction|undefined)}}
+ * @typedef {{
+ *   text:string,
+ *   action:(FilesToastAction|undefined)
+ * }}
  */
-// eslint-disable-next-line no-var
-var FilesToastData;
+let FilesToastData;
 
 /**
  * Files Toast.
  *
- * This toast is shown at the bottom-right in ltr (bottom-left in rtl).
+ * The toast is shown at the bottom-right in LTR, bottom-left in RTL. Usage:
  *
- * Usage:
  * toast.show('Toast without action.');
- * toast.show('Toast with action', {text: 'ACTION', callback:function() {}});
+ * toast.show('Toast with action', {text: 'Action', callback:function(){}});
  * toast.hide();
  */
-// eslint-disable-next-line no-var
-var FilesToast = Polymer({
+const FilesToast = Polymer({
   is: 'files-toast',
 
   properties: {
@@ -34,16 +36,9 @@ var FilesToast = Polymer({
       readOnly: true,
       value: false,
     },
-    duration: {
-      type: Number,
-      value: 5000, /* ms */
-    }
   },
 
-  /**
-   * Initialize member variables.
-   */
-  created: function() {
+  created() {
     /**
      * @private {?FilesToastAction}
      */
@@ -53,124 +48,80 @@ var FilesToast = Polymer({
      * @private {!Array<!FilesToastData>}
      */
     this.queue_ = [];
+  },
 
-    /**
-     * @private {Animation}
-     */
-    this.enterAnimationPlayer_ = null;
-
-    /**
-     * @private {Animation}
-     */
-    this.hideAnimationPlayer_ = null;
+  attached() {
+    this.$.container.ontransitionend = this.onTransitionEnd_.bind(this);
   },
 
   /**
-   * Shows toast. If a toast is already shown, this toast will be added to the
-   * queue and shown when others have completed.
+   * Shows toast. If a toast is already shown, add the toast to the pending
+   * queue. It will shown later when other toasts have completed.
    *
    * @param {string} text Text of toast.
-   * @param {FilesToastAction=} opt_action Action. Callback
-   *     is invoked when user taps an action.
+   * @param {FilesToastAction=} opt_action Action. The |Action.callback| is
+   *     called if the user taps or clicks the action button.
    */
-  show: function(text, opt_action) {
+  show(text, opt_action) {
     if (this.visible) {
       this.queue_.push({text: text, action: opt_action});
       return;
     }
+
     this._setVisible(true);
 
-    // Update UI.
-    this.$.container.removeAttribute('style');
-    this.$.container.hidden = false;
-
-    this.$.text.removeAttribute('style');
     this.$.text.innerText = text;
-
     this.action_ = opt_action || null;
     if (this.action_) {
-      this.$.text.setAttribute('style', 'padding-inline-end: 0');
-      this.$.action.hidden = false;
+      this.$.text.setAttribute('style', 'margin-inline-end: 0');
       this.$.action.innerText = this.action_.text;
+      this.$.action.hidden = false;
     } else {
+      this.$.text.removeAttribute('style');
+      this.$.action.innerText = '';
       this.$.action.hidden = true;
     }
 
-    // Make container min-height 68px if the text needs two lines.
-    const style = window.getComputedStyle(this.$.text);
-    if (parseFloat(style.height) > 1.2 * parseFloat(style.lineHeight)) {
-      this.$.container.setAttribute('style', 'min-height: 68px');
-    }
-
-    // Perform animation.
-    this.enterAnimationPlayer_ = this.$.container.animate([
-      {bottom: '-100px', opacity: 0, offset: 0},
-      {bottom: '24px', opacity: 1, offset: 1}
-    ], 100 /* ms */);
-
-    this.enterAnimationPlayer_.addEventListener('finish', () => {
-      this.enterAnimationPlayer_ = null;
-    });
-
-    // Set timeout.
-    setTimeout(this.hide.bind(this), this.duration);
+    this.$.container.show();
   },
 
   /**
-   * Handles tap event of action button.
+   * Handles action button tap/click.
+   *
+   * @private
    */
-  onActionTapped_: function() {
-    if (!this.action_ || !this.action_.callback) {
-      return;
+  onActionTapped_() {
+    if (this.action_ && this.action_.callback) {
+      this.action_.callback();
+      this.hide();
     }
-
-    this.action_.callback();
-    this.hide();
   },
 
   /**
-   * Clears toast if it's shown.
-   * @return {!Promise} A promise which is resolved when toast is hidden.
+   * Handles the <cr-toast> transitionend event. On a hide transition, show
+   * the next queued toast if any.
+   *
+   * @private
    */
-  hide: function() {
-    if (!this.visible) {
-      return Promise.resolve();
-    }
+  onTransitionEnd_() {
+    const hide = !this.$.container.hasAttribute('open');
 
-    // If it's performing enter animation, wait until it's done and come back
-    // later.
-    if (this.enterAnimationPlayer_ && !this.enterAnimationPlayer_.finished) {
-      return new Promise(resolve => {
-        // Check that the animation is still playing. Animation can be finished
-        // between the above condition check and this function call.
-        if (!this.enterAnimationPlayer_ ||
-            this.enterAnimationPlayer_.finished) {
-          resolve();
-        }
-
-        this.enterAnimationPlayer_.addEventListener('finish', resolve);
-      }).then(this.hide.bind(this));
-    }
-
-    // Start hide animation if it's not performing now.
-    if (!this.hideAnimationPlayer_) {
-      this.hideAnimationPlayer_ = this.$.container.animate([
-        {bottom: '24px', opacity: 1, offset: 0},
-        {bottom: '-100px', opacity: 0, offset: 1}
-      ], 100 /* ms */);
-    }
-
-    return new Promise(resolve => {
-      this.hideAnimationPlayer_.addEventListener('finish', resolve);
-    }).then(() => {
-      this.$.container.hidden = true;
-      this.hideAnimationPlayer_ = null;
+    if (hide && this.visible) {
       this._setVisible(false);
-      // Show next in the queue, if any.
+
       if (this.queue_.length > 0) {
         const next = this.queue_.shift();
-        this.show(next.text, next.action);
+        setTimeout(this.show.bind(this), 0, next.text, next.action);
       }
-    });
+    }
+  },
+
+  /**
+   * Hides toast if visible.
+   */
+  hide() {
+    if (this.visible) {
+      this.$.container.hide();
+    }
   }
 });

@@ -166,6 +166,8 @@ class WebAppInstallManagerTest : public WebAppTest {
     install_finalizer_->SetSubsystems(
         &registrar(), ui_manager_.get(),
         &test_registry_controller_->sync_bridge());
+
+    install_finalizer_->Start();
   }
 
   void TearDown() override {

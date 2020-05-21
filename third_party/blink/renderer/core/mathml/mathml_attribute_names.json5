@@ -18,6 +18,7 @@
     "mathcolor",
     "mathsize",
     "mathvariant",
+    "scriptlevel",
     "width",
   ],
 }

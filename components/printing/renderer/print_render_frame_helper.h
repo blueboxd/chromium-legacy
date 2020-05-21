@@ -25,6 +25,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/common/metafile_utils.h"
+#include "printing/mojom/print.mojom-forward.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "ui/gfx/geometry/size.h"
@@ -59,7 +60,6 @@ class AXTreeSnapshotter;
 
 namespace printing {
 
-struct PageSizeMargins;
 class MetafileSkia;
 class PrepareFrameAndViewForPrint;
 
@@ -244,7 +244,7 @@ class PrintRenderFrameHelper
   // Get |page_size| and |content_area| information from
   // |page_layout_in_points|.
   void GetPageSizeAndContentAreaFromPageLayout(
-      const PageSizeMargins& page_layout_in_points,
+      const mojom::PageSizeMargins& page_layout_in_points,
       gfx::Size* page_size,
       gfx::Rect* content_area);
 
@@ -375,7 +375,7 @@ class PrintRenderFrameHelper
       const PrintMsg_Print_Params& default_params,
       bool ignore_css_margins,
       double* scale_factor,
-      PageSizeMargins* page_layout_in_points);
+      mojom::PageSizeMargins* page_layout_in_points);
 
   // Return an array of pages to print given the print |params| and an expected
   // |page_count|. Page numbers are zero-based.
@@ -385,13 +385,14 @@ class PrintRenderFrameHelper
 
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
-  static void PrintHeaderAndFooter(cc::PaintCanvas* canvas,
-                                   int page_number,
-                                   int total_pages,
-                                   const blink::WebLocalFrame& source_frame,
-                                   float webkit_scale_factor,
-                                   const PageSizeMargins& page_layout_in_points,
-                                   const PrintMsg_Print_Params& params);
+  static void PrintHeaderAndFooter(
+      cc::PaintCanvas* canvas,
+      int page_number,
+      int total_pages,
+      const blink::WebLocalFrame& source_frame,
+      float webkit_scale_factor,
+      const mojom::PageSizeMargins& page_layout_in_points,
+      const PrintMsg_Print_Params& params);
 
   // Script Initiated Printing ------------------------------------------------
 

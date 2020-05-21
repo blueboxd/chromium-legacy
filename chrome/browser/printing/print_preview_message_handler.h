@@ -13,6 +13,7 @@
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "printing/mojom/print.mojom-forward.h"
 
 struct PrintHostMsg_DidPreviewDocument_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
@@ -35,7 +36,6 @@ class Rect;
 namespace printing {
 
 class PrintPreviewUI;
-struct PageSizeMargins;
 
 // Manages the print preview handling for a WebContents.
 class PrintPreviewMessageHandler
@@ -65,10 +65,11 @@ class PrintPreviewMessageHandler
   void OnRequestPrintPreview(
       content::RenderFrameHost* render_frame_host,
       const PrintHostMsg_RequestPrintPreview_Params& params);
-  void OnDidGetDefaultPageLayout(const PageSizeMargins& page_layout_in_points,
-                                 const gfx::Rect& printable_area_in_points,
-                                 bool has_custom_page_size_style,
-                                 const PrintHostMsg_PreviewIds& ids);
+  void OnDidGetDefaultPageLayout(
+      const mojom::PageSizeMargins& page_layout_in_points,
+      const gfx::Rect& printable_area_in_points,
+      bool has_custom_page_size_style,
+      const PrintHostMsg_PreviewIds& ids);
   void OnDidStartPreview(const mojom::DidStartPreviewParams& params,
                          const PrintHostMsg_PreviewIds& ids);
   void OnDidPrepareForDocumentToPdf(int document_cookie,

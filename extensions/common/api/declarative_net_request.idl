@@ -88,6 +88,7 @@ namespace declarativeNetRequest {
   };
 
   // Describes modification to various url components.
+  [noinline_doc]
   dictionary URLTransform {
      // The new scheme for the request. Allowed values are "http", "https",
      // "ftp" and "chrome-extension".
@@ -136,6 +137,7 @@ namespace declarativeNetRequest {
      DOMString? regexSubstitution;
   };
 
+  [noinline_doc]
   dictionary RuleCondition {
 
     // The pattern which is matched against the network request url.
@@ -234,6 +236,7 @@ namespace declarativeNetRequest {
     HeaderOperation operation;
   };
 
+  [noinline_doc]
   dictionary RuleAction {
     // The type of action to perform.
     RuleActionType type;
@@ -283,6 +286,7 @@ namespace declarativeNetRequest {
     DOMString rulesetId;
   };
 
+  [noinline_doc]
   dictionary MatchedRuleInfo {
     MatchedRule rule;
 
@@ -309,6 +313,7 @@ namespace declarativeNetRequest {
      MatchedRuleInfo[] rulesMatchedInfo;
   };
 
+  [noinline_doc]
   dictionary RequestDetails {
     // The ID of the request. Request IDs are unique within a browser session.
     DOMString requestId;
@@ -470,8 +475,8 @@ namespace declarativeNetRequest {
     // Fired when a rule is matched with a request. Only available for unpacked
     // extensions with the <code>declarativeNetRequestFeedback</code> permission
     // as this is intended to be used for debugging purposes only.
-    // |matched_rule_info|: The rule that has been matched along with
-    // information about the associated request.
-    static void onRuleMatchedDebug(MatchedRuleInfoDebug matched_rule_info);
+    // |info|: The rule that has been matched along with information about the
+    // associated request.
+    static void onRuleMatchedDebug(MatchedRuleInfoDebug info);
   };
 };

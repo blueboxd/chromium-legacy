@@ -17,12 +17,16 @@ crbug.com/870173 virtual/omt-worker-fetch/external/wpt/service-workers/service-w
 # enterprise policies.
 crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
 crbug.com/870173 external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
+crbug.com/1085332 external/wpt/resource-timing/redirects.sub.html [ Skip ]
+crbug.com/1085332 external/wpt/resource-timing/resource_connection_reuse_mixed_content_redirect.html [ Skip ]
 crbug.com/870173 http/tests/devtools/console-xhr-logging.js [ Skip ]
 crbug.com/870173 http/tests/devtools/network/extra-info-redirects.js [ Skip ]
 crbug.com/870173 http/tests/eventsource/eventsource-cors-non-http.html [ Skip ]
 crbug.com/870173 http/tests/eventsource/workers/eventsource-cors-non-http.html [ Skip ]
 crbug.com/870173 http/tests/htmlimports/import-script-block-crossorigin-dynamic.html [ Skip ]
 crbug.com/870173 http/tests/inspector-protocol/network-fetch-content-with-error-status-code.js [ Skip ]
+crbug.com/1085332 http/tests/misc/resource-timing-sizes-redirect-worker.html [ Skip ]
+crbug.com/1085332 http/tests/misc/resource-timing-sizes-redirect.html [ Skip ]
 crbug.com/870173 http/tests/preload/warning/request-mode.html [ Skip ]
 crbug.com/870173 http/tests/security/img-redirect-to-crossorigin-credentials.https.html [ Skip ]
 crbug.com/870173 http/tests/security/script-crossorigin-redirect-credentials.html [ Skip ]
@@ -31,6 +35,8 @@ crbug.com/870173 http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.
 crbug.com/870173 mhtml/cid_in_html_resource.html [ Skip ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.html [ Skip ]
 crbug.com/870173 virtual/omt-worker-fetch/external/wpt/resource-timing/cors-preflight.any.worker.html [ Skip ]
+crbug.com/1085332 virtual/omt-worker-fetch/external/wpt/resource-timing/redirects.sub.html [ Skip ]
+crbug.com/1085332 virtual/omt-worker-fetch/external/wpt/resource-timing/resource_connection_reuse_mixed_content_redirect.html [ Skip ]
 crbug.com/870173 virtual/omt-worker-fetch/http/tests/workers/worker-redirect.html [ Skip ]
 
 # Timing-Allow-Origin checks are only completely correct with OOR-CORS.
@@ -74,3 +80,7 @@ crbug.com/958524 http/tests/inspector-protocol/network/xhr-post-replay-cors.js [
 # Added by https://chromium-review.googlesource.com/c/chromium/src/+/2054468 and
 # Blink CORS does not support.
 crbug.com/941297 http/tests/inspector-protocol/network/xhr-cors-preflight-redirect-failure.js [ Timeout ]
+
+# Added by https://chromium-review.googlesource.com/c/chromium/src/+/2178572 and
+# Blink CORS does not support.
+crbug.com/911952 external/wpt/client-hints/accept-ch-stickiness/cross-origin-subresource-redirect-with-fp-delegation.https.html [ Skip ]

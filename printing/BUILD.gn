@@ -75,7 +75,6 @@ component("printing") {
     "page_range.h",
     "page_setup.cc",
     "page_setup.h",
-    "page_size_margins.h",
     "pdf_render_settings.h",
     "print_dialog_gtk_interface.h",
     "print_job_constants.cc",

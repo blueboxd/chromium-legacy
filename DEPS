@@ -178,7 +178,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '4c057863221783de134459b54391eda293a6c5fd',
+  'skia_revision': 'fe49ce29c3e1028c79b0a50bdb93e978cbedfdaf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': '98dedb300ca729df22a6b34399fe08425f8dccf5',
+  'catapult_revision': 'e5d042ae732ba389d8d5aaeae925e7eae5f75989',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -249,7 +249,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling devtools-frontend
   # and whatever else without interference from each other.
-  'devtools_frontend_revision': 'a6b59e58b6b5ca6542e4f66ad632d3eedf977252',
+  'devtools_frontend_revision': 'ce0a830cd58216cd27db48430898964e1055e267',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libprotobuf-mutator
   # and whatever else without interference from each other.
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '14a83aec5603e47208a4a41c8c085a1991d33d47',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + 'c9eb1c3712fa32c3e4c0f2edb4d58607c682351d',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -927,7 +927,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '638ef84819f8b3cd614dcf63378fe4814aa4cb2a',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '2e0f0a0517e4251ac8e0d6fd46e92af33fcb800d',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + '6f723ebbe3b0eba0c543fa615b53fbdc3e6e22c7',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1298,7 +1298,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': '4xEEbuyLmLA-dGdzewQlaM2km7fPUiGEEdIQJhIK8v4C'
+              'version': 'UAZDN83lzdK4HxQIv-nYpbO_46U_m9R-ZmkucVXwDbYC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',

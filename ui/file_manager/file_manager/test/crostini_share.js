@@ -252,7 +252,48 @@ shareBase.testSharePaths = async (
   done();
 };
 
+const createMockFilesAppToast = () => {
+  const toast = document.querySelector('#toast');
+
+  toast.shadowRoot.innerHTML = `
+    <div class="container" id="container" hidden>
+      <div class="text" id="text" hidden></div>
+      <cr-button class="action" id="action" hidden></cr-button>
+    </div>
+  `;
+
+  toast.visible = false;
+
+  toast.show = (message, action) => {
+    const host = document.querySelector('#toast');
+
+    if (typeof message === 'string') {
+      const text = host.shadowRoot.querySelector('#text');
+      text.innerText = message;
+      text.hidden = false;
+    } else {
+      assertTrue(false, 'Invalid <files-toast> message');
+      return;
+    }
+
+    if (action && action.text && action.callback) {
+      const button = host.shadowRoot.querySelector('#action');
+      button.innerText = action.text;
+      button.hidden = false;
+    } else {
+      assertTrue(false, 'Invalid <files-toast> action');
+      return;
+    }
+
+    console.log('Toasted ' + message);
+    const container = host.shadowRoot.querySelector('#container');
+    container.hidden = false;
+    host.visible = true;
+  };
+};
+
 crostiniShare.testSharePaths = done => {
+  createMockFilesAppToast();
   shareBase.testSharePaths(
       shareBase.vmNameTermina, shareBase.vmNameSelectorLinux,
       shareBase.toastSharedTextLinux, shareBase.toastActionTextLinux,
@@ -260,6 +301,7 @@ crostiniShare.testSharePaths = done => {
 };
 
 pluginVmShare.testSharePaths = done => {
+  createMockFilesAppToast();
   shareBase.testSharePaths(
       shareBase.vmNamePluginVm, shareBase.vmNameSelectorPluginVm,
       shareBase.toastSharedTextPluginVm, shareBase.toastActionTextPluginVm,

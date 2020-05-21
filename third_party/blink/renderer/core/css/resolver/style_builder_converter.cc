@@ -59,6 +59,7 @@
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
+#include "third_party/blink/renderer/platform/fonts/opentype/open_type_math_support.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -293,6 +294,58 @@ StyleBuilderConverter::ConvertFontVariationSettings(StyleResolverState& state,
   return settings;
 }
 
+float MathScriptScaleFactor(StyleResolverState& state) {
+  int a = state.ParentStyle()->MathScriptLevel();
+  int b = state.Style()->MathScriptLevel();
+  if (b == a)
+    return 1.0;
+  bool invertScaleFactor = false;
+  if (b < a) {
+    std::swap(a, b);
+    invertScaleFactor = true;
+  }
+
+  // Determine the scale factors from the inherited font.
+  float defaultScaleDown = 0.71;
+  int exponent = b - a;
+  float scaleFactor = 1.0;
+  HarfBuzzFace* parent_harfbuzz_face = state.ParentStyle()
+                                           ->GetFont()
+                                           .PrimaryFont()
+                                           ->PlatformData()
+                                           .GetHarfBuzzFace();
+  if (OpenTypeMathSupport::HasMathData(parent_harfbuzz_face)) {
+    float scriptPercentScaleDown =
+        OpenTypeMathSupport::MathConstant(
+            parent_harfbuzz_face,
+            OpenTypeMathSupport::MathConstants::kScriptPercentScaleDown)
+            .value_or(0);
+    // Note: zero can mean both zero for the math constant and the fallback.
+    if (!scriptPercentScaleDown)
+      scriptPercentScaleDown = defaultScaleDown;
+    float scriptScriptPercentScaleDown =
+        OpenTypeMathSupport::MathConstant(
+            parent_harfbuzz_face,
+            OpenTypeMathSupport::MathConstants::kScriptScriptPercentScaleDown)
+            .value_or(0);
+    // Note: zero can mean both zero for the math constant and the fallback.
+    if (!scriptScriptPercentScaleDown)
+      scriptScriptPercentScaleDown = defaultScaleDown * defaultScaleDown;
+    if (a <= 0 && b >= 2) {
+      scaleFactor *= scriptScriptPercentScaleDown;
+      exponent -= 2;
+    } else if (a == 1) {
+      scaleFactor *= scriptScriptPercentScaleDown / scriptPercentScaleDown;
+      exponent--;
+    } else if (b == 1) {
+      scaleFactor *= scriptPercentScaleDown;
+      exponent--;
+    }
+  }
+  scaleFactor *= pow(defaultScaleDown, exponent);
+  return invertScaleFactor ? 1 / scaleFactor : scaleFactor;
+}
+
 static float ComputeFontSize(const CSSToLengthConversionData& conversion_data,
                              const CSSPrimitiveValue& primitive_value,
                              const FontDescription::Size& parent_size) {
@@ -356,14 +409,48 @@ FontDescription::Size StyleBuilderConverterBase::ConvertFontSize(
       is_absolute);
 }
 
+static FontDescription::Size ConvertScriptLevelFontSize(
+    StyleResolverState& state,
+    const FontDescription::Size& parent_size,
+    const CSSFunctionValue& function_value) {
+  SECURITY_DCHECK(function_value.length() == 1);
+  const auto& css_value = function_value.Item(0);
+  if (const auto* list = DynamicTo<CSSValueList>(css_value)) {
+    DCHECK_EQ(list->length(), 1U);
+    const auto& relative_value = To<CSSPrimitiveValue>(list->Item(0));
+    state.Style()->SetMathScriptLevel(state.ParentStyle()->MathScriptLevel() +
+                                      relative_value.GetIntValue());
+  } else if (auto* identifier_value =
+                 DynamicTo<CSSIdentifierValue>(css_value)) {
+    DCHECK(identifier_value->GetValueID() == CSSValueID::kAuto);
+    unsigned level = 0;
+    if (state.ParentStyle()->MathStyle() == EMathStyle::kInline)
+      level += 1;
+    state.Style()->SetMathScriptLevel(state.ParentStyle()->MathScriptLevel() +
+                                      level);
+  } else if (DynamicTo<CSSPrimitiveValue>(css_value)) {
+    state.Style()->SetMathScriptLevel(
+        To<CSSPrimitiveValue>(css_value).GetIntValue());
+  }
+  auto scale_factor = MathScriptScaleFactor(state);
+  state.Style()->SetHasGlyphRelativeUnits();
+  return FontDescription::Size(0, (scale_factor * parent_size.value),
+                               parent_size.is_absolute);
+}
+
 FontDescription::Size StyleBuilderConverter::ConvertFontSize(
     StyleResolverState& state,
     const CSSValue& value) {
+  // FIXME: Find out when parentStyle could be 0?
+  auto parent_size = state.ParentStyle()
+                         ? state.ParentFontDescription().GetSize()
+                         : FontDescription::Size(0, 0.0f, false);
+
+  if (const auto* function_value = DynamicTo<CSSFunctionValue>(value))
+    return ConvertScriptLevelFontSize(state, parent_size, *function_value);
+
   return StyleBuilderConverterBase::ConvertFontSize(
-      value, state.FontSizeConversionData(),
-      // FIXME: Find out when parentStyle could be 0?
-      state.ParentStyle() ? state.ParentFontDescription().GetSize()
-                          : FontDescription::Size(0, 0.0f, false));
+      value, state.FontSizeConversionData(), parent_size);
 }
 
 float StyleBuilderConverter::ConvertFontSizeAdjust(StyleResolverState& state,

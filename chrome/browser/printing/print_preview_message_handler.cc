@@ -33,6 +33,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/nup_parameters.h"
 #include "printing/page_setup.h"
 #include "printing/print_job_constants.h"
@@ -269,7 +270,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 }
 
 void PrintPreviewMessageHandler::OnDidGetDefaultPageLayout(
-    const PageSizeMargins& page_layout_in_points,
+    const mojom::PageSizeMargins& page_layout_in_points,
     const gfx::Rect& printable_area_in_points,
     bool has_custom_page_size_style,
     const PrintHostMsg_PreviewIds& ids) {

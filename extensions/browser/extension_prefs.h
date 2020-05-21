@@ -625,6 +625,11 @@ class ExtensionPrefs : public KeyedService {
   void SetDNRUseActionCountAsBadgeText(const ExtensionId& extension_id,
                                        bool use_action_count_as_badge_text);
 
+  // Looks to see if the Youtube extension is installed, and removes the
+  // FROM_BOOKMARK flag from it's creation flags.
+  // TODO(dmurph): Remove this in m90.
+  void MigrateYoutubeOffBookmarkApps();
+
   // Iterates over the extension pref entries and removes any obsolete keys. We
   // need to do this here specially (rather than in
   // MigrateObsoleteProfilePrefs()) because these entries are subkeys of the

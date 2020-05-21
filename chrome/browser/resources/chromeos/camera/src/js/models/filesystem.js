@@ -334,9 +334,8 @@ function saveToFile(dir, name, blob) {
  * @return {!Promise<?FileEntry>} Promise for the result.
  */
 export function saveBlob(blob, filename) {
-  const dir = externalDir || internalDir;
-  assert(dir !== null);
-  return saveToFile(dir, filename, blob);
+  assert(externalDir !== null);
+  return saveToFile(externalDir, filename, blob);
 }
 
 /**
@@ -358,15 +357,14 @@ export function getFileWriter(file) {
 }
 
 /**
- * Creates a file for saving temporary video recording result.
- * @return {!Promise<!FileEntry>} Newly created temporary file.
- * @throws {Error} If failed to create video temp file.
+ * Creates a file for saving video recording result.
+ * @return {!Promise<!FileEntry>} Newly created video file.
+ * @throws {Error} If failed to create video file.
  */
-export async function createTempVideoFile() {
-  const dir = externalDir || internalDir;
-  assert(dir !== null);
+export async function createVideoFile() {
+  assert(externalDir !== null);
   const filename = new Filenamer().newVideoName();
-  const file = await getFile(dir, filename, true);
+  const file = await getFile(externalDir, filename, true);
   if (file === null) {
     throw new Error('Failed to create video temp file.');
   }
@@ -391,30 +389,6 @@ export async function createPrivateTempVideoFile() {
     throw new Error('Failed to create private video temp file.');
   }
   return file;
-}
-
-/**
- * Saves temporary video file to predefined default location.
- * @param {!FileEntry} tempfile Temporary video file to be saved.
- * @param {string} filename Filename to be saved.
- * @return {!Promise<!FileEntry>} Saved video file.
- */
-export async function saveVideo(tempfile, filename) {
-  const dir = externalDir || internalDir;
-  assert(dir !== null);
-
-  // Non-null version for the Closure Compiler.
-  const nonNullDir = dir;
-
-  // Assuming content of tempfile contains all recorded chunks appended together
-  // and is a well-formed video. The work needed here is just to move the file
-  // to the correct directory and rename as the specified filename.
-  if (tempfile.name === filename) {
-    return tempfile;
-  }
-  return new Promise(
-      (resolve, reject) =>
-          tempfile.moveTo(nonNullDir, filename, resolve, reject));
 }
 
 /**

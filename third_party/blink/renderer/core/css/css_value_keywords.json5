@@ -1190,6 +1190,10 @@
     "p3",
     "rec2020",
 
+    // math-script-level
+    "add",
+    "scriptlevel",
+
     // overscroll-behavior
     // auto,
     // contain

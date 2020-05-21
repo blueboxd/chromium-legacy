@@ -17,24 +17,16 @@ class FilesToast extends PolymerElement {
      * @type {boolean}
      */
     this.visible;
-
-    /**
-     * @type {number}
-     */
-    this.timeout;
   }
+
+  hide() {}
+
   /**
    * @param {string} text
    * @param {{text: string, callback: function()}=} opt_action
    */
   show(text, opt_action) {}
-
-  /**
-   * @return {!Promise}
-   */
-  hide() {}
 }
-
 
 class FilesQuickView extends PolymerElement {}
 

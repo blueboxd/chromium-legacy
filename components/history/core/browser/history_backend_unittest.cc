@@ -3873,6 +3873,53 @@ TEST_F(HistoryBackendTest, PubliclyRoutableColumn) {
   ASSERT_FALSE(visits5[1].publicly_routable);
 }
 
+TEST_F(HistoryBackendTest, PubliclyRoutableFieldInQueryResult) {
+  const GURL url1("http://foo1.com");
+  const GURL url2("http://foo2.com");
+
+  // Add a page visit to url1 that has a private IP address.
+  HistoryAddPageArgs request1(url1, base::Time::FromDoubleT(1), nullptr, 0,
+                              GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, false);
+  backend_->AddPage(request1);
+
+  // Add a page visit to url2 that has a publicly routable IP address.
+  HistoryAddPageArgs request2(url2, base::Time::FromDoubleT(2), nullptr, 0,
+                              GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, true);
+  backend_->AddPage(request2);
+
+  // Add a page visit to url1 that has a publicly routable IP address.
+  HistoryAddPageArgs request3(url1, base::Time::FromDoubleT(3), nullptr, 0,
+                              GURL(), {}, ui::PAGE_TRANSITION_TYPED, false,
+                              history::SOURCE_BROWSED, false, true, true);
+  backend_->AddPage(request3);
+
+  QueryOptions options;
+  options.duplicate_policy = QueryOptions::KEEP_ALL_DUPLICATES;
+  base::string16 text_query = {};
+  QueryResults results;
+
+  results = backend_->QueryHistory(text_query, options);
+  ASSERT_EQ(results.size(), 3u);
+  EXPECT_EQ(results[0].url(), url1);
+  EXPECT_TRUE(results[0].publicly_routable());
+  EXPECT_EQ(results[1].url(), url2);
+  EXPECT_TRUE(results[1].publicly_routable());
+  EXPECT_EQ(results[2].url(), url1);
+  EXPECT_FALSE(results[2].publicly_routable());
+
+  text_query = base::UTF8ToUTF16("foo");
+  results = backend_->QueryHistory(text_query, options);
+  ASSERT_EQ(results.size(), 3u);
+  EXPECT_EQ(results[0].url(), url1);
+  EXPECT_TRUE(results[0].publicly_routable());
+  EXPECT_EQ(results[1].url(), url2);
+  EXPECT_TRUE(results[1].publicly_routable());
+  EXPECT_EQ(results[2].url(), url1);
+  EXPECT_FALSE(results[2].publicly_routable());
+}
+
 // Common implementation for the two tests below, given that the only difference
 // between them is the type of the notification sent out.
 void InMemoryHistoryBackendTest::TestAddingAndChangingURLRows(

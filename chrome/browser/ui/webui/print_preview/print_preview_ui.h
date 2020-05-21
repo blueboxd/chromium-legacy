@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/webui/constrained_web_dialog_ui.h"
 #include "components/printing/common/print.mojom.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "printing/mojom/print.mojom-forward.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -40,7 +41,6 @@ class Rect;
 namespace printing {
 
 class PrintPreviewHandler;
-struct PageSizeMargins;
 
 class PrintPreviewUI : public ConstrainedWebDialogUI,
                        public mojom::PrintPreviewUI {
@@ -146,7 +146,7 @@ class PrintPreviewUI : public ConstrainedWebDialogUI,
 
   // Notifies the Web UI of the default page layout according to the currently
   // selected printer and page size.
-  void OnDidGetDefaultPageLayout(const PageSizeMargins& page_layout,
+  void OnDidGetDefaultPageLayout(const mojom::PageSizeMargins& page_layout,
                                  const gfx::Rect& printable_area,
                                  bool has_custom_page_size_style,
                                  int request_id);

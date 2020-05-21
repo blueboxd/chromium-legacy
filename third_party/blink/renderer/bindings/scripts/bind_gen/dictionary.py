@@ -315,9 +315,9 @@ def make_dict_member_vars(cg_context):
     if member.default_value:
         default_expr = make_default_value_expr(member.idl_type,
                                                member.default_value)
-        if default_expr.initializer is not None:
+        if default_expr.initializer_expr is not None:
             default_value_initializer = _format("{{{}}}",
-                                                default_expr.initializer)
+                                                default_expr.initializer_expr)
 
     _1 = blink_type_info(member.idl_type).member_t
     _2 = _blink_member_name(member).value_var

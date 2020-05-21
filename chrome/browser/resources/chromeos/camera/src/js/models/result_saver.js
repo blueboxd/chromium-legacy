@@ -28,8 +28,7 @@ export class ResultSaver {
    * Saves captured video result.
    * @param {!VideoSaver} video Contains the video result to be
    *     saved.
-   * @param {string} name Name of the video to be saved.
    * @return {!Promise}
    */
-  async finishSaveVideo(video, name) {}
+  async finishSaveVideo(video) {}
 }

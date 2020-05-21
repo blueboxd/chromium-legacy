@@ -206,16 +206,15 @@ export class GalleryButton {
    * @override
    */
   async startSaveVideo() {
-    const tempFile = await filesystem.createTempVideoFile();
-    return VideoSaver.createForFile(tempFile);
+    const file = await filesystem.createVideoFile();
+    return VideoSaver.createForFile(file);
   }
 
   /**
    * @override
    */
-  async finishSaveVideo(video, name) {
-    const tempFile = await video.endWrite();
-    const file = await filesystem.saveVideo(tempFile, name);
+  async finishSaveVideo(video) {
+    const file = await video.endWrite();
     assert(file !== null);
     await this.updateCover_(file);
   }

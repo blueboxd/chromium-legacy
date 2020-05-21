@@ -34,7 +34,6 @@ static inline bool IsDisallowedMathSizeAttribute(const AtomicString& value) {
 }
 
 bool MathMLElement::IsPresentationAttribute(const QualifiedName& name) const {
-  // TODO(crbug.com/1023292): add support for displaystyle and scriptlevel.
   if (name == html_names::kDirAttr || name == mathml_names::kMathsizeAttr ||
       name == mathml_names::kMathcolorAttr ||
       name == mathml_names::kMathbackgroundAttr ||
@@ -49,8 +48,6 @@ void MathMLElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
     const AtomicString& value,
     MutableCSSPropertyValueSet* style) {
-  // TODO(crbug.com/1023292, crbug.com/1023296): add support for display,
-  // displaystyle and scriptlevel.
   if (name == html_names::kDirAttr) {
     if (IsValidDirAttribute(value)) {
       AddPropertyToPresentationAttributeStyle(style, CSSPropertyID::kDirection,

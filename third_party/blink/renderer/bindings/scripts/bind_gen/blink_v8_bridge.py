@@ -286,21 +286,56 @@ def make_default_value_expr(idl_type, default_value):
     Returns a set of C++ expressions to be used for initialization with default
     values.  The returned object has the following attributes.
 
-      initializer: Used as "Type var(|initializer|);".  This is None if
-          "Type var;" sets an appropriate default value.
+      initializer_expr: Used as "Type var{|initializer_expr|};".  This is None
+          if "Type var;" sets an appropriate default value.
+      initializer_deps: A list of symbol names that |initializer_expr| depends
+          on.
+      is_initialization_lightweight: True if a possibly-redundant initialization
+          will not be more expensive than assignment.  See bellow for an
+          example.
       assignment_value: Used as "var = |assignment_value|;".
+      assignment_deps: A list of symbol names that |assignment_value| depends
+          on.
+
+
+    |is_initialization_lightweight| is True if
+
+      Type var{${initializer_expr}};
+      if (value_is_given)
+        var = value;
+
+    is not more expensive than
+
+      Type var;
+      if (value_is_given)
+        var = value;
+      else
+        var = ${assignment_value};
     """
     assert default_value.is_type_compatible_with(idl_type)
 
     class DefaultValueExpr:
-        def __init__(self, initializer, is_initializer_lightweight,
-                     assignment_value):
-            assert initializer is None or isinstance(initializer, str)
-            assert isinstance(is_initializer_lightweight, bool)
+        _ALLOWED_SYMBOLS_IN_DEPS = ("isolate")
+
+        def __init__(self, initializer_expr, initializer_deps,
+                     is_initialization_lightweight, assignment_value,
+                     assignment_deps):
+            assert initializer_expr is None or isinstance(
+                initializer_expr, str)
+            assert (isinstance(initializer_deps, (list, tuple)) and all(
+                dependency in DefaultValueExpr._ALLOWED_SYMBOLS_IN_DEPS
+                for dependency in initializer_deps))
+            assert isinstance(is_initialization_lightweight, bool)
             assert isinstance(assignment_value, str)
-            self.initializer = initializer
-            self.is_initializer_lightweight = is_initializer_lightweight
+            assert (isinstance(assignment_deps, (list, tuple)) and all(
+                dependency in DefaultValueExpr._ALLOWED_SYMBOLS_IN_DEPS
+                for dependency in assignment_deps))
+
+            self.initializer_expr = initializer_expr
+            self.initializer_deps = initializer_deps
+            self.is_initialization_lightweight = is_initialization_lightweight
             self.assignment_value = assignment_value
+            self.assignment_deps = assignment_deps
 
     if idl_type.unwrap(typedef=True).is_union:
         union_type = idl_type.unwrap(typedef=True)
@@ -315,60 +350,71 @@ def make_default_value_expr(idl_type, default_value):
         member_default_expr = make_default_value_expr(member_type,
                                                       default_value)
         if default_value.idl_type.is_nullable:
-            initializer = None
+            initializer_expr = None
             assignment_value = _format("{}()", union_class_name)
         else:
             func_name = name_style.func("From", member_type.type_name)
             argument = member_default_expr.assignment_value
-            initializer = _format("{}::{}({})", union_class_name, func_name,
-                                  argument)
-            assignment_value = initializer
+            # TODO(peria): Remove this workaround when we support V8Enum types
+            # in Union.
+            if (member_type.is_sequence
+                    and member_type.element_type.unwrap().is_enumeration):
+                argument = "{}"
+            initializer_expr = _format("{}::{}({})", union_class_name,
+                                       func_name, argument)
+            assignment_value = initializer_expr
         return DefaultValueExpr(
-            initializer=initializer,
-            is_initializer_lightweight=False,
-            assignment_value=assignment_value)
+            initializer_expr=initializer_expr,
+            initializer_deps=member_default_expr.initializer_deps,
+            is_initialization_lightweight=False,
+            assignment_value=assignment_value,
+            assignment_deps=member_default_expr.assignment_deps)
 
     type_info = blink_type_info(idl_type)
 
-    is_initializer_lightweight = False
+    is_initialization_lightweight = False
+    initializer_deps = []
+    assignment_deps = []
     if default_value.idl_type.is_nullable:
         if idl_type.unwrap().type_definition_object is not None:
-            initializer = "nullptr"
-            is_initializer_lightweight = True
+            initializer_expr = "nullptr"
+            is_initialization_lightweight = True
             assignment_value = "nullptr"
         elif idl_type.unwrap().is_string:
-            initializer = None  # String::IsNull() by default
+            initializer_expr = None  # String::IsNull() by default
             assignment_value = "String()"
         elif idl_type.unwrap().is_buffer_source_type:
-            initializer = "nullptr"
-            is_initializer_lightweight = True
+            initializer_expr = "nullptr"
+            is_initialization_lightweight = True
             assignment_value = "nullptr"
         elif type_info.value_t == "ScriptValue":
-            initializer = "${isolate}, v8::Null(${isolate})"
+            initializer_expr = "${isolate}, v8::Null(${isolate})"
+            initializer_deps = ["isolate"]
             assignment_value = "ScriptValue::CreateNull(${isolate})"
+            assignment_deps = ["isolate"]
         elif idl_type.unwrap().is_union:
-            initializer = None  # <union_type>::IsNull() by default
+            initializer_expr = None  # <union_type>::IsNull() by default
             assignment_value = "{}()".format(type_info.value_t)
         else:
             assert not type_info.has_null_value
-            initializer = None  # !base::Optional::has_value() by default
+            initializer_expr = None  # !base::Optional::has_value() by default
             assignment_value = "base::nullopt"
     elif default_value.idl_type.is_sequence:
-        initializer = None  # VectorOf<T>::size() == 0 by default
+        initializer_expr = None  # VectorOf<T>::size() == 0 by default
         assignment_value = "{}()".format(type_info.value_t)
     elif default_value.idl_type.is_object:
         dict_name = blink_class_name(idl_type.unwrap().type_definition_object)
         value = _format("{}::Create()", dict_name)
-        initializer = value
+        initializer_expr = value
         assignment_value = value
     elif default_value.idl_type.is_boolean:
         value = "true" if default_value.value else "false"
-        initializer = value
-        is_initializer_lightweight = True
+        initializer_expr = value
+        is_initialization_lightweight = True
         assignment_value = value
     elif default_value.idl_type.is_integer:
-        initializer = default_value.literal
-        is_initializer_lightweight = True
+        initializer_expr = default_value.literal
+        is_initialization_lightweight = True
         assignment_value = default_value.literal
     elif default_value.idl_type.is_floating_point_numeric:
         if default_value.value == float("NaN"):
@@ -381,31 +427,34 @@ def make_default_value_expr(idl_type, default_value):
             value_fmt = "{value}"
         value = value_fmt.format(
             type=type_info.value_t, value=default_value.literal)
-        initializer = value
-        is_initializer_lightweight = True
+        initializer_expr = value
+        is_initialization_lightweight = True
         assignment_value = value
     elif default_value.idl_type.is_string:
         if idl_type.unwrap().is_string:
             value = "\"{}\"".format(default_value.value)
-            initializer = value
+            initializer_expr = value
             assignment_value = value
         elif idl_type.unwrap().is_enumeration:
             enum_class_name = blink_class_name(
                 idl_type.unwrap().type_definition_object)
             enum_value_name = name_style.constant(default_value.value)
-            initializer = "{}::Enum::{}".format(enum_class_name,
-                                                enum_value_name)
-            is_initializer_lightweight = True
-            assignment_value = "{}({})".format(enum_class_name, initializer)
+            initializer_expr = "{}::Enum::{}".format(enum_class_name,
+                                                     enum_value_name)
+            is_initialization_lightweight = True
+            assignment_value = "{}({})".format(enum_class_name,
+                                               initializer_expr)
         else:
             assert False
     else:
         assert False
 
     return DefaultValueExpr(
-        initializer=initializer,
-        is_initializer_lightweight=is_initializer_lightweight,
-        assignment_value=assignment_value)
+        initializer_expr=initializer_expr,
+        initializer_deps=initializer_deps,
+        is_initialization_lightweight=is_initialization_lightweight,
+        assignment_value=assignment_value,
+        assignment_deps=assignment_deps)
 
 
 def make_v8_to_blink_value(blink_var_name,
@@ -457,10 +506,10 @@ def make_v8_to_blink_value(blink_var_name,
         nodes = []
         type_info = blink_type_info(idl_type)
         default_expr = make_default_value_expr(idl_type, default_value)
-        if default_expr.is_initializer_lightweight:
+        if default_expr.is_initialization_lightweight:
             nodes.append(
                 F("{} ${{{}}}{{{}}};", type_info.value_t, blink_var_name,
-                  default_expr.initializer))
+                  default_expr.initializer_expr))
         else:
             nodes.append(F("{} ${{{}}};", type_info.value_t, blink_var_name))
         assignment = [
@@ -468,21 +517,20 @@ def make_v8_to_blink_value(blink_var_name,
             CxxUnlikelyIfNode(
                 cond="${exception_state}.HadException()", body=T("return;")),
         ]
-        if (default_expr.initializer is None
-                or default_expr.is_initializer_lightweight):
+        if (default_expr.initializer_expr is None
+                or default_expr.is_initialization_lightweight):
             nodes.append(
                 CxxLikelyIfNode(
                     cond="!{}->IsUndefined()".format(v8_value_expr),
                     body=assignment))
         else:
             nodes.append(
-                CxxIfElseNode(
-                    cond="{}->IsUndefined()".format(v8_value_expr),
-                    then=F("${{{}}} = {};", blink_var_name,
-                           default_expr.assignment_value),
-                    then_likeliness=Likeliness.LIKELY,
-                    else_=assignment,
-                    else_likeliness=Likeliness.LIKELY))
+                CxxIfElseNode(cond="{}->IsUndefined()".format(v8_value_expr),
+                              then=F("${{{}}} = {};", blink_var_name,
+                                     default_expr.assignment_value),
+                              then_likeliness=Likeliness.LIKELY,
+                              else_=assignment,
+                              else_likeliness=Likeliness.LIKELY))
         return SymbolDefinitionNode(symbol_node, nodes)
 
     return SymbolNode(blink_var_name, definition_constructor=create_definition)

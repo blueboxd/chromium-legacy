@@ -43,6 +43,13 @@ namespace {
 // app that contains a link to the app manifest.
 constexpr char kAppUrl[] = "app_url";
 
+// kHideFromUser is an optional boolean which controls whether we add
+// a shortcut to the relevant OS surface i.e. Application folder on macOS, Start
+// Menu on Windows and Linux, and launcher on Chrome OS. Defaults to false if
+// missing. If true, we also don't show the app in search or in app management
+// on Chrome OS.
+constexpr char kHideFromUser[] = "hide_from_user";
+
 // kCreateShortcuts is an optional boolean which controls whether OS
 // level shortcuts are created. On Chrome OS this controls whether the app is
 // pinned to the shelf.
@@ -159,6 +166,16 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
       continue;
     }
 
+    bool hide_from_user = false;
+    value = dict->FindKey(kHideFromUser);
+    if (value) {
+      if (!value->is_bool()) {
+        LOG(ERROR) << file.value() << " had an invalid " << kHideFromUser;
+        continue;
+      }
+      hide_from_user = value->GetBool();
+    }
+
     bool create_shortcuts = false;
     value = dict->FindKey(kCreateShortcuts);
     if (value) {
@@ -168,6 +185,9 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
       }
       create_shortcuts = value->GetBool();
     }
+
+    // It doesn't make sense to hide the app and also create shortcuts for it.
+    DCHECK(!(hide_from_user && create_shortcuts));
 
     value = dict->FindKeyOfType(kLaunchContainer, base::Value::Type::STRING);
     if (!value) {
@@ -213,7 +233,9 @@ std::vector<ExternalInstallOptions> ScanDir(const base::FilePath& dir,
     ExternalInstallOptions install_options(
         std::move(app_url), user_display_mode,
         ExternalInstallSource::kExternalDefault);
-    install_options.add_to_applications_menu = create_shortcuts;
+    install_options.add_to_applications_menu = !hide_from_user;
+    install_options.add_to_search = !hide_from_user;
+    install_options.add_to_management = !hide_from_user;
     install_options.add_to_desktop = create_shortcuts;
     install_options.add_to_quick_launch_bar = create_shortcuts;
     install_options.require_manifest = true;

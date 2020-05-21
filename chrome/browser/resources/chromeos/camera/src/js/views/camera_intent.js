@@ -65,7 +65,7 @@ export class CameraIntent extends Camera {
       startSaveVideo: async () => {
         return await VideoSaver.createForIntent(intent);
       },
-      finishSaveVideo: async (video, savedName) => {
+      finishSaveVideo: async (video) => {
         this.videoResultFile_ = await video.endWrite();
       },
     });
@@ -120,10 +120,10 @@ export class CameraIntent extends Camera {
   /**
    * @override
    */
-  async doSaveVideo_(result, name) {
+  async doSaveVideo_(result) {
     this.videoResult_ = result;
     try {
-      await this.resultSaver_.finishSaveVideo(result.videoSaver, name);
+      await this.resultSaver_.finishSaveVideo(result.videoSaver);
     } catch (e) {
       toast.show('error_msg_save_file_failed');
       throw e;

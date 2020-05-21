@@ -70117,6 +70117,7 @@ Full version information for the fingerprint enum values:
   <int value="19" label="BookmarkExtensionInstallError"/>
   <int value="20" label="ApkWebInstallFailed"/>
   <int value="21" label="CancelledOnWebAppProviderShuttingDown"/>
+  <int value="22" label="WebAppProviderNotReady"/>
 </enum>
 
 <enum name="WebAppInstallSource">

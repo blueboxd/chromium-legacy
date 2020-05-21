@@ -38,6 +38,41 @@ const hasActionableDescendant = function(node) {
   return result;
 };
 
+/**
+ * A helper to determine whether the children of a node are all
+ * STATIC_TEXT, and whether the joined names of such children nodes are equal to
+ * the current nodes name.
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ * @private
+ */
+const nodeNameContainedInStaticTextChildren = function(node) {
+  const name = node.name;
+  let child = node.firstChild;
+  if (!child) {
+    return false;
+  }
+  let nameIndex = 0;
+  do {
+    if (child.role != Role.STATIC_TEXT) {
+      return false;
+    }
+    if (name.substring(nameIndex, nameIndex + child.name.length) !=
+        child.name) {
+      return false;
+    }
+    nameIndex += child.name.length;
+    // Either space or empty (i.e. end of string).
+    const char = name.substring(nameIndex, nameIndex + 1);
+    child = child.nextSibling;
+    if ((child && char != ' ') || char != '') {
+      return false;
+    }
+    nameIndex++;
+  } while (child);
+  return true;
+};
+
 AutomationPredicate = class {
   constructor() {}
 
@@ -278,6 +313,13 @@ AutomationPredicate = class {
 
     // Clickables (on Android) are not containers.
     if (node.clickable) {
+      return false;
+    }
+
+    // Sometimes a focusable node will have a static text child with the same
+    // name. During object navigation, the child will receive focus, resulting
+    // in the name being read out twice.
+    if (node.state.focusable && nodeNameContainedInStaticTextChildren(node)) {
       return false;
     }
 

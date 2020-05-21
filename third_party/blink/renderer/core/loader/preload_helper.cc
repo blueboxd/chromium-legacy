@@ -30,7 +30,7 @@
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/font_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
-#include "third_party/blink/renderer/core/loader/resource/link_fetch_resource.h"
+#include "third_party/blink/renderer/core/loader/resource/link_prefetch_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/page/viewport_description.h"
@@ -551,7 +551,7 @@ Resource* PreloadHelper::PrefetchIfNeeded(const LinkLoadParameters& params,
             SignedExchangePrefetchCacheForNavigationsEnabled() ||
         RuntimeEnabledFeatures::SignedExchangeSubresourcePrefetchEnabled(
             &document));
-    return LinkFetchResource::Fetch(link_fetch_params, document.Fetcher());
+    return LinkPrefetchResource::Fetch(link_fetch_params, document.Fetcher());
   }
   return nullptr;
 }

@@ -154,6 +154,7 @@ void WebAppProvider::Shutdown() {
   install_manager_->Shutdown();
   manifest_update_manager_->Shutdown();
   system_web_app_manager_->Shutdown();
+  install_finalizer_->Shutdown();
 }
 
 void WebAppProvider::StartImpl() {
@@ -269,6 +270,7 @@ void WebAppProvider::StartRegistryController() {
 void WebAppProvider::OnRegistryControllerReady() {
   DCHECK(!on_registry_ready_.is_signaled());
 
+  install_finalizer_->Start();
   external_web_app_manager_->Start();
   web_app_policy_manager_->Start();
   system_web_app_manager_->Start();

@@ -103,6 +103,9 @@ class InstallFinalizer {
                            bool shortcut_created,
                            content::WebContents* web_contents);
 
+  virtual void Start() {}
+  virtual void Shutdown() {}
+
   void SetSubsystems(AppRegistrar* registrar,
                      WebAppUiManager* ui_manager,
                      AppRegistryController* registry_controller);

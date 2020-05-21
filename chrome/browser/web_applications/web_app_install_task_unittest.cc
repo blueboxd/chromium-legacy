@@ -97,6 +97,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(
         profile(), icon_manager_.get());
+
     shortcut_manager_ = std::make_unique<TestAppShortcutManager>(profile());
     file_handler_manager_ = std::make_unique<TestFileHandlerManager>(profile());
 
@@ -116,6 +117,7 @@ class WebAppInstallTaskTest : public WebAppTest {
 
     url_loader_ = std::make_unique<TestWebAppUrlLoader>();
     controller().Init();
+    install_finalizer_->Start();
 
 #if defined(OS_CHROMEOS)
     arc_test_.SetUp(profile());

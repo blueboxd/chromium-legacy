@@ -73,9 +73,8 @@ export let CreateVideoSaver;
 /**
  * Callback for saving video capture result.
  * param {!VideoResult} Captured video result.
- * param {string} Name of the video result to be saved as.
  * return {!Promise}
- * @typedef {function(!VideoResult, string): !Promise}
+ * @typedef {function(!VideoResult): !Promise}
  */
 export let DoSaveVideo;
 
@@ -682,8 +681,7 @@ class Video extends ModeBase {
     const resolution = new Resolution(settings.width, settings.height);
     state.set(PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, true);
     try {
-      await this.doSaveVideo_(
-          {resolution, duration, videoSaver}, (new Filenamer()).newVideoName());
+      await this.doSaveVideo_({resolution, duration, videoSaver});
       state.set(
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false,
           {resolution, facing: this.facing_});

@@ -5,13 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_PROXY_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CREDENTIALMANAGER_CREDENTIAL_MANAGER_PROXY_H_
 
-#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -52,14 +53,22 @@ class MODULES_EXPORT CredentialManagerProxy
     credential_manager_.FlushForTesting();
   }
 
+  void Trace(Visitor*) const override;
+
   // Must be called only with argument representing a valid
   // context corresponding to an attached window.
   static CredentialManagerProxy* From(ScriptState*);
 
  private:
-  mojo::Remote<mojom::blink::Authenticator> authenticator_;
-  mojo::Remote<mojom::blink::CredentialManager> credential_manager_;
-  mojo::Remote<mojom::blink::SmsReceiver> sms_receiver_;
+  HeapMojoRemote<mojom::blink::Authenticator,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      authenticator_;
+  HeapMojoRemote<mojom::blink::CredentialManager,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      credential_manager_;
+  HeapMojoRemote<mojom::blink::SmsReceiver,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      sms_receiver_;
 };
 
 }  // namespace blink

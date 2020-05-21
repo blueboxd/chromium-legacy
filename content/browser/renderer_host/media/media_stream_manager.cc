@@ -1766,7 +1766,7 @@ void MediaStreamManager::FinalizeGenerateStream(const std::string& label,
   }
 
   // It is safe to bind base::Unretained(this) because MediaStreamManager is
-  // owned by BrowserMainLoop and so guaranteed to be approximately immortal.
+  // owned by BrowserMainLoop and so outlives the IO thread.
   base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaDevicesPermissionChecker::

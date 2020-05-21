@@ -91,6 +91,8 @@ class CC_PAINT_EXPORT DisplayItemList
     if (usage_hint_ == kTopLevelDisplayItemList)
       offsets_.push_back(offset);
     const T* op = paint_op_buffer_.push<T>(std::forward<Args>(args)...);
+    if (op->IsDrawOp())
+      has_draw_ops_ = true;
     DCHECK(op->IsValid());
     return offset;
   }
@@ -179,16 +181,10 @@ class CC_PAINT_EXPORT DisplayItemList
                              int max_ops_to_analyze = 1);
 
   std::string ToString() const;
-  bool has_draw_ops() const { return paint_op_buffer_.has_draw_ops(); }
+  bool has_draw_ops() const { return has_draw_ops_; }
 
   // Ops with nested paint ops are considered as a single op.
   size_t num_paint_ops() const { return paint_op_buffer_.size(); }
-
-  bool NeedsAdditionalInvalidationForLCDText(
-      const DisplayItemList& old_list) const {
-    return paint_op_buffer_.NeedsAdditionalInvalidationForLCDText(
-        old_list.paint_op_buffer_);
-  }
 
  private:
   friend class DisplayItemListTest;
@@ -242,6 +238,7 @@ class CC_PAINT_EXPORT DisplayItemList
 #endif
 
   UsageHint usage_hint_;
+  bool has_draw_ops_ = false;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, BytesUsed);

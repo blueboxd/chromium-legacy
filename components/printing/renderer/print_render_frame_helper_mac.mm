@@ -15,7 +15,7 @@
 #include "components/printing/common/print_messages.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/metafile_skia.h"
-#include "printing/page_size_margins.h"
+#include "printing/mojom/print.mojom.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace printing {
@@ -30,7 +30,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
     gfx::Size* page_size_in_dpi,
     gfx::Rect* content_rect_in_dpi) {
   double css_scale_factor = scale_factor;
-  PageSizeMargins page_layout_in_points;
+  mojom::PageSizeMargins page_layout_in_points;
   ComputePageLayoutInPointsForCss(frame, page_number, params,
                                   ignore_css_margins_, &css_scale_factor,
                                   &page_layout_in_points);

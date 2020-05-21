@@ -1128,5 +1128,13 @@
       field_group: "*",
       getter: "GetMathFractionBarThickness",
     },
+    {
+      name: "MathScriptLevel",
+      inherited: true,
+      field_template: "primitive",
+      type_name: "short",
+      default_value: "0",
+      field_group: "*",
+    },
   ],
 }

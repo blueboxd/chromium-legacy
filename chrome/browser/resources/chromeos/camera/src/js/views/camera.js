@@ -361,17 +361,16 @@ export class Camera extends View {
   /**
    * Handles captured video result.
    * @param {!VideoResult} result Captured video result.
-   * @param {string} name Name of the video result to be saved as.
    * @return {!Promise} Promise for the operation.
    * @protected
    */
-  async doSaveVideo_(result, name) {
+  async doSaveVideo_(result) {
     metrics.log(
         metrics.Type.CAPTURE, this.facingMode_, result.duration,
         result.resolution, metrics.IntentResultType.NOT_INTENT,
         this.shutterType_);
     try {
-      await this.resultSaver_.finishSaveVideo(result.videoSaver, name);
+      await this.resultSaver_.finishSaveVideo(result.videoSaver);
     } catch (e) {
       toast.show('error_msg_save_file_failed');
       throw e;

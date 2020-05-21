@@ -13,9 +13,6 @@
 # TODO(crbug.com/977744): Enable this.
 -ProcessMemoryMetricsEmitterTest.RendererBuildId
 
-# TODO(crbug.com/990819): Enable this.
--StructSequence/OobeLocalizationTest.LocalizationTest/0
-
 # TODO(crbug.com/978051): Enable this.
 -TabManagerTestWithTwoTabs.TabProactiveDiscardAndFocusBeforeFreezeCompletes
 

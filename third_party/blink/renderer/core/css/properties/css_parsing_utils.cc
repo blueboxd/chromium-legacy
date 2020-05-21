@@ -1340,6 +1340,39 @@ CSSValue* ConsumeCounter(CSSParserTokenRange& range,
   return list;
 }
 
+CSSValue* ConsumeScriptLevel(CSSParserTokenRange& range,
+                             const CSSParserContext& context) {
+  CSSValueID function_id = range.Peek().FunctionId();
+  DCHECK(function_id == CSSValueID::kScriptlevel);
+  CSSParserTokenRange args =
+      css_property_parser_helpers::ConsumeFunction(range);
+  if (args.AtEnd())
+    return nullptr;
+  CSSValue* parsed_value =
+      css_property_parser_helpers::ConsumeIdent<CSSValueID::kAuto>(args);
+  if (!parsed_value)
+    parsed_value = css_property_parser_helpers::ConsumeInteger(args, context);
+  if (!parsed_value) {
+    function_id = args.Peek().FunctionId();
+    if (function_id == CSSValueID::kAdd) {
+      auto* add_value = MakeGarbageCollected<CSSFunctionValue>(function_id);
+      CSSParserTokenRange add_args =
+          css_property_parser_helpers::ConsumeFunction(args);
+      if ((parsed_value = css_property_parser_helpers::ConsumeInteger(
+               add_args, context))) {
+        add_value->Append(*parsed_value);
+        parsed_value = add_value;
+      }
+    }
+  }
+  if (!parsed_value || !args.AtEnd())
+    return nullptr;
+  auto* script_level_value =
+      MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kScriptlevel);
+  script_level_value->Append(*parsed_value);
+  return script_level_value;
+}
+
 CSSValue* ConsumeFontSize(CSSParserTokenRange& range,
                           const CSSParserContext& context,
                           css_property_parser_helpers::UnitlessQuirk unitless) {
@@ -1348,6 +1381,9 @@ CSSValue* ConsumeFontSize(CSSParserTokenRange& range,
   if (range.Peek().Id() >= CSSValueID::kXxSmall &&
       range.Peek().Id() <= CSSValueID::kWebkitXxxLarge)
     return css_property_parser_helpers::ConsumeIdent(range);
+  if (RuntimeEnabledFeatures::CSSMathStyleEnabled() &&
+      range.Peek().FunctionId() == CSSValueID::kScriptlevel)
+    return ConsumeScriptLevel(range, context);
   return css_property_parser_helpers::ConsumeLengthOrPercent(
       range, context, kValueRangeNonNegative, unitless);
 }

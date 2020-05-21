@@ -176,8 +176,7 @@ class DeepScanningDialogDelegateBrowserTest
     : public DeepScanningBrowserTestBase,
       public DeepScanningDialogViews::TestObserver {
  public:
-  explicit DeepScanningDialogDelegateBrowserTest(bool use_legacy_policies)
-      : DeepScanningBrowserTestBase(use_legacy_policies) {
+  DeepScanningDialogDelegateBrowserTest() {
     DeepScanningDialogViews::SetObserverForTesting(this);
   }
 
@@ -191,7 +190,9 @@ class DeepScanningDialogDelegateBrowserTest
 
     // Add the wildcard pattern to this policy since malware responses are
     // verified for most of these tests.
-    AddUrlToCheckForMalwareOfUploads("*");
+    ListPrefUpdate(g_browser_process->local_state(),
+                   prefs::kURLsToCheckForMalwareOfUploadedContent)
+        ->Append("*");
 
     client_ = std::make_unique<policy::MockCloudPolicyClient>();
     extensions::SafeBrowsingPrivateEventRouterFactory::GetForProfile(
@@ -218,16 +219,7 @@ class DeepScanningDialogDelegateBrowserTest
   base::ScopedTempDir temp_dir_;
 };
 
-class DeepScanningDialogDelegateSimpleBrowserTest
-    : public DeepScanningDialogDelegateBrowserTest,
-      public testing::WithParamInterface<bool> {
- public:
-  DeepScanningDialogDelegateSimpleBrowserTest()
-      : DeepScanningDialogDelegateBrowserTest(GetParam()) {}
-};
-
-IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest,
-                       Unauthorized) {
+IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Unauthorized) {
   EnableUploadsScanningAndReporting();
 
   DeepScanningDialogDelegate::SetFactoryForTesting(
@@ -275,7 +267,7 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest,
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 1);
 }
 
-IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Files) {
+IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Files) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
   // Set up delegate and upload service.
@@ -353,115 +345,15 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Files) {
   ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 3);
 }
 
-IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateSimpleBrowserTest, Texts) {
-  // Set up delegate and upload service.
-  EnableUploadsScanningAndReporting();
-
-  DeepScanningDialogDelegate::SetFactoryForTesting(
-      base::BindRepeating(&MinimalFakeDeepScanningDialogDelegate::Create));
-
-  FakeBinaryUploadServiceStorage()->SetAuthorized(true);
-
-  // Prepare a complex DLP response to test that the verdict is reported
-  // correctly in the sensitive data event.
-  DeepScanningClientResponse response;
-  DlpDeepScanningVerdict* verdict = response.mutable_dlp_scan_verdict();
-  verdict->set_status(DlpDeepScanningVerdict::SUCCESS);
-
-  DlpDeepScanningVerdict::TriggeredRule* rule1 = verdict->add_triggered_rules();
-  rule1->set_rule_id(1);
-  rule1->set_action(DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY);
-  rule1->set_rule_resource_name("resource name 1");
-  rule1->set_rule_severity("severity 1");
-  DlpDeepScanningVerdict::MatchedDetector* detector1 =
-      rule1->add_matched_detectors();
-  detector1->set_detector_id("id1");
-  detector1->set_detector_type("dlp1");
-  detector1->set_display_name("display name 1");
-
-  DlpDeepScanningVerdict::TriggeredRule* rule2 = verdict->add_triggered_rules();
-  rule2->set_rule_id(3);
-  rule2->set_action(DlpDeepScanningVerdict::TriggeredRule::BLOCK);
-  rule2->set_rule_resource_name("resource rule 2");
-  rule2->set_rule_severity("severity 2");
-  DlpDeepScanningVerdict::MatchedDetector* detector2_1 =
-      rule2->add_matched_detectors();
-  detector2_1->set_detector_id("id2.1");
-  detector2_1->set_detector_type("type2.1");
-  detector2_1->set_display_name("display name 2.1");
-  DlpDeepScanningVerdict::MatchedDetector* detector2_2 =
-      rule2->add_matched_detectors();
-  detector2_2->set_detector_id("id2.2");
-  detector2_2->set_detector_type("type2.2");
-  detector2_2->set_display_name("display name 2.2");
-
-  FakeBinaryUploadServiceStorage()->SetResponseForText(
-      BinaryUploadService::Result::SUCCESS, response);
-
-  // The DLP verdict means an event should be reported. The content size is
-  // equal to the length of the concatenated texts ("text1" and "text2") times 2
-  // since they are wide characters ((5 + 5) * 2 = 20).
-  EventReportValidator validator(client());
-  validator.ExpectSensitiveDataEvent(
-      /*url*/ "about:blank",
-      /*filename*/ "Text data",
-      // The hash should not be included for string requests.
-      /*sha*/ "",
-      /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
-      /*dlp_verdict*/ response.dlp_scan_verdict(),
-      /*mimetype*/ TextMimeTypes(),
-      /*size*/ 20);
-
-  bool called = false;
-  base::RunLoop run_loop;
-  SetQuitClosure(run_loop.QuitClosure());
-
-  DeepScanningDialogDelegate::Data data;
-  data.do_dlp_scan = true;
-  data.do_malware_scan = true;
-  data.text.emplace_back(base::UTF8ToUTF16("text1"));
-  data.text.emplace_back(base::UTF8ToUTF16("text2"));
-  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
-      browser()->profile(), GURL(kTestUrl), &data,
-      enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
-
-  // Start test.
-  DeepScanningDialogDelegate::ShowForWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
-      base::BindLambdaForTesting(
-          [&called](const DeepScanningDialogDelegate::Data& data,
-                    const DeepScanningDialogDelegate::Result& result) {
-            ASSERT_TRUE(result.paths_results.empty());
-            ASSERT_EQ(result.text_results.size(), 2u);
-            ASSERT_FALSE(result.text_results[0]);
-            ASSERT_FALSE(result.text_results[1]);
-            called = true;
-          }),
-      DeepScanAccessPoint::UPLOAD);
-
-  FakeBinaryUploadServiceStorage()->ReturnAuthorizedResponse();
-
-  run_loop.Run();
-  EXPECT_TRUE(called);
-
-  // There should have been 1 request for all texts and 1 for authentication.
-  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 2);
-}
-
-INSTANTIATE_TEST_SUITE_P(,
-                         DeepScanningDialogDelegateSimpleBrowserTest,
-                         testing::Bool());
-
 class DeepScanningDialogDelegatePasswordProtectedFilesBrowserTest
     : public DeepScanningDialogDelegateBrowserTest,
-      public testing::WithParamInterface<
-          std::tuple<AllowPasswordProtectedFilesValues, bool>> {
+      public testing::WithParamInterface<AllowPasswordProtectedFilesValues> {
  public:
-  DeepScanningDialogDelegatePasswordProtectedFilesBrowserTest()
-      : DeepScanningDialogDelegateBrowserTest(std::get<1>(GetParam())) {}
+  using DeepScanningDialogDelegateBrowserTest::
+      DeepScanningDialogDelegateBrowserTest;
 
   AllowPasswordProtectedFilesValues allow_password_protected_files() const {
-    return std::get<0>(GetParam());
+    return GetParam();
   }
 
   bool expected_result() const {
@@ -546,28 +438,26 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
     DeepScanningDialogDelegatePasswordProtectedFilesBrowserTest,
-    testing::Combine(testing::Values(ALLOW_NONE,
-                                     ALLOW_DOWNLOADS,
-                                     ALLOW_UPLOADS,
-                                     ALLOW_UPLOADS_AND_DOWNLOADS),
-                     testing::Bool()));
+    DeepScanningDialogDelegatePasswordProtectedFilesBrowserTest,
+    testing::Values(ALLOW_NONE,
+                    ALLOW_DOWNLOADS,
+                    ALLOW_UPLOADS,
+                    ALLOW_UPLOADS_AND_DOWNLOADS));
 
 class DeepScanningDialogDelegateBlockUnsupportedFileTypesBrowserTest
     : public DeepScanningDialogDelegateBrowserTest,
-      public testing::WithParamInterface<
-          std::tuple<BlockUnsupportedFiletypesValues, bool>> {
+      public testing::WithParamInterface<BlockUnsupportedFiletypesValues> {
  public:
-  DeepScanningDialogDelegateBlockUnsupportedFileTypesBrowserTest()
-      : DeepScanningDialogDelegateBrowserTest(std::get<1>(GetParam())) {}
+  using DeepScanningDialogDelegateBrowserTest::
+      DeepScanningDialogDelegateBrowserTest;
 
   BlockUnsupportedFiletypesValues block_unsupported_file_types() const {
-    return std::get<0>(GetParam());
+    return GetParam();
   }
 
   bool expected_result() const {
-    switch (block_unsupported_file_types()) {
+    switch (GetParam()) {
       case BLOCK_UNSUPPORTED_FILETYPES_NONE:
       case BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS:
         return true;
@@ -586,7 +476,9 @@ IN_PROC_BROWSER_TEST_P(
   // Set up delegate and upload service.
   EnableUploadsScanningAndReporting();
   SetBlockUnsupportedFileTypesPolicy(block_unsupported_file_types());
-  ClearUrlsToCheckForMalwareOfUploads();
+  ListPrefUpdate(g_browser_process->local_state(),
+                 prefs::kURLsToCheckForMalwareOfUploadedContent)
+      ->Clear();
 
   DeepScanningDialogDelegate::SetFactoryForTesting(
       base::BindRepeating(&MinimalFakeDeepScanningDialogDelegate::Create));
@@ -643,25 +535,22 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
     DeepScanningDialogDelegateBlockUnsupportedFileTypesBrowserTest,
-    testing::Combine(
-        testing::Values(BLOCK_UNSUPPORTED_FILETYPES_NONE,
-                        BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS,
-                        BLOCK_UNSUPPORTED_FILETYPES_UPLOADS,
-                        BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS),
-        testing::Bool()));
+    DeepScanningDialogDelegateBlockUnsupportedFileTypesBrowserTest,
+    testing::Values(BLOCK_UNSUPPORTED_FILETYPES_NONE,
+                    BLOCK_UNSUPPORTED_FILETYPES_DOWNLOADS,
+                    BLOCK_UNSUPPORTED_FILETYPES_UPLOADS,
+                    BLOCK_UNSUPPORTED_FILETYPES_UPLOADS_AND_DOWNLOADS));
 
 class DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest
     : public DeepScanningDialogDelegateBrowserTest,
-      public testing::WithParamInterface<
-          std::tuple<BlockLargeFileTransferValues, bool>> {
+      public testing::WithParamInterface<BlockLargeFileTransferValues> {
  public:
-  DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest()
-      : DeepScanningDialogDelegateBrowserTest(std::get<1>(GetParam())) {}
+  using DeepScanningDialogDelegateBrowserTest::
+      DeepScanningDialogDelegateBrowserTest;
 
   BlockLargeFileTransferValues block_large_file_transfer() const {
-    return std::get<0>(GetParam());
+    return GetParam();
   }
 
   bool expected_result() const {
@@ -744,24 +633,22 @@ IN_PROC_BROWSER_TEST_P(
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
     DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest,
-    testing::Combine(testing::Values(BLOCK_NONE,
-                                     BLOCK_LARGE_DOWNLOADS,
-                                     BLOCK_LARGE_UPLOADS,
-                                     BLOCK_LARGE_UPLOADS_AND_DOWNLOADS),
-                     testing::Bool()));
+    DeepScanningDialogDelegateBlockLargeFileTransferBrowserTest,
+    testing::Values(BLOCK_NONE,
+                    BLOCK_LARGE_DOWNLOADS,
+                    BLOCK_LARGE_UPLOADS,
+                    BLOCK_LARGE_UPLOADS_AND_DOWNLOADS));
 
 class DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest
     : public DeepScanningDialogDelegateBrowserTest,
-      public testing::WithParamInterface<
-          std::tuple<DelayDeliveryUntilVerdictValues, bool>> {
+      public testing::WithParamInterface<DelayDeliveryUntilVerdictValues> {
  public:
-  DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest()
-      : DeepScanningDialogDelegateBrowserTest(std::get<1>(GetParam())) {}
+  using DeepScanningDialogDelegateBrowserTest::
+      DeepScanningDialogDelegateBrowserTest;
 
   DelayDeliveryUntilVerdictValues delay_delivery_until_verdict() const {
-    return std::get<0>(GetParam());
+    return GetParam();
   }
 
   bool expected_result() const {
@@ -858,12 +745,106 @@ IN_PROC_BROWSER_TEST_P(DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    ,
     DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
-    testing::Combine(testing::Values(DELAY_NONE,
-                                     DELAY_DOWNLOADS,
-                                     DELAY_UPLOADS,
-                                     DELAY_UPLOADS_AND_DOWNLOADS),
-                     testing::Bool()));
+    DeepScanningDialogDelegateDelayDeliveryUntilVerdictTest,
+    testing::Values(DELAY_NONE,
+                    DELAY_DOWNLOADS,
+                    DELAY_UPLOADS,
+                    DELAY_UPLOADS_AND_DOWNLOADS));
+
+IN_PROC_BROWSER_TEST_F(DeepScanningDialogDelegateBrowserTest, Texts) {
+  // Set up delegate and upload service.
+  EnableUploadsScanningAndReporting();
+
+  DeepScanningDialogDelegate::SetFactoryForTesting(
+      base::BindRepeating(&MinimalFakeDeepScanningDialogDelegate::Create));
+
+  FakeBinaryUploadServiceStorage()->SetAuthorized(true);
+
+  // Prepare a complex DLP response to test that the verdict is reported
+  // correctly in the sensitive data event.
+  DeepScanningClientResponse response;
+  DlpDeepScanningVerdict* verdict = response.mutable_dlp_scan_verdict();
+  verdict->set_status(DlpDeepScanningVerdict::SUCCESS);
+
+  DlpDeepScanningVerdict::TriggeredRule* rule1 = verdict->add_triggered_rules();
+  rule1->set_rule_id(1);
+  rule1->set_action(DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY);
+  rule1->set_rule_resource_name("resource name 1");
+  rule1->set_rule_severity("severity 1");
+  DlpDeepScanningVerdict::MatchedDetector* detector1 =
+      rule1->add_matched_detectors();
+  detector1->set_detector_id("id1");
+  detector1->set_detector_type("dlp1");
+  detector1->set_display_name("display name 1");
+
+  DlpDeepScanningVerdict::TriggeredRule* rule2 = verdict->add_triggered_rules();
+  rule2->set_rule_id(3);
+  rule2->set_action(DlpDeepScanningVerdict::TriggeredRule::BLOCK);
+  rule2->set_rule_resource_name("resource rule 2");
+  rule2->set_rule_severity("severity 2");
+  DlpDeepScanningVerdict::MatchedDetector* detector2_1 =
+      rule2->add_matched_detectors();
+  detector2_1->set_detector_id("id2.1");
+  detector2_1->set_detector_type("type2.1");
+  detector2_1->set_display_name("display name 2.1");
+  DlpDeepScanningVerdict::MatchedDetector* detector2_2 =
+      rule2->add_matched_detectors();
+  detector2_2->set_detector_id("id2.2");
+  detector2_2->set_detector_type("type2.2");
+  detector2_2->set_display_name("display name 2.2");
+
+  FakeBinaryUploadServiceStorage()->SetResponseForText(
+      BinaryUploadService::Result::SUCCESS, response);
+
+  // The DLP verdict means an event should be reported. The content size is
+  // equal to the length of the concatenated texts ("text1" and "text2") times 2
+  // since they are wide characters ((5 + 5) * 2 = 20).
+  EventReportValidator validator(client());
+  validator.ExpectSensitiveDataEvent(
+      /*url*/ "about:blank",
+      /*filename*/ "Text data",
+      // The hash should not be included for string requests.
+      /*sha*/ "",
+      /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerWebContentUpload,
+      /*dlp_verdict*/ response.dlp_scan_verdict(),
+      /*mimetype*/ TextMimeTypes(),
+      /*size*/ 20);
+
+  bool called = false;
+  base::RunLoop run_loop;
+  SetQuitClosure(run_loop.QuitClosure());
+
+  DeepScanningDialogDelegate::Data data;
+  data.do_dlp_scan = true;
+  data.do_malware_scan = true;
+  data.text.emplace_back(base::UTF8ToUTF16("text1"));
+  data.text.emplace_back(base::UTF8ToUTF16("text2"));
+  ASSERT_TRUE(DeepScanningDialogDelegate::IsEnabled(
+      browser()->profile(), GURL(kTestUrl), &data,
+      enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY));
+
+  // Start test.
+  DeepScanningDialogDelegate::ShowForWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents(), std::move(data),
+      base::BindLambdaForTesting(
+          [&called](const DeepScanningDialogDelegate::Data& data,
+                    const DeepScanningDialogDelegate::Result& result) {
+            ASSERT_TRUE(result.paths_results.empty());
+            ASSERT_EQ(result.text_results.size(), 2u);
+            ASSERT_FALSE(result.text_results[0]);
+            ASSERT_FALSE(result.text_results[1]);
+            called = true;
+          }),
+      DeepScanAccessPoint::UPLOAD);
+
+  FakeBinaryUploadServiceStorage()->ReturnAuthorizedResponse();
+
+  run_loop.Run();
+  EXPECT_TRUE(called);
+
+  // There should have been 1 request for all texts and 1 for authentication.
+  ASSERT_EQ(FakeBinaryUploadServiceStorage()->requests_count(), 2);
+}
 
 }  // namespace safe_browsing

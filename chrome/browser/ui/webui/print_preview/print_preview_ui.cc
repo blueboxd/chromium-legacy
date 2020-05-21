@@ -59,7 +59,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "extensions/common/constants.h"
-#include "printing/page_size_margins.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_job_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -652,7 +652,7 @@ void PrintPreviewUI::OnDidStartPreview(
 }
 
 void PrintPreviewUI::OnDidGetDefaultPageLayout(
-    const PageSizeMargins& page_layout,
+    const mojom::PageSizeMargins& page_layout,
     const gfx::Rect& printable_area,
     bool has_custom_page_size_style,
     int request_id) {

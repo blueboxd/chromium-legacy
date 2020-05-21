@@ -31,8 +31,6 @@ base::Value MakeListValue(const std::vector<std::string>& elements) {
 base::Value DefaultConnectorSettings() {
   base::Value settings(base::Value::Type::DICTIONARY);
 
-  settings.SetKey(enterprise_connectors::kKeyServiceProvider,
-                  base::Value("google"));
   settings.SetKey(enterprise_connectors::kKeyEnable,
                   base::Value(base::Value::Type::LIST));
   settings.SetKey(enterprise_connectors::kKeyDisable,
@@ -75,47 +73,9 @@ void AddConnectorUrlPattern(enterprise_connectors::AnalysisConnector connector,
   list->Append(std::move(list_element));
 }
 
-void ClearConnectorUrlPattern(
-    enterprise_connectors::AnalysisConnector connector,
-    bool enable,
-    base::Value tags) {
-  ListPrefUpdate settings_list(g_browser_process->local_state(),
-                               ConnectorPref(connector));
-  DCHECK(settings_list.Get());
-  if (settings_list->empty())
-    return;
-
-  base::Value* settings = nullptr;
-  DCHECK(settings_list->Get(0, &settings));
-  DCHECK(settings);
-  DCHECK(settings->is_dict());
-
-  base::Value* list =
-      settings->FindListPath(enable ? enterprise_connectors::kKeyEnable
-                                    : enterprise_connectors::kKeyDisable);
-  if (!list)
-    return;
-
-  DCHECK(list->is_list());
-  for (const base::Value& pattern : list->GetList()) {
-    DCHECK(pattern.is_dict());
-
-    const base::Value* pattern_tags =
-        pattern.FindKey(enterprise_connectors::kKeyTags);
-    if (!pattern_tags)
-      continue;
-
-    DCHECK(pattern_tags->is_list());
-    if (*pattern_tags == tags) {
-      list->EraseListValue(pattern);
-    }
-  }
-}
-
-template <typename T>
 void SetConnectorField(enterprise_connectors::AnalysisConnector connector,
                        const char* key,
-                       T value) {
+                       bool value) {
   InitConnectorPrefIfEmpty(connector);
   ListPrefUpdate settings_list(g_browser_process->local_state(),
                                ConnectorPref(connector));
@@ -123,7 +83,7 @@ void SetConnectorField(enterprise_connectors::AnalysisConnector connector,
   DCHECK(settings_list->Get(0, &settings));
   DCHECK(settings);
   DCHECK(settings->is_dict());
-  DCHECK(settings->SetKey(key, base::Value(std::move(value))));
+  settings->SetKey(key, base::Value(std::move(value)));
 }
 
 }  // namespace
@@ -393,6 +353,7 @@ void SetDlpPolicyForConnectors(CheckContentComplianceValues state) {
   // wildcard pattern should also be included in the disable list if the policy
   // is disabled for downloads since no scan can occur with the legacy policy
   // when it is disabled.
+
   bool enable_uploads =
       state == CHECK_UPLOADS || state == CHECK_UPLOADS_AND_DOWNLOADS;
 
@@ -444,11 +405,10 @@ void SetMalwarePolicyForConnectors(SendFilesForMalwareCheckValues state) {
 
 void SetDelayDeliveryUntilVerdictPolicyForConnectors(
     DelayDeliveryUntilVerdictValues state) {
-  int delay_uploads =
-      (state == DELAY_UPLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS) ? 1 : 0;
-  int delay_downloads =
-      (state == DELAY_DOWNLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS) ? 1
-                                                                         : 0;
+  bool delay_uploads =
+      state == DELAY_UPLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS;
+  bool delay_downloads =
+      state == DELAY_DOWNLOADS || state == DELAY_UPLOADS_AND_DOWNLOADS;
   SetConnectorField(enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY,
                     enterprise_connectors::kKeyBlockUntilVerdict,
                     delay_uploads);
@@ -468,10 +428,10 @@ void SetAllowPasswordProtectedFilesPolicyForConnectors(
       state == ALLOW_DOWNLOADS || state == ALLOW_UPLOADS_AND_DOWNLOADS;
   SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
                     enterprise_connectors::kKeyBlockPasswordProtected,
-                    !allow_uploads);
+                    allow_uploads);
   SetConnectorField(enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED,
                     enterprise_connectors::kKeyBlockPasswordProtected,
-                    !allow_downloads);
+                    allow_downloads);
 }
 
 void SetBlockUnsupportedFileTypesPolicyForConnectors(
@@ -535,20 +495,6 @@ void AddUrlsToNotCheckForMalwareOfDownloadsForConnectors(
   AddConnectorUrlPattern(
       enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, false,
       MakeListValue(urls), MakeListValue({"malware"}));
-}
-
-void ClearUrlsToCheckComplianceOfDownloadsForConnectors() {
-  ClearConnectorUrlPattern(
-      enterprise_connectors::AnalysisConnector::FILE_DOWNLOADED, true,
-      MakeListValue({"dlp"}));
-}
-
-void ClearUrlsToCheckForMalwareOfUploadsForConnectors() {
-  for (auto connector :
-       {enterprise_connectors::AnalysisConnector::FILE_ATTACHED,
-        enterprise_connectors::AnalysisConnector::BULK_DATA_ENTRY}) {
-    ClearConnectorUrlPattern(connector, true, MakeListValue({"malware"}));
-  }
 }
 
 }  // namespace safe_browsing

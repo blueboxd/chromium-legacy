@@ -26,8 +26,14 @@
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos',
       'mac-chrome': 'official_goma',
+      'mac-chrome-beta': 'official_goma',
+      'mac-chrome-stable': 'official_goma',
       'win-chrome': 'official_goma_x86',
+      'win-chrome-beta': 'official_goma_x86',
+      'win-chrome-stable': 'official_goma_x86',
       'win64-chrome': 'official_goma_x64',
+      'win64-chrome-beta': 'official_goma_x64',
+      'win64-chrome-stable': 'official_goma_x64',
     },
 
     'chrome.pgo': {
@@ -664,6 +670,7 @@
       # cause them to produce different baselines than the release
       # waterfall bots, and run_web_tests.py can't handle that (by design).
       'linux-blink-rel': 'release_bot_minimal_symbols',
+      'linux-blink-optional-highdpi-rel': 'release_bot_minimal_symbols',
       'mac10.10-blink-rel': 'release_bot_minimal_symbols',
       'mac10.11-blink-rel': 'release_bot_minimal_symbols',
       'mac10.12-blink-rel': 'release_bot_minimal_symbols',
@@ -1887,7 +1894,7 @@
     ],
 
     'ios_clang_device_tot': [
-      'clang_tot', 'ios_device', 'release',
+      'clang_tot', 'ios_device', 'release', 'ios_chromium_cert'
     ],
 
     'ios_cronet': [
@@ -2584,6 +2591,11 @@
 
     'ios': {
       'gn_args': 'target_os="ios"',
+    },
+
+    'ios_chromium_cert': {
+      # defaults to "Apple Development" under ios_sdk.gni
+      'gn_args': 'ios_code_signing_identity_description=\"iPhone Developer\"',
     },
 
     'ios_deployment_target_9_0': {

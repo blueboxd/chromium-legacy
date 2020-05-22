@@ -433,6 +433,17 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // method explicitly, to avoid setting it accidentally.
   void SetSystemPriority();
 
+#if defined(OS_CHROMEOS)
+  void set_system_notification_warning_level(
+      SystemNotificationWarningLevel warning_level) {
+    system_notification_warning_level_ = warning_level;
+  }
+
+  SystemNotificationWarningLevel system_notification_warning_level() const {
+    return system_notification_warning_level_;
+  }
+#endif  // defined(OS_CHROMEOS)
+
   const std::string& custom_view_type() const { return custom_view_type_; }
   void set_custom_view_type(const std::string& custom_view_type) {
     DCHECK_EQ(type(), NotificationType::NOTIFICATION_TYPE_CUSTOM);
@@ -475,6 +486,12 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // creating the view for this notification. The type should match the type
   // used to register the factory in MessageViewFactory.
   std::string custom_view_type_;
+
+#if defined(OS_CHROMEOS)
+  // The warning level of a system notification.
+  SystemNotificationWarningLevel system_notification_warning_level_ =
+      SystemNotificationWarningLevel::NORMAL;
+#endif  // defined(OS_CHROMEOS)
 };
 
 }  // namespace message_center

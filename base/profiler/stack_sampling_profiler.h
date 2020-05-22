@@ -72,16 +72,6 @@ class BASE_EXPORT StackSamplingProfiler {
     // Interval between samples during a sampling profile. This is the desired
     // duration from the start of one sample to the start of the next sample.
     TimeDelta sampling_interval = TimeDelta::FromMilliseconds(100);
-
-    // When true, keeps the average sampling interval = |sampling_interval|,
-    // irrespective of how long each sample takes. If a sample takes too long,
-    // keeping the interval constant will lock out the sampled thread. When
-    // false, sample is created with an interval of |sampling_interval|,
-    // excluding the time taken by a sample. The metrics collected will not be
-    // accurate, since sampling could take arbitrary amount of time, but makes
-    // sure that the sampled thread gets at least the interval amount of time to
-    // run between samples.
-    bool keep_consistent_sampling_interval = true;
   };
 
   // Creates a profiler for the specified thread. |native_unwinder| is required
@@ -153,6 +143,11 @@ class BASE_EXPORT StackSamplingProfiler {
     // runs.
     static void PerformSamplingThreadIdleShutdown(
         bool simulate_intervening_start);
+
+    // Provides access to the method computing the next sample time.
+    static TimeTicks GetNextSampleTime(TimeTicks scheduled_current_sample_time,
+                                       TimeDelta sampling_interval,
+                                       TimeTicks now);
   };
 
  private:

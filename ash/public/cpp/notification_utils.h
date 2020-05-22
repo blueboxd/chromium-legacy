@@ -68,7 +68,7 @@ CreateSystemNotification(
     const message_center::RichNotificationData& optional_fields,
     scoped_refptr<message_center::NotificationDelegate> delegate,
     const gfx::VectorIcon& small_image,
-    message_center::SystemNotificationWarningLevel color_type);
+    message_center::SystemNotificationWarningLevel warning_level);
 
 }  // namespace ash
 

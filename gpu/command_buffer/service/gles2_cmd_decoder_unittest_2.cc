@@ -691,6 +691,20 @@ void GLES2DecoderTestBase::SpecializedSetup<
 }
 
 template <>
+void GLES2DecoderTestBase::SpecializedSetup<cmds::GetProgramiv, 0>(bool valid) {
+  if (valid) {
+    // GetProgramiv calls ClearGLError then GetError to make sure
+    // it actually got a value so it can report correctly to the client.
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+  }
+}
+
+template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::RenderbufferStorage, 0>(
     bool valid) {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
@@ -848,12 +862,6 @@ template <>
 void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform3ivImmediate, 0>(
     bool /* valid */) {
   SetupShaderForUniform(GL_INT_VEC3);
-}
-
-template <>
-void GLES2DecoderTestBase::SpecializedSetup<cmds::Uniform4f, 0>(
-    bool /* valid */) {
-  SetupShaderForUniform(GL_FLOAT_VEC4);
 }
 
 template <>

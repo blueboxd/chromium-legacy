@@ -15269,8 +15269,8 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
         HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
                                              auth_challenge.end());
         auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_PROXY,
-                                        empty_ssl_info, origin,
-                                        NetLogWithSource());
+                                        empty_ssl_info, NetworkIsolationKey(),
+                                        origin, NetLogWithSource());
         auth_handler->SetGenerateExpectation(
             test_config.proxy_auth_timing == AUTH_ASYNC,
             n == 0 ? test_config.first_generate_proxy_token_rv : OK);
@@ -15284,8 +15284,8 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
       HttpAuthChallengeTokenizer tokenizer(auth_challenge.begin(),
                                            auth_challenge.end());
       auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_SERVER,
-                                      empty_ssl_info, origin,
-                                      NetLogWithSource());
+                                      empty_ssl_info, NetworkIsolationKey(),
+                                      origin, NetLogWithSource());
       auth_handler->SetGenerateExpectation(
           test_config.server_auth_timing == AUTH_ASYNC,
           test_config.first_generate_server_token_rv);
@@ -15297,8 +15297,8 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
       std::unique_ptr<HttpAuthHandlerMock> second_handler =
           std::make_unique<HttpAuthHandlerMock>();
       second_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_SERVER,
-                                        empty_ssl_info, origin,
-                                        NetLogWithSource());
+                                        empty_ssl_info, NetworkIsolationKey(),
+                                        origin, NetLogWithSource());
       second_handler->SetGenerateExpectation(true, OK);
       auth_factory->AddMockHandler(second_handler.release(),
                                    HttpAuth::AUTH_SERVER);
@@ -15413,7 +15413,8 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
                                        auth_challenge.end());
   SSLInfo empty_ssl_info;
   auth_handler->InitFromChallenge(&tokenizer, HttpAuth::AUTH_SERVER,
-                                  empty_ssl_info, origin, NetLogWithSource());
+                                  empty_ssl_info, NetworkIsolationKey(), origin,
+                                  NetLogWithSource());
   auth_factory->AddMockHandler(auth_handler, HttpAuth::AUTH_SERVER);
 
   int rv = OK;

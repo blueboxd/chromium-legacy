@@ -104,6 +104,7 @@ PerFrameContentTranslateDriver::PendingRequestStats::~PendingRequestStats() =
 void PerFrameContentTranslateDriver::PendingRequestStats::Clear() {
   frame_request_count = 0;
   main_frame_success = false;
+  main_frame_error = TranslateErrors::NONE;
   frame_success_count = 0;
   frame_errors.clear();
 }
@@ -154,6 +155,11 @@ void PerFrameContentTranslateDriver::TranslateFrame(
     const std::string& source_lang,
     const std::string& target_lang,
     content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host->IsFrameDisplayNone() ||
+      !translate::IsTranslatableURL(render_frame_host->GetLastCommittedURL())) {
+    return;
+  }
+
   bool is_main_frame = (!render_frame_host->GetParent());
   mojo::AssociatedRemote<mojom::TranslateAgent> frame_agent;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
@@ -177,6 +183,11 @@ void PerFrameContentTranslateDriver::RevertTranslation(int page_seq_no) {
 
 void PerFrameContentTranslateDriver::RevertFrame(
     content::RenderFrameHost* render_frame_host) {
+  if (render_frame_host->IsFrameDisplayNone() ||
+      !translate::IsTranslatableURL(render_frame_host->GetLastCommittedURL())) {
+    return;
+  }
+
     mojo::AssociatedRemote<mojom::TranslateAgent> frame_agent;
     render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(
         &frame_agent);
@@ -409,10 +420,14 @@ void PerFrameContentTranslateDriver::OnFrameTranslated(
     }
   } else {
     stats_.frame_errors.push_back(error_type);
+    if (is_main_frame) {
+      stats_.main_frame_error = error_type;
+    }
   }
 
   if (--stats_.pending_request_count == 0) {
-    OnPageTranslated(cancelled, original_lang, translated_lang, error_type);
+    OnPageTranslated(cancelled, original_lang, translated_lang,
+                     stats_.main_frame_error);
     stats_.Report();
   }
 }

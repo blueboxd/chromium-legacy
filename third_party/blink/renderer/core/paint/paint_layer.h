@@ -613,9 +613,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   static void MapPointInPaintInvalidationContainerToBacking(
       const LayoutBoxModelObject& paint_invalidation_container,
       PhysicalOffset&);
-  static void MapQuadInPaintInvalidationContainerToBacking(
-      const LayoutBoxModelObject& paint_invalidation_container,
-      FloatQuad&);
 
   bool PaintsWithTransparency(GlobalPaintFlags global_paint_flags) const {
     return IsTransparent() && !PaintsIntoOwnBacking(global_paint_flags);

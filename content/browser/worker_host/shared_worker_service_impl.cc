@@ -78,6 +78,10 @@ void SharedWorkerServiceImpl::EnumerateSharedWorkers(Observer* observer) {
   for (const auto& host : worker_hosts_) {
     observer->OnWorkerCreated(host->id(), host->GetProcessHost()->GetID(),
                               host->GetDevToolsToken());
+    if (host->started()) {
+      observer->OnFinalResponseURLDetermined(host->id(),
+                                             host->final_response_url());
+    }
   }
 }
 
@@ -400,7 +404,8 @@ void SharedWorkerServiceImpl::StartWorker(
   host->Start(std::move(factory), std::move(main_script_load_params),
               std::move(subresource_loader_factories), std::move(controller),
               std::move(controller_service_worker_object_host),
-              std::move(outside_fetch_client_settings_object));
+              std::move(outside_fetch_client_settings_object),
+              final_response_url);
   for (Observer& observer : observers_)
     observer.OnFinalResponseURLDetermined(host->id(), final_response_url);
 }

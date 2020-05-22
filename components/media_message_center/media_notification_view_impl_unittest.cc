@@ -325,11 +325,8 @@ class MediaNotificationViewImplTest : public views::ViewsTestBase {
     view->SetSize(kViewSize);
 
     // Display it in |widget_|. Widget now owns |view|.
-    auto* view_ptr = view.get();
-    widget_->SetContentsView(view.release());
-
-    // Associate it with |container_|.
-    container_.SetView(view_ptr);
+    // And associate it with |container_|.
+    container_.SetView(widget_->SetContentsView(std::move(view)));
   }
 
   base::UnguessableToken request_id_;

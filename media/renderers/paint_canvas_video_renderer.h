@@ -271,6 +271,9 @@ class MEDIA_EXPORT PaintCanvasVideoRenderer {
     // The shared image backing the texture.
     gpu::Mailbox mailbox;
 
+    // The GL texture.
+    uint32_t texture = 0;
+
     // A SyncToken after last usage, used for reusing or destroying texture and
     // shared image.
     gpu::SyncToken sync_token;

@@ -4,6 +4,8 @@
 
 #include "components/media_message_center/media_controls_progress_view.h"
 
+#include <memory>
+
 #include "base/bind_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
@@ -31,8 +33,8 @@ class MediaControlsProgressViewTest : public views::ViewsTestBase {
     params.bounds = gfx::Rect(300, 300);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_.Init(std::move(params));
-    views::View* container = new views::View();
-    widget_.SetContentsView(container);
+    views::View* container =
+        widget_.SetContentsView(std::make_unique<views::View>());
 
     progress_view_ = new MediaControlsProgressView(base::DoNothing());
     container->AddChildView(progress_view_);

@@ -4155,6 +4155,61 @@ static_assert(offsetof(GetBooleanv, params_shm_id) == 8,
 static_assert(offsetof(GetBooleanv, params_shm_offset) == 12,
               "offset of GetBooleanv params_shm_offset should be 12");
 
+struct GetBooleani_v {
+  typedef GetBooleani_v ValueType;
+  static const CommandId kCmdId = kGetBooleani_v;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef SizedResult<GLboolean> Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _pname,
+            GLuint _index,
+            uint32_t _data_shm_id,
+            uint32_t _data_shm_offset) {
+    SetHeader();
+    pname = _pname;
+    index = _index;
+    data_shm_id = _data_shm_id;
+    data_shm_offset = _data_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLenum _pname,
+            GLuint _index,
+            uint32_t _data_shm_id,
+            uint32_t _data_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_pname, _index, _data_shm_id,
+                                       _data_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t pname;
+  uint32_t index;
+  uint32_t data_shm_id;
+  uint32_t data_shm_offset;
+};
+
+static_assert(sizeof(GetBooleani_v) == 20,
+              "size of GetBooleani_v should be 20");
+static_assert(offsetof(GetBooleani_v, header) == 0,
+              "offset of GetBooleani_v header should be 0");
+static_assert(offsetof(GetBooleani_v, pname) == 4,
+              "offset of GetBooleani_v pname should be 4");
+static_assert(offsetof(GetBooleani_v, index) == 8,
+              "offset of GetBooleani_v index should be 8");
+static_assert(offsetof(GetBooleani_v, data_shm_id) == 12,
+              "offset of GetBooleani_v data_shm_id should be 12");
+static_assert(offsetof(GetBooleani_v, data_shm_offset) == 16,
+              "offset of GetBooleani_v data_shm_offset should be 16");
+
 struct GetBufferParameteri64v {
   typedef GetBufferParameteri64v ValueType;
   static const CommandId kCmdId = kGetBufferParameteri64v;
@@ -16776,5 +16831,368 @@ static_assert(sizeof(EndBatchReadAccessSharedImageCHROMIUM) == 4,
 static_assert(
     offsetof(EndBatchReadAccessSharedImageCHROMIUM, header) == 0,
     "offset of EndBatchReadAccessSharedImageCHROMIUM header should be 0");
+
+struct EnableiOES {
+  typedef EnableiOES ValueType;
+  static const CommandId kCmdId = kEnableiOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target, GLuint _index) {
+    SetHeader();
+    target = _target;
+    index = _index;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLuint _index) {
+    static_cast<ValueType*>(cmd)->Init(_target, _index);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t index;
+};
+
+static_assert(sizeof(EnableiOES) == 12, "size of EnableiOES should be 12");
+static_assert(offsetof(EnableiOES, header) == 0,
+              "offset of EnableiOES header should be 0");
+static_assert(offsetof(EnableiOES, target) == 4,
+              "offset of EnableiOES target should be 4");
+static_assert(offsetof(EnableiOES, index) == 8,
+              "offset of EnableiOES index should be 8");
+
+struct DisableiOES {
+  typedef DisableiOES ValueType;
+  static const CommandId kCmdId = kDisableiOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target, GLuint _index) {
+    SetHeader();
+    target = _target;
+    index = _index;
+  }
+
+  void* Set(void* cmd, GLenum _target, GLuint _index) {
+    static_cast<ValueType*>(cmd)->Init(_target, _index);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t index;
+};
+
+static_assert(sizeof(DisableiOES) == 12, "size of DisableiOES should be 12");
+static_assert(offsetof(DisableiOES, header) == 0,
+              "offset of DisableiOES header should be 0");
+static_assert(offsetof(DisableiOES, target) == 4,
+              "offset of DisableiOES target should be 4");
+static_assert(offsetof(DisableiOES, index) == 8,
+              "offset of DisableiOES index should be 8");
+
+struct BlendEquationiOES {
+  typedef BlendEquationiOES ValueType;
+  static const CommandId kCmdId = kBlendEquationiOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _buf, GLenum _mode) {
+    SetHeader();
+    buf = _buf;
+    mode = _mode;
+  }
+
+  void* Set(void* cmd, GLuint _buf, GLenum _mode) {
+    static_cast<ValueType*>(cmd)->Init(_buf, _mode);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t buf;
+  uint32_t mode;
+};
+
+static_assert(sizeof(BlendEquationiOES) == 12,
+              "size of BlendEquationiOES should be 12");
+static_assert(offsetof(BlendEquationiOES, header) == 0,
+              "offset of BlendEquationiOES header should be 0");
+static_assert(offsetof(BlendEquationiOES, buf) == 4,
+              "offset of BlendEquationiOES buf should be 4");
+static_assert(offsetof(BlendEquationiOES, mode) == 8,
+              "offset of BlendEquationiOES mode should be 8");
+
+struct BlendEquationSeparateiOES {
+  typedef BlendEquationSeparateiOES ValueType;
+  static const CommandId kCmdId = kBlendEquationSeparateiOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _buf, GLenum _modeRGB, GLenum _modeAlpha) {
+    SetHeader();
+    buf = _buf;
+    modeRGB = _modeRGB;
+    modeAlpha = _modeAlpha;
+  }
+
+  void* Set(void* cmd, GLuint _buf, GLenum _modeRGB, GLenum _modeAlpha) {
+    static_cast<ValueType*>(cmd)->Init(_buf, _modeRGB, _modeAlpha);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t buf;
+  uint32_t modeRGB;
+  uint32_t modeAlpha;
+};
+
+static_assert(sizeof(BlendEquationSeparateiOES) == 16,
+              "size of BlendEquationSeparateiOES should be 16");
+static_assert(offsetof(BlendEquationSeparateiOES, header) == 0,
+              "offset of BlendEquationSeparateiOES header should be 0");
+static_assert(offsetof(BlendEquationSeparateiOES, buf) == 4,
+              "offset of BlendEquationSeparateiOES buf should be 4");
+static_assert(offsetof(BlendEquationSeparateiOES, modeRGB) == 8,
+              "offset of BlendEquationSeparateiOES modeRGB should be 8");
+static_assert(offsetof(BlendEquationSeparateiOES, modeAlpha) == 12,
+              "offset of BlendEquationSeparateiOES modeAlpha should be 12");
+
+struct BlendFunciOES {
+  typedef BlendFunciOES ValueType;
+  static const CommandId kCmdId = kBlendFunciOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _buf, GLenum _src, GLenum _dst) {
+    SetHeader();
+    buf = _buf;
+    src = _src;
+    dst = _dst;
+  }
+
+  void* Set(void* cmd, GLuint _buf, GLenum _src, GLenum _dst) {
+    static_cast<ValueType*>(cmd)->Init(_buf, _src, _dst);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t buf;
+  uint32_t src;
+  uint32_t dst;
+};
+
+static_assert(sizeof(BlendFunciOES) == 16,
+              "size of BlendFunciOES should be 16");
+static_assert(offsetof(BlendFunciOES, header) == 0,
+              "offset of BlendFunciOES header should be 0");
+static_assert(offsetof(BlendFunciOES, buf) == 4,
+              "offset of BlendFunciOES buf should be 4");
+static_assert(offsetof(BlendFunciOES, src) == 8,
+              "offset of BlendFunciOES src should be 8");
+static_assert(offsetof(BlendFunciOES, dst) == 12,
+              "offset of BlendFunciOES dst should be 12");
+
+struct BlendFuncSeparateiOES {
+  typedef BlendFuncSeparateiOES ValueType;
+  static const CommandId kCmdId = kBlendFuncSeparateiOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _buf,
+            GLenum _srcRGB,
+            GLenum _dstRGB,
+            GLenum _srcAlpha,
+            GLenum _dstAlpha) {
+    SetHeader();
+    buf = _buf;
+    srcRGB = _srcRGB;
+    dstRGB = _dstRGB;
+    srcAlpha = _srcAlpha;
+    dstAlpha = _dstAlpha;
+  }
+
+  void* Set(void* cmd,
+            GLuint _buf,
+            GLenum _srcRGB,
+            GLenum _dstRGB,
+            GLenum _srcAlpha,
+            GLenum _dstAlpha) {
+    static_cast<ValueType*>(cmd)->Init(_buf, _srcRGB, _dstRGB, _srcAlpha,
+                                       _dstAlpha);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t buf;
+  uint32_t srcRGB;
+  uint32_t dstRGB;
+  uint32_t srcAlpha;
+  uint32_t dstAlpha;
+};
+
+static_assert(sizeof(BlendFuncSeparateiOES) == 24,
+              "size of BlendFuncSeparateiOES should be 24");
+static_assert(offsetof(BlendFuncSeparateiOES, header) == 0,
+              "offset of BlendFuncSeparateiOES header should be 0");
+static_assert(offsetof(BlendFuncSeparateiOES, buf) == 4,
+              "offset of BlendFuncSeparateiOES buf should be 4");
+static_assert(offsetof(BlendFuncSeparateiOES, srcRGB) == 8,
+              "offset of BlendFuncSeparateiOES srcRGB should be 8");
+static_assert(offsetof(BlendFuncSeparateiOES, dstRGB) == 12,
+              "offset of BlendFuncSeparateiOES dstRGB should be 12");
+static_assert(offsetof(BlendFuncSeparateiOES, srcAlpha) == 16,
+              "offset of BlendFuncSeparateiOES srcAlpha should be 16");
+static_assert(offsetof(BlendFuncSeparateiOES, dstAlpha) == 20,
+              "offset of BlendFuncSeparateiOES dstAlpha should be 20");
+
+struct ColorMaskiOES {
+  typedef ColorMaskiOES ValueType;
+  static const CommandId kCmdId = kColorMaskiOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _buf,
+            GLboolean _r,
+            GLboolean _g,
+            GLboolean _b,
+            GLboolean _a) {
+    SetHeader();
+    buf = _buf;
+    r = _r;
+    g = _g;
+    b = _b;
+    a = _a;
+  }
+
+  void* Set(void* cmd,
+            GLuint _buf,
+            GLboolean _r,
+            GLboolean _g,
+            GLboolean _b,
+            GLboolean _a) {
+    static_cast<ValueType*>(cmd)->Init(_buf, _r, _g, _b, _a);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t buf;
+  uint32_t r;
+  uint32_t g;
+  uint32_t b;
+  uint32_t a;
+};
+
+static_assert(sizeof(ColorMaskiOES) == 24,
+              "size of ColorMaskiOES should be 24");
+static_assert(offsetof(ColorMaskiOES, header) == 0,
+              "offset of ColorMaskiOES header should be 0");
+static_assert(offsetof(ColorMaskiOES, buf) == 4,
+              "offset of ColorMaskiOES buf should be 4");
+static_assert(offsetof(ColorMaskiOES, r) == 8,
+              "offset of ColorMaskiOES r should be 8");
+static_assert(offsetof(ColorMaskiOES, g) == 12,
+              "offset of ColorMaskiOES g should be 12");
+static_assert(offsetof(ColorMaskiOES, b) == 16,
+              "offset of ColorMaskiOES b should be 16");
+static_assert(offsetof(ColorMaskiOES, a) == 20,
+              "offset of ColorMaskiOES a should be 20");
+
+struct IsEnablediOES {
+  typedef IsEnablediOES ValueType;
+  static const CommandId kCmdId = kIsEnablediOES;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  typedef uint32_t Result;
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLenum _target,
+            GLuint _index,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    SetHeader();
+    target = _target;
+    index = _index;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+  }
+
+  void* Set(void* cmd,
+            GLenum _target,
+            GLuint _index,
+            uint32_t _result_shm_id,
+            uint32_t _result_shm_offset) {
+    static_cast<ValueType*>(cmd)->Init(_target, _index, _result_shm_id,
+                                       _result_shm_offset);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t target;
+  uint32_t index;
+  uint32_t result_shm_id;
+  uint32_t result_shm_offset;
+};
+
+static_assert(sizeof(IsEnablediOES) == 20,
+              "size of IsEnablediOES should be 20");
+static_assert(offsetof(IsEnablediOES, header) == 0,
+              "offset of IsEnablediOES header should be 0");
+static_assert(offsetof(IsEnablediOES, target) == 4,
+              "offset of IsEnablediOES target should be 4");
+static_assert(offsetof(IsEnablediOES, index) == 8,
+              "offset of IsEnablediOES index should be 8");
+static_assert(offsetof(IsEnablediOES, result_shm_id) == 12,
+              "offset of IsEnablediOES result_shm_id should be 12");
+static_assert(offsetof(IsEnablediOES, result_shm_offset) == 16,
+              "offset of IsEnablediOES result_shm_offset should be 16");
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_

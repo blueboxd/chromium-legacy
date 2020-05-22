@@ -118,6 +118,8 @@ class CORE_EXPORT WebFrameWidgetBase
   cc::EventListenerProperties EventListenerProperties(
       cc::EventListenerClass) const final;
   mojom::blink::DisplayMode DisplayMode() const override;
+  void SetDelegatedInkMetadata(
+      std::unique_ptr<viz::DelegatedInkMetadata> metadata) final;
 
   // WebFrameWidget implementation.
   WebLocalFrame* LocalRoot() const override;

@@ -86,6 +86,14 @@ class CC_EXPORT ScrollState {
   // it's a scroll update
   gfx::ScrollOffset DeltaOrHint() const;
 
+  ElementId target_element_id() const {
+    return data_.current_native_scrolling_element();
+  }
+
+  bool is_main_thread_hit_tested() const {
+    return data_.is_main_thread_hit_tested;
+  }
+
   ScrollStateData* data() { return &data_; }
 
  private:

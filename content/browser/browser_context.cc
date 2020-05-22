@@ -43,6 +43,7 @@
 #include "content/browser/media/browser_feature_provider.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
+#include "content/browser/speech/tts_controller_impl.h"
 #include "content/browser/storage_partition_impl_map.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/public/browser/blob_handle.h"
@@ -483,6 +484,8 @@ BrowserContext::~BrowserContext() {
 
   if (GetUserData(kDownloadManagerKeyName))
     GetDownloadManager(this)->Shutdown();
+
+  TtsControllerImpl::GetInstance()->OnBrowserContextDestroyed(this);
 
   TRACE_EVENT_NESTABLE_ASYNC_END1(
       "shutdown", "BrowserContext::NotifyWillBeDestroyed() called.", this,

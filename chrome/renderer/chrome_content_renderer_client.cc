@@ -546,9 +546,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
     }
   }
 
-  // Set up a mojo service to test if this page is a distiller page.
+  // Set up a render frame observer to test if this page is a distiller page.
   new dom_distiller::DistillerJsRenderFrameObserver(
-      render_frame, ISOLATED_WORLD_ID_CHROME_INTERNAL, registry);
+      render_frame, ISOLATED_WORLD_ID_CHROME_INTERNAL);
 
   if (dom_distiller::ShouldStartDistillabilityService()) {
     // Create DistillabilityAgent to send distillability updates to

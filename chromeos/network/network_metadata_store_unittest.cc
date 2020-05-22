@@ -193,6 +193,15 @@ TEST_F(NetworkMetadataStoreTest, ConfigurationCreated) {
   ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
 }
 
+TEST_F(NetworkMetadataStoreTest, ConfigurationCreated_HiddenNetwork) {
+  metadata_store()->OnConfigurationCreated("service_path", kGuid);
+  // Network only exists after the OnConfigurationCreated has been called.
+  std::string service_path = ConfigureService(kConfigWifi0Connectable);
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_TRUE(metadata_store()->GetIsCreatedByUser(kGuid));
+}
+
 TEST_F(NetworkMetadataStoreTest, ConfigurationUpdated) {
   std::string service_path = ConfigureService(kConfigWifi0Connectable);
   network_connection_handler()->ConnectToNetwork(

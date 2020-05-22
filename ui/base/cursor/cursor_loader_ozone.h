@@ -14,13 +14,10 @@
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 
 namespace ui {
-
-class CursorFactoryOzone;
+class CursorFactory;
 
 class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderOzone : public CursorLoader {
  public:
-  // CursorLoaderOzone will use CursorFactoryOzone corresponding to the thread
-  // it was constructed on.
   CursorLoaderOzone();
   ~CursorLoaderOzone() override;
 
@@ -38,7 +35,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) CursorLoaderOzone : public CursorLoader {
  private:
   // Pointers are owned by ResourceBundle and must not be freed here.
   std::map<mojom::CursorType, PlatformCursor> image_cursors_;
-  CursorFactoryOzone* factory_ = nullptr;
+  CursorFactory* factory_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CursorLoaderOzone);
 };

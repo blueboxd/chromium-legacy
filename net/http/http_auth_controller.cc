@@ -231,8 +231,8 @@ bool HttpAuthController::SelectPreemptiveAuth(
   std::unique_ptr<HttpAuthHandler> handler_preemptive;
   int rv_create =
       http_auth_handler_factory_->CreatePreemptiveAuthHandlerFromString(
-          entry->auth_challenge(), target_, auth_origin_,
-          entry->IncrementNonceCount(), net_log_, host_resolver_,
+          entry->auth_challenge(), target_, network_isolation_key_,
+          auth_origin_, entry->IncrementNonceCount(), net_log_, host_resolver_,
           &handler_preemptive);
   if (rv_create != OK)
     return false;
@@ -328,9 +328,10 @@ int HttpAuthController::HandleAuthChallenge(
   do {
     if (!handler_.get() && can_send_auth) {
       // Find the best authentication challenge that we support.
-      HttpAuth::ChooseBestChallenge(
-          http_auth_handler_factory_, *headers, ssl_info, target_, auth_origin_,
-          disabled_schemes_, net_log_, host_resolver_, &handler_);
+      HttpAuth::ChooseBestChallenge(http_auth_handler_factory_, *headers,
+                                    ssl_info, network_isolation_key_, target_,
+                                    auth_origin_, disabled_schemes_, net_log_,
+                                    host_resolver_, &handler_);
       if (handler_.get())
         HistogramAuthEvent(handler_.get(), AUTH_EVENT_START);
     }

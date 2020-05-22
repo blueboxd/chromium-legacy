@@ -31,7 +31,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_service_observer.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -131,17 +134,53 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
       // Note: |this| is deleted here.
       return;
     }
-    // Start observing sync changes.
+    DCHECK(!done_closure_);
+    done_closure_ = std::move(done_closure);
+    if (chromeos::features::IsSplitSettingsSyncEnabled()) {
+      // SplitSettingsSync lets users opt-out of sync during OOBE.
+      PrefService* prefs = profile_->GetPrefs();
+      if (!prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted)) {
+        // Need to wait for OOBE completion before checking if sync is enabled.
+        pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
+        pref_change_registrar_->Init(prefs);
+        // base::Unretained is safe because we own |pref_changed_registrar_|.
+        pref_change_registrar_->Add(
+            chromeos::prefs::kSyncOobeCompleted,
+            base::BindRepeating(&PrioritySyncReadyWaiter::OnSyncOobeCompleted,
+                                base::Unretained(this)));
+        return;
+      }
+    }
+    MaybeObserveSyncStart();
+  }
+
+ private:
+  void OnSyncOobeCompleted() {
+    DCHECK(chromeos::features::IsSplitSettingsSyncEnabled());
+    DCHECK(
+        profile_->GetPrefs()->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+    pref_change_registrar_.reset();
+    syncer::SyncService* service =
+        ProfileSyncServiceFactory::GetForProfile(profile_);
+    if (!service->GetUserSettings()->IsOsSyncFeatureEnabled()) {
+      // User opted-out of OS sync, OS sync will never start, we're done here.
+      Finish();
+      // Note: |this| is deleted.
+      return;
+    }
+    MaybeObserveSyncStart();
+  }
+
+  void MaybeObserveSyncStart() {
     syncer::SyncService* service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
     DCHECK(service);
-    if (service->CanSyncFeatureStart()) {
-      done_closure_ = std::move(done_closure);
-      AddObservers();
-    } else {
-      std::move(done_closure).Run();
-      // Note: |this| is deleted here.
+    if (!service->CanSyncFeatureStart()) {
+      Finish();
+      // Note: |this| is deleted.
+      return;
     }
+    AddObservers();
   }
 
   // sync_preferences::PrefServiceSyncableObserver:
@@ -160,12 +199,15 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
       Finish();
   }
 
- private:
   bool IsPrioritySyncing() {
     sync_preferences::PrefServiceSyncable* prefs =
         PrefServiceSyncableFromProfile(profile_);
     DCHECK(prefs);
-    return prefs->IsPrioritySyncing();
+    // SplitSettingsSync moves prefs like language and keyboard/mouse config to
+    // OS priority prefs.
+    return chromeos::features::IsSplitSettingsSyncEnabled()
+               ? prefs->AreOsPriorityPrefsSyncing()
+               : prefs->IsPrioritySyncing();
   }
 
   void AddObservers() {
@@ -184,6 +226,9 @@ class ExternalPrefLoader::PrioritySyncReadyWaiter
   Profile* profile_;
 
   base::OnceClosure done_closure_;
+
+  // Used with SplitSettingsSync to wait for OOBE sync dialog completion.
+  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   // Used for registering observer for sync_preferences::PrefServiceSyncable.
   ScopedObserver<sync_preferences::PrefServiceSyncable,

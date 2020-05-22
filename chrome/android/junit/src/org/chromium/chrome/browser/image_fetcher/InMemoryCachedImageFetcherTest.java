@@ -149,8 +149,9 @@ public class InMemoryCachedImageFetcherTest {
             answerFetch(mBitmap, true);
 
             // No exception should be thrown here when bitmap cache is null.
-            mInMemoryCachedImageFetcher.fetchImage(
-                    URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX, (Bitmap bitmap) -> {});
+            ImageFetcher.Params params =
+                    ImageFetcher.Params.create(URL, UMA_CLIENT_NAME, WIDTH_PX, HEIGHT_PX);
+            mInMemoryCachedImageFetcher.fetchImage(params, (Bitmap bitmap) -> {});
         } catch (Exception e) {
             Assert.fail("Destroy called in the middle of execution shouldn't throw");
         }
@@ -183,7 +184,7 @@ public class InMemoryCachedImageFetcherTest {
         mExpectedException.expectMessage("fetchGif called after destroy");
         mInMemoryCachedImageFetcher.fetchGif("", "", null);
         mExpectedException.expectMessage("fetchImage called after destroy");
-        mInMemoryCachedImageFetcher.fetchImage("", "", 100, 100, null);
+        mInMemoryCachedImageFetcher.fetchImage(ImageFetcher.Params.create("", "", 100, 100), null);
         mExpectedException.expectMessage("clear called after destroy");
         mInMemoryCachedImageFetcher.clear();
     }

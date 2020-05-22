@@ -646,11 +646,11 @@ ui::KeyboardCode StringToKeyCode(const std::string& str) {
   DCHECK(base::IsStringASCII(str));
   if (str.length() == 1) {
     char c = str[0];
-    if (c >= 'a' || c <= 'z') {
+    if (c >= 'a' && c <= 'z') {
       return static_cast<ui::KeyboardCode>(static_cast<int>(ui::VKEY_A) +
                                            (c - 'a'));
     }
-    if (c >= '0' || c <= '9') {
+    if (c >= '0' && c <= '9') {
       return static_cast<ui::KeyboardCode>(static_cast<int>(ui::VKEY_0) +
                                            (c - '0'));
     }

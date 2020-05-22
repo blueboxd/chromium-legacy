@@ -65,8 +65,12 @@ bool ScrollInputHandler::OnScrollEvent(const ScrollEvent& event,
 
   // Note: the WHEEL type covers both actual wheels as well as trackpad
   // scrolling.
-  input_handler_weak_ptr_->ScrollBegin(&scroll_state_begin,
-                                       ui::ScrollInputType::kWheel);
+  cc::InputHandler::ScrollStatus result = input_handler_weak_ptr_->ScrollBegin(
+      &scroll_state_begin, ui::ScrollInputType::kWheel);
+
+  // Falling back to the main thread should never be required when an explicit
+  // ElementId is provided.
+  DCHECK(!result.needs_main_thread_hit_test);
 
   cc::ScrollState scroll_state = CreateScrollState(event, false);
   input_handler_weak_ptr_->ScrollUpdate(&scroll_state, base::TimeDelta());

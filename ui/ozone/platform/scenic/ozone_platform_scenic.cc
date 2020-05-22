@@ -15,6 +15,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/notreached.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/fuchsia/input_method_fuchsia.h"
 #include "ui/display/fake/fake_display_delegate.h"
@@ -30,7 +31,6 @@
 #include "ui/ozone/platform/scenic/scenic_window_manager.h"
 #include "ui/ozone/platform/scenic/sysmem_buffer_collection.h"
 #include "ui/ozone/platform_selection.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/mojom/scenic_gpu_service.mojom.h"
@@ -77,9 +77,7 @@ class OzonePlatformScenic
     return overlay_manager_.get();
   }
 
-  CursorFactoryOzone* GetCursorFactoryOzone() override {
-    return cursor_factory_ozone_.get();
-  }
+  CursorFactory* GetCursorFactory() override { return cursor_factory_.get(); }
 
   InputController* GetInputController() override {
     return input_controller_.get();
@@ -137,7 +135,7 @@ class OzonePlatformScenic
     window_manager_ = std::make_unique<ScenicWindowManager>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
-    cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
 
     scenic_gpu_host_ = std::make_unique<ScenicGpuHost>(window_manager_.get());
 
@@ -208,7 +206,7 @@ class OzonePlatformScenic
 
   std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<PlatformEventSource> platform_event_source_;
-  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<ScenicGpuHost> scenic_gpu_host_;

@@ -647,6 +647,24 @@ void GLES2Implementation::Disable(GLenum cap) {
   CheckGLError();
 }
 
+void GLES2Implementation::DisableiOES(GLenum target, GLuint index) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDisableiOES("
+                     << GLES2Util::GetStringEnum(target) << ", " << index
+                     << ")");
+  if (index == 0u && target == GL_BLEND) {
+    bool changed = false;
+    DCHECK(target == GL_BLEND);
+    if (!state_.SetCapabilityState(target, false, &changed) || changed) {
+      helper_->DisableiOES(target, index);
+    }
+  } else {
+    helper_->DisableiOES(target, index);
+  }
+
+  CheckGLError();
+}
+
 void GLES2Implementation::Enable(GLenum cap) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glEnable("
@@ -655,6 +673,24 @@ void GLES2Implementation::Enable(GLenum cap) {
   if (!state_.SetCapabilityState(cap, true, &changed) || changed) {
     helper_->Enable(cap);
   }
+  CheckGLError();
+}
+
+void GLES2Implementation::EnableiOES(GLenum target, GLuint index) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glEnableiOES("
+                     << GLES2Util::GetStringEnum(target) << ", " << index
+                     << ")");
+  if (index == 0u && target == GL_BLEND) {
+    bool changed = false;
+    DCHECK(target == GL_BLEND);
+    if (!state_.SetCapabilityState(target, true, &changed) || changed) {
+      helper_->EnableiOES(target, index);
+    }
+  } else {
+    helper_->EnableiOES(target, index);
+  }
+
   CheckGLError();
 }
 
@@ -674,6 +710,24 @@ GLboolean GLES2Implementation::IsEnabled(GLenum cap) {
     WaitForCmd();
     state = (*result) != 0;
   }
+
+  GPU_CLIENT_LOG("returned " << state);
+  CheckGLError();
+  return state;
+}
+
+GLboolean GLES2Implementation::IsEnablediOES(GLenum target, GLuint index) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glIsEnablediOES("
+                     << GLES2Util::GetStringCapability(target) << ", " << index
+                     << ")");
+  bool state = false;
+  typedef cmds::IsEnabled::Result Result;
+  auto result = GetResultAs<Result>();
+  *result = 0;
+  helper_->IsEnablediOES(target, index, GetResultShmId(), result.offset());
+  WaitForCmd();
+  state = (*result) != 0;
 
   GPU_CLIENT_LOG("returned " << state);
   CheckGLError();
@@ -1103,6 +1157,13 @@ bool GLES2Implementation::GetBooleanvHelper(GLenum pname, GLboolean* params) {
   }
   *params = static_cast<GLboolean>(value);
   return true;
+}
+
+bool GLES2Implementation::GetBooleani_vHelper(GLenum pname,
+                                              GLuint index,
+                                              GLboolean* data) {
+  // TODO(zmo): Implement client side caching.
+  return false;
 }
 
 bool GLES2Implementation::GetFloatvHelper(GLenum pname, GLfloat* params) {

@@ -183,8 +183,9 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
 
    protected:
     bool Init(HttpAuthChallengeTokenizer* challenge,
-              const SSLInfo& ssl_info) override {
-      HttpAuthHandlerMock::Init(challenge, ssl_info);
+              const SSLInfo& ssl_info,
+              const NetworkIsolationKey& network_isolation_key) override {
+      HttpAuthHandlerMock::Init(challenge, ssl_info, network_isolation_key);
       set_allows_default_credentials(true);
       set_allows_explicit_credentials(false);
       set_connection_based(true);

@@ -71,6 +71,7 @@ CONTENT_EXPORT extern const char kChromeUINetworkErrorURL[];
 CONTENT_EXPORT extern const char kChromeUIPpapiFlashCrashURL[];
 CONTENT_EXPORT extern const char kChromeUIPpapiFlashHangURL[];
 CONTENT_EXPORT extern const char kChromeUIProcessInternalsURL[];
+CONTENT_EXPORT extern const char kChromeUIUntrustedResourcesURL[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kChromeUIGpuJavaCrashURL[];
 #endif

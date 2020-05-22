@@ -159,8 +159,8 @@ class WebViewUnitTest : public views::test::WidgetTest {
     // child.
     top_level_widget_ = CreateTopLevelFramelessPlatformWidget();
     top_level_widget_->SetBounds(gfx::Rect(0, 10, 100, 100));
-    View* const contents_view = new View();
-    top_level_widget_->SetContentsView(contents_view);
+    View* const contents_view =
+        top_level_widget_->SetContentsView(std::make_unique<View>());
     web_view_ = new WebView(browser_context_.get());
     web_view_->SetBoundsRect(gfx::Rect(contents_view->size()));
     contents_view->AddChildView(web_view_);

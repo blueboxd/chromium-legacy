@@ -1703,6 +1703,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Wrapper for glDisable
   void DoDisable(GLenum cap);
 
+  // Wrapper for glDisableiOES
+  void DoDisableiOES(GLenum target, GLuint index);
+
   // Wrapper for glDisableVertexAttribArray.
   void DoDisableVertexAttribArray(GLuint index);
 
@@ -1736,6 +1739,9 @@ class GLES2DecoderImpl : public GLES2Decoder,
 
   // Wrapper for glEnable
   void DoEnable(GLenum cap);
+
+  // Wrapper for glEnableiOES
+  void DoEnableiOES(GLenum target, GLuint index);
 
   // Wrapper for glEnableVertexAttribArray.
   void DoEnableVertexAttribArray(GLuint index);
@@ -1809,10 +1815,16 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Wrapper for glGetIntegerv.
   void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size);
 
-  // Helper for DoGetIntegeri_v and DoGetInteger64i_v.
+  // Helper for DoGetBooleani_v, DoGetIntegeri_v and DoGetInteger64i_v.
   template <typename TYPE>
   void GetIndexedIntegerImpl(
       const char* function_name, GLenum target, GLuint index, TYPE* data);
+
+  // Wrapper for glGetBooleani_v.
+  void DoGetBooleani_v(GLenum target,
+                       GLuint index,
+                       GLboolean* params,
+                       GLsizei params_size);
 
   // Wrapper for glGetIntegeri_v.
   void DoGetIntegeri_v(GLenum target,
@@ -1924,6 +1936,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   bool DoIsTransformFeedback(GLuint client_id);
   bool DoIsVertexArrayOES(GLuint client_id);
   bool DoIsSync(GLuint client_id);
+
+  bool DoIsEnablediOES(GLenum target, GLuint index);
 
   void DoLineWidth(GLfloat width);
 
@@ -7778,6 +7792,7 @@ void GLES2DecoderImpl::GetIndexedIntegerImpl(
     state_.GetWindowRectangle(index, data);
     return;
   }
+
   scoped_refptr<IndexedBufferBindingHost> bindings;
   switch (target) {
     case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
@@ -7797,6 +7812,16 @@ void GLES2DecoderImpl::GetIndexedIntegerImpl(
         return;
       }
       bindings = state_.indexed_uniform_buffer_bindings.get();
+      break;
+    case GL_BLEND_SRC_RGB:
+    case GL_BLEND_SRC_ALPHA:
+    case GL_BLEND_DST_RGB:
+    case GL_BLEND_DST_ALPHA:
+    case GL_BLEND_EQUATION_RGB:
+    case GL_BLEND_EQUATION_ALPHA:
+    case GL_COLOR_WRITEMASK:
+      // Note (crbug.com/1058744): not implemented for validating command
+      // decoder
       break;
     default:
       NOTREACHED();
@@ -7819,10 +7844,27 @@ void GLES2DecoderImpl::GetIndexedIntegerImpl(
     case GL_UNIFORM_BUFFER_START:
       *data = static_cast<TYPE>(bindings->GetBufferStart(index));
       break;
+    case GL_BLEND_SRC_RGB:
+    case GL_BLEND_SRC_ALPHA:
+    case GL_BLEND_DST_RGB:
+    case GL_BLEND_DST_ALPHA:
+    case GL_BLEND_EQUATION_RGB:
+    case GL_BLEND_EQUATION_ALPHA:
+    case GL_COLOR_WRITEMASK:
+      // Note (crbug.com/1058744): not implemented for validating command
+      // decoder
+      break;
     default:
       NOTREACHED();
       break;
   }
+}
+
+void GLES2DecoderImpl::DoGetBooleani_v(GLenum target,
+                                       GLuint index,
+                                       GLboolean* params,
+                                       GLsizei params_size) {
+  GetIndexedIntegerImpl<GLboolean>("glGetBooleani_v", target, index, params);
 }
 
 void GLES2DecoderImpl::DoGetIntegeri_v(GLenum target,
@@ -8358,6 +8400,10 @@ void GLES2DecoderImpl::DoDisable(GLenum cap) {
   }
 }
 
+void GLES2DecoderImpl::DoDisableiOES(GLenum target, GLuint index) {
+  api()->glDisableiOESFn(target, index);
+}
+
 void GLES2DecoderImpl::DoEnable(GLenum cap) {
   if (SetCapabilityState(cap, true)) {
     if (cap == GL_PRIMITIVE_RESTART_FIXED_INDEX &&
@@ -8373,6 +8419,10 @@ void GLES2DecoderImpl::DoEnable(GLenum cap) {
     }
     api()->glEnableFn(cap);
   }
+}
+
+void GLES2DecoderImpl::DoEnableiOES(GLenum target, GLuint index) {
+  api()->glEnableiOESFn(target, index);
 }
 
 void GLES2DecoderImpl::DoDepthRangef(GLclampf znear, GLclampf zfar) {
@@ -12380,6 +12430,11 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
 
 bool GLES2DecoderImpl::DoIsEnabled(GLenum cap) {
   return state_.GetEnabled(cap);
+}
+
+bool GLES2DecoderImpl::DoIsEnablediOES(GLenum target, GLuint index) {
+  // Note (crbug.com/1058744): not implemented for validating command decoder
+  return false;
 }
 
 bool GLES2DecoderImpl::DoIsBuffer(GLuint client_id) {

@@ -553,7 +553,9 @@ class CORE_EXPORT LocalFrameView final
   void Hide() override;
 
   bool IsLocalFrameView() const override { return true; }
-  bool ShouldReportMainFrameIntersection() const override { return true; }
+  // TODO(https://crbug/1085175): Re-enable reporting main frame intersections
+  // once intersections are in the root document coordinate system.
+  bool ShouldReportMainFrameIntersection() const override { return false; }
 
   void Trace(Visitor*) const override;
   void NotifyPageThatContentAreaWillPaint() const;

@@ -75,14 +75,15 @@ class AssistantInfoBoxViewBinder
         if (infoBox.getImagePath().isEmpty()) {
             viewHolder.mExplanationView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
         } else {
-            mImageFetcher.fetchImage(infoBox.getImagePath(),
-                    ImageFetcher.ASSISTANT_INFO_BOX_UMA_CLIENT_NAME, image -> {
-                        if (image != null) {
-                            Drawable d = new BitmapDrawable(mContext.getResources(), image);
-                            viewHolder.mExplanationView.setCompoundDrawablesWithIntrinsicBounds(
-                                    null, d, null, null);
-                        }
-                    });
+            ImageFetcher.Params params = ImageFetcher.Params.create(
+                    infoBox.getImagePath(), ImageFetcher.ASSISTANT_INFO_BOX_UMA_CLIENT_NAME);
+            mImageFetcher.fetchImage(params, image -> {
+                if (image != null) {
+                    Drawable d = new BitmapDrawable(mContext.getResources(), image);
+                    viewHolder.mExplanationView.setCompoundDrawablesWithIntrinsicBounds(
+                            null, d, null, null);
+                }
+            });
         }
     }
 }

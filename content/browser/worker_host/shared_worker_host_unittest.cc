@@ -122,7 +122,8 @@ class SharedWorkerHostTest : public testing::Test {
                 blink::mojom::FetchClientSettingsObject::New(
                     network::mojom::ReferrerPolicy::kDefault,
                     GURL() /* outgoing_referrer */,
-                    blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade));
+                    blink::mojom::InsecureRequestsPolicy::kDoNotUpgrade),
+                GURL() /* final_response_url */);
   }
 
   MessagePortChannel AddClient(

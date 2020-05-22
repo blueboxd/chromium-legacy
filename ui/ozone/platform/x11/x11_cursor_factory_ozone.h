@@ -11,15 +11,15 @@
 
 #include "base/macros.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/ozone/platform/x11/x11_cursor_ozone.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
 
 // CursorFactoryOzone implementation for X11 cursors.
-class X11CursorFactoryOzone : public CursorFactoryOzone {
+class X11CursorFactoryOzone : public CursorFactory {
  public:
   X11CursorFactoryOzone();
   ~X11CursorFactoryOzone() override;

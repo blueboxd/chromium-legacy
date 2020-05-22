@@ -8,34 +8,29 @@ import("//build/config/ui.gni")
 # bringing all of //ui/base/cursor.
 component("cursor_base") {
   output_name = "ui_base_cursor_base"
-
   sources = [
     "cursor.cc",
     "cursor.h",
+    "cursor_factory.cc",
+    "cursor_factory.h",
     "cursor_size.h",
   ]
-
   defines = [ "IS_UI_BASE_CURSOR_BASE_IMPL" ]
-
   public_deps = [
     "//base",
     "//skia",
     "//ui/base/cursor/mojom:cursor_type",
     "//ui/gfx/geometry",
   ]
-
   deps = [ "//ui/gfx:geometry_skia" ]
 
-  if (use_x11 && use_aura) {
+  if (use_x11) {
     sources += [ "cursor_x11.cc" ]
-
     deps += [ "//ui/base/x" ]
   }
 
   if (use_ozone) {
     sources += [ "cursor_ozone.cc" ]
-
-    deps += [ "//ui/ozone:ozone_base" ]
   }
 
   if (is_win) {
@@ -109,8 +104,8 @@ if (use_aura) {
         "ozone/bitmap_cursor_factory_ozone.h",
       ]
       public_deps += [
+        "//skia",
         "//ui/gfx/geometry",
-        "//ui/ozone:ozone_base",
       ]
     }
   }

@@ -324,8 +324,14 @@ const base::Feature kLazyInitializeMediaControls{
 const base::Feature kLegacyWindowsDWriteFontFallback{
     "LegacyWindowsDWriteFontFallback", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kLogJsConsoleMessages{"LogJsConsoleMessages",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kLogJsConsoleMessages {
+  "LogJsConsoleMessages",
+#if defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Enables lowering the priority of the resources in iframes.
 const base::Feature kLowPriorityIframes{"LowPriorityIframes",

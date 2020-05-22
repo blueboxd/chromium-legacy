@@ -42,8 +42,8 @@ ColorSpaceGamut GetColorSpaceGamut(const skcms_ICCProfile* color_profile) {
   in[1][1] = 255;
   in[2][2] = 255;
   bool color_converison_successful = skcms_Transform(
-      in, skcms_PixelFormat_RGB_888, skcms_AlphaFormat_Opaque, color_profile,
-      out, skcms_PixelFormat_RGB_fff, skcms_AlphaFormat_Opaque, &sc_rgb, 3);
+      in, skcms_PixelFormat_RGB_888, skcms_AlphaFormat_Unpremul, color_profile,
+      out, skcms_PixelFormat_RGB_fff, skcms_AlphaFormat_Unpremul, &sc_rgb, 3);
   DCHECK(color_converison_successful);
   float score = out[0][0] * out[1][1] * out[2][2];
 

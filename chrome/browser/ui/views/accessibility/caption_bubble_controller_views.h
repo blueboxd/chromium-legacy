@@ -24,8 +24,6 @@ struct CaptionText {
   std::string final_text;
   std::string partial_text;
 
-  bool empty() { return final_text.empty() && partial_text.empty(); }
-
   std::string full_text() { return final_text + partial_text; }
 };
 

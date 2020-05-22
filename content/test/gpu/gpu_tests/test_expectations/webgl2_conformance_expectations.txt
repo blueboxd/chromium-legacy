@@ -43,6 +43,7 @@
 [ android qualcomm ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
 [ android qualcomm ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
 crbug.com/776222 [ android ] WebglExtension_WEBGL_video_texture [ Skip ]
+crbug.com/1058744 [ no-passthrough ] WebglExtension_OES_draw_buffers_indexed [ Skip ]
 
 # Disabling all multiview checks temporarily while ANGLE side changes
 # get merged in.

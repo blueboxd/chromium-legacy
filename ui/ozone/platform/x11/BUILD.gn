@@ -34,7 +34,10 @@ source_set("x11") {
     "x11_surface_factory.h",
   ]
 
-  public_deps = [ "//ui/base/cursor/mojom:cursor_type" ]
+  public_deps = [
+    "//ui/base/cursor:cursor_base",
+    "//ui/base/cursor/mojom:cursor_type",
+  ]
 
   deps = [
     "//base",

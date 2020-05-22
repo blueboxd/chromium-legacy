@@ -72,6 +72,9 @@ const char kLtrRtlLtr[] = "a\u05d1b";
 const char kRtlLtr[] = "\u05d0\u05d1a";
 const char kRtlLtrRtl[] = "\u05d0a\u05d1";
 
+constexpr bool kUseWordWrap = true;
+constexpr bool kUseObscuredText = true;
+
 // Bitmasks based on gfx::TextStyle.
 enum {
   ITALIC_MASK = 1 << TEXT_STYLE_ITALIC,
@@ -2945,6 +2948,96 @@ TEST_F(RenderTextTest, GetDisplayTextDirection) {
   render_text->SetText(UTF8ToUTF16(kRtl));
   EXPECT_EQ(render_text->GetDisplayTextDirection(), base::i18n::RIGHT_TO_LEFT);
 }
+
+struct GetTextIndexOfLineCase {
+  const char* test_name;
+  const wchar_t* const text;
+  const std::vector<size_t> line_breaks;
+  const bool set_word_wrap = false;
+  const bool set_obscured = false;
+};
+
+class RenderTextTestWithGetTextIndexOfLineCase
+    : public RenderTextTest,
+      public ::testing::WithParamInterface<GetTextIndexOfLineCase> {
+ public:
+  static std::string ParamInfoToString(
+      ::testing::TestParamInfo<GetTextIndexOfLineCase> param_info) {
+    return param_info.param.test_name;
+  }
+};
+
+TEST_P(RenderTextTestWithGetTextIndexOfLineCase, GetTextIndexOfLine) {
+  GetTextIndexOfLineCase param = GetParam();
+  RenderText* render_text = GetRenderText();
+  render_text->SetMultiline(true);
+  SetGlyphWidth(10);
+  if (param.set_word_wrap) {
+    render_text->SetDisplayRect(Rect(1, 1000));
+    render_text->SetWordWrapBehavior(WRAP_LONG_WORDS);
+  }
+  render_text->SetObscured(param.set_obscured);
+  render_text->SetText(base::WideToUTF16(param.text));
+  for (size_t i = 0; i < param.line_breaks.size(); ++i) {
+    EXPECT_EQ(param.line_breaks[i], render_text->GetTextIndexOfLine(i));
+  }
+}
+
+const GetTextIndexOfLineCase kGetTextIndexOfLineCases[] = {
+    {"emptyString", L"", {0}},
+    // The following test strings are three character strings.
+    // The word wrap makes each character fall on a new line.
+    {"kWeak_minWidth", L" . ", {0, 1, 2}, kUseWordWrap},
+    {"kLtr_minWidth", L"abc", {0, 1, 2}, kUseWordWrap},
+    {"kLtrRtl_minWidth", L"a\u05d0\u05d1", {0, 1, 2}, kUseWordWrap},
+    {"kLtrRtlLtr_minWidth", L"a\u05d1b", {0, 1, 2}, kUseWordWrap},
+    {"kRtl_minWidth", L"\u05d0\u05d1\u05d2", {0, 1, 2}, kUseWordWrap},
+    {"kRtlLtr_minWidth", L"\u05d0\u05d1a", {0, 1, 2}, kUseWordWrap},
+    {"kRtlLtrRtl_minWidth", L"\u05d0a\u05d1", {0, 1, 2}, kUseWordWrap},
+    // The following test strings have 2 graphemes separated by a newline.
+    // The obscured text replace each grapheme by a single codepoint.
+    {"grapheme_unobscured",
+     L"\U0001F601\n\U0001F468\u200D\u2708\uFE0F\nx",
+     {0, 3, 9}},
+    {"grapheme_obscured",
+     L"\U0001F601\n\U0001F468\u200D\u2708\uFE0F\nx",
+     {0, 3, 9},
+     !kUseWordWrap,
+     kUseObscuredText},
+    // The following test strings have a new line character.
+    {"basic_newLine", L"abc\ndef", {0, 4}},
+    {"basic_newLineWindows", L"abc\r\ndef", {0, 5}},
+    {"spaces_newLine", L"a \n b ", {0, 3}},
+    {"spaces_newLineWindows", L"a \r\n b ", {0, 4}},
+    {"double_newLine", L"a\n\nb", {0, 2, 3}},
+    {"double_newLineWindows", L"a\r\n\r\nb", {0, 3, 5}},
+    {"start_newLine", L"\nab", {0, 1}},
+    {"start_newLineWindows", L"\r\nab", {0, 2}},
+    {"end_newLine", L"ab\n", {0}},
+    {"end_newLineWindows", L"ab\r\n", {0}},
+    {"isolated_newLine", L"\n", {0}},
+    {"isolated_newLineWindows", L"\r\n", {0}},
+    {"isolatedDouble_newLine", L"\n\n", {0, 1}},
+    {"isolatedDouble_newLineWindows", L"\r\n\r\n", {0, 2}},
+    // The following test strings have unicode characters.
+    {"playSymbol_unicode", L"x\n\u25B6\ny", {0, 2, 4}},
+    {"emoji_unicode", L"x\n\U0001F601\ny\n\u2728\nz", {0, 2, 5, 7, 9}},
+    {"flag_unicode", L"🇬🇧\n🇯🇵", {0, 5}, false, false},
+    // The following cases test that GetTextIndexOfLine returns the length of
+    // the text when passed a line index larger than the number of lines.
+    {"basic_outsideRange", L"abc", {0, 1, 2, 3, 3}, kUseWordWrap},
+    {"emptyString_outsideRange", L"", {0, 0, 0}},
+    {"newLine_outsideRange", L"\n", {0, 1, 1}},
+    {"newLineWindows_outsideRange", L"\r\n", {0, 2, 2, 2}},
+    {"doubleNewLine_outsideRange", L"\n\n", {0, 1, 2, 2}},
+    {"doubleNewLineWindows_outsideRange", L"\r\n\r\n", {0, 2, 4, 4}},
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    GetTextIndexOfLine,
+    RenderTextTestWithGetTextIndexOfLineCase,
+    ::testing::ValuesIn(kGetTextIndexOfLineCases),
+    RenderTextTestWithGetTextIndexOfLineCase::ParamInfoToString);
 
 TEST_F(RenderTextTest, MoveCursorLeftRightInLtr) {
   RenderText* render_text = GetRenderText();

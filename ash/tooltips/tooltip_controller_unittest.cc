@@ -4,6 +4,8 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
+#include <memory>
+
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -54,10 +56,8 @@ views::Widget* CreateNewWidgetOn(int display) {
 }
 
 void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
-  if (!widget->GetContentsView()) {
-    views::View* contents_view = new views::View;
-    widget->SetContentsView(contents_view);
-  }
+  if (!widget->GetContentsView())
+    widget->SetContentsView(std::make_unique<views::View>());
 
   views::View* contents_view = widget->GetContentsView();
   contents_view->AddChildView(view);

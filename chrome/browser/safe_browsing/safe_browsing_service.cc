@@ -28,7 +28,6 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/safe_browsing/chrome_password_protection_service_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -223,7 +222,9 @@ TriggerManager* SafeBrowsingService::trigger_manager() const {
 
 PasswordProtectionService* SafeBrowsingService::GetPasswordProtectionService(
     Profile* profile) const {
-  return ChromePasswordProtectionServiceFactory::GetForProfile(profile);
+  if (IsSafeBrowsingEnabled(*profile->GetPrefs()))
+    return services_delegate_->GetPasswordProtectionService(profile);
+  return nullptr;
 }
 
 std::unique_ptr<prefs::mojom::TrackedPreferenceValidationDelegate>
@@ -375,11 +376,13 @@ void SafeBrowsingService::OnOffTheRecordProfileCreated(
 
 void SafeBrowsingService::OnProfileWillBeDestroyed(Profile* profile) {
   observed_profiles_.Remove(profile);
+  services_delegate_->RemovePasswordProtectionService(profile);
   services_delegate_->RemoveTelemetryService(profile);
   services_delegate_->RemoveSafeBrowsingNetworkContext(profile);
 }
 
 void SafeBrowsingService::CreateServicesForProfile(Profile* profile) {
+  services_delegate_->CreatePasswordProtectionService(profile);
   services_delegate_->CreateTelemetryService(profile);
   services_delegate_->CreateSafeBrowsingNetworkContext(profile);
   observed_profiles_.Add(profile);

@@ -1563,6 +1563,9 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
   }
 
   tree_impl->set_display_transform_hint(display_transform_hint_);
+
+  if (delegated_ink_metadata_)
+    tree_impl->set_delegated_ink_metadata(std::move(delegated_ink_metadata_));
 }
 
 void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {

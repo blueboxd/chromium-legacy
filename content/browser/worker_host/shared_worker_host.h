@@ -95,7 +95,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
       base::WeakPtr<ServiceWorkerObjectHost>
           controller_service_worker_object_host,
       blink::mojom::FetchClientSettingsObjectPtr
-          outside_fetch_client_settings_object);
+          outside_fetch_client_settings_object,
+      const GURL& final_response_url);
 
   void AllowFileSystem(const GURL& url,
                        base::OnceCallback<void(bool)> callback);
@@ -130,6 +131,10 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
 
   // Returns true if this worker is connected to at least one client.
   bool HasClients() const;
+
+  bool started() const { return started_; }
+
+  const GURL& final_response_url() const { return final_response_url_; }
 
   SharedWorkerId id() const { return id_; }
 
@@ -245,6 +250,8 @@ class CONTENT_EXPORT SharedWorkerHost : public blink::mojom::SharedWorkerHost,
 
   // Indicates if Start() was invoked on this instance.
   bool started_ = false;
+
+  GURL final_response_url_;
 
   base::WeakPtrFactory<SharedWorkerHost> weak_factory_{this};
 

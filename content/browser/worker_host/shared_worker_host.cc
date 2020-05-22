@@ -153,7 +153,8 @@ void SharedWorkerHost::Start(
     base::WeakPtr<ServiceWorkerObjectHost>
         controller_service_worker_object_host,
     blink::mojom::FetchClientSettingsObjectPtr
-        outside_fetch_client_settings_object) {
+        outside_fetch_client_settings_object,
+    const GURL& final_response_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!started_);
   DCHECK(main_script_load_params);
@@ -161,6 +162,7 @@ void SharedWorkerHost::Start(
   DCHECK(!subresource_loader_factories->pending_default_factory());
 
   started_ = true;
+  final_response_url_ = final_response_url;
 
   auto options = blink::mojom::WorkerOptions::New(
       instance_.script_type(), instance_.credentials_mode(), instance_.name());

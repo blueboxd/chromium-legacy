@@ -32,18 +32,21 @@ int HttpAuthHandlerFactory::CreateAuthHandlerFromString(
     const std::string& challenge,
     HttpAuth::Target target,
     const SSLInfo& ssl_info,
+    const NetworkIsolationKey& network_isolation_key,
     const GURL& origin,
     const NetLogWithSource& net_log,
     HostResolver* host_resolver,
     std::unique_ptr<HttpAuthHandler>* handler) {
   HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
-  return CreateAuthHandler(&props, target, ssl_info, origin, CREATE_CHALLENGE,
-                           1, net_log, host_resolver, handler);
+  return CreateAuthHandler(&props, target, ssl_info, network_isolation_key,
+                           origin, CREATE_CHALLENGE, 1, net_log, host_resolver,
+                           handler);
 }
 
 int HttpAuthHandlerFactory::CreatePreemptiveAuthHandlerFromString(
     const std::string& challenge,
     HttpAuth::Target target,
+    const NetworkIsolationKey& network_isolation_key,
     const GURL& origin,
     int digest_nonce_count,
     const NetLogWithSource& net_log,
@@ -51,9 +54,9 @@ int HttpAuthHandlerFactory::CreatePreemptiveAuthHandlerFromString(
     std::unique_ptr<HttpAuthHandler>* handler) {
   HttpAuthChallengeTokenizer props(challenge.begin(), challenge.end());
   SSLInfo null_ssl_info;
-  return CreateAuthHandler(&props, target, null_ssl_info, origin,
-                           CREATE_PREEMPTIVE, digest_nonce_count, net_log,
-                           host_resolver, handler);
+  return CreateAuthHandler(&props, target, null_ssl_info, network_isolation_key,
+                           origin, CREATE_PREEMPTIVE, digest_nonce_count,
+                           net_log, host_resolver, handler);
 }
 
 namespace {
@@ -194,6 +197,7 @@ int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const SSLInfo& ssl_info,
+    const NetworkIsolationKey& network_isolation_key,
     const GURL& origin,
     CreateReason reason,
     int digest_nonce_count,
@@ -211,9 +215,9 @@ int HttpAuthHandlerRegistryFactory::CreateAuthHandler(
     return ERR_UNSUPPORTED_AUTH_SCHEME;
   }
   DCHECK(it->second);
-  return it->second->CreateAuthHandler(challenge, target, ssl_info, origin,
-                                       reason, digest_nonce_count, net_log,
-                                       host_resolver, handler);
+  return it->second->CreateAuthHandler(
+      challenge, target, ssl_info, network_isolation_key, origin, reason,
+      digest_nonce_count, net_log, host_resolver, handler);
 }
 
 }  // namespace net

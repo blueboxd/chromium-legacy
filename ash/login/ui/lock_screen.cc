@@ -85,17 +85,18 @@ void LockScreen::Show(ScreenType type) {
       Shell::Get()->tray_action()->GetLockScreenNoteState();
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kShowLoginDevOverlay)) {
-    auto* debug_view = new LockDebugView(initial_note_action_state, type);
+    auto debug_view =
+        std::make_unique<LockDebugView>(initial_note_action_state, type);
     instance_->contents_view_ = debug_view->lock();
-    instance_->widget_->SetContentsView(debug_view);
+    instance_->widget_->SetContentsView(std::move(debug_view));
   } else {
     auto detachable_base_model = LoginDetachableBaseModel::Create(
         Shell::Get()->detachable_base_handler());
-    instance_->contents_view_ = new LockContentsView(
-        initial_note_action_state, type,
-        Shell::Get()->login_screen_controller()->data_dispatcher(),
-        std::move(detachable_base_model));
-    instance_->widget_->SetContentsView(instance_->contents_view_);
+    instance_->contents_view_ =
+        instance_->widget_->SetContentsView(std::make_unique<LockContentsView>(
+            initial_note_action_state, type,
+            Shell::Get()->login_screen_controller()->data_dispatcher(),
+            std::move(detachable_base_model)));
   }
 
   // Postpone showing the screen after the animation of the first wallpaper

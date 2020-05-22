@@ -58,6 +58,7 @@ DisallowedFeatures AdjustDisallowedFeatures(
     adjusted_disallowed_features.ext_texture_filter_anisotropic = true;
     adjusted_disallowed_features.ext_float_blend = true;
     adjusted_disallowed_features.oes_fbo_render_mipmap = true;
+    adjusted_disallowed_features.oes_draw_buffers_indexed = true;
   }
   return adjusted_disallowed_features;
 }

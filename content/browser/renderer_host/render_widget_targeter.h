@@ -12,7 +12,6 @@
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
-#include "content/common/content_constants_internal.h"
 #include "content/common/content_export.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/latency/latency_info.h"
@@ -244,8 +243,7 @@ class RenderWidgetTargeter {
 
   // This value limits how long to wait for a response from the renderer
   // process before giving up and resuming event processing.
-  base::TimeDelta async_hit_test_timeout_delay_ =
-      base::TimeDelta::FromMilliseconds(kAsyncHitTestTimeoutMs);
+  base::TimeDelta async_hit_test_timeout_delay_;
 
   std::unique_ptr<OneShotTimeoutMonitor> async_hit_test_timeout_;
 

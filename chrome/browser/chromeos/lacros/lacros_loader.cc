@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/lacros/lacros_util.h"
@@ -141,6 +142,18 @@ void LacrosLoader::Start() {
       "--enable-oop-rasterization",
       "--lang=en-US",
       "--breakpad-dump-location=/tmp"};
+
+  // We assume that if there's a custom chrome path, that this is a developer
+  // and they want to enable logging.
+  bool custom_chrome_path = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kLacrosChromePath);
+  if (custom_chrome_path) {
+    argv.push_back("--enable-logging");
+    int64_t seconds = base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds();
+    argv.push_back(std::string("--log-file=") + kUserDataDir + "/lacros_" +
+                   base::NumberToString(seconds) + ".log");
+  }
+
   lacros_process_ = base::LaunchProcess(argv, options);
   LOG(WARNING) << "Launched lacros-chrome with pid " << lacros_process_.Pid();
 }

@@ -758,6 +758,24 @@ TEST_F(GLES2ImplementationTest, GetBooleanv) {
   EXPECT_EQ(static_cast<ResultType>(1), result);
 }
 
+TEST_F(GLES2ImplementationTest, GetBooleani_v) {
+  struct Cmds {
+    cmds::GetBooleani_v cmd;
+  };
+  typedef cmds::GetBooleani_v::Result::Type ResultType;
+  ResultType result = 0;
+  Cmds expected;
+  ExpectedMemoryInfo result1 =
+      GetExpectedResultMemory(sizeof(uint32_t) + sizeof(ResultType));
+  expected.cmd.Init(123, 2, result1.id, result1.offset);
+  EXPECT_CALL(*command_buffer(), OnFlush())
+      .WillOnce(SetMemory(result1.ptr, SizedResultHelper<ResultType>(1)))
+      .RetiresOnSaturation();
+  gl_->GetBooleani_v(123, 2, &result);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+  EXPECT_EQ(static_cast<ResultType>(1), result);
+}
+
 TEST_F(GLES2ImplementationTest, GetBufferParameteri64v) {
   struct Cmds {
     cmds::GetBufferParameteri64v cmd;
@@ -3122,6 +3140,83 @@ TEST_F(GLES2ImplementationTest, EndBatchReadAccessSharedImageCHROMIUM) {
   expected.cmd.Init();
 
   gl_->EndBatchReadAccessSharedImageCHROMIUM();
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, EnableiOES) {
+  struct Cmds {
+    cmds::EnableiOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2);
+
+  gl_->EnableiOES(1, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, DisableiOES) {
+  struct Cmds {
+    cmds::DisableiOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2);
+
+  gl_->DisableiOES(1, 2);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, BlendEquationiOES) {
+  struct Cmds {
+    cmds::BlendEquationiOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, GL_FUNC_SUBTRACT);
+
+  gl_->BlendEquationiOES(1, GL_FUNC_SUBTRACT);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, BlendEquationSeparateiOES) {
+  struct Cmds {
+    cmds::BlendEquationSeparateiOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, GL_FUNC_SUBTRACT, GL_FUNC_SUBTRACT);
+
+  gl_->BlendEquationSeparateiOES(1, GL_FUNC_SUBTRACT, GL_FUNC_SUBTRACT);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, BlendFunciOES) {
+  struct Cmds {
+    cmds::BlendFunciOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3);
+
+  gl_->BlendFunciOES(1, 2, 3);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, BlendFuncSeparateiOES) {
+  struct Cmds {
+    cmds::BlendFuncSeparateiOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, 2, 3, 4, 5);
+
+  gl_->BlendFuncSeparateiOES(1, 2, 3, 4, 5);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
+
+TEST_F(GLES2ImplementationTest, ColorMaskiOES) {
+  struct Cmds {
+    cmds::ColorMaskiOES cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1, true, true, true, true);
+
+  gl_->ColorMaskiOES(1, true, true, true, true);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

@@ -23,8 +23,10 @@ namespace internal {
 
 struct CheckedPtrNoOpImpl {
   // Wraps a pointer, and returns its uintptr_t representation.
-  static ALWAYS_INLINE uintptr_t WrapRawPtr(const void* const_ptr) {
-    return reinterpret_cast<uintptr_t>(const_ptr);
+  // Use |const volatile| to prevent compiler error. These will be dropped
+  // anyway when casting to uintptr_t and brought back upon pointer extraction.
+  static ALWAYS_INLINE uintptr_t WrapRawPtr(const volatile void* cv_ptr) {
+    return reinterpret_cast<uintptr_t>(cv_ptr);
   }
 
   // Returns equivalent of |WrapRawPtr(nullptr)|. Separated out to make it a
@@ -214,10 +216,10 @@ class CheckedPtr {
   template <typename U>
   friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs,
                                        const CheckedPtr<U, Impl>& rhs) {
-    // Add |const| when casting, in case |U| has |const| in it. Even if |T|
-    // doesn't, comparison between |T*| and |const T*| is fine.
+    // Add |const volatile| when casting, in case |U| has any. Even if |T|
+    // doesn't, comparison between |T*| and |const volatile T*| is fine.
     return lhs.GetForComparison() ==
-           static_cast<std::add_const_t<T>*>(rhs.GetForComparison());
+           static_cast<std::add_cv_t<T>*>(rhs.GetForComparison());
   }
   template <typename U>
   friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs,
@@ -226,9 +228,9 @@ class CheckedPtr {
   }
   template <typename U>
   friend ALWAYS_INLINE bool operator==(const CheckedPtr& lhs, U* rhs) {
-    // Add |const| when casting, in case |U| has |const| in it. Even if |T|
-    // doesn't, comparison between |T*| and |const T*| is fine.
-    return lhs.GetForComparison() == static_cast<std::add_const_t<T>*>(rhs);
+    // Add |const volatile| when casting, in case |U| has any. Even if |T|
+    // doesn't, comparison between |T*| and |const volatile T*| is fine.
+    return lhs.GetForComparison() == static_cast<std::add_cv_t<T>*>(rhs);
   }
   template <typename U>
   friend ALWAYS_INLINE bool operator!=(const CheckedPtr& lhs, U* rhs) {

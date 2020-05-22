@@ -5,11 +5,8 @@
 package org.chromium.chrome.browser.omnibox.suggestions.entity;
 
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.anyInt;
-import static org.mockito.Mockito.anyString;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import android.graphics.Bitmap;
@@ -30,9 +27,9 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
-import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
@@ -54,9 +51,6 @@ public class EntitySuggestionProcessorUnitTest {
 
     @Mock
     SuggestionHost mSuggestionHost;
-
-    @Mock
-    UrlBarEditingTextStateProvider mUrlStateProvider;
 
     @Mock
     ImageFetcher mImageFetcher;
@@ -133,6 +127,13 @@ public class EntitySuggestionProcessorUnitTest {
         CommandLine.reset();
     }
 
+    ImageFetcher.Params createParams(String url) {
+        int size = ContextUtils.getApplicationContext().getResources().getDimensionPixelSize(
+                R.dimen.omnibox_suggestion_entity_icon_size);
+        return ImageFetcher.Params.create(
+                url, ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME, size, size);
+    }
+
     @CalledByNativeJavaTest
     public void contentTest_basicContent() {
         SuggestionTestHelper suggHelper =
@@ -199,13 +200,12 @@ public class EntitySuggestionProcessorUnitTest {
     @CalledByNativeJavaTest
     public void decorationTest_basicSuccessfulBitmapFetch() {
         final GURL url = new GURL("http://site.com");
-        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
-
         SuggestionTestHelper suggHelper = createSuggestion("", "", "red", url);
         processSuggestion(suggHelper);
 
-        verify(mImageFetcher)
-                .fetchImage(eq(url.getSpec()), anyString(), anyInt(), anyInt(), callback.capture());
+        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
+        verify(mImageFetcher).fetchImage(eq(createParams(url.getSpec())), callback.capture());
+
         suggHelper.verifyReportedType(DECORATION_TYPE_COLOR);
         Assert.assertThat(suggHelper.getIcon(), instanceOf(ColorDrawable.class));
         callback.getValue().onResult(mBitmap);
@@ -228,18 +228,13 @@ public class EntitySuggestionProcessorUnitTest {
         processSuggestion(sugg3);
         processSuggestion(sugg4);
 
-        verify(mImageFetcher)
-                .fetchImage(eq(url1.getSpec()), anyString(), anyInt(), anyInt(), any());
-        verify(mImageFetcher)
-                .fetchImage(eq(url2.getSpec()), anyString(), anyInt(), anyInt(), any());
-        verify(mImageFetcher, times(2))
-                .fetchImage(anyString(), anyString(), anyInt(), anyInt(), any());
+        verify(mImageFetcher).fetchImage(eq(createParams(url1.getSpec())), any());
+        verify(mImageFetcher).fetchImage(eq(createParams(url2.getSpec())), any());
     }
 
     @CalledByNativeJavaTest
     public void decorationTest_bitmapReplacesIconForAllSuggestionsWithSameUrl() {
         final GURL url = new GURL("http://site.com");
-        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
         final SuggestionTestHelper sugg1 = createSuggestion("", "", "", url);
         final SuggestionTestHelper sugg2 = createSuggestion("", "", "", url);
         final SuggestionTestHelper sugg3 = createSuggestion("", "", "", url);
@@ -248,8 +243,8 @@ public class EntitySuggestionProcessorUnitTest {
         processSuggestion(sugg2);
         processSuggestion(sugg3);
 
-        verify(mImageFetcher)
-                .fetchImage(eq(url.getSpec()), anyString(), anyInt(), anyInt(), callback.capture());
+        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
+        verify(mImageFetcher).fetchImage(eq(createParams(url.getSpec())), callback.capture());
 
         final Drawable icon1 = sugg1.getIcon();
         final Drawable icon2 = sugg2.getIcon();
@@ -282,12 +277,11 @@ public class EntitySuggestionProcessorUnitTest {
     @CalledByNativeJavaTest
     public void decorationTest_failedBitmapFetchDoesNotReplaceIcon() {
         final GURL url = new GURL("http://site.com");
-        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
         final SuggestionTestHelper suggHelper = createSuggestion("", "", null, url);
-
         processSuggestion(suggHelper);
-        verify(mImageFetcher)
-                .fetchImage(eq(url.getSpec()), anyString(), anyInt(), anyInt(), callback.capture());
+
+        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
+        verify(mImageFetcher).fetchImage(eq(createParams(url.getSpec())), callback.capture());
 
         final Drawable oldIcon = suggHelper.getIcon();
         callback.getValue().onResult(null);
@@ -301,12 +295,11 @@ public class EntitySuggestionProcessorUnitTest {
     @CalledByNativeJavaTest
     public void decorationTest_failedBitmapFetchDoesNotReplaceColor() {
         final GURL url = new GURL("http://site.com");
-        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
         final SuggestionTestHelper suggHelper = createSuggestion("", "", "red", url);
-
         processSuggestion(suggHelper);
-        verify(mImageFetcher)
-                .fetchImage(eq(url.getSpec()), anyString(), anyInt(), anyInt(), callback.capture());
+
+        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
+        verify(mImageFetcher).fetchImage(eq(createParams(url.getSpec())), callback.capture());
 
         final Drawable oldIcon = suggHelper.getIcon();
         callback.getValue().onResult(null);
@@ -319,18 +312,16 @@ public class EntitySuggestionProcessorUnitTest {
 
     @CalledByNativeJavaTest
     public void decorationTest_updatedModelsAreRemovedFromPendingRequestsList() {
-        ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
         final GURL url = new GURL("http://site1.com");
-
         final SuggestionTestHelper sugg1 = createSuggestion("", "", "", url);
         final SuggestionTestHelper sugg2 = createSuggestion("", "", "", url);
 
         processSuggestion(sugg1);
         processSuggestion(sugg2);
 
-        verify(mImageFetcher)
-                .fetchImage(eq(url.getSpec()), anyString(), anyInt(), anyInt(), callback.capture());
-        verify(mImageFetcher).fetchImage(anyString(), anyString(), anyInt(), anyInt(), any());
+        final ArgumentCaptor<Callback<Bitmap>> callback = ArgumentCaptor.forClass(Callback.class);
+        verify(mImageFetcher).fetchImage(eq(createParams(url.getSpec())), callback.capture());
+        verify(mImageFetcher).fetchImage(any(), any());
 
         final Drawable icon1 = sugg1.getIcon();
         final Drawable icon2 = sugg2.getIcon();

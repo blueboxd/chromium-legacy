@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
 #include "net/http/http_auth_handler_mock.h"
@@ -42,7 +43,8 @@ TEST(HttpAuthHandlerTest, NetLog) {
       // call after GenerateAuthToken() is expected and does not result in
       // AUTHORIZATION_RESULT_REJECT.
       mock_handler.set_connection_based(true);
-      mock_handler.InitFromChallenge(&tokenizer, target, SSLInfo(), origin,
+      mock_handler.InitFromChallenge(&tokenizer, target, SSLInfo(),
+                                     NetworkIsolationKey(), origin,
                                      test_net_log.bound());
       mock_handler.SetGenerateExpectation(async, OK);
       mock_handler.GenerateAuthToken(&credentials, &request,

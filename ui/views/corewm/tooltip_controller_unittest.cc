@@ -4,6 +4,7 @@
 
 #include "ui/views/corewm/tooltip_controller.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -96,7 +97,7 @@ class TooltipControllerTest : public ViewsTestBase {
     }
 #endif
     widget_.reset(CreateWidget(root_window));
-    widget_->SetContentsView(new View);
+    widget_->SetContentsView(std::make_unique<View>());
     view_ = new TooltipTestView;
     widget_->GetContentsView()->AddChildView(view_);
     view_->SetBoundsRect(widget_->GetContentsView()->GetLocalBounds());
@@ -539,7 +540,7 @@ TEST_F(TooltipControllerTest, MAYBE_Capture) {
   view_->set_tooltip_text(tooltip_text);
 
   std::unique_ptr<views::Widget> widget2(CreateWidget(GetContext()));
-  widget2->SetContentsView(new View);
+  widget2->SetContentsView(std::make_unique<View>());
   TooltipTestView* view2 = new TooltipTestView;
   widget2->GetContentsView()->AddChildView(view2);
   view2->set_tooltip_text(tooltip_text2);
@@ -696,7 +697,7 @@ class TooltipControllerTest3 : public ViewsTestBase {
     aura::Window* root_window = GetContext();
 
     widget_.reset(CreateWidget(root_window));
-    widget_->SetContentsView(new View);
+    widget_->SetContentsView(std::make_unique<View>());
     view_ = new TooltipTestView;
     widget_->GetContentsView()->AddChildView(view_);
     view_->SetBoundsRect(widget_->GetContentsView()->GetLocalBounds());

@@ -392,13 +392,3 @@ function resolveWhen(condition) {
     tick();
   });
 }
-
-// Returns a promise that only gets resolved after n animation frames
-function waitForAnimationFrames(n){
-  let p = 0;
-  function next(){
-    p++;
-    return p === n;
-  }
-  return resolveWhen(next);
-}

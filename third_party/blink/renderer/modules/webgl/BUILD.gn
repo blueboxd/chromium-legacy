@@ -37,6 +37,8 @@ blink_modules_sources("webgl") {
     "gl_string_query.h",
     "khr_parallel_shader_compile.cc",
     "khr_parallel_shader_compile.h",
+    "oes_draw_buffers_indexed.cc",
+    "oes_draw_buffers_indexed.h",
     "oes_element_index_uint.cc",
     "oes_element_index_uint.h",
     "oes_fbo_render_mipmap.cc",

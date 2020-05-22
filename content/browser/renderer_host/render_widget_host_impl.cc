@@ -141,6 +141,11 @@ using blink::WebMouseWheelEvent;
 namespace content {
 namespace {
 
+// How long to wait for newly loaded content to send a compositor frame
+// before clearing previously displayed graphics.
+constexpr base::TimeDelta kNewContentRenderingDelay =
+    base::TimeDelta::FromSeconds(4);
+
 bool g_check_for_pending_visual_properties_ack = true;
 
 bool ShouldDisableHangMonitor() {
@@ -320,9 +325,8 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(
       clock_(base::DefaultTickClock::GetInstance()),
       is_hidden_(hidden),
       latency_tracker_(delegate_),
-      hung_renderer_delay_(TimeDelta::FromMilliseconds(kHungRendererDelayMs)),
-      new_content_rendering_delay_(
-          TimeDelta::FromMilliseconds(kNewContentRenderingDelayMs)),
+      hung_renderer_delay_(kHungRendererDelay),
+      new_content_rendering_delay_(kNewContentRenderingDelay),
       frame_token_message_queue_(std::move(frame_token_message_queue)),
       render_frame_metadata_provider_(
 #if defined(OS_MACOSX)

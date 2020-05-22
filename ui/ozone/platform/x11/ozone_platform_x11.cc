@@ -11,6 +11,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_factory_ozone.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
@@ -88,9 +89,7 @@ class OzonePlatformX11 : public OzonePlatform,
     return overlay_manager_.get();
   }
 
-  CursorFactoryOzone* GetCursorFactoryOzone() override {
-    return cursor_factory_ozone_.get();
-  }
+  CursorFactory* GetCursorFactory() override { return cursor_factory_.get(); }
 
   std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
     return nullptr;
@@ -167,7 +166,7 @@ class OzonePlatformX11 : public OzonePlatform,
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     clipboard_ = std::make_unique<X11ClipboardOzone>();
-    cursor_factory_ozone_ = std::make_unique<X11CursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<X11CursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -238,7 +237,7 @@ class OzonePlatformX11 : public OzonePlatform,
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<X11ClipboardOzone> clipboard_;
-  std::unique_ptr<X11CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
 
   // Objects in the GPU process.

@@ -237,6 +237,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_DUET_ADAPTIVE = "ChromeDuetAdaptive";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
     public static final String CHROME_DUET_LABELED = "ChromeDuetLabeled";
+    public static final String CHROME_SHARE_QRCODE = "ChromeShareQRCode";
     public static final String CHROME_SHARE_SCREENSHOT = "ChromeShareScreenshot";
     public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
     public static final String CHROME_SHARING_HUB_V15 = "ChromeSharingHubV15";

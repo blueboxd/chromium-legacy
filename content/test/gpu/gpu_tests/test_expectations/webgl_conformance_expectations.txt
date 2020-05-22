@@ -1,10 +1,14 @@
-# tags: [ android chromeos linux mac win win10 win7 ]
+# tags: [ android
+#         chromeos chromeos-board-kevin
+#         linux
+#         mac
+#         win win10 win7 ]
 # tags: [ android-chromium android-webview-instrumentation ]
 # tags: [ debug debug-x64 release ]
-# tags: [ amd amd-0x6613 amd-0x699f amd-0x679e intel intel-0xa011 intel-0xa2e nvidia
-#         nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9 qualcomm
-#         qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418
-#         qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430 ]
+# tags: [ amd amd-0x6613 amd-0x699f amd-0x679e
+#         intel intel-0xa011 intel-0xa2e
+#         nvidia nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9
+#         qualcomm qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430 ]
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
 # tags: [ webgl-version-1 ]
@@ -603,3 +607,36 @@ crbug.com/1081973 [ chromeos ] conformance/textures/misc/compressed-tex-image.ht
 # ChromeOS: AMD
 crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-array-access.html [ Skip ]
 crbug.com/1042897 [ chromeos amd ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
+
+# Texture compression is only expected to be available on desktop GPUs.
+crbug.com/1080360 [ chromeos-board-kevin ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1080360 [ chromeos-board-kevin ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+crbug.com/1080408 [ chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
+crbug.com/1080377 [ chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+
+# Arm-based issues.
+crbug.com/1080400 [ chromeos-board-kevin ] WebglExtension_EXT_color_buffer_half_float [ Failure ]
+crbug.com/1080356 [ chromeos-board-kevin ] WebglExtension_EXT_frag_depth [ Failure ]
+crbug.com/1080375 [ chromeos-board-kevin ] WebglExtension_OES_texture_float [ Failure ]
+crbug.com/1080402 [ chromeos-board-kevin ] WebglExtension_OES_texture_float_linear [ Failure ]
+crbug.com/1080403 [ chromeos-board-kevin ] WebglExtension_OES_texture_half_float [ Failure ]
+crbug.com/1080404 [ chromeos-board-kevin ] WebglExtension_OES_texture_half_float_linear [ Failure ]
+crbug.com/1080407 [ chromeos-board-kevin ] WebglExtension_WEBGL_color_buffer_float [ Failure ]
+crbug.com/1080411 [ chromeos-board-kevin ] WebglExtension_WEBGL_draw_buffers [ Failure ]
+crbug.com/1080379 [ chromeos-board-kevin ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
+crbug.com/1080380 [ chromeos-board-kevin ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
+crbug.com/1080380 [ chromeos-board-kevin ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_from_video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-luminance_alpha-luminance_alpha-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_from_video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_from_video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_5_5_5_1.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-luminance-luminance-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_byte.html [ Failure ]
+crbug.com/1080397 [ chromeos-board-kevin ] conformance/textures/video/tex-2d-rgb-rgb-unsigned_short_5_6_5.html [ Failure ]

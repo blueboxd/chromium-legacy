@@ -48,6 +48,7 @@ class UI_BASE_EXPORT Accelerator {
               base::TimeTicks time_stamp = base::TimeTicks());
   explicit Accelerator(const KeyEvent& key_event);
   Accelerator(const Accelerator& accelerator);
+  Accelerator& operator=(const Accelerator& accelerator);
   ~Accelerator();
 
   // Masks out all the non-modifiers KeyEvent |flags| and returns only the
@@ -55,8 +56,6 @@ class UI_BASE_EXPORT Accelerator {
   static int MaskOutKeyEventFlags(int flags);
 
   KeyEvent ToKeyEvent() const;
-
-  Accelerator& operator=(const Accelerator& accelerator);
 
   // Define the < operator so that the KeyboardShortcut can be used as a key in
   // a std::map.

@@ -592,6 +592,13 @@ void GLES2TraceImplementation::GetBooleanv(GLenum pname, GLboolean* params) {
   gl_->GetBooleanv(pname, params);
 }
 
+void GLES2TraceImplementation::GetBooleani_v(GLenum pname,
+                                             GLuint index,
+                                             GLboolean* data) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::GetBooleani_v");
+  gl_->GetBooleani_v(pname, index, data);
+}
+
 void GLES2TraceImplementation::GetBufferParameteri64v(GLenum target,
                                                       GLenum pname,
                                                       GLint64* params) {
@@ -2649,6 +2656,58 @@ void GLES2TraceImplementation::EndBatchReadAccessSharedImageCHROMIUM() {
   TRACE_EVENT_BINARY_EFFICIENT0(
       "gpu", "GLES2Trace::EndBatchReadAccessSharedImageCHROMIUM");
   gl_->EndBatchReadAccessSharedImageCHROMIUM();
+}
+
+void GLES2TraceImplementation::EnableiOES(GLenum target, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::EnableiOES");
+  gl_->EnableiOES(target, index);
+}
+
+void GLES2TraceImplementation::DisableiOES(GLenum target, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::DisableiOES");
+  gl_->DisableiOES(target, index);
+}
+
+void GLES2TraceImplementation::BlendEquationiOES(GLuint buf, GLenum mode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BlendEquationiOES");
+  gl_->BlendEquationiOES(buf, mode);
+}
+
+void GLES2TraceImplementation::BlendEquationSeparateiOES(GLuint buf,
+                                                         GLenum modeRGB,
+                                                         GLenum modeAlpha) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BlendEquationSeparateiOES");
+  gl_->BlendEquationSeparateiOES(buf, modeRGB, modeAlpha);
+}
+
+void GLES2TraceImplementation::BlendFunciOES(GLuint buf,
+                                             GLenum src,
+                                             GLenum dst) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BlendFunciOES");
+  gl_->BlendFunciOES(buf, src, dst);
+}
+
+void GLES2TraceImplementation::BlendFuncSeparateiOES(GLuint buf,
+                                                     GLenum srcRGB,
+                                                     GLenum dstRGB,
+                                                     GLenum srcAlpha,
+                                                     GLenum dstAlpha) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::BlendFuncSeparateiOES");
+  gl_->BlendFuncSeparateiOES(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+}
+
+void GLES2TraceImplementation::ColorMaskiOES(GLuint buf,
+                                             GLboolean r,
+                                             GLboolean g,
+                                             GLboolean b,
+                                             GLboolean a) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::ColorMaskiOES");
+  gl_->ColorMaskiOES(buf, r, g, b, a);
+}
+
+GLboolean GLES2TraceImplementation::IsEnablediOES(GLenum target, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::IsEnablediOES");
+  return gl_->IsEnablediOES(target, index);
 }
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

@@ -32,6 +32,7 @@ executable("vr_testapp") {
     "//components/security_state/core",
     "//components/tracing:startup_tracing",
     "//components/vector_icons:vector_icons",
+    "//ui/base/cursor:cursor_base",
     "//ui/display/types",
     "//ui/events",
     "//ui/events:dom_keycode_converter",

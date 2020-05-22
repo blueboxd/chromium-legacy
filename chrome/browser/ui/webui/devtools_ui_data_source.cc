@@ -57,6 +57,8 @@ std::string GetMimeTypeForPath(const std::string& path) {
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "text/css";
   } else if (base::EndsWith(filename, ".js",
+                            base::CompareCase::INSENSITIVE_ASCII) ||
+             base::EndsWith(filename, ".mjs",
                             base::CompareCase::INSENSITIVE_ASCII)) {
     return "application/javascript";
   } else if (base::EndsWith(filename, ".png",

@@ -135,17 +135,11 @@ Accelerator::Accelerator(const KeyEvent& key_event)
 #endif
 }
 
-Accelerator::Accelerator(const Accelerator& accelerator) {
-  key_code_ = accelerator.key_code_;
-  key_state_ = accelerator.key_state_;
-  modifiers_ = accelerator.modifiers_;
-  time_stamp_ = accelerator.time_stamp_;
-  interrupted_by_mouse_event_ = accelerator.interrupted_by_mouse_event_;
-  source_device_id_ = accelerator.source_device_id_;
-}
+Accelerator::Accelerator(const Accelerator& accelerator) = default;
 
-Accelerator::~Accelerator() {
-}
+Accelerator& Accelerator::operator=(const Accelerator& accelerator) = default;
+
+Accelerator::~Accelerator() = default;
 
 // static
 int Accelerator::MaskOutKeyEventFlags(int flags) {
@@ -157,17 +151,6 @@ KeyEvent Accelerator::ToKeyEvent() const {
                       ? ET_KEY_PRESSED
                       : ET_KEY_RELEASED,
                   key_code(), modifiers(), time_stamp());
-}
-
-Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
-  if (this != &accelerator) {
-    key_code_ = accelerator.key_code_;
-    key_state_ = accelerator.key_state_;
-    modifiers_ = accelerator.modifiers_;
-    time_stamp_ = accelerator.time_stamp_;
-    interrupted_by_mouse_event_ = accelerator.interrupted_by_mouse_event_;
-  }
-  return *this;
 }
 
 bool Accelerator::operator <(const Accelerator& rhs) const {

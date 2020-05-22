@@ -9,6 +9,8 @@
 
 namespace blink {
 
+Ink::Ink(LocalFrame* frame) : local_frame_(frame) {}
+
 ScriptPromise Ink::requestPresenter(ScriptState* state,
                                     String type,
                                     Element* presentationArea) {
@@ -20,18 +22,20 @@ ScriptPromise Ink::requestPresenter(ScriptState* state,
 
   if (!state->ContextIsValid()) {
     resolver->Reject(V8ThrowException::CreateError(
-        state->GetIsolate(), "Unable to create presenter"));
+        state->GetIsolate(),
+        "The object is no longer associated with a window."));
     return promise;
   }
 
   if (type != "delegated-ink-trail") {
-    resolver->Reject(
-        V8ThrowException::CreateTypeError(state->GetIsolate(), "Bad type"));
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        state->GetIsolate(), "Unknown type requested."));
     return promise;
   }
 
   DelegatedInkTrailPresenter* trail_presenter =
-      MakeGarbageCollected<DelegatedInkTrailPresenter>(presentationArea);
+      DelegatedInkTrailPresenter::CreatePresenter(presentationArea,
+                                                  local_frame_);
 
   resolver->Resolve(trail_presenter);
   return promise;
@@ -39,6 +43,7 @@ ScriptPromise Ink::requestPresenter(ScriptState* state,
 
 void Ink::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
+  visitor->Trace(local_frame_);
 }
 
 }  // namespace blink

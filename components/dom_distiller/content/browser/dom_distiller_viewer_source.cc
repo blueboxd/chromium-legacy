@@ -20,7 +20,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_utils.h"
-#include "components/dom_distiller/content/common/mojom/distiller_page_notifier_service.mojom.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
@@ -124,18 +123,6 @@ void DomDistillerViewerSource::RequestViewerHandle::DidFinishNavigation(
   bool expected_main_view_request = navigation == expected_url_;
   if (navigation_handle->IsSameDocument() || expected_main_view_request) {
     // In-page navigations, as well as the main view request can be ignored.
-    if (expected_main_view_request) {
-      content::RenderFrameHost* render_frame_host =
-          navigation_handle->GetRenderFrameHost();
-      CHECK_EQ(0, render_frame_host->GetEnabledBindings());
-
-      // Tell the renderer that this is currently a distilled page.
-      mojo::Remote<mojom::DistillerPageNotifierService> page_notifier_service;
-      render_frame_host->GetRemoteInterfaces()->GetInterface(
-          page_notifier_service.BindNewPipeAndPassReceiver());
-      DCHECK(page_notifier_service);
-      page_notifier_service->NotifyIsDistillerPage();
-    }
     return;
   }
 

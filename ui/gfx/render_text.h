@@ -172,6 +172,9 @@ struct Line {
 
   // Maximum baseline of all segments on this line.
   int baseline;
+
+  // The text index of this line in |text_|.
+  int display_text_index = 0;
 };
 
 // Internal class that contains the results of the text layout and shaping.
@@ -297,6 +300,10 @@ class GFX_EXPORT RenderText {
 
   // Returns the actual number of lines, broken by |lines_|.
   size_t GetNumLines();
+
+  // Returns the text index of the given line |line|. Returns the text length
+  // for any |line| above the number of lines.
+  size_t GetTextIndexOfLine(size_t line);
 
   // TODO(mukai): ELIDE_LONG_WORDS is not supported.
   WordWrapBehavior word_wrap_behavior() const { return word_wrap_behavior_; }

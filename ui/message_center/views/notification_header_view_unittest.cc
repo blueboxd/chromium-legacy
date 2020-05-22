@@ -32,8 +32,8 @@ class NotificationHeaderViewTest : public views::ViewsTestBase {
     params.bounds = gfx::Rect(200, 200);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     widget_.Init(std::move(params));
-    views::View* container = new views::View();
-    widget_.SetContentsView(container);
+    views::View* container =
+        widget_.SetContentsView(std::make_unique<views::View>());
 
     notification_header_view_ = new NotificationHeaderView(nullptr);
     container->AddChildView(notification_header_view_);

@@ -8,21 +8,19 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 
 namespace content {
 
-// How long to wait before we consider a renderer hung.
-CONTENT_EXPORT extern const int64_t kHungRendererDelayMs;
-
-// How long to wait for newly loaded content to send a compositor frame
-// before clearing previously displayed graphics.
-extern const int64_t kNewContentRenderingDelayMs;
-
-// Maximum wait time for an asynchronous hit test request sent to a renderer
-// process (in milliseconds).
-CONTENT_EXPORT extern const int64_t kAsyncHitTestTimeoutMs;
+#if defined(OS_ANDROID)
+constexpr base::TimeDelta kHungRendererDelay = base::TimeDelta::FromSeconds(5);
+#else
+// TODO(jdduke): Consider shortening this delay on desktop. It was originally
+// set to 5 seconds but was extended to accommodate less responsive plugins.
+constexpr base::TimeDelta kHungRendererDelay = base::TimeDelta::FromSeconds(30);
+#endif
 
 // The maximum length of string as data url.
 extern const size_t kMaxLengthOfDataURLString;

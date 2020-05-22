@@ -2062,6 +2062,14 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'linux-blink-optional-highdpi-rel-dummy': {
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'isolated_scripts': 'chromium_web_tests_high_dpi_isolated_scripts',
+        },
+      },
       'linux-blink-rel-dummy': {
         'mixins': [
           'linux-xenial',
@@ -4317,7 +4325,9 @@
           'x86-64',
         ],
         'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
+          # TODO(crbug.com/1071693): Use the main 'linux_chromeos_gtests' suite
+          # when OOBE tests no longer fail on MSAN.
+          'gtest_tests': 'linux_chromeos_gtests_oobe',
         },
         'args': [
           '--test-launcher-print-test-stdio=always',

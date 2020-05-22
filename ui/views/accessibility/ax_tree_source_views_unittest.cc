@@ -50,7 +50,7 @@ class AXTreeSourceViewsTest : public ViewsTestBase {
     params.bounds = gfx::Rect(11, 22, 333, 444);
     params.context = GetContext();
     widget_->Init(std::move(params));
-    widget_->SetContentsView(new View());
+    widget_->SetContentsView(std::make_unique<View>());
 
     label1_ = new Label(base::ASCIIToUTF16("Label 1"));
     label1_->SetBounds(1, 1, 111, 111);

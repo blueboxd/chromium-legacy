@@ -128,6 +128,7 @@ source_set("gbm") {
     "//third_party/minigbm",
     "//ui/base",
     "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/ime",
     "//ui/display",
     "//ui/display/types",

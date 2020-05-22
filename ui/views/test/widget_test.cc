@@ -52,7 +52,7 @@ Widget* WidgetTest::CreateChildPlatformWidget(
   params.native_widget =
       CreatePlatformNativeWidgetImpl(child, kStubCapture, nullptr);
   child->Init(std::move(params));
-  child->SetContentsView(new View);
+  child->SetContentsView(std::make_unique<View>());
   return child;
 }
 
@@ -68,7 +68,7 @@ Widget* WidgetTest::CreateChildNativeWidgetWithParent(Widget* parent) {
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_CONTROL);
   params.parent = parent->GetNativeView();
   child->Init(std::move(params));
-  child->SetContentsView(new View);
+  child->SetContentsView(std::make_unique<View>());
   return child;
 }
 

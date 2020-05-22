@@ -2000,6 +2000,7 @@ static_library("browser") {
     "//chrome/browser/metrics/variations:chrome_ui_string_overrider_factory",
     "//chrome/browser/net:probe_message_proto",
     "//chrome/browser/notifications",
+    "//chrome/browser/privacy_budget",
     "//chrome/browser/profiling_host",
     "//chrome/browser/push_messaging:budget_proto",
     "//chrome/browser/reputation:proto",

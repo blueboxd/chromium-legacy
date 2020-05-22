@@ -58,7 +58,7 @@ shared_library("browser_switcher_bho") {
     ]
   } else {
     sources = [
-      "//base/win/atl.h",
+      "atl.h",
       "bho.cc",
       "bho.h",
       "browser_switcher_core.cc",

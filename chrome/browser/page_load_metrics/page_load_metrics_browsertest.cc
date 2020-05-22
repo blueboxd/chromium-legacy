@@ -2577,8 +2577,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PreCommitWebFeature) {
       static_cast<int32_t>(WebFeature::kSecureContextCheckFailed), 0);
 }
 
+// TODO(https://crbug/1085175): Main frame document intersections need to be
+// transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MainFrameDocumentIntersectionsMainFrame) {
+                       DISABLED_MainFrameDocumentIntersectionsMainFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -2617,8 +2619,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
 // Creates a single frame within the main frame and verifies the intersection
 // with the main frame.
+// TODO(https://crbug/1085175): Main frame document intersections need to be
+// transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MainFrameDocumentIntersectionSingleFrame) {
+                       DISABLED_MainFrameDocumentIntersectionSingleFrame) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -2641,8 +2645,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
 // Creates a set of nested frames within the main frame and verifies
 // their intersections with the main frame.
+// TODO(https://crbug/1085175): Main frame document intersections need to be
+// transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MainFrameDocumentIntersectionSameOrigin) {
+                       DISABLED_MainFrameDocumentIntersectionSameOrigin) {
   EXPECT_TRUE(embedded_test_server()->Start());
 
   auto waiter = CreatePageLoadMetricsTestWaiter();
@@ -2682,8 +2688,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 
 // Creates a set of nested frames, with a cross origin subframe, within the
 // main frame and verifies their intersections with the main frame.
+// TODO(https://crbug/1085175): Main frame document intersections need to be
+// transformed into the main frame documents coordinate system.
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MainFrameDocumentIntersectionCrossOrigin) {
+                       DISABLED_MainFrameDocumentIntersectionCrossOrigin) {
   EXPECT_TRUE(embedded_test_server()->Start());
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
@@ -2739,8 +2747,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 // Creates a set of nested frames, with a cross origin subframe that is out of
 // view within the main frame and verifies their intersections with the main
 // frame.
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MainFrameDocumentIntersectionCrossOriginOutOfView) {
+// TODO(https://crbug/1085175): Main frame document intersections need to be
+// transformed into the main frame documents coordinate system.
+IN_PROC_BROWSER_TEST_F(
+    PageLoadMetricsBrowserTest,
+    DISABLED_MainFrameDocumentIntersectionCrossOriginOutOfView) {
   EXPECT_TRUE(embedded_test_server()->Start());
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(
@@ -2782,8 +2793,11 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 // view within the main frame and verifies their intersections with the main
 // frame. The out of view frame is then scrolled back into view and the
 // intersection is verified.
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
-                       MainFrameDocumentIntersectionCrossOriginScrolled) {
+// TODO(https://crbug/1085175): Main frame document intersections need to be
+// transformed into the main frame documents coordinate system.
+IN_PROC_BROWSER_TEST_F(
+    PageLoadMetricsBrowserTest,
+    DISABLED_MainFrameDocumentIntersectionCrossOriginScrolled) {
   EXPECT_TRUE(embedded_test_server()->Start());
   auto waiter = CreatePageLoadMetricsTestWaiter();
   ui_test_utils::NavigateToURL(

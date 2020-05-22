@@ -291,6 +291,14 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
                     kPropertyEffectsLayout);
 }
 
+size_t Label::GetTextIndexOfLine(size_t line) const {
+  return full_text_->GetTextIndexOfLine(line);
+}
+
+void Label::SetTruncateLength(size_t truncate_length) {
+  return full_text_->set_truncate_length(truncate_length);
+}
+
 gfx::ElideBehavior Label::GetElideBehavior() const {
   return elide_behavior_;
 }

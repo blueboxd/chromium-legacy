@@ -19,6 +19,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -71,7 +72,8 @@ std::string SyncConsentScreen::GetResultString(Result result) {
 
 // static
 void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
-  if (profile->GetPrefs()->GetBoolean(prefs::kShowSyncSettingsOnSessionStart)) {
+  if (profile->GetPrefs()->GetBoolean(
+          ::prefs::kShowSyncSettingsOnSessionStart)) {
     // TODO (alemate): In a very special case when chrome is exiting at the very
     // moment we show Settings, it might crash here because profile could be
     // already destroyed. This needs to be fixed.
@@ -80,7 +82,7 @@ void SyncConsentScreen::MaybeLaunchSyncConsentSettings(Profile* profile) {
         base::BindOnce(
             [](Profile* profile) {
               profile->GetPrefs()->ClearPref(
-                  prefs::kShowSyncSettingsOnSessionStart);
+                  ::prefs::kShowSyncSettingsOnSessionStart);
               chrome::ShowSettingsSubPageForProfile(profile,
                                                     chrome::kSyncSetupSubPage);
             },
@@ -111,13 +113,20 @@ void SyncConsentScreen::Init() {
   UpdateScreen();
 }
 
+void SyncConsentScreen::Finish(Result result) {
+  DCHECK(profile_);
+  // Always set completed, even if the dialog was skipped (e.g. by policy).
+  profile_->GetPrefs()->SetBoolean(chromeos::prefs::kSyncOobeCompleted, true);
+  exit_callback_.Run(result);
+}
+
 bool SyncConsentScreen::MaybeSkip() {
   Init();
 
   if (behavior_ == SyncScreenBehavior::kSkip ||
       behavior_ == SyncScreenBehavior::kSkipAndEnableSync) {
     MaybeEnableSyncForSkip();
-    exit_callback_.Run(Result::NOT_APPLICABLE);
+    Finish(Result::NOT_APPLICABLE);
     return true;
   }
 
@@ -156,9 +165,9 @@ void SyncConsentScreen::OnContinueAndReview(
     return;
   RecordUmaReviewFollowingSetup(true);
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
-  profile_->GetPrefs()->SetBoolean(prefs::kShowSyncSettingsOnSessionStart,
+  profile_->GetPrefs()->SetBoolean(::prefs::kShowSyncSettingsOnSessionStart,
                                    true);
-  exit_callback_.Run(Result::NEXT);
+  Finish(Result::NEXT);
 }
 
 void SyncConsentScreen::OnContinueWithDefaults(
@@ -168,7 +177,7 @@ void SyncConsentScreen::OnContinueWithDefaults(
     return;
   RecordUmaReviewFollowingSetup(false);
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
-  exit_callback_.Run(Result::NEXT);
+  Finish(Result::NEXT);
 }
 
 void SyncConsentScreen::OnAcceptAndContinue(
@@ -183,7 +192,7 @@ void SyncConsentScreen::OnAcceptAndContinue(
   // they chose to enable.
   RecordConsent(CONSENT_GIVEN, consent_description, consent_confirmation);
   UpdateSyncSettings(enable_os_sync, enable_browser_sync);
-  exit_callback_.Run(Result::NEXT);
+  Finish(Result::NEXT);
 }
 
 void SyncConsentScreen::UpdateSyncSettings(bool enable_os_sync,
@@ -279,7 +288,7 @@ SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
 
   // Skip if the sync consent screen is disabled by policy, for example, in
   // education scenarios. https://crbug.com/841156
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kEnableSyncConsent))
+  if (!profile_->GetPrefs()->GetBoolean(::prefs::kEnableSyncConsent))
     return SyncScreenBehavior::kSkipAndEnableSync;
 
   // Skip if sync-the-feature is disabled by policy.
@@ -311,7 +320,7 @@ void SyncConsentScreen::UpdateScreen() {
     case SyncScreenBehavior::kSkip:
     case SyncScreenBehavior::kSkipAndEnableSync:
       MaybeEnableSyncForSkip();
-      exit_callback_.Run(Result::NEXT);
+      Finish(Result::NEXT);
       break;
     case SyncScreenBehavior::kUnknown:
       NOTREACHED();

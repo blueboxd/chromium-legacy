@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <memory>
 #include <utility>
 
 #include "ash/metrics/histogram_macros.h"
@@ -225,7 +226,7 @@ std::unique_ptr<views::Widget> CreateDropTargetWidget(
   widget->SetVisibilityAnimationTransition(views::Widget::ANIMATE_NONE);
 
   // Show plus icon if drag a tab from a multi-tab window.
-  widget->SetContentsView(new DropTargetView(
+  widget->SetContentsView(std::make_unique<DropTargetView>(
       dragged_window->GetProperty(ash::kTabDraggingSourceWindowKey)));
   aura::Window* drop_target_window = widget->GetNativeWindow();
   drop_target_window->parent()->StackChildAtBottom(drop_target_window);
@@ -1623,13 +1624,13 @@ void OverviewGrid::MaybeInitDesksWidget() {
 
   desks_widget_ =
       DesksBarView::CreateDesksWidget(root_window_, GetDesksWidgetBounds());
-  desks_bar_view_ = new DesksBarView(this);
 
   // The following order of function calls is significant: SetContentsView()
   // must be called before DesksBarView:: Init(). This is needed because the
   // desks mini views need to access the widget to get the root window in order
   // to know how to layout themselves.
-  desks_widget_->SetContentsView(desks_bar_view_);
+  desks_bar_view_ =
+      desks_widget_->SetContentsView(std::make_unique<DesksBarView>(this));
   desks_bar_view_->Init();
 
   desks_widget_->Show();

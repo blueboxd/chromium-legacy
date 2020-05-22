@@ -114,9 +114,10 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
         List<PropertyModel> models = new ArrayList<>();
         models.add(model);
         mPendingAnswerRequestUrls.put(url, models);
-
+        ImageFetcher.Params params =
+                ImageFetcher.Params.create(url, ImageFetcher.ANSWER_SUGGESTIONS_UMA_CLIENT_NAME);
         imageFetcher.fetchImage(
-                url, ImageFetcher.ANSWER_SUGGESTIONS_UMA_CLIENT_NAME, (Bitmap bitmap) -> {
+                params, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();
                     // Remove models for the URL ahead of all the checks to ensure we
                     // do not keep them around waiting in case image fetch failed.

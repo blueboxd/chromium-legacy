@@ -87,6 +87,7 @@ GL_APICALL void         GL_APIENTRY glGetActiveUniformsiv (GLidProgram program, 
 GL_APICALL void         GL_APIENTRY glGetAttachedShaders (GLidProgram program, GLsizeiNotNegative maxcount, GLsizeiOptional* count, GLuint* shaders);
 GL_APICALL GLint        GL_APIENTRY glGetAttribLocation (GLidProgram program, const char* name);
 GL_APICALL void         GL_APIENTRY glGetBooleanv (GLenumGLState pname, GLboolean* params);
+GL_APICALL void         GL_APIENTRY glGetBooleani_v (GLenumIndexedGLState pname, GLuint index, GLboolean* data);
 GL_APICALL void         GL_APIENTRY glGetBufferParameteri64v (GLenumBufferTarget target, GLenumBufferParameter64 pname, GLint64* params);
 GL_APICALL void         GL_APIENTRY glGetBufferParameteriv (GLenumBufferTarget target, GLenumBufferParameter pname, GLint* params);
 GL_APICALL GLenum       GL_APIENTRY glGetError (void);
@@ -415,3 +416,13 @@ GL_APICALL void         GL_APIENTRY glBeginSharedImageAccessDirectCHROMIUM (GLui
 GL_APICALL void         GL_APIENTRY glEndSharedImageAccessDirectCHROMIUM (GLuint texture);
 GL_APICALL void         GL_APIENTRY glBeginBatchReadAccessSharedImageCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glEndBatchReadAccessSharedImageCHROMIUM (void);
+
+// Extension OES_draw_buffers_indexed
+GL_APICALL void         GL_APIENTRY glEnableiOES (GLenum target, GLuint index);
+GL_APICALL void         GL_APIENTRY glDisableiOES (GLenum target, GLuint index);
+GL_APICALL void         GL_APIENTRY glBlendEquationiOES (GLuint buf, GLenum mode);
+GL_APICALL void         GL_APIENTRY glBlendEquationSeparateiOES (GLuint buf, GLenum modeRGB, GLenum modeAlpha);
+GL_APICALL void         GL_APIENTRY glBlendFunciOES (GLuint buf, GLenum src, GLenum dst);
+GL_APICALL void         GL_APIENTRY glBlendFuncSeparateiOES (GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha);
+GL_APICALL void         GL_APIENTRY glColorMaskiOES (GLuint buf, GLboolean r, GLboolean g, GLboolean b, GLboolean a);
+GL_APICALL GLboolean    GL_APIENTRY glIsEnablediOES (GLenum target, GLuint index);

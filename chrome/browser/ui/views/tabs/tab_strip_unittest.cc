@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 
+#include <memory>
 #include <string>
 
 #include "base/bind.h"
@@ -142,18 +143,18 @@ class TabStripTest : public ChromeViewsTestBase,
     tab_strip_ = new TabStrip(std::unique_ptr<TabStripController>(controller_));
     controller_->set_tab_strip(tab_strip_);
     // Do this to force TabStrip to create the buttons.
-    tab_strip_parent_ = new views::View;
-    views::FlexLayout* layout_manager = tab_strip_parent_->SetLayoutManager(
+    auto tab_strip_parent = std::make_unique<views::View>();
+    views::FlexLayout* layout_manager = tab_strip_parent->SetLayoutManager(
         std::make_unique<views::FlexLayout>());
     layout_manager->SetOrientation(views::LayoutOrientation::kHorizontal)
         .SetDefault(
             views::kFlexBehaviorKey,
             views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                      views::MaximumFlexSizeRule::kUnbounded));
-    tab_strip_parent_->AddChildView(tab_strip_);
+    tab_strip_parent->AddChildView(tab_strip_);
 
     widget_ = CreateTestWidget();
-    widget_->SetContentsView(tab_strip_parent_);
+    tab_strip_parent_ = widget_->SetContentsView(std::move(tab_strip_parent));
   }
 
   void TearDown() override {

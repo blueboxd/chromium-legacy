@@ -1314,6 +1314,43 @@ error::Error GLES2DecoderImpl::HandleGetBooleanv(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleGetBooleani_v(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  if (!feature_info_->IsWebGL2OrES3OrHigherContext())
+    return error::kUnknownCommand;
+  const volatile gles2::cmds::GetBooleani_v& c =
+      *static_cast<const volatile gles2::cmds::GetBooleani_v*>(cmd_data);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  GLuint index = static_cast<GLuint>(c.index);
+  typedef cmds::GetBooleani_v::Result Result;
+  GLsizei num_values = 0;
+  if (!GetNumValuesReturnedForGLGet(pname, &num_values)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM(":GetBooleani_v", pname, "pname");
+    return error::kNoError;
+  }
+  uint32_t checked_size = 0;
+  if (!Result::ComputeSize(num_values).AssignIfValid(&checked_size)) {
+    return error::kOutOfBounds;
+  }
+  Result* result = GetSharedMemoryAs<Result*>(c.data_shm_id, c.data_shm_offset,
+                                              checked_size);
+  GLboolean* data = result ? result->GetData() : nullptr;
+  if (!validators_->indexed_g_l_state.IsValid(pname)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetBooleani_v", pname, "pname");
+    return error::kNoError;
+  }
+  if (data == nullptr) {
+    return error::kOutOfBounds;
+  }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
+  DoGetBooleani_v(pname, index, data, num_values);
+  result->SetNumResults(num_values);
+  return error::kNoError;
+}
 error::Error GLES2DecoderImpl::HandleGetBufferParameteri64v(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
@@ -5614,6 +5651,109 @@ error::Error GLES2DecoderImpl::HandleEndBatchReadAccessSharedImageCHROMIUM(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {
   DoEndBatchReadAccessSharedImageCHROMIUM();
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleEnableiOES(uint32_t immediate_data_size,
+                                                const volatile void* cmd_data) {
+  const volatile gles2::cmds::EnableiOES& c =
+      *static_cast<const volatile gles2::cmds::EnableiOES*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint index = static_cast<GLuint>(c.index);
+  DoEnableiOES(target, index);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleDisableiOES(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::DisableiOES& c =
+      *static_cast<const volatile gles2::cmds::DisableiOES*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint index = static_cast<GLuint>(c.index);
+  DoDisableiOES(target, index);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBlendEquationiOES(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BlendEquationiOES& c =
+      *static_cast<const volatile gles2::cmds::BlendEquationiOES*>(cmd_data);
+  GLuint buf = static_cast<GLuint>(c.buf);
+  GLenum mode = static_cast<GLenum>(c.mode);
+  api()->glBlendEquationiOESFn(buf, mode);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBlendEquationSeparateiOES(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BlendEquationSeparateiOES& c =
+      *static_cast<const volatile gles2::cmds::BlendEquationSeparateiOES*>(
+          cmd_data);
+  GLuint buf = static_cast<GLuint>(c.buf);
+  GLenum modeRGB = static_cast<GLenum>(c.modeRGB);
+  GLenum modeAlpha = static_cast<GLenum>(c.modeAlpha);
+  api()->glBlendEquationSeparateiOESFn(buf, modeRGB, modeAlpha);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBlendFunciOES(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BlendFunciOES& c =
+      *static_cast<const volatile gles2::cmds::BlendFunciOES*>(cmd_data);
+  GLuint buf = static_cast<GLuint>(c.buf);
+  GLenum src = static_cast<GLenum>(c.src);
+  GLenum dst = static_cast<GLenum>(c.dst);
+  api()->glBlendFunciOESFn(buf, src, dst);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleBlendFuncSeparateiOES(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::BlendFuncSeparateiOES& c =
+      *static_cast<const volatile gles2::cmds::BlendFuncSeparateiOES*>(
+          cmd_data);
+  GLuint buf = static_cast<GLuint>(c.buf);
+  GLenum srcRGB = static_cast<GLenum>(c.srcRGB);
+  GLenum dstRGB = static_cast<GLenum>(c.dstRGB);
+  GLenum srcAlpha = static_cast<GLenum>(c.srcAlpha);
+  GLenum dstAlpha = static_cast<GLenum>(c.dstAlpha);
+  api()->glBlendFuncSeparateiOESFn(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleColorMaskiOES(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::ColorMaskiOES& c =
+      *static_cast<const volatile gles2::cmds::ColorMaskiOES*>(cmd_data);
+  GLuint buf = static_cast<GLuint>(c.buf);
+  GLboolean r = static_cast<GLboolean>(c.r);
+  GLboolean g = static_cast<GLboolean>(c.g);
+  GLboolean b = static_cast<GLboolean>(c.b);
+  GLboolean a = static_cast<GLboolean>(c.a);
+  api()->glColorMaskiOESFn(buf, r, g, b, a);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleIsEnablediOES(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::IsEnablediOES& c =
+      *static_cast<const volatile gles2::cmds::IsEnablediOES*>(cmd_data);
+  GLenum target = static_cast<GLenum>(c.target);
+  GLuint index = static_cast<GLuint>(c.index);
+  typedef cmds::IsEnablediOES::Result Result;
+  Result* result_dst = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result_dst));
+  if (!result_dst) {
+    return error::kOutOfBounds;
+  }
+  *result_dst = DoIsEnablediOES(target, index);
   return error::kNoError;
 }
 

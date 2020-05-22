@@ -14,6 +14,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "chromecast/public/cast_egl_platform.h"
 #include "chromecast/public/cast_egl_platform_shlib.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/ime/input_method_minimal.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/events/ozone/device/device_manager.h"
@@ -24,7 +25,6 @@
 #include "ui/ozone/platform/cast/overlay_manager_cast.h"
 #include "ui/ozone/platform/cast/platform_window_cast.h"
 #include "ui/ozone/platform/cast/surface_factory_cast.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -83,9 +83,7 @@ class OzonePlatformCast : public OzonePlatform {
   OverlayManagerOzone* GetOverlayManager() override {
     return overlay_manager_.get();
   }
-  CursorFactoryOzone* GetCursorFactoryOzone() override {
-    return cursor_factory_.get();
-  }
+  CursorFactory* GetCursorFactory() override { return cursor_factory_.get(); }
   InputController* GetInputController() override {
     return event_factory_ozone_->input_controller();
   }
@@ -123,7 +121,7 @@ class OzonePlatformCast : public OzonePlatform {
 
   void InitializeUI(const InitParams& params) override {
     device_manager_ = CreateDeviceManager();
-    cursor_factory_ = std::make_unique<CursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<CursorFactory>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
 
     // Enable dummy software rendering support if GPU process disabled
@@ -157,7 +155,7 @@ class OzonePlatformCast : public OzonePlatform {
   std::unique_ptr<DeviceManager> device_manager_;
   std::unique_ptr<CastEglPlatform> egl_platform_;
   std::unique_ptr<SurfaceFactoryCast> surface_factory_;
-  std::unique_ptr<CursorFactoryOzone> cursor_factory_;
+  std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;

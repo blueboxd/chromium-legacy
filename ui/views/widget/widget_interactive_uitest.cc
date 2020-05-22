@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -603,7 +604,7 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
 // Test view focus retention when a widget's HWND is disabled and re-enabled.
 TEST_F(WidgetTestInteractive, ViewFocusOnHWNDEnabledChanges) {
   WidgetAutoclosePtr widget(CreateTopLevelFramelessPlatformWidget());
-  widget->SetContentsView(new View);
+  widget->SetContentsView(std::make_unique<View>());
   for (size_t i = 0; i < 2; ++i) {
     auto child = std::make_unique<View>();
     child->SetFocusBehavior(View::FocusBehavior::ALWAYS);
@@ -1456,10 +1457,10 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
 
   MouseView* mouse_view1 = new MouseView;
   MouseView* mouse_view2 = new MouseView;
-  View* contents_view = new View;
+  auto contents_view = std::make_unique<View>();
   contents_view->AddChildView(mouse_view1);
   contents_view->AddChildView(mouse_view2);
-  widget.SetContentsView(contents_view);
+  widget.SetContentsView(std::move(contents_view));
 
   mouse_view1->SetBounds(0, 0, 200, 400);
   mouse_view2->SetBounds(200, 0, 200, 400);
@@ -1480,8 +1481,7 @@ TEST_F(WidgetCaptureTest, FailedCaptureRequestIsNoop) {
 
 TEST_F(WidgetCaptureTest, CaptureAutoReset) {
   WidgetAutoclosePtr toplevel(CreateTopLevelFramelessPlatformWidget());
-  View* container = new View;
-  toplevel->SetContentsView(container);
+  toplevel->SetContentsView(std::make_unique<View>());
 
   EXPECT_FALSE(toplevel->HasCapture());
   toplevel->SetCapture(nullptr);
@@ -1507,8 +1507,7 @@ TEST_F(WidgetCaptureTest, CaptureAutoReset) {
 
 TEST_F(WidgetCaptureTest, ResetCaptureOnGestureEnd) {
   WidgetAutoclosePtr toplevel(CreateTopLevelFramelessPlatformWidget());
-  View* container = new View;
-  toplevel->SetContentsView(container);
+  View* container = toplevel->SetContentsView(std::make_unique<View>());
 
   View* gesture = new GestureCaptureView;
   gesture->SetBounds(0, 0, 30, 30);
@@ -1570,10 +1569,11 @@ TEST_F(WidgetCaptureTest, DisableCaptureWidgetFromMousePress) {
   WidgetAutoclosePtr first(CreateTopLevelFramelessPlatformWidget());
   Widget* second = CreateTopLevelFramelessPlatformWidget();
 
-  NestedLoopCaptureView* container = new NestedLoopCaptureView(second);
-  first->SetContentsView(container);
+  NestedLoopCaptureView* container =
+      first->SetContentsView(std::make_unique<NestedLoopCaptureView>(second));
 
-  second->SetContentsView(new ExitLoopOnRelease(container->GetQuitClosure()));
+  second->SetContentsView(
+      std::make_unique<ExitLoopOnRelease>(container->GetQuitClosure()));
 
   first->SetSize(gfx::Size(100, 100));
   first->Show();
@@ -1597,21 +1597,21 @@ TEST_F(WidgetCaptureTest, DisableCaptureWidgetFromMousePress) {
 // time.
 TEST_F(WidgetCaptureTest, GrabUngrab) {
   auto top_level = CreateTestWidget();
-  top_level->SetContentsView(new MouseView());
+  top_level->SetContentsView(std::make_unique<MouseView>());
 
   Widget* child1 = new Widget;
   Widget::InitParams params1 = CreateParams(Widget::InitParams::TYPE_CONTROL);
   params1.parent = top_level->GetNativeView();
   params1.bounds = gfx::Rect(10, 10, 100, 100);
   child1->Init(std::move(params1));
-  child1->SetContentsView(new MouseView());
+  child1->SetContentsView(std::make_unique<MouseView>());
 
   Widget* child2 = new Widget;
   Widget::InitParams params2 = CreateParams(Widget::InitParams::TYPE_CONTROL);
   params2.parent = top_level->GetNativeView();
   params2.bounds = gfx::Rect(110, 10, 100, 100);
   child2->Init(std::move(params2));
-  child2->SetContentsView(new MouseView());
+  child2->SetContentsView(std::make_unique<MouseView>());
 
   top_level->Show();
   RunPendingMessages();
@@ -1732,8 +1732,8 @@ TEST_F(WidgetCaptureTest, MAYBE_MouseExitOnCaptureGrab) {
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget1.Init(std::move(params1));
-  MouseView* mouse_view1 = new MouseView;
-  widget1.SetContentsView(mouse_view1);
+  MouseView* mouse_view1 =
+      widget1.SetContentsView(std::make_unique<MouseView>());
   widget1.Show();
   widget1.SetBounds(gfx::Rect(300, 300));
 

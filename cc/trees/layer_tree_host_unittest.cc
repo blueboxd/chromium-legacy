@@ -76,6 +76,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/point_conversions.h"
@@ -8930,6 +8931,36 @@ class LayerTreeHostCustomThrougputTrackerTest : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostCustomThrougputTrackerTest);
+
+// Confirm that the delegated ink metadata is populated correctly on the LTH
+class LayerTreeHostPopulateInkMetadata : public LayerTreeHostTest {
+ public:
+  LayerTreeHostPopulateInkMetadata() = default;
+
+  void BeginTest() override {
+    // Values chosen arbitrarily
+    SkColor color = SK_ColorMAGENTA;
+    unsigned diameter = 4;
+    gfx::PointF point = gfx::PointF(32, 97);
+    gfx::RectF area = gfx::RectF(256, 367);
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+
+    viz::DelegatedInkMetadata expected(point, diameter, color, timestamp, area);
+    layer_tree_host()->SetDelegatedInkMetadata(
+        std::make_unique<viz::DelegatedInkMetadata>(expected));
+    viz::DelegatedInkMetadata* actual =
+        layer_tree_host()->DelegatedInkMetadataForTesting();
+    EXPECT_TRUE(actual);
+    EXPECT_EQ(point, actual->point());
+    EXPECT_EQ(color, actual->color());
+    EXPECT_EQ(diameter, actual->diameter());
+    EXPECT_EQ(area, actual->presentation_area());
+    EXPECT_EQ(timestamp, actual->timestamp());
+    EndTest();
+  }
+};
+
+SINGLE_THREAD_TEST_F(LayerTreeHostPopulateInkMetadata);
 
 }  // namespace
 }  // namespace cc

@@ -78,6 +78,12 @@ const char kSamlPasswordExpirationTime[] = "saml.password_expiration_time";
 // to the SAML IdP.
 const char kSamlPasswordChangeUrl[] = "saml.password_change_url";
 
+// Boolean pref indicating whether the user has completed (or skipped) the
+// out-of-box experience (OOBE) sync consent screen. Before this pref is set
+// both OS and browser sync will be disabled. After this pref is set it's
+// possible to check sync state to see if the user enabled it.
+const char kSyncOobeCompleted[] = "sync.oobe_completed";
+
 // Boolean pref indicating whether a user has enabled the display password
 // button on the login/lock screen.
 const char kLoginDisplayPasswordButtonEnabled[] =

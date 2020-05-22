@@ -5,6 +5,7 @@
 #include "ui/views/accessibility/view_ax_platform_node_delegate.h"
 
 #include <atk/atk.h>
+#include <memory>
 
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -29,8 +30,7 @@ TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest, TextfieldAccessibility) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   Textfield* textfield = new Textfield;
   textfield->SetAccessibleName(base::UTF8ToUTF16("Name"));

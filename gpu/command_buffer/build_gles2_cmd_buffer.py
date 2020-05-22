@@ -308,6 +308,13 @@ _NAMED_TYPE_INFO = {
       'GL_UNPACK_SKIP_IMAGES',
       'GL_UNPACK_SKIP_PIXELS',
       'GL_UNPACK_SKIP_ROWS',
+      'GL_BLEND_EQUATION_RGB',
+      'GL_BLEND_EQUATION_ALPHA',
+      'GL_BLEND_SRC_RGB',
+      'GL_BLEND_SRC_ALPHA',
+      'GL_BLEND_DST_RGB',
+      'GL_BLEND_DST_ALPHA',
+      'GL_COLOR_WRITEMASK',
       # GL_VERTEX_ARRAY_BINDING is the same as GL_VERTEX_ARRAY_BINDING_OES
       # 'GL_VERTEX_ARRAY_BINDING',
     ],
@@ -324,6 +331,13 @@ _NAMED_TYPE_INFO = {
       'GL_UNIFORM_BUFFER_BINDING',
       'GL_UNIFORM_BUFFER_SIZE',
       'GL_UNIFORM_BUFFER_START',
+      'GL_BLEND_EQUATION_RGB',
+      'GL_BLEND_EQUATION_ALPHA',
+      'GL_BLEND_SRC_RGB',
+      'GL_BLEND_SRC_ALPHA',
+      'GL_BLEND_DST_RGB',
+      'GL_BLEND_DST_ALPHA',
+      'GL_COLOR_WRITEMASK',
     ],
     'invalid': [
       'GL_FOG_HINT',
@@ -1828,6 +1842,9 @@ _FUNCTION_INFO = {
     'no_gl': True,
     'expectation': False,
   },
+  'ColorMaskiOES': {
+    'extension': 'OES_draw_buffers_indexed',
+  },
   'ContextVisibilityHintCHROMIUM': {
     'decoder_func': 'DoContextVisibilityHintCHROMIUM',
     'extension': 'CHROMIUM_context_visibility_hint',
@@ -1954,6 +1971,13 @@ _FUNCTION_INFO = {
       '0': 'GL_FUNC_SUBTRACT'
     },
   },
+  'BlendEquationiOES': {
+    'extension': 'OES_draw_buffers_indexed',
+    'valid_args': {
+      '1': 'GL_FUNC_SUBTRACT',
+      '2': 'GL_FUNC_SUBTRACT'
+    },
+  },
   'BlendEquationSeparate': {
     'type': 'StateSet',
     'state': 'BlendEquation',
@@ -1961,13 +1985,26 @@ _FUNCTION_INFO = {
       '0': 'GL_FUNC_SUBTRACT'
     },
   },
+  'BlendEquationSeparateiOES': {
+    'extension': 'OES_draw_buffers_indexed',
+    'valid_args': {
+      '1': 'GL_FUNC_SUBTRACT',
+      '2': 'GL_FUNC_SUBTRACT'
+    },
+  },
   'BlendFunc': {
     'type': 'StateSetRGBAlpha',
     'state': 'BlendFunc',
   },
+  'BlendFunciOES': {
+    'extension': 'OES_draw_buffers_indexed',
+  },
   'BlendFuncSeparate': {
     'type': 'StateSet',
     'state': 'BlendFunc',
+  },
+  'BlendFuncSeparateiOES': {
+    'extension': 'OES_draw_buffers_indexed',
   },
   'BlendBarrierKHR': {
     'gl_test_func': 'glBlendBarrierKHR',
@@ -2079,6 +2116,12 @@ _FUNCTION_INFO = {
     'impl_func': False,
     'client_test': False,
   },
+  'DisableiOES': {
+    'extension': 'OES_draw_buffers_indexed',
+    'decoder_func': 'DoDisableiOES',
+    'impl_func': False,
+    'unit_test': False,
+  },
   'DisableVertexAttribArray': {
     'decoder_func': 'DoDisableVertexAttribArray',
     'impl_func': False,
@@ -2138,6 +2181,12 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoEnable',
     'impl_func': False,
     'client_test': False,
+  },
+  'EnableiOES': {
+    'extension': 'OES_draw_buffers_indexed',
+    'decoder_func': 'DoEnableiOES',
+    'impl_func': False,
+    'unit_test': False,
   },
   'EnableVertexAttribArray': {
     'decoder_func': 'DoEnableVertexAttribArray',
@@ -2324,6 +2373,15 @@ _FUNCTION_INFO = {
     'result': ['SizedResult<GLboolean>'],
     'decoder_func': 'DoGetBooleanv',
     'gl_test_func': 'glGetIntegerv',
+  },
+  'GetBooleani_v': {
+    'type': 'GETn',
+    'result': ['SizedResult<GLboolean>'],
+    'decoder_func': 'DoGetBooleani_v',
+    'shadowed': True,
+    'client_test': False,
+    'unit_test': False,
+    'es3': True
   },
   'GetBufferParameteri64v': {
     'type': 'GETn',
@@ -2717,6 +2775,14 @@ _FUNCTION_INFO = {
   'IsEnabled': {
     'type': 'Is',
     'decoder_func': 'DoIsEnabled',
+    'client_test': False,
+    'impl_func': False,
+    'expectation': False,
+  },
+  'IsEnablediOES': {
+    'extension': 'OES_draw_buffers_indexed',
+    'type': 'Is',
+    'decoder_func': 'DoIsEnablediOES',
     'client_test': False,
     'impl_func': False,
     'expectation': False,

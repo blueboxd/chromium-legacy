@@ -143,13 +143,28 @@ class CC_EXPORT InputHandler {
         : thread(SCROLL_ON_IMPL_THREAD),
           main_thread_scrolling_reasons(
               MainThreadScrollingReason::kNotScrollingOnMain),
-          bubble(false) {}
+          bubble(false),
+          needs_main_thread_hit_test(false) {}
     ScrollStatus(ScrollThread thread, uint32_t main_thread_scrolling_reasons)
         : thread(thread),
-          main_thread_scrolling_reasons(main_thread_scrolling_reasons) {}
+          main_thread_scrolling_reasons(main_thread_scrolling_reasons),
+          bubble(false),
+          needs_main_thread_hit_test(false) {}
+    ScrollStatus(ScrollThread thread,
+                 uint32_t main_thread_scrolling_reasons,
+                 bool needs_main_thread_hit_test)
+        : thread(thread),
+          main_thread_scrolling_reasons(main_thread_scrolling_reasons),
+          bubble(false),
+          needs_main_thread_hit_test(needs_main_thread_hit_test) {}
     ScrollThread thread;
     uint32_t main_thread_scrolling_reasons;
     bool bubble;
+
+    // Used only in scroll unification. Tells the caller that the input handler
+    // detected a case where it cannot reliably target a scroll node and needs
+    // the main thread to perform a hit test.
+    bool needs_main_thread_hit_test;
   };
 
   enum class TouchStartOrMoveEventListenerType {

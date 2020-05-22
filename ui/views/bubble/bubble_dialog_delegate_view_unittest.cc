@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -185,10 +186,9 @@ TEST_F(BubbleDialogDelegateViewTest, CloseAnchorWidget) {
 TEST_F(BubbleDialogDelegateViewTest, CloseAnchorViewTest) {
   // Create an anchor widget and add a view to be used as an anchor view.
   std::unique_ptr<Widget> anchor_widget = CreateTestWidget();
-  std::unique_ptr<View> anchor_view(new View());
-  anchor_widget->SetContentsView(anchor_view.get());
+  View* anchor_view = anchor_widget->SetContentsView(std::make_unique<View>());
   TestBubbleDialogDelegateView* bubble_delegate =
-      new TestBubbleDialogDelegateView(anchor_view.get());
+      new TestBubbleDialogDelegateView(anchor_view);
   // Prevent flakes by avoiding closing on activation changes.
   bubble_delegate->set_close_on_deactivate(false);
   Widget* bubble_widget =
@@ -197,7 +197,7 @@ TEST_F(BubbleDialogDelegateViewTest, CloseAnchorViewTest) {
   // Check that the anchor view is correct and set up an anchor view rect.
   // Make sure that this rect will get ignored (as long as the anchor view is
   // attached).
-  EXPECT_EQ(anchor_view.get(), bubble_delegate->GetAnchorView());
+  EXPECT_EQ(anchor_view, bubble_delegate->GetAnchorView());
   const gfx::Rect set_anchor_rect = gfx::Rect(10, 10, 100, 100);
   bubble_delegate->SetAnchorRect(set_anchor_rect);
   const gfx::Rect view_rect = bubble_delegate->GetAnchorRect();
@@ -209,8 +209,7 @@ TEST_F(BubbleDialogDelegateViewTest, CloseAnchorViewTest) {
 
   // Remove now the anchor view and make sure that the original found rect
   // is still kept, so that the bubble does not jump when the view gets deleted.
-  anchor_widget->SetContentsView(anchor_view.get());
-  anchor_view.reset();
+  anchor_view->parent()->RemoveChildViewT(anchor_view);
   EXPECT_EQ(nullptr, bubble_delegate->GetAnchorView());
   EXPECT_EQ(view_rect.ToString(), bubble_delegate->GetAnchorRect().ToString());
 }
@@ -510,8 +509,8 @@ TEST_F(BubbleDialogDelegateViewTest, StyledLabelTitle) {
 // widget is shown or hidden respectively.
 TEST_F(BubbleDialogDelegateViewTest, AttachedWidgetShowsInkDropWhenVisible) {
   std::unique_ptr<Widget> anchor_widget = CreateTestWidget();
-  LabelButton* button = new LabelButton(nullptr, base::string16());
-  anchor_widget->SetContentsView(button);
+  LabelButton* button = anchor_widget->SetContentsView(
+      std::make_unique<LabelButton>(nullptr, base::string16()));
   TestInkDrop* ink_drop = new TestInkDrop();
   test::InkDropHostViewTestApi(button).SetInkDrop(base::WrapUnique(ink_drop));
   TestBubbleDialogDelegateView* bubble_delegate =
@@ -538,8 +537,8 @@ TEST_F(BubbleDialogDelegateViewTest, AttachedWidgetShowsInkDropWhenVisible) {
 // widget is shown.
 TEST_F(BubbleDialogDelegateViewTest, VisibleWidgetShowsInkDropOnAttaching) {
   std::unique_ptr<Widget> anchor_widget = CreateTestWidget();
-  LabelButton* button = new LabelButton(nullptr, base::string16());
-  anchor_widget->SetContentsView(button);
+  LabelButton* button = anchor_widget->SetContentsView(
+      std::make_unique<LabelButton>(nullptr, base::string16()));
   TestInkDrop* ink_drop = new TestInkDrop();
   test::InkDropHostViewTestApi(button).SetInkDrop(base::WrapUnique(ink_drop));
   TestBubbleDialogDelegateView* bubble_delegate =

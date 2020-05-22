@@ -43,16 +43,16 @@ namespace {
 // In this case we will time out, to avoid renderer hang forever waiting for
 // device authorization (http://crbug/615589). This will result in "no audio".
 // There are also cases when authorization takes too long on Mac and Linux.
-constexpr int64_t kMaxAuthorizationTimeoutMs = 10000;
+constexpr base::TimeDelta kMaxAuthorizationTimeout =
+    base::TimeDelta::FromSeconds(10);
 #else
-constexpr int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
+constexpr base::TimeDelta kMaxAuthorizationTimeout;  // No timeout.
 #endif
 
 base::TimeDelta GetDefaultAuthTimeout() {
   // Set authorization request timeout at 80% of renderer hung timeout,
   // but no more than kMaxAuthorizationTimeout.
-  return base::TimeDelta::FromMilliseconds(
-      std::min(kHungRendererDelayMs * 8 / 10, kMaxAuthorizationTimeoutMs));
+  return std::min(kHungRendererDelay * 8 / 10, kMaxAuthorizationTimeout);
 }
 
 scoped_refptr<media::AudioOutputDevice> NewOutputDevice(

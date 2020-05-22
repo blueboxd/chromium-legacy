@@ -1003,6 +1003,8 @@ jumbo_component("base") {
       "trace_event/trace_event_etw_export_win.h",
       "win/async_operation.h",
       "win/atl.h",
+      "win/atl_throw.cc",
+      "win/atl_throw.h",
       "win/com_init_check_hook.cc",
       "win/com_init_check_hook.h",
       "win/com_init_util.cc",

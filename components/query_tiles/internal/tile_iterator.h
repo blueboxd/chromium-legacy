@@ -26,7 +26,6 @@ struct TileGroup;
 //   }
 // }
 //
-//
 class TileIterator {
  public:
   // Pass to |levels_| to iterates through all tiles.

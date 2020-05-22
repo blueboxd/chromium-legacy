@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <vector>
 
 #include "base/macros.h"
@@ -64,8 +65,7 @@ class AXTreeSourceAuraTest : public ChromeViewsTestBase {
     init_params.context = GetContext();
     widget_->Init(std::move(init_params));
 
-    content_ = new View();
-    widget_->SetContentsView(content_);
+    content_ = widget_->SetContentsView(std::make_unique<View>());
 
     textfield_ = new Textfield();
     textfield_->SetText(base::ASCIIToUTF16("Value"));

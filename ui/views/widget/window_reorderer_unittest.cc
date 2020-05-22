@@ -59,8 +59,7 @@ TEST_F(WindowReordererTest, Basic) {
   parent->Show();
   aura::Window* parent_window = parent->GetNativeWindow();
 
-  View* contents_view = new View();
-  parent->SetContentsView(contents_view);
+  View* contents_view = parent->SetContentsView(std::make_unique<View>());
 
   // 1) Test that layers for views and layers for windows associated to a host
   // view are stacked below the layers for any windows not associated to a host
@@ -130,8 +129,7 @@ TEST_F(WindowReordererTest, Association) {
   parent->Show();
   aura::Window* parent_window = parent->GetNativeWindow();
 
-  View* contents_view = new View();
-  parent->SetContentsView(contents_view);
+  View* contents_view = parent->SetContentsView(std::make_unique<View>());
 
   aura::Window* w1 =
       aura::test::CreateTestWindowWithId(0, parent->GetNativeWindow());
@@ -185,8 +183,7 @@ TEST_F(WindowReordererTest, HostViewParentHasLayer) {
   parent->Show();
   aura::Window* parent_window = parent->GetNativeWindow();
 
-  View* contents_view = new View();
-  parent->SetContentsView(contents_view);
+  View* contents_view = parent->SetContentsView(std::make_unique<View>());
 
   // Create the following view hierarchy. (*) denotes views which paint to a
   // layer.
@@ -251,8 +248,7 @@ TEST_F(WindowReordererTest, ViewWithLayerBeneath) {
 
   aura::Window* parent_window = parent->GetNativeWindow();
 
-  View* contents_view = new View;
-  parent->SetContentsView(contents_view);
+  View* contents_view = parent->SetContentsView(std::make_unique<View>());
 
   View* view_with_layer_beneath =
       contents_view->AddChildView(std::make_unique<View>());

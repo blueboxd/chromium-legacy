@@ -41,7 +41,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/base/cursor/cursor_factory.h"
 #endif
 
 namespace exo {
@@ -684,8 +684,8 @@ void Pointer::UpdateCursor() {
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
     // and use that here instead of the current bitmap API.
     // https://crbug.com/686600
-    platform_cursor = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
-        bitmap, hotspot, 0);
+    platform_cursor =
+        ui::CursorFactory::GetInstance()->CreateImageCursor(bitmap, hotspot, 0);
 #elif defined(USE_X11)
     XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
     platform_cursor = ui::CreateReffedCustomXCursor(image);
@@ -694,7 +694,7 @@ void Pointer::UpdateCursor() {
     cursor_.set_custom_bitmap(bitmap);
     cursor_.set_custom_hotspot(hotspot);
 #if defined(USE_OZONE)
-    ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor);
+    ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor);
 #elif defined(USE_X11)
     ui::UnrefCustomXCursor(platform_cursor);
 #endif

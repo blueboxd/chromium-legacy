@@ -28,6 +28,7 @@ class HttpAuthHandler;
 class HttpAuthHandlerRegistryFactory;
 class HttpAuthPreferences;
 class NetLogWithSource;
+class NetworkIsolationKey;
 
 // An HttpAuthHandlerFactory is used to create HttpAuthHandler objects.
 // The HttpAuthHandlerFactory object _must_ outlive any of the HttpAuthHandler
@@ -90,28 +91,32 @@ class NET_EXPORT HttpAuthHandlerFactory {
   // scheme is used and the factory was created with
   // |negotiate_disable_cname_lookup| false, |host_resolver| must not be null,
   // and it must remain valid for the lifetime of the created |handler|.
-  virtual int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
-                                HttpAuth::Target target,
-                                const SSLInfo& ssl_info,
-                                const GURL& origin,
-                                CreateReason create_reason,
-                                int digest_nonce_count,
-                                const NetLogWithSource& net_log,
-                                HostResolver* host_resolver,
-                                std::unique_ptr<HttpAuthHandler>* handler) = 0;
+  virtual int CreateAuthHandler(
+      HttpAuthChallengeTokenizer* challenge,
+      HttpAuth::Target target,
+      const SSLInfo& ssl_info,
+      const NetworkIsolationKey& network_isolation_key,
+      const GURL& origin,
+      CreateReason create_reason,
+      int digest_nonce_count,
+      const NetLogWithSource& net_log,
+      HostResolver* host_resolver,
+      std::unique_ptr<HttpAuthHandler>* handler) = 0;
 
   // Creates an HTTP authentication handler based on the authentication
   // challenge string |challenge|.
   // This is a convenience function which creates a ChallengeTokenizer for
   // |challenge| and calls |CreateAuthHandler|. See |CreateAuthHandler| for
   // more details on return values.
-  int CreateAuthHandlerFromString(const std::string& challenge,
-                                  HttpAuth::Target target,
-                                  const SSLInfo& ssl_info,
-                                  const GURL& origin,
-                                  const NetLogWithSource& net_log,
-                                  HostResolver* host_resolver,
-                                  std::unique_ptr<HttpAuthHandler>* handler);
+  int CreateAuthHandlerFromString(
+      const std::string& challenge,
+      HttpAuth::Target target,
+      const SSLInfo& ssl_info,
+      const NetworkIsolationKey& network_isolation_key,
+      const GURL& origin,
+      const NetLogWithSource& net_log,
+      HostResolver* host_resolver,
+      std::unique_ptr<HttpAuthHandler>* handler);
 
   // Creates an HTTP authentication handler based on the authentication
   // challenge string |challenge|.
@@ -121,6 +126,7 @@ class NET_EXPORT HttpAuthHandlerFactory {
   int CreatePreemptiveAuthHandlerFromString(
       const std::string& challenge,
       HttpAuth::Target target,
+      const NetworkIsolationKey& network_isolation_key,
       const GURL& origin,
       int digest_nonce_count,
       const NetLogWithSource& net_log,
@@ -219,6 +225,7 @@ class NET_EXPORT HttpAuthHandlerRegistryFactory
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                         HttpAuth::Target target,
                         const SSLInfo& ssl_info,
+                        const NetworkIsolationKey& network_isolation_key,
                         const GURL& origin,
                         CreateReason reason,
                         int digest_nonce_count,

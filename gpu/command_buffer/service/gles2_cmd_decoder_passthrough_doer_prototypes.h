@@ -257,6 +257,11 @@ error::Error DoGetBooleanv(GLenum pname,
                            GLsizei bufsize,
                            GLsizei* length,
                            GLboolean* params);
+error::Error DoGetBooleani_v(GLenum pname,
+                             GLuint index,
+                             GLsizei bufsize,
+                             GLsizei* length,
+                             GLboolean* data);
 error::Error DoGetBufferParameteri64v(GLenum target,
                                       GLenum pname,
                                       GLsizei bufsize,
@@ -1143,4 +1148,22 @@ error::Error DoBeginSharedImageAccessDirectCHROMIUM(GLuint client_id,
 error::Error DoEndSharedImageAccessDirectCHROMIUM(GLuint client_id);
 error::Error DoBeginBatchReadAccessSharedImageCHROMIUM(void);
 error::Error DoEndBatchReadAccessSharedImageCHROMIUM(void);
+error::Error DoEnableiOES(GLenum target, GLuint index);
+error::Error DoDisableiOES(GLenum target, GLuint index);
+error::Error DoBlendEquationiOES(GLuint buf, GLenum mode);
+error::Error DoBlendEquationSeparateiOES(GLuint buf,
+                                         GLenum modeRGB,
+                                         GLenum modeAlpha);
+error::Error DoBlendFunciOES(GLuint buf, GLenum sfactor, GLenum dfactor);
+error::Error DoBlendFuncSeparateiOES(GLuint buf,
+                                     GLenum srcRGB,
+                                     GLenum dstRGB,
+                                     GLenum srcAlpha,
+                                     GLenum dstAlpha);
+error::Error DoColorMaskiOES(GLuint buf,
+                             GLboolean red,
+                             GLboolean green,
+                             GLboolean blue,
+                             GLboolean alpha);
+error::Error DoIsEnablediOES(GLenum target, GLuint index, uint32_t* result);
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_PASSTHROUGH_DOER_PROTOTYPES_H_

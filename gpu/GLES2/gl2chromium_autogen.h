@@ -96,6 +96,7 @@
 #define glGetAttachedShaders GLES2_GET_FUN(GetAttachedShaders)
 #define glGetAttribLocation GLES2_GET_FUN(GetAttribLocation)
 #define glGetBooleanv GLES2_GET_FUN(GetBooleanv)
+#define glGetBooleani_v GLES2_GET_FUN(GetBooleani_v)
 #define glGetBufferParameteri64v GLES2_GET_FUN(GetBufferParameteri64v)
 #define glGetBufferParameteriv GLES2_GET_FUN(GetBufferParameteriv)
 #define glGetError GLES2_GET_FUN(GetError)
@@ -406,5 +407,13 @@
   GLES2_GET_FUN(BeginBatchReadAccessSharedImageCHROMIUM)
 #define glEndBatchReadAccessSharedImageCHROMIUM \
   GLES2_GET_FUN(EndBatchReadAccessSharedImageCHROMIUM)
+#define glEnableiOES GLES2_GET_FUN(EnableiOES)
+#define glDisableiOES GLES2_GET_FUN(DisableiOES)
+#define glBlendEquationiOES GLES2_GET_FUN(BlendEquationiOES)
+#define glBlendEquationSeparateiOES GLES2_GET_FUN(BlendEquationSeparateiOES)
+#define glBlendFunciOES GLES2_GET_FUN(BlendFunciOES)
+#define glBlendFuncSeparateiOES GLES2_GET_FUN(BlendFuncSeparateiOES)
+#define glColorMaskiOES GLES2_GET_FUN(ColorMaskiOES)
+#define glIsEnablediOES GLES2_GET_FUN(IsEnablediOES)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

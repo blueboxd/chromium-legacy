@@ -300,6 +300,14 @@ void CaptionBubble::Init() {
   label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
   label->SetTooltipText(base::string16());
 
+  // Render text truncates the end of text that is greater than 10000 chars.
+  // While it is unlikely that the text will exceed 10000 chars, it is not
+  // impossible, if the speech service sends a very long transcription_result.
+  // In order to guarantee that the caption bubble displays the last lines, and
+  // in order to ensure that caption_bubble_->GetTextIndexOfLine() is correct,
+  // set the truncate_length to 0 to ensure that it never truncates.
+  label->SetTruncateLength(0);
+
   auto title = std::make_unique<views::Label>();
   title->SetEnabledColor(gfx::kGoogleGrey500);
   title->SetBackgroundColor(SK_ColorTRANSPARENT);
@@ -512,6 +520,14 @@ void CaptionBubble::Show() {
 void CaptionBubble::Hide() {
   should_show_ = false;
   UpdateBubbleVisibility();
+}
+
+size_t CaptionBubble::GetTextIndexOfLineInLabel(size_t line) const {
+  return label_->GetTextIndexOfLine(line);
+}
+
+size_t CaptionBubble::GetNumLinesInLabel() {
+  return label_->GetRequiredLines();
 }
 
 const char* CaptionBubble::GetClassName() const {

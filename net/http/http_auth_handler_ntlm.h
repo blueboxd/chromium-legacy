@@ -51,6 +51,7 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
     int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                           HttpAuth::Target target,
                           const SSLInfo& ssl_info,
+                          const NetworkIsolationKey& network_isolation_key,
                           const GURL& origin,
                           CreateReason reason,
                           int digest_nonce_count,
@@ -90,7 +91,9 @@ class NET_EXPORT_PRIVATE HttpAuthHandlerNTLM : public HttpAuthHandler {
 
  protected:
   // HttpAuthHandler
-  bool Init(HttpAuthChallengeTokenizer* tok, const SSLInfo& ssl_info) override;
+  bool Init(HttpAuthChallengeTokenizer* tok,
+            const SSLInfo& ssl_info,
+            const NetworkIsolationKey& network_isolation_key) override;
   int GenerateAuthTokenImpl(const AuthCredentials* credentials,
                             const HttpRequestInfo* request,
                             CompletionOnceCallback callback,

@@ -101,8 +101,8 @@ To upload the change, use repo upload, something like this:
 
 ```
 git commit -a
-  Bug:chromium:12345
-  Test:Write what you tested here
+  Bug: chromium:12345
+  Test: Write what you tested here
 repo upload .
 ```
 

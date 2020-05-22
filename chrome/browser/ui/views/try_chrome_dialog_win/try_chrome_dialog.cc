@@ -1191,7 +1191,7 @@ void TryChromeDialog::OnContextInitialized() {
   layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         kTextButtonPadding - kTryChromeBorderThickness);
 
-  popup_->SetContentsView(contents_view.release());
+  popup_->SetContentsView(std::move(contents_view));
 
   // Compute the preferred size after attaching the contents view to the popup,
   // as doing such causes the theme to propagate through the view hierarchy.

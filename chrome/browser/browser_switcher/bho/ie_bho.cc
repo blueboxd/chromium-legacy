@@ -6,8 +6,7 @@
 
 #include <ShlObj.h>
 
-#include "base/win/atl.h"
-
+#include "chrome/browser/browser_switcher/bho/atl.h"
 #include "chrome/browser/browser_switcher/bho/ie_bho_idl.h"
 #include "chrome/browser/browser_switcher/bho/logging.h"
 #include "chrome/browser/browser_switcher/bho/resource.h"

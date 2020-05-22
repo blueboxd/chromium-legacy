@@ -710,6 +710,11 @@ class CC_EXPORT LayerTreeImpl {
     return host_impl_->DrawTransform();
   }
 
+  void set_delegated_ink_metadata(
+      std::unique_ptr<viz::DelegatedInkMetadata> metadata) {
+    delegated_ink_metadata_ = std::move(metadata);
+  }
+
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
   void PushPageScaleFactorAndLimits(const float* page_scale_factor,
@@ -861,6 +866,8 @@ class CC_EXPORT LayerTreeImpl {
 
   // Event metrics that are reported back from the main thread.
   std::vector<EventMetrics> events_metrics_from_main_thread_;
+
+  std::unique_ptr<viz::DelegatedInkMetadata> delegated_ink_metadata_;
 };
 
 }  // namespace cc

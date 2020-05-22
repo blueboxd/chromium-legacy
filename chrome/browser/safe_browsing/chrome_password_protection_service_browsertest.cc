@@ -737,7 +737,6 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        OnEnterpriseTriggerOffGSuite) {
-  GetService(/*is_incognito=*/false);  // Create a service to listen to events.
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/true, PasswordProtectionTrigger::PHISHING_REUSE);
   Profile* profile = browser()->profile();
@@ -763,7 +762,6 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        OnEnterpriseTriggerOff) {
-  GetService(/*is_incognito=*/false);  // Create a service to listen to events.
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/false, PasswordProtectionTrigger::PHISHING_REUSE);
   Profile* profile = browser()->profile();

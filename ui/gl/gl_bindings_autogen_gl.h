@@ -80,13 +80,26 @@ typedef void(GL_BINDING_CALL* glBlendColorProc)(GLclampf red,
                                                 GLclampf blue,
                                                 GLclampf alpha);
 typedef void(GL_BINDING_CALL* glBlendEquationProc)(GLenum mode);
+typedef void(GL_BINDING_CALL* glBlendEquationiOESProc)(GLuint buf, GLenum mode);
 typedef void(GL_BINDING_CALL* glBlendEquationSeparateProc)(GLenum modeRGB,
                                                            GLenum modeAlpha);
+typedef void(GL_BINDING_CALL* glBlendEquationSeparateiOESProc)(
+    GLuint buf,
+    GLenum modeRGB,
+    GLenum modeAlpha);
 typedef void(GL_BINDING_CALL* glBlendFuncProc)(GLenum sfactor, GLenum dfactor);
+typedef void(GL_BINDING_CALL* glBlendFunciOESProc)(GLuint buf,
+                                                   GLenum sfactor,
+                                                   GLenum dfactor);
 typedef void(GL_BINDING_CALL* glBlendFuncSeparateProc)(GLenum srcRGB,
                                                        GLenum dstRGB,
                                                        GLenum srcAlpha,
                                                        GLenum dstAlpha);
+typedef void(GL_BINDING_CALL* glBlendFuncSeparateiOESProc)(GLuint buf,
+                                                           GLenum srcRGB,
+                                                           GLenum dstRGB,
+                                                           GLenum srcAlpha,
+                                                           GLenum dstAlpha);
 typedef void(GL_BINDING_CALL* glBlitFramebufferProc)(GLint srcX0,
                                                      GLint srcY0,
                                                      GLint srcX1,
@@ -153,6 +166,11 @@ typedef void(GL_BINDING_CALL* glColorMaskProc)(GLboolean red,
                                                GLboolean green,
                                                GLboolean blue,
                                                GLboolean alpha);
+typedef void(GL_BINDING_CALL* glColorMaskiOESProc)(GLuint buf,
+                                                   GLboolean red,
+                                                   GLboolean green,
+                                                   GLboolean blue,
+                                                   GLboolean alpha);
 typedef void(GL_BINDING_CALL* glCompileShaderProc)(GLuint shader);
 typedef void(GL_BINDING_CALL* glCompressedTexImage2DProc)(GLenum target,
                                                           GLint level,
@@ -384,6 +402,7 @@ typedef void(GL_BINDING_CALL* glDetachShaderProc)(GLuint program,
                                                   GLuint shader);
 typedef void(GL_BINDING_CALL* glDisableProc)(GLenum cap);
 typedef void(GL_BINDING_CALL* glDisableExtensionANGLEProc)(const char* name);
+typedef void(GL_BINDING_CALL* glDisableiOESProc)(GLenum target, GLuint index);
 typedef void(GL_BINDING_CALL* glDisableVertexAttribArrayProc)(GLuint index);
 typedef void(GL_BINDING_CALL* glDiscardFramebufferEXTProc)(
     GLenum target,
@@ -447,6 +466,7 @@ typedef void(GL_BINDING_CALL* glEGLImageTargetTexture2DOESProc)(
     GLenum target,
     GLeglImageOES image);
 typedef void(GL_BINDING_CALL* glEnableProc)(GLenum cap);
+typedef void(GL_BINDING_CALL* glEnableiOESProc)(GLenum target, GLuint index);
 typedef void(GL_BINDING_CALL* glEnableVertexAttribArrayProc)(GLuint index);
 typedef void(GL_BINDING_CALL* glEndQueryProc)(GLenum target);
 typedef void(GL_BINDING_CALL* glEndTilingQCOMProc)(GLbitfield preserveMask);
@@ -1077,6 +1097,8 @@ typedef void(GL_BINDING_CALL* glInvalidateSubFramebufferProc)(
 typedef void(GL_BINDING_CALL* glInvalidateTextureANGLEProc)(GLenum target);
 typedef GLboolean(GL_BINDING_CALL* glIsBufferProc)(GLuint buffer);
 typedef GLboolean(GL_BINDING_CALL* glIsEnabledProc)(GLenum cap);
+typedef GLboolean(GL_BINDING_CALL* glIsEnablediOESProc)(GLenum target,
+                                                        GLuint index);
 typedef GLboolean(GL_BINDING_CALL* glIsFenceAPPLEProc)(GLuint fence);
 typedef GLboolean(GL_BINDING_CALL* glIsFenceNVProc)(GLuint fence);
 typedef GLboolean(GL_BINDING_CALL* glIsFramebufferEXTProc)(GLuint framebuffer);
@@ -2007,6 +2029,7 @@ struct ExtensionsGL {
   bool b_GL_NV_internalformat_sample_query;
   bool b_GL_NV_path_rendering;
   bool b_GL_OES_EGL_image;
+  bool b_GL_OES_draw_buffers_indexed;
   bool b_GL_OES_get_program_binary;
   bool b_GL_OES_mapbuffer;
   bool b_GL_OES_texture_buffer;
@@ -2042,9 +2065,13 @@ struct ProcsGL {
   glBlendBarrierKHRProc glBlendBarrierKHRFn;
   glBlendColorProc glBlendColorFn;
   glBlendEquationProc glBlendEquationFn;
+  glBlendEquationiOESProc glBlendEquationiOESFn;
   glBlendEquationSeparateProc glBlendEquationSeparateFn;
+  glBlendEquationSeparateiOESProc glBlendEquationSeparateiOESFn;
   glBlendFuncProc glBlendFuncFn;
+  glBlendFunciOESProc glBlendFunciOESFn;
   glBlendFuncSeparateProc glBlendFuncSeparateFn;
+  glBlendFuncSeparateiOESProc glBlendFuncSeparateiOESFn;
   glBlitFramebufferProc glBlitFramebufferFn;
   glBufferDataProc glBufferDataFn;
   glBufferSubDataProc glBufferSubDataFn;
@@ -2063,6 +2090,7 @@ struct ProcsGL {
   glClientWaitSyncProc glClientWaitSyncFn;
   glClientWaitSyncAPPLEProc glClientWaitSyncAPPLEFn;
   glColorMaskProc glColorMaskFn;
+  glColorMaskiOESProc glColorMaskiOESFn;
   glCompileShaderProc glCompileShaderFn;
   glCompressedTexImage2DProc glCompressedTexImage2DFn;
   glCompressedTexImage2DRobustANGLEProc glCompressedTexImage2DRobustANGLEFn;
@@ -2118,6 +2146,7 @@ struct ProcsGL {
   glDetachShaderProc glDetachShaderFn;
   glDisableProc glDisableFn;
   glDisableExtensionANGLEProc glDisableExtensionANGLEFn;
+  glDisableiOESProc glDisableiOESFn;
   glDisableVertexAttribArrayProc glDisableVertexAttribArrayFn;
   glDiscardFramebufferEXTProc glDiscardFramebufferEXTFn;
   glDispatchComputeProc glDispatchComputeFn;
@@ -2139,6 +2168,7 @@ struct ProcsGL {
       glEGLImageTargetRenderbufferStorageOESFn;
   glEGLImageTargetTexture2DOESProc glEGLImageTargetTexture2DOESFn;
   glEnableProc glEnableFn;
+  glEnableiOESProc glEnableiOESFn;
   glEnableVertexAttribArrayProc glEnableVertexAttribArrayFn;
   glEndQueryProc glEndQueryFn;
   glEndTilingQCOMProc glEndTilingQCOMFn;
@@ -2307,6 +2337,7 @@ struct ProcsGL {
   glInvalidateTextureANGLEProc glInvalidateTextureANGLEFn;
   glIsBufferProc glIsBufferFn;
   glIsEnabledProc glIsEnabledFn;
+  glIsEnablediOESProc glIsEnablediOESFn;
   glIsFenceAPPLEProc glIsFenceAPPLEFn;
   glIsFenceNVProc glIsFenceNVFn;
   glIsFramebufferEXTProc glIsFramebufferEXTFn;
@@ -2591,12 +2622,24 @@ class GL_EXPORT GLApi {
                               GLclampf blue,
                               GLclampf alpha) = 0;
   virtual void glBlendEquationFn(GLenum mode) = 0;
+  virtual void glBlendEquationiOESFn(GLuint buf, GLenum mode) = 0;
   virtual void glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) = 0;
+  virtual void glBlendEquationSeparateiOESFn(GLuint buf,
+                                             GLenum modeRGB,
+                                             GLenum modeAlpha) = 0;
   virtual void glBlendFuncFn(GLenum sfactor, GLenum dfactor) = 0;
+  virtual void glBlendFunciOESFn(GLuint buf,
+                                 GLenum sfactor,
+                                 GLenum dfactor) = 0;
   virtual void glBlendFuncSeparateFn(GLenum srcRGB,
                                      GLenum dstRGB,
                                      GLenum srcAlpha,
                                      GLenum dstAlpha) = 0;
+  virtual void glBlendFuncSeparateiOESFn(GLuint buf,
+                                         GLenum srcRGB,
+                                         GLenum dstRGB,
+                                         GLenum srcAlpha,
+                                         GLenum dstAlpha) = 0;
   virtual void glBlitFramebufferFn(GLint srcX0,
                                    GLint srcY0,
                                    GLint srcX1,
@@ -2663,6 +2706,11 @@ class GL_EXPORT GLApi {
                              GLboolean green,
                              GLboolean blue,
                              GLboolean alpha) = 0;
+  virtual void glColorMaskiOESFn(GLuint buf,
+                                 GLboolean red,
+                                 GLboolean green,
+                                 GLboolean blue,
+                                 GLboolean alpha) = 0;
   virtual void glCompileShaderFn(GLuint shader) = 0;
   virtual void glCompressedTexImage2DFn(GLenum target,
                                         GLint level,
@@ -2864,6 +2912,7 @@ class GL_EXPORT GLApi {
   virtual void glDetachShaderFn(GLuint program, GLuint shader) = 0;
   virtual void glDisableFn(GLenum cap) = 0;
   virtual void glDisableExtensionANGLEFn(const char* name) = 0;
+  virtual void glDisableiOESFn(GLenum target, GLuint index) = 0;
   virtual void glDisableVertexAttribArrayFn(GLuint index) = 0;
   virtual void glDiscardFramebufferEXTFn(GLenum target,
                                          GLsizei numAttachments,
@@ -2918,6 +2967,7 @@ class GL_EXPORT GLApi {
   virtual void glEGLImageTargetTexture2DOESFn(GLenum target,
                                               GLeglImageOES image) = 0;
   virtual void glEnableFn(GLenum cap) = 0;
+  virtual void glEnableiOESFn(GLenum target, GLuint index) = 0;
   virtual void glEnableVertexAttribArrayFn(GLuint index) = 0;
   virtual void glEndQueryFn(GLenum target) = 0;
   virtual void glEndTilingQCOMFn(GLbitfield preserveMask) = 0;
@@ -3467,6 +3517,7 @@ class GL_EXPORT GLApi {
   virtual void glInvalidateTextureANGLEFn(GLenum target) = 0;
   virtual GLboolean glIsBufferFn(GLuint buffer) = 0;
   virtual GLboolean glIsEnabledFn(GLenum cap) = 0;
+  virtual GLboolean glIsEnablediOESFn(GLenum target, GLuint index) = 0;
   virtual GLboolean glIsFenceAPPLEFn(GLuint fence) = 0;
   virtual GLboolean glIsFenceNVFn(GLuint fence) = 0;
   virtual GLboolean glIsFramebufferEXTFn(GLuint framebuffer) = 0;
@@ -4273,10 +4324,16 @@ class GL_EXPORT GLApi {
 #define glBlendBarrierKHR ::gl::g_current_gl_context->glBlendBarrierKHRFn
 #define glBlendColor ::gl::g_current_gl_context->glBlendColorFn
 #define glBlendEquation ::gl::g_current_gl_context->glBlendEquationFn
+#define glBlendEquationiOES ::gl::g_current_gl_context->glBlendEquationiOESFn
 #define glBlendEquationSeparate \
   ::gl::g_current_gl_context->glBlendEquationSeparateFn
+#define glBlendEquationSeparateiOES \
+  ::gl::g_current_gl_context->glBlendEquationSeparateiOESFn
 #define glBlendFunc ::gl::g_current_gl_context->glBlendFuncFn
+#define glBlendFunciOES ::gl::g_current_gl_context->glBlendFunciOESFn
 #define glBlendFuncSeparate ::gl::g_current_gl_context->glBlendFuncSeparateFn
+#define glBlendFuncSeparateiOES \
+  ::gl::g_current_gl_context->glBlendFuncSeparateiOESFn
 #define glBlitFramebuffer ::gl::g_current_gl_context->glBlitFramebufferFn
 #define glBufferData ::gl::g_current_gl_context->glBufferDataFn
 #define glBufferSubData ::gl::g_current_gl_context->glBufferSubDataFn
@@ -4297,6 +4354,7 @@ class GL_EXPORT GLApi {
 #define glClientWaitSyncAPPLE \
   ::gl::g_current_gl_context->glClientWaitSyncAPPLEFn
 #define glColorMask ::gl::g_current_gl_context->glColorMaskFn
+#define glColorMaskiOES ::gl::g_current_gl_context->glColorMaskiOESFn
 #define glCompileShader ::gl::g_current_gl_context->glCompileShaderFn
 #define glCompressedTexImage2D \
   ::gl::g_current_gl_context->glCompressedTexImage2DFn
@@ -4375,6 +4433,7 @@ class GL_EXPORT GLApi {
 #define glDisable ::gl::g_current_gl_context->glDisableFn
 #define glDisableExtensionANGLE \
   ::gl::g_current_gl_context->glDisableExtensionANGLEFn
+#define glDisableiOES ::gl::g_current_gl_context->glDisableiOESFn
 #define glDisableVertexAttribArray \
   ::gl::g_current_gl_context->glDisableVertexAttribArrayFn
 #define glDiscardFramebufferEXT \
@@ -4404,6 +4463,7 @@ class GL_EXPORT GLApi {
 #define glEGLImageTargetTexture2DOES \
   ::gl::g_current_gl_context->glEGLImageTargetTexture2DOESFn
 #define glEnable ::gl::g_current_gl_context->glEnableFn
+#define glEnableiOES ::gl::g_current_gl_context->glEnableiOESFn
 #define glEnableVertexAttribArray \
   ::gl::g_current_gl_context->glEnableVertexAttribArrayFn
 #define glEndQuery ::gl::g_current_gl_context->glEndQueryFn
@@ -4659,6 +4719,7 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glInvalidateTextureANGLEFn
 #define glIsBuffer ::gl::g_current_gl_context->glIsBufferFn
 #define glIsEnabled ::gl::g_current_gl_context->glIsEnabledFn
+#define glIsEnablediOES ::gl::g_current_gl_context->glIsEnablediOESFn
 #define glIsFenceAPPLE ::gl::g_current_gl_context->glIsFenceAPPLEFn
 #define glIsFenceNV ::gl::g_current_gl_context->glIsFenceNVFn
 #define glIsFramebufferEXT ::gl::g_current_gl_context->glIsFramebufferEXTFn

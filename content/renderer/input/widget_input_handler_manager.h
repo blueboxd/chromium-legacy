@@ -173,6 +173,13 @@ class CONTENT_EXPORT WidgetInputHandlerManager final
       std::unique_ptr<blink::WebCoalescedInputEvent> event,
       blink::mojom::WidgetInputHandler::DispatchEventCallback callback);
 
+  // Used to return a result from FindScrollTargetOnMainThread. Will be called
+  // on the input handling thread.
+  void FindScrollTargetReply(
+      std::unique_ptr<blink::WebCoalescedInputEvent> event,
+      blink::mojom::WidgetInputHandler::DispatchEventCallback browser_callback,
+      uint64_t hit_test_result);
+
   // This method is the callback used by the compositor input handler to
   // communicate back whether the event was successfully handled on the
   // compositor thread or whether it needs to forwarded to the main thread.

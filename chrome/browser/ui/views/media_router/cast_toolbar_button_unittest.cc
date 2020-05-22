@@ -88,12 +88,11 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
         MediaRouterFactory::GetApiForBrowserContext(profile_.get());
     auto context_menu = std::make_unique<MediaRouterContextualMenu>(
         browser_.get(), false, &context_menu_observer_);
-    button_ = std::make_unique<CastToolbarButton>(browser_.get(), media_router,
-                                                  std::move(context_menu));
 
     // Button needs to be in a widget to be able to access ThemeProvider.
     widget_ = CreateTestWidget();
-    widget_->SetContentsView(button_.get());
+    button_ = widget_->SetContentsView(std::make_unique<CastToolbarButton>(
+        browser_.get(), media_router, std::move(context_menu)));
 
     ui::NativeTheme* native_theme = button_->GetNativeTheme();
     idle_icon_ = gfx::Image(
@@ -113,7 +112,6 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
   }
 
   void TearDown() override {
-    button_.reset();
     widget_.reset();
     browser_.reset();
     window_.reset();
@@ -129,7 +127,7 @@ class CastToolbarButtonTest : public ChromeViewsTestBase {
   std::unique_ptr<BrowserWindow> window_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<views::Widget> widget_;
-  std::unique_ptr<CastToolbarButton> button_;
+  CastToolbarButton* button_ = nullptr;  // owned by |widget_|.
   MockContextMenuObserver context_menu_observer_;
   std::unique_ptr<TestingProfile> profile_;
 

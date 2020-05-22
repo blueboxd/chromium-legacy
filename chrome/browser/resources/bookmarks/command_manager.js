@@ -471,8 +471,6 @@ export const CommandManager = Polymer({
       if (shortcut.matchesEvent(e) && this.canExecute(command, itemIds)) {
         this.handle(command, itemIds);
 
-        this.recordCommandHistogram_(
-            itemIds, 'BookmarkManager.CommandExecutedFromKeyboard', command);
         e.stopPropagation();
         e.preventDefault();
         return true;

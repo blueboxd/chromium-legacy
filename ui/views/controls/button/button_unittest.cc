@@ -166,15 +166,6 @@ TestInkDrop* AddTestInkDrop(TestButton* button) {
   return ink_drop;
 }
 
-// TODO(tluk): remove when the appropriate ownership APIs have been added for
-// Widget's SetContentsView().
-template <typename T>
-T* AddContentsView(Widget* widget, std::unique_ptr<T> view) {
-  T* view_ptr = view.get();
-  widget->SetContentsView(view.release());
-  return view_ptr;
-}
-
 }  // namespace
 
 class ButtonTest : public ViewsTestBase {
@@ -195,7 +186,7 @@ class ButtonTest : public ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    button_ = AddContentsView(widget(), std::make_unique<TestButton>(false));
+    button_ = widget()->SetContentsView(std::make_unique<TestButton>(false));
 
     event_generator_ =
         std::make_unique<ui::test::EventGenerator>(GetRootWindow(widget()));
@@ -213,24 +204,21 @@ class ButtonTest : public ViewsTestBase {
   }
 
   TestInkDrop* CreateButtonWithInkDrop(bool has_ink_drop_action_on_click) {
-    button_ = AddContentsView(
-        widget(), std::make_unique<TestButton>(has_ink_drop_action_on_click));
-    widget_->SetContentsView(button_);
+    button_ = widget()->SetContentsView(
+        std::make_unique<TestButton>(has_ink_drop_action_on_click));
     return AddTestInkDrop(button_);
   }
 
   void CreateButtonWithRealInkDrop() {
-    button_ = AddContentsView(widget(), std::make_unique<TestButton>(false));
+    button_ = widget()->SetContentsView(std::make_unique<TestButton>(false));
     InkDropHostViewTestApi(button_).SetInkDrop(
         std::make_unique<InkDropImpl>(button_, button_->size()));
-    widget_->SetContentsView(button_);
   }
 
   void CreateButtonWithObserver() {
-    button_ = AddContentsView(widget(), std::make_unique<TestButton>(false));
+    button_ = widget()->SetContentsView(std::make_unique<TestButton>(false));
     button_observer_ = std::make_unique<TestButtonObserver>();
     button_->AddButtonObserver(button_observer_.get());
-    widget_->SetContentsView(button_);
   }
 
  protected:
@@ -575,7 +563,7 @@ TEST_F(ButtonTest, InkDropAfterTryingToShowContextMenu) {
 }
 
 TEST_F(ButtonTest, HideInkDropHighlightWhenRemoved) {
-  View* contents_view = AddContentsView(widget(), std::make_unique<View>());
+  View* contents_view = widget()->SetContentsView(std::make_unique<View>());
 
   TestButton* button =
       contents_view->AddChildView(std::make_unique<TestButton>(false));
@@ -755,7 +743,7 @@ class VisibilityTestButton : public TestButton {
 // changed visibility states.
 TEST_F(ButtonTest, NoLayerAddedForWidgetVisibilityChanges) {
   VisibilityTestButton* button =
-      AddContentsView(widget(), std::make_unique<VisibilityTestButton>());
+      widget()->SetContentsView(std::make_unique<VisibilityTestButton>());
 
   // Ensure no layers are created during construction.
   EXPECT_TRUE(button->GetVisible());

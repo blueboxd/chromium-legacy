@@ -851,6 +851,16 @@ void GetBooleanv(GLenum pname,
   }
 }
 
+void GetBooleani_v(GLenum pname,
+                   GLuint index,
+                   uint32_t data_shm_id,
+                   uint32_t data_shm_offset) {
+  gles2::cmds::GetBooleani_v* c = GetCmdSpace<gles2::cmds::GetBooleani_v>();
+  if (c) {
+    c->Init(pname, index, data_shm_id, data_shm_offset);
+  }
+}
+
 void GetBufferParameteri64v(GLenum target,
                             GLenum pname,
                             uint32_t params_shm_id,
@@ -3412,6 +3422,76 @@ void EndBatchReadAccessSharedImageCHROMIUM() {
       GetCmdSpace<gles2::cmds::EndBatchReadAccessSharedImageCHROMIUM>();
   if (c) {
     c->Init();
+  }
+}
+
+void EnableiOES(GLenum target, GLuint index) {
+  gles2::cmds::EnableiOES* c = GetCmdSpace<gles2::cmds::EnableiOES>();
+  if (c) {
+    c->Init(target, index);
+  }
+}
+
+void DisableiOES(GLenum target, GLuint index) {
+  gles2::cmds::DisableiOES* c = GetCmdSpace<gles2::cmds::DisableiOES>();
+  if (c) {
+    c->Init(target, index);
+  }
+}
+
+void BlendEquationiOES(GLuint buf, GLenum mode) {
+  gles2::cmds::BlendEquationiOES* c =
+      GetCmdSpace<gles2::cmds::BlendEquationiOES>();
+  if (c) {
+    c->Init(buf, mode);
+  }
+}
+
+void BlendEquationSeparateiOES(GLuint buf, GLenum modeRGB, GLenum modeAlpha) {
+  gles2::cmds::BlendEquationSeparateiOES* c =
+      GetCmdSpace<gles2::cmds::BlendEquationSeparateiOES>();
+  if (c) {
+    c->Init(buf, modeRGB, modeAlpha);
+  }
+}
+
+void BlendFunciOES(GLuint buf, GLenum src, GLenum dst) {
+  gles2::cmds::BlendFunciOES* c = GetCmdSpace<gles2::cmds::BlendFunciOES>();
+  if (c) {
+    c->Init(buf, src, dst);
+  }
+}
+
+void BlendFuncSeparateiOES(GLuint buf,
+                           GLenum srcRGB,
+                           GLenum dstRGB,
+                           GLenum srcAlpha,
+                           GLenum dstAlpha) {
+  gles2::cmds::BlendFuncSeparateiOES* c =
+      GetCmdSpace<gles2::cmds::BlendFuncSeparateiOES>();
+  if (c) {
+    c->Init(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+  }
+}
+
+void ColorMaskiOES(GLuint buf,
+                   GLboolean r,
+                   GLboolean g,
+                   GLboolean b,
+                   GLboolean a) {
+  gles2::cmds::ColorMaskiOES* c = GetCmdSpace<gles2::cmds::ColorMaskiOES>();
+  if (c) {
+    c->Init(buf, r, g, b, a);
+  }
+}
+
+void IsEnablediOES(GLenum target,
+                   GLuint index,
+                   uint32_t result_shm_id,
+                   uint32_t result_shm_offset) {
+  gles2::cmds::IsEnablediOES* c = GetCmdSpace<gles2::cmds::IsEnablediOES>();
+  if (c) {
+    c->Init(target, index, result_shm_id, result_shm_offset);
   }
 }
 

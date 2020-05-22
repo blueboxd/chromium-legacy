@@ -321,10 +321,18 @@ void NotificationList::PushNotification(
     state = iter->second;
     EraseNotification(iter);
   } else {
+    // For critical ChromeOS system notifications, we ignore the standard quiet
+    // mode behaviour and show the notification anyways.
+    bool effective_quiet_mode = quiet_mode_;
+#if defined(OS_CHROMEOS)
+    effective_quiet_mode &= notification->system_notification_warning_level() !=
+                            SystemNotificationWarningLevel::CRITICAL_WARNING;
+#endif
+
     // TODO(mukai): needs to distinguish if a notification is dismissed by
     // the quiet mode or user operation.
     state.shown_as_popup =
-        message_center_->IsMessageCenterVisible() || quiet_mode_;
+        message_center_->IsMessageCenterVisible() || effective_quiet_mode;
   }
   if (notification->priority() == MIN_PRIORITY)
     state.is_read = true;

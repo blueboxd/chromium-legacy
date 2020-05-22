@@ -175,8 +175,10 @@ class AssistantDetailsViewBinder
             }
         } else {
             // Download image and then set it in the view.
-            mImageFetcher.fetchImage(details.getImageUrl(),
-                    ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, image -> {
+            ImageFetcher.Params params = ImageFetcher.Params.create(
+                    details.getImageUrl(), ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME);
+            mImageFetcher.fetchImage(
+                    params, image -> {
                         if (image != null) {
                             viewHolder.mImageView.setImageDrawable(getRoundedImage(image));
                             if (details.hasImageClickthroughData()

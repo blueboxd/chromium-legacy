@@ -160,15 +160,48 @@ GL_FUNCTIONS = [
   'names': ['glBlendEquation'],
   'arguments': ' GLenum mode ', },
 { 'return_type': 'void',
+  'known_as': 'glBlendEquationiOES',
+  'versions': [
+    { 'name': 'glBlendEquationi' },
+    { 'name': 'glBlendEquationiOES', 'extensions':
+      ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments': ' GLuint buf, GLenum mode ', },
+{ 'return_type': 'void',
   'names': ['glBlendEquationSeparate'],
   'arguments': 'GLenum modeRGB, GLenum modeAlpha', },
+{ 'return_type': 'void',
+  'known_as': 'glBlendEquationSeparateiOES',
+  'versions': [
+    { 'name': 'glBlendEquationSeparatei' },
+    { 'name': 'glBlendEquationSeparateiOES', 'extensions':
+      ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments': 'GLuint buf, GLenum modeRGB, GLenum modeAlpha', },
 { 'return_type': 'void',
   'names': ['glBlendFunc'],
   'arguments': 'GLenum sfactor, GLenum dfactor', },
 { 'return_type': 'void',
+  'known_as': 'glBlendFunciOES',
+  'versions': [
+    { 'name': 'glBlendFunci' },
+    { 'name': 'glBlendFunciOES', 'extensions': ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments': 'GLuint buf, GLenum sfactor, GLenum dfactor', },
+{ 'return_type': 'void',
   'names': ['glBlendFuncSeparate'],
   'arguments':
       'GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha', },
+{ 'return_type': 'void',
+  'known_as': 'glBlendFuncSeparateiOES',
+  'versions': [
+    { 'name': 'glBlendFuncSeparatei' },
+    { 'name': 'glBlendFuncSeparateiOES', 'extensions':
+      ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments':
+      'GLuint buf, GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, '
+      'GLenum dstAlpha', },
 { 'return_type': 'void',
   'versions' : [{'name': 'glBlitFramebuffer',
                  'extensions': ['GL_ARB_framebuffer_object']},
@@ -250,6 +283,15 @@ GL_FUNCTIONS = [
   'names': ['glColorMask'],
   'arguments':
       'GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha', },
+{ 'return_type': 'void',
+  'known_as': 'glColorMaskiOES',
+  'versions': [
+    { 'name': 'glColorMaski' },
+    { 'name': 'glColorMaskiOES', 'extensions': ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments':
+      'GLuint buf, GLboolean red, GLboolean green, GLboolean blue, '
+      'GLboolean alpha', },
 { 'return_type': 'void',
   'names': ['glCompileShader'],
   'arguments': 'GLuint shader', },
@@ -513,6 +555,13 @@ GL_FUNCTIONS = [
                  'extensions': ['GL_ANGLE_request_extension'] }],
   'arguments': 'const char* name', },
 { 'return_type': 'void',
+  'known_as': 'glDisableiOES',
+  'versions': [
+    { 'name': 'glDisablei' },
+    { 'name': 'glDisableiOES', 'extensions': ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments': 'GLenum target, GLuint index', },
+{ 'return_type': 'void',
   'names': ['glDisableVertexAttribArray'],
   'arguments': 'GLuint index', },
 { 'return_type': 'void',
@@ -591,6 +640,13 @@ GL_FUNCTIONS = [
 { 'return_type': 'void',
   'names': ['glEnable'],
   'arguments': 'GLenum cap', },
+{ 'return_type': 'void',
+  'known_as': 'glEnableiOES',
+  'versions': [
+    { 'name': 'glEnablei' },
+    { 'name': 'glEnableiOES', 'extensions': ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments': 'GLenum target, GLuint index', },
 { 'return_type': 'void',
   'names': ['glEnableVertexAttribArray'],
   'arguments': 'GLuint index', },
@@ -1334,6 +1390,13 @@ GL_FUNCTIONS = [
 { 'return_type': 'GLboolean',
   'names': ['glIsEnabled'],
   'arguments': 'GLenum cap', },
+{ 'return_type': 'GLboolean',
+  'known_as': 'glIsEnablediOES',
+  'versions': [
+    { 'name': 'glIsEnabledi' },
+    { 'name': 'glIsEnablediOES', 'extensions': ['GL_OES_draw_buffers_indexed'] }
+  ],
+  'arguments': 'GLenum target, GLuint index', },
 { 'return_type': 'GLboolean',
   'known_as': 'glIsFenceAPPLE',
   'versions': [{ 'name': 'glIsFenceAPPLE',

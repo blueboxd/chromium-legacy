@@ -244,8 +244,7 @@ class ComboboxTest : public ViewsTestBase {
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     params.bounds = gfx::Rect(200, 200, 200, 200);
     widget_->Init(std::move(params));
-    View* container = new View();
-    widget_->SetContentsView(container);
+    View* container = widget_->SetContentsView(std::make_unique<View>());
     container->AddChildView(combobox_);
     widget_->Show();
 
@@ -370,8 +369,7 @@ TEST_F(ComboboxTest, DisabilityTest) {
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(100, 100, 100, 100);
   widget_->Init(std::move(params));
-  View* container = new View();
-  widget_->SetContentsView(container);
+  View* container = widget_->SetContentsView(std::make_unique<View>());
   container->AddChildView(combobox_);
   EXPECT_FALSE(combobox_->GetEnabled());
 }

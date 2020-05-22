@@ -523,7 +523,10 @@ TEST_F(RenderFrameImplTest, FileUrlPathAlias) {
   }
 }
 
-TEST_F(RenderFrameImplTest, MainFrameDocumentIntersectionRecorded) {
+// TODO(https://crbug/1085175): Mainframe document intersections need to be
+// transformed into the main frame document's coordinate system from the
+// child frame's.
+TEST_F(RenderFrameImplTest, DISABLED_MainFrameDocumentIntersectionRecorded) {
   RenderFrameTestObserver observer(frame());
   gfx::Point viewport_offset(7, -11);
   blink::WebRect viewport_intersection(0, 11, 200, 89);

@@ -34,12 +34,6 @@ public class NetworkImageFetcher extends ImageFetcher {
     }
 
     @Override
-    public void fetchImage(
-            String url, String clientName, int width, int height, Callback<Bitmap> callback) {
-        fetchImage(ImageFetcher.Params.create(url, clientName, width, height), callback);
-    }
-
-    @Override
     public void fetchImage(final Params params, Callback<Bitmap> callback) {
         long startTimeMillis = System.currentTimeMillis();
         getImageFetcherBridge().fetchImage(getConfig(), params, (Bitmap bitmapFromNative) -> {

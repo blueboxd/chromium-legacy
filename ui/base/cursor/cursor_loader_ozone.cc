@@ -6,14 +6,14 @@
 
 #include <vector>
 
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/cursor_util.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
 
 CursorLoaderOzone::CursorLoaderOzone() {
-  factory_ = CursorFactoryOzone::GetInstance();
+  factory_ = CursorFactory::GetInstance();
 }
 
 CursorLoaderOzone::~CursorLoaderOzone() {

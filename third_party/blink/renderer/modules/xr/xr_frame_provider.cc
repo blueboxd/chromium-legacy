@@ -56,6 +56,8 @@ XRFrameProvider::XRFrameProvider(XRSystem* xr)
           xr->GetExecutionContext(),
           xr->GetExecutionContext()->GetTaskRunner(
               TaskType::kMiscPlatformAPI))),
+      immersive_data_provider_(xr->GetExecutionContext()),
+      immersive_presentation_provider_(xr->GetExecutionContext()),
       last_has_focus_(xr->IsFrameFocused()) {}
 
 void XRFrameProvider::OnSessionStarted(
@@ -71,13 +73,16 @@ void XRFrameProvider::OnSessionStarted(
 
     immersive_session_ = session;
 
-    immersive_data_provider_.Bind(std::move(session_ptr->data_provider));
+    immersive_data_provider_.Bind(
+        std::move(session_ptr->data_provider),
+        xr_->GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
     immersive_data_provider_.set_disconnect_handler(
         WTF::Bind(&XRFrameProvider::OnProviderConnectionError,
                   WrapWeakPersistent(this), WrapWeakPersistent(session)));
 
     immersive_presentation_provider_.Bind(
-        std::move(session_ptr->submit_frame_sink->provider));
+        std::move(session_ptr->submit_frame_sink->provider),
+        xr_->GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
     immersive_presentation_provider_.set_disconnect_handler(
         WTF::Bind(&XRFrameProvider::OnProviderConnectionError,
                   WrapWeakPersistent(this), WrapWeakPersistent(session)));
@@ -94,13 +99,18 @@ void XRFrameProvider::OnSessionStarted(
       return;
     }
 
-    mojo::Remote<device::mojom::blink::XRFrameDataProvider> data_provider;
-    data_provider.Bind(std::move(session_ptr->data_provider));
+    HeapMojoRemote<device::mojom::blink::XRFrameDataProvider,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+        data_provider(xr_->GetExecutionContext());
+    data_provider.Bind(
+        std::move(session_ptr->data_provider),
+        xr_->GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
     data_provider.set_disconnect_handler(
         WTF::Bind(&XRFrameProvider::OnProviderConnectionError,
                   WrapWeakPersistent(this), WrapWeakPersistent(session)));
 
-    non_immersive_data_providers_.insert(session, std::move(data_provider));
+    non_immersive_data_providers_.insert(
+        session, WrapDisallowNew(std::move(data_provider)));
   }
 }
 
@@ -358,7 +368,7 @@ void XRFrameProvider::RequestNonImmersiveFrameData(XRSession* session) {
   if (provider == non_immersive_data_providers_.end()) {
     request->value = nullptr;
   } else {
-    auto& data_provider = provider->value;
+    auto& data_provider = provider->value->Value();
     auto options = device::mojom::blink::XRFrameDataRequestOptions::New(
         session->worldTrackingState()->planeDetectionState()->enabled(),
         session->LightEstimationEnabled());
@@ -568,7 +578,7 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
 // the moment. Will need an overhaul when we get more robust layering support.
 void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
   DCHECK(layer->session() == immersive_session_);
-  DCHECK(immersive_presentation_provider_);
+  DCHECK(immersive_presentation_provider_.is_bound());
 
   XRViewport* left = layer->GetViewportForEye(XRView::kEyeLeft);
   XRViewport* right = layer->GetViewportForEye(XRView::kEyeRight);
@@ -611,6 +621,8 @@ void XRFrameProvider::Trace(Visitor* visitor) const {
   visitor->Trace(xr_);
   visitor->Trace(frame_transport_);
   visitor->Trace(immersive_session_);
+  visitor->Trace(immersive_data_provider_);
+  visitor->Trace(immersive_presentation_provider_);
   visitor->Trace(non_immersive_data_providers_);
   visitor->Trace(requesting_sessions_);
 }

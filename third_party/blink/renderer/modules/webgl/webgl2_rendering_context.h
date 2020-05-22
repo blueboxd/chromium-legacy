@@ -20,6 +20,7 @@ class EXTTextureCompressionBPTC;
 class EXTTextureCompressionRGTC;
 class EXTTextureFilterAnisotropic;
 class EXTTextureNorm16;
+class OESDrawBuffersIndexed;
 class OESTextureFloatLinear;
 class OVRMultiview2;
 class WebGLDebugRendererInfo;
@@ -77,6 +78,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<EXTTextureFilterAnisotropic> ext_texture_filter_anisotropic_;
   Member<EXTTextureNorm16> ext_texture_norm16_;
   Member<KHRParallelShaderCompile> khr_parallel_shader_compile_;
+  Member<OESDrawBuffersIndexed> oes_draw_buffers_indexed_;
   Member<OESTextureFloatLinear> oes_texture_float_linear_;
   Member<OVRMultiview2> ovr_multiview2_;
   Member<WebGLCompressedTextureASTC> webgl_compressed_texture_astc_;

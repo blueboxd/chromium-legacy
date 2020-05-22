@@ -4,18 +4,18 @@
 
 #include "ui/base/cursor/cursor.h"
 
-#include "ui/ozone/public/cursor_factory_ozone.h"
+#include "ui/base/cursor/cursor_factory.h"
 
 namespace ui {
 
 void Cursor::RefCustomCursor() {
   if (platform_cursor_)
-    CursorFactoryOzone::GetInstance()->RefImageCursor(platform_cursor_);
+    CursorFactory::GetInstance()->RefImageCursor(platform_cursor_);
 }
 
 void Cursor::UnrefCustomCursor() {
   if (platform_cursor_)
-    CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
+    CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor_);
 }
 
 }  // namespace ui

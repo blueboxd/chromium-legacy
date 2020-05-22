@@ -1233,4 +1233,10 @@ double ChromeClientImpl::UserZoomFactor() const {
   return PageZoomLevelToZoomFactor(web_view_->ZoomLevel());
 }
 
+void ChromeClientImpl::SetDelegatedInkMetadata(
+    LocalFrame* frame,
+    std::unique_ptr<viz::DelegatedInkMetadata> metadata) {
+  frame->GetWidgetForLocalRoot()->SetDelegatedInkMetadata(std::move(metadata));
+}
+
 }  // namespace blink

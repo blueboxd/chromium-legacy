@@ -5,12 +5,12 @@
 #ifndef CONTENT_BROWSER_SPEECH_TTS_CONTROLLER_IMPL_H_
 #define CONTENT_BROWSER_SPEECH_TTS_CONTROLLER_IMPL_H_
 
+#include <deque>
 #include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include "base/containers/queue.h"
 #include "base/gtest_prod_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -59,6 +59,10 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   void SetTtsEngineDelegate(TtsEngineDelegate* delegate) override;
   TtsEngineDelegate* GetTtsEngineDelegate() override;
 
+  // Called directly by ~BrowserContext, because a raw BrowserContext pointer
+  // is stored in an Utterance.
+  void OnBrowserContextDestroyed(BrowserContext* browser_context);
+
   // Testing methods
   void SetTtsPlatform(TtsPlatform* tts_platform) override;
   int QueueSize() override;
@@ -77,6 +81,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestGetMatchingVoice);
   FRIEND_TEST_ALL_PREFIXES(TtsControllerTest,
                            TestTtsControllerUtteranceDefaults);
+  FRIEND_TEST_ALL_PREFIXES(TtsControllerTest, TestBrowserContextRemoved);
 
   friend struct base::DefaultSingletonTraits<TtsControllerImpl>;
 
@@ -86,6 +91,10 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   // Start speaking the given utterance. Will either take ownership of
   // |utterance| or delete it if there's an error. Returns true on success.
   void SpeakNow(std::unique_ptr<TtsUtterance> utterance);
+
+  // Implementation of Stop(), with an optional flag to indicate whether
+  // user actions should be recorded.
+  void StopInternal(const GURL& source_url, bool record_user_action);
 
   // Clear the utterance queue. If send_events is true, will send
   // TTS_EVENT_CANCELLED events on each one.
@@ -131,7 +140,7 @@ class CONTENT_EXPORT TtsControllerImpl : public TtsController {
   TtsPlatform* tts_platform_;
 
   // A queue of utterances to speak after the current one finishes.
-  base::queue<std::unique_ptr<TtsUtterance>> utterance_queue_;
+  std::deque<std::unique_ptr<TtsUtterance>> utterance_deque_;
 
   DISALLOW_COPY_AND_ASSIGN(TtsControllerImpl);
 };

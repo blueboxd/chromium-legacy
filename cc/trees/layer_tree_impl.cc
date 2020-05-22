@@ -618,6 +618,13 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->HandleScrollbarShowRequestsFromMain();
   target_tree->AddPresentationCallbacks(std::move(presentation_callbacks_));
   presentation_callbacks_.clear();
+
+  if (delegated_ink_metadata_) {
+    TRACE_EVENT_INSTANT1("cc", "Delegated ink metadata pushed to tree",
+                         TRACE_EVENT_SCOPE_THREAD, "point",
+                         delegated_ink_metadata_->point().ToString());
+    target_tree->set_delegated_ink_metadata(std::move(delegated_ink_metadata_));
+  }
 }
 
 void LayerTreeImpl::HandleTickmarksVisibilityChange() {

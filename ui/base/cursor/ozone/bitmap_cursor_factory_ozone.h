@@ -13,9 +13,9 @@
 #include "base/memory/ref_counted.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace ui {
 
@@ -46,7 +46,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorOzone
   DISALLOW_COPY_AND_ASSIGN(BitmapCursorOzone);
 };
 
-// CursorFactoryOzone implementation for bitmapped cursors.
+// CursorFactory implementation for bitmapped cursors.
 //
 // This is a base class for platforms where PlatformCursor is an SkBitmap
 // combined with a gfx::Point for the hotspot.
@@ -54,7 +54,7 @@ class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorOzone
 // Subclasses need only implement SetBitmapCursor() as everything else is
 // implemented here.
 class COMPONENT_EXPORT(UI_BASE_CURSOR) BitmapCursorFactoryOzone
-    : public CursorFactoryOzone {
+    : public CursorFactory {
  public:
   BitmapCursorFactoryOzone();
   ~BitmapCursorFactoryOzone() override;

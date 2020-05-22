@@ -24,9 +24,10 @@
 
 namespace {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-const int64_t kMaxAuthorizationTimeoutMs = 4000;
+constexpr base::TimeDelta kMaxAuthorizationTimeout =
+    base::TimeDelta::FromSeconds(4);
 #else
-const int64_t kMaxAuthorizationTimeoutMs = 0;  // No timeout.
+constexpr base::TimeDelta kMaxAuthorizationTimeout;  // No timeout.
 #endif
 }
 
@@ -44,8 +45,7 @@ PepperPlatformAudioOutputDev* PepperPlatformAudioOutputDev::Create(
           render_frame_id, device_id,
           // Set authorization request timeout at 80% of renderer hung timeout,
           // but no more than kMaxAuthorizationTimeout.
-          base::TimeDelta::FromMilliseconds(std::min(
-              kHungRendererDelayMs * 8 / 10, kMaxAuthorizationTimeoutMs))));
+          std::min(kHungRendererDelay * 8 / 10, kMaxAuthorizationTimeout)));
 
   if (audio_output->Initialize(sample_rate, frames_per_buffer, client)) {
     // Balanced by Release invoked in

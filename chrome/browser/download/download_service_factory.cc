@@ -137,7 +137,6 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
   clients->insert(std::make_pair(
       download::DownloadClient::BACKGROUND_FETCH,
       std::make_unique<download::DeferredClientWrapper>(
-          download::DownloadClient::BACKGROUND_FETCH,
           base::BindOnce(&CreateBackgroundFetchDownloadClient), key)));
 
 #if defined(OS_CHROMEOS)
@@ -145,7 +144,6 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
     clients->insert(std::make_pair(
         download::DownloadClient::PLUGIN_VM_IMAGE,
         std::make_unique<download::DeferredClientWrapper>(
-            download::DownloadClient::PLUGIN_VM_IMAGE,
             base::BindOnce(&CreatePluginVmImageDownloadClient), key)));
   }
 #endif

@@ -54,46 +54,62 @@ Screen::Screen(LocalFrame* frame) : ExecutionContextClient(frame) {}
 int Screen::height() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->bounds.height();
+    return RecordThenReturn(
+        WebFeature::kV8Screen_Height_AttributeGetter,
+        display_->bounds.height());
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
+    return RecordThenReturn(WebFeature::kV8Screen_Height_AttributeGetter, 0);
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(
-        lroundf(screen_info.rect.height * screen_info.device_scale_factor));
+    return RecordThenReturn(
+        WebFeature::kV8Screen_Height_AttributeGetter,
+        static_cast<int>(lroundf(screen_info.rect.height *
+                         screen_info.device_scale_factor)));
   }
-  return GetScreenInfo(*frame).rect.height;
+  return RecordThenReturn(
+      WebFeature::kV8Screen_Height_AttributeGetter,
+      GetScreenInfo(*frame).rect.height);
 }
 
 int Screen::width() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->bounds.width();
+    return RecordThenReturn(
+        WebFeature::kV8Screen_Width_AttributeGetter, display_->bounds.width());
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
+    return RecordThenReturn(WebFeature::kV8Screen_Width_AttributeGetter, 0);
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(
-        lroundf(screen_info.rect.width * screen_info.device_scale_factor));
+    return RecordThenReturn(
+        WebFeature::kV8Screen_Width_AttributeGetter,
+        static_cast<int>(lroundf(screen_info.rect.width *
+                                 screen_info.device_scale_factor)));
   }
-  return GetScreenInfo(*frame).rect.width;
+  return RecordThenReturn(
+      WebFeature::kV8Screen_Width_AttributeGetter,
+      GetScreenInfo(*frame).rect.width);
 }
 
 unsigned Screen::colorDepth() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->color_depth;
+    return RecordThenReturn(
+        WebFeature::kV8Screen_ColorDepth_AttributeGetter,
+        display_->color_depth);
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
-  return static_cast<unsigned>(GetScreenInfo(*frame).depth);
+    return RecordThenReturn(
+        WebFeature::kV8Screen_ColorDepth_AttributeGetter, 0);
+  return RecordThenReturn(
+      WebFeature::kV8Screen_ColorDepth_AttributeGetter,
+      static_cast<unsigned>(GetScreenInfo(*frame).depth));
 }
 
 unsigned Screen::pixelDepth() const {
@@ -225,35 +241,43 @@ Screen::Screen(display::mojom::blink::DisplayPtr display,
 int Screen::left() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->bounds.x();
+    return RecordThenReturn(
+        WebFeature::kWindowScreenLeft, display_->bounds.x());
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
+    return RecordThenReturn(WebFeature::kWindowScreenLeft, 0);
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(
-        lroundf(screen_info.rect.x * screen_info.device_scale_factor));
+    return RecordThenReturn(
+        WebFeature::kWindowScreenLeft,
+        static_cast<int>(lroundf(screen_info.rect.x *
+                                 screen_info.device_scale_factor)));
   }
-  return GetScreenInfo(*frame).rect.x;
+  return RecordThenReturn(
+      WebFeature::kWindowScreenLeft, GetScreenInfo(*frame).rect.x);
 }
 
 int Screen::top() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::WindowPlacementEnabled());
-    return display_->bounds.y();
+    return RecordThenReturn(
+        WebFeature::kWindowScreenTop, display_->bounds.y());
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
-    return 0;
+    return RecordThenReturn(WebFeature::kWindowScreenTop, 0);
   Page* page = frame->GetPage();
   if (page->GetSettings().GetReportScreenSizeInPhysicalPixelsQuirk()) {
     WebScreenInfo screen_info = GetScreenInfo(*frame);
-    return static_cast<int>(
-        lroundf(screen_info.rect.y * screen_info.device_scale_factor));
+    return RecordThenReturn(
+        WebFeature::kWindowScreenTop,
+        static_cast<int>(lroundf(screen_info.rect.y *
+                                 screen_info.device_scale_factor)));
   }
-  return GetScreenInfo(*frame).rect.y;
+  return RecordThenReturn(
+      WebFeature::kWindowScreenTop, GetScreenInfo(*frame).rect.y);
 }
 
 bool Screen::internal() const {

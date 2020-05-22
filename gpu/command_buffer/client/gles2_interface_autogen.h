@@ -235,6 +235,7 @@ virtual void GetAttachedShaders(GLuint program,
                                 GLuint* shaders) = 0;
 virtual GLint GetAttribLocation(GLuint program, const char* name) = 0;
 virtual void GetBooleanv(GLenum pname, GLboolean* params) = 0;
+virtual void GetBooleani_v(GLenum pname, GLuint index, GLboolean* data) = 0;
 virtual void GetBufferParameteri64v(GLenum target,
                                     GLenum pname,
                                     GLint64* params) = 0;
@@ -967,4 +968,22 @@ virtual void BeginSharedImageAccessDirectCHROMIUM(GLuint texture,
 virtual void EndSharedImageAccessDirectCHROMIUM(GLuint texture) = 0;
 virtual void BeginBatchReadAccessSharedImageCHROMIUM() = 0;
 virtual void EndBatchReadAccessSharedImageCHROMIUM() = 0;
+virtual void EnableiOES(GLenum target, GLuint index) = 0;
+virtual void DisableiOES(GLenum target, GLuint index) = 0;
+virtual void BlendEquationiOES(GLuint buf, GLenum mode) = 0;
+virtual void BlendEquationSeparateiOES(GLuint buf,
+                                       GLenum modeRGB,
+                                       GLenum modeAlpha) = 0;
+virtual void BlendFunciOES(GLuint buf, GLenum src, GLenum dst) = 0;
+virtual void BlendFuncSeparateiOES(GLuint buf,
+                                   GLenum srcRGB,
+                                   GLenum dstRGB,
+                                   GLenum srcAlpha,
+                                   GLenum dstAlpha) = 0;
+virtual void ColorMaskiOES(GLuint buf,
+                           GLboolean r,
+                           GLboolean g,
+                           GLboolean b,
+                           GLboolean a) = 0;
+virtual GLboolean IsEnablediOES(GLenum target, GLuint index) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

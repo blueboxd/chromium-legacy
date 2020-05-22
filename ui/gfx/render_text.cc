@@ -577,6 +577,13 @@ size_t RenderText::GetNumLines() {
   return GetShapedText()->lines().size();
 }
 
+size_t RenderText::GetTextIndexOfLine(size_t line) {
+  const std::vector<internal::Line>& lines = GetShapedText()->lines();
+  if (line >= lines.size())
+    return text_.size();
+  return DisplayIndexToTextIndex(lines[line].display_text_index);
+}
+
 void RenderText::SetWordWrapBehavior(WordWrapBehavior behavior) {
   if (word_wrap_behavior_ != behavior) {
     word_wrap_behavior_ = behavior;

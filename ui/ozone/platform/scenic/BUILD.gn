@@ -56,6 +56,7 @@ source_set("scenic") {
     "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     "//ui/base",
     "//ui/base/cursor",
+    "//ui/base/cursor:cursor_base",
     "//ui/base/ime/fuchsia",
     "//ui/display/fake",
     "//ui/events:dom_keycode_converter",

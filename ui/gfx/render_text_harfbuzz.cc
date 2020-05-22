@@ -485,6 +485,14 @@ class HarfBuzzLineBreaker {
   // Finishes line breaking and outputs the results. Can be called at most once.
   void FinalizeLines(std::vector<internal::Line>* lines, SizeF* size) {
     DCHECK(!lines_.empty());
+    // If the last character of the text is a new line character, then the last
+    // line is any empty string, which contains no segments. This means that the
+    // display_text_index will not have been set in AdvanceLine. So here, set
+    // display_text_index to the text length, which is the true text index of
+    // the final line.
+    internal::Line* line = &lines_.back();
+    if (line->display_text_index == 0)
+      line->display_text_index = text_.size();
     // Add an empty line to finish the line size calculation and remove it.
     AdvanceLine();
     lines_.pop_back();
@@ -505,6 +513,11 @@ class HarfBuzzLineBreaker {
   void AdvanceLine() {
     if (!lines_.empty()) {
       internal::Line* line = &lines_.back();
+      // Compute the line start while the line segments are in the logical order
+      // so that the start of the line is the start of the char range,
+      // regardless of i18n.
+      if (!line->segments.empty())
+        line->display_text_index = line->segments[0].char_range.start();
       std::sort(line->segments.begin(), line->segments.end(),
                 [this](const internal::LineSegment& s1,
                        const internal::LineSegment& s2) -> bool {

@@ -251,14 +251,11 @@ sorry):
 *   [`pools.cfg`][pools.cfg]
     *   Defines the Swarming pools for GCEs and Mac VMs used for manually
         triggered trybots.
-*   [`bot_config.py`][bot_config.py]
-    *   Defines the stable GPU driver and OS versions in GPU Swarming pools.
 
 [infradata/config]:                https://chrome-internal.googlesource.com/infradata/config
 [gpu.star]:                        https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/starlark/bots/chromium/gpu.star
 [chromium.star]:                   https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/starlark/bots/chromium/chromium.star
 [pools.cfg]:                       https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/pools.cfg
-[bot_config.py]:                   https://chrome-internal.googlesource.com/infradata/config/+/master/configs/chromium-swarm/scripts/bot_config.py
 [main.star]:                       https://chrome-internal.googlesource.com/infradata/config/+/master/main.star
 [vms.cfg]:                         https://chrome-internal.googlesource.com/infradata/config/+/master/configs/gce-provider/vms.cfg
 
@@ -666,10 +663,6 @@ or OS update. To do this:
 1.  Make sure that all of the current Swarming jobs for this OS and GPU
     configuration are targeted at the "stable" version of the driver and the OS
     in [`waterfalls.pyl`][waterfalls.pyl] and [`mixins.pyl`][mixins.pyl].
-    Make sure that there are "named" stable versions of the driver and the OS
-    there, which target the `_TARGETED_DRIVER_VERSIONS` and
-    `_TARGETED_OS_VERSIONS` dictionaries in [`bot_config.py`][bot_config.py]
-    (Google internal).
 1.  File a `Build Infrastructure` bug, component `Infra>Labs`, to have ~4 of
     the physical machines already in the Swarming pool upgraded to the new
     version of the driver or the OS.
@@ -684,51 +677,41 @@ or OS update. To do this:
     it'll be necessary to follow the instructions on
     [updating Gold baselines (step #4)][updating gold baselines].
 1.  Watch the new machine for a day or two to make sure it's stable.
-1.  When it is, update [`bot_config.py`][bot_config.py] (Google internal)
-    to *add* a mapping between the new driver version and the "stable" version.
-    For example:
+1.  When it is, add the experimental driver/OS to the `_stable` mixin using the
+    swarming OR operator `|`. For example:
 
     ```
-    _TARGETED_DRIVER_VERSIONS = {
-      # NVIDIA Quadro P400, Ubuntu Stable version
-      '10de:1cb3-384.90': 'nvidia-quadro-p400-ubuntu-stable',
-      # NVIDIA Quadro P400, new Ubuntu Stable version
-      '10de:1cb3-410.78': 'nvidia-quadro-p400-ubuntu-stable',
-      # ...
-    }
-    ```
-
-    And/or a mapping between the new OS version and the "stable" version.
-    For example:
-
-    ```
-    _TARGETED_OS_VERSIONS = {
-      # Linux NVIDIA Quadro P400
-      '10de:1cb3': {
-        'Ubuntu-14.04': 'linux-nvidia-stable',
-        'Ubuntu-19.04': 'linux-nvidia-stable',
+    'win10_intel_hd_630_stable': {
+      'swarming': {
+        'dimensions': {
+          'gpu': '8086:5912-26.20.100.7870|8086:5912-26.20.100.8141',
+          'os': 'Windows-10',
+          'pool': 'chromium.tests.gpu',
+        },
       },
-      # ...
     }
     ```
 
-    The new driver or OS version should match the one just added for the
-    experimental bot. Get this CL reviewed and landed.
-    [Sample CL (Google internal)][sample targeted version cl].
+    This will cause tests triggered using the `_stable` mixin to run on either
+    the old stable dimension or the experimental/new stable dimension.
+
+    **NOTE** There is a hard cap of 8 combinations in swarming, so you can only
+    use the OR operator in up to 3 dimensions if each dimension only has two
+    options. More than two options per dimension is allowed as long as the total
+    number of combinations is 8 or less.
 1.  After it lands, ask the Chrome Infrastructure Labs team to roll out the
     driver update across all of the similarly configured bots in the swarming
     pool.
 1.  If necessary, update pixel test expectations and remove the suppressions
     added above.
-1.  Remove the old driver or OS version from [`bot_config.py`][bot_config.py],
-    leaving the "stable" driver version pointing at the newly upgraded version.
+1.  Remove the old driver or OS version from the `_stable` mixin, leaving just
+    the new stable version.
 
 Note that we leave the experimental bot in place. We could reclaim it, but it
 seems worthwhile to continuously test the "next" version of graphics drivers as
 well as the current stable ones.
 
 [sample driver cl]: https://chromium-review.googlesource.com/c/chromium/src/+/1726875
-[sample targeted version cl]: https://chrome-internal-review.googlesource.com/c/infradata/config/+/1602377
 [updating gold baselines]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/gpu/pixel_wrangling.md#how-to-keep-the-bots-green
 
 ## Credentials for various servers

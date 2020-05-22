@@ -39,6 +39,7 @@ extern const base::Feature kChromeDuetFeature;
 extern const base::Feature kChromeDuetAdaptive;
 extern const base::Feature kDontAutoHideBrowserControls;
 extern const base::Feature kChromeDuetLabeled;
+extern const base::Feature kChromeShareQRCode;
 extern const base::Feature kChromeShareScreenshot;
 extern const base::Feature kChromeSharingHub;
 extern const base::Feature kChromeSharingHubV15;

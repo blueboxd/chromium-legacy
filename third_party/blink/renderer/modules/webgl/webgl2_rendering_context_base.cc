@@ -4696,6 +4696,36 @@ ScriptValue WebGL2RenderingContextBase::getIndexedParameter(
       ContextGL()->GetInteger64i_v(target, index, &value);
       return WebGLAny(script_state, value);
     }
+    case GL_BLEND_EQUATION_RGB:
+    case GL_BLEND_EQUATION_ALPHA:
+    case GL_BLEND_SRC_RGB:
+    case GL_BLEND_SRC_ALPHA:
+    case GL_BLEND_DST_RGB:
+    case GL_BLEND_DST_ALPHA: {
+      if (!ExtensionEnabled(kOESDrawBuffersIndexed)) {
+        // return null
+        SynthesizeGLError(GL_INVALID_ENUM, "getIndexedParameter",
+                          "invalid parameter name");
+        return ScriptValue::CreateNull(script_state->GetIsolate());
+      }
+      GLint value = -1;
+      ContextGL()->GetIntegeri_v(target, index, &value);
+      return WebGLAny(script_state, value);
+    }
+    case GL_COLOR_WRITEMASK: {
+      if (!ExtensionEnabled(kOESDrawBuffersIndexed)) {
+        // Enum validation has to happen here to return null
+        // instead of an array to pass
+        // conformance2/state/gl-object-get-calls.html
+        SynthesizeGLError(GL_INVALID_ENUM, "getIndexedParameter",
+                          "invalid parameter name");
+        return ScriptValue::CreateNull(script_state->GetIsolate());
+      }
+      Vector<bool> values(4);
+      ContextGL()->GetBooleani_v(target, index,
+                                 reinterpret_cast<GLboolean*>(values.data()));
+      return WebGLAny(script_state, values);
+    }
     default:
       SynthesizeGLError(GL_INVALID_ENUM, "getIndexedParameter",
                         "invalid parameter name");

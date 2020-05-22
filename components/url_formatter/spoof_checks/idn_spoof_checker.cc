@@ -314,7 +314,7 @@ IDNSpoofChecker::IDNSpoofChecker() {
   digits_ = icu::UnicodeSet(UNICODE_STRING_SIMPLE("[0-9]"), status);
   digits_.freeze();
   digit_lookalikes_ = icu::UnicodeSet(
-      icu::UnicodeString::fromUTF8("[θ२২੨੨૨೩೭շзҙӡउওਤ੩૩౩ဒვპ੫丩ㄐճ৪੪୫૭୨౨]"),
+      icu::UnicodeString::fromUTF8("[θ२২੨੨૨೩೭շзҙӡउওਤ੩૩౩ဒვპੜ੫丩ㄐճ৪੪୫૭୨౨]"),
       status);
   digit_lookalikes_.freeze();
 

@@ -8,8 +8,8 @@
 
 #include "base/check_op.h"
 #include "ui/base/cursor/cursor.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-shared.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ ui::PlatformCursor WebCursor::GetPlatformCursor(const ui::Cursor& cursor) {
   DCHECK_EQ(cursor.type(), ui::mojom::CursorType::kCustom);
 
   if (!platform_cursor_) {
-    platform_cursor_ = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
+    platform_cursor_ = ui::CursorFactory::GetInstance()->CreateImageCursor(
         cursor.custom_bitmap(), cursor.custom_hotspot(),
         cursor.image_scale_factor());
   }
@@ -61,7 +61,7 @@ bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {
 
 void WebCursor::CleanupPlatformData() {
   if (platform_cursor_) {
-    ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
+    ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor_);
     platform_cursor_ = NULL;
   }
   custom_cursor_.reset();
@@ -69,10 +69,10 @@ void WebCursor::CleanupPlatformData() {
 
 void WebCursor::CopyPlatformData(const WebCursor& other) {
   if (platform_cursor_)
-    ui::CursorFactoryOzone::GetInstance()->UnrefImageCursor(platform_cursor_);
+    ui::CursorFactory::GetInstance()->UnrefImageCursor(platform_cursor_);
   platform_cursor_ = other.platform_cursor_;
   if (platform_cursor_)
-    ui::CursorFactoryOzone::GetInstance()->RefImageCursor(platform_cursor_);
+    ui::CursorFactory::GetInstance()->RefImageCursor(platform_cursor_);
 
   device_scale_factor_ = other.device_scale_factor_;
   maximum_cursor_size_ = other.maximum_cursor_size_;

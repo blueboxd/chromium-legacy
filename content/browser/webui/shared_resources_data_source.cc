@@ -291,14 +291,29 @@ int GetIdrForPath(const std::string& path) {
 
 }  // namespace
 
-SharedResourcesDataSource::SharedResourcesDataSource() {
+// static
+std::unique_ptr<SharedResourcesDataSource>
+SharedResourcesDataSource::CreateForChromeScheme() {
+  return std::make_unique<SharedResourcesDataSource>(PassKey(),
+                                                     kChromeUIResourcesHost);
 }
 
-SharedResourcesDataSource::~SharedResourcesDataSource() {
+// static
+std::unique_ptr<SharedResourcesDataSource>
+SharedResourcesDataSource::CreateForChromeUntrustedScheme() {
+  return std::make_unique<SharedResourcesDataSource>(
+      PassKey(), kChromeUIUntrustedResourcesURL);
 }
+
+SharedResourcesDataSource::SharedResourcesDataSource(
+    PassKey,
+    const std::string& source_name)
+    : source_name_(source_name) {}
+
+SharedResourcesDataSource::~SharedResourcesDataSource() = default;
 
 std::string SharedResourcesDataSource::GetSource() {
-  return kChromeUIResourcesHost;
+  return source_name_;
 }
 
 void SharedResourcesDataSource::StartDataRequest(

@@ -76,6 +76,7 @@ js2gtest("browser_tests_js_webui") {
     "cr_elements/cr_elements_v3_browsertest.js",
     "find_shortcut_behavior_browsertest.js",
     "find_shortcut_behavior_v3_browsertest.js",
+    "histograms/histograms_internals_ui_browsertest.js",
     "history/history_browsertest.js",
     "js/webui_resource_module_async_browsertest.js",
     "js2gtest_browsertest.js",

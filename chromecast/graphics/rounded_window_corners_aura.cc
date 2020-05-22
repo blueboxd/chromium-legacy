@@ -104,7 +104,7 @@ RoundedWindowCornersAura::RoundedWindowCornersAura(
   params.bounds = window_manager->GetRootWindow()->GetBoundsInRootWindow();
   params.accept_events = false;
   widget_->Init(std::move(params));
-  widget_->SetContentsView(main_view.release());
+  widget_->SetContentsView(std::move(main_view));
   widget_->GetNativeWindow()->SetName("RoundCorners");
 
   window_manager->SetZOrder(widget_->GetNativeView(),

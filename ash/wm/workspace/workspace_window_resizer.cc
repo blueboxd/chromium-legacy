@@ -586,6 +586,8 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
 }
 
 void WorkspaceWindowResizer::CompleteDrag() {
+  tab_dragging_recorder_.reset();
+
   gfx::PointF last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);
@@ -687,6 +689,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
 }
 
 void WorkspaceWindowResizer::RevertDrag() {
+  tab_dragging_recorder_.reset();
+
   gfx::PointF last_mouse_location_in_screen = last_mouse_location_;
   ::wm::ConvertPointToScreen(GetTarget()->parent(),
                              &last_mouse_location_in_screen);

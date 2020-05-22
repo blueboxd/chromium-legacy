@@ -441,9 +441,11 @@
         # These are very slow on the Chrome OS MSAN trybot for some reason.
         # crbug.com/865455
         'swarming': {
-          # TODO(crbug.com/1071693): Drop back down to 32 shards.
-          'shards': 40,
+          'shards': 32,
         },
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_negative.filter',
+        ],
       },
       'Linux Tests (dbg)(1)': {
         # crbug.com/1066161
@@ -1209,6 +1211,16 @@
           '--extra-browser-args=--no-sandbox',
         ],
       },
+    },
+    'replacements': {
+      'ChromeOS FYI Release (amd64-generic)': {
+        'args': {
+          # Swarming does not report a GPU since tests are run in a VM, but
+          # the VM does report that a GPU is present.
+          '--expected-vendor-id': '1af4',
+          '--expected-device-id': '1050',
+        },
+      }
     },
   },
   'interactive_ui_tests': {

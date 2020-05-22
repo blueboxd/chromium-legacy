@@ -60,6 +60,7 @@ const char kChromeUINetworkErrorsListingURL[] = "chrome://network-errors/";
 const char kChromeUIPpapiFlashCrashURL[] = "chrome://ppapiflashcrash/";
 const char kChromeUIPpapiFlashHangURL[] = "chrome://ppapiflashhang/";
 const char kChromeUIProcessInternalsURL[] = "chrome://process-internals";
+const char kChromeUIUntrustedResourcesURL[] = "chrome-untrusted://resources/";
 #if defined(OS_ANDROID)
 const char kChromeUIGpuJavaCrashURL[] = "chrome://gpu-java-crash/";
 #endif

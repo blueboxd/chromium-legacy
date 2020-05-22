@@ -157,7 +157,7 @@ TEST_F(ToolbarActionViewUnitTest,
   auto view = std::make_unique<ToolbarActionView>(view_controller,
                                                   action_view_delegate());
   view->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
-  widget()->SetContentsView(view.release());
+  widget()->SetContentsView(std::move(view));
   widget()->Show();
 
   view_controller->ShowPopup(true);
@@ -173,7 +173,7 @@ TEST_F(ToolbarActionViewUnitTest,
   auto view = std::make_unique<ToolbarActionView>(view_controller,
                                                   action_view_delegate());
   view->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
-  widget()->SetContentsView(view.release());
+  widget()->SetContentsView(std::move(view));
   widget()->Show();
 
   ui::test::EventGenerator generator(GetContext(), widget()->GetNativeWindow());
@@ -218,7 +218,7 @@ TEST_F(ToolbarActionViewUnitTest, MAYBE_BasicToolbarActionViewTest) {
       std::make_unique<ToolbarActionView>(view_controller, view_delegate);
   owning_view->SetBoundsRect(gfx::Rect(0, 0, 200, 20));
   ToolbarActionView* view = owning_view.get();
-  widget()->SetContentsView(owning_view.release());
+  widget()->SetContentsView(std::move(owning_view));
   widget()->Show();
 
   // Check that the tooltip and accessible state of the view match the

@@ -74,15 +74,15 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    folder_header_view_ = std::make_unique<FolderHeaderView>(delegate_.get());
     textfield_ = std::make_unique<views::Textfield>();
-    widget_->SetContentsView(folder_header_view_.get());
+    folder_header_view_ = widget_->SetContentsView(
+        std::make_unique<FolderHeaderView>(delegate_.get()));
   }
 
   void TearDown() override {
     widget_->Close();
+    widget_.reset();
     textfield_.reset();
-    folder_header_view_.reset();  // Release apps grid view before models.
     delegate_.reset();
     views::ViewsTestBase::TearDown();
   }
@@ -112,7 +112,7 @@ class FolderHeaderViewTest : public views::ViewsTestBase {
   }
 
   std::unique_ptr<AppListTestModel> model_;
-  std::unique_ptr<FolderHeaderView> folder_header_view_;
+  FolderHeaderView* folder_header_view_ = nullptr;  // owned by |widget_|.
   std::unique_ptr<TestFolderHeaderViewDelegate> delegate_;
   std::unique_ptr<views::Textfield> textfield_;
   std::unique_ptr<views::Widget> widget_;

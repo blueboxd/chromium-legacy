@@ -13,6 +13,12 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "content/public/browser/web_contents.h"
 
+namespace {
+// The caption bubble contains 2 lines of text in its normal size and 4 lines
+// in its expanded size, so the maximum number of lines before truncating is 5.
+constexpr int kMaxLines = 5;
+}  // namespace
+
 namespace captions {
 
 // Static
@@ -72,11 +78,12 @@ void CaptionBubbleControllerViews::OnTranscription(
     content::WebContents* web_contents) {
   if (!caption_bubble_)
     return;
-
   std::string& partial_text = caption_texts_[web_contents].partial_text;
   std::string& final_text = caption_texts_[web_contents].final_text;
+
   partial_text = transcription_result->transcription;
   SetCaptionBubbleText();
+
   if (transcription_result->is_final) {
     // If the first character of partial text isn't a space, add a space before
     // appending it to final text.
@@ -87,8 +94,18 @@ void CaptionBubbleControllerViews::OnTranscription(
         partial_text.compare(partial_text.size() - 1, 1, " ") != 0) {
       final_text += " ";
     }
+
+    // Truncate the final text to kMaxLines lines long.
+    const size_t num_lines = caption_bubble_->GetNumLinesInLabel();
+    if (num_lines > kMaxLines) {
+      DCHECK(base::IsStringASCII(final_text));
+      size_t truncate_index =
+          caption_bubble_->GetTextIndexOfLineInLabel(num_lines - kMaxLines);
+      final_text.erase(0, truncate_index);
+      partial_text.clear();
+      SetCaptionBubbleText();
+    }
   }
-  // TODO(1055150): Truncate final_text_ when it gets very long.
 }
 
 void CaptionBubbleControllerViews::OnTabStripModelChanged(

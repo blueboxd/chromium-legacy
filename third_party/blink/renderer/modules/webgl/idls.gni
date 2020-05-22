@@ -30,6 +30,7 @@ modules_idl_files = [
   "ext_texture_filter_anisotropic.idl",
   "ext_texture_norm_16.idl",
   "khr_parallel_shader_compile.idl",
+  "oes_draw_buffers_indexed.idl",
   "oes_element_index_uint.idl",
   "oes_fbo_render_mipmap.idl",
   "oes_standard_derivatives.idl",

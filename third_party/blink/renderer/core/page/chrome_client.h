@@ -509,6 +509,10 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   // enabled). This only includes the zoom initiated by the user (ctrl +/-).
   virtual double UserZoomFactor() const { return 1; }
 
+  virtual void SetDelegatedInkMetadata(
+      LocalFrame* frame,
+      std::unique_ptr<viz::DelegatedInkMetadata> metadata) {}
+
  protected:
   ChromeClient() = default;
 

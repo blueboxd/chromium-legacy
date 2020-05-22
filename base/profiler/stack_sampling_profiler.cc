@@ -5,6 +5,7 @@
 #include "base/profiler/stack_sampling_profiler.h"
 
 #include <algorithm>
+#include <cmath>
 #include <map>
 #include <utility>
 
@@ -46,6 +47,36 @@ constexpr WaitableEvent::ResetPolicy kResetPolicy =
 // This value is used when there is no collection in progress and thus no ID
 // for referencing the active collection to the SamplingThread.
 const int kNullProfilerId = -1;
+
+TimeTicks GetNextSampleTimeImpl(TimeTicks scheduled_current_sample_time,
+                                TimeDelta sampling_interval,
+                                TimeTicks now) {
+  // Schedule the next sample at the next sampling_interval-aligned time in
+  // the future that's sufficiently far enough from the current sample. In the
+  // general case this will be one sampling_interval from the current
+  // sample. In cases where sample tasks were unable to be executed, such as
+  // during system suspend or bad system-wide jank, we may have missed some
+  // samples. The right thing to do for those cases is to skip the missed
+  // samples since the rest of the systems also wasn't executing.
+
+  // Ensure that the next sample time is at least half a sampling interval
+  // away. This causes the second sample after resume to be taken between 0.5
+  // and 1.5 samples after the first, or 1 sample interval on average. The delay
+  // also serves to provide a grace period in the normal sampling case where the
+  // current sample may be taken slightly later than its scheduled time.
+  const TimeTicks earliest_next_sample_time = now + sampling_interval / 2;
+
+  const TimeDelta minimum_time_delta_to_next_sample =
+      earliest_next_sample_time - scheduled_current_sample_time;
+
+  // The minimum number of sampling intervals required to get from the scheduled
+  // current sample time to the earliest next sample time.
+  const int64_t required_sampling_intervals = static_cast<int64_t>(
+      std::ceil(minimum_time_delta_to_next_sample.InMicrosecondsF() /
+                sampling_interval.InMicroseconds()));
+  return scheduled_current_sample_time +
+         required_sampling_intervals * sampling_interval;
+}
 
 }  // namespace
 
@@ -597,9 +628,9 @@ void StackSamplingProfiler::SamplingThread::RecordSampleTask(
 
   // Schedule the next sample recording if there is one.
   if (++collection->sample_count < collection->params.samples_per_profile) {
-    if (!collection->params.keep_consistent_sampling_interval)
-      collection->next_sample_time = TimeTicks::Now();
-    collection->next_sample_time += collection->params.sampling_interval;
+    collection->next_sample_time = GetNextSampleTimeImpl(
+        collection->next_sample_time, collection->params.sampling_interval,
+        TimeTicks::Now());
     bool success = GetTaskRunnerOnSamplingThread()->PostDelayedTask(
         FROM_HERE,
         BindOnce(&SamplingThread::RecordSampleTask, Unretained(this),
@@ -687,6 +718,15 @@ void StackSamplingProfiler::TestPeer::DisableIdleShutdown() {
 void StackSamplingProfiler::TestPeer::PerformSamplingThreadIdleShutdown(
     bool simulate_intervening_start) {
   SamplingThread::TestPeer::ShutdownAssumingIdle(simulate_intervening_start);
+}
+
+// static
+TimeTicks StackSamplingProfiler::TestPeer::GetNextSampleTime(
+    TimeTicks scheduled_current_sample_time,
+    TimeDelta sampling_interval,
+    TimeTicks now) {
+  return GetNextSampleTimeImpl(scheduled_current_sample_time, sampling_interval,
+                               now);
 }
 
 StackSamplingProfiler::StackSamplingProfiler(

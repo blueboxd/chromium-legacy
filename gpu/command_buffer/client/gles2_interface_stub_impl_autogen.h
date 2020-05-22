@@ -274,6 +274,9 @@ GLint GLES2InterfaceStub::GetAttribLocation(GLuint /* program */,
 }
 void GLES2InterfaceStub::GetBooleanv(GLenum /* pname */,
                                      GLboolean* /* params */) {}
+void GLES2InterfaceStub::GetBooleani_v(GLenum /* pname */,
+                                       GLuint /* index */,
+                                       GLboolean* /* data */) {}
 void GLES2InterfaceStub::GetBufferParameteri64v(GLenum /* target */,
                                                 GLenum /* pname */,
                                                 GLint64* /* params */) {}
@@ -1251,4 +1254,28 @@ void GLES2InterfaceStub::EndSharedImageAccessDirectCHROMIUM(
     GLuint /* texture */) {}
 void GLES2InterfaceStub::BeginBatchReadAccessSharedImageCHROMIUM() {}
 void GLES2InterfaceStub::EndBatchReadAccessSharedImageCHROMIUM() {}
+void GLES2InterfaceStub::EnableiOES(GLenum /* target */, GLuint /* index */) {}
+void GLES2InterfaceStub::DisableiOES(GLenum /* target */, GLuint /* index */) {}
+void GLES2InterfaceStub::BlendEquationiOES(GLuint /* buf */,
+                                           GLenum /* mode */) {}
+void GLES2InterfaceStub::BlendEquationSeparateiOES(GLuint /* buf */,
+                                                   GLenum /* modeRGB */,
+                                                   GLenum /* modeAlpha */) {}
+void GLES2InterfaceStub::BlendFunciOES(GLuint /* buf */,
+                                       GLenum /* src */,
+                                       GLenum /* dst */) {}
+void GLES2InterfaceStub::BlendFuncSeparateiOES(GLuint /* buf */,
+                                               GLenum /* srcRGB */,
+                                               GLenum /* dstRGB */,
+                                               GLenum /* srcAlpha */,
+                                               GLenum /* dstAlpha */) {}
+void GLES2InterfaceStub::ColorMaskiOES(GLuint /* buf */,
+                                       GLboolean /* r */,
+                                       GLboolean /* g */,
+                                       GLboolean /* b */,
+                                       GLboolean /* a */) {}
+GLboolean GLES2InterfaceStub::IsEnablediOES(GLenum /* target */,
+                                            GLuint /* index */) {
+  return 0;
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

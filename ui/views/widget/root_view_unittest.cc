@@ -56,8 +56,7 @@ TEST_F(RootViewTest, DeleteViewDuringKeyEventDispatch) {
 
   bool got_key_event = false;
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* child = new DeleteOnKeyEventView(&got_key_event);
   content->AddChildView(child);
@@ -413,8 +412,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   bool view_destroyed = false;
   View* child = new DeleteViewOnEvent(ui::ET_MOUSE_EXITED, &view_destroyed);
@@ -450,8 +448,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   bool view_destroyed = false;
   View* child = new DeleteViewOnEvent(ui::ET_MOUSE_ENTERED, &view_destroyed);
@@ -489,8 +486,7 @@ TEST_F(RootViewTest, RemoveViewOnMouseEnterDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   // |child| gets removed without being deleted, so make it a local
   // to prevent test memory leak.
@@ -529,8 +525,7 @@ TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseExitDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* root_view = widget.GetRootView();
 
@@ -565,8 +560,7 @@ TEST_F(RootViewTest,
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* root_view = widget.GetRootView();
 
@@ -603,8 +597,7 @@ TEST_F(RootViewTest, ClearMouseMoveHandlerOnMouseEnterDispatch) {
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* root_view = widget.GetRootView();
 
@@ -657,10 +650,10 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatch) {
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));
   WidgetDeletionObserver widget_deletion_observer(widget);
 
-  View* content = new View();
+  auto content = std::make_unique<View>();
   View* child = new DeleteWidgetOnMouseExit(widget);
   content->AddChildView(child);
-  widget->SetContentsView(content);
+  widget->SetContentsView(std::move(content));
 
   // Make |child| smaller than the containing Widget and RootView.
   child->SetBounds(100, 100, 100, 100);
@@ -693,10 +686,9 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));
   WidgetDeletionObserver widget_deletion_observer(widget);
 
-  View* content = new View();
   View* child = new DeleteWidgetOnMouseExit(widget);
   View* subchild = new View();
-  widget->SetContentsView(content);
+  View* content = widget->SetContentsView(std::make_unique<View>());
   content->AddChildView(child);
   child->AddChildView(subchild);
 

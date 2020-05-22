@@ -64,12 +64,22 @@ void glBlendColorFn(GLclampf red,
                     GLclampf blue,
                     GLclampf alpha) override;
 void glBlendEquationFn(GLenum mode) override;
+void glBlendEquationiOESFn(GLuint buf, GLenum mode) override;
 void glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) override;
+void glBlendEquationSeparateiOESFn(GLuint buf,
+                                   GLenum modeRGB,
+                                   GLenum modeAlpha) override;
 void glBlendFuncFn(GLenum sfactor, GLenum dfactor) override;
+void glBlendFunciOESFn(GLuint buf, GLenum sfactor, GLenum dfactor) override;
 void glBlendFuncSeparateFn(GLenum srcRGB,
                            GLenum dstRGB,
                            GLenum srcAlpha,
                            GLenum dstAlpha) override;
+void glBlendFuncSeparateiOESFn(GLuint buf,
+                               GLenum srcRGB,
+                               GLenum dstRGB,
+                               GLenum srcAlpha,
+                               GLenum dstAlpha) override;
 void glBlitFramebufferFn(GLint srcX0,
                          GLint srcY0,
                          GLint srcX1,
@@ -136,6 +146,11 @@ void glColorMaskFn(GLboolean red,
                    GLboolean green,
                    GLboolean blue,
                    GLboolean alpha) override;
+void glColorMaskiOESFn(GLuint buf,
+                       GLboolean red,
+                       GLboolean green,
+                       GLboolean blue,
+                       GLboolean alpha) override;
 void glCompileShaderFn(GLuint shader) override;
 void glCompressedTexImage2DFn(GLenum target,
                               GLint level,
@@ -334,6 +349,7 @@ void glDepthRangefFn(GLclampf zNear, GLclampf zFar) override;
 void glDetachShaderFn(GLuint program, GLuint shader) override;
 void glDisableFn(GLenum cap) override;
 void glDisableExtensionANGLEFn(const char* name) override;
+void glDisableiOESFn(GLenum target, GLuint index) override;
 void glDisableVertexAttribArrayFn(GLuint index) override;
 void glDiscardFramebufferEXTFn(GLenum target,
                                GLsizei numAttachments,
@@ -386,6 +402,7 @@ void glEGLImageTargetRenderbufferStorageOESFn(GLenum target,
 void glEGLImageTargetTexture2DOESFn(GLenum target,
                                     GLeglImageOES image) override;
 void glEnableFn(GLenum cap) override;
+void glEnableiOESFn(GLenum target, GLuint index) override;
 void glEnableVertexAttribArrayFn(GLuint index) override;
 void glEndQueryFn(GLenum target) override;
 void glEndTilingQCOMFn(GLbitfield preserveMask) override;
@@ -912,6 +929,7 @@ void glInvalidateSubFramebufferFn(GLenum target,
 void glInvalidateTextureANGLEFn(GLenum target) override;
 GLboolean glIsBufferFn(GLuint buffer) override;
 GLboolean glIsEnabledFn(GLenum cap) override;
+GLboolean glIsEnablediOESFn(GLenum target, GLuint index) override;
 GLboolean glIsFenceAPPLEFn(GLuint fence) override;
 GLboolean glIsFenceNVFn(GLuint fence) override;
 GLboolean glIsFramebufferEXTFn(GLuint framebuffer) override;

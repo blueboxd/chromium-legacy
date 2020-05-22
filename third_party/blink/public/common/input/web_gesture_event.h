@@ -76,7 +76,10 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
       // a hit-test. Should be used for gestures queued up internally within
       // the renderer process. This is an ElementIdType instead of ElementId
       // due to the fact that ElementId has a non-trivial constructor that
-      // can't easily participate in this union of structs.
+      // can't easily participate in this union of structs. Note that while
+      // this is used in scroll unification to perform a main thread hit test,
+      // in which case |main_thread_hit_tested| is true, it is also used in
+      // other cases like scroll events reinjected for scrollbar scrolling.
       cc::ElementIdType scrollable_area_element_id;
       // Initial motion that triggered the scroll.
       float delta_x_hint;
@@ -95,6 +98,11 @@ class BLINK_COMMON_EXPORT WebGestureEvent : public WebInputEvent {
       // True if this event is generated from a wheel event with synthetic
       // phase.
       bool synthetic;
+      // If true, this event has been hit tested by the main thread and the
+      // result is stored in scrollable_area_element_id. Used only in scroll
+      // unification when the event is sent back the the compositor for a
+      // second time after the main thread hit test is complete.
+      bool main_thread_hit_tested;
     } scroll_begin;
 
     struct {

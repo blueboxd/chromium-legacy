@@ -180,6 +180,7 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
           'EXT_texture_filter_anisotropic',
           'EXT_texture_norm16',
           'KHR_parallel_shader_compile',
+          'OES_draw_buffers_indexed',
           'OES_texture_float_linear',
           'OVR_multiview2',
           'WEBGL_compressed_texture_astc',

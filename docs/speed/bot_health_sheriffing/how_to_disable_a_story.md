@@ -57,10 +57,10 @@ whereas an entry disabling a benchmark on an entire platform might look like:
 
 Once you've committed your changes locally, your CL can be submitted with:
 
-- `No-Try:True`
-- `Tbr:`someone from [`tools/perf/OWNERS`](https://cs.chromium.org/chromium/src/tools/perf/OWNERS?q=tools/perf/owners&sq=package:chromium&dr)
-- `CC:`benchmark owner found in [this spreadsheet](https://docs.google.com/spreadsheets/u/1/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0)
-- `Bug:`tracking bug
+- `No-Try: True`
+- `Tbr: `someone from [`tools/perf/OWNERS`](https://cs.chromium.org/chromium/src/tools/perf/OWNERS?q=tools/perf/owners&sq=package:chromium&dr)
+- `CC: `benchmark owner found in [this spreadsheet](https://docs.google.com/spreadsheets/u/1/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0)
+- `Bug: `tracking bug
 
 *Please make sure to CC the benchmark owner so that they're aware that they've lost coverage.*
 

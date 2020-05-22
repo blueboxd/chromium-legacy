@@ -46,6 +46,9 @@ bool IsMouseMiddleClick(const blink::WebInputEvent& event) {
 
 constexpr const char kTracingCategory[] = "input,latency";
 
+constexpr base::TimeDelta kAsyncHitTestTimeout =
+    base::TimeDelta::FromSeconds(5);
+
 }  // namespace
 
 class TracingUmaTracker {
@@ -169,7 +172,8 @@ const ui::LatencyInfo& RenderWidgetTargeter::TargetingRequest::GetLatency()
 }
 
 RenderWidgetTargeter::RenderWidgetTargeter(Delegate* delegate)
-    : trace_id_(base::RandUint64()),
+    : async_hit_test_timeout_delay_(kAsyncHitTestTimeout),
+      trace_id_(base::RandUint64()),
       is_viz_hit_testing_debug_enabled_(
           features::IsVizHitTestingDebugEnabled()),
       delegate_(delegate) {

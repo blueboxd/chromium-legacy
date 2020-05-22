@@ -56,7 +56,6 @@ Ozone moves platform-specific code behind the following interfaces:
   access to IPC between the browser & GPU processes. Some platforms need this
   to provide additional services in the GPU process such as display
   configuration.
-* `CursorFactoryOzone` is used to load & set platform cursors.
 * `OverlayManagerOzone` is used to manage overlays.
 * `InputController` allows to control input devices such as keyboard, mouse or
   touchpad.
@@ -91,7 +90,7 @@ Users of the Ozone abstraction need to do the following, at minimum:
   invoke `PlatformWindowDelegate::DispatchEvent` to dispatch each event.
 * Write a subclass of `SurfaceFactoryOzone` that handles allocating accelerated
   surfaces. I'll call this `SurfaceFactoryOzoneImpl`.
-* Write a subclass of `CursorFactoryOzone` to manage cursors, or use the
+* Write a subclass of `CursorFactory` to manage cursors, or use the
   `BitmapCursorFactoryOzone` implementation if only bitmap cursors need to be
   supported.
 * Write a subclass of `OverlayManagerOzone` or just use `StubOverlayManager` if

@@ -12,6 +12,7 @@ virtual/composite-after-paint/* [ Skip ]
 virtual/layout_ng_block_frag/* [ Skip ]
 virtual/layout_ng_fieldset/* [ Skip ]
 virtual/layout_ng_flex_box/* [ Skip ]
+virtual/layout_ng_fragment_traversal/* [ Skip ]
 virtual/prefer_compositing_to_lcd_text/compositing/overflow/* [ Skip ]
 virtual/stable/* [ Skip ]
 

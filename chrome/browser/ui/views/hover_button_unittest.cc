@@ -158,11 +158,10 @@ TEST_F(HoverButtonTest, CreateButtonWithSubtitleAndIcons) {
 // Tests that the listener is notified on mouse release rather than mouse press.
 TEST_F(HoverButtonTest, ActivatesOnMouseReleased) {
   TestButtonListener button_listener;
-  HoverButton button(&button_listener, CreateIcon(),
-                     base::ASCIIToUTF16("Title"), base::string16());
-
-  button.SetBoundsRect(gfx::Rect(100, 100, 200, 200));
-  widget()->SetContentsView(&button);
+  HoverButton* button = widget()->SetContentsView(std::make_unique<HoverButton>(
+      &button_listener, CreateIcon(), base::ASCIIToUTF16("Title"),
+      base::string16()));
+  button->SetBoundsRect(gfx::Rect(100, 100, 200, 200));
   widget()->Show();
 
   // ButtonListener should not be activated on press.
@@ -171,7 +170,9 @@ TEST_F(HoverButtonTest, ActivatesOnMouseReleased) {
 
   // ButtonListener should be activated on release.
   generator()->ReleaseLeftButton();
-  EXPECT_EQ(&button, button_listener.last_sender());
+  EXPECT_EQ(button, button_listener.last_sender());
+
+  widget()->Close();
 }
 
 }  // namespace

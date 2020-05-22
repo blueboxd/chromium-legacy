@@ -182,6 +182,10 @@ BrowserContext* TtsUtteranceImpl::GetBrowserContext() {
   return browser_context_;
 }
 
+void TtsUtteranceImpl::ClearBrowserContext() {
+  browser_context_ = nullptr;
+}
+
 int TtsUtteranceImpl::GetId() {
   return id_;
 }

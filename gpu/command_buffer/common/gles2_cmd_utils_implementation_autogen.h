@@ -7447,6 +7447,13 @@ std::string GLES2Util::GetStringIndexedGLState(uint32_t value) {
       {GL_UNIFORM_BUFFER_BINDING, "GL_UNIFORM_BUFFER_BINDING"},
       {GL_UNIFORM_BUFFER_SIZE, "GL_UNIFORM_BUFFER_SIZE"},
       {GL_UNIFORM_BUFFER_START, "GL_UNIFORM_BUFFER_START"},
+      {GL_BLEND_EQUATION_RGB, "GL_BLEND_EQUATION_RGB"},
+      {GL_BLEND_EQUATION_ALPHA, "GL_BLEND_EQUATION_ALPHA"},
+      {GL_BLEND_SRC_RGB, "GL_BLEND_SRC_RGB"},
+      {GL_BLEND_SRC_ALPHA, "GL_BLEND_SRC_ALPHA"},
+      {GL_BLEND_DST_RGB, "GL_BLEND_DST_RGB"},
+      {GL_BLEND_DST_ALPHA, "GL_BLEND_DST_ALPHA"},
+      {GL_COLOR_WRITEMASK, "GL_COLOR_WRITEMASK"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            base::size(string_table), value);

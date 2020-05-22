@@ -839,17 +839,15 @@ WebInputEventResult PointerEventManager::SendMousePointerEvent(
       // If pointerup releases the capture we also send boundary events
       // rightaway when the pointer that supports hover. Perform a hit
       // test to find the new target.
-      if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled()) {
-        if (pointer_capture_target_.find(pointer_event->pointerId()) !=
-            pointer_capture_target_.end()) {
-          HitTestRequest::HitTestRequestType hit_type =
-              HitTestRequest::kRelease | HitTestRequest::kRetargetForInert;
-          HitTestRequest request(hit_type);
-          MouseEventWithHitTestResults mev =
-              event_handling_util::PerformMouseEventHitTest(frame_, request,
-                                                            mouse_event);
-          target = mev.InnerElement();
-        }
+      if (pointer_capture_target_.find(pointer_event->pointerId()) !=
+          pointer_capture_target_.end()) {
+        HitTestRequest::HitTestRequestType hit_type =
+            HitTestRequest::kRelease | HitTestRequest::kRetargetForInert;
+        HitTestRequest request(hit_type);
+        MouseEventWithHitTestResults mev =
+            event_handling_util::PerformMouseEventHitTest(frame_, request,
+                                                          mouse_event);
+        target = mev.InnerElement();
       }
       ProcessCaptureAndPositionOfPointerEvent(pointer_event, target,
                                               canvas_region_id, &mouse_event);

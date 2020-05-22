@@ -54,6 +54,10 @@ const int kMaxTranslateInitCheckAttempts = 5;
 // finished.
 const int kTranslateStatusCheckDelayMs = 400;
 
+// The maximum number of times we'll check whether the translation has
+// finished.
+const int kMaxTranslateStatusCheckAttempts = 10;
+
 // Language name passed to the Translate element for it to detect the language.
 const char kAutoDetectionLanguage[] = "auto";
 
@@ -150,7 +154,6 @@ void PerFrameTranslateAgent::TranslateFrame(const std::string& translate_script,
 
 void PerFrameTranslateAgent::RevertTranslation() {
   if (!IsTranslateLibAvailable()) {
-    NOTREACHED();
     return;
   }
 
@@ -288,7 +291,8 @@ int64_t PerFrameTranslateAgent::ExecuteScriptAndGetIntegerResult(
 
 ////////////////////////////////////////////////////////////////////////////////
 // PerFrameTranslateAgent, private:
-void PerFrameTranslateAgent::CheckTranslateStatus() {
+void PerFrameTranslateAgent::CheckTranslateStatus(int check_count) {
+  DCHECK_LT(check_count, kMaxTranslateStatusCheckAttempts);
   // First check if there was an error.
   if (HasTranslationFailed()) {
     NotifyBrowserTranslationFailed(
@@ -329,13 +333,20 @@ void PerFrameTranslateAgent::CheckTranslateStatus() {
     return;
   }
 
-  // The translation is still pending, check again later.
+  // The translation is still pending, check again later unless we have tried
+  // many times already.
+  if (++check_count >= kMaxTranslateStatusCheckAttempts) {
+    NotifyBrowserTranslationFailed(TranslateErrors::TRANSLATION_TIMEOUT);
+    return;
+  }
+
+  // Check again later.
   render_frame()
       ->GetTaskRunner(blink::TaskType::kInternalTranslation)
       ->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&PerFrameTranslateAgent::CheckTranslateStatus,
-                         weak_method_factory_.GetWeakPtr()),
+                         weak_method_factory_.GetWeakPtr(), check_count),
           AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 
@@ -372,7 +383,9 @@ void PerFrameTranslateAgent::TranslateFrameImpl(int try_count) {
       ExecuteScriptAndGetDoubleResult("cr.googleTranslate.loadTime"));
 
   if (!StartTranslation()) {
-    CheckTranslateStatus();
+    DCHECK(HasTranslationFailed());
+    NotifyBrowserTranslationFailed(
+        static_cast<translate::TranslateErrors::Type>(GetErrorCode()));
     return;
   }
   // Check the status of the translation.
@@ -381,7 +394,7 @@ void PerFrameTranslateAgent::TranslateFrameImpl(int try_count) {
       ->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&PerFrameTranslateAgent::CheckTranslateStatus,
-                         weak_method_factory_.GetWeakPtr()),
+                         weak_method_factory_.GetWeakPtr(), 0),
           AdjustDelay(kTranslateStatusCheckDelayMs));
 }
 

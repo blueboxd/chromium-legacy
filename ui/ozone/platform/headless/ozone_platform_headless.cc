@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/input_method_minimal.h"
 #include "ui/display/types/native_display_delegate.h"
@@ -21,7 +22,6 @@
 #include "ui/ozone/platform/headless/headless_surface_factory.h"
 #include "ui/ozone/platform/headless/headless_window.h"
 #include "ui/ozone/platform/headless/headless_window_manager.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -63,9 +63,7 @@ class OzonePlatformHeadless : public OzonePlatform {
   OverlayManagerOzone* GetOverlayManager() override {
     return overlay_manager_.get();
   }
-  CursorFactoryOzone* GetCursorFactoryOzone() override {
-    return cursor_factory_ozone_.get();
-  }
+  CursorFactory* GetCursorFactory() override { return cursor_factory_.get(); }
   InputController* GetInputController() override {
     return input_controller_.get();
   }
@@ -110,7 +108,7 @@ class OzonePlatformHeadless : public OzonePlatform {
 
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
-    cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
     gpu_platform_support_host_.reset(CreateStubGpuPlatformSupportHost());
   }
 
@@ -124,7 +122,7 @@ class OzonePlatformHeadless : public OzonePlatform {
   std::unique_ptr<HeadlessWindowManager> window_manager_;
   std::unique_ptr<HeadlessSurfaceFactory> surface_factory_;
   std::unique_ptr<PlatformEventSource> platform_event_source_;
-  std::unique_ptr<CursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;

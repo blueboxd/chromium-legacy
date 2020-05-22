@@ -399,18 +399,18 @@ class GestureTrackingView : public View {
 TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   // Create two views (both sized the same). |child| is configured not to
   // consume the gesture event.
-  GestureTrackingView* view = new GestureTrackingView();
+  auto content_view = std::make_unique<GestureTrackingView>();
   GestureTrackingView* child = new GestureTrackingView();
   child->set_consume_gesture_event(false);
-  view->SetLayoutManager(std::make_unique<FillLayout>());
-  view->AddChildView(child);
+  content_view->SetLayoutManager(std::make_unique<FillLayout>());
+  content_view->AddChildView(child);
   std::unique_ptr<TestWidget> widget(new TestWidget());
   Widget::InitParams params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = root_window();
   params.bounds = gfx::Rect(0, 0, 100, 200);
   widget->Init(std::move(params));
-  widget->SetContentsView(view);
+  GestureTrackingView* view = widget->SetContentsView(std::move(content_view));
   widget->Show();
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51),
@@ -441,13 +441,12 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
 // Verifies views with layers are targeted for events properly.
 TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   // Create two widgets: |parent| and |child|. |child| is a child of |parent|.
-  View* parent_root = new View;
   std::unique_ptr<Widget> parent(new Widget());
   Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   parent_params.context = root_window();
   parent->Init(std::move(parent_params));
-  parent->SetContentsView(parent_root);
+  View* parent_root = parent->SetContentsView(std::make_unique<View>());
   parent->SetBounds(gfx::Rect(0, 0, 400, 400));
   parent->Show();
 
@@ -499,13 +498,12 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
 TEST_F(NativeWidgetAuraTest,
        ShouldDescendIntoChildForEventHandlingChecksVisibleBounds) {
   // Create two widgets: |parent| and |child|. |child| is a child of |parent|.
-  View* parent_root_view = new View;
   Widget parent;
   Widget::InitParams parent_params(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   parent_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   parent_params.context = root_window();
   parent.Init(std::move(parent_params));
-  parent.SetContentsView(parent_root_view);
+  View* parent_root_view = parent.SetContentsView(std::make_unique<View>());
   parent.SetBounds(gfx::Rect(0, 0, 400, 400));
   parent.Show();
 

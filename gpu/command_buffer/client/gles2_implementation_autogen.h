@@ -316,6 +316,8 @@ GLint GetAttribLocation(GLuint program, const char* name) override;
 
 void GetBooleanv(GLenum pname, GLboolean* params) override;
 
+void GetBooleani_v(GLenum pname, GLuint index, GLboolean* data) override;
+
 void GetBufferParameteri64v(GLenum target,
                             GLenum pname,
                             GLint64* params) override;
@@ -1290,5 +1292,31 @@ void EndSharedImageAccessDirectCHROMIUM(GLuint texture) override;
 void BeginBatchReadAccessSharedImageCHROMIUM() override;
 
 void EndBatchReadAccessSharedImageCHROMIUM() override;
+
+void EnableiOES(GLenum target, GLuint index) override;
+
+void DisableiOES(GLenum target, GLuint index) override;
+
+void BlendEquationiOES(GLuint buf, GLenum mode) override;
+
+void BlendEquationSeparateiOES(GLuint buf,
+                               GLenum modeRGB,
+                               GLenum modeAlpha) override;
+
+void BlendFunciOES(GLuint buf, GLenum src, GLenum dst) override;
+
+void BlendFuncSeparateiOES(GLuint buf,
+                           GLenum srcRGB,
+                           GLenum dstRGB,
+                           GLenum srcAlpha,
+                           GLenum dstAlpha) override;
+
+void ColorMaskiOES(GLuint buf,
+                   GLboolean r,
+                   GLboolean g,
+                   GLboolean b,
+                   GLboolean a) override;
+
+GLboolean IsEnablediOES(GLenum target, GLuint index) override;
 
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_AUTOGEN_H_

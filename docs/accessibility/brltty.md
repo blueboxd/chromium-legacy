@@ -65,8 +65,8 @@ To upload a change, use repo, something like this:
 ```
 repo start <branch_name> .
 git commit -a
-  Bug:chromium:12345
-  Test:Write what you tested here
+  Bug: chromium:12345
+  Test: Write what you tested here
 repo upload .
 ```
 

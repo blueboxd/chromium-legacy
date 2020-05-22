@@ -447,6 +447,8 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   ext.b_GL_NV_path_rendering =
       gfx::HasExtension(extensions, "GL_NV_path_rendering");
   ext.b_GL_OES_EGL_image = gfx::HasExtension(extensions, "GL_OES_EGL_image");
+  ext.b_GL_OES_draw_buffers_indexed =
+      gfx::HasExtension(extensions, "GL_OES_draw_buffers_indexed");
   ext.b_GL_OES_get_program_binary =
       gfx::HasExtension(extensions, "GL_OES_get_program_binary");
   ext.b_GL_OES_mapbuffer = gfx::HasExtension(extensions, "GL_OES_mapbuffer");
@@ -600,6 +602,42 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
         GetGLProcAddress("glBlendBarrierKHR"));
   }
 
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
+    fn.glBlendEquationiOESFn = reinterpret_cast<glBlendEquationiOESProc>(
+        GetGLProcAddress("glBlendEquationi"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glBlendEquationiOESFn = reinterpret_cast<glBlendEquationiOESProc>(
+        GetGLProcAddress("glBlendEquationiOES"));
+  }
+
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
+    fn.glBlendEquationSeparateiOESFn =
+        reinterpret_cast<glBlendEquationSeparateiOESProc>(
+            GetGLProcAddress("glBlendEquationSeparatei"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glBlendEquationSeparateiOESFn =
+        reinterpret_cast<glBlendEquationSeparateiOESProc>(
+            GetGLProcAddress("glBlendEquationSeparateiOES"));
+  }
+
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
+    fn.glBlendFunciOESFn =
+        reinterpret_cast<glBlendFunciOESProc>(GetGLProcAddress("glBlendFunci"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glBlendFunciOESFn = reinterpret_cast<glBlendFunciOESProc>(
+        GetGLProcAddress("glBlendFunciOES"));
+  }
+
+  if (ver->IsAtLeastGLES(3u, 2u) || ver->IsAtLeastGL(4u, 0u)) {
+    fn.glBlendFuncSeparateiOESFn =
+        reinterpret_cast<glBlendFuncSeparateiOESProc>(
+            GetGLProcAddress("glBlendFuncSeparatei"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glBlendFuncSeparateiOESFn =
+        reinterpret_cast<glBlendFuncSeparateiOESProc>(
+            GetGLProcAddress("glBlendFuncSeparateiOES"));
+  }
+
   if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 0u) ||
       ext.b_GL_ARB_framebuffer_object) {
     fn.glBlitFramebufferFn = reinterpret_cast<glBlitFramebufferProc>(
@@ -672,6 +710,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
   if (ext.b_GL_APPLE_sync) {
     fn.glClientWaitSyncAPPLEFn = reinterpret_cast<glClientWaitSyncAPPLEProc>(
         GetGLProcAddress("glClientWaitSyncAPPLE"));
+  }
+
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glColorMaskiOESFn =
+        reinterpret_cast<glColorMaskiOESProc>(GetGLProcAddress("glColorMaski"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glColorMaskiOESFn = reinterpret_cast<glColorMaskiOESProc>(
+        GetGLProcAddress("glColorMaskiOES"));
   }
 
   if (ext.b_GL_ANGLE_robust_client_memory) {
@@ -926,6 +972,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDisableExtensionANGLE"));
   }
 
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glDisableiOESFn =
+        reinterpret_cast<glDisableiOESProc>(GetGLProcAddress("glDisablei"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glDisableiOESFn =
+        reinterpret_cast<glDisableiOESProc>(GetGLProcAddress("glDisableiOES"));
+  }
+
   if (ext.b_GL_EXT_discard_framebuffer) {
     fn.glDiscardFramebufferEXTFn =
         reinterpret_cast<glDiscardFramebufferEXTProc>(
@@ -1040,6 +1094,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glEGLImageTargetTexture2DOESFn =
         reinterpret_cast<glEGLImageTargetTexture2DOESProc>(
             GetGLProcAddress("glEGLImageTargetTexture2DOES"));
+  }
+
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glEnableiOESFn =
+        reinterpret_cast<glEnableiOESProc>(GetGLProcAddress("glEnablei"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glEnableiOESFn =
+        reinterpret_cast<glEnableiOESProc>(GetGLProcAddress("glEnableiOES"));
   }
 
   if (!ver->is_es || ver->IsAtLeastGLES(3u, 0u)) {
@@ -1895,6 +1957,14 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
     fn.glInvalidateTextureANGLEFn =
         reinterpret_cast<glInvalidateTextureANGLEProc>(
             GetGLProcAddress("glInvalidateTextureANGLE"));
+  }
+
+  if (ver->IsAtLeastGL(3u, 0u) || ver->IsAtLeastGLES(3u, 2u)) {
+    fn.glIsEnablediOESFn =
+        reinterpret_cast<glIsEnablediOESProc>(GetGLProcAddress("glIsEnabledi"));
+  } else if (ext.b_GL_OES_draw_buffers_indexed) {
+    fn.glIsEnablediOESFn = reinterpret_cast<glIsEnablediOESProc>(
+        GetGLProcAddress("glIsEnablediOES"));
   }
 
   if (ext.b_GL_APPLE_fence) {
@@ -3067,12 +3137,26 @@ void GLApiBase::glBlendEquationFn(GLenum mode) {
   driver_->fn.glBlendEquationFn(mode);
 }
 
+void GLApiBase::glBlendEquationiOESFn(GLuint buf, GLenum mode) {
+  driver_->fn.glBlendEquationiOESFn(buf, mode);
+}
+
 void GLApiBase::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   driver_->fn.glBlendEquationSeparateFn(modeRGB, modeAlpha);
 }
 
+void GLApiBase::glBlendEquationSeparateiOESFn(GLuint buf,
+                                              GLenum modeRGB,
+                                              GLenum modeAlpha) {
+  driver_->fn.glBlendEquationSeparateiOESFn(buf, modeRGB, modeAlpha);
+}
+
 void GLApiBase::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   driver_->fn.glBlendFuncFn(sfactor, dfactor);
+}
+
+void GLApiBase::glBlendFunciOESFn(GLuint buf, GLenum sfactor, GLenum dfactor) {
+  driver_->fn.glBlendFunciOESFn(buf, sfactor, dfactor);
 }
 
 void GLApiBase::glBlendFuncSeparateFn(GLenum srcRGB,
@@ -3080,6 +3164,15 @@ void GLApiBase::glBlendFuncSeparateFn(GLenum srcRGB,
                                       GLenum srcAlpha,
                                       GLenum dstAlpha) {
   driver_->fn.glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha, dstAlpha);
+}
+
+void GLApiBase::glBlendFuncSeparateiOESFn(GLuint buf,
+                                          GLenum srcRGB,
+                                          GLenum dstRGB,
+                                          GLenum srcAlpha,
+                                          GLenum dstAlpha) {
+  driver_->fn.glBlendFuncSeparateiOESFn(buf, srcRGB, dstRGB, srcAlpha,
+                                        dstAlpha);
 }
 
 void GLApiBase::glBlitFramebufferFn(GLint srcX0,
@@ -3202,6 +3295,14 @@ void GLApiBase::glColorMaskFn(GLboolean red,
                               GLboolean blue,
                               GLboolean alpha) {
   driver_->fn.glColorMaskFn(red, green, blue, alpha);
+}
+
+void GLApiBase::glColorMaskiOESFn(GLuint buf,
+                                  GLboolean red,
+                                  GLboolean green,
+                                  GLboolean blue,
+                                  GLboolean alpha) {
+  driver_->fn.glColorMaskiOESFn(buf, red, green, blue, alpha);
 }
 
 void GLApiBase::glCompileShaderFn(GLuint shader) {
@@ -3589,6 +3690,10 @@ void GLApiBase::glDisableExtensionANGLEFn(const char* name) {
   driver_->fn.glDisableExtensionANGLEFn(name);
 }
 
+void GLApiBase::glDisableiOESFn(GLenum target, GLuint index) {
+  driver_->fn.glDisableiOESFn(target, index);
+}
+
 void GLApiBase::glDisableVertexAttribArrayFn(GLuint index) {
   driver_->fn.glDisableVertexAttribArrayFn(index);
 }
@@ -3696,6 +3801,10 @@ void GLApiBase::glEGLImageTargetTexture2DOESFn(GLenum target,
 
 void GLApiBase::glEnableFn(GLenum cap) {
   driver_->fn.glEnableFn(cap);
+}
+
+void GLApiBase::glEnableiOESFn(GLenum target, GLuint index) {
+  driver_->fn.glEnableiOESFn(target, index);
 }
 
 void GLApiBase::glEnableVertexAttribArrayFn(GLuint index) {
@@ -4788,6 +4897,10 @@ GLboolean GLApiBase::glIsBufferFn(GLuint buffer) {
 
 GLboolean GLApiBase::glIsEnabledFn(GLenum cap) {
   return driver_->fn.glIsEnabledFn(cap);
+}
+
+GLboolean GLApiBase::glIsEnablediOESFn(GLenum target, GLuint index) {
+  return driver_->fn.glIsEnablediOESFn(target, index);
 }
 
 GLboolean GLApiBase::glIsFenceAPPLEFn(GLuint fence) {
@@ -6395,14 +6508,32 @@ void TraceGLApi::glBlendEquationFn(GLenum mode) {
   gl_api_->glBlendEquationFn(mode);
 }
 
+void TraceGLApi::glBlendEquationiOESFn(GLuint buf, GLenum mode) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendEquationiOES")
+  gl_api_->glBlendEquationiOESFn(buf, mode);
+}
+
 void TraceGLApi::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendEquationSeparate")
   gl_api_->glBlendEquationSeparateFn(modeRGB, modeAlpha);
 }
 
+void TraceGLApi::glBlendEquationSeparateiOESFn(GLuint buf,
+                                               GLenum modeRGB,
+                                               GLenum modeAlpha) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
+                                "TraceGLAPI::glBlendEquationSeparateiOES")
+  gl_api_->glBlendEquationSeparateiOESFn(buf, modeRGB, modeAlpha);
+}
+
 void TraceGLApi::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendFunc")
   gl_api_->glBlendFuncFn(sfactor, dfactor);
+}
+
+void TraceGLApi::glBlendFunciOESFn(GLuint buf, GLenum sfactor, GLenum dfactor) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendFunciOES")
+  gl_api_->glBlendFunciOESFn(buf, sfactor, dfactor);
 }
 
 void TraceGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
@@ -6411,6 +6542,15 @@ void TraceGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
                                        GLenum dstAlpha) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendFuncSeparate")
   gl_api_->glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha, dstAlpha);
+}
+
+void TraceGLApi::glBlendFuncSeparateiOESFn(GLuint buf,
+                                           GLenum srcRGB,
+                                           GLenum dstRGB,
+                                           GLenum srcAlpha,
+                                           GLenum dstAlpha) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glBlendFuncSeparateiOES")
+  gl_api_->glBlendFuncSeparateiOESFn(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
 void TraceGLApi::glBlitFramebufferFn(GLint srcX0,
@@ -6552,6 +6692,15 @@ void TraceGLApi::glColorMaskFn(GLboolean red,
                                GLboolean alpha) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glColorMask")
   gl_api_->glColorMaskFn(red, green, blue, alpha);
+}
+
+void TraceGLApi::glColorMaskiOESFn(GLuint buf,
+                                   GLboolean red,
+                                   GLboolean green,
+                                   GLboolean blue,
+                                   GLboolean alpha) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glColorMaskiOES")
+  gl_api_->glColorMaskiOESFn(buf, red, green, blue, alpha);
 }
 
 void TraceGLApi::glCompileShaderFn(GLuint shader) {
@@ -6998,6 +7147,11 @@ void TraceGLApi::glDisableExtensionANGLEFn(const char* name) {
   gl_api_->glDisableExtensionANGLEFn(name);
 }
 
+void TraceGLApi::glDisableiOESFn(GLenum target, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisableiOES")
+  gl_api_->glDisableiOESFn(target, index);
+}
+
 void TraceGLApi::glDisableVertexAttribArrayFn(GLuint index) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDisableVertexAttribArray")
   gl_api_->glDisableVertexAttribArrayFn(index);
@@ -7128,6 +7282,11 @@ void TraceGLApi::glEGLImageTargetTexture2DOESFn(GLenum target,
 void TraceGLApi::glEnableFn(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEnable")
   gl_api_->glEnableFn(cap);
+}
+
+void TraceGLApi::glEnableiOESFn(GLenum target, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glEnableiOES")
+  gl_api_->glEnableiOESFn(target, index);
 }
 
 void TraceGLApi::glEnableVertexAttribArrayFn(GLuint index) {
@@ -8419,6 +8578,11 @@ GLboolean TraceGLApi::glIsBufferFn(GLuint buffer) {
 GLboolean TraceGLApi::glIsEnabledFn(GLenum cap) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsEnabled")
   return gl_api_->glIsEnabledFn(cap);
+}
+
+GLboolean TraceGLApi::glIsEnablediOESFn(GLenum target, GLuint index) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glIsEnablediOES")
+  return gl_api_->glIsEnablediOESFn(target, index);
 }
 
 GLboolean TraceGLApi::glIsFenceAPPLEFn(GLuint fence) {
@@ -10308,6 +10472,12 @@ void LogGLApi::glBlendEquationFn(GLenum mode) {
   gl_api_->glBlendEquationFn(mode);
 }
 
+void LogGLApi::glBlendEquationiOESFn(GLuint buf, GLenum mode) {
+  GL_SERVICE_LOG("glBlendEquationiOES"
+                 << "(" << buf << ", " << GLEnums::GetStringEnum(mode) << ")");
+  gl_api_->glBlendEquationiOESFn(buf, mode);
+}
+
 void LogGLApi::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   GL_SERVICE_LOG("glBlendEquationSeparate"
                  << "(" << GLEnums::GetStringEnum(modeRGB) << ", "
@@ -10315,11 +10485,27 @@ void LogGLApi::glBlendEquationSeparateFn(GLenum modeRGB, GLenum modeAlpha) {
   gl_api_->glBlendEquationSeparateFn(modeRGB, modeAlpha);
 }
 
+void LogGLApi::glBlendEquationSeparateiOESFn(GLuint buf,
+                                             GLenum modeRGB,
+                                             GLenum modeAlpha) {
+  GL_SERVICE_LOG("glBlendEquationSeparateiOES"
+                 << "(" << buf << ", " << GLEnums::GetStringEnum(modeRGB)
+                 << ", " << GLEnums::GetStringEnum(modeAlpha) << ")");
+  gl_api_->glBlendEquationSeparateiOESFn(buf, modeRGB, modeAlpha);
+}
+
 void LogGLApi::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   GL_SERVICE_LOG("glBlendFunc"
                  << "(" << GLEnums::GetStringEnum(sfactor) << ", "
                  << GLEnums::GetStringEnum(dfactor) << ")");
   gl_api_->glBlendFuncFn(sfactor, dfactor);
+}
+
+void LogGLApi::glBlendFunciOESFn(GLuint buf, GLenum sfactor, GLenum dfactor) {
+  GL_SERVICE_LOG("glBlendFunciOES"
+                 << "(" << buf << ", " << GLEnums::GetStringEnum(sfactor)
+                 << ", " << GLEnums::GetStringEnum(dfactor) << ")");
+  gl_api_->glBlendFunciOESFn(buf, sfactor, dfactor);
 }
 
 void LogGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
@@ -10332,6 +10518,19 @@ void LogGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
                  << GLEnums::GetStringEnum(srcAlpha) << ", "
                  << GLEnums::GetStringEnum(dstAlpha) << ")");
   gl_api_->glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha, dstAlpha);
+}
+
+void LogGLApi::glBlendFuncSeparateiOESFn(GLuint buf,
+                                         GLenum srcRGB,
+                                         GLenum dstRGB,
+                                         GLenum srcAlpha,
+                                         GLenum dstAlpha) {
+  GL_SERVICE_LOG("glBlendFuncSeparateiOES"
+                 << "(" << buf << ", " << GLEnums::GetStringEnum(srcRGB) << ", "
+                 << GLEnums::GetStringEnum(dstRGB) << ", "
+                 << GLEnums::GetStringEnum(srcAlpha) << ", "
+                 << GLEnums::GetStringEnum(dstAlpha) << ")");
+  gl_api_->glBlendFuncSeparateiOESFn(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
 }
 
 void LogGLApi::glBlitFramebufferFn(GLint srcX0,
@@ -10521,6 +10720,19 @@ void LogGLApi::glColorMaskFn(GLboolean red,
                  << GLEnums::GetStringBool(blue) << ", "
                  << GLEnums::GetStringBool(alpha) << ")");
   gl_api_->glColorMaskFn(red, green, blue, alpha);
+}
+
+void LogGLApi::glColorMaskiOESFn(GLuint buf,
+                                 GLboolean red,
+                                 GLboolean green,
+                                 GLboolean blue,
+                                 GLboolean alpha) {
+  GL_SERVICE_LOG("glColorMaskiOES"
+                 << "(" << buf << ", " << GLEnums::GetStringBool(red) << ", "
+                 << GLEnums::GetStringBool(green) << ", "
+                 << GLEnums::GetStringBool(blue) << ", "
+                 << GLEnums::GetStringBool(alpha) << ")");
+  gl_api_->glColorMaskiOESFn(buf, red, green, blue, alpha);
 }
 
 void LogGLApi::glCompileShaderFn(GLuint shader) {
@@ -11105,6 +11317,13 @@ void LogGLApi::glDisableExtensionANGLEFn(const char* name) {
   gl_api_->glDisableExtensionANGLEFn(name);
 }
 
+void LogGLApi::glDisableiOESFn(GLenum target, GLuint index) {
+  GL_SERVICE_LOG("glDisableiOES"
+                 << "(" << GLEnums::GetStringEnum(target) << ", " << index
+                 << ")");
+  gl_api_->glDisableiOESFn(target, index);
+}
+
 void LogGLApi::glDisableVertexAttribArrayFn(GLuint index) {
   GL_SERVICE_LOG("glDisableVertexAttribArray"
                  << "(" << index << ")");
@@ -11269,6 +11488,13 @@ void LogGLApi::glEnableFn(GLenum cap) {
   GL_SERVICE_LOG("glEnable"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
   gl_api_->glEnableFn(cap);
+}
+
+void LogGLApi::glEnableiOESFn(GLenum target, GLuint index) {
+  GL_SERVICE_LOG("glEnableiOES"
+                 << "(" << GLEnums::GetStringEnum(target) << ", " << index
+                 << ")");
+  gl_api_->glEnableiOESFn(target, index);
 }
 
 void LogGLApi::glEnableVertexAttribArrayFn(GLuint index) {
@@ -12972,6 +13198,15 @@ GLboolean LogGLApi::glIsEnabledFn(GLenum cap) {
   GL_SERVICE_LOG("glIsEnabled"
                  << "(" << GLEnums::GetStringEnum(cap) << ")");
   GLboolean result = gl_api_->glIsEnabledFn(cap);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+GLboolean LogGLApi::glIsEnablediOESFn(GLenum target, GLuint index) {
+  GL_SERVICE_LOG("glIsEnablediOES"
+                 << "(" << GLEnums::GetStringEnum(target) << ", " << index
+                 << ")");
+  GLboolean result = gl_api_->glIsEnablediOESFn(target, index);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
@@ -15324,13 +15559,29 @@ void NoContextGLApi::glBlendEquationFn(GLenum mode) {
   NoContextHelper("glBlendEquation");
 }
 
+void NoContextGLApi::glBlendEquationiOESFn(GLuint buf, GLenum mode) {
+  NoContextHelper("glBlendEquationiOES");
+}
+
 void NoContextGLApi::glBlendEquationSeparateFn(GLenum modeRGB,
                                                GLenum modeAlpha) {
   NoContextHelper("glBlendEquationSeparate");
 }
 
+void NoContextGLApi::glBlendEquationSeparateiOESFn(GLuint buf,
+                                                   GLenum modeRGB,
+                                                   GLenum modeAlpha) {
+  NoContextHelper("glBlendEquationSeparateiOES");
+}
+
 void NoContextGLApi::glBlendFuncFn(GLenum sfactor, GLenum dfactor) {
   NoContextHelper("glBlendFunc");
+}
+
+void NoContextGLApi::glBlendFunciOESFn(GLuint buf,
+                                       GLenum sfactor,
+                                       GLenum dfactor) {
+  NoContextHelper("glBlendFunciOES");
 }
 
 void NoContextGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
@@ -15338,6 +15589,14 @@ void NoContextGLApi::glBlendFuncSeparateFn(GLenum srcRGB,
                                            GLenum srcAlpha,
                                            GLenum dstAlpha) {
   NoContextHelper("glBlendFuncSeparate");
+}
+
+void NoContextGLApi::glBlendFuncSeparateiOESFn(GLuint buf,
+                                               GLenum srcRGB,
+                                               GLenum dstRGB,
+                                               GLenum srcAlpha,
+                                               GLenum dstAlpha) {
+  NoContextHelper("glBlendFuncSeparateiOES");
 }
 
 void NoContextGLApi::glBlitFramebufferFn(GLint srcX0,
@@ -15461,6 +15720,14 @@ void NoContextGLApi::glColorMaskFn(GLboolean red,
                                    GLboolean blue,
                                    GLboolean alpha) {
   NoContextHelper("glColorMask");
+}
+
+void NoContextGLApi::glColorMaskiOESFn(GLuint buf,
+                                       GLboolean red,
+                                       GLboolean green,
+                                       GLboolean blue,
+                                       GLboolean alpha) {
+  NoContextHelper("glColorMaskiOES");
 }
 
 void NoContextGLApi::glCompileShaderFn(GLuint shader) {
@@ -15832,6 +16099,10 @@ void NoContextGLApi::glDisableExtensionANGLEFn(const char* name) {
   NoContextHelper("glDisableExtensionANGLE");
 }
 
+void NoContextGLApi::glDisableiOESFn(GLenum target, GLuint index) {
+  NoContextHelper("glDisableiOES");
+}
+
 void NoContextGLApi::glDisableVertexAttribArrayFn(GLuint index) {
   NoContextHelper("glDisableVertexAttribArray");
 }
@@ -15938,6 +16209,10 @@ void NoContextGLApi::glEGLImageTargetTexture2DOESFn(GLenum target,
 
 void NoContextGLApi::glEnableFn(GLenum cap) {
   NoContextHelper("glEnable");
+}
+
+void NoContextGLApi::glEnableiOESFn(GLenum target, GLuint index) {
+  NoContextHelper("glEnableiOES");
 }
 
 void NoContextGLApi::glEnableVertexAttribArrayFn(GLuint index) {
@@ -16999,6 +17274,11 @@ GLboolean NoContextGLApi::glIsBufferFn(GLuint buffer) {
 
 GLboolean NoContextGLApi::glIsEnabledFn(GLenum cap) {
   NoContextHelper("glIsEnabled");
+  return GL_FALSE;
+}
+
+GLboolean NoContextGLApi::glIsEnablediOESFn(GLenum target, GLuint index) {
+  NoContextHelper("glIsEnablediOES");
   return GL_FALSE;
 }
 

@@ -23,8 +23,7 @@ class NativeDisplayDelegate;
 }
 
 namespace ui {
-
-class CursorFactoryOzone;
+class CursorFactory;
 class InputController;
 class GpuPlatformSupportHost;
 class OverlayManagerOzone;
@@ -129,7 +128,7 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
   // inject these objects themselves. Ownership is retained by OzonePlatform.
   virtual ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() = 0;
   virtual ui::OverlayManagerOzone* GetOverlayManager() = 0;
-  virtual ui::CursorFactoryOzone* GetCursorFactoryOzone() = 0;
+  virtual ui::CursorFactory* GetCursorFactory() = 0;
   virtual ui::InputController* GetInputController() = 0;
   virtual ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() = 0;
   virtual std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() = 0;

@@ -642,4 +642,22 @@ IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, ChangeActiveTab) {
   // TODO(1055150): Test tab switching when the close button is pressed.
 }
 
+IN_PROC_BROWSER_TEST_F(CaptionBubbleControllerViewsTest, TruncatesFinalText) {
+  // Make a string with 30 lines of 500 characters each.
+  std::string text;
+  std::string line(497, 'a');
+  for (int i = 10; i < 40; i++) {
+    text += base::NumberToString(i) + line + " ";
+  }
+  OnFinalTranscription(text);
+  EXPECT_EQ(text.substr(12500, 15000), GetLabelText());
+  EXPECT_EQ(5u, GetBubble()->GetNumLinesInLabel());
+  OnPartialTranscription(text);
+  EXPECT_EQ(text.substr(12500, 15000) + text, GetLabelText());
+  EXPECT_EQ(35u, GetBubble()->GetNumLinesInLabel());
+  OnFinalTranscription("a ");
+  EXPECT_EQ(text.substr(13000, 15000) + "a ", GetLabelText());
+  EXPECT_EQ(5u, GetBubble()->GetNumLinesInLabel());
+}
+
 }  // namespace captions

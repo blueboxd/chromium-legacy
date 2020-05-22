@@ -294,12 +294,10 @@ void ChromePasswordProtectionService::Init() {
 #endif
 }
 
-void ChromePasswordProtectionService::Shutdown() {
+ChromePasswordProtectionService::~ChromePasswordProtectionService() {
   if (pref_change_registrar_)
     pref_change_registrar_->RemoveAll();
 }
-
-ChromePasswordProtectionService::~ChromePasswordProtectionService() = default;
 
 // static
 ChromePasswordProtectionService*

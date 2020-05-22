@@ -216,10 +216,6 @@ void LogEntryRetryCount(uint32_t retry_count);
 // Records whether the entry was an upload.
 void LogHasUploadData(DownloadClient client, bool has_upload_data);
 
-// Records count of reduced mode to full browser transitions requested by each
-// client.
-void LogDownloadClientInflatedFullBrowser(DownloadClient client);
-
 }  // namespace stats
 }  // namespace download
 

@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_
-#define UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_
+#ifndef UI_BASE_CURSOR_CURSOR_FACTORY_H_
+#define UI_BASE_CURSOR_CURSOR_FACTORY_H_
 
 #include <vector>
 
 #include "base/component_export.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/cursor/mojom/cursor_type.mojom-forward.h"
-#include "ui/gfx/native_widget_types.h"
+
+class SkBitmap;
 
 namespace gfx {
 class Point;
@@ -17,15 +19,13 @@ class Point;
 
 namespace ui {
 
-typedef void* PlatformCursor;
-
-class COMPONENT_EXPORT(OZONE_BASE) CursorFactoryOzone {
+class COMPONENT_EXPORT(UI_BASE_CURSOR_BASE) CursorFactory {
  public:
-  CursorFactoryOzone();
-  virtual ~CursorFactoryOzone();
+  CursorFactory();
+  virtual ~CursorFactory();
 
   // Returns the thread-local instance.
-  static CursorFactoryOzone* GetInstance();
+  static CursorFactory* GetInstance();
 
   // Return the default cursor of the specified type. The types are listed in
   // ui/base/cursor/cursor.h. Default cursors are managed by the implementation
@@ -58,4 +58,4 @@ class COMPONENT_EXPORT(OZONE_BASE) CursorFactoryOzone {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PUBLIC_CURSOR_FACTORY_OZONE_H_
+#endif  // UI_BASE_CURSOR_CURSOR_FACTORY_H_

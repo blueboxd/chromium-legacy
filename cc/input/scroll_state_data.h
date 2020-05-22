@@ -70,12 +70,18 @@ class CC_EXPORT ScrollStateData {
   ElementId current_native_scrolling_element() const;
   void set_current_native_scrolling_element(ElementId element_id);
 
+  // Used in scroll unification to specify that a scroll state has been hit
+  // tested on the main thread. If this is true, the hit test result will be
+  // placed in the current_native_scrolling_element_.
+  bool is_main_thread_hit_tested;
+
  private:
   // The id of the last native element to respond to a scroll, or 0 if none
   // exists.
   // TODO(bokan): In the compositor, this is now only used as an override to
-  // scroller targeting, i.e. we'll latch scrolling to the specified
-  // element_id. It will be renamed when the main thread is also converted.
+  // scroller targeting. I.e. we'll latch scrolling to the specified
+  // element_id. It will be renamed to a better name (target_element_id?) when
+  // the main thread is also converted.
   ElementId current_native_scrolling_element_;
 };
 

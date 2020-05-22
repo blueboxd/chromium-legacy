@@ -973,6 +973,34 @@
       },
     },
 
+    'chromium_web_tests_high_dpi_isolated_scripts': {
+      'high_dpi_blink_web_tests': {
+        # high_dpi_blink_web_tests provides coverage for
+        # running Layout Tests with forced device scale factor.
+        'args': [
+          '--additional-driver-flag=--force-device-scale-factor=1.5',
+
+          # layout test failures are retried 3 times when '--test-list' is not
+          # passed, but 0 times when '--test-list' is passed. We want to always
+          # retry 3 times, so we explicitly specify it.
+          '--num-retries=3',
+        ],
+        'isolate_name': 'blink_web_tests',
+        'merge': {
+          'args': [
+            '--verbose',
+          ],
+          'script': '//third_party/blink/tools/merge_web_test_results.py',
+        },
+        'results_handler': 'layout tests',
+        'swarming': {
+          'shards': 12,
+        },
+        # Experimental until tests are rebaselined.
+        'experiment_percentage': 100,
+      },
+    },
+
     'chromium_webkit_isolated_scripts': {
       'blink_web_tests': {
         # layout test failures are retried 3 times when '--test-list' is not
@@ -1936,8 +1964,15 @@
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--force_high_performance_gpu',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
       },
-      'trace_test': {}
+      'trace_test': {
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
+      },
     },
 
     # GPU gtests which run on both the main and FYI waterfalls.
@@ -2501,6 +2536,9 @@
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
           # to run. Split them into roughly 5-minute shards.
@@ -2561,6 +2599,9 @@
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-cmd-decoder=validating --force_high_performance_gpu',
         ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
+        ],
         'swarming': {
           # These tests currently take about an hour and fifteen minutes
           # to run. Split them into roughly 5-minute shards.
@@ -2588,6 +2629,9 @@
         'args': [
           # On dual-GPU devices we want the high-performance GPU to be active
           '--extra-browser-args=--use-gl=angle --use-angle=gl --use-cmd-decoder=passthrough --force_high_performance_gpu',
+        ],
+        'chromeos_args': [
+          '$$MAGIC_SUBSTITUTION_ChromeOSTelemetryRemote',
         ],
         'swarming': {
           'shards': 2,
@@ -2869,7 +2913,22 @@
       },
     },
 
-    #1
+    'linux_chromeos_oobe_specific_tests': {
+      # TODO(crbug.com/1071693): Merge this suite back in to the main
+      # browser_tests when the tests no longer fail on MSAN.
+      'oobe_only_browser_tests': {
+        'name': 'oobe_only_browser_tests',
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.msan.browser_tests.oobe_positive.filter',
+        ],
+        'experiment_percentage': 100,
+        'test': 'browser_tests',
+        'swarming': {
+          'shards': 20,
+        },
+      },
+    },
+
     'linux_chromeos_specific_gtests': {
       # Chrome OS only.
       'app_list_unittests': {},
@@ -4556,7 +4615,16 @@
     # gpu_fyi_linux_intel_and_nvidia_release_telemetry_tests once all CrOS tests
     # have been enabled.
     'gpu_fyi_chromeos_release_telemetry_tests': [
+      'gpu_common_and_optional_telemetry_tests',
       'gpu_telemetry_tests',
+      'gpu_webgl_conformance_validating_telemetry_tests',
+      # Large amounts of WebGL/WebGL2 tests are failing due to issues that are
+      # possibly related to other CrOS issues that are already reported.
+      # TODO(crbug.com/1080424): Try enabling these again once some of the
+      # existing CrOS WebGL issues are resolved.
+      # 'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
+      # 'gpu_webgl2_conformance_validating_telemetry_tests',
+      # 'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
     ],
 
     'gpu_fyi_linux_debug_gtests': [
@@ -4823,6 +4891,19 @@
       'chromium_gtests_for_devices_with_graphical_output',
       'chromium_gtests_for_linux_and_chromeos_only',
       'chromium_gtests_for_win_and_linux_only',
+      'linux_chromeos_specific_gtests',
+      'linux_flavor_specific_chromium_gtests',
+      'non_android_chromium_gtests',
+      'storage_service_gtests',
+    ],
+
+    'linux_chromeos_gtests_oobe': [
+      'aura_gtests',
+      'chromium_gtests',
+      'chromium_gtests_for_devices_with_graphical_output',
+      'chromium_gtests_for_linux_and_chromeos_only',
+      'chromium_gtests_for_win_and_linux_only',
+      'linux_chromeos_oobe_specific_tests',
       'linux_chromeos_specific_gtests',
       'linux_flavor_specific_chromium_gtests',
       'non_android_chromium_gtests',

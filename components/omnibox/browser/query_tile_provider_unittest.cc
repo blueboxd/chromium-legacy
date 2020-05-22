@@ -29,8 +29,6 @@ class QueryTileProviderTest : public testing::Test,
         .WillRepeatedly(testing::Return(true));
   }
 
-  void TearDown() override { task_environment_.RunUntilIdle(); }
-
   AutocompleteInput CreateInput(const std::string& text) {
     AutocompleteInput input(base::ASCIIToUTF16(text),
                             metrics::OmniboxEventProto::OTHER,
@@ -41,6 +39,8 @@ class QueryTileProviderTest : public testing::Test,
  protected:
   // AutocompleteProviderListener overrides.
   void OnProviderUpdate(bool updated_matches) override {}
+
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
@@ -60,6 +60,7 @@ QueryTileProviderTest::QueryTileProviderTest()
 TEST_F(QueryTileProviderTest, TopLevelTilesShowOnZeroSuggest) {
   auto input = CreateInput(std::string());
   provider_->Start(input, false);
+  RunUntilIdle();
 
   EXPECT_EQ(provider_->matches().size(), 1u);
   auto match = provider_->matches().front();
@@ -74,6 +75,8 @@ TEST_F(QueryTileProviderTest, SubTilesForSelectedTile) {
   auto input = CreateInput("News");
   input.set_query_tile_id("1");
   provider_->Start(input, false);
+  RunUntilIdle();
+
   EXPECT_EQ(provider_->matches().size(), 1u);
   auto match = provider_->matches().front();
   EXPECT_EQ(match.type, AutocompleteMatchType::TILE_SUGGESTION);
@@ -86,6 +89,7 @@ TEST_F(QueryTileProviderTest, OmniboxTextNotMatchingSelectedTile) {
   auto input = CreateInput("some text");
   input.set_query_tile_id("1");
   provider_->Start(input, false);
+  RunUntilIdle();
   EXPECT_TRUE(provider_->matches().empty());
 }
 
@@ -95,6 +99,7 @@ TEST_F(QueryTileProviderTest, QueryTilesAreShownForURLInput) {
   input.set_current_url(GURL(url));
   input.UpdateText(base::UTF8ToUTF16(url), 0, {});
   provider_->Start(input, false);
+  RunUntilIdle();
   EXPECT_EQ(provider_->matches().size(), 1u);
   EXPECT_FALSE(provider_->matches().front().allowed_to_be_default_match);
 }
@@ -113,6 +118,7 @@ TEST_F(QueryTileProviderTest, DefaultSearchProviderIsNotGoogle) {
 
   auto input = CreateInput("");
   provider_->Start(input, false);
+  RunUntilIdle();
   EXPECT_TRUE(provider_->matches().empty());
 
   // Restore Google as the default search provider. Now query tile suggestions
@@ -120,6 +126,7 @@ TEST_F(QueryTileProviderTest, DefaultSearchProviderIsNotGoogle) {
   turl_model->SetUserSelectedDefaultSearchProvider(
       const_cast<TemplateURL*>(google_search_provider));
   provider_->Start(input, false);
+  RunUntilIdle();
   EXPECT_EQ(provider_->matches().size(), 1u);
   EXPECT_EQ(provider_->matches().front().query_tiles.size(), 2u);
 }

@@ -296,6 +296,34 @@ MockGLInterface::Mock_glBlendEquationSeparate(GLenum modeRGB,
   interface_->BlendEquationSeparate(modeRGB, modeAlpha);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBlendEquationSeparatei(GLuint buf,
+                                               GLenum modeRGB,
+                                               GLenum modeAlpha) {
+  MakeGlMockFunctionUnique("glBlendEquationSeparatei");
+  interface_->BlendEquationSeparateiOES(buf, modeRGB, modeAlpha);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBlendEquationSeparateiOES(GLuint buf,
+                                                  GLenum modeRGB,
+                                                  GLenum modeAlpha) {
+  MakeGlMockFunctionUnique("glBlendEquationSeparateiOES");
+  interface_->BlendEquationSeparateiOES(buf, modeRGB, modeAlpha);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glBlendEquationi(GLuint buf,
+                                                            GLenum mode) {
+  MakeGlMockFunctionUnique("glBlendEquationi");
+  interface_->BlendEquationiOES(buf, mode);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glBlendEquationiOES(GLuint buf,
+                                                               GLenum mode) {
+  MakeGlMockFunctionUnique("glBlendEquationiOES");
+  interface_->BlendEquationiOES(buf, mode);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glBlendFunc(GLenum sfactor,
                                                        GLenum dfactor) {
   MakeGlMockFunctionUnique("glBlendFunc");
@@ -309,6 +337,40 @@ MockGLInterface::Mock_glBlendFuncSeparate(GLenum srcRGB,
                                           GLenum dstAlpha) {
   MakeGlMockFunctionUnique("glBlendFuncSeparate");
   interface_->BlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBlendFuncSeparatei(GLuint buf,
+                                           GLenum srcRGB,
+                                           GLenum dstRGB,
+                                           GLenum srcAlpha,
+                                           GLenum dstAlpha) {
+  MakeGlMockFunctionUnique("glBlendFuncSeparatei");
+  interface_->BlendFuncSeparateiOES(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+}
+
+void GL_BINDING_CALL
+MockGLInterface::Mock_glBlendFuncSeparateiOES(GLuint buf,
+                                              GLenum srcRGB,
+                                              GLenum dstRGB,
+                                              GLenum srcAlpha,
+                                              GLenum dstAlpha) {
+  MakeGlMockFunctionUnique("glBlendFuncSeparateiOES");
+  interface_->BlendFuncSeparateiOES(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glBlendFunci(GLuint buf,
+                                                        GLenum sfactor,
+                                                        GLenum dfactor) {
+  MakeGlMockFunctionUnique("glBlendFunci");
+  interface_->BlendFunciOES(buf, sfactor, dfactor);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glBlendFunciOES(GLuint buf,
+                                                           GLenum sfactor,
+                                                           GLenum dfactor) {
+  MakeGlMockFunctionUnique("glBlendFunciOES");
+  interface_->BlendFunciOES(buf, sfactor, dfactor);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glBlitFramebuffer(GLint srcX0,
@@ -519,6 +581,24 @@ void GL_BINDING_CALL MockGLInterface::Mock_glColorMask(GLboolean red,
                                                        GLboolean alpha) {
   MakeGlMockFunctionUnique("glColorMask");
   interface_->ColorMask(red, green, blue, alpha);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glColorMaski(GLuint buf,
+                                                        GLboolean red,
+                                                        GLboolean green,
+                                                        GLboolean blue,
+                                                        GLboolean alpha) {
+  MakeGlMockFunctionUnique("glColorMaski");
+  interface_->ColorMaskiOES(buf, red, green, blue, alpha);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glColorMaskiOES(GLuint buf,
+                                                           GLboolean red,
+                                                           GLboolean green,
+                                                           GLboolean blue,
+                                                           GLboolean alpha) {
+  MakeGlMockFunctionUnique("glColorMaskiOES");
+  interface_->ColorMaskiOES(buf, red, green, blue, alpha);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glCompileShader(GLuint shader) {
@@ -1127,6 +1207,18 @@ MockGLInterface::Mock_glDisableVertexAttribArray(GLuint index) {
   interface_->DisableVertexAttribArray(index);
 }
 
+void GL_BINDING_CALL MockGLInterface::Mock_glDisablei(GLenum target,
+                                                      GLuint index) {
+  MakeGlMockFunctionUnique("glDisablei");
+  interface_->DisableiOES(target, index);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glDisableiOES(GLenum target,
+                                                         GLuint index) {
+  MakeGlMockFunctionUnique("glDisableiOES");
+  interface_->DisableiOES(target, index);
+}
+
 void GL_BINDING_CALL
 MockGLInterface::Mock_glDiscardFramebufferEXT(GLenum target,
                                               GLsizei numAttachments,
@@ -1370,6 +1462,18 @@ void GL_BINDING_CALL
 MockGLInterface::Mock_glEnableVertexAttribArray(GLuint index) {
   MakeGlMockFunctionUnique("glEnableVertexAttribArray");
   interface_->EnableVertexAttribArray(index);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glEnablei(GLenum target,
+                                                     GLuint index) {
+  MakeGlMockFunctionUnique("glEnablei");
+  interface_->EnableiOES(target, index);
+}
+
+void GL_BINDING_CALL MockGLInterface::Mock_glEnableiOES(GLenum target,
+                                                        GLuint index) {
+  MakeGlMockFunctionUnique("glEnableiOES");
+  interface_->EnableiOES(target, index);
 }
 
 void GL_BINDING_CALL MockGLInterface::Mock_glEndQuery(GLenum target) {
@@ -3012,6 +3116,18 @@ GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsBuffer(GLuint buffer) {
 GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsEnabled(GLenum cap) {
   MakeGlMockFunctionUnique("glIsEnabled");
   return interface_->IsEnabled(cap);
+}
+
+GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsEnabledi(GLenum target,
+                                                             GLuint index) {
+  MakeGlMockFunctionUnique("glIsEnabledi");
+  return interface_->IsEnablediOES(target, index);
+}
+
+GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsEnablediOES(GLenum target,
+                                                                GLuint index) {
+  MakeGlMockFunctionUnique("glIsEnablediOES");
+  return interface_->IsEnablediOES(target, index);
 }
 
 GLboolean GL_BINDING_CALL MockGLInterface::Mock_glIsFenceAPPLE(GLuint fence) {
@@ -5302,10 +5418,29 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glBlendEquationSeparate") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glBlendEquationSeparate);
+  if (strcmp(name, "glBlendEquationSeparatei") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBlendEquationSeparatei);
+  if (strcmp(name, "glBlendEquationSeparateiOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBlendEquationSeparateiOES);
+  if (strcmp(name, "glBlendEquationi") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendEquationi);
+  if (strcmp(name, "glBlendEquationiOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendEquationiOES);
   if (strcmp(name, "glBlendFunc") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendFunc);
   if (strcmp(name, "glBlendFuncSeparate") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendFuncSeparate);
+  if (strcmp(name, "glBlendFuncSeparatei") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendFuncSeparatei);
+  if (strcmp(name, "glBlendFuncSeparateiOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glBlendFuncSeparateiOES);
+  if (strcmp(name, "glBlendFunci") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendFunci);
+  if (strcmp(name, "glBlendFunciOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glBlendFunciOES);
   if (strcmp(name, "glBlitFramebuffer") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glBlitFramebuffer);
   if (strcmp(name, "glBlitFramebufferANGLE") == 0)
@@ -5354,6 +5489,10 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glClientWaitSyncAPPLE);
   if (strcmp(name, "glColorMask") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glColorMask);
+  if (strcmp(name, "glColorMaski") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glColorMaski);
+  if (strcmp(name, "glColorMaskiOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glColorMaskiOES);
   if (strcmp(name, "glCompileShader") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glCompileShader);
   if (strcmp(name, "glCompressedTexImage2D") == 0)
@@ -5519,6 +5658,10 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glDisableVertexAttribArray") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glDisableVertexAttribArray);
+  if (strcmp(name, "glDisablei") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDisablei);
+  if (strcmp(name, "glDisableiOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glDisableiOES);
   if (strcmp(name, "glDiscardFramebufferEXT") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glDiscardFramebufferEXT);
@@ -5591,6 +5734,10 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glEnableVertexAttribArray") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glEnableVertexAttribArray);
+  if (strcmp(name, "glEnablei") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEnablei);
+  if (strcmp(name, "glEnableiOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glEnableiOES);
   if (strcmp(name, "glEndQuery") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glEndQuery);
   if (strcmp(name, "glEndQueryARB") == 0)
@@ -6075,6 +6222,10 @@ MockGLInterface::GetGLProcAddress(const char* name) {
     return reinterpret_cast<GLFunctionPointerType>(Mock_glIsBuffer);
   if (strcmp(name, "glIsEnabled") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glIsEnabled);
+  if (strcmp(name, "glIsEnabledi") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsEnabledi);
+  if (strcmp(name, "glIsEnablediOES") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(Mock_glIsEnablediOES);
   if (strcmp(name, "glIsFenceAPPLE") == 0)
     return reinterpret_cast<GLFunctionPointerType>(Mock_glIsFenceAPPLE);
   if (strcmp(name, "glIsFenceNV") == 0)

@@ -52,10 +52,8 @@ void LogConsoleMessage(blink::mojom::ConsoleMessageLevel log_level,
   if (is_off_the_record && !is_builtin_component)
     return;
 
-#if defined(OS_ANDROID)
   if (!base::FeatureList::IsEnabled(features::kLogJsConsoleMessages))
     return;
-#endif  // OS_ANDROID
 
   logging::LogMessage("CONSOLE", line_number, resolved_level).stream()
       << "\"" << message << "\", source: " << source_id << " (" << line_number

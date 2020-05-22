@@ -262,6 +262,7 @@ public class HomepagePromoTest {
      */
     @Test
     @SmallTest
+    @DisableIf.Build(sdk_is_greater_than = VERSION_CODES.O, message = "crbug.com/1084756")
     public void testDismiss_SwipeToDismiss() {
         setVariationForTests(LayoutStyle.SLIM);
 

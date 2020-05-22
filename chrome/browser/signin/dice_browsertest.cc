@@ -28,6 +28,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
@@ -873,7 +874,9 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
             dice_request_header_);
 
   ui_test_utils::UrlLoadObserver ntp_url_observer(
-      GURL(chrome::kChromeSearchLocalNtpUrl),
+      base::FeatureList::IsEnabled(ntp_features::kWebUI)
+          ? GURL(chrome::kChromeUINewTabPageURL)
+          : GURL(chrome::kChromeSearchLocalNtpUrl),
       content::NotificationService::AllSources());
 
   WaitForSigninSucceeded();
@@ -934,7 +937,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_EnableSyncBeforeToken) {
             dice_request_header_);
 
   ui_test_utils::UrlLoadObserver ntp_url_observer(
-      GURL(chrome::kChromeSearchLocalNtpUrl),
+      GURL(chrome::kChromeUINewTabURL),
       content::NotificationService::AllSources());
 
   WaitForSigninSucceeded();

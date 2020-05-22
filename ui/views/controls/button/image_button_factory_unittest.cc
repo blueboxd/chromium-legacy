@@ -56,24 +56,22 @@ class ImageButtonFactoryWidgetTest : public ViewsTestBase {
   }
 
   void TearDown() override {
-    button_.reset();
     widget_.reset();
     ViewsTestBase::TearDown();
   }
 
   ImageButton* AddImageButton(std::unique_ptr<ImageButton> button) {
-    button_ = std::move(button);
-    widget_->SetContentsView(button_.get());
-    return button_.get();
+    button_ = widget_->SetContentsView(std::move(button));
+    return button_;
   }
 
  protected:
   Widget* widget() { return widget_.get(); }
-  ImageButton* button() { return button_.get(); }
+  ImageButton* button() { return button_; }
 
  private:
   std::unique_ptr<Widget> widget_;
-  std::unique_ptr<ImageButton> button_;
+  ImageButton* button_ = nullptr;  // owned by |widget_|.
 
   DISALLOW_COPY_AND_ASSIGN(ImageButtonFactoryWidgetTest);
 };

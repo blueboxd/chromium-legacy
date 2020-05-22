@@ -711,7 +711,7 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
       // TODO: Apply the xform to the RGB pixels, skipping second pass over
       // data.
       if (ColorProfileTransform* xform = ColorTransform()) {
-        skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Opaque;
+        skcms_AlphaFormat alpha_format = skcms_AlphaFormat_Unpremul;
         bool color_conversion_successful =
             skcms_Transform(dst_row, XformColorFormat(), alpha_format,
                             xform->SrcProfile(), dst_row, XformColorFormat(),
@@ -737,12 +737,10 @@ void PNGImageDecoder::RowAvailable(unsigned char* row_buffer,
     auto* dst_profile = xform ? xform->DstProfile() : nullptr;
     auto src_format = has_alpha ? skcms_PixelFormat_RGBA_16161616BE
                                 : skcms_PixelFormat_RGB_161616BE;
-    auto src_alpha_format =
-        has_alpha ? skcms_AlphaFormat_Unpremul : skcms_AlphaFormat_Opaque;
-    auto dst_alpha_format = has_alpha ? (buffer.PremultiplyAlpha()
-                                             ? skcms_AlphaFormat_PremulAsEncoded
-                                             : skcms_AlphaFormat_Unpremul)
-                                      : skcms_AlphaFormat_Opaque;
+    auto src_alpha_format = skcms_AlphaFormat_Unpremul;
+    auto dst_alpha_format = (has_alpha && buffer.PremultiplyAlpha())
+                                ? skcms_AlphaFormat_PremulAsEncoded
+                                : skcms_AlphaFormat_Unpremul;
     bool success = skcms_Transform(
         src_ptr, src_format, src_alpha_format, src_profile, dst_row_f16,
         skcms_PixelFormat_RGBA_hhhh, dst_alpha_format, dst_profile, width);

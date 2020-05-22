@@ -89,8 +89,10 @@ public class AssistantOverlayCoordinator {
                 if (image != null && !TextUtils.isEmpty(image.mImageUrl)) {
                     DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
                     // TODO(b/143517837) Merge autofill assistant image fetcher UMA names.
-                    mImageFetcher.fetchImage(image.mImageUrl,
-                            ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, result -> {
+                    ImageFetcher.Params params = ImageFetcher.Params.create(
+                            image.mImageUrl, ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME);
+                    mImageFetcher.fetchImage(
+                            params, result -> {
                                 image.mImageBitmap = result != null ? Bitmap.createScaledBitmap(
                                                              result, image.mImageSizeInPixels,
                                                              image.mImageSizeInPixels, true)

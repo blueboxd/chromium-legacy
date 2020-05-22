@@ -30,16 +30,17 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::DoAll;
-using ::testing::Invoke;
 using ::testing::InSequence;
+using ::testing::Invoke;
 using ::testing::InvokeWithoutArgs;
+using ::testing::NiceMock;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
-using ::testing::_;
 
 namespace {
 int g_saved_utterance_id;
@@ -284,7 +285,13 @@ class TtsApiTest : public ExtensionApiTest {
     return false;
   }
 
+  void IgnoreAnyAdditionalCallsToMockPlatformImpl() {
+    content::TtsController::GetInstance()->SetTtsPlatform(
+        &nice_mock_platform_impl_);
+  }
+
   StrictMock<MockTtsPlatformImpl> mock_platform_impl_;
+  NiceMock<MockTtsPlatformImpl> nice_mock_platform_impl_;
 };
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakOptionalArgs) {
@@ -311,6 +318,7 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakOptionalArgs) {
   EXPECT_CALL(mock_platform_impl_, DoSpeak(_, "Echo", _, _, _))
       .WillOnce(Return());
   ASSERT_TRUE(RunExtensionTest("tts/optional_args")) << message_;
+  IgnoreAnyAdditionalCallsToMockPlatformImpl();
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, PlatformSpeakFinishesImmediately) {

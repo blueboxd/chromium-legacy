@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
@@ -297,6 +298,7 @@ public class WebsitePermissionsFetcherTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "https://crbug.com/1085592")
     public void testFetcherDoesNotTimeOutWithManyUrls() throws Exception {
         final WebsitePermissionsWaiter waiter = new WebsitePermissionsWaiter();
         // Set lots of permissions values.

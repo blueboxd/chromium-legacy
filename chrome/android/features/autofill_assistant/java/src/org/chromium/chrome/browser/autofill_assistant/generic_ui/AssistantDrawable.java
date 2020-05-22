@@ -103,8 +103,10 @@ public abstract class AssistantDrawable {
         @Override
         public void getDrawable(Context context, Callback<Drawable> callback) {
             // TODO(b/143517837) Merge autofill assistant image fetcher UMA names.
+            ImageFetcher.Params params = ImageFetcher.Params.create(
+                    mUrl, ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME);
             mImageFetcher.fetchImage(
-                    mUrl, ImageFetcher.ASSISTANT_DETAILS_UMA_CLIENT_NAME, result -> {
+                    params, result -> {
                         if (result != null) {
                             callback.onResult(new BitmapDrawable(context.getResources(),
                                     Bitmap.createScaledBitmap(

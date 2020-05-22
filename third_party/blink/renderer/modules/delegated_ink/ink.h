@@ -12,6 +12,7 @@
 namespace blink {
 
 class Element;
+class LocalFrame;
 class ScriptPromise;
 class ScriptState;
 
@@ -19,11 +20,15 @@ class Ink : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  explicit Ink(LocalFrame* frame);
   ScriptPromise requestPresenter(ScriptState* state,
                                  String type,
                                  Element* presentationArea = nullptr);
 
   void Trace(blink::Visitor*) const override;
+
+ private:
+  Member<LocalFrame> local_frame_;
 };
 
 }  // namespace blink

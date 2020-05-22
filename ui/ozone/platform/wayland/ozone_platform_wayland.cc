@@ -14,6 +14,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/base/ime/linux/input_method_auralinux.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
@@ -98,9 +99,7 @@ class OzonePlatformWayland : public OzonePlatform {
     return overlay_manager_.get();
   }
 
-  CursorFactoryOzone* GetCursorFactoryOzone() override {
-    return cursor_factory_.get();
-  }
+  CursorFactory* GetCursorFactory() override { return cursor_factory_.get(); }
 
   InputController* GetInputController() override {
     return input_controller_.get();
@@ -249,7 +248,7 @@ class OzonePlatformWayland : public OzonePlatform {
   std::unique_ptr<KeyboardLayoutEngine> keyboard_layout_engine_;
   std::unique_ptr<WaylandConnection> connection_;
   std::unique_ptr<WaylandSurfaceFactory> surface_factory_;
-  std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_;
+  std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<StubOverlayManager> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<GpuPlatformSupportHost> gpu_platform_support_host_;

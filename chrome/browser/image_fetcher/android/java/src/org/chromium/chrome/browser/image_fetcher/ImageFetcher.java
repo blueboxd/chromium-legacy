@@ -201,33 +201,6 @@ public abstract class ImageFetcher {
     public abstract void fetchGif(String url, String clientName, Callback<BaseGifImage> callback);
 
     /**
-     * Fetches the image at url with the desired size. Image is null if not found or fails decoding.
-     *
-     * @param url The url to fetch the image from.
-     * @param clientName Name of the cached image fetcher client to report UMA metrics for.
-     * @param width The new bitmap's desired width (in pixels). If the given value is <= 0, the
-     *         image won't be scaled.
-     * @param height The new bitmap's desired height (in pixels). If the given value is <= 0, the
-     *         image won't be scaled.
-     * @param callback The function which will be called when the image is ready; will be called
-     *         with null result if fetching fails;
-     */
-    public abstract void fetchImage(
-            String url, String clientName, int width, int height, Callback<Bitmap> callback);
-
-    /**
-     * Alias of fetchImage that ignores scaling.
-     *
-     * @param url The url to fetch the image from.
-     * @param clientName Name of the cached image fetcher client to report UMA metrics for.
-     * @param callback The function which will be called when the image is ready; will be called
-     *         with null result if fetching fails;
-     */
-    public void fetchImage(String url, String clientName, Callback<Bitmap> callback) {
-        fetchImage(ImageFetcher.Params.create(url, clientName), callback);
-    }
-
-    /**
      * Fetches the image based on customized parameters specified.
      *
      * @param params The parameters to specify image fetching details.

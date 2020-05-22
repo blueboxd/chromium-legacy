@@ -345,9 +345,7 @@ source_set("common") {
     deps += [ "//ppapi/proxy:ipc_sources" ]
   }
 
-  if (use_ozone) {
-    deps += [ "//ui/ozone" ]
-  } else {
+  if (!use_ozone) {
     sources -= [ "cursors/webcursor_ozone.cc" ]
   }
 

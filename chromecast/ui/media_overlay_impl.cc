@@ -185,7 +185,7 @@ std::unique_ptr<views::Widget> MediaOverlayImpl::CreateOverlayWidget(
   params.accept_events = false;
 
   widget->Init(std::move(params));
-  widget->SetContentsView(content_view.release());
+  widget->SetContentsView(std::move(content_view));
   window_manager_->SetZOrder(widget->GetNativeView(), mojom::ZOrder::VOLUME);
 
   return widget;

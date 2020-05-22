@@ -199,6 +199,9 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
   // ChromeClient methods:
   String AcceptLanguages() override;
   void SetCursorForPlugin(const ui::Cursor&, LocalFrame*) override;
+  void SetDelegatedInkMetadata(
+      LocalFrame* frame,
+      std::unique_ptr<viz::DelegatedInkMetadata> metadata) override;
 
   // ChromeClientImpl:
   void SetNewWindowNavigationPolicy(WebNavigationPolicy);

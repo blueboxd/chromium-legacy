@@ -459,8 +459,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     widget_->Init(std::move(params));
     input_method_->SetDelegate(
         test::WidgetTest::GetInputMethodDelegateForWidget(widget_));
-    View* container = new View();
-    widget_->SetContentsView(container);
+    View* container = widget_->SetContentsView(std::make_unique<View>());
     container->AddChildView(textfield_);
     textfield_->SetBoundsRect(params.bounds);
     textfield_->SetID(1);
@@ -3478,13 +3477,12 @@ TEST_F(TextfieldTest, TextfieldBoundsChangeTest) {
 TEST_F(TextfieldTest, TextfieldInitialization) {
   TestTextfield* new_textfield = new TestTextfield();
   new_textfield->set_controller(this);
-  View* container = new View();
   Widget* widget(new Widget());
   Widget::InitParams params =
       CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.bounds = gfx::Rect(100, 100, 100, 100);
   widget->Init(std::move(params));
-  widget->SetContentsView(container);
+  View* container = widget->SetContentsView(std::make_unique<View>());
   container->AddChildView(new_textfield);
 
   new_textfield->SetBoundsRect(params.bounds);

@@ -186,8 +186,8 @@ Otherwise the reviewer won't know to review the patch.
   * Add the reviewer's email address in the code review tool's reviewer field
     like normal.
 
-  * Add a line "Tbr:<reviewer's email>" to the bottom of the change list
-    description. e.g. `Tbr:reviewer1@chromium.org,reviewer2@chromium.org`
+  * Add a line "Tbr: <reviewer's email>" to the bottom of the change list
+    description. e.g. `Tbr: reviewer1@chromium.org,reviewer2@chromium.org`
 
   * Type a message so that the owners in the TBR list can understand who is
     responsible for reviewing what, as part of their post-commit review

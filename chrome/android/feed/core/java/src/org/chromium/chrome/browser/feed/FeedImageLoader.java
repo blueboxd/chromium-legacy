@@ -179,7 +179,9 @@ public class FeedImageLoader implements ImageLoaderApi {
 
     @VisibleForTesting
     protected void fetchImage(String url, int width, int height, Callback<Bitmap> callback) {
-        mImageFetcher.fetchImage(url, ImageFetcher.FEED_UMA_CLIENT_NAME, width, height, callback);
+        ImageFetcher.Params params =
+                ImageFetcher.Params.create(url, ImageFetcher.FEED_UMA_CLIENT_NAME, width, height);
+        mImageFetcher.fetchImage(params, callback);
     }
 
     @VisibleForTesting

@@ -21,6 +21,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ui/base/buildflags.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/base/cursor/ozone/bitmap_cursor_factory_ozone.h"
 #include "ui/events/ozone/device/device_manager.h"
 #include "ui/events/ozone/evdev/event_factory_evdev.h"
@@ -43,7 +44,6 @@
 #include "ui/ozone/platform/drm/host/drm_window_host.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/platform/drm/host/host_drm_device.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/mojom/drm_device.mojom.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -80,9 +80,7 @@ class OzonePlatformGbm : public OzonePlatform {
   OverlayManagerOzone* GetOverlayManager() override {
     return overlay_manager_.get();
   }
-  CursorFactoryOzone* GetCursorFactoryOzone() override {
-    return cursor_factory_ozone_.get();
-  }
+  CursorFactory* GetCursorFactory() override { return cursor_factory_.get(); }
   InputController* GetInputController() override {
     return event_factory_ozone_->input_controller();
   }
@@ -202,7 +200,7 @@ class OzonePlatformGbm : public OzonePlatform {
     display_manager_ = std::make_unique<DrmDisplayHostManager>(
         adapter, device_manager_.get(), &host_properties_,
         event_factory_ozone_->input_controller());
-    cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
+    cursor_factory_ = std::make_unique<BitmapCursorFactoryOzone>();
 
     host_drm_device_->SetDisplayManager(display_manager_.get());
   }
@@ -307,7 +305,7 @@ class OzonePlatformGbm : public OzonePlatform {
   scoped_refptr<HostDrmDevice> host_drm_device_;
   base::PlatformThreadRef host_thread_;
   std::unique_ptr<DeviceManager> device_manager_;
-  std::unique_ptr<BitmapCursorFactoryOzone> cursor_factory_ozone_;
+  std::unique_ptr<CursorFactory> cursor_factory_;
   std::unique_ptr<DrmWindowHostManager> window_manager_;
   std::unique_ptr<DrmCursor> cursor_;
   std::unique_ptr<EventFactoryEvdev> event_factory_ozone_;

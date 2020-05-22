@@ -10,8 +10,6 @@ static_library("renderer") {
     "distiller_js_render_frame_observer.h",
     "distiller_native_javascript.cc",
     "distiller_native_javascript.h",
-    "distiller_page_notifier_service_impl.cc",
-    "distiller_page_notifier_service_impl.h",
   ]
 
   public_deps = [ "//components/dom_distiller/core/proto" ]

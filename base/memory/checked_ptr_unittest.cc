@@ -67,9 +67,9 @@ static void ClearCounters() {
 struct CheckedPtrCountingNoOpImpl : base::internal::CheckedPtrNoOpImpl {
   using Super = base::internal::CheckedPtrNoOpImpl;
 
-  static ALWAYS_INLINE uintptr_t WrapRawPtr(const void* const_ptr) {
+  static ALWAYS_INLINE uintptr_t WrapRawPtr(const volatile void* cv_ptr) {
     ++g_wrap_raw_ptr_cnt;
-    return Super::WrapRawPtr(const_ptr);
+    return Super::WrapRawPtr(cv_ptr);
   }
 
   static ALWAYS_INLINE void* SafelyUnwrapPtrForDereference(
@@ -145,10 +145,10 @@ TEST(CheckedPtr, ArrowDereference) {
   EXPECT_EQ(ptr->x, 42);
 }
 
-TEST(CheckedPtr, ConstVoidPtr) {
+TEST(CheckedPtr, ConstVolatileVoidPtr) {
   int32_t foo[] = {1234567890};
-  CheckedPtr<const void> ptr = foo;
-  EXPECT_EQ(*static_cast<const int32_t*>(ptr), 1234567890);
+  CheckedPtr<const volatile void> ptr = foo;
+  EXPECT_EQ(*static_cast<const volatile int32_t*>(ptr), 1234567890);
 }
 
 TEST(CheckedPtr, VoidPtr) {
@@ -197,8 +197,8 @@ TEST(CheckedPtr, OperatorEQCast) {
   ClearCounters();
   int foo = 42;
   const int* raw_int_ptr = &foo;
-  void* raw_void_ptr = &foo;
-  CountingCheckedPtr<int> checked_int_ptr = &foo;
+  volatile void* raw_void_ptr = &foo;
+  CountingCheckedPtr<volatile int> checked_int_ptr = &foo;
   CountingCheckedPtr<const void> checked_void_ptr = &foo;
   EXPECT_TRUE(checked_int_ptr == checked_int_ptr);
   EXPECT_TRUE(checked_int_ptr == raw_int_ptr);
@@ -222,9 +222,9 @@ TEST(CheckedPtr, OperatorEQCast) {
   Derived derived_val(42, 84, 1024);
   Derived* raw_derived_ptr = &derived_val;
   const Base1* raw_base1_ptr = &derived_val;
-  Base2* raw_base2_ptr = &derived_val;
-  CountingCheckedPtr<const Derived> checked_derived_ptr = &derived_val;
-  CountingCheckedPtr<Base1> checked_base1_ptr = &derived_val;
+  volatile Base2* raw_base2_ptr = &derived_val;
+  CountingCheckedPtr<const volatile Derived> checked_derived_ptr = &derived_val;
+  CountingCheckedPtr<volatile Base1> checked_base1_ptr = &derived_val;
   CountingCheckedPtr<const Base2> checked_base2_ptr = &derived_val;
   EXPECT_TRUE(checked_derived_ptr == checked_derived_ptr);
   EXPECT_TRUE(checked_derived_ptr == raw_derived_ptr);
@@ -262,10 +262,10 @@ TEST(CheckedPtr, OperatorEQCast) {
 TEST(CheckedPtr, OperatorNECast) {
   ClearCounters();
   int foo = 42;
-  int* raw_int_ptr = &foo;
+  volatile int* raw_int_ptr = &foo;
   const void* raw_void_ptr = &foo;
   CountingCheckedPtr<const int> checked_int_ptr = &foo;
-  CountingCheckedPtr<void> checked_void_ptr = &foo;
+  CountingCheckedPtr<volatile void> checked_void_ptr = &foo;
   EXPECT_FALSE(checked_int_ptr != checked_int_ptr);
   EXPECT_FALSE(checked_int_ptr != raw_int_ptr);
   EXPECT_FALSE(raw_int_ptr != checked_int_ptr);
@@ -287,11 +287,11 @@ TEST(CheckedPtr, OperatorNECast) {
   ClearCounters();
   Derived derived_val(42, 84, 1024);
   const Derived* raw_derived_ptr = &derived_val;
-  Base1* raw_base1_ptr = &derived_val;
+  volatile Base1* raw_base1_ptr = &derived_val;
   const Base2* raw_base2_ptr = &derived_val;
-  CountingCheckedPtr<Derived> checked_derived_ptr = &derived_val;
+  CountingCheckedPtr<volatile Derived> checked_derived_ptr = &derived_val;
   CountingCheckedPtr<const Base1> checked_base1_ptr = &derived_val;
-  CountingCheckedPtr<Base2> checked_base2_ptr = &derived_val;
+  CountingCheckedPtr<const volatile Base2> checked_base2_ptr = &derived_val;
   EXPECT_FALSE(checked_derived_ptr != checked_derived_ptr);
   EXPECT_FALSE(checked_derived_ptr != raw_derived_ptr);
   EXPECT_FALSE(raw_derived_ptr != checked_derived_ptr);
@@ -366,6 +366,17 @@ TEST(CheckedPtr, Cast) {
   EXPECT_EQ(checked_const_derived_ptr->b1, 42);
   EXPECT_EQ(checked_const_derived_ptr->b2, 84);
   EXPECT_EQ(checked_const_derived_ptr->d, 1024);
+
+  volatile Derived* raw_volatile_derived_ptr = checked_derived_ptr2;
+  EXPECT_EQ(raw_volatile_derived_ptr->b1, 42);
+  EXPECT_EQ(raw_volatile_derived_ptr->b2, 84);
+  EXPECT_EQ(raw_volatile_derived_ptr->d, 1024);
+
+  CheckedPtr<volatile Derived> checked_volatile_derived_ptr =
+      raw_volatile_derived_ptr;
+  EXPECT_EQ(checked_volatile_derived_ptr->b1, 42);
+  EXPECT_EQ(checked_volatile_derived_ptr->b2, 84);
+  EXPECT_EQ(checked_volatile_derived_ptr->d, 1024);
 
   void* raw_void_ptr = checked_derived_ptr;
   CheckedPtr<void> checked_void_ptr = raw_derived_ptr;

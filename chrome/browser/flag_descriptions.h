@@ -1372,6 +1372,9 @@ extern const char kChromeDuetLabelsDescription[];
 extern const char kShareButtonInTopToolbarName[];
 extern const char kShareButtonInTopToolbarDescription[];
 
+extern const char kChromeShareQRCodeName[];
+extern const char kChromeShareQRCodeDescription[];
+
 extern const char kChromeShareScreenshotName[];
 extern const char kChromeShareScreenshotDescription[];
 

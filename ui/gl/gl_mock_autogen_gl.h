@@ -58,11 +58,21 @@ MOCK_METHOD0(BlendBarrierKHR, void());
 MOCK_METHOD4(BlendColor,
              void(GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha));
 MOCK_METHOD1(BlendEquation, void(GLenum mode));
+MOCK_METHOD2(BlendEquationiOES, void(GLuint buf, GLenum mode));
 MOCK_METHOD2(BlendEquationSeparate, void(GLenum modeRGB, GLenum modeAlpha));
+MOCK_METHOD3(BlendEquationSeparateiOES,
+             void(GLuint buf, GLenum modeRGB, GLenum modeAlpha));
 MOCK_METHOD2(BlendFunc, void(GLenum sfactor, GLenum dfactor));
+MOCK_METHOD3(BlendFunciOES, void(GLuint buf, GLenum sfactor, GLenum dfactor));
 MOCK_METHOD4(
     BlendFuncSeparate,
     void(GLenum srcRGB, GLenum dstRGB, GLenum srcAlpha, GLenum dstAlpha));
+MOCK_METHOD5(BlendFuncSeparateiOES,
+             void(GLuint buf,
+                  GLenum srcRGB,
+                  GLenum dstRGB,
+                  GLenum srcAlpha,
+                  GLenum dstAlpha));
 MOCK_METHOD10(BlitFramebuffer,
               void(GLint srcX0,
                    GLint srcY0,
@@ -111,6 +121,12 @@ MOCK_METHOD3(ClientWaitSyncAPPLE,
 MOCK_METHOD4(
     ColorMask,
     void(GLboolean red, GLboolean green, GLboolean blue, GLboolean alpha));
+MOCK_METHOD5(ColorMaskiOES,
+             void(GLuint buf,
+                  GLboolean red,
+                  GLboolean green,
+                  GLboolean blue,
+                  GLboolean alpha));
 MOCK_METHOD1(CompileShader, void(GLuint shader));
 MOCK_METHOD8(CompressedTexImage2D,
              void(GLenum target,
@@ -293,6 +309,7 @@ MOCK_METHOD2(DepthRangef, void(GLclampf zNear, GLclampf zFar));
 MOCK_METHOD2(DetachShader, void(GLuint program, GLuint shader));
 MOCK_METHOD1(Disable, void(GLenum cap));
 MOCK_METHOD1(DisableExtensionANGLE, void(const char* name));
+MOCK_METHOD2(DisableiOES, void(GLenum target, GLuint index));
 MOCK_METHOD1(DisableVertexAttribArray, void(GLuint index));
 MOCK_METHOD3(DiscardFramebufferEXT,
              void(GLenum target,
@@ -344,6 +361,7 @@ MOCK_METHOD2(EGLImageTargetRenderbufferStorageOES,
 MOCK_METHOD2(EGLImageTargetTexture2DOES,
              void(GLenum target, GLeglImageOES image));
 MOCK_METHOD1(Enable, void(GLenum cap));
+MOCK_METHOD2(EnableiOES, void(GLenum target, GLuint index));
 MOCK_METHOD1(EnableVertexAttribArray, void(GLuint index));
 MOCK_METHOD1(EndQuery, void(GLenum target));
 MOCK_METHOD1(EndTilingQCOM, void(GLbitfield preserveMask));
@@ -900,6 +918,7 @@ MOCK_METHOD7(InvalidateSubFramebuffer,
 MOCK_METHOD1(InvalidateTextureANGLE, void(GLenum target));
 MOCK_METHOD1(IsBuffer, GLboolean(GLuint buffer));
 MOCK_METHOD1(IsEnabled, GLboolean(GLenum cap));
+MOCK_METHOD2(IsEnablediOES, GLboolean(GLenum target, GLuint index));
 MOCK_METHOD1(IsFenceAPPLE, GLboolean(GLuint fence));
 MOCK_METHOD1(IsFenceNV, GLboolean(GLuint fence));
 MOCK_METHOD1(IsFramebufferEXT, GLboolean(GLuint framebuffer));

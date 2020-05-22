@@ -130,7 +130,8 @@ class ChromeProvidedSharingOptionsProvider {
             propertyModels.add(createSendTabToSelfPropertyModel());
         }
         if (!Collections.disjoint(
-                    mSharingOptionToContentTypes.get(SharingOption.QR_CODE), contentTypes)) {
+                    mSharingOptionToContentTypes.get(SharingOption.QR_CODE), contentTypes)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SHARE_QRCODE)) {
             propertyModels.add(createQrCodePropertyModel());
         }
         if (!Collections.disjoint(

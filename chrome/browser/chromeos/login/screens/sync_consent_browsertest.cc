@@ -33,6 +33,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "chromeos/constants/chromeos_pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/consent_level.h"
@@ -436,6 +437,9 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   PrefService* prefs = profile->GetPrefs();
   EXPECT_FALSE(prefs->GetBoolean(syncer::prefs::kOsSyncFeatureEnabled));
 
+  // Dialog not completed yet.
+  EXPECT_FALSE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
+
   // Wait for content to load.
   SyncConsentScreen* screen = GetSyncConsentScreen();
   ConsentRecordedWaiter consent_recorded_waiter;
@@ -493,6 +497,9 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest, MAYBE_DefaultFlow) {
   histogram_tester_.ExpectTotalCount(
       "OOBE.StepCompletionTimeByExitReason.Sync-consent.Next", 1);
   histogram_tester_.ExpectTotalCount("OOBE.StepCompletionTime.Sync-consent", 1);
+
+  // Dialog is completed.
+  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
 }
 
 // Flaky failures on sanitizer builds. https://crbug.com/1054377
@@ -580,6 +587,10 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
   // Browser sync is on.
   EXPECT_TRUE(settings->IsSyncRequested());
   EXPECT_TRUE(settings->IsFirstSetupComplete());
+
+  // Dialog is completed.
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
 }
 
 IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
@@ -598,6 +609,10 @@ IN_PROC_BROWSER_TEST_F(SyncConsentSplitSettingsSyncTest,
   // Browser sync is off.
   EXPECT_FALSE(settings->IsSyncRequested());
   EXPECT_FALSE(settings->IsFirstSetupComplete());
+
+  // Dialog is completed.
+  PrefService* prefs = ProfileManager::GetPrimaryUserProfile()->GetPrefs();
+  EXPECT_TRUE(prefs->GetBoolean(chromeos::prefs::kSyncOobeCompleted));
 }
 
 // Tests that the SyncConsent screen performs a timezone request so that
@@ -617,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(SyncConsentTimezoneOverride, MakesTimezoneRequest) {
   LoginToSyncConsentScreen();
   EXPECT_EQ("TimezeonPropagationTest",
             g_browser_process->local_state()->GetString(
-                prefs::kSigninScreenTimezone));
+                ::prefs::kSigninScreenTimezone));
 }
 
 }  // namespace

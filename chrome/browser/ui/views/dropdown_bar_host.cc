@@ -59,7 +59,7 @@ void DropdownBarHost::Init(views::View* host_view,
   params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
 #endif
   host_->Init(std::move(params));
-  host_->SetContentsView(clip_view.release());
+  host_->SetContentsView(std::move(clip_view));
 
   SetHostViewNative(host_view);
 

@@ -1344,13 +1344,8 @@ void EventHandler::MarkHoverStateDirty() {
 Element* EventHandler::EffectiveMouseEventTargetElement(
     Element* target_element) {
   Element* new_element_under_mouse = target_element;
-  if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled()) {
-    if (pointer_event_manager_->GetMouseCaptureTarget())
-      new_element_under_mouse = pointer_event_manager_->GetMouseCaptureTarget();
-  } else {
-    if (capturing_mouse_events_element_)
-      new_element_under_mouse = capturing_mouse_events_element_.Get();
-  }
+  if (pointer_event_manager_->GetMouseCaptureTarget())
+    new_element_under_mouse = pointer_event_manager_->GetMouseCaptureTarget();
   return new_element_under_mouse;
 }
 
@@ -2419,8 +2414,7 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
           frame_, FloatPoint(event.PositionInRootFrame()));
 
   // TODO(eirage): This does not handle chorded buttons yet.
-  if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled() &&
-      event.GetType() != WebInputEvent::Type::kMouseDown) {
+  if (event.GetType() != WebInputEvent::Type::kMouseDown) {
     HitTestResult result(request, HitTestLocation(document_point));
 
     Element* capture_target;
@@ -2458,11 +2452,9 @@ MouseEventWithHitTestResults EventHandler::GetMouseEventTarget(
 void EventHandler::ReleaseMouseCaptureFromLocalRoot() {
   CaptureMouseEventsToWidget(false);
 
-  if (RuntimeEnabledFeatures::UnifiedPointerCaptureInBlinkEnabled()) {
-    frame_->LocalFrameRoot()
-        .GetEventHandler()
-        .ReleaseMouseCaptureFromCurrentFrame();
-  }
+  frame_->LocalFrameRoot()
+      .GetEventHandler()
+      .ReleaseMouseCaptureFromCurrentFrame();
 }
 
 void EventHandler::ReleaseMouseCaptureFromCurrentFrame() {

@@ -4467,22 +4467,11 @@ bool LocalFrameView::MapToVisualRectInRemoteRootFrame(
   // This is the top-level frame, so no mapping necessary.
   if (frame_->IsMainFrame())
     return true;
-  bool result;
-  if (apply_overflow_clip) {
-    result = rect.InclusiveIntersect(
-        PhysicalRect(frame_->RemoteViewportIntersection()));
-    if (result)
-      rect.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
-  } else {
-    // If we are not applying the overflow clip, the mapping should be in the
-    // remote viewport's coordinate system. Map rect to the remote viewport's
-    // coordinate system prior to intersecting.
-    // RemoteMainFrameDocumentIntersection is in the remote viewport's
-    // coordinate system.
+  bool result = rect.InclusiveIntersect(PhysicalRect(
+      apply_overflow_clip ? frame_->RemoteViewportIntersection()
+                          : frame_->RemoteMainFrameDocumentIntersection()));
+  if (result)
     rect.Move(PhysicalOffset(GetFrame().RemoteViewportOffset()));
-    result = rect.InclusiveIntersect(
-        PhysicalRect(frame_->RemoteMainFrameDocumentIntersection()));
-  }
   return result;
 }
 

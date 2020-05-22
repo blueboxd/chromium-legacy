@@ -126,9 +126,6 @@ class BackdropURLLoader {
     DCHECK(!simple_loader_);
 
     loader_factory_ = AmbientClient::Get()->GetURLLoaderFactory();
-
-    // TODO(b/148818448): This will reset previous request without callback
-    // called. Handle parallel/sequential requests to server.
     simple_loader_ = network::SimpleURLLoader::Create(
         std::move(resource_request), traffic_annotation);
     simple_loader_->AttachStringForUpload(request_body, kProtoMimeType);

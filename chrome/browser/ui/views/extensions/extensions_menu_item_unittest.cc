@@ -52,7 +52,7 @@ class ExtensionsMenuItemViewTest : public BrowserWithTestWindowTest {
         browser(), std::move(controller));
     primary_button_on_menu_ = menu_item->primary_action_button_for_testing();
 
-    widget_->SetContentsView(menu_item.release());
+    widget_->SetContentsView(std::move(menu_item));
   }
 
   void TearDown() override {

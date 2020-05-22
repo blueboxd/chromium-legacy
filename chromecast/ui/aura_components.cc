@@ -9,7 +9,11 @@
 namespace chromecast {
 
 AuraComponents::AuraComponents(CastWindowManager* cast_window_manager)
-    : media_overlay_(std::make_unique<MediaOverlayImpl>(cast_window_manager)) {}
+#if defined(ENABLE_MEDIA_OVERLAY)
+    : media_overlay_(std::make_unique<MediaOverlayImpl>(cast_window_manager))
+#endif
+{
+}
 
 AuraComponents::~AuraComponents() = default;
 

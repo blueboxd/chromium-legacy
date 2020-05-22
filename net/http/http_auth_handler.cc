@@ -25,11 +25,13 @@ HttpAuthHandler::HttpAuthHandler()
 
 HttpAuthHandler::~HttpAuthHandler() = default;
 
-bool HttpAuthHandler::InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
-                                        HttpAuth::Target target,
-                                        const SSLInfo& ssl_info,
-                                        const GURL& origin,
-                                        const NetLogWithSource& net_log) {
+bool HttpAuthHandler::InitFromChallenge(
+    HttpAuthChallengeTokenizer* challenge,
+    HttpAuth::Target target,
+    const SSLInfo& ssl_info,
+    const NetworkIsolationKey& network_isolation_key,
+    const GURL& origin,
+    const NetLogWithSource& net_log) {
   origin_ = origin;
   target_ = target;
   score_ = -1;
@@ -38,7 +40,7 @@ bool HttpAuthHandler::InitFromChallenge(HttpAuthChallengeTokenizer* challenge,
 
   auth_challenge_ = challenge->challenge_text();
   net_log_.BeginEvent(NetLogEventType::AUTH_HANDLER_INIT);
-  bool ok = Init(challenge, ssl_info);
+  bool ok = Init(challenge, ssl_info, network_isolation_key);
   net_log_.AddEntryWithBoolParams(NetLogEventType::AUTH_HANDLER_INIT,
                                   NetLogEventPhase::END, "succeeded", ok);
 

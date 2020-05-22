@@ -108,9 +108,14 @@ void AddUntrustedDataSource(BrowserContext* browser_context,
       base::BindRepeating([](const std::string& path) { return true; }),
       base::BindRepeating(&GetResource));
   if (csp.has_value()) {
-    if (csp->child_src.has_value())
+    if (csp->child_src.has_value()) {
       untrusted_data_source->OverrideContentSecurityPolicyChildSrc(
           csp->child_src.value());
+    }
+    if (csp->script_src.has_value()) {
+      untrusted_data_source->OverrideContentSecurityPolicyScriptSrc(
+          csp->script_src.value());
+    }
     if (csp->no_xfo)
       untrusted_data_source->DisableDenyXFrameOptions();
     if (csp->frame_ancestors.has_value()) {

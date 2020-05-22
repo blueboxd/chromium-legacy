@@ -8,6 +8,21 @@
 
 namespace content {
 
+DedicatedWorkerServiceImpl::DedicatedWorkerInfo::DedicatedWorkerInfo(
+    int worker_process_id,
+    GlobalFrameRoutingId ancestor_render_frame_host_id)
+    : worker_process_id(worker_process_id),
+      ancestor_render_frame_host_id(ancestor_render_frame_host_id) {}
+
+DedicatedWorkerServiceImpl::DedicatedWorkerInfo::DedicatedWorkerInfo(
+    const DedicatedWorkerInfo& info) = default;
+DedicatedWorkerServiceImpl::DedicatedWorkerInfo&
+DedicatedWorkerServiceImpl::DedicatedWorkerInfo::operator=(
+    const DedicatedWorkerInfo& info) = default;
+
+DedicatedWorkerServiceImpl::DedicatedWorkerInfo::~DedicatedWorkerInfo() =
+    default;
+
 DedicatedWorkerServiceImpl::DedicatedWorkerServiceImpl() = default;
 
 DedicatedWorkerServiceImpl::~DedicatedWorkerServiceImpl() = default;
@@ -28,6 +43,10 @@ void DedicatedWorkerServiceImpl::EnumerateDedicatedWorkers(Observer* observer) {
     observer->OnWorkerCreated(
         dedicated_worker_id, dedicated_worker_info.worker_process_id,
         dedicated_worker_info.ancestor_render_frame_host_id);
+    if (dedicated_worker_info.final_response_url) {
+      observer->OnFinalResponseURLDetermined(
+          dedicated_worker_id, *dedicated_worker_info.final_response_url);
+    }
   }
 }
 
@@ -42,8 +61,8 @@ void DedicatedWorkerServiceImpl::NotifyWorkerCreated(
   bool inserted =
       dedicated_worker_infos_
           .emplace(dedicated_worker_id,
-                   DedicatedWorkerInfo{worker_process_id,
-                                       ancestor_render_frame_host_id})
+                   DedicatedWorkerInfo(worker_process_id,
+                                       ancestor_render_frame_host_id))
           .second;
   DCHECK(inserted);
 
@@ -68,7 +87,10 @@ void DedicatedWorkerServiceImpl::NotifyBeforeWorkerDestroyed(
 void DedicatedWorkerServiceImpl::NotifyWorkerFinalResponseURLDetermined(
     DedicatedWorkerId dedicated_worker_id,
     const GURL& url) {
-  DCHECK(base::Contains(dedicated_worker_infos_, dedicated_worker_id));
+  auto it = dedicated_worker_infos_.find(dedicated_worker_id);
+  DCHECK(it != dedicated_worker_infos_.end());
+
+  it->second.final_response_url = url;
 
   for (Observer& observer : observers_)
     observer.OnFinalResponseURLDetermined(dedicated_worker_id, url);

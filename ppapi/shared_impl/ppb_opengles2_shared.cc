@@ -10,7 +10,7 @@
 
 #include "ppapi/shared_impl/ppb_opengles2_shared.h"
 
-#include "base/check.h"
+#include "base/logging.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/thunk/enter.h"

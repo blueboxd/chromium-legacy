@@ -24,6 +24,10 @@ try_.set_defaults(
 # Builders are sorted first lexicographically by the function used to define
 # them, then lexicographically by their name
 
+try_.blink_builder(
+    name = 'linux-blink-optional-highdpi-rel',
+    goma_backend = goma.backend.RBE_PROD,
+)
 
 try_.blink_builder(
     name = 'win10-blink-rel',

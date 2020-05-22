@@ -10,6 +10,7 @@
 #include "base/check_op.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "cc/base/features.h"
 #include "content/common/input_messages.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/widget_input_handler_impl.h"
@@ -82,9 +83,11 @@ blink::mojom::InputEventResultState InputEventDispositionToAck(
       return blink::mojom::InputEventResultState::kSetNonBlocking;
     case blink::InputHandlerProxy::DID_HANDLE_SHOULD_BUBBLE:
       return blink::mojom::InputEventResultState::kConsumedShouldBubble;
+    case blink::InputHandlerProxy::REQUIRES_MAIN_THREAD_HIT_TEST:
+    default:
+      NOTREACHED();
+      return blink::mojom::InputEventResultState::kUnknown;
   }
-  NOTREACHED();
-  return blink::mojom::InputEventResultState::kUnknown;
 }
 
 }  // namespace
@@ -257,7 +260,11 @@ void WidgetInputHandlerManager::DispatchNonBlockingEventToMainThread(
 void WidgetInputHandlerManager::FindScrollTargetOnMainThread(
     const gfx::PointF& point,
     ElementAtPointCallback callback) {
+  TRACE_EVENT2("input",
+               "WidgetInputHandlerManager::FindScrollTargetOnMainThread",
+               "point.x", point.x(), "point.y", point.y());
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+  DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
 
   uint64_t element_id =
       render_widget_->GetHitTestResultAtPoint(point).GetScrollableContainerId();
@@ -592,6 +599,34 @@ void WidgetInputHandlerManager::DispatchDirectlyToWidget(
   render_widget_->HandleInputEvent(*event, std::move(send_callback));
 }
 
+void WidgetInputHandlerManager::FindScrollTargetReply(
+    std::unique_ptr<blink::WebCoalescedInputEvent> event,
+    blink::mojom::WidgetInputHandler::DispatchEventCallback browser_callback,
+    uint64_t hit_test_result) {
+  TRACE_EVENT1("input", "WidgetInputHandlerManager::FindScrollTargetReply",
+               "hit_test_result", hit_test_result);
+  DCHECK(InputThreadTaskRunner()->BelongsToCurrentThread());
+  DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
+
+  // If the input_handler was destroyed in the mean time just ACK the event as
+  // unconsumed to the browser and drop further handling.
+  if (!input_handler_proxy_) {
+    std::move(browser_callback)
+        .Run(blink::mojom::InputEventResultSource::kMainThread,
+             ui::LatencyInfo(),
+             blink::mojom::InputEventResultState::kNotConsumed, nullptr,
+             nullptr);
+    return;
+  }
+
+  input_handler_proxy_->ContinueScrollBeginAfterMainThreadHitTest(
+      std::move(event),
+      base::BindOnce(
+          &WidgetInputHandlerManager::DidHandleInputEventSentToCompositor, this,
+          std::move(browser_callback)),
+      hit_test_result);
+}
+
 void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
     blink::mojom::WidgetInputHandler::DispatchEventCallback callback,
     blink::InputHandlerProxy::EventDisposition event_disposition,
@@ -607,6 +642,34 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
   ui::LatencyInfo::TraceIntermediateFlowEvents(
       {event->latency_info()},
       ChromeLatencyInfo::STEP_DID_HANDLE_INPUT_AND_OVERSCROLL);
+
+  if (event_disposition ==
+      blink::InputHandlerProxy::REQUIRES_MAIN_THREAD_HIT_TEST) {
+    TRACE_EVENT_INSTANT0("input", "PostingHitTestToMainThread",
+                         TRACE_EVENT_SCOPE_THREAD);
+    // TODO(bokan): We're going to need to perform a hit test on the main thread
+    // before we can continue handling the event. This is the critical path of a
+    // scroll so we should probably ensure the scheduler can prioritize it
+    // accordingly. https://crbug.com/1082618.
+    DCHECK(base::FeatureList::IsEnabled(::features::kScrollUnification));
+    DCHECK_EQ(event->Event().GetType(),
+              blink::WebInputEvent::Type::kGestureScrollBegin);
+    DCHECK(input_handler_proxy_);
+
+    gfx::PointF event_position =
+        static_cast<const blink::WebGestureEvent&>(event->Event())
+            .PositionInWidget();
+
+    ElementAtPointCallback result_callback = base::BindOnce(
+        &WidgetInputHandlerManager::FindScrollTargetReply, this->AsWeakPtr(),
+        std::move(event), std::move(callback));
+
+    main_thread_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&WidgetInputHandlerManager::FindScrollTargetOnMainThread,
+                       this, event_position, std::move(result_callback)));
+    return;
+  }
 
   blink::mojom::InputEventResultState ack_state =
       InputEventDispositionToAck(event_disposition);

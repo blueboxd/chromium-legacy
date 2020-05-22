@@ -116,7 +116,7 @@ crbug.com/868596 [ android android-chromium nvidia ] Pixel_OffscreenCanvasWebGLP
 crbug.com/948141 Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 
 # Fails on Nexus 5, 6 and 6P
-crbug.com/883500 [ android no-skia-renderer qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
+crbug.com/883500 [ android qualcomm-adreno-(tm)-330 ] Pixel_BackgroundImage [ Skip ]
 crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-420 ] Pixel_BackgroundImage [ Skip ]
 crbug.com/883500 [ android no-use-gl no-use-vulkan qualcomm-adreno-(tm)-430 ] Pixel_BackgroundImage [ Skip ]
 crbug.com/1029389 [ android qualcomm-adreno-(tm)-330 ] Pixel_PrecisionRoundedCorner [ Skip ]

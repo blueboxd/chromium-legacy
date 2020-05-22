@@ -15,6 +15,11 @@ namespace cc {
 
 const ElementIdType ElementId::kInvalidElementId = 0;
 
+// static
+bool ElementId::IsValid(ElementIdType id) {
+  return id != kInvalidElementId;
+}
+
 ElementId LayerIdToElementIdForTesting(int layer_id) {
   return ElementId(std::numeric_limits<int>::max() - layer_id);
 }

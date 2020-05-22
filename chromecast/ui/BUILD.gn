@@ -57,6 +57,10 @@ cast_source_set("aura_components") {
   } else {
     sources += [ "aura_components_dummy.cc" ]
   }
+
+  if (enable_media_overlay) {
+    defines = [ "ENABLE_MEDIA_OVERLAY" ]
+  }
 }
 
 if (use_aura) {

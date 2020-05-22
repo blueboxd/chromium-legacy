@@ -116,6 +116,11 @@ struct CORE_EXPORT PhysicalOffset {
             LayoutUnit::FromFloatRound(size.Height())};
   }
 
+  void Scale(float s) {
+    left *= s;
+    top *= s;
+  }
+
   constexpr explicit operator FloatPoint() const { return {left, top}; }
   constexpr explicit operator FloatSize() const { return {left, top}; }
 

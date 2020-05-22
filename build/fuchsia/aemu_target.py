@@ -73,3 +73,13 @@ class AemuTarget(qemu_target.QemuTarget):
       '-device', 'ich9-ahci,id=ahci'])
     logging.info(' '.join(aemu_command))
     return aemu_command
+
+  def _SetEnv(self):
+    env = os.environ.copy()
+    aemu_logging_env = {
+        "ANDROID_EMU_VK_LOG_CALLS": "1",
+        "ANDROID_EMUGL_LOG_PRINT": "1",
+        "ANDROID_EMUGL_FINE_LOG": "1",
+    }
+    env.update(aemu_logging_env)
+    return env

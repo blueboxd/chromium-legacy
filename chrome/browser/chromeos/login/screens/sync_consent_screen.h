@@ -121,6 +121,9 @@ class SyncConsentScreen : public BaseScreen,
   }
 
  private:
+  // Marks the dialog complete and runs |exit_callback_|.
+  void Finish(Result result);
+
   // BaseScreen:
   bool MaybeSkip() override;
   void ShowImpl() override;

@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -66,9 +69,10 @@ class LocationIconViewTest : public ChromeViewsTestBase {
     delegate_ =
         std::make_unique<TestLocationIconDelegate>(location_bar_model());
 
-    view_ = new LocationIconView(font_list, delegate(), delegate());
-    view_->SetBoundsRect(gfx::Rect(0, 0, 24, 24));
-    widget_->SetContentsView(view_);
+    auto view =
+        std::make_unique<LocationIconView>(font_list, delegate(), delegate());
+    view->SetBoundsRect(gfx::Rect(0, 0, 24, 24));
+    view_ = widget_->SetContentsView(std::move(view));
 
     widget_->Show();
   }

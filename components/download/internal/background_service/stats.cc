@@ -322,11 +322,5 @@ void LogHasUploadData(DownloadClient client, bool has_upload_data) {
   base::UmaHistogramBoolean(name, has_upload_data);
 }
 
-void LogDownloadClientInflatedFullBrowser(DownloadClient client) {
-  std::string client_name(ClientToHistogramSuffix(client));
-  base::UmaHistogramBoolean(
-      "Download.Service.Clients.InflatedFullBrowser." + client_name, true);
-}
-
 }  // namespace stats
 }  // namespace download

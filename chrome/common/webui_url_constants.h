@@ -93,15 +93,6 @@ extern const char kChromeUIInterstitialHost[];
 extern const char kChromeUIInterstitialURL[];
 extern const char kChromeUIInterventionsInternalsHost[];
 extern const char kChromeUIInvalidationsHost[];
-
-// |kChromeUIKaleidoscopeHost| and |kChromeUIKaleidoscopeContentHost| are used
-// in the public repo, so are defined here. We only use the URL constants in the
-// internal repo, but they are defined here to be near the host constants.
-extern const char kChromeUIKaleidoscopeHost[];
-extern const char kChromeUIKaleidoscopeURL[];
-extern const char kChromeUIKaleidoscopeContentHost[];
-extern const char kChromeUIKaleidoscopeContentURL[];
-
 extern const char kChromeUIKillHost[];
 extern const char kChromeUILocalStateHost[];
 extern const char kChromeUIManagementHost[];

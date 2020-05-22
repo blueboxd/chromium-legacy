@@ -17,6 +17,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/trace_event_analyzer.h"
 #include "build/build_config.h"
+#include "cc/base/features.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -42,17 +43,27 @@ using cc::InputHandler;
 using cc::ScrollBeginThreadState;
 using cc::TouchAction;
 using testing::_;
+using testing::AllOf;
 using testing::DoAll;
+using testing::Eq;
 using testing::Field;
 using testing::Mock;
+using testing::NiceMock;
+using testing::Property;
 using testing::Return;
 using testing::SetArgPointee;
+using testing::StrictMock;
 
 namespace blink {
 namespace test {
 
 namespace {
 
+// These test parameters control:
+//   - Whether ot not to setup a synchronous input handler. This simulates the
+//     mode that WebView runs in.
+//   - Whether or not the input handler says that the viewport is scrolling
+//     (ROOT_SCROLL or CHILD_SCROLL).
 enum InputHandlerProxyTestType {
   ROOT_SCROLL_NORMAL_HANDLER,
   ROOT_SCROLL_SYNCHRONOUS_HANDLER,
@@ -270,6 +281,11 @@ const cc::InputHandler::ScrollStatus kImplThreadScrollState(
     cc::InputHandler::SCROLL_ON_IMPL_THREAD,
     cc::MainThreadScrollingReason::kNotScrollingOnMain);
 
+const cc::InputHandler::ScrollStatus kRequiresMainThreadHitTestState(
+    cc::InputHandler::SCROLL_ON_IMPL_THREAD,
+    cc::MainThreadScrollingReason::kNotScrollingOnMain,
+    /*needs_main_thread_hit_test=*/true);
+
 const cc::InputHandler::ScrollStatus kMainThreadScrollState(
     cc::InputHandler::SCROLL_ON_MAIN_THREAD,
     cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
@@ -445,10 +461,6 @@ class InputHandlerProxyEventQueueTest : public testing::Test {
       : input_handler_proxy_(&mock_input_handler_,
                              &mock_client_,
                              /*force_input_to_main_thread=*/false) {
-    if (input_handler_proxy_.compositor_event_queue_) {
-      input_handler_proxy_.compositor_event_queue_ =
-          std::make_unique<CompositorThreadEventQueue>();
-    }
     SetScrollPredictionEnabled(true);
   }
 
@@ -1819,6 +1831,487 @@ TEST_P(InputHandlerProxyTest, TouchMoveBlockingAddedAfterPassiveTouchStart) {
   EXPECT_EQ(InputHandlerProxy::DID_HANDLE_NON_BLOCKING,
             HandleInputEventWithLatencyInfo(input_handler_.get(), touch));
   VERIFY_AND_RESET_MOCKS();
+}
+
+class UnifiedScrollingInputHandlerProxyTest : public testing::Test {
+ public:
+  using ElementId = cc::ElementId;
+  using ElementIdType = cc::ElementIdType;
+  using EventDisposition = InputHandlerProxy::EventDisposition;
+  using EventDispositionCallback = InputHandlerProxy::EventDispositionCallback;
+  using LatencyInfo = ui::LatencyInfo;
+  using ScrollGranularity = ui::ScrollGranularity;
+  using ScrollState = cc::ScrollState;
+  using ReturnedDisposition = base::Optional<EventDisposition>;
+
+  UnifiedScrollingInputHandlerProxyTest()
+      : input_handler_proxy_(&mock_input_handler_,
+                             &mock_client_,
+                             /*force_input_to_main_thread=*/false) {}
+
+  void SetUp() override {
+    scoped_feature_list.InitAndEnableFeature(features::kScrollUnification);
+  }
+
+  std::unique_ptr<WebCoalescedInputEvent> ScrollBegin() {
+    auto gsb = std::make_unique<WebGestureEvent>(
+        WebInputEvent::Type::kGestureScrollBegin, WebInputEvent::kNoModifiers,
+        TimeForInputEvents(), WebGestureDevice::kTouchpad);
+    gsb->data.scroll_begin.scrollable_area_element_id = 0;
+    gsb->data.scroll_begin.main_thread_hit_tested = false;
+    ;
+    gsb->data.scroll_begin.delta_x_hint = 0;
+    gsb->data.scroll_begin.delta_y_hint = 10;
+    gsb->data.scroll_begin.pointer_count = 0;
+
+    LatencyInfo unused;
+    return std::make_unique<WebCoalescedInputEvent>(std::move(gsb), unused);
+  }
+
+  std::unique_ptr<WebCoalescedInputEvent> ScrollUpdate() {
+    auto gsu = std::make_unique<WebGestureEvent>(
+        WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
+        TimeForInputEvents(), WebGestureDevice::kTouchpad);
+    gsu->data.scroll_update.delta_x = 0;
+    gsu->data.scroll_update.delta_y = 10;
+
+    LatencyInfo unused;
+    return std::make_unique<WebCoalescedInputEvent>(std::move(gsu), unused);
+  }
+
+  std::unique_ptr<WebCoalescedInputEvent> ScrollEnd() {
+    auto gse = std::make_unique<WebGestureEvent>(
+        WebInputEvent::Type::kGestureScrollEnd, WebInputEvent::kNoModifiers,
+        TimeForInputEvents(), WebGestureDevice::kTouchpad);
+
+    LatencyInfo unused;
+    return std::make_unique<WebCoalescedInputEvent>(std::move(gse), unused);
+  }
+
+  void DispatchEvent(std::unique_ptr<blink::WebCoalescedInputEvent> event,
+                     ReturnedDisposition* out_disposition = nullptr) {
+    input_handler_proxy_.HandleInputEventWithLatencyInfo(
+        std::move(event), BindEventHandledCallback(out_disposition));
+  }
+
+  void ContinueScrollBeginAfterMainThreadHitTest(
+      std::unique_ptr<WebCoalescedInputEvent> event,
+      cc::ElementIdType hit_test_result,
+      ReturnedDisposition* out_disposition = nullptr) {
+    input_handler_proxy_.ContinueScrollBeginAfterMainThreadHitTest(
+        std::move(event), BindEventHandledCallback(out_disposition),
+        hit_test_result);
+  }
+
+  bool MainThreadHitTestInProgress() const {
+    return input_handler_proxy_.hit_testing_scroll_begin_on_main_thread_;
+  }
+
+  void BeginFrame() {
+    constexpr base::TimeDelta interval = base::TimeDelta::FromMilliseconds(16);
+    base::TimeTicks frame_time =
+        TimeForInputEvents() +
+        (next_begin_frame_number_ - viz::BeginFrameArgs::kStartingFrameNumber) *
+            interval;
+    input_handler_proxy_.DeliverInputForBeginFrame(viz::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, 0, next_begin_frame_number_++, frame_time,
+        frame_time + interval, interval, viz::BeginFrameArgs::NORMAL));
+  }
+
+  cc::InputHandlerScrollResult DidScrollResult() const {
+    cc::InputHandlerScrollResult result;
+    result.did_scroll = true;
+    return result;
+  }
+
+ protected:
+  NiceMock<MockInputHandler> mock_input_handler_;
+  NiceMock<MockInputHandlerProxyClient> mock_client_;
+
+ private:
+  void EventHandledCallback(
+      ReturnedDisposition* out_disposition,
+      EventDisposition event_disposition,
+      std::unique_ptr<WebCoalescedInputEvent> input_event,
+      std::unique_ptr<InputHandlerProxy::DidOverscrollParams> overscroll_params,
+      const WebInputEventAttribution& attribution) {
+    if (out_disposition)
+      *out_disposition = event_disposition;
+  }
+
+  EventDispositionCallback BindEventHandledCallback(
+      ReturnedDisposition* out_disposition = nullptr) {
+    return base::BindOnce(
+        &UnifiedScrollingInputHandlerProxyTest::EventHandledCallback,
+        weak_ptr_factory_.GetWeakPtr(), out_disposition);
+  }
+
+  base::TimeTicks TimeForInputEvents() const {
+    return WebInputEvent::GetStaticTimeStampForTests();
+  }
+
+  InputHandlerProxy input_handler_proxy_;
+  base::test::ScopedFeatureList scoped_feature_list;
+  base::SimpleTestTickClock tick_clock_;
+  uint64_t next_begin_frame_number_ = viz::BeginFrameArgs::kStartingFrameNumber;
+  base::WeakPtrFactory<UnifiedScrollingInputHandlerProxyTest> weak_ptr_factory_{
+      this};
+};
+
+// Test that when a main thread hit test is requested, the InputHandlerProxy
+// starts queueing incoming gesture event and the compositor queue is blocked
+// until the hit test is satisfied.
+TEST_F(UnifiedScrollingInputHandlerProxyTest, MainThreadHitTestRequired) {
+  // The hit testing state shouldn't be entered until one is actually requested.
+  EXPECT_FALSE(MainThreadHitTestInProgress());
+
+  // Inject a GSB that returns RequiresMainThreadHitTest.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .WillOnce(Return(kRequiresMainThreadHitTestState));
+
+    ReturnedDisposition disposition;
+    DispatchEvent(ScrollBegin(), &disposition);
+
+    EXPECT_TRUE(MainThreadHitTestInProgress());
+    EXPECT_EQ(InputHandlerProxy::REQUIRES_MAIN_THREAD_HIT_TEST, *disposition);
+
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  ReturnedDisposition gsu1_disposition;
+  ReturnedDisposition gsu2_disposition;
+
+  // Now inject a GSU. This should be queued.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
+
+    DispatchEvent(ScrollUpdate(), &gsu1_disposition);
+    EXPECT_FALSE(gsu1_disposition);
+
+    // Ensure the queue is blocked; a BeginFrame doesn't cause event dispatch.
+    BeginFrame();
+    EXPECT_FALSE(gsu1_disposition);
+
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // Inject a second GSU; it should be coalesced and also queued.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
+
+    DispatchEvent(ScrollUpdate(), &gsu2_disposition);
+    EXPECT_FALSE(gsu2_disposition);
+
+    // Ensure the queue is blocked.
+    BeginFrame();
+    EXPECT_FALSE(gsu2_disposition);
+
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  EXPECT_TRUE(MainThreadHitTestInProgress());
+
+  // The hit test reply arrives. Ensure we call ScrollBegin and unblock the
+  // queue.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .WillOnce(Return(kImplThreadScrollState));
+
+    // Additionally, the queue should be flushed by
+    // ContinueScrollBeginAfterMainThreadHitTest so that the GSUs dispatched
+    // earlier will now handled.
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _))
+        .WillOnce(Return(DidScrollResult()));
+
+    // Ensure we don't spurriously call ScrollEnd (because we think we're
+    // already in a scroll from the first GSB).
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(0);
+
+    ReturnedDisposition disposition;
+    const ElementIdType kHitTestResult = 12345;
+    ContinueScrollBeginAfterMainThreadHitTest(ScrollBegin(), kHitTestResult,
+                                              &disposition);
+
+    // The ScrollBegin should have been immediately re-injected and queue
+    // flushed.
+    EXPECT_FALSE(MainThreadHitTestInProgress());
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *disposition);
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *gsu1_disposition);
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *gsu2_disposition);
+
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // Injecting a new GSU should cause queueing and dispatching as usual.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _))
+        .WillOnce(Return(DidScrollResult()));
+
+    ReturnedDisposition disposition;
+    DispatchEvent(ScrollUpdate(), &disposition);
+    EXPECT_FALSE(disposition);
+
+    BeginFrame();
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *disposition);
+
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // Finish the scroll.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(1);
+    ReturnedDisposition disposition;
+    DispatchEvent(ScrollEnd(), &disposition);
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *disposition);
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  EXPECT_FALSE(MainThreadHitTestInProgress());
+}
+
+// Test to ensure that a main thread hit test sets the correct flags on the
+// re-injected GestureScrollBegin.
+TEST_F(UnifiedScrollingInputHandlerProxyTest, MainThreadHitTestEvent) {
+  // Inject a GSB that returns RequiresMainThreadHitTest.
+  {
+    // Ensure that by default we don't set a target. The
+    // |is_main_thread_hit_tested| property should default to false.
+    EXPECT_CALL(
+        mock_input_handler_,
+        ScrollBegin(
+            AllOf(Property(&ScrollState::target_element_id, Eq(ElementId())),
+                  Property(&ScrollState::is_main_thread_hit_tested, Eq(false))),
+            _))
+        .WillOnce(Return(kRequiresMainThreadHitTestState));
+    DispatchEvent(ScrollBegin());
+    ASSERT_TRUE(MainThreadHitTestInProgress());
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // The hit test reply arrives. Ensure we call ScrollBegin with the ElementId
+  // from the hit test and the main_thread
+  {
+    const ElementId kHitTestResult(12345);
+
+    EXPECT_CALL(
+        mock_input_handler_,
+        ScrollBegin(
+            AllOf(Property(&ScrollState::target_element_id, Eq(kHitTestResult)),
+                  Property(&ScrollState::is_main_thread_hit_tested, Eq(true))),
+            _))
+        .Times(1);
+
+    ContinueScrollBeginAfterMainThreadHitTest(ScrollBegin(),
+                                              kHitTestResult.GetStableId());
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+}
+
+// Test to ensure that a main thread hit test counts the correct number of
+// scrolls for metrics.
+TEST_F(UnifiedScrollingInputHandlerProxyTest, MainThreadHitTestMetrics) {
+  // Inject a GSB that returns RequiresMainThreadHitTest followed by a GSU and
+  // a GSE.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .WillOnce(Return(kRequiresMainThreadHitTestState))
+        .WillOnce(Return(kImplThreadScrollState));
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(1);
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(1);
+
+    // The record begin/end should be called exactly once.
+    EXPECT_CALL(mock_input_handler_, RecordScrollBegin(_, _)).Times(1);
+    EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
+
+    DispatchEvent(ScrollBegin());
+    EXPECT_TRUE(MainThreadHitTestInProgress());
+    DispatchEvent(ScrollUpdate());
+    DispatchEvent(ScrollEnd());
+
+    // Hit test reply.
+    const ElementIdType kHitTestResult = 12345;
+    ContinueScrollBeginAfterMainThreadHitTest(ScrollBegin(), kHitTestResult);
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // Ensure we don't record either a begin or an end if the hit test fails.
+  // TODO(bokan): Though it looks odd, it appears that today we do record the
+  // scrolling thread if the scroll is dropped. We should fix that but in the
+  // mean-time we add a test for the unified path in this case.
+  // https://crbug.com/1082601.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .WillOnce(Return(kRequiresMainThreadHitTestState));
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(0);
+
+    EXPECT_CALL(mock_input_handler_, RecordScrollBegin(_, _)).Times(1);
+    EXPECT_CALL(mock_input_handler_, RecordScrollEnd(_)).Times(1);
+
+    DispatchEvent(ScrollBegin());
+    EXPECT_TRUE(MainThreadHitTestInProgress());
+    DispatchEvent(ScrollUpdate());
+    DispatchEvent(ScrollEnd());
+
+    // Hit test reply failed.
+    const ElementIdType kHitTestResult = 0;
+    ASSERT_FALSE(ElementId::IsValid(kHitTestResult));
+
+    ContinueScrollBeginAfterMainThreadHitTest(ScrollBegin(), kHitTestResult);
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+}
+
+// Test the case where a main thread hit test is in progress on the main thread
+// and a GSE and new GSB arrive.
+TEST_F(UnifiedScrollingInputHandlerProxyTest,
+       ScrollEndAndBeginsDuringMainThreadHitTest) {
+  ReturnedDisposition gsb1_disposition;
+  ReturnedDisposition gsu1_disposition;
+  ReturnedDisposition gse1_disposition;
+  ReturnedDisposition gsb2_disposition;
+  ReturnedDisposition gsu2_disposition;
+  ReturnedDisposition gse2_disposition;
+
+  // Inject a GSB that returns RequiresMainThreadHitTest followed by a GSU and
+  // GSE that get queued.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .WillOnce(Return(kRequiresMainThreadHitTestState));
+    DispatchEvent(ScrollBegin(), &gsb1_disposition);
+    ASSERT_TRUE(MainThreadHitTestInProgress());
+    ASSERT_EQ(InputHandlerProxy::REQUIRES_MAIN_THREAD_HIT_TEST,
+              *gsb1_disposition);
+
+    DispatchEvent(ScrollUpdate(), &gsu1_disposition);
+    DispatchEvent(ScrollEnd(), &gse1_disposition);
+
+    // The queue is blocked so none of the events should be processed.
+    BeginFrame();
+
+    ASSERT_FALSE(gsu1_disposition);
+    ASSERT_FALSE(gse1_disposition);
+  }
+
+  // Inject another group of GSB, GSU, GSE. They should all be queued.
+  {
+    DispatchEvent(ScrollBegin(), &gsb2_disposition);
+    DispatchEvent(ScrollUpdate(), &gsu2_disposition);
+    DispatchEvent(ScrollEnd(), &gse2_disposition);
+
+    // The queue is blocked so none of the events should be processed.
+    BeginFrame();
+
+    EXPECT_FALSE(gsb2_disposition);
+    EXPECT_FALSE(gsu2_disposition);
+    EXPECT_FALSE(gse2_disposition);
+  }
+
+  ASSERT_TRUE(MainThreadHitTestInProgress());
+
+  // The hit test reply arrives. Ensure we call ScrollBegin and unblock the
+  // queue.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .Times(2)
+        .WillRepeatedly(Return(kImplThreadScrollState));
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _))
+        .Times(2)
+        .WillRepeatedly(Return(DidScrollResult()));
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(2);
+
+    ReturnedDisposition disposition;
+    const ElementIdType kHitTestResult = 12345;
+    ContinueScrollBeginAfterMainThreadHitTest(ScrollBegin(), kHitTestResult,
+                                              &disposition);
+
+    // The ScrollBegin should have been immediately re-injected and queue
+    // flushed.
+    EXPECT_FALSE(MainThreadHitTestInProgress());
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *disposition);
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *gsu1_disposition);
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *gse1_disposition);
+
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *gsb2_disposition);
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *gsu2_disposition);
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *gse2_disposition);
+
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+}
+
+// Test the case where a main thread hit test returns a null element_id. In
+// this case we should reset the state and unblock the queue.
+TEST_F(UnifiedScrollingInputHandlerProxyTest, MainThreadHitTestFailed) {
+  ReturnedDisposition gsu1_disposition;
+
+  // Inject a GSB that returns RequiresMainThreadHitTest.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .WillOnce(Return(kRequiresMainThreadHitTestState));
+    DispatchEvent(ScrollBegin());
+    DispatchEvent(ScrollUpdate(), &gsu1_disposition);
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // The hit test reply arrives with an invalid ElementId. We shouldn't call
+  // ScrollBegin nor ScrollUpdate. Both should be dropped without reaching the
+  // input handler.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _)).Times(0);
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
+    EXPECT_CALL(mock_input_handler_, ScrollEnd(_)).Times(0);
+
+    const ElementIdType kHitTestResult = 0;
+    ASSERT_FALSE(ElementId::IsValid(kHitTestResult));
+
+    ReturnedDisposition gsb_disposition;
+    ContinueScrollBeginAfterMainThreadHitTest(ScrollBegin(), kHitTestResult,
+                                              &gsb_disposition);
+
+    EXPECT_EQ(InputHandlerProxy::DROP_EVENT, *gsb_disposition);
+    EXPECT_EQ(InputHandlerProxy::DROP_EVENT, *gsu1_disposition);
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // Send a new GSU, ensure it's dropped without queueing since there's no
+  // scroll in progress.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _)).Times(0);
+
+    ReturnedDisposition disposition;
+    DispatchEvent(ScrollUpdate(), &disposition);
+    EXPECT_EQ(InputHandlerProxy::DROP_EVENT, *disposition);
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
+
+  // Ensure there's no left-over bad state by sending a new GSB+GSU which
+  // should be handled by the input handler immediately. A following GSU should
+  // be queued and dispatched at BeginFrame.
+  {
+    EXPECT_CALL(mock_input_handler_, ScrollBegin(_, _))
+        .WillOnce(Return(kImplThreadScrollState));
+    EXPECT_CALL(mock_input_handler_, ScrollUpdate(_, _))
+        .WillOnce(Return(DidScrollResult()))
+        .WillOnce(Return(DidScrollResult()));
+
+    // Note: The first GSU after a GSB is dispatched immediately without
+    // queueing.
+    ReturnedDisposition disposition;
+    DispatchEvent(ScrollBegin(), &disposition);
+    DispatchEvent(ScrollUpdate());
+
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *disposition);
+    disposition = base::nullopt;
+
+    DispatchEvent(ScrollUpdate(), &disposition);
+    EXPECT_FALSE(disposition);
+
+    BeginFrame();
+    EXPECT_EQ(InputHandlerProxy::DID_HANDLE, *disposition);
+    Mock::VerifyAndClearExpectations(&mock_input_handler_);
+  }
 }
 
 TEST(SynchronousInputHandlerProxyTest, StartupShutdown) {
@@ -3444,12 +3937,13 @@ TEST_F(InputHandlerProxyMomentumScrollJankTest, TestNonMomentumNoJank) {
                                     0);
 }
 
-INSTANTIATE_TEST_SUITE_P(AnimateInput,
+INSTANTIATE_TEST_SUITE_P(All,
                          InputHandlerProxyTest,
                          testing::ValuesIn(test_types));
 
-INSTANTIATE_TEST_SUITE_P(AnimateInput,
+INSTANTIATE_TEST_SUITE_P(All,
                          InputHandlerProxyMainThreadScrollingReasonTest,
                          testing::ValuesIn(test_types));
+
 }  // namespace test
 }  // namespace blink

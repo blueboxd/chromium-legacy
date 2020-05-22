@@ -41,12 +41,8 @@ constexpr uint32_t kSharedImageUsage =
 class SkiaOutputDeviceBufferQueue::Image {
  public:
   Image(gpu::SharedImageFactory* factory,
-        gpu::SharedImageRepresentationFactory* representation_factory,
-        bool is_gl)
-      : factory_(factory),
-        representation_factory_(representation_factory),
-        is_gl_(is_gl) {}
-
+        gpu::SharedImageRepresentationFactory* representation_factory)
+      : factory_(factory), representation_factory_(representation_factory) {}
   ~Image() {
     // TODO(vasilyt): As we are going to delete image anyway we should be able
     // to abort write to avoid unnecessary flush to submit semaphores.
@@ -186,21 +182,15 @@ class SkiaOutputDeviceBufferQueue::Image {
   }
 
   gl::GLImage* GetGLImage(std::unique_ptr<gfx::GpuFence>* fence) {
-    if (scoped_overlay_read_access_) {
-      // TODO(penghuang): Remove it when SharedImageBackingFactoryGLTexture
-      // supports ProduceOverlay properly.
-      if (fence && is_gl_ && gl::GLFence::IsGpuFenceSupported()) {
-        if (auto gl_fence = gl::GLFence::CreateForGpuFence())
-          *fence = gl_fence->GetGpuFence();
-      }
+    if (scoped_overlay_read_access_)
       return scoped_overlay_read_access_->gl_image();
-    }
 
-    if (fence && gl::GLFence::IsGpuFenceSupported()) {
+    DCHECK(scoped_gl_read_access_);
+
+    if (gl::GLFence::IsGpuFenceSupported() && fence) {
       if (auto gl_fence = gl::GLFence::CreateForGpuFence())
         *fence = gl_fence->GetGpuFence();
     }
-    DCHECK(scoped_gl_read_access_);
     auto* texture = gl_representation_->GetTexture();
     return texture->GetLevelImage(texture->target(), 0);
   }
@@ -216,7 +206,6 @@ class SkiaOutputDeviceBufferQueue::Image {
  private:
   gpu::SharedImageFactory* const factory_;
   gpu::SharedImageRepresentationFactory* const representation_factory_;
-  const bool is_gl_;
 
   base::ScopedClosureRunner shared_image_deletor_;
   std::unique_ptr<gpu::SharedImageRepresentationSkia> skia_representation_;
@@ -432,7 +421,7 @@ void SkiaOutputDeviceBufferQueue::SchedulePrimaryPlane(
   image->BeginPresent();
 
   std::unique_ptr<gfx::GpuFence> fence;
-  // If the submitted_image_ is being scheduled, we don't need a new fence.
+  // If the submitted_image_ is being scheduled, we don't new a new fence.
   auto* gl_image =
       image->GetGLImage(image == submitted_image_ ? nullptr : &fence);
 
@@ -613,8 +602,7 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
 
   for (int i = 0; i < capabilities_.max_frames_pending + 1; ++i) {
     auto image = std::make_unique<Image>(
-        &shared_image_factory_, shared_image_representation_factory_.get(),
-        dependency_->GetSharedContextState()->GrContextIsGL());
+        &shared_image_factory_, shared_image_representation_factory_.get());
     if (!image->Initialize(image_size_, color_space_, image_format_,
                            dependency_, shared_image_usage_)) {
       DLOG(ERROR) << "Failed to initialize image.";

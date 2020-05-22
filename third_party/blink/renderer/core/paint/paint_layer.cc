@@ -581,32 +581,6 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
   point -= PhysicalOffset(squashing_layer->GetOffsetFromTransformNode());
 }
 
-void PaintLayer::MapQuadInPaintInvalidationContainerToBacking(
-    const LayoutBoxModelObject& paint_invalidation_container,
-    FloatQuad& quad) {
-  PaintLayer* paint_invalidation_layer = paint_invalidation_container.Layer();
-  if (!paint_invalidation_layer->GroupedMapping())
-    return;
-
-  GraphicsLayer* squashing_layer =
-      paint_invalidation_layer->GroupedMapping()->SquashingLayer(
-          *paint_invalidation_layer);
-
-  PropertyTreeState source_state =
-      paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
-  PropertyTreeState dest_state = squashing_layer->GetPropertyTreeState();
-
-  // Move the rect into the source_state transform space, map to dest_state
-  // transform space, then move into squashing layer state.
-  quad.Move(
-      FloatSize(paint_invalidation_container.FirstFragment().PaintOffset()));
-  GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
-                                                dest_state.Transform())
-      .MapQuad(quad);
-  quad.Move(
-      -ToFloatSize(FloatPoint(squashing_layer->GetOffsetFromTransformNode())));
-}
-
 void PaintLayer::DirtyVisibleContentStatus() {
   MarkAncestorChainForFlagsUpdate();
   // Non-self-painting layers paint into their ancestor layer, and count as part

@@ -1962,6 +1962,7 @@ test("ash_unittests") {
     "power/hfp_battery_listener_unittest.cc",
     "power/hid_battery_listener_unittest.cc",
     "power/hid_battery_util_unittest.cc",
+    "quick_answers/ui/quick_answers_view_unittest.cc",
     "root_window_controller_unittest.cc",
     "rotator/screen_rotation_animation_unittest.cc",
     "rotator/screen_rotation_animator_unittest.cc",

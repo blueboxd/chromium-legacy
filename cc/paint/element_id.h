@@ -63,6 +63,8 @@ struct CC_PAINT_EXPORT ElementId {
 
   std::string ToString() const;
 
+  static bool IsValid(ElementIdType id);
+
  private:
   friend struct ElementIdHash;
   static const ElementIdType kInvalidElementId;

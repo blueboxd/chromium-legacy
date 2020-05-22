@@ -746,7 +746,6 @@ var defaultTests = [
       });
     });
   },
-
   // This test verifies that api to activate accelrator works as expected.
   function acceleratorTest() {
     // Ash level accelerator.
@@ -777,6 +776,19 @@ var defaultTests = [
                   }, 100);
                 });
           });
+        });
+  },
+  // This test verifies that api to activate accelrator with number works as
+  // expected.
+  function acceleratorWithNumberTest() {
+    // An ash accelerator with number to reset UI scale.
+    var accelerator = newAccelerator('0', true /* shift */, true /* control */);
+    chrome.autotestPrivate.activateAccelerator(
+        accelerator,
+        function(success) {
+          chrome.test.assertNoLastError();
+          chrome.test.assertTrue(success);
+          chrome.test.succeed();
         });
   },
   function setMetricsEnabled() {

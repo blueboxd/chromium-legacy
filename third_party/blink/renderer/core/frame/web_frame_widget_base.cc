@@ -765,6 +765,11 @@ WebFrameWidgetBase::EnsureCompositorPaintDispatcher(
   return paint_dispatcher_;
 }
 
+void WebFrameWidgetBase::SetDelegatedInkMetadata(
+    std::unique_ptr<viz::DelegatedInkMetadata> metadata) {
+  widget_base_->LayerTreeHost()->SetDelegatedInkMetadata(std::move(metadata));
+}
+
 // Enables measuring and reporting both presentation times and swap times in
 // swap promises.
 class ReportTimeSwapPromise : public cc::SwapPromise {

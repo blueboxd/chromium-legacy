@@ -128,11 +128,10 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   widget.Init(std::move(init_params));
   widget.Show();
 
-  View* content = new View;
   View* child = new View;
   View* grandchild = new View;
 
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
   content->AddChildView(child);
   child->AddChildView(grandchild);
 
@@ -174,14 +173,14 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
   widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
-  View* content = new View;
-  content->SetBounds(0, 0, 100, 100);
+  auto owning_content = std::make_unique<View>();
+  owning_content->SetBounds(0, 0, 100, 100);
   View* child = new View;
   child->SetBounds(50, 50, 20, 20);
   View* grandchild = new View;
   grandchild->SetBounds(0, 0, 5, 5);
 
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::move(owning_content));
   content->AddChildView(child);
   child->AddChildView(grandchild);
 
@@ -245,14 +244,13 @@ TEST_F(ViewTargeterTest, ViewTargeterForGestureEvents) {
   widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
-  View* content = new View;
-  content->SetBounds(0, 0, 100, 100);
   View* child = new View;
   child->SetBounds(50, 50, 20, 20);
   View* grandchild = new View;
   grandchild->SetBounds(0, 0, 5, 5);
 
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
+  content->SetBounds(0, 0, 100, 100);
   content->AddChildView(child);
   child->AddChildView(grandchild);
 
@@ -355,9 +353,9 @@ TEST_F(ViewTargeterTest, TargetContentsAndRootView) {
   widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
-  View* content = new View;
-  content->SetBounds(0, 0, 100, 100);
-  widget.SetContentsView(content);
+  auto owning_content = std::make_unique<View>();
+  owning_content->SetBounds(0, 0, 100, 100);
+  View* content = widget.SetContentsView(std::move(owning_content));
 
   internal::RootView* root_view =
       static_cast<internal::RootView*>(widget.GetRootView());
@@ -437,8 +435,6 @@ TEST_F(ViewTargeterTest, GestureEventCoordinateConversion) {
   widget.Init(std::move(init_params));
 
   // The coordinates used for SetBounds() are in the parent coordinate space.
-  View* content = new View;
-  content->SetBounds(0, 0, 100, 100);
   View* child = new View;
   child->SetBounds(50, 50, 20, 20);
   View* grandchild = new View;
@@ -446,7 +442,8 @@ TEST_F(ViewTargeterTest, GestureEventCoordinateConversion) {
   View* great_grandchild = new View;
   great_grandchild->SetBounds(3, 3, 4, 4);
 
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
+  content->SetBounds(0, 0, 100, 100);
   content->AddChildView(child);
   child->AddChildView(grandchild);
   grandchild->AddChildView(great_grandchild);

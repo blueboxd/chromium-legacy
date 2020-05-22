@@ -177,6 +177,13 @@ class VIEWS_EXPORT Label : public View,
   bool GetAllowCharacterBreak() const;
   void SetAllowCharacterBreak(bool allow_character_break);
 
+  // For the provided line index, gets the corresponding rendered line and
+  // returns the text position of the first character of that line.
+  size_t GetTextIndexOfLine(size_t line) const;
+
+  // Set the truncate length of the rendered text.
+  void SetTruncateLength(size_t truncate_length);
+
   // Gets/Sets the eliding or fading behavior, applied as necessary. The default
   // is to elide at the end. Eliding is not well-supported for multi-line
   // labels.

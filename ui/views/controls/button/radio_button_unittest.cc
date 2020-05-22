@@ -34,8 +34,7 @@ class RadioButtonTest : public ViewsTestBase {
     widget_->Init(std::move(params));
     widget_->Show();
 
-    button_container_ = new View();
-    widget_->SetContentsView(button_container_);
+    button_container_ = widget_->SetContentsView(std::make_unique<View>());
   }
 
   void TearDown() override {

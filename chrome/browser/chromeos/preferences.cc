@@ -444,6 +444,8 @@ void Preferences::RegisterProfilePrefs(
   // By default showing Sync Consent is set to true. It can changed by policy.
   registry->RegisterBooleanPref(::prefs::kEnableSyncConsent, true);
 
+  registry->RegisterBooleanPref(chromeos::prefs::kSyncOobeCompleted, false);
+
   registry->RegisterBooleanPref(::prefs::kTPMFirmwareUpdateCleanupDismissed,
                                 false);
 

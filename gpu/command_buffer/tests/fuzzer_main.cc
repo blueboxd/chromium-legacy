@@ -171,6 +171,7 @@ constexpr const char* kExtensions[] = {
     "GL_OES_compressed_ETC1_RGB8_texture",
     "GL_OES_depth24",
     "GL_OES_depth_texture",
+    "GL_OES_draw_buffers_indexed",
     "GL_OES_EGL_image_external",
     "GL_OES_element_index_uint",
     "GL_OES_fbo_render_mipmap",

@@ -4,6 +4,8 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include <memory>
+
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ui_controls_factory_ash.h"
@@ -68,7 +70,7 @@ class TargetView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TargetView);
 };
 
-views::Widget* CreateWidget(views::View* contents_view,
+views::Widget* CreateWidget(std::unique_ptr<views::View> contents_view,
                             const gfx::Rect& bounds,
                             aura::Window* context) {
   views::Widget* widget = new views::Widget;
@@ -79,7 +81,7 @@ views::Widget* CreateWidget(views::View* contents_view,
   params.context = context;
   widget->Init(std::move(params));
 
-  widget->SetContentsView(contents_view);
+  widget->SetContentsView(std::move(contents_view));
   widget->Show();
   return widget;
 }
@@ -122,16 +124,17 @@ TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
 
   UpdateDisplay("400x400,400x400");
   aura::Window::Windows root_windows = Shell::Get()->GetAllRootWindows();
-  views::View* draggable_view = new DraggableView();
+  auto draggable_view = std::make_unique<DraggableView>();
   draggable_view->set_drag_controller(NULL);
   draggable_view->SetBounds(0, 0, 100, 100);
-  views::Widget* source =
-      CreateWidget(draggable_view, gfx::Rect(0, 0, 100, 100), GetContext());
+  views::Widget* source = CreateWidget(std::move(draggable_view),
+                                       gfx::Rect(0, 0, 100, 100), GetContext());
 
-  TargetView* target_view = new TargetView();
+  auto target_view = std::make_unique<TargetView>();
   target_view->SetBounds(0, 0, 100, 100);
-  views::Widget* target =
-      CreateWidget(target_view, gfx::Rect(400, 0, 100, 100), GetContext());
+  TargetView* target_view_ptr = target_view.get();
+  views::Widget* target = CreateWidget(
+      std::move(target_view), gfx::Rect(400, 0, 100, 100), GetContext());
 
   // Make sure they're on the different root windows.
   EXPECT_EQ(root_windows[0], source->GetNativeView()->GetRootWindow());
@@ -142,7 +145,7 @@ TEST_F(DragDropTest, DragDropAcrossMultiDisplay) {
 
   base::RunLoop().Run();
 
-  EXPECT_TRUE(target_view->dropped());
+  EXPECT_TRUE(target_view_ptr->dropped());
 
   source->Close();
   target->Close();

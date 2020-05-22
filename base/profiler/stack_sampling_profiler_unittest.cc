@@ -706,6 +706,73 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
       }));
 }
 
+PROFILER_TEST_F(StackSamplingProfilerTest, GetNextSampleTime_NormalExecution) {
+  const auto& GetNextSampleTime =
+      StackSamplingProfiler::TestPeer::GetNextSampleTime;
+
+  const TimeTicks scheduled_current_sample_time = TimeTicks::UnixEpoch();
+  const TimeDelta sampling_interval = TimeDelta::FromMilliseconds(10);
+
+  // When executing the sample at exactly the scheduled time the next sample
+  // should be one interval later.
+  EXPECT_EQ(scheduled_current_sample_time + sampling_interval,
+            GetNextSampleTime(scheduled_current_sample_time, sampling_interval,
+                              scheduled_current_sample_time));
+
+  // When executing the sample less than half an interval after the scheduled
+  // time the next sample also should be one interval later.
+  EXPECT_EQ(scheduled_current_sample_time + sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 0.4 * sampling_interval));
+
+  // When executing the sample less than half an interval before the scheduled
+  // time the next sample also should be one interval later. This is not
+  // expected to occur in practice since delayed tasks never run early.
+  EXPECT_EQ(scheduled_current_sample_time + sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time - 0.4 * sampling_interval));
+}
+
+PROFILER_TEST_F(StackSamplingProfilerTest, GetNextSampleTime_DelayedExecution) {
+  const auto& GetNextSampleTime =
+      StackSamplingProfiler::TestPeer::GetNextSampleTime;
+
+  const TimeTicks scheduled_current_sample_time = TimeTicks::UnixEpoch();
+  const TimeDelta sampling_interval = TimeDelta::FromMilliseconds(10);
+
+  // When executing the sample between 0.5 and 1.5 intervals after the scheduled
+  // time the next sample should be two intervals later.
+  EXPECT_EQ(scheduled_current_sample_time + 2 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 0.6 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 2 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 1.0 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 2 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 1.4 * sampling_interval));
+
+  // Similarly when executing the sample between 9.5 and 10.5 intervals after
+  // the scheduled time the next sample should be 11 intervals later.
+  EXPECT_EQ(scheduled_current_sample_time + 11 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 9.6 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 11 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 10.0 * sampling_interval));
+  EXPECT_EQ(scheduled_current_sample_time + 11 * sampling_interval,
+            GetNextSampleTime(
+                scheduled_current_sample_time, sampling_interval,
+                scheduled_current_sample_time + 10.4 * sampling_interval));
+}
+
 // Checks that we can destroy the profiler while profiling.
 PROFILER_TEST_F(StackSamplingProfilerTest, DestroyProfilerWhileProfiling) {
   SamplingParams params;

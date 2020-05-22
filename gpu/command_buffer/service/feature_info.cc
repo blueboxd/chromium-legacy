@@ -420,6 +420,13 @@ void FeatureInfo::EnableCHROMIUMColorBufferFloatRGB() {
   AddExtensionString("GL_CHROMIUM_color_buffer_float_rgb");
 }
 
+void FeatureInfo::EnableOESDrawBuffersIndexed() {
+  if (!feature_flags_.oes_draw_buffers_indexed) {
+    AddExtensionString("GL_OES_draw_buffers_indexed");
+    feature_flags_.oes_draw_buffers_indexed = true;
+  }
+}
+
 void FeatureInfo::EnableOESFboRenderMipmap() {
   if (!feature_flags_.oes_fbo_render_mipmap) {
     AddExtensionString("GL_OES_fbo_render_mipmap");
@@ -776,6 +783,14 @@ void FeatureInfo::InitializeFeatures() {
       gl::HasDesktopGLFeatures()) {
     AddExtensionString("GL_OES_element_index_uint");
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
+  }
+
+  // Note (crbug.com/1058744): not implemented for validating command decoder
+  if (is_passthrough_cmd_decoder_ &&
+      gfx::HasExtension(extensions, "GL_OES_draw_buffers_indexed")) {
+    if (!disallowed_features_.oes_draw_buffers_indexed) {
+      EnableOESDrawBuffersIndexed();
+    }
   }
 
   if (gl_version_info_->IsAtLeastGL(3, 0) || gl_version_info_->is_es3 ||

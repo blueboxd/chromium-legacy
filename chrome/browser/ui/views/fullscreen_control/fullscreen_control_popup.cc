@@ -30,7 +30,7 @@ std::unique_ptr<views::Widget> CreatePopupWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = parent_view;
   popup->Init(std::move(params));
-  popup->SetContentsView(view.release());
+  popup->SetContentsView(std::move(view));
 
   return popup;
 }

@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_auth_challenge_tokenizer.h"
@@ -47,8 +48,9 @@ TEST(HttpAuthHandlerBasicTest, GenerateAuthToken) {
     auto host_resolver = std::make_unique<MockHostResolver>();
     std::unique_ptr<HttpAuthHandler> basic;
     EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
-                      challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
-                      NetLogWithSource(), host_resolver.get(), &basic));
+                      challenge, HttpAuth::AUTH_SERVER, null_ssl_info,
+                      NetworkIsolationKey(), origin, NetLogWithSource(),
+                      host_resolver.get(), &basic));
     AuthCredentials credentials(base::ASCIIToUTF16(tests[i].username),
                                 base::ASCIIToUTF16(tests[i].password));
     HttpRequestInfo request_info;
@@ -103,7 +105,8 @@ TEST(HttpAuthHandlerBasicTest, HandleAnotherChallenge) {
   std::unique_ptr<HttpAuthHandler> basic;
   EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
                     tests[0].challenge, HttpAuth::AUTH_SERVER, null_ssl_info,
-                    origin, NetLogWithSource(), host_resolver.get(), &basic));
+                    NetworkIsolationKey(), origin, NetLogWithSource(),
+                    host_resolver.get(), &basic));
 
   for (size_t i = 0; i < base::size(tests); ++i) {
     std::string challenge(tests[i].challenge);
@@ -204,8 +207,8 @@ TEST(HttpAuthHandlerBasicTest, InitFromChallenge) {
     auto host_resolver = std::make_unique<MockHostResolver>();
     std::unique_ptr<HttpAuthHandler> basic;
     int rv = factory.CreateAuthHandlerFromString(
-        challenge, HttpAuth::AUTH_SERVER, null_ssl_info, origin,
-        NetLogWithSource(), host_resolver.get(), &basic);
+        challenge, HttpAuth::AUTH_SERVER, null_ssl_info, NetworkIsolationKey(),
+        origin, NetLogWithSource(), host_resolver.get(), &basic);
     EXPECT_EQ(tests[i].expected_rv, rv);
     if (rv == OK)
       EXPECT_EQ(tests[i].expected_realm, basic->realm());

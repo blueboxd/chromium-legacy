@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 
+#include <memory>
 #include <utility>
 
 #include "chrome/browser/ui/layout_constants.h"
@@ -104,7 +105,7 @@ TEST_F(ToolbarButtonViewsTest, MenuDoesNotShowWhenTabStripIsEmpty) {
   ToolbarButton* button = parent_view->AddChildView(
       std::make_unique<ToolbarButton>(nullptr, std::move(model), &tab_strip));
   std::unique_ptr<views::Widget> widget_ = CreateTestWidget();
-  widget_->SetContentsView(parent_view.release());
+  widget_->SetContentsView(std::move(parent_view));
 
   // Since |tab_strip| is empty, calling this does not do anything. This is the
   // expected result. If it actually tries to show the menu, then
@@ -127,12 +128,10 @@ class ToolbarButtonUITest : public ChromeViewsTestBase {
     // ToolbarButton takes ownership of the |model|.
     auto model = std::make_unique<ui::SimpleMenuModel>(nullptr);
     model->AddItem(0, base::string16());
-    auto button =
-        std::make_unique<TestToolbarButton>(nullptr, std::move(model), nullptr);
-    button_ = button.get();
 
     widget_ = CreateTestWidget();
-    widget_->SetContentsView(button.release());
+    button_ = widget_->SetContentsView(std::make_unique<TestToolbarButton>(
+        nullptr, std::move(model), nullptr));
   }
 
   void TearDown() override {
@@ -179,7 +178,8 @@ TEST_F(ToolbarButtonUITest, ShowMenu) {
 TEST_F(ToolbarButtonUITest, DeleteWithMenu) {
   button_->ShowContextMenuForView(nullptr, gfx::Point(), ui::MENU_SOURCE_MOUSE);
   EXPECT_TRUE(test::ToolbarButtonTestApi(button_).menu_runner());
-  widget()->SetContentsView(new views::View());  // Deletes |button_|.
+  widget()->SetContentsView(
+      std::make_unique<views::View>());  // Deletes |button_|.
 }
 
 // Tests to make sure the button's border is updated as its height changes.

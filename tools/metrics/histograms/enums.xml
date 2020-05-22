@@ -29265,6 +29265,7 @@ Called by update_feature_policy_enum.py.-->
   <int value="0" label="Presented Frame"/>
   <int value="1" label="Missed Deadline Frame"/>
   <int value="2" label="Dropped Frame"/>
+  <int value="3" label="Compositor Only Frame"/>
 </enum>
 
 <enum name="FrameSiteInstanceProcessRelationship">
@@ -39973,6 +39974,7 @@ from previous Chrome versions.
   <int value="-307260007" label="ExtensionsCheckup:disabled"/>
   <int value="-304951461" label="TextSuggestionsTouchBar:enabled"/>
   <int value="-304777110" label="PreconnectToSearch:disabled"/>
+  <int value="-300542825" label="ChromeShareQRCode:disabled"/>
   <int value="-300018686" label="disable-cloud-import"/>
   <int value="-299841473" label="top-document-isolation:enabled"/>
   <int value="-297716805"
@@ -41332,6 +41334,7 @@ from previous Chrome versions.
       label="AutofillUpstreamUseGooglePayOnAndroidBranding:disabled"/>
   <int value="1266886673" label="delay-reload-stop-button-change"/>
   <int value="1268470658" label="disable-android-password-link"/>
+  <int value="1269642282" label="ChromeShareQRCode:enabled"/>
   <int value="1269940659" label="EnumerateAudioDevices:enabled"/>
   <int value="1269952439" label="AndroidAIAFetching:disabled"/>
   <int value="1271871811" label="LegacyTLSEnforced:enabled"/>

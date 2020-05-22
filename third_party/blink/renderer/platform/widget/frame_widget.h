@@ -78,6 +78,10 @@ class PLATFORM_EXPORT FrameWidget {
 
   // Returns the DisplayMode in use for the widget.
   virtual mojom::blink::DisplayMode DisplayMode() const = 0;
+
+  // Sets the ink metadata on the layer tree host
+  virtual void SetDelegatedInkMetadata(
+      std::unique_ptr<viz::DelegatedInkMetadata> metadata) = 0;
 };
 
 }  // namespace blink

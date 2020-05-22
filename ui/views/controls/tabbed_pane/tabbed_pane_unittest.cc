@@ -121,7 +121,7 @@ class TabbedPaneWithWidgetTest : public ViewsTestBase {
     params.bounds = gfx::Rect(0, 0, 650, 650);
     widget_->Init(std::move(params));
     tabbed_pane_ = tabbed_pane.get();
-    widget_->SetContentsView(tabbed_pane.release());
+    widget_->SetContentsView(std::move(tabbed_pane));
   }
 
   void TearDown() override {

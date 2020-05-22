@@ -101,7 +101,7 @@ static const char kTestScriptIdenticalLanguages[] =
     "})();"
     "cr.googleTranslate.onTranslateElementLoad();";
 
-static const char kTestScriptTimeout[] =
+static const char kTestScriptAvailableTimeout[] =
     "var google = {};"
     "google.translate = (function() {"
     "  return {"
@@ -110,6 +110,31 @@ static const char kTestScriptTimeout[] =
     "        isAvailable : function() {"
     "          return false;"
     "        },"
+    "      };"
+    "    }"
+    "  };"
+    "})();"
+    "cr.googleTranslate.onTranslateElementLoad();";
+
+static const char kTestScriptTranslateTimeout[] =
+    "var google = {};"
+    "google.translate = (function() {"
+    "  return {"
+    "    TranslateService: function() {"
+    "      return {"
+    "        isAvailable : function() {"
+    "          return true;"
+    "        },"
+    "        restore : function() {"
+    "          return;"
+    "        },"
+    "        getDetectedLanguage : function() {"
+    "          return \"fr\";"
+    "        },"
+    "        translatePage : function(originalLang, targetLang,"
+    "                                 onTranslateProgress) {"
+    "          onTranslateProgress(33, false, 0);"
+    "        }"
     "      };"
     "    }"
     "  };"
@@ -872,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
 // Test the checks translate lib never gets ready and throws timeout.
 IN_PROC_BROWSER_TEST_F(TranslateManagerBrowserTest,
                        PageTranslationTimeoutError) {
-  SetTranslateScript(kTestScriptTimeout);
+  SetTranslateScript(kTestScriptAvailableTimeout);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
@@ -1310,41 +1335,6 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
                                1);
 }
 
-// Test that the translation was successful in an about:blank page.
-// This is a regression test for https://crbug.com/943685.
-IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
-                       PageTranslationAboutBlank) {
-  SetTranslateScript(kTestValidScript);
-  AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
-                ui::PAGE_TRANSITION_TYPED);
-  ResetObserver();
-
-  // Open a pop-up window and leave it at the initial about:blank URL.
-  content::WebContentsAddedObserver popup_observer;
-  ASSERT_TRUE(
-      content::ExecJs(browser()->tab_strip_model()->GetActiveWebContents(),
-                      "window.open('about:blank', 'popup')"));
-  content::WebContents* popup = popup_observer.GetWebContents();
-
-  // A round-trip to the renderer process helps avoid a race where the
-  // browser-side translate structures are not yet ready for the translate call.
-  EXPECT_EQ("ping", content::EvalJs(popup, "'ping'"));
-
-  // Translate the about:blank page.
-  ChromeTranslateClient* chrome_translate_client =
-      ChromeTranslateClient::FromWebContents(popup);
-  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
-  manager->TranslatePage("fr", "en", true);
-
-  // Verify that the crash from https://crbug.com/943685 didn't happen.
-  EXPECT_EQ("still alive", content::EvalJs(popup, "'still alive'"));
-
-  // Wait for translation to finish and verify it was successful.
-  WaitUntilPageTranslated();
-  EXPECT_FALSE(chrome_translate_client->GetLanguageState().translation_error());
-  EXPECT_EQ(TranslateErrors::NONE, GetPageTranslatedResult());
-}
-
 // Test that hrefTranslate is propagating properly
 IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
                        HrefTranslateSuccess) {
@@ -1655,8 +1645,8 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 
-  // Open a new tab with about:blank page.
-  AddTabAtIndex(0, GURL("about:blank"), ui::PAGE_TRANSITION_TYPED);
+  AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
+                ui::PAGE_TRANSITION_TYPED);
   ResetObserver();
   chrome_translate_client = GetChromeTranslateClient();
   TranslateManager* manager = chrome_translate_client->GetTranslateManager();
@@ -1701,8 +1691,39 @@ IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
 
 // Test the checks translate lib never gets ready and throws timeout.
 IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
-                       PageTranslationTimeoutError) {
-  SetTranslateScript(kTestScriptTimeout);
+                       PageTranslationAvailableTimeoutError) {
+  SetTranslateScript(kTestScriptAvailableTimeout);
+
+  ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
+
+  // Open a new tab with a page in French.
+  AddTabAtIndex(0, GURL(embedded_test_server()->GetURL("/french_page.html")),
+                ui::PAGE_TRANSITION_TYPED);
+  ResetObserver();
+  chrome_translate_client = GetChromeTranslateClient();
+  WaitUntilLanguageDetermined();
+
+  EXPECT_EQ("fr",
+            chrome_translate_client->GetLanguageState().original_language());
+
+  // Translate the page through TranslateManager.
+  TranslateManager* manager = chrome_translate_client->GetTranslateManager();
+  manager->TranslatePage(
+      chrome_translate_client->GetLanguageState().original_language(), "en",
+      true);
+
+  WaitUntilPageTranslated();
+
+  EXPECT_TRUE(chrome_translate_client->GetLanguageState().translation_error());
+  EXPECT_EQ(TranslateErrors::TRANSLATION_TIMEOUT, GetPageTranslatedResult());
+}
+
+// Test the checks translate operation status never resolves.
+// TODO(1064974): consolidate the common test logic here that is used between
+// several error type tests from different script inputs.
+IN_PROC_BROWSER_TEST_F(TranslateManagerWithSubFrameSupportBrowserTest,
+                       PageTranslationTranslateTimeoutError) {
+  SetTranslateScript(kTestScriptTranslateTimeout);
 
   ChromeTranslateClient* chrome_translate_client = GetChromeTranslateClient();
 

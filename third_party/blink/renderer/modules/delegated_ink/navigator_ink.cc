@@ -12,7 +12,8 @@ namespace blink {
 const char NavigatorInk::kSupplementName[] = "NavigatorInk";
 
 NavigatorInk::NavigatorInk(Navigator& navigator)
-    : Supplement<Navigator>(navigator), ink_(MakeGarbageCollected<Ink>()) {}
+    : Supplement<Navigator>(navigator),
+      ink_(MakeGarbageCollected<Ink>(GetSupplementable()->GetFrame())) {}
 
 Ink* NavigatorInk::ink(Navigator& navigator) {
   DCHECK(RuntimeEnabledFeatures::DelegatedInkTrailsEnabled());

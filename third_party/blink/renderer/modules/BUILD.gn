@@ -286,6 +286,7 @@ jumbo_source_set("unit_tests") {
     "csspaint/paint_worklet_global_scope_test.cc",
     "csspaint/paint_worklet_proxy_client_test.cc",
     "csspaint/paint_worklet_test.cc",
+    "delegated_ink/delegated_ink_trail_presenter_unittest.cc",
     "device_orientation/device_motion_event_pump_unittest.cc",
     "device_orientation/device_orientation_event_pump_unittest.cc",
     "document_metadata/document_metadata_extractor_test.cc",

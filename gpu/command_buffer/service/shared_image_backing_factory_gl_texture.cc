@@ -357,31 +357,6 @@ class SharedImageRepresentationGLTexturePassthroughImpl
   scoped_refptr<gles2::TexturePassthrough> texture_passthrough_;
 };
 
-class SharedImageRepresentationOverlayImpl
-    : public SharedImageRepresentationOverlay {
- public:
-  SharedImageRepresentationOverlayImpl(SharedImageManager* manager,
-                                       SharedImageBacking* backing,
-                                       MemoryTypeTracker* tracker,
-                                       gl::GLImage* gl_image)
-      : SharedImageRepresentationOverlay(manager, backing, tracker),
-        gl_image_(gl_image) {}
-  ~SharedImageRepresentationOverlayImpl() override = default;
-
-#if defined(OS_ANDROID)
-  void NotifyOverlayPromotion(bool promotion,
-                              const gfx::Rect& bounds) override {
-    NOTIMPLEMENTED() << "Promotion hints are only required for media overlays";
-  }
-#endif
-  bool BeginReadAccess() override { return true; }
-  void EndReadAccess() override {}
-  gl::GLImage* GetGLImage() override { return gl_image_; }
-
- private:
-  gl::GLImage* gl_image_;
-};
-
 class SharedImageBackingWithReadAccess : public SharedImageBacking {
  public:
   SharedImageBackingWithReadAccess(const Mailbox& mailbox,
@@ -633,20 +608,6 @@ class SharedImageBackingGLTexture : public SharedImageBackingWithReadAccess {
       MemoryTypeTracker* tracker) override {
     return std::make_unique<SharedImageRepresentationGLTextureImpl>(
         manager, this, tracker, texture_);
-  }
-
-  std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
-      SharedImageManager* manager,
-      MemoryTypeTracker* tracker) override {
-    gl::GLImage* image =
-        texture_->GetLevelImage(texture_->target(), 0, nullptr);
-    if (!image) {
-      LOG(ERROR)
-          << "Trying to create overlay representation from a native GL texture";
-      return nullptr;
-    }
-    return std::make_unique<SharedImageRepresentationOverlayImpl>(
-        manager, this, tracker, image);
   }
 
   std::unique_ptr<SharedImageRepresentationGLTexture>

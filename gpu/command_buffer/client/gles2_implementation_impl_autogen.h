@@ -889,6 +889,34 @@ void GLES2Implementation::GetBooleanv(GLenum pname, GLboolean* params) {
   });
   CheckGLError();
 }
+void GLES2Implementation::GetBooleani_v(GLenum pname,
+                                        GLuint index,
+                                        GLboolean* data) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLboolean, data);
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glGetBooleani_v("
+                     << GLES2Util::GetStringIndexedGLState(pname) << ", "
+                     << index << ", " << static_cast<const void*>(data) << ")");
+  TRACE_EVENT0("gpu", "GLES2Implementation::GetBooleani_v");
+  if (GetBooleani_vHelper(pname, index, data)) {
+    return;
+  }
+  typedef cmds::GetBooleani_v::Result Result;
+  ScopedResultPtr<Result> result = GetResultAs<Result>();
+  if (!result) {
+    return;
+  }
+  result->SetNumResults(0);
+  helper_->GetBooleani_v(pname, index, GetResultShmId(), result.offset());
+  WaitForCmd();
+  result->CopyResult(data);
+  GPU_CLIENT_LOG_CODE_BLOCK({
+    for (int32_t i = 0; i < result->GetNumResults(); ++i) {
+      GPU_CLIENT_LOG("  " << i << ": " << result->GetData()[i]);
+    }
+  });
+  CheckGLError();
+}
 void GLES2Implementation::GetBufferParameteri64v(GLenum target,
                                                  GLenum pname,
                                                  GLint64* params) {
@@ -3728,6 +3756,64 @@ void GLES2Implementation::EndBatchReadAccessSharedImageCHROMIUM() {
                      << "] glEndBatchReadAccessSharedImageCHROMIUM("
                      << ")");
   helper_->EndBatchReadAccessSharedImageCHROMIUM();
+  CheckGLError();
+}
+
+void GLES2Implementation::BlendEquationiOES(GLuint buf, GLenum mode) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBlendEquationiOES(" << buf
+                     << ", " << GLES2Util::GetStringEnum(mode) << ")");
+  helper_->BlendEquationiOES(buf, mode);
+  CheckGLError();
+}
+
+void GLES2Implementation::BlendEquationSeparateiOES(GLuint buf,
+                                                    GLenum modeRGB,
+                                                    GLenum modeAlpha) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBlendEquationSeparateiOES("
+                     << buf << ", " << GLES2Util::GetStringEnum(modeRGB) << ", "
+                     << GLES2Util::GetStringEnum(modeAlpha) << ")");
+  helper_->BlendEquationSeparateiOES(buf, modeRGB, modeAlpha);
+  CheckGLError();
+}
+
+void GLES2Implementation::BlendFunciOES(GLuint buf, GLenum src, GLenum dst) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBlendFunciOES(" << buf << ", "
+                     << GLES2Util::GetStringEnum(src) << ", "
+                     << GLES2Util::GetStringEnum(dst) << ")");
+  helper_->BlendFunciOES(buf, src, dst);
+  CheckGLError();
+}
+
+void GLES2Implementation::BlendFuncSeparateiOES(GLuint buf,
+                                                GLenum srcRGB,
+                                                GLenum dstRGB,
+                                                GLenum srcAlpha,
+                                                GLenum dstAlpha) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glBlendFuncSeparateiOES(" << buf
+                     << ", " << GLES2Util::GetStringEnum(srcRGB) << ", "
+                     << GLES2Util::GetStringEnum(dstRGB) << ", "
+                     << GLES2Util::GetStringEnum(srcAlpha) << ", "
+                     << GLES2Util::GetStringEnum(dstAlpha) << ")");
+  helper_->BlendFuncSeparateiOES(buf, srcRGB, dstRGB, srcAlpha, dstAlpha);
+  CheckGLError();
+}
+
+void GLES2Implementation::ColorMaskiOES(GLuint buf,
+                                        GLboolean r,
+                                        GLboolean g,
+                                        GLboolean b,
+                                        GLboolean a) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glColorMaskiOES(" << buf << ", "
+                     << GLES2Util::GetStringBool(r) << ", "
+                     << GLES2Util::GetStringBool(g) << ", "
+                     << GLES2Util::GetStringBool(b) << ", "
+                     << GLES2Util::GetStringBool(a) << ")");
+  helper_->ColorMaskiOES(buf, r, g, b, a);
   CheckGLError();
 }
 

@@ -55,8 +55,10 @@ bool ParseRealm(const HttpAuthChallengeTokenizer& tokenizer,
 
 }  // namespace
 
-bool HttpAuthHandlerBasic::Init(HttpAuthChallengeTokenizer* challenge,
-                                const SSLInfo& ssl_info) {
+bool HttpAuthHandlerBasic::Init(
+    HttpAuthChallengeTokenizer* challenge,
+    const SSLInfo& ssl_info,
+    const NetworkIsolationKey& network_isolation_key) {
   auth_scheme_ = HttpAuth::AUTH_SCHEME_BASIC;
   score_ = 1;
   properties_ = 0;
@@ -111,6 +113,7 @@ int HttpAuthHandlerBasic::Factory::CreateAuthHandler(
     HttpAuthChallengeTokenizer* challenge,
     HttpAuth::Target target,
     const SSLInfo& ssl_info,
+    const NetworkIsolationKey& network_isolation_key,
     const GURL& origin,
     CreateReason reason,
     int digest_nonce_count,
@@ -120,9 +123,10 @@ int HttpAuthHandlerBasic::Factory::CreateAuthHandler(
   // TODO(cbentzel): Move towards model of parsing in the factory
   //                 method and only constructing when valid.
   std::unique_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerBasic());
-  if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info, origin,
-                                      net_log))
+  if (!tmp_handler->InitFromChallenge(challenge, target, ssl_info,
+                                      network_isolation_key, origin, net_log)) {
     return ERR_INVALID_RESPONSE;
+  }
   handler->swap(tmp_handler);
   return OK;
 }

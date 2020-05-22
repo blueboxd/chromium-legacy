@@ -107,7 +107,6 @@ StackSamplingConfiguration::GetSamplingParams() const {
       base::TimeDelta::FromSeconds(IsBrowserTestModeEnabled() ? 1 : 30);
   params.sampling_interval = base::TimeDelta::FromMilliseconds(100);
   params.samples_per_profile = duration / params.sampling_interval;
-  params.keep_consistent_sampling_interval = true;
 
   return params;
 }

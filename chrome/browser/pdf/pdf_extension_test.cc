@@ -18,6 +18,7 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/pattern.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
@@ -89,6 +90,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "pdf/pdf_features.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/context_menu_data/media_type.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -1347,6 +1349,67 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilitySelection) {
   EXPECT_EQ(ax::mojom::Role::kParagraph, para->data().role);
   region = para->parent();
   EXPECT_EQ(ax::mojom::Role::kRegion, region->data().role);
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityContextMenuAction) {
+  // Validate the context menu arguments for PDF selection when context menu is
+  // invoked via accessibility tree.
+  const char kExepectedPDFSelection[] =
+      "1 First Section\n"
+      "This is the first section.\n"
+      "1\n"
+      "1.1 First Subsection\n"
+      "This is the first subsection.\n"
+      "2\n"
+      "2 Second Section\n"
+      "3";
+
+  GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  ASSERT_TRUE(guest_contents);
+
+  CHECK(content::ExecuteScript(
+      GetActiveWebContents(),
+      "document.getElementsByTagName('embed')[0].postMessage("
+      "{type: 'selectAll'});"));
+
+  EnableAccessibilityForWebContents(guest_contents);
+  WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
+                                                "1 First Section\r\n");
+
+  // Find PDF document node in the accessibility tree.
+  content::FindAccessibilityNodeCriteria find_criteria;
+  find_criteria.role = ax::mojom::Role::kEmbeddedObject;
+  ui::AXPlatformNodeDelegate* pdf_root =
+      content::FindAccessibilityNode(guest_contents, find_criteria);
+  ASSERT_TRUE(pdf_root);
+
+  find_criteria.role = ax::mojom::Role::kDocument;
+  ui::AXPlatformNodeDelegate* pdf_doc_node =
+      FindAccessibilityNodeInSubtree(pdf_root, find_criteria);
+  ASSERT_TRUE(pdf_doc_node);
+
+  content::RenderProcessHost* guest_process_host =
+      guest_contents->GetMainFrame()->GetProcess();
+  auto context_menu_filter = base::MakeRefCounted<content::ContextMenuFilter>();
+  guest_process_host->AddFilter(context_menu_filter.get());
+
+  ContextMenuWaiter menu_waiter;
+  // Invoke kShowContextMenu accessibility action on PDF document node.
+  ui::AXActionData data;
+  data.action = ax::mojom::Action::kShowContextMenu;
+  pdf_doc_node->AccessibilityPerformAction(data);
+  menu_waiter.WaitForMenuOpenAndClose();
+
+  context_menu_filter->Wait();
+  content::UntrustworthyContextMenuParams params =
+      context_menu_filter->get_params();
+
+  // Validate the context menu params for selection.
+  EXPECT_EQ(blink::ContextMenuDataMediaType::kPlugin, params.media_type);
+  std::string selected_text = base::UTF16ToUTF8(params.selection_text);
+  base::ReplaceChars(selected_text, "\r", "", &selected_text);
+  EXPECT_EQ(kExepectedPDFSelection, selected_text);
 }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

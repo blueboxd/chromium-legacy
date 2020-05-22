@@ -59,7 +59,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
 
  private:
   void CreateLockScreen() {
-    views::View* lock_view = new views::View;
+    auto lock_view = std::make_unique<views::View>();
     lock_screen_widget_.reset(new views::Widget);
     views::Widget::InitParams params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -73,7 +73,7 @@ class LockScreenSessionControllerClient : public TestSessionControllerClient {
                                         kShellWindowId_LockScreenContainer);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     lock_screen_widget_->Init(std::move(params));
-    lock_screen_widget_->SetContentsView(lock_view);
+    lock_screen_widget_->SetContentsView(std::move(lock_view));
     lock_screen_widget_->Show();
     lock_screen_widget_->GetNativeView()->SetName("LockView");
     lock_screen_widget_->GetNativeView()->Focus();

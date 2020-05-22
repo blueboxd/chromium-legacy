@@ -119,8 +119,11 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
         models.add(model);
         mPendingImageRequests.put(url, models);
 
-        imageFetcher.fetchImage(url.getSpec(), ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME,
-                mEntityImageSizePx, mEntityImageSizePx, (Bitmap bitmap) -> {
+        ImageFetcher.Params params = ImageFetcher.Params.create(url.getSpec(),
+                ImageFetcher.ENTITY_SUGGESTIONS_UMA_CLIENT_NAME, mEntityImageSizePx,
+                mEntityImageSizePx);
+        imageFetcher.fetchImage(
+                params, (Bitmap bitmap) -> {
                     ThreadUtils.assertOnUiThread();
 
                     final List<PropertyModel> pendingModels = mPendingImageRequests.remove(url);

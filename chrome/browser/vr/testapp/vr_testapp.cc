@@ -18,6 +18,7 @@
 #include "chrome/browser/vr/testapp/gl_renderer.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/base/cursor/cursor_factory.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/types/native_display_observer.h"
@@ -28,7 +29,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
-#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
@@ -110,8 +110,8 @@ class AppWindow : public ui::PlatformWindowDelegate {
 
     // Supply an empty cursor to override and hide the default system pointer.
     platform_window_->SetCursor(
-        ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(SkBitmap(),
-                                                                 {0, 0}, 0));
+        ui::CursorFactory::GetInstance()->CreateImageCursor(SkBitmap(), {0, 0},
+                                                            0));
   }
   ~AppWindow() override {}
 

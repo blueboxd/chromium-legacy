@@ -314,14 +314,14 @@ void OmniboxViewViewsTest::SetUp() {
   AutocompleteClassifierFactory::GetInstance()->SetTestingFactoryAndUse(
       profile_.get(),
       base::BindRepeating(&AutocompleteClassifierFactory::BuildInstanceFor));
-  omnibox_view_ =
-      new TestingOmniboxView(&omnibox_edit_controller_,
-                             std::make_unique<ChromeOmniboxClient>(
-                                 &omnibox_edit_controller_, profile_.get()));
-  test_api_ = std::make_unique<views::TextfieldTestApi>(omnibox_view_);
-  omnibox_view_->Init();
+  auto omnibox_view = std::make_unique<TestingOmniboxView>(
+      &omnibox_edit_controller_,
+      std::make_unique<ChromeOmniboxClient>(&omnibox_edit_controller_,
+                                            profile_.get()));
+  test_api_ = std::make_unique<views::TextfieldTestApi>(omnibox_view.get());
+  omnibox_view->Init();
 
-  widget_->SetContentsView(omnibox_view_);
+  omnibox_view_ = widget_->SetContentsView(std::move(omnibox_view));
 }
 
 void OmniboxViewViewsTest::TearDown() {

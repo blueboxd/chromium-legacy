@@ -7,6 +7,7 @@
 #include <oleacc.h>
 #include <wrl/client.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/win/scoped_bstr.h"
@@ -69,8 +70,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAccessibility) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   Textfield* textfield = new Textfield;
   textfield->SetAccessibleName(L"Name");
@@ -112,8 +112,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, TextfieldAssociatedLabel) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   Label* label = new Label(L"Label");
   content->AddChildView(label);
@@ -259,8 +258,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, DISABLED_RetrieveAllAlerts) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
 
   View* infobar = new View;
   content->AddChildView(infobar);
@@ -358,8 +356,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, Overrides) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
 
-  View* contents_view = new View;
-  widget.SetContentsView(contents_view);
+  View* contents_view = widget.SetContentsView(std::make_unique<View>());
 
   View* alert_view = new ScrollView;
   alert_view->GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
@@ -417,8 +414,7 @@ TEST_F(ViewAXPlatformNodeDelegateWinTest, GridRowColumnCount) {
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
 
-  View* content = new View;
-  widget.SetContentsView(content);
+  View* content = widget.SetContentsView(std::make_unique<View>());
   TestListGridView* grid = new TestListGridView();
   content->AddChildView(grid);
 

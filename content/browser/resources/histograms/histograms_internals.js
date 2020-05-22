@@ -19,6 +19,7 @@ function requestHistograms() {
  *     of header and body strings representing histograms.
  */
 function addHistograms(histograms) {
+  $('histograms').innerHTML = trustedTypes.emptyHTML;
   // TBD(jar) Write a nice HTML bar chart, with divs an mouse-overs etc.
   for (const histogram of histograms) {
     const {header, body} = histogram;

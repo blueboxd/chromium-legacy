@@ -5,6 +5,7 @@
 #include "ash/system/power/power_button_controller.h"
 
 #include <limits>
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -439,7 +440,7 @@ void PowerButtonController::StartPowerMenuAnimation() {
 
   if (!menu_widget_)
     menu_widget_ = CreateMenuWidget();
-  menu_widget_->SetContentsView(new PowerButtonMenuScreenView(
+  menu_widget_->SetContentsView(std::make_unique<PowerButtonMenuScreenView>(
       power_button_position_, power_button_offset_percentage_,
       base::BindRepeating(&PowerButtonController::SetShowMenuAnimationDone,
                           base::Unretained(this))));

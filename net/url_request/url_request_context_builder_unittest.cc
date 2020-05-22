@@ -58,6 +58,7 @@ class MockHttpAuthHandlerFactory : public HttpAuthHandlerFactory {
   int CreateAuthHandler(HttpAuthChallengeTokenizer* challenge,
                         HttpAuth::Target target,
                         const SSLInfo& ssl_info,
+                        const NetworkIsolationKey& network_isolation_key,
                         const GURL& origin,
                         CreateReason reason,
                         int nonce_count,
@@ -131,10 +132,11 @@ TEST_F(URLRequestContextBuilderTest, DefaultHttpAuthHandlerFactory) {
   SSLInfo null_ssl_info;
 
   // Verify that the default basic handler is present
-  EXPECT_EQ(OK,
-            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+  EXPECT_EQ(
+      OK,
+      context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+          "basic", HttpAuth::AUTH_SERVER, null_ssl_info, NetworkIsolationKey(),
+          gurl, NetLogWithSource(), host_resolver_.get(), &handler));
 }
 
 TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
@@ -149,20 +151,23 @@ TEST_F(URLRequestContextBuilderTest, CustomHttpAuthHandlerFactory) {
   // Verify that a handler is returned for a custom scheme.
   EXPECT_EQ(kBasicReturnCode,
             context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "ExtraScheme", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+                "ExtraScheme", HttpAuth::AUTH_SERVER, null_ssl_info,
+                NetworkIsolationKey(), gurl, NetLogWithSource(),
+                host_resolver_.get(), &handler));
 
   // Verify that the default basic handler isn't present
-  EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
-            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "basic", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+  EXPECT_EQ(
+      ERR_UNSUPPORTED_AUTH_SCHEME,
+      context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+          "basic", HttpAuth::AUTH_SERVER, null_ssl_info, NetworkIsolationKey(),
+          gurl, NetLogWithSource(), host_resolver_.get(), &handler));
 
   // Verify that a handler isn't returned for a bogus scheme.
-  EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME,
-            context->http_auth_handler_factory()->CreateAuthHandlerFromString(
-                "Bogus", HttpAuth::AUTH_SERVER, null_ssl_info, gurl,
-                NetLogWithSource(), host_resolver_.get(), &handler));
+  EXPECT_EQ(
+      ERR_UNSUPPORTED_AUTH_SCHEME,
+      context->http_auth_handler_factory()->CreateAuthHandlerFromString(
+          "Bogus", HttpAuth::AUTH_SERVER, null_ssl_info, NetworkIsolationKey(),
+          gurl, NetLogWithSource(), host_resolver_.get(), &handler));
 }
 
 #if BUILDFLAG(ENABLE_REPORTING)

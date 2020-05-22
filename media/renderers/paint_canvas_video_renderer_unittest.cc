@@ -1306,8 +1306,7 @@ class PaintCanvasVideoRendererWithGLTest : public PaintCanvasVideoRendererTest {
   scoped_refptr<viz::TestInProcessContextProvider> destination_context_;
 };
 
-TEST_F(PaintCanvasVideoRendererWithGLTest,
-       DISABLED_CopyVideoFrameYUVDataToGLTexture) {
+TEST_F(PaintCanvasVideoRendererWithGLTest, CopyVideoFrameYUVDataToGLTexture) {
   auto* destination_gl = destination_context_->ContextGL();
   DCHECK(destination_gl);
   GLenum target = GL_TEXTURE_2D;
@@ -1339,7 +1338,7 @@ TEST_F(PaintCanvasVideoRendererWithGLTest,
 }
 
 TEST_F(PaintCanvasVideoRendererWithGLTest,
-       DISABLED_CopyVideoFrameYUVDataToGLTexture_FlipY) {
+       CopyVideoFrameYUVDataToGLTexture_FlipY) {
   auto* destination_gl = destination_context_->ContextGL();
   DCHECK(destination_gl);
   GLenum target = GL_TEXTURE_2D;

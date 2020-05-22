@@ -1362,6 +1362,7 @@ class BBJSONGenerator(object):
       'Win7 ANGLE Tryserver (AMD)',
       # chromium.fyi
       'linux-blink-rel-dummy',
+      'linux-blink-optional-highdpi-rel-dummy',
       'mac10.10-blink-rel-dummy',
       'mac10.11-blink-rel-dummy',
       'mac10.12-blink-rel-dummy',

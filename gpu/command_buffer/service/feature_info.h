@@ -151,6 +151,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool webgl_multi_draw_instanced_base_vertex_base_instance = false;
     bool ext_texture_compression_bptc = false;
     bool ext_texture_compression_rgtc = false;
+    bool oes_draw_buffers_indexed = false;
   };
 
   FeatureInfo();
@@ -213,6 +214,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   void EnableEXTColorBufferFloat();
   void EnableEXTColorBufferHalfFloat();
   void EnableEXTTextureFilterAnisotropic();
+  void EnableOESDrawBuffersIndexed();
   void EnableOESFboRenderMipmap();
   void EnableOESTextureFloatLinear();
   void EnableOESTextureHalfFloatLinear();

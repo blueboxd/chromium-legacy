@@ -124,8 +124,9 @@ class PerFrameTranslateAgent : public content::RenderFrameObserver,
 
   // Checks if the current running page translation is finished or errored and
   // notifies the browser accordingly.  If the translation has not terminated,
-  // posts a task to check again later.
-  void CheckTranslateStatus();
+  // posts a task to check again later. |check_count| is used to limit the
+  // number of retries.
+  void CheckTranslateStatus(int check_count);
 
   // Called by TranslateFrame to do the actual translation.  |count| is used to
   // limit the number of retries.

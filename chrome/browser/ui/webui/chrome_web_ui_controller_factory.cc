@@ -103,7 +103,7 @@
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-#include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_content_ui.h"
+#include "chrome/browser/media/kaleidoscope/internal/constants.h"
 #include "chrome/browser/media/kaleidoscope/internal/kaleidoscope_ui.h"
 #include "media/base/media_switches.h"
 #endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
@@ -727,10 +727,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
 
 #if BUILDFLAG(ENABLE_KALEIDOSCOPE)
   if (base::FeatureList::IsEnabled(media::kKaleidoscope)) {
-    if (url.host_piece() == chrome::kChromeUIKaleidoscopeHost)
+    if (url.host_piece() == kKaleidoscopeUIHost)
       return &NewWebUI<KaleidoscopeUI>;
-    if (url.host_piece() == chrome::kChromeUIKaleidoscopeContentHost)
-      return &NewWebUI<KaleidoscopeContentUI>;
   }
 #endif  // BUILDFLAG(ENABLE_KALEIDOSCOPE)
 #if BUILDFLAG(ENABLE_NACL)
@@ -954,11 +952,6 @@ bool ChromeWebUIControllerFactory::IsWebUIAllowedToMakeNetworkRequests(
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
       // https://crbug.com/829414
       origin.host() == chrome::kChromeUIPrintHost ||
-#endif
-#if BUILDFLAG(ENABLE_KALEIDOSCOPE)
-      // TODO(https://crbug.com/1039904): This is only for prototyping purposes.
-      // Must be removed before launch.
-      origin.host() == chrome::kChromeUIKaleidoscopeContentHost ||
 #endif
       // https://crbug.com/831812
       origin.host() == chrome::kChromeUISyncConfirmationHost ||

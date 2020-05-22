@@ -49,8 +49,7 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
         bubble_view(), kTestColors, tab_groups::TabGroupColorId::kBlue,
         color_selected_callback_.Get());
     color_picker->SizeToPreferredSize();
-    color_picker_ = color_picker.get();
-    widget_->SetContentsView(color_picker.release());
+    color_picker_ = widget_->SetContentsView(std::move(color_picker));
     widget_->Show();
   }
 
@@ -97,12 +96,10 @@ class ColorPickerViewTest : public ChromeViewsTestBase {
 TEST_F(ColorPickerViewTest, ColorSelectedByDefaultIfMatching) {
   std::unique_ptr<views::Widget> widget = CreateTestWidget();
 
-  auto owned_color_picker = std::make_unique<ColorPickerView>(
-      bubble_view(), kTestColors, tab_groups::TabGroupColorId::kRed,
-      color_selected_callback_.Get());
-
-  ColorPickerView* color_picker = owned_color_picker.get();
-  widget->SetContentsView(owned_color_picker.release());
+  ColorPickerView* color_picker =
+      widget->SetContentsView(std::make_unique<ColorPickerView>(
+          bubble_view(), kTestColors, tab_groups::TabGroupColorId::kRed,
+          color_selected_callback_.Get()));
 
   color_picker->SizeToPreferredSize();
 

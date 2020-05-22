@@ -599,6 +599,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   bool GetHelper(GLenum pname, GLint* params);
   GLuint GetBoundBufferHelper(GLenum target);
   bool GetBooleanvHelper(GLenum pname, GLboolean* params);
+  bool GetBooleani_vHelper(GLenum pname, GLuint index, GLboolean* data);
   bool GetBufferParameteri64vHelper(
       GLenum target, GLenum pname, GLint64* params);
   bool GetBufferParameterivHelper(GLenum target, GLenum pname, GLint* params);

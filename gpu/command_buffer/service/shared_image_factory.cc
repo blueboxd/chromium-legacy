@@ -391,6 +391,12 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
                                (usage & SHARED_IMAGE_USAGE_VIDEO_DECODE) ||
                                (share_between_threads && vulkan_usage);
 
+#if defined(OS_ANDROID)
+  // Scanout on Android requires explicit fence synchronization which is only
+  // supported by the interop factory.
+  using_interop_factory |= usage & SHARED_IMAGE_USAGE_SCANOUT;
+#endif
+
   // wrapped_sk_image_factory_ is only used for OOPR and supports
   // a limited number of flags (e.g. no SHARED_IMAGE_USAGE_SCANOUT).
   constexpr auto kWrappedSkImageUsage = SHARED_IMAGE_USAGE_RASTER |

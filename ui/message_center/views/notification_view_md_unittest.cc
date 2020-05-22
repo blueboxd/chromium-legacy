@@ -311,8 +311,7 @@ void NotificationViewMDTest::UpdateNotificationViews(
     // The native widget owns |widget| and |widget| owns |notification_view_|.
     auto* widget = new views::Widget();
     widget->Init(std::move(init_params));
-    notification_view_ = notification_view.get();
-    widget->SetContentsView(notification_view.release());
+    notification_view_ = widget->SetContentsView(std::move(notification_view));
     widget->SetSize(notification_view_->GetPreferredSize());
     widget->Show();
     widget->widget_delegate()->SetCanActivate(true);

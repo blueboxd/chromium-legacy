@@ -34,6 +34,9 @@ class EmuTarget(target.Target):
     """Build the command that will be run to start Fuchsia in the emulator."""
     pass
 
+  def _SetEnv(self):
+    return os.environ.copy()
+
   # Used by the context manager to ensure that the emulator is killed when
   # the Python process exits.
   def __exit__(self, exc_type, exc_val, exc_tb):
@@ -63,9 +66,12 @@ class EmuTarget(target.Target):
       temporary_system_log_file = tempfile.NamedTemporaryFile('w')
       stdout = temporary_system_log_file
       stderr = sys.stderr
-
-    self._emu_process = subprocess.Popen(emu_command, stdin=open(os.devnull),
-                                          stdout=stdout, stderr=stderr)
+    emu_env = self._SetEnv()
+    self._emu_process = subprocess.Popen(emu_command,
+                                         stdin=open(os.devnull),
+                                         stdout=stdout,
+                                         stderr=stderr,
+                                         env=emu_env)
 
     try:
       self._WaitUntilReady();

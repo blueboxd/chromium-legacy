@@ -4,6 +4,8 @@
 
 #include "ash/drag_drop/drag_drop_controller.h"
 
+#include <memory>
+
 #include "ash/drag_drop/drag_drop_tracker.h"
 #include "ash/drag_drop/drag_image_view.h"
 #include "ash/shell.h"
@@ -264,10 +266,8 @@ class EventTargetTestDelegate : public aura::client::DragDropDelegate {
 };
 
 void AddViewToWidgetAndResize(views::Widget* widget, views::View* view) {
-  if (!widget->GetContentsView()) {
-    views::View* contents_view = new views::View;
-    widget->SetContentsView(contents_view);
-  }
+  if (!widget->GetContentsView())
+    widget->SetContentsView(std::make_unique<views::View>());
 
   views::View* contents_view = widget->GetContentsView();
   contents_view->AddChildView(view);

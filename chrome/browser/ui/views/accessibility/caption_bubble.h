@@ -60,6 +60,14 @@ class CaptionBubble : public views::BubbleDialogDelegateView,
   // directly.
   void Hide();
 
+  // For the provided line index, gets the corresponding rendered line in the
+  // label and returns the text position of the first character of that line.
+  // Returns the same value regardless of whether the label is visible or not.
+  size_t GetTextIndexOfLineInLabel(size_t line) const;
+
+  // Returns the number of lines in the caption bubble label that are rendered.
+  size_t GetNumLinesInLabel();
+
   const char* GetClassName() const override;
 
  protected:

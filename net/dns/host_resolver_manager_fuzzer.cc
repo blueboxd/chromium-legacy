@@ -17,6 +17,7 @@
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/request_priority.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/fuzzed_host_resolver_util.h"
@@ -161,7 +162,8 @@ class DnsRequest {
 
     const char* hostname = data_provider_->PickValueInArray(kHostNames);
     request_ = host_resolver_->CreateRequest(
-        net::HostPortPair(hostname, 80), net::NetLogWithSource(), parameters);
+        net::HostPortPair(hostname, 80), net::NetworkIsolationKey(),
+        net::NetLogWithSource(), parameters);
     int rv = request_->Start(
         base::BindOnce(&DnsRequest::OnCallback, base::Unretained(this)));
     if (rv != net::ERR_IO_PENDING)

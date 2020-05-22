@@ -66,7 +66,6 @@ PaymentRequestState::PaymentRequestState(
     const std::string& app_locale,
     autofill::PersonalDataManager* personal_data_manager,
     ContentPaymentRequestDelegate* payment_request_delegate,
-    const ServiceWorkerPaymentApp::IdentityCallback& sw_identity_callback,
     JourneyLogger* journey_logger)
     : web_contents_(web_contents),
       initiator_render_frame_host_(initiator_render_frame_host),
@@ -81,7 +80,6 @@ PaymentRequestState::PaymentRequestState(
       are_requested_methods_supported_(
           !spec_->supported_card_networks().empty()),
       payment_request_delegate_(payment_request_delegate),
-      sw_identity_callback_(sw_identity_callback),
       profile_comparator_(app_locale, *spec) {
   PopulateProfileCache();
 
@@ -149,11 +147,6 @@ bool PaymentRequestState::MayCrawlForInstallablePaymentApps() {
   return PaymentsExperimentalFeatures::IsEnabled(
              features::kAlwaysAllowJustInTimePaymentApp) ||
          !spec_->supports_basic_card();
-}
-
-void PaymentRequestState::OnPaymentAppInstalled(const url::Origin& origin,
-                                                int64_t registration_id) {
-  sw_identity_callback_.Run(origin, registration_id);
 }
 
 void PaymentRequestState::OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) {

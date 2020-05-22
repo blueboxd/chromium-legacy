@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -135,6 +136,10 @@ class PaymentApp {
   // method, shipping option, or shipping address change events, so the payment
   // details are unchanged.
   virtual void OnPaymentDetailsNotUpdated() {}
+
+  // Requests the invoked payment app to abort if possible. Only called if this
+  // payment app is currently invoked.
+  virtual void AbortPaymentApp(base::OnceCallback<void(bool)> abort_callback);
 
  protected:
   PaymentApp(int icon_resource_id, Type type);

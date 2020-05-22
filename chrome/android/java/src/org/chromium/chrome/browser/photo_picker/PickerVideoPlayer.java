@@ -319,12 +319,14 @@ public class PickerVideoPlayer
     public void onStartTrackingTouch(SeekBar seekBar) {
         cancelFadeAwayAnimation();
         mFastForwardMessage.setVisibility(View.VISIBLE);
+        mLargePlayButton.setVisibility(View.GONE);
     }
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
         fadeAwayVideoControls();
         mFastForwardMessage.setVisibility(View.GONE);
+        mLargePlayButton.setVisibility(View.VISIBLE);
     }
 
     private void showOverlayControls(boolean animateAway) {

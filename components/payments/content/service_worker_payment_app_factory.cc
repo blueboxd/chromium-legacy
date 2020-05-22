@@ -74,9 +74,7 @@ class ServiceWorkerPaymentAppCreator {
           delegate_->GetTopOrigin(), delegate_->GetFrameOrigin(),
           delegate_->GetSpec(), std::move(installed_app.second),
           delegate_->GetPaymentRequestDelegate()->IsOffTheRecord(),
-          show_processing_spinner,
-          base::BindRepeating(
-              &PaymentAppFactory::Delegate::OnPaymentAppInstalled, delegate_));
+          show_processing_spinner);
       app->ValidateCanMakePayment(base::BindOnce(
           &ServiceWorkerPaymentAppCreator::OnSWPaymentAppValidated,
           weak_ptr_factory_.GetWeakPtr()));
@@ -90,9 +88,7 @@ class ServiceWorkerPaymentAppCreator {
           delegate_->GetFrameOrigin(), delegate_->GetSpec(),
           std::move(installable_app.second), installable_app.first.spec(),
           delegate_->GetPaymentRequestDelegate()->IsOffTheRecord(),
-          show_processing_spinner,
-          base::BindRepeating(
-              &PaymentAppFactory::Delegate::OnPaymentAppInstalled, delegate_));
+          show_processing_spinner);
       app->ValidateCanMakePayment(base::BindOnce(
           &ServiceWorkerPaymentAppCreator::OnSWPaymentAppValidated,
           weak_ptr_factory_.GetWeakPtr()));

@@ -185,10 +185,7 @@ void PaymentRequest::Init(
       web_contents_, initiator_frame, top_level_origin_, frame_origin_,
       frame_security_origin_, spec_.get(),
       /*delegate=*/this, delegate_->GetApplicationLocale(),
-      delegate_->GetPersonalDataManager(), delegate_.get(),
-      base::BindRepeating(&PaymentRequest::SetInvokedServiceWorkerIdentity,
-                          weak_ptr_factory_.GetWeakPtr()),
-      &journey_logger_);
+      delegate_->GetPersonalDataManager(), delegate_.get(), &journey_logger_);
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
@@ -407,18 +404,16 @@ void PaymentRequest::Abort() {
   // The abort is only successful if the payment app wasn't yet invoked.
   // TODO(crbug.com/716546): Add a merchant abort metric
 
-  bool accepting_abort = !state_->IsPaymentAppInvoked();
-  if (accepting_abort)
-    RecordFirstAbortReason(JourneyLogger::ABORT_REASON_ABORTED_BY_MERCHANT);
-
-  if (client_.is_bound())
-    client_->OnAbort(accepting_abort);
-
   if (observer_for_testing_)
     observer_for_testing_->OnAbortCalled();
 
-  if (accepting_abort)
-    state_->OnAbort();
+  if (!state_->IsPaymentAppInvoked() || !state_->selected_app()) {
+    OnAbortResult(/*aborted=*/true);
+    return;
+  }
+
+  state_->selected_app()->AbortPaymentApp(base::BindOnce(
+      &PaymentRequest::OnAbortResult, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PaymentRequest::Complete(mojom::PaymentComplete result) {
@@ -704,12 +699,6 @@ void PaymentRequest::OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) {
   client_->OnPayerDetailChange(std::move(payer_info));
 }
 
-void PaymentRequest::SetInvokedServiceWorkerIdentity(const url::Origin& origin,
-                                                     int64_t registration_id) {
-  payment_handler_host_.set_sw_origin_for_logs(origin);
-  payment_handler_host_.set_registration_id_for_logs(registration_id);
-}
-
 void PaymentRequest::UserCancelled() {
   // If |client_| is not bound, then the object is already being destroyed as
   // a result of a renderer event.
@@ -836,6 +825,16 @@ void PaymentRequest::RespondToHasEnrolledInstrumentQuery(
   client_->OnHasEnrolledInstrument(has_enrolled_instrument ? positive
                                                            : negative);
   journey_logger_.SetHasEnrolledInstrumentValue(has_enrolled_instrument);
+}
+
+void PaymentRequest::OnAbortResult(bool aborted) {
+  if (client_.is_bound())
+    client_->OnAbort(aborted);
+
+  if (aborted) {
+    RecordFirstAbortReason(JourneyLogger::ABORT_REASON_ABORTED_BY_MERCHANT);
+    state_->OnAbort();
+  }
 }
 
 }  // namespace payments

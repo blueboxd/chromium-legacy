@@ -34,9 +34,6 @@ class PaymentHandlerHost;
 // Represents a service worker based payment app.
 class ServiceWorkerPaymentApp : public PaymentApp {
  public:
-  using IdentityCallback =
-      base::RepeatingCallback<void(const url::Origin&, int64_t)>;
-
   // This constructor is used for a payment app that has been installed in
   // Chrome.
   ServiceWorkerPaymentApp(
@@ -46,8 +43,7 @@ class ServiceWorkerPaymentApp : public PaymentApp {
       const PaymentRequestSpec* spec,
       std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
       bool is_incognito,
-      const base::RepeatingClosure& show_processing_spinner,
-      const IdentityCallback& identity_callback);
+      const base::RepeatingClosure& show_processing_spinner);
 
   // This constructor is used for a payment app that has not been installed in
   // Chrome but can be installed when paying with it.
@@ -59,8 +55,7 @@ class ServiceWorkerPaymentApp : public PaymentApp {
       std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
       const std::string& enabled_method,
       bool is_incognito,
-      const base::RepeatingClosure& show_processing_spinner,
-      const IdentityCallback& identity_callback);
+      const base::RepeatingClosure& show_processing_spinner);
   ~ServiceWorkerPaymentApp() override;
 
   // The callback for ValidateCanMakePayment.
@@ -105,6 +100,7 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   bool IsWaitingForPaymentDetailsUpdate() const override;
   void UpdateWith(const mojom::PaymentDetailsPtr& details) override;
   void OnPaymentDetailsNotUpdated() override;
+  void AbortPaymentApp(base::OnceCallback<void(bool)> abort_callback) override;
 
  private:
   friend class ServiceWorkerPaymentAppTest;
@@ -142,12 +138,11 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   // invoked.
   base::RepeatingClosure show_processing_spinner_;
 
-  // The callback that is notified of service worker registration identifier
-  // after the service worker is installed.
-  IdentityCallback identity_callback_;
-
   base::WeakPtr<PaymentHandlerHost> payment_handler_host_;
   mojo::PendingRemote<mojom::PaymentHandlerHost> payment_handler_host_remote_;
+
+  // Service worker registration identifier. Used for aborting the payment app.
+  int64_t registration_id_ = 0;
 
   // PaymentAppProvider::CanMakePayment result of this payment app.
   bool can_make_payment_result_;

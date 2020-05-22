@@ -21,8 +21,8 @@ import org.chromium.ui.modelutil.PropertyModel;
  * This class creates the model for permission dialog.
  */
 class PermissionDialogModel {
-    public static PropertyModel getModel(
-            ModalDialogProperties.Controller controller, PermissionDialogDelegate delegate) {
+    public static PropertyModel getModel(ModalDialogProperties.Controller controller,
+            PermissionDialogDelegate delegate, Runnable touchFilteredCallback) {
         Context context = delegate.getWindow().getContext().get();
         assert context != null;
         View customView = loadDialogView(context);
@@ -42,6 +42,7 @@ class PermissionDialogModel {
                 .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, delegate.getSecondaryButtonText())
                 .with(ModalDialogProperties.CONTENT_DESCRIPTION, delegate.getMessageText())
                 .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
+                .with(ModalDialogProperties.TOUCH_FILTERED_CALLBACK, touchFilteredCallback)
                 .build();
     }
 

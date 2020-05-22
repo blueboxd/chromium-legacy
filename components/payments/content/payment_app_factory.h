@@ -63,11 +63,6 @@ class PaymentAppFactory {
         const = 0;
     virtual PaymentRequestSpec* GetSpec() const = 0;
 
-    // Called after an app is installed. Used for just-in-time installable
-    // payment handlers, for example.
-    virtual void OnPaymentAppInstalled(const url::Origin& origin,
-                                       int64_t registration_id) = 0;
-
     // Called when an app is created.
     virtual void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) = 0;
 

@@ -101,9 +101,6 @@ class PaymentRequest : public mojom::PaymentRequest,
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
   void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
 
-  void SetInvokedServiceWorkerIdentity(const url::Origin& origin,
-                                       int64_t registration_id);
-
   // Called when the user explicitly cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through
   // OnConnectionTerminated).
@@ -186,6 +183,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   // version of the values instead.
   void RespondToHasEnrolledInstrumentQuery(bool has_enrolled_instrument,
                                            bool warn_localhost_or_file);
+
+  void OnAbortResult(bool aborted);
 
   content::WebContents* web_contents_;
   const content::GlobalFrameRoutingId initiator_frame_routing_id_;

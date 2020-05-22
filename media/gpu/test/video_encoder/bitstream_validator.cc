@@ -10,6 +10,7 @@
 #include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_decoder_config.h"
 #include "media/base/video_frame.h"
 #include "media/filters/ffmpeg_video_decoder.h"
@@ -25,6 +26,7 @@ std::unique_ptr<VideoDecoder> CreateDecoder(VideoCodec codec) {
 
   if (codec == kCodecVP8 || codec == kCodecVP9) {
 #if BUILDFLAG(ENABLE_LIBVPX)
+    LOG_ASSERT(!base::FeatureList::IsEnabled(kFFmpegDecodeOpaqueVP8));
     decoder = std::make_unique<VpxVideoDecoder>();
 #endif
   }

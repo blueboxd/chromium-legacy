@@ -2623,6 +2623,9 @@ crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failu
 crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/mediaqueries/aspect-ratio-004.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/mediaqueries/aspect-ratio-004.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/mediaqueries/aspect-ratio-004.html [ Failure ]

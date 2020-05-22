@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.tasks;
 import android.app.Activity;
 import android.text.TextUtils;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
@@ -29,6 +30,7 @@ import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 
@@ -142,6 +144,23 @@ public final class ReturnToChromeExperimentsUtil {
      */
     public static boolean willHandleLoadUrlFromStartSurface(
             String url, @PageTransition int transition) {
+        return willHandleLoadUrlWithPostDataFromStartSurface(url, transition, null, null);
+    }
+
+    /**
+     * Check if we should handle the navigation. If so, create a new tab and load the URL with POST
+     * data.
+     *
+     * @param url The URL to load.
+     * @param transition The page transition type.
+     * @param postDataType   postData type.
+     * @param postData       POST data to include in the tab URL's request body, ex. bitmap when
+     *         image search.
+     * @return true if we have handled the navigation, false otherwise.
+     */
+    public static boolean willHandleLoadUrlWithPostDataFromStartSurface(String url,
+            @PageTransition int transition, @Nullable String postDataType,
+            @Nullable byte[] postData) {
         ChromeActivity chromeActivity = getActivityPresentingOverviewWithOmnibox();
         if (chromeActivity == null) return false;
 
@@ -149,6 +168,11 @@ public final class ReturnToChromeExperimentsUtil {
         TabModel model = chromeActivity.getCurrentTabModel();
         LoadUrlParams params = new LoadUrlParams(url);
         params.setTransitionType(transition | PageTransition.FROM_ADDRESS_BAR);
+        if (!TextUtils.isEmpty(postDataType) && postData != null && postData.length != 0) {
+            params.setVerbatimHeaders("Content-Type: " + postDataType);
+            params.setPostData(ResourceRequestBody.createFromBytes(postData));
+        }
+
         chromeActivity.getTabCreator(model.isIncognito())
                 .createNewTab(params, TabLaunchType.FROM_START_SURFACE, null);
 

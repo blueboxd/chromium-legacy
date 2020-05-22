@@ -6,6 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <re2/re2.h>
 #include "base/files/file_path.h"
 #include "base/json/json_writer.h"
 #include "base/strings/string_number_conversions.h"
@@ -41,37 +42,6 @@ const char kHeightDictAttr[] = "height";
 const char kRangeLocDictAttr[] = "loc";
 const char kRangeLenDictAttr[] = "len";
 
-base::Value StringForBrowserAccessibility(BrowserAccessibilityCocoa* obj) {
-  NSMutableArray* tokens = [[NSMutableArray alloc] init];
-
-  // Always include the role
-  id role = [obj role];
-  [tokens addObject:role];
-
-  // If the role is "group", include the role description as well.
-  id roleDescription = [obj roleDescription];
-  if ([role isEqualToString:NSAccessibilityGroupRole] &&
-      roleDescription != nil && ![roleDescription isEqualToString:@""] &&
-      ![roleDescription isEqualToString:@"group"]) {
-    [tokens addObject:roleDescription];
-  }
-
-  // Include the description, title, or value - the first one not empty.
-  id title = [obj title];
-  id description = [obj descriptionForAccessibility];
-  id value = [obj value];
-  if (description && ![description isEqual:@""]) {
-    [tokens addObject:description];
-  } else if (title && ![title isEqual:@""]) {
-    [tokens addObject:title];
-  } else if (value && ![value isEqual:@""]) {
-    [tokens addObject:value];
-  }
-
-  NSString* result = [tokens componentsJoinedByString:@" "];
-  return base::Value(SysNSStringToUTF16(result));
-}
-
 }  // namespace
 
 class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
@@ -93,8 +63,14 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
       const base::StringPiece& pattern) override;
 
  private:
+  using LineIndexesMap = std::map<const gfx::NativeViewAccessible, int>;
+
   void RecursiveBuildAccessibilityTree(const BrowserAccessibilityCocoa* node,
+                                       const LineIndexesMap& line_indexes_map,
                                        base::DictionaryValue* dict);
+  void RecursiveBuildLineIndexesMap(const BrowserAccessibilityCocoa* node,
+                                    LineIndexesMap* line_indexes_map,
+                                    int* counter);
 
   base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
@@ -102,16 +78,21 @@ class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
   const std::string GetDenyString() override;
   const std::string GetDenyNodeString() override;
 
-  void AddProperties(const BrowserAccessibilityCocoa* node, base::Value* dict);
+  void AddProperties(const BrowserAccessibilityCocoa* node,
+                     const LineIndexesMap& line_indexes_map,
+                     base::Value* dict);
   base::Value PopulateSize(const BrowserAccessibilityCocoa*) const;
   base::Value PopulatePosition(const BrowserAccessibilityCocoa*) const;
-  base::Value PopulateObject(id) const;
   base::Value PopulateRange(NSRange) const;
-  base::Value PopulateArray(NSArray*) const;
+  base::Value PopulateObject(id, const LineIndexesMap& line_indexes_map) const;
+  base::Value PopulateArray(NSArray*,
+                            const LineIndexesMap& line_indexes_map) const;
 
   base::string16 ProcessTreeForOutput(
       const base::DictionaryValue& node,
       base::DictionaryValue* filtered_dict_result = nullptr) override;
+
+  std::string FormatAttributeValue(const base::Value& value);
 };
 
 // static
@@ -154,9 +135,14 @@ AccessibilityTreeFormatterMac::BuildAccessibilityTree(
     BrowserAccessibility* root) {
   DCHECK(root);
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   BrowserAccessibilityCocoa* cocoa_root = ToBrowserAccessibilityCocoa(root);
-  RecursiveBuildAccessibilityTree(cocoa_root, dict.get());
+
+  int counter = 0;
+  LineIndexesMap line_indexes_map;
+  RecursiveBuildLineIndexesMap(cocoa_root, &line_indexes_map, &counter);
+
+  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
+  RecursiveBuildAccessibilityTree(cocoa_root, line_indexes_map, dict.get());
   return dict;
 }
 
@@ -183,21 +169,34 @@ AccessibilityTreeFormatterMac::BuildAccessibilityTreeForPattern(
 
 void AccessibilityTreeFormatterMac::RecursiveBuildAccessibilityTree(
     const BrowserAccessibilityCocoa* cocoa_node,
+    const LineIndexesMap& line_indexes_map,
     base::DictionaryValue* dict) {
-  AddProperties(cocoa_node, dict);
+  AddProperties(cocoa_node, line_indexes_map, dict);
 
   auto children = std::make_unique<base::ListValue>();
   for (BrowserAccessibilityCocoa* cocoa_child in [cocoa_node children]) {
     std::unique_ptr<base::DictionaryValue> child_dict(
         new base::DictionaryValue);
-    RecursiveBuildAccessibilityTree(cocoa_child, child_dict.get());
+    RecursiveBuildAccessibilityTree(cocoa_child, line_indexes_map,
+                                    child_dict.get());
     children->Append(std::move(child_dict));
   }
   dict->Set(kChildrenDictAttr, std::move(children));
 }
 
+void AccessibilityTreeFormatterMac::RecursiveBuildLineIndexesMap(
+    const BrowserAccessibilityCocoa* cocoa_node,
+    LineIndexesMap* line_indexes_map,
+    int* counter) {
+  line_indexes_map->insert({cocoa_node, ++(*counter)});
+  for (BrowserAccessibilityCocoa* cocoa_child in [cocoa_node children]) {
+    RecursiveBuildLineIndexesMap(cocoa_child, line_indexes_map, counter);
+  }
+}
+
 void AccessibilityTreeFormatterMac::AddProperties(
     const BrowserAccessibilityCocoa* cocoa_node,
+    const LineIndexesMap& line_indexes_map,
     base::Value* dict) {
   // DOM element id
   BrowserAccessibility* node = [cocoa_node owner];
@@ -209,7 +208,7 @@ void AccessibilityTreeFormatterMac::AddProperties(
       id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
       if (value != nil) {
         dict->SetPath(SysNSStringToUTF8(supportedAttribute),
-                      PopulateObject(value));
+                      PopulateObject(value, line_indexes_map));
       }
     }
   }
@@ -255,10 +254,12 @@ base::Value AccessibilityTreeFormatterMac::PopulatePosition(
   return position;
 }
 
-base::Value AccessibilityTreeFormatterMac::PopulateObject(id value) const {
+base::Value AccessibilityTreeFormatterMac::PopulateObject(
+    id value,
+    const LineIndexesMap& line_indexes_map) const {
   // NSArray
   if ([value isKindOfClass:[NSArray class]]) {
-    return PopulateArray((NSArray*)value);
+    return PopulateArray((NSArray*)value, line_indexes_map);
   }
 
   // NSRange
@@ -269,7 +270,11 @@ base::Value AccessibilityTreeFormatterMac::PopulateObject(id value) const {
 
   // Accessible object.
   if ([value isKindOfClass:[BrowserAccessibilityCocoa class]]) {
-    return StringForBrowserAccessibility((BrowserAccessibilityCocoa*)value);
+    int line_index = -1;
+    if (line_indexes_map.find(value) != line_indexes_map.end()) {
+      line_index = line_indexes_map.at(value);
+    }
+    return base::Value(":" + base::NumberToString(line_index));
   }
 
   // Scalar value.
@@ -286,10 +291,11 @@ base::Value AccessibilityTreeFormatterMac::PopulateRange(
 }
 
 base::Value AccessibilityTreeFormatterMac::PopulateArray(
-    NSArray* node_array) const {
+    NSArray* node_array,
+    const LineIndexesMap& line_indexes_map) const {
   base::Value list(base::Value::Type::LIST);
   for (NSUInteger i = 0; i < [node_array count]; i++)
-    list.Append(PopulateObject([node_array objectAtIndex:i]));
+    list.Append(PopulateObject([node_array objectAtIndex:i], line_indexes_map));
   return list;
 }
 
@@ -318,45 +324,78 @@ base::string16 AccessibilityTreeFormatterMac::ProcessTreeForOutput(
 
   // Expose all other attributes.
   for (auto item : dict.DictItems()) {
-    if (item.second.is_string()) {
-      if (item.first != role_attr && item.first != subrole_attr) {
-        WriteAttribute(false,
-                       StringPrintf("%s='%s'", item.first.c_str(),
-                                    item.second.GetString().c_str()),
-                       &line);
-      }
+    if (item.second.is_string() &&
+        (item.first == role_attr || item.first == subrole_attr)) {
       continue;
     }
 
     // Special processing for position and size.
-    if (item.second.is_dict()) {
-      if (item.first == kPositionDictAttr) {
-        WriteAttribute(false,
-                       FormatCoordinates(
-                           base::Value::AsDictionaryValue(item.second),
-                           kPositionDictAttr, kXCoordDictAttr, kYCoordDictAttr),
-                       &line);
-        continue;
-      }
-      if (item.first == kSizeDictAttr) {
-        WriteAttribute(
-            false,
-            FormatCoordinates(base::Value::AsDictionaryValue(item.second),
-                              kSizeDictAttr, kWidthDictAttr, kHeightDictAttr),
-            &line);
-        continue;
-      }
+    if (item.first == kPositionDictAttr) {
+      WriteAttribute(false,
+                     FormatCoordinates(
+                         base::Value::AsDictionaryValue(item.second),
+                         kPositionDictAttr, kXCoordDictAttr, kYCoordDictAttr),
+                     &line);
+      continue;
+    }
+    if (item.first == kSizeDictAttr) {
+      WriteAttribute(
+          false,
+          FormatCoordinates(base::Value::AsDictionaryValue(item.second),
+                            kSizeDictAttr, kWidthDictAttr, kHeightDictAttr),
+          &line);
+      continue;
     }
 
-    // Write everything else as JSON.
-    std::string json_value;
-    base::JSONWriter::Write(item.second, &json_value);
+    // Write formatted value.
+    std::string formatted_value = FormatAttributeValue(item.second);
     WriteAttribute(
-        false, StringPrintf("%s=%s", item.first.c_str(), json_value.c_str()),
+        false,
+        StringPrintf("%s=%s", item.first.c_str(), formatted_value.c_str()),
         &line);
   }
 
   return line;
+}
+
+std::string AccessibilityTreeFormatterMac::FormatAttributeValue(
+    const base::Value& value) {
+  if (value.is_string()) {
+    // Special handling for accessible object relations, which are encoded
+    // as a line index the related accessible object is written at. The format
+    // is :LINE_NUM.
+    if (RE2::FullMatch(value.GetString(), "^:\\d+$")) {
+      return value.GetString();
+    }
+    return "'" + value.GetString() + "'";
+  }
+
+  if (value.is_int()) {
+    return base::NumberToString(value.GetInt());
+  }
+
+  if (value.is_list()) {
+    std::string output;
+    for (const auto& item : value.GetList()) {
+      if (!output.empty()) {
+        output += ", ";
+      }
+      output += FormatAttributeValue(item);
+    }
+    return "[" + output + "]";
+  }
+
+  if (value.is_dict()) {
+    std::string output;
+    for (const auto& item : value.DictItems()) {
+      if (!output.empty()) {
+        output += ", ";
+      }
+      output += item.first + ": " + FormatAttributeValue(item.second);
+    }
+    return "{" + output + "}";
+  }
+  return "";
 }
 
 base::FilePath::StringType

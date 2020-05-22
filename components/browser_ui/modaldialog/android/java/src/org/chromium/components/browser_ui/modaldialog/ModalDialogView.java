@@ -64,6 +64,7 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
     private boolean mTitleScrollable;
     private boolean mFilterTouchForSecurity;
     private boolean mFilteredTouchResultRecorded;
+    private Runnable mOnTouchFilteredCallback;
 
     /**
      * Constructor for inflating from XML.
@@ -221,6 +222,10 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
                                                   : SecurityFilteredTouchResult.HANDLED,
                             SecurityFilteredTouchResult.NUM_ENTRIES);
                 }
+                if (shouldBlockTouchEvent && mOnTouchFilteredCallback != null
+                        && ev.getAction() == MotionEvent.ACTION_DOWN) {
+                    mOnTouchFilteredCallback.run();
+                }
             } catch (NoSuchFieldException | IllegalAccessException e) {
                 Log.e(TAG, "Reflection failure: " + e);
             }
@@ -231,6 +236,14 @@ public class ModalDialogView extends BoundedLinearLayout implements View.OnClick
         positiveButton.setOnTouchListener(onTouchListener);
         negativeButton.setFilterTouchesWhenObscured(true);
         negativeButton.setOnTouchListener(onTouchListener);
+    }
+
+    /**
+     * @param callback The callback is called when touch event is filtered because of an overlay
+     *                 window.
+     */
+    void setOnTouchFilteredCallback(Runnable callback) {
+        mOnTouchFilteredCallback = callback;
     }
 
     /** @param message The message in the dialog content. */

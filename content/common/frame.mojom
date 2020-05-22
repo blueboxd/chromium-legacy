@@ -14,7 +14,6 @@ import "content/common/widget.mojom";
 import "content/public/common/browser_controls_state.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
-import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
@@ -93,15 +92,6 @@ interface Frame {
   // See ui/accessibility/ax_mode.h for valid values of |ax_mode|.
   SnapshotAccessibilityTree(uint32 ax_mode)
       => (ax.mojom.AXContentTreeUpdate snapshot);
-
-
-  // Get HTML data by serializing the target frame and replacing all resource
-  // links with a path to the local copy passed in the message payload.
-  GetSerializedHtmlWithLocalLinks(
-      map<url.mojom.Url, mojo_base.mojom.FilePath> url_map,
-      map<mojo_base.mojom.UnguessableToken, mojo_base.mojom.FilePath>
-          frame_token_map,
-      bool save_with_empty_url) => (string data_buffer, bool end_of_data);
 };
 
 // Implemented by the frame provider and currently must be associated with the

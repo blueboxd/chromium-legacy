@@ -113,6 +113,13 @@ public class ModalDialogProperties {
     public static final ReadableBooleanPropertyKey FILTER_TOUCH_FOR_SECURITY =
             new ReadableBooleanPropertyKey();
 
+    /**
+     * Callback to be called when the modal dialog filters touch events because the buttons are
+     * obscured by another window.
+     */
+    public static final ReadableObjectPropertyKey<Runnable> TOUCH_FILTERED_CALLBACK =
+            new ReadableObjectPropertyKey<>();
+
     /** Whether the title is scrollable with the message. */
     public static final WritableBooleanPropertyKey TITLE_SCROLLABLE =
             new WritableBooleanPropertyKey();
@@ -125,5 +132,6 @@ public class ModalDialogProperties {
             TITLE, TITLE_ICON, MESSAGE, CUSTOM_VIEW, POSITIVE_BUTTON_TEXT,
             POSITIVE_BUTTON_CONTENT_DESCRIPTION, POSITIVE_BUTTON_DISABLED, NEGATIVE_BUTTON_TEXT,
             NEGATIVE_BUTTON_CONTENT_DESCRIPTION, NEGATIVE_BUTTON_DISABLED, CANCEL_ON_TOUCH_OUTSIDE,
-            FILTER_TOUCH_FOR_SECURITY, TITLE_SCROLLABLE, PRIMARY_BUTTON_FILLED};
+            FILTER_TOUCH_FOR_SECURITY, TOUCH_FILTERED_CALLBACK, TITLE_SCROLLABLE,
+            PRIMARY_BUTTON_FILLED};
 }

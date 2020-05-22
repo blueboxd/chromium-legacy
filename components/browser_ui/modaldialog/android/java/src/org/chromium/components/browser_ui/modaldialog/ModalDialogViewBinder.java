@@ -61,6 +61,9 @@ public class ModalDialogViewBinder
             assert checkFilterTouchConsistency(model);
             view.setFilterTouchForSecurity(
                     model.get(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY));
+        } else if (ModalDialogProperties.TOUCH_FILTERED_CALLBACK == propertyKey) {
+            view.setOnTouchFilteredCallback(
+                    model.get(ModalDialogProperties.TOUCH_FILTERED_CALLBACK));
         } else if (ModalDialogProperties.CONTENT_DESCRIPTION == propertyKey) {
             // Intentionally left empty since this is a property used for the dialog container.
         } else if (ModalDialogProperties.PRIMARY_BUTTON_FILLED == propertyKey) {

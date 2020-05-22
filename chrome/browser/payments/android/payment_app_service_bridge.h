@@ -75,8 +75,6 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
   bool IsRequestedAutofillDataAvailable() override;
   ContentPaymentRequestDelegate* GetPaymentRequestDelegate() const override;
   PaymentRequestSpec* GetSpec() const override;
-  void OnPaymentAppInstalled(const url::Origin& origin,
-                             int64_t registration_id) override;
   void OnPaymentAppCreated(std::unique_ptr<PaymentApp> app) override;
   void OnPaymentAppCreationError(const std::string& error_message) override;
   bool SkipCreatingNativePaymentApps() const override;

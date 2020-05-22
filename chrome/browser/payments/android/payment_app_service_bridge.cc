@@ -336,12 +336,6 @@ PaymentRequestSpec* PaymentAppServiceBridge::GetSpec() const {
   return nullptr;
 }
 
-void PaymentAppServiceBridge::OnPaymentAppInstalled(const url::Origin& origin,
-                                                    int64_t registration_id) {
-  // PaymentAppService flow should have short-circuited before this point.
-  NOTREACHED();
-}
-
 void PaymentAppServiceBridge::OnPaymentAppCreated(
     std::unique_ptr<PaymentApp> app) {
   // PaymentAppService flow should have short-circuited before this point.

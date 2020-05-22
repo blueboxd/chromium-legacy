@@ -13,7 +13,10 @@
     android:viewportHeight="24">
 
     <path
-        android:fillColor="@color/white_alpha_70"
+        android:fillColor="@color/black_alpha_65"
+        android:pathData="M 10,16.5 v -9 L 16,12 10,16.5 z" />
+    <path
+        android:fillColor="@color/default_primary_color"
         android:pathData="M 12,2 C 6.475,2 2,6.475 2,12 2,17.525 6.475,22 12,22 17.525,22 22,17.525
-            22,12 22,6.475 17.525,2 12,2 z M 9.9999998,16.5 v -9 L 16,12 9.9999998,16.5 z" />
+            22,12 22,6.475 17.525,2 12,2 z M 10,16.5 v -9 L 16,12 10,16.5 z" />
 </vector>

@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/payments/content/autofill_payment_app.h"
 #include "components/payments/core/features.h"
@@ -66,6 +67,11 @@ ukm::SourceId PaymentApp::UkmSourceId() {
 
 bool PaymentApp::IsWaitingForPaymentDetailsUpdate() const {
   return false;
+}
+
+void PaymentApp::AbortPaymentApp(
+    base::OnceCallback<void(bool)> abort_callback) {
+  std::move(abort_callback).Run(/*aborted=*/false);
 }
 
 // static

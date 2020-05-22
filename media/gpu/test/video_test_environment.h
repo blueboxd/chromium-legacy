@@ -8,9 +8,11 @@
 #define MEDIA_GPU_TEST_VIDEO_TEST_ENVIRONMENT_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -25,6 +27,9 @@ namespace test {
 class VideoTestEnvironment : public ::testing::Environment {
  public:
   VideoTestEnvironment();
+  // Features are overridden by given features in this environment.
+  VideoTestEnvironment(const std::vector<base::Feature>& enabled_features,
+                       const std::vector<base::Feature>& disabled_features);
   virtual ~VideoTestEnvironment();
 
   // ::testing::Environment implementation.
@@ -39,6 +44,8 @@ class VideoTestEnvironment : public ::testing::Environment {
   base::AtExitManager at_exit_manager;
 
   std::unique_ptr<base::test::TaskEnvironment> task_environment_;
+  // Features to override default feature settings in this environment.
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 }  // namespace test

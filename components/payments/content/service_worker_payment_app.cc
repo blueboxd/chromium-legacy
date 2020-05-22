@@ -37,8 +37,7 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     const PaymentRequestSpec* spec,
     std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info,
     bool is_incognito,
-    const base::RepeatingClosure& show_processing_spinner,
-    const IdentityCallback& identity_callback)
+    const base::RepeatingClosure& show_processing_spinner)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
       browser_context_(browser_context),
       top_origin_(top_origin),
@@ -48,10 +47,10 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
       delegate_(nullptr),
       is_incognito_(is_incognito),
       show_processing_spinner_(show_processing_spinner),
-      identity_callback_(identity_callback),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
-      needs_installation_(false) {
+      needs_installation_(false),
+      web_contents_(nullptr) {
   DCHECK(browser_context_);
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
@@ -80,22 +79,22 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
     std::unique_ptr<WebAppInstallationInfo> installable_payment_app_info,
     const std::string& enabled_method,
     bool is_incognito,
-    const base::RepeatingClosure& show_processing_spinner,
-    const IdentityCallback& identity_callback)
+    const base::RepeatingClosure& show_processing_spinner)
     : PaymentApp(0, PaymentApp::Type::SERVICE_WORKER_APP),
+      browser_context_(web_contents->GetBrowserContext()),
       top_origin_(top_origin),
       frame_origin_(frame_origin),
       spec_(spec),
       delegate_(nullptr),
       is_incognito_(is_incognito),
       show_processing_spinner_(show_processing_spinner),
-      identity_callback_(identity_callback),
       can_make_payment_result_(false),
       has_enrolled_instrument_result_(false),
       needs_installation_(true),
       web_contents_(web_contents),
       installable_web_app_info_(std::move(installable_payment_app_info)),
       installable_enabled_method_(enabled_method) {
+  DCHECK(browser_context_);
   DCHECK(web_contents_);
   DCHECK(top_origin_.is_valid());
   DCHECK(frame_origin_.is_valid());
@@ -114,14 +113,11 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
 }
 
 ServiceWorkerPaymentApp::~ServiceWorkerPaymentApp() {
-  if (delegate_ && !needs_installation_) {
+  if (delegate_) {
     // If there's a payment in progress, abort it before destroying this so that
     // it can update its internal state. Since the PaymentRequest will be
     // destroyed, pass an empty callback to the payment app.
-    content::PaymentAppProvider::GetInstance()->AbortPayment(
-        browser_context_, stored_payment_app_info_->registration_id,
-        url::Origin::Create(stored_payment_app_info_->scope),
-        *spec_->details().id, base::DoNothing());
+    AbortPaymentApp(/*abort_callback=*/base::DoNothing());
   }
 }
 
@@ -533,7 +529,11 @@ bool ServiceWorkerPaymentApp::HandlesPayerPhone() const {
 
 void ServiceWorkerPaymentApp::OnPaymentAppIdentity(const url::Origin& origin,
                                                    int64_t registration_id) {
-  identity_callback_.Run(origin, registration_id);
+  registration_id_ = registration_id;
+  if (payment_handler_host_) {
+    payment_handler_host_->set_sw_origin_for_logs(origin);
+    payment_handler_host_->set_registration_id_for_logs(registration_id_);
+  }
 }
 
 ukm::SourceId ServiceWorkerPaymentApp::UkmSourceId() {
@@ -576,6 +576,16 @@ void ServiceWorkerPaymentApp::UpdateWith(
 void ServiceWorkerPaymentApp::OnPaymentDetailsNotUpdated() {
   if (payment_handler_host_)
     payment_handler_host_->OnPaymentDetailsNotUpdated();
+}
+
+void ServiceWorkerPaymentApp::AbortPaymentApp(
+    base::OnceCallback<void(bool)> abort_callback) {
+  content::PaymentAppProvider::GetInstance()->AbortPayment(
+      browser_context_, registration_id_,
+      stored_payment_app_info_
+          ? url::Origin::Create(stored_payment_app_info_->scope)
+          : url::Origin::Create(GURL(installable_web_app_info_->sw_scope)),
+      *spec_->details().id, std::move(abort_callback));
 }
 
 }  // namespace payments

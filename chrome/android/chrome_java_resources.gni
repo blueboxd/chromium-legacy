@@ -844,6 +844,8 @@ chrome_java_resources = [
   "java/res/drawable/password_manager_onboarding_illustration02_dark_mode.xml",
   "java/res/drawable/password_manager_onboarding_illustration03.xml",
   "java/res/drawable/password_manager_onboarding_illustration03_dark_mode.xml",
+  "java/res/drawable/photo_picker_seekbar_thumb.xml",
+  "java/res/drawable/photo_picker_seekbar_track.xml",
   "java/res/drawable/popup_bg_bottom_tinted.xml",
   "java/res/drawable/qr_code.xml",
   "java/res/drawable/rating_bar.xml",

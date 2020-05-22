@@ -7,7 +7,10 @@
 #include <algorithm>
 #include <utility>
 
+#include "build/buildflag.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
+#include "media/base/media_switches.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/test/video.h"
 
@@ -21,6 +24,25 @@ struct CodecParamToProfile {
     {"h264baseline", H264PROFILE_BASELINE}, {"h264", H264PROFILE_MAIN},
     {"h264main", H264PROFILE_MAIN},         {"vp8", VP8PROFILE_ANY},
     {"vp9", VP9PROFILE_PROFILE0},
+};
+
+const std::vector<base::Feature> kEnabledFeaturesForVideoEncoderTest = {
+#if BUILDFLAG(USE_VAAPI)
+    // TODO(crbug.com/811912): remove once enabled by default.
+    kVaapiVP9Encoder,
+    // TODO(crbug.com/828482): Remove once H264 encoder on AMD is enabled by
+    // default.
+    kVaapiH264AMDEncoder,
+#endif
+};
+
+const std::vector<base::Feature> kDisabledFeaturesForVideoEncoderTest = {
+    // FFmpegVideoDecoder is used for vp8 stream whose alpha mode is opaque in
+    // chromium browser. However, VpxVideoDecoder will be used to decode any vp8
+    // stream for the rightness (b/138840822), and currently be experimented
+    // with this feature flag. We disable the feature to use VpxVideoDecoder to
+    // decode any vp8 stream in BitstreamValidator.
+    kFFmpegDecodeOpaqueVP8,
 };
 }  // namespace
 
@@ -75,7 +97,9 @@ VideoEncoderTestEnvironment::VideoEncoderTestEnvironment(
     std::unique_ptr<media::test::Video> video,
     const base::FilePath& output_folder,
     VideoCodecProfile profile)
-    : video_(std::move(video)),
+    : VideoTestEnvironment(kEnabledFeaturesForVideoEncoderTest,
+                           kDisabledFeaturesForVideoEncoderTest),
+      video_(std::move(video)),
       output_folder_(output_folder),
       profile_(profile),
       gpu_memory_buffer_factory_(

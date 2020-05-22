@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/file_util_icu.h"
@@ -925,6 +924,8 @@ bool SavePackage::OnMessageReceived(const IPC::Message& message,
                         OnSavableResourceLinksResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SavableResourceLinksError,
                         OnSavableResourceLinksError)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_SerializedHtmlWithLocalLinksResponse,
+                        OnSerializedHtmlWithLocalLinksResponse)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -993,10 +994,8 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
   // SECURITY NOTE: We don't send *all* urls / local paths, but only
   // those that the given frame had access to already (because it contained
   // the savable resources / subframes associated with save items).
-  base::flat_map<GURL, base::FilePath> url_to_local_path;
-  base::flat_map<base::UnguessableToken, base::FilePath>
-      frame_token_to_local_path;
-
+  std::map<GURL, base::FilePath> url_to_local_path;
+  std::map<base::UnguessableToken, base::FilePath> frame_token_to_local_path;
   auto it = frame_tree_node_id_to_contained_save_items_.find(
       target_frame_tree_node_id);
   if (it != frame_tree_node_id_to_contained_save_items_.end()) {
@@ -1042,16 +1041,14 @@ void SavePackage::GetSerializedHtmlWithLocalLinksForFrame(
   }
 
   // Ask target frame to serialize itself.
-  target->GetSerializedHtmlWithLocalLinks(
-      url_to_local_path, frame_token_to_local_path,
-      web_contents()->GetBrowserContext()->IsOffTheRecord(),
-      base::BindOnce(&SavePackage::GetSerializedHtmlWithLocalLinksResponse,
-                     AsWeakPtr()));
+  target->Send(new FrameMsg_GetSerializedHtmlWithLocalLinks(
+      target->GetRoutingID(), url_to_local_path, frame_token_to_local_path,
+      web_contents()->GetBrowserContext()->IsOffTheRecord()));
 }
 
 // Process the serialized HTML content data of a specified frame
 // retrieved from the renderer process.
-void SavePackage::GetSerializedHtmlWithLocalLinksResponse(
+void SavePackage::OnSerializedHtmlWithLocalLinksResponse(
     RenderFrameHostImpl* sender,
     const std::string& data,
     bool end_of_data) {
@@ -1062,11 +1059,12 @@ void SavePackage::GetSerializedHtmlWithLocalLinksResponse(
 
   int frame_tree_node_id = sender->frame_tree_node()->frame_tree_node_id();
   auto it = frame_tree_node_id_to_save_item_.find(frame_tree_node_id);
-
-  // This method can only get called as a response to the serialization request
-  // previously sent from the browser to the renderer for a given FrameTreeNode.
-  DCHECK(it != frame_tree_node_id_to_save_item_.end());
-
+  if (it == frame_tree_node_id_to_save_item_.end()) {
+    // This is parimarily sanitization of IPC (renderer shouldn't send
+    // OnSerializedHtmlFragment IPC without being asked to), but it might also
+    // occur in the wild (if old renderer response reaches a new SavePackage).
+    return;
+  }
   const SaveItem* save_item = it->second;
   DCHECK_EQ(SaveFileCreateInfo::SAVE_FILE_FROM_DOM, save_item->save_source());
   if (save_item->state() != SaveItem::IN_PROGRESS) {

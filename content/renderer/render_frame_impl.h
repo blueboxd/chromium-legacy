@@ -184,6 +184,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::FrameBindingsControl,
       mojom::MhtmlFileWriter,
       public blink::WebLocalFrameClient,
+      public blink::WebFrameSerializerClient,
       service_manager::mojom::InterfaceProvider {
  public:
   // Creates a new RenderFrame as the main frame of |render_view|.
@@ -515,12 +516,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void SnapshotAccessibilityTree(
       uint32_t ax_mode,
       SnapshotAccessibilityTreeCallback callback) override;
-  void GetSerializedHtmlWithLocalLinks(
-      const base::flat_map<GURL, base::FilePath>& url_map,
-      const base::flat_map<base::UnguessableToken, base::FilePath>&
-          frame_token_map,
-      bool save_with_empty_url,
-      mojom::Frame::GetSerializedHtmlWithLocalLinksCallback callback) override;
 
 #if defined(OS_ANDROID)
   void ExtractSmartClipData(
@@ -778,6 +773,12 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnStopLoading() override;
   void DraggableRegionsChanged() override;
   blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker() override;
+
+  // WebFrameSerializerClient implementation:
+  void DidSerializeDataForFrame(
+      const blink::WebVector<char>& data,
+      blink::WebFrameSerializerClient::FrameSerializationStatus status)
+      override;
 
   // Binds to the fullscreen service in the browser.
   void BindFullscreen(
@@ -1041,6 +1042,11 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(https://crbug.com/995428): Deprecated.
   void OnReload();
   void OnGetSavableResourceLinks();
+  void OnGetSerializedHtmlWithLocalLinks(
+      const std::map<GURL, base::FilePath>& url_to_local_path,
+      const std::map<base::UnguessableToken, base::FilePath>&
+          frame_token_to_local_path,
+      bool save_with_empty_url);
   void OnSuppressFurtherDialogs();
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
 

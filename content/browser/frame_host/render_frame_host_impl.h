@@ -248,10 +248,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
  public:
   using AXTreeSnapshotCallback =
       base::OnceCallback<void(const ui::AXTreeUpdate&)>;
-  using SerializedHtmlWithLocalLinksCallback =
-      base::OnceCallback<void(RenderFrameHostImpl* sender,
-                              const std::string& data,
-                              bool end_of_data)>;
   using JavaScriptDialogCallback =
       content::JavaScriptDialogManager::DialogClosedCallback;
 
@@ -569,16 +565,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // applications.
   void GetCanonicalUrlForSharing(
       mojom::Frame::GetCanonicalUrlForSharingCallback callback);
-
-  // Get HTML data for this RenderFrame by serializing contents on the renderer
-  // side and replacing all links to both same-site and cross-site resources
-  // with paths to local copies as specified by |url_map| and |frame_token_map|.
-  void GetSerializedHtmlWithLocalLinks(
-      const base::flat_map<GURL, base::FilePath>& url_map,
-      const base::flat_map<base::UnguessableToken, base::FilePath>&
-          frame_token_map,
-      bool save_with_empty_url,
-      SerializedHtmlWithLocalLinksCallback callback);
 
   // Returns the associated WebUI or null if none applies.
   WebUIImpl* web_ui() const { return web_ui_.get(); }
@@ -2045,13 +2031,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // standalone snapshot of the accessibility tree as |snapshot|.
   void RequestAXTreeSnapshotCallback(AXTreeSnapshotCallback callback,
                                      const AXContentTreeUpdate& snapshot);
-
-  // Callback that will be called upon receiving the serialized HTML data from
-  // the renderer, as a response to GetSerializedHtmlWithLocalLinks().
-  void GetSerializedHtmlWithLocalLinksCallback(
-      SerializedHtmlWithLocalLinksCallback callback,
-      const std::string& data,
-      bool end_of_data);
 
   // Returns the RenderWidgetHostView used for accessibility. For subframes,
   // this function will return the platform view on the main frame; for main

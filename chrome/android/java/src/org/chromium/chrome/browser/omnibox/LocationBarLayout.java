@@ -935,7 +935,9 @@ public class LocationBarLayout extends FrameLayout
         // side is initialized
         assert mNativeInitialized : "Loading URL before native side initialized";
 
-        if (ReturnToChromeExperimentsUtil.willHandleLoadUrlFromStartSurface(url, transition)) {
+        // TODO(crbug.com/1085812): Should be taking a fulll loaded LoadUrlParams.
+        if (ReturnToChromeExperimentsUtil.willHandleLoadUrlWithPostDataFromStartSurface(
+                    url, transition, postDataType, postData)) {
             return;
         }
 

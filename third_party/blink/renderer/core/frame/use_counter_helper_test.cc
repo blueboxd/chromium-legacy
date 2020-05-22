@@ -262,7 +262,7 @@ TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageColumnIndefiniteWidth) {
   EXPECT_FALSE(document.IsUseCounted(feature));
 }
 
-TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight) {
+TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight1) {
   auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
   Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
   Document& document = dummy_page_holder->GetDocument();
@@ -273,6 +273,87 @@ TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight) {
       "</div>");
   UpdateAllLifecyclePhases(document);
   EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight2) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.documentElement()->setInnerHTML(
+      "<div style='display: inline-grid; grid-template-rows: 50% 50%;'>"
+      "</div>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight3) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.documentElement()->setInnerHTML(
+      "<div style='display: inline-grid; grid-template-rows: 100% 100%;'>"
+      "</div>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight4) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.documentElement()->setInnerHTML(
+      "<div style='display: inline-grid; grid-template-rows: minmax(50%, "
+      "100%);'>"
+      "</div>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight5) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.documentElement()->setInnerHTML(
+      "<div style='display: inline-grid; max-height: 0; grid-template-rows: "
+      "100%;'>"
+      "</div>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_TRUE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight6) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.documentElement()->setInnerHTML(
+      "<div style='display: inline-grid; grid-template-rows: 100%;'>"
+      "</div>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(document.IsUseCounted(feature));
+}
+
+TEST_F(UseCounterHelperTest, CSSGridLayoutPercentageRowIndefiniteHeight7) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  Document& document = dummy_page_holder->GetDocument();
+  WebFeature feature = WebFeature::kGridRowTrackPercentIndefiniteHeight;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  document.documentElement()->setInnerHTML(
+      "<div style='display: inline-grid; grid-template-rows: minmax(100%, "
+      "100%);'>"
+      "</div>");
+  UpdateAllLifecyclePhases(document);
+  EXPECT_FALSE(document.IsUseCounted(feature));
 }
 
 TEST_F(UseCounterHelperTest, CSSFlexibleBox) {

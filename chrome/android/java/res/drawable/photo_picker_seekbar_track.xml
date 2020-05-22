@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<!-- A SeekBar track is composed of up to three components:
+
+1) A line for showing playback progress (android:id/progress).
+2) A line for showing buffering progress (android:id/secondaryProgress).
+3) A background element (@android:id/background), which frames the playback and buffering lines,
+   thereby indicating how much remains of playback and/or buffering.
+
+The buffering progress line (item 2 above) is omitted here, because it is not needed due to the fact
+that the videos are all readily available on disk and don't need to be downloaded. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape android:shape="line">
+            <stroke
+                android:color="@color/modern_grey_500"
+                android:width="@dimen/photo_picker_seek_bar_thickness" />
+        </shape>
+    </item>
+
+    <!-- @android:id/secondaryProgress can also be added, but is not necessary here. -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="line">
+                <stroke
+                    android:color="@color/default_primary_color"
+                    android:width="@dimen/photo_picker_seek_bar_thickness" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

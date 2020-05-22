@@ -6,9 +6,9 @@
 #define UI_BASE_MODELS_IMAGE_MODEL_H_
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -28,7 +28,7 @@ namespace ui {
 // is only used internal to ImageModel and should never be instantiated except
 // by ImageModel.
 
-class UI_BASE_EXPORT VectorIconModel {
+class COMPONENT_EXPORT(UI_BASE) VectorIconModel {
  public:
   VectorIconModel();
   VectorIconModel(const VectorIconModel&);
@@ -71,7 +71,7 @@ class UI_BASE_EXPORT VectorIconModel {
 // of the two may be specified at a given time. This class is instantiated via
 // the FromXXXX static factory functions.
 
-class UI_BASE_EXPORT ImageModel {
+class COMPONENT_EXPORT(UI_BASE) ImageModel {
  public:
   ImageModel();
   ImageModel(const ImageModel&);

@@ -8,9 +8,9 @@
 #include <objidl.h>
 #include <wrl/implements.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -26,7 +26,8 @@ class DragSourceWin
           IDropSource> {
  public:
   // Factory method to avoid exporting the class and all it derives from.
-  static UI_BASE_EXPORT Microsoft::WRL::ComPtr<DragSourceWin> Create();
+  static COMPONENT_EXPORT(
+      UI_BASE) Microsoft::WRL::ComPtr<DragSourceWin> Create();
 
   // Use Create() to construct these objects. Direct calls to the constructor
   // are an error - it is only public because a WRL helper function creates the

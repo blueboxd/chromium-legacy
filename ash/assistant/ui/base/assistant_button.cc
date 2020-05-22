@@ -24,6 +24,14 @@ constexpr int kInkDropInset = 2;
 
 }  // namespace
 
+// AssistantButton::InitParams -------------------------------------------------
+
+AssistantButton::InitParams::InitParams() = default;
+AssistantButton::InitParams::InitParams(InitParams&&) = default;
+AssistantButton::InitParams::~InitParams() = default;
+
+// AssistantButton -------------------------------------------------------------
+
 AssistantButton::AssistantButton(AssistantButtonListener* listener,
                                  AssistantButtonId button_id)
     : views::ImageButton(this), listener_(listener), id_(button_id) {
@@ -56,21 +64,25 @@ AssistantButton::~AssistantButton() = default;
 std::unique_ptr<AssistantButton> AssistantButton::Create(
     AssistantButtonListener* listener,
     const gfx::VectorIcon& icon,
-    int size_in_dip,
-    int icon_size_in_dip,
-    int accessible_name_id,
     AssistantButtonId button_id,
-    base::Optional<int> tooltip_id,
-    SkColor icon_color) {
+    InitParams params) {
+  DCHECK_GT(params.size_in_dip, 0);
+  DCHECK_GT(params.icon_size_in_dip, 0);
+  DCHECK(params.accessible_name_id.has_value());
+
   auto button = std::make_unique<AssistantButton>(listener, button_id);
-  button->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
+  button->SetAccessibleName(
+      l10n_util::GetStringUTF16(params.accessible_name_id.value()));
 
-  if (tooltip_id)
-    button->SetTooltipText(l10n_util::GetStringUTF16(tooltip_id.value()));
+  if (params.tooltip_id) {
+    button->SetTooltipText(
+        l10n_util::GetStringUTF16(params.tooltip_id.value()));
+  }
 
-  button->SetImage(views::Button::STATE_NORMAL,
-                   gfx::CreateVectorIcon(icon, icon_size_in_dip, icon_color));
-  button->SetPreferredSize(gfx::Size(size_in_dip, size_in_dip));
+  button->SetImage(
+      views::Button::STATE_NORMAL,
+      gfx::CreateVectorIcon(icon, params.icon_size_in_dip, params.icon_color));
+  button->SetPreferredSize(gfx::Size(params.size_in_dip, params.size_in_dip));
   return button;
 }
 

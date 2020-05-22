@@ -5,8 +5,8 @@
 #ifndef UI_BASE_COCOA_WEAK_PTR_NSOBJECT_H_
 #define UI_BASE_COCOA_WEAK_PTR_NSOBJECT_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "ui/base/ui_base_export.h"
 
 #if defined(__OBJC__)
 @class WeakPtrNSObject;
@@ -20,7 +20,7 @@ namespace internal {
 // Non-templatized base for WeakPtrNSObjectFactory with utility functions. This
 // mainly serves to hide the objective-C code from the header, so it can be
 // included in cc files.
-class UI_BASE_EXPORT WeakPtrNSObjectFactoryBase {
+class COMPONENT_EXPORT(UI_BASE) WeakPtrNSObjectFactoryBase {
  protected:
   static WeakPtrNSObject* Create(void* owner);
   static void* UnWrap(WeakPtrNSObject* handle);

@@ -248,6 +248,7 @@ AutomationAXTreeWrapper::AutomationAXTreeWrapper(
     : tree_id_(tree_id), owner_(owner), event_generator_(&tree_) {
   tree_.AddObserver(this);
   ui::AXTreeManagerMap::GetInstance().AddTreeManager(tree_id, this);
+  event_generator_.set_always_fire_load_complete(true);
 }
 
 AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {

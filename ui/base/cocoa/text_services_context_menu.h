@@ -5,20 +5,20 @@
 #ifndef UI_BASE_COCOA_TEXT_SERVICES_CONTEXT_MENU_H_
 #define UI_BASE_COCOA_TEXT_SERVICES_CONTEXT_MENU_H_
 
+#include "base/component_export.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // This class is used to append and handle the Speech and BiDi submenu for the
 // context menu.
-class UI_BASE_EXPORT TextServicesContextMenu
+class COMPONENT_EXPORT(UI_BASE) TextServicesContextMenu
     : public SimpleMenuModel::Delegate {
  public:
-  class UI_BASE_EXPORT Delegate {
+  class COMPONENT_EXPORT(UI_BASE) Delegate {
    public:
     // Returns the selected text.
     virtual base::string16 GetSelectedText() const = 0;

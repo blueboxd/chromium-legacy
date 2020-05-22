@@ -1512,8 +1512,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetTableCellColumnHeaders",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        std::vector<int32_t> col_headers;
-        node->GetTableCellColHeaderNodeIds(&col_headers);
+        std::vector<int32_t> col_headers = node->GetTableCellColHeaderNodeIds();
         v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, col_headers.size()));
@@ -1528,8 +1527,7 @@ void AutomationInternalCustomBindings::AddRoutes() {
       "GetTableCellRowHeaders",
       [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
          AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
-        std::vector<int32_t> row_headers;
-        node->GetTableCellRowHeaderNodeIds(&row_headers);
+        std::vector<int32_t> row_headers = node->GetTableCellRowHeaderNodeIds();
         v8::Local<v8::Context> context = isolate->GetCurrentContext();
         v8::Local<v8::Array> array_result(
             v8::Array::New(isolate, row_headers.size()));

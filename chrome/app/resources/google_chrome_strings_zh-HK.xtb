@@ -193,7 +193,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="6967962315388095737">允許 mDNS 流量的 Google Chrome 測試版輸入規則。</translation>
 <translation id="6982337800632491844">在使用這部裝置前，<ph name="DOMAIN" /> 要求您仔細閱讀並接受下列《服務條款》。這些條款不會擴展、修改或限制《Google Chrome 作業系統條款》。</translation>
 <translation id="6989339256997917931">Google Chrome 已更新，但您至少已有 30 天未使用該瀏覽器。</translation>
-<translation id="7062128746136194023">貴家長已停用 Chrome 的「網站、應用程式和擴充功能的權限」設定，因此你無法新增這個<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
+<translation id="7062128746136194023">您的家長已停用 Chrome 的「網站、應用程式和擴充程式權限」設定，因此您無法新增此<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="7098166902387133879">Google Chrome 正在使用您的麥克風。</translation>
 <translation id="7106741999175697885">工作管理員 - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Chrome 有可用的更新，重新啟動後即可套用。}=1{Chrome 有可用的更新，重新啟動後即可套用。您的無痕式視窗不會重新開啟。}other{Chrome 有可用的更新，重新啟動後即可套用。您的 # 個無痕式視窗不會重新開啟。}}</translation>
@@ -234,7 +234,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8129812357326543296">關於 Google Chrome(&amp;G)</translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的相機和麥克風。</translation>
 <translation id="8286862437124483331">Google Chrome 正在嘗試顯示密碼。如果您同意，請輸入您的 Windows 密碼。</translation>
-<translation id="828798499196665338">貴家長已停用 Chrome 的「網站、應用程式和擴充功能的權限」設定，因此你無法啟用這個<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
+<translation id="828798499196665338">您的家長已停用 Chrome 的「網站、應用程式和擴充程式權限」設定，因此您無法啟用此<ph name="EXTENSION_TYPE_PARAMETER" />。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當機了，要立即重新啟動嗎？</translation>
 <translation id="8342675569599923794">此檔案不安全，因此 Chrome 已封鎖此檔案。</translation>
 <translation id="8370517070665726704">版權所有 <ph name="YEAR" /> Google LLC。保留所有權利。</translation>

@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">Дадаць мову</translation>
 <translation id="2650751991977523696">Спампаваць файл зноў?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аўдыяфайл}one{# аўдыяфайл}few{# аўдыяфайлы}many{# аўдыяфайлаў}other{# аўдыяфайла}}</translation>
+<translation id="2656405586795711023">Вэб-праграмы</translation>
 <translation id="2677748264148917807">Выйсці</translation>
 <translation id="2689830683995595741">Выкарыстоўваючы Chrome, вы згаджаецеся з <ph name="BEGIN_LINK1" />Умовамі выкарыстання Google<ph name="END_LINK1" /> і <ph name="BEGIN_LINK2" />Дадатковымі ўмовамі выкарыстання Google Chrome і Chrome OS<ph name="END_LINK2" />. Таксама прымяняецца <ph name="BEGIN_LINK3" />Паведамленне аб прыватнасці ў дачыненні да Уліковых запісаў Google, якія кіруюцца праз Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Абнавіць старонку</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">Другараднае сховішча</translation>
 <translation id="4000212216660919741">Пазасеткавы рэжым</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# гадз}one{# гадз}few{# гадз}many{# гадз}other{# гадз}}</translation>
+<translation id="403687620286099920">Націсніце, каб адкрыць QR-код</translation>
 <translation id="4046123991198612571">Наступны трэк</translation>
 <translation id="4056223980640387499">Сепія</translation>
 <translation id="4060598801229743805">Параметры даступныя ўверсе экрана</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">Адкрыць новую ўкладку</translation>
 <translation id="4759238208242260848">Спампоўкі</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 спампоўка завершана.}one{# спампоўка завершана.}few{# спампоўкі завершана.}many{# спамповак завершана.}other{# спампоўкі завершана.}}</translation>
+<translation id="478981486571169252">Вы ўбачыце, ці выкананы ўваход на сайт <ph name="SITE_NAME" />, гісторыю праглядаў і даныя сайтаў у Chrome.</translation>
 <translation id="4802417911091824046">Шыфраванне фразы-пароля не распаўсюджваецца на спосабы аплаты і адрасы з Google Pay.
 
 Каб змяніць гэту наладу, <ph name="BEGIN_LINK" />скіньце налады сінхранізацыі<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">Адпраўка на прыладу</translation>
 <translation id="5304593522240415983">Гэта поле не можа быць пустым</translation>
 <translation id="5308380583665731573">Падключыцца</translation>
+<translation id="5317780077021120954">Захаваць</translation>
 <translation id="5324858694974489420">Налады бацькоўскага кантролю</translation>
 <translation id="5327248766486351172">Імя</translation>
 <translation id="5342314432463739672">Запыты дазволаў</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">Адрас электроннай пошты</translation>
 <translation id="5665379678064389456">Стварыце падзею ў праграме <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Перавызначаць запыт вэб-сайта на прадухіленне павелічэння маштабу</translation>
+<translation id="5681394891799747640">Не ўдалося спампаваць QR-код</translation>
 <translation id="5684874026226664614">Памылка. Не ўдалося перакласці гэту старонку.</translation>
 <translation id="5686790454216892815">Назва файла занадта доўгая</translation>
 <translation id="5694049548840660018">Вяртацца на галоўную старонку проста</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">Яшчэ</translation>
 <translation id="604996488070107836">Не ўдалося спампаваць файл "<ph name="FILE_NAME" />" з-за невядомай памылкі.</translation>
 <translation id="605721222689873409">ГГ</translation>
+<translation id="6059830886158432458">Кіруйце паказам артыкулаў і гісторыяй дзеянняў тут</translation>
 <translation id="60923314841986378">Засталося <ph name="HOURS" /> гадз</translation>
 <translation id="6108923351542677676">Ідзе наладка…</translation>
 <translation id="6111020039983847643">выкарыстаны трафік</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">Уліковы запіс</translation>
 <translation id="6297765934698848803">Арганізацыя, якая кіруе вашай прыладай, выключыла камеру.</translation>
 <translation id="6303969859164067831">Выйсці і выключыць сінхранізацыю</translation>
+<translation id="6312687380483398334">Вэб-праграмы (бязгучныя)</translation>
 <translation id="6316139424528454185">Версія Android не падтрымлів.</translation>
 <translation id="6324034347079777476">Сінхранізацыя сістэмы Android выключана</translation>
 <translation id="6333140779060797560">Абагуліць праз <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">Не ўдалося спампаваць файл <ph name="FILE_NAME" /> з-за недахопу месца ў сховішчы.</translation>
 <translation id="6496823230996795692">Каб выкарыстаць <ph name="APP_NAME" /> першы раз, падключыцеся да інтэрнэту.</translation>
 <translation id="6508722015517270189">Перазапусціце Chrome</translation>
+<translation id="6527303717912515753">Абагуліць</translation>
 <translation id="6532866250404780454">Не будуць паказвацца сайты, наведаныя вамі ў Chrome. Усе таймеры сайтаў будуць выдалены.</translation>
 <translation id="6534565668554028783">Чаканне адказу ад Google заняло занадта шмат часу</translation>
 <translation id="6539092367496845964">Нешта пайшло не так. Паўтарыце спробу пазней.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">Сінхранізацыя не працуе</translation>
 <translation id="7606077192958116810">Лёгкі рэжым уключаны. Кіраваць ім можна ў Наладах.</translation>
 <translation id="7612619742409846846">Уваход у Google выкананы ад імя</translation>
+<translation id="7614971007231847352">QR-код спампаваны</translation>
 <translation id="7619072057915878432">Не ўдалося спампаваць файл "<ph name="FILE_NAME" />" з-за збояў сеткі.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Атрымайце даведку<ph name="END_LINK1" /> або <ph name="BEGIN_LINK2" />паўтарыце пошук<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Вас вітае Chrome</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">Тут будзе паказвацца аб'ём сэканомленага трафіка</translation>
 <translation id="7835852323729233924">Прайграванне мультымедыя</translation>
 <translation id="783819812427904514">Уключыць гук відэа</translation>
+<translation id="7846296061357476882">Сэрвісы Google</translation>
 <translation id="784934925303690534">Прамежак часу</translation>
 <translation id="7851858861565204677">Іншыя прылады</translation>
 <translation id="7875915731392087153">Стварыць ліст электроннай пошты</translation>

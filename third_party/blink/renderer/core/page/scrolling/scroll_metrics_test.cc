@@ -145,17 +145,17 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
   // Test touch scroll.
   Scroll(box, WebGestureDevice::kTouchscreen);
   EXPECT_TOUCH_BUCKET(kHasTransformAndLCDText, 1);
-  EXPECT_TOUCH_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_TOUCH_BUCKET(kNotOpaqueForTextAndLCDText, 1);
 
   Scroll(box, WebGestureDevice::kTouchscreen);
   EXPECT_TOUCH_BUCKET(kHasTransformAndLCDText, 2);
-  EXPECT_TOUCH_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 2);
+  EXPECT_TOUCH_BUCKET(kNotOpaqueForTextAndLCDText, 2);
   EXPECT_TOUCH_TOTAL(4);
 
   // Test wheel scroll.
   Scroll(box, WebGestureDevice::kTouchpad);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
   EXPECT_WHEEL_TOTAL(2);
 }
 
@@ -182,7 +182,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
 
   Scroll(box, WebGestureDevice::kTouchpad);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
   EXPECT_WHEEL_TOTAL(2);
 
   box->setAttribute("class", "composited transform box");
@@ -192,7 +192,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
                    ->GetScrollableArea()
                    ->GetNonCompositedMainThreadScrollingReasons());
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
   EXPECT_WHEEL_TOTAL(2);
 }
 
@@ -216,14 +216,14 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest,
 
   Scroll(box, WebGestureDevice::kTouchpad);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
   EXPECT_WHEEL_TOTAL(2);
 
   box->setAttribute("class", "hidden transform box");
   UpdateAllLifecyclePhases();
   Scroll(box, WebGestureDevice::kTouchpad);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 1);
-  EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
   EXPECT_WHEEL_TOTAL(2);
 }
 
@@ -258,7 +258,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonRecordTest, NestedScrollersTest) {
   // Scrolling the inner box will gather reasons from the scrolling chain. The
   // inner box itself has no reason because it's composited. Other scrollable
   // areas from the chain have corresponding reasons.
-  EXPECT_WHEEL_BUCKET(kBackgroundNotOpaqueInRectAndLCDText, 1);
+  EXPECT_WHEEL_BUCKET(kNotOpaqueForTextAndLCDText, 1);
   EXPECT_WHEEL_BUCKET(kHasTransformAndLCDText, 0);
   EXPECT_WHEEL_TOTAL(1);
 }

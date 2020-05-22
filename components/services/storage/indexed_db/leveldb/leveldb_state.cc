@@ -17,9 +17,10 @@ scoped_refptr<LevelDBState> LevelDBState::CreateForDiskDB(
     const leveldb::Comparator* comparator,
     std::unique_ptr<leveldb::DB> database,
     base::FilePath database_path) {
-  return base::WrapRefCounted(new LevelDBState(
-      nullptr, comparator, std::move(database), std::move(database_path),
-      database_path.BaseName().AsUTF8Unsafe()));
+  auto name_for_tracing = database_path.BaseName().AsUTF8Unsafe();
+  return base::WrapRefCounted(
+      new LevelDBState(nullptr, comparator, std::move(database),
+                       std::move(database_path), std::move(name_for_tracing)));
 }
 
 // static

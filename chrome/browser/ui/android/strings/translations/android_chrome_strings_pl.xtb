@@ -519,6 +519,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5292796745632149097">Wyślij na</translation>
 <translation id="5304593522240415983">To pole nie może być puste</translation>
 <translation id="5308380583665731573">Połącz</translation>
+<translation id="5317780077021120954">Zapisz</translation>
 <translation id="5324858694974489420">Ustawienia rodzicielskie</translation>
 <translation id="5327248766486351172">Nazwa</translation>
 <translation id="5342314432463739672">Prośby o uprawnienia</translation>
@@ -670,6 +671,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6482749332252372425">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu braku miejsca.</translation>
 <translation id="6496823230996795692">Aby pierwszy raz skorzystać z aplikacji <ph name="APP_NAME" />, połącz się z internetem.</translation>
 <translation id="6508722015517270189">Uruchom ponownie Chrome</translation>
+<translation id="6527303717912515753">Udostępnij</translation>
 <translation id="6532866250404780454">Strony, które otwierasz w Chrome, nie będą widoczne. Wszystkie liczniki czasu dotyczące stron zostaną usunięte.</translation>
 <translation id="6534565668554028783">Google zbyt długo nie odpowiada</translation>
 <translation id="6539092367496845964">Coś poszło nie tak. Spróbuj później.</translation>

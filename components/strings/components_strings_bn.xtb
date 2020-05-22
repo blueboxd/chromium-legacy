@@ -602,6 +602,7 @@
 <translation id="3539171420378717834">এই ডিভাইসে কার্ডটির একটি কপি রাখুন</translation>
 <translation id="3558573058928565255">দিনের সময়</translation>
 <translation id="3566021033012934673">আপনার সংযোগ ব্যক্তিগত নয়</translation>
+<translation id="3567778190852720481">এন্টারপ্রাইজ অ্যাকাউন্ট দিয়ে এনরোল করা যাচ্ছে না (এন্টারপ্রাইজ অ্যাকাউন্টকে এখানে অনুমতি দেওয়া হয়নি)।</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> এ এম্বেডেড করা পৃষ্ঠায় এটি দেখানো হচ্ছে</translation>
 <translation id="3581089476000296252">এই পৃষ্ঠাটি প্রস্তুত হলে Chrome আপনাকে জানাবে। &lt;a&gt;বাতিল করুন&lt;/a&gt;</translation>
@@ -878,6 +879,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows নেটওয়ার্ক ডায়গনিস্টিক্স চালান<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">নীতিগুলি রিলোড করুন</translation>
 <translation id="4728558894243024398">প্ল্যাটফর্ম</translation>
+<translation id="4731638775147756694">আপনার অ্যাডমিনিস্ট্রেটর এই অ্যাপ্লিকেশন ব্লক করে দিয়েছেন</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> আপনার ডিভাইসের লোকেশন ব্যবহার করতে চায়</translation>
 <translation id="4736825316280949806">Chromium পুনরায় চালু করুন</translation>
@@ -1247,6 +1249,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> বুকমার্কগুলি</translation>
 <translation id="6264485186158353794">সুরক্ষাতে ফিরুন</translation>
 <translation id="6266934640124581640">হালকা টিল</translation>
+<translation id="6272383483618007430">Google আপডেট</translation>
 <translation id="6276112860590028508">পড়ার তালিকার পৃষ্ঠাগুলি এখানে দেখা যাবে</translation>
 <translation id="627746635834430766">পরের বার আরও দ্রুত পেমেন্ট করা জন্য আপনার এই কার্ড এবং বিলিং ঠিকানাটি Google অ্যাকাউন্টে সেভ করে রাখুন।</translation>
 <translation id="6279516281132775660">এক্ষেত্রে নিচে দেওয়া তথ্য Chrome <ph name="BEGIN_EMPHASIS" />সেভ করবে না<ph name="END_EMPHASIS" />:
@@ -1620,6 +1623,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{একটিও নয়}=1{১টি অ্যাপ (<ph name="EXAMPLE_APP_1" />)}=2{২টি অ্যাপ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{#টি অ্যাপ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}other{#টি অ্যাপ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">আপনি অবশ্য অদৃশ্য থাকবেন না। ছদ্মবেশী মোডে গেলেও তা আপনার নিয়োগকর্তা, আপনার ইন্টারনেট পরিষেবা প্রদানকারী অথবা আপনার পরিদর্শন করা ওয়েবসাইট থেকে আপনার ব্রাউজিংকে আড়াল করবে না।</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Google-এ <ph name="BEGIN_WHITEPAPER_LINK" />আপনার দেখা পৃষ্ঠাগুলির ইউআরএল, সিস্টেমের কিছু সীমিত তথ্য এবং পৃষ্ঠার কিছু কন্টেন্ট<ph name="END_WHITEPAPER_LINK" /> পাঠিয়ে ওয়েবে সকলের জন্য নিরাপত্তা উন্নত করতে সাহায্য করুন। <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">সাইট ছেড়ে যাবেন?</translation>
 <translation id="7865448901209910068">সর্বোচ্চ গতি</translation>
 <translation id="7874263914261512992">আপনি এইমাত্র একটি প্রতারণামূলক সাইটে আপনার পাসওয়ার্ড লিখেছেন। <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> এবং অন্যান্য সাইটে, যেখানে যেখানে আপনি এই পাসওয়ার্ডটি ব্যবহার করেন, Chrome আপনাকে সেইসব জায়গায় গিয়ে আপনার সেভ করা পাসওয়ার্ডগুলি পরিবর্তন করতে সাজেস্ট করছে।</translation>
@@ -1754,7 +1758,6 @@
 <translation id="8425213833346101688">পরিবর্তন</translation>
 <translation id="8428213095426709021">সেটিংস</translation>
 <translation id="8433057134996913067">এটি বেশিরভাগ ওয়েবসাইট থেকে আপনাকে প্রস্থান করুন করবে।</translation>
-<translation id="8433678324664858900">পরামর্শগুলি দেখান</translation>
 <translation id="8437238597147034694">&amp;সরানোকে পূর্বাবস্থায় ফেরান</translation>
 <translation id="8457125768502047971">অনির্দিষ্ট</translation>
 <translation id="8461694314515752532">আপনার নিজস্ব সিঙ্ক পাসফ্রেজ দিয়ে সিঙ্ক করা ডেটা এনক্রিপ্ট করুন</translation>

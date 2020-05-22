@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> anmoder om at gemme store datamængder permanent på din enhed</translation>
 <translation id="1032854598605920125">Rotér med uret</translation>
 <translation id="1036348656032585052">Deaktiver</translation>
+<translation id="1038106730571050514">Vis forslag</translation>
 <translation id="1038842779957582377">ukendt navn</translation>
 <translation id="1041998700806130099">Jobarksmeddelelse</translation>
 <translation id="1050038467049342496">Luk andre apps</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Billedskift Y</translation>
 <translation id="17513872634828108">Åbne faner</translation>
 <translation id="1752021286346845558">Postkasse 8</translation>
-<translation id="1752483581718172048">Skjul forslag</translation>
 <translation id="1753706481035618306">Sidetal</translation>
 <translation id="1763864636252898013">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da operativsystemet på din enhed ikke har tillid til sikkerhedscertifikatet. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Prøv at køre Windows Netværksdiagnosticering<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="2666092431469916601">Top</translation>
 <translation id="2666117266261740852">Luk andre faner eller apps</translation>
 <translation id="2674170444375937751">Er du sikker på, at du vil slette disse sider fra din historik?</translation>
+<translation id="2674804415323431591">Skjul forslag</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Forlad</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1082,6 +1083,7 @@ Ellers vil det blive blokeret af dine privatlivsindstillinger. Det giver det ind
 <translation id="5523118979700054094">Navn på politik</translation>
 <translation id="55293785478302737">Kanthæftning</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5536214594743852365">Vis sektionen "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Flåde</translation>
 <translation id="5540224163453853">Den anmodede artikel blev ikke fundet.</translation>
 <translation id="5541086400771735334">Postkasse 7</translation>
@@ -1481,6 +1483,7 @@ Yderligere oplysninger:
 <translation id="7313965965371928911">Advarsler fra <ph name="BEGIN_LINK" />Beskyttet browsing<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Hjælp til at oprette forbindelse</translation>
+<translation id="7323804146520582233">Skjul sektionen "<ph name="SECTION" />"</translation>
 <translation id="733354035281974745">Tilsidesættelse af enhedslokal konto</translation>
 <translation id="7333654844024768166">Du har lige angivet din adgangskode på et vildledende website. Chromium anbefaler, at du straks går til <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> og eventuelle andre websites, hvor du bruger denne adgangskode, og ændrer adgangskoden.</translation>
 <translation id="7334320624316649418">&amp;Annuller fortryd omarrangering</translation>
@@ -1759,7 +1762,6 @@ Yderligere oplysninger:
 <translation id="8425213833346101688">Skift</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433057134996913067">Dette logger dig ud af de fleste websites.</translation>
-<translation id="8433678324664858900">Vis forslag</translation>
 <translation id="8437238597147034694">&amp;Fortryd flytning</translation>
 <translation id="8457125768502047971">Ikke defineret</translation>
 <translation id="8461694314515752532">Kryptér synkroniserede data med din egen adgangssætning til synkronisering</translation>

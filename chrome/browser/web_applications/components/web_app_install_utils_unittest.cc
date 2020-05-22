@@ -4,10 +4,14 @@
 
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
+#include <string>
+#include <utility>
+
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_icon_generator.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
@@ -61,6 +65,17 @@ constexpr SquareSizePx kIconSize = 64;
 // This value is greater than kMaxIcons in web_app_install_utils.cc.
 constexpr unsigned int kNumTestIcons = 30;
 }  // namespace
+
+class WebAppInstallUtilsWithShortcutsMenu : public testing::Test {
+ public:
+  WebAppInstallUtilsWithShortcutsMenu() {
+    scoped_feature_list.InitAndEnableFeature(
+        features::kDesktopPWAsAppIconShortcutsMenu);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list;
+};
 
 TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
   WebApplicationInfo web_app_info;
@@ -131,11 +146,8 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifest) {
 }
 
 // Tests that WebAppInfo is correctly updated when Manifest contains Shortcuts.
-TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestWithShortcuts) {
-  // Enable the feature.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDesktopPWAsAppIconShortcutsMenu);
+TEST_F(WebAppInstallUtilsWithShortcutsMenu,
+       UpdateWebAppInfoFromManifestWithShortcuts) {
   WebApplicationInfo web_app_info;
   web_app_info.title = base::UTF8ToUTF16(kAlternativeAppTitle);
   web_app_info.app_url = AlternativeAppUrl();
@@ -272,10 +284,8 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyIcons) {
 }
 
 // Tests that we limit the number of shortcut icons declared by a site.
-TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestTooManyShortcutIcons) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDesktopPWAsAppIconShortcutsMenu);
+TEST_F(WebAppInstallUtilsWithShortcutsMenu,
+       UpdateWebAppInfoFromManifestTooManyShortcutIcons) {
   blink::Manifest manifest;
   for (unsigned int i = 0; i < kNumTestIcons; ++i) {
     blink::Manifest::ShortcutItem shortcut_item;
@@ -325,10 +335,8 @@ TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestIconsTooLarge) {
 }
 
 // Tests that we limit the size of shortcut icons declared by a site.
-TEST(WebAppInstallUtils, UpdateWebAppInfoFromManifestShortcutIconsTooLarge) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDesktopPWAsAppIconShortcutsMenu);
+TEST_F(WebAppInstallUtilsWithShortcutsMenu,
+       UpdateWebAppInfoFromManifestShortcutIconsTooLarge) {
   blink::Manifest manifest;
   for (int i = 1; i <= 20; ++i) {
     blink::Manifest::ShortcutItem shortcut_item;
@@ -412,6 +420,72 @@ TEST(WebAppInstallUtils, PopulateShortcutItemIconsNoShortcutIcons) {
   PopulateShortcutItemIcons(&web_app_info, &icons_map);
 
   EXPECT_EQ(0U, web_app_info.shortcut_infos.size());
+}
+
+// Tests that when FilterAndResizeIconsGenerateMissing is called with no
+// app icon or shortcut icon data in web_app_info, web_app_info.icon_bitmaps is
+// correctly populated.
+TEST(WebAppInstallUtils, FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
+  WebApplicationInfo web_app_info;
+  IconsMap icons_map;
+  std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
+  icons_map.emplace(IconUrl1(), bmp1);
+  FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
+
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.size());
+}
+
+// Tests that when FilterAndResizeIconsGenerateMissing is called with no
+// app icon or shortcut icon data in web_app_info, and kDesktopPWAShortcutsMenu
+// feature enabled, web_app_info.icon_bitmaps is correctly populated.
+TEST_F(WebAppInstallUtilsWithShortcutsMenu,
+       FilterAndResizeIconsGenerateMissingNoWebAppIconData) {
+  WebApplicationInfo web_app_info;
+  IconsMap icons_map;
+  std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
+  icons_map.emplace(IconUrl1(), bmp1);
+  FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
+
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.size());
+}
+
+// Tests that when FilterAndResizeIconsGenerateMissing is called with both
+// app icon and shortcut icon bitmaps in icons_map, web_app_info.icon_bitmaps
+// is correctly populated.
+TEST_F(WebAppInstallUtilsWithShortcutsMenu,
+       FilterAndResizeIconsGenerateMissingWithShortcutIcons) {
+  // Construct |icons_map| to pass to FilterAndResizeIconsGenerateMissing().
+  IconsMap icons_map;
+  std::vector<SkBitmap> bmp1 = {CreateSquareIcon(32, SK_ColorWHITE)};
+  std::vector<SkBitmap> bmp2 = {CreateSquareIcon(kIconSize, SK_ColorBLUE)};
+  icons_map.emplace(IconUrl1(), bmp1);
+  icons_map.emplace(IconUrl2(), bmp2);
+
+  // Construct |info| to add to |web_app_info.icon_infos|.
+  WebApplicationInfo web_app_info;
+  WebApplicationIconInfo info;
+  info.url = IconUrl1();
+  web_app_info.icon_infos.push_back(info);
+
+  // Construct |shortcut_item| to add to |web_app_info.shortcut_infos|.
+  WebApplicationShortcutInfo shortcut_item;
+  shortcut_item.name = base::UTF8ToUTF16(kShortcutItemName);
+  shortcut_item.url = ShortcutItemUrl();
+  // Construct |icon| to add to |shortcut_item.shortcut_icon_infos|.
+  WebApplicationIconInfo icon;
+  icon.url = IconUrl2();
+  icon.square_size_px = kIconSize;
+  shortcut_item.shortcut_icon_infos.push_back(std::move(icon));
+  shortcut_item.shortcut_icon_bitmaps[kIconSize] =
+      CreateSquareIcon(kIconSize, SK_ColorBLUE);
+  web_app_info.shortcut_infos.push_back(std::move(shortcut_item));
+
+  FilterAndResizeIconsGenerateMissing(&web_app_info, &icons_map);
+
+  EXPECT_EQ(SizesToGenerate().size(), web_app_info.icon_bitmaps.size());
+  for (const auto& icon_bitmap : web_app_info.icon_bitmaps) {
+    EXPECT_EQ(SK_ColorWHITE, icon_bitmap.second.getColor(0, 0));
+  }
 }
 
 }  // namespace web_app

@@ -2045,9 +2045,7 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     }
   } else {
     // Otherwise this is a cell, return the row headers for this cell.
-    std::vector<int32_t> rowHeaderIds;
-    _owner->node()->GetTableCellRowHeaderNodeIds(&rowHeaderIds);
-    for (int32_t id : rowHeaderIds) {
+    for (int32_t id : _owner->node()->GetTableCellRowHeaderNodeIds()) {
       BrowserAccessibility* cell = _owner->manager()->GetFromID(id);
       if (cell)
         [ret addObject:ToBrowserAccessibilityCocoa(cell)];
@@ -2454,11 +2452,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   if (![self instanceActive])
     return nil;
 
-  std::vector<int32_t> unique_cell_ids;
-  _owner->node()->GetTableUniqueCellIds(&unique_cell_ids);
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
-  for (size_t i = 0; i < unique_cell_ids.size(); ++i) {
-    int id = unique_cell_ids[i];
+  for (int32_t id : _owner->node()->GetTableUniqueCellIds()) {
     BrowserAccessibility* cell = _owner->manager()->GetFromID(id);
     if (cell)
       [ret addObject:ToBrowserAccessibilityCocoa(cell)];

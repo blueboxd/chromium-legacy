@@ -319,29 +319,17 @@ public class ChromeContextMenuPopulatorTest {
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
         int[] expected2 = {R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_copy_image,
                 R.id.contextmenu_save_image, R.id.contextmenu_share_image};
-        if (!ChromeContextMenuPopulator.isCopyImageEnabled()) {
-            expected2 = new int[] {R.id.contextmenu_open_image_in_new_tab,
-                    R.id.contextmenu_save_image, R.id.contextmenu_share_image};
-        }
         checkMenuOptions(contextMenuParams, expected2);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
         int[] expected3 = {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_open_image,
                 R.id.contextmenu_copy_image, R.id.contextmenu_save_image,
                 R.id.contextmenu_share_image};
-        if (!ChromeContextMenuPopulator.isCopyImageEnabled()) {
-            expected3 = new int[] {R.id.contextmenu_open_in_browser_id, R.id.contextmenu_open_image,
-                    R.id.contextmenu_save_image, R.id.contextmenu_share_image};
-        }
         checkMenuOptions(contextMenuParams, expected3);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
         int[] expected4 = {R.id.contextmenu_copy_image, R.id.contextmenu_save_image,
                 R.id.contextmenu_share_image, R.id.contextmenu_open_in_chrome};
-        if (!ChromeContextMenuPopulator.isCopyImageEnabled()) {
-            expected4 = new int[] {R.id.contextmenu_save_image, R.id.contextmenu_share_image,
-                    R.id.contextmenu_open_in_chrome};
-        }
         checkMenuOptions(contextMenuParams, expected4);
     }
 
@@ -370,10 +358,6 @@ public class ChromeContextMenuPopulatorTest {
                 R.id.contextmenu_share_link};
         int[] expected2Tab2 = {R.id.contextmenu_open_image_in_new_tab, R.id.contextmenu_copy_image,
                 R.id.contextmenu_save_image, R.id.contextmenu_share_image};
-        if (!ChromeContextMenuPopulator.isCopyImageEnabled()) {
-            expected2Tab2 = new int[] {R.id.contextmenu_open_image_in_new_tab,
-                    R.id.contextmenu_save_image, R.id.contextmenu_share_image};
-        }
         checkMenuOptions(contextMenuParams, expected2Tab1, expected2Tab2);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.CUSTOM_TAB);
@@ -382,11 +366,6 @@ public class ChromeContextMenuPopulatorTest {
                 R.id.contextmenu_share_link};
         int[] expected3Tab2 = {R.id.contextmenu_open_image, R.id.contextmenu_copy_image,
                 R.id.contextmenu_save_image, R.id.contextmenu_share_image};
-        if (!ChromeContextMenuPopulator.isCopyImageEnabled()) {
-            expected3Tab2 = new int[] {R.id.contextmenu_open_image, R.id.contextmenu_save_image,
-                    R.id.contextmenu_share_image};
-            ;
-        }
         checkMenuOptions(contextMenuParams, expected3Tab1, expected3Tab2);
 
         initializePopulator(ChromeContextMenuPopulator.ContextMenuMode.WEB_APP);
@@ -394,10 +373,6 @@ public class ChromeContextMenuPopulatorTest {
                 R.id.contextmenu_share_link};
         int[] expected4Tab2 = {R.id.contextmenu_copy_image, R.id.contextmenu_save_image,
                 R.id.contextmenu_share_image, R.id.contextmenu_open_in_chrome};
-        if (!ChromeContextMenuPopulator.isCopyImageEnabled()) {
-            expected4Tab2 = new int[] {R.id.contextmenu_save_image, R.id.contextmenu_share_image,
-                    R.id.contextmenu_open_in_chrome};
-        }
         checkMenuOptions(contextMenuParams, expected4Tab1, expected4Tab2);
     }
 }

@@ -42,6 +42,7 @@
 <translation id="6058625436358447366">Tamamlamaq üçün yeni və köhnə parolları yazın</translation>
 <translation id="6106186594183574873">Tamamlamaq üçün köhnə parolu yazın</translation>
 <translation id="6146993107019042706">Tamamlamaq üçün yeni parolu daxil edin</translation>
+<translation id="6517239166834772319">Araşdırın</translation>
 <translation id="6643016212128521049">Silin</translation>
 <translation id="7162487448488904999">Qalereya</translation>
 <translation id="7658239707568436148">Ləğv edin</translation>
@@ -49,6 +50,7 @@
 <translation id="7805768142964895445">Status</translation>
 <translation id="808894953321890993">Parolu dəyişin</translation>
 <translation id="8208861521865154048">İmtiyazlar</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> bu istifadəçini idarə edir. O, ayarları məsafədən idarə edə və istifadəçi fəaliyyətini izləyə bilər.</translation>
 <translation id="8747900814994928677">Dəyişikliyi təsdiqləyin</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> cəhd qalıb</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> üçün bileti yeniləyin</translation>

@@ -204,6 +204,7 @@ Axtarmaq üçün istənilən sözə toxunub saxlayın. Axtarışınızı dəqiql
 <translation id="2647434099613338025">Dil əlavə edin</translation>
 <translation id="2650751991977523696">Fayl yenidən endirilsin?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audio fayl}other{# Audio fayl}}</translation>
+<translation id="2656405586795711023">Veb tətbiqlər</translation>
 <translation id="2677748264148917807">Tərk edin</translation>
 <translation id="2689830683995595741">Chrome'u istifadə etməklə, <ph name="BEGIN_LINK1" />Google Xidmət Şərtləri<ph name="END_LINK1" /> və <ph name="BEGIN_LINK2" />Google Chrome və Chrome ƏS Əlavə Xidmət Şərtləri<ph name="END_LINK2" /> ilə razılaşırsınız. <ph name="BEGIN_LINK3" />Family Link ilə İdarə Edilən Google Hesabları üçün Məxfilik Bildirişi<ph name="END_LINK3" /> də tətbiq edilir.</translation>
 <translation id="2707726405694321444">Səhifəni yeniləyin</translation>
@@ -366,6 +367,7 @@ Kamerada görünəni ancaq siz görə bilərsiniz. Sayt kameranızdakı şəkill
 <translation id="3997476611815694295">Əhəmiyyətsiz yaddaş</translation>
 <translation id="4000212216660919741">Ev oflayndır</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# saat}other{# saat}}</translation>
+<translation id="403687620286099920">QR kodu açmaq üçün toxunun</translation>
 <translation id="4046123991198612571">Növbəti trek</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Seçənəklər ekranın yuxarısına yaxın yerdə əlçatandır</translation>
@@ -450,6 +452,7 @@ Kamerada görünəni ancaq siz görə bilərsiniz. Sayt kameranızdakı şəkill
 <translation id="4749960740855309258">Yeni panel açın</translation>
 <translation id="4759238208242260848">Endirmələr</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 endirmə tamamlandı.}other{# endirmə tamamlandı.}}</translation>
+<translation id="478981486571169252">Chrome'da <ph name="SITE_NAME" /> giriş statusu, baxış datası və sayt datanızı görəcəksiniz.</translation>
 <translation id="4802417911091824046">Google Pay'dəki ödəniş metodları və ünvanlar parol şifrələməsinə daxil deyil.
 
 Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlayın<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5292796745632149097">Kimə</translation>
 <translation id="5304593522240415983">Bu hissə boş ola bilməz</translation>
 <translation id="5308380583665731573">Qoşun</translation>
+<translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5324858694974489420">Valideyn Ayarları</translation>
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5342314432463739672">İcazə sorğuları</translation>
@@ -562,6 +566,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5659593005791499971">E-poçt</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> tətbiqində tədbir yaradın</translation>
 <translation id="5668404140385795438">Böyüdülmənin qarşısını almaq üçün saytın sorğusunu kənarlaşdırın</translation>
+<translation id="5681394891799747640">QR kodu endirmək mümkün deyil</translation>
 <translation id="5684874026226664614">Bu səhifə tərcümə edilə bilmir. Niyəsini bilmirik.</translation>
 <translation id="5686790454216892815">Fayl adı çox uzundur</translation>
 <translation id="5694049548840660018">Əsas səhifəyə asanlıqla qayıdın</translation>
@@ -610,6 +615,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6042308850641462728">Daha çox</translation>
 <translation id="604996488070107836">Naməlum xəta səbəbindən <ph name="FILE_NAME" /> faylı endirilmədi.</translation>
 <translation id="605721222689873409">İİ</translation>
+<translation id="6059830886158432458">Hekayələrinizi və fəaliyyətlərinizi burada idarə edin</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> saat qaldı</translation>
 <translation id="6108923351542677676">Quraşdırma icra olunur...</translation>
 <translation id="6111020039983847643">istifadə edilmiş data</translation>
@@ -631,6 +637,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="629730747756840877">Hesab</translation>
 <translation id="6297765934698848803">Cihazınızı idarə edən təşkilat kameranızı deaktiv edib.</translation>
 <translation id="6303969859164067831">Çıxış edin və sinxronizasiyanı deaktiv edin</translation>
+<translation id="6312687380483398334">Veb tətbiqlər (sakit)</translation>
 <translation id="6316139424528454185">Android versiyası dəstəklənmir</translation>
 <translation id="6324034347079777476">Android sisteminin sinxronizasiyası deaktiv edildi</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> vasitəsilə paylaşın</translation>
@@ -662,6 +669,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6482749332252372425">Yadda az olduğu üçün <ph name="FILE_NAME" /> endirilə bilmədi.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> tətbiqini ilk dəfə istifadə etmək üçün internetə qoşulun.</translation>
 <translation id="6508722015517270189">Chrome'u yenidən başladın</translation>
+<translation id="6527303717912515753">Paylaşın</translation>
 <translation id="6532866250404780454">Chrome'da girdiyiniz saytlar göstərilməyəcək. Bütün sayt taymerləri silinəcək.</translation>
 <translation id="6534565668554028783">Google cavab üçün çox vaxt aldı</translation>
 <translation id="6539092367496845964">Xəta baş verdi. Sonra cəhd edin.</translation>
@@ -792,6 +800,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7605594153474022051">Sinxronizasiya işləmir</translation>
 <translation id="7606077192958116810">Layt rejimi aktivdir. Onu ayarlardan idarə edin.</translation>
 <translation id="7612619742409846846">Google'a bu cür daxil olunub</translation>
+<translation id="7614971007231847352">QR kodu endirildi</translation>
 <translation id="7619072057915878432">Şəbəkə problemi səbəbi ilə <ph name="FILE_NAME" /> faylının yüklənməsi uğursuz oldu.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Yardım alın<ph name="END_LINK1" /> və ya <ph name="BEGIN_LINK2" />təkrar skan edin<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome'a xoş gəlmisiniz</translation>
@@ -819,6 +828,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7821588508402923572">Data istifadəsi burada görünəcək</translation>
 <translation id="7835852323729233924">Medianın oxudulması</translation>
 <translation id="783819812427904514">Videonu səssiz rejimdən çıxarın</translation>
+<translation id="7846296061357476882">Google xidmətləri</translation>
 <translation id="784934925303690534">Vaxt aralığı</translation>
 <translation id="7851858861565204677">Digər cihazlar</translation>
 <translation id="7875915731392087153">E-poçt yaradın</translation>

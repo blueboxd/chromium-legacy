@@ -156,6 +156,7 @@
 కొన్ని ఫీచర్‌లు అందుబాటులో ఉండకపోవచ్చు. దయచేసి వేరొక ప్రొఫైల్ డైరెక్టరీని పేర్కొనండి లేదా Chromium యొక్క కొత్త వెర్షన్‌ను ఉపయోగించండి.</translation>
 <translation id="6734080038664603509">&amp;Chromiumను అప్‌డేట్ చేయండి</translation>
 <translation id="6734291798041940871">మీ కంప్యూటర్‌లోని వినియోగదారులందరికీ Chromium ఇప్పటికే ఇన్‌స్టాల్ చేయబడింది.</translation>
+<translation id="6774082503108938489">Chromiumలో సైట్‌లు, యాప్‌లు, ఎక్స్‌టెన్షన్‌లకు సంబంధించిన అనుమతులను మీ తల్లి/తండ్రి ఆఫ్ చేశారు. ఈ <ph name="EXTENSION_TYPE_PARAMETER" />ను ఎనేబుల్ చేయడానికి అనుమతి లేదు.</translation>
 <translation id="6847869444787758381">మీ పాస్‌వర్డ్‌లు ఎప్పుడైనా హ్యాక్ అయితే, Chromium మీకు తెలియచేస్తుంది</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromiumకి కాపీ చేయబడింది)</translation>
@@ -212,6 +213,7 @@
 <translation id="8417404458978023919">{0,plural, =1{ఒక రోజులోపు Chromiumను తిరిగి ప్రారంభించండి}other{# రోజులలోపు Chromiumను తిరిగి ప్రారంభించండి}}</translation>
 <translation id="8453117565092476964">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Chromiumను మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8493179195440786826">Chromium కాలం చెల్లినది</translation>
+<translation id="8558383651099478961">Chromiumలో సైట్‌లు, యాప్‌లు, ఎక్స్‌టెన్షన్‌లకు సంబంధించిన అనుమతులను మీ తల్లి/తండ్రి ఆఫ్ చేశారు. ఈ <ph name="EXTENSION_TYPE_PARAMETER" />ను జోడించడానికి అనుమతి లేదు.</translation>
 <translation id="8568283329061645092">మీరు మీ Google ఖాతాతో సైన్ ఇన్ చేసి ఉన్నప్పుడు, Chromium మీ పాస్‌వర్డ్‌లను చెక్ చేయగలుగుతుంది</translation>
 <translation id="8586442755830160949">కాపీరైట్ <ph name="YEAR" /> Chromium రచయితలు. అన్ని హ‌క్కులు రిజ‌ర్వ్ చేయ‌బ‌డ్డాయి.</translation>
 <translation id="8619360774459241877">Chromiumని ప్రారంభిస్తోంది...</translation>

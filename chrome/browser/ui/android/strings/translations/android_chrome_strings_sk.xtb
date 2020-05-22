@@ -519,6 +519,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5292796745632149097">Odoslanie do zariadení</translation>
 <translation id="5304593522240415983">Toto pole nesmie byť prázdne</translation>
 <translation id="5308380583665731573">Pripojenie</translation>
+<translation id="5317780077021120954">Uložiť</translation>
 <translation id="5324858694974489420">Rodičovské nastavenia</translation>
 <translation id="5327248766486351172">Názov</translation>
 <translation id="5342314432463739672">Žiadosti o povolenie</translation>
@@ -670,6 +671,7 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="6482749332252372425">Súbor <ph name="FILE_NAME" /> sa nepodarilo stiahnuť z dôvodu nedostatku voľného miesta v úložisku.</translation>
 <translation id="6496823230996795692">Prvé spustenie aplikácie <ph name="APP_NAME" /> vyžaduje pripojenie k internetu.</translation>
 <translation id="6508722015517270189">Reštartujte Chrome</translation>
+<translation id="6527303717912515753">Zdieľať</translation>
 <translation id="6532866250404780454">Weby, ktoré navštívite v Chrome, sa nezobrazia. Odstránia sa všetky časovače webov.</translation>
 <translation id="6534565668554028783">Odpoveď Googlu trvala príliš dlho</translation>
 <translation id="6539092367496845964">Vyskytol sa problém. Skúste to znova neskôr.</translation>

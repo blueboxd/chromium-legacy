@@ -204,6 +204,7 @@ Sentuh lama kata apa pun untuk menelusurinya. Untuk menyaring penelusuran, pilih
 <translation id="2647434099613338025">Tambah bahasa</translation>
 <translation id="2650751991977523696">Download file lagi?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# File audio}other{# File audio}}</translation>
+<translation id="2656405586795711023">Aplikasi web</translation>
 <translation id="2677748264148917807">Keluar</translation>
 <translation id="2689830683995595741">Dengan menggunakan Chrome, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan Google<ph name="END_LINK1" /> serta <ph name="BEGIN_LINK2" />Persyaratan Layanan Tambahan Google Chrome dan Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Pemberitahuan Privasi untuk Akun Google yang Dikelola dengan Family Link<ph name="END_LINK3" /> juga berlaku.</translation>
 <translation id="2707726405694321444">Segarkan halaman</translation>
@@ -366,6 +367,7 @@ Hanya Anda yang dapat melihat hal-hal yang dilihat kamera Anda. Situs ini tidak 
 <translation id="3997476611815694295">Penyimpanan tidak penting</translation>
 <translation id="4000212216660919741">Beranda Offline</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# jam}other{# jam}}</translation>
+<translation id="403687620286099920">Ketuk untuk membuka kode QR</translation>
 <translation id="4046123991198612571">Lagu berikutnya</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opsi yang tersedia di dekat bagian atas layar</translation>
@@ -450,6 +452,7 @@ Akun Google Anda mungkin memiliki bentuk histori penjelajahan lain seperti penel
 <translation id="4749960740855309258">Membuka tab baru</translation>
 <translation id="4759238208242260848">Download</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download selesai.}other{# download selesai.}}</translation>
+<translation id="478981486571169252">Di Chrome, Anda akan melihat status login, data penjelajahan, dan data situs <ph name="SITE_NAME" />.</translation>
 <translation id="4802417911091824046">Enkripsi frasa sandi tidak mencakup alamat dan metode pembayaran dari Google Pay.
 
 Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5292796745632149097">Kirim ke</translation>
 <translation id="5304593522240415983">Bidang ini tidak boleh kosong</translation>
 <translation id="5308380583665731573">Sambungkan</translation>
+<translation id="5317780077021120954">Simpan</translation>
 <translation id="5324858694974489420">Setelan Orang Tua</translation>
 <translation id="5327248766486351172">Nama</translation>
 <translation id="5342314432463739672">Permintaan izin</translation>
@@ -562,6 +566,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Buat acara di <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Abaikan permintaan situs web untuk mencegah zoom</translation>
+<translation id="5681394891799747640">Tidak dapat mendownload kode QR</translation>
 <translation id="5684874026226664614">Ups. Halaman ini tidak dapat diterjemahkan.</translation>
 <translation id="5686790454216892815">Nama file terlalu panjang</translation>
 <translation id="5694049548840660018">Kembali ke beranda dengan mudah</translation>
@@ -610,6 +615,7 @@ Untuk mengubah setelan ini, <ph name="BEGIN_LINK" />setel ulang sinkronisasi<ph 
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="604996488070107836">Download <ph name="FILE_NAME" /> gagal karena kesalahan tak dikenal.</translation>
 <translation id="605721222689873409">TT</translation>
+<translation id="6059830886158432458">Kontrol artikel dan aktivitas Anda di sini</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> jam lagi</translation>
 <translation id="6108923351542677676">Penyiapan sedang berlangsung...</translation>
 <translation id="6111020039983847643">data digunakan</translation>
@@ -633,6 +639,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="629730747756840877">Akun</translation>
 <translation id="6297765934698848803">Organisasi yang mengelola perangkat telah menonaktifkan kamera Anda.</translation>
 <translation id="6303969859164067831">Logout dan nonaktifkan sinkronisasi</translation>
+<translation id="6312687380483398334">Aplikasi web (minim gangguan notifikasi)</translation>
 <translation id="6316139424528454185">Versi Android tidak didukung</translation>
 <translation id="6324034347079777476">Sinkronisasi sistem Android dinonaktifkan</translation>
 <translation id="6333140779060797560">Bagikan dengan <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="6482749332252372425">Download <ph name="FILE_NAME" /> gagal karena ruang penyimpanan tidak cukup.</translation>
 <translation id="6496823230996795692">Untuk menggunakan <ph name="APP_NAME" /> pertama kali, harap hubungkan ke internet.</translation>
 <translation id="6508722015517270189">Buka Ulang Chrome</translation>
+<translation id="6527303717912515753">Bagikan</translation>
 <translation id="6532866250404780454">Situs yang Anda kunjungi di Chrome tidak akan ditampilkan. Semua timer situs akan dihapus.</translation>
 <translation id="6534565668554028783">Google membutuhkan waktu terlalu lama untuk merespons</translation>
 <translation id="6539092367496845964">Terjadi masalah. Coba lagi nanti.</translation>
@@ -794,6 +802,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7605594153474022051">Sinkronisasi tidak berfungsi</translation>
 <translation id="7606077192958116810">Mode Ringan aktif. Kelola di Setelan.</translation>
 <translation id="7612619742409846846">Login ke Google sebagai</translation>
+<translation id="7614971007231847352">Kode QR telah didownload</translation>
 <translation id="7619072057915878432">Download <ph name="FILE_NAME" /> gagal karena kesalahan jaringan.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Dapatkan bantuan<ph name="END_LINK1" /> atau <ph name="BEGIN_LINK2" />pindai ulang<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Selamat Datang di Chrome</translation>
@@ -821,6 +830,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7821588508402923572">Penghematan data Anda akan terlihat di sini</translation>
 <translation id="7835852323729233924">Media yang sedang diputar</translation>
 <translation id="783819812427904514">Bunyikan video</translation>
+<translation id="7846296061357476882">Layanan Google</translation>
 <translation id="784934925303690534">Rentang waktu</translation>
 <translation id="7851858861565204677">Perangkat lain</translation>
 <translation id="7875915731392087153">Buat email</translation>

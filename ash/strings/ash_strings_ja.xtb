@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">バッテリー残量: フル</translation>
 <translation id="3604801046548457007">デスク <ph name="DESK_TITILE" /> が作成されました</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
+<translation id="3616883743181209306">メニューは画面右上に移動しました。</translation>
 <translation id="3621202678540785336">入力</translation>
 <translation id="3621712662352432595">オーディオ設定</translation>
 <translation id="3626281679859535460">輝度</translation>
 <translation id="3631369015426612114">以下からの通知を許可</translation>
 <translation id="3638400994746983214">プライバシー スクリーンを切り替えます。<ph name="STATE_TEXT" />。</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> の管理対象ユーザー</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
 <translation id="371370241367527062">前方のマイク</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">ミラーモードを終了しています</translation>
 <translation id="602001110135236999">左にスクロール</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />、管理者によって管理</translation>
+<translation id="6030495522958826102">メニューは画面左下に移動しました。</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6043212731627905357">このモニターは <ph name="DEVICE_TYPE" /> では使用できません（サポートされていません）。</translation>
 <translation id="6043994281159824495">ログアウト</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">接続中</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
+<translation id="7188494361780961876">メニューは画面左上に移動しました。</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />。アップデートを適用するには、Chromebook を再起動する必要があります。再起動には最長で 1 分ほどかかります。</translation>
 <translation id="7256634071279256947">後方のマイク</translation>
 <translation id="726276584504105859">分割画面を使用するにはここにドラッグします</translation>
@@ -614,6 +618,7 @@
 <translation id="8513108775083588393">自動回転</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンのままでは充電できない可能性があります。</translation>
 <translation id="8563862697512465947">通知設定</translation>
+<translation id="857201607579416096">メニューは画面右下に移動しました。</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> と接続しました</translation>
 <translation id="8631727435199967028">ユーザー補助機能の設定</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />、管理者によって管理</translation>

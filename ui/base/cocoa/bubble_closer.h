@@ -8,9 +8,9 @@
 #include <objc/objc.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/cocoa/weak_ptr_nsobject.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -18,7 +18,7 @@ namespace ui {
 // Monitors mouse events to allow a regular window to have menu-like popup
 // behavior when clicking outside the window. This is needed because macOS
 // suppresses window activation events when clicking rapidly.
-class UI_BASE_EXPORT BubbleCloser {
+class COMPONENT_EXPORT(UI_BASE) BubbleCloser {
  public:
   // Installs an event monitor watching for mouse clicks outside of |window| or
   // any of its child windows. Invokes |on_click_outside| on each event.

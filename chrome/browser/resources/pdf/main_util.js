@@ -8,7 +8,6 @@ import {PDFViewer} from './pdf_viewer.js';
 
 /**
  * Global PDFViewer object, accessible for testing.
- *
  * @type Object
  */
 window.viewer = null;
@@ -17,22 +16,20 @@ window.viewer = null;
 /**
  * Stores any pending messages received which should be passed to the
  * PDFViewer when it is created.
- *
  * @type Array
  */
 const pendingMessages = [];
 
 /**
  * Handles events that are received prior to the PDFViewer being created.
- *
  * @param {Object} message A message event received.
  */
 function handleScriptingMessage(message) {
   pendingMessages.push(message);
 }
+
 /**
  * Initialize the global PDFViewer and pass any outstanding messages to it.
- *
  * @param {!BrowserApi} browserApi
  */
 function initViewer(browserApi) {
@@ -46,7 +43,6 @@ function initViewer(browserApi) {
 
 /**
  * Determine if the content settings allow PDFs to execute javascript.
- *
  * @param {!BrowserApi} browserApi
  * @return {!Promise<!BrowserApi>}
  */

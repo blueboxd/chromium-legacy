@@ -519,6 +519,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5292796745632149097">Send til</translation>
 <translation id="5304593522240415983">Dette felt må ikke være tomt</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
+<translation id="5317780077021120954">Gem</translation>
 <translation id="5324858694974489420">Indstillinger for børnesikring</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5342314432463739672">Anmodninger om tilladelse</translation>
@@ -670,6 +671,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="6482749332252372425">Download af <ph name="FILE_NAME" /> mislykkedes, fordi der ikke er nok lagerplads.</translation>
 <translation id="6496823230996795692">Opret forbindelse til internettet, første gang du bruger <ph name="APP_NAME" />.</translation>
 <translation id="6508722015517270189">Genstart Chrome</translation>
+<translation id="6527303717912515753">Del</translation>
 <translation id="6532866250404780454">Websites, du besøger i Chrome, vises ikke. Alle timere for websites slettes.</translation>
 <translation id="6534565668554028783">Google var for lang tid om at svare</translation>
 <translation id="6539092367496845964">Der opstod en fejl. Prøv igen senere.</translation>

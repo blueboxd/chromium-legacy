@@ -160,6 +160,7 @@
 Кейбір мүмкіндіктер қолжетімсіз болуы мүмкін. Басқа профиль каталогін көрсетіңіз немесе жаңарақ Chromium нұсқасын пайдаланыңыз.</translation>
 <translation id="6734080038664603509">&amp;Chromium жаңарту</translation>
 <translation id="6734291798041940871">Chromium компьютердегі барлық пайдаланушылар үшін әлдеқашан орнатылған.</translation>
+<translation id="6774082503108938489">Ата-анаңыз Chromium браузері үшін "Сайттар, қолданбалар және кеңейтімдер бойынша рұқсаттар" параметрін өшірді. <ph name="EXTENSION_TYPE_PARAMETER" /> кеңейтімін іске қосуға болмайды.</translation>
 <translation id="6847869444787758381">Құпия сөздеріңіз ұрланған жағдайда, Chromium бұл туралы хабарлайды.</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium браузеріне көшірілген)</translation>
@@ -218,6 +219,7 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="8417404458978023919">{0,plural, =1{Chromium браузерін бір күннің ішінде қайта іске қосыңыз}other{Chromium браузерін # күннің ішінде қайта іске қосыңыз}}</translation>
 <translation id="8453117565092476964">Орнатқыш мұрағаты бүлінген немесе жарамсыз. Chromium қайтадан жүктеңіз.</translation>
 <translation id="8493179195440786826">Chromium ескірген</translation>
+<translation id="8558383651099478961">Ата-анаңыз Chromium браузері үшін "Сайттар, қолданбалар және кеңейтімдер бойынша рұқсаттар" параметрін өшірді. <ph name="EXTENSION_TYPE_PARAMETER" /> кеңейтімін енгізуге болмайды.</translation>
 <translation id="8568283329061645092">Google есептік жазбаңызбен кіргенде, Chromium сіздің құпия сөздеріңізді тексере алады.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Барлық құқықтар қорғалған.</translation>
 <translation id="8619360774459241877">Chromium іске қосылуда…</translation>

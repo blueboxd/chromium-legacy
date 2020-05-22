@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">Тил кошуу</translation>
 <translation id="2650751991977523696">Файл кайра жүктөлүп алынсынбы?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудио файл}other{# аудио файл}}</translation>
+<translation id="2656405586795711023">Веб колдонмолор</translation>
 <translation id="2677748264148917807">Чыгуу</translation>
 <translation id="2689830683995595741">Chrome'ду колдонуу менен, <ph name="BEGIN_LINK1" />Google'дун Тейлөө шарттарына<ph name="END_LINK1" /> жана <ph name="BEGIN_LINK2" />Google Chrome менен Chrome OS'тун Кошумча Тейлөө шарттарына<ph name="END_LINK2" /> макулдугуңузду билдиресиз. <ph name="BEGIN_LINK3" />Family Link'те башкарылган Google аккаунттары үчүн Купуялык эскертүүсү<ph name="END_LINK3" /> да колдонулат.</translation>
 <translation id="2707726405694321444">Бетти жаңылоо</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">Маанилүү эмес дайындар</translation>
 <translation id="4000212216660919741">Үйдө оффлайн режиминде</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# саат}other{# саат}}</translation>
+<translation id="403687620286099920">QR кодун ачуу үчүн таптаңыз</translation>
 <translation id="4046123991198612571">Кийинки трек</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Параметрлер экрандын жогору жагында берилген</translation>
@@ -450,6 +452,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="4749960740855309258">Жаңы өтмөк ачуу</translation>
 <translation id="4759238208242260848">Жүктөлүп алынгандар</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 жүктөп алуу аяктады.}other{# жүктөп алуу аяктады.}}</translation>
+<translation id="478981486571169252"><ph name="SITE_NAME" /> сайтына кирип же кирбей турганыңызды, серептөө дайындарын жана сайттын дайындарын Chrome'дон көрөсүз.</translation>
 <translation id="4802417911091824046">Купуя сөз айкашы менен шифрлөө Google Pay'деги төлөм ыкмалары менен даректерине карата колдонулбайт.
 
 Бул жөндөөнү өзгөртүү үчүн <ph name="BEGIN_LINK" />шайкештирүүнү баштапкы абалга келтириңиз<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5292796745632149097">Төмөнкүгө жөнөтүү</translation>
 <translation id="5304593522240415983">Бул талаа бош болбошу керек</translation>
 <translation id="5308380583665731573">Туташуу</translation>
+<translation id="5317780077021120954">Сактоо</translation>
 <translation id="5324858694974489420">Ата-энелик жөндөөлөр</translation>
 <translation id="5327248766486351172">Аты:</translation>
 <translation id="5342314432463739672">Уруксат сурамдары</translation>
@@ -562,6 +566,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="5659593005791499971">Электрондук почта</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> колдонмосунан иш-чара түзүңүз</translation>
 <translation id="5668404140385795438">Чоңойтууга жол берилбесин деген вебсайттын сурамын жокко чыгаруу</translation>
+<translation id="5681394891799747640">QR коду жүктөлүп алынбай жатат</translation>
 <translation id="5684874026226664614">Ой, бул бет которулган жок.</translation>
 <translation id="5686790454216892815">Файлдын аталышы өтө узун</translation>
 <translation id="5694049548840660018">Башкы бетке оңой кайтыңыз</translation>
@@ -610,6 +615,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6042308850641462728">Дагы</translation>
 <translation id="604996488070107836">Белгисиз катадан улам <ph name="FILE_NAME" /> жүктөлүп алынбай калды.</translation>
 <translation id="605721222689873409">ЖЖ</translation>
+<translation id="6059830886158432458">Окуяларыңызды жана аракеттериңизди бул жерден көзөмөлдөңүз</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> саат калды</translation>
 <translation id="6108923351542677676">Орнотулуп жатат…</translation>
 <translation id="6111020039983847643">колдонулган дайындар</translation>
@@ -633,6 +639,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="629730747756840877">Каттоо эсеби</translation>
 <translation id="6297765934698848803">Түзмөгүңүздү башкарган уюм камераңызды өчүрүп койду.</translation>
 <translation id="6303969859164067831">Аккаунттан чыгып, шайкештирүүнү өчүрүү</translation>
+<translation id="6312687380483398334">Веб колдонмолор (добушсуз)</translation>
 <translation id="6316139424528454185">Android колдоого алынбайт</translation>
 <translation id="6324034347079777476">Android тутумун шайкештирүү өчүрүлдү</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> аркылуу бөлүшүү</translation>
@@ -664,6 +671,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> кампада орун жоктугуна байланыштуу жүктөлбөй калды.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> колдонмосун биринчи жолу колдонгондо, Интернетке туташуу талап кылынат.</translation>
 <translation id="6508722015517270189">Chrome’ду өчүрүп-күйгүзүңүз</translation>
+<translation id="6527303717912515753">Бөлүшүү</translation>
 <translation id="6532866250404780454">Chrome'до кирген сайттарыңыз көрүнбөйт. Бардык сайттардагы таймерлер өчүрүлөт.</translation>
 <translation id="6534565668554028783">Google'дун жооп берүүсү өтө узакка созулуп кетти</translation>
 <translation id="6539092367496845964">Бир жерден ката кетти. Бир аздан кийин кайталап көрүңүз.</translation>
@@ -794,6 +802,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7605594153474022051">Шайкештирүү иштебей жатат</translation>
 <translation id="7606077192958116810">Жөнөкөй режим күйүк. Аны Жөндөөлөрдөн башкарыңыз.</translation>
 <translation id="7612619742409846846">Google'га төмөнкү аркылуу кирип турасыз</translation>
+<translation id="7614971007231847352">QR коду жүктөлүп алынды</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> тармак жөндөмсүздүгүнө байланыштуу жүктөлбөй калды.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Жардам алыңыз<ph name="END_LINK1" /> же <ph name="BEGIN_LINK2" />кайра издеңиз<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome'го кош келиңиз</translation>
@@ -821,6 +830,7 @@ Google аккаунтуңуздун башка Google кызматтарынан
 <translation id="7821588508402923572">Үнөмдөлгөн трафик ушул жерде көрүнөт</translation>
 <translation id="7835852323729233924">Медиа ойнотулууда</translation>
 <translation id="783819812427904514">Видеонун үнүн чыгаруу</translation>
+<translation id="7846296061357476882">Google кызматтары</translation>
 <translation id="784934925303690534">Убакыт аралыгы</translation>
 <translation id="7851858861565204677">Башка түзмөктөр</translation>
 <translation id="7875915731392087153">Электрондук почта түзүңүз</translation>

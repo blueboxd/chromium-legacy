@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> жели трајно да складишти велике количине података на уређају</translation>
 <translation id="1032854598605920125">Окрените у смеру казаљке на сату</translation>
 <translation id="1036348656032585052">Искључи</translation>
+<translation id="1038106730571050514">Прикажите предлоге</translation>
 <translation id="1038842779957582377">непознато име</translation>
 <translation id="1041998700806130099">Порука о радном листу</translation>
 <translation id="1050038467049342496">Затворите друге апликације</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Померање слике по Y оси</translation>
 <translation id="17513872634828108">Отворене картице</translation>
 <translation id="1752021286346845558">8. поштанско сандуче</translation>
-<translation id="1752483581718172048">Сакриј предлоге</translation>
 <translation id="1753706481035618306">Број странице</translation>
 <translation id="1763864636252898013">Овај сервер не може да докаже да је <ph name="DOMAIN" />; оперативни систем уређаја нема поверења у његов безбедносни сертификат. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Покушајте да покренете Windows дијагностику мреже<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@
 <translation id="2666092431469916601">Врх</translation>
 <translation id="2666117266261740852">Затворите друге картице или апликације</translation>
 <translation id="2674170444375937751">Желите ли стварно да избришете ове странице из историје?</translation>
+<translation id="2674804415323431591">Сакријте предлоге</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Затвори</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1082,6 +1083,7 @@
 <translation id="5523118979700054094">Назив смерница</translation>
 <translation id="55293785478302737">Спајање ивица шавом</translation>
 <translation id="553484882784876924">Prc6 (коверат)</translation>
+<translation id="5536214594743852365">Прикажи одељак <ph name="SECTION" /></translation>
 <translation id="5539243836947087108">Подлога</translation>
 <translation id="5540224163453853">Нисмо пронашли захтевани чланак.</translation>
 <translation id="5541086400771735334">7. поштанско сандуче</translation>
@@ -1480,6 +1482,7 @@
 <translation id="7313965965371928911">Упозорења у вези са <ph name="BEGIN_LINK" />Безбедним прегледањем<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Помоћ при повезивању</translation>
+<translation id="7323804146520582233">Сакријте одељак <ph name="SECTION" /></translation>
 <translation id="733354035281974745">Замена локалног налога на уређају</translation>
 <translation id="7333654844024768166">Управо сте унели лозинку на обмањујућем сајту. Chromium вам препоручује да одете на <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> и на друге сајтове где користите ову лозинку и да је одмах промените.</translation>
 <translation id="7334320624316649418">&amp;Понови промену редоследа</translation>
@@ -1758,7 +1761,6 @@
 <translation id="8425213833346101688">Промени</translation>
 <translation id="8428213095426709021">Подешавања</translation>
 <translation id="8433057134996913067">Овако ћете се одјавити са већине веб-сајтова.</translation>
-<translation id="8433678324664858900">Прикажи предлоге</translation>
 <translation id="8437238597147034694">&amp;Опозови премештање</translation>
 <translation id="8457125768502047971">Неограничено</translation>
 <translation id="8461694314515752532">Шифрујте синхронизоване податке помоћу сопствене приступне фразе за синхронизацију</translation>

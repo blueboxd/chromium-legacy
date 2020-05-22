@@ -204,6 +204,7 @@ Appuyez sur n'importe quel mot pour effectuer une recherche. Pour affiner la rec
 <translation id="2647434099613338025">Ajouter une langue</translation>
 <translation id="2650751991977523696">Télécharger de nouveau le fichier ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# fichier audio}one{# fichier audio}other{# fichiers audio}}</translation>
+<translation id="2656405586795711023">Applications Web</translation>
 <translation id="2677748264148917807">Quitter</translation>
 <translation id="2689830683995595741">En utilisant Chrome, vous acceptez les <ph name="BEGIN_LINK1" />Conditions d'utilisation de Google<ph name="END_LINK1" /> et les <ph name="BEGIN_LINK2" />Conditions d'utilisation supplémentaires de Google Chrome et Chrome OS<ph name="END_LINK2" />. L'<ph name="BEGIN_LINK3" />Avis de confidentialité relatif aux comptes Google gérés avec Family Link<ph name="END_LINK3" /> s'applique également.</translation>
 <translation id="2707726405694321444">Actualiser la page</translation>
@@ -366,6 +367,7 @@ Vous seul voyez les images de votre caméra. Le site n'y a pas accès.</translat
 <translation id="3997476611815694295">Stockage non important</translation>
 <translation id="4000212216660919741">Mode hors connexion</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}one{# h}other{# h}}</translation>
+<translation id="403687620286099920">Appuyez pour ouvrir le code QR</translation>
 <translation id="4046123991198612571">Piste suivante</translation>
 <translation id="4056223980640387499">Sépia</translation>
 <translation id="4060598801229743805">Options disponibles à proximité du haut de l'écran</translation>
@@ -450,6 +452,7 @@ Votre compte Google conserve peut-être d'autres contenus d'historique de naviga
 <translation id="4749960740855309258">Ouvrir un nouvel onglet</translation>
 <translation id="4759238208242260848">Téléchargements</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 téléchargement terminé.}one{# téléchargement terminé.}other{# téléchargements terminés.}}</translation>
+<translation id="478981486571169252">Vous verrez votre état de connexion à <ph name="SITE_NAME" /> ainsi que vos données de navigation et les données des sites dans Chrome.</translation>
 <translation id="4802417911091824046">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay.
 
 Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5292796745632149097">Envoyer sur</translation>
 <translation id="5304593522240415983">Champ obligatoire.</translation>
 <translation id="5308380583665731573">Connexion</translation>
+<translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5324858694974489420">Paramètres parentaux</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5342314432463739672">Demandes d'autorisation</translation>
@@ -562,6 +566,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5665379678064389456">Créer un événement dans <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignore la demande d'un site d'empêcher les zooms avant</translation>
+<translation id="5681394891799747640">Impossible de télécharger le code QR</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
 <translation id="5686790454216892815">Nom de fichier trop long</translation>
 <translation id="5694049548840660018">Revenir facilement à l'accueil</translation>
@@ -610,6 +615,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="6042308850641462728">Plus</translation>
 <translation id="604996488070107836">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison d'une erreur inconnue.</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6059830886158432458">Contrôlez vos articles et votre activité via ce menu</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> heures restantes</translation>
 <translation id="6108923351542677676">Configuration en cours…</translation>
 <translation id="6111020039983847643">de données utilisées</translation>
@@ -633,6 +639,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="629730747756840877">Compte</translation>
 <translation id="6297765934698848803">L'organisation qui gère votre appareil a désactivé la caméra.</translation>
 <translation id="6303969859164067831">Se déconnecter et désactiver la synchronisation</translation>
+<translation id="6312687380483398334">Applications Web (discrètes)</translation>
 <translation id="6316139424528454185">Version Android non compatible</translation>
 <translation id="6324034347079777476">La synchronisation du système Android est désactivée.</translation>
 <translation id="6333140779060797560">Partager via <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6482749332252372425">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'espace de stockage insuffisant.</translation>
 <translation id="6496823230996795692">Pour utiliser <ph name="APP_NAME" /> pour la première fois, veuillez vous connecter à Internet.</translation>
 <translation id="6508722015517270189">Relancez Chrome</translation>
+<translation id="6527303717912515753">Partager</translation>
 <translation id="6532866250404780454">Les sites que vous consultez dans Chrome ne s'afficheront pas. Tous les minuteurs de site seront supprimés.</translation>
 <translation id="6534565668554028783">Google a mis trop de temps à répondre</translation>
 <translation id="6539092367496845964">Un problème est survenu. Réessayez plus tard.</translation>
@@ -794,6 +802,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7605594153474022051">La synchronisation ne fonctionne pas</translation>
 <translation id="7606077192958116810">Le mode simplifié est activé. Gérez-le dans les paramètres.</translation>
 <translation id="7612619742409846846">Connecté à Google en tant que</translation>
+<translation id="7614971007231847352">Code QR téléchargé</translation>
 <translation id="7619072057915878432">Échec du téléchargement du fichier "<ph name="FILE_NAME" />" en raison de l'échec du réseau.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obtenir de l'aide<ph name="END_LINK1" /> ou <ph name="BEGIN_LINK2" />effectuer une nouvelle recherche<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Bienvenue dans Chrome</translation>
@@ -821,6 +830,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7821588508402923572">Vos économies de données s'affichent ici</translation>
 <translation id="7835852323729233924">Contenu en cours de lecture</translation>
 <translation id="783819812427904514">Réactiver le son de la vidéo</translation>
+<translation id="7846296061357476882">Services Google</translation>
 <translation id="784934925303690534">Période</translation>
 <translation id="7851858861565204677">Autres appareils</translation>
 <translation id="7875915731392087153">Créer un e-mail</translation>

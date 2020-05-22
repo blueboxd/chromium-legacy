@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> chce na stałe przechowywać dużą ilość danych na Twoim urządzeniu</translation>
 <translation id="1032854598605920125">Obróć w prawo</translation>
 <translation id="1036348656032585052">Wyłącz</translation>
+<translation id="1038106730571050514">Pokaż sugestie</translation>
 <translation id="1038842779957582377">nieznana nazwa</translation>
 <translation id="1041998700806130099">Komunikat dotyczący arkusza zadań</translation>
 <translation id="1050038467049342496">Zamknij inne aplikacje</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Przesunięcie obrazu wzdłuż osi Y</translation>
 <translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1752021286346845558">Zestaw tac odbiorczych 8</translation>
-<translation id="1752483581718172048">Ukryj sugestie</translation>
 <translation id="1753706481035618306">Numer strony</translation>
 <translation id="1763864636252898013">Ten serwer nie mógł udowodnić, że należy do <ph name="DOMAIN" />. Jego certyfikat bezpieczeństwa nie jest zaufany w systemie operacyjnym tego urządzenia. Może to być spowodowane błędną konfiguracją lub przechwyceniem połączenia przez atakującego.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Uruchom Diagnostykę sieci systemu Windows<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="2666092431469916601">Do góry</translation>
 <translation id="2666117266261740852">Zamknij inne karty lub aplikacje</translation>
 <translation id="2674170444375937751">Czy na pewno chcesz usunąć te strony z historii?</translation>
+<translation id="2674804415323431591">Ukryj sugestie</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Wyjdź</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1078,6 +1079,7 @@ Jeśli się nie zgodzisz, zostaną one zablokowane ze względu na Twoje ustawien
 <translation id="5523118979700054094">Nazwa zasady</translation>
 <translation id="55293785478302737">Zszywanie wzdłuż krawędzi</translation>
 <translation id="553484882784876924">Prc6 (koperta)</translation>
+<translation id="5536214594743852365">Pokaż sekcję „<ph name="SECTION" />”</translation>
 <translation id="5539243836947087108">Tratwa</translation>
 <translation id="5540224163453853">Nie udało się znaleźć tego artykułu.</translation>
 <translation id="5541086400771735334">Zestaw tac odbiorczych 7</translation>
@@ -1477,6 +1479,7 @@ Dodatkowe informacje:
 <translation id="7313965965371928911">Ostrzeżenia <ph name="BEGIN_LINK" />Bezpiecznego przeglądania<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoc dotycząca połączeń</translation>
+<translation id="7323804146520582233">Ukryj sekcję „<ph name="SECTION" />”</translation>
 <translation id="733354035281974745">Zastąpienie przez konto lokalne na urządzeniu</translation>
 <translation id="7333654844024768166">Przed chwilą wpisano hasło na stronie wprowadzającej w błąd. Chromium zaleca, by natychmiast zmienić je na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i innych stronach, na których go używasz.</translation>
 <translation id="7334320624316649418">&amp;Ponów zmianę kolejności</translation>
@@ -1755,7 +1758,6 @@ Dodatkowe informacje:
 <translation id="8425213833346101688">Zmień</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8433057134996913067">Zostaniesz wylogowany z większości stron internetowych.</translation>
-<translation id="8433678324664858900">Pokazuj propozycje</translation>
 <translation id="8437238597147034694">&amp;Cofnij przeniesienie</translation>
 <translation id="8457125768502047971">Bez ograniczeń</translation>
 <translation id="8461694314515752532">Szyfruj synchronizowane dane własnym hasłem synchronizacji</translation>

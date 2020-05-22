@@ -10,11 +10,11 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/events/platform_event.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"
@@ -30,7 +30,7 @@ class SelectionData;
 // drop. This class interprets messages from the stateful selection request
 // API. SelectionRequestor should only deal with the X11 details; it does not
 // implement per-component fast-paths.
-class UI_BASE_EXPORT SelectionRequestor {
+class COMPONENT_EXPORT(UI_BASE) SelectionRequestor {
  public:
   SelectionRequestor(XDisplay* xdisplay,
                      XID xwindow,

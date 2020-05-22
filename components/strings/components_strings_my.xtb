@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> သည် ကြီးမားသည့်ဒေတာများကို သင့်စက်တွင် အမြဲတမ်းသိုလှောင်လိုသည်</translation>
 <translation id="1032854598605920125">လက်ယာရစ် လှည့်ရန်</translation>
 <translation id="1036348656032585052">ပိတ်ရန်</translation>
+<translation id="1038106730571050514">အကြံပြုချက်များ ပြရန်</translation>
 <translation id="1038842779957582377">မသိရ အမည်</translation>
 <translation id="1041998700806130099">အလုပ် စာမျက်နှာ မက်ဆေ့ဂျ်</translation>
 <translation id="1050038467049342496">အခြား အက်ပ်များကို ပိတ်ပါ</translation>
@@ -202,7 +203,6 @@
 <translation id="1746113442205726301">ပုံဒေါင်လိုက် အရွှေ့</translation>
 <translation id="17513872634828108">တဲဘ်များ ဖွင့်ရန်</translation>
 <translation id="1752021286346845558">စာတိုက်ပုံး ၈</translation>
-<translation id="1752483581718172048">အကြံပြုချက်များကို ဝှက်ရန်</translation>
 <translation id="1753706481035618306">စာမျက်နှာ နံပါတ်</translation>
 <translation id="1763864636252898013">ဒီဆာဗာက <ph name="DOMAIN" /> ဖြစ်တာကို သက်သေထူ မပြနိုင်ခဲ့ပါ၊ ၎င်း၏ လုံခြုံရေး လက်မှတ်ကို သင့်ကိရိယာ၏ လည်ပတ်မှု စနစ် ဘက်မှ မယုံကြည်ပါ။ ဖွဲ့စည်းစီစဉ်မှု အမှားကြောင့် သို့မဟုတ် တိုက်ခိုက်လိုသူက 
 သင်၏ ချိတ်ဆက်မှုကို ကြားဖြတ်ယူနေ၍ ထိုသို့ ဖြစ်လာနိုင်ခဲ့ပါသည်။</translation>
@@ -404,6 +404,7 @@
 <translation id="2666092431469916601">ထိပ်</translation>
 <translation id="2666117266261740852">အခြား တဘ် သို့မဟုတ် အက်ပ်များကို ပိတ်ပါ</translation>
 <translation id="2674170444375937751">သင့်သမိုင်းမှ ဤစာမျက်နှာများကို သင်ဖျက်လိုသည်မှာ သင်သေချာပါသလား?</translation>
+<translation id="2674804415323431591">အကြံပြုချက်များကို ဝှက်ရန်</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ထွက်ခွာရန်</translation>
 <translation id="2684561033061424857">၁၁x၁၂</translation>
@@ -1082,6 +1083,7 @@
 <translation id="5523118979700054094">မူဝါဒ အမည်</translation>
 <translation id="55293785478302737">အစွန်းတွင် အပ်ချည်ဖြင့်ချုပ်ရန်</translation>
 <translation id="553484882784876924">Prc6 (စာအိတ်)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" ကဏ္ဍကို ပြရန်</translation>
 <translation id="5539243836947087108">အောက်ခြေ</translation>
 <translation id="5540224163453853">တောင်းဆိုထားသည့် အကြောင်းအရာ မတွေ့ပါ။</translation>
 <translation id="5541086400771735334">စာတိုက်ပုံး ၇</translation>
@@ -1481,6 +1483,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />ဘေးကင်းစွာ အင်တာနက်အသုံးပြုခြင်းစနစ်<ph name="END_LINK" /> သတိပေးချက်များ</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ချိတ်ဆက်မှု အကူအညီ</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" ကဏ္ဍကို ဝှက်ရန်</translation>
 <translation id="733354035281974745">ကိရိယာတွင်း အကောင့်ကို အစားထိုးရန်</translation>
 <translation id="7333654844024768166">လှည့်ဖြားတတ်သော ဝဘ်ဆိုက်တစ်ခုတွင် သင့်စကားဝှက်ကို ထည့်လိုက်ပါသည်။ <ph name="WEBSITE_1" />၊ <ph name="WEBSITE_2" />၊ <ph name="WEBSITE_3" /> နှင့် ဤစကားဝှက်အသုံးပြုသည့် အခြားဝဘ်ဆိုက်များသို့သွားပြီး ၎င်းကိုပြောင်းရန် Chromium က အကြံပြုပါသည်။</translation>
 <translation id="7334320624316649418">&amp;ပြန်စီမှုကို ပြန်လုပ်ရန်</translation>
@@ -1759,7 +1762,6 @@
 <translation id="8425213833346101688">ပြောင်းရန်</translation>
 <translation id="8428213095426709021">ဆက်တင်များ</translation>
 <translation id="8433057134996913067">၎င်းသည် သင့်ကို ဝဘ်ဆိုက်အများစုမှ ထွက်စေပါမည်။</translation>
-<translation id="8433678324664858900">အကြံပြုချက်များ ပြပါ</translation>
 <translation id="8437238597147034694">&amp;ရွေ့ရှားမှုကို ပြန်ဖျက်ရန်</translation>
 <translation id="8457125768502047971">အဆုံးမရှိ</translation>
 <translation id="8461694314515752532">စင့်ခ်လုပ်ထားသော ဒေတာများကို သင့်ကိုယ်ပိုင် စင့်ခ်စကားဝှက်ဖြင့် အသွင်ဝှက်ရန်</translation>

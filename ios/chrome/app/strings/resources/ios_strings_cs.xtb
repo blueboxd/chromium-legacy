@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Historie</translation>
 <translation id="1650222530560417226">Klepnutím na tlačítko Spustit protokolování začnete shromažďovat budoucí protokoly konzole JavaScriptu a chyby ze všech karet. Protokoly se budou shromažďovat (a ukládat jen do paměti), dokud tuto stránku nezavřete nebo neklepnete na Zastavit protokolování.</translation>
 <translation id="1657011748321897393">Sdílení se nezdařilo, protože nejste připojeni k síti.</translation>
+<translation id="1657641691196698092">Blokované soubory cookie</translation>
 <translation id="165877110639533037">Žádné otevřené karty</translation>
 <translation id="1674504678466460478">Z: <ph name="SOURCE_LANGUAGE" /> do: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Chcete-li mít záložky ve všech zařízeních, zapněte synchronizaci.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Přístup k vašim fotkám blokují zásady zařízení.</translation>
 <translation id="2578571896248130439">Odeslat webovou stránku</translation>
 <translation id="2584132361465095047">Přidat účet...</translation>
+<translation id="2600682495497606169">Vymazat soubory cookie webu</translation>
 <translation id="2625189173221582860">Heslo bylo zkopírováno</translation>
 <translation id="2647269890314209800">Používané soubory cookie</translation>
 <translation id="2648803196158606475">Smazat přečtené</translation>
@@ -332,6 +334,7 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5234764350956374838">Zavřít</translation>
 <translation id="5245322853195994030">Zrušit synchronizaci</translation>
 <translation id="5271549068863921519">Uložit heslo</translation>
+<translation id="5295239312320826323">Odstranit účet <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5317780077021120954">Uložit</translation>
 <translation id="5327248766486351172">Jméno</translation>
@@ -418,6 +421,7 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="6362362396625799311">Žádné anonymní karty</translation>
 <translation id="6363526231572697780">Žádné uživatelské jméno</translation>
 <translation id="6374469231428023295">Zkusit znovu</translation>
+<translation id="6377118281273296434">Zabezpečení webu</translation>
 <translation id="6380866119319257197">Pokud heslovou frázi zapomenete nebo toto nastavení budete chtít změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<ph name="END_LINK" />.</translation>
 <translation id="6389470377220713856">Jméno na kartě</translation>
 <translation id="6406506848690869874">Synchronizace</translation>
@@ -525,11 +529,13 @@ Vaše data byla <ph name="TIME" /> zašifrována pomocí heslové fráze pro syn
 
 Protože váš účet spravuje doména <ph name="HOSTED_DOMAIN" />, při odhlášení z tohoto zařízení se smažou vaše data v prohlížeči Chrome. Synchronizovaná data vám v účtu Google zůstanou.</translation>
 <translation id="7772032839648071052">Potvrďte heslovou frázi</translation>
+<translation id="7778472311864276518">Odstranit účet z tohoto zařízení</translation>
 <translation id="7781011649027948662">Přeložit stránku?</translation>
 <translation id="7781829728241885113">Včera</translation>
 <translation id="778855399387580014">Spustit vyhledávání na nové kartě Chromu.</translation>
 <translation id="7791543448312431591">Přidat</translation>
 <translation id="7828557259026017104">Soubory cookie jsou vytvářeny webovými stránkami, které navštěvujete. Weby je používají k tomu, aby si zapamatovaly vaše preference. Soubory cookie třetích stran jsou vytvářeny ostatními weby. Tyto weby na navštívené stránce vlastní nějaký obsah, např. reklamy nebo obrázky.</translation>
+<translation id="7839985698273989086">Stránka offline</translation>
 <translation id="7840771868269352570">Vybrané položky budou odstraněny.</translation>
 <translation id="7856733331829174190">Stažení se nezdařilo</translation>
 <translation id="7859704718976024901">Historie procházení</translation>

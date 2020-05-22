@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">כדי לסיים יש להזין את הסיסמה הישנה והחדשה</translation>
 <translation id="6106186594183574873">כדי לסיים יש להזין את הסיסמה הישנה</translation>
 <translation id="6146993107019042706">כדי לסיים, יש להזין את הסיסמה החדשה</translation>
+<translation id="6517239166834772319">אפשרויות נוספות</translation>
 <translation id="6643016212128521049">ניקוי</translation>
 <translation id="7162487448488904999">גלריה</translation>
 <translation id="7658239707568436148">ביטול</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">סטטוס</translation>
 <translation id="808894953321890993">שינוי הסיסמה</translation>
 <translation id="8208861521865154048">הטבות</translation>
+<translation id="8701136875688985581">משתמש זה מנוהל על ידי <ph name="ENROLLMENT_DOMAIN" />. הדומיין עשוי לנהל מרחוק את ההגדרות ולעקוב אחרי פעילות המשתמש.</translation>
 <translation id="8747900814994928677">אישור השינוי</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> נותרו <ph name="ATTEMPTS_LEFT" /> ניסיונות</translation>
 <translation id="910415269708673980">רענון הכרטיס עבור <ph name="PRINCIPAL_NAME" /></translation>

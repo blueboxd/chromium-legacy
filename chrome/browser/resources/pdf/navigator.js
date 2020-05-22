@@ -5,10 +5,8 @@
 import {OpenPdfParamsParser} from './open_pdf_params_parser.js';
 import {Viewport} from './viewport.js';
 
-/**
- * NavigatorDelegate for calling browser-specific functions to do the actual
- * navigating.
- */
+// NavigatorDelegate for calling browser-specific functions to do the actual
+// navigating.
 export class NavigatorDelegate {
   /**
    * @param {number} tabId The tab ID of the PDF viewer or -1 if the viewer is
@@ -63,7 +61,7 @@ export class NavigatorDelegate {
   }
 }
 
-/** Navigator for navigating to links inside or outside the PDF. */
+// Navigator for navigating to links inside or outside the PDF.
 export class PdfNavigator {
   /**
    * @param {string} originalUrl The original page URL.

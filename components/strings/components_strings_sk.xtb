@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> chce natrvalo ukladať veľké množstvo dát vo vašom zariadení</translation>
 <translation id="1032854598605920125">Otočiť v smere hodinových ručičiek</translation>
 <translation id="1036348656032585052">Vypnúť</translation>
+<translation id="1038106730571050514">Zobrazovať návrhy</translation>
 <translation id="1038842779957582377">neznámy názov</translation>
 <translation id="1041998700806130099">Správa hárku úlohy</translation>
 <translation id="1050038467049342496">Zavrite ostatné aplikácie</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Posun obrázka na osi Y</translation>
 <translation id="17513872634828108">Otvorené karty</translation>
 <translation id="1752021286346845558">Poštová schránka č. 8</translation>
-<translation id="1752483581718172048">Skryť návrhy</translation>
 <translation id="1753706481035618306">Číslo stránky</translation>
 <translation id="1763864636252898013">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" />, operačný systém vášho zariadenia nedôveruje jej bezpečnostnému certifikátu. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie zachytil útočník.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Skúste spustiť nástroj Diagnostika siete systému Windows<ph name="END_LINK" />.</translation>
@@ -398,6 +398,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="2666092431469916601">Vrch</translation>
 <translation id="2666117266261740852">Zavrite ostatné karty alebo aplikácie</translation>
 <translation id="2674170444375937751">Naozaj chcete odstrániť tieto stránky zo svojej histórie?</translation>
+<translation id="2674804415323431591">Skryť návrhy</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Odísť</translation>
 <translation id="2684561033061424857">11 x 12</translation>
@@ -1067,6 +1068,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="5523118979700054094">Názov pravidla</translation>
 <translation id="55293785478302737">Zošiť hrebeňovou väzbou</translation>
 <translation id="553484882784876924">Prc6 (obálka)</translation>
+<translation id="5536214594743852365">Zobraziť sekciu <ph name="SECTION" /></translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Požadovaný článok sa nepodarilo nájsť.</translation>
 <translation id="5541086400771735334">Poštová schránka č. 7</translation>
@@ -1465,6 +1467,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="7313965965371928911">Upozornenia <ph name="BEGIN_LINK" />Bezpečného prehliadania<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomocník s pripojením</translation>
+<translation id="7323804146520582233">Skryť sekciu <ph name="SECTION" /></translation>
 <translation id="733354035281974745">Prekonanie miestneho účtu zariadenia</translation>
 <translation id="7333654844024768166">Práve ste zadali svoje heslo na podvodnom webe. Chromium odporúča, aby ste prešli na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> a ďalšie weby, kde používate toto heslo, a ihneď ho zmenili.</translation>
 <translation id="7334320624316649418">&amp;Znova zmeniť poradie</translation>
@@ -1608,6 +1611,7 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="7844689747373518809">{COUNT,plural, =0{Žiadne}=1{1 aplikácia (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikácie (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}few{# aplikácie (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}many{# apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# aplikácií (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Nie ste však neviditeľný/-á. Prejdením do režimu inkognito neskryjete svoje prehliadanie pred zamestnávateľom, poskytovateľom internetových služieb ani pred navštívenými webmi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7858256690562840157">Pomôžte zlepšovať bezpečnosť na internete pre všetkých odosielaním <ph name="BEGIN_WHITEPAPER_LINK" />webových adries a obsahu niektorých stránok, ktoré navštevujete, ako aj obmedzených informácií o systéme<ph name="END_WHITEPAPER_LINK" /> Googlu. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Chcete odísť z tohto webu?</translation>
 <translation id="7865448901209910068">Najlepšia rýchlosť</translation>
 <translation id="7874263914261512992">Práve ste zadali svoje heslo na podvodnom webe. Chrome odporúča, aby ste skontrolovali svoje uložené heslá pre <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a ďalšie weby, na ktorých ho momentálne používate.</translation>
@@ -1742,7 +1746,6 @@ Ich používanie by bolo inak blokované vašimi nastaveniami ochrany súkromia.
 <translation id="8425213833346101688">Zmeniť</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
 <translation id="8433057134996913067">Táto možnosť vás odhlási z väčšiny webov.</translation>
-<translation id="8433678324664858900">Zobraziť návrhy</translation>
 <translation id="8437238597147034694">&amp;Vrátiť späť presunutie</translation>
 <translation id="8457125768502047971">Bez časového obmedzenia</translation>
 <translation id="8461694314515752532">Šifrovať synchronizované údaje pomocou vlastnej prístupovej frázy synchronizácie</translation>

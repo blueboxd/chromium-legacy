@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">باتری پر است</translation>
 <translation id="3604801046548457007">میز <ph name="DESK_TITILE" /> ایجاد شد</translation>
 <translation id="3606978283550408104">نمایشگر بریل متصل شد.</translation>
+<translation id="3616883743181209306">منو به گوشه چپ بالای صفحه منتقل شد.</translation>
 <translation id="3621202678540785336">ورودی</translation>
 <translation id="3621712662352432595">تنظیمات صوتی</translation>
 <translation id="3626281679859535460">روشنایی</translation>
 <translation id="3631369015426612114">مجاز کردن اعلان‌های منابع زیر</translation>
 <translation id="3638400994746983214">روشن/خاموش کردن صفحه حریم‌خصوصی. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> کاربر مدیریت‌شده</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">محدوده گرفتن عکس</translation>
 <translation id="371370241367527062">میکروفون جلو</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">خروج از حالت آینه</translation>
 <translation id="602001110135236999">پیمایش به چپ</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />، <ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، تحت‌مدیریت سرپرست</translation>
+<translation id="6030495522958826102">منو به گوشه راست پایین صفحه منتقل شد.</translation>
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6043212731627905357">این نمایشگر با <ph name="DEVICE_TYPE" /> سازگار نیست (نمایشگر پشتیبانی نمی‌شود).</translation>
 <translation id="6043994281159824495">خروج از سیستم هم‌اکنون</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">در حال اتصال</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">برگرداندن به وضوح قدیمی در <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">منو به گوشه راست بالای صفحه منتقل شد.</translation>
 <translation id="7246071203293827765">‏<ph name="UPDATE_TEXT" />. این Chromebook برای اعمال به‌روزرسانی باید بازراه‌اندازی شود. این کار ممکن است تا ۱ دقیقه طول بکشد.</translation>
 <translation id="7256634071279256947">میکروفون پشت</translation>
 <translation id="726276584504105859">برای استفاده از تقسیم صفحه، به اینجا بکشید</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">چرخش خودکار</translation>
 <translation id="8517041960877371778">ممکن است وقتی <ph name="DEVICE_TYPE" /> شما خاموش است، شارژ نشود.</translation>
 <translation id="8563862697512465947">تنظیمات اعلام</translation>
+<translation id="857201607579416096">منو به گوشه چپ پایین صفحه منتقل شد.</translation>
 <translation id="8627191004499078455">متصل به <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">تنظیمات دسترس‌پذیری</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />، قدرت سیگنال <ph name="SIGNAL_STRENGTH" />، تحت‌مدیریت سرپرست</translation>

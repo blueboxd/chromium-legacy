@@ -519,6 +519,7 @@ Da biste promenili ovo podešavanje, <ph name="BEGIN_LINK" />resetujte sinhroniz
 <translation id="5292796745632149097">Pošaljite na</translation>
 <translation id="5304593522240415983">Ovo polje ne sme da bude prazno</translation>
 <translation id="5308380583665731573">Povezivanje</translation>
+<translation id="5317780077021120954">Sačuvaj</translation>
 <translation id="5324858694974489420">Roditeljska podešavanja</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5342314432463739672">Zahtevi za dozvolu</translation>
@@ -670,6 +671,7 @@ Na primer, neki veb-sajtovi mogu da odgovore na ovaj zahtev prikazivanjem oglasa
 <translation id="6482749332252372425">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspelo zbog nedostatka memorijskog prostora.</translation>
 <translation id="6496823230996795692">Da biste prvi put koristili <ph name="APP_NAME" />, povežite se na internet.</translation>
 <translation id="6508722015517270189">Ponovo pokrenite Chrome</translation>
+<translation id="6527303717912515753">Deli</translation>
 <translation id="6532866250404780454">Sajtovi koje posećujete u Chrome-u se neće prikazivati. Biće izbrisani tajmeri za sve sajtove.</translation>
 <translation id="6534565668554028783">Google-u je trebalo predugo da odgovori</translation>
 <translation id="6539092367496845964">Nešto nije u redu. Probajte ponovo kasnije.</translation>

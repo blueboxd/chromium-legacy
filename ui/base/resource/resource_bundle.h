@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/gtest_prod_util.h"
@@ -21,7 +22,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "ui/base/layout.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/native_widget_types.h"
@@ -41,7 +41,7 @@ class ResourceHandle;
 
 // ResourceBundle is a central facility to load images and other resources,
 // such as theme graphics. Every resource is loaded only once.
-class UI_BASE_EXPORT ResourceBundle {
+class COMPONENT_EXPORT(UI_BASE) ResourceBundle {
  public:
   // Legacy font size deltas. Consider these to be magic numbers. New code
   // should declare their own size delta constant using an identifier that

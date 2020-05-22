@@ -44,8 +44,8 @@ void MainThreadScrollingReason::AddToTracedValue(
     traced_value.AppendString("Handling scroll from main thread");
   if (reasons & kHasTransformAndLCDText)
     traced_value.AppendString("Has transform and LCD text");
-  if (reasons & kBackgroundNotOpaqueInRectAndLCDText)
-    traced_value.AppendString("Background is not opaque in rect and LCD text");
+  if (reasons & kNotOpaqueForTextAndLCDText)
+    traced_value.AppendString("Not opaque for text and LCD text");
   if (reasons & kCantPaintScrollingBackground)
     traced_value.AppendString("Can't paint scrolling background");
   if (reasons & kHasClipRelatedProperty)

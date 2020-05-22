@@ -4,10 +4,8 @@
 
 import {FittingType} from './constants.js';
 
-/**
- * Parses the open pdf parameters passed in the url to set initial viewport
- * settings for opening the pdf.
- */
+// Parses the open pdf parameters passed in the url to set initial viewport
+// settings for opening the pdf.
 export class OpenPdfParamsParser {
   /**
    * @param {function(string):void} getNamedDestinationCallback
@@ -24,7 +22,6 @@ export class OpenPdfParamsParser {
   /**
    * Parse zoom parameter of open PDF parameters. The PDF should be opened at
    * the specified zoom level.
-   *
    * @param {string} paramValue zoom value.
    * @return {Object} Map with zoom parameters (zoom and position).
    * @private
@@ -57,7 +54,6 @@ export class OpenPdfParamsParser {
   /**
    * Parse view parameter of open PDF parameters. The PDF should be opened at
    * the specified fitting type mode and position.
-   *
    * @param {string} paramValue view value.
    * @return {Object} Map with view parameters (view and viewPosition).
    * @private
@@ -96,7 +92,6 @@ export class OpenPdfParamsParser {
 
   /**
    * Parse the parameters encoded in the fragment of a URL into a dictionary.
-   *
    * @param {string} url to parse
    * @return {Object} Key-value pairs of URL parameters
    * @private
@@ -133,7 +128,6 @@ export class OpenPdfParamsParser {
    * Parse PDF url parameters used for controlling the state of UI. These need
    * to be available when the UI is being initialized, rather than when the PDF
    * is finished loading.
-   *
    * @param {string} url that needs to be parsed.
    * @return {Object} parsed url parameters.
    */
@@ -153,7 +147,6 @@ export class OpenPdfParamsParser {
    * and specify actions to be performed when opening pdf files.
    * See http://www.adobe.com/content/dam/Adobe/en/devnet/acrobat/
    * pdfs/pdf_open_parameters.pdf for details.
-   *
    * @param {string} url that needs to be parsed.
    * @param {Function} callback function to be called with viewport info.
    */
@@ -190,7 +183,6 @@ export class OpenPdfParamsParser {
   /**
    * This is called when a named destination is received and the page number
    * corresponding to the request for which a named destination is passed.
-   *
    * @param {number} pageNumber The page corresponding to the named destination
    *    requested.
    */

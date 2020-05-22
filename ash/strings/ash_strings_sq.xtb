@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Bateria është plot</translation>
 <translation id="3604801046548457007">U krijua tavolina e punës <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">Ekrani "Braille" është i lidhur.</translation>
+<translation id="3616883743181209306">Menyja u zhvendos në këndin lart djathtas të ekranit.</translation>
 <translation id="3621202678540785336">Hyrje</translation>
 <translation id="3621712662352432595">Cilësimet e audios</translation>
 <translation id="3626281679859535460">Ndriçimi</translation>
 <translation id="3631369015426612114">Lejo njoftimet nga më poshtë</translation>
 <translation id="3638400994746983214">Ndrysho ekranin e privatësisë. <ph name="STATE_TEXT" /></translation>
+<translation id="366222428570480733">Përdorues i menaxhuar (<ph name="USER_EMAIL_ADDRESS" />)</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Regjistro sektorin</translation>
 <translation id="371370241367527062">Mikrofoni i përparmë</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">Po del nga modaliteti i pasqyrës</translation>
 <translation id="602001110135236999">Lëviz majtas</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />, menaxhuar nga administratori yt</translation>
+<translation id="6030495522958826102">Menyja u zhvendos në këndin poshtë majtas të ekranit.</translation>
 <translation id="6040143037577758943">Mbyll</translation>
 <translation id="6043212731627905357">Ky monitor nuk po përshtatet me pajisjen tënde <ph name="DEVICE_TYPE" /> (monitori nuk mbështetet).</translation>
 <translation id="6043994281159824495">Dil tani</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">Po lidhet</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Po rikthehet te rezolucioni i vjetër për <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">Menyja u zhvendos në këndin lart majtas të ekranit.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Kjo pajisje Chromebook duhet të riniset për të zbatuar një përditësim. Kjo mund të zgjasë deri në 1 minutë.</translation>
 <translation id="7256634071279256947">Mikrofoni i pasmë</translation>
 <translation id="726276584504105859">Zvarrit këtu për të përdorur ekranin e ndarë</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">Rrotullim automatik</translation>
 <translation id="8517041960877371778">Pajisja jote <ph name="DEVICE_TYPE" /> mund të mos ngarkohet kur është e ndezur.</translation>
 <translation id="8563862697512465947">Cilësimet e njoftimeve</translation>
+<translation id="857201607579416096">Menyja u zhvendos në këndin poshtë djathtas të ekranit.</translation>
 <translation id="8627191004499078455">I lidhur me <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Cilësimet e qasshmërisë</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />, menaxhuar nga administratori yt</translation>

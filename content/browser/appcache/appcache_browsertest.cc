@@ -98,8 +98,9 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Regression test for crbug.com/937761.
+// Disabled due to flakiness https://crbug.com/1031090.
 IN_PROC_BROWSER_TEST_F(AppCacheNetworkServiceBrowserTest,
-                       SSLCertificateCachedCorrectly) {
+                       DISABLED_SSLCertificateCachedCorrectly) {
   net::EmbeddedTestServer embedded_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   embedded_test_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK,

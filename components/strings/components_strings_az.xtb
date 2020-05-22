@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> böyük həcmli datanı həmişəlik cihazınızda yadda saxlamaq istəyir</translation>
 <translation id="1032854598605920125">Saat əqrəbi istiqamətində fırladın</translation>
 <translation id="1036348656032585052">Deaktiv edin</translation>
+<translation id="1038106730571050514">Təklifləri göstərin</translation>
 <translation id="1038842779957582377">bilinməyən ad</translation>
 <translation id="1041998700806130099">İş vərəqi mesajı</translation>
 <translation id="1050038467049342496">Digər tətbiqləri bağlayın</translation>
@@ -401,6 +402,7 @@
 <translation id="2666092431469916601">Yuxarı</translation>
 <translation id="2666117266261740852">Digər tab və ya tətbiqləri bağlayın</translation>
 <translation id="2674170444375937751">Siz tarixi bu pages silmək üçün əminsinizmi?</translation>
+<translation id="2674804415323431591">Təklifləri gizlədin</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Tərk edin</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -598,6 +600,7 @@
 <translation id="3539171420378717834">Bu kartın kopyasını bu cihazda saxlayın</translation>
 <translation id="3558573058928565255">Gündüz vaxtı</translation>
 <translation id="3566021033012934673">Bağlantınız məxfi deyil</translation>
+<translation id="3567778190852720481">Müəssisə hesabı ilə qeydiyyatdan keçmək olmur (müəssisə hesabı uyğun deyil).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> daxilində yerləşdirilmiş səhifə deyir:</translation>
 <translation id="3581089476000296252">Chrome bu səhifə hazır olduqda bildiriş göndərəcək. &lt;a&gt;Ləğv edin&lt;/a&gt;</translation>
@@ -873,6 +876,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Şəbəkə Diaqnostikası İşləyir<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Qaydaları yenidən yükləyin</translation>
 <translation id="4728558894243024398">Platforma</translation>
+<translation id="4731638775147756694">Bu tətbiq admin tərəfindən bloklanıb</translation>
 <translation id="4731967714531604179">Prc2 (Zərf)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> cihazın məkanını istifadə etmək istəyir</translation>
 <translation id="4736825316280949806">Chromium'u yenidən başladın</translation>
@@ -1075,6 +1079,7 @@
 <translation id="5523118979700054094">Siyasət adı</translation>
 <translation id="55293785478302737">Kənar tikişi vurun</translation>
 <translation id="553484882784876924">Prc6 (Zərf)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" bölməsini göstərin</translation>
 <translation id="5539243836947087108">Sal</translation>
 <translation id="5540224163453853">Tələb olunan məqaləni tapmaq alınmadı.</translation>
 <translation id="5541086400771735334">Poçt qutusu 7</translation>
@@ -1243,6 +1248,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> əlfəcinləri</translation>
 <translation id="6264485186158353794">Güvənliyə qayıdın</translation>
 <translation id="6266934640124581640">Açıq-firuzəyi</translation>
+<translation id="6272383483618007430">Google Güncəlləməsi</translation>
 <translation id="6276112860590028508">Oxu siyahısının səhifələri burada görünəcək</translation>
 <translation id="627746635834430766">Növbəti dəfə daha sürətli ödəniş etmək üçün kartı və faktura ünvanını Google Hesabınızda yadda saxlayın.</translation>
 <translation id="6279516281132775660">Chrome aşağıdakı məlumatları <ph name="BEGIN_EMPHASIS" />yadda saxlamayacaq<ph name="END_EMPHASIS" />:
@@ -1473,6 +1479,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Təhlükəsiz Axtarış<ph name="END_LINK" /> xəbərdarlıqları</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Bağlantı Yardımı</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" bölməsini gizlədin</translation>
 <translation id="733354035281974745">Cihazın lokal hesabı əvəz edilib</translation>
 <translation id="7333654844024768166">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chromium indi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> və bu parolu istifadə etdiyiniz digər saytlara keçərək parolunuzu dəyişmənizi tövsiyə edir.</translation>
 <translation id="7334320624316649418">&amp;Yenidən yerbəyer edin</translation>
@@ -1616,6 +1623,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Heç bir tətbiq}=1{1 tətbiq (<ph name="EXAMPLE_APP_1" />)}=2{2 tətbiq (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# tətbiq (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Siz görünməz olmursunuz. Gizli rejim brauzeri şirkətinizdən, internet xidməti provayderi və ya daxil olduğunuz veb saytdan gizlətmir.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />Daxil olduğunuz bəzi səhifələrin keçidlərini, məhdud sistem məlumatlarını və bəzi səhifə məzmununu<ph name="END_WHITEPAPER_LINK" /> Google'a göndərməklə vebdə hər kəs üçün təhlükəsizliyi artırmağa yardım edin. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Saytdan çıxılsın?</translation>
 <translation id="7865448901209910068">Ən yüksək sürət</translation>
 <translation id="7874263914261512992">İndicə parolunuzu aldadıcı saytda daxil etdiniz. Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> saytlarında və bu paroldan istifadə etdiyiniz digər saytlarda saxlanılmış parollarınızı indi yoxlamağı tövsiyə edir.</translation>
@@ -1750,7 +1758,6 @@
 <translation id="8425213833346101688">Dəyişin</translation>
 <translation id="8428213095426709021">Ayarlar</translation>
 <translation id="8433057134996913067">Bu Sizi bir çox veb saytdan çıxaracaq.</translation>
-<translation id="8433678324664858900">Təklifləri Göstərin</translation>
 <translation id="8437238597147034694">&amp;Daşınmanı ləğv edin</translation>
 <translation id="8457125768502047971">Qeyri-müəyyən</translation>
 <translation id="8461694314515752532">Sinxronizasiya parolunuz ilə sinxronizasiya edilmiş datanı şifrələyin</translation>

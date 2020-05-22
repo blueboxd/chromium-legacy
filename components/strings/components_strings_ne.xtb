@@ -594,6 +594,7 @@
 <translation id="3539171420378717834">यस यन्त्रमा यस कार्डको एउटा प्रतिलिपि राख्नुहोस्</translation>
 <translation id="3558573058928565255">दिउँसो</translation>
 <translation id="3566021033012934673">तपाईंको जडान निजी होइन</translation>
+<translation id="3567778190852720481">संस्थागत खातामार्फत सहभागी हुन सकिँदैन (संस्थागत खाता प्रयोग गर्न मिल्दैन)।</translation>
 <translation id="3574305903863751447"><ph name="CITY" /> , <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> मा इम्बेड गरिएको पृष्ठले यसो भन्छ</translation>
 <translation id="3581089476000296252">यो पृष्ठ तयार भएपछि Chrome ले तपाईंलाई यसबारे सूचित गर्ने छ। &lt;a&gt;रद्द गर्नुहोस्&lt;/a&gt;</translation>
@@ -869,6 +870,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows नेटवर्क सम्बन्धी निदान चलाएर हेर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">नीतिहरू पुन: लोड गर्नुहोस्</translation>
 <translation id="4728558894243024398">प्लेटफर्म</translation>
+<translation id="4731638775147756694">तपाईंका एड्मिनले यो एपलाई रोक लगाउनुभएको छ</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> तपाईंको यन्त्रको स्थान प्रयोग गर्न चाहन्छ</translation>
 <translation id="4736825316280949806">Chromium लाई पुनः सुरु गर्नुहोस्</translation>
@@ -1235,6 +1237,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> बुकमार्कहरू</translation>
 <translation id="6264485186158353794">सुरक्षामा फर्कनुहोस्</translation>
 <translation id="6266934640124581640">हल्का निलो र हरियो</translation>
+<translation id="6272383483618007430">Google अपडेट</translation>
 <translation id="6276112860590028508">तपाईंको पाठ्य सूचीका पृष्ठहरू यहाँ देखिन्छन्</translation>
 <translation id="627746635834430766">अर्को पटक अझ छिटो भुक्तानी गर्न आफ्नो Google खातामा आफ्नो कार्ड र बिलिङ ठेगाना सुरक्षित गर्नुहोस्।</translation>
 <translation id="6279516281132775660">Chrome ले निम्न जानकारी <ph name="BEGIN_EMPHASIS" />सुरक्षित गर्ने छैन<ph name="END_EMPHASIS" />:
@@ -1608,6 +1611,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{कुनै पनि होइन}=1{१ एप (<ph name="EXAMPLE_APP_1" />)}=2{२ एपहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# एपहरू (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">यद्दपि, तपाईं अदृश्य हुनुहुन्न। इन्कोग्निटो हुनाले तपाईंको ब्राउजिङलाई तपाईंको रोजगारदाता, तपाईंको इन्टरनेट सेवा प्रदायक वा तपाईंले भ्रमण गर्नुभएका बेवसाइटहरूबाट लुकाउँदैन।</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Google लाई आफूले हेर्ने केही पृष्ठका <ph name="BEGIN_WHITEPAPER_LINK" />URL, प्रणालीसम्बन्धी निश्चित जानकारी र पृष्ठका केही सामग्रीहरू<ph name="END_WHITEPAPER_LINK" /> पठाएर वेब प्रयोग गर्ने सम्पूर्ण प्रयोगकर्ताहरूलाई झन् सुरक्षित राख्न मद्दत गर्नुहोस्। <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">साइट छाड्ने हो?</translation>
 <translation id="7865448901209910068">उत्कृष्ट गति</translation>
 <translation id="7874263914261512992">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chrome तपाईंलाई अहिले नै <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> र तपाईंले हाल यो पासवर्ड प्रयोग गर्ने अन्य साइटका सुरक्षित गरिएका पासवर्डहरूको जाँच गर्न सिफारिस गर्छ।</translation>
@@ -1742,7 +1746,6 @@
 <translation id="8425213833346101688">परिवर्तन गर्नुहोस्</translation>
 <translation id="8428213095426709021">सेटिङहरू</translation>
 <translation id="8433057134996913067">यसले तपाईँलाई अधिकांश साइटहरूबाट साइन आउट गराउनेछ।</translation>
-<translation id="8433678324664858900">सुझावहरू देखाउनुहोस्</translation>
 <translation id="8437238597147034694">सार्ने कार्यलाई &amp;पूर्ववत गर्नुहोस्</translation>
 <translation id="8457125768502047971">अनिश्चितकालीन</translation>
 <translation id="8461694314515752532">सिंक गरिएको डेटालाई तपाईंको आफ्नै सिंक पासफ्रेजमार्फत इन्क्रिप्ट गर्नुहोस्</translation>

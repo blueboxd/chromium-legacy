@@ -5,8 +5,8 @@
 #ifndef UI_BASE_MODELS_COMBOBOX_MODEL_H_
 #define UI_BASE_MODELS_COMBOBOX_MODEL_H_
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -14,7 +14,7 @@ class ComboboxModelObserver;
 class ImageModel;
 
 // A data model for a combo box.
-class UI_BASE_EXPORT ComboboxModel {
+class COMPONENT_EXPORT(UI_BASE) ComboboxModel {
  public:
   virtual ~ComboboxModel() {}
 

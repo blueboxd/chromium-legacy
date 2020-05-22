@@ -160,6 +160,7 @@
 일부 기능을 사용할 수 없습니다. 다른 프로필 디렉터리를 지정하거나 Chromium의 새로운 버전을 사용하시기 바랍니다.</translation>
 <translation id="6734080038664603509">Chromium 업데이트</translation>
 <translation id="6734291798041940871">모든 사용자가 사용할 수 있도록 컴퓨터에 Chromium이 이미 설치되어 있습니다.</translation>
+<translation id="6774082503108938489">부모님이 Chromium의 ‘사이트, 앱, 확장 프로그램에 대한 권한’을 사용 중지하셨습니다. 이 <ph name="EXTENSION_TYPE_PARAMETER" /> 사용은 허용되지 않습니다.</translation>
 <translation id="6847869444787758381">비밀번호가 유출되면 Chromium에서 알려줍니다.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay(Chromium에 복사됨)</translation>
@@ -218,6 +219,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8417404458978023919">{0,plural, =1{1일 이내로 Chromium을 다시 시작해 주세요}other{#일 이내로 Chromium을 다시 시작해 주세요}}</translation>
 <translation id="8453117565092476964">설치 프로그램 아카이브가 손상되었거나 잘못되었습니다. Chromium을 다시 다운로드하세요.</translation>
 <translation id="8493179195440786826">Chromium이 이전 버전임</translation>
+<translation id="8558383651099478961">부모님이 Chromium의 ‘사이트, 앱, 확장 프로그램에 대한 권한’을 사용 중지하셨습니다. 이 <ph name="EXTENSION_TYPE_PARAMETER" /> 추가가 허용되지 않습니다.</translation>
 <translation id="8568283329061645092">Google 계정으로 로그인하면 Chromium에서 비밀번호를 확인할 수 있습니다.</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Chromium 실행 중...</translation>

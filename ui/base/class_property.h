@@ -10,8 +10,8 @@
 #include <map>
 #include <set>
 
+#include "base/component_export.h"
 #include "base/time/time.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/base/ui_base_types.h"
 
 // This header should be included by code that defines ClassProperties.
@@ -64,7 +64,7 @@ class PropertyHelper;
 
 }
 
-class UI_BASE_EXPORT PropertyHandler {
+class COMPONENT_EXPORT(UI_BASE) PropertyHandler {
  public:
   PropertyHandler();
   PropertyHandler(PropertyHandler&& other);
@@ -166,7 +166,7 @@ class ClassPropertyCaster<base::TimeDelta> {
 
 namespace subtle {
 
-class UI_BASE_EXPORT PropertyHelper {
+class COMPONENT_EXPORT(UI_BASE) PropertyHelper {
  public:
   template<typename T>
   static void Set(::ui::PropertyHandler* handler,

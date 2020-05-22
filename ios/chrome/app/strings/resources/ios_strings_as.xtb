@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1650222530560417226">সকলো টেবৰ পৰা ভৱিষ্যতৰ JavaScriptৰ কনছ'লৰ লগ আৰু আসোঁৱাহ সংগ্ৰহ কৰিবলৈ "লগ কৰা আৰম্ভ কৰক" বুটামটো টিপক। এই পৃষ্ঠাটো বন্ধ নকৰা বা "লগ কৰা বন্ধ কৰক" বুটামটো নিটিপা পর্যন্ত লগসমূহ সংগ্ৰহ কৰা হ'ব (আৰু কেৱল মেম'ৰীত ষ্ট'ৰ কৰা হ'ব)।</translation>
 <translation id="1657011748321897393">আপুনি বৰ্তমান নেটৱৰ্কটো সৈতে সংযোজিত হৈ থকা নাই বাবে শ্বেয়াৰ কৰিব পৰা নগ’ল।</translation>
+<translation id="1657641691196698092">অৱৰোধ কৰা কুকিসমূহ</translation>
 <translation id="165877110639533037">কোনো খোলা টেব নাই</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />ৰ পৰা <ph name="TARGET_LANGUAGE" />লৈ</translation>
 <translation id="168715261339224929">আপোনাৰ বুকমাৰ্কসমূহ নিজৰ সকলো ডিভাইচতে পাবলৈ ছিংক অন কৰক।</translation>
@@ -132,7 +133,9 @@
 <translation id="2572712655377361602">কোনো ডিভাইচৰ নীতিয়ে আপোনাৰ ফট'লৈ এক্সেছ অৱৰোধ কৰিছে</translation>
 <translation id="2578571896248130439">ৱেবপৃষ্ঠা পঠিয়াওক</translation>
 <translation id="2584132361465095047">একাউণ্ট যোগ দিয়ক…</translation>
+<translation id="2600682495497606169">ছাইটৰ কুকিসমূহ মচক</translation>
 <translation id="2625189173221582860">পাছৱর্ডৰ প্ৰতিলিপি কৰা হ’ল</translation>
+<translation id="2647269890314209800">ব্যৱহাৰ হৈ থকা কুকিসমূহ</translation>
 <translation id="2648803196158606475">পঢ়া প্ৰৱিষ্টি মচক</translation>
 <translation id="2653659639078652383">দাখিল কৰক</translation>
 <translation id="2690858294534178585">কেমেৰা ব্যৱহাৰ হৈ আছে</translation>
@@ -331,6 +334,7 @@
 <translation id="5234764350956374838">অগ্ৰাহ্য কৰক</translation>
 <translation id="5245322853195994030">ছিংক বাতিল কৰক</translation>
 <translation id="5271549068863921519">পাছৱৰ্ড ছেভ কৰক</translation>
+<translation id="5295239312320826323"><ph name="USER_EMAIL" /> একাউণ্টটো আঁতৰাবনে?</translation>
 <translation id="5300589172476337783">দেখুৱাওক</translation>
 <translation id="5317780077021120954">ছেভ কৰক</translation>
 <translation id="5327248766486351172">নাম</translation>
@@ -417,6 +421,7 @@
 <translation id="6362362396625799311">কোনো ইনকগনিট’ টেব নাই</translation>
 <translation id="6363526231572697780">কোনো ব্যৱহাৰকাৰীৰ নাম নাই</translation>
 <translation id="6374469231428023295">আকৌ চেষ্টা কৰক</translation>
+<translation id="6377118281273296434">ছাইটৰ সুৰক্ষা</translation>
 <translation id="6380866119319257197">আপুনি যদি নিজৰ পাছফ্ৰেজটো পাহৰিছে বা এই ছেটিংটো সলনি কৰিব বিচাৰিছে তেন্তে <ph name="BEGIN_LINK" />ছিংক ৰিছেট কৰক<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">কার্ডত থকা নাম</translation>
 <translation id="6406506848690869874">ছিংক কৰক</translation>
@@ -521,11 +526,13 @@
 
 আপুনি যিহেতু আপোনাৰ একাউণ্টটো <ph name="HOSTED_DOMAIN" />এ পৰিচালনা কৰে, ছাইন আউট কৰিলে আপোনাৰ Chrome ডেটা এই ডিভাইচটোৰ পৰা মচা হ’ব। আপোনাৰ ছিংক কৰা ডেটা আপোনাৰ Google একাউণ্টত থাকিব।</translation>
 <translation id="7772032839648071052">পাছফ্ৰেজ নিশ্চিত কৰক</translation>
+<translation id="7778472311864276518">এই ডিভাইচটোৰ পৰা একাউণ্টটো আঁতৰাওক</translation>
 <translation id="7781011649027948662">পৃষ্ঠাখন অনুবাদ কৰিবনে?</translation>
 <translation id="7781829728241885113">কালি</translation>
 <translation id="778855399387580014">Chromeৰ নতুন টেবত সন্ধান আৰম্ভ কৰক।</translation>
 <translation id="7791543448312431591">যোগ কৰক</translation>
 <translation id="7828557259026017104">কুকিবোৰ হৈছে আপুনি চোৱা ৱেবছাইটসমূহে সৃষ্টি কৰা ফাইল। ছাইটসমূহে আপোনাৰ অগ্ৰাধিকাৰসমূহ মনত ৰাখিবলৈ সেইবোৰ ব্যৱহাৰ কৰে। তৃতীয় পক্ষৰ কুকিসমূহ অন্য ছাইটসমূহে সৃষ্টি কৰে। এই ছাইটসমূহ আপুনি চোৱা ৱেবছাইটটোত দেখা পোৱা বিজ্ঞাপন অথবা প্ৰতিচ্ছবিবোৰৰ দৰে কিছুমান সমলৰ গৰাকী।</translation>
+<translation id="7839985698273989086">অফলাইন পৃষ্ঠা</translation>
 <translation id="7840771868269352570">আপুনি বাছনি কৰা বস্তুটো আঁতৰোৱা হ’ব।</translation>
 <translation id="7856733331829174190">ডাউনল'ড কৰিব পৰা নগ'ল</translation>
 <translation id="7859704718976024901">ব্ৰাউজিঙৰ ইতিহাস</translation>
@@ -566,6 +573,7 @@
 <translation id="8428045167754449968">নগৰ / চহৰ</translation>
 <translation id="8428213095426709021">ছেটিংসমূহ</translation>
 <translation id="8458397775385147834">১টা বস্তু মচা হ’ল</translation>
+<translation id="8459333855531264009">সুৰক্ষিত নহয়</translation>
 <translation id="8487667956631253959">অন কৰা আছে</translation>
 <translation id="8487700953926739672">অফলাইনত উপলব্ধ</translation>
 <translation id="8490978609246021741">সালসলনিবোৰ ছেভ কৰক</translation>
@@ -592,6 +600,7 @@
 <translation id="8741995161408053644"><ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />ত আপোনাৰ Google একাউণ্টৰ অন্য ধৰণৰ ব্ৰাউজিঙৰ ইতিহাস থাকিব পাৰে।</translation>
 <translation id="8756969031206844760">পাছৱৰ্ড আপডে’ট কৰিবনে?</translation>
 <translation id="8775144690796719618">অমান্য URL</translation>
+<translation id="8803639129939845298">সুৰক্ষিত</translation>
 <translation id="8820817407110198400">বুকমার্কসমূহ</translation>
 <translation id="8840513115188359703">আপোনাক নিজৰ Google Accountৰ পৰা ছাইন আউট কৰোৱা নহয়।</translation>
 <translation id="8870413625673593573">শেহতীয়াকৈ বন্ধ কৰা</translation>

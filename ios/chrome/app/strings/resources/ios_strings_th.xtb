@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">ประวัติการเข้าชม</translation>
 <translation id="1650222530560417226">แตะปุ่ม "เริ่มบันทึก" เพื่อรวบรวมบันทึกและข้อผิดพลาดของคอนโซล JavaScript ในอนาคตจากทุกแท็บ ระบบจะรวบรวมบันทึก (และเก็บไว้ในหน่วยความจำเท่านั้น) จนกว่าหน้านี้จะปิดหรือมีการแตะ "หยุดบันทึก"</translation>
 <translation id="1657011748321897393">การแชร์ล้มเหลวเนื่องจากคุณไม่ได้เชื่อมต่อเครือข่าย</translation>
+<translation id="1657641691196698092">คุกกี้ที่บล็อก</translation>
 <translation id="165877110639533037">ไม่มีแท็บที่เปิดไว้</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" />เป็น<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">เปิดการซิงค์เพื่อรับบุ๊กมาร์กในอุปกรณ์ทุกเครื่องของคุณ</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">นโยบายของอุปกรณ์บล็อกการเข้าถึงรูปภาพของคุณ</translation>
 <translation id="2578571896248130439">ส่งหน้าเว็บ</translation>
 <translation id="2584132361465095047">เพิ่มบัญชี…</translation>
+<translation id="2600682495497606169">ล้างคุกกี้ของเว็บไซต์</translation>
 <translation id="2625189173221582860">คัดลอกรหัสผ่านแล้ว</translation>
 <translation id="2647269890314209800">คุกกี้ที่ใช้งานอยู่</translation>
 <translation id="2648803196158606475">ลบรายการที่อ่านแล้ว</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">ปิด</translation>
 <translation id="5245322853195994030">ยกเลิกการซิงค์</translation>
 <translation id="5271549068863921519">บันทึกรหัสผ่าน</translation>
+<translation id="5295239312320826323">นำบัญชี <ph name="USER_EMAIL" /> ออกใช่ไหม</translation>
 <translation id="5300589172476337783">แสดง</translation>
 <translation id="5317780077021120954">บันทึก</translation>
 <translation id="5327248766486351172">ชื่อ</translation>

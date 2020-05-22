@@ -84,6 +84,41 @@ AST_MATCHER(clang::TagDecl, isNotFreeStandingTagDecl) {
   return !tag_decl->isFreeStanding();
 }
 
+llvm::StringRef GetFilePath(const clang::SourceManager& source_manager,
+                            const clang::FieldDecl& field_decl) {
+  clang::SourceLocation loc = field_decl.getSourceRange().getBegin();
+  if (loc.isInvalid() || !loc.isFileID())
+    return llvm::StringRef();
+
+  clang::FileID file_id = source_manager.getDecomposedLoc(loc).first;
+  const clang::FileEntry* file_entry =
+      source_manager.getFileEntryForID(file_id);
+  if (!file_entry)
+    return llvm::StringRef();
+
+  return file_entry->getName();
+}
+
+AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
+  llvm::StringRef file_path =
+      GetFilePath(Finder->getASTContext().getSourceManager(), Node);
+
+  // Blink is part of the Chromium git repo, even though it contains
+  // "third_party" in its path.
+  if (file_path.contains("third_party/blink/"))
+    return false;
+
+  // V8 needs to be considered "third party", even though its paths do not
+  // contain the "third_party" substring.  In particular, the rewriter should
+  // not append |.get()| to references to |v8::RegisterState::pc|, because
+  // //v8/include/v8.h will *not* get rewritten.
+  if (file_path.contains("v8/include/"))
+    return true;
+
+  // Otherwise, just check if the paths contains the "third_party" substring.
+  return file_path.contains("third_party");
+}
+
 AST_MATCHER(clang::ClassTemplateSpecializationDecl, isImplicitSpecialization) {
   return !Node.isExplicitSpecialization();
 }
@@ -260,7 +295,9 @@ int main(int argc, const char* argv[]) {
   // - fields of lambda-supporting classes
   auto field_decl_matcher =
       fieldDecl(allOf(hasType(supported_pointer_types_matcher),
-                      hasUniqueTypeLoc(), unless(implicit_field_decl_matcher)))
+                      hasUniqueTypeLoc(),
+                      unless(anyOf(isInThirdPartyLocation(),
+                                   implicit_field_decl_matcher))))
           .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);

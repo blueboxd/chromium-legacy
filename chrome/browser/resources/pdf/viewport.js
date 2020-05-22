@@ -589,9 +589,7 @@ export class Viewport {
     };
   }
 
-  /**
-   * @param {number} newZoom The zoom level to zoom to.
-   */
+  /** @param {number} newZoom The zoom level to zoom to. */
   setZoom(newZoom) {
     this.fittingType_ = FittingType.NONE;
     this.mightZoom_(() => {
@@ -1269,15 +1267,13 @@ Viewport.PinchPhase = {
   PINCH_END: 4
 };
 
-/**
- * The increment to scroll a page by in pixels when up/down/left/right arrow
- * keys are pressed. Usually we just let the browser handle scrolling on the
- * window when these keys are pressed but in certain cases we need to simulate
- * these events.
- */
+// The increment to scroll a page by in pixels when up/down/left/right arrow
+// keys are pressed. Usually we just let the browser handle scrolling on the
+// window when these keys are pressed but in certain cases we need to simulate
+// these events.
 Viewport.SCROLL_INCREMENT = 40;
 
-/** The width of the page shadow around pages in pixels. */
+// The width of the page shadow around pages in pixels.
 Viewport.PAGE_SHADOW = {
   top: 3,
   bottom: 7,

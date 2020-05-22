@@ -204,6 +204,7 @@ Prek dhe mbaj shtypur një fjalë për ta kërkuar. Për të përsosur kërkimin
 <translation id="2647434099613338025">Shto gjuhën</translation>
 <translation id="2650751991977523696">Të shkarkohet skedari sërish?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# skedar audio}other{# skedarë audio}}</translation>
+<translation id="2656405586795711023">Aplikacionet e uebit</translation>
 <translation id="2677748264148917807">Largohu</translation>
 <translation id="2689830683995595741">Duke përdorur Chrome, ti pranon <ph name="BEGIN_LINK1" />Kushtet e shërbimit të Google<ph name="END_LINK1" /> dhe <ph name="BEGIN_LINK2" />Kushtet shtesë të shërbimit të Google Chrome dhe të sistemit operativ Chrome<ph name="END_LINK2" />. Zbatohet gjithashtu <ph name="BEGIN_LINK3" />"Njoftimi i privatësisë" për "Llogaritë e menaxhuara të Google" me Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Rifresko faqen</translation>
@@ -366,6 +367,7 @@ Vetëm ti mund të shohësh se çfarë po shikon kamera. Sajti nuk mund të shik
 <translation id="3997476611815694295">Hapësirë ruajtëse e parëndësishme</translation>
 <translation id="4000212216660919741">Shtëpia jashtë linje</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# orë}other{# orë}}</translation>
+<translation id="403687620286099920">Trokit për të hapur kodin QR</translation>
 <translation id="4046123991198612571">Kënga tjetër</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opsionet janë të disponueshme pranë kreut të ekranit</translation>
@@ -450,6 +452,7 @@ Llogaria jote e Google mund të ketë forma të tjera të historikut të shfleti
 <translation id="4749960740855309258">Hap një skedë të re</translation>
 <translation id="4759238208242260848">Shkarkimet</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 shkarkim përfundoi.}other{# shkarkime përfunduan.}}</translation>
+<translation id="478981486571169252">Do të shikosh statusin e identifikimit për <ph name="SITE_NAME" />, të dhënat e shfletimit dhe të dhënat e sajtit në Chrome.</translation>
 <translation id="4802417911091824046">Enkriptimi me frazën e kalimit nuk përfshin mënyrat e pagesës dhe adresat nga Google Pay.
 
 Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizimin<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5292796745632149097">Dërgo te</translation>
 <translation id="5304593522240415983">Kjo fushë nuk mund të jetë bosh</translation>
 <translation id="5308380583665731573">Lidh</translation>
+<translation id="5317780077021120954">Ruaj</translation>
 <translation id="5324858694974489420">Cilësimet prindërore</translation>
 <translation id="5327248766486351172">Emri</translation>
 <translation id="5342314432463739672">Kërkesat për autorizim</translation>
@@ -562,6 +566,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="5659593005791499971">Mail-i</translation>
 <translation id="5665379678064389456">Krijo ngjarje në <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Zëvendësoje kërkesën e një sajti uebi për të parandaluar zmadhimin</translation>
+<translation id="5681394891799747640">Kodi QR nuk mund të shkarkohet</translation>
 <translation id="5684874026226664614">Mos! Kjo faqe nuk mund të përkthehej.</translation>
 <translation id="5686790454216892815">Emri i skedarit është tepër i gjatë</translation>
 <translation id="5694049548840660018">Kthehu te faqja kryesore me lehtësi</translation>
@@ -610,6 +615,7 @@ Për të ndryshuar këtë cilësim, <ph name="BEGIN_LINK" />rivendos sinkronizim
 <translation id="6042308850641462728">Më shumë</translation>
 <translation id="604996488070107836">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të një gabimi të panjohur.</translation>
 <translation id="605721222689873409">VV</translation>
+<translation id="6059830886158432458">Kontrollo historitë dhe aktivitetin tënd këtu</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> orë të mbetura</translation>
 <translation id="6108923351542677676">Konfigurimi në vazhdim...</translation>
 <translation id="6111020039983847643">të dhënat e përdorura</translation>
@@ -633,6 +639,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="629730747756840877">Llogaria</translation>
 <translation id="6297765934698848803">Organizata që menaxhon pajisjen tënde ka çaktivizuar kamerën tënde.</translation>
 <translation id="6303969859164067831">Dil dhe çaktivizo sinkronizimin</translation>
+<translation id="6312687380483398334">Aplikacionet e uebit (në qetësi)</translation>
 <translation id="6316139424528454185">Versioni i Android s'mbështetet</translation>
 <translation id="6324034347079777476">Sinkronizimi i sistemit Android u çaktivizua</translation>
 <translation id="6333140779060797560">Ndaje nëpërmjet <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="6482749332252372425">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të mungesës së hapësirës ruajtëse.</translation>
 <translation id="6496823230996795692">Për të përdorur <ph name="APP_NAME" /> për herë të parë, lidhu me internetin.</translation>
 <translation id="6508722015517270189">Rinis Chrome</translation>
+<translation id="6527303717912515753">Ndaj</translation>
 <translation id="6532866250404780454">Sajtet që viziton në Chrome nuk do të shfaqen. Të gjithë kohëmatësit e sajtit do të fshihen.</translation>
 <translation id="6534565668554028783">Google kërkoi shumë kohë për t'u përgjigjur</translation>
 <translation id="6539092367496845964">Ndodhi një gabim. Provo përsëri më vonë.</translation>
@@ -794,6 +802,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7605594153474022051">Sinkronizimi nuk po funksionon.</translation>
 <translation id="7606077192958116810">"Modaliteti i lehtë" është aktiv. Menaxhoje te "Cilësimet".</translation>
 <translation id="7612619742409846846">U identifikove te Google si</translation>
+<translation id="7614971007231847352">Kodi QR u shkarkua</translation>
 <translation id="7619072057915878432">Shkarkimi i <ph name="FILE_NAME" /> dështoi për shkak të problemeve të rrjetit.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Kërko ndihmë<ph name="END_LINK1" /> ose <ph name="BEGIN_LINK2" />skano sërish<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Mirë se vjen në Chrome</translation>
@@ -821,6 +830,7 @@ Për shembull, disa sajte uebi mund t'i përgjigjen kësaj kërkese duke të tre
 <translation id="7821588508402923572">Kursimet e të dhënave të tua do të shfaqen këtu</translation>
 <translation id="7835852323729233924">Po luan media</translation>
 <translation id="783819812427904514">Aktivizo zërin e videos</translation>
+<translation id="7846296061357476882">Shërbimet e Google</translation>
 <translation id="784934925303690534">Shtrirja kohore</translation>
 <translation id="7851858861565204677">Pajisjet e tjera</translation>
 <translation id="7875915731392087153">Krijo mail</translation>

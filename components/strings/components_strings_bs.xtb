@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> želi trajno pohraniti veliku količinu podataka na vaš uređaj</translation>
 <translation id="1032854598605920125">Okreni u smjeru kretanja kazaljki na satu</translation>
 <translation id="1036348656032585052">Isključi</translation>
+<translation id="1038106730571050514">Prikaži prijedloge</translation>
 <translation id="1038842779957582377">nepoznato ime</translation>
 <translation id="1041998700806130099">Poruka u tabeli za posao</translation>
 <translation id="1050038467049342496">Zatvorite druge aplikacije</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Pomak slike Y</translation>
 <translation id="17513872634828108">Otvorene kartice</translation>
 <translation id="1752021286346845558">Poštansko sanduče 8</translation>
-<translation id="1752483581718172048">Sakrijte prijedloge</translation>
 <translation id="1753706481035618306">Broj stranice</translation>
 <translation id="1763864636252898013">Ovaj server nije mogao potvrditi da je ovo domena <ph name="DOMAIN" />. Operativni sistem vašeg uređaja ne smatra njenu potvrdu sigurnosti pouzdanom. Uzrok može biti u pogrešnoj konfiguraciji ili da je napadač presreo vašu vezu.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Probajte pokrenuti Windows mrežnu dijagnostiku<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="2666092431469916601">Gornji</translation>
 <translation id="2666117266261740852">Zatvori ostale kartice ili aplikacije</translation>
 <translation id="2674170444375937751">Jeste li sigurni da želite izbrisati ove stranice iz historije?</translation>
+<translation id="2674804415323431591">Sakrij prijedloge</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Napusti</translation>
 <translation id="2684561033061424857">11 x 12</translation>
@@ -602,7 +603,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="3539171420378717834">Zadrži kopiju ove kartice na ovom uređaju</translation>
 <translation id="3558573058928565255">Dan</translation>
 <translation id="3566021033012934673">Vaša veza nije privatna</translation>
-<translation id="3567778190852720481">Ne možete se prijaviti poslovnim računom (poslovni račun ne ispunjava uvjete).</translation>
+<translation id="3567778190852720481">Nije se moguće prijaviti s računom preduzeća (račun preduzeća ne ispunjava uslove).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Na ugrađenoj stranici na web lokaciji <ph name="SITE" /> se navodi</translation>
 <translation id="3581089476000296252">Chrome će vas obavijestiti kada ova stranica bude spremna. &lt;a&gt;Otkaži&lt;/a&gt;</translation>
@@ -879,7 +880,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Pokrenuti Mrežnu dijagnostiku za Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Ponovo učitaj pravila</translation>
 <translation id="4728558894243024398">Platforma</translation>
-<translation id="4731638775147756694">Administrator je blokirao ovu aplikaciju</translation>
+<translation id="4731638775147756694">Vaš administrator je blokirao ovu aplikaciju</translation>
 <translation id="4731967714531604179">Prc2 (Koverta)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> želi koristiti lokciju vašeg uređaja</translation>
 <translation id="4736825316280949806">Ponovo pokrenite Chromium</translation>
@@ -1082,6 +1083,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="5523118979700054094">Naziv pravila</translation>
 <translation id="55293785478302737">Uvez uz rub</translation>
 <translation id="553484882784876924">Prc6 (Koverta)</translation>
+<translation id="5536214594743852365">Prikaži odjeljak "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Baza</translation>
 <translation id="5540224163453853">Traženi članak nije pronađen.</translation>
 <translation id="5541086400771735334">Poštansko sanduče 7</translation>
@@ -1250,7 +1252,7 @@ To će u suprotnom biti blokirano prema vašim postavkama privatnosti. To će om
 <translation id="6263376278284652872">Oznake domene <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Nazad na sigurno</translation>
 <translation id="6266934640124581640">Svijetlotirkiznoplava</translation>
-<translation id="6272383483618007430">Google ažuriranje</translation>
+<translation id="6272383483618007430">Google Ažuriranje</translation>
 <translation id="6276112860590028508">Stranice s vašeg spiska za čitanje će se pojaviti ovdje</translation>
 <translation id="627746635834430766">Da sljedeći put brže izvršite plaćanje, sačuvajte adresu kartice i adresu za naplatu na svoj Google račun.</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />neće čuvati<ph name="END_EMPHASIS" /> sljedeće podatke:
@@ -1481,6 +1483,7 @@ Dodatni detalji:
 <translation id="7313965965371928911">Upozorenja iz <ph name="BEGIN_LINK" />Sigurnog pregledanja<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoć s povezivanjem</translation>
+<translation id="7323804146520582233">Sakrijte odjeljak "<ph name="SECTION" />"</translation>
 <translation id="733354035281974745">Zaobilaženje lokalnog računa uređaja</translation>
 <translation id="7333654844024768166">Upravo ste unijeli lozinku na obmanjujućoj web lokaciji. Chromium preporučuje da odete na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> i druge web lokacije na kojima koristite ovu lozinku i odmah je promijenite.</translation>
 <translation id="7334320624316649418">&amp;Ponovi preuređivanje</translation>
@@ -1759,7 +1762,6 @@ Dodatni detalji:
 <translation id="8425213833346101688">Izmijeni</translation>
 <translation id="8428213095426709021">Postavke</translation>
 <translation id="8433057134996913067">Time ćete se odjaviti s većine web-lokacija.</translation>
-<translation id="8433678324664858900">Pokaži prijedloge</translation>
 <translation id="8437238597147034694">&amp;Poništi premještanje</translation>
 <translation id="8457125768502047971">Neodređeno</translation>
 <translation id="8461694314515752532">Šifrirajte sinhronizirane podatke svojim pristupnim izrazom</translation>

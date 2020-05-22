@@ -44,7 +44,7 @@ struct CC_EXPORT MainThreadScrollingReason {
     // screen position; transparency and transforms break this.
     kNonCompositedReasonsFirst = 17,
     kHasTransformAndLCDText = 1 << 17,
-    kBackgroundNotOpaqueInRectAndLCDText = 1 << 18,
+    kNotOpaqueForTextAndLCDText = 1 << 18,
     kCantPaintScrollingBackground = 1 << 19,
     kHasClipRelatedProperty = 1 << 20,
     kNonCompositedReasonsLast = 22,
@@ -68,7 +68,7 @@ struct CC_EXPORT MainThreadScrollingReason {
   };
 
   static const uint32_t kNonCompositedReasons =
-      kHasTransformAndLCDText | kBackgroundNotOpaqueInRectAndLCDText |
+      kHasTransformAndLCDText | kNotOpaqueForTextAndLCDText |
       kCantPaintScrollingBackground | kHasClipRelatedProperty;
 
   // Returns true if the given MainThreadScrollingReason can be set by the main

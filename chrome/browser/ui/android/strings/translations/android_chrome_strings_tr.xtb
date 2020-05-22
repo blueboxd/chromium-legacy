@@ -204,6 +204,7 @@ Arama yapmak için herhangi bir kelimeye dokunup basılı tutun. Aramanızı has
 <translation id="2647434099613338025">Dil ekle</translation>
 <translation id="2650751991977523696">Dosya tekrar indirilsin mi?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Ses dosyası}other{# Ses dosyası}}</translation>
+<translation id="2656405586795711023">Web uygulamaları</translation>
 <translation id="2677748264148917807">Çık</translation>
 <translation id="2689830683995595741">Chrome'u kullanarak <ph name="BEGIN_LINK1" />Google Hizmet Şartları<ph name="END_LINK1" /> ile <ph name="BEGIN_LINK2" />Google Chrome ve Chrome OS Ek Hizmet Şartları<ph name="END_LINK2" />'nı kabul etmiş olursunuz. <ph name="BEGIN_LINK3" />Family Link ile Yönetilen Google Hesapları İçin Gizlilik Uyarısı<ph name="END_LINK3" /> da geçerlidir.</translation>
 <translation id="2707726405694321444">Sayfayı yenile</translation>
@@ -366,6 +367,7 @@ Kameranızın neye baktığını yalnızca siz görebilirsiniz. Site, kameranız
 <translation id="3997476611815694295">Önemli olmayan depolama alanı</translation>
 <translation id="4000212216660919741">Çevrimdışı Ana Sayfa</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# sa.}other{# sa.}}</translation>
+<translation id="403687620286099920">QR kodunu açmak için dokunun</translation>
 <translation id="4046123991198612571">Sonraki parça</translation>
 <translation id="4056223980640387499">Sepya Tonu</translation>
 <translation id="4060598801229743805">Ekranın üst kısmına yakın bir yerde seçenekler vardır</translation>
@@ -450,6 +452,7 @@ Diğer Google hizmetlerinden yapılan aramalar ve etkinlikler gibi Google hesab�
 <translation id="4749960740855309258">Yeni sekme açar</translation>
 <translation id="4759238208242260848">İndirilenler</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 indirme işlemi tamamlandı.}other{# indirme işlemi tamamlandı.}}</translation>
+<translation id="478981486571169252"><ph name="SITE_NAME" /> sitenizin oturum açma durumunu, tarama verilerini ve site verilerini Chrome'da görürsünüz.</translation>
 <translation id="4802417911091824046">Parolayla şifreleme, Google Pay'deki adresleri ve ödeme yöntemlerini kapsamaz.
 
 Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5292796745632149097">Alıcılar</translation>
 <translation id="5304593522240415983">Bu alan boş olamaz</translation>
 <translation id="5308380583665731573">Bağlan</translation>
+<translation id="5317780077021120954">Kaydet</translation>
 <translation id="5324858694974489420">Ebeveyn Ayarları</translation>
 <translation id="5327248766486351172">Ad</translation>
 <translation id="5342314432463739672">İzin istekleri</translation>
@@ -562,6 +566,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5659593005791499971">E-posta</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> adlı uygulamada etkinlik oluştur</translation>
 <translation id="5668404140385795438">Web sitesinin yakınlaştırmayı önleme isteğini geçersiz kıl</translation>
+<translation id="5681394891799747640">QR kodu indirilemiyor</translation>
 <translation id="5684874026226664614">Hata! Bu sayfa çevrilemedi.</translation>
 <translation id="5686790454216892815">Dosya adı çok uzun</translation>
 <translation id="5694049548840660018">Ana sayfaya kolayca geri dönün</translation>
@@ -610,6 +615,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6042308850641462728">Daha fazla</translation>
 <translation id="604996488070107836">Bilinmeyen bir hata nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">Haberlerinizi ve aktivitenizi buradan yönetin</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> saat kaldı</translation>
 <translation id="6108923351542677676">Kurulum devam ediyor…</translation>
 <translation id="6111020039983847643">kullanılan veri miktarı</translation>
@@ -633,6 +639,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="629730747756840877">Hesap</translation>
 <translation id="6297765934698848803">Cihazınızı yöneten kuruluş, kameranızı kapattı.</translation>
 <translation id="6303969859164067831">Oturumu ve senkronizasyonu kapat</translation>
+<translation id="6312687380483398334">Web uygulamaları (sessiz)</translation>
 <translation id="6316139424528454185">Android sürümü desteklenmiyor</translation>
 <translation id="6324034347079777476">Android sistem senkronizasyonu devre dışı</translation>
 <translation id="6333140779060797560">Paylaşım yöntemi: <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="6482749332252372425">Depolama alanı yetersiz olduğu için <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> uygulamasını ilk kez kullanmak için lütfen internete bağlanın.</translation>
 <translation id="6508722015517270189">Chrome'u yeniden başlatın</translation>
+<translation id="6527303717912515753">Paylaş</translation>
 <translation id="6532866250404780454">Chrome'da ziyaret ettiğiniz siteler gösterilmez. Tüm site zamanlayıcıları silinir.</translation>
 <translation id="6534565668554028783">Google çok geç yanıt verdi</translation>
 <translation id="6539092367496845964">Bir sorun oldu. Daha sonra tekrar deneyin.</translation>
@@ -794,6 +802,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7605594153474022051">Senkronizasyon çalışmıyor</translation>
 <translation id="7606077192958116810">Basit mod açık. Bunu Ayarlar'dan yönetebilirsiniz.</translation>
 <translation id="7612619742409846846">Google'da şu hesapla oturum açıldı:</translation>
+<translation id="7614971007231847352">QR kodu indirildi</translation>
 <translation id="7619072057915878432">Ağ sorunları nedeniyle <ph name="FILE_NAME" /> dosyası indirilemedi.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Yardım alın<ph name="END_LINK1" /> veya <ph name="BEGIN_LINK2" />yeniden tarayın<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome'a Hoş Geldiniz</translation>
@@ -821,6 +830,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7821588508402923572">Veri tasarruflarınız burada görünür</translation>
 <translation id="7835852323729233924">Medya oynatılıyor/çalınıyor</translation>
 <translation id="783819812427904514">Videonun sesini aç</translation>
+<translation id="7846296061357476882">Google hizmetleri</translation>
 <translation id="784934925303690534">Zaman aralığı</translation>
 <translation id="7851858861565204677">Diğer cihazlar</translation>
 <translation id="7875915731392087153">E-posta oluşturun</translation>

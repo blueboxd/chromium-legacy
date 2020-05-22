@@ -128,14 +128,12 @@ export class ContentController {
   unload() {}
 }
 
-/**
- * Controller for annotation mode, on Chrome OS only. Fires the following events
- * from its event target:
- * has-unsaved-changes: Fired to indicate there are ink annotations that have
- *     not been saved.
- * set-annotation-undo-state: Contains information about whether undo or redo
- *     options are available.
- */
+// Controller for annotation mode, on Chrome OS only. Fires the following events
+// from its event target:
+// has-unsaved-changes: Fired to indicate there are ink annotations that have
+//     not been saved.
+// set-annotation-undo-state: Contains information about whether undo or redo
+//     options are available.
 export class InkController extends ContentController {
   /** @param {!Viewport} viewport */
   constructor(viewport) {
@@ -227,11 +225,9 @@ export class InkController extends ContentController {
   }
 }
 
-/**
- * PDF plugin controller, responsible for communicating with the embedded plugin
- * element. Dispatches a 'plugin-message' event containing the message from the
- * plugin, if a message type not handled by this controller is received.
- */
+// PDF plugin controller, responsible for communicating with the embedded plugin
+// element. Dispatches a 'plugin-message' event containing the message from the
+// plugin, if a message type not handled by this controller is received.
 export class PluginController extends ContentController {
   /**
    * @param {!HTMLEmbedElement} plugin
@@ -476,7 +472,6 @@ export class PluginController extends ContentController {
 
   /**
    * Handles the pdf file buffer received from the plugin.
-   *
    * @param {!SaveDataMessageData} messageData data of the message event.
    * @private
    */

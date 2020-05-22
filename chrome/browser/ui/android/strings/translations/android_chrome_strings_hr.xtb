@@ -519,6 +519,7 @@ Da biste promijenili tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizac
 <translation id="5292796745632149097">Pošalji na uređaj</translation>
 <translation id="5304593522240415983">To polje ne može biti prazno</translation>
 <translation id="5308380583665731573">Povežite se</translation>
+<translation id="5317780077021120954">Spremi</translation>
 <translation id="5324858694974489420">Postavke nadređenog računa</translation>
 <translation id="5327248766486351172">Naziv</translation>
 <translation id="5342314432463739672">Zahtjevi za dopuštenja</translation>
@@ -670,6 +671,7 @@ Na primjer, neke web-lokacije na taj zahtjev mogu odgovoriti tako da vam prikaž
 <translation id="6482749332252372425">Preuzimanje datoteke <ph name="FILE_NAME" /> nije uspjelo zbog nedostatka prostora.</translation>
 <translation id="6496823230996795692">Za prvu upotrebu aplikacije <ph name="APP_NAME" /> povežite se s internetom.</translation>
 <translation id="6508722015517270189">Ponovo pokrenite Chrome</translation>
+<translation id="6527303717912515753">Podijeli</translation>
 <translation id="6532866250404780454">Web-lokacije koje otvorite u Chromeu neće se prikazivati. Izbrisat će se svi tajmeri za web-lokacije.</translation>
 <translation id="6534565668554028783">Googleu je bilo potrebno previše vremena za odgovor</translation>
 <translation id="6539092367496845964">Nešto nije u redu. Pokušajte ponovo kasnije.</translation>

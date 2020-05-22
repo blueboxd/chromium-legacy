@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Batteria carica</translation>
 <translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> creato</translation>
 <translation id="3606978283550408104">Display Braille collegato.</translation>
+<translation id="3616883743181209306">Menu spostato nell'angolo in alto a destra dello schermo.</translation>
 <translation id="3621202678540785336">Ingresso</translation>
 <translation id="3621712662352432595">Impostazioni audio</translation>
 <translation id="3626281679859535460">Luminosità</translation>
 <translation id="3631369015426612114">Consenti notifiche da:</translation>
 <translation id="3638400994746983214">Attiva/disattiva Schermata sulla privacy. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733">Utente gestito da <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Acquisisci area</translation>
 <translation id="371370241367527062">Microfono anteriore</translation>
@@ -406,6 +408,7 @@
 <translation id="6018164090099858612">Uscita dalla modalità di mirroring</translation>
 <translation id="602001110135236999">Scorri a sinistra</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />, gestita dall'amministratore</translation>
+<translation id="6030495522958826102">Menu spostato nell'angolo in basso a sinistra dello schermo.</translation>
 <translation id="6040143037577758943">Chiudi</translation>
 <translation id="6043212731627905357">Questo monitor non è compatibile con il tuo dispositivo <ph name="DEVICE_TYPE" /> (il monitor non è supportato).</translation>
 <translation id="6043994281159824495">Esci ora</translation>
@@ -504,6 +507,7 @@
 <translation id="7143207342074048698">Connessione</translation>
 <translation id="7165278925115064263">ALT + MAIUSC + K</translation>
 <translation id="7168224885072002358">Ripristino della risoluzione precedente tra <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">Menu spostato nell'angolo in alto a sinistra dello schermo.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. È richiesto il riavvio del Chromebook per installare un aggiornamento. L'operazione può richiedere fino a 1 minuto.</translation>
 <translation id="7256634071279256947">Microfono posteriore</translation>
 <translation id="726276584504105859">Trascina qui per utilizzare la modalità Schermo diviso</translation>
@@ -614,6 +618,7 @@
 <translation id="8513108775083588393">Rotazione automatica</translation>
 <translation id="8517041960877371778">Il tuo dispositivo <ph name="DEVICE_TYPE" /> potrebbe non caricarsi mentre è acceso.</translation>
 <translation id="8563862697512465947">Impostazioni di notifica</translation>
+<translation id="857201607579416096">Menu spostato nell'angolo in basso a destra dello schermo.</translation>
 <translation id="8627191004499078455">Connesso a <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Impostazioni di accessibilità</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />, gestita dall'amministratore</translation>

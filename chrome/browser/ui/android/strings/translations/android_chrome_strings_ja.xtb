@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">言語の追加</translation>
 <translation id="2650751991977523696">ファイルをもう一度ダウンロードしますか？</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# 件の音声ファイル}other{# 件の音声ファイル}}</translation>
+<translation id="2656405586795711023">ウェブアプリ</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2689830683995595741">Chrome を使用すると、<ph name="BEGIN_LINK1" />Google 利用規約<ph name="END_LINK1" />と <ph name="BEGIN_LINK2" />Google Chrome および Chrome OS 追加利用規約<ph name="END_LINK2" />に同意したことになります。また、<ph name="BEGIN_LINK3" />ファミリー リンクで管理する Google アカウントのプライバシーに関するお知らせ<ph name="END_LINK3" />も適用されます。</translation>
 <translation id="2707726405694321444">ページを更新</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">重要度の低いストレージ</translation>
 <translation id="4000212216660919741">オフライン ホーム</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# 時間}other{# 時間}}</translation>
+<translation id="403687620286099920">QR コードを開くにはタップしてください</translation>
 <translation id="4046123991198612571">次のトラック</translation>
 <translation id="4056223980640387499">セピア</translation>
 <translation id="4060598801229743805">画面の上部にあるオプション</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">新しいタブを開く</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 件のダウンロードが完了しました。}other{# 件のダウンロードが完了しました。}}</translation>
+<translation id="478981486571169252">Chrome での <ph name="SITE_NAME" /> のログイン ステータス、閲覧データ、サイトデータが表示されます。</translation>
 <translation id="4802417911091824046">パスフレーズ暗号化の対象に Google Pay のお支払い方法と住所は含まれません。
 
 この設定を変更する場合は<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />してください</translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">送信先</translation>
 <translation id="5304593522240415983">この項目は必須です</translation>
 <translation id="5308380583665731573">接続</translation>
+<translation id="5317780077021120954">保存</translation>
 <translation id="5324858694974489420">保護者設定</translation>
 <translation id="5327248766486351172">名前</translation>
 <translation id="5342314432463739672">権限のリクエスト</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">メール</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> で予定を作成</translation>
 <translation id="5668404140385795438">ウェブサイトのズーム防止リクエストを上書きします</translation>
+<translation id="5681394891799747640">QR コードをダウンロードできません</translation>
 <translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
 <translation id="5686790454216892815">ファイル名が長すぎます</translation>
 <translation id="5694049548840660018">ホームに簡単アクセス</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="604996488070107836">不明なエラーが発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">ここで記事やアクティビティを管理</translation>
 <translation id="60923314841986378">残り <ph name="HOURS" /> 時間</translation>
 <translation id="6108923351542677676">設定しています...</translation>
 <translation id="6111020039983847643">データ使用量</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">アカウント</translation>
 <translation id="6297765934698848803">デバイスの管理者がカメラをオフにしています。</translation>
 <translation id="6303969859164067831">ログアウトして同期をオフにする</translation>
+<translation id="6312687380483398334">ウェブアプリ（サイレント）</translation>
 <translation id="6316139424528454185">Android のバージョンはサポートされていません</translation>
 <translation id="6324034347079777476">Android システムの同期が無効です</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> で共有します</translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">ストレージの空き容量が不足しているため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> を初めて使用する場合は、インターネットに接続してください。</translation>
 <translation id="6508722015517270189">Chrome を再起動する</translation>
+<translation id="6527303717912515753">共有</translation>
 <translation id="6532866250404780454">Chrome でアクセスしたサイトは表示されなくなり、サイトに設定したタイマーはすべて削除されます。</translation>
 <translation id="6534565668554028783">Google からの応答に時間がかかりすぎています</translation>
 <translation id="6539092367496845964">エラーが発生しました。しばらくしてからもう一度お試しください。</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">同期が機能していません</translation>
 <translation id="7606077192958116810">ライトモードはオンです。[設定] で管理できます。</translation>
 <translation id="7612619742409846846">次のユーザーとして Google にログインしています</translation>
+<translation id="7614971007231847352">QR コードをダウンロードしました</translation>
 <translation id="7619072057915878432">ネットワーク障害が発生したため、<ph name="FILE_NAME" /> をダウンロードできませんでした。</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />ヘルプ<ph name="END_LINK1" />または<ph name="BEGIN_LINK2" />再スキャン<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">データ節約量がここに表示されます</translation>
 <translation id="7835852323729233924">再生中のメディア</translation>
 <translation id="783819812427904514">動画のミュートを解除</translation>
+<translation id="7846296061357476882">Google のサービス</translation>
 <translation id="784934925303690534">期間</translation>
 <translation id="7851858861565204677">他のデバイス</translation>
 <translation id="7875915731392087153">メールを作成</translation>

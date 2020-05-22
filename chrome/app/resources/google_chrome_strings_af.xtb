@@ -195,6 +195,7 @@ Google Chrome kan nie jou instellings terugstel nie.</translation>
 <translation id="6967962315388095737">Inkomende reël vir Google Chrome Beta om mDNS-verkeer toe te laat.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> vereis dat jy die volgende diensbepalings lees en aanvaar voor jy hierdie toestel gebruik. Hierdie bepalings verander, beperk of brei nie die Google Chrome-bedryfstelseldiensbepalings uit nie.</translation>
 <translation id="6989339256997917931">Google Chrome is opgedateer, maar jy het dit vir minstens 30 dae nie gebruik nie.</translation>
+<translation id="7062128746136194023">Jou ouer het "Toestemmings vir werwe, programme en uitbreidings" vir Chrome afgeskakel. Hierdie <ph name="EXTENSION_TYPE_PARAMETER" /> mag nie bygevoeg word nie.</translation>
 <translation id="7098166902387133879">Google Chrome gebruik tans jou mikrofoon.</translation>
 <translation id="7106741999175697885">Taakbestuurder – Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{'n Nuwe opdatering vir Chrome is beskikbaar en sal toegepas word sodra jy herbegin.}=1{'n Nuwe opdatering vir Chrome is beskikbaar en sal toegepas word sodra jy herbegin. Jou incognitovenster sal nie weer oopgemaak word nie.}other{'n Nuwe opdatering vir Chrome is beskikbaar en sal toegepas word sodra jy herbegin. Jou # incognitovensters sal nie weer oopgemaak word nie.}}</translation>
@@ -235,6 +236,7 @@ Google Chrome kan nie jou instellings terugstel nie.</translation>
 <translation id="8129812357326543296">Meer oor Google Chrome</translation>
 <translation id="8255190535488645436">Google Chrome gebruik jou kamera en mikrofoon.</translation>
 <translation id="8286862437124483331">Google Chrome probeer tans om wagwoorde te wys. Tik jou Windows-wagwoord in om dit toe te laat.</translation>
+<translation id="828798499196665338">Jou ouer het "Toestemmings vir werwe, programme en uitbreidings" vir Chrome afgeskakel. Hierdie <ph name="EXTENSION_TYPE_PARAMETER" /> mag nie geaktiveer word nie.</translation>
 <translation id="8290100596633877290">Sjoe! Google Chrome het omgeval. Herbegin nou?</translation>
 <translation id="8342675569599923794">Hierdie lêer is gevaarlik en daarom het Chrome dit geblokkeer.</translation>
 <translation id="8370517070665726704">Kopiereg <ph name="YEAR" /> Google LLC. Alle regte voorbehou.</translation>

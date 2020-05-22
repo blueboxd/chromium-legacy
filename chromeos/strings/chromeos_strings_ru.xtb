@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">Для завершения введите старый и новый пароли.</translation>
 <translation id="6106186594183574873">Для завершения введите старый пароль.</translation>
 <translation id="6146993107019042706">Чтобы завершить процедуру, введите новый пароль.</translation>
+<translation id="6517239166834772319">Возможности</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7658239707568436148">Отмена</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="808894953321890993">Сменить пароль</translation>
 <translation id="8208861521865154048">Преимущества</translation>
+<translation id="8701136875688985581">Этот аккаунт находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, из которого можно удаленно контролировать действия пользователя и менять настройки.</translation>
 <translation id="8747900814994928677">Подтверждение изменений</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Осталось попыток: <ph name="ATTEMPTS_LEFT" />.</translation>
 <translation id="910415269708673980">Обновите билет для аккаунта <ph name="PRINCIPAL_NAME" />.</translation>

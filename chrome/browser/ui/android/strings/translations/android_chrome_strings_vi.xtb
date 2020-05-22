@@ -204,6 +204,7 @@ Chạm và giữ từ bất kỳ để tìm kiếm. Để điều chỉnh nội 
 <translation id="2647434099613338025">Thêm ngôn ngữ</translation>
 <translation id="2650751991977523696">Tải tệp xuống lần nữa?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# tệp âm thanh}other{# tệp âm thanh}}</translation>
+<translation id="2656405586795711023">Ứng dụng web</translation>
 <translation id="2677748264148917807">Rời khỏi</translation>
 <translation id="2689830683995595741">Bằng việc sử dụng Chrome, bạn đồng ý với <ph name="BEGIN_LINK1" />Điều khoản dịch vụ của Google<ph name="END_LINK1" /> cũng như <ph name="BEGIN_LINK2" />Điều khoản dịch vụ bổ sung của Google Chrome và Chrome OS<ph name="END_LINK2" />. Bạn sẽ phải tuân thủ cả <ph name="BEGIN_LINK3" />Thông báo về quyền riêng tư cho Tài khoản Google được quản lý bằng Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Làm mới trang</translation>
@@ -366,6 +367,7 @@ Chỉ bạn mới biết được máy ảnh đang nhìn vào thứ gì. Trang w
 <translation id="3997476611815694295">Bộ nhớ không quan trọng</translation>
 <translation id="4000212216660919741">Nhà ở chế độ không kết nối Internet</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# giờ}other{# giờ}}</translation>
+<translation id="403687620286099920">Nhấn để mở mã QR</translation>
 <translation id="4046123991198612571">Bản nhạc tiếp theo</translation>
 <translation id="4056223980640387499">Màu nâu đỏ</translation>
 <translation id="4060598801229743805">Có các tùy chọn ở gần đầu màn hình</translation>
@@ -450,6 +452,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="4749960740855309258">Mở tab mới</translation>
 <translation id="4759238208242260848">Tệp đã tải xuống</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Đã tải xong 1 tệp xuống.}other{Đã tải xong # tệp xuống.}}</translation>
+<translation id="478981486571169252">Trong Chrome, bạn sẽ thấy trạng thái đăng nhập, dữ liệu duyệt web và dữ liệu trang web trên <ph name="SITE_NAME" />.</translation>
 <translation id="4802417911091824046">Việc mã hóa cụm mật khẩu không bao gồm địa chỉ và phương thức thanh toán từ Google Pay.
 
 Để thay đổi tùy chọn cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại tính năng đồng bộ hóa<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5292796745632149097">Gửi đến</translation>
 <translation id="5304593522240415983">Không được để trống trường này</translation>
 <translation id="5308380583665731573">Kết nối</translation>
+<translation id="5317780077021120954">Lưu</translation>
 <translation id="5324858694974489420">Cài đặt dành cho cha mẹ</translation>
 <translation id="5327248766486351172">Tên</translation>
 <translation id="5342314432463739672">Yêu cầu cấp quyền</translation>
@@ -562,6 +566,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5659593005791499971">Email</translation>
 <translation id="5665379678064389456">Tạo sự kiện trong <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ghi đè yêu cầu của trang web để chặn phóng to</translation>
+<translation id="5681394891799747640">Không thể tải mã QR xuống</translation>
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
 <translation id="5686790454216892815">Tên tệp quá dài</translation>
 <translation id="5694049548840660018">Dễ dàng quay lại trang chủ</translation>
@@ -610,6 +615,7 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="6042308850641462728">Xem thêm</translation>
 <translation id="604996488070107836">Không tải xuống được <ph name="FILE_NAME" /> do lỗi không xác định.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">Kiểm soát tin bài và hoạt động của bạn tại đây</translation>
 <translation id="60923314841986378">Còn <ph name="HOURS" /> giờ</translation>
 <translation id="6108923351542677676">Đang thiết lập…</translation>
 <translation id="6111020039983847643">dữ liệu đã dùng</translation>
@@ -633,6 +639,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="629730747756840877">Tài khoản</translation>
 <translation id="6297765934698848803">Tổ chức giữ quyền quản lý thiết bị của bạn đã tắt máy ảnh của bạn.</translation>
 <translation id="6303969859164067831">Đăng xuất và tắt đồng bộ hóa</translation>
+<translation id="6312687380483398334">Ứng dụng web (im lặng)</translation>
 <translation id="6316139424528454185">Phiên bản Android không được hỗ trợ</translation>
 <translation id="6324034347079777476">Đồng bộ hóa hệ thống Android đã bị tắt</translation>
 <translation id="6333140779060797560">Chia sẻ qua <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6482749332252372425">Tải xuống <ph name="FILE_NAME" /> không thành công do thiếu dung lượng bộ nhớ.</translation>
 <translation id="6496823230996795692">Để sử dụng <ph name="APP_NAME" /> lần đầu tiên, vui lòng kết nối Internet.</translation>
 <translation id="6508722015517270189">Khởi động lại Chrome</translation>
+<translation id="6527303717912515753">Chia sẻ</translation>
 <translation id="6532866250404780454">Các trang web bạn truy cập trên Chrome sẽ không hiển thị. Tất cả lịch hẹn giờ trên trang web sẽ bị xóa.</translation>
 <translation id="6534565668554028783">Google mất quá nhiều thời gian để phản hồi</translation>
 <translation id="6539092367496845964">Đã xảy ra lỗi. Hãy thử lại sau.</translation>
@@ -794,6 +802,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7605594153474022051">Đồng bộ hóa không hoạt động</translation>
 <translation id="7606077192958116810">Chế độ thu gọn đang bật. Quản lý chế độ này trong phần Cài đặt.</translation>
 <translation id="7612619742409846846">Đã đăng nhập vào Google bằng</translation>
+<translation id="7614971007231847352">Đã tải mã QR xuống</translation>
 <translation id="7619072057915878432">Tải xuống không thành công <ph name="FILE_NAME" /> do lỗi mạng.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Nhận trợ giúp<ph name="END_LINK1" /> hoặc <ph name="BEGIN_LINK2" />quét lại<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chào mừng bạn đến với Chrome</translation>
@@ -821,6 +830,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7821588508402923572">Mức tiết kiệm dữ liệu sẽ hiển thị tại đây</translation>
 <translation id="7835852323729233924">Đang phát nội dung nghe nhìn</translation>
 <translation id="783819812427904514">Bật tiếng video</translation>
+<translation id="7846296061357476882">Các dịch vụ của Google</translation>
 <translation id="784934925303690534">Phạm vi thời gian</translation>
 <translation id="7851858861565204677">Thiết bị khác</translation>
 <translation id="7875915731392087153">Tạo email</translation>

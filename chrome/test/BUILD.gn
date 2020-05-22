@@ -2478,11 +2478,12 @@ if (!is_android) {
           "../browser/ui/ash/assistant/assistant_test_mixin.h",
           "../browser/ui/ash/assistant/assistant_timers_browsertest.cc",
           "../browser/ui/ash/assistant/assistant_web_view_impl_browsertest.cc",
-          "../browser/ui/ash/assistant/test/fake_s3_server.cc",
-          "../browser/ui/ash/assistant/test/fake_s3_server.h",
         ]
 
-        deps += [ "//chromeos/assistant/internal:internal" ]
+        deps += [
+          "//chrome/browser/ui/ash/assistant/test_support",
+          "//chromeos/assistant/internal:internal",
+        ]
 
         data += [ "//chromeos/assistant/internal/test_data/" ]
 

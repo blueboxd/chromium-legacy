@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/icu_test_util.h"
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
+#include "chrome/browser/ui/ash/assistant/test_support/test_util.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "content/public/test/browser_test.h"
@@ -62,32 +63,7 @@ constexpr int kVersion = 1;
     run_loop.Run();                                                           \
   }
 
-// TODO(b:153496343): Move generic helpers to a more generic location for reuse.
 // Helpers ---------------------------------------------------------------------
-
-// Finds any descendents of |parent| with the desired |class_name| and pushes
-// them onto the strongly typed |result| vector.
-// NOTE: Callers are expected to ensure that casting to <T> makes sense.
-template <typename T>
-void FindDescendentsOfClass(views::View* parent,
-                            std::string class_name,
-                            std::vector<T*>* result) {
-  for (auto* child : parent->children()) {
-    if (child->GetClassName() == class_name)
-      result->push_back(static_cast<T*>(child));
-    FindDescendentsOfClass(child, class_name, result);
-  }
-}
-
-// Finds any descendents of |parent| with class name equal to the static class
-// variable |kViewClassName| and pushes them onto the strongly typed |result|
-// vector.
-// NOTE: This variant of FindDescendentsOfClass is safer than the three argument
-// variant and its usage should be preferred where possible.
-template <typename T>
-void FindDescendentsOfClass(views::View* parent, std::vector<T*>* result) {
-  FindDescendentsOfClass(parent, T::kViewClassName, result);
-}
 
 // Returns the status area widget.
 ash::StatusAreaWidget* FindStatusAreaWidget() {

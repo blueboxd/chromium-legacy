@@ -24,6 +24,7 @@
 <translation id="4787850887676698916">ਤੁਹਾਡੀਆਂ ਹੋਰ ਡੀਵਾਈਸਾਂ 'ਤੇ Chromium ਵਿੱਚ ਤੁਹਾਡੇ ਵੱਲੋਂ ਖੋਲ੍ਹੀਆਂ ਗਈਆਂ ਟੈਬਾਂ ਇੱਥੇ ਵਿਖਾਈ ਦੇਣਗੀਆਂ।</translation>
 <translation id="4999538639245140991">ਕਿਉਂਕਿ ਤੁਸੀਂ <ph name="SIGNOUT_MANAGED_DOMAIN" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਕਿਸੇ ਖਾਤੇ ਵਿੱਚੋਂ ਸਾਈਨ-ਆਊਟ ਕਰ ਰਹੇ ਹੋ, ਇਸ ਲਈ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਤੁਹਾਡੇ Chromium ਡਾਟੇ ਨੂੰ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ। ਤੁਹਾਡਾ ਡਾਟਾ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਰਹੇਗਾ।</translation>
 <translation id="5573014823074921752">Chromium ਨੁਕਤਾ। ਹੋਰ ਟੈਬ ਵਿਕਲਪਾਂ ਲਈ, ਟੂਲਬਾਰ ਵਿੱਚ 'ਟੈਬਾਂ ਦਿਖਾਓ' ਬਟਨ ਨੂੰ ਸਪਰਸ਼ ਕਰਕੇ ਰੱਖੋ, ਜੋ ਤੁਹਾਡੀ ਸਕ੍ਰੀਨ ਦੇ ਹੇਠਾਂ ਜਾਂ ਉੱਪਰ ਹੈ।</translation>
+<translation id="5777187867430702742">Chromium ਪੰਨਾ</translation>
 <translation id="5862307444128926510">Chromium ਵਿੱਚ ਸੁਆਗਤ ਹੈ</translation>
 <translation id="5945387852661427312">ਤੁਸੀਂ <ph name="DOMAIN" /> ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤੇ ਖਾਤੇ ਨਾਲ ਸਾਈਨ-ਇਨ ਕਰ ਰਹੇ ਹੋ ਅਤੇ ਉਸਦੇ ਪ੍ਰਸ਼ਾਸਕ ਨੂੰ ਆਪਣੇ Chromium ਡਾਟੇ ਦਾ ਕੰਟਰੋਲ ਦੇ ਰਹੇ ਹੋ। ਤੁਹਾਡਾ ਡਾਟਾ ਸਥਾਈ ਤੌਰ 'ਤੇ ਇਸ ਖਾਤੇ ਨਾਲ ਜੋੜ ਦਿੱਤਾ ਜਾਵੇਗਾ। Chromium ਤੋਂ ਸਾਈਨ-ਆਊਟ ਹੋਣ ਨਾਲ ਤੁਹਾਡਾ ਡਾਟਾ ਇਸ ਡੀਵਾਈਸ ਤੋਂ ਮਿਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ, ਪਰ ਇਹ ਤੁਹਾਡੇ Google ਖਾਤੇ ਵਿੱਚ ਸਟੋਰ ਰਹੇਗਾ।</translation>
 <translation id="602807004951640891">Chromium ਨੂੰ ਵਰਤ ਕੇ, ਤੁਸੀਂ <ph name="BEGIN_LINK_TOS" />ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK_TOS" /> ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।</translation>
@@ -44,6 +45,7 @@
 <translation id="8175055321229419309">ਨੁਕਤਾ: <ph name="BEGIN_LINK" />Chromium ਨੂੰ ਆਪਣੇ ਡੌਕ 'ਤੇ ਲੈ ਜਾਓ<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">ਆਪਣੇ ਟਿਕਾਣੇ ਦੇ ਆਧਾਰ 'ਤੇ Chromium ਵਿੱਚ ਬਿਹਤਰ Google ਅਨੁਭਵ ਪ੍ਰਾਪਤ ਕਰੋ।</translation>
 <translation id="8586442755830160949">ਕਾਪੀਰਾਈਟ <ph name="YEAR" /> The Chromium Authors. ਸਾਰੇ ਹੱਕ ਰਾਖਵੇਂ ਹਨ।</translation>
+<translation id="8776843108004031667">Chromium ਤੋਂ ਇਸ ਖਾਤੇ ਅਤੇ ਕਿਸੇ ਵੀ ਅਣਰੱਖਿਅਤ ਡਾਟੇ ਨੂੰ ਹਟਾ ਦਿੱਤਾ ਜਾਵੇਗਾ।</translation>
 <translation id="8809780021347235332">ਚਿੱਤਰਾਂ ਨੂੰ ਰੱਖਿਅਤ ਕਰਨ ਲਈ, Chromium ਨੂੰ ਤੁਹਾਡੀਆਂ ਫ਼ੋਟੋਆਂ ਦੀ ਵਰਤੋਂ ਕਰਨ ਦੇਣ ਵਾਸਤੇ ਸੈਟਿੰਗਾਂ 'ਤੇ ਟੈਪ ਕਰੋ</translation>
 <translation id="9022552996538154597">Chromium ਵਿੱਚ ਸਾਈਨ-ਇਨ ਕਰੋ</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

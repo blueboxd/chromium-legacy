@@ -24,6 +24,7 @@
 <translation id="4787850887676698916">Các tab bạn đã mở trong Chromium trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="4999538639245140991">Vì bạn đăng xuất khỏi tài khoản do <ph name="SIGNOUT_MANAGED_DOMAIN" /> quản lý, nên dữ liệu Chromium của bạn sẽ bị xóa khỏi thiết bị này. Dữ liệu của bạn sẽ vẫn còn trong Tài khoản Google của bạn.</translation>
 <translation id="5573014823074921752">Mẹo sử dụng Chromium. Để xem thêm các tùy chọn về tab, hãy chạm và giữ nút Hiển thị tab trên thanh công cụ ở đầu hoặc cuối màn hình.</translation>
+<translation id="5777187867430702742">Trang Chromium</translation>
 <translation id="5862307444128926510">Chào mừng bạn đến với Chromium</translation>
 <translation id="5945387852661427312">Bạn đang đăng nhập bằng tài khoản do <ph name="DOMAIN" /> quản lý và cấp cho quản trị viên quyền kiểm soát dữ liệu Chromium của bạn. Dữ liệu của bạn sẽ được liên kết vĩnh viễn với tài khoản này. Đăng xuất khỏi Chromium sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn được lưu trữ trong Tài khoản Google.</translation>
 <translation id="602807004951640891">Bằng việc sử dụng Chromium, bạn đồng ý với <ph name="BEGIN_LINK_TOS" />Điều khoản dịch vụ<ph name="END_LINK_TOS" />.</translation>
@@ -44,6 +45,7 @@
 <translation id="8175055321229419309">Mẹo: <ph name="BEGIN_LINK" />Di chuyển Chromium sang thanh dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Có được trải nghiệm Google tốt hơn trong Chromium dựa trên vị trí của bạn.</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
+<translation id="8776843108004031667">Tài khoản này và mọi dữ liệu chưa lưu sẽ bị xóa khỏi Chromium.</translation>
 <translation id="8809780021347235332">Để lưu hình ảnh, nhấn vào Cài đặt để cho phép Chromium sử dụng ảnh của bạn</translation>
 <translation id="9022552996538154597">Đăng nhập vào Chromium</translation>
 <translation id="985602178874221306">Tác giả Chromium</translation>

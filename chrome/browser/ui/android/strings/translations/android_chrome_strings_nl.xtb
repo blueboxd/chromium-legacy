@@ -204,6 +204,7 @@ Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden
 <translation id="2647434099613338025">Taal toevoegen</translation>
 <translation id="2650751991977523696">Bestand opnieuw downloaden?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# audiobestand}other{# audiobestanden}}</translation>
+<translation id="2656405586795711023">Web-apps</translation>
 <translation id="2677748264148917807">Verlaten</translation>
 <translation id="2689830683995595741">Door Chrome te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK1" />servicevoorwaarden van Google<ph name="END_LINK1" /> en met de <ph name="BEGIN_LINK2" />aanvullende servicevoorwaarden van Google Chrome en Chrome OS<ph name="END_LINK2" />. Ook is de <ph name="BEGIN_LINK3" />privacyverklaring voor Google-accounts die worden beheerd met Family Link<ph name="END_LINK3" /> van toepassing.</translation>
 <translation id="2707726405694321444">Pagina vernieuwen</translation>
@@ -366,6 +367,7 @@ Alleen jij kunt zien wat je camera ziet. De site kan de beelden van je camera ni
 <translation id="3997476611815694295">Onbelangrijke opslag</translation>
 <translation id="4000212216660919741">Homepage voor offline</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# uur}other{# uur}}</translation>
+<translation id="403687620286099920">Tik om de QR-code te openen</translation>
 <translation id="4046123991198612571">Volgend nummer</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opties beschikbaar boven aan het scherm</translation>
@@ -450,6 +452,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4749960740855309258">Een nieuw tabblad openen</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 download voltooid.}other{# downloads voltooid.}}</translation>
+<translation id="478981486571169252">Je ziet je inlogstatus, browsergegevens en sitegegevens van <ph name="SITE_NAME" /> in Chrome.</translation>
 <translation id="4802417911091824046">Wachtwoordzinversleuteling is niet van toepassing op betaalmethoden en adressen van Google Pay.
 
 <ph name="BEGIN_LINK" />Reset de synchronisatie<ph name="END_LINK" /> als je deze instelling wilt wijzigen.</translation>
@@ -516,6 +519,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5292796745632149097">Verzenden naar</translation>
 <translation id="5304593522240415983">Dit veld mag niet leeg zijn</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
+<translation id="5317780077021120954">Opslaan</translation>
 <translation id="5324858694974489420">Instellingen voor ouders</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5342314432463739672">Rechtenverzoeken</translation>
@@ -562,6 +566,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5659593005791499971">E-mailadres</translation>
 <translation id="5665379678064389456">Afspraak maken in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Negeer verzoek van website om inzoomen te voorkomen</translation>
+<translation id="5681394891799747640">Kan QR-code niet downloaden</translation>
 <translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
 <translation id="5686790454216892815">Bestandsnaam te lang</translation>
 <translation id="5694049548840660018">Makkelijk naar je homepage gaan</translation>
@@ -610,6 +615,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="6042308850641462728">Meer</translation>
 <translation id="604996488070107836">Download van <ph name="FILE_NAME" /> mislukt vanwege een onbekende fout.</translation>
 <translation id="605721222689873409">JJ</translation>
+<translation id="6059830886158432458">Beheer hier je artikelen en activiteiten</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> uur resterend</translation>
 <translation id="6108923351542677676">Instellen wordt uitgevoerd...</translation>
 <translation id="6111020039983847643">data gebruikt</translation>
@@ -633,6 +639,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="629730747756840877">Account</translation>
 <translation id="6297765934698848803">De organisatie die je apparaat beheert, heeft de camera uitgeschakeld.</translation>
 <translation id="6303969859164067831">Uitloggen en synchronisatie uitschakelen</translation>
+<translation id="6312687380483398334">Web-apps (stil)</translation>
 <translation id="6316139424528454185">Android-versie wordt niet ondersteund</translation>
 <translation id="6324034347079777476">Systeemsynchronisatie van Android uitgeschakeld</translation>
 <translation id="6333140779060797560">Delen via <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6482749332252372425">Downloaden van <ph name="FILE_NAME" /> is mislukt door te weinig opslagruimte.</translation>
 <translation id="6496823230996795692">Maak verbinding met internet als je <ph name="APP_NAME" /> voor het eerst wilt gebruiken.</translation>
 <translation id="6508722015517270189">Chrome opnieuw starten</translation>
+<translation id="6527303717912515753">Delen</translation>
 <translation id="6532866250404780454">Sites die je in Chrome bezoekt, worden niet weergegeven. Alle sitetimers worden verwijderd.</translation>
 <translation id="6534565668554028783">Het duurt te lang voordat Google reageert</translation>
 <translation id="6539092367496845964">Er is iets misgegaan. Probeer het later opnieuw.</translation>
@@ -794,6 +802,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7605594153474022051">Synchronisatie werkt niet</translation>
 <translation id="7606077192958116810">Lite-versie is ingeschakeld. Je kunt dit beheren via de instellingen.</translation>
 <translation id="7612619742409846846">Ingelogd bij Google als</translation>
+<translation id="7614971007231847352">QR-code gedownload</translation>
 <translation id="7619072057915878432">Downloaden van <ph name="FILE_NAME" /> is mislukt door netwerkfouten.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Hulp vragen<ph name="END_LINK1" /> of <ph name="BEGIN_LINK2" />opnieuw scannen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Welkom bij Chrome</translation>
@@ -821,6 +830,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7821588508402923572">Hier wordt getoond hoeveel data je bespaart</translation>
 <translation id="7835852323729233924">Media afspelen</translation>
 <translation id="783819812427904514">Dempen van video opheffen</translation>
+<translation id="7846296061357476882">Google-services</translation>
 <translation id="784934925303690534">Periode</translation>
 <translation id="7851858861565204677">Andere apparaten</translation>
 <translation id="7875915731392087153">E-mail maken</translation>

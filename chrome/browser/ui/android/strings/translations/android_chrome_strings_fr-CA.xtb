@@ -519,6 +519,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5292796745632149097">Envoyer à</translation>
 <translation id="5304593522240415983">Ce champ ne peut être vide</translation>
 <translation id="5308380583665731573">Connecter</translation>
+<translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5324858694974489420">Contrôle parental</translation>
 <translation id="5327248766486351172">Nom</translation>
 <translation id="5342314432463739672">Demandes d'autorisation</translation>
@@ -670,6 +671,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6482749332252372425">Échec du téléchargement de <ph name="FILE_NAME" /> en raison d'un manque d'espace de stockage.</translation>
 <translation id="6496823230996795692">Pour utiliser <ph name="APP_NAME" /> pour la première fois, veuillez vous connecter à Internet.</translation>
 <translation id="6508722015517270189">Redémarrer Google Chrome</translation>
+<translation id="6527303717912515753">Partager</translation>
 <translation id="6532866250404780454">Les sites que vous visitez dans Chrome ne s'afficheront pas. Toutes les minuteries de site seront supprimées.</translation>
 <translation id="6534565668554028783">Google a pris trop de temps à répondre</translation>
 <translation id="6539092367496845964">Une erreur s'est produite. Réessayez plus tard.</translation>

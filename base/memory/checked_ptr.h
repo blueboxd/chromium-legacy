@@ -167,14 +167,14 @@ class CheckedPtr {
     return *this;
   }
 
-  ALWAYS_INLINE CheckedPtr<T> operator++(int /* post_increment */) {
-    CheckedPtr<T> result = *this;
+  ALWAYS_INLINE CheckedPtr operator++(int /* post_increment */) {
+    CheckedPtr result = *this;
     ++(*this);
     return result;
   }
 
-  ALWAYS_INLINE CheckedPtr<T> operator--(int /* post_decrement */) {
-    CheckedPtr<T> result = *this;
+  ALWAYS_INLINE CheckedPtr operator--(int /* post_decrement */) {
+    CheckedPtr result = *this;
     --(*this);
     return result;
   }

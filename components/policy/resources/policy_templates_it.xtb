@@ -141,6 +141,9 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
       Se questo criterio viene impostato su True o non viene impostato, quando viene mostrato un messaggio di conferma di protocollo esterno, l'utente può selezionare "Consenti sempre" per ignorare i futuri messaggi di conferma per il protocollo su questo sito.
 
       Se questo criterio viene impostato su False, la casella di controllo "Consenti sempre" non viene visualizzata e l'utente riceverà un messaggio ogni volta che viene richiamato un protocollo esterno.</translation>
+<translation id="11903325225202653">Se il criterio è impostato su True, la modalità ad alto contrasto rimane attivata. Se il criterio è impostato su False, la modalità ad alto contrasto rimane disattivata.
+
+      Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la modalità ad alto contrasto è disattivata, ma gli utenti possono attivarla in qualsiasi momento.</translation>
 <translation id="1194005076170619046">Se la norma è attivata, nella barra delle applicazioni appare un grosso pulsante di uscita rosso quando è attiva una sessione e lo schermo non è bloccato.
 
       Se la norma è disattivata o non è specificata, nella barra delle applicazioni non appare il grosso pulsante di uscita rosso.</translation>
@@ -149,6 +152,7 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
 
       Se questa norma non viene impostata, la frequenza predefinita è pari a tre ore. La frequenza minima consentita è pari a 60 secondi.</translation>
 <translation id="1204263402976895730">Stampanti aziendali attive</translation>
+<translation id="120937472976628837">Segnala informazioni sulla ventola</translation>
 <translation id="1216919699175573511">Attiva il supporto per Signed HTTP Exchange (SXG)</translation>
 <translation id="1219695476179627719">Consente di specificare se il dispositivo deve eseguire il rollback alla versione impostata da <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> nel caso in cui sia già in esecuzione una versione successiva.
 
@@ -251,6 +255,11 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 <translation id="1427655258943162134">Indirizzo o URL del server proxy</translation>
 <translation id="1435659902881071157">Configurazione di rete a livello di dispositivo</translation>
 <translation id="1438739959477268107">Impostazione generazione di chiavi predefinite</translation>
+<translation id="1449083855104537880">Se il criterio è impostato su True, le opzioni di accessibilità vengono mostrate nel menu della barra delle applicazioni. Se il criterio è impostato su False, le opzioni non appaiono nel menu.
+
+      Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, le opzioni di accessibilità non vengono mostrate nel menu, ma gli utenti possono farle apparire dalla pagina Impostazioni.
+
+      Se attivi le funzioni di accessibilità in altro modo (ad esempio, con una combinazione di tasti), le opzioni di accessibilità vengono sempre mostrate nel menu della barra delle applicazioni.</translation>
 <translation id="1456822151187621582">Windows (client <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Consente di controllare il comportamento degli utenti in una sessione multiprofilo su dispositivi <ph name="PRODUCT_OS_NAME" />.
 
@@ -615,6 +624,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2024476116966025075">Configura il nome di dominio richiesto per i client di accesso remoto</translation>
 <translation id="2030905906517501646">Parola chiave del provider di ricerca predefinito</translation>
 <translation id="203096360153626918">Questa norma non ha effetto sulle app Android, che saranno in grado di entrare in modalità a schermo intero anche se la norma viene impostata su <ph name="FALSE" />.</translation>
+<translation id="2040479044912658454">Modalità rasterizzazione stampa</translation>
 <translation id="2043749682619281558">Attiva l'evidenziazione del cursore sulla schermata di accesso</translation>
 <translation id="2043770014371753404">Stampanti aziendali disattivate</translation>
 <translation id="2050629715135525072">Controlla la capacità di un utente connesso a un host di accesso remoto di trasferire file dal client all'host e viceversa. Questa norma non si applica alle connessioni di assistenza remota, le quali non supportano il trasferimento di file.
@@ -814,7 +824,26 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Se il modello URI contiene una variabile <ph name="HTTP_VARIABLE_DNS" />, per le richieste al resolver verrà usato il metodo <ph name="HTTP_METHOD_GET" />; in caso contrario verrà usato il metodo <ph name="HTTP_METHOD_POST" /> per le richieste.
 
       I modelli con formato errato verranno ignorati.</translation>
+<translation id="2333763898098246468">Controlla come <ph name="PRODUCT_NAME" /> stampa su Windows.
+
+      Quando stampi su una stampante non PostScript da Windows, a volte i processi di stampa devono essere rasterizzati per essere stampati correttamente.
+
+      Se il criterio è impostato su Full, <ph name="PRODUCT_NAME" /> effettua una rasterizzazione di pagina completa, se necessario.
+
+      Se il criterio è impostato su Fast, se possibile <ph name="PRODUCT_NAME" /> eviterà la rasterizzazione: ridurre la quantità di rasterizzazione può contribuire a diminuire le dimensioni dei processi di stampa e aumentare la velocità di stampa.
+
+      Se il criterio non è impostato, <ph name="PRODUCT_NAME" /> opererà in modalità Full.</translation>
+<translation id="2336221492251647548">Se il criterio è impostato su True, la tastiera sullo schermo è attivata all'accesso. Se il criterio è impostato su False, la tastiera sullo schermo è disattivata all'accesso.
+
+      Se imposti il criterio, gli utenti possono attivare o disattivare temporaneamente la tastiera sullo schermo. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, la tastiera sullo schermo torna allo stato originale.
+
+      Se il criterio non è impostato, la tastiera sullo schermo è disattivata nella schermata di accesso. Gli utenti possono attivarla in qualsiasi momento e il suo stato nella schermata di accesso persiste per tutti gli utenti.
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="2345547870894930157">Attiva DNS over HTTPS senza fallback non sicuro</translation>
+<translation id="2349117476121456297">Se il criterio è impostato su True, i tasti della fila superiore della tastiera riprodurranno i comandi dei tasti funzione. Per ripristinare il comportamento dei tasti multimediali, è necessario premere il tasto per la ricerca.
+
+      Se il criterio è impostato su False o non è impostato, la tastiera riprodurrà i comandi dei tasti multimediali per impostazione predefinita. Per ripristinare il comportamento dei tasti funzione, è necessario premere il tasto per la ricerca.</translation>
 <translation id="2353442107789326507">Elenco di impostazioni per i servizi di Chrome Enterprise Connectors da applicare al connettore di Enterprise <ph name="ON_FILE_ATTACHED_ENTERPRISE_CONNECTOR" />, che si attiva quando un file viene allegato a Chrome.
 
       I campi <ph name="ENTERPRISE_CONNECTOR_URL_LIST_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_TAGS_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_ENABLE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_DISABLE_FIELD" /> vengono utilizzati per stabilire se il connettore deve inviare un file per l'analisi quando viene allegato a una pagina specifica e quali tag includere nella richiesta di analisi di tale file. Un tag che corrisponde a un pattern "enable" verrà incluso nella richiesta di analisi se l'URL della pagina corrisponde a un pattern associato a tale tag finché nessun pattern "disable" con lo stesso tag corrisponde all'URL della pagina. L'analisi viene eseguita se almeno un tag deve essere incluso nella richiesta.
@@ -1072,11 +1101,6 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Se questo criterio non viene impostato, <ph name="PRODUCT_NAME" /> utilizzerà il valore predefinito di 10.000 millisecondi.</translation>
 <translation id="257788512393330403">Richiedi inserimento della password ogni sei ore</translation>
 <translation id="2580104054820772954">Ritarda la consegna dei file finché il risultato dell'analisi non viene reso noto</translation>
-<translation id="2586162458524426376">
-      Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicato alla sessione utente.
-      Se il criterio è attivato, ciascuna delle origini denominate all'interno di un elenco separato da virgole verrà eseguita nel proprio processo. Ciò isolerà anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isolerà anche https://foo.example.com/, perché fa parte del sito https://example.com/.
-      Se il criterio non è configurato o è disattivato, per la schermata di accesso verranno usate le impostazioni di isolamento dei siti predefinite della piattaforma.
-      </translation>
 <translation id="2587719089023392205">Imposta <ph name="PRODUCT_NAME" /> come browser predefinito</translation>
 <translation id="2588071938417715443">Questo criterio consente di gestire l'accesso alle funzionalità controllabili nell'interfaccia utente di individuazione di dispositivi locali (<ph name="CHROME_DEVICES_LINK" />), in cui vengono mostrati i dispositivi rilevabili accanto all'utente, nonché i dispositivi cloud a cui è registrato. Su tutti i sistemi operativi tranne <ph name="PRODUCT_OS_NAME" />, l'interfaccia utente di individuazione di dispositivi locali consente inoltre agli utenti di aggiungere a <ph name="CLOUD_PRINT_NAME" /> stampanti classiche collegate ai loro computer.</translation>
 <translation id="2592091433672667839">Durata inattività prima della visualizzazione del salvaschermo nella schermata di accesso in modalità retail</translation>
@@ -1154,6 +1178,10 @@ Se questa norma non viene impostata, l'utente potrà scegliere se utilizzare o m
       Tieni presente che tali limitazioni vengono applicate ai download attivati dai contenuti delle pagine web, nonché all'opzione del menu contestuale "Link di download...". Tali limitazioni non vengono applicate al salvataggio o al download della pagina correntemente visualizzata né al salvataggio in formato PDF nelle opzioni di stampa.
 
       Visita il sito https://developers.google.com/safe-browsing per avere ulteriori informazioni sulla funzione Navigazione sicura.</translation>
+<translation id="2696077732471707315">
+      Questo criterio è stato rimosso da M77.
+      Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicato alla sessione utente. È consigliabile impostare lo stesso valore per entrambi i criteri. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dai criteri relativi agli utenti.
+      </translation>
 <translation id="2706708761587205154">Consenti la stampa solo con PIN</translation>
 <translation id="2707873794476722903">Navigazione sicura è attiva in modalità standard.</translation>
 <translation id="2710534340210290498">Se la norma viene impostata su false, gli utenti non potranno bloccare lo schermo (sarà possibile solo la disconnessione dalla sessione utente). Se l'impostazione viene impostata su true o non viene configurata, gli utenti autenticati mediante password potranno bloccare lo schermo.</translation>
@@ -2051,6 +2079,9 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 
           Se questa norma non viene impostata, verrà utilizzata la norma "AllowCookies", che potrà essere modificata dall'utente.</translation>
 <translation id="4093716537292423758">Non bloccare i tipi di file non supportati</translation>
+<translation id="4097556069183835428">Se il criterio è impostato su None, la Lente d'ingrandimento è disattivata.
+
+      Se configuri il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la Lente d'ingrandimento risulta disattivata all'inizio, ma gli utenti possono attivarla in qualsiasi momento.</translation>
 <translation id="410068710490553233">Consenti l'accesso ad altri Account Google</translation>
 <translation id="4103289232974211388">Reindirizza a IdP SAML dopo la conferma dell'utente</translation>
 <translation id="4105884561459127998">Consente di configurare il tipo di autenticazione per gli accessi SAML.
@@ -2202,6 +2233,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Tieni presente che l'esistenza dell'ID di un'app nella norma non implica necessariamente che l'utente potrà attivare l'app in questione come app per scrivere note nella schermata di blocco. Ad esempio, su Chrome 61, il gruppo di app disponibili è limitato ulteriormente dalla piattaforma.
 
       Se la norma non viene impostata, non ci saranno limitazioni relative al gruppo di app che l'utente potrà attivare nella schermata di blocco.</translation>
+<translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">Indirizzo MAC designato del dock del dispositivo</translation>
 <translation id="4322842393287974810">Consenti all'app kiosk avviata automaticamente senza ritardo di controllare la versione di <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="4325690621216251241">Aggiungi un pulsante di uscita all'area di notifica</translation>
@@ -2252,6 +2284,10 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4432762137771104529">Attiva rapporti estesi su Navigazione sicura</translation>
 <translation id="443454694385851356">Precedente (non sicuro)</translation>
 <translation id="443665821428652897">Cancella i dati del sito alla chiusura del browser (obsoleta)</translation>
+<translation id="4438784219739665968">Consenti al dispositivo di eseguire PluginVm.
+
+      Se il criterio è impostato su False o non viene impostato, <ph name="PLUGIN_VM_NAME" /> non viene attivato per il dispositivo.
+      Se è impostato su true, <ph name="PLUGIN_VM_NAME" /> viene attivato per il dispositivo, a condizione che anche le altre impostazioni lo permettano. Il valore dei criteri <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> e <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere True ed è necessario impostare i criteri <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="4439336120285389675">Consente di specificare un elenco di funzioni ritirate della piattaforma web da riattivare temporaneamente.
 
       Questa norma consente agli amministratori di riattivare funzioni ritirate della piattaforma web per un periodo di tempo limitato. Le funzioni sono identificate da un tag string e le funzioni corrispondenti ai tag inclusi nell'elenco specificato tramite questa norma verranno riattivate.
@@ -2298,6 +2334,9 @@ Se questa impostazione viene attivata, i suggerimenti di ricerca verranno utiliz
 Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
 
 Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
+<translation id="4529868888205510667">A meno che ARC sia disattivato da altri mezzi, se il criterio è impostato su True o non è configurato, gli utenti possono utilizzare ARC. Se il criterio è impostato su False, gli utenti non affiliati non possono utilizzare ARC.
+
+      Le modifiche al criterio vengono applicate solo mentre ARC non è in esecuzione, ad esempio durante l'avvio di Chrome OS.</translation>
 <translation id="453031441196755904">Questa norma è obsoleta.</translation>
 <translation id="4531706050939927436">L'installazione di app Android può essere imposta dalla Console d'amministrazione Google tramite Google Play. Questa norma non viene utilizzata.</translation>
 <translation id="4534500438517478692">Nome della limitazione di Android:</translation>
@@ -2504,6 +2543,13 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
           Se imposti questo criterio, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, inizialmente l'audio in formato mono è disattivato nella schermata di accesso, ma l'utente può attivarlo in qualsiasi momento.</translation>
+<translation id="4942681160308347946">Se il criterio è impostato su True, la funzione di lettura vocale viene attivata nella schermata di accesso. Se il criterio è impostato su False, la funzione di lettura vocale viene disattivata nella schermata.
+
+      Se imposti il criterio, gli utenti possono attivare o disattivare temporaneamente la funzione di lettura vocale. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, viene ripristinato lo stato originale della funzione.
+
+      Se il criterio non è impostato, la funzione di lettura vocale risulta disattivata nella schermata di accesso. Gli utenti possono attivarla in qualsiasi momento e il suo stato nella schermata di accesso persiste per tutti gli utenti.
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="494613465159630803">Cast Receiver</translation>
 <translation id="494924690085329212">Riavvia all'uscita dell'utente se Android è stato avviato.</translation>
 <translation id="4962262530309732070">Se questo criterio è impostato su true o non viene configurato, su <ph name="PRODUCT_NAME" /> sarà possibile aggiungere persone con la funzione Aggiungi persona di Gestione utenti.
@@ -2804,6 +2850,9 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5369937289900051171">Solo stampa a colori</translation>
 <translation id="5370279767682621504">Attiva il supporto HTTP/0.9 sulle porte non predefinite</translation>
 <translation id="5377606826822211923">Controlla l'utilizzo delle app Android di fonti non attendibili per l'utente</translation>
+<translation id="5377668121137111316">Se il criterio è impostato su True, la tastiera sullo schermo rimane attivata. Se il criterio è impostato su False, la tastiera sullo schermo rimane disattivata.
+
+      Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la tastiera sullo schermo è disattivata all'inizio, ma gli utenti possono attivarla in qualsiasi momento.</translation>
 <translation id="537786648513450280">Controlla l'utilizzo delle app Android di fonti non attendibili per il dispositivo</translation>
 <translation id="5378985487213287085">Permette di stabilire se consentire o meno la visualizzazione di notifiche desktop nei siti web. La visualizzazione di notifiche desktop può essere consentita o negata per impostazione predefinita oppure l'utente può ricevere una richiesta ogni volta che un sito web desidera visualizzare le notifiche desktop. Se questa norma non viene impostata, verrà utilizzato il valore "AskNotifications", che potrà essere modificato dagli utenti.</translation>
 <translation id="538108065117008131">Consenti a <ph name="PRODUCT_FRAME_NAME" /> di gestire i seguenti tipi di contenuto.</translation>
@@ -3010,6 +3059,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
         Se il criterio viene impostato su false, gli utenti non possono inviare feedback a Google.
 
         Se il criterio non viene impostato o viene impostato su true, gli utenti possono inviare feedback a Google dal percorso Menu -&gt; Guida -&gt; Segnala un problema o tramite una combinazione di tasti.</translation>
+<translation id="5579179012798142131">A meno che la modalità temporanea o l'accesso simultaneo sia attivo durante la sessione utente, se ArcEnabled è impostato su True, ARC viene attivato per l'utente. Se il criterio è impostato su False o non è configurato, gli utenti aziendali non possono utilizzare ARC.</translation>
 <translation id="5583806683960333345">Se questa impostazione viene attivata, gli utenti potranno utilizzare il tethering istantaneo, che consente al loro telefono Google di condividere i dati mobili con il dispositivo.
 
       Se questa impostazione viene disattivata, gli utenti non potranno utilizzare il tethering istantaneo.
@@ -3143,6 +3193,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
       Se questo criterio viene impostato su False o non viene impostato, le funzionalità Web Components v0 verranno disattivate per impostazione predefinita a partire dalla versione M80.
 
       Questo criterio verrà rimosso nelle versioni successive alla versione 84 di Chrome.</translation>
+<translation id="5756680608782814094">Segnala informazioni sui VPD di un dispositivo.
+
+      Se il criterio è impostato su False o non è configurato, le informazioni non vengono segnalate.
+      Se è impostato su True, le informazioni sui VPD del dispositivo vengono segnalate.
+      I Vital Product Data (VPD) sono una raccolta di dati informativi e di configurazione (come numeri di serie o di componenti) associati al dispositivo.</translation>
 <translation id="5765780083710877561">Descrizione:</translation>
 <translation id="5770738360657678870">Canale Dev (potrebbe essere instabile)</translation>
 <translation id="5774856474228476867">URL di ricerca del provider di ricerca predefinito</translation>
@@ -3256,6 +3311,11 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 
       Se la norma viene impostata su false, non viene applicata alcuna limitazione.
       Se viene impostata su true, il sistema viene limitato per raggiungere le velocità di caricamento e download indicate (in kbit/s).</translation>
+<translation id="5907283448020542268">A meno che il criterio <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> sia impostato su <ph name="BLOCK_GEOLOCATION_SETTING" />, l'impostazione <ph name="GLS_ENABLED" /> attiva i Servizi di geolocalizzazione di Google durante la configurazione iniziale. Se il criterio è impostato su <ph name="GLS_DISABLED" /> o se non è configurato, i Servizi di geolocalizzazione rimangono disattivati durante la configurazione.
+
+      Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, agli utenti viene chiesto se utilizzare o meno i Servizi di geolocalizzazione di Google. Se vengono attivati, le app Android utilizzano i servizi per cercare la posizione del dispositivo e inviare dati anonimi sulla posizione a Google.
+
+      Dopo la configurazione iniziale, gli utenti possono attivare o disattivare i Servizi di geolocalizzazione di Google.</translation>
 <translation id="591088232153082363">Ricarica adattiva della batteria sulla base dei pattern di utilizzo batteria.</translation>
 <translation id="5921713479449475707">Permetti download di aggiornamento automatico tramite HTTP</translation>
 <translation id="5929855945144989709">Consente ai dispositivi di eseguire macchine virtuali su Chrome OS</translation>
@@ -3276,6 +3336,15 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5997543603646547632">Utilizza orologio di 24 ore per impostazione predefinita</translation>
 <translation id="5997846976342452720">Specifica se disattivare o meno la ricerca dei plug-in (ritirata)</translation>
 <translation id="5998198091336830580">Questo criterio fa parte del seguente gruppo atomico (vengono applicati soltanto i criteri dell'origine con la priorità massima presenti nel gruppo):</translation>
+<translation id="6009062900206392980">Se il criterio è impostato su None, la Lente d'ingrandimento è disattivata nella schermata di accesso.
+
+       Se imposti il criterio, gli utenti possono attivare o disattivare temporaneamente la Lente d'ingrandimento. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, la Lente d'ingrandimento torna allo stato originale.
+
+      Se il criterio non è impostato, la Lente d'ingrandimento è disattivata nella schermata di accesso. Gli utenti possono attivarla in qualsiasi momento e il suo stato nella schermata di accesso persiste per tutti gli utenti.
+
+       Valori validi: • 0 = disattivata• 1 = attivata• 2 = riquadro d'ingrandimento ancorato attivato
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="6017568866726630990">Mostra la finestra di dialogo di stampa del sistema invece dell'anteprima di stampa.
 
       Se l'impostazione è attivata, <ph name="PRODUCT_NAME" /> aprirà la finestra di dialogo di stampa del sistema invece dell'anteprima di stampa integrata quando un utente richiede la stampa di una pagina.
@@ -3441,6 +3510,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
         Questo criterio può proteggere l'utente dall'accesso a contenuti con limitazioni sulle proprietà web di Google.
         Se questo criterio viene impostato su True, l'utente sarà disconnesso dall'account non appena il suo token di autenticazione non sarà più valido e se i tentativi di ripristinarlo non andranno a buon fine.
         Se questo criterio viene impostato su False o non viene impostato, l'utente può continuare le proprie operazioni in uno stato non autenticato.</translation>
+<translation id="631183702829488873">Se attivata, questa funzionalità mostra un pulsante nella schermata di accesso e di blocco per la visualizzazione della password.
+          È rappresentata con un'icona a forma di occhio nel campo della password. Il pulsante non è presente quando la funzionalità è disattivata.
+      </translation>
 <translation id="6315673513957120120">Chrome mostra una pagina di avviso quando gli utenti visitano siti che presentano errori SSL. Per impostazione predefinita, o se la norma viene impostata su true, gli utenti possono fare clic nelle pagine di avviso.
       Se questa norma viene impostata su false, gli utenti non possono fare clic nelle pagine di avviso.</translation>
 <translation id="6319198883324703402">Imposta il tempo della prima notifica del riavvio per l'utente</translation>
@@ -3526,6 +3598,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
           Se si decide di utilizzare uno script proxy .pac, alle app Android viene fornito l'URL script.</translation>
 <translation id="6430366557948788869">Estensione Chrome Reporting Extension</translation>
+<translation id="6438972408080276697">Se il criterio è impostato su True, vengono inviati rapporti degli eventi principali di installazione delle app Android attivati dal criterio. Se il criterio è impostato su False, non viene acquisito alcun evento.</translation>
 <translation id="6440051664870270040">Consenti ai siti di navigare e aprire popup contemporaneamente</translation>
 <translation id="6447948611083700881">Backup e ripristino disabilitati</translation>
 <translation id="6449476513004303784">Non consentire più agli utenti di gestire i certificati</translation>
@@ -3690,8 +3763,12 @@ Gli URL che utilizzano uno schema di questo elenco non verranno caricati e non p
 
 Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile accedere a tutti gli schemi in <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Impostazioni degli utenti gestiti localmente</translation>
+<translation id="6658129069061688328">Se il criterio è impostato su True, i consigli di app possono essere visualizzati nella ricerca a stato nullo. Se il criterio è impostato su False, tali consigli non vengono visualizzati.
+
+      Se il criterio è configurato, gli utenti non possono modificarlo. Se non è configurato, l'impostazione predefinita dei dispositivi gestiti è False.</translation>
 <translation id="6658245400435704251">Consente di specificare il numero di secondi massimo per cui un dispositivo può ritardare in modo casuale il download di un suo aggiornamento dal momento della pubblicazione dell'aggiornamento sul server. Il dispositivo può attendere una parte di questo tempo in termini di tempo reale e la parte rimanente in termini di numero di controlli della disponibilità di aggiornamenti. In ogni caso, la dispersione ha un limite massimo pari a un periodo di tempo costante in modo che un dispositivo non si blocchi mai in attesa di scaricare un aggiornamento.</translation>
 <translation id="6665670272107384733">Imposta la frequenza di inserimento della password per poter usare lo sblocco rapido</translation>
+<translation id="6667586534922258705">Mostra il pulsante di visualizzazione della password nella schermata di accesso e di blocco</translation>
 <translation id="6672070613706645316">Consenti agli utenti di personalizzare lo sfondo della pagina Nuova scheda</translation>
 <translation id="6672630473862787247">Attiva l'autenticazione ambientale nelle sessioni standard, Ospite e in modalità in incognito.</translation>
 <translation id="6685903773201985073">Attiva l'autenticazione ambientale nelle sessioni standard e Ospite.</translation>
@@ -3711,6 +3788,10 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6731757988219967594">Filtra i siti di contenuti per adulti di primo livello (ma non gli iframe incorporati)</translation>
 <translation id="6734521799274931721">Consente di controllare la disponibilità della funzione Condivisioni file di rete per Chrome OS</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
+<translation id="6740611636377710500">Consenti all'utente di eseguire PluginVm.
+
+      Se il criterio è impostato su False o non viene impostato, <ph name="PLUGIN_VM_NAME" /> non viene attivato per l'utente.
+      Se è impostato su True, <ph name="PLUGIN_VM_NAME" /> viene attivato per l'utente, a condizione che anche le altre impostazioni lo permettano. Il valore dei criteri <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> e <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere True ed è necessario impostare i criteri <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="6757613329154374267">Backup e ripristino attivato</translation>
 <translation id="6758659208493449452">Questo criterio consente di stabilire se gli utenti registrati al programma di protezione avanzata ricevono o meno ulteriori livelli di protezione. Alcune di queste funzionalità potrebbero prevedere la condivisione di dati con Google (ad esempio, gli utenti che usano la protezione avanzata potranno inviare i propri download a Google per verificare l'eventuale presenza di malware). Se questo criterio viene impostato su True o non viene impostato, gli utenti registrati al programma riceveranno ulteriori livelli di protezione. Se viene impostato su False, gli utenti che usano la protezione avanzata riceveranno soltanto le funzionalità standard per i consumatori.</translation>
 <translation id="6762235610019366960">Ti consente di gestire la presentazione dei contenuti promozionali e/o informativi a scheda intera in <ph name="PRODUCT_NAME" />.
@@ -3734,6 +3815,13 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6813263547126514821">Alimentazione e spegnimento</translation>
 <translation id="681446116407619279">Schemi di autenticazione supportati</translation>
 <translation id="6821268164692776674">Destinazioni <ph name="CLOUD_PRINT_NAME" /> e "Salva su Google Drive"</translation>
+<translation id="6833064854262015312">Se il criterio è impostato su True, la modalità ad alto contrasto viene attivata nella schermata di accesso. Se il criterio è impostato su False, la modalità ad alto contrasto viene disattivata nella schermata di accesso.
+
+      Se imposti il criterio, gli utenti possono modificare temporaneamente la modalità ad alto contrasto attivandola o disattivandola. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, viene ripristinato lo stato originale della modalità.
+
+      Se il criterio non è impostato, la modalità ad alto contrasto risulta disattivata nella schermata di accesso. Gli utenti possono attivarla in qualsiasi momento e il suo stato nella schermata di accesso persiste per tutti gli utenti.
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="6833988859168635883">Avvio, pagina iniziale e pagina Nuova scheda</translation>
 <translation id="6835883744948188639">Mostra un messaggio ricorrente all'utente in cui indica che è consigliato eseguire un riavvio</translation>
 <translation id="683688607121170501">Questa impostazione consente agli utenti di passare da un Account Google a un altro all'interno dell'area dei contenuti della finestra del browser e nelle applicazioni Android, dopo avere eseguito l'accesso al dispositivo <ph name="PRODUCT_OS_NAME" />.
@@ -3815,6 +3903,12 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       informazioni sull'utilizzo. Se viene impostata su true, queste informazioni vengono invece segnalate.
 
       Questa norma viene applicata soltanto se le app Linux sono attive.</translation>
+<translation id="6946652757373377924">
+      Questo criterio è stato rimosso da M77.
+      Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicato alla sessione utente.
+      Se il criterio è attivato, ciascuna delle origini denominate all'interno di un elenco separato da virgole viene eseguita nel proprio processo. Ciò isola anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isola anche https://foo.example.com/, perché fa parte del sito https://example.com/.
+      Se il criterio non è configurato o è disattivato, per la schermata di accesso vengono utilizzate le impostazioni di isolamento dei siti predefinite della piattaforma.
+      </translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
 <translation id="6953102253399571439">Attiva la stampa PIN per impostazione predefinita</translation>
 <translation id="6956272732789158625">Non consentire a nessun sito di utilizzare la generazione di chiavi</translation>
@@ -3824,6 +3918,11 @@ Quando lo schermo sta per essere oscurato, il modello di oscuramento smart valut
 Se questa norma è impostata su True o non è impostata, il modello di oscuramento smart verrà attivato e la quantità di tempo prima che lo schermo venga oscurato verrà estesa. Se questa norma è impostata su False, il modello di oscuramento smart non inciderà sull'oscuramento dello schermo.</translation>
 <translation id="6972540544240464302">Seleziona configurazione programma di pianificazione attività</translation>
 <translation id="6979158407327259162">Google Drive</translation>
+<translation id="6979739838208297344">Se il criterio è impostato su <ph name="BR_ENABLED" />, il backup e ripristino di Android è inizialmente attivo. Se il criterio è impostato su <ph name="BR_DISABLED" /> o se non è configurato, il backup e ripristino rimane disattivato durante la configurazione.
+
+      Se il criterio è impostato su <ph name="BR_UNDER_USER_CONTROL" />, agli utenti viene chiesto di utilizzare il backup e ripristino. Se gli utenti attivano il backup e ripristino, i dati delle app Android vengono caricati sui server di backup di Android e ripristinati durante la reinstallazione delle app.
+
+      Dopo la configurazione iniziale, gli utenti possono attivare o disattivare il backup e ripristino.</translation>
 <translation id="6991078864332103177">Questo criterio consente di stabilire se segnalare o meno informazioni che possono essere usate per identificare gli utenti, ad esempio i dati di accesso al sistema operativo, i dati di accesso del profilo <ph name="PRODUCT_NAME" />, il nome del profilo <ph name="PRODUCT_NAME" />, il percorso del profilo <ph name="PRODUCT_NAME" /> e il percorso eseguibile di <ph name="PRODUCT_NAME" />.
 
       Se questo criterio non viene impostato o viene impostato su True, vengono raccolte informazioni che possono essere usate per identificare gli utenti.
@@ -3840,6 +3939,7 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 <translation id="7003334574344702284">Se è attiva, questa norma impone l'importazione delle password salvate dal browser predefinito precedente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, le password salvate non vengono importate. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="7003746348783715221">Preferenze di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7008308728445338159">Controlli intercettazione DNS attivi</translation>
+<translation id="7019805045859631636">Veloce</translation>
 <translation id="7027785306666625591">Configura la gestione dell'alimentazione in <ph name="PRODUCT_OS_NAME" />.
 
       Queste norme consentono di configurare il comportamento di <ph name="PRODUCT_OS_NAME" /> quando l'utente rimane inattivo per un determinato periodo di tempo.</translation>
@@ -3881,6 +3981,10 @@ Se questa norma è impostata su True o non è impostata, il modello di oscuramen
 
           Il fattore di regolazione minimo deve essere 100%.</translation>
 <translation id="7086720321892395256">Consente di controllare i criteri relativi agli utenti e ai dispositivi per la funzionalità Schermata sulla privacy.</translation>
+<translation id="7093294902558672021">Segnala informazioni sulla ventola di un dispositivo.
+
+      Se il criterio è impostato su False o non è configurato, le informazioni non vengono segnalate.
+      Se è impostato su True, le informazioni sulla ventola del dispositivo vengono segnalate.</translation>
 <translation id="710003290625031750">Descrizione estesa dello schema:</translation>
 <translation id="7106631983877564505">Consente di attivare il blocco quando lo stato dei dispositivi <ph name="PRODUCT_OS_NAME" /> diventa inattivo o sospeso.
 
@@ -4093,6 +4197,7 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
 <translation id="7311458740754205918">Se questa norma viene impostata su true o non viene impostata, nella pagina Nuova scheda potrebbero essere mostrati suggerimenti di contenuti basati sulla cronologia di navigazione, sugli interessi o sulla posizione dell'utente.
 
       Se viene impostata su false, i suggerimenti di contenuti generati automaticamente non vengono mostrati nella pagina Nuova scheda.</translation>
+<translation id="731208205557053914">Segnala informazioni sui VPD</translation>
 <translation id="7323896582714668701">Parametri aggiuntivi della riga di comando per <ph name="PRODUCT_NAME" /></translation>
 <translation id="7326394567531622570">Simile a Wipe (valore 2), ma prova a mantenere i token di accesso per evitare all'utente di dover accedere di nuovo.</translation>
 <translation id="7329968046053403405">Consente di specificare il tipo di account degli account forniti dall'app di autenticazione di Android che supporta l'autenticazione <ph name="HTTP_NEGOTIATE" /> (ad esempio, l'autenticazione Kerberos). Queste informazioni dovrebbero essere messe a disposizione dal fornitore dell'app di autenticazione. Per ulteriori informazioni, visitare la pagina https://goo.gl/hajyfN.
@@ -4110,12 +4215,12 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
 <translation id="7336785017449297672">Consente di gestire le impostazioni relative all'orologio e al fuso orario.</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
+<translation id="7338217396351647423">Se il criterio è configurato, viene specificato un insieme di criteri per passare al tempo di esecuzione di ARC. Gli amministratori possono utilizzarlo per selezionare le app Android che vengono installate automaticamente. Inserisci il valore in formato JSON valido.
+
+      Per bloccare le app nell'Avvio app, vedi PinnedLauncherApps.</translation>
 <translation id="7339315111520512972">Forza l'esecuzione del codice di networking nel processo di browser</translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
 <translation id="7343497214039883642">File di configurazione delle stampanti aziendali per i dispositivi</translation>
-<translation id="7359307926583593395">
-      Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="SITE_PER_PROCESS_POLICY_NAME" /> che viene applicato alla sessione utente. È consigliabile impostare lo stesso valore per entrambi i criteri. Se i valori non corrispondono, può verificarsi un ritardo quando si accede a una sessione utente mentre viene applicato il valore specificato dai criteri relativi agli utenti.
-      </translation>
 <translation id="7360181094056034924">Consente di controllare il modo in cui <ph name="PRODUCT_NAME" /> si comporta con i dati caricati e scaricati che sono considerati da analizzare.  Un ritardo nella consegna significa che <ph name="PRODUCT_NAME" /> non permetterà all'utente di accedere a un file scaricato, selezionare un file per caricarlo, incollare dagli appunti o trascinare dati finché non verranno analizzati e il risultato dell'analisi non sarà reso noto.  Tale limitazione si applica esclusivamente ai file o ai dati che dovrebbero essere analizzati secondo quanto stabilito da <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> e dai criteri che controllano l'elenco di domini per i quali è attiva l'analisi.
 
       Se questo criterio non viene impostato o se viene impostato su "Nessuno", <ph name="PRODUCT_NAME" /> non ritarderà il caricamento di alcun file, né le operazioni di copia e incolla dagli appunti, il trascinamento di dati o l'accesso a qualsiasi file scaricato.  L'analisi verrà eseguita in background.
@@ -4295,6 +4400,13 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Quando questa norma è impostata, il codice di accesso genitori può essere verificato sul dispositivo dell'utente bambino o ragazzo.
       Quando questa norma non è impostata, non è possibile verificare il codice di accesso genitori sul dispositivo dell'utente bambino o ragazzo.</translation>
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
+<translation id="7629840767216985001">Se il criterio è impostato su True, viene attivato il puntatore grande nella schermata di accesso. Se il criterio è impostato su False, viene disattivato il puntatore grande nella schermata di accesso.
+
+      Se imposti il criterio, gli utenti possono attivare o disattivare temporaneamente il puntatore grande. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, il puntatore torna allo stato originale.
+
+      Se il criterio non è impostato, il puntatore grande risulta disattivato nella schermata di accesso. Gli utenti possono attivarlo in qualsiasi momento e il suo stato nella schermata di accesso persiste per tutti gli utenti.
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> sostituisce questo criterio.</translation>
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
 <translation id="7635471475589566552">Consente di configurare in <ph name="PRODUCT_NAME" /> le impostazioni della lingua e di impedirne la modifica agli utenti. Se attivi questa impostazione, <ph name="PRODUCT_NAME" /> utilizzerà le impostazioni della lingua specificate. Se la lingua configurata non è supportata, verrà utilizzata la lingua "en-US". Se questa impostazione viene disattivata o non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà la lingua preferita specificata dall'utente (se configurata), quella del sistema o la lingua di riserva "en-US".</translation>
 <translation id="7643883929273267746">Limita gli account visibili in <ph name="PRODUCT_NAME" /></translation>
@@ -4609,6 +4721,7 @@ Se attivi questa impostazione o non imposti un valore, la funzione Compilazione 
       Se l'impostazione viene attivata o non viene configurata, i siti web possono controllare se l'utente ha salvato dei metodi di pagamento.</translation>
 <translation id="8118665053362250806">Imposta le dimensioni della cache su disco di supporto</translation>
 <translation id="8124468781472887384">Norma di accesso alla configurazione delle stampanti per i dispositivi.</translation>
+<translation id="8128192446158421884">URL su cui è applicabile AutoOpenFileTypes</translation>
 <translation id="8140204717286305802">Consente di comunicare al server l'elenco di interfacce di rete con i relativi tipi e indirizzi hardware. Se la norma viene impostata su False, l'elenco di interfacce non viene comunicato.</translation>
 <translation id="8141795997560411818">Questa norma non impedisce all'utente di utilizzare l'app Google Drive per Android. Se vuoi impedire l'accesso a Google Drive, non devi consentire l'installazione dell'app Google Drive per Android.</translation>
 <translation id="8142894094385450823">Questa norma consente di impostare le impostazioni internazionali consigliate per una sessione gestita</translation>
@@ -4766,6 +4879,13 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Tieni presente che questa norma viene ignorata, se <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME" /> viene disattivata.
 
           Se questa norma non è impostata, l'impostazione viene attivata.</translation>
+<translation id="838056554726401140">Elenco di URL che specifica a quali URL è applicato <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Questo criterio non influisce sulla possibilità di aprire automaticamente i valori configurati dagli utenti.
+
+      Se il criterio è impostato, i file saranno aperti automaticamente dal criterio se l'URL fa parte di questo insieme e il relativo tipo è elencato in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Se una delle condizioni è falsa, il criterio non aprirà automaticamente i download.
+
+      Se il criterio non è impostato, tutti i download con tipo di file contenuto in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" /> verranno aperti automaticamente.
+
+      Un pattern URL deve essere nel formato indicato all'indirizzo https://www.chromium.org/administrators/url-blacklist-filter-format.</translation>
 <translation id="8382184662529825177">Attiva l'utilizzo dell'attestazione remota per la protezione dei contenuti per il dispositivo</translation>
 <translation id="8382693763260501307">Consente di attivare il criterio di gestione della modalità di ricarica avanzata della batteria.
 
@@ -4934,6 +5054,9 @@ Se questa impostazione viene impostata su false, il dispositivo non utilizzerà 
 Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazione remota potrebbe essere utilizzata per la protezione dei contenuti.</translation>
 <translation id="8650974590712548439">Posizione del Registro di sistema di Windows per client Windows:</translation>
 <translation id="8653085952260859632">Segnala informazioni sulla memoria</translation>
+<translation id="8653561013005884087">Se il criterio è impostato su True, la funzione di lettura vocale rimane attivata. Se il criterio è impostato su False, la funzione di lettura vocale rimane disattivata.
+
+       Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la funzione di lettura vocale è disattivata all'inizio, ma gli utenti possono attivarla in qualsiasi momento.</translation>
 <translation id="8654286232573430130">Consente di specificare quali server devono essere autorizzati per l'autenticazione integrata. L'autenticazione integrata è attivata solo quando <ph name="PRODUCT_NAME" /> riceve una richiesta di autenticazione da un proxy o da un server che si trova in questo elenco di autorizzazione.
 
           Separa più nomi di server con delle virgole. Sono ammessi i caratteri jolly (*).
@@ -4960,6 +5083,10 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8687958770985542440">Riattiva l'API Web Components v0 fino alla versione M84</translation>
 <translation id="8693243869659262736">Utilizza client DNS integrato</translation>
 <translation id="8698286761337647563">Numero di giorni di anticipo con cui avvisare gli utenti SAML quando la loro password sta per scadere</translation>
+<translation id="8699392919012430269">Segnala informazioni sul Bluetooth di un dispositivo.
+
+      Se il criterio è impostato su False o non è configurato, le informazioni non vengono segnalate.
+      Se è impostato su True, le informazioni sul Bluetooth del dispositivo vengono segnalate.</translation>
 <translation id="8701288965900240388">Permette di stabilire se consentire o meno ai siti web di eseguire automaticamente il plug-in <ph name="FLASH_PLUGIN_NAME" />. L'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> può essere consentita o negata per tutti i siti web.
 
           Click-to-play consente di eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />, ma l'utente deve fare clic sul segnaposto per avviare l'esecuzione.
@@ -4991,6 +5118,9 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se questa impostazione è attivata o non è impostata, la cronologia di navigazione e la cronologia dei download possono essere eliminate.
 
       Se questa impostazione è disattivata, la cronologia di navigazione e la cronologia dei download non possono essere eliminate.</translation>
+<translation id="8749536858950505376">Se il criterio è impostato su True, il puntatore grande rimane attivato. Se il criterio è impostato su True, il puntatore grande rimane disattivato.
+
+      Se imposti il criterio, gli utenti non possono modificare la funzionalità. Se il criterio non è impostato, il puntatore grande risulta disattivato all'inizio, ma gli utenti possono attivarlo in qualsiasi momento.</translation>
 <translation id="8749803771700374502">Per le stampanti dei tipi inseriti nell'elenco di tipi non consentiti verranno disattivati il rilevamento o il recupero delle relative funzionalità.
 
       L'inserimento di tutti i tipi di stampanti nell'elenco di tipi non consentiti comporta essenzialmente la disattivazione della stampa, perché non ci sarebbero destinazioni disponibili a cui inviare un documento da stampare.
@@ -5057,6 +5187,7 @@ Se la norma non viene impostata o viene impostata su false, la posizione non vie
 <translation id="8858642179038618439">Forza la Modalità di protezione di YouTube</translation>
 <translation id="8860342862142842017">Disattiva l'applicazione di Certificate Transparency per un elenco di hash subjectPublicKeyInfo</translation>
 <translation id="8864975621965365890">Consente di eliminare il messaggio di richiesta di turndown che compare quando un sito viene visualizzato da <ph name="PRODUCT_FRAME_NAME" />.</translation>
+<translation id="886645881209114007">Consenti agli utenti di usare un <ph name="PLUGIN_VM_NAME" /> su <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="8867464911288727016">Consente di attivare il servizio Google Traduttore integrato su <ph name="PRODUCT_NAME" />.
 
       Se questa impostazione viene attivata, in <ph name="PRODUCT_NAME" /> verrà offerta una funzionalità di traduzione mediante una barra degli strumenti di traduzione integrata (se opportuno) e un'opzione di traduzione mostrata nel menu contestuale visualizzato facendo clic con il pulsante destro del mouse.
@@ -5212,6 +5343,9 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="9112897538922695510">Ti consente di registrare un elenco di gestori di protocolli. Questa può essere soltanto una norma consigliata. Per la proprietà |protocol| dovrebbe essere impostato lo schema, ad esempio "mailto", e per la proprietà |url| dovrebbe essere impostato il pattern URL dell'applicazione che gestisce lo schema. Il pattern può includere "%s" che, se presente, verrà sostituito dall'URL gestito.
 
           I gestori di protocolli registrati tramite la norma vengono uniti a quelli registrati dall'utente e possono essere utilizzati entrambi i tipi. L'utente può sostituire i gestori di protocolli installati tramite la norma installando un nuovo gestore predefinito, ma non può rimuovere un gestore di protocollo registrato tramite la norma.</translation>
+<translation id="9117826695152538214">Se il criterio è impostato su True, i tasti permanenti rimangono attivati. Se il criterio è impostato su False, i tasti permanenti rimangono disattivati.
+
+      Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, i tasti permanenti risultano disattivati all'inizio, ma gli utenti possono attivarli in qualsiasi momento.</translation>
 <translation id="91196902572559194">Questo criterio autorizza l'Assistente Google ad ascoltare la frase di attivazione vocale.
 
       Se il criterio viene attivato, l'Assistente Google ascolta la frase di attivazione vocale.
@@ -5279,6 +5413,7 @@ https://www.w3.org/TR/secure-contexts/
 
       Se non viene impostato o viene impostato su false, la funzionalità AppCache dipenderà dalle impostazioni predefinite di Chrome.</translation>
 <translation id="930930237275114205">Imposta la directory dei dati utente di <ph name="PRODUCT_FRAME_NAME" /></translation>
+<translation id="935779984563655842">Segnala informazioni sul Bluetooth</translation>
 <translation id="940706688964479124">Elenco dei tipi di file che dovrebbero essere aperti automaticamente al termine del download</translation>
 <translation id="943865157632139008">Consente di configurare il renderer HTML predefinito quando è installato <ph name="PRODUCT_FRAME_NAME" />.
       Per impostazione predefinita, l'host browser esegue il rendering, ma in alternativa è possibile sostituire questa impostazione e far sì che <ph name="PRODUCT_FRAME_NAME" /> esegua il rendering delle pagine HTML per impostazione predefinita.</translation>
@@ -5292,6 +5427,9 @@ https://www.w3.org/TR/secure-contexts/
 <translation id="981346395360763138">Servizi di geolocalizzazione di Google disabilitati</translation>
 <translation id="982497069985795632">Attiva il controllo ortografico</translation>
 <translation id="991560005425213776">Invia nome utente e nome file alle stampanti native</translation>
+<translation id="99202634486128833">Se il criterio è impostato su CopyCaCerts, per le app ARC sono disponibili tutti i certificati CA installati su ONC con <ph name="WEB_TRUSTED_BIT" />.
+
+       Se è impostato su None o non è configurato, per le app ARC non sono disponibili certificati <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="99232017131102456">Questo criterio consente di configurare una singola cache globale per profilo con credenziali di autenticazione server HTTP.
 
       Se questo criterio non viene impostato o viene disattivato, il browser userà il comportamento predefinito dell'autenticazione tra siti che, a partire dalla versione 80, prevede credenziali di autenticazione server HTTP con ambito per sito principale. Ciò significa che, se due siti usano risorse dello stesso dominio di autenticazione, le credenziali devono essere fornite separatamente nel contesto di entrambi i siti. Le credenziali proxy memorizzate nella cache verranno riutilizzate tra i siti.

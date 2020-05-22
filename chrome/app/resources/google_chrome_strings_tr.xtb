@@ -189,6 +189,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="6967962315388095737">Google Chrome Beta'nın mDNS trafiğine izin vermeyi sağlayan gelen trafik kuralı.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" />, bu cihazı kullanmadan önce aşağıdaki Hizmet Şartları'nı okuyup kabul etmenizi gerektirmektedir. Bu şartlar, Google Chromium OS Şartları'nın kapsamını genişletmez, değiştirmez veya sınırlamaz.</translation>
 <translation id="6989339256997917931">Google Chrome güncellendi, ancak programı en azından 30 gündür kullanmıyorsunuz.</translation>
+<translation id="7062128746136194023">Ebeveyniniz, Chrome'a yönelik "Siteler, uygulamalar ve uzantılar için izinler"i kapattı. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> uzantısını eklemeye izin verilmiyor.</translation>
 <translation id="7098166902387133879">Google Chrome mikrofonunuzu kullanıyor.</translation>
 <translation id="7106741999175697885">Görev Yöneticisi - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Chrome için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır.}=1{Chrome için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır. Gizli pencereniz yeniden açılmayacak.}other{Chrome için yeni bir güncelleme var. Yeniden başlattığınızda güncelleme hemen uygulanacaktır. # Gizli pencereniz yeniden açılmayacak.}}</translation>
@@ -229,6 +230,7 @@ Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirti
 <translation id="8129812357326543296">&amp;Google Chrome hakkında</translation>
 <translation id="8255190535488645436">Google Chrome kameranızı ve mikrofonunuzu kullanıyor.</translation>
 <translation id="8286862437124483331">Google Chrome şifreleri göstermeye çalışıyor. Buna izin vermek için Windows şifrenizi yazın.</translation>
+<translation id="828798499196665338">Ebeveyniniz, Chrome'a yönelik "Siteler, uygulamalar ve uzantılar için izinler"i kapattı. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> uzantısının etkinleştirilmesine izin verilmiyor.</translation>
 <translation id="8290100596633877290">Of! Google Chrome kilitlendi. Şimdi yeniden başlatılsın mı?</translation>
 <translation id="8342675569599923794">Bu dosya tehlikeli olduğu için Chrome tarafından engellendi.</translation>
 <translation id="8370517070665726704">Telif hakkı <ph name="YEAR" /> Google LLC. Tüm hakları saklıdır.</translation>

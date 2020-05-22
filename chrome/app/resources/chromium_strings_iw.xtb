@@ -156,6 +156,7 @@
 ייתכן שחלק מהתכונות לא יהיו זמינות. ציין ספריית פרופיל אחרת או השתמש בגרסה חדשה יותר של Chromium.</translation>
 <translation id="6734080038664603509">‏עדכן &amp;את Chromium‏</translation>
 <translation id="6734291798041940871">‏Chromium כבר מותקן במחשב ונגיש לכל המשתמשים.</translation>
+<translation id="6774082503108938489">‏אחד מההורים השבית ב-Chromium את ההגדרה "הרשאות לאתרים, אפליקציות ותוספים". לא ניתן להפעיל את <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">‏Chromium מודיע לך אם הסיסמאות שלך נמצאות בסיכון</translation>
 <translation id="6857782730669500492">‏Chromium‏ - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (‏הועתק ל-Chromium)</translation>
@@ -214,6 +215,7 @@ Chromium לא יכול לשחזר את ההגדרות שלך.</translation>
 <translation id="8417404458978023919">{0,plural, =1{‏צריך להפעיל מחדש את Chromium בתוך יום אחד}two{‏צריך להפעיל מחדש את Chromium בתוך # ימים}many{‏צריך להפעיל מחדש את Chromium בתוך # ימים}other{‏צריך להפעיל מחדש את Chromium בתוך # ימים}}</translation>
 <translation id="8453117565092476964">‏הארכיון של המתקין פגום או שאינו חוקי. הורד שוב את Chromium.</translation>
 <translation id="8493179195440786826">‏Chromium אינו מעודכן</translation>
+<translation id="8558383651099478961">‏אחד מההורים השבית ב-Chromium את ההגדרה "הרשאות לאתרים, אפליקציות ותוספים". לא ניתן להוסיף את ה<ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">‏Chromium יכול לבדוק את הסיסמאות כשנכנסים באמצעות חשבון Google</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
 <translation id="8619360774459241877">‏הפעלת Chromium מתבצעת...</translation>

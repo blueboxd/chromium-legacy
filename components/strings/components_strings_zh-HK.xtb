@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">圖片 Y 軸移動</translation>
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1752021286346845558">出紙槽 8</translation>
-<translation id="1752483581718172048">隱藏建議項目</translation>
 <translation id="1753706481035618306">頁碼</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得您裝置的操作系統的信任。這可能是因為設定錯誤，或有攻擊者攔截您的連線。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網絡診斷<ph name="END_LINK" />。</translation>
@@ -594,7 +593,7 @@
 <translation id="3539171420378717834">在此裝置上保存此卡片的副本</translation>
 <translation id="3558573058928565255">日間</translation>
 <translation id="3566021033012934673">您的連線不是私人連線</translation>
-<translation id="3567778190852720481">無法使用公司帳戶註冊 (公司帳戶不符合註冊資格)。</translation>
+<translation id="3567778190852720481">無法使用企業帳戶註冊 (企業賬戶不符合資格)。</translation>
 <translation id="3574305903863751447"><ph name="CITY" />，<ph name="STATE" />，<ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> 上的嵌入式頁面顯示</translation>
 <translation id="3581089476000296252">Chrome 將會在網頁準備好時通知您。&lt;a&gt;取消&lt;/a&gt;</translation>
@@ -870,7 +869,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />執行 Windows 網絡診斷<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">重新載入政策</translation>
 <translation id="4728558894243024398">平台</translation>
-<translation id="4731638775147756694">系統管理員已封鎖這個應用程式</translation>
+<translation id="4731638775147756694">您的管理員已封鎖此應用程式</translation>
 <translation id="4731967714531604179">Prc2 (信封)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> 要求使用裝置的位置資料</translation>
 <translation id="4736825316280949806">重新啟動 Chromium</translation>
@@ -1746,7 +1745,6 @@
 <translation id="8425213833346101688">變更</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
-<translation id="8433678324664858900">顯示建議</translation>
 <translation id="8437238597147034694">復原移動(&amp;U)</translation>
 <translation id="8457125768502047971">無限期</translation>
 <translation id="8461694314515752532">使用您的同步密碼短語，加密已同步的資料</translation>

@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> می‌خواهد داده‌های بزرگ را برای همیشه در دستگاهتان ذخیره کند</translation>
 <translation id="1032854598605920125">چرخش در جهت عقربه‌های ساعت</translation>
 <translation id="1036348656032585052">خاموش کردن</translation>
+<translation id="1038106730571050514">نمایش پیشنهادها</translation>
 <translation id="1038842779957582377">نام ناشناس</translation>
 <translation id="1041998700806130099">پیام برگ کار</translation>
 <translation id="1050038467049342496">برنامه‌های دیگر را ببندید</translation>
@@ -401,6 +402,7 @@
 <translation id="2666092431469916601">بالا</translation>
 <translation id="2666117266261740852">برگه‌ها یا برنامه‌های دیگر را ببندید</translation>
 <translation id="2674170444375937751">آیا مطمئن هستید می‌خواهید این صفحات را از سابقه خود حذف کنید؟</translation>
+<translation id="2674804415323431591">پنهان کردن پیشنهادها</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -599,6 +601,7 @@
 <translation id="3539171420378717834">یک کپی از این کارت در این دستگاه نگهداری شود</translation>
 <translation id="3558573058928565255">ساعت از روز</translation>
 <translation id="3566021033012934673">اتصال شما خصوصی نیست</translation>
+<translation id="3567778190852720481">نمی‌توان با حساب سازمانی ثبت‌نام کرد (حساب سازمانی واجد شرایط نیست).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />، <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">صفحه جاسازی‌شده‌ای در <ph name="SITE" /> می‌گوید</translation>
 <translation id="3581089476000296252">‏وقتی این صفحه آماده شد، Chrome به شما اطلاع می‌دهد. &lt;a&gt;لغو&lt;/a&gt;</translation>
@@ -875,6 +878,7 @@
 <translation id="4722547256916164131">‏<ph name="BEGIN_LINK" />اجرای Windows Network Diagnostics<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">تازه‌سازی خط مشی‌ها</translation>
 <translation id="4728558894243024398">پلت فورم</translation>
+<translation id="4731638775147756694">سرپرستتان این برنامه را مسدود کرده است</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> می‌خواهد از موقعیت مکانی دستگاهتان استفاده کند</translation>
 <translation id="4736825316280949806">‏Chromium را راه‌اندازی مجدد کنید</translation>
@@ -1077,6 +1081,7 @@
 <translation id="5523118979700054094">نام خط‌مشی</translation>
 <translation id="55293785478302737">دوختن لبه</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5536214594743852365">نمایش بخش «<ph name="SECTION" />»</translation>
 <translation id="5539243836947087108">«رفت»</translation>
 <translation id="5540224163453853">مقاله درخواستی یافت نشد.</translation>
 <translation id="5541086400771735334">صندوق پست ۷</translation>
@@ -1245,6 +1250,7 @@
 <translation id="6263376278284652872">نشانک‌های <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">بازگشت به ایمنی</translation>
 <translation id="6266934640124581640">سبز دودی روشن</translation>
+<translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">صفحه‌های مربوط به فهرست خواندنتان اینجا نشان داده می‌شوند</translation>
 <translation id="627746635834430766">‏برای اینکه دفعات بعد پرداخت سریع‌تری داشته باشید، اطلاعات کارت و نشانی صورت‌حسابتان را در حساب Google خود ذخیره کنید.</translation>
 <translation id="6279516281132775660">‏Chrome اطلاعات زیر را<ph name="BEGIN_EMPHASIS" />ذخیره نخواهد کرد<ph name="END_EMPHASIS" />:
@@ -1475,6 +1481,7 @@
 <translation id="7313965965371928911">هشدار <ph name="BEGIN_LINK" />مرور ایمن<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">راهنمای اتصال</translation>
+<translation id="7323804146520582233">پنهان کردن بخش «<ph name="SECTION" />»</translation>
 <translation id="733354035281974745">لغو حساب محلی دستگاه</translation>
 <translation id="7333654844024768166">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chromium توصیه می‌کند همین حالا به <ph name="WEBSITE_1" />،‏ <ph name="WEBSITE_2" />، <ph name="WEBSITE_3" />، و سایت‌های دیگری که در آن‌ها از این گذرواژه استفاده می‌کنید بروید و گذرواژه را تغییر دهید.</translation>
 <translation id="7334320624316649418">&amp;انجام مجدد ترتیب‌بندی مجدد</translation>
@@ -1618,6 +1625,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{هیچ‌کدام}=1{۱ برنامه (<ph name="EXAMPLE_APP_1" />)}=2{۲ برنامه (<ph name="EXAMPLE_APP_1" />،‏ <ph name="EXAMPLE_APP_2" />)}one{# برنامه (<ph name="EXAMPLE_APP_1" />،‏ <ph name="EXAMPLE_APP_2" />،‏ <ph name="AND_MORE" />)}other{# برنامه (<ph name="EXAMPLE_APP_1" />،‏ <ph name="EXAMPLE_APP_2" />،‏ <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">اما، شما نامرئی نیستید. با استفاده از حالت ناشناس، مرورتان از چشمان کارفرمای شما، ارائه‌دهنده خدمات اینترنت یا وب‌‌سایت‌هایی که بازدید می‌کنید پنهان نمی‌ماند.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">‏با ارسال <ph name="BEGIN_WHITEPAPER_LINK" />نشانی وب برخی از صفحه‌هایی که بازدید می‌کنید، اطلاعات محدود سیستم، و بخشی از محتوای صفحه<ph name="END_WHITEPAPER_LINK" /> به Google، به بهبود امنیت وب برای همه کمک کنید. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">سایت را ترک می‌کنید؟</translation>
 <translation id="7865448901209910068">بهترین سرعت</translation>
 <translation id="7874263914261512992">‏اخیراً گذرواژه‌تان را در سایتی فریب‌کار وارد کرده‌اید. Chrome توصیه می‌کند همین حالا گذرواژه‌های ذخیره‌شده برای <ph name="WEBSITE_1" />، <ph name="WEBSITE_2" />، و سایت‌های دیگری را که در آن‌ها از این گذرواژه استفاده می‌کنید بررسی کنید.</translation>
@@ -1752,7 +1760,6 @@
 <translation id="8425213833346101688">تغییر</translation>
 <translation id="8428213095426709021">تنظیمات</translation>
 <translation id="8433057134996913067">با این کار از سیستم بیشتر وب‌سایت‌ها خارج می‌شوید.</translation>
-<translation id="8433678324664858900">نمایش پیشنهادات</translation>
 <translation id="8437238597147034694">&amp;واگرد انتقال</translation>
 <translation id="8457125768502047971">نامشخص</translation>
 <translation id="8461694314515752532">رمزگذاری داده‌های همگام‌سازی‌شده با عبارت عبور همگام‌سازی خودتان</translation>

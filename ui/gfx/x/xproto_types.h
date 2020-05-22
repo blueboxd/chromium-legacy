@@ -35,6 +35,12 @@ using Error = xcb_generic_error_t;
 template <class Reply>
 class Future;
 
+template <typename T>
+T Read(const uint8_t* buf);
+
+template <typename T>
+std::vector<uint8_t> Write(const T& t);
+
 template <typename Reply>
 struct Response {
   operator bool() const { return reply.get(); }

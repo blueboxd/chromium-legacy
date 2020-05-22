@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> आपके डिवाइस पर हमेशा के लिए बड़ी मात्रा में डेटा संग्रहीत करना चाहता है</translation>
 <translation id="1032854598605920125">घड़ी की दिशा में घुमाएं</translation>
 <translation id="1036348656032585052">बंद करें</translation>
+<translation id="1038106730571050514">सुझाव दिखाएं</translation>
 <translation id="1038842779957582377">अज्ञात नाम</translation>
 <translation id="1041998700806130099">जॉब शीट मैसेज</translation>
 <translation id="1050038467049342496">दूूूूसरे ऐप्लिकेशन बंद करें</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">इमेज Y शिफ़्ट</translation>
 <translation id="17513872634828108">टैब खोलें</translation>
 <translation id="1752021286346845558">मेलबॉक्स 8</translation>
-<translation id="1752483581718172048">सुझाव छिपाएं</translation>
 <translation id="1753706481035618306">पृष्‍ठ संख्‍या</translation>
 <translation id="1763864636252898013">यह सर्वर यह नहीं प्रमाणित कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाणपत्र आपके डिवाइस के ऑपरेटिंग सिस्टम द्वारा विश्वसनीय नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चलाकर देखें<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@
 <translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2666117266261740852">दूसरे टैब या ऐप्लिकेशन बंद करें</translation>
 <translation id="2674170444375937751">क्या आप वाकई अपने इतिहास से इन पेजों को मिटाना चाहते हैं?</translation>
+<translation id="2674804415323431591">सुझाव छिपाएं</translation>
 <translation id="2676271551327853224">रॉक-8के</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1075,6 +1076,7 @@
 <translation id="5523118979700054094">नीति का नाम</translation>
 <translation id="55293785478302737">एज़ स्टिच</translation>
 <translation id="553484882784876924">पीआरसी6 (एन्वेलप)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" सेक्शन दिखाएं</translation>
 <translation id="5539243836947087108">राफ़्ट</translation>
 <translation id="5540224163453853">अनुरोध किया गया लेख नहीं ढूंढा जा सका.</translation>
 <translation id="5541086400771735334">मेलबॉक्स 7</translation>
@@ -1474,6 +1476,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />सुरक्षित ब्राउज़िंग<ph name="END_LINK" /> की चेतावनियां</translation>
 <translation id="7319430975418800333">ए3</translation>
 <translation id="7320336641823683070">कनेक्शन संबंधी सहायता</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" सेक्शन को छिपाएं</translation>
 <translation id="733354035281974745">डिवाइस का स्थानीय खाता बदलें</translation>
 <translation id="7333654844024768166">आपने अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. क्रोमियम, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसका इस्तेमाल किया था.</translation>
 <translation id="7334320624316649418">&amp;पुन: क्रमित करना फिर से करें</translation>
@@ -1617,6 +1620,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{कोई नहीं}=1{एक ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />)}=2{दो ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# ऐप्लिकेशन (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">हालांकि, गुप्त मोड का मतलब यह नहीं है कि आपको कोई भी नहीं देख सकता. गुप्त मोड में आप जो भी ब्राउजिंग करते हैं उसे, आपके नियोक्ता, इंटरनेट सेवा देने वाली कंपनी या आप जिन वेबसाइटों को देखते हैं, वे देख सकतीं हैं.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />आप जिन पेजों पर जाते हैं उनमें से कुछ के यूआरएल, सिस्टम की थोड़ी जानकारी, और पेज का कुछ कॉन्टेंट<ph name="END_WHITEPAPER_LINK" /> Google को भेजकर, वेब पर सभी के लिए सुरक्षा को बेहतर बनाने में मदद करें. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">साइट छोड़ें?</translation>
 <translation id="7865448901209910068">सबसे अच्छी रफ़्तार</translation>
 <translation id="7874263914261512992">आपने अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. Chrome, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> और उन साइटों पर तुरंत जाकर, सेव किए गए पासवर्ड की जांच करने का सुझाव देता है जिन पर आपने इस पासवर्ड का इस्तेमाल किया है.</translation>
@@ -1751,7 +1755,6 @@
 <translation id="8425213833346101688">बदलें</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
 <translation id="8433057134996913067">इससे आप ज़्यादातर वेबसाइट से प्रस्थान कर जाएंगे.</translation>
-<translation id="8433678324664858900">सुझाव दिखाएं</translation>
 <translation id="8437238597147034694">&amp;ले जाना वापस लाएं</translation>
 <translation id="8457125768502047971">कोई तय अवधि नहीं</translation>
 <translation id="8461694314515752532">सिंक किए गए डेटा को अपने खुद के सिंक लंबे पासवर्ड से सुरक्षित करें</translation>

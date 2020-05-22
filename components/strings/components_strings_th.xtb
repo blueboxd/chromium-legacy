@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">เปลี่ยนตำแหน่งรูปภาพตามแกน Y</translation>
 <translation id="17513872634828108">แท็บที่เปิดอยู่</translation>
 <translation id="1752021286346845558">กล่องจดหมาย 8</translation>
-<translation id="1752483581718172048">ซ่อนคำแนะนำ</translation>
 <translation id="1753706481035618306">เลขหน้า</translation>
 <translation id="1763864636252898013">เซิร์ฟเวอร์นี้ไม่สามารถพิสูจน์ได้ว่าเป็น <ph name="DOMAIN" /> เพราะระบบปฏิบัติการของอุปกรณ์ของคุณไม่เชื่อถือใบรับรองความปลอดภัย โดยอาจเกิดจากการกำหนดค่าผิดหรือผู้บุกรุกที่ขัดขวางการเชื่อมต่อของคุณ</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />ลองเรียกใช้การวินิจฉัยเครือข่ายของ Windows<ph name="END_LINK" /></translation>
@@ -1612,6 +1611,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{ไม่มี}=1{1 แอป (<ph name="EXAMPLE_APP_1" />)}=2{2 แอป (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# แอป (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">อย่างไรก็ตาม ระบบยังมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้างของคุณ ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">ช่วยปรับปรุงความปลอดภัยในอินเทอร์เน็ตสำหรับทุกคนโดยการส่ง <ph name="BEGIN_WHITEPAPER_LINK" />URL ของหน้าเว็บบางหน้าที่คุณเข้าชม ข้อมูลระบบที่จำกัด และเนื้อหาบางส่วนของหน้า<ph name="END_WHITEPAPER_LINK" />ให้ Google <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">ออกจากเว็บไซต์ไหม</translation>
 <translation id="7865448901209910068">เร็วที่สุด</translation>
 <translation id="7874263914261512992">คุณเพิ่งใส่รหัสผ่านในเว็บไซต์ที่มีการหลอกลวง Chrome ขอแนะนำให้ตรวจสอบรหัสผ่านที่บันทึกไว้สำหรับ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> และเว็บไซต์อื่นๆ ที่คุณใช้รหัสผ่านนี้ทันที</translation>
@@ -1746,7 +1746,6 @@
 <translation id="8425213833346101688">เปลี่ยน</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433057134996913067">วิธีนี้จะทำให้คุณออกจากระบบของเว็บไซต์ส่วนใหญ่</translation>
-<translation id="8433678324664858900">แสดงคำแนะนำ</translation>
 <translation id="8437238597147034694">&amp;เลิกทำการย้าย</translation>
 <translation id="8457125768502047971">ไม่จำกัด</translation>
 <translation id="8461694314515752532">เข้ารหัสลับข้อมูลที่ซิงค์ด้วยรหัสผ่านการซิงค์ของคุณเอง</translation>

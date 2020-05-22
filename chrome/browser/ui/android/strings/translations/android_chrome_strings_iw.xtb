@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">להוספת שפה</translation>
 <translation id="2650751991977523696">האם להוריד את הקובץ שוב?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{קובץ אודיו אחד (#)}two{# קובצי אודיו}many{# קובצי אודיו}other{# קובצי אודיו}}</translation>
+<translation id="2656405586795711023">אפליקציות אינטרנט</translation>
 <translation id="2677748264148917807">יציאה</translation>
 <translation id="2689830683995595741">‏השימוש ב-Chrome מבטא הסכמה ל<ph name="BEGIN_LINK1" />תנאים ולהגבלות של Google<ph name="END_LINK1" /> ול<ph name="BEGIN_LINK2" />תנאים ולהגבלות הנוספים של Google Chrome ו-Chrome OS<ph name="END_LINK2" />. על השימוש חלה גם <ph name="BEGIN_LINK3" />הודעת הפרטיות לגבי חשבונות Google המנוהלים באמצעות Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">רענן את הדף</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">נתונים מאוחסנים לא חשובים</translation>
 <translation id="4000212216660919741">דף הבית במצב לא מקוון</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{שעה אחת}two{שעתיים}many{# שעות}other{# שעות}}</translation>
+<translation id="403687620286099920">‏יש להקיש כדי לפתוח את קוד ה-QR</translation>
 <translation id="4046123991198612571">הרצועה הבאה</translation>
 <translation id="4056223980640387499">חום-ספיה</translation>
 <translation id="4060598801229743805">האפשרויות זמינות בחלק העליון של המסך</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">פתח כרטיסייה חדשה</translation>
 <translation id="4759238208242260848">הורדות</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{הורדה אחת הושלמה.}two{# הורדות הושלמו.}many{# הורדות הושלמו.}other{# הורדות הושלמו.}}</translation>
+<translation id="478981486571169252">‏ב-Chrome יוצגו סטטוס הכניסה שלך ל-<ph name="SITE_NAME" />, נתוני הגלישה ונתוני האתר.</translation>
 <translation id="4802417911091824046">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay
 
 כדי לשנות את ההגדרה הזו צריך <ph name="BEGIN_LINK" />לאפס את הסנכרון<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">שליחה אל</translation>
 <translation id="5304593522240415983">שדה זה לא יכול להיות ריק</translation>
 <translation id="5308380583665731573">התחברות</translation>
+<translation id="5317780077021120954">שמור</translation>
 <translation id="5324858694974489420">הגדרות הורים</translation>
 <translation id="5327248766486351172">שם</translation>
 <translation id="5342314432463739672">בקשות הרשאה</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">אימייל</translation>
 <translation id="5665379678064389456">צור אירוע ב-<ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">להתעלם מבקשה של אתר שנועדה למנוע את שינוי הזום</translation>
+<translation id="5681394891799747640">‏הורדת קוד ה-QR נכשלה</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="5686790454216892815">שם הקובץ ארוך מדי</translation>
 <translation id="5694049548840660018">חזרה לדף הבית בקלות</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">עוד</translation>
 <translation id="604996488070107836">הורדת <ph name="FILE_NAME" /> נכשלה עקב שגיאה לא ידועה.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">כאן אפשר לנהל את הסטוריז והפעילות שלך</translation>
 <translation id="60923314841986378">נותרו <ph name="HOURS" /> שעות</translation>
 <translation id="6108923351542677676">ההגדרה מתבצעת…</translation>
 <translation id="6111020039983847643">צרכת בפועל</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">חשבון</translation>
 <translation id="6297765934698848803">המצלמה הושבתה במכשיר, בהתאם להגדרות שנקבעו על ידי הארגון שמנהל את המכשיר.</translation>
 <translation id="6303969859164067831">יציאה וכיבוי הסנכרון</translation>
+<translation id="6312687380483398334">אפליקציות אינטרנט (שקט)</translation>
 <translation id="6316139424528454185">‏אין תמיכה בגרסת Android</translation>
 <translation id="6324034347079777476">‏סנכרון מערכת Android מושבת</translation>
 <translation id="6333140779060797560">שיתוף באמצעות <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">הורדת <ph name="FILE_NAME" /> נכשלה מאחר שחסר מקום אחסון.</translation>
 <translation id="6496823230996795692">כדי להשתמש באפליקציה <ph name="APP_NAME" /> בפעם הראשונה יש להתחבר לאינטרנט.</translation>
 <translation id="6508722015517270189">‏הפעלה מחדש של Chrome</translation>
+<translation id="6527303717912515753">שיתוף</translation>
 <translation id="6532866250404780454">‏אתרים שנכנסים אליהם ב-Chrome לא יופיעו. כל הטיימרים של האתרים יימחקו.</translation>
 <translation id="6534565668554028783">‏ל-Google נדרש זמן רב מדי להגיב</translation>
 <translation id="6539092367496845964">משהו השתבש. יש לנסות שוב מאוחר יותר.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">הסנכרון לא עובד</translation>
 <translation id="7606077192958116810">מצב הטעינה המהירה מופעל. אפשר לנהל אותו דרך ההגדרות.</translation>
 <translation id="7612619742409846846">‏מחובר ל-Google בשם</translation>
+<translation id="7614971007231847352">‏ההורדה של קוד ה-QR הסתיימה</translation>
 <translation id="7619072057915878432">הורדת <ph name="FILE_NAME" /> נכשלה עקב כשלים ברשת.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />קבל עזרה<ph name="END_LINK1" /> או <ph name="BEGIN_LINK2" />חפש שוב<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏ברוכים הבאים ל-Chrome</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">ערכי החיסכון בנתונים יופיעו כאן</translation>
 <translation id="7835852323729233924">מדיה פועלת</translation>
 <translation id="783819812427904514">ביטול ההשתקה של הסרטון</translation>
+<translation id="7846296061357476882">‏שירותי Google</translation>
 <translation id="784934925303690534">טווח זמן</translation>
 <translation id="7851858861565204677">מכשירים אחרים</translation>
 <translation id="7875915731392087153">צור הודעת אימייל</translation>

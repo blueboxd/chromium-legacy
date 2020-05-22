@@ -7,9 +7,9 @@
 
 #include <objidl.h>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "ui/base/ui_base_export.h"
 
 // Windows interface.
 struct IDropTargetHelper;
@@ -25,7 +25,7 @@ namespace ui {
 // before the HWND is deleted too.
 //
 // This class is meant to be used in a STA and is not multithread-safe.
-class UI_BASE_EXPORT DropTargetWin : public IDropTarget {
+class COMPONENT_EXPORT(UI_BASE) DropTargetWin : public IDropTarget {
  public:
   DropTargetWin();
   virtual ~DropTargetWin();

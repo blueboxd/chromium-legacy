@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Vēsture</translation>
 <translation id="1650222530560417226">Pieskarieties pogai “Start Logging” (Sākt datu reģistrēšanu žurnālā), lai vāktu turpmākus JavaScript konsoles žurnālus un kļūdas no visām cilnēm. Žurnāli tiks vākti (un uzglabāti tikai atmiņā), līdz tiks aizvērta šī lapa vai līdz pieskarsieties pogai “Stop Logging” (Pārtraukt datu reģistrēšanu žurnālā).</translation>
 <translation id="1657011748321897393">Nevarēja kopīgot, jo nav izveidots savienojums ar tīklu.</translation>
+<translation id="1657641691196698092">Bloķētie sīkfaili</translation>
 <translation id="165877110639533037">Nav atvērtu ciļņu</translation>
 <translation id="1674504678466460478">No <ph name="SOURCE_LANGUAGE" /> uz <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Lai grāmatzīmes būtu pieejamas visās jūsu ierīcēs, ieslēdziet sinhronizāciju.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Ierīces politikas dēļ tika bloķēta piekļuve jūsu fotoattēliem.</translation>
 <translation id="2578571896248130439">Tīmekļa lapas sūtīšana</translation>
 <translation id="2584132361465095047">Pievienot kontu…</translation>
+<translation id="2600682495497606169">Vietņu sīkfailu dzēšana</translation>
 <translation id="2625189173221582860">Parole ir nokopēta.</translation>
 <translation id="2647269890314209800">Izmantojamie sīkfaili</translation>
 <translation id="2648803196158606475">Dzēst izlasītos</translation>
@@ -332,6 +334,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5234764350956374838">Noraidīt</translation>
 <translation id="5245322853195994030">Atcelt sinhronizēšanu</translation>
 <translation id="5271549068863921519">Saglabāt paroli</translation>
+<translation id="5295239312320826323">Vai noņemt kontu <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
 <translation id="5327248766486351172">Nosaukums</translation>

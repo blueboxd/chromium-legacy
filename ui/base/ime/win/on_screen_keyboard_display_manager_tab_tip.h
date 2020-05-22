@@ -11,7 +11,6 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "ui/base/ime/input_method_keyboard_controller.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {

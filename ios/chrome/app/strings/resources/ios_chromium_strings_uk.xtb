@@ -24,6 +24,7 @@
 <translation id="4787850887676698916">Тут відображатимуться вкладки, відкриті в Chromium на інших ваших пристроях.</translation>
 <translation id="4999538639245140991">Оскільки ви виходите з облікового запису, зареєстрованого в домені <ph name="SIGNOUT_MANAGED_DOMAIN" />, ваші дані Chromium буде видалено з цього пристрою. Вони залишаться в обліковому записі Google.</translation>
 <translation id="5573014823074921752">Порада щодо Chromium. Щоб відкрити більше параметрів, натисніть і утримуйте кнопку "Показати вкладки" на панелі інструментів, розташованій унизу або вгорі екрана.</translation>
+<translation id="5777187867430702742">Сторінка Chromium</translation>
 <translation id="5862307444128926510">Вітаємо в Chromium</translation>
 <translation id="5945387852661427312">Ви входите в обліковий запис, зареєстрований у домені <ph name="DOMAIN" />, і надаєте його адміністратору доступ до своїх даних Chromium. Ваші дані буде назавжди зв’язано з цим обліковим записом. Якщо ви вийдете з облікового запису Chromium, дані буде видалено з цього пристрою, але вони залишаться у вашому обліковому записі Google.</translation>
 <translation id="602807004951640891">Користуючись Chromium, ви приймаєте <ph name="BEGIN_LINK_TOS" />Умови використання<ph name="END_LINK_TOS" />.</translation>
@@ -44,6 +45,7 @@
 <translation id="8175055321229419309">Порада. <ph name="BEGIN_LINK" />Перемістіть значок Chromium на панель Dock<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Знаючи ваше місцезнаходження, Google зможе створити для вас зручніші умови роботи в Chromium.</translation>
 <translation id="8586442755830160949">Авторське право <ph name="YEAR" /> Автори Chromium. Усі права захищено.</translation>
+<translation id="8776843108004031667">Цей обліковий запис і всі незбережені дані буде вилучено з Chromium.</translation>
 <translation id="8809780021347235332">Щоб зберегти зображення, торкніться опції "Параметри" та надайте Chromium доступ до ваших фото</translation>
 <translation id="9022552996538154597">Вхід у Chromium</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

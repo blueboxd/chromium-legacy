@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">배터리 충전 완료</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> 데스크가 생성되었습니다.</translation>
 <translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
+<translation id="3616883743181209306">메뉴가 화면 오른쪽 상단으로 이동했습니다.</translation>
 <translation id="3621202678540785336">입력</translation>
 <translation id="3621712662352432595">오디오 설정</translation>
 <translation id="3626281679859535460">밝기</translation>
 <translation id="3631369015426612114">다음 항목에 알림 허용:</translation>
 <translation id="3638400994746983214">개인정보 보호 화면을 켜거나 끕니다. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> 관리 사용자</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">영역 캡처</translation>
 <translation id="371370241367527062">전면 마이크</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">미러링 모드 종료 중</translation>
 <translation id="602001110135236999">왼쪽으로 스크롤</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />, 관리자가 관리함</translation>
+<translation id="6030495522958826102">메뉴가 화면 왼쪽 하단으로 이동했습니다.</translation>
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6043212731627905357"><ph name="DEVICE_TYPE" />과(와) 호환되지 않는 모니터입니다(지원되지 않는 모니터임).</translation>
 <translation id="6043994281159824495">지금 로그아웃</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">연결 중</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
+<translation id="7188494361780961876">메뉴가 화면 왼쪽 상단으로 이동했습니다.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. 업데이트를 적용하려면 Chromebook을 다시 시작해야 합니다. 여기에는 최대 1분이 걸릴 수 있습니다.</translation>
 <translation id="7256634071279256947">후면 마이크</translation>
 <translation id="726276584504105859">화면 분할을 사용하려면 여기를 드래그하세요.</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">자동 회전</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8563862697512465947">알림 설정</translation>
+<translation id="857201607579416096">메뉴가 화면 오른쪽 하단으로 이동했습니다.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />에 연결됨</translation>
 <translation id="8631727435199967028">접근성 설정</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />, 관리자가 관리함</translation>

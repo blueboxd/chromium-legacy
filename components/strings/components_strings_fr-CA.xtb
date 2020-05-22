@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">Décalage Y de l'image</translation>
 <translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1752021286346845558">Boîte aux lettres 8</translation>
-<translation id="1752483581718172048">Masquer les suggestions</translation>
 <translation id="1753706481035618306">Numéro de page</translation>
 <translation id="1763864636252898013">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas considéré comme fiable par le système d'exploitation de votre appareil. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Essayer d'exécuter Windows Network Diagnostics<ph name="END_LINK" />.</translation>
@@ -1613,6 +1612,7 @@ Détails supplémentaires :
 <translation id="7844689747373518809">{COUNT,plural, =0{Aucune}=1{1 application : <ph name="EXAMPLE_APP_1" />}=2{2 applications (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# application (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# applications (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Vous n'êtes cependant pas devenu(e) invisible. L'utilisation du mode de navigation privée n'empêche pas votre employeur, votre fournisseur d'accès Internet ou les sites Web que vous avez consultés d'avoir accès aux données relatives à votre navigation.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Aidez-nous à améliorer la sécurité pour tout le monde sur Internet en envoyant <ph name="BEGIN_WHITEPAPER_LINK" />les URL de certaines pages que vous visitez, certaines données système et certains contenus des pages en question<ph name="END_WHITEPAPER_LINK" /> à Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Quitter le site?</translation>
 <translation id="7865448901209910068">Meilleure vitesse</translation>
 <translation id="7874263914261512992">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de vérifier vos mots de passe enregistrés pour <ph name="WEBSITE_1" />, pour <ph name="WEBSITE_2" /> et pour tout autre site sur lequel vous utilisez ce mot de passe maintenant.</translation>
@@ -1747,7 +1747,6 @@ Détails supplémentaires :
 <translation id="8425213833346101688">Modifier</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433057134996913067">Cette option vous déconnecte de la plupart des sites Web.</translation>
-<translation id="8433678324664858900">Afficher suggest.</translation>
 <translation id="8437238597147034694">&amp;Annuler le déplacement</translation>
 <translation id="8457125768502047971">Indéfini</translation>
 <translation id="8461694314515752532">Chiffrer vos données synchronisées avec votre propre phrase de passe de synchronisation</translation>

@@ -606,6 +606,10 @@ class PDFiumEngine : public PDFEngine,
   bool HandleTabForward(uint32_t modifiers);
   bool HandleTabBackward(uint32_t modifiers);
 
+  // Updates the currently focused object stored in |focus_item_type_|. Notifies
+  // |client_| about document focus change, if any.
+  void UpdateFocusItemType(FocusElementType focus_item_type);
+
   void UpdateLinkUnderCursor(const std::string& target_url);
   void SetLinkUnderCursorForAnnotation(FPDF_ANNOTATION annot, int page_index);
 

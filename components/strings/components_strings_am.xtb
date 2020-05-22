@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> ትልቅ ውሂብ በእርስዎ መሣሪያ ላይ እስከ መጨረሻው ማከማቸት ይፈልጋል</translation>
 <translation id="1032854598605920125">በሰዓት አቅጣጫ አሽከርክር</translation>
 <translation id="1036348656032585052">አጥፋ</translation>
+<translation id="1038106730571050514">የአስተያየት ጥቆማዎችን አሳይ</translation>
 <translation id="1038842779957582377">ያልታወቀ ስም</translation>
 <translation id="1041998700806130099">የስራ ሉህ መልዕክት</translation>
 <translation id="1050038467049342496">ሌሎች መተግበሪያዎችን ይዝጉ</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">የምስል Y ፈረቃ</translation>
 <translation id="17513872634828108">ትሮችን ክፈት</translation>
 <translation id="1752021286346845558">የመልዕክት ሳጥን 8</translation>
-<translation id="1752483581718172048">የአስተያየት ጥቆማዎችን ደብቅ</translation>
 <translation id="1753706481035618306">የገጽ ቁጥር</translation>
 <translation id="1763864636252898013">ይህ አገልጋይ <ph name="DOMAIN" /> መሆኑን ሊያረጋግጥ አልቻለም፤ የደህንነት እውቅና ማረጋገጫው በመሣሪያዎ ስርዓተ ክወና የሚታመን አይደለም። ይሄ በተሳሳተ አወቃቀር ወይም አንድ አጥቂ ግንኙነትዎን በመጥለፉ የተከሰተ ሊሆን ይችላል።</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />የWindows አውታረ መረብ መመርመሪያውን ለማሄድ ይሞክሩ<ph name="END_LINK" />።</translation>
@@ -400,6 +400,7 @@
 <translation id="2666092431469916601">ላይ</translation>
 <translation id="2666117266261740852">ሌሎች ትሮችን ወይም መተግበሪያዎችን ይዝጉ</translation>
 <translation id="2674170444375937751">እርግጠኛ ነዎት እነዚህን ገጾች ከታሪክዎ መሰረዝ ይፈልጋሉ?</translation>
+<translation id="2674804415323431591">የአስተያየት ጥቆማዎችን ደብቅ</translation>
 <translation id="2676271551327853224">ROC 8K</translation>
 <translation id="2677748264148917807">ለቅቀህ ውጣ</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1073,6 +1074,7 @@
 <translation id="5523118979700054094">የመምሪያ ስም</translation>
 <translation id="55293785478302737">ጫፍ ስፋ</translation>
 <translation id="553484882784876924">Prc6 (የደብዳቤ ፖስታ)</translation>
+<translation id="5536214594743852365">የ«<ph name="SECTION" />» ክፍሉን አሳይ</translation>
 <translation id="5539243836947087108">ታንኳ</translation>
 <translation id="5540224163453853">የተጠየቀውን ጽሑፍ ማግኘት አልተቻለም።</translation>
 <translation id="5541086400771735334">የመልዕክት ሳጥን 7</translation>
@@ -1472,6 +1474,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />የጥንቃቄ አሰሳ<ph name="END_LINK" /> ማስጠንቀቂያዎች</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">የግንኙነት እገዛ</translation>
+<translation id="7323804146520582233">የ«<ph name="SECTION" />» ክፍሉን ሰርዝ</translation>
 <translation id="733354035281974745">የመሣሪያ አካባቢያዊ መለያ መሻር</translation>
 <translation id="7333654844024768166">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chromium ወደ <ph name="WEBSITE_1" />፣ <ph name="WEBSITE_2" />፣ <ph name="WEBSITE_3" /> እና የይህን ይለፍ ቃል ወደሚጠቀሙባቸው ሌሎች ጣቢያዎች ሄደው አሁኑኑ እንዲለውጡት ይመክራል።</translation>
 <translation id="7334320624316649418">&amp;ማስተካከልን ድገም</translation>
@@ -1615,6 +1618,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{ምንም}=1{1 መተግበሪያ (<ph name="EXAMPLE_APP_1" />)}=2{2 መተግበሪያዎች (<ph name="EXAMPLE_APP_1" />፣ <ph name="EXAMPLE_APP_2" />)}one{# መተግበሪያዎች (<ph name="EXAMPLE_APP_1" />፣ <ph name="EXAMPLE_APP_2" />፣ <ph name="AND_MORE" />)}other{# መተግበሪያዎች (<ph name="EXAMPLE_APP_1" />፣ <ph name="EXAMPLE_APP_2" />፣ <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">ሆኖም ግን የማይታዩ አይደሉም። ማንነት የማያሳውቅ ሁነታ መጠቀም የእርስዎን አሰሳ፣ የበይነመረብ አገልግሎት አቅራቢ ወይም የሚጎበኟቸው ድር ጣቢያዎች ከአሰሪዎ አይደብቃቸውም።</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />የጎበኙትን የአንዳንድ ገጾች ዩአርኤልዎች፣ የተገደበ የስርዓት መረጃ እና አንዳንድ የገጽ ይዘት<ph name="END_WHITEPAPER_LINK" />ወደ Google <ph name="PRIVACY_PAGE_LINK" /> በመላክ ለሁሉም ሰው ድር ላይ ደህንነት እንዲሻሻል ያግዙ።</translation>
 <translation id="7862185352068345852">ከጣቢያ ይወጡ?</translation>
 <translation id="7865448901209910068">ምርጥ ፍጥነት</translation>
 <translation id="7874263914261512992">አሁን የይለፍ ቃልዎን በአንድ አታላይ ጣቢያ ላይ አስገብተዋል። Chrome የ<ph name="WEBSITE_1" />፣ <ph name="WEBSITE_2" /> እና አሁን ይህን የይለፍ ቃል የተጠቀሙባቸው የሌሎች ጣቢያዎች የተቀመጡ የይለፍ ቃላትዎን መፈተሽ ይመክራል።</translation>
@@ -1749,7 +1753,6 @@
 <translation id="8425213833346101688">ለውጥ</translation>
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8433057134996913067">ይህ ከአብዛኛዎቹ የድር ጣቢያዎች ዘግቶ ያስወጣዎታል።</translation>
-<translation id="8433678324664858900">ጥቆማዎችን አሳይ</translation>
 <translation id="8437238597147034694">&amp;ውሰድን ቀልብስ</translation>
 <translation id="8457125768502047971">ያልተወሰነ</translation>
 <translation id="8461694314515752532">የሰመረ ውሂብ በራስዎ የስምረት ይለፍ ሐረግ ያመሣጥሩ</translation>

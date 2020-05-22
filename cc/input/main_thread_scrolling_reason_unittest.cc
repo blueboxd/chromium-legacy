@@ -20,7 +20,7 @@ TEST_F(MainThreadScrollingReasonTest, AsText) {
       "Frame overlay, "
       "Handling scroll from main thread, "
       "Has transform and LCD text, "
-      "Background is not opaque in rect and LCD text, "
+      "Not opaque for text and LCD text, "
       "Can't paint scrolling background, "
       "Has clip related property, "
       "Non fast scrollable region, "

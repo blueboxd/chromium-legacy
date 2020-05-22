@@ -10,13 +10,13 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "third_party/icu/source/common/unicode/unistr.h"
 #include "third_party/icu/source/i18n/unicode/msgfmt.h"
 #include "third_party/icu/source/i18n/unicode/plurrule.h"
 #include "ui/base/l10n/time_format.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -87,7 +87,7 @@ class Formatter {
 };
 
 // Class to hold all Formatters, intended to be used in a global LazyInstance.
-class UI_BASE_EXPORT FormatterContainer {
+class COMPONENT_EXPORT(UI_BASE) FormatterContainer {
  public:
   FormatterContainer();
   ~FormatterContainer();
@@ -112,10 +112,11 @@ class UI_BASE_EXPORT FormatterContainer {
 
 // Windows compilation requires full definition of FormatterContainer before
 // LazyInstance<FormatterContainter> may be declared.
-extern UI_BASE_EXPORT base::LazyInstance<FormatterContainer>::Leaky g_container;
+extern COMPONENT_EXPORT(UI_BASE) base::LazyInstance<FormatterContainer>::Leaky
+    g_container;
 
 // For use in unit tests only.
-extern UI_BASE_EXPORT bool formatter_force_fallback;
+extern COMPONENT_EXPORT(UI_BASE) bool formatter_force_fallback;
 
 }  // namespace ui
 

@@ -265,9 +265,9 @@ class StaleHostResolverTest : public testing::Test {
     DCHECK(resolver_);
     EXPECT_FALSE(resolve_pending_);
 
-    request_ =
-        resolver_->CreateRequest(net::HostPortPair(kHostname, kPort),
-                                 net::NetLogWithSource(), optional_parameters);
+    request_ = resolver_->CreateRequest(
+        net::HostPortPair(kHostname, kPort), net::NetworkIsolationKey(),
+        net::NetLogWithSource(), optional_parameters);
     resolve_pending_ = true;
     resolve_complete_ = false;
     resolve_error_ = net::ERR_UNEXPECTED;

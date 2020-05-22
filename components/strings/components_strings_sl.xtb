@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> želi trajno shranjevati velike količine podatkov v vaši napravi</translation>
 <translation id="1032854598605920125">Sukanje v smeri urnega kazalca</translation>
 <translation id="1036348656032585052">Izklop</translation>
+<translation id="1038106730571050514">Prikaz predlogov</translation>
 <translation id="1038842779957582377">neznano ime</translation>
 <translation id="1041998700806130099">Sporočilo glede delovnega lista</translation>
 <translation id="1050038467049342496">Zaprite druge aplikacije</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Zamike slike v Y</translation>
 <translation id="17513872634828108">Odprti zavihki</translation>
 <translation id="1752021286346845558">Nabiralnik 8</translation>
-<translation id="1752483581718172048">Skrivanje predlogov</translation>
 <translation id="1753706481035618306">Številka strani</translation>
 <translation id="1763864636252898013">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vaše naprave ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Poskušajte zagnati orodje Omrežna diagnostika Windows<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="2666092431469916601">Na vrh</translation>
 <translation id="2666117266261740852">Zaprite druge zavihke ali aplikacije</translation>
 <translation id="2674170444375937751">Ali ste prepričani, da želite te strani izbrisati iz svoje zgodovine?</translation>
+<translation id="2674804415323431591">Skrivanje predlogov</translation>
 <translation id="2676271551327853224">ROC 16K</translation>
 <translation id="2677748264148917807">Zapusti</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1082,6 +1083,7 @@ V nasprotnem primeru bodo to blokirale nastavitve zasebnosti. S tem bo vsebina, 
 <translation id="5523118979700054094">Ime pravilnika</translation>
 <translation id="55293785478302737">Robni šiv</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5536214594743852365">Pokaži razdelek »<ph name="SECTION" />«</translation>
 <translation id="5539243836947087108">Mrežasta podlaga</translation>
 <translation id="5540224163453853">Zahtevanega članka ni bilo mogoče najti.</translation>
 <translation id="5541086400771735334">Nabiralnik 7</translation>
@@ -1481,6 +1483,7 @@ Dodatne podrobnosti:
 <translation id="7313965965371928911">Opozorila za <ph name="BEGIN_LINK" />varno brskanje<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoč pri povezavi</translation>
+<translation id="7323804146520582233">Skrij razdelek »<ph name="SECTION" />«</translation>
 <translation id="733354035281974745">Preglasitev lokalnega računa v napravi</translation>
 <translation id="7333654844024768166">Pravkar ste vnesli geslo na zavajajočem spletnem mestu. Chromium priporoča, da obiščete <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ter druga spletna mesta, na katerih uporabljate to geslo, in ga takoj spremenite.</translation>
 <translation id="7334320624316649418">&amp;Uveljavi razvrstitev</translation>
@@ -1759,7 +1762,6 @@ Dodatne podrobnosti:
 <translation id="8425213833346101688">Spremeni</translation>
 <translation id="8428213095426709021">Nastavitve</translation>
 <translation id="8433057134996913067">S tem boste odjavljeni z večine spletnih mest.</translation>
-<translation id="8433678324664858900">Prikaži predloge</translation>
 <translation id="8437238597147034694">&amp;Razveljavi premik</translation>
 <translation id="8457125768502047971">Neomejeno</translation>
 <translation id="8461694314515752532">Šifriranje sinhroniziranih podatkov z vašim geslom za sinhronizacijo</translation>

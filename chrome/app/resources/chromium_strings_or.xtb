@@ -160,6 +160,7 @@
 କିଛି ବୈଶିଷ୍ଟ୍ୟ ହୁଏତ ଉପଲବ୍ଧ ନଥାଇପାରେ। ଦୟାକରି ଏକ ଭିନ୍ନ ପ୍ରୋଫାଇଲ୍ ଡିରେକ୍ଟୋରୀ ନିର୍ଦ୍ଦିଷ୍ଟ କରନ୍ତୁ କିମ୍ବା Chromiumର ଏକ ନୂତନ ସଂସ୍କରଣ ବ୍ୟବହାର କରନ୍ତୁ।</translation>
 <translation id="6734080038664603509">&amp;Chromium ଅପ୍‌ଡେଟ୍</translation>
 <translation id="6734291798041940871">ଆପଣଙ୍କ କମ୍ପ୍ୟୁଟର୍‌ରେ ସମସ୍ତ ଉପଯୋଗକର୍ତ୍ତାଙ୍କ ପାଇଁ Chromium ପୂର୍ବରୁ ଇନ୍‌ଷ୍ଟଲ୍ କରାଯାଇଛି।</translation>
+<translation id="6774082503108938489">ଆପଣଙ୍କ ବାପାମା Chromium ପାଇଁ "ସାଇଟ୍, ଆପ୍ ଏବଂ ଏକ୍ସଟେନସନଗୁଡ଼ିକ ନିମନ୍ତେ ଅନୁମତିଗୁଡ଼ିକ" ବନ୍ଦ କରିଦେଇଛନ୍ତି। ଏହି <ph name="EXTENSION_TYPE_PARAMETER" />କୁ ସକ୍ଷମ କରିବା ପାଇଁ ଅନୁମତି ନାହିଁ।</translation>
 <translation id="6847869444787758381">ଆପଣଙ୍କର ପାସ୍‍ୱାର୍ଡଗୁଡ଼ିକ କେବେ ବି ଚୋରି ହୋଇଛି କି ନାହିଁ ତାହା Chromium ଆପଣଙ୍କୁ ଜାଣିବାକୁ ଦିଏ</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google ପେ (Chromiumକୁ କପି କରାଯାଇଛି)</translation>
@@ -217,6 +218,7 @@ Chromium ଆପଣଙ୍କ ସେଟିଂସ୍‌କୁ ପୁନରୁଦ୍
 <translation id="8417404458978023919">{0,plural, =1{ଗୋଟିଏ ଦିନ ମଧ୍ୟରେ Chromium ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ}other{# ଦିନ ମଧ୍ୟରେ Chromium ପୁଣି ଲଞ୍ଚ କରନ୍ତୁ}}</translation>
 <translation id="8453117565092476964">ଇନ୍‌ଷ୍ଟଲର୍‌ ଆର୍କାଇଭ୍‍ ଖରାପ ହୋ‍ଇଯାଇଛି କିମ୍ବା ଅବୈଧ ଅଟେ। ଦୟାକରି Chromium ପୁଣି ଡାଉନ୍‌ଲୋଡ୍‌ କରନ୍ତୁ।</translation>
 <translation id="8493179195440786826">Chromiumର ସମୟସୀମା ଶେଷ ହୋଇଛି</translation>
+<translation id="8558383651099478961">ଆପଣଙ୍କ ବାପାମା Chromium ପାଇଁ "ସାଇଟ୍, ଆପ୍ ଏବଂ ଏକ୍ସଟେନସନଗୁଡ଼ିକ ନିମନ୍ତେ ଅନୁମତିଗୁଡ଼ିକ" ବନ୍ଦ କରିଦେଇଛନ୍ତି। ଏହି <ph name="EXTENSION_TYPE_PARAMETER" />କୁ ଯୋଗ କରିବା ପାଇଁ ଅନୁମତି ନାହିଁ।</translation>
 <translation id="8568283329061645092">ଆପଣ ଆପଣଙ୍କର Google ଆକାଉଣ୍ଟ ମାଧ୍ୟମରେ ସାଇନ୍ ଇନ୍ କଲେ, Chromium ଆପଣଙ୍କର ପାସୱାର୍ଡ ଯାଞ୍ଚ କରିପାରିବ</translation>
 <translation id="8586442755830160949">କପିରାଇଟ୍ <ph name="YEAR" /> Chromium ଲେଖକ। ସମସ୍ତ ଅଧିକାର ସଂରକ୍ଷିତ ଅଛି।</translation>
 <translation id="8619360774459241877">Chromium ଲଞ୍ଚ୍ ହେଉଛି...</translation>

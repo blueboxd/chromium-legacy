@@ -4,13 +4,10 @@
 
 import {FittingType, TwoUpViewAction} from './constants.js';
 
-/**
- * Handles events specific to the PDF viewer and logs the corresponding metrics.
- */
+// Handles events specific to the PDF viewer and logs the corresponding metrics.
 export class PDFMetrics {
   /**
    * Records when the zoom mode is changed to fit a FittingType.
-   *
    * @param {FittingType} fittingType the new FittingType.
    */
   static recordFitTo(fittingType) {
@@ -25,7 +22,6 @@ export class PDFMetrics {
 
   /**
    * Records when the two up view mode is enabled or disabled.
-   *
    * @param {TwoUpViewAction} twoUpViewAction the new TwoUpViewAction.
    */
   static recordTwoUpView(twoUpViewAction) {
@@ -37,9 +33,8 @@ export class PDFMetrics {
 
   /**
    * Records zoom in and zoom out actions.
-   *
    * @param {boolean} isZoomIn True when the action is zooming in, false when
-   * the action is zooming out.
+   *     the action is zooming out.
    */
   static recordZoomAction(isZoomIn) {
     PDFMetrics.record(
@@ -49,7 +44,6 @@ export class PDFMetrics {
 
   /**
    * Records the given action to chrome.metricsPrivate.
-   *
    * @param {PDFMetrics.UserAction} action
    */
   static record(action) {
@@ -96,18 +90,15 @@ PDFMetrics.firstActionRecorded_ = new Set();
  * The *_FIRST values are recorded automaticlly,
  * eg. PDFMetrics.record(...ROTATE) will also record ROTATE_FIRST
  * on the first instance.
- *
  * @enum {number}
  */
 PDFMetrics.UserAction = {
-  /**
-   * Recorded when the document is first loaded. This event serves as
-   * denominator to determine percentages of documents in which an action was
-   * taken as well as average number of each action per document.
-   */
+  // Recorded when the document is first loaded. This event serves as
+  // denominator to determine percentages of documents in which an action was
+  // taken as well as average number of each action per document.
   DOCUMENT_OPENED: 0,
 
-  /** Recorded when the document is rotated clockwise or counter-clockwise. */
+  // Recorded when the document is rotated clockwise or counter-clockwise.
   ROTATE_FIRST: 1,
   ROTATE: 2,
 
@@ -117,26 +108,24 @@ PDFMetrics.UserAction = {
   FIT_TO_PAGE_FIRST: 5,
   FIT_TO_PAGE: 6,
 
-  /** Recorded when the bookmarks panel is opened. */
+  // Recorded when the bookmarks panel is opened.
   OPEN_BOOKMARKS_PANEL_FIRST: 7,
   OPEN_BOOKMARKS_PANEL: 8,
 
-  /** Recorded when a bookmark is followed. */
+  // Recorded when a bookmark is followed.
   FOLLOW_BOOKMARK_FIRST: 9,
   FOLLOW_BOOKMARK: 10,
 
-  /** Recorded when the page selection is used to navigate to another page. */
+  // Recorded when the page selection is used to navigate to another page.
   PAGE_SELECTOR_NAVIGATE_FIRST: 11,
   PAGE_SELECTOR_NAVIGATE: 12,
 
-  /** Recorded when the user triggers a save of the document. */
+  // Recorded when the user triggers a save of the document.
   SAVE_FIRST: 13,
   SAVE: 14,
 
-  /**
-   * Recorded when the user triggers a save of the document and the document
-   * has been modified by annotations.
-   */
+  // Recorded when the user triggers a save of the document and the document
+  // has been modified by annotations.
   SAVE_WITH_ANNOTATION_FIRST: 15,
   SAVE_WITH_ANNOTATION: 16,
 
@@ -149,43 +138,43 @@ PDFMetrics.UserAction = {
   EXIT_ANNOTATION_MODE_FIRST: 21,
   EXIT_ANNOTATION_MODE: 22,
 
-  /** Recorded when a pen stroke is made. */
+  // Recorded when a pen stroke is made.
   ANNOTATE_STROKE_TOOL_PEN_FIRST: 23,
   ANNOTATE_STROKE_TOOL_PEN: 24,
 
-  /** Recorded when an eraser stroke is made. */
+  // Recorded when an eraser stroke is made.
   ANNOTATE_STROKE_TOOL_ERASER_FIRST: 25,
   ANNOTATE_STROKE_TOOL_ERASER: 26,
 
-  /** Recorded when a highlighter stroke is made. */
+  // Recorded when a highlighter stroke is made.
   ANNOTATE_STROKE_TOOL_HIGHLIGHTER_FIRST: 27,
   ANNOTATE_STROKE_TOOL_HIGHLIGHTER: 28,
 
-  /** Recorded when a stroke is made using touch. */
+  // Recorded when a stroke is made using touch.
   ANNOTATE_STROKE_DEVICE_TOUCH_FIRST: 29,
   ANNOTATE_STROKE_DEVICE_TOUCH: 30,
 
-  /** Recorded when a stroke is made using mouse. */
+  // Recorded when a stroke is made using mouse.
   ANNOTATE_STROKE_DEVICE_MOUSE_FIRST: 31,
   ANNOTATE_STROKE_DEVICE_MOUSE: 32,
 
-  /** Recorded when a stroke is made using pen. */
+  // Recorded when a stroke is made using pen.
   ANNOTATE_STROKE_DEVICE_PEN_FIRST: 33,
   ANNOTATE_STROKE_DEVICE_PEN: 34,
 
-  /** Recorded when two-up view mode is enabled. */
+  // Recorded when two-up view mode is enabled.
   TWO_UP_VIEW_ENABLE_FIRST: 35,
   TWO_UP_VIEW_ENABLE: 36,
 
-  /** Recorded when two-up view mode is disabled. */
+  // Recorded when two-up view mode is disabled.
   TWO_UP_VIEW_DISABLE_FIRST: 37,
   TWO_UP_VIEW_DISABLE: 38,
 
-  /** Recorded when zoom in button is clicked. */
+  // Recorded when zoom in button is clicked.
   ZOOM_IN_FIRST: 39,
   ZOOM_IN: 40,
 
-  /** Recorded when zoom out button is clicked. */
+  // Recorded when zoom out button is clicked.
   ZOOM_OUT_FIRST: 41,
   ZOOM_OUT: 42,
 

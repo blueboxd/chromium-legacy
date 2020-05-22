@@ -97,6 +97,8 @@ public class UrlOverridingTest {
             BASE_PATH + "navigation_from_java_redirection.html";
     private static final String NAVIGATION_TO_CCT_FROM_INTENT_URI =
             BASE_PATH + "navigation_to_cct_via_intent_uri.html";
+    private static final String NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI =
+            BASE_PATH + "navigation_to_file_scheme_via_intent_uri.html";
 
     private static class TestTabObserver extends EmptyTabObserver {
         private final CallbackHelper mFinishCallback;
@@ -489,5 +491,38 @@ public class UrlOverridingTest {
                         Base64.URL_SAFE));
 
         loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, fallbackUrl, true);
+    }
+
+    @Test
+    @LargeTest
+    public void testIntentURIWithFileSchemeDoesNothing() throws TimeoutException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        String originalUrl = mTestServer.getURL(NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI);
+        loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, null, false, "scheme_file");
+    }
+
+    @Test
+    @LargeTest
+    public void testIntentURIWithMixedCaseFileSchemeDoesNothing() throws TimeoutException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        String originalUrl = mTestServer.getURL(NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI);
+        loadUrlAndWaitForIntentUrl(
+                originalUrl, true, false, false, null, false, "scheme_mixed_case_file");
+    }
+
+    @Test
+    @LargeTest
+    public void testIntentURIWithNoSchemeDoesNothing() throws TimeoutException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        String originalUrl = mTestServer.getURL(NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI);
+        loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, null, false, "null_scheme");
+    }
+
+    @Test
+    @LargeTest
+    public void testIntentURIWithEmptySchemeDoesNothing() throws TimeoutException {
+        mActivityTestRule.startMainActivityOnBlankPage();
+        String originalUrl = mTestServer.getURL(NAVIGATION_TO_FILE_SCHEME_FROM_INTENT_URI);
+        loadUrlAndWaitForIntentUrl(originalUrl, true, false, false, null, false, "empty_scheme");
     }
 }

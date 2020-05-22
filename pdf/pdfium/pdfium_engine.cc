@@ -947,7 +947,7 @@ void PDFiumEngine::KillFormFocus() {
 
 void PDFiumEngine::UpdateFocus(bool has_focus) {
   if (has_focus) {
-    focus_item_type_ = last_focused_item_type_;
+    UpdateFocusItemType(last_focused_item_type_);
     if (focus_item_type_ == FocusElementType::kPage &&
         PageIndexInBounds(last_focused_page_) &&
         last_focused_annot_index_ != -1) {
@@ -961,7 +961,7 @@ void PDFiumEngine::UpdateFocus(bool has_focus) {
   } else {
     last_focused_item_type_ = focus_item_type_;
     if (focus_item_type_ == FocusElementType::kDocument) {
-      focus_item_type_ = FocusElementType::kNone;
+      UpdateFocusItemType(FocusElementType::kNone);
     } else if (focus_item_type_ == FocusElementType::kPage) {
       FPDF_ANNOTATION last_focused_annot = nullptr;
       FPDF_BOOL ret = FORM_GetFocusedAnnot(form(), &last_focused_page_,
@@ -1119,7 +1119,7 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
     return true;
 
   if (page_index != -1) {
-    focus_item_type_ = FocusElementType::kPage;
+    UpdateFocusItemType(FocusElementType::kPage);
     last_focused_page_ = page_index;
     double page_x;
     double page_y;
@@ -2707,7 +2707,8 @@ void PDFiumEngine::LoadForm() {
                                     kFormHighlightColor);
     FPDF_SetFormFieldHighlightAlpha(form(), kFormHighlightAlpha);
 
-    if (base::FeatureList::IsEnabled(features::kTabAcrossPDFAnnotations)) {
+    if (base::FeatureList::IsEnabled(features::kTabAcrossPDFAnnotations) &&
+        !client_->IsPrintPreview()) {
       static constexpr FPDF_ANNOTATION_SUBTYPE kFocusableAnnotSubtypes[] = {
           FPDF_ANNOT_LINK, FPDF_ANNOT_HIGHLIGHT, FPDF_ANNOT_WIDGET};
       FPDF_BOOL ret = FPDFAnnot_SetFocusableSubtypes(
@@ -3849,7 +3850,7 @@ bool PDFiumEngine::HandleTabEventWithModifiers(uint32_t modifiers) {
 
 bool PDFiumEngine::HandleTabForward(uint32_t modifiers) {
   if (focus_item_type_ == FocusElementType::kNone) {
-    focus_item_type_ = FocusElementType::kDocument;
+    UpdateFocusItemType(FocusElementType::kDocument);
     return true;
   }
 
@@ -3867,17 +3868,17 @@ bool PDFiumEngine::HandleTabForward(uint32_t modifiers) {
 
   if (did_tab_forward) {
     last_focused_page_ = page_index;
-    focus_item_type_ = FocusElementType::kPage;
+    UpdateFocusItemType(FocusElementType::kPage);
   } else {
     last_focused_page_ = -1;
-    focus_item_type_ = FocusElementType::kNone;
+    UpdateFocusItemType(FocusElementType::kNone);
   }
   return did_tab_forward;
 }
 
 bool PDFiumEngine::HandleTabBackward(uint32_t modifiers) {
   if (focus_item_type_ == FocusElementType::kDocument) {
-    focus_item_type_ = FocusElementType::kNone;
+    UpdateFocusItemType(FocusElementType::kNone);
     return false;
   }
 
@@ -3895,7 +3896,7 @@ bool PDFiumEngine::HandleTabBackward(uint32_t modifiers) {
 
   if (did_tab_backward) {
     last_focused_page_ = page_index;
-    focus_item_type_ = FocusElementType::kPage;
+    UpdateFocusItemType(FocusElementType::kPage);
   } else {
     // No focusable annotation found in pages. Possible scenarios:
     // Case 1: |focus_item_type_| is None. Since no object in any page can take
@@ -3908,11 +3909,11 @@ bool PDFiumEngine::HandleTabBackward(uint32_t modifiers) {
       case FocusElementType::kNone:
         did_tab_backward = true;
         last_focused_page_ = -1;
-        focus_item_type_ = FocusElementType::kDocument;
+        UpdateFocusItemType(FocusElementType::kDocument);
         KillFormFocus();
         break;
       case FocusElementType::kDocument:
-        focus_item_type_ = FocusElementType::kNone;
+        UpdateFocusItemType(FocusElementType::kNone);
         break;
       default:
         NOTREACHED();
@@ -3920,6 +3921,16 @@ bool PDFiumEngine::HandleTabBackward(uint32_t modifiers) {
     }
   }
   return did_tab_backward;
+}
+
+void PDFiumEngine::UpdateFocusItemType(FocusElementType focus_item_type) {
+  if (focus_item_type_ == focus_item_type)
+    return;
+  if (focus_item_type_ == FocusElementType::kDocument)
+    client_->DocumentFocusChanged(false);
+  focus_item_type_ = focus_item_type;
+  if (focus_item_type_ == FocusElementType::kDocument)
+    client_->DocumentFocusChanged(true);
 }
 
 #if defined(PDF_ENABLE_XFA)

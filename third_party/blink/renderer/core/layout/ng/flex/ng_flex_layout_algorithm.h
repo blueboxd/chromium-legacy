@@ -49,6 +49,9 @@ class CORE_EXPORT NGFlexLayoutAlgorithm
   bool IsColumnContainerMainSizeDefinite() const;
   bool IsContainerCrossSizeDefinite() const;
 
+  LayoutUnit CalculateFixedCrossSize(const MinMaxSizes& cross_axis_min_max,
+                                     const NGBoxStrut& margins) const;
+
   NGConstraintSpace BuildSpaceForFlexBasis(const NGBlockNode& flex_item) const;
   NGConstraintSpace BuildSpaceForIntrinsicBlockSize(
       const NGBlockNode& flex_item,

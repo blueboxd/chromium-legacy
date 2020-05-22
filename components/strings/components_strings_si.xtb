@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> හට ඔබේ උපාංගය මත විශාල දත්ත ස්ථිරව ගබඩා කිරීමට අවශ්‍යයි</translation>
 <translation id="1032854598605920125">දක්ෂිණාවර්තව කරකවන්න</translation>
 <translation id="1036348656032585052">ක්‍රියා විරහිතය</translation>
+<translation id="1038106730571050514">යෝජනා පෙන්වන්න</translation>
 <translation id="1038842779957582377">නොදන්නා නමක්</translation>
 <translation id="1041998700806130099">වැඩ පත්‍ර පණිවුඩය</translation>
 <translation id="1050038467049342496">අනෙකුත් යෙදුම් වසන්න</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">රූපයේ Y වැඩ මුරය</translation>
 <translation id="17513872634828108">පටිති විවෘත කරන්න</translation>
 <translation id="1752021286346845558">තැපැල් පෙට්ටිය 8</translation>
-<translation id="1752483581718172048">යෝජනා සඟවන්න</translation>
 <translation id="1753706481035618306">පිටු අංකය</translation>
 <translation id="1763864636252898013">මෙම සේවාදායකයට එය <ph name="DOMAIN" /> බව සනාථ කිරීමට නොහැකි විය; එහි ආරක්ෂණ සහතිකය ඔබගේ උපාංගයෙහි මෙහෙයුම් පද්ධතිය මගින් විශ්වාස නොකරයි. මෙය වැරදි වින්‍යාස කිරීමක් හෝ ප්‍රහාරකයකු ඔබගේ සබැඳුමට බාධා කිරීමක් නිසා විය හැකිය.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows ජාල දෝෂහරණ ධාවනය කිරීමට උත්සාහ කරන්න<ph name="END_LINK" />.</translation>
@@ -399,6 +399,7 @@
 <translation id="2666092431469916601">ඉහල</translation>
 <translation id="2666117266261740852">අනෙකුත් පටිති හෝ යෙදුම් වසන්න</translation>
 <translation id="2674170444375937751">ඔබට ඔබේ ඉතිහාසය වෙතින් මෙම පිටු මැකීමට අවශ්‍ය බව විශ්වාසද?</translation>
+<translation id="2674804415323431591">යෝජනා සඟවන්න</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">හැර යන්න</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1077,6 +1078,7 @@
 <translation id="5523118979700054094">ප්‍රතිපත්තියේ නම</translation>
 <translation id="55293785478302737">දාර මැස්ම</translation>
 <translation id="553484882784876924">Prc6 (ලියුම් කවරය)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" කොටස පෙන්වන්න</translation>
 <translation id="5539243836947087108">උඩුප</translation>
 <translation id="5540224163453853">ඉල්ලා සිටි ලිපිය සොයා ගත නොහැකි විය.</translation>
 <translation id="5541086400771735334">තැපැල් පෙට්ටිය 7</translation>
@@ -1476,6 +1478,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />ආරක්‍ෂිත බ්‍රවුස් කිරීමේ<ph name="END_LINK" /> අවවාද</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">සම්බන්ධතා උපකාරය</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" කොටස සඟවන්න</translation>
 <translation id="733354035281974745">උපාංග අභ්‍යන්තර ගිණුම් ප්‍රතික්‍ෂේපය</translation>
 <translation id="7333654844024768166">ඔබ මේ දැන් වංචනික අඩවියක ඔබේ මුරපදය ඇතුළු කළා. Chromium <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" />, සහ ඔබ මෙම මුරපදය භාවිත කරන වෙනත් වෙබ් අඩවිවලට ගොස් එය දැන් වෙනස් කිරීම නිර්දේශ කරයි.</translation>
 <translation id="7334320624316649418">යළි ඇනවුම් කිරීම &amp;යළි කරන්න</translation>
@@ -1754,7 +1757,6 @@
 <translation id="8425213833346101688">වෙනස් කරන්න</translation>
 <translation id="8428213095426709021">සැකසුම්</translation>
 <translation id="8433057134996913067">මෙය ඔබව බොහෝ අඩවිවලින් වරනු ඇත.</translation>
-<translation id="8433678324664858900">යෝජනා පෙන්වන්න</translation>
 <translation id="8437238597147034694">ගෙන යාම &amp;පසුගමනය කරන්න</translation>
 <translation id="8457125768502047971">අනියත</translation>
 <translation id="8461694314515752532">ඔබගේම සමමුහූර්ත මුර-වැකිකඩ සමඟ සමමුහූර්ත කළ දත්ත සංකේතන කරන්න</translation>

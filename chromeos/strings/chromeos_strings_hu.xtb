@@ -51,7 +51,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="808894953321890993">Jelszó módosítása</translation>
 <translation id="8208861521865154048">Előnyök</translation>
-<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> kezeli ezt a felhasználót. Távolról módosíthatja a beállításokat és felügyelheti a felhasználó tevékenységeit.</translation>
+<translation id="8701136875688985581">A(z) <ph name="ENROLLMENT_DOMAIN" /> kezeli ezt a felhasználót. A domain távolról módosíthatja a beállításokat, és figyelheti a felhasználó tevékenységeit.</translation>
 <translation id="8747900814994928677">Módosítás megerősítése</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> kísérlet maradt</translation>
 <translation id="910415269708673980">Frissítse a következőhöz tartozó jegyet: <ph name="PRINCIPAL_NAME" /></translation>

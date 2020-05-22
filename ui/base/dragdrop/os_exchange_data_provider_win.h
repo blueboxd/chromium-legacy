@@ -23,10 +23,10 @@
 #define IDataObjectAsyncCapability IAsyncOperation
 #endif
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
 
@@ -115,7 +115,8 @@ class DataObjectImpl : public DownloadFileObserver,
   bool async_operation_started_;
 };
 
-class UI_BASE_EXPORT OSExchangeDataProviderWin : public OSExchangeDataProvider {
+class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderWin
+    : public OSExchangeDataProvider {
  public:
   // Returns true if source has plain text that is a valid url.
   static bool HasPlainTextURL(IDataObject* source);

@@ -155,7 +155,6 @@ jumbo_component("base") {
     "template_expressions.h",
     "theme_provider.cc",
     "theme_provider.h",
-    "ui_base_export.h",
     "ui_base_exports.cc",
     "ui_base_paths.cc",
     "ui_base_paths.h",
@@ -420,7 +419,7 @@ jumbo_component("base") {
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-  defines = [ "UI_BASE_IMPLEMENTATION" ]
+  defines = [ "IS_UI_BASE_IMPL" ]
 
   public_deps = [
     ":buildflags",

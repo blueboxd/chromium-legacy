@@ -7,12 +7,12 @@
 
 #include <stdint.h>
 
+#include "base/component_export.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-class UI_BASE_EXPORT DragDropTypes {
+class COMPONENT_EXPORT(UI_BASE) DragDropTypes {
  public:
   enum DragOperation {
     DRAG_NONE = 0,

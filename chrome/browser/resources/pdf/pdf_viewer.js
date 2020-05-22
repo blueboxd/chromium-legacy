@@ -134,10 +134,7 @@ export function shouldIgnoreKeyEvents(activeElement) {
       activeElement.tagName === 'TEXTAREA');
 }
 
-/**
- * Creates a new PDFViewer. There should only be one of these objects per
- * document.
- */
+// There should only be one of these objects per document.
 export class PDFViewer {
   /**
    * @param {!BrowserApi} browserApi An object providing an API to the browser.
@@ -826,8 +823,8 @@ export class PDFViewer {
 
   /**
    * @return {?Promise} Resolved when the load state reaches LOADED,
-   * rejects on FAILED. Returns null if no promise has been created, which
-   * is the case for initial load of the PDF.
+   *     rejects on FAILED. Returns null if no promise has been created, which
+   *     is the case for initial load of the PDF.
    */
   get loaded() {
     return this.loaded_ ? this.loaded_.promise : null;
@@ -1291,6 +1288,9 @@ export class PDFViewer {
           type: 'touchSelectionOccurred',
         });
         return;
+      case 'documentFocusChanged':
+        // TODO(crbug.com/1069370): Draw a focus rect around plugin.
+        return;
     }
     assertNotReached('Unknown message type received: ' + data.type);
   }
@@ -1566,6 +1566,7 @@ window.PDFViewer = PDFViewer;
 /**
  * The height of the toolbar along the top of the page. The document will be
  * shifted down by this much in the viewport.
+ * @const {number}
  */
 PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 56;
 
@@ -1573,21 +1574,25 @@ PDFViewer.MATERIAL_TOOLBAR_HEIGHT = 56;
  * Minimum height for the material toolbar to show (px). Should match the media
  * query in index-material.css. If the window is smaller than this at load,
  * leave no space for the toolbar.
+ * @const {number}
  */
 PDFViewer.TOOLBAR_WINDOW_MIN_HEIGHT = 250;
 
 /**
  * The background color used for print preview (--google-grey-refresh-300).
+ * @const {string}
  */
 PDFViewer.PRINT_PREVIEW_BACKGROUND_COLOR = '0xFFDADCE0';
 
 /**
  * The background color used for print preview when dark mode is enabled
  * (--google-grey-refresh-700).
+ * @const {string}
  */
 PDFViewer.PRINT_PREVIEW_DARK_BACKGROUND_COLOR = '0xFF5F6368';
 
 /**
  * The background color used for the regular viewer.
+ * @const {string}
  */
 PDFViewer.BACKGROUND_COLOR = '0xFF525659';

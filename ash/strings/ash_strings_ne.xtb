@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">ब्यटरी पूर्ण</translation>
 <translation id="3604801046548457007">डेस्क <ph name="DESK_TITILE" /> सिर्जना गरियो</translation>
 <translation id="3606978283550408104">ब्रेल प्रदर्शन जडित छ।</translation>
+<translation id="3616883743181209306">मेनु सारेर स्क्रिनको सिरानको दायाँ कुनामा लगियो।</translation>
 <translation id="3621202678540785336">आगत</translation>
 <translation id="3621712662352432595">अडियो सेटिङहरू</translation>
 <translation id="3626281679859535460">चम्किलोपना</translation>
 <translation id="3631369015426612114">निम्न स्रोतहरूबाट सूचनाहरूलाई अनुमति दिनुहोस्</translation>
 <translation id="3638400994746983214">गोपनीयताको स्क्रिन टगल गर्नुहोस्। <ph name="STATE_TEXT" />।</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> व्यवस्थापन गरिएका प्रयोगकर्ता</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">क्षेत्र कैद गर्नुहोस्</translation>
 <translation id="371370241367527062">अगाडिको माइक्रोफोन</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">मिरर मोडबाट बाहिर निस्कँदै</translation>
 <translation id="602001110135236999">बायाँतिर स्क्रोल गर्नुहोस्</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ</translation>
+<translation id="6030495522958826102">मेनु सारेर स्क्रिनको फेदको बायाँ कुनामा लगियो।</translation>
 <translation id="6040143037577758943">बन्द गर्नुहोस्</translation>
 <translation id="6043212731627905357">तपाईंको मनिटरले <ph name="DEVICE_TYPE" /> सँग राम्ररी काम गरिरहेको छैन (यस मनिटरलाई समर्थन छैन)।</translation>
 <translation id="6043994281159824495">अहिले साइन आउट गर्नुहोस्</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">जडान गर्दै...</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> सेकेन्डमा पुरानो रिजोल्युसनमा फिर्ता जाँदै</translation>
+<translation id="7188494361780961876">मेनु सारेर स्क्रिनको सिरानको बायाँ कुनामा लगियो।</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />। कुनै अद्यावधिक लागू गर्न यो Chromebook पुनः सुरु गर्नु पर्ने हुन्छ। यो प्रक्रिया पूरा हुन १ मिनेटसम्म लाग्न सक्छ।</translation>
 <translation id="7256634071279256947">पछाडिको माइक्रोफोन</translation>
 <translation id="726276584504105859">विभाजित स्क्रिनको प्रयोग गर्न यहाँ ड्र्याग गर्नुहोस्</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">स्वतः परिक्रमा</translation>
 <translation id="8517041960877371778">खुला हुँदा तपाईँको <ph name="DEVICE_TYPE" /> चार्ज नहुन सक्छ।</translation>
 <translation id="8563862697512465947">सूचनाका सेटिङहरू</translation>
+<translation id="857201607579416096">मेनु सारेर स्क्रिनको फेदको दायाँ कुनामा लगियो।</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> मा जोडियो</translation>
 <translation id="8631727435199967028">पहुँचसम्बन्धी सेटिङहरू</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, सिग्नलको क्षमता <ph name="SIGNAL_STRENGTH" />, तपाईंका प्रशासकले व्यवस्थित गर्नुभएको छ</translation>

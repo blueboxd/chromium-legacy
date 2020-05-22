@@ -8,14 +8,15 @@
 #include <memory>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "net/filter/filter_source_stream.h"
 #include "ui/base/template_expressions.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
-class UI_BASE_EXPORT I18nSourceStream : public net::FilterSourceStream {
+class COMPONENT_EXPORT(UI_BASE) I18nSourceStream
+    : public net::FilterSourceStream {
  public:
   ~I18nSourceStream() override;
 

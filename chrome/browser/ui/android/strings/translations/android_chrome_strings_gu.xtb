@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">ભાષા ઉમેરો</translation>
 <translation id="2650751991977523696">ફાઇલને ફરીથી ડાઉનલોડ કરીએ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ઑડિયો ફાઇલ}one{# ઑડિયો ફાઇલો}other{# ઑડિયો ફાઇલો}}</translation>
+<translation id="2656405586795711023">વેબ ઍપ</translation>
 <translation id="2677748264148917807">છોડો</translation>
 <translation id="2689830683995595741">Chromeનો ઉપયોગ કરીને, તમે <ph name="BEGIN_LINK1" />Googleની સેવાની શરતો<ph name="END_LINK1" /> અને <ph name="BEGIN_LINK2" />Google Chrome તથા Chrome OSની વધારાની સેવાની શરતો<ph name="END_LINK2" /> સાથે સંમત થાઓ છો. <ph name="BEGIN_LINK3" />Family Link વડે મેનેજ કરવામાં આવતા Google એકાઉન્ટ માટેની પ્રાઇવસી નોટિસ<ph name="END_LINK3" /> પણ લાગુ.</translation>
 <translation id="2707726405694321444">પેજ રિફ્રેશ કરો</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">બિનમહત્વપૂર્ણ સ્ટોરેજ</translation>
 <translation id="4000212216660919741">ઑફલાઇન હોમ</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# કલાક}one{# કલાક}other{# કલાક}}</translation>
+<translation id="403687620286099920">QR કોડ ખોલવા માટે ટૅપ કરો</translation>
 <translation id="4046123991198612571">આગલો ટ્રૅક</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">સ્ક્રીનની ટોચ પર વિકલ્પો ઉપલબ્ધ છે</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">એક નવું ટૅબ ખોલો</translation>
 <translation id="4759238208242260848">ડાઉનલોડ્સ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ડાઉનલોડ પૂર્ણ થયું.}one{# ડાઉનલોડ પૂર્ણ થયું.}other{# ડાઉનલોડ પૂર્ણ થયાં.}}</translation>
+<translation id="478981486571169252">તમને Chromeમાં તમારું <ph name="SITE_NAME" /> સાઇન ઇન સ્ટેટસ, બ્રાઉઝિંગ ડેટા અને સાઇટ ડેટા દેખાશે.</translation>
 <translation id="4802417911091824046">પાસફ્રેઝ એન્ક્રિપ્શનમાં Google Payની ચુકવણી પદ્ધતિઓ અને ઍડ્રેસ સામેલ હોતા નથી. 
 
 આ સેટિંગ બદલવા માટે, <ph name="BEGIN_LINK" />સિંકને રીસેટ કરો<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">આના પર મોકલો</translation>
 <translation id="5304593522240415983">આ ફીલ્ડ ખાલી હોઈ શકતું નથી</translation>
 <translation id="5308380583665731573">કનેક્ટ કરો</translation>
+<translation id="5317780077021120954">સાચવો</translation>
 <translation id="5324858694974489420">પેરેંટલ સેટિંગ્સ</translation>
 <translation id="5327248766486351172">નામ</translation>
 <translation id="5342314432463739672">પરવાનગીની વિનંતી કરી</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">ઇમેઇલ</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> માં ઇવેન્ટ બનાવો</translation>
 <translation id="5668404140385795438">ઝૂમ વધારવાનું અટકાવવા માટે વેબસાઇટની વિનંતી ઑવરરાઇડ કરો</translation>
+<translation id="5681394891799747640">QR કોડ ડાઉનલોડ કરી શકાતો નથી</translation>
 <translation id="5684874026226664614">અરેરે. આ પૃષ્ઠનો અનુવાદ કરી શકાયો નથી.</translation>
 <translation id="5686790454216892815">ફાઇલનું નામ ખૂબ લાંબું છે</translation>
 <translation id="5694049548840660018">પાછા સરળતાથી હોમ પર જાઓ</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">વધુ</translation>
 <translation id="604996488070107836">કોઇ અજાણી ભૂલને કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">તમારી સ્ટોરી અને પ્રવૃત્તિને અહીં નિયંત્રિત કરો</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> કલાક બાકી</translation>
 <translation id="6108923351542677676">સેટઅપની પ્રક્રિયા ચાલુ છે...</translation>
 <translation id="6111020039983847643">ડેટા વપરાશ</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">એકાઉન્ટ</translation>
 <translation id="6297765934698848803">જે સંસ્થા તમારા ડિવાઇસને મેનેજ કરે છે તેણે તમારો કૅમેરા બંધ કર્યો છે.</translation>
 <translation id="6303969859164067831">સાઇન આઉટ કરો અને સિંક બંધ કરો</translation>
+<translation id="6312687380483398334">વેબ ઍપ (છોડો)</translation>
 <translation id="6316139424528454185">Android વર્ઝન અસમર્થિત છે</translation>
 <translation id="6324034347079777476">Android સિસ્ટમ સમન્વયન અક્ષમ છે</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> મારફતે શેર કરો</translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">સ્ટોરેજ સ્થાનના અભાવના કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="6496823230996795692">પહેલી વખત <ph name="APP_NAME" />નો ઉપયોગ કરવા માટે, કૃપા કરીને ઇન્ટરનેટ સાથે કનેક્ટ કરો.</translation>
 <translation id="6508722015517270189">Chrome ને પુનઃપ્રારંભ કરો</translation>
+<translation id="6527303717912515753">શેર કરો</translation>
 <translation id="6532866250404780454">Chromeમાં તમે મુલાકાત લીધેલી સાઇટ બતાવવામાં આવશે નહીં. સાઇટના બધા ટાઇમર ડિલીટ કરવામાં આવશે.</translation>
 <translation id="6534565668554028783">પ્રતિભાવ આપવા માટે Googleએ ઘણો સમય લીધો</translation>
 <translation id="6539092367496845964">કંઈક ખોટું થયું હતું. થોડીવાર પછી ફરી પ્રયાસ કરો.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">સમન્વયન કામ કરતું નથી</translation>
 <translation id="7606077192958116810">લાઇટ મોડ ચાલુ છે. તેને સેટિંગમાં મેનેજ કરો.</translation>
 <translation id="7612619742409846846">Google પર આ તરીકે સાઇન ઇન કરો</translation>
+<translation id="7614971007231847352">QR કોડ ડાઉનલોડ કર્યો</translation>
 <translation id="7619072057915878432">નેટવર્ક નિષ્ફળતાને કારણે <ph name="FILE_NAME" /> ડાઉનલોડ નિષ્ફળ થયું.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />સહાય મેળવો<ph name="END_LINK1" /> અથવા <ph name="BEGIN_LINK2" />ફરીથી સ્કેન કરો<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome પર આપનું સ્વાગત છે</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">તમારી ડેટા બચત અહીં દેખાશે</translation>
 <translation id="7835852323729233924">મીડિયા ચલાવી રહ્યાં છીએ</translation>
 <translation id="783819812427904514">વીડિયોને અનમ્યૂટ કરો</translation>
+<translation id="7846296061357476882">Googleની સેવાઓ</translation>
 <translation id="784934925303690534">સમય શ્રેણી</translation>
 <translation id="7851858861565204677">અન્ય ઉપકરણો</translation>
 <translation id="7875915731392087153">ઇમેઇલ બનાવો</translation>

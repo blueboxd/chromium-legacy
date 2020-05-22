@@ -381,7 +381,6 @@
 <translation id="1486096554574027028">Recherche de mots de passe</translation>
 <translation id="1487335504823219454">Paramètres personnalisés activés</translation>
 <translation id="1489664337021920575">Choisir une autre option</translation>
-<translation id="1491985563764252632">Ton parent a désactivé les autorisations pour les extensions.</translation>
 <translation id="1493892686965953381">En attente de <ph name="LOAD_STATE_PARAMETER" />...</translation>
 <translation id="1495486559005647033"><ph name="NUM_PRINTERS" /> autres appareils accessibles.</translation>
 <translation id="1495677929897281669">Retour à l'onglet</translation>
@@ -440,11 +439,6 @@
 <translation id="1555130319947370107">Bleu</translation>
 <translation id="1556537182262721003">Échec de déplacement du répertoire d'extensions dans le profil.</translation>
 <translation id="155865706765934889">Pavé tactile</translation>
-<translation id="1560763881671211335">Les administrateurs de G Suite for Education déterminent à quels services Google leurs utilisateurs peuvent accéder lorsqu'ils sont connectés à un compte G Suite for Education. Les administrateurs scolaires doivent fournir ou obtenir le consentement pour que les utilisateurs mineurs puissent utiliser les services.
-
-    Les données de navigation (y compris l'historique, les favoris et les mots de passe) seront stockées dans le compte Family Link et non dans le compte scolaire.
-
-    Vos paramètres parentaux s'appliqueront toujours. Si vous avez déjà bloqué une application ou un site, vous n'aurez plus à le faire.</translation>
 <translation id="1566049601598938765">Site Web</translation>
 <translation id="15662109988763471">L'imprimante sélectionnée n'est pas accessible ou n'est pas installée correctement. Vérifiez votre imprimante ou essayez d'en sélectionner une autre.</translation>
 <translation id="1567387640189251553">Un autre clavier a été branché depuis la dernière fois que vous avez entré votre mot de passe. Il essaie peut-être de récupérer les touches que vous avez utilisées.</translation>
@@ -579,7 +573,7 @@
 <translation id="1714644264617423774">Activez les fonctionnalités d'accessibilité afin de faciliter l'utilisation de votre appareil. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="1717218214683051432">Capteurs de mouvements</translation>
 <translation id="1718835860248848330">Dernière heure</translation>
-<translation id="1719312230114180055">Remarque : Votre empreinte digitale peut être moins sécuritaire qu'un mot de passe ou un NIP fiables.</translation>
+<translation id="1719312230114180055">Remarque : Votre empreinte digitale peut être moins sécurisée qu'un mot de passe ou un NIP fiables.</translation>
 <translation id="1720318856472900922">Authentification du serveur WWW TLS</translation>
 <translation id="1721312023322545264">Il vous faut l'autorisation de <ph name="NAME" /> pour consulter ce site</translation>
 <translation id="1721937473331968728">Vous pouvez ajouter des imprimantes standards connectées à votre ordinateur à <ph name="CLOUD_PRINT_NAME" />.</translation>
@@ -709,6 +703,7 @@
 <translation id="186612162884103683">« <ph name="EXTENSION" /> » dispose d'un droit d'accès en lecture et en écriture aux images, aux vidéos et aux fichiers audio figurant dans les dossiers sélectionnés.</translation>
 <translation id="1867780286110144690"><ph name="PRODUCT_NAME" /> est prêt à terminer l'installation.</translation>
 <translation id="1868193363684582383">« Ok Google »</translation>
+<translation id="1868553836791672080">La vérification des mots de passe n'est pas offerte dans Chromium</translation>
 <translation id="1871534214638631766">Afficher de l'information connexe lorsque vous faites un clic droit ou un appui prolongé sur un élément</translation>
 <translation id="1871615898038944731">Votre <ph name="DEVICE_TYPE" /> est à jour</translation>
 <translation id="1874972853365565008">{NUM_TABS,plural, =1{Déplacer l'onglet vers une autre fenêtre}one{Déplacer l'onglet vers une autre fenêtre}other{Déplacer les onglets vers une autre fenêtre}}</translation>
@@ -795,9 +790,6 @@
 <translation id="1989112275319619282">Parcourir</translation>
 <translation id="1990512225220753005">Ne pas afficher les raccourcis sur cette page</translation>
 <translation id="1992397118740194946">Non défini</translation>
-<translation id="199340248656592341">Gérez vos comptes ici. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" />&lt;br&gt;&lt;br&gt;
-    Les favoris, les mots de passe et d'autres données du navigateur sont synchronisés avec le compte principal.&lt;br&gt;&lt;br&gt;
-    L'ajout d'un compte scolaire permet aux élèves de se connecter aisément et d'utiliser les extensions, tout en étant régis par les contrôles parentaux.</translation>
 <translation id="1994173015038366702">URL du site</translation>
 <translation id="1995916364271252349">Gère les données que les sites peuvent utiliser et afficher (position, appareil photo, fenêtres contextuelles et plus)</translation>
 <translation id="1997616988432401742">Vos certificats</translation>
@@ -1054,7 +1046,6 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2319993584768066746">Photos à l'écran de connexion</translation>
 <translation id="2322193970951063277">En-têtes et pieds de page</translation>
 <translation id="2322318151094136999">Demander quand un site souhaite accéder aux ports série (recommandé)</translation>
-<translation id="2322952656605352242">Autoriser les applications Linux à accéder au microphone</translation>
 <translation id="2323018538045954000">Réseaux Wi-Fi enregistrés</translation>
 <translation id="2325444234681128157">Mémoriser le mot de passe</translation>
 <translation id="2326931316514688470">Actua&amp;liser l'application</translation>
@@ -1293,7 +1284,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2616366145935564096">Accéder à vos données sur <ph name="WEBSITE_1" /> et les modifier</translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
 <translation id="2619761439309613843">Actualiser tous les jours</translation>
-<translation id="2620215283731032047"><ph name="FILE_NAME" /> ne peut pas être téléchargé de manière sécuritaire.</translation>
 <translation id="2620436844016719705">Système</translation>
 <translation id="2621713457727696555">Sécurisé</translation>
 <translation id="26224892172169984">Interdire à tous les sites de gérer les protocoles</translation>
@@ -1478,7 +1468,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="2824942875887026017"><ph name="IDS_SHORT_PRODUCT_NAME" /> utilise les paramètres mandataires de votre administrateur</translation>
 <translation id="2825758591930162672">Clé publique de l'objet</translation>
 <translation id="2828650939514476812">Connexion au réseau Wi-Fi</translation>
-<translation id="2835294513443818940">Ce fichier ne peut pas être téléchargé de manière sécuritaire.</translation>
 <translation id="2835547721736623118">Service de reconnaissance vocale</translation>
 <translation id="2836269494620652131">Plantage</translation>
 <translation id="2836635946302913370">L'administrateur a désactivé la connexion avec ce nom d'utilisateur.</translation>
@@ -1843,7 +1832,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3312424061798279731">Langues activées</translation>
 <translation id="3313622045786997898">Valeur de la signature du certificat</translation>
 <translation id="3315158641124845231">Masquer <ph name="PRODUCT_NAME" /></translation>
-<translation id="3317284582048881482">Renseignements sur le compte scolaire à l'intention des parents</translation>
 <translation id="3317459757438853210">Recto verso</translation>
 <translation id="3317678681329786349">La caméra et le microphone sont bloqués</translation>
 <translation id="3319048459796106952">Nouvelle fenêtre de navigation pr&amp;ivée</translation>
@@ -2210,7 +2198,6 @@ https://support.google.com/chrome/?p=applescript</translation>
 <translation id="3764583730281406327">{NUM_DEVICES,plural, =1{Communique avec un appareil USB}one{Communique avec # appareil USB}other{Communique avec # appareils USB}}</translation>
 <translation id="3765246971671567135">Impossible de lire la politique du mode démo hors ligne.</translation>
 <translation id="3766811143887729231"><ph name="REFRESH_RATE" /> Hz</translation>
-<translation id="3768037234834996183">Synchronisation de vos préférences en cours…</translation>
 <translation id="377050016711188788">Crème glacée</translation>
 <translation id="3771290962915251154">Ce paramètre est désactivé parce que les contrôles parentaux sont activés</translation>
 <translation id="3771294271822695279">Fichiers vidéo</translation>
@@ -3522,7 +3509,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="551752069230578406">Ajout de l'imprimante à votre compte. Cette opération peut prendre quelques instants…</translation>
 <translation id="5518219166343146486">Demander lorsqu'un site veut voir le texte et les images copiés dans le presse-papiers</translation>
 <translation id="5518584115117143805">Certificat de chiffrement de courrier électronique</translation>
-<translation id="5519045302974745794">EasyUnlock</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="5521078259930077036">Est-ce bien la page d'accueil à laquelle vous vous attendiez?</translation>
 <translation id="5522156646677899028">Cette extension contient une faille de sécurité grave.</translation>
@@ -3764,7 +3750,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5830720307094128296">Enregistrer la p&amp;age sous…</translation>
 <translation id="5832805196449965646">Ajouter une personne</translation>
 <translation id="583281660410589416">Inconnu</translation>
-<translation id="5832976493438355584">Verrouillé</translation>
 <translation id="5833397272224757657">Utilise le contenu de sites que vous consultez, ainsi que l'activité du navigateur et les interactions avec celui-ci pour la personnalisation</translation>
 <translation id="5833726373896279253">Seul le propriétaire peut modifier ces paramètres :</translation>
 <translation id="5834581999798853053">Il reste environ <ph name="TIME" /> min</translation>
@@ -3933,7 +3918,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="604388835206766544">Impossible d'analyser la configuration</translation>
 <translation id="6044805581023976844"><ph name="APP_NAME" /> partage un onglet Chrome et du son avec <ph name="TAB_NAME" />.</translation>
 <translation id="6049004884579590341">Maintenez le doigt sur |<ph name="ACCELERATOR" />| pour quitter le mode plein écran</translation>
-<translation id="6049065490165456785">Photo d'un appareil photo interne</translation>
 <translation id="6051354611314852653">Oups… Échec de l'autorisation d'accès à l'API pour cet appareil.</translation>
 <translation id="6052976518993719690">Autorité de certification SSL</translation>
 <translation id="6053401458108962351">&amp;Effacer les données de navigation…</translation>
@@ -4196,7 +4180,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6385543213911723544">Les sites peuvent enregistrer et lire des données de témoin</translation>
 <translation id="6387674443318562538">Séparation verticale</translation>
 <translation id="6388429472088318283">Rechercher des langues</translation>
-<translation id="6389891144950120352">Verrouillage d'écran EasyUnlock</translation>
 <translation id="6390020764191254941">Déplacer l'onglet vers une nouvelle fenêtre</translation>
 <translation id="6390799748543157332">Les pages que vous consultez dans cette fenêtre ne sont pas consignées dans l'historique du navigateur et ne laissent aucune autre trace sur votre ordinateur (des témoins, par exemple), une fois que vous avez fermé toutes les fenêtres ouvertes en tant qu'invité. Tous les fichiers téléchargés sont toutefois conservés.</translation>
 <translation id="6393156038355142111">Suggérer un mot de passe fort</translation>
@@ -4814,13 +4797,12 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7197190419934240522">Obtenez la recherche Google et les fonctionnalités intelligentes de Google chaque fois que vous naviguez</translation>
 <translation id="7197632491113152433">Nous avons trouvé dans votre compte <ph name="NUMBER_OF_APPS" /> applications que vous pouvez utiliser sur cet appareil.</translation>
 <translation id="7199158086730159431">Obtenir de l'aide</translation>
-<translation id="7199237594231970159">Accès vérifié aux paramètres de confidentialité</translation>
 <translation id="7200083590239651963">Sélectionner la configuration</translation>
 <translation id="7201042526153088083">Installez des applications et des jeux de Google Play sur votre <ph name="DEVICE_TYPE" />. &lt;a target="_blank" href="<ph name="URL" />"&gt;En savoir plus&lt;/a&gt;</translation>
 <translation id="720110658997053098">Conserver cet appareil en mode kiosque de manière permanente</translation>
 <translation id="7201118060536064622">« <ph name="DELETED_ITEM_NAME" /> » supprimé</translation>
 <translation id="7201420661433230412">Afficher les fichiers</translation>
-<translation id="7203826966018112936">L'ajout d'un compte scolaire à un profil permet aux élèves de se connecter aisément et d'utiliser les extensions, tout en étant régis par les contrôles parentaux. Cela ne donne pas à un enfant l'accès aux favoris, aux mots de passe ni aux autres données du navigateur qui sont synchronisés avec le compte scolaire.&lt;br&gt;&lt;br&gt;
+<translation id="7203826966018112936">L'ajout d'un compte scolaire à un profil permet aux élèves de se connecter aisément aux sites Web et d'utiliser les extensions, tout en étant régis par les contrôles parentaux. Cela ne donne pas à un enfant l'accès aux favoris, aux mots de passe ni aux autres données du navigateur qui sont synchronisés avec le compte scolaire.&lt;br&gt;&lt;br&gt;
     Si votre enfant utilise un Chromebook à l'école et que vous souhaitez reproduire cette expérience à la maison pour vous assurer qu'il a accès à tous ses travaux scolaires, veuillez vous déconnecter de ce compte Family Link et vous connecter avec le compte scolaire sur la page des comptes Chrome OS (remarque : les paramètres des contrôles parentaux de Family Link ne s'appliqueront pas).&lt;br&gt;&lt;br&gt;
     Si votre enfant n'utilise pas de Chromebook à l'école ou si vous préférez gérer son expérience à la maison avec Family Link, veuillez cliquer sur le bouton Suivant ci-dessous pour ajouter un compte scolaire à ce profil.</translation>
 <translation id="7206693748120342859">Téléchargement de <ph name="PLUGIN_NAME" /> en cours...</translation>
@@ -4848,7 +4830,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7235737137505019098">Votre clé de sécurité n'a pas suffisamment d'espace libre pour qu'on y enregistre des comptes supplémentaires.</translation>
 <translation id="7238643356913091553"><ph name="NETWORK_NAME" />, détails</translation>
 <translation id="7240339475467890413">Connexion au nouveau point d'accès sans fil?</translation>
-<translation id="7240847845291869311">Votre enfant souhaite ajouter un compte G Suite for Education sur cet appareil. L'<ph name="LINK_BEGIN" />avis de confidentialité de G Suite for Education<ph name="LINK_END" /> est conçu pour aider les utilisateurs de G Suite for Education et leurs parents à comprendre quelles données le service collecte, pour quelles raisons et l'usage qu'il en fait.</translation>
 <translation id="7241389281993241388">Veuillez vous connecter à <ph name="TOKEN_NAME" /> pour importer le certificat de client.</translation>
 <translation id="7243632151880336635">Effacer et se déconnecter</translation>
 <translation id="7243784282103630670">Une erreur s'est produite lors de la mise à niveau de Linux. Nous allons restaurer le conteneur à l'aide de votre sauvegarde.</translation>
@@ -5129,7 +5110,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7617263010641145920">Activer le Play Store</translation>
 <translation id="7617366389578322136">Connexion à « <ph name="DEVICE_NAME" /> » en cours…</translation>
 <translation id="761763866592998929">Mode Veille</translation>
-<translation id="762068974690945752">Ajoutez un compte scolaire ou gérez les comptes d'enfants ici. <ph name="LINK_BEGIN" />En savoir plus<ph name="LINK_END" /></translation>
 <translation id="7621382409404463535">Le système n'a pas réussi à enregistrer la configuration de l'appareil.</translation>
 <translation id="7622114377921274169">Charge en cours…</translation>
 <translation id="7624337243375417909">verrouillage des majuscules désactivé</translation>
@@ -5977,7 +5957,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8678933587484842200">Comment souhaitez-vous lancer cette application?</translation>
 <translation id="8680251145628383637">Connectez-vous pour accéder à vos favoris, votre historique, vos mots de passe et autres paramètres sur tous vos appareils. Vous serez également automatiquement connecté(e) à vos services Google.</translation>
 <translation id="8682730193597992579">L'imprimante <ph name="PRINTER_NAME" /> est connectée et prête à être utilisée</translation>
-<translation id="8688179730468142365">La modification apportée à l'accès au microphone nécessite le redémarrage de Linux. Éteignez Linux pour continuer.</translation>
 <translation id="8688579245973331962">Vous ne trouvez pas votre nom?</translation>
 <translation id="8688591111840995413">Mot de passe incorrect</translation>
 <translation id="8688672835843460752">Disponible</translation>
@@ -6296,7 +6275,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="9057354806206861646">Mettre à jour le calendrier</translation>
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Erreur de la ligne <ph name="ERROR_LINE_START" /> à la ligne <ph name="ERROR_LINE_END" /></translation>
-<translation id="9064142312330104323">Photo du profil Google (chargement)</translation>
 <translation id="9064275926664971810">Activer le remplissage automatique afin de remplir les formulaires en un seul clic</translation>
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9066773882585798925">Lire à voix haute le texte à l'écran</translation>

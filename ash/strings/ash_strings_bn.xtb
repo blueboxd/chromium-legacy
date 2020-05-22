@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">ব্যাটারি পুরো চার্জ</translation>
 <translation id="3604801046548457007">ডেস্ক <ph name="DESK_TITILE" /> তৈরি করা হয়েছে</translation>
 <translation id="3606978283550408104">ব্রেইল প্রদর্শন সংযুক্ত হয়েছে৷</translation>
+<translation id="3616883743181209306">স্ক্রিনের উপরে ডানদিকের কোণায় মেনু সরে গেছে।</translation>
 <translation id="3621202678540785336">ইনপুট</translation>
 <translation id="3621712662352432595">অডিও সেটিংস</translation>
 <translation id="3626281679859535460">উজ্জ্বলতা</translation>
 <translation id="3631369015426612114">নিম্নলিখিত থেকে বিজ্ঞপ্তি অনুমতি দিন</translation>
 <translation id="3638400994746983214">গোপনীয়তা স্ক্রিন টগল করুন। <ph name="STATE_TEXT" />।</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> ম্যানেজ করা ব্যবহারকারী</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">অঞ্চল ক্যাপচার করুন</translation>
 <translation id="371370241367527062">সামনের মাইক্রোফোন</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">মিরর মোড থেকে প্রস্থান করছে</translation>
 <translation id="602001110135236999">বাঁ দিকে স্ক্রল করুন</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>
+<translation id="6030495522958826102">স্ক্রিনের নিচে বাঁদিকের কোণায় মেনু সরে গেছে।</translation>
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6043212731627905357">এই মনিটরটি আপনার <ph name="DEVICE_TYPE" /> এর সাথে তাল মেলাতে পারছে না (মনিটরটি সমর্থিত নয়)।</translation>
 <translation id="6043994281159824495">এখনই সাইন-আউট করুন</translation>
@@ -504,6 +507,7 @@
 <translation id="7143207342074048698">সংযুক্ত হচ্ছে</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> -এ পুরনো রেজোলিউশানে ফেরানো হচ্ছে</translation>
+<translation id="7188494361780961876">স্ক্রিনের উপরে বাঁদিকের কোণায় মেনু সরে গেছে।</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />। একটি আপডেট প্রয়োগ করতে Chromebook রিস্টার্ট করতে হবে। এতে ১ মিনিট পর্যন্ত সময় লাগতে পারে।</translation>
 <translation id="7256634071279256947">পেছনের মাইক্রোফোন</translation>
 <translation id="726276584504105859">বিভক্ত স্ক্রিন ব্যবহার করতে এখানে টেনে আনুন</translation>
@@ -614,6 +618,7 @@
 <translation id="8513108775083588393">নিজে থেকে ঘুরবে</translation>
 <translation id="8517041960877371778">আপনার <ph name="DEVICE_TYPE" /> চালু থাকা অবস্থায় চার্জ নাও হতে পারে।</translation>
 <translation id="8563862697512465947">বিজ্ঞপ্তি সেটিংস</translation>
+<translation id="857201607579416096">স্ক্রিনের নিচে ডানদিকের কোণায় মেনু সরে গেছে।</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />-এর সাথে কানেক্ট হয়েছে</translation>
 <translation id="8631727435199967028">অ্যাক্সেসিবিলিটি সেটিংস</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, সিগন্যাল: <ph name="SIGNAL_STRENGTH" />, আপনার অ্যাডমিনিস্ট্রেটর ম্যানেজ করে</translation>

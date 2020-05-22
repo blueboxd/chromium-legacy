@@ -223,6 +223,14 @@ RENAME = {
     'WAITCONDITION': 'WaitCondition',
 }
 
+READ_SPECIAL = set([
+    ('xcb', 'Setup'),
+])
+
+WRITE_SPECIAL = set([
+    ('xcb', 'ClientMessage'),
+])
+
 
 def adjust_type_case(name):
     if name in RENAME:
@@ -537,24 +545,36 @@ class GenXproto(FileWriter):
         type_name = self.fieldtype(field)
         name = safe_name(field.field_name)
 
+        def copy_basic():
+            self.write('%s %s;' % (type_name, name))
+            self.copy_primitive(name)
+
         if name in ('major_opcode', 'minor_opcode'):
             assert not self.is_read
             is_ext = self.module.namespace.is_ext
-            self.write('%s %s = %s;' %
-                       (type_name, name, 'major_opcode_' if is_ext
-                        and name == 'major_opcode' else field.parent.opcode))
+            self.write(
+                '%s %s = %s;' %
+                (type_name, name, 'major_opcode_' if is_ext
+                 and name == 'major_opcode' else field.parent[0].opcode))
             self.copy_primitive(name)
-        elif name in ('response_type', 'sequence', 'extension'):
+        elif name == 'response_type':
+            if self.is_read:
+                copy_basic()
+            else:
+                container_type, container_name = field.parent
+                assert container_type.is_event
+                opcode = container_type.opcodes[container_name]
+                self.write('%s %s = %s;' % (type_name, name, opcode))
+                self.copy_primitive(name)
+        elif name in ('extension', 'error_code', 'event_type'):
             assert self.is_read
-            self.write('%s %s;' % (type_name, name))
-            self.copy_primitive(name)
+            copy_basic()
         elif name == 'length':
             if not self.is_read:
                 self.write('// Caller fills in length for writes.')
                 self.write('Pad(&buf, sizeof(%s));' % type_name)
             else:
-                self.write('%s %s;' % (type_name, name))
-                self.copy_primitive(name)
+                copy_basic()
         else:
             assert field.type.is_expr
             assert (not isinstance(field.type, self.xcbgen.xtypes.Enum))
@@ -761,13 +781,13 @@ class GenXproto(FileWriter):
             self.write('%s = static_cast<%s>(%s);' %
                        (real_name, enum_type, tmp_name))
 
-    def declare_container(self, struct):
-        name = struct.name[-1] + self.type_suffix(struct)
+    def declare_container(self, struct, struct_name):
+        name = struct_name[-1] + self.type_suffix(struct)
         self.undef(name)
         with Indent(self, 'struct %s {' % adjust_type_case(name), '};'):
             if struct.is_event:
                 self.write('static constexpr uint8_t opcode = %s;' %
-                           struct.opcodes[struct.name])
+                           struct.opcodes[struct_name])
             for field in struct.fields:
                 for field_type_name in self.declare_field(field):
                     self.write('%s %s{};' % field_type_name)
@@ -779,14 +799,42 @@ class GenXproto(FileWriter):
             for field in struct.fields:
                 self.copy_field(field)
 
+    def read_special_container(self, struct, name):
+        self.namespace = ['x11']
+        name = self.qualtype(struct, name)
+        self.write('template <> COMPONENT_EXPORT(X11)')
+        self.write('%s Read<%s>(' % (name, name))
+        with Indent(self, '    const uint8_t* buffer) {', '}'):
+            self.write('ReadBuffer buf{buffer, 0UL};')
+            self.write('%s obj;' % name)
+            self.write()
+            self.is_read = True
+            self.copy_container(struct, 'obj')
+            self.write('return obj;')
+        self.write()
+
+    def write_special_container(self, struct, name):
+        self.namespace = ['x11']
+        name = self.qualtype(struct, name)
+        self.write('template <> COMPONENT_EXPORT(X11)')
+        self.write('std::vector<uint8_t> Write<%s>(' % name)
+        with Indent(self, '    const %s& obj) {' % name, '}'):
+            self.write('WriteBuffer buf;')
+            self.write()
+            self.is_read = False
+            self.copy_container(struct, 'obj')
+            self.write('return buf;')
+        self.write()
+
     def declare_union(self, union):
         name = union.name[-1]
         with Indent(self, 'union %s {' % name, '};'):
             self.write('%s() { memset(this, 0, sizeof(*this)); }' % name)
             self.write()
             for field in union.fields:
-                type_name = self.fieldtype(field)
-                self.write('%s %s;' % (type_name, safe_name(field.field_name)))
+                field_type_names = self.declare_field(field)
+                assert len(field_type_names) == 1
+                self.write('%s %s;' % field_type_names[0])
         self.write(
             'static_assert(std::is_trivially_copyable<%s>::value, "");' % name)
         self.write()
@@ -796,9 +844,9 @@ class GenXproto(FileWriter):
         request_name = method_name + 'Request'
         reply_name = method_name + 'Reply'
 
-        self.declare_container(request)
+        self.declare_container(request, request.name)
         if request.reply:
-            self.declare_container(request.reply)
+            self.declare_container(request.reply, request.reply.name)
         else:
             reply_name = 'void'
 
@@ -853,14 +901,21 @@ class GenXproto(FileWriter):
             self.write('return reply;')
         self.write()
 
+    def define_type(self, item, name):
+        if name in READ_SPECIAL:
+            self.read_special_container(item, name)
+        if name in WRITE_SPECIAL:
+            self.write_special_container(item, name)
+        if isinstance(item, self.xcbgen.xtypes.Request):
+            self.define_request(item)
+
     def declare_type(self, item, name):
         if item.is_union:
             self.declare_union(item)
         elif isinstance(item, self.xcbgen.xtypes.Request):
             self.declare_request(item)
         elif item.is_container:
-            item.name = name
-            self.declare_container(item)
+            self.declare_container(item, name)
         elif isinstance(item, self.xcbgen.xtypes.Enum):
             self.declare_enum(item)
         else:
@@ -909,7 +964,9 @@ class GenXproto(FileWriter):
         self.resolve_element(t.elt, fields)
 
         for field in fields.values():
-            field.parent = t
+            if field.field_name == 'sequence':
+                field.visible = True
+            field.parent = (t, name)
             field.for_list = getattr(field, 'for_list', None)
             field.for_switch = getattr(field, 'for_switch', None)
 
@@ -1068,8 +1125,7 @@ class GenXproto(FileWriter):
             self.write(ctor + '(XDisplay* display) : display_(display) {}')
         self.write()
         for (name, item) in self.module.all:
-            if isinstance(item, self.xcbgen.xtypes.Request):
-                self.define_request(item)
+            self.define_type(item, name)
         self.write('}  // namespace x11')
 
     def parse(self):

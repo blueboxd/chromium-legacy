@@ -28,27 +28,6 @@ extern const base::Feature kAssistantAppSupport;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kAssistantLauncherChipIntegration;
 
-// Enables Assistant proactive suggestions.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::Feature kAssistantProactiveSuggestions;
-
-// A comma-delimited list of experiment IDs to trigger on the proactive
-// suggestions server.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::FeatureParam<std::string>
-    kAssistantProactiveSuggestionsServerExperimentIds;
-
-// Enables suppression of Assistant proactive suggestions that have already been
-// shown to the user.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::FeatureParam<bool>
-    kAssistantProactiveSuggestionsSuppressDuplicates;
-
-// The timeout threshold (in milliseconds) for the proactive suggestions chip.
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-extern const base::FeatureParam<int>
-    kAssistantProactiveSuggestionsTimeoutThresholdMillis;
-
 // When enabled, Assistant will use response processing V2. This is a set of
 // synced client and server changes which will turn on default parallel client
 // op processing and eager (streaming) UI element rendering.
@@ -92,21 +71,6 @@ extern const base::Feature kEnablePowerManager;
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 extern const base::Feature kEnableOnDeviceAssistant;
 
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-int GetProactiveSuggestionsMaxWidth();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-int GetProactiveSuggestionsRichEntryPointBackgroundBlurRadius();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-int GetProactiveSuggestionsRichEntryPointCornerRadius();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-std::string GetProactiveSuggestionsServerExperimentIds();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-base::TimeDelta GetProactiveSuggestionsTimeoutThreshold();
-
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAppSupportEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsAudioEraserEnabled();
@@ -125,17 +89,6 @@ bool IsMediaSessionIntegrationEnabled();
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsPowerManagerEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsOnDeviceAssistantEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsProactiveSuggestionsEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsProactiveSuggestionsShowOnScrollEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsProactiveSuggestionsShowRichEntryPointEnabled();
-
-COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
-bool IsProactiveSuggestionsSuppressDuplicatesEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsResponseProcessingV2Enabled();

@@ -11,8 +11,8 @@
 #include <map>
 #include <string>
 
+#include "base/component_export.h"
 #include "base/strings/string_piece.h"
-#include "ui/base/ui_base_export.h"
 
 namespace base {
 class DictionaryValue;
@@ -26,14 +26,16 @@ typedef std::map<const std::string, std::string> TemplateReplacements;
 // Convert a dictionary to a replacement map. This helper function is to assist
 // migration to using TemplateReplacements directly (which is preferred).
 // TODO(dschuyler): remove this function by using TemplateReplacements directly.
-UI_BASE_EXPORT void TemplateReplacementsFromDictionaryValue(
+COMPONENT_EXPORT(UI_BASE)
+void TemplateReplacementsFromDictionaryValue(
     const base::DictionaryValue& dictionary,
     TemplateReplacements* replacements);
 
 // Replace $i18n*{foo} in the format string with the value for the foo key in
 // |replacements|.  If the key is not found in the |replacements| that item will
 // be unaltered.
-UI_BASE_EXPORT std::string ReplaceTemplateExpressions(
+COMPONENT_EXPORT(UI_BASE)
+std::string ReplaceTemplateExpressions(
     base::StringPiece source,
     const TemplateReplacements& replacements,
     bool skip_unexpected_placeholder_check = false);
@@ -51,10 +53,10 @@ UI_BASE_EXPORT std::string ReplaceTemplateExpressions(
 // backticks or "${" within the HTML string).
 // Note: Currently, this only supports the legacy Polymer syntax, i.e.:
 //     _template: html` ... `,
-UI_BASE_EXPORT bool ReplaceTemplateExpressionsInJS(
-    base::StringPiece source,
-    const TemplateReplacements& replacements,
-    std::string* output);
+COMPONENT_EXPORT(UI_BASE)
+bool ReplaceTemplateExpressionsInJS(base::StringPiece source,
+                                    const TemplateReplacements& replacements,
+                                    std::string* output);
 
 }  // namespace ui
 

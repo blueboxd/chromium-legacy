@@ -43,6 +43,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="6058625436358447366">Để hoàn tất, hãy nhập cả mật khẩu cũ và mật khẩu mới của bạn</translation>
 <translation id="6106186594183574873">Để hoàn tất, hãy nhập mật khẩu cũ của bạn</translation>
 <translation id="6146993107019042706">Để hoàn tất, hãy nhập mật khẩu mới của bạn</translation>
+<translation id="6517239166834772319">Khám phá</translation>
 <translation id="6643016212128521049">Xóa</translation>
 <translation id="7162487448488904999">Thư viện</translation>
 <translation id="7658239707568436148">Hủy</translation>
@@ -50,6 +51,7 @@ Hãy thử nhấn vào micrô để hỏi tôi bất cứ điều gì.</translat
 <translation id="7805768142964895445">Trạng thái</translation>
 <translation id="808894953321890993">Đổi mật khẩu</translation>
 <translation id="8208861521865154048">Đặc quyền</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> quản lý người dùng này. Miền này có thể quản lý từ xa các tùy chọn cài đặt và giám sát hoạt động của người dùng.</translation>
 <translation id="8747900814994928677">Xác nhận thay đổi</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Bạn còn <ph name="ATTEMPTS_LEFT" /> lần thử</translation>
 <translation id="910415269708673980">Làm mới phiếu cho <ph name="PRINCIPAL_NAME" /></translation>

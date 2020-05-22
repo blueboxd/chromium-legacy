@@ -312,15 +312,6 @@ class NET_EXPORT HostResolver {
       const NetLogWithSource& net_log,
       const base::Optional<ResolveHostParameters>& optional_parameters) = 0;
 
-  // Deprecated version of above method that uses an empty NetworkIsolationKey.
-  //
-  // TODO(mmenke): Once all consumers have been updated to use the other
-  // overload instead, remove this method and make above method pure virtual.
-  virtual std::unique_ptr<ResolveHostRequest> CreateRequest(
-      const HostPortPair& host,
-      const NetLogWithSource& net_log,
-      const base::Optional<ResolveHostParameters>& optional_parameters);
-
   // Creates a request to probe configured DoH servers to find which can be used
   // successfully.
   virtual std::unique_ptr<ProbeRequest> CreateDohProbeRequest();

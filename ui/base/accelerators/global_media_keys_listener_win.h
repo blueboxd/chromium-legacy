@@ -5,10 +5,10 @@
 #ifndef UI_BASE_ACCELERATORS_GLOBAL_MEDIA_KEYS_LISTENER_WIN_H_
 #define UI_BASE_ACCELERATORS_GLOBAL_MEDIA_KEYS_LISTENER_WIN_H_
 
+#include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/win/windows_types.h"
 #include "ui/base/accelerators/media_keys_listener.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace gfx {
@@ -22,7 +22,8 @@ namespace ui {
 // Implementation of MediaKeysListener that uses RegisterHotKey to globally
 // listen for media key presses. It only allows for a single instance to be
 // created in order to prevent conflicts form multiple listeners.
-class UI_BASE_EXPORT GlobalMediaKeysListenerWin : public MediaKeysListener {
+class COMPONENT_EXPORT(UI_BASE) GlobalMediaKeysListenerWin
+    : public MediaKeysListener {
  public:
   explicit GlobalMediaKeysListenerWin(MediaKeysListener::Delegate* delegate);
   ~GlobalMediaKeysListenerWin() override;

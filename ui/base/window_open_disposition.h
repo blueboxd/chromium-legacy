@@ -5,7 +5,7 @@
 #ifndef UI_BASE_WINDOW_OPEN_DISPOSITION_H_
 #define UI_BASE_WINDOW_OPEN_DISPOSITION_H_
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 // DEPRECATED: Instead of introducing new references to this enum, use
 // the generated ui::mojom::WindowOpenDisposition in
@@ -41,20 +41,22 @@ namespace ui {
 // suggest opening in the current tab; for example, a caller could set this to
 // NEW_FOREGROUND_TAB to prevent a click from overwriting the current tab by
 // default.
-UI_BASE_EXPORT WindowOpenDisposition
-DispositionFromClick(bool middle_button,
-                     bool alt_key,
-                     bool ctrl_key,
-                     bool meta_key,
-                     bool shift_key,
-                     WindowOpenDisposition disposition_for_current_tab =
-                         WindowOpenDisposition::CURRENT_TAB);
+COMPONENT_EXPORT(UI_BASE)
+WindowOpenDisposition DispositionFromClick(
+    bool middle_button,
+    bool alt_key,
+    bool ctrl_key,
+    bool meta_key,
+    bool shift_key,
+    WindowOpenDisposition disposition_for_current_tab =
+        WindowOpenDisposition::CURRENT_TAB);
 
 // As with DispositionFromClick(), but using |event_flags| as in ui::MouseEvent.
-UI_BASE_EXPORT WindowOpenDisposition
-DispositionFromEventFlags(int event_flags,
-                          WindowOpenDisposition disposition_for_current_tab =
-                              WindowOpenDisposition::CURRENT_TAB);
+COMPONENT_EXPORT(UI_BASE)
+WindowOpenDisposition DispositionFromEventFlags(
+    int event_flags,
+    WindowOpenDisposition disposition_for_current_tab =
+        WindowOpenDisposition::CURRENT_TAB);
 
 }  // namespace ui
 

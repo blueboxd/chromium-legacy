@@ -160,7 +160,7 @@ class ASH_EXPORT AssistantControllerImpl
   AssistantScreenContextControllerImpl assistant_screen_context_controller_{
       this};
   AssistantSetupController assistant_setup_controller_{this};
-  AssistantSuggestionsControllerImpl assistant_suggestions_controller_{this};
+  AssistantSuggestionsControllerImpl assistant_suggestions_controller_;
   AssistantUiControllerImpl assistant_ui_controller_;
   AssistantWebUiController assistant_web_ui_controller_;
 

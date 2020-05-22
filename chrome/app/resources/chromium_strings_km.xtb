@@ -161,6 +161,7 @@
 លក្ខណៈពិសេសមួយចំនួនអាចប្រហែលជាមិនមានទេ។.សូមបញ្ជាក់ពីថតឯកសារទម្រង់ផ្សេងទៀត ឬប្រើកំណែ Chromium ថ្មីជាងនេះ។</translation>
 <translation id="6734080038664603509">ធ្វើបច្ចុប្បន្នភាព Chromium</translation>
 <translation id="6734291798041940871">Chromium ត្រូវបានដំឡើងរួចហើយសម្រាប់អ្នកប្រើទាំងអស់នៅលើកុំព្យូទ័ររបស់អ្នក។</translation>
+<translation id="6774082503108938489">មាតាបិតា​របស់អ្នក​បានបិទ "ការអនុញ្ញាត​ឱ្យចូលប្រើ​គេហទំព័រ កម្មវិធី និង​កម្មវិធី​បន្ថែម" សម្រាប់ Chromium។ ការបើក <ph name="EXTENSION_TYPE_PARAMETER" /> នេះ​មិនត្រូវបាន​អនុញ្ញាតទេ​។</translation>
 <translation id="6847869444787758381">Chromium ប្រាប់អ្នក​ឱ្យដឹងថាតើពាក្យ​សម្ងាត់របស់អ្នក​ធ្លាប់ត្រូវបានវាយលុកឬអត់</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (បាន​ចម្លង​ទៅ Chromium)</translation>
@@ -219,6 +220,7 @@ Chromium មិនអាចសង្គ្រោះការកំណត់រ�
 <translation id="8417404458978023919">{0,plural, =1{ចាប់ផ្ដើម Chromium ឡើងវិញ​ក្នុងរយៈពេល​មួយ​ថ្ងៃទៀត}other{ចាប់ផ្ដើម Chromium ឡើងវិញ​ក្នុងរយៈពេល # ថ្ងៃទៀត}}</translation>
 <translation id="8453117565092476964">កម្មវិធីតំឡើងបណ្ណាសារមានបញ្ហា ឬគ្មានសុពលភាព។ សូមទាញយក Google Chromium ម្តងទៀត។</translation>
 <translation id="8493179195440786826">Chromium ហួសសម័យហើយ</translation>
+<translation id="8558383651099478961">មាតាបិតា​របស់អ្នក​បានបិទ "ការអនុញ្ញាត​ឱ្យចូលប្រើ​គេហទំព័រ កម្មវិធី និង​កម្មវិធី​បន្ថែម" សម្រាប់ Chromium។ ការបញ្ចូល <ph name="EXTENSION_TYPE_PARAMETER" /> នេះ​មិនត្រូវបាន​អនុញ្ញាតទេ​។</translation>
 <translation id="8568283329061645092">Chromium អាចពិនិត្យពាក្យសម្ងាត់របស់អ្នក នៅពេលអ្នកចូល​ដោយប្រើគណនី Google របស់អ្នក</translation>
 <translation id="8586442755830160949">រក្សាសិទ្ធិគ្រប់យ៉ាងដោយផលិតករ Chromium។ រក្សាសិទ្ធិ <ph name="YEAR" />។</translation>
 <translation id="8619360774459241877">កំពុង​ចាប់ផ្ដើម Chromium...</translation>

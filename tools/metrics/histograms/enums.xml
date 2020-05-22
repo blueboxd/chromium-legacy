@@ -42772,7 +42772,7 @@ from previous Chrome versions.
   <int value="16" label="Requires hit testing on custom scrollbars (obsolete)"/>
   <int value="17" label="Has opacity (obsolete)"/>
   <int value="18" label="Has transform"/>
-  <int value="19" label="Background not opaque in rect"/>
+  <int value="19" label="Not opaque for text"/>
   <int value="20" label="Can't paint scrolling background"/>
   <int value="21" label="Has clip related property"/>
   <int value="22" label="Has box shadow from non-root layer (obsolete)"/>

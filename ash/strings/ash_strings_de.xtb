@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Akku voll</translation>
 <translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> erstellt</translation>
 <translation id="3606978283550408104">Verbindung zur Braillezeile hergestellt</translation>
+<translation id="3616883743181209306">Menü wurde nach rechts oben auf dem Bildschirm verschoben.</translation>
 <translation id="3621202678540785336">Eingang</translation>
 <translation id="3621712662352432595">Audioeinstellungen</translation>
 <translation id="3626281679859535460">Helligkeit</translation>
 <translation id="3631369015426612114">Alle Benachrichtigungen zulassen von:</translation>
 <translation id="3638400994746983214">Der Datenschutzbildschirm kann aktiviert oder deaktiviert werden. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> Verwalteter Nutzer</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Bereich erfassen</translation>
 <translation id="371370241367527062">Mikrofon auf der Vorderseite</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">Spiegelungsmodus wird beendet</translation>
 <translation id="602001110135236999">Nach links scrollen</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" />, von Ihrem Administrator verwaltet</translation>
+<translation id="6030495522958826102">Menü wurde nach links unten auf dem Bildschirm verschoben.</translation>
 <translation id="6040143037577758943">Schließen</translation>
 <translation id="6043212731627905357">Dieser Monitor ist mit Ihrem <ph name="DEVICE_TYPE" /> nicht kompatibel (wird nicht unterstützt).</translation>
 <translation id="6043994281159824495">Jetzt abmelden</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="7165278925115064263">Alt + Umschalttaste + K</translation>
 <translation id="7168224885072002358">Alte Auflösung wird in <ph name="TIMEOUT_SECONDS" /> wiederhergestellt.</translation>
+<translation id="7188494361780961876">Menü wurde nach links oben auf dem Bildschirm verschoben.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Dieses Chromebook muss zur Installation eines Updates neu gestartet werden. Dies kann bis zu einer Minute dauern.</translation>
 <translation id="7256634071279256947">Mikrofon auf der Rückseite</translation>
 <translation id="726276584504105859">Hierher ziehen, um den Bildschirm zu teilen</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">Automatisch drehen</translation>
 <translation id="8517041960877371778">Ihr <ph name="DEVICE_TYPE" /> wird möglicherweise nicht aufgeladen, wenn es eingeschaltet ist.</translation>
 <translation id="8563862697512465947">Benachrichtigungseinstellungen</translation>
+<translation id="857201607579416096">Menü wurde nach rechts unten auf dem Bildschirm verschoben.</translation>
 <translation id="8627191004499078455">Verbunden mit <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Einstellungen für Bedienungshilfen</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Signalstärke bei <ph name="SIGNAL_STRENGTH" />, von Ihrem Administrator verwaltet</translation>

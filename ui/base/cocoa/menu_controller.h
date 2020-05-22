@@ -7,9 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/component_export.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 class MenuModel;
@@ -21,7 +21,7 @@ class MenuModel;
 // allow for hierarchical menus). The tag is the index into that model for
 // that particular item. It is important that the model outlives this object
 // as it only maintains weak references.
-UI_BASE_EXPORT
+COMPONENT_EXPORT(UI_BASE)
 @interface MenuControllerCocoa
     : NSObject<NSMenuDelegate, NSUserInterfaceValidations>
 

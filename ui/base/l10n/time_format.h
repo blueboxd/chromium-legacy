@@ -5,9 +5,9 @@
 #ifndef UI_BASE_L10N_TIME_FORMAT_H_
 #define UI_BASE_L10N_TIME_FORMAT_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
 
 namespace base {
 class Time;
@@ -17,7 +17,7 @@ class TimeDelta;
 namespace ui {
 
 // Methods to format time values as strings.
-class UI_BASE_EXPORT TimeFormat {
+class COMPONENT_EXPORT(UI_BASE) TimeFormat {
  public:
   enum Format {
     FORMAT_DURATION,   // Plain duration, e.g. in English: "2 minutes".

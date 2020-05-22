@@ -20,7 +20,6 @@ class UnguessableToken;
 namespace ash {
 
 class AssistantSuggestionsModelObserver;
-class ProactiveSuggestions;
 
 class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
  public:
@@ -46,21 +45,10 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantSuggestionsModel {
   // Returns all cached conversation starters.
   std::vector<const AssistantSuggestion*> GetConversationStarters() const;
 
-  // Sets the cache of proactive suggestions.
-  void SetProactiveSuggestions(
-      scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
-
-  // Returns the cache of proactive suggestions.
-  scoped_refptr<const ProactiveSuggestions> GetProactiveSuggestions() const;
-
  private:
   void NotifyConversationStartersChanged();
-  void NotifyProactiveSuggestionsChanged(
-      const scoped_refptr<const ProactiveSuggestions>&
-          old_proactive_suggestions);
 
   std::vector<AssistantSuggestionPtr> conversation_starters_;
-  scoped_refptr<const ProactiveSuggestions> proactive_suggestions_;
 
   mutable base::ObserverList<AssistantSuggestionsModelObserver> observers_;
 

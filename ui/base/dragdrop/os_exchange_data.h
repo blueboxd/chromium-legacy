@@ -18,10 +18,10 @@
 #endif
 
 #include "base/callback_forward.h"
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
-#include "ui/base/ui_base_export.h"
 
 class GURL;
 
@@ -48,7 +48,7 @@ struct FileInfo;
 // TabContentsViewGtk uses a different class to handle drag support that does
 // not use OSExchangeData. As such, file contents and html support is only
 // compiled on windows.
-class UI_BASE_EXPORT OSExchangeData {
+class COMPONENT_EXPORT(UI_BASE) OSExchangeData {
  public:
   // Enumeration of the known formats.
   enum Format {

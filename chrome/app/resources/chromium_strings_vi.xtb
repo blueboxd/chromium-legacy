@@ -158,6 +158,7 @@
 Một số tính năng có thể không khả dụng. Hãy chỉ định thư mục cấu hình khác hoặc sử dụng phiên bản Chromium mới hơn.</translation>
 <translation id="6734080038664603509">Cập nhật &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium đã được cài đặt cho tất cả người dùng trên máy tính của bạn.</translation>
+<translation id="6774082503108938489">Cha mẹ bạn đã tắt tùy chọn "Quyền của các trang web, ứng dụng và tiện ích" đối với Chromium. Bạn không được phép bật <ph name="EXTENSION_TYPE_PARAMETER" /> này.</translation>
 <translation id="6847869444787758381">Chromium cho bạn biết mật khẩu của bạn có bị đánh cắp hay không</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (đã sao chép vào Chromium)</translation>
@@ -216,6 +217,7 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Khởi động lại Chromium trong vòng một ngày}other{Khởi động lại Chromium trong vòng # ngày}}</translation>
 <translation id="8453117565092476964">Tệp lưu trữ trình cài đặt bị hỏng hoặc không hợp lệ. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8493179195440786826">Chromium đã lỗi thời</translation>
+<translation id="8558383651099478961">Cha mẹ bạn đã tắt tùy chọn "Quyền của các trang web, ứng dụng và tiện ích" đối với Chromium. Bạn không được phép thêm <ph name="EXTENSION_TYPE_PARAMETER" /> này.</translation>
 <translation id="8568283329061645092">Chromium có thể kiểm tra mật khẩu khi bạn đăng nhập bằng Tài khoản Google của mình</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
 <translation id="8619360774459241877">Đang khởi động Chromium...</translation>

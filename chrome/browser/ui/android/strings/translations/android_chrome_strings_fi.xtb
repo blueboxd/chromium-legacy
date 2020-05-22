@@ -519,6 +519,7 @@ Jos haluat muokata asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name
 <translation id="5292796745632149097">Lähetä:</translation>
 <translation id="5304593522240415983">Kenttä ei voi olla tyhjä.</translation>
 <translation id="5308380583665731573">Muodosta yhteys</translation>
+<translation id="5317780077021120954">Tallenna</translation>
 <translation id="5324858694974489420">Vanhempien asetukset</translation>
 <translation id="5327248766486351172">Nimi</translation>
 <translation id="5342314432463739672">Käyttöoikeuspyynnöt</translation>
@@ -670,6 +671,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="6482749332252372425">Tiedoston <ph name="FILE_NAME" /> lataus epäonnistui, koska tallennustila ei riitä.</translation>
 <translation id="6496823230996795692">Muodosta internetyhteys, ennen kuin <ph name="APP_NAME" /> on käytössäsi ensimmäisen kerran.</translation>
 <translation id="6508722015517270189">Käynnistä Chrome uudelleen.</translation>
+<translation id="6527303717912515753">Jaa</translation>
 <translation id="6532866250404780454">Chromessa käyttämäsi sivustot eivät näy. Kaikki sivuston ajastimet poistetaan.</translation>
 <translation id="6534565668554028783">Google ei vastannut riittävän nopeasti.</translation>
 <translation id="6539092367496845964">Jotain meni vikaan. Yritä myöhemmin uudelleen.</translation>

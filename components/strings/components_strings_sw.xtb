@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> inataka kuhifadhi data nyingi kwenye kifaa chako kwa muda mrefu</translation>
 <translation id="1032854598605920125">Zungusha kwenye mwendo wa saa</translation>
 <translation id="1036348656032585052">Zima</translation>
+<translation id="1038106730571050514">Onyesha mapendekezo</translation>
 <translation id="1038842779957582377">jina lisilojulikana</translation>
 <translation id="1041998700806130099">Ujumbe wa laha la kazi</translation>
 <translation id="1050038467049342496">Funga programu nyingine</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Ugeuzaji wa Picha ya Y</translation>
 <translation id="17513872634828108">Vichupo vilivyo wazi</translation>
 <translation id="1752021286346845558">Kikasha cha barua cha nane</translation>
-<translation id="1752483581718172048">Ficha Mapendekezo</translation>
 <translation id="1753706481035618306">Nambari ya ukurasa</translation>
 <translation id="1763864636252898013">Seva hii haikuweza kuthibitisha kuwa ni <ph name="DOMAIN" />; cheti chake cha usalama hakiaminiwi na mfumo wa uendeshaji wa kifaa chako. Hii inaweza kusababishwa na usanidi usiofaa au mvamizi kuingilia muunganisho wako.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Jaribu kutumia zana ya Kuchunguza Mtandao wa Windows<ph name="END_LINK" />.</translation>
@@ -400,6 +400,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="2666092431469916601">Ya Juu</translation>
 <translation id="2666117266261740852">Funga vichupo au programu nyingine</translation>
 <translation id="2674170444375937751">Je, una hakika kuwa ungependa kufuta kurasa hizi kutoka historia yako?</translation>
+<translation id="2674804415323431591">Usionyeshe mapendekezo</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Ondoka</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1078,6 +1079,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="5523118979700054094">Jina la sera</translation>
 <translation id="55293785478302737">Mshono wa ncha</translation>
 <translation id="553484882784876924">Prc6 (Bahasha)</translation>
+<translation id="5536214594743852365">Onyesha sehemu ya "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">Chelezo</translation>
 <translation id="5540224163453853">Haikuweza kupata makala yaliyoitishwa.</translation>
 <translation id="5541086400771735334">Kikasha cha barua cha saba</translation>
@@ -1475,6 +1477,7 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="7313965965371928911">Maonyo ya <ph name="BEGIN_LINK" />Kuvinjari Salama<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Usaidizi kuhusu Muunganisho</translation>
+<translation id="7323804146520582233">Ficha sehemu ya "<ph name="SECTION" />"</translation>
 <translation id="733354035281974745">Futa akaunti ya ndani ya kifaa</translation>
 <translation id="7333654844024768166">Umeweka nenosiri lako kwenye tovuti inayotiliwa shaka. Chromium inapendekeza uende kwenye <ph name="WEBSITE_1" />,<ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> na tovuti nyingine unakotumia nenosiri hili na ulibadilishe sasa.</translation>
 <translation id="7334320624316649418">Rudia Kupanga Upya</translation>
@@ -1751,7 +1754,6 @@ Vinginevyo, hatua hii itazuiwa na mipangilio yako ya faragha. Hali hii itaruhusu
 <translation id="8425213833346101688">Badilisha</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8433057134996913067">Kufanya hivyo kutakuondoa kwenye tovuti nyingi.</translation>
-<translation id="8433678324664858900">Onyesha Mapendekezo</translation>
 <translation id="8437238597147034694">Tendua hatua</translation>
 <translation id="8457125768502047971">Haijabainishwa</translation>
 <translation id="8461694314515752532">Simba data iliyosawazishwa kwa njia fiche ukitumia kauli yako ya siri ya usawazishaji</translation>

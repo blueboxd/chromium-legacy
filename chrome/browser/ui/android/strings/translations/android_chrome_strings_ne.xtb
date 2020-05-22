@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">भाषा थप्नुहोस्</translation>
 <translation id="2650751991977523696">फाइल पुनः डाउनलोड गर्ने हो?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# अडियो फाइल}other{# अडियो फाइलहरू}}</translation>
+<translation id="2656405586795711023">वेब एपहरू</translation>
 <translation id="2677748264148917807">छोड्नुहोस्</translation>
 <translation id="2689830683995595741">Chrome प्रयोग गरेर तपाईं <ph name="BEGIN_LINK1" />Google का सेवाका सर्तहरू<ph name="END_LINK1" /> र <ph name="BEGIN_LINK2" />Google Chrome र Chrome OS का सेवाका अतिरिक्त सर्तहरू<ph name="END_LINK2" />मा सहमति जनाउनुहुन्छ। <ph name="BEGIN_LINK3" />Family Link मार्फत व्यवस्थापन गरिएका Google खाताहरूको गोपनीयता सूचना<ph name="END_LINK3" /> पनि लागू हुन्छ।</translation>
 <translation id="2707726405694321444">पृष्ठ ताजा गर्नुहोस्</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">अनावश्यक भण्डारण</translation>
 <translation id="4000212216660919741">अफलाइन गृहपृष्ठ</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# घन्टा}other{# घन्टा}}</translation>
+<translation id="403687620286099920">QR कोड खोल्न ट्याप गर्नुहोस्</translation>
 <translation id="4046123991198612571">अर्को ट्र्याक</translation>
 <translation id="4056223980640387499">सेपिया</translation>
 <translation id="4060598801229743805">स्क्रिनको शीर्ष भाग नजिकै विकल्पहरू उपलब्ध छन्</translation>
@@ -449,6 +451,7 @@
 <translation id="4749960740855309258">एउटा नयाँ ट्याब खोल्नुहोस्</translation>
 <translation id="4759238208242260848">डाउनलोडहरू</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{१ डाउनलोड सम्पन्न भयो।}other{# डाउनलोडहरू सम्पन्न भए।}}</translation>
+<translation id="478981486571169252">तपाईं Chrome मा आफ्नो <ph name="SITE_NAME" /> को साइन इनसम्बन्धी अवस्था, ब्राउजिङ डेटा र साइट डेटा देख्नु हुने छ।</translation>
 <translation id="4802417911091824046">पासफ्रेजमार्फत इन्क्रिप्सन गर्ने कार्यअन्तर्गत Google Pay का भुक्तानी विधि र ठेगानाहरू समावेश हुँदैनन्।
 
 यो सेटिङ परिवर्तन गर्न <ph name="BEGIN_LINK" />सिंक रिसेट गर्नुहोस्<ph name="END_LINK" /></translation>
@@ -515,6 +518,7 @@
 <translation id="5292796745632149097">निम्न यन्त्रमा पठाउनुहोस्</translation>
 <translation id="5304593522240415983">यो क्षेत्र खाली हुन सक्दैन</translation>
 <translation id="5308380583665731573">जडान गर्नुहोस्</translation>
+<translation id="5317780077021120954">बचत गर्नुहोस्</translation>
 <translation id="5324858694974489420">अभिभावक सेटिङहरू</translation>
 <translation id="5327248766486351172">नाम</translation>
 <translation id="5342314432463739672">अनुमतिसम्बन्धी अनुरोधहरू</translation>
@@ -561,6 +565,7 @@
 <translation id="5659593005791499971">इमेल</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> मा घटना सिर्जना गर्नुहोस्</translation>
 <translation id="5668404140385795438">जूमिङ इनलाई रोक्न वेबसाइटको अनुरोधलाई ओभरराइड गर्नुहोस्</translation>
+<translation id="5681394891799747640">QR कोड डाउनलोड गर्न सकिएन</translation>
 <translation id="5684874026226664614">ओहो। यो पृष्ठ अनुवादन गर्न सकिएन।</translation>
 <translation id="5686790454216892815">फाइलको नाम ज्यादै लामो छ</translation>
 <translation id="5694049548840660018">सजिलैसँग गृहपृष्ठमा फर्कनुहोस्</translation>
@@ -609,6 +614,7 @@
 <translation id="6042308850641462728">थप</translation>
 <translation id="604996488070107836">एक अज्ञात त्रुटिको कारणले गर्दा <ph name="FILE_NAME" /> को डाउनलोड असफल भयो।</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">यहाँ आफ्नो समाचार फिडमा देखिने सामग्री तथा क्रियाकलाप नियन्त्रण गर्नुहोस्</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> घन्टा बाँकी छ</translation>
 <translation id="6108923351542677676">सेटअप प्रगतिमा छ...</translation>
 <translation id="6111020039983847643">प्रयोग भएको डेटा</translation>
@@ -632,6 +638,7 @@
 <translation id="629730747756840877">खाता</translation>
 <translation id="6297765934698848803">तपाईंको यन्त्रको व्यवस्थापन गर्ने सङ्गठनले तपाईंको यन्त्रको क्यामेरा निष्क्रिय पारेको छ।</translation>
 <translation id="6303969859164067831">साइन आउट गरी सिंक प्रक्रिया निष्क्रिय पार्नुहोस्</translation>
+<translation id="6312687380483398334">वेब एपहरू (मौन)</translation>
 <translation id="6316139424528454185">Android को संस्करण समर्थित छैन</translation>
 <translation id="6324034347079777476">Android प्रणालीको सिंकलाई असक्षम गरियो</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> मार्फत साझा गर्नुहोस्</translation>
@@ -663,6 +670,7 @@
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> डाउनलोड भण्डारण ठाउँ कमीको कारण असफल भयो।</translation>
 <translation id="6496823230996795692">पहिलोपटक <ph name="APP_NAME" /> प्रयोग गर्न कृपया इन्टरनेटमा जडान गर्नुहोस्।</translation>
 <translation id="6508722015517270189">Chrome पुनः सुरु गर्नुहोस्</translation>
+<translation id="6527303717912515753">साझा गर्नुहोस्</translation>
 <translation id="6532866250404780454">तपाईंले Chrome मार्फत हेर्नुभएका साइटहरू देखिने छैनन्। साइटका सबै टाइमरहरू मेटाइने छन्।</translation>
 <translation id="6534565668554028783">Google ले प्रतिक्रिया जनाउन निकै लामो समय लियो</translation>
 <translation id="6539092367496845964">केही चिज गडबड भयो। पछि फेरि प्रयास गर्नुहोस्।</translation>
@@ -793,6 +801,7 @@
 <translation id="7605594153474022051">सिंकले काम गरिरहेको छैन</translation>
 <translation id="7606077192958116810">लाइट मोड सक्रिय छ। सेटिङहरूमा गई यसको व्यवस्थापन गर्नुहोस्।</translation>
 <translation id="7612619742409846846">यस रूपमा Google मा साइन इन गरियो</translation>
+<translation id="7614971007231847352">QR कोड डाउनलोड गरियो</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> डाउनलोड नेटवर्क असफलताका कारणले असफल भयो।</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />मद्दत प्राप्त गर्नुहोस्<ph name="END_LINK1" /> वा <ph name="BEGIN_LINK2" />पुन:स्क्यान गर्नुहोस्<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome मा स्वागत छ</translation>
@@ -820,6 +829,7 @@
 <translation id="7821588508402923572">तपाईंले बचत गर्नुभएको डेटा यहाँ देखिने छ</translation>
 <translation id="7835852323729233924">प्ले भइरहेको मिडिया</translation>
 <translation id="783819812427904514">भिडियो अनम्युट गर्नुहोस्</translation>
+<translation id="7846296061357476882">Google का सेवाहरू</translation>
 <translation id="784934925303690534">समयको दायरा</translation>
 <translation id="7851858861565204677">अन्य यन्त्रहरू</translation>
 <translation id="7875915731392087153">इमेल सिर्जना गर्नुहोस्</translation>

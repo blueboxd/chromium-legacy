@@ -43,6 +43,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="6058625436358447366">Para finalizar, ingresa tu contraseña anterior y la nueva</translation>
 <translation id="6106186594183574873">Para finalizar, ingresa tu contraseña anterior</translation>
 <translation id="6146993107019042706">Para finalizar, ingresa tu nueva contraseña</translation>
+<translation id="6517239166834772319">Explorar</translation>
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="7162487448488904999">Galería</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -50,6 +51,7 @@ Intenta presionar el micrófono para hacerme una pregunta.</translation>
 <translation id="7805768142964895445">Estado</translation>
 <translation id="808894953321890993">Cambiar contraseña</translation>
 <translation id="8208861521865154048">Beneficios</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> administra a este usuario. Puede supervisar la actividad del usuario y cambiar la configuración de forma remota.</translation>
 <translation id="8747900814994928677">Confirmar cambio</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Intentos restantes: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Actualizar ticket para <ph name="PRINCIPAL_NAME" /></translation>

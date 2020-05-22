@@ -22,50 +22,6 @@ const base::Feature kAssistantConversationStartersV2{
 const base::Feature kAssistantLauncherChipIntegration{
     "AssistantLauncherChipIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kAssistantProactiveSuggestions{
-    "AssistantProactiveSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// The maximum width (in dip) for the proactive suggestions chip.
-const base::FeatureParam<int> kAssistantProactiveSuggestionsMaxWidth{
-    &kAssistantProactiveSuggestions, "max-width", 280};
-
-// The desired background blur radius (in dip) for the rich proactive
-// suggestions entry point. Amount of blur may need to be dynamically modified
-// later or disabled which may be accomplished by setting to zero.
-const base::FeatureParam<int>
-    kAssistantProactiveSuggestionsRichEntryPointBackgroundBlurRadius{
-        &kAssistantProactiveSuggestions,
-        "rich-entry-point-background-blur-radius", 30};
-
-// The desired corner radius (in dip) for the rich proactive suggestions entry
-// point. As the rich UI has yet to be defined, corner radius may need to be
-// dynamically modified later.
-const base::FeatureParam<int>
-    kAssistantProactiveSuggestionsRichEntryPointCornerRadius{
-        &kAssistantProactiveSuggestions, "rich-entry-point-corner-radius", 12};
-
-const base::FeatureParam<std::string>
-    kAssistantProactiveSuggestionsServerExperimentIds{
-        &kAssistantProactiveSuggestions, "server-experiment-ids", ""};
-
-// When enabled, the proactive suggestions view will show only after the user
-// scrolls up in the source web contents. When disabled, the view will be shown
-// immediately once the set of proactive suggestions are available.
-const base::FeatureParam<bool> kAssistantProactiveSuggestionsShowOnScroll{
-    &kAssistantProactiveSuggestions, "show-on-scroll", true};
-
-// When enabled, we will use the rich, content-forward entry point for the
-// proactive suggestions feature in lieu of the simple entry point affordance.
-const base::FeatureParam<bool> kAssistantProactiveSuggestionsShowRichEntryPoint{
-    &kAssistantProactiveSuggestions, "show-rich-entry-point", false};
-
-const base::FeatureParam<bool> kAssistantProactiveSuggestionsSuppressDuplicates{
-    &kAssistantProactiveSuggestions, "suppress-duplicates", false};
-
-const base::FeatureParam<int>
-    kAssistantProactiveSuggestionsTimeoutThresholdMillis{
-        &kAssistantProactiveSuggestions, "timeout-threshold-millis", 15 * 1000};
-
 const base::Feature kAssistantResponseProcessingV2{
     "AssistantResponseProcessingV2", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -98,27 +54,6 @@ const base::Feature kEnableMediaSessionIntegration{
 const base::Feature kDisableVoiceMatch{"DisableVoiceMatch",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-int GetProactiveSuggestionsMaxWidth() {
-  return kAssistantProactiveSuggestionsMaxWidth.Get();
-}
-
-int GetProactiveSuggestionsRichEntryPointBackgroundBlurRadius() {
-  return kAssistantProactiveSuggestionsRichEntryPointBackgroundBlurRadius.Get();
-}
-
-int GetProactiveSuggestionsRichEntryPointCornerRadius() {
-  return kAssistantProactiveSuggestionsRichEntryPointCornerRadius.Get();
-}
-
-std::string GetProactiveSuggestionsServerExperimentIds() {
-  return kAssistantProactiveSuggestionsServerExperimentIds.Get();
-}
-
-base::TimeDelta GetProactiveSuggestionsTimeoutThreshold() {
-  return base::TimeDelta::FromMilliseconds(
-      kAssistantProactiveSuggestionsTimeoutThresholdMillis.Get());
-}
-
 bool IsAppSupportEnabled() {
   return base::FeatureList::IsEnabled(
       assistant::features::kAssistantAppSupport);
@@ -150,22 +85,6 @@ bool IsPowerManagerEnabled() {
 
 bool IsOnDeviceAssistantEnabled() {
   return base::FeatureList::IsEnabled(kEnableOnDeviceAssistant);
-}
-
-bool IsProactiveSuggestionsEnabled() {
-  return base::FeatureList::IsEnabled(kAssistantProactiveSuggestions);
-}
-
-bool IsProactiveSuggestionsShowOnScrollEnabled() {
-  return kAssistantProactiveSuggestionsShowOnScroll.Get();
-}
-
-bool IsProactiveSuggestionsShowRichEntryPointEnabled() {
-  return kAssistantProactiveSuggestionsShowRichEntryPoint.Get();
-}
-
-bool IsProactiveSuggestionsSuppressDuplicatesEnabled() {
-  return kAssistantProactiveSuggestionsSuppressDuplicates.Get();
 }
 
 bool IsResponseProcessingV2Enabled() {

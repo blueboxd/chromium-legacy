@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">ভাষা যুক্ত করুন</translation>
 <translation id="2650751991977523696">আবার ফাইল ডাউনলোড করবেন?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#টি অডিও ফাইল}one{#টি অডিও ফাইল}other{#টি অডিও ফাইল}}</translation>
+<translation id="2656405586795711023">ওয়েব অ্যাপ</translation>
 <translation id="2677748264148917807">ছেড়ে চলে যান</translation>
 <translation id="2689830683995595741">Chrome ব্যবহার করার মাধ্যমে, আপনি <ph name="BEGIN_LINK1" />Google পরিষেবার শর্তাবলী<ph name="END_LINK1" /> এবং <ph name="BEGIN_LINK2" />Google Chrome ও Chrome OS-এর পরিষেবার অতিরিক্ত শর্তাবলী<ph name="END_LINK2" /> মেনে নিচ্ছেন। তাছাড়া, এর সাথে <ph name="BEGIN_LINK3" />Family Link-এর মাধ্যমে ম্যানেজ করা Google অ্যাকাউন্টের গোপনীয়তা বিজ্ঞপ্তি<ph name="END_LINK3" />ও প্রযোজ্য হবে।</translation>
 <translation id="2707726405694321444">পৃষ্ঠা রিফ্রেশ করুন</translation>
@@ -368,6 +369,7 @@
 <translation id="3997476611815694295">গুরুত্বহীন সঞ্চয়স্থান</translation>
 <translation id="4000212216660919741">অফলাইন হোম</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
+<translation id="403687620286099920">QR কোড খুলতে ট্যাপ করুন</translation>
 <translation id="4046123991198612571">পরবর্তী ট্র্যাক</translation>
 <translation id="4056223980640387499">সেপিয়া</translation>
 <translation id="4060598801229743805">স্ক্রীনের প্রায় উপরের দিকে বিকল্পগুলি উপলব্ধ</translation>
@@ -452,6 +454,7 @@
 <translation id="4749960740855309258">একটি নতুন ট্যাব খুলুন</translation>
 <translation id="4759238208242260848">ডাউনলোডগুলি</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{১টি ডাউনলোড হয়ে গেছে।}one{#টি ডাউনলোড হয়ে গেছে।}other{#টি ডাউনলোড হয়ে গেছে।}}</translation>
+<translation id="478981486571169252">আপনি Chrome-এ নিজের <ph name="SITE_NAME" />-এর সাইন-ইন স্ট্যাটাস, ব্রাউজ করা ডেটা এবং সাইট ডেটা দেখতে পাবেন।</translation>
 <translation id="4802417911091824046">পাসফ্রেজ এনক্রিপশনে Google Pay-এর পেমেন্ট পদ্ধতি ও ঠিকানা অন্তর্ভুক্ত থাকে না।
 
 <ph name="BEGIN_LINK" />রিসেট সিঙ্ক<ph name="END_LINK" /> থেকে এই সেটিং পরিবর্তন করুন</translation>
@@ -518,6 +521,7 @@
 <translation id="5292796745632149097">এতে পাঠান:</translation>
 <translation id="5304593522240415983">এই ক্ষেত্রটি খালি রাখা যাবে না</translation>
 <translation id="5308380583665731573">সংযুক্ত করুন</translation>
+<translation id="5317780077021120954">সেভ করুন</translation>
 <translation id="5324858694974489420">অভিভাবকীয় সেটিংস</translation>
 <translation id="5327248766486351172">নাম</translation>
 <translation id="5342314432463739672">অনুমতি দেওয়ার অনুরোধ</translation>
@@ -564,6 +568,7 @@
 <translation id="5659593005791499971">ইমেল আইডি</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> এ ইভেন্ট তৈরি করুন</translation>
 <translation id="5668404140385795438">কোনো ওয়েবসাইটের জুম ইন প্রতিরোধ করার অনুরোধ উপেক্ষা করুন</translation>
+<translation id="5681394891799747640">QR কোড ডাউনলোড করা যাচ্ছে না</translation>
 <translation id="5684874026226664614">ওহো৷ এই পৃষ্ঠাটির অনুবাদ করা যাবে না৷</translation>
 <translation id="5686790454216892815">ফাইলের নামটি খুব বড়</translation>
 <translation id="5694049548840660018">হোমে সহজেই ফিরে যান</translation>
@@ -612,6 +617,7 @@
 <translation id="6042308850641462728">আরও</translation>
 <translation id="604996488070107836">একটি অজানা ত্রুটির কারনে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">আপনার খবর ও গতিবিধি এখানে নিয়ন্ত্রণ করুন</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ঘণ্টা বাকি আছে</translation>
 <translation id="6108923351542677676">সেটআপ চলছে...</translation>
 <translation id="6111020039983847643">ব্যবহৃত ডেটা</translation>
@@ -635,6 +641,7 @@
 <translation id="629730747756840877">অ্যাকাউন্ট</translation>
 <translation id="6297765934698848803">যে সংস্থাটি আপনার ডিভাইস ম্যানেজ করে সেটি আপনার ক্যামেরা বন্ধ করে দিয়েছে।</translation>
 <translation id="6303969859164067831">সাইন-আউট করুন এবং সিঙ্ক করা বন্ধ করুন</translation>
+<translation id="6312687380483398334">ওয়েব অ্যাপ (কোনও রকম আওয়াজ ছাড়া)</translation>
 <translation id="6316139424528454185">এই Android ভার্সন সমর্থিত নয়</translation>
 <translation id="6324034347079777476">Android সিস্টেম সিঙ্ক অক্ষম করা হয়েছে</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> এর মাধ্যমে শেয়ার করুন</translation>
@@ -666,6 +673,7 @@
 <translation id="6482749332252372425">স্টোরেজে জায়গার ঘাটতির কারণে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> প্রথমবার ব্যবহার করার জন্য অনুগ্রহ করে ইন্টারনেটে সংযুক্ত হন।</translation>
 <translation id="6508722015517270189">Chrome পুনরায় চালু করুন</translation>
+<translation id="6527303717912515753">শেয়ার করুন</translation>
 <translation id="6532866250404780454">আপনি কোন কোন সাইটে গেছেন তা Chrome-এ দেখা যাবে না। সমস্ত সাইটের টাইমার মুছে দেওয়া হবে।</translation>
 <translation id="6534565668554028783">Google সাড়া দিতে দেরী করছে</translation>
 <translation id="6539092367496845964">কোনও সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।</translation>
@@ -796,6 +804,7 @@
 <translation id="7605594153474022051">সিঙ্ক কাজ করছে না</translation>
 <translation id="7606077192958116810">লাইট মোড চালু আছে। সেটিংসে এটি ম্যানেজ করুন।</translation>
 <translation id="7612619742409846846">এই হিসাবে Google এ প্রবেশ করেছেন</translation>
+<translation id="7614971007231847352">QR কোড ডাউনলোড করা হয়েছে</translation>
 <translation id="7619072057915878432">নেটওয়ার্ক কানেক্ট হয়নি বলে <ph name="FILE_NAME" /> ডাউনলোড করা যায়নি।</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />সহায়তা পান<ph name="END_LINK1" /> বা <ph name="BEGIN_LINK2" />আবার স্ক্যান করুন<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome এ স্বাগতম</translation>
@@ -823,6 +832,7 @@
 <translation id="7821588508402923572">আপনি কত ডেটা সেভ করেছেন তা এখানে দেখা যাবে</translation>
 <translation id="7835852323729233924">মিডিয়া চালানো হচ্ছে</translation>
 <translation id="783819812427904514">ভিডিওটি আনমিউট করুন</translation>
+<translation id="7846296061357476882">Google পরিষেবা</translation>
 <translation id="784934925303690534">সময় সীমা</translation>
 <translation id="7851858861565204677">অন্যান্য ডিভাইস</translation>
 <translation id="7875915731392087153">ইমেল আইডি তৈরি করুন</translation>

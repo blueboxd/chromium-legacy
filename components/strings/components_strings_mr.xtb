@@ -600,6 +600,7 @@
 <translation id="3539171420378717834">या डिव्हाइसवर या कार्डची एक प्रत ठेवा</translation>
 <translation id="3558573058928565255">दिवसापर्यंत</translation>
 <translation id="3566021033012934673">तुमचे कनेक्शन खाजगी नाही</translation>
+<translation id="3567778190852720481">एंटरप्राइझ खात्यासोबत नोंदणी करू शकत नाही (एंटरप्राइझ खाते पात्र नाही).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> वरील एंबेड केलेल्‍या पेजचे म्हणणे हे आहे की</translation>
 <translation id="3581089476000296252">हे पेज केव्हा तयार होईल हे Chrome तुम्हाला कळवेल. &lt;a&gt;रद्द करा&lt;/a&gt;</translation>
@@ -876,6 +877,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows नेटवर्क निदान चालविणे<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">धोरणे रीलोड करा</translation>
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
+<translation id="4731638775147756694">तुमच्या अ‍ॅडमिनिस्ट्रेटरने हे अ‍ॅप्लिकेशन ब्लॉक केले आहे</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> ला तुमच्या डिव्हाइसचे स्थान वापरायचे आहे</translation>
 <translation id="4736825316280949806">Chromium रीस्टार्ट करा</translation>
@@ -1247,6 +1249,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> बुकमार्क</translation>
 <translation id="6264485186158353794">सुरक्षिततेकडे परत</translation>
 <translation id="6266934640124581640">फिकट हिरवट निळा</translation>
+<translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">आपल्या वाचन सूचीमधील पेज येथे दिसतात</translation>
 <translation id="627746635834430766">पुढील वेळी जलद पेमेंट देण्यासाठी, तुमच्या Google खात्यावर तुमचे कार्ड आणि बिलिंग पत्ता सेव्ह करा.</translation>
 <translation id="6279516281132775660">Chrome पुढील माहिती <ph name="BEGIN_EMPHASIS" />सेव्ह करणार नाही<ph name="END_EMPHASIS" />:
@@ -1755,7 +1758,6 @@
 <translation id="8425213833346101688">बदल करा</translation>
 <translation id="8428213095426709021">सेटिंग्ज</translation>
 <translation id="8433057134996913067">हे तुम्हाला बहुतांश वेबसाइट वरून साइन आउट करेल.</translation>
-<translation id="8433678324664858900">सूचना दर्शवा</translation>
 <translation id="8437238597147034694">&amp;हलवा पूर्ववत करा</translation>
 <translation id="8457125768502047971">अनिश्चित</translation>
 <translation id="8461694314515752532">तुमच्या स्वतःच्या सिंक पासफ्रेजसह सिंक केलेला डेटा एंक्रिप्ट करा</translation>

@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">افزودن زبان</translation>
 <translation id="2650751991977523696">فایل دوباره بارگیری شود؟</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# فایل صوتی}one{# فایل صوتی}other{# فایل صوتی}}</translation>
+<translation id="2656405586795711023">برنامه‌های وب</translation>
 <translation id="2677748264148917807">خروج</translation>
 <translation id="2689830683995595741">‏با استفاده کردن از Chrome، با <ph name="BEGIN_LINK1" />شرایط خدمات Google<ph name="END_LINK1" /> و <ph name="BEGIN_LINK2" />شرایط خدمات تکمیلی Google Chrome و سیستم‌عامل Chrome<ph name="END_LINK2" /> موافقت می‌کنید. <ph name="BEGIN_LINK3" />اعلان حریم‌خصوصی برای «حساب‌های Google» مدیریت‌شده با Family Link<ph name="END_LINK3" /> نیز اعمال می‌شود.</translation>
 <translation id="2707726405694321444">بازخوانی صفحه</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">فضای ذخیره غیرمهم</translation>
 <translation id="4000212216660919741">صفحه اصلیِ آفلاین</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ساعت}one{# ساعت}other{# ساعت}}</translation>
+<translation id="403687620286099920">‏برای باز کردن کد QR، ضربه بزنید</translation>
 <translation id="4046123991198612571">آهنگ بعدی</translation>
 <translation id="4056223980640387499">سپیا</translation>
 <translation id="4060598801229743805">گزینه‌هایی در نزدیکی بالای صفحه دردسترس هستند</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">باز کردن برگه جدید</translation>
 <translation id="4759238208242260848">بارگیری‌ها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{۱ بارگیری کامل شد.}one{# بارگیری کامل شد.}other{# بارگیری کامل شد.}}</translation>
+<translation id="478981486571169252">‏وضعیت ورود به سیستم <ph name="SITE_NAME" />، داده‌های محصول مرور، و داده‌های سایت را در Chrome خواهید دید</translation>
 <translation id="4802417911091824046">‏رمزگذاری عبارت ورود شامل روش‌های پرداخت و نشانی‌های موجود در Google Pay نمی‌شود.
 
 برای تغییر این تنظیم، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">ارسال به</translation>
 <translation id="5304593522240415983">این قسمت باید پر شود</translation>
 <translation id="5308380583665731573">اتصال</translation>
+<translation id="5317780077021120954">ذخیره</translation>
 <translation id="5324858694974489420">تنظیمات والدین</translation>
 <translation id="5327248766486351172">نام</translation>
 <translation id="5342314432463739672">درخواست‌های مجوز</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">ایمیل</translation>
 <translation id="5665379678064389456">ایجاد رویداد در <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">لغو درخواست وب‌سایت برای جلوگیری از بزرگ‌نمایی</translation>
+<translation id="5681394891799747640">‏کد QR بارگیری نشد</translation>
 <translation id="5684874026226664614">متأسفیم. این صفحه ترجمه نشد.</translation>
 <translation id="5686790454216892815">نام فایل خیلی طولانی است</translation>
 <translation id="5694049548840660018">برگشت آسان به صفحه اصلی</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="604996488070107836">به‌دلیل خطایی ناشناس، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="605721222689873409">سال</translation>
+<translation id="6059830886158432458">داستان‌ها و فعالیت خود را اینجا کنترل کنید</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ساعت باقی‌مانده است</translation>
 <translation id="6108923351542677676">تنظیم در حال انجام است...</translation>
 <translation id="6111020039983847643">داده مصرف‌شده</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">حساب</translation>
 <translation id="6297765934698848803">سازمانی که دستگاهتان را مدیریت می‌کند دوربین را خاموش کرده است.</translation>
 <translation id="6303969859164067831">خروج از سیستم و خاموش کردن همگام‌سازی</translation>
+<translation id="6312687380483398334">برنامه‌های وب (بی‌صدا)</translation>
 <translation id="6316139424528454185">‏نسخه Android پشتیبانی نمی‌شود</translation>
 <translation id="6324034347079777476">‏همگام‌سازی سیستم Android غیرفعال شد</translation>
 <translation id="6333140779060797560">اشتراک‌گذاری از طریق <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">به‌دلیل نبودن فضای ذخیره‌سازی، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="6496823230996795692">برای استفاده از <ph name="APP_NAME" /> برای اولین‌ بار، لطفاً به اینترنت وصل شوید.</translation>
 <translation id="6508722015517270189">‏Chrome را راه‌اندازی مجدد کنید</translation>
+<translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6532866250404780454">‏سایت‌هایی که در Chrome بازدید می‌کنید، نشان داده نخواهد شد. همه تایمرهای سایت حذف خواهد شد.</translation>
 <translation id="6534565668554028783">‏پاسخ Google بیش از حد طول کشیده است</translation>
 <translation id="6539092367496845964">مشکلی پیش آمد. بعداً دوباره امتحان کنید.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">همگام‌سازی کار نمی‌کند</translation>
 <translation id="7606077192958116810">حالت ساده روشن است. آن را در «تنظیمات» مدیریت کنید.</translation>
 <translation id="7612619742409846846">‏ثبت ورودشده در Google به‌عنوان</translation>
+<translation id="7614971007231847352">‏کد QR بارگیری شد</translation>
 <translation id="7619072057915878432">به‌دلیل نقص‌هایی در شبکه، بارگیری <ph name="FILE_NAME" /> انجام نشد.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />دریافت راهنمایی<ph name="END_LINK1" /> یا <ph name="BEGIN_LINK2" />اسکن مجدد<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏به Chrome خوش آمدید</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">میزان داده صرفه‌جویی‌شده اینجا نشان داده می‌شود</translation>
 <translation id="7835852323729233924">درحال پخش رسانه</translation>
 <translation id="783819812427904514">با صدا کردن ویدیو</translation>
+<translation id="7846296061357476882">‏سرویس‌های Google</translation>
 <translation id="784934925303690534">محدوده زمانی</translation>
 <translation id="7851858861565204677">دستگاه‌های دیگر</translation>
 <translation id="7875915731392087153">ایجاد ایمیل</translation>

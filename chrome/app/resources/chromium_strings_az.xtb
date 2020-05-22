@@ -158,6 +158,7 @@ Bəzi funksiyalar əlçatmaz ola bilər ki, nəticədə tərcihlərə edilən d�
 Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstərin və ya yeni Chromium versiyası işlədin.</translation>
 <translation id="6734080038664603509">Chromium'u güncəlləşdirin</translation>
 <translation id="6734291798041940871">Chromium kompüterinizdəki bütün istifadəçilər üçün artıq quraşdırılıb.</translation>
+<translation id="6774082503108938489">Valideyniniz Chromium üçün "Saytlar, tətbiqlər və artırmalar üçün icazələri" deaktiv edib. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> artırmasının aktiv edilməsinə icazə verilmir.</translation>
 <translation id="6847869444787758381">Chromium parollarınızın oğurlanıb-oğurlanmadığı haqqında Sizə məlumat verir</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium'a kopyalandı)</translation>
@@ -214,6 +215,7 @@ Bəzi funksiyalar əlçatmaz ola bilər. Xüsusi profil direktoriyası göstəri
 <translation id="8417404458978023919">{0,plural, =1{Chromium'u bir gün ərzində yenidən başladın}other{Chromium'u # gün ərzində yenidən başladın}}</translation>
 <translation id="8453117565092476964">Quraşdırıcı arxivi zədələnib və ya yanlışdır. Lütfən, Chromium'u yenidən endirin.</translation>
 <translation id="8493179195440786826">Chromium'um vaxtı keçib</translation>
+<translation id="8558383651099478961">Valideyniniz Chromium üçün "Saytlar, tətbiqlər və artırmalar üçün icazələri" deaktiv edib. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> artırmasının əlavə edilməsinə icazə verilmir.</translation>
 <translation id="8568283329061645092">Google Hesabınız ilə daxil olduqda Chromium parollarınızı yoxlaya bilər</translation>
 <translation id="8586442755830160949">Müəlliflik Hüququ <ph name="YEAR" /> Chromium Müəllifləri. Bütün hüquqlar qorunur.</translation>
 <translation id="8619360774459241877">Chromium başlayır...</translation>

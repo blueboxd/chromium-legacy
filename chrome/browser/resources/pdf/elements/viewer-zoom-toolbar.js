@@ -184,16 +184,12 @@ Polymer({
     this.fire('two-up-view-changed', twoUpViewAction);
   },
 
-  /**
-   * Handle clicks of the zoom-in-button.
-   */
+  /** Handle clicks of the zoom-in-button. */
   zoomIn() {
     this.fire('zoom-in');
   },
 
-  /**
-   * Handle clicks of the zoom-out-button.
-   */
+  /** Handle clicks of the zoom-out-button. */
   zoomOut() {
     this.fire('zoom-out');
   },

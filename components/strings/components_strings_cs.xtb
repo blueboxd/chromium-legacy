@@ -10,6 +10,7 @@
 <translation id="1030706264415084469">Stránka <ph name="URL" /> chce v zařízení trvale ukládat velké množství dat</translation>
 <translation id="1032854598605920125">Otočit ve směru hodinových ručiček</translation>
 <translation id="1036348656032585052">Vypnout</translation>
+<translation id="1038106730571050514">Zobrazit návrhy</translation>
 <translation id="1038842779957582377">neznámé jméno</translation>
 <translation id="1041998700806130099">Zpráva listu úlohy</translation>
 <translation id="1050038467049342496">Zavřete ostatní aplikace</translation>
@@ -397,6 +398,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="2666092431469916601">Nahoru</translation>
 <translation id="2666117266261740852">Zavřete ostatní karty nebo aplikace</translation>
 <translation id="2674170444375937751">Jste si jisti, že chcete tyto stránky odstranit ze své historie?</translation>
+<translation id="2674804415323431591">Skrýt návrhy</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Odejít</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -592,6 +594,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="3539171420378717834">Uchovat kopii této karty v tomto zařízení</translation>
 <translation id="3558573058928565255">Den</translation>
 <translation id="3566021033012934673">Vaše připojení není soukromé</translation>
+<translation id="3567778190852720481">Pomocí podnikového účtu se nelze zaregistrovat.</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Vložená stránka na webu <ph name="SITE" /> říká</translation>
 <translation id="3581089476000296252">Až bude tato stránka připravená, Chrome vás bude informovat. &lt;a&gt;Zrušit&lt;/a&gt;</translation>
@@ -866,6 +869,7 @@ Jinak to vaše nastavení ochrany soukromí bude blokovat. Povolením umožníte
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Spustit Diagnostiku sítě systému Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Znovu načíst zásady</translation>
 <translation id="4728558894243024398">Platforma</translation>
+<translation id="4731638775147756694">Administrátor aplikaci zablokoval</translation>
 <translation id="4731967714531604179">Prc2 (obálka)</translation>
 <translation id="4733082559415072992">Web <ph name="URL" /> chce použít polohu vašeho zařízení</translation>
 <translation id="4736825316280949806">Restartujte Chromium</translation>
@@ -1064,6 +1068,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="5523118979700054094">Název zásady</translation>
 <translation id="55293785478302737">Sešití na okraji</translation>
 <translation id="553484882784876924">Prc6 (obálka)</translation>
+<translation id="5536214594743852365">Zobrazit sekci <ph name="SECTION" /></translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Požadovaný článek nebyl nalezen.</translation>
 <translation id="5541086400771735334">Schránka 7</translation>
@@ -1231,6 +1236,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="6263376278284652872">Záložky webu <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Zpět na bezpečnější stránku</translation>
 <translation id="6266934640124581640">Světle modrozelená</translation>
+<translation id="6272383483618007430">Aktualizace Google</translation>
 <translation id="6276112860590028508">Zde naleznete stránky ze seznamu četby</translation>
 <translation id="627746635834430766">Abyste příště mohli zaplatit rychleji, uložte si kartu a fakturační adresu do účtu Google.</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />nebude ukládat<ph name="END_EMPHASIS" /> následující informace:
@@ -1460,6 +1466,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7313965965371928911">Upozornění <ph name="BEGIN_LINK" />Bezpečného prohlížení<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Pomoc s připojením</translation>
+<translation id="7323804146520582233">Skrýt sekci <ph name="SECTION" /></translation>
 <translation id="733354035281974745">Místní přepsání účtu na zařízení</translation>
 <translation id="7333654844024768166">Právě jste své heslo zadali na klamavém webu. Chromium doporučuje navštívit weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> a další weby, na nichž toto heslo používáte, a okamžitě ho změnit.</translation>
 <translation id="7334320624316649418">&amp;Opakovat změnu uspořádání</translation>
@@ -1603,6 +1610,7 @@ Kontaktujte administrátora systému.</translation>
 <translation id="7844689747373518809">{COUNT,plural, =0{Žádné}=1{1 aplikace (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikace (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}few{# aplikace (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}many{# aplikace (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# aplikací (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">To neznamená, že jste neviditelní. Anonymní režim neskryje vaši aktivitu před vaším zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Pomozte se zlepšováním bezpečnosti na webu tím, že do Googlu budete odesílat <ph name="BEGIN_WHITEPAPER_LINK" />adresy URL některých navštívených stránek, omezené informace o systému a část obsahu stránek<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Opustit web?</translation>
 <translation id="7865448901209910068">Nejlepší rychlost</translation>
 <translation id="7874263914261512992">Právě jste své heslo zadali na klamavém webu. Chrome doporučuje zkontrolovat uložená hesla pro weby <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a další weby, na nichž toto heslo používáte.</translation>
@@ -1737,7 +1745,6 @@ Další podrobnosti:
 <translation id="8425213833346101688">Změnit</translation>
 <translation id="8428213095426709021">Nastavení</translation>
 <translation id="8433057134996913067">Budete odhlášeni z většiny webů.</translation>
-<translation id="8433678324664858900">Zobrazovat návrhy</translation>
 <translation id="8437238597147034694">&amp;Vrátit přesunutí zpět</translation>
 <translation id="8457125768502047971">Bez časového omezení</translation>
 <translation id="8461694314515752532">Šifrovat synchronizovaná data pomocí vlastní heslové fráze pro synchronizaci</translation>

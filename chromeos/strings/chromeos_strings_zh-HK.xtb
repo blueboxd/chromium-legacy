@@ -51,7 +51,7 @@
 <translation id="7805768142964895445">狀態</translation>
 <translation id="808894953321890993">變更密碼</translation>
 <translation id="8208861521865154048">獎賞</translation>
-<translation id="8701136875688985581">由 <ph name="ENROLLMENT_DOMAIN" /> 管理這位使用者，因此可能會從遠端管理設定並監控使用者活動。</translation>
+<translation id="8701136875688985581">由 <ph name="ENROLLMENT_DOMAIN" /> 管理這位使用者，因此可能會從遠端管理設定並監察用戶活動。</translation>
 <translation id="8747900814994928677">確認變更</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />剩餘嘗試次數：<ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">更新 <ph name="PRINCIPAL_NAME" /> 的票證</translation>

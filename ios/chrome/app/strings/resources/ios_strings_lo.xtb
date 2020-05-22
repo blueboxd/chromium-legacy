@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">ປະຫວັດ</translation>
 <translation id="1650222530560417226">ແຕະປຸ່ມ "ເລີ່ມບັນທຶກ" ເພື່ອເກັບກຳບັນທຶກ ແລະ ຂໍ້ຜິດພາດໃນອະນາຄົດຂອງຄອນໂຊນ JavaScript ຈາກແຖບທັງໝົດ. ບັນທຶກຈະຖືກເກັບກຳ (ແລະ ເກັບໄວ້ໃນໜ່ວຍຄວາມຈຳເທົ່ານັ້ນ) ຈົນກວ່າວ່າຈະປິດໜ້ານີ້ ຫຼື ມີການແຕະປຸ່ມ "ຢຸດບັນທຶກ".</translation>
 <translation id="1657011748321897393">ການ​ແບ່ງ​ປັນ​ຂອງ​ທ່ານ​ບໍ່​ສຳ​ເລັດ ເພາະ​ວ່າ​ທ່ານ​ບໍ່​ໄດ້​ເຊື່ອມ​ຕໍ່​ກັບ​ເຄືອ​ຂ່າຍ.</translation>
+<translation id="1657641691196698092">ຄຸກກີ້ທີ່ບລັອກໄວ້</translation>
 <translation id="165877110639533037">ບໍ່​ມີ​ແຖບ​ເປີດ</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ເປັນ <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">ເພື່ອມີບຸກມາກຢູ່ໃນທຸກອຸປະກອນຂອງທ່ານ, ກະລຸນາເປີດການຊິ້ງຂໍ້ມູນກ່ອນ.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">ນະໂຍບາຍອຸປະກອນໄດ້ບລັອກການເຂົ້າເຖິງຮູບຖ່າຍຂອງທ່ານ</translation>
 <translation id="2578571896248130439">ສົ່ງໜ້າເວັບ</translation>
 <translation id="2584132361465095047">ເພີ່ມບັນຊີ...</translation>
+<translation id="2600682495497606169">ລຶບລ້າງຄຸກກີ້ເວັບໄຊ</translation>
 <translation id="2625189173221582860">ສຳເນົາລະຫັດຜ່ານແລ້ວ</translation>
 <translation id="2647269890314209800">ຄຸກກີ້ທີ່ໃຊ້ຢູ່</translation>
 <translation id="2648803196158606475">ລຶບລາຍການທີ່ອ່ານແລ້ວ</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">ປ່ອຍໄປ</translation>
 <translation id="5245322853195994030">ຍົກເລີກການຊິ້ງຂໍ້ມູນ</translation>
 <translation id="5271549068863921519">ບັນທຶກລະ​ຫັດ​ຜ່ານ</translation>
+<translation id="5295239312320826323">ລຶບບັນຊີ <ph name="USER_EMAIL" /> ອອກບໍ?</translation>
 <translation id="5300589172476337783">ສະ​ແດງ​</translation>
 <translation id="5317780077021120954">ບັນທຶກ</translation>
 <translation id="5327248766486351172">ຊື່</translation>

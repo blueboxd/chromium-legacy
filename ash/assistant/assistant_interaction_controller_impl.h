@@ -29,7 +29,6 @@
 namespace ash {
 
 class AssistantControllerImpl;
-class ProactiveSuggestions;
 enum class AssistantButtonId;
 enum class AssistantQuerySource;
 
@@ -138,12 +137,9 @@ class AssistantInteractionControllerImpl
   bool ShouldAttemptWarmerWelcome(AssistantEntryPoint entry_point) const;
   void AttemptWarmerWelcome();
 
-  void StartProactiveSuggestionsInteraction(
-      scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
   void StartScreenContextInteraction(bool include_assistant_structure,
                                      const gfx::Rect& region,
                                      AssistantQuerySource query_source);
-
   void StartVoiceInteraction();
   void StopActiveInteraction(bool cancel_conversation);
 

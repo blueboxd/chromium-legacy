@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> vill lagra stora mängder data permanent på din enhet</translation>
 <translation id="1032854598605920125">Rotera medurs</translation>
 <translation id="1036348656032585052">Inaktivera</translation>
+<translation id="1038106730571050514">Visa förslag</translation>
 <translation id="1038842779957582377">okänt namn</translation>
 <translation id="1041998700806130099">Meddelande på arbetsorder</translation>
 <translation id="1050038467049342496">Stäng andra appar</translation>
@@ -401,6 +402,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="2666092431469916601">Överst</translation>
 <translation id="2666117266261740852">Stäng andra flikar eller appar</translation>
 <translation id="2674170444375937751">Vill du ta bort de här sidorna från historiken?</translation>
+<translation id="2674804415323431591">Dölj förslag</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Lämna</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -601,6 +603,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="3539171420378717834">Spara en kopia av kortet på enheten</translation>
 <translation id="3558573058928565255">dagtid</translation>
 <translation id="3566021033012934673">Anslutningen är inte privat</translation>
+<translation id="3567778190852720481">Det går inte att registrera sig med ett jobbkonto (jobbkonton är inte behöriga).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">På en inbäddad sida på <ph name="SITE" /> står det</translation>
 <translation id="3581089476000296252">Ett meddelande visas när sidan är klar. &lt;a&gt;Avbryt&lt;/a&gt;</translation>
@@ -877,6 +880,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" /> köra nätverksdiagnostik för Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Läs in policyer på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
+<translation id="4731638775147756694">Den här appen har blockerats av administratören</translation>
 <translation id="4731967714531604179">Prc2 (kuvert)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> vill använda enhetens plats</translation>
 <translation id="4736825316280949806">Starta om Chromium</translation>
@@ -1079,6 +1083,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="5523118979700054094">Policynamn</translation>
 <translation id="55293785478302737">Kanthäftning</translation>
 <translation id="553484882784876924">Prc6 (kuvert)</translation>
+<translation id="5536214594743852365">Visa avsnittet <ph name="SECTION" /></translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Det gick inte att hitta den önskade artikeln.</translation>
 <translation id="5541086400771735334">Postfack 7</translation>
@@ -1247,6 +1252,7 @@ Annars blockeras detta av sekretessinställningarna. Om du tillåter detta kan i
 <translation id="6263376278284652872">Bokmärken för <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Tillbaka till säker webbplats</translation>
 <translation id="6266934640124581640">Ljust blågrön</translation>
+<translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Sidor från läslistan visas här</translation>
 <translation id="627746635834430766">Spara kortet och faktureringsadressen i Google-kontot så går det snabbare att betala nästa gång.</translation>
 <translation id="6279516281132775660">Följande information sparas <ph name="BEGIN_EMPHASIS" />inte<ph name="END_EMPHASIS" /> i Chrome:
@@ -1477,6 +1483,7 @@ Mer information.
 <translation id="7313965965371928911">Varningar från <ph name="BEGIN_LINK" />Säker webbsökning<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Anslutningshjälp</translation>
+<translation id="7323804146520582233">Dölj avsnittet <ph name="SECTION" /></translation>
 <translation id="733354035281974745">Åsidosätt enhetens lokala konto</translation>
 <translation id="7333654844024768166">Du angav just ditt lösenord på en bedräglig webbplats. Vi rekommenderar att du besöker <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> och andra webbplatser där du använder lösenordet och ändrar det nu.</translation>
 <translation id="7334320624316649418">&amp;Gör om Ändra ordning</translation>
@@ -1755,7 +1762,6 @@ Mer information:
 <translation id="8425213833346101688">Ändra</translation>
 <translation id="8428213095426709021">Inställningar</translation>
 <translation id="8433057134996913067">Alternativet innebär att du loggas ut från de flesta webbplatser.</translation>
-<translation id="8433678324664858900">Visa förslag</translation>
 <translation id="8437238597147034694">&amp;Ångra Flytta</translation>
 <translation id="8457125768502047971">Obestämd</translation>
 <translation id="8461694314515752532">Kryptera synkroniserad data med en egen lösenfras för synkronisering</translation>

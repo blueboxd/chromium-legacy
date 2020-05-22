@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Tarixçə</translation>
 <translation id="1650222530560417226">Gələcək JavaScript konsolunun qeyd və xətalarını bütün tablardan toplamaq üçün "Qeydlərə Başlayın" düyməsinə klikləyin. Qeydlər bu səhifə bağlanana və ya "Qeydləri Dayandırın" seçimi edilənədək toplanacaq (və yalnız yaddaşda saxlanacaq).</translation>
 <translation id="1657011748321897393">Paylaşım uğursuz oldu, çünki Siz şəbəkəyə qoşulmamısınız.</translation>
+<translation id="1657641691196698092">Bloklanmış Kukilər</translation>
 <translation id="165877110639533037">Açıq Panel Yoxdur</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> dilindən <ph name="TARGET_LANGUAGE" /> dilinə</translation>
 <translation id="168715261339224929">Bütün cihazlarınızda əlfəcinləri əldə etmək üçün sinxronizasiyanı aktiv edin.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Cihaz siyasəti fotolarınıza girişi blok etdi</translation>
 <translation id="2578571896248130439">Veb səhifəni göndərin</translation>
 <translation id="2584132361465095047">Hesab əlavə edin...</translation>
+<translation id="2600682495497606169">Sayt Kukilərini Silin</translation>
 <translation id="2625189173221582860">Parol kopyalandı</translation>
 <translation id="2647269890314209800">İstifadə edilən kukilər</translation>
 <translation id="2648803196158606475">Oxunmuşları Silin</translation>
@@ -332,6 +334,7 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5234764350956374838">Kənarlaşdırın</translation>
 <translation id="5245322853195994030">Sinxronizasiyanı Ləğv Edin</translation>
 <translation id="5271549068863921519">Şifrəni yadda saxlayın</translation>
+<translation id="5295239312320826323"><ph name="USER_EMAIL" /> hesabı silinsin?</translation>
 <translation id="5300589172476337783">Göstərin</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>
 <translation id="5327248766486351172">Ad</translation>
@@ -418,6 +421,7 @@ Handoff Ayarların Ümumi bölməsindən də aktiv edilə bilər və cihazların
 <translation id="6362362396625799311">Gizli Panel yoxdur</translation>
 <translation id="6363526231572697780">İstifadəçi adı yoxdur</translation>
 <translation id="6374469231428023295">Yenidən cəhd edin</translation>
+<translation id="6377118281273296434">Sayt Təhlükəsizliyi</translation>
 <translation id="6380866119319257197">Əgər parol sözü unutsanız və ya bu ayarı dəyişmək istəsəniz, <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Kart Adı</translation>
 <translation id="6406506848690869874">Sinx</translation>
@@ -525,11 +529,13 @@ Datanız <ph name="TIME" /> tarixində sinxronizasiya parol sözü ilə şifrəl
 
 Hesabınız <ph name="HOSTED_DOMAIN" /> tərəfindən idarə edildiyinə görə, çıxış etdikdə Chrome datanız bu cihazdan silinəcək. Sinxronlaşdırılmış data Google Hesabınızda qalacaq.</translation>
 <translation id="7772032839648071052">Parolu təsdiq edin</translation>
+<translation id="7778472311864276518">Hesabı bu Cihazdan silin</translation>
 <translation id="7781011649027948662">Səhifə tərcümə edilsin?</translation>
 <translation id="7781829728241885113">Dünən</translation>
 <translation id="778855399387580014">Yeni Chrome tabında axtarışa başlayın.</translation>
 <translation id="7791543448312431591">Əlavə etmək</translation>
 <translation id="7828557259026017104">Kukilər daxil olduğunuz veb saytların yaratdığı fayllardır. Saytlar tərcihlərinizi yadda saxlamaq üçün onlardan istifadə edir. Üçüncü tərəf kukiləri başqa saytlar tərəfindən yaradılır. Bu saytlar daxil olduğunuz veb səhifədə gördüyünüz reklam və ya şəkillər kimi bəzi məzmunların sahibidir.</translation>
+<translation id="7839985698273989086">Oflayn Səhifə</translation>
 <translation id="7840771868269352570">Seçdiyiniz elementlər silinəcək.</translation>
 <translation id="7856733331829174190">Yüklənmədi</translation>
 <translation id="7859704718976024901">Brauzer Tarixçəsi</translation>

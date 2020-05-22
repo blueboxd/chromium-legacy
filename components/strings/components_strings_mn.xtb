@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">Y тэнхлэгийн дагуу зураг шилжүүлэх</translation>
 <translation id="17513872634828108">Нээлттэй цонх</translation>
 <translation id="1752021286346845558">Шуудангийн хайрцаг 8</translation>
-<translation id="1752483581718172048">Зөвлөмжүүдийг нуух</translation>
 <translation id="1753706481035618306">Хуудaсны дугаар</translation>
 <translation id="1763864636252898013">Энэ сервер нь <ph name="DOMAIN" />-аа баталж чадсангүй; учир нь энэхүү сертификатыг таны төхөөрөмжийн үйлдлийн систем дэмждэггүй. Энэ нь тохиргоо буруу хийгдсэнээс эсвэл халдагч таны холболтонд саад учруулж байгаагаас шалтгаалж болох юм.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows сүлжээний оношилгоог ажиллуулж үзнэ үү<ph name="END_LINK" />.</translation>
@@ -880,7 +879,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows сүлжээний оношилгоог ажиллуулж байна<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Тохиргоог дахин ачаалах</translation>
 <translation id="4728558894243024398">Платформ</translation>
-<translation id="4731638775147756694">Энэ аппыг таны администратор хориглосон байна</translation>
+<translation id="4731638775147756694">Энэ аппликэйшнийг таны администратор хориглосон байна</translation>
 <translation id="4731967714531604179">Prc2 (Дугтуй)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> таны төхөөрөмжийн байршлыг ашиглах хүсэлтэй байна</translation>
 <translation id="4736825316280949806">Chromium-г дахин эхлүүлэх</translation>
@@ -1623,6 +1622,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Байхгүй}=1{1 апп (<ph name="EXAMPLE_APP_1" />)}=2{2 апп (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# апп (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Та харагдаж байгаа. Нууц горимд шилжсэн ч таны хийж буй хайлтыг таны ажил олгогч, интернэтийн үйлчилгээ үзүүлэгч болон зочилсон вэбсайтаас нуух боломжгүй.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />Зарим зочилдог хуудасныхаа URL, системийн хязгаарлагдмал мэдээлэл болон зарим хуудасны контентыг<ph name="END_WHITEPAPER_LINK" /> Google-д илгээж, хүн бүрд вэбийн аюулгүй байдлыг сайжруулахад тусална уу. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Сайтыг орхих уу?</translation>
 <translation id="7865448901209910068">Хамгийн оновчтой хурд</translation>
 <translation id="7874263914261512992">Та дөнгөж сая сэжигтэй сайтад нууц үгээ орууллаа. Таны энэ нууц үгийг ашигладаг <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> болон бусад сайтын хувьд хадгалсан нууц үгсээ одоо шалгахыг Chrome зөвлөж байна.</translation>
@@ -1757,7 +1757,6 @@
 <translation id="8425213833346101688">Өөрчлөлт</translation>
 <translation id="8428213095426709021">Тохиргоо</translation>
 <translation id="8433057134996913067">Энэ сонголт нь таныг ихэнх вэб сайтаас гаргах болно.</translation>
-<translation id="8433678324664858900">Зөвлөмжүүдийг харуулах</translation>
 <translation id="8437238597147034694">&amp; Зөөвөрлөх үйлдлийг буцаах</translation>
 <translation id="8457125768502047971">Тодорхойгүй</translation>
 <translation id="8461694314515752532">Синк хийсэн өгөгдлийг синкийн нэвтрэх үгээрээ шифрлэх</translation>

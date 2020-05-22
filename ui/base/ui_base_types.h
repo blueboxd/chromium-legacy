@@ -5,7 +5,7 @@
 #ifndef UI_BASE_UI_BASE_TYPES_H_
 #define UI_BASE_UI_BASE_TYPES_H_
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 namespace ui {
 
@@ -93,7 +93,8 @@ enum MenuSourceType {
   MENU_SOURCE_TYPE_LAST = MENU_SOURCE_ADJUST_SELECTION_RESET
 };
 
-UI_BASE_EXPORT MenuSourceType GetMenuSourceTypeForEvent(const ui::Event& event);
+COMPONENT_EXPORT(UI_BASE)
+MenuSourceType GetMenuSourceTypeForEvent(const ui::Event& event);
 
 }  // namespace ui
 

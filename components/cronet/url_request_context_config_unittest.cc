@@ -19,6 +19,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/host_resolver_manager.h"
@@ -289,9 +290,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
 
   // All host resolution expected to be mapped to an immediately-resolvable IP.
   std::unique_ptr<net::HostResolver::ResolveHostRequest> resolve_request =
-      context->host_resolver()->CreateRequest(net::HostPortPair("abcde", 80),
-                                              net::NetLogWithSource(),
-                                              base::nullopt);
+      context->host_resolver()->CreateRequest(
+          net::HostPortPair("abcde", 80), net::NetworkIsolationKey(),
+          net::NetLogWithSource(), base::nullopt);
   EXPECT_EQ(net::OK, resolve_request->Start(
                          base::BindOnce([](int error) { NOTREACHED(); })));
 

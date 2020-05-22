@@ -10,6 +10,7 @@
 <translation id="1030706264415084469">ನಿಮ್ಮ ಸಾಧನದಲ್ಲಿ ದೊಡ್ಡ ಪ್ರಮಾಣದ ಡೇಟಾವನ್ನು ಶಾಶ್ವತವಾಗಿ ಸಂಗ್ರಹಣೆ ಮಾಡಲು <ph name="URL" /> ಬಯಸುತ್ತದೆ</translation>
 <translation id="1032854598605920125">ಪ್ರದಕ್ಷಿಣಾಕಾರದಲ್ಲಿ ತಿರುಗಿಸು</translation>
 <translation id="1036348656032585052">ಆಫ್ ಮಾಡು</translation>
+<translation id="1038106730571050514">ಸಲಹೆಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="1038842779957582377">ಆಜ್ಞಾತ ಹೆಸರು</translation>
 <translation id="1041998700806130099">ಜಾಬ್ ಶೀಟ್ ಸಂದೇಶ</translation>
 <translation id="1050038467049342496">ಇತರ ಅಪ್ಲಿಕೇಶನ್‍ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
@@ -200,7 +201,6 @@
 <translation id="1746113442205726301">ಚಿತ್ರ Y ಶಿಫ್ಟ್</translation>
 <translation id="17513872634828108">ತೆರೆದ ಟ್ಯಾಬ್‌ಗಳು</translation>
 <translation id="1752021286346845558">ಮೇಲ್‌ಬಾಕ್ಸ್ 8</translation>
-<translation id="1752483581718172048">ಸಲಹೆಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="1753706481035618306">ಪುಟ ಸಂಖ್ಯೆ</translation>
 <translation id="1763864636252898013">ಈ ಸರ್ವರ್ <ph name="DOMAIN" /> ಆಗಿದೆ ಎಂಬುದನ್ನು ಸಾಬೀತುಪಡಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ; ಅದರ ಸುರಕ್ಷತಾ ಪ್ರಮಾಣಪತ್ರವು ನಿಮ್ಮ ಸಾಧನದ ಆಪರೇಟಿಂಗ್ ಸಿಸ್ಟಂ‌ ಪ್ರಕಾರ ವಿಶ್ವಾಸಾರ್ಹವಾಗಿಲ್ಲ. ಇದು ತಪ್ಪು ಕಾನ್ಫಿಗರೇಶನ್‌ನಿಂದ ಅಥವಾ ಆಕ್ರಮಣಕಾರರು ನಿಮ್ಮ ಸಂಪರ್ಕದಲ್ಲಿ ಒಳನುಸುಳಿರುವುದರಿಂದ ಆಗಿರಬಹುದು.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows ನೆಟ್‌ವರ್ಕ್ ಡಯಾಗ್ನಾಸ್ಟಿಕ್ಸ್‌ ರನ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ‌<ph name="END_LINK" />.</translation>
@@ -397,6 +397,7 @@
 <translation id="2666092431469916601">ಮೇಲೆ</translation>
 <translation id="2666117266261740852">ಇತರ ಟ್ಯಾಬ್‌ಗಳು ಅಥವಾ ಅಪ್ಲಿಕೇಶನ್‍ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
 <translation id="2674170444375937751">ನಿಮ್ಮ ಇತಿಹಾಸದಿಂದ ನೀವು ಈ ಪುಟಗಳನ್ನು ಖಚಿತವಾಗಿ ಅಳಿಸಲು ಬಯಸುತ್ತಿದ್ದೀರಾ?</translation>
+<translation id="2674804415323431591">ಸಲಹೆಗಳನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ತೊರೆಯಿರಿ</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1070,6 +1071,7 @@
 <translation id="5523118979700054094">ನೀತಿ ಹೆಸರು</translation>
 <translation id="55293785478302737">ಅಂಚನ್ನು ಹೊಲಿಯಿರಿ</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5536214594743852365">ಈ "<ph name="SECTION" />" ವಿಭಾಗವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="5539243836947087108">ರಾಫ್ಟ್</translation>
 <translation id="5540224163453853">ವಿನಂತಿಸಿದ ಲೇಖನವನ್ನು ಹುಡುಕಲು ಸಾಧವಾಗಲಿಲ್ಲ.</translation>
 <translation id="5541086400771735334">ಮೇಲ್‌ಬಾಕ್ಸ್ 7</translation>
@@ -1468,6 +1470,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />ಸುರಕ್ಷಿತ ಬ್ರೌಸಿಂಗ್<ph name="END_LINK" /> ಎಚ್ಚರಿಕೆಗಳು</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ಸಂಪರ್ಕ ಸಹಾಯ</translation>
+<translation id="7323804146520582233">ಈ "<ph name="SECTION" />" ವಿಭಾಗವನ್ನು ಮರೆಮಾಡಿ</translation>
 <translation id="733354035281974745">ಸಾಧನದ ಸ್ಥಳೀಯ ಖಾತೆಯು ಅತಿಕ್ರಮಿಸಿದೆ</translation>
 <translation id="7333654844024768166">ವಂಚನೆ ಮಾಡುವ ಸೈಟ್‌ ಒಂದರಲ್ಲಿ, ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಈಗಷ್ಟೇ ನೀವು ನಮೂದಿಸಿದ್ದೀರಿ. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ಹಾಗೂ ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ನೀವು ಯಾವ ಇತರ ಸೈಟ್‌ಗಳಲ್ಲಿ ಬಳಸುವಿರೋ ಅಲ್ಲಿ ಈಗಲೇ ಅದನ್ನು ಬದಲಾಯಿಸಬೇಕೆಂದು Chromium ನಿಮಗೆ ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ.</translation>
 <translation id="7334320624316649418">&amp;ಮರುಕ್ರಮಗೊಳಿಸುವುದನ್ನು ಮತ್ತೆಮಾಡು</translation>
@@ -1745,7 +1748,6 @@
 <translation id="8425213833346101688">ಬದಲಿಸಿ</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="8433057134996913067">ಇದು ನಿಮ್ಮನ್ನು ಹೆಚ್ಚಿನ ವೆಬ್‌ಸೈಟ್‌ಗಳಿಂದ ಸೈನ್‌ ಔಟ್‌ ಮಾಡುತ್ತದೆ.</translation>
-<translation id="8433678324664858900">ಸಲಹೆಗಳನ್ನು ತೋರಿಸಿ</translation>
 <translation id="8437238597147034694">&amp;ಸರಿಸುವುದನ್ನು ರದ್ದುಗೊಳಿಸಿ</translation>
 <translation id="8457125768502047971">ಅನಿರ್ದಿಷ್ಟ</translation>
 <translation id="8461694314515752532">ನಿಮ್ಮ ಸ್ವಂತ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್‌ ಬಳಸಿಕೊಂಡು ಸಿಂಕ್ ಮಾಡಿದ ಡೇಟಾವನ್ನು ಎನ್‌ಕ್ರಿಪ್ಟ್ ಮಾಡಿ</translation>

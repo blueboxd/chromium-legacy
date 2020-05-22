@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Batería al máximo</translation>
 <translation id="3604801046548457007">Se ha creado el escritorio <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">La pantalla braille está conectada.</translation>
+<translation id="3616883743181209306">Se ha movido el menú a la esquina superior derecha de la pantalla.</translation>
 <translation id="3621202678540785336">Entrada</translation>
 <translation id="3621712662352432595">Configuración de audio</translation>
 <translation id="3626281679859535460">Brillo</translation>
 <translation id="3631369015426612114">Permitir notificaciones de:</translation>
 <translation id="3638400994746983214">Activar/Desactivar la pantalla de privacidad. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733">Usuario administrado (<ph name="USER_EMAIL_ADDRESS" />)</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Capturar parte de la pantalla</translation>
 <translation id="371370241367527062">Micrófono delantero</translation>
@@ -406,6 +408,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="6018164090099858612">Saliendo del modo de proyección</translation>
 <translation id="602001110135236999">Desplazar a la izquierda</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, gestionada por el administrador</translation>
+<translation id="6030495522958826102">Se ha movido el menú a la esquina inferior izquierda de la pantalla.</translation>
 <translation id="6040143037577758943">Cerrar</translation>
 <translation id="6043212731627905357">Este monitor no se puede utilizar con tu <ph name="DEVICE_TYPE" /> (el monitor no es compatible).</translation>
 <translation id="6043994281159824495">Salir ahora</translation>
@@ -504,6 +507,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7165278925115064263">Alt + Mayús + K</translation>
 <translation id="7168224885072002358">Restableciendo la resolución anterior en <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">Se ha movido el menú a la esquina superior izquierda de la pantalla.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. El Chromebook debe reiniciarse para aplicar una actualización. Este proceso puede tardar hasta 1 minuto.</translation>
 <translation id="7256634071279256947">Micrófono trasero</translation>
 <translation id="726276584504105859">Arrastra hasta aquí para utilizar la pantalla dividida</translation>
@@ -614,6 +618,7 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="8513108775083588393">Girar automáticamente</translation>
 <translation id="8517041960877371778">Es posible que tu <ph name="DEVICE_TYPE" /> no se cargue mientras esté encendido.</translation>
 <translation id="8563862697512465947">Configuración de notificaciones</translation>
+<translation id="857201607579416096">Se ha movido el menú a la esquina inferior derecha de la pantalla.</translation>
 <translation id="8627191004499078455">Conectado a <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Ajustes de accesibilidad</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />, gestionada por el administrador</translation>

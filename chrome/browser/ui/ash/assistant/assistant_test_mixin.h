@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "chrome/browser/ui/ash/assistant/test/fake_s3_server.h"
+#include "chrome/browser/ui/ash/assistant/test_support/fake_s3_server.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "ui/events/keycodes/keyboard_codes_posix.h"
 

@@ -5,7 +5,7 @@
 #ifndef UI_BASE_WIN_EVENT_CREATION_UTILS_H_
 #define UI_BASE_WIN_EVENT_CREATION_UTILS_H_
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 namespace gfx {
 class Point;
@@ -15,7 +15,8 @@ namespace ui {
 
 // Send a mouse event to Windows input queue using ::SendInput, to screen
 // point |point|. Returns true if the mouse event was sent, false if not.
-UI_BASE_EXPORT bool SendMouseEvent(const gfx::Point& point, int flags);
+COMPONENT_EXPORT(UI_BASE)
+bool SendMouseEvent(const gfx::Point& point, int flags);
 
 }  // namespace ui
 

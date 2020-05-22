@@ -204,6 +204,7 @@ Para buscar una palabra, mantenla presionada. Si quieres definir mejor la búsqu
 <translation id="2647434099613338025">Agregar idioma</translation>
 <translation id="2650751991977523696">¿Deseas volver a descargar el archivo?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# archivo de audio}other{# archivos de audio}}</translation>
+<translation id="2656405586795711023">Apps web</translation>
 <translation id="2677748264148917807">Abandonar</translation>
 <translation id="2689830683995595741">Si usas Chrome, aceptas las <ph name="BEGIN_LINK1" />Condiciones del Servicio de Google<ph name="END_LINK1" /> y las <ph name="BEGIN_LINK2" />Condiciones del Servicio Adicionales de Google Chrome y el Sistema operativo Chrome<ph name="END_LINK2" />. También se aplica el <ph name="BEGIN_LINK3" />Aviso de Privacidad para las Cuentas de Google administradas con Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Actualizar página</translation>
@@ -366,6 +367,7 @@ Solo tú podrás ver lo que captura la cámara. El sitio no tiene acceso a las i
 <translation id="3997476611815694295">Almacenamiento no importante</translation>
 <translation id="4000212216660919741">Página principal sin conexión</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
+<translation id="403687620286099920">Presiona para abrir el código QR</translation>
 <translation id="4046123991198612571">Siguiente pista</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opciones disponibles cerca de la parte superior de la pantalla</translation>
@@ -450,6 +452,7 @@ Es posible que tu cuenta de Google tenga otros formularios de historial de naveg
 <translation id="4749960740855309258">Abrir una pestaña nueva</translation>
 <translation id="4759238208242260848">Descargas</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{Se completó la descarga.}other{Se completaron # descargas.}}</translation>
+<translation id="478981486571169252">En Chrome, verás tu estado de acceso para <ph name="SITE_NAME" />, los datos de navegación y los datos del sitio.</translation>
 <translation id="4802417911091824046">La encriptación de la frase de contraseña no incluye formas de pago ni direcciones de Google Pay.
 
 Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5292796745632149097">Enviar a</translation>
 <translation id="5304593522240415983">Este campo no puede quedar en blanco.</translation>
 <translation id="5308380583665731573">Conectar</translation>
+<translation id="5317780077021120954">Guardar</translation>
 <translation id="5324858694974489420">Configuración parental</translation>
 <translation id="5327248766486351172">Nombre</translation>
 <translation id="5342314432463739672">Solicitudes de permisos</translation>
@@ -562,6 +566,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5665379678064389456">Crear evento en <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Anular la solicitud de inhabilitación del zoom de un sitio web</translation>
+<translation id="5681394891799747640">No se puede descargar el código QR</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
 <translation id="5686790454216892815">El nombre del archivo es demasiado largo</translation>
 <translation id="5694049548840660018">Regresar a casa fácilmente</translation>
@@ -610,6 +615,7 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="6042308850641462728">Más</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> no se pudo descargar debido a un error desconocido.</translation>
 <translation id="605721222689873409">AA</translation>
+<translation id="6059830886158432458">Controla tus historias y actividad aquí</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> horas restantes</translation>
 <translation id="6108923351542677676">Configuración en curso…</translation>
 <translation id="6111020039983847643">de datos utilizados</translation>
@@ -633,6 +639,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="629730747756840877">Cuenta</translation>
 <translation id="6297765934698848803">La organización que administra tu dispositivo desactivó la cámara.</translation>
 <translation id="6303969859164067831">Salir y desactivar la sincronización</translation>
+<translation id="6312687380483398334">Aplicaciones web (discretas)</translation>
 <translation id="6316139424528454185">Versión Android no compatible</translation>
 <translation id="6324034347079777476">Sincronización del sistema Android inhabilitada</translation>
 <translation id="6333140779060797560">Compartir mediante <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> no se pudo descargar debido a la falta de espacio de almacenamiento.</translation>
 <translation id="6496823230996795692">Para usar <ph name="APP_NAME" /> por primera vez, conéctate a Internet.</translation>
 <translation id="6508722015517270189">Reinicia Chrome.</translation>
+<translation id="6527303717912515753">Compartir</translation>
 <translation id="6532866250404780454">No se mostrarán los sitios que visites en Chrome. Se borrarán todos los temporizadores.</translation>
 <translation id="6534565668554028783">Google tardó demasiado en responder</translation>
 <translation id="6539092367496845964">Se produjo un error; vuelve a intentarlo más tarde.</translation>
@@ -794,6 +802,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7605594153474022051">La sincronización no funciona</translation>
 <translation id="7606077192958116810">El modo lite está activado. Puedes administrarlo en Configuración.</translation>
 <translation id="7612619742409846846">Accediste a Google como</translation>
+<translation id="7614971007231847352">Se descargó el código QR</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> no se pudo descargar debido a fallas en la red.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Obtener ayuda<ph name="END_LINK1" /> o <ph name="BEGIN_LINK2" />volver a buscar<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
@@ -821,6 +830,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7821588508402923572">Aquí aparecerá tu ahorro de datos</translation>
 <translation id="7835852323729233924">Reproduciendo contenido multimedia</translation>
 <translation id="783819812427904514">Activar sonido del video</translation>
+<translation id="7846296061357476882">Servicios de Google</translation>
 <translation id="784934925303690534">Intervalo de tiempo</translation>
 <translation id="7851858861565204677">Otros dispositivos</translation>
 <translation id="7875915731392087153">Crear correo electrónico</translation>

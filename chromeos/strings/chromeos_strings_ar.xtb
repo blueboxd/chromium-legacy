@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">يُرجى إدخال كلمتي المرور القديمة والجديدة لإنهاء الإجراء.</translation>
 <translation id="6106186594183574873">يُرجى إدخال كلمة المرور القديمة لإنهاء الإجراء.</translation>
 <translation id="6146993107019042706">يُرجى إدخال كلمة مرور جديدة لإنهاء الإجراء.</translation>
+<translation id="6517239166834772319">استكشاف</translation>
 <translation id="6643016212128521049">محو</translation>
 <translation id="7162487448488904999">معرض الصور</translation>
 <translation id="7658239707568436148">إلغاء</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">الحالة</translation>
 <translation id="808894953321890993">تغيير كلمة المرور</translation>
 <translation id="8208861521865154048">المزايا</translation>
+<translation id="8701136875688985581">يُدير <ph name="ENROLLMENT_DOMAIN" /> هذا المستخدِم. وقد يعمل على إدارة الإعدادات ورصد نشاط المستخدِم.</translation>
 <translation id="8747900814994928677">تأكيد التغيير</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> محاولة متبقية</translation>
 <translation id="910415269708673980">تحديث تذكرة من أجل <ph name="PRINCIPAL_NAME" /></translation>

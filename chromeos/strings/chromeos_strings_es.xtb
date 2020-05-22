@@ -42,6 +42,7 @@
 <translation id="6058625436358447366">Para finalizar, introduce tu contraseña anterior y la nueva</translation>
 <translation id="6106186594183574873">Para finalizar, introduce tu contraseña anterior</translation>
 <translation id="6146993107019042706">Para finalizar, introduce tu contraseña nueva</translation>
+<translation id="6517239166834772319">Explorar</translation>
 <translation id="6643016212128521049">Eliminar</translation>
 <translation id="7162487448488904999">Galería</translation>
 <translation id="7658239707568436148">Cancelar</translation>
@@ -49,6 +50,7 @@
 <translation id="7805768142964895445">Estado</translation>
 <translation id="808894953321890993">Cambiar contraseña</translation>
 <translation id="8208861521865154048">Ventajas</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona este usuario. Puede gestionar ajustes y supervisar la actividad del usuario de forma remota.</translation>
 <translation id="8747900814994928677">Confirmar cambio</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Intentos restantes: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Actualiza el ticket de <ph name="PRINCIPAL_NAME" /></translation>

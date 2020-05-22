@@ -14,10 +14,10 @@
 #include <memory>
 #include <utility>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
@@ -30,7 +30,7 @@ class KeyEvent;
 // for a particular KeyEvent matches an accelerator with or without the repeat
 // flag. A side effect of this is that == (and <) does not consider the
 // repeat flag in its comparison.
-class UI_BASE_EXPORT Accelerator {
+class COMPONENT_EXPORT(UI_BASE) Accelerator {
  public:
   enum class KeyState {
     PRESSED,
@@ -128,7 +128,7 @@ class UI_BASE_EXPORT Accelerator {
 
 // An interface that classes that want to register for keyboard accelerators
 // should implement.
-class UI_BASE_EXPORT AcceleratorTarget {
+class COMPONENT_EXPORT(UI_BASE) AcceleratorTarget {
  public:
   // Should return true if the accelerator was processed.
   virtual bool AcceleratorPressed(const Accelerator& accelerator) = 0;

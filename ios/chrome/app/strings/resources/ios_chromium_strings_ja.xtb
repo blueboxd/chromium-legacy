@@ -24,6 +24,7 @@
 <translation id="4787850887676698916">他のデバイスの Chromium で開いているタブがここに表示されます。</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトするにあたり、Chromium データはこのデバイスから削除されます（ただし Google アカウントには残ります）。</translation>
 <translation id="5573014823074921752">Chromium の使い方のヒント: タブのオプションをさらに表示するには、画面の下部または上部のツールバーにある [タブを表示] を長押しします。</translation>
+<translation id="5777187867430702742">Chromium ページ</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
 <translation id="5945387852661427312"><ph name="DOMAIN" /> で管理されているアカウントでログインして、Chromium データの管理を管理者に委ねようとしています。この操作を行うと、データはこのアカウントに恒久的に関連付けられます。Chromium からログアウトすると、データはこのデバイスから削除されますが、Google アカウントには残ります。</translation>
 <translation id="602807004951640891">Chromium を使用すると、<ph name="BEGIN_LINK_TOS" />利用規約<ph name="END_LINK_TOS" />に同意したことになります。</translation>
@@ -44,6 +45,7 @@
 <translation id="8175055321229419309">ヒント: <ph name="BEGIN_LINK" />Chromium を Dock に移動<ph name="END_LINK" />するとアクセスしやすくなります</translation>
 <translation id="8252885722420466166">ユーザーの現在時に基づいて Chromium で Google を使いやすくします。</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
+<translation id="8776843108004031667">このアカウントと保存されていないデータは Chromium から削除されます。</translation>
 <translation id="8809780021347235332">画像を保存するには、[設定] をタップして写真の使用を Chromium に許可してください</translation>
 <translation id="9022552996538154597">Chromium にログイン</translation>
 <translation id="985602178874221306">Chromium 開発者</translation>

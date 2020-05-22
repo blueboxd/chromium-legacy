@@ -160,6 +160,7 @@
 કેટલીક સુવિધાઓ ઉપલબ્ધ થઈ શકે છે. કૃપા કરીને અલગ પ્રોફાઇલ ડિરેક્ટરીનો ઉલ્લેખ કરો અથવા Chromiumના નવા વર્ઝનનો ઉપયોગ કરો.</translation>
 <translation id="6734080038664603509">&amp;Chromium ને અપડેટ કરો</translation>
 <translation id="6734291798041940871">Chromium, તમારા કમ્પ્યુટર પર તમામ વપરાશકર્તાઓ માટે પહેલાંથી ઇન્સ્ટૉલ કરેલ છે.</translation>
+<translation id="6774082503108938489">તમારા માતાપિતાએ Chromium માટે "સાઇટ, ઍપ અને એક્સ્ટેન્શન માટેની પરવાનગીઓ" બંધ કરી છે. આ <ph name="EXTENSION_TYPE_PARAMETER" /> ચાલુ કરવાની મંજૂરી નથી.</translation>
 <translation id="6847869444787758381">Chromium વડે તમે તમારા પાસવર્ડમાં ક્યારેક ચેડાં થાય તો તેના વિશે જાણકારી મેળવી શકો છો</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium પર કૉપિ કરેલું છે)</translation>
@@ -218,6 +219,7 @@ Chromium તમારી સેટિંગ્સને પુનઃપ્રા
 <translation id="8417404458978023919">{0,plural, =1{એક દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}one{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}other{# દિવસની અંદર Chromiumને ફરીથી લૉન્ચ કરો}}</translation>
 <translation id="8453117565092476964">ઇન્સ્ટૉલર આર્કાઇવ ખરાબ અથવા અમાન્ય છે. કૃપા કરીને Chromium ફરીથી ડાઉનલોડ કરો.</translation>
 <translation id="8493179195440786826">Chromium જૂનું થઈ ગયું છે</translation>
+<translation id="8558383651099478961">તમારા માતાપિતાએ Chromium માટે "સાઇટ, ઍપ અને એક્સ્ટેન્શન માટેની પરવાનગીઓ" બંધ કરી છે. આ <ph name="EXTENSION_TYPE_PARAMETER" /> ઉમેરવાની મંજૂરી નથી.</translation>
 <translation id="8568283329061645092">જ્યારે તમે તમારા Google એકાઉન્ટ વડે સાઇન ઇન કરો ત્યારે Chromium તમારા પાસવર્ડ ચેક કરી શકે છે</translation>
 <translation id="8586442755830160949">કોપિરાઇટ <ph name="YEAR" /> The Chromium Authors. સર્વાધિકાર સુરક્ષિત.</translation>
 <translation id="8619360774459241877">Chromium લૉન્ચ કરી રહ્યાં છીએ…</translation>

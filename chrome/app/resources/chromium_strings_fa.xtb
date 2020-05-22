@@ -157,6 +157,7 @@
 برخی از ویژگی‌ها ممکن است موجود نباشند. لطفاً یک فهرست راهنمای نمایه دیگری را مشخص کنید یا از نسخه جدیدتری از Chromium استفاده کنید.</translation>
 <translation id="6734080038664603509">‏به‌روزرسانی &amp;Chromium</translation>
 <translation id="6734291798041940871">‏Chromium از قبل برای همه کاربران این رایانه نصب شده است.</translation>
+<translation id="6774082503108938489">‏ولی‌تان «اجازه‌های مربوط به سایت‌ها، برنامه‌ها، و افزونه‌ها» را برای Chromium خاموش کرده است. فعال کردن این <ph name="EXTENSION_TYPE_PARAMETER" /> مجاز نیست.</translation>
 <translation id="6847869444787758381">‏Chromium می‌تواند، اگر گذرواژه‌هایتان در معرض خطر باشد، مطلعتان کند</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (در Chromium کپی شد)</translation>
@@ -214,6 +215,7 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="8417404458978023919">{0,plural, =1{‏Chromium را ظرف یک روز راه‌اندازی مجدد کنید}one{‏Chromium را ظرف # روز راه‌اندازی مجدد کنید}other{‏Chromium را ظرف # روز راه‌اندازی مجدد کنید}}</translation>
 <translation id="8453117565092476964">‏بایگانی نصب‌کننده خراب یا نامعتبر است. لطفاً Chromium را دوباره را بارگیری کنید.</translation>
 <translation id="8493179195440786826">‏نسخه Chromium قدیمی است</translation>
+<translation id="8558383651099478961">‏ولی‌تان «اجازه‌های مربوط به سایت‌ها، برنامه‌ها، و افزونه‌ها» را برای Chromium خاموش کرده است. افزودن این <ph name="EXTENSION_TYPE_PARAMETER" /> مجاز نیست.</translation>
 <translation id="8568283329061645092">‏وقتی با «حساب Google» خود به سیستم وارد می‌شوید، Chromium می‌تواند گذرواژه‌هایتان را بررسی کند</translation>
 <translation id="8586442755830160949">‏حق نسخه‌برداری <ph name="YEAR" /> نویسندگان Chromium. کلیه حقوق محفوظ است.</translation>
 <translation id="8619360774459241877">‏درحال راه‌اندازی Chromium…</translation>

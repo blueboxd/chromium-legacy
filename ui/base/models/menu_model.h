@@ -5,11 +5,11 @@
 #ifndef UI_BASE_MODELS_MENU_MODEL_H_
 #define UI_BASE_MODELS_MENU_MODEL_H_
 
+#include "base/component_export.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "ui/base/models/menu_model_delegate.h"
 #include "ui/base/models/menu_separator_types.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -23,7 +23,8 @@ class ButtonMenuItemModel;
 class ImageModel;
 
 // An interface implemented by an object that provides the content of a menu.
-class UI_BASE_EXPORT MenuModel : public base::SupportsWeakPtr<MenuModel> {
+class COMPONENT_EXPORT(UI_BASE) MenuModel
+    : public base::SupportsWeakPtr<MenuModel> {
  public:
   // The type of item.
   enum ItemType {

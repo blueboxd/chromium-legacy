@@ -160,7 +160,7 @@ Neke funkcije možda neće biti dostupne i promjene postavki se neće sačuvati.
 Moguće je da neke funkcije neće biti dostupne. Odredite drugi direktorij profila ili koristite noviju verziju Chromiuma.</translation>
 <translation id="6734080038664603509">Ažuriraj &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium je već instaliran za sve korisnike na računaru.</translation>
-<translation id="6774082503108938489">Tvoj je roditelj isključio "Dopuštenja za web-lokacije, aplikacije i proširenja" za Chromium. Nije dopušteno omogućiti ovo <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
+<translation id="6774082503108938489">Tvoj roditelj je isključio "Odobrenja za web lokacije, aplikacije i ekstenzije" za Chromium. Omogućavanje ove stavke (<ph name="EXTENSION_TYPE_PARAMETER" />) nije dozvoljeno.</translation>
 <translation id="6847869444787758381">Chromium vas obavještava ako sigurnost vaših lozinki bude ugrožena</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopirano u Chromium)</translation>
@@ -219,7 +219,7 @@ Chromium ne može vratiti vaše postavke.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Ponovo pokreni Chromium u roku od jednog dana}one{Ponovo pokreni Chromium u roku od # dana}few{Ponovo pokreni Chromium u roku od # dana}other{Ponovo pokreni Chromium u roku od # dana}}</translation>
 <translation id="8453117565092476964">Arhiva alata za instaliranje je oštećena ili nevažeća. Ponovo preuzmite Chromium.</translation>
 <translation id="8493179195440786826">Chromium nije ažuriran</translation>
-<translation id="8558383651099478961">Tvoj je roditelj isključio "Dopuštenja za web-lokacije, aplikacije i proširenja" za Chromium. Nije dopušteno dodati ovo <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
+<translation id="8558383651099478961">Tvoj roditelj je isključio "Odobrenja za web lokacije, aplikacije i ekstenzije" za Chromium. Dodavanje ove stavke (<ph name="EXTENSION_TYPE_PARAMETER" />) nije dozvoljeno.</translation>
 <translation id="8568283329061645092">Chromium može provjeravati vaše lozinke kada se prijavljujete putem Google računa</translation>
 <translation id="8586442755830160949">Autorska prava <ph name="YEAR" /> Autori Chromiuma. Sva prava zadržana.</translation>
 <translation id="8619360774459241877">Pokretanje Chromiuma...</translation>

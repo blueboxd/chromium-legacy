@@ -31,6 +31,29 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
     : public views::ImageButton,
       public views::ButtonListener {
  public:
+  // Initialization parameters for customizing the Assistant button.
+  struct InitParams {
+    InitParams();
+
+    InitParams(InitParams&&);
+    InitParams& operator=(InitParams&&) = default;
+
+    ~InitParams();
+
+    // Size of the Assistant button.
+    int size_in_dip = 0;
+
+    // Params for the icon.
+    int icon_size_in_dip = 0;
+    SkColor icon_color = gfx::kGoogleGrey700;
+
+    // ID of the localization string for the button's accessible name.
+    base::Optional<int> accessible_name_id;
+
+    // ID of the localization string for the button's tooltip text.
+    base::Optional<int> tooltip_id;
+  };
+
   AssistantButton(AssistantButtonListener* listener,
                   AssistantButtonId button_id);
   ~AssistantButton() override;
@@ -39,12 +62,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantButton
   static std::unique_ptr<AssistantButton> Create(
       AssistantButtonListener* listener,
       const gfx::VectorIcon& icon,
-      int size_in_dip,
-      int icon_size_in_dip,
-      int accessible_name_id,
       AssistantButtonId button_id,
-      base::Optional<int> tooltip_id = base::nullopt,
-      SkColor icon_color = gfx::kGoogleGrey700);
+      InitParams params);
 
   AssistantButtonId GetAssistantButtonId() const { return id_; }
 

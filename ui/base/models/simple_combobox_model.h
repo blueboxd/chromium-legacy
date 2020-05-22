@@ -5,6 +5,7 @@
 #ifndef UI_BASE_MODELS_SIMPLE_COMBOBOX_MODEL_H_
 #define UI_BASE_MODELS_SIMPLE_COMBOBOX_MODEL_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/models/combobox_model.h"
 
@@ -14,7 +15,7 @@ namespace ui {
 
 // A simple data model for a combobox that takes a string16 vector as the items.
 // An empty string will be a separator.
-class UI_BASE_EXPORT SimpleComboboxModel : public ComboboxModel {
+class COMPONENT_EXPORT(UI_BASE) SimpleComboboxModel : public ComboboxModel {
  public:
   explicit SimpleComboboxModel(std::vector<base::string16> items);
   ~SimpleComboboxModel() override;

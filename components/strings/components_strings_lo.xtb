@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">ປ່ຽນຕຳແໜ່ງຮູບພາບຕາມແກນ Y</translation>
 <translation id="17513872634828108">ແຖບ​ເປີດ</translation>
 <translation id="1752021286346845558">ກ່ອງຈົດໝາຍ 8</translation>
-<translation id="1752483581718172048">ເຊື່ອງການແນະນຳ</translation>
 <translation id="1753706481035618306">ເລກ​ທີໜ້າ</translation>
 <translation id="1763864636252898013">ເຊີບເວີນີ້ບໍ່ສາມາດພິສູດໄດ້ວ່າ ມັນແມ່ນ <ph name="DOMAIN" />; ໃບຢັ້ງຢືນຄວາມປອດໄພຂອງມັນບໍ່ໄດ້ຮັບການເຊື່ອໝັ້ນໂດຍລະບົບການດໍາເນີນງານຂອງອຸປະກອນຂອງທ່ານ. ອັນນີ້ອາດຈະເຮັດໃຫ້ເກີດມີການປັບຕັ້ງຄ່າຜິດ ຫຼືຜູ້ໂຈມຕີອາດຈະດັກເອົາການເຊື່ອມຕໍ່ຂອງທ່ານ.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />ລອງເປີດໃຊ້ Windows Network Diagnostics<ph name="END_LINK" />.</translation>
@@ -1624,6 +1623,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{ບໍ່ມີ}=1{1 ແອັບ (<ph name="EXAMPLE_APP_1" />)}=2{2 ແອັບ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# ແອັບ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">ແນວໃດກໍຕາມ, ທ່ານຈະບໍ່ຫາຍໄປໃສ. ການໃຊ້ໂໝດບໍ່ເຜີຍຕົວຕົນ ຈະບໍ່ເຊື່ອງການທ່ອງເວັບຂອງທ່ານຈາກນາຍຈ້າງ, ຜູ້ໃຫ້ບໍລິການອິນເຕີເນັດ ຫຼືເວັບໄຊທີ່ທ່ານເຂົ້າເບິ່ງ.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">ຊ່ວຍປັບປຸງຄວາມປອດໄພຂອງເວັບໄຊສຳລັບທຸກຄົນໂດຍການສົ່ງ <ph name="BEGIN_WHITEPAPER_LINK" />URL ຂອງບາງໜ້າເວັບທີ່ທ່ານເຂົ້າເບິ່ງ, ຂໍ້ມູນລະບົບແບບຈຳກັດ ແລະ ບາງເນື້ອຫາໃນໜ້າເວັບ<ph name="END_WHITEPAPER_LINK" /> ໄປໃຫ້ Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">ອອກຈາກເວັບໄຊບໍ?</translation>
 <translation id="7865448901209910068">ຄວາມໄວດີສຸດ</translation>
 <translation id="7874263914261512992">ທ່ານຫາກໍປ້ອນລະຫັດຜ່ານຂອງທ່ານໃສ່ເວັບໄຊຫຼອກລວງ. Chrome ຂໍແນະນຳໃຫ້ກວດເບິ່ງລະຫັດຜ່ານທີ່ທ່ານບັນທຶກໄວ້ສຳລັບ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ແລະ ເວັບໄຊອື່ນໆທີ່ທ່ານໃຊ້ລະຫັດຜ່ານນີ້ໃນຕອນນີ້ເລີຍ.</translation>
@@ -1758,7 +1758,6 @@
 <translation id="8425213833346101688">ປ່ຽນ​ແປງ</translation>
 <translation id="8428213095426709021">ການ​ຕັ້ງຄ່າ</translation>
 <translation id="8433057134996913067">ນີ້ຈະນຳທ່ານອອກຈາກລະບົບເວັບໄຊສ່ວນໃຫຍ່.</translation>
-<translation id="8433678324664858900">ສະ​ແດງ​ການ​ແນະ​ນຳ</translation>
 <translation id="8437238597147034694">ປ່ຽນກັບຄືນຄໍາສັ່ງຍ້າຍ</translation>
 <translation id="8457125768502047971">ບໍ່ມີກຳນົດ</translation>
 <translation id="8461694314515752532">ເຂົ້າລະຫັດຂໍ້ມູນທີ່ຊິ້ງດ້ວຍລະຫັດຜ່ານການຊິ້ງຂໍ້ມູນຂອງທ່ານເອງ</translation>

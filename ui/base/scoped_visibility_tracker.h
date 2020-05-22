@@ -7,8 +7,8 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/time/time.h"
-#include "ui/base/ui_base_export.h"
 
 namespace base {
 class TickClock;
@@ -18,7 +18,7 @@ namespace ui {
 
 // This class tracks the total time it is visible, based on receiving
 // OnShown/OnHidden notifications, which are logically idempotent.
-class UI_BASE_EXPORT ScopedVisibilityTracker {
+class COMPONENT_EXPORT(UI_BASE) ScopedVisibilityTracker {
  public:
   // |tick_clock| must outlive this object.
   ScopedVisibilityTracker(const base::TickClock* tick_clock, bool is_shown);

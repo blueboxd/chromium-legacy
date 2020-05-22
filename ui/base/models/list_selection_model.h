@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 namespace ui {
 
@@ -25,7 +25,7 @@ namespace ui {
 //
 // Typically there is only one selected item, in which case the anchor and
 // active index correspond to the same thing.
-class UI_BASE_EXPORT ListSelectionModel {
+class COMPONENT_EXPORT(UI_BASE) ListSelectionModel {
  public:
   using SelectedIndices = std::vector<int>;
 

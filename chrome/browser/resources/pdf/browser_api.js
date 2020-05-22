@@ -28,7 +28,6 @@ function lookupDefaultZoom(streamInfo) {
  * Returns a promise that will resolve to the initial zoom factor
  * upon starting the plugin. This may differ from the default zoom
  * if, for example, the page is zoomed before the plugin is run.
- *
  * @param {!Object} streamInfo The stream object pointing to the data contained
  *     in the PDF.
  * @return {Promise<number>} A promise that will resolve to the initial zoom
@@ -46,9 +45,7 @@ function lookupInitialZoom(streamInfo) {
   });
 }
 
-/**
- * A class providing an interface to the browser.
- */
+// A class providing an interface to the browser.
 export class BrowserApi {
   /**
    * @param {!Object} streamInfo The stream object which points to the data
@@ -90,7 +87,6 @@ export class BrowserApi {
 
   /**
    * Sets the browser zoom.
-   *
    * @param {number} zoom The zoom factor to send to the browser.
    * @return {Promise} A promise that will be resolved when the browser zoom
    *     has been updated.
@@ -104,23 +100,17 @@ export class BrowserApi {
     });
   }
 
-  /**
-   * @return {number} The default browser zoom factor.
-   */
+  /** @return {number} The default browser zoom factor. */
   getDefaultZoom() {
     return this.defaultZoom_;
   }
 
-  /**
-   * @return {number} The initial browser zoom factor.
-   */
+  /** @return {number} The initial browser zoom factor. */
   getInitialZoom() {
     return this.initialZoom_;
   }
 
-  /**
-   * @return {BrowserApi.ZoomBehavior} How to manage zoom.
-   */
+  /** @return {BrowserApi.ZoomBehavior} How to manage zoom. */
   getZoomBehavior() {
     return this.zoomBehavior_;
   }
@@ -160,7 +150,6 @@ BrowserApi.ZoomBehavior = {
 
 /**
  * Creates a BrowserApi for an extension running as a mime handler.
- *
  * @return {!Promise<!BrowserApi>} A promise to a BrowserApi instance
  *     constructed using the mimeHandlerPrivate API.
  */
@@ -197,7 +186,6 @@ function createBrowserApiForMimeHandlerView() {
 
 /**
  * Creates a BrowserApi instance for an extension not running as a mime handler.
- *
  * @return {!Promise<!BrowserApi>} A promise to a BrowserApi instance
  *     constructed from the URL.
  */

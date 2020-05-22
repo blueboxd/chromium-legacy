@@ -331,16 +331,13 @@ public class ExternalNavigationHandlerTest {
     @SmallTest
     public void testIgnore() {
         // Ensure the following URLs are not broadcast for external navigation.
-        String urlsToIgnore[] = new String[] {
-                "about:test",
+        String urlsToIgnore[] = new String[] {"about:test",
                 "content:test", // Content URLs should not be exposed outside of Chrome.
-                "chrome://history",
-                "chrome-native://newtab",
-                "devtools://foo",
+                "chrome://history", "chrome-native://newtab", "devtools://foo",
                 "intent:chrome-urls#Intent;package=com.android.chrome;scheme=about;end;",
                 "intent:chrome-urls#Intent;package=com.android.chrome;scheme=chrome;end;",
                 "intent://com.android.chrome.FileProvider/foo.html#Intent;scheme=content;end;",
-        };
+                "intent:///x.mhtml#Intent;package=com.android.chrome;action=android.intent.action.VIEW;scheme=file;end;"};
         for (String url : urlsToIgnore) {
             checkUrl(url).expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
             checkUrl(url).withIsIncognito(true).expecting(
@@ -1251,6 +1248,37 @@ public class ExternalNavigationHandlerTest {
                         START_OTHER_ACTIVITY);
         Assert.assertEquals(ExternalNavigationHandler.ALLOWED_INTENT_FLAGS,
                 mDelegate.startActivityIntent.getFlags());
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentWithFileSchemeFiltered() {
+        checkUrl("intent://#Intent;package=com.test.package;scheme=file;end;")
+                .expecting(OverrideUrlLoadingResult.NO_OVERRIDE, IGNORE);
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentWithNoSchemeLaunched() {
+        checkUrl("intent://#Intent;package=com.test.package;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentWithEmptySchemeLaunched() {
+        checkUrl("intent://#Intent;package=com.test.package;scheme=;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
+    public void testIntentWithWeirdSchemeLaunched() {
+        checkUrl("intent://#Intent;package=com.test.package;scheme=w3irD;end;")
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
     }
 
     @Test

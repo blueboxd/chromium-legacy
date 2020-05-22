@@ -600,6 +600,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="3539171420378717834">Menyimpan salinan kartu ini di perangkat ini</translation>
 <translation id="3558573058928565255">Siang hari</translation>
 <translation id="3566021033012934673">Koneksi Anda tidak pribadi</translation>
+<translation id="3567778190852720481">Tidak dapat mendaftar dengan akun perusahaan (akun perusahaan tidak memenuhi syarat).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Halaman tersemat di <ph name="SITE" /> menyatakan</translation>
 <translation id="3581089476000296252">Chrome akan memberi tahu Anda saat halaman ini sudah siap. &lt;a&gt;Batal&lt;/a&gt;</translation>
@@ -876,6 +877,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Jalankan Diagnostik Jaringan Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Muat ulang kebijakan</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4731638775147756694">Aplikasi ini telah diblokir oleh administrator Anda</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> ingin menggunakan lokasi perangkat Anda</translation>
 <translation id="4736825316280949806">Buka Ulang Chromium</translation>
@@ -1246,6 +1248,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="6263376278284652872">Bookmark <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Kembali agar aman</translation>
 <translation id="6266934640124581640">Hijau Kebiruan Terang</translation>
+<translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Halaman dari daftar bacaan Anda muncul di sini</translation>
 <translation id="627746635834430766">Untuk membayar lebih cepat di pembelian selanjutnya, simpan kartu dan alamat penagihan ke Akun Google Anda.</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />tidak akan menyimpan<ph name="END_EMPHASIS" /> informasi berikut:
@@ -1617,6 +1620,7 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="7844689747373518809">{COUNT,plural, =0{Tidak ada}=1{1 aplikasi (<ph name="EXAMPLE_APP_1" />)}=2{2 aplikasi (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# aplikasi (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Namun, Anda masih dapat terlihat. Login ke mode samaran tidak menyembunyikan penjelajahan Anda dari atasan, penyedia layanan internet, atau situs web yang Anda kunjungi.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Bantu sempurnakan keamanan di web untuk semua orang dengan mengirimkan <ph name="BEGIN_WHITEPAPER_LINK" />URL beberapa halaman yang Anda kunjungi, informasi sistem terbatas, dan beberapa konten halaman<ph name="END_WHITEPAPER_LINK" /> ke Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Keluar dari situs?</translation>
 <translation id="7865448901209910068">Paling cepat</translation>
 <translation id="7874263914261512992">Anda baru saja memasukkan sandi ke situs penipuan. Chrome merekomendasikan Anda memeriksa sandi yang disimpan untuk <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, dan situs lain tempat Anda menggunakan sandi ini sekarang.</translation>
@@ -1749,7 +1753,6 @@ Jika tidak, ini akan diblokir oleh setelan privasi Anda. Ini akan memungkinkan k
 <translation id="8425213833346101688">Ubah</translation>
 <translation id="8428213095426709021">Setelan</translation>
 <translation id="8433057134996913067">Tindakan ini akan mengeluarkan Anda dari sebagian besar situs web.</translation>
-<translation id="8433678324664858900">Tampilkan Saran</translation>
 <translation id="8437238597147034694">&amp;Urungkan pemindahan</translation>
 <translation id="8457125768502047971">Tak terbatas</translation>
 <translation id="8461694314515752532">Enkripsikan data yang disinkronkan dengan frasa sandi sinkronisasi Anda sendiri</translation>

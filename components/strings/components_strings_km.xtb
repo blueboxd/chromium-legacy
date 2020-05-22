@@ -604,6 +604,7 @@
 <translation id="3539171420378717834">រក្សាច្បាប់ចម្លងនៃកាតនេះនៅលើឧបករណ៍នេះ</translation>
 <translation id="3558573058928565255">ពេលថ្ងៃ</translation>
 <translation id="3566021033012934673">ការភ្ជាប់របស់អ្នកមិនឯកជនទេ</translation>
+<translation id="3567778190852720481">មិនអាច​ចុះឈ្មោះ​ដោយប្រើ​គណនី​សហគ្រាស​បានទេ (គណនី​សហគ្រាស​មិនមានសិទ្ធិ​ឡើយ)។</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">ទំព័រ​បង្កប់​នៅ <ph name="SITE" /> និយាយ​ថា</translation>
 <translation id="3581089476000296252">Chrome នឹងប្រាប់​ឱ្យអ្នកដឹង នៅពេល​ទំព័រនេះ​រួចរាល់។ &lt;a&gt;បោះបង់&lt;/a&gt;</translation>
@@ -881,6 +882,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />កំពុងដំណើរការការវិភាគបណ្តាញ Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">ដំណើរការគោលការណ៍ឡើងវិញ</translation>
 <translation id="4728558894243024398">អង្គប្រតិបត្តិការ</translation>
+<translation id="4731638775147756694">កម្មវិធីនេះ​ត្រូវបាន​ទប់ស្កាត់​ដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>
 <translation id="4731967714531604179">Prc2 (ស្រោម​សំបុត្រ)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> ចង់ប្រើ​ទីតាំង​ឧបករណ៍​របស់អ្នក</translation>
 <translation id="4736825316280949806">ចាប់ផ្តើម Chromium ឡើងវិញ</translation>
@@ -1251,6 +1253,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> ចំណាំ</translation>
 <translation id="6264485186158353794">ត្រលប់ទៅកន្លែងសុវត្ថិភាព</translation>
 <translation id="6266934640124581640">បៃតង​ស្រាល</translation>
+<translation id="6272383483618007430">Google បច្ចុប្បន្នភាព</translation>
 <translation id="6276112860590028508">ទំព័រ​ពីបញ្ជីអាន​របស់​អ្នក​បង្ហាញ​នៅ​ទីនេះ</translation>
 <translation id="627746635834430766">ដើម្បី​បង់ប្រាក់​លឿន​ជាងនេះ​នៅពេល​ក្រោយ សូម​រក្សា​ទុកបណ្ណ និង​អាសយដ្ឋាន​ចេញ​វិក្កយបត្រ​របស់អ្នក​ទៅក្នុង​គណនី Google របស់​អ្នក។</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />នឹង​មិន​រក្សាទុក<ph name="END_EMPHASIS" />ព័ត៌មាន​ខាងក្រោម​ទេ៖
@@ -1625,6 +1628,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{គ្មាន}=1{កម្មវិធី 1 (<ph name="EXAMPLE_APP_1" />)}=2{កម្មវិធី 2 (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{កម្មវិធី # (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">ទោះជាយ៉ាងណាក្តី អ្នកនៅតែអាចឲ្យគេមើលឃើញ។ ការចូលជាអនាមិកមិនអាចលាក់ការរុករករបស់អ្នកពីនិយោជករបស់អ្នក ក្រុមហ៊ុនផ្តល់សេវាអ៊ីធឺណិត ឬគេហទំព័រដែលអ្នកបានចូលនោះទេ។</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">ជួយពង្រឹង​សុវត្ថិភាព​នៅលើ​អ៊ីនធឺណិត​សម្រាប់​អ្នករាល់គ្នា​តាមរយៈការបញ្ជូន <ph name="BEGIN_WHITEPAPER_LINK" />URL របស់ទំព័រ​មួយចំនួន​ដែលអ្នកចូលមើល ព័ត៌មាន​ប្រព័ន្ធមួយចំនួន និងខ្លឹមសារទំព័រ​មួយចំនួន<ph name="END_WHITEPAPER_LINK" />ទៅ Google។ <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">ចាកចេញពី​ទំព័រ?</translation>
 <translation id="7865448901209910068">ល្បឿន​ល្អបំផុត</translation>
 <translation id="7874263914261512992">អ្នកទើបតែ​បានបញ្ចូល​ពាក្យសម្ងាត់​របស់អ្នក​នៅលើ​គេហទំព័របញ្ឆោត។ Chrome សូមណែនាំឱ្យ​ពិនិត្យមើល​ពាក្យសម្ងាត់​ដែលអ្នក​បានរក្សាទុក​សម្រាប់ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> និង​គេហទំព័រ​ផ្សេងទៀត ដែលអ្នក​ប្រើ​ពាក្យសម្ងាត់​នេះ​ឥឡូវនេះ​។</translation>
@@ -1759,7 +1763,6 @@
 <translation id="8425213833346101688">ប្តូរ</translation>
 <translation id="8428213095426709021">ការកំណត់</translation>
 <translation id="8433057134996913067">វានឹងយកអ្នកចេញពីគេហទំព័រភាគច្រើន</translation>
-<translation id="8433678324664858900">បង្ហាញការផ្តល់យោបល់</translation>
 <translation id="8437238597147034694">បកក្រោយការផ្លាស់ទី</translation>
 <translation id="8457125768502047971">មិនច្បាស់</translation>
 <translation id="8461694314515752532">អ៊ីនគ្រីប​ទិន្នន័យ​ដែលបាន​ធ្វើ​សមកាលកម្ម​ ដោយប្រើឃ្លា​សម្ងាត់​សមកាលកម្មផ្ទាល់​ខ្លួន​របស់​អ្នក</translation>

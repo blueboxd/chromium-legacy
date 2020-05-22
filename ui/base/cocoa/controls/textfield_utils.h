@@ -5,11 +5,11 @@
 #ifndef UI_BASE_COCOA_CONTROLS_TEXTFIELD_UTILS_H_
 #define UI_BASE_COCOA_CONTROLS_TEXTFIELD_UTILS_H_
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 #include <Cocoa/Cocoa.h>
 
-UI_BASE_EXPORT
+COMPONENT_EXPORT(UI_BASE)
 @interface TextFieldUtils : NSObject
 
 // This method is a polyfill for a method on NSTextField on macOS 10.12+.

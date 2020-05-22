@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1650222530560417226">모든 탭에서 앞으로 자바스크립트 콘솔 로그 및 오류를 수집하려면 '로그 기록 시작' 버튼을 탭하세요. 이 페이지가 닫히거나 '로그 기록 중지'를 탭할 때까지 로그가 수집됩니다(메모리에만 저장됨).</translation>
 <translation id="1657011748321897393">네트워크에 연결되어 있지 않아 공유하지 못했습니다.</translation>
+<translation id="1657641691196698092">차단된 쿠키 수</translation>
 <translation id="165877110639533037">열린 탭 없음</translation>
 <translation id="1674504678466460478">출발어: <ph name="SOURCE_LANGUAGE" />, 도착어: <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">어느 기기에서나 북마크를 사용하려면 동기화를 사용 설정하세요.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">기기 정책으로 인해 사진 액세스가 차단되었습니다.</translation>
 <translation id="2578571896248130439">웹페이지 보내기</translation>
 <translation id="2584132361465095047">계정 추가...</translation>
+<translation id="2600682495497606169">사이트 쿠키 삭제</translation>
 <translation id="2625189173221582860">비밀번호 복사됨</translation>
 <translation id="2647269890314209800">사용 중인 쿠키</translation>
 <translation id="2648803196158606475">읽은 항목 삭제</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">숨기기</translation>
 <translation id="5245322853195994030">동기화 취소</translation>
 <translation id="5271549068863921519">비밀번호 저장</translation>
+<translation id="5295239312320826323"><ph name="USER_EMAIL" /> 계정을 삭제하시겠습니까?</translation>
 <translation id="5300589172476337783">표시</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="5327248766486351172">이름</translation>
@@ -418,6 +421,7 @@
 <translation id="6362362396625799311">시크릿 탭 없음</translation>
 <translation id="6363526231572697780">사용자 이름 없음</translation>
 <translation id="6374469231428023295">다시 시도</translation>
+<translation id="6377118281273296434">사이트 보안</translation>
 <translation id="6380866119319257197">암호를 잊어버렸거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
 <translation id="6389470377220713856">카드 명의</translation>
 <translation id="6406506848690869874">동기화</translation>
@@ -525,11 +529,13 @@
 
 <ph name="HOSTED_DOMAIN" />에서 계정을 관리하므로 로그아웃하면 기기에서 Chrome 데이터가 삭제됩니다. 동기화된 데이터는 Google 계정에 그대로 유지됩니다.</translation>
 <translation id="7772032839648071052">암호 확인</translation>
+<translation id="7778472311864276518">이 기기에서 계정 삭제</translation>
 <translation id="7781011649027948662">페이지를 번역하시겠습니까?</translation>
 <translation id="7781829728241885113">어제</translation>
 <translation id="778855399387580014">새 Chrome 탭에서 검색을 시작합니다.</translation>
 <translation id="7791543448312431591">추가</translation>
 <translation id="7828557259026017104">쿠키는 방문한 웹사이트에서 생성된 파일로, 사이트에서 사용자의 설정을 기억하기 위해 사용합니다. 타사 쿠키는 다른 사이트, 즉 광고나 이미지 등 방문하는 웹페이지에 표시되는 일부 콘텐츠를 소유하는 사이트에 의해 생성됩니다.</translation>
+<translation id="7839985698273989086">오프라인 페이지</translation>
 <translation id="7840771868269352570">선택한 항목 삭제</translation>
 <translation id="7856733331829174190">다운로드할 수 없음</translation>
 <translation id="7859704718976024901">인터넷 사용 기록</translation>

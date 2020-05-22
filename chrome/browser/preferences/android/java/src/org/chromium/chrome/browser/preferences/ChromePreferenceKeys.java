@@ -77,6 +77,12 @@ public final class ChromePreferenceKeys {
     public static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
 
     /**
+     * The URI of Chrome shared to Android system clibpoard, we only need this preference for the
+     * Android O and O_MR1 version.
+     */
+    public static final String CLIPBOARD_SHARED_URI = "Chrome.Clipboard.SharedUri";
+
+    /**
      * Saves a counter of how many continuous feature sessions in which a user has dismissed
      * conditional tab strip.
      */
@@ -746,6 +752,7 @@ public final class ChromePreferenceKeys {
     static List<String> getKeysInUse() {
         // clang-format off
         return Arrays.asList(
+                CLIPBOARD_SHARED_URI,
                 CONDITIONAL_TAB_STRIP_CONTINUOUS_DISMISS_COUNTER,
                 CONDITIONAL_TAB_STRIP_FEATURE_STATUS,
                 CONDITIONAL_TAB_STRIP_LAST_SHOWN_TIMESTAMP,

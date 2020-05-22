@@ -599,6 +599,7 @@
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
 <translation id="3558573058928565255">낮</translation>
 <translation id="3566021033012934673">연결이 비공개로 설정되어 있지 않습니다.</translation>
+<translation id="3567778190852720481">회사 계정으로는 등록할 수 없습니다(회사 계정을 사용할 수 없음).</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" />, <ph name="CITY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" />에 삽입된 페이지 내용:</translation>
 <translation id="3581089476000296252">이 페이지가 준비되면 Chrome에서 알려드립니다. &lt;a&gt;취소&lt;/a&gt;</translation>
@@ -875,6 +876,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows 네트워크 진단 프로그램 실행<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
 <translation id="4728558894243024398">플랫폼</translation>
+<translation id="4731638775147756694">관리자가 애플리케이션을 차단했습니다.</translation>
 <translation id="4731967714531604179">Prc2(봉투)</translation>
 <translation id="4733082559415072992"><ph name="URL" />에서 기기의 위치에 액세스하려고 합니다.</translation>
 <translation id="4736825316280949806">Chromium 다시 시작</translation>
@@ -1245,6 +1247,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="6264485186158353794">안전한 페이지로 돌아가기</translation>
 <translation id="6266934640124581640">연한 청록색</translation>
+<translation id="6272383483618007430">Google 업데이트</translation>
 <translation id="6276112860590028508">읽기 목록의 페이지가 여기에 표시됩니다.</translation>
 <translation id="627746635834430766">다음번에 더 빠르게 결제할 수 있도록 Google 계정에 카드와 청구서 수신 주소를 저장하세요.</translation>
 <translation id="6279516281132775660">Chrome에서는 다음 정보를 <ph name="BEGIN_EMPHASIS" />저장하지 않습니다<ph name="END_EMPHASIS" />.
@@ -1617,6 +1620,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{없음}=1{앱 1개(<ph name="EXAMPLE_APP_1" />)}=2{앱 2개(<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{앱 #개(<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">하지만 흔적이 아예 남지 않는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체 또는 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />방문한 일부 페이지의 URL, 제한된 시스템 정보, 일부 페이지 콘텐츠<ph name="END_WHITEPAPER_LINK" />를 Google에 전송하여 모든 웹 사용자를 위해 보안을 강화하는 데 참여해 주세요. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">사이트에서 나가시겠습니까?</translation>
 <translation id="7865448901209910068">최고 속도</translation>
 <translation id="7874263914261512992">사기성 사이트에 비밀번호를 입력했습니다. 지금 바로 <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> 등 동일한 비밀번호를 사용한 사이트에 저장된 비밀번호를 확인하는 것이 좋습니다.</translation>
@@ -1751,7 +1755,6 @@
 <translation id="8425213833346101688">변경</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433057134996913067">이 작업을 수행하면 대부분의 웹사이트에서 로그아웃됩니다.</translation>
-<translation id="8433678324664858900">추천 보기</translation>
 <translation id="8437238597147034694">이동 실행 취소(&amp;U)</translation>
 <translation id="8457125768502047971">무기한</translation>
 <translation id="8461694314515752532">나만의 동기화 암호로 동기화된 데이터 암호화</translation>

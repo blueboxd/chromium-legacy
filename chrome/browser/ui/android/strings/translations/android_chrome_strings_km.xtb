@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">បន្ថែមភាសា</translation>
 <translation id="2650751991977523696">ទាញយក​ឯកសារ​ម្ដងទៀត​មែនទេ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ឯកសារសំឡេង #}other{ឯកសារ​សំឡេង #}}</translation>
+<translation id="2656405586795711023">កម្មវិធីលើ​អ៊ីនធឺណិត</translation>
 <translation id="2677748264148917807">ចាកចេញ</translation>
 <translation id="2689830683995595741">ប្រសិនបើប្រើ Chrome មានន័យថាអ្នកយល់ព្រមតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់ Google<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />លក្ខខណ្ឌប្រើប្រាស់បន្ថែមរបស់ Google Chrome និង Chrome OS<ph name="END_LINK2" />។ <ph name="BEGIN_LINK3" />ការជូន​ដំណឹង​អំពី​ឯកជនភាព​សម្រាប់​គណនី Google ដែល​គ្រប់គ្រង​ដោយ​ប្រើ Family Link<ph name="END_LINK3" /> ក៏អនុវត្តផងដែរ។</translation>
 <translation id="2707726405694321444">ធ្វើឲ្យទំព័រថ្មីឡើងវិញ</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">ទំហំផ្ទុកមិនសំខាន់</translation>
 <translation id="4000212216660919741">Home គ្មាន​អ៊ីនធឺណិតទេ</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ម៉ោង​}other{# ម៉ោង}}</translation>
+<translation id="403687620286099920">ចុច​ដើម្បី​បើក​កូដ QR</translation>
 <translation id="4046123991198612571">បទ​បន្ទាប់</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">ជម្រើសមានផ្តល់ជូននៅក្បែរផ្នែកខាងលើអេក្រង់</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">បើកផ្ទាំងថ្មី</translation>
 <translation id="4759238208242260848">ទាញយក</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ការទាញយក 1 បាន​បញ្ចប់។}other{ការទាញយក # បាន​បញ្ចប់។}}</translation>
+<translation id="478981486571169252">អ្នក​នឹងមើលឃើញ​ស្ថានភាព​ចូល <ph name="SITE_NAME" />, ទិន្នន័យ​រុករក និង​ទិន្នន័យគេហទំព័រ​របស់អ្នក​នៅក្នុង Chrome។</translation>
 <translation id="4802417911091824046">ការ​អ៊ីនគ្រីបឃ្លាសម្ងាត់មិន​រួមបញ្ចូល​អាសយដ្ឋាន និងវិធីបង់ប្រាក់​ពី Google Pay ទេ។
 
 ដើម្បី​ផ្លាស់ប្ដូរ​ការកំណត់នេះ <ph name="BEGIN_LINK" />សូមកំណត់​សមកាលកម្មឡើងវិញ<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">ផ្ញើ​ទៅ</translation>
 <translation id="5304593522240415983">ប្រអប់នេះមិនអាចចន្លោះទេ</translation>
 <translation id="5308380583665731573">ភ្ជាប់</translation>
+<translation id="5317780077021120954">រក្សាទុក</translation>
 <translation id="5324858694974489420">ការកំណត់មាតាបិតា</translation>
 <translation id="5327248766486351172">ឈ្មោះ</translation>
 <translation id="5342314432463739672">សំណើសុំ​ការអនុញ្ញាត</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">អ៊ីម៉េល</translation>
 <translation id="5665379678064389456">បង្កើតព្រឹត្តិការណ៍នៅក្នុង <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">បដិសេធសំណើរគេហទំព័រដើម្បីបង្ការការពង្រីក</translation>
+<translation id="5681394891799747640">មិនអាច​ទាញយក​កូដ QR បានទេ</translation>
 <translation id="5684874026226664614">អូ។ ទំព័រនេះមិនអាចបកប្រែទេ។</translation>
 <translation id="5686790454216892815">ឈ្មោះ​ឯកសារ​វែងពេក</translation>
 <translation id="5694049548840660018">ត្រឡប់ទៅ​ទំព័រដើមវិញ​បានយ៉ាង​ងាយស្រួល</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">ច្រើនទៀត</translation>
 <translation id="604996488070107836">ការដោនឡូត <ph name="FILE_NAME" /> បានបរាជ័យដោយសារមានកំហុសមិនស្គាល់។</translation>
 <translation id="605721222689873409">ឆ្នាំ</translation>
+<translation id="6059830886158432458">គ្រប់គ្រង​អត្ថបទ និង​សកម្មភាព​របស់អ្នក​នៅទីនេះ</translation>
 <translation id="60923314841986378">នៅសល់ <ph name="HOURS" /> ម៉ោងទៀត</translation>
 <translation id="6108923351542677676">ការដំឡើងកំពុងដំណើរការ…</translation>
 <translation id="6111020039983847643">ទិន្នន័យ​ដែល​បានប្រើ</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">គណនី</translation>
 <translation id="6297765934698848803">ស្ថាប័ន​ដែល​គ្រប់គ្រង​ឧបករណ៍​របស់អ្នក​បានបិទ​កាមេរ៉ា​របស់អ្នក​ហើយ។</translation>
 <translation id="6303969859164067831">ចាកចេញ ហើយបិទការធ្វើសមកាលកម្ម</translation>
+<translation id="6312687380483398334">កម្មវិធីលើ​អ៊ីនធឺណិត (ស្ងាត់)</translation>
 <translation id="6316139424528454185">មិន​អាច​ប្រើកំណែ Android បានទេ</translation>
 <translation id="6324034347079777476">បានបិទដំណើរការសមកាលកម្មប្រព័ន្ធ Android</translation>
 <translation id="6333140779060797560">ចែករំលែកតាមរយៈ <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">ការដោនឡូត <ph name="FILE_NAME" /> បានបរាជ័យដោយសារខ្វះទំហំផ្ទុក។</translation>
 <translation id="6496823230996795692">ដើម្បីប្រើ <ph name="APP_NAME" /> ជាលើកដំបូង សូមភ្ជាប់​អ៊ីនធឺណិត។</translation>
 <translation id="6508722015517270189">ចាប់ផ្តើម Chrome ឡើងវិញ</translation>
+<translation id="6527303717912515753">ចែករំលែក</translation>
 <translation id="6532866250404780454">គេហ​ទំព័រដែល​អ្នកចូលមើល​នៅក្នុង Chrome នឹងមិនបង្ហាញទេ។ កម្មវិធី​កំណត់ពេលរបស់​គេហទំព័រទាំង​អស់នឹងត្រូវ​បានលុប។</translation>
 <translation id="6534565668554028783">Google បាន​ចំណាយពេល​យូរពេក​ក្នុងការ​ឆ្លើយតប</translation>
 <translation id="6539092367496845964">មានអ្វីមួយខុសប្រក្រតី។ សូមព្យាយាមម្តង​ទៀតនៅ​ពេលក្រោយ។</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">សមកាលកម្មមិនដំណើរការទេ</translation>
 <translation id="7606077192958116810">មុខងារស្រាល​បានបើក។ គ្រប់គ្រងមុខងារនេះ​នៅក្នុងការកំណត់។</translation>
 <translation id="7612619742409846846">បានចូល Google ជា</translation>
+<translation id="7614971007231847352">កូដ QR ត្រូវបាន​ទាញយក</translation>
 <translation id="7619072057915878432">ការដោនឡូត <ph name="FILE_NAME" /> បានបរាជ័យដោយសារបរាជ័យក្នុងការភ្ជាប់បណ្តាញ។</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />ទទួលជំនួយ<ph name="END_LINK1" /> ឬ<ph name="BEGIN_LINK2" />ស្កេនសារឡើងវិញ<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">ស្វាគមន៍មកកាន់ Chrome</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">ការសន្សំសំចៃ​ទិន្នន័យ​របស់អ្នក​នឹង​បង្ហាញ​នៅ​ទីនេះ</translation>
 <translation id="7835852323729233924">ការចាក់មេឌៀ</translation>
 <translation id="783819812427904514">បើក​សំឡេង​វីដេអូ</translation>
+<translation id="7846296061357476882">សេវាកម្ម Google</translation>
 <translation id="784934925303690534">ចន្លោះពេល</translation>
 <translation id="7851858861565204677">ឧបករណ៍ផ្សេងទៀត</translation>
 <translation id="7875915731392087153">បង្កើតអ៊ីមែល</translation>

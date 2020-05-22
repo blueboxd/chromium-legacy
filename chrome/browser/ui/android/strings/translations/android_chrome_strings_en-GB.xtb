@@ -519,6 +519,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5292796745632149097">Send to</translation>
 <translation id="5304593522240415983">This field cannot be blank</translation>
 <translation id="5308380583665731573">Connect</translation>
+<translation id="5317780077021120954">Save</translation>
 <translation id="5324858694974489420">Parental Settings</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5342314432463739672">Permission requests</translation>
@@ -670,6 +671,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
 <translation id="6496823230996795692">To use <ph name="APP_NAME" /> for the first time, please connect to the Internet.</translation>
 <translation id="6508722015517270189">Restart Chrome</translation>
+<translation id="6527303717912515753">Share</translation>
 <translation id="6532866250404780454">Sites that you visit in Chrome won't show. All site timers will be deleted.</translation>
 <translation id="6534565668554028783">Google took too long to respond</translation>
 <translation id="6539092367496845964">Something went wrong. Try again later.</translation>

@@ -204,6 +204,7 @@ Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att v
 <translation id="2647434099613338025">Lägg till språk</translation>
 <translation id="2650751991977523696">Vill du ladda ned filen igen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ljudfil}other{# ljudfiler}}</translation>
+<translation id="2656405586795711023">Webbappar</translation>
 <translation id="2677748264148917807">Lämna</translation>
 <translation id="2689830683995595741">Genom att använda Chrome godkänner du <ph name="BEGIN_LINK1" />Googles användarvillkor<ph name="END_LINK1" /> och <ph name="BEGIN_LINK2" />de ytterligare användarvillkoren för Google Chrome och Chrome OS<ph name="END_LINK2" />. <ph name="BEGIN_LINK3" />Sekretessmeddelandet för Google-konton som hanteras med Family Link<ph name="END_LINK3" /> gäller också.</translation>
 <translation id="2707726405694321444">Uppdatera sidan</translation>
@@ -366,6 +367,7 @@ Det är endast du som kan se det kameran avbildar. Bilderna från kameran visas 
 <translation id="3997476611815694295">Oviktig lagring</translation>
 <translation id="4000212216660919741">Startsida offline</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# tim}other{# tim}}</translation>
+<translation id="403687620286099920">Tryck för att öppna QR-koden</translation>
 <translation id="4046123991198612571">Nästa spår</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Alternativ finns högt upp på skärmen</translation>
@@ -450,6 +452,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4749960740855309258">Öppna en ny flik</translation>
 <translation id="4759238208242260848">Nedladdningar</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 nedladdning har slutförts.}other{# nedladdningar har slutförts.}}</translation>
+<translation id="478981486571169252">Du kommer att se din inloggningsstatus, webbdata och webbplatsdata för <ph name="SITE_NAME" /> i Chrome.</translation>
 <translation id="4802417911091824046">Betalningsmetoder och adresser från Google Pay omfattas inte av kryptering med lösenfras.
 
 <ph name="BEGIN_LINK" />Återställ synkroniseringen<ph name="END_LINK" /> om du vill ändra den här inställningen.</translation>
@@ -516,6 +519,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5292796745632149097">Skicka till</translation>
 <translation id="5304593522240415983">Fältet får inte vara tomt</translation>
 <translation id="5308380583665731573">Anslut</translation>
+<translation id="5317780077021120954">Spara</translation>
 <translation id="5324858694974489420">Föräldrainställningar</translation>
 <translation id="5327248766486351172">Namn</translation>
 <translation id="5342314432463739672">Behörighetsförfrågningar</translation>
@@ -562,6 +566,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5659593005791499971">E-post</translation>
 <translation id="5665379678064389456">Skapa händelse i <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Åsidosätt en webbplats begäran att hindra inzoomning</translation>
+<translation id="5681394891799747640">Det går inte att ladda ned QR-kod</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
 <translation id="5686790454216892815">Filnamnet är för långt</translation>
 <translation id="5694049548840660018">Kom tillbaka till startsidan snabbt</translation>
@@ -610,6 +615,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="6042308850641462728">Mer</translation>
 <translation id="604996488070107836">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av ett okänt fel.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
+<translation id="6059830886158432458">Styr dina berättelser och din aktivitet här</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> timmar kvar</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
 <translation id="6111020039983847643">Använd data</translation>
@@ -633,6 +639,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="629730747756840877">Konto</translation>
 <translation id="6297765934698848803">Organisationen som hanterar din enhet har inaktiverat kameran.</translation>
 <translation id="6303969859164067831">Logga ut och inaktivera synkronisering</translation>
+<translation id="6312687380483398334">Webbappar (tyst)</translation>
 <translation id="6316139424528454185">Android-versionen stöds inte</translation>
 <translation id="6324034347079777476">Synkronisering av Android-system har inaktiverats</translation>
 <translation id="6333140779060797560">Dela via <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6482749332252372425">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte finns tillräckligt med lagringsutrymme.</translation>
 <translation id="6496823230996795692">Du behöver vara ansluten till internet när du använder <ph name="APP_NAME" /> för första gången.</translation>
 <translation id="6508722015517270189">Starta om Chrome</translation>
+<translation id="6527303717912515753">Dela</translation>
 <translation id="6532866250404780454">Webbplatser som du besöker i Chrome visas inte. Alla timer för webbplatser raderas.</translation>
 <translation id="6534565668554028783">Google tog för lång tid på sig att svara</translation>
 <translation id="6539092367496845964">Något gick fel. Försök igen senare.</translation>
@@ -794,6 +802,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7605594153474022051">Det går inte att synkronisera</translation>
 <translation id="7606077192958116810">Begränsat läge har aktiverats. Hantera detta i inställningarna.</translation>
 <translation id="7612619742409846846">Inloggad i Google som</translation>
+<translation id="7614971007231847352">QR-koden har laddats ned</translation>
 <translation id="7619072057915878432">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av nätverksfel.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Få hjälp<ph name="END_LINK1" /> eller <ph name="BEGIN_LINK2" />sök igen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Välkommen till Chrome</translation>
@@ -821,6 +830,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7821588508402923572">Här visas hur mycket data du har sparat</translation>
 <translation id="7835852323729233924">Spelar upp media</translation>
 <translation id="783819812427904514">Slå på ljudet för videon</translation>
+<translation id="7846296061357476882">Googles tjänster</translation>
 <translation id="784934925303690534">Tidsintervall</translation>
 <translation id="7851858861565204677">Andra enheter</translation>
 <translation id="7875915731392087153">Skapa ett e-postmeddelande</translation>

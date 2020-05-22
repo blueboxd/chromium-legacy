@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">ਬੈਟਰੀ ਪੂਰੀ</translation>
 <translation id="3604801046548457007">ਡੈਸਕ <ph name="DESK_TITILE" /> ਬਣਾਇਆ ਗਿਆ</translation>
 <translation id="3606978283550408104">ਬ੍ਰੇਲ ਡਿਸਪਲੇ ਕਨੈਕਟ ਕੀਤਾ।</translation>
+<translation id="3616883743181209306">ਮੀਨੂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇ ਉੱਪਰਲੇ ਸੱਜੇ ਕੋਨੇ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
 <translation id="3621202678540785336">ਇਨਪੁਟ</translation>
 <translation id="3621712662352432595"> ਆਡੀਓ  ਸੈਟਿੰਗਾਂ</translation>
 <translation id="3626281679859535460">ਚਮਕ</translation>
 <translation id="3631369015426612114">ਇਹਨਾਂ ਤੋਂ ਸੂਚਨਾਵਾਂ ਦਿਖਾਉਣ ਦਿਓ</translation>
 <translation id="3638400994746983214">ਪਰਦੇਦਾਰੀ ਸਕ੍ਰੀਨ ਨੂੰ ਟੌਗਲ ਕਰੋ। <ph name="STATE_TEXT" />।</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> ਪ੍ਰਬੰਧਿਤ ਵਰਤੋਂਕਾਰ</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ਖੇਤਰ ਕੈਪਚਰ ਕਰੋ</translation>
 <translation id="371370241367527062">ਮੂਹਰਲਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">"ਮਿਰਰ ਮੋਡ" ਤੋਂ ਬਾਹਰ ਨਿਕਲਿਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="602001110135236999">ਖੱਬੇ ਪਾਸੇ ਸਕ੍ਰੋਲ ਕਰੋ</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>
+<translation id="6030495522958826102">ਮੀਨੂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇ ਹੇਠਲੇ ਖੱਬੇ ਕੋਨੇ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
 <translation id="6040143037577758943">ਬੰਦ ਕਰੋ</translation>
 <translation id="6043212731627905357">ਇਹ ਮਾਨੀਟਰ ਤੁਹਾਡੇ <ph name="DEVICE_TYPE" /> ਨਾਲ ਕੰਮ ਨਹੀਂ ਕਰ ਰਿਹਾ ਹੈ (ਮਾਨੀਟਰ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ)।</translation>
 <translation id="6043994281159824495">ਹੁਣ ਸਾਈਨ-ਆਊਟ ਕਰੋ</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">ਕਨੈਕਟ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">ਪੁਰਾਣੇ ਰੈਜ਼ੋਲਿਊਸ਼ਨ ਨੂੰ <ph name="TIMEOUT_SECONDS" /> ਵਿੱਚ ਵਾਪਸ ਲਿਆ ਰਿਹਾ ਹੈ</translation>
+<translation id="7188494361780961876">ਮੀਨੂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇ ਉੱਪਰਲੇ ਖੱਬੇ ਕੋਨੇ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />। ਇਸ Chromebook ਨੂੰ ਅੱਪਡੇਟ ਲਾਗੂ ਕਰਨ ਲਈ ਮੁੜ-ਸ਼ੁਰੂ ਹੋਣ ਦੀ ਲੋੜ ਹੈ। ਇਸ ਵਿੱਚ 1 ਮਿੰਟ ਲੱਗ ਸਕਦਾ ਹੈ।</translation>
 <translation id="7256634071279256947">ਪਿਛਲਾ ਮਾਈਕ੍ਰੋਫ਼ੋਨ</translation>
 <translation id="726276584504105859">ਸਪਲਿਟ ਸਕ੍ਰੀਨ ਦੀ ਵਰਤੋਂ ਕਰਨ ਲਈ ਇੱਥੇ ਘਸੀਟੋ</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">ਸਵੈ-ਘੁੰਮਾਓ</translation>
 <translation id="8517041960877371778">ਤੁਹਾਡੀ <ph name="DEVICE_TYPE" /> ਚਾਲੂ ਹੋਣ ਵੇਲੇ ਚਾਰਜ ਨਹੀਂ ਹੋ ਸਕਦੀ।</translation>
 <translation id="8563862697512465947">ਸੂਚਨਾ ਸੈਟਿੰਗਾਂ</translation>
+<translation id="857201607579416096">ਮੀਨੂ ਨੂੰ ਸਕ੍ਰੀਨ ਦੇ ਹੇਠਲੇ ਸੱਜੇ ਕੋਨੇ ਵਿੱਚ ਲਿਜਾਇਆ ਗਿਆ।</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> ਨਾਲ ਕਨੈਕਟ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="8631727435199967028">ਪਹੁੰਚਯੋਗਤਾ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, ਸਿਗਨਲ ਦੀ ਤੀਬਰਤਾ <ph name="SIGNAL_STRENGTH" />, ਤੁਹਾਡੇ ਪ੍ਰਸ਼ਾਸਕ ਵੱਲੋਂ ਪ੍ਰਬੰਧਿਤ ਕੀਤਾ ਜਾਂਦਾ ਹੈ</translation>

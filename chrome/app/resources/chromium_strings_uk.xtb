@@ -158,6 +158,7 @@
 Деякі функції можуть бути недоступними. Укажіть інший каталог профілю або скористайтеся новішою версією Chromium.</translation>
 <translation id="6734080038664603509">Оновити &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium уже встановлено для всіх користувачів на вашому комп’ютері.</translation>
+<translation id="6774082503108938489">Хтось із твоїх батьків вимкнув "Дозволи для сайтів, додатків і розширень" у Chromium. Вмикати це <ph name="EXTENSION_TYPE_PARAMETER" /> заборонено.</translation>
 <translation id="6847869444787758381">Chromium повідомляє, коли ваші паролі зламують</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (скопійовано в Chromium)</translation>
@@ -216,6 +217,7 @@ Chromium не може відновити ваші налаштування.</tr
 <translation id="8417404458978023919">{0,plural, =1{Перезапустіть Chromium упродовж дня}one{Перезапустіть Chromium упродовж # дня}few{Перезапустіть Chromium упродовж # днів}many{Перезапустіть Chromium упродовж # днів}other{Перезапустіть Chromium упродовж # дня}}</translation>
 <translation id="8453117565092476964">Архів програми встановлення пошкоджений або недійсний. Завантажте Chromium ще раз.</translation>
 <translation id="8493179195440786826">Версія Chromium застаріла</translation>
+<translation id="8558383651099478961">Хтось із твоїх батьків вимкнув "Дозволи для сайтів, додатків і розширень" у Chromium. Додавати це <ph name="EXTENSION_TYPE_PARAMETER" /> заборонено.</translation>
 <translation id="8568283329061645092">Chromium зможе перевірити ваші паролі, коли ви ввійдете у свій обліковий запис Google</translation>
 <translation id="8586442755830160949">Авторське право <ph name="YEAR" /> Автори Chromium. Усі права захищено.</translation>
 <translation id="8619360774459241877">Запускається Chromium…</translation>

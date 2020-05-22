@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">ਭਾਸ਼ਾ ਜੋੜੋ</translation>
 <translation id="2650751991977523696">ਕੀ ਫ਼ਾਈਲ ਦੁਬਾਰਾ ਡਾਊਨਲੋਡ ਕਰਨੀ ਹੈ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ਆਡੀਓ ਫ਼ਾਈਲ}one{# ਆਡੀਓ ਫ਼ਾਈਲ}other{# ਆਡੀਓ ਫ਼ਾਈਲਾਂ}}</translation>
+<translation id="2656405586795711023">ਵੈੱਬ ਐਪਾਂ</translation>
 <translation id="2677748264148917807">ਛੱਡੋ</translation>
 <translation id="2689830683995595741">Chrome ਨੂੰ ਵਰਤ ਕੇ, ਤੁਸੀਂ <ph name="BEGIN_LINK1" />Google ਦੇ ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK1" /> ਅਤੇ <ph name="BEGIN_LINK2" />Google Chrome ਅਤੇ Chrome OS ਦੇ ਵਧੀਕ ਸੇਵਾ ਦੇ ਨਿਯਮਾਂ<ph name="END_LINK2" /> ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ। <ph name="BEGIN_LINK3" />Family Link ਨਾਲ ਪ੍ਰਤੀਬੰਧਿਤ ਕੀਤੇ ਜਾਂਦੇ Google ਖਾਤਿਆਂ ਲਈ ਪਰਦੇਦਾਰੀ ਨੋਟਿਸ<ph name="END_LINK3" /> ਵੀ ਲਾਗੂ ਹੁੰਦਾ ਹੈ।</translation>
 <translation id="2707726405694321444">ਪੰਨੇ ਰਿਫ੍ਰੈਸ਼ ਕਰੋ</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">ਗੈਰ-ਮਹੱਤਵਪੂਰਨ ਸਟੋਰੇਜ</translation>
 <translation id="4000212216660919741">ਆਫ਼ਲਾਈਨ ਹੋਮ</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ਘੰਟਾ}one{# ਘੰਟਾ}other{# ਘੰਟੇ}}</translation>
+<translation id="403687620286099920">QR ਕੋਡ ਨੂੰ ਖੋਲ੍ਹਣ ਲਈ ਟੈਪ ਕਰੋ</translation>
 <translation id="4046123991198612571">ਅਗਲਾ ਟਰੈਕ</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">ਵਿਕਲਪ ਸਕ੍ਰੀਨ ਦੇ ਉੱਪਰਲੇ ਪਾਸੇ ਕੋਲ ਉਪਲਬਧ ਹਨ</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">ਇੱਕ ਨਵੀਂ ਟੈਬ ਖੋਲ੍ਹੋ</translation>
 <translation id="4759238208242260848">ਡਾਊਨਲੋਡਸ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 ਡਾਊਨਲੋਡ ਪੂਰਾ ਹੋਇਆ।}one{# ਡਾਊਨਲੋਡ ਪੂਰਾ ਹੋਇਆ।}other{# ਡਾਊਨਲੋਡ ਪੂਰੇ ਹੋਏ।}}</translation>
+<translation id="478981486571169252">ਤੁਸੀਂ Chrome ਵਿੱਚ ਆਪਣੀ <ph name="SITE_NAME" /> ਸਾਈਨ-ਇਨ ਸਥਿਤੀ, ਬ੍ਰਾਊਜ਼ਿੰਗ ਡਾਟਾ ਅਤੇ ਸਾਈਟ ਡਾਟਾ ਦੇਖੋਗੇ।</translation>
 <translation id="4802417911091824046">ਪਾਸਫਰੇਜ਼ ਇਨਕ੍ਰਿਪਸ਼ਨ ਵਿੱਚ Google Pay ਦੀਆਂ ਭੁਗਤਾਨ ਵਿਧੀਆਂ ਅਤੇ ਪਤੇ ਸ਼ਾਮਲ ਨਹੀਂ ਹਨ।
 
 ਇਸ ਸੈਟਿੰਗ ਨੂੰ ਬਦਲਣ ਲਈ, <ph name="BEGIN_LINK" />ਸਮਕਾਲੀਕਰਨ ਨੂੰ ਰੀਸੈੱਟ ਕਰੋ<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">ਇਸ 'ਤੇ ਭੇਜੋ</translation>
 <translation id="5304593522240415983">ਇਹ ਖੇਤਰ ਖਾਲੀ ਨਹੀਂ ਛੱਡਿਆ ਜਾ ਸਕਦਾ</translation>
 <translation id="5308380583665731573">ਕਨੈਕਟ ਕਰੋ</translation>
+<translation id="5317780077021120954">ਰੱਖਿਅਤ ਕਰੋ</translation>
 <translation id="5324858694974489420">ਪੇਰੈਂਟਲ ਸੈਟਿੰਗਾਂ</translation>
 <translation id="5327248766486351172">ਨਾਮ</translation>
 <translation id="5342314432463739672">ਇਜਾਜ਼ਤ ਲਈ ਬੇਨਤੀਆਂ</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">ਈਮੇਲ</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> ਵਿੱਚ ਵਰਤਾਰਾ ਬਣਾਓ</translation>
 <translation id="5668404140385795438">ਜ਼ੂਮ ਇਨ ਕਰਨ ਤੋਂ ਰੋਕਣ ਲਈ ਵੈੱਬਸਾਈਟ ਦੀ ਬੇਨਤੀ ਨੂੰ ਓਵਰਰਾਈਡ ਕਰੋ</translation>
+<translation id="5681394891799747640">QR ਕੋਡ ਨੂੰ ਡਾਊਨਲੋਡ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਦਾ</translation>
 <translation id="5684874026226664614">ਓਹੋ। ਇਸ ਪੰਨੇ ਦਾ ਅਨੁਵਾਦ ਨਹੀਂ ਕੀਤਾ ਜਾ ਸਕਿਆ।</translation>
 <translation id="5686790454216892815">ਫ਼ਾਈਲ ਨਾਮ ਬਹੁਤ ਜ਼ਿਆਦਾ ਵੱਡਾ ਹੈ</translation>
 <translation id="5694049548840660018">ਆਸਾਨੀ ਨਾਲ ਹੋਮਪੇਜ 'ਤੇ ਵਾਪਸ ਜਾਓ</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">ਹੋਰ</translation>
 <translation id="604996488070107836">ਇੱਕ ਅਗਿਆਤ ਗੜਬੜ ਕਾਰਨ <ph name="FILE_NAME" /> ਡਾਊਨਲੋਡ ਅਸਫ਼ਲ ਰਿਹਾ।</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">ਆਪਣੀਆਂ ਕਹਾਣੀਆਂ ਅਤੇ ਸਰਗਰਮੀ ਨੂੰ ਇੱਥੇ ਕੰਟਰੋਲ ਕਰੋ</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ਘੰਟੇ ਬਾਕੀ</translation>
 <translation id="6108923351542677676">ਸੈਟਅਪ ਚਾਲੂ ਹੈ...</translation>
 <translation id="6111020039983847643">ਵਰਤਿਆ ਗਿਆ ਡਾਟਾ</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">ਖਾਤਾ</translation>
 <translation id="6297765934698848803">ਤੁਹਾਡੇ ਡੀਵਾਈਸ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਨ ਵਾਲੀ ਸੰਸਥਾ ਨੇ ਤੁਹਾਡਾ ਕੈਮਰਾ ਬੰਦ ਕਰ ਦਿੱਤਾ ਹੈ।</translation>
 <translation id="6303969859164067831">ਸਾਈਨ-ਆਊਟ ਕਰਕੇ ਸਮਕਾਲੀਕਰਨ ਬੰਦ ਕਰੋ</translation>
+<translation id="6312687380483398334">ਵੈੱਬ ਐਪਾਂ (ਸ਼ਾਂਤ)</translation>
 <translation id="6316139424528454185">Android ਵਰਜਨ ਸਮਰਥਿਤ ਨਹੀਂ ਹੈ</translation>
 <translation id="6324034347079777476">Android ਸਿਸਟਮ ਸਮਕਾਲੀਕਰਨ ਅਯੋਗ ਬਣਾਇਆ ਗਿਆ</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> ਰਾਹੀਂ ਸ਼ੇਅਰ ਕਰੋ</translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">ਸਟੋਰੇਜ ਜਗ੍ਹਾ ਦੀ ਕਮੀ ਦੇ ਕਾਰਨ <ph name="FILE_NAME" /> ਡਾਊਨਲੋਡ ਅਸਫ਼ਲ ਰਿਹਾ।</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> ਪਹਿਲੀ ਵਾਰ ਵਰਤਣ ਲਈ, ਕਿਰਪਾ ਕਰਕੇ ਇੰਟਰਨੈੱਟ ਨਾਲ ਕਨੈਕਟ ਕਰੋ।</translation>
 <translation id="6508722015517270189">Chrome ਨੂੰ ਮੁੜ-ਸ਼ੁਰੂ ਕਰੋ</translation>
+<translation id="6527303717912515753">ਸ਼ੇਅਰ ਕਰੋ</translation>
 <translation id="6532866250404780454">Chrome ਵਿੱਚ ਉਹ ਸਾਈਟਾਂ ਨਹੀਂ ਦਿਸਣਗੀਆਂ, ਜਿਨ੍ਹਾਂ 'ਤੇ ਤੁਸੀਂ ਜਾਂਦੇ ਹੋ। ਸਾਰੇ ਸਾਈਟ ਟਾਈਮਰ ਮਿਟਾ ਦਿੱਤੇ ਜਾਣਗੇ।</translation>
 <translation id="6534565668554028783">Google ਨੇ ਜਵਾਬ ਦੇਣ ਵਿੱਚ ਜ਼ਿਆਦਾ ਸਮਾਂ ਲਿਆ</translation>
 <translation id="6539092367496845964">ਕੋਈ ਗੜਬੜ ਹੋਈ। ਬਾਅਦ ਵਿੱਚ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">ਸਮਕਾਲੀਕਰਨ ਕੰਮ ਨਹੀਂ ਕਰ ਰਿਹਾ ਹੈ</translation>
 <translation id="7606077192958116810">ਲਾਈਟ ਮੋਡ ਚਾਲੂ ਹੈ। ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਇਸਦਾ ਪ੍ਰਬੰਧਨ ਕਰੋ।</translation>
 <translation id="7612619742409846846">ਇਸ ਦੇ ਤੌਰ 'ਤੇ Google ਵਿੱਚ ਸਾਈਨ ਇਨ ਕੀਤਾ ਹੋਇਆ ਹੈ</translation>
+<translation id="7614971007231847352">QR ਕੋਡ ਡਾਊਨਲੋਡ ਕੀਤਾ ਗਿਆ</translation>
 <translation id="7619072057915878432">ਨੈੱਟਵਰਕ ਅਸਫਲਤਾਵਾਂ ਕਾਰਨ <ph name="FILE_NAME" /> ਡਾਊਨਲੋਡ ਅਸਫ਼ਲ ਰਿਹਾ।</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />ਮਦਦ ਪ੍ਰਾਪਤ ਕਰੋ<ph name="END_LINK1" /> ਜਾਂ <ph name="BEGIN_LINK2" />ਮੁੜ-ਸਕੈਨ ਕਰੋ<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome ਵਿੱਚ ਸੁਆਗਤ ਹੈ</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">ਤੁਹਾਡੀਆਂ ਡਾਟਾ ਬਚਤਾਂ ਇੱਥੇ ਦਿਖਾਈ ਦੇਣਗੀਆਂ</translation>
 <translation id="7835852323729233924">ਮੀਡੀਆ ਚਲਾਇਆ ਜਾ ਰਿਹਾ ਹੈ</translation>
 <translation id="783819812427904514">ਵੀਡੀਓ ਅਣਮਿਊਟ ਕਰੋ</translation>
+<translation id="7846296061357476882">Google ਸੇਵਾਵਾਂ</translation>
 <translation id="784934925303690534">ਸਮਾਂ ਰੇਂਜ</translation>
 <translation id="7851858861565204677">ਹੋਰ ਡਿਵਾਈਸਾਂ</translation>
 <translation id="7875915731392087153">ਈਮੇਲ ਬਣਾਓ</translation>

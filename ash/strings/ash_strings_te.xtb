@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">బ్యాటరీ నిండింది</translation>
 <translation id="3604801046548457007">"<ph name="DESK_TITILE" />" డెస్క్ సృష్టించబడింది</translation>
 <translation id="3606978283550408104">బ్రెయిలీ డిస్‌ప్లే కనెక్ట్ చేయబడింది.</translation>
+<translation id="3616883743181209306">స్క్రీన్‌లో పైన కుడి వైపు మూలకు మెనూ తరలించబడింది.</translation>
 <translation id="3621202678540785336">ఇన్‌పుట్</translation>
 <translation id="3621712662352432595">ఆడియో సెట్టింగ్‌‍లు</translation>
 <translation id="3626281679859535460">ప్రకాశం</translation>
 <translation id="3631369015426612114">క్రింది వాటి నుండి నోటిఫికేషన్‌లను అనుమతించు</translation>
 <translation id="3638400994746983214">గోప్యతా స్క్రీన్‌ను టోగుల్ చేస్తుంది. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> మేనేజ్ చేసిన యూజర్</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ప్రాంతాన్ని సంగ్రహించు</translation>
 <translation id="371370241367527062">ముందువైపు మైక్రోఫోన్</translation>
@@ -406,6 +408,7 @@
 <translation id="6018164090099858612">ప్రతిబింబ మోడ్ నుండి నిష్క్రమిస్తోంది</translation>
 <translation id="602001110135236999">ఎడమకు స్క్రోల్ చేయి</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />, మీ అడ్మినిస్ట్రేటర్ ద్వారా నిర్వహించబడుతోంది</translation>
+<translation id="6030495522958826102">స్క్రీన్‌లో కింద ఎడమ వైపు మూలకు మెనూ తరలించబడింది.</translation>
 <translation id="6040143037577758943">మూసివేయి</translation>
 <translation id="6043212731627905357">మీ <ph name="DEVICE_TYPE" />తో ఈ మానిటర్ పని చేయడం లేదు (మానిటర్‌కు మద్దతు లేదు).</translation>
 <translation id="6043994281159824495">ఇప్పుడే సైన్ అవుట్ చేయి</translation>
@@ -504,6 +507,7 @@
 <translation id="7143207342074048698">కనెక్ట్ అవుతోంది</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />లో తిరిగి పాత రిజల్యూషన్‌కి మార్చబడుతుంది</translation>
+<translation id="7188494361780961876">స్క్రీన్‌లో పైన ఎడమ వైపు మూలకు మెనూ తరలించబడింది.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. ఒక అప్‌డేట్‌ను వర్తింపజేయడానికి ఈ Chromebookను రీస్టార్ట్ చేయాలి. దీనికి 1 నిమిషం వరకు పట్టవచ్చు.</translation>
 <translation id="7256634071279256947">వెనుకవైపు మైక్రోఫోన్</translation>
 <translation id="726276584504105859">విభజన స్క్రీన్‌ను ఉపయోగించడానికి ఇక్కడికి లాగండి</translation>
@@ -614,6 +618,7 @@
 <translation id="8513108775083588393">ఆటో-రొటేట్‌లో ఉంది</translation>
 <translation id="8517041960877371778">మీ <ph name="DEVICE_TYPE" /> ఆన్‌లో ఉన్నప్పుడు ఛార్జ్ కాకపోవచ్చు.</translation>
 <translation id="8563862697512465947">నోటిఫికేషన్ సెట్టింగ్‌లు</translation>
+<translation id="857201607579416096">స్క్రీన్‌లో కింద కుడి వైపు మూలకు మెనూ తరలించబడింది.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" />కి కనెక్ట్ చేయబడింది</translation>
 <translation id="8631727435199967028">యాక్సెసిబిలిటీ సెట్టింగ్‌లు</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />, మీ అడ్మినిస్ట్రేటర్ ద్వారా నిర్వహించబడుతోంది</translation>

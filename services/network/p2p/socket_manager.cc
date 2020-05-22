@@ -15,6 +15,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_interfaces.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/sys_addrinfo.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_source.h"
@@ -107,8 +108,8 @@ class P2PSocketManager::DnsRequest {
       parameters.source = net::HostResolverSource::MULTICAST_DNS;
 #endif  // ENABLE_MDNS
     }
-    request_ =
-        resolver_->CreateRequest(host, net::NetLogWithSource(), parameters);
+    request_ = resolver_->CreateRequest(host, net::NetworkIsolationKey::Todo(),
+                                        net::NetLogWithSource(), parameters);
 
     int result = request_->Start(base::BindOnce(
         &P2PSocketManager::DnsRequest::OnDone, base::Unretained(this)));

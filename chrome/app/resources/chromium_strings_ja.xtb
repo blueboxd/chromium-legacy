@@ -158,6 +158,7 @@
 一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chromium をご使用ください。</translation>
 <translation id="6734080038664603509">Chromium を更新(&amp;C)</translation>
 <translation id="6734291798041940871">Chromium は既にパソコンのすべてのユーザーに対してインストールされています。</translation>
+<translation id="6774082503108938489">保護者が Chromium の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を有効にすることはできません。</translation>
 <translation id="6847869444787758381">Chromium では、特定のパスワードが侵害された事実の有無がわかります</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay（Chromium にコピー）</translation>
@@ -216,6 +217,7 @@
 <translation id="8417404458978023919">{0,plural, =1{1 日以内に Chromium を再起動してください}other{# 日以内に Chromium を再起動してください}}</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>
+<translation id="8558383651099478961">保護者が Chromium の「サイト、アプリ、拡張機能の権限」をオフにしました。この <ph name="EXTENSION_TYPE_PARAMETER" /> を追加することはできません。</translation>
 <translation id="8568283329061645092">Google アカウントでログインすると、Chromium がパスワードを確認できます。</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
 <translation id="8619360774459241877">Chromium を起動しています...</translation>

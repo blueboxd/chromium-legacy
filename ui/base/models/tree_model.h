@@ -7,8 +7,8 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
 
 namespace gfx {
 class ImageSkia;
@@ -34,7 +34,7 @@ class TreeModelNode {
 };
 
 // Observer for the TreeModel. Notified of significant events to the model.
-class UI_BASE_EXPORT TreeModelObserver {
+class COMPONENT_EXPORT(UI_BASE) TreeModelObserver {
  public:
   // Notification that nodes were added to the specified parent.
   virtual void TreeNodesAdded(TreeModel* model,
@@ -61,7 +61,7 @@ class UI_BASE_EXPORT TreeModelObserver {
 // of bookkeeping for the tree to be implemented. Generally you will want to
 // use TreeNodeModel which provides a standard implementation for basic
 // hierarchy and observer notification. See tree_node_model.h.
-class UI_BASE_EXPORT TreeModel {
+class COMPONENT_EXPORT(UI_BASE) TreeModel {
  public:
   using Nodes = std::vector<TreeModelNode*>;
 

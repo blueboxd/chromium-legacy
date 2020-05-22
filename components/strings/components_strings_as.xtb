@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" />এ আপোনাৰ ডিভাইচত চিৰদিনৰ বাবে ডাঙৰ ডেটা সঞ্চয় কৰিব বিচাৰে</translation>
 <translation id="1032854598605920125">ঘড়ীৰ কাঁটাৰ দিশত ঘূৰাওক</translation>
 <translation id="1036348656032585052">অফ কৰক</translation>
+<translation id="1038106730571050514">পৰামৰ্শসমূহ দেখুৱাওক</translation>
 <translation id="1038842779957582377">অজ্ঞাত নাম</translation>
 <translation id="1041998700806130099">কামৰ শ্বীটৰ বাৰ্তা</translation>
 <translation id="1050038467049342496">অন্য এপ্‌বোৰ বাছনি কৰক</translation>
@@ -401,6 +402,7 @@
 <translation id="2666092431469916601">শীর্ষ</translation>
 <translation id="2666117266261740852">অন্য টেব বা এপ্‌ বন্ধ কৰক</translation>
 <translation id="2674170444375937751">আপুনি ব্ৰাউজিং ইতিহাসৰ পৰা এই পৃষ্ঠাসমূহ মচিবলৈ বিচাৰে বুলি নিশ্চিতনে?</translation>
+<translation id="2674804415323431591">পৰামৰ্শসমূহ লুকুৱাওক</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ত্যাগ কৰক</translation>
 <translation id="2684561033061424857">১১x১২</translation>
@@ -598,6 +600,7 @@
 <translation id="3539171420378717834">এই ডিভাইচটোত এই কার্ডৰ এটা প্ৰতিলিপি ৰাখক</translation>
 <translation id="3558573058928565255">দিনত</translation>
 <translation id="3566021033012934673">আপোনাৰ ইণ্টাৰনেট সংযোগ ব্যক্তিগত নহয়</translation>
+<translation id="3567778190852720481">এণ্টাৰপ্ৰাইজ একাউণ্টৰ জৰিয়তে পঞ্জীয়ন কৰিব নোৱাৰি (এণ্টাৰপ্ৰাইজ একাউণ্ট যোগ্য নহয়)।</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" />ত এম্বেড কৰি ৰখা পৃষ্ঠাত কোৱা হৈছে</translation>
 <translation id="3581089476000296252">এই পৃষ্ঠাটো সাজু হ‘লে Chromeএ আপোনাক জনাব। &lt;a&gt;বাতিল কৰক&lt;/a&gt;</translation>
@@ -872,6 +875,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Network Diagnostics চলি আছে<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">নীতিসমূহ পুনৰ ল'ড কৰক</translation>
 <translation id="4728558894243024398">প্লেটফ’ৰ্ম</translation>
+<translation id="4731638775147756694">আপোনাৰ প্ৰশাসকে এই এপ্লিকেশ্বনটো অৱৰোধ কৰিছে</translation>
 <translation id="4731967714531604179">Prc2 (লেফাফা)</translation>
 <translation id="4733082559415072992"><ph name="URL" />এ আপোনাৰ ডিভাইচৰ অৱস্থান জানিব বিচাৰে</translation>
 <translation id="4736825316280949806">Chromium ৰিষ্টাৰ্ট কৰক</translation>
@@ -1074,6 +1078,7 @@
 <translation id="5523118979700054094">নীতিৰ নাম</translation>
 <translation id="55293785478302737">কাষত চিলাওক</translation>
 <translation id="553484882784876924">Prc6 (লেফাফা)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" শাখাটো দেখুৱাওক</translation>
 <translation id="5539243836947087108">ৰাফ্‌ট</translation>
 <translation id="5540224163453853">অনুৰোধ কৰা প্ৰবন্ধটো বিচাৰি পোৱা নগ'ল।</translation>
 <translation id="5541086400771735334">মেইলবক্স ৭</translation>
@@ -1240,6 +1245,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" />ৰ বুকমার্ক</translation>
 <translation id="6264485186158353794">পূৰ্বৱৰ্তী পৃষ্ঠাটোলৈ উভতি যাওক</translation>
 <translation id="6266934640124581640">পাতল নীলা</translation>
+<translation id="6272383483618007430">Google আপডে’ট</translation>
 <translation id="6276112860590028508">আপোনাৰ পঢ়াৰ সূচীৰ পৃষ্ঠাসমূহ ইয়াত প্ৰদর্শন হয়</translation>
 <translation id="627746635834430766">পৰৱৰ্তী সময়ত দ্ৰুতভাৱে পৰিশোধ কৰিবলৈ আপোনাৰ কাৰ্ড আৰু বিলিঙৰ ঠিকনা নিজৰ Google একাউণ্টত ছেভ কৰক।</translation>
 <translation id="6279516281132775660">Chromeএ তলত দিয়া তথ্যসমূহ <ph name="BEGIN_EMPHASIS" />ছেভ নকৰিব<ph name="END_EMPHASIS" />:
@@ -1468,6 +1474,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />সুৰক্ষিত ব্ৰাউজিঙ<ph name="END_LINK" />ৰ সতৰ্কবাণী</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">সংযোগ সম্পৰ্কীয় সহায়</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" শাখাটো লুকুৱাওক</translation>
 <translation id="733354035281974745">ডিভাইচ ল’কেল একাউণ্ট অ’ভাৰৰাইড</translation>
 <translation id="7333654844024768166">আপুনি এটা প্ৰৱঞ্চনামূলক ছাইটত এইমাত্ৰ নিজৰ পাছৱৰ্ডটো দিছে। Chromiumএ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> আৰু আপুনি এই পাছৱৰ্ডটো ব্যৱহাৰ কৰা অন্য ছাইটসমূহলৈ গৈ এইটো এতিয়াই সলনি কৰাটো চুপাৰিছ কৰে।</translation>
 <translation id="7334320624316649418">&amp;পুনৰ ক্ৰমবদ্ধ কৰাটো ৰিডু কৰক</translation>
@@ -1610,6 +1617,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{এটাও নহয়}=1{১টা এপ্ (<ph name="EXAMPLE_APP_1" />)}=2{২টা এপ্ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{#টা এপ্ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{#টা এপ্ (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">তথাপি, আপুনি অদৃশ্য নহয়। আপুনি ইনক'গনিট' ৱিণ্ড' ব্যৱহাৰ কৰিলেও আপোনাৰ নিয়োগদাতা, ইণ্টাৰনেট সেৱা প্ৰদানকাৰী বা আপুনি চোৱা ৱেবছাইতে আপোনাৰ ব্ৰাউজিংৰ তথ্য চাব পাৰে।</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Googleলৈ <ph name="BEGIN_WHITEPAPER_LINK" />আপুনি চোৱা কিছুমান পৃষ্ঠাৰ URLসমূহ, ছিষ্টেমৰ সীমিত তথ্য আৰু পৃষ্ঠাৰ কিছু সমল<ph name="END_WHITEPAPER_LINK" /> পঠিয়াই ৱেবত সকলোৰে বাবে সুৰক্ষা উন্নত কৰাত সহায় কৰক। <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">ছাইটোৰ পৰা বাহিৰ হ’বনে?</translation>
 <translation id="7865448901209910068">উত্তম বেগ</translation>
 <translation id="7874263914261512992">আপুনি এটা প্ৰৱঞ্চনামূলক ছাইটত এইমাত্ৰ নিজৰ পাছৱৰ্ডটো দিছে। Chromeএ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> আৰু অন্য ছাইটসমূহ, য’ত আপুনি এই পাছৱৰ্ডটো ব্যৱহাৰ কৰে সেইবিলাকত ছেভ কৰি থোৱা আপোনাৰ পাছৱৰ্ডসমূহ এতিয়াই পৰীক্ষা কৰাটো চুপাৰিছ কৰে।</translation>

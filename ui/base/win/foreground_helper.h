@@ -5,9 +5,9 @@
 #ifndef UI_BASE_WIN_FOREGROUND_HELPER_H_
 #define UI_BASE_WIN_FOREGROUND_HELPER_H_
 
+#include "base/component_export.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/win/window_impl.h"
 
 #include <windows.h>
@@ -21,7 +21,7 @@ namespace ui {
 // to be capable of moving to the foreground.
 //
 // This is probably leveraging a windows bug.
-class UI_BASE_EXPORT ForegroundHelper : public gfx::WindowImpl {
+class COMPONENT_EXPORT(UI_BASE) ForegroundHelper : public gfx::WindowImpl {
  public:
   ForegroundHelper();
   ~ForegroundHelper() override;

@@ -595,6 +595,7 @@
 <translation id="3539171420378717834">このデバイスにこのカード情報のコピーを保存する</translation>
 <translation id="3558573058928565255">日中</translation>
 <translation id="3566021033012934673">この接続ではプライバシーが保護されません</translation>
+<translation id="3567778190852720481">企業アカウントでは登録できません（企業アカウントは利用できません）。</translation>
 <translation id="3574305903863751447"><ph name="COUNTRY" /> <ph name="STATE" /> <ph name="CITY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> に埋め込まれているページの内容</translation>
 <translation id="3581089476000296252">このページの準備が整いましたらお知らせします。&lt;a&gt;キャンセル&lt;/a&gt;</translation>
@@ -870,6 +871,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows ネットワーク診断ツールを実行する<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
+<translation id="4731638775147756694">このアプリケーションは管理者によってブロックされています</translation>
 <translation id="4731967714531604179">Prc2（封筒）</translation>
 <translation id="4733082559415072992"><ph name="URL" /> から、デバイスの現在地情報の使用許可を求められています</translation>
 <translation id="4736825316280949806">Chromium を再起動する</translation>
@@ -1236,6 +1238,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> のブックマーク</translation>
 <translation id="6264485186158353794">セキュリティで保護されたページに戻る</translation>
 <translation id="6266934640124581640">ライトティール</translation>
+<translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">リーディング リストに登録されたページがここに表示されます</translation>
 <translation id="627746635834430766">カードと請求先住所を Google アカウントに保存すると、次回のお支払いが簡単になります。</translation>
 <translation id="6279516281132775660">Chrome には、次の情報は<ph name="BEGIN_EMPHASIS" />保存されません<ph name="END_EMPHASIS" />。
@@ -1609,6 +1612,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{なし}=1{1 個のアプリ（<ph name="EXAMPLE_APP_1" />）}=2{2 個のアプリ（<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />）}other{# 個のアプリ（<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />、<ph name="AND_MORE" />）}}</translation>
 <translation id="785549533363645510">あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />アクセスしたページの URL、システム情報、およびページのコンテンツの一部<ph name="END_WHITEPAPER_LINK" />を Google に送信して、ウェブ全体のセキュリティ強化にご協力ください。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">このサイトを離れますか？</translation>
 <translation id="7865448901209910068">最高速度</translation>
 <translation id="7874263914261512992">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> のほか、このパスワードを使用しているサイトで、保存したパスワードを今すぐ確認することをおすすめします。</translation>
@@ -1743,7 +1747,6 @@
 <translation id="8425213833346101688">変更</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">ほとんどのウェブサイトからログアウトします。</translation>
-<translation id="8433678324664858900">候補を表示</translation>
 <translation id="8437238597147034694">移動の取り消し（&amp;U）</translation>
 <translation id="8457125768502047971">無期限</translation>
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>

@@ -616,6 +616,9 @@ void AXEventGenerator::FireRelationSourceEvents(AXTree* tree,
 // Attempts to suppress load-related events that we presume no AT will be
 // interested in under any circumstances, such as pages which have no size.
 bool AXEventGenerator::ShouldFireLoadEvents(AXNode* node) {
+  if (always_fire_load_complete_)
+    return true;
+
   const AXNodeData& data = node->data();
   return data.relative_bounds.bounds.width() ||
          data.relative_bounds.bounds.height();

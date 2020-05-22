@@ -158,6 +158,7 @@
 Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda atau gunakan versi Chromium yang lebih baru.</translation>
 <translation id="6734080038664603509">Pembaruan &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium sudah terpasang untuk semua pengguna di komputer Anda.</translation>
+<translation id="6774082503108938489">Orang tuamu telah menonaktifkan "Izin untuk situs, aplikasi, dan ekstensi" untuk Chromium. Tindakan mengaktifkan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak diizinkan.</translation>
 <translation id="6847869444787758381">Chromium akan memberi tahu jika sandi Anda disusupi</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (disalin ke Chromium)</translation>
@@ -216,6 +217,7 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Luncurkan ulang Chromium dalam 1 hari}other{Luncurkan ulang Chromium dalam # hari}}</translation>
 <translation id="8453117565092476964">Arsip pemasang rusak atau tidak valid. Download Chromium lagi.</translation>
 <translation id="8493179195440786826">Chromium Terlalu Lawas</translation>
+<translation id="8558383651099478961">Orang tuamu telah menonaktifkan "Izin untuk situs, aplikasi, dan ekstensi" untuk Chromium. Tindakan menambahkan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak diizinkan.</translation>
 <translation id="8568283329061645092">Chromium dapat memeriksa sandi saat Anda login dengan Akun Google</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Semua hak dilindungi undang-undang.</translation>
 <translation id="8619360774459241877">Meluncurkan Chromium...</translation>

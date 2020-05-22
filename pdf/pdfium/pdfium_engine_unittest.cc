@@ -227,6 +227,17 @@ TEST_F(PDFiumEngineTest, GetBadPdfVersion) {
 
 }  // namespace
 
+class TabbingTestClient : public TestClient {
+ public:
+  TabbingTestClient() = default;
+  ~TabbingTestClient() override = default;
+  TabbingTestClient(const TabbingTestClient&) = delete;
+  TabbingTestClient& operator=(const TabbingTestClient&) = delete;
+
+  // Mock PDFEngine::Client methods.
+  MOCK_METHOD1(DocumentFocusChanged, void(bool));
+};
+
 class PDFiumEngineTabbingTest : public PDFiumTestBase {
  public:
   PDFiumEngineTabbingTest() = default;
@@ -376,12 +387,19 @@ TEST_F(PDFiumEngineTabbingTest, TabbingForwardTest) {
    * ++ Page 2
    * ++++ Annotation
    */
-  TestClient client;
+  TabbingTestClient client;
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
       &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
   ASSERT_TRUE(engine);
 
   ASSERT_EQ(2, engine->GetNumberOfPages());
+
+  static constexpr bool kExpectedFocusState[] = {true, false};
+  {
+    InSequence sequence;
+    for (auto focused : kExpectedFocusState)
+      EXPECT_CALL(client, DocumentFocusChanged(focused));
+  }
 
   ASSERT_EQ(PDFiumEngine::FocusElementType::kNone,
             GetFocusedElementType(engine.get()));
@@ -421,12 +439,19 @@ TEST_F(PDFiumEngineTabbingTest, TabbingBackwardTest) {
    * ++ Page 2
    * ++++ Annotation
    */
-  TestClient client;
+  TabbingTestClient client;
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
       &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
   ASSERT_TRUE(engine);
 
   ASSERT_EQ(2, engine->GetNumberOfPages());
+
+  static constexpr bool kExpectedFocusState[] = {true, false};
+  {
+    InSequence sequence;
+    for (auto focused : kExpectedFocusState)
+      EXPECT_CALL(client, DocumentFocusChanged(focused));
+  }
 
   ASSERT_EQ(PDFiumEngine::FocusElementType::kNone,
             GetFocusedElementType(engine.get()));
@@ -510,12 +535,19 @@ TEST_F(PDFiumEngineTabbingTest, NoFocusableItemTabbingTest) {
    * ++ Page 1
    * ++ Page 2
    */
-  TestClient client;
+  TabbingTestClient client;
   std::unique_ptr<PDFiumEngine> engine =
       InitializeEngine(&client, FILE_PATH_LITERAL("hello_world2.pdf"));
   ASSERT_TRUE(engine);
 
   ASSERT_EQ(2, engine->GetNumberOfPages());
+
+  static constexpr bool kExpectedFocusState[] = {true, false, true, false};
+  {
+    InSequence sequence;
+    for (auto focused : kExpectedFocusState)
+      EXPECT_CALL(client, DocumentFocusChanged(focused));
+  }
 
   ASSERT_EQ(PDFiumEngine::FocusElementType::kNone,
             GetFocusedElementType(engine.get()));
@@ -550,12 +582,19 @@ TEST_F(PDFiumEngineTabbingTest, RestoringDocumentFocusTest) {
    * ++ Page 2
    * ++++ Annotation
    */
-  TestClient client;
+  TabbingTestClient client;
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
       &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
   ASSERT_TRUE(engine);
 
   ASSERT_EQ(2, engine->GetNumberOfPages());
+
+  static constexpr bool kExpectedFocusState[] = {true, false, true};
+  {
+    InSequence sequence;
+    for (auto focused : kExpectedFocusState)
+      EXPECT_CALL(client, DocumentFocusChanged(focused));
+  }
 
   EXPECT_EQ(PDFiumEngine::FocusElementType::kNone,
             GetFocusedElementType(engine.get()));
@@ -588,12 +627,19 @@ TEST_F(PDFiumEngineTabbingTest, RestoringAnnotFocusTest) {
    * ++ Page 2
    * ++++ Annotation
    */
-  TestClient client;
+  TabbingTestClient client;
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
       &client, FILE_PATH_LITERAL("annotation_form_fields.pdf"));
   ASSERT_TRUE(engine);
 
   ASSERT_EQ(2, engine->GetNumberOfPages());
+
+  static constexpr bool kExpectedFocusState[] = {true, false};
+  {
+    InSequence sequence;
+    for (auto focused : kExpectedFocusState)
+      EXPECT_CALL(client, DocumentFocusChanged(focused));
+  }
 
   EXPECT_EQ(PDFiumEngine::FocusElementType::kNone,
             GetFocusedElementType(engine.get()));

@@ -459,30 +459,22 @@ base::Optional<bool> TestAXNodeWrapper::GetTableHasColumnOrRowHeaderNode()
   return node_->GetTableHasColumnOrRowHeaderNode();
 }
 
-std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds() const {
-  std::vector<int32_t> header_ids;
-  node_->GetTableColHeaderNodeIds(&header_ids);
-  return header_ids;
+std::vector<AXNode::AXID> TestAXNodeWrapper::GetColHeaderNodeIds() const {
+  return node_->GetTableColHeaderNodeIds();
 }
 
-std::vector<int32_t> TestAXNodeWrapper::GetColHeaderNodeIds(
+std::vector<AXNode::AXID> TestAXNodeWrapper::GetColHeaderNodeIds(
     int col_index) const {
-  std::vector<int32_t> header_ids;
-  node_->GetTableColHeaderNodeIds(col_index, &header_ids);
-  return header_ids;
+  return node_->GetTableColHeaderNodeIds(col_index);
 }
 
-std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds() const {
-  std::vector<int32_t> header_ids;
-  node_->GetTableCellRowHeaderNodeIds(&header_ids);
-  return header_ids;
+std::vector<AXNode::AXID> TestAXNodeWrapper::GetRowHeaderNodeIds() const {
+  return node_->GetTableCellRowHeaderNodeIds();
 }
 
-std::vector<int32_t> TestAXNodeWrapper::GetRowHeaderNodeIds(
+std::vector<AXNode::AXID> TestAXNodeWrapper::GetRowHeaderNodeIds(
     int row_index) const {
-  std::vector<int32_t> header_ids;
-  node_->GetTableRowHeaderNodeIds(row_index, &header_ids);
-  return header_ids;
+  return node_->GetTableRowHeaderNodeIds(row_index);
 }
 
 bool TestAXNodeWrapper::IsTableRow() const {

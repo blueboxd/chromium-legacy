@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Verlauf</translation>
 <translation id="1650222530560417226">Tippen Sie auf die Schaltfläche "Protokollierung starten", um künftig Protokolle und Fehler von allen Tabs der JavaScript-Konsole zu erheben. Protokolle werden erfasst und ausschließlich im Speicher aufbewahrt, bis die Seite geschlossen oder "Protokoll anhalten" angetippt wird.</translation>
 <translation id="1657011748321897393">Fehler beim Teilen, weil keine Netzwerkverbindung besteht</translation>
+<translation id="1657641691196698092">Blockierte Cookies</translation>
 <translation id="165877110639533037">Keine geöffneten Tabs</translation>
 <translation id="1674504678466460478">Von <ph name="SOURCE_LANGUAGE" /> auf <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Aktivieren Sie die Synchronisierung, um Ihre Lesezeichen auf allen Ihren Geräten zu sehen.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Eine Geräterichtlinie hat den Zugriff auf Ihre Fotos blockiert</translation>
 <translation id="2578571896248130439">Webseite senden</translation>
 <translation id="2584132361465095047">Konto hinzufügen...</translation>
+<translation id="2600682495497606169">Website-Cookies löschen</translation>
 <translation id="2625189173221582860">Passwort kopiert</translation>
 <translation id="2647269890314209800">Verwendete Cookies</translation>
 <translation id="2648803196158606475">Gelesene löschen</translation>
@@ -332,6 +334,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5234764350956374838">Schließen</translation>
 <translation id="5245322853195994030">Synchronisierung abbrechen</translation>
 <translation id="5271549068863921519">Passwort speichern</translation>
+<translation id="5295239312320826323">Konto <ph name="USER_EMAIL" /> entfernen?</translation>
 <translation id="5300589172476337783">Anzeigen</translation>
 <translation id="5317780077021120954">Speichern</translation>
 <translation id="5327248766486351172">Name</translation>
@@ -418,6 +421,7 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6362362396625799311">Keine Inkognito-Tabs</translation>
 <translation id="6363526231572697780">Kein Nutzername</translation>
 <translation id="6374469231428023295">Erneut versuchen</translation>
+<translation id="6377118281273296434">Websitesicherheit</translation>
 <translation id="6380866119319257197">Wenn Sie Ihre Passphrase vergessen oder diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Name auf Karte</translation>
 <translation id="6406506848690869874">Synchronisierung</translation>
@@ -525,11 +529,13 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 
 Da Ihr Konto von <ph name="HOSTED_DOMAIN" /> verwaltet wird, werden Ihre Chrome-Daten beim Abmelden von diesem Gerät gelöscht. Ihre synchronisierten Daten verbleiben jedoch in Ihrem Google-Konto.</translation>
 <translation id="7772032839648071052">Passphrase bestätigen</translation>
+<translation id="7778472311864276518">Konto von diesem Gerät entfernen</translation>
 <translation id="7781011649027948662">Seite übersetzen?</translation>
 <translation id="7781829728241885113">Gestern</translation>
 <translation id="778855399387580014">Eine Suche in einem neuen Chrome-Tab starten.</translation>
 <translation id="7791543448312431591">Hinzufügen</translation>
 <translation id="7828557259026017104">Cookies sind Dateien, die von Websites erstellt werden, die Sie besuchen. Sie werden zum Speichern Ihrer Einstellungen verwendet. Drittanbieter-Cookies werden von anderen Websites erstellt. Diesen Websites gehören einige der Inhalte, wie z. B. Werbeanzeigen oder Bilder, die Sie auf der besuchten Webseite sehen.</translation>
+<translation id="7839985698273989086">Offlineseite</translation>
 <translation id="7840771868269352570">Die ausgewählten Elemente werden entfernt.</translation>
 <translation id="7856733331829174190">Fehler beim Download</translation>
 <translation id="7859704718976024901">Browserverlauf</translation>

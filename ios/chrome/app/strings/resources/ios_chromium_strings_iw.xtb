@@ -24,6 +24,7 @@
 <translation id="4787850887676698916">‏כרטיסיות שפתחת ב-Chromium במכשירים האחרים שלך יופיעו כאן.</translation>
 <translation id="4999538639245140991">‏יציאה מחשבון שמנוהל על ידי <ph name="SIGNOUT_MANAGED_DOMAIN" /> תגרום למחיקת נתוני Chromium שלך מהמכשיר הזה. הנתונים האלה יישארו בחשבון Google שלך.</translation>
 <translation id="5573014823074921752">‏טיפ למשתמשי Chromium: כדי לקבל אפשרויות נוספות של כרטיסיות, יש ללחוץ לחיצה ארוכה על הלחצן 'הצגת כרטיסיות' בסרגל הכלים, שנמצא בחלק התחתון או העליון של המסך.</translation>
+<translation id="5777187867430702742">‏דף Chromium</translation>
 <translation id="5862307444128926510">‏ברוכים הבאים ל-Chromium‏</translation>
 <translation id="5945387852661427312">‏אתה נכנס עם חשבון המנוהל על-ידי <ph name="DOMAIN" /> ומעניק למנהל שלו שליטה על הנתונים שלך ב-Chromium. הנתונים שלך ישויכו לצמיתות אל החשבון הזה. יציאה מ-Chromium תמחק את הנתונים שלך מהמכשיר הזה, אבל הם יישארו בחשבון Google שלך.</translation>
 <translation id="602807004951640891">‏השימוש ב-Chromium מהווה הסכמה ל<ph name="BEGIN_LINK_TOS" />תנאים ולהגבלות<ph name="END_LINK_TOS" />.</translation>
@@ -44,6 +45,7 @@
 <translation id="8175055321229419309">‏טיפ: <ph name="BEGIN_LINK" />העבר את Chromium לשורת המשימות<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">‏לחוויית Google משופרת ב-Chromium בהתבסס על המיקום שלך.</translation>
 <translation id="8586442755830160949">‏Copyright <ph name="YEAR" /> The Chromium Authors. כל הזכויות שמורות.</translation>
+<translation id="8776843108004031667">‏החשבון הזה וכל הנתונים שלא נשמרו יוסרו מ-Chromium.</translation>
 <translation id="8809780021347235332">‏כדי לשמור תמונות, הקש על 'הגדרות' ואפשר ל-Chromium להשתמש בתמונות שלך</translation>
 <translation id="9022552996538154597">‏היכנס אל Chromium</translation>
 <translation id="985602178874221306">‏מחברי Chromium</translation>

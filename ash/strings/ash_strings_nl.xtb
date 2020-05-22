@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Batterij is vol</translation>
 <translation id="3604801046548457007">Bureaublad <ph name="DESK_TITILE" /> gemaakt</translation>
 <translation id="3606978283550408104">Braillescherm gekoppeld.</translation>
+<translation id="3616883743181209306">Menu verplaatst naar rechtsboven in het scherm.</translation>
 <translation id="3621202678540785336">Ingang</translation>
 <translation id="3621712662352432595">Audio-instellingen</translation>
 <translation id="3626281679859535460">Helderheid</translation>
 <translation id="3631369015426612114">Meldingen toestaan van het volgende</translation>
 <translation id="3638400994746983214">Privacyscherm in-/uitschakelen. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733">Beheerde gebruiker <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Gebied vastleggen</translation>
 <translation id="371370241367527062">Microfoon aan voorzijde</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">Mirrormodus wordt gesloten</translation>
 <translation id="602001110135236999">Naar links scrollen</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />, beheerd door je beheerder</translation>
+<translation id="6030495522958826102">Menu verplaatst naar linksonder in het scherm.</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6043212731627905357">Dit beeldscherm werkt niet met je <ph name="DEVICE_TYPE" /> (het beeldscherm wordt niet ondersteund).</translation>
 <translation id="6043994281159824495">Nu uitloggen</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">Verbinding maken</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Terugzetten naar oude resolutie over <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">Menu verplaatst naar linksboven in het scherm.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Deze Chromebook moet opnieuw worden opgestart om een update uit te voeren. Dit kan ongeveer één minuut duren.</translation>
 <translation id="7256634071279256947">Microfoon aan achterzijde</translation>
 <translation id="726276584504105859">Sleep hier naartoe om het scherm te splitsen</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">Automatisch draaien</translation>
 <translation id="8517041960877371778">Je <ph name="DEVICE_TYPE" /> wordt mogelijk niet opgeladen terwijl deze is ingeschakeld.</translation>
 <translation id="8563862697512465947">Meldingsinstellingen</translation>
+<translation id="857201607579416096">Menu verplaatst naar rechtsonder in het scherm.</translation>
 <translation id="8627191004499078455">Verbonden met <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Instellingen voor toegankelijkheid</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, signaalsterkte <ph name="SIGNAL_STRENGTH" />, beheerd door je beheerder</translation>

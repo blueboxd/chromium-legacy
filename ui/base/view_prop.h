@@ -5,10 +5,10 @@
 #ifndef UI_BASE_VIEW_PROP_H_
 #define UI_BASE_VIEW_PROP_H_
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if !defined(OS_WIN) && !defined(USE_AURA)
@@ -21,7 +21,7 @@ namespace ui {
 // designed as a replacement for the Win32's SetProp, but does not make use of
 // window manager memory. ViewProp shares similar semantics as SetProp, the
 // value for a particular view/key pair comes from the last ViewProp created.
-class UI_BASE_EXPORT ViewProp {
+class COMPONENT_EXPORT(UI_BASE) ViewProp {
  public:
   // Associates data with a view/key pair. If a ViewProp has already been
   // created for the specified pair |data| replaces the current value.

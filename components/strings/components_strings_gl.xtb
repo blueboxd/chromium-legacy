@@ -10,6 +10,7 @@
 <translation id="1030706264415084469">O URL <ph name="URL" /> quere almacenar un gran volume de datos de forma permanente no teu dispositivo</translation>
 <translation id="1032854598605920125">Xirar  á dereita</translation>
 <translation id="1036348656032585052">Desactivar</translation>
+<translation id="1038106730571050514">Mostrar suxestións</translation>
 <translation id="1038842779957582377">nome descoñecido</translation>
 <translation id="1041998700806130099">Mensaxe da folla do traballo</translation>
 <translation id="1050038467049342496">Pecha outras aplicacións</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Desprazamento da imaxe no eixe Y</translation>
 <translation id="17513872634828108">Pestanas abertas</translation>
 <translation id="1752021286346845558">Caixa de correo 8</translation>
-<translation id="1752483581718172048">Ocultar suxestións</translation>
 <translation id="1753706481035618306">Número de páxina</translation>
 <translation id="1763864636252898013">Este servidor non puido demostrar que é <ph name="DOMAIN" /> porque o sistema operativo do teu dispositivo non confía no seu certificado de seguranza. É posible que isto se deba a un erro de configuración ou a que un atacante interceptase a túa conexión.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Proba a executar Diagnósticos da rede de Windows<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2666092431469916601">Parte superior</translation>
 <translation id="2666117266261740852">Pecha outras pestanas ou aplicacións</translation>
 <translation id="2674170444375937751">Estás seguro de que queres eliminar estas páxinas do teu historial?</translation>
+<translation id="2674804415323431591">Ocultar suxestións</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Saír</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1076,6 +1077,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5523118979700054094">Nome da política</translation>
 <translation id="55293785478302737">Grampa no bordo</translation>
 <translation id="553484882784876924">Prc6 (sobre)</translation>
+<translation id="5536214594743852365">Mostrar a sección <ph name="SECTION" /></translation>
 <translation id="5539243836947087108">Balsa</translation>
 <translation id="5540224163453853">Non se puido atopar o artigo solicitado.</translation>
 <translation id="5541086400771735334">Caixa de correo 7</translation>
@@ -1475,6 +1477,7 @@ Detalles adicionais:
 <translation id="7313965965371928911">Advertencias de <ph name="BEGIN_LINK" />navegación segura<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Axuda de conexión</translation>
+<translation id="7323804146520582233">Ocultara sección <ph name="SECTION" /></translation>
 <translation id="733354035281974745">Anulación da conta local do dispositivo</translation>
 <translation id="7333654844024768166">Acabas de escribir o teu contrasinal nun sitio enganoso. Chromium recoméndache que vaias a <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> e outros sitios nos que utilices este contrasinal para cambialo agora.</translation>
 <translation id="7334320624316649418">&amp;Refacer de cambio de orde</translation>
@@ -1753,7 +1756,6 @@ Detalles adicionais:
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Ao realizar esta acción, pecharase sesión na maioría dos sitios web</translation>
-<translation id="8433678324664858900">Mostrar suxestións</translation>
 <translation id="8437238597147034694">&amp;Desfacer movemento</translation>
 <translation id="8457125768502047971">Indefinido</translation>
 <translation id="8461694314515752532">Encriptar os datos sincronizados coa túa propia frase de acceso de sincronización</translation>

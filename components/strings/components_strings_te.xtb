@@ -601,6 +601,7 @@
 <translation id="3539171420378717834">ఈ పరికరంలో ఈ కార్డ్ కాపీని ఉంచు</translation>
 <translation id="3558573058928565255">రోజు, సమయం</translation>
 <translation id="3566021033012934673">మీ కనెక్షన్ ప్రైవేట్ కాదు</translation>
+<translation id="3567778190852720481">ఎంటర్‌ప్రైజ్ ఖాతాతో ఎన్‌రోల్ చేయడం సాధ్యపడదు (ఎంటర్‌ప్రైజ్ ఖాతాకు అర్హత లేదు).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" />లో పొందుపరిచిన పేజీ ఇలా చెబుతోంది</translation>
 <translation id="3581089476000296252">ఈ పేజీ సిద్ధమైనప్పుడు Chrome మీకు తెలియజేస్తుంది. &lt;a&gt;రద్దు చేయి&lt;/a&gt;</translation>
@@ -877,6 +878,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows నెట్‌వర్క్ సమస్య విశ్లేషణలను అమలు చేయడం<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">విధానాలను మళ్లీ లోడ్ చేయి</translation>
 <translation id="4728558894243024398">ప్లాట్‌ఫారమ్</translation>
+<translation id="4731638775147756694">మీ నిర్వాహకుడు ఈ యాప్‌ను బ్లాక్ చేశారు</translation>
 <translation id="4731967714531604179">Prc2 (ఎన్వలప్)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> మీ పరికర స్థానాన్ని ఉపయోగించాలని అనుకుంటోంది</translation>
 <translation id="4736825316280949806">Chromiumని పునఃప్రారంభించండి</translation>
@@ -1247,6 +1249,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> బుక్‌మార్క్‌లు</translation>
 <translation id="6264485186158353794">భద్రతకు తిరిగి వెళ్ళు</translation>
 <translation id="6266934640124581640">లేత నీలి ఆకుపచ్చ రంగు</translation>
+<translation id="6272383483618007430">Google అప్‌డేట్</translation>
 <translation id="6276112860590028508">మీ పఠన జాబితాలో ఉన్న పేజీలు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="627746635834430766">తర్వాతిసారి మరింత వేగంగా చెల్లించడానికి, మీ కార్డ్, బిల్లింగ్ చిరునామాను మీ Google ఖాతాకు సేవ్ చేయండి.</translation>
 <translation id="6279516281132775660">Chrome ఈ కింది సమాచారాన్ని <ph name="BEGIN_EMPHASIS" />సేవ్ చేయదు<ph name="END_EMPHASIS" />:
@@ -1620,6 +1623,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{ఏదీ వద్దు}=1{1 యాప్ (<ph name="EXAMPLE_APP_1" />)}=2{2 యాప్‌లు (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# యాప్‌లు (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">అయితే, మీరు అదృశ్యంగా ఉండరు. అజ్ఞాతంలోకి వెళ్లడం వలన మీ బ్రౌజింగ్ మీ యజమానికి, మీ ఇంటర్నెట్ సేవా ప్రదాతకు లేదా మీరు సందర్శించే వెబ్‌సైట్‌లకు కనిపించకుండా దాచబడదు.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Googleకు <ph name="BEGIN_WHITEPAPER_LINK" />మీరు సందర్శించిన కొన్ని పేజీల URLలు, పరిమిత సిస్టమ్ సమాచారం, కొంత పేజీ కంటెంట్<ph name="END_WHITEPAPER_LINK" />ను పంపడం ద్వారా వెబ్‌లో ప్రతిఒక్కరికీ భద్రతను మెరుగుపరచడంలో సహాయం చేయండి. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">సైట్ నుండి నిష్క్రమించాలా?</translation>
 <translation id="7865448901209910068">ఉత్తమ వేగం</translation>
 <translation id="7874263914261512992">మీరు మోసపూరితమైన సైట్‌లో మీ పాస్‌వర్డ్‌ను ఎంటర్ చేశారు. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, ఇతర సైట్‌లలో ప్రస్తుతం మీరు ఎక్కడైతే ఈ పాస్‌వర్డ్‌ను ఉపయోగిస్తారో, అక్కడ మీ సేవ్ చేసిన పాస్‌వర్డ్‌లను తనిఖీ చేసుకోమని Chrome సిఫార్సు చేస్తోంది.</translation>
@@ -1754,7 +1758,6 @@
 <translation id="8425213833346101688">మార్చు</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
 <translation id="8433057134996913067">దీని వలన మీరు చాలా వెబ్‌సైట్‌ల నుండి సైన్ అవుట్ చేయబడతారు.</translation>
-<translation id="8433678324664858900">సూచనలను చూపు</translation>
 <translation id="8437238597147034694">&amp;తరలించడాన్ని రద్దు చేయి</translation>
 <translation id="8457125768502047971">అనిశ్చితం</translation>
 <translation id="8461694314515752532">మీ స్వంత సమకాలీకరణ రహస్య పదబంధంతో సమకాలీకరించబడిన డేటాని ఎన్‌క్రిప్ట్ చేయండి</translation>

@@ -11,6 +11,7 @@ import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
@@ -21,6 +22,7 @@ import android.text.style.CharacterStyle;
 import android.text.style.ParagraphStyle;
 import android.text.style.UpdateAppearance;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -38,6 +40,7 @@ import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Simple proxy that provides C++ code with an access pathway to the Android clipboard.
@@ -72,6 +75,23 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
          */
         void storeImageAndGenerateUri(final Context context, final byte[] imageData,
                 String fileExtension, Callback<Uri> callback);
+
+        /**
+         * Store the last image uri we put in the sytstem clipboard, this is special case for
+         * Android O.
+         */
+        void storeLastCopiedImageUri(@NonNull Uri uri);
+
+        /**
+         * Get stored the last image uri, this is special case for Android O.
+         */
+        @Nullable
+        Uri getLastCopiedImageUri();
+
+        /**
+         * Clear the image uri which stored by |storeLastCopiedImageUri|.
+         */
+        void clearLastCopiedImageUri();
     }
 
     /**
@@ -258,9 +278,8 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
             return;
         }
 
-        ContextUtils.getApplicationContext().grantUriPermission(
-                ClipboardManager.class.getCanonicalName(), uri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        grantUriPermission(uri);
+
         ClipData clip = ClipData.newUri(
                 ContextUtils.getApplicationContext().getContentResolver(), "image", uri);
         setPrimaryClipNoException(clip);
@@ -328,6 +347,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     @Override
     public void onPrimaryClipChanged() {
         RecordUserAction.record("MobileClipboardChanged");
+        revokeUriPermissionForLastSharedImage();
         if (mNativeClipboard != 0) {
             ClipboardJni.get().onPrimaryClipChanged(mNativeClipboard, Clipboard.this);
         }
@@ -372,6 +392,63 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
     public long getLastModifiedTimeMs() {
         if (mNativeClipboard == 0) return 0;
         return ClipboardJni.get().getLastModifiedTimeToJavaTime(mNativeClipboard);
+    }
+
+    /**
+     * Grant permission to access a specific Uri to other packages. For sharing images through the
+     * system’s clipboard, Outside of Android O permissions are already managed properly by the
+     * system. But on Android O, sharing images/files needs to grant permission to each app/packages
+     * individually. Note: Don't forget to revoke the permission once the clipboard is updated.
+     */
+    private void grantUriPermission(@NonNull Uri uri) {
+        if ((Build.VERSION.SDK_INT != Build.VERSION_CODES.O
+                    && Build.VERSION.SDK_INT != Build.VERSION_CODES.O_MR1)
+                || mImageFileProvider == null) {
+            return;
+        }
+
+        // Cache the Uri for revoking permission later.
+        mImageFileProvider.storeLastCopiedImageUri(uri);
+        List<PackageInfo> installedPackages = mContext.getPackageManager().getInstalledPackages(0);
+        for (PackageInfo installedPackage : installedPackages) {
+            mContext.grantUriPermission(
+                    installedPackage.packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+    }
+
+    /**
+     * Revoke the permission for previously shared image uri. This operation is only needed for
+     * Android O.
+     */
+    private void revokeUriPermissionForLastSharedImage() {
+        if (Build.VERSION.SDK_INT != Build.VERSION_CODES.O
+                && Build.VERSION.SDK_INT != Build.VERSION_CODES.O_MR1) {
+            return;
+        }
+
+        if (mImageFileProvider == null) {
+            // It is ok to not revoke permission. Since |mImageFileProvider| is set very early on
+            // during process init, |mImageFileProvider| == null means we are starting.
+            // ShareImageFileUtils#clearSharedImages will clear cached image files during
+            // startup if they are not being shared. Therefore even if permission is not revoked,
+            // the other package will not get the image. The permission will be revoked later, once
+            // onPrimaryClipChanged triggered. Also, since shared images use timestamp as file
+            // name, the file name will not be reused.
+            return;
+        }
+
+        Uri uri = mImageFileProvider.getLastCopiedImageUri();
+        // Exit early if the URI is empty or event onPrimaryClipChanges was caused by sharing
+        // image.
+        if (uri == null || uri.equals(Uri.EMPTY) || uri.equals(getImageUri())) return;
+
+        // https://developer.android.com/reference/android/content/Context#revokeUriPermission(android.net.Uri,%20int)
+        // According to the above link, it is not necessary to enumerate all of the packages like
+        // what was done in |grantUriPermission|. Context#revokeUriPermission(Uri, int) will revoke
+        // all permissions.
+        mContext.revokeUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        // Clear uri to avoid revoke over and over.
+        mImageFileProvider.clearLastCopiedImageUri();
     }
 
     @NativeMethods

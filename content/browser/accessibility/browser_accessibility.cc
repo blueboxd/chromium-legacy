@@ -1750,30 +1750,24 @@ base::Optional<bool> BrowserAccessibility::GetTableHasColumnOrRowHeaderNode()
   return node()->GetTableHasColumnOrRowHeaderNode();
 }
 
-std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds() const {
-  std::vector<int32_t> result;
-  node()->GetTableColHeaderNodeIds(&result);
-  return result;
+std::vector<ui::AXNode::AXID> BrowserAccessibility::GetColHeaderNodeIds()
+    const {
+  return node()->GetTableColHeaderNodeIds();
 }
 
-std::vector<int32_t> BrowserAccessibility::GetColHeaderNodeIds(
+std::vector<ui::AXNode::AXID> BrowserAccessibility::GetColHeaderNodeIds(
     int col_index) const {
-  std::vector<int32_t> result;
-  node()->GetTableColHeaderNodeIds(col_index, &result);
-  return result;
+  return node()->GetTableColHeaderNodeIds(col_index);
 }
 
-std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds() const {
-  std::vector<int32_t> result;
-  node()->GetTableCellRowHeaderNodeIds(&result);
-  return result;
+std::vector<ui::AXNode::AXID> BrowserAccessibility::GetRowHeaderNodeIds()
+    const {
+  return node()->GetTableCellRowHeaderNodeIds();
 }
 
-std::vector<int32_t> BrowserAccessibility::GetRowHeaderNodeIds(
+std::vector<ui::AXNode::AXID> BrowserAccessibility::GetRowHeaderNodeIds(
     int row_index) const {
-  std::vector<int32_t> result;
-  node()->GetTableRowHeaderNodeIds(row_index, &result);
-  return result;
+  return node()->GetTableRowHeaderNodeIds(row_index);
 }
 
 ui::AXPlatformNode* BrowserAccessibility::GetTableCaption() const {

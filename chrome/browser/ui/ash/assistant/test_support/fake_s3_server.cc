@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/assistant/test/fake_s3_server.h"
+#include "chrome/browser/ui/ash/assistant/test_support/fake_s3_server.h"
 
 #include <memory>
 

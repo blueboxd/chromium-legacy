@@ -2,14 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * A class that listens for touch events and produces events when these
- * touches form gestures (e.g. pinching).
- */
+// A class that listens for touch events and produces events when these
+// touches form gestures (e.g. pinching).
 export class GestureDetector {
-  /**
-   * @param {!Element} element The element to monitor for touch gestures.
-   */
+  /** @param {!Element} element The element to monitor for touch gestures. */
   constructor(element) {
     /** @private {!Element} */
     this.element_ = element;
@@ -69,16 +65,13 @@ export class GestureDetector {
     }
   }
 
-  /**
-   * @return {boolean} True if the last touch start was a two finger touch.
-   */
+  /** @return {boolean} True if the last touch start was a two finger touch. */
   wasTwoFingerTouch() {
     return this.lastTouchTouchesCount_ === 2;
   }
 
   /**
    * Call the relevant listeners with the given |pinchEvent|.
-   *
    * @param {!Object} pinchEvent The event to notify the listeners of.
    * @private
    */
@@ -92,7 +85,6 @@ export class GestureDetector {
 
   /**
    * The callback for touchstart events on the element.
-   *
    * @param {!TouchEvent} event Touch event on the element.
    * @private
    */
@@ -109,7 +101,6 @@ export class GestureDetector {
 
   /**
    * The callback for touch move, end, and cancel events on the element.
-   *
    * @param {!TouchEvent} event Touch event on the element.
    * @private
    */
@@ -154,7 +145,6 @@ export class GestureDetector {
 
   /**
    * The callback for wheel events on the element.
-   *
    * @param {!WheelEvent} event Wheel event on the element.
    * @private
    */
@@ -214,7 +204,6 @@ export class GestureDetector {
   /**
    * Computes the change in scale between this touch event
    * and a previous one.
-   *
    * @param {!TouchEvent} event Latest touch event on the element.
    * @param {!TouchEvent} prevEvent A previous touch event on the element.
    * @return {?number} The ratio of the scale of this event and the
@@ -229,7 +218,6 @@ export class GestureDetector {
 
   /**
    * Computes the distance between fingers.
-   *
    * @param {!TouchEvent} event Touch event with at least 2 touch points.
    * @return {number} Distance between touch[0] and touch[1].
    * @private
@@ -244,9 +232,8 @@ export class GestureDetector {
 
   /**
    * Computes the midpoint between fingers.
-   *
    * @param {!TouchEvent} event Touch event with at least 2 touch points.
-   * @return {!Object} Midpoint between touch[0] and touch[1].
+   * @return {!{x: number, y: number}} Midpoint between touch[0] and touch[1].
    * @private
    */
   static center_(event) {

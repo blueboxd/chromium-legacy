@@ -8,14 +8,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/assistant/assistant_controller_impl.h"
 #include "ash/assistant/model/assistant_ui_model.h"
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
 #include "ash/public/cpp/assistant/conversation_starter.h"
 #include "ash/public/cpp/assistant/conversation_starters_client.h"
-#include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/rand_util.h"
@@ -31,7 +29,6 @@ namespace ash {
 namespace {
 
 using chromeos::assistant::features::IsConversationStartersV2Enabled;
-using chromeos::assistant::features::IsProactiveSuggestionsEnabled;
 using chromeos::assistant::mojom::AssistantSuggestion;
 using chromeos::assistant::mojom::AssistantSuggestionPtr;
 using chromeos::assistant::mojom::AssistantSuggestionType;
@@ -74,15 +71,7 @@ AssistantSuggestionPtr ToAssistantSuggestionPtr(
 
 // AssistantSuggestionsControllerImpl ------------------------------------------
 
-AssistantSuggestionsControllerImpl::AssistantSuggestionsControllerImpl(
-    AssistantControllerImpl* assistant_controller)
-    : assistant_controller_(assistant_controller) {
-  if (IsProactiveSuggestionsEnabled()) {
-    proactive_suggestions_controller_ =
-        std::make_unique<AssistantProactiveSuggestionsController>(
-            assistant_controller_);
-  }
-
+AssistantSuggestionsControllerImpl::AssistantSuggestionsControllerImpl() {
   // In conversation starters V2, we only update conversation starters when the
   // Assistant UI is becoming visible so as to maximize freshness.
   if (!IsConversationStartersV2Enabled())
@@ -140,11 +129,6 @@ void AssistantSuggestionsControllerImpl::OnUiVisibilityChanged(
     UpdateConversationStarters();
 }
 
-void AssistantSuggestionsControllerImpl::OnProactiveSuggestionsChanged(
-    scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
-  model_.SetProactiveSuggestions(std::move(proactive_suggestions));
-}
-
 void AssistantSuggestionsControllerImpl::OnAssistantContextEnabled(
     bool enabled) {
   // We currently assume that the context setting is not being modified while
@@ -167,7 +151,7 @@ void AssistantSuggestionsControllerImpl::UpdateConversationStarters() {
     FetchConversationStarters();
     return;
   }
-  // Otherwise we'll use a locally provided set of proactive suggestions.
+  // Otherwise we'll use a locally provided set of conversation starters.
   ProvideConversationStarters();
 }
 

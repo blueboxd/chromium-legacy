@@ -520,6 +520,7 @@ Para alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincroniza�
 <translation id="5292796745632149097">Enviar para</translation>
 <translation id="5304593522240415983">Este campo não pode ficar em branco</translation>
 <translation id="5308380583665731573">Conectar</translation>
+<translation id="5317780077021120954">Salvar</translation>
 <translation id="5324858694974489420">Configurações dos pais</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5342314432463739672">Solicitações de permissão</translation>
@@ -671,6 +672,7 @@ Por exemplo, alguns sites podem responder a esse pedido mostrando anúncios que 
 <translation id="6482749332252372425">Falha no download do arquivo <ph name="FILE_NAME" /> devido à falta de espaço de armazenamento.</translation>
 <translation id="6496823230996795692">Para usar o app <ph name="APP_NAME" /> pela primeira vez, conecte-se à Internet</translation>
 <translation id="6508722015517270189">Reiniciar o Chrome</translation>
+<translation id="6527303717912515753">Compartilhar</translation>
 <translation id="6532866250404780454">Os sites que você visita no Chrome não serão exibidos. Todos os timers do site serão excluídos.</translation>
 <translation id="6534565668554028783">O Google demorou muito para responder</translation>
 <translation id="6539092367496845964">Algo deu errado. Tente novamente mais tarde.</translation>

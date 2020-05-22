@@ -158,6 +158,7 @@
 Einige Funktionen stehen möglicherweise nicht zur Verfügung. Geben Sie bitte ein anderes Profilverzeichnis an oder verwenden Sie eine neuere Version von Chromium.</translation>
 <translation id="6734080038664603509">&amp;Chromium aktualisieren</translation>
 <translation id="6734291798041940871">Chromium ist bereits für alle Nutzer auf Ihrem Computer installiert.</translation>
+<translation id="6774082503108938489">Dein Elternteil hat "Berechtigungen für Websites, Apps und Erweiterungen" für Chromium deaktiviert. Das Aktivieren dieser <ph name="EXTENSION_TYPE_PARAMETER" /> ist nicht zulässig.</translation>
 <translation id="6847869444787758381">Chromium wird Sie informieren, sollten Ihre Passwörter nicht mehr sicher sein</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (in Chromium kopiert)</translation>
@@ -215,6 +216,7 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium innerhalb eines Tages neu starten}other{Chromium innerhalb von # Tagen neu starten}}</translation>
 <translation id="8453117565092476964">Das Installationsarchiv ist beschädigt oder ungültig. Bitte laden Sie Chromium erneut herunter.</translation>
 <translation id="8493179195440786826">Chromium ist veraltet.</translation>
+<translation id="8558383651099478961">Dein Elternteil hat "Berechtigungen für Websites, Apps und Erweiterungen" für Chromium deaktiviert. Das Hinzufügen dieser <ph name="EXTENSION_TYPE_PARAMETER" /> ist nicht zulässig.</translation>
 <translation id="8568283329061645092">Chromium kann Ihre Passwörter prüfen, wenn Sie sich mit Ihrem Google-Konto anmelden</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Die Chromium-Autoren. Alle Rechte vorbehalten.</translation>
 <translation id="8619360774459241877">Chromium wird gestartet…</translation>

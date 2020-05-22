@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Batareya doludur</translation>
 <translation id="3604801046548457007">Masa <ph name="DESK_TITILE" /> yaradıldı</translation>
 <translation id="3606978283550408104">Brayl displeyi qoşuludur.</translation>
+<translation id="3616883743181209306">Menyu ekranın yuxarı sağ küncünə köçürülüb.</translation>
 <translation id="3621202678540785336">Daxiletmə</translation>
 <translation id="3621712662352432595">Audio Ayarlar</translation>
 <translation id="3626281679859535460">İşıqlanma dərəcəsi</translation>
 <translation id="3631369015426612114">Aşağıdakı bildirişlərə icazə verin</translation>
 <translation id="3638400994746983214">Məxfilik ekranını dəyişdirin. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> İdarə edilən istifadəçi</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Zonanın ani şəkli</translation>
 <translation id="371370241367527062">Ön mikrofon</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">Güzgü rejimindən çıxır</translation>
 <translation id="602001110135236999">Sola sürüşdürün</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />, Administratorunuz tərəfindən idarə olunur</translation>
+<translation id="6030495522958826102">Menyu ekranın aşağı sol küncünə köçürülüb.</translation>
 <translation id="6040143037577758943">Qapat</translation>
 <translation id="6043212731627905357">Bu monitor <ph name="DEVICE_TYPE" /> cihazına uyğun gəlmir (monitor dəstəklənmir).</translation>
 <translation id="6043994281159824495">Hesabdan çıxın</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">Qoşulur</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> daxilində köhnə həllə qayıtma</translation>
+<translation id="7188494361780961876">Menyu ekranın yuxarı sol küncünə köçürülüb.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Bu Chromebook yeniləməni tətbiq etmək üçün yenidən başlamalıdır. Bu, 1 dəqiqəyə qədər vaxt apara bilər.</translation>
 <translation id="7256634071279256947">Arxa mikrofon</translation>
 <translation id="726276584504105859">Ekranı bölmək üçün bura sürüşdürün</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">Avtodönüş</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> cihazınız aktiv olan zaman elektrik yığmaya bilər.</translation>
 <translation id="8563862697512465947">Bildiriş Ayarları</translation>
+<translation id="857201607579416096">Menyu ekranın aşağı sağ küncünə köçürülüb.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> şəbəkəsinə qoşuldunuz</translation>
 <translation id="8631727435199967028">Əlçatımlılıq Ayarları</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />, Administratorunuz tərəfindən idarə olunur</translation>

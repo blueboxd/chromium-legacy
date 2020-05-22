@@ -7,9 +7,9 @@
 
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/strings/string16.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
-#include "ui/base/ui_base_export.h"
 
 namespace gfx {
 class ImageSkia;
@@ -20,7 +20,7 @@ namespace ui {
 class TableModelObserver;
 
 // The model driving the TableView.
-class UI_BASE_EXPORT TableModel {
+class COMPONENT_EXPORT(UI_BASE) TableModel {
  public:
   // Size of the table row icon, if used.
   static constexpr int kIconSize = 16;
@@ -65,7 +65,7 @@ class UI_BASE_EXPORT TableModel {
 };
 
 // TableColumn specifies the title, alignment and size of a particular column.
-struct UI_BASE_EXPORT TableColumn {
+struct COMPONENT_EXPORT(UI_BASE) TableColumn {
   enum Alignment {
     LEFT, RIGHT, CENTER
   };

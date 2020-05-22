@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1650222530560417226">‏انقر على الزر "بدء تسجيل الدخول" لجمع سجلَّات وحدة تحكُّم JavaScript وأخطائها من جميع علامات التبويب. سيتم جمع السجلَّات (وتخزينها فقط في الذاكرة) حتى يتم إغلاق هذه الصفحة أو النقر على "إيقاف تسجيل الدخول".</translation>
 <translation id="1657011748321897393">تعذّرت المشاركة بسبب عدم اتصالك بالشبكة.</translation>
+<translation id="1657641691196698092">ملفات تعريف الارتباط المحظورة</translation>
 <translation id="165877110639533037">لا توجد علامات تبويب مفتوحة</translation>
 <translation id="1674504678466460478">من <ph name="SOURCE_LANGUAGE" /> إلى <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">للحصول على الإشارات المرجعية على جميع أجهزتك، يُرجى تفعيل المزامنة.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">حظرت سياسة الجهاز الدخول إلى صورك</translation>
 <translation id="2578571896248130439">إرسال صفحة الويب</translation>
 <translation id="2584132361465095047">إضافة حساب...</translation>
+<translation id="2600682495497606169">محو ملفات تعريف الارتباط على هذا الموقع الإلكتروني</translation>
 <translation id="2625189173221582860">تم نسخ كلمة المرور</translation>
 <translation id="2647269890314209800">ملفات تعريف الارتباط قيد الاستخدام</translation>
 <translation id="2648803196158606475">حذف المقروءة</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">رفض</translation>
 <translation id="5245322853195994030">إلغاء المزامنة</translation>
 <translation id="5271549068863921519">حفظ كلمة المرور</translation>
+<translation id="5295239312320826323">هل تريد إزالة الحساب <ph name="USER_EMAIL" />؟</translation>
 <translation id="5300589172476337783">عرض</translation>
 <translation id="5317780077021120954">حفظ</translation>
 <translation id="5327248766486351172">الاسم</translation>
@@ -418,6 +421,7 @@
 <translation id="6362362396625799311">لا توجد علامات تبويب للتصفح المتخفي</translation>
 <translation id="6363526231572697780">ليس هناك اسم مستخدم</translation>
 <translation id="6374469231428023295">إعادة المحاولة</translation>
+<translation id="6377118281273296434">أمن الموقع الإلكتروني</translation>
 <translation id="6380866119319257197">إذا كنت قد نسيت عبارة المرور أو ترغب في تغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">الاسم كما في البطاقة</translation>
 <translation id="6406506848690869874">المزامنة</translation>
@@ -525,11 +529,13 @@
 
 سيتم حذف بيانات Chrome من هذا الجهاز عند تسجيل الخروج، وذلك لأن حسابك تتم إدارته من خلال <ph name="HOSTED_DOMAIN" />. وستظل البيانات المتزامنة في حسابك على Google.</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
+<translation id="7778472311864276518">إزالة الحساب من هذا الجهاز</translation>
 <translation id="7781011649027948662">هل تريد ترجمة الصفحة؟</translation>
 <translation id="7781829728241885113">أمس</translation>
 <translation id="778855399387580014">‏يمكنك بدء البحث في علامة تبويب Chrome جديدة.</translation>
 <translation id="7791543448312431591">إضافة</translation>
 <translation id="7828557259026017104">ملفات تعريف الارتباط هي ملفات تُنشئها المواقع الإلكترونية التي تزورها. وتستخدمها المواقع الإلكترونية لتتذكّر الإعدادات المفضّلة. أمّا ملفات تعريف الارتباط التابعة لجهات خارجية، فتُنشئها مواقع إلكترونية أخرى. وتمتلك هذه المواقع الإلكترونية بعضًا من المحتوى الذي تراه على صفحة الويب التي تزورها، مثل الإعلانات أو الصور.</translation>
+<translation id="7839985698273989086">صفحة بلا إنترنت</translation>
 <translation id="7840771868269352570">ستتم إزالة العناصر التي اخترتها.</translation>
 <translation id="7856733331829174190">تعذّر التنزيل.</translation>
 <translation id="7859704718976024901">سجلّ التصفّح</translation>

@@ -651,6 +651,30 @@ public class ExternalNavigationHandler {
     }
 
     /**
+     * Intent URIs leads to creating intents that chrome would use for firing external navigations
+     * via Android. Android throws an exception [1] when an application exposes a file:// Uri to
+     * another app.
+     *
+     * This method checks if the |targetIntent| contains the file:// scheme in its data.
+     *
+     * [1]: https://developer.android.com/reference/android/os/FileUriExposedException
+     */
+    private boolean hasFileSchemeInIntentURI(Intent targetIntent, boolean hasIntentScheme) {
+        // We are only concerned with targetIntent that was generated due to intent:// schemes only.
+        if (!hasIntentScheme) return false;
+
+        Uri data = targetIntent.getData();
+
+        if (data == null || data.getScheme() == null) return false;
+
+        if (data.getScheme().equalsIgnoreCase(UrlConstants.FILE_SCHEME)) {
+            if (DEBUG) Log.i(TAG, "Intent navigation to file: URI");
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Special case - It makes no sense to use an external application for a YouTube
      * pairing code URL, since these match the current tab with a device (Chromecast
      * or similar) it is supposed to be controlling. Using a different application
@@ -1013,6 +1037,10 @@ public class ExternalNavigationHandler {
         }
 
         if (hasContentScheme(params, targetIntent, hasIntentScheme)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        if (hasFileSchemeInIntentURI(targetIntent, hasIntentScheme)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 

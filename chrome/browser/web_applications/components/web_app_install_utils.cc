@@ -5,6 +5,7 @@
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 
 #include <algorithm>
+#include <string>
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
@@ -31,12 +32,28 @@ namespace {
 constexpr int kMaxIcons = 20;
 constexpr SquareSizePx kMaxIconSize = 1024;
 
+// Get a list of non-empty square icons from |icons_map|.
+void FilterSquareIconsFromMap(const IconsMap& icons_map,
+                              std::vector<SkBitmap>* square_icons) {
+  for (const auto& url_icon : icons_map) {
+    for (const SkBitmap& icon : url_icon.second) {
+      if (!icon.empty() && icon.width() == icon.height())
+        square_icons->push_back(icon);
+    }
+  }
+}
+
 // Get a list of non-empty square app icons from |icons_map|. We will disregard
 // shortcut icons here.
-void FilterSquareIconsFromMap(
+void FilterSquareIconsFromMapDisregardShortcutIcons(
     const std::vector<WebApplicationIconInfo>& icon_infos,
     const IconsMap& icons_map,
     std::vector<SkBitmap>* square_icons) {
+  if (icon_infos.empty()) {
+    FilterSquareIconsFromMap(icons_map, square_icons);
+    return;
+  }
+
   for (const auto& url_icon : icons_map) {
     for (const auto& info : icon_infos) {
       if (info.url == url_icon.first) {
@@ -239,8 +256,13 @@ void FilterAndResizeIconsGenerateMissing(WebApplicationInfo* web_app_info,
   // which are not actually created and linked on disk.
   std::vector<SkBitmap> square_icons;
   if (icons_map) {
-    FilterSquareIconsFromMap(web_app_info->icon_infos, *icons_map,
-                             &square_icons);
+    if (base::FeatureList::IsEnabled(
+            features::kDesktopPWAsAppIconShortcutsMenu)) {
+      FilterSquareIconsFromMapDisregardShortcutIcons(web_app_info->icon_infos,
+                                                     *icons_map, &square_icons);
+    } else {
+      FilterSquareIconsFromMap(*icons_map, &square_icons);
+    }
   }
   FilterSquareIconsFromBitmaps(web_app_info->icon_bitmaps, &square_icons);
 

@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Geçmiş</translation>
 <translation id="1650222530560417226">İleri tarihli JavaScript konsolu günlüklerini ve tüm sekmelerdeki hataları toplamak için "Günlük Kaydını Başlat" düğmesine dokunun. Bu sayfa kapatılana veya "Günlük Kaydını Durdur" düğmesine dokunulana kadar günlükler toplanır (ve yalnızca bellekte saklanır).</translation>
 <translation id="1657011748321897393">Ağa bağlı olmadığınızdan paylaşma başarısız oldu.</translation>
+<translation id="1657641691196698092">Engellenmiş Çerez Sayısı</translation>
 <translation id="165877110639533037">Açık Sekme Yok</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> dilinden <ph name="TARGET_LANGUAGE" /> diline</translation>
 <translation id="168715261339224929">Yer işaretlerinize tüm cihazlarınızda ulaşmak için senkronizasyonu açın.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Fotoğraflarınıza erişim bir cihaz politikası tarafından engellendi</translation>
 <translation id="2578571896248130439">Web sayfasını gönder</translation>
 <translation id="2584132361465095047">Hesap Ekle…</translation>
+<translation id="2600682495497606169">Site Çerezlerini Temizle</translation>
 <translation id="2625189173221582860">Şifre kopyalandı</translation>
 <translation id="2647269890314209800">Kullanımdaki Çerezler</translation>
 <translation id="2648803196158606475">Okunanları Sil</translation>
@@ -332,6 +334,7 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5234764350956374838">Kapat</translation>
 <translation id="5245322853195994030">Senkronizasyonu iptal et</translation>
 <translation id="5271549068863921519">Şifreyi kaydet</translation>
+<translation id="5295239312320826323"><ph name="USER_EMAIL" /> hesabı kaldırılsın mı?</translation>
 <translation id="5300589172476337783">Göster</translation>
 <translation id="5317780077021120954">Kaydet</translation>
 <translation id="5327248766486351172">Ad</translation>
@@ -418,6 +421,7 @@ Handoff'un ayrıca, Ayarlar'ın Genel bölümünde de etkinleştirilmesi ve ciha
 <translation id="6362362396625799311">Gizli Sekme Yok</translation>
 <translation id="6363526231572697780">Kullanıcı Adı Yok</translation>
 <translation id="6374469231428023295">Tekrar Dene</translation>
+<translation id="6377118281273296434">Site Güvenliği</translation>
 <translation id="6380866119319257197">Parolanızı unutursanız veya bu ayarı değiştirmek isterseniz <ph name="BEGIN_LINK" />senkronizasyonu sıfırlayın<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Karttaki Ad</translation>
 <translation id="6406506848690869874">Senkronizasyon</translation>
@@ -525,11 +529,13 @@ Verileriniz <ph name="TIME" /> tarihinde senkronizasyon parolanızla şifrelendi
 
 Hesabınız <ph name="HOSTED_DOMAIN" /> tarafından yönetildiği için oturumunuzu kapatırken Chrome verileriniz bu cihazdan silinecek. Senkronize edilmiş verileriniz Google Hesabınızda kalmaya devam edecek.</translation>
 <translation id="7772032839648071052">Parolayı onayla</translation>
+<translation id="7778472311864276518">Hesabı bu Cihazdan kaldır</translation>
 <translation id="7781011649027948662">Sayfa Çevrilsin mi?</translation>
 <translation id="7781829728241885113">Dün</translation>
 <translation id="778855399387580014">Yeni bir Chrome sekmesinde arama başlatır.</translation>
 <translation id="7791543448312431591">Ekle</translation>
 <translation id="7828557259026017104">Çerezler, ziyaret ettiğiniz web siteleri tarafından oluşturulan dosyalardır. Siteler tercihlerinizi hatırlamak için çerezleri kullanır. Üçüncü taraf çerezleri diğer siteler tarafından oluşturulur. Bu siteler, ziyaret ettiğiniz web sayfasında gördüğünüz reklam veya resim gibi içeriğin bir kısmına sahiptir.</translation>
+<translation id="7839985698273989086">Çevrimdışı Sayfa</translation>
 <translation id="7840771868269352570">Seçtiğiniz öğeler kaldırılacak.</translation>
 <translation id="7856733331829174190">İndirilemedi</translation>
 <translation id="7859704718976024901">Tarama Geçmişi</translation>

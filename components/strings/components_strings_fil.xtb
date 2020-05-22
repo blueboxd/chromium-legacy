@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">Pag-shift ng larawan Y</translation>
 <translation id="17513872634828108">Mga bukas na tab</translation>
 <translation id="1752021286346845558">Mailbox 8</translation>
-<translation id="1752483581718172048">Itago ang Mga Suhestyon</translation>
 <translation id="1753706481035618306">Numero ng page</translation>
 <translation id="1763864636252898013">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong device ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Subukang patakbuhin ang Windows Network Diagnostics<ph name="END_LINK" />.</translation>
@@ -1619,6 +1618,7 @@ Mga karagdagang detalye:
 <translation id="7844689747373518809">{COUNT,plural, =0{Wala}=1{1 app (<ph name="EXAMPLE_APP_1" />)}=2{2 app (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# (na) app (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# (na) app (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Gayunpaman, hindi ka invisible. Kahit mag-incognito ka, hindi matatago ang iyong pagba-browse mula sa iyong employer, sa iyong internet service provider o sa mga website na binibisita mo.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Tumulong na pahusayin ang seguridad sa web para sa lahat sa pamamagitan ng pagpapadala ng <ph name="BEGIN_WHITEPAPER_LINK" />mga URL ng ilang page na binibisita mo, limitadong impormasyon ng system, at ilang content ng page<ph name="END_WHITEPAPER_LINK" /> sa Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Umalis sa site?</translation>
 <translation id="7865448901209910068">Pinakamabilis</translation>
 <translation id="7874263914261512992">Kakalagay mo lang ng iyong password sa isang mapanlinlang na site. Inirerekomenda ng Chrome na suriin mo ngayon ang iyong mga naka-save na password para sa <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, at iba pang site kung saan mo ginagamit ang password na ito.</translation>
@@ -1753,7 +1753,6 @@ Mga karagdagang detalye:
 <translation id="8425213833346101688">Baguhin</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8433057134996913067">Masa-sign out ka sa karamihan ng mga website.</translation>
-<translation id="8433678324664858900">Ipakita Suhestiyon</translation>
 <translation id="8437238597147034694">&amp;I-undo ang paglilipat</translation>
 <translation id="8457125768502047971">Walang katiyakan</translation>
 <translation id="8461694314515752532">I-encrypt ang naka-sync na data gamit ang iyong sariling passphrase sa pag-sync</translation>

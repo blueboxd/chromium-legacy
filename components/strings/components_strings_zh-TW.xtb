@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">圖片 Y 批次</translation>
 <translation id="17513872634828108">開啟的分頁</translation>
 <translation id="1752021286346845558">出紙槽 8</translation>
-<translation id="1752483581718172048">隱藏建議項目</translation>
 <translation id="1753706481035618306">頁碼</translation>
 <translation id="1763864636252898013">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你裝置作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />嘗試執行 Windows 網路診斷<ph name="END_LINK" />。</translation>
@@ -1613,6 +1612,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{無}=1{1 個應用程式：<ph name="EXAMPLE_APP_1" />}=2{2 個應用程式：<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />}other{# 個應用程式：<ph name="EXAMPLE_APP_1" />、<ph name="EXAMPLE_APP_2" />、<ph name="AND_MORE" />}}</translation>
 <translation id="785549533363645510">不過，這並不意味著您可以完全隱形。使用無痕模式時，您的雇主和網際網路服務供應商仍然可以追蹤您的瀏覽記錄，您所造訪的網站也可能會記錄您的瀏覽行為。</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />將你造訪的部分網頁網址、特定的系統資訊以及部分網頁內容傳送<ph name="END_WHITEPAPER_LINK" />給 Google，協助我們為所有人改善網路安全性。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">要離開網站嗎？</translation>
 <translation id="7865448901209910068">最佳速度</translation>
 <translation id="7874263914261512992">你剛才在詐騙網站上輸入了密碼。Chrome 建議你立即檢查為以下網站儲存的密碼：<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />，以及使用這組密碼的其他網站。</translation>
@@ -1747,7 +1747,6 @@
 <translation id="8425213833346101688">變更</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433057134996913067">您會因此登出大多數網站。</translation>
-<translation id="8433678324664858900">顯示建議</translation>
 <translation id="8437238597147034694">復原移動(&amp;U)</translation>
 <translation id="8457125768502047971">無限期</translation>
 <translation id="8461694314515752532">使用你自己的同步通關密語，加密保護同步資料</translation>

@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> möchte dauerhaft umfangreiche Daten auf Ihrem Gerät speichern</translation>
 <translation id="1032854598605920125">Im Uhrzeigersinn drehen</translation>
 <translation id="1036348656032585052">Deaktivieren</translation>
+<translation id="1038106730571050514">Vorschläge anzeigen</translation>
 <translation id="1038842779957582377">Unbekannter Name</translation>
 <translation id="1041998700806130099">Auftragsblattnachricht</translation>
 <translation id="1050038467049342496">Andere Apps schließen</translation>
@@ -398,6 +399,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="2666092431469916601">Oben</translation>
 <translation id="2666117266261740852">Andere Tabs oder Apps schließen</translation>
 <translation id="2674170444375937751">Möchten Sie diese Seiten wirklich aus dem Verlauf löschen?</translation>
+<translation id="2674804415323431591">Vorschläge ausblenden</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -595,6 +597,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="3539171420378717834">Kopie dieser Karte auf diesem Gerät speichern</translation>
 <translation id="3558573058928565255">Tageszeit</translation>
 <translation id="3566021033012934673">Dies ist keine sichere Verbindung</translation>
+<translation id="3567778190852720481">Registrierung mit Unternehmenskonto nicht möglich (Unternehmenskonto ist nicht berechtigt).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Auf einer in <ph name="SITE" /> eingebetteten Seite wird Folgendes angezeigt</translation>
 <translation id="3581089476000296252">Chrome informiert Sie, wenn diese Seite bereit ist. &lt;a&gt;Abbrechen&lt;/a&gt;</translation>
@@ -870,6 +873,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows-Netzwerkdiagnose ausführen<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Richtlinien neu laden</translation>
 <translation id="4728558894243024398">Plattform</translation>
+<translation id="4731638775147756694">Diese App wurde von Ihrem Administrator blockiert</translation>
 <translation id="4731967714531604179">Prc2 (Umschlag)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> möchte den Standort Ihres Geräts nutzen</translation>
 <translation id="4736825316280949806">Chromium neu starten</translation>
@@ -1068,6 +1072,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="5523118979700054094">Richtlinienname</translation>
 <translation id="55293785478302737">Mehrere Heftklammern</translation>
 <translation id="553484882784876924">Prc6 (Umschlag)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />"-Abschnitt einblenden</translation>
 <translation id="5539243836947087108">Raft</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="5541086400771735334">Ablage 7</translation>
@@ -1236,6 +1241,7 @@ Sie werden sonst gemäß Ihren Datenschutzeinstellungen blockiert. Wenn Cookies 
 <translation id="6263376278284652872"><ph name="DOMAIN" />-Lesezeichen</translation>
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
 <translation id="6266934640124581640">Helles Blaugrün</translation>
+<translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Seiten von Ihrer Leseliste werden hier angezeigt</translation>
 <translation id="627746635834430766">Damit Zahlungen zukünftig schneller abgewickelt werden können, speichern Sie Ihre Kreditkartendaten und Ihre Rechnungsadresse in Ihrem Google-Konto.</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />speichert die folgenden Daten nicht<ph name="END_EMPHASIS" />:
@@ -1466,6 +1472,7 @@ Weitere Details:
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Safe Browsing<ph name="END_LINK" />-Warnmeldungen</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Hilfe bei der Verbindungsherstellung</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />"-Abschnitt ausblenden</translation>
 <translation id="733354035281974745">Durch Sitzung mit einem lokalen Gerätekonto überschrieben</translation>
 <translation id="7333654844024768166">Sie haben Ihr Passwort gerade auf einer verdächtigen Seite eingegeben. Chromium empfiehlt, Ihr Passwort auf <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> und allen anderen Websites, auf denen Sie es verwendet haben, zu ändern.</translation>
 <translation id="7334320624316649418">&amp;Neu anordnen wiederholen</translation>
@@ -1609,6 +1616,7 @@ Weitere Details:
 <translation id="7844689747373518809">{COUNT,plural, =0{Keine}=1{1 App (<ph name="EXAMPLE_APP_1" />)}=2{2 Apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# Apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber, Ihrem Internetanbieter oder den von Ihnen besuchten Websites erfasst werden.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7858256690562840157">Helfen Sie mit, die Sicherheit im Web für alle zu verbessern, und senden Sie die <ph name="BEGIN_WHITEPAPER_LINK" />URLs einiger von Ihnen besuchter Seiten, eingeschränkte Systemdaten und manche Seiteninhalte<ph name="END_WHITEPAPER_LINK" /> an Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Website verlassen?</translation>
 <translation id="7865448901209910068">Beste Geschwindigkeit</translation>
 <translation id="7874263914261512992">Sie haben Ihr Passwort gerade auf einer verdächtigen Seite eingegeben. Chrome empfiehlt, Ihre gespeicherten Passwörter für <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> und alle anderen Websites, auf denen Sie dieses Passwort verwenden, zu prüfen.</translation>
@@ -1743,7 +1751,6 @@ Weitere Details:
 <translation id="8425213833346101688">Ändern</translation>
 <translation id="8428213095426709021">Einstellungen</translation>
 <translation id="8433057134996913067">Dadurch werden Sie von den meisten Websites abgemeldet.</translation>
-<translation id="8433678324664858900">Vorschläge anz.</translation>
 <translation id="8437238597147034694">&amp;Verschieben rückgängig machen</translation>
 <translation id="8457125768502047971">Unbestimmt</translation>
 <translation id="8461694314515752532">Synchronisierte Daten mit eigener Synchronisierungspassphrase verschlüsseln</translation>

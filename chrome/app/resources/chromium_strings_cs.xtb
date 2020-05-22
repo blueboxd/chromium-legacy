@@ -160,6 +160,7 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu, nebo používejte novější verzi prohlížeče Chromium.</translation>
 <translation id="6734080038664603509">Aktualizovat &amp;Chromium</translation>
 <translation id="6734291798041940871">Prohlížeč Chromium je na tomto počítači již nainstalován pro všechny uživatele.</translation>
+<translation id="6774082503108938489">Tvůj rodič pro prohlížeč Chromium vypnul možnost Oprávnění pro weby, aplikace a rozšíření. Aktivace tohoto <ph name="EXTENSION_TYPE_PARAMETER" /> není povolena.</translation>
 <translation id="6847869444787758381">Pokud vaše hesla někdo prolomí, Chromium vás o tom bude informovat</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (zkopírováno do prohlížeče Chromium)</translation>
@@ -217,6 +218,7 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Do jednoho dne Chromium restartujte}few{Do # dní Chromium restartujte}many{Do # dne Chromium restartujte}other{Do # dní Chromium restartujte}}</translation>
 <translation id="8453117565092476964">Archiv instalačního programu je poškozený nebo neplatný. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8493179195440786826">Prohlížeč Chromium je zastaralý</translation>
+<translation id="8558383651099478961">Tvůj rodič pro prohlížeč Chromium vypnul možnost Oprávnění pro weby, aplikace a rozšíření. Přidání tohoto <ph name="EXTENSION_TYPE_PARAMETER" /> není povoleno.</translation>
 <translation id="8568283329061645092">Když se přihlásíte pomocí účtu Google, může vám Chromium kontrolovat hesla</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
 <translation id="8619360774459241877">Spouštění prohlížeče Chromium...</translation>

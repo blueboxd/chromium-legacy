@@ -156,6 +156,7 @@
 Bazı özellikler kullanılamayabilir. Lütfen farklı bir profil dizini belirtin veya daha yeni bir Chromium sürümünü kullanın.</translation>
 <translation id="6734080038664603509">&amp;Chromium'u güncelle</translation>
 <translation id="6734291798041940871">Chromium zaten bilgisayarınızdaki tüm kullanıcılar için yüklendi.</translation>
+<translation id="6774082503108938489">Ebeveyniniz, Chromium'a yönelik "Siteler, uygulamalar ve uzantılar için izinler"i kapattı. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> uzantısının etkinleştirilmesine izin verilmiyor.</translation>
 <translation id="6847869444787758381">Chromium, şifrelerinizin güvenliğinin ihlal edilip edilmediğini size bildirir</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium'a kopyalandı)</translation>
@@ -214,6 +215,7 @@ Chromium ayarlarınızı kurtaramıyor.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Chromium'u bir gün içinde yeniden başlatın}other{Chromium'u # gün içinde yeniden başlatın}}</translation>
 <translation id="8453117565092476964">Yükleyici arşivi bozuk veya geçersiz. Lütfen Chromium'u yeniden indirin.</translation>
 <translation id="8493179195440786826">Chromium Sürümü Eski</translation>
+<translation id="8558383651099478961">Ebeveyniniz, Chromium'a yönelik "Siteler, uygulamalar ve uzantılar için izinler"i kapattı. Bu <ph name="EXTENSION_TYPE_PARAMETER" /> uzantısını eklemeye izin verilmiyor.</translation>
 <translation id="8568283329061645092">Chromium, Google Hesabınızla oturum açtığınızda şifrelerinizi kontrol edebilir</translation>
 <translation id="8586442755830160949">Telif Hakkı <ph name="YEAR" /> The Chromium Authors. Tüm hakları saklıdır.</translation>
 <translation id="8619360774459241877">Chromium başlatılıyor...</translation>

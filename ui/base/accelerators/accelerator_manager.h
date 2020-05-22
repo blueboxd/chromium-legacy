@@ -10,16 +10,16 @@
 #include <utility>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/events/event_constants.h"
 
 namespace ui {
 
 // AcceleratorManger handles processing of accelerators. A delegate may be
 // supplied which is notified as unique accelerators are added and removed.
-class UI_BASE_EXPORT AcceleratorManager {
+class COMPONENT_EXPORT(UI_BASE) AcceleratorManager {
  public:
   enum HandlerPriority {
     kNormalPriority,

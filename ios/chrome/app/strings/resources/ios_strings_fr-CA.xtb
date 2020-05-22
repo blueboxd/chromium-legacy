@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1650222530560417226">Touchez le bouton « Démarrer la journalisation » pour collecter les éventuels journaux et erreurs de la console JavaScript sur tous les onglets. Les journaux seront collectés (et stockés dans la mémoire uniquement) jusqu'à ce que cette page soit fermée ou que le bouton « Arrêter la journalisation » soit touché.</translation>
 <translation id="1657011748321897393">Échec du partage, car vous n'êtes pas connecté(e) au réseau.</translation>
+<translation id="1657641691196698092">Témoins bloqués</translation>
 <translation id="165877110639533037">Aucun onglet ouvert</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> en <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Pour synchroniser vos favoris sur tous vos appareils, activez la synchronisation.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Une règle relative à l'appareil a bloqué l'accès à vos photos</translation>
 <translation id="2578571896248130439">Envoyer la page Web</translation>
 <translation id="2584132361465095047">Ajouter un compte…</translation>
+<translation id="2600682495497606169">Effacer les témoins du site</translation>
 <translation id="2625189173221582860">Mot de passe copié</translation>
 <translation id="2647269890314209800">Témoins en cours d'utilisation</translation>
 <translation id="2648803196158606475">Supprimer les éléments lus</translation>
@@ -332,6 +334,7 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5234764350956374838">Fermer</translation>
 <translation id="5245322853195994030">Annuler la synchronisation</translation>
 <translation id="5271549068863921519">Enregistrer le mot de passe</translation>
+<translation id="5295239312320826323">Supprimer le compte <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Afficher</translation>
 <translation id="5317780077021120954">Enregistrer</translation>
 <translation id="5327248766486351172">Nom</translation>

@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">সম্পূর্ণ কৰিবলৈ আপোনাৰ পুৰণি আৰু নতুন পাছৱর্ডসমূহ দিয়ক</translation>
 <translation id="6106186594183574873">সম্পূর্ণ কৰিবলৈ আপোনাৰ পুৰণি পাছৱর্ড দিয়ক</translation>
 <translation id="6146993107019042706">সম্পূর্ণ কৰিবলৈ আপোনাৰ নতুন পাছৱর্ড দিয়ক</translation>
+<translation id="6517239166834772319">অন্বেষণ কৰক</translation>
 <translation id="6643016212128521049">মচক</translation>
 <translation id="7162487448488904999">Gallery</translation>
 <translation id="7658239707568436148">বাতিল কৰক</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="808894953321890993">পাছৱৰ্ড সলনি কৰক</translation>
 <translation id="8208861521865154048">লাভালাভসমূহ</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" />এ এই ব্যৱহাৰকাৰী গৰাকীক পৰিচালনা কৰে। এইটোৱে হয়তো দূৰৰ পৰা ছেটিংসমূহ পৰিচালনা কৰিব আৰু ব্যৱহাৰকাৰীৰ কার্যকলাপ নিৰীক্ষণ কৰিব পাৰে।</translation>
 <translation id="8747900814994928677">সলনি কৰাটো নিশ্চিত কৰক</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> <ph name="ATTEMPTS_LEFT" /> টা প্ৰয়াস বাকী আছে</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" />ৰ টিকেট ৰিফ্ৰেশ্ব কৰক</translation>

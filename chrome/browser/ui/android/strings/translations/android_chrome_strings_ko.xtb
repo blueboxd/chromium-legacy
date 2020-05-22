@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">언어 추가</translation>
 <translation id="2650751991977523696">파일을 다시 다운로드하시겠습니까?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{오디오 파일 #개}other{오디오 파일 #개}}</translation>
+<translation id="2656405586795711023">웹 앱</translation>
 <translation id="2677748264148917807">나가기</translation>
 <translation id="2689830683995595741">Chrome을 사용하면 <ph name="BEGIN_LINK1" />Google 서비스 약관<ph name="END_LINK1" />과 <ph name="BEGIN_LINK2" />Chrome 및 Chrome OS 추가 서비스 약관<ph name="END_LINK2" />에 동의하는 것으로 간주됩니다. <ph name="BEGIN_LINK3" />Family Link로 관리되는 Google 계정에 관한 개인정보처리방침<ph name="END_LINK3" />도 적용됩니다.</translation>
 <translation id="2707726405694321444">페이지 새로고침</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">중요하지 않은 저장공간</translation>
 <translation id="4000212216660919741">오프라인 홈</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{#시간}other{#시간}}</translation>
+<translation id="403687620286099920">QR 코드를 열려면 탭하세요.</translation>
 <translation id="4046123991198612571">다음 트랙</translation>
 <translation id="4056223980640387499">세피아</translation>
 <translation id="4060598801229743805">화면 상단에서 옵션을 선택할 수 있습니다.</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">새 탭 열기</translation>
 <translation id="4759238208242260848">다운로드</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{다운로드 1개 완료}other{다운로드 #개 완료}}</translation>
+<translation id="478981486571169252">Chrome에서의 <ph name="SITE_NAME" /> 로그인 상태, 인터넷 사용 기록, 사이트 데이터를 볼 수 있습니다.</translation>
 <translation id="4802417911091824046">Google Pay 결제 수단 및 주소는 암호로 암호화되지 않습니다.
 
 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />하세요.</translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">전송할 기기</translation>
 <translation id="5304593522240415983">필수 입력란입니다.</translation>
 <translation id="5308380583665731573">연결</translation>
+<translation id="5317780077021120954">저장</translation>
 <translation id="5324858694974489420">자녀 보호 설정</translation>
 <translation id="5327248766486351172">이름</translation>
 <translation id="5342314432463739672">권한 요청</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">이메일</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />에 일정 만들기</translation>
 <translation id="5668404140385795438">웹사이트의 확대 방지 요청 무시</translation>
+<translation id="5681394891799747640">QR 코드를 다운로드할 수 없음</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="5686790454216892815">파일 이름이 너무 깁니다.</translation>
 <translation id="5694049548840660018">홈으로 쉽게 돌아가기</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">더보기</translation>
 <translation id="604996488070107836">알 수 없는 오류로 인해 <ph name="FILE_NAME" /> 다운로드에 실패했습니다.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">여기에서 스토리 및 활동을 관리하세요.</translation>
 <translation id="60923314841986378"><ph name="HOURS" />시간 남음</translation>
 <translation id="6108923351542677676">설정 진행 중...</translation>
 <translation id="6111020039983847643">데이터 사용됨</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">계정</translation>
 <translation id="6297765934698848803">내 기기를 관리하는 조직에서 카메라를 사용 중지했습니다.</translation>
 <translation id="6303969859164067831">로그아웃하고 동기화 사용 중지</translation>
+<translation id="6312687380483398334">웹 앱(무음)</translation>
 <translation id="6316139424528454185">지원되지 않는 Android 버전입니다.</translation>
 <translation id="6324034347079777476">Android 시스템 동기화 사용 안함</translation>
 <translation id="6333140779060797560">공유 방법: <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">저장공간이 부족하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="6496823230996795692">처음으로 <ph name="APP_NAME" />을(를) 사용하는 경우 인터넷에 연결하세요.</translation>
 <translation id="6508722015517270189">Chrome 다시 시작하기</translation>
+<translation id="6527303717912515753">공유</translation>
 <translation id="6532866250404780454">Chrome에서 방문한 사이트가 표시되지 않습니다. 모든 사이트 타이머가 삭제됩니다.</translation>
 <translation id="6534565668554028783">Google에서 응답하는 데 시간이 너무 오래 걸립니다.</translation>
 <translation id="6539092367496845964">문제가 발생했습니다. 나중에 다시 시도해 보세요.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">동기화가 작동하지 않음</translation>
 <translation id="7606077192958116810">라이트 모드가 켜져 있습니다. 설정에서 기능을 관리하세요.</translation>
 <translation id="7612619742409846846">다음 계정으로 Google에 로그인함:</translation>
+<translation id="7614971007231847352">QR 코드가 다운로드됨</translation>
 <translation id="7619072057915878432">네트워크에 문제가 발생하여 <ph name="FILE_NAME" />을(를) 다운로드할 수 없습니다.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />도움말 보기<ph name="END_LINK1" /> 또는 <ph name="BEGIN_LINK2" />다시 검색하기<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome에 오신 것을 환영합니다</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">절약한 데이터 양이 여기에 표시됩니다</translation>
 <translation id="7835852323729233924">재생 중인 미디어</translation>
 <translation id="783819812427904514">동영상 음소거 해제</translation>
+<translation id="7846296061357476882">Google 서비스</translation>
 <translation id="784934925303690534">기간</translation>
 <translation id="7851858861565204677">다른 기기</translation>
 <translation id="7875915731392087153">이메일 만들기</translation>

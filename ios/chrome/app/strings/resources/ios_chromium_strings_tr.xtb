@@ -24,6 +24,7 @@
 <translation id="4787850887676698916">Diğer cihazlarınızda Chromium'da açtığınız sekmeler burada görünür.</translation>
 <translation id="4999538639245140991"><ph name="SIGNOUT_MANAGED_DOMAIN" /> tarafından yönetilen bir hesabın oturumunu kapattığınız için Chromium verileriniz bu cihazdan silinecek. Ancak verileriniz Google Hesabınızda kalmaya devam edecek.</translation>
 <translation id="5573014823074921752">Chromium için ipucu. Sekmelerle ilgili daha fazla seçenek görmek için ekranınızın altında veya üstünde görünen araç çubuğunda Sekmeleri Göster düğmesine dokunup basılı tutun.</translation>
+<translation id="5777187867430702742">Chromium Sayfası</translation>
 <translation id="5862307444128926510">Chromium'a Hoş Geldiniz</translation>
 <translation id="5945387852661427312"><ph name="DOMAIN" /> tarafından yönetilen bir hesapla oturum açıyor ve yöneticiye tüm Chromium verileriniz üzerinde denetim olanağı veriyorsunuz. Verileriniz kalıcı olarak bu hesaba bağlanacaktır. Chromium'da oturumu kapattığınızda verileriniz bu cihazdan silinir ancak Google Hesabınızda kalmaya devam eder.</translation>
 <translation id="602807004951640891">Chromium'u kullanarak, <ph name="BEGIN_LINK_TOS" />Hizmet Şartları<ph name="END_LINK_TOS" />'nı kabul etmiş sayılırsınız.</translation>
@@ -44,6 +45,7 @@
 <translation id="8175055321229419309">İpucu: <ph name="BEGIN_LINK" />Chromium'u yuva bölümüne taşıyın<ph name="END_LINK" /></translation>
 <translation id="8252885722420466166">Chromium'da, konumunuza dayalı olarak daha iyi bir Google deneyimi yaşayın.</translation>
 <translation id="8586442755830160949">Telif Hakkı <ph name="YEAR" /> The Chromium Authors. Tüm hakları saklıdır.</translation>
+<translation id="8776843108004031667">Bu hesap ve kaydedilmemiş tüm veriler Chromium'dan kaldırılacak.</translation>
 <translation id="8809780021347235332">Resimleri kaydetmek için Ayarlar'a dokunarak Chromium'un fotoğraflarınızı kullanmasına izin verin</translation>
 <translation id="9022552996538154597">Chromium'da oturum aç</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>

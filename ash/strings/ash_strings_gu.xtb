@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
 <translation id="3604801046548457007">ડેસ્ક <ph name="DESK_TITILE" /> બનાવ્યું</translation>
 <translation id="3606978283550408104">બ્રેઇલ ડિસ્પ્લે કનેક્ટ થયું.</translation>
+<translation id="3616883743181209306">મેનૂને સ્ક્રીનની ઉપરના જમણા ખૂણામાં ખસેડ્યું.</translation>
 <translation id="3621202678540785336">ઇનપુટ</translation>
 <translation id="3621712662352432595">ઑડિઓ સેટિંગ્સ</translation>
 <translation id="3626281679859535460">તેજ</translation>
 <translation id="3631369015426612114">નીચેના પરથી સૂચનાઓને મંજૂરી આપો</translation>
 <translation id="3638400994746983214">પ્રાઇવસી સ્ક્રીનને ટૉગલ કરો. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> મેનેજ કરાયેલા વપરાશકર્તા</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">પ્રદેશને કૅપ્ચર કરો</translation>
 <translation id="371370241367527062">આગળનો માઇક્રોફોન</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">મીરર મોડથી બહાર નીકળે છે</translation>
 <translation id="602001110135236999">ડાબે સ્ક્રોલ કરો</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>
+<translation id="6030495522958826102">મેનૂને સ્ક્રીનની નીચેના ડાબા ખૂણામાં ખસેડ્યું.</translation>
 <translation id="6040143037577758943">બંધ કરો</translation>
 <translation id="6043212731627905357">આ મૉનિટર તમારા <ph name="DEVICE_TYPE" /> સાથે કામ કરી રહ્યું નથી (મૉનિટર સમર્થિત નથી).</translation>
 <translation id="6043994281159824495">હવે સાઇન આઉટ કરો</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">કનેક્ટ કરી રહ્યું છે</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">જૂના રિઝોલ્યુશન પર પાછા ફરી રહ્યાં છે <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">મેનૂને સ્ક્રીનની ઉપરના ડાબા ખૂણામાં ખસેડ્યું.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. અપડેટ લાગુ કરવા માટે આ Chromebookને ફરી શરૂ કરવાની જરૂર છે. આમાં 1 મિનિટ જેટલો સમય લાગી શકે છે.</translation>
 <translation id="7256634071279256947">પાછળનો માઇક્રોફોન</translation>
 <translation id="726276584504105859">વિભાજિત સ્ક્રીનનો ઉપયોગ કરવા માટે અહીં ખેંચો</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">ઑટો રોટેટ</translation>
 <translation id="8517041960877371778">તમારું <ph name="DEVICE_TYPE" /> ચાલુ હોય ત્યારે તે ચાર્જ ન થાય તેવું બની શકે.</translation>
 <translation id="8563862697512465947">સૂચના સેટિંગ્સ</translation>
+<translation id="857201607579416096">મેનૂને સ્ક્રીનની નીચેના જમણા ખૂણામાં ખસેડ્યું.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> સાથે કનેક્ટ થયા</translation>
 <translation id="8631727435199967028">ઍક્સેસિબિલિટી સેટિંગ</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, સિગ્નલની સશક્તતા <ph name="SIGNAL_STRENGTH" />, તમારા વ્યવસ્થાપક દ્વારા મેનેજ કરવામાં આવે છે</translation>

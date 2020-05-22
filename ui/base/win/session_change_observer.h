@@ -8,8 +8,8 @@
 #include <windows.h>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/macros.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ namespace ui {
 // managing the tricky business of observing a singleton object. Only
 // WTS_SESSION_LOCK and WTS_SESSION_UNLOCK events trigger the callback
 // because those are the only events existing observers handle.
-class UI_BASE_EXPORT SessionChangeObserver {
+class COMPONENT_EXPORT(UI_BASE) SessionChangeObserver {
  public:
   // WPARAM is the wparam passed to the OnWndProc when message is
   // WM_WTSSESSION_CHANGE. The bool indicates whether the session

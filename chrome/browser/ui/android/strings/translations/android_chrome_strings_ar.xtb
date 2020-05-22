@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">إضافة لغة</translation>
 <translation id="2650751991977523696">هل تريد تنزيل الملف مرة أخرى؟</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{ملف صوتي واحد (#)}zero{# ملف صوتي}two{ملفان صوتيان (#)}few{# ملفات صوتية}many{# ملفًا صوتيًا}other{# ملف صوتي}}</translation>
+<translation id="2656405586795711023">تطبيقات الويب</translation>
 <translation id="2677748264148917807">الخروج</translation>
 <translation id="2689830683995595741">‏يعني استخدامك لمتصفّح Chrome موافقتك على <ph name="BEGIN_LINK1" />بنود خدمة Google<ph name="END_LINK1" /> و<ph name="BEGIN_LINK2" />بنود الخدمة الإضافية لكل من متصفّح Google Chrome و"نظام التشغيل Chrome"<ph name="END_LINK2" />. وينطبق ذلك أيضًا على <ph name="BEGIN_LINK3" />إشعار الخصوصية لحسابات Google المُدارة من خلال Family Link<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">إعادة تحميل الصفحة</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">مساحة تخزين غير مهمة</translation>
 <translation id="4000212216660919741">الصفحة الرئيسية بلا اتصال بالإنترنت</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{ساعة واحدة (#)}zero{# ساعة}two{ساعتان (#)}few{# ساعات}many{# ساعةً}other{# ساعة}}</translation>
+<translation id="403687620286099920">انقر لفتح رمز الاستجابة السريعة.</translation>
 <translation id="4046123991198612571">المقطع الصوتي التالي</translation>
 <translation id="4056223980640387499">بني داكن</translation>
 <translation id="4060598801229743805">الخيارات متاحة بالقرب من أعلى الشاشة</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">فتح علامة تبويب جديدة</translation>
 <translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{اكتملت عملية تنزيل واحدة.}zero{اكتملت # عملية تنزيل.}two{اكتملت عمليتا تنزيل (#).}few{اكتملت # عمليات تنزيل.}many{اكتملت # عملية تنزيل.}other{اكتملت # عملية تنزيل.}}</translation>
+<translation id="478981486571169252">‏ستظهر لك حالة تسجيل الدخول <ph name="SITE_NAME" />، وبيانات التصفُّح وبيانات الموقع الإلكتروني في متصفِّح Chrome.</translation>
 <translation id="4802417911091824046">‏لا يتضمّن التشفير باستخدام عبارة المرور طرق الدفع والعناوين من Google Pay.
 
 لتغيير هذا الإعداد، يُرجى <ph name="BEGIN_LINK" />إعادة ضبط المزامنة<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">إرسال إلى</translation>
 <translation id="5304593522240415983">لا يمكن ترك هذا الحقل فارغًا</translation>
 <translation id="5308380583665731573">اتصال</translation>
+<translation id="5317780077021120954">حفظ</translation>
 <translation id="5324858694974489420">الإعدادات الأبوية</translation>
 <translation id="5327248766486351172">الاسم</translation>
 <translation id="5342314432463739672">طلبات الإذن</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">البريد الإلكتروني</translation>
 <translation id="5665379678064389456">إنشاء حدث في <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">تجاوز طلب موقع الويب لمنع التكبير</translation>
+<translation id="5681394891799747640">يتعذّر تنزيل رمز الاستجابة السريعة</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="5686790454216892815">اسم الملف طويل جدًا</translation>
 <translation id="5694049548840660018">العودة إلى المنزل بسهولة</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="604996488070107836">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب خطأ غير معلوم.</translation>
 <translation id="605721222689873409">العام</translation>
+<translation id="6059830886158432458">يمكنك التحكُّم بقصصك ونشاطك هنا.</translation>
 <translation id="60923314841986378">عدد الساعات المتبقية: <ph name="HOURS" /></translation>
 <translation id="6108923351542677676">الإعداد قيد التقدّم…</translation>
 <translation id="6111020039983847643">حجم البيانات المستخدَمة</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">الحساب</translation>
 <translation id="6297765934698848803">إن المؤسسة التي تدير الجهاز أوقفت الكاميرا.</translation>
 <translation id="6303969859164067831">تسجيل الخروج وإيقاف المزامنة</translation>
+<translation id="6312687380483398334">تطبيقات الويب (غير مزعجة)</translation>
 <translation id="6316139424528454185">‏إصدار Android غير متوافق</translation>
 <translation id="6324034347079777476">‏تمّ إيقاف مزامنة نظام Android</translation>
 <translation id="6333140779060797560">المشاركة عن طريق <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">تعذّر تنزيل الملف <ph name="FILE_NAME" /> لعدم توفر مساحة لتخزين.</translation>
 <translation id="6496823230996795692">لاستخدام <ph name="APP_NAME" /> للمرة الأولى، يُرجى الاتصال بالإنترنت.</translation>
 <translation id="6508722015517270189">‏إعادة تشغيل Chrome</translation>
+<translation id="6527303717912515753">مشاركة</translation>
 <translation id="6532866250404780454">‏لن يتم عرض مواقع الويب التي تزورها في Chrome. سيتم حذف جميع موقِّتات موقع الويب.</translation>
 <translation id="6534565668554028783">‏استغرقت Google وقتًا أطول مما يجب للاستجابة</translation>
 <translation id="6539092367496845964">حدث خطأ. يُرجى إعادة المحاولة لاحقًا.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">المزامنة لا تعمل</translation>
 <translation id="7606077192958116810">تم تفعيل الوضع البسيط. يمكنك إدارته في الإعدادات.</translation>
 <translation id="7612619742409846846">‏أنت مسجّل الدخول إلى Google باستخدام</translation>
+<translation id="7614971007231847352">تم تنزيل رمز الاستجابة السريعة</translation>
 <translation id="7619072057915878432">تعذّر تنزيل الملف <ph name="FILE_NAME" /> بسبب إخفاقات الشبكة.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />الحصول على مساعدة<ph name="END_LINK1" /> أو <ph name="BEGIN_LINK2" />إعادة الفحص<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">‏مرحبًا بك في Chrome‏</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">سيظهر توفير البيانات هنا</translation>
 <translation id="7835852323729233924">تشغيل الوسائط</translation>
 <translation id="783819812427904514">إعادة صوت الفيديو</translation>
+<translation id="7846296061357476882">‏خدمات Google</translation>
 <translation id="784934925303690534">النطاق الزمني</translation>
 <translation id="7851858861565204677">أجهزة أخرى</translation>
 <translation id="7875915731392087153">إنشاء بريد إلكتروني</translation>

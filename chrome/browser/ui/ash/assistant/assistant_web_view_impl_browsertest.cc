@@ -35,6 +35,72 @@ constexpr auto kMode = FakeS3Mode::kReplay;
 // Update this when you introduce breaking changes to existing tests.
 constexpr int kVersion = 1;
 
+// Macros ----------------------------------------------------------------------
+
+#define EXPECT_PREFERRED_SIZE(web_view_, expected_preferred_size_)       \
+  {                                                                      \
+    MockViewObserver mock;                                               \
+    ScopedObserver<views::View, views::ViewObserver> observer{&mock};    \
+    observer.Add(static_cast<views::View*>(web_view_));                  \
+                                                                         \
+    base::RunLoop run_loop;                                              \
+    EXPECT_CALL(mock, OnViewPreferredSizeChanged)                        \
+        .WillOnce(testing::Invoke([&](views::View* view) {               \
+          EXPECT_EQ(expected_preferred_size_, view->GetPreferredSize()); \
+          run_loop.QuitClosure().Run();                                  \
+        }));                                                             \
+    run_loop.Run();                                                      \
+  }
+
+#define EXPECT_DID_STOP_LOADING(web_view_)                                     \
+  {                                                                            \
+    MockAssistantWebViewObserver mock;                                         \
+    ScopedObserver<AssistantWebView, AssistantWebView::Observer> obs{&mock};   \
+    obs.Add(web_view_);                                                        \
+                                                                               \
+    base::RunLoop run_loop;                                                    \
+    EXPECT_CALL(mock, DidStopLoading).WillOnce(testing::Invoke([&run_loop]() { \
+      run_loop.QuitClosure().Run();                                            \
+    }));                                                                       \
+    run_loop.Run();                                                            \
+  }
+
+#define EXPECT_DID_SUPPRESS_NAVIGATION(web_view_, expected_url_,             \
+                                       expected_disposition_,                \
+                                       expected_from_user_gesture_)          \
+  {                                                                          \
+    MockAssistantWebViewObserver mock;                                       \
+    ScopedObserver<AssistantWebView, AssistantWebView::Observer> obs{&mock}; \
+    obs.Add(web_view_);                                                      \
+                                                                             \
+    base::RunLoop run_loop;                                                  \
+    EXPECT_CALL(mock, DidSuppressNavigation)                                 \
+        .WillOnce(testing::Invoke([&](const GURL& url,                       \
+                                      WindowOpenDisposition disposition,     \
+                                      bool from_user_gesture) {              \
+          EXPECT_EQ(expected_url_, url);                                     \
+          EXPECT_EQ(expected_disposition_, disposition);                     \
+          EXPECT_EQ(expected_from_user_gesture_, from_user_gesture);         \
+          run_loop.QuitClosure().Run();                                      \
+        }));                                                                 \
+    run_loop.Run();                                                          \
+  }
+
+#define EXPECT_DID_CHANGE_CAN_GO_BACK(web_view_, expected_can_go_back_)      \
+  {                                                                          \
+    MockAssistantWebViewObserver mock;                                       \
+    ScopedObserver<AssistantWebView, AssistantWebView::Observer> obs{&mock}; \
+    obs.Add(web_view_);                                                      \
+                                                                             \
+    base::RunLoop run_loop;                                                  \
+    EXPECT_CALL(mock, DidChangeCanGoBack)                                    \
+        .WillOnce(testing::Invoke([&](bool can_go_back) {                    \
+          EXPECT_EQ(expected_can_go_back_, can_go_back);                     \
+          run_loop.QuitClosure().Run();                                      \
+        }));                                                                 \
+    run_loop.Run();                                                          \
+  }
+
 // Helpers ---------------------------------------------------------------------
 
 std::unique_ptr<views::Widget> CreateWidget() {
@@ -96,71 +162,6 @@ class MockAssistantWebViewObserver
   MOCK_METHOD(void, DidChangeCanGoBack, (bool can_go_back), (override));
 };
 
-// Expectations ----------------------------------------------------------------
-
-void ExpectPreferredSize(AssistantWebView* web_view,
-                         const gfx::Size& expected_preferred_size) {
-  MockViewObserver mock;
-  ScopedObserver<views::View, views::ViewObserver> observer{&mock};
-  observer.Add(static_cast<views::View*>(web_view));
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock, OnViewPreferredSizeChanged)
-      .WillOnce(testing::Invoke([&](views::View* view) {
-        EXPECT_EQ(expected_preferred_size, view->GetPreferredSize());
-        run_loop.QuitClosure().Run();
-      }));
-  run_loop.Run();
-}
-
-void ExpectDidStopLoading(AssistantWebView* web_view) {
-  MockAssistantWebViewObserver mock;
-  ScopedObserver<AssistantWebView, AssistantWebView::Observer> obs{&mock};
-  obs.Add(web_view);
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock, DidStopLoading).WillOnce(testing::Invoke([&run_loop]() {
-    run_loop.QuitClosure().Run();
-  }));
-  run_loop.Run();
-}
-
-void ExpectDidSuppressNavigation(AssistantWebView* web_view,
-                                 const GURL& expected_url,
-                                 WindowOpenDisposition expected_disposition,
-                                 bool expected_from_user_gesture) {
-  MockAssistantWebViewObserver mock;
-  ScopedObserver<AssistantWebView, AssistantWebView::Observer> obs{&mock};
-  obs.Add(web_view);
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock, DidSuppressNavigation)
-      .WillOnce(testing::Invoke([&](const GURL& url,
-                                    WindowOpenDisposition disposition,
-                                    bool from_user_gesture) {
-        EXPECT_EQ(expected_url, url);
-        EXPECT_EQ(expected_disposition, disposition);
-        EXPECT_EQ(expected_from_user_gesture, from_user_gesture);
-        run_loop.QuitClosure().Run();
-      }));
-  run_loop.Run();
-}
-
-void ExpectDidChangeCanGoBack(AssistantWebView* web_view,
-                              bool expected_can_go_back) {
-  MockAssistantWebViewObserver mock;
-  ScopedObserver<AssistantWebView, AssistantWebView::Observer> obs{&mock};
-  obs.Add(web_view);
-
-  base::RunLoop run_loop;
-  EXPECT_CALL(mock, DidChangeCanGoBack)
-      .WillOnce(testing::Invoke([&](bool can_go_back) {
-        EXPECT_EQ(expected_can_go_back, can_go_back);
-        run_loop.QuitClosure().Run();
-      }));
-  run_loop.Run();
-}
-
 }  // namespace
 
 // AssistantWebViewImplBrowserTest ---------------------------------------------
@@ -192,17 +193,17 @@ IN_PROC_BROWSER_TEST_F(AssistantWebViewImplBrowserTest, ShouldAutoResize) {
   // Verify auto-resizing within min/max bounds.
   web_view->Navigate(
       CreateDataUrlWithBody("<div style='width:700px; height:500px'></div>"));
-  ExpectPreferredSize(web_view, gfx::Size(700, 500));
+  EXPECT_PREFERRED_SIZE(web_view, gfx::Size(700, 500));
 
   // Verify auto-resizing clamps to min bounds.
   web_view->Navigate(
       CreateDataUrlWithBody("<div style='width:0; height:0'></div>"));
-  ExpectPreferredSize(web_view, gfx::Size(600, 400));
+  EXPECT_PREFERRED_SIZE(web_view, gfx::Size(600, 400));
 
   // Verify auto-resizing clamps to max bounds.
   web_view->Navigate(
       CreateDataUrlWithBody("<div style='width:1000px; height:1000px'></div>"));
-  ExpectPreferredSize(web_view, gfx::Size(800, 600));
+  EXPECT_PREFERRED_SIZE(web_view, gfx::Size(800, 600));
 }
 
 // Tests that AssistantWebViewImpl will notify DidStopLoading() events.
@@ -213,7 +214,7 @@ IN_PROC_BROWSER_TEST_F(AssistantWebViewImplBrowserTest,
       AssistantWebViewFactory::Get()->Create(AssistantWebView::InitParams()));
 
   web_view->Navigate(CreateDataUrl());
-  ExpectDidStopLoading(web_view);
+  EXPECT_DID_STOP_LOADING(web_view);
 }
 
 // Tests that AssistantWebViewImpl will notify DidSuppressNavigation() events.
@@ -250,13 +251,13 @@ IN_PROC_BROWSER_TEST_F(AssistantWebViewImplBrowserTest,
     )"));
 
   // Expect suppression of the first click event.
-  ExpectDidSuppressNavigation(
+  EXPECT_DID_SUPPRESS_NAVIGATION(
       web_view, /*url=*/GURL("https://google.com/"),
       /*disposition=*/WindowOpenDisposition::CURRENT_TAB,
       /*from_user_gesture=*/false);
 
   // Expect suppression of the second click event.
-  ExpectDidSuppressNavigation(
+  EXPECT_DID_SUPPRESS_NAVIGATION(
       web_view, /*url=*/GURL("https://assistant.google.com/"),
       /*disposition=*/WindowOpenDisposition::NEW_FOREGROUND_TAB,
       /*from_user_gesture=*/true);
@@ -270,13 +271,13 @@ IN_PROC_BROWSER_TEST_F(AssistantWebViewImplBrowserTest,
       AssistantWebViewFactory::Get()->Create(AssistantWebView::InitParams()));
 
   web_view->Navigate(CreateDataUrlWithBody("<div>First Page</div>"));
-  ExpectDidStopLoading(web_view);
+  EXPECT_DID_STOP_LOADING(web_view);
 
   web_view->Navigate(CreateDataUrlWithBody("<div>Second Page</div>"));
-  ExpectDidChangeCanGoBack(web_view, /*can_go_back=*/true);
+  EXPECT_DID_CHANGE_CAN_GO_BACK(web_view, /*can_go_back=*/true);
 
   web_view->GoBack();
-  ExpectDidChangeCanGoBack(web_view, /*can_go_back=*/false);
+  EXPECT_DID_CHANGE_CAN_GO_BACK(web_view, /*can_go_back=*/false);
 }
 
 }  // namespace assistant

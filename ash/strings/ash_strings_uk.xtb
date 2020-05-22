@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">Акумулятор заряджено</translation>
 <translation id="3604801046548457007">Створено робочий стіл "<ph name="DESK_TITILE" />"</translation>
 <translation id="3606978283550408104">Брайлівський дисплей під’єднано.</translation>
+<translation id="3616883743181209306">Меню переміщено у верхній правий кут екрана.</translation>
 <translation id="3621202678540785336">Вхід</translation>
 <translation id="3621712662352432595">Налаштування звуку</translation>
 <translation id="3626281679859535460">Яскравість</translation>
 <translation id="3631369015426612114">Дозволити сповіщення з перелічених нижче джерел</translation>
 <translation id="3638400994746983214">Перемикає екран конфіденційності. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> – керований користувач</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">Зробити знімок певної області</translation>
 <translation id="371370241367527062">Мікрофон на передній панелі</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">Вихід із режиму віддзеркалення</translation>
 <translation id="602001110135236999">Прокрутити ліворуч</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, рівень сигналу –<ph name="SIGNAL_STRENGTH" />. Мережею керує адміністратор</translation>
+<translation id="6030495522958826102">Меню переміщено в нижній лівий кут екрана.</translation>
 <translation id="6040143037577758943">Закрити</translation>
 <translation id="6043212731627905357">Ваш пристрій <ph name="DEVICE_TYPE" /> не підтримує цей монітор.</translation>
 <translation id="6043994281159824495">Вийти зараз</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">Під’єднання</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Попередня роздільна здатність повернеться через <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">Меню переміщено у верхній лівий кут екрана.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Щоб оновлення почали діяти, Chromebook потрібно перезапустити. Це може зайняти до 1 хвилини.</translation>
 <translation id="7256634071279256947">Мікрофон на задній панелі</translation>
 <translation id="726276584504105859">Перетягніть сюди, щоб розділити екран</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">Автообертання</translation>
 <translation id="8517041960877371778">Пристрій <ph name="DEVICE_TYPE" /> може не заряджатися, коли він увімкнений.</translation>
 <translation id="8563862697512465947">Налаштування сповіщення</translation>
+<translation id="857201607579416096">Меню переміщено в нижній правий кут екрана.</translation>
 <translation id="8627191004499078455">Під’єднано до пристрою: <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Налаштування спеціальних можливостей</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />. Мережею керує адміністратор</translation>

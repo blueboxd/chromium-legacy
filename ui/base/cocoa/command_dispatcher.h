@@ -7,8 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "base/component_export.h"
 #import "base/mac/scoped_nsobject.h"
-#include "ui/base/ui_base_export.h"
 
 @protocol CommandDispatcherDelegate;
 @protocol CommandDispatchingWindow;
@@ -21,7 +21,7 @@
 // NSWindow can use CommandDispatcher by implementing CommandDispatchingWindow
 // and overriding -[NSWindow performKeyEquivalent:] and -[NSWindow sendEvent:]
 // to call the respective CommandDispatcher methods.
-UI_BASE_EXPORT
+COMPONENT_EXPORT(UI_BASE)
 @interface CommandDispatcher : NSObject
 
 @property(assign, nonatomic) id<CommandDispatcherDelegate> delegate;

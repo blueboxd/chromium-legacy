@@ -201,7 +201,6 @@
 <translation id="1746113442205726301">Պատկերի տեղաշարժ Y առանցքով</translation>
 <translation id="17513872634828108">Բաց ներդիրներ</translation>
 <translation id="1752021286346845558">Փոստարկղ 8</translation>
-<translation id="1752483581718172048">Թաքցնել հուշումները</translation>
 <translation id="1753706481035618306">Էջի համարը</translation>
 <translation id="1763864636252898013">Այս սերվերը չի կարող ապացուցել, որ <ph name="DOMAIN" /> է: Ձեր սարքի օպերացիոն համակարգը չի վստահում դրա անվտանգության վկայականին: Պատճառը կարող է լինել սխալ կազմաձևումը կամ կապակցման խափանումը հարձակվողի կողմից:</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Գործարկեք Windows-ի ցանցի ախտորոշումը<ph name="END_LINK" />:</translation>
@@ -1624,6 +1623,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Չկա}=1{1 հավելված (<ph name="EXAMPLE_APP_1" />)}=2{2 հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}other{# հավելված (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Այնուամենայնիվ, դուք անտեսանելի չեք: Ինկոգնիտո ռեժիմը չի թաքցնում ձեր դիտարկման պատմությունը ձեր գործատուից, ինտերնետային ծառայությունների մատուցողից կամ ձեր այցելած կայքերից:</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Օգնեք բարձրացնել անվտանգության մակարդակը համացանցում՝ Google-ին ուղարկելով <ph name="BEGIN_WHITEPAPER_LINK" />ձեր այցելած որոշ էջերի URL-ներն ու դրանց բովանդակությունը և որոշակի տեղեկություններ համակարգի մասին<ph name="END_WHITEPAPER_LINK" />։ <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Փակե՞լ կայքը</translation>
 <translation id="7865448901209910068">Լավագույն արագություն</translation>
 <translation id="7874263914261512992">Դուք հենց նոր մուտքագրեցիք ձեր գաղտնաբառը կասկածելի կայքում։ Chrome-ը խորհուրդ է տալիս ստուգել պահված գաղտնաբառերը <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> և այլ կայքերի համար, որտեղ դուք այժմ օգտագործում եք այս գաղտնաբառը։</translation>
@@ -1758,7 +1758,6 @@
 <translation id="8425213833346101688">Փոխել</translation>
 <translation id="8428213095426709021">Կարգավորումներ</translation>
 <translation id="8433057134996913067">Սա ձեզ դուրս կհանի կայքերից շատերից:</translation>
-<translation id="8433678324664858900">Ցույց տալ առաջարկություններ</translation>
 <translation id="8437238597147034694">&amp;Հետարկել տեղափոխումը</translation>
 <translation id="8457125768502047971">Անորոշ</translation>
 <translation id="8461694314515752532">Գաղտնագրել համաժամացված տվյալները սեփական համաժամացման անցաբառով</translation>

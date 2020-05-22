@@ -7,15 +7,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 
 namespace ui {
 
 // Whether a force-click event on the touchpad should invoke Quick Look.
-UI_BASE_EXPORT bool ForceClickInvokesQuickLook();
+COMPONENT_EXPORT(UI_BASE) bool ForceClickInvokesQuickLook();
 
 // Returns true if both CGFloat values are equal.
-UI_BASE_EXPORT bool IsCGFloatEqual(CGFloat a, CGFloat b);
+COMPONENT_EXPORT(UI_BASE) bool IsCGFloatEqual(CGFloat a, CGFloat b);
 
 }  // namespace ui
 

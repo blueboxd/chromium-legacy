@@ -186,6 +186,10 @@ constexpr char kJSIsSelecting[] = "isSelecting";
 constexpr char kJSFieldFocusType[] = "formFocusChange";
 constexpr char kJSFieldFocus[] = "focused";
 
+// Notify when document is focused (Plugin -> Page)
+constexpr char kJSDocumentFocusChangedType[] = "documentFocusChanged";
+constexpr char kJSDocumentHasFocus[] = "hasFocus";
+
 constexpr int kFindResultCooldownMs = 100;
 
 // Do not save forms with over 100 MB. This cap should be kept in sync with and
@@ -1932,6 +1936,13 @@ void OutOfProcessInstance::IsEditModeChanged(bool is_edit_mode) {
 
 float OutOfProcessInstance::GetToolbarHeightInScreenCoords() {
   return top_toolbar_height_in_viewport_coords_ * device_scale_;
+}
+
+void OutOfProcessInstance::DocumentFocusChanged(bool document_has_focus) {
+  pp::VarDictionary message;
+  message.Set(pp::Var(kType), pp::Var(kJSDocumentFocusChangedType));
+  message.Set(pp::Var(kJSDocumentHasFocus), pp::Var(document_has_focus));
+  PostMessage(message);
 }
 
 void OutOfProcessInstance::ProcessPreviewPageInfo(const std::string& url,

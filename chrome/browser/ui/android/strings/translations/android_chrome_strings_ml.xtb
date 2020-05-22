@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">ഭാഷ ചേര്‍ക്കുക</translation>
 <translation id="2650751991977523696">ഫയൽ വീണ്ടും ഡൗൺലോഡ് ചെയ്യണോ?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ഓഡിയോ ഫയൽ}other{# ഓഡിയോ ഫയലുകള്‍}}</translation>
+<translation id="2656405586795711023">വെബ് ആപ്പുകൾ</translation>
 <translation id="2677748264148917807">ഉപേക്ഷിക്കുക</translation>
 <translation id="2689830683995595741">Chrome ഉപയോഗിക്കുന്നതിലൂടെ, നിങ്ങൾ <ph name="BEGIN_LINK1" />Google സേവന നിബന്ധനകളും<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />Google Chrome, Chrome OS അധിക സേവന നിബന്ധനകളും<ph name="END_LINK2" /> അംഗീകരിക്കുന്നു. <ph name="BEGIN_LINK3" />Family Link ഉപയോഗിച്ച് മാനേജ് ചെയ്യുന്ന Google അക്കൗണ്ടുകൾക്കുള്ള സ്വകാര്യതാ കുറിപ്പും<ph name="END_LINK3" /> ബാധകമാണ്.</translation>
 <translation id="2707726405694321444">പേജ് പുതുക്കുക</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">പ്രധാനമല്ലാത്ത സ്‌റ്റോറേജ്</translation>
 <translation id="4000212216660919741">ഓഫ്‌ലൈൻ ഹോം</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# മണിക്കൂർ}other{# മണിക്കൂർ}}</translation>
+<translation id="403687620286099920">QR കോഡ് തുറക്കാൻ ടാപ്പ് ചെയ്യുക</translation>
 <translation id="4046123991198612571">അടുത്ത ട്രാക്ക്</translation>
 <translation id="4056223980640387499">സിപിയ</translation>
 <translation id="4060598801229743805">സ്‌ക്രീനിന്റെ മുകളിൽ ഓപ്‌ഷനുകൾ ലഭ്യമാണ്</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">പുതിയൊരു ടാബ് തുറക്കുക</translation>
 <translation id="4759238208242260848">ഡൌണ്‍ലോഡുകള്‍</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ഒരു ഡൗൺലോഡ് പൂർത്തിയായി.}other{# ഡൗൺലോഡുകൾ പൂർത്തിയായി.}}</translation>
+<translation id="478981486571169252">നിങ്ങളുടെ <ph name="SITE_NAME" />-ന്റെ സൈൻ ഇൻ സ്‌റ്റാറ്റസ്, ബ്രൗസിംഗ് ഡാറ്റ, സൈറ്റ് ഡാറ്റ എന്നിവ Chrome-ൽ കാണാനാകും.</translation>
 <translation id="4802417911091824046">പാസ്‌ഫ്രെയ്‌സ് എൻക്രി‌പ്ഷനിൽ, Google Pay-ൽ നിന്നുള്ള പേയ്മെന്‍റ് രീതികളും വിലാസങ്ങളും ഉൾപ്പെടുന്നില്ല.
 
 ഈ ക്രമീകരണം മാറ്റാൻ, <ph name="BEGIN_LINK" />സമന്വയം പുനഃക്രമീകരിക്കുക<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">ഇതിലേക്ക് അയയ്ക്കുക</translation>
 <translation id="5304593522240415983">ഈ ഫീൽഡ് ശൂന്യമായിടാൻ കഴിയില്ല</translation>
 <translation id="5308380583665731573">കണക്‌റ്റുചെയ്യുക</translation>
+<translation id="5317780077021120954">സംരക്ഷിക്കുക</translation>
 <translation id="5324858694974489420">രക്ഷാകർതൃ ക്രമീകരണം</translation>
 <translation id="5327248766486351172">പേര്</translation>
 <translation id="5342314432463739672">അനുമതി അഭ്യർത്ഥനകൾ</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">ഇമെയില്‍</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> ആപ്പിൽ ഇവന്റ് സൃഷ്‌ടിക്കുക</translation>
 <translation id="5668404140385795438">സൂം ഇൻ ചെയ്യുന്നത് തടയുന്നതിനുള്ള ഒരു വെബ്സൈറ്റിന്റെ അഭ്യർത്ഥന അസാധുവാക്കുക</translation>
+<translation id="5681394891799747640">QR കോഡ് ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="5684874026226664614">ക്ഷമിക്കണം. ഈ പേജ് വിവർത്തനം ചെയ്യാനായില്ല.</translation>
 <translation id="5686790454216892815">ഫയലിന്റെ പേര് ദൈർഘ്യമേറിയതാണ്</translation>
 <translation id="5694049548840660018">ഹോമിലേക്ക് എളുപ്പത്തിൽ മടങ്ങൂ</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">കൂടുതൽ</translation>
 <translation id="604996488070107836">ഒരു അജ്ഞാതമായ പിശക് കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">നിങ്ങളുടെ സ്‌റ്റോറികളും ആക്റ്റിവിറ്റികളും ഇവിടെ നിയന്ത്രിക്കുക</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> മണിക്കൂർ ശേഷിക്കുന്നു</translation>
 <translation id="6108923351542677676">സജ്ജീകരണം പുരോഗതിയിലാണ്...</translation>
 <translation id="6111020039983847643">ഉപയോഗിച്ച ഡാറ്റ</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">അക്കൗണ്ട്</translation>
 <translation id="6297765934698848803">നിങ്ങളുടെ ഉപകരണം മാനേജ് ചെയ്യുന്ന ഓർഗനൈസേഷൻ നിങ്ങളുടെ ക്യാമറ ഓഫാക്കി.</translation>
 <translation id="6303969859164067831">സൈൻ ഔട്ട് ചെയ്‌ത് സമന്വയം ഓഫാക്കുക</translation>
+<translation id="6312687380483398334">വെബ്‌ ആപ്പുകൾ (നിശബ്‌ദം)</translation>
 <translation id="6316139424528454185">Android പതിപ്പ് പിന്തുണയ്‌ക്കുന്നതല്ല</translation>
 <translation id="6324034347079777476">Android സിസ്‌റ്റം സമന്വയിപ്പിക്കൽ പ്രവർത്തനരഹിതമാക്കി</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> വഴി പങ്കിടുക</translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">സ്‌റ്റോറേജ് ഇടമില്ലാത്തതിനാൽ <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> ആദ്യമായി ഉപയോഗിക്കാൻ, ഇന്‍റര്‍നെറ്റിലേക്ക് കണക്റ്റുചെയ്യുക.</translation>
 <translation id="6508722015517270189">Chrome റീസ്‌റ്റാർട്ടുചെയ്യുക</translation>
+<translation id="6527303717912515753">പങ്കിടുക</translation>
 <translation id="6532866250404780454">നിങ്ങൾ Chrome-ൽ സന്ദർശിക്കുന്ന സൈറ്റുകൾ കാണിക്കില്ല. എല്ലാ സൈറ്റ് ടൈമറുകളും ഇല്ലാതാക്കപ്പെടും.</translation>
 <translation id="6534565668554028783">Google പ്രതികരിക്കാൻ കൂടുതൽ സമയമെടുത്തു</translation>
 <translation id="6539092367496845964">എന്തോ കുഴപ്പം സംഭവിച്ചു. പിന്നീട് വീണ്ടും ശ്രമിക്കുക.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">സമന്വയിപ്പിക്കൽ പ്രവർത്തിക്കുന്നില്ല</translation>
 <translation id="7606077192958116810">ലൈറ്റ് മോഡ് ഓണാണ്. ഇത് ക്രമീകരണത്തിൽ മാനേജ് ചെയ്യുക.</translation>
 <translation id="7612619742409846846">ഇനി പറയുന്നതിൽ നിന്നും Google-ലേക്ക് സൈൻ ഇൻ ചെയ്‌തു</translation>
+<translation id="7614971007231847352">QR കോഡ് ഡൗൺലോഡ് ചെയ്‌തു</translation>
 <translation id="7619072057915878432">നെറ്റ്‌വർക്ക് പരാജയം കാരണം <ph name="FILE_NAME" /> ഡൗൺലോഡ് ചെയ്യാനായില്ല.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />സഹായം തേടുക<ph name="END_LINK1" /> അല്ലെങ്കിൽ <ph name="BEGIN_LINK2" />വീണ്ടും സ്‌കാൻ ചെയ്യുക<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome-ലേക്ക് സ്വാഗതം</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">നിങ്ങൾ ലാഭിച്ച ഡാറ്റ ഇവിടെ ദൃശ്യമാവും</translation>
 <translation id="7835852323729233924">മീഡിയ പ്ലേ ചെയ്യുന്നു</translation>
 <translation id="783819812427904514">വീഡിയോ അൺ‌മ്യൂട്ട് ചെയ്യുക</translation>
+<translation id="7846296061357476882">Google സേവനങ്ങൾ</translation>
 <translation id="784934925303690534">സമയ ശ്രേണി</translation>
 <translation id="7851858861565204677">മറ്റ് ഉപകരണങ്ങൾ</translation>
 <translation id="7875915731392087153">ഇമെയിൽ സൃഷ്‌ടിക്കുക</translation>

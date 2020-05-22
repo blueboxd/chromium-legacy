@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">완료하려면 이전 및 새 비밀번호를 입력하세요.</translation>
 <translation id="6106186594183574873">완료하려면 이전 비밀번호를 입력하세요.</translation>
 <translation id="6146993107019042706">완료하려면 새 비밀번호를 입력하세요.</translation>
+<translation id="6517239166834772319">탐색</translation>
 <translation id="6643016212128521049">삭제</translation>
 <translation id="7162487448488904999">갤러리</translation>
 <translation id="7658239707568436148">취소</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">상태</translation>
 <translation id="808894953321890993">비밀번호 변경</translation>
 <translation id="8208861521865154048">혜택</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" />에서 이 사용자를 관리합니다. 원격으로 설정을 관리하고 사용자 활동을 모니터링할 수 있습니다.</translation>
 <translation id="8747900814994928677">변경사항 확인</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> 남은 시도 <ph name="ATTEMPTS_LEFT" />회</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> 티켓을 새로고침하세요.</translation>

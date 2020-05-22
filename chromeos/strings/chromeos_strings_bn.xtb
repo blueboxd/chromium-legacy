@@ -42,6 +42,7 @@
 <translation id="6058625436358447366">সম্পূর্ণ করতে, আপনার পুরনো ও নতুন পাসওয়ার্ড লিখুন</translation>
 <translation id="6106186594183574873">সম্পূর্ণ করতে, আপনার পুরনো পাসওয়ার্ড লিখুন</translation>
 <translation id="6146993107019042706">সম্পূর্ণ করতে, আপনার নতুন পাসওয়ার্ড লিখুন</translation>
+<translation id="6517239166834772319">ঘুরে দেখুন</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="7162487448488904999">গ্যালারি</translation>
 <translation id="7658239707568436148">বাতিল</translation>
@@ -49,6 +50,7 @@
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="808894953321890993">পাসওয়ার্ড পরিবর্তন করুন</translation>
 <translation id="8208861521865154048">বিশেষ সুবিধা</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> এই ব্যবহারকারীকে ম্যানেজ করে। এটি দূর থেকে সেটিংস ম্যানেজ করতে পারে এবং ব্যবহারকারীর গতিবিধির উপর নজর রাখতে পারে।</translation>
 <translation id="8747900814994928677">পরিবর্তন কনফার্ম করুন</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> আর <ph name="ATTEMPTS_LEFT" /> বার চেষ্টা করতে পারবেন</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" />-এর টিকিট রিফ্রেশ করুন</translation>

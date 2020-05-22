@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> dorește să stocheze permanent cantități mari de date pe dispozitiv</translation>
 <translation id="1032854598605920125">Rotește în sensul acelor de ceasornic</translation>
 <translation id="1036348656032585052">Dezactivează</translation>
+<translation id="1038106730571050514">Afișează sugestii</translation>
 <translation id="1038842779957582377">nume necunoscut</translation>
 <translation id="1041998700806130099">Mesajul din foaia sarcinii</translation>
 <translation id="1050038467049342496">închide celelalte aplicații;</translation>
@@ -201,7 +202,6 @@
 <translation id="1746113442205726301">Deplasarea poziției Y a imaginii</translation>
 <translation id="17513872634828108">File deschise</translation>
 <translation id="1752021286346845558">Căsuța de e-mail 8</translation>
-<translation id="1752483581718172048">Ascunde sugestiile</translation>
 <translation id="1753706481035618306">Numărul paginii</translation>
 <translation id="1763864636252898013">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al dispozitivului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Rulează Diagnostice rețea Windows<ph name="END_LINK" />.</translation>
@@ -402,6 +402,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="2666092431469916601">Sus</translation>
 <translation id="2666117266261740852">închide celelalte file sau aplicații;</translation>
 <translation id="2674170444375937751">Sigur doriți să ștergeți aceste pagini din istoric?</translation>
+<translation id="2674804415323431591">Ascunde sugestiile</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Ieși</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1080,6 +1081,7 @@ Permiți ca <ph name="EMBEDDED_URL" /> să folosească cookie-uri și date privi
 <translation id="5523118979700054094">Numele politicii</translation>
 <translation id="55293785478302737">Broșare</translation>
 <translation id="553484882784876924">Prc6 (Plic)</translation>
+<translation id="5536214594743852365">Afișează secțiunea „<ph name="SECTION" />”</translation>
 <translation id="5539243836947087108">Fundație</translation>
 <translation id="5540224163453853">Articolul solicitat nu poate fi găsit.</translation>
 <translation id="5541086400771735334">Căsuța de e-mail 7</translation>
@@ -1479,6 +1481,7 @@ Detalii suplimentare:
 <translation id="7313965965371928911">Avertizări privind <ph name="BEGIN_LINK" />Navigarea sigură<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Ajutor pentru conectare</translation>
+<translation id="7323804146520582233">Ascunde secțiunea „<ph name="SECTION" />”</translation>
 <translation id="733354035281974745">Modificarea contului local al dispozitivului</translation>
 <translation id="7333654844024768166">Ai introdus parola pe un site înșelător. Chromium recomandă să accesezi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> și alte site-uri pe care folosești această parolă și să o schimbi acum.</translation>
 <translation id="7334320624316649418">&amp;Repetați reordonarea</translation>
@@ -1757,7 +1760,6 @@ Detalii suplimentare:
 <translation id="8425213833346101688">Modificați</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433057134996913067">Astfel, te vei deconecta de pe majoritatea site-urilor.</translation>
-<translation id="8433678324664858900">Afișează sugestii</translation>
 <translation id="8437238597147034694">&amp;Anulați mutarea</translation>
 <translation id="8457125768502047971">Durată nedefinită</translation>
 <translation id="8461694314515752532">Criptează datele sincronizate folosind propria expresie de acces pentru sincronizare</translation>

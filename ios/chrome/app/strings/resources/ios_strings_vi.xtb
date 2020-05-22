@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Lịch sử</translation>
 <translation id="1650222530560417226">Nhấn nút "Bắt đầu ghi nhật ký" để thu thập nhật ký trong bảng điều khiển JavaScript và lỗi từ tất cả các tab trong tương lai. Nhật ký sẽ được thu thập (và chỉ được lưu trữ trong bộ nhớ) cho đến khi bạn đóng trang này hoặc nhấn vào "Dừng ghi nhật ký".</translation>
 <translation id="1657011748321897393">Không thể chia sẻ do bạn không kết nối với mạng.</translation>
+<translation id="1657641691196698092">Số cookie bị chặn</translation>
 <translation id="165877110639533037">Không có tab nào đang mở</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> sang <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Để sử dụng dấu trang trên tất cả các thiết bị của bạn, hãy bật đồng bộ hóa.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Chính sách thiết bị đã chặn quyền truy cập vào ảnh của bạn</translation>
 <translation id="2578571896248130439">Gửi trang web</translation>
 <translation id="2584132361465095047">Thêm tài khoản...</translation>
+<translation id="2600682495497606169">Xóa cookie của trang web</translation>
 <translation id="2625189173221582860">Đã sao chép mật khẩu</translation>
 <translation id="2647269890314209800">Các cookie đang được sử dụng</translation>
 <translation id="2648803196158606475">Xóa mục đã đọc</translation>
@@ -332,6 +334,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="5234764350956374838">Loại bỏ</translation>
 <translation id="5245322853195994030">Hủy đồng bộ hóa</translation>
 <translation id="5271549068863921519">Lưu mật khẩu</translation>
+<translation id="5295239312320826323">Xóa tài khoản <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5317780077021120954">Lưu</translation>
 <translation id="5327248766486351172">Tên</translation>
@@ -418,6 +421,7 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6362362396625799311">Không có tab ẩn danh nào</translation>
 <translation id="6363526231572697780">Không có tên người dùng</translation>
 <translation id="6374469231428023295">Thử lại</translation>
+<translation id="6377118281273296434">Thông tin bảo mật của trang web</translation>
 <translation id="6380866119319257197">Nếu bạn quên cụm mật khẩu hoặc muốn thay đổi cài đặt này, hãy <ph name="BEGIN_LINK" />đặt lại đồng bộ hóa<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Tên trên thẻ</translation>
 <translation id="6406506848690869874">Đồng bộ hóa</translation>
@@ -525,11 +529,13 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 
 Vì tài khoản của bạn do <ph name="HOSTED_DOMAIN" /> quản lý, nên dữ liệu trên Chrome sẽ bị xóa khỏi thiết bị này khi bạn đăng xuất. Dữ liệu đã đồng bộ hóa của bạn sẽ vẫn ở trong Tài khoản Google của bạn.</translation>
 <translation id="7772032839648071052">Xác nhận cụm mật khẩu</translation>
+<translation id="7778472311864276518">Xóa tài khoản khỏi thiết bị này</translation>
 <translation id="7781011649027948662">Dịch trang?</translation>
 <translation id="7781829728241885113">Hôm qua</translation>
 <translation id="778855399387580014">Bắt đầu tìm kiếm trong tab Chrome mới.</translation>
 <translation id="7791543448312431591">Thêm</translation>
 <translation id="7828557259026017104">Cookie là các tệp do các trang web bạn truy cập tạo ra. Các trang web dùng cookie để ghi nhớ lựa chọn của bạn. Cookie bên thứ ba do các trang web khác tạo ra. Các trang web này sở hữu một số nội dung như quảng cáo hoặc hình ảnh mà bạn thấy trên trang web mình truy cập.</translation>
+<translation id="7839985698273989086">Trang ngoại tuyến</translation>
 <translation id="7840771868269352570">Mục đã chọn sẽ bị xóa.</translation>
 <translation id="7856733331829174190">Không thể tải xuống</translation>
 <translation id="7859704718976024901">Lịch sử duyệt web</translation>

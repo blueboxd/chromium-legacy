@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1650222530560417226">आने वाले समय के JavaScript कंसोल लॉग और सभी टैब की गड़बड़ियां इकट्ठा करने के लिए "लॉग करना शुरू करें" बटन पर टैप करें. लॉग तब तक इकट्ठा किए जाएंगे (और सिर्फ़ मेमोरी में सेव किए जाएंगे), जब तक कि यह पेज बंद नहीं किया जाता या फिर "लॉग करना बंद करें" पर टैप नहीं किया जाता.</translation>
 <translation id="1657011748321897393">साझाकरण विफल रहा क्योंकि आप नेटवर्क से कनेक्ट नहीं हैं.</translation>
+<translation id="1657641691196698092">ब्लॉक की गई कुकी</translation>
 <translation id="165877110639533037">कोई खुले टैब नहीं</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> से <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">अपने सभी डिवाइस पर अपने बुकमार्क पाने के लिए, सिंक चालू करें.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">एक डिवाइस नीति ने आपकी फ़ोटो का एक्सेस रोक दिया है</translation>
 <translation id="2578571896248130439">वेबपेज भेजें</translation>
 <translation id="2584132361465095047">खाता जोड़ें...</translation>
+<translation id="2600682495497606169">साइट कुकी मिटाएं</translation>
 <translation id="2625189173221582860">पासवर्ड कॉपी किया गया</translation>
 <translation id="2647269890314209800">इस्तेमाल की जा रही कुकी</translation>
 <translation id="2648803196158606475">'पढ़े गए' मिटाएं</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5245322853195994030">सिंक करना रद्द करें</translation>
 <translation id="5271549068863921519">पासवर्ड सेव करें</translation>
+<translation id="5295239312320826323">क्या आप <ph name="USER_EMAIL" /> खाता हटाना चाहते हैं?</translation>
 <translation id="5300589172476337783">दिखाएं</translation>
 <translation id="5317780077021120954">सेव करें</translation>
 <translation id="5327248766486351172">नाम</translation>

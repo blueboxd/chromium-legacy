@@ -7,7 +7,7 @@
 
 #include <set>
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
@@ -15,7 +15,8 @@ namespace ui {
 // Brings a group of windows to the front without changing their order, and
 // makes the frontmost one key and main. If none are visible, the frontmost
 // miniaturized window is deminiaturized.
-UI_BASE_EXPORT void FocusWindowSet(const std::set<gfx::NativeWindow>& windows);
+COMPONENT_EXPORT(UI_BASE)
+void FocusWindowSet(const std::set<gfx::NativeWindow>& windows);
 
 // Brings a group of windows to the front without changing their
 // order, and makes the frontmost one key and main. If none are
@@ -24,8 +25,8 @@ UI_BASE_EXPORT void FocusWindowSet(const std::set<gfx::NativeWindow>& windows);
 // behavior. Unlike FocusWindowSet, only windows on the current space
 // are considered. It also ignores the hidden state of windows; the
 // window system may be in the middle of unhiding the application.
-UI_BASE_EXPORT void FocusWindowSetOnCurrentSpace(
-    const std::set<gfx::NativeWindow>& windows);
+COMPONENT_EXPORT(UI_BASE)
+void FocusWindowSetOnCurrentSpace(const std::set<gfx::NativeWindow>& windows);
 
 }  // namespace ui
 

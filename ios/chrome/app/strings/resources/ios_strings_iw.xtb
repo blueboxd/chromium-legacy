@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1650222530560417226">‏אפשר להקיש על הלחצן "התחלת הרישום ביומן" כדי לאסוף רשומות יומן ושגיאות של לוח JavaScript מכל הכרטיסיות. רשומות היומן ייאספו (ויישמרו רק בזיכרון) עד לסגירת הדף הזה, או להקשה על "הפסקת הרישום ביומן".</translation>
 <translation id="1657011748321897393">השיתוף נכשל משום שאינך מחובר לרשת.</translation>
+<translation id="1657641691196698092">‏קובצי Cookie חסומים</translation>
 <translation id="165877110639533037">אין כרטיסיות פתוחות</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">כדי שהסימניות שלך יופיעו בכל המכשירים, יש להפעיל סינכרון.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">הגישה לתמונות שלך נחסמה עקב מדיניות שהוגדרה למכשיר</translation>
 <translation id="2578571896248130439">שליחת דף האינטרנט</translation>
 <translation id="2584132361465095047">חשבון חדש…</translation>
+<translation id="2600682495497606169">‏ניקוי קובצי ה-cookie של אתרים</translation>
 <translation id="2625189173221582860">הסיסמה הועתקה</translation>
 <translation id="2647269890314209800">‏קובצי Cookie בשימוש</translation>
 <translation id="2648803196158606475">מחק פריטים שנקראו</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">סגור</translation>
 <translation id="5245322853195994030">ביטול הסנכרון</translation>
 <translation id="5271549068863921519">שמור סיסמה</translation>
+<translation id="5295239312320826323">האם להסיר את החשבון <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="5327248766486351172">שם</translation>
@@ -418,6 +421,7 @@
 <translation id="6362362396625799311">אין כרטיסיות של גלישה בסתר</translation>
 <translation id="6363526231572697780">אין שם משתמש</translation>
 <translation id="6374469231428023295">נסה שוב</translation>
+<translation id="6377118281273296434">אבטחת האתר</translation>
 <translation id="6380866119319257197">אם תשכח את ביטוי הסיסמה או תרצה לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">שם על הכרטיס</translation>
 <translation id="6406506848690869874">סנכרון</translation>
@@ -525,11 +529,13 @@
 
 החשבון שלך מנוהל על-ידי <ph name="HOSTED_DOMAIN" />, ולכן הנתונים מ-Chrome יימחקו מהמכשיר הזה בעת היציאה מהחשבון. הנתונים המסונכרנים יישארו בחשבון Google שלך.</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
+<translation id="7778472311864276518">הסרת החשבון מהמכשיר הזה</translation>
 <translation id="7781011649027948662">לתרגם את הדף?</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="778855399387580014">‏חיפוש בכרטיסיית Chrome חדשה.</translation>
 <translation id="7791543448312431591">הוספה</translation>
 <translation id="7828557259026017104">‏קובצי cookie נוצרים על ידי האתרים שביקרת בהם. האתרים משתמשים בהם כדי לזכור את ההעדפות שלך. קובצי cookie של צד שלישי נוצרים על-ידי אתרים אחרים. האתרים האלה הם הבעלים של חלק מהתוכן בדף האינטרנט שביקרת בו, למשל מודעות או תמונות.</translation>
+<translation id="7839985698273989086">הדף לא מחובר לאינטרנט</translation>
 <translation id="7840771868269352570">הפריטים שבחרת יוסרו.</translation>
 <translation id="7856733331829174190">ההורדה נכשלה</translation>
 <translation id="7859704718976024901">היסטוריית הגלישה</translation>

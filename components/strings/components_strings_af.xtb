@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> wil groot data permanent op jou toestel berg</translation>
 <translation id="1032854598605920125">Draai kloksgewys</translation>
 <translation id="1036348656032585052">Skakel af</translation>
+<translation id="1038106730571050514">Wys voorstelle</translation>
 <translation id="1038842779957582377">onbekende naam</translation>
 <translation id="1041998700806130099">Taakbladsyboodskap</translation>
 <translation id="1050038467049342496">Maak ander programme toe</translation>
@@ -401,6 +402,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="2666092431469916601">Top</translation>
 <translation id="2666117266261740852">Maak ander oortjies of programme toe</translation>
 <translation id="2674170444375937751">Is jy seker jy wil hierdie bladsye uit jou geskiedenis uitvee?</translation>
+<translation id="2674804415323431591">Versteek voorstelle</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Gaan uit</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -601,6 +603,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="3539171420378717834">Hou 'n kopie van hierdie kaart op hierdie toestel</translation>
 <translation id="3558573058928565255">Dag</translation>
 <translation id="3566021033012934673">Jou verbinding is nie privaat nie</translation>
+<translation id="3567778190852720481">Kan nie met werkrekening inskryf nie (werkrekening kwalifiseer nie).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">'n Ingebedde bladsy by <ph name="SITE" /> sê</translation>
 <translation id="3581089476000296252">Chrome sal jou laat weet wanneer hierdie bladsy gereed is. &lt;a&gt;Kanselleer&lt;/a&gt;</translation>
@@ -877,6 +880,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Voer tans Windows Network Diagnostics uit<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Herlaai beleide</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4731638775147756694">Jou administrateur het hierdie program geblokkeer</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> wil jou toestel se ligging gebruik</translation>
 <translation id="4736825316280949806">Herbegin Chromium</translation>
@@ -1079,6 +1083,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="5523118979700054094">Beleidnaam</translation>
 <translation id="55293785478302737">Randhegting</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5536214594743852365">Wys die "<ph name="SECTION" />"-afdeling</translation>
 <translation id="5539243836947087108">Vlot</translation>
 <translation id="5540224163453853">Kon nie die versoekte artikel vind nie.</translation>
 <translation id="5541086400771735334">Posbus 7</translation>
@@ -1247,6 +1252,7 @@ Dit sal andersins deur jou privaatheidinstellings geblokkeer word. Dit sal die i
 <translation id="6263376278284652872"><ph name="DOMAIN" />-boekmerke</translation>
 <translation id="6264485186158353794">Terug na veiligheid</translation>
 <translation id="6266934640124581640">Liggroenblou</translation>
+<translation id="6272383483618007430">Google-opdatering</translation>
 <translation id="6276112860590028508">Bladsye uit jou leeslys verskyn hier</translation>
 <translation id="627746635834430766">Stoor jou kaart en faktureringadres in jou Google-rekening om volgende keer vinniger te betaal.</translation>
 <translation id="6279516281132775660">Chrome sal nie die volgende inligting <ph name="BEGIN_EMPHASIS" />stoor nie<ph name="END_EMPHASIS" />:
@@ -1477,6 +1483,7 @@ Bykomende besonderhede:
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Veiligblaai<ph name="END_LINK" />-waarskuwings</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Verbindinghulp</translation>
+<translation id="7323804146520582233">Versteek die "<ph name="SECTION" />"-afdeling</translation>
 <translation id="733354035281974745">Toestel se plaaslike rekening is geïgnoreer</translation>
 <translation id="7333654844024768166">Jy het sopas jou wagwoord op 'n misleidende werf ingevoer. Chromium beveel aan dat jy gaan na <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> en ander werwe waarop jy hierdie wagwoord gebruik en dit nou verander.</translation>
 <translation id="7334320624316649418">Herdoen herrangskikking</translation>
@@ -1755,7 +1762,6 @@ Bykomende besonderhede:
 <translation id="8425213833346101688">Verander</translation>
 <translation id="8428213095426709021">Instellings</translation>
 <translation id="8433057134996913067">Dit sal jou by die meeste webwerwe afmeld.</translation>
-<translation id="8433678324664858900">Wys voorstelle</translation>
 <translation id="8437238597147034694">Ontdoen skuif</translation>
 <translation id="8457125768502047971">Onbepaald</translation>
 <translation id="8461694314515752532">Enkripteer gesinkroniseerde data met jou eie sinkroniseringwagfrase</translation>

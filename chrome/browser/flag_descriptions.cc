@@ -2380,8 +2380,7 @@ const char kContentIndexingNTPDescription[] =
 
 const char kContextMenuCopyImageName[] = "Copy Image";
 const char kContextMenuCopyImageDescription[] =
-    "Enable copying image to system clipboard via context menu. Copy image is "
-    "not available for Android O.";
+    "Enable copying image to system clipboard via context menu.";
 
 const char kContextMenuPerformanceInfoName[] = "Context menu performance hints";
 const char kContextMenuPerformanceInfoDescription[] =

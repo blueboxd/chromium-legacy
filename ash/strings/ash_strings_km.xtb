@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">ថ្មពេញ</translation>
 <translation id="3604801046548457007">បានបង្កើតតុទី <ph name="DESK_TITILE" /></translation>
 <translation id="3606978283550408104">អេក្រង់ប្រែលត្រូវបានភ្ជាប់</translation>
+<translation id="3616883743181209306">ម៉ឺនុយ​ត្រូវបានផ្លាស់ទី​ទៅ​ជ្រុងខាងលើ​ផ្នែកខាងស្ដាំ​នៃអេក្រង់​។</translation>
 <translation id="3621202678540785336">ធាតុបញ្ចូល</translation>
 <translation id="3621712662352432595">ការកំណត់សម្លេង</translation>
 <translation id="3626281679859535460">កម្រិតពន្លឺ</translation>
 <translation id="3631369015426612114">អនុញ្ញាត​ការជូន​ដំណឹង​ពីបញ្ជី​ខាងក្រោម</translation>
 <translation id="3638400994746983214">បិទ/បើកអេក្រង់ឯកជនភាព។ <ph name="STATE_TEXT" />។</translation>
+<translation id="366222428570480733">អ្នកប្រើប្រាស់​ដែលគ្រប់គ្រង​ដោយ <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ថតផ្នែក</translation>
 <translation id="371370241367527062">មីក្រូហ្វូន​ខាងមុខ</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">កំពុង​ចាកចេញ​ពី​មុខងារឆ្លុះ</translation>
 <translation id="602001110135236999">រំកិលទៅ​ឆ្វេង</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />, គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>
+<translation id="6030495522958826102">ម៉ឺនុយ​ត្រូវបានផ្លាស់ទី​ទៅ​ជ្រុងខាងក្រោម​ផ្នែកខាងឆ្វេង​នៃអេក្រង់​។</translation>
 <translation id="6040143037577758943">បិទ</translation>
 <translation id="6043212731627905357">ម៉ូនីទ័រ​នេះ​មិន​ត្រូវ​គ្នា​ជាមួយ​ <ph name="DEVICE_TYPE" /> របស់​អ្នក​ទេ​ (មិន​ស្គាល់​ម៉ូនីទ័រ)។</translation>
 <translation id="6043994281159824495">ចាកចេញឥឡូវនេះ</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">កំពុងភ្ជាប់...</translation>
 <translation id="7165278925115064263">Alt+ប្ដូរ (Shift)+K</translation>
 <translation id="7168224885072002358">កំពុងត្រលប់ទៅកម្រិតច្បាស់ចាស់នៅក្នុង <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7188494361780961876">ម៉ឺនុយ​ត្រូវបានផ្លាស់ទី​ទៅ​ជ្រុងខាងលើ​ផ្នែកខាងឆ្វេង​នៃអេក្រង់​។</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />។ Chromebook នេះ​ត្រូវចាប់ផ្ដើមឡើងវិញ ដើម្បី​អនុវត្តកំណែថ្មី។ សកម្មភាពនេះអាចចំណាយពេលរហូតដល់ 1 នាទី។</translation>
 <translation id="7256634071279256947">មីក្រូហ្វូន​ខាងក្រោយ</translation>
 <translation id="726276584504105859">អូសនៅទីនេះដើម្បីប្រើអេក្រង់បំបែក</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">បង្វិល​ស្វ័យ​ប្រវត្តិ</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> របស់អ្នកអាចនឹងមិនសាកថ្មទេនៅពេលបើក។</translation>
 <translation id="8563862697512465947">​កំណត់​ការ​ជូន​ដំណឹង</translation>
+<translation id="857201607579416096">ម៉ឺនុយ​ត្រូវបានផ្លាស់ទី​ទៅ​ជ្រុងខាងក្រោម​ផ្នែកខាងស្ដាំ​នៃអេក្រង់​។</translation>
 <translation id="8627191004499078455">បានភ្ជាប់ទៅ <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">ការកំណត់​ភាព​ងាយស្រួល</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, កម្លាំងរលកសញ្ញា <ph name="SIGNAL_STRENGTH" />, ​គ្រប់គ្រងដោយ​អ្នកគ្រប់គ្រង​របស់អ្នក</translation>

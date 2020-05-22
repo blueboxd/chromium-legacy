@@ -193,6 +193,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="6967962315388095737">Google Chrome बीटाचा mDNS रहदारीस अनुमती देण्यासाठी इनबाउंड नियम.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> ला हे डिव्हाइस वापरण्यापूर्वी तुम्ही खालील सेवा अटी वाचणे आणि स्वीकारणे आवश्यक आहे. या अटी Google Chrome OS अटींना विस्तृत, सुधारित किंवा मर्यादित करत नाहीत.</translation>
 <translation id="6989339256997917931">Google Chrome अपडेट केला गेला, परंतु तुम्ही तो किमान 30 दिवसांपासून वापरलेला नाही.</translation>
+<translation id="7062128746136194023">तुमच्या पालकांनी Chrome साठी "साइट, अ‍ॅप्स आणि एक्स्टेंशनकरिता परवानग्या" सुरू केल्या आहेत. हे <ph name="EXTENSION_TYPE_PARAMETER" /> जोडण्याची अनुमती नाही.</translation>
 <translation id="7098166902387133879">Google Chrome तुमचा मायक्रोफोन वापरत आहे.</translation>
 <translation id="7106741999175697885">टास्क मॅनेजर – Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Chrome चे नवीन अपडेट उपलब्ध आहे आणि तुम्ही ते पुन्हा लाँच करताच लागू केले जाईल.}=1{Chrome चे नवीन अपडेट उपलब्ध आहे आणि तुम्ही ते पुन्हा लाँच करताच लागू केले जाईल. तुमची गुप्त विंडो पुन्हा उघडणार नाही.}other{Chrome चे नवीन अपडेट उपलब्ध आहे आणि तुम्ही ते पुन्हा लाँच करताच लागू केले जाईल. तुमच्या # गुप्त विंडो पुन्हा उघडणार नाहीत.}}</translation>
@@ -233,6 +234,7 @@ Google Chrome तुमची सेटिंग्ज पुन्हा मि
 <translation id="8129812357326543296">&amp;Google Chrome विषयी</translation>
 <translation id="8255190535488645436">Google Chrome तुमचा कॅमेरा आणि मायक्रोफोन वापरत आहे.</translation>
 <translation id="8286862437124483331">Google Chrome पासवर्ड दर्शविण्‍याचा प्रयत्‍न करत आहे. यास अनुमती देण्‍यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
+<translation id="828798499196665338">तुमच्या पालकांनी Chrome साठी "साइट, अ‍ॅप्स आणि एक्स्टेंशनकरिता परवानग्या" सुरू केल्या आहेत. हे <ph name="EXTENSION_TYPE_PARAMETER" /> सुरू करण्यास अनुमती नाही.</translation>
 <translation id="8290100596633877290">अरेरे! Google Chrome क्रॅश झाला. त्वरित पुन्हा लाँच करायचा?</translation>
 <translation id="8342675569599923794">ही फाईल धोकादायक आहे, त्यामुळे Chrome ने ती अवरोधित केली आहे.</translation>
 <translation id="8370517070665726704">कॉपीराइट <ph name="YEAR" /> Google LLC. सर्व हक्क राखीव.</translation>

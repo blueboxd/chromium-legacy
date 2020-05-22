@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Історія</translation>
 <translation id="1650222530560417226">Натисніть кнопку "Почати ведення журналів", щоб у майбутньому збирати журнали консолі JavaScript і дані про помилки з усіх вкладок. Журнали збиратимуться (і зберігатимуться лише в пам’яті), доки ви не закриєте цю сторінку або не виберете опцію "Припинити ведення журналів".</translation>
 <translation id="1657011748321897393">Не вдалося поділитися, оскільки ви не під’єднані до мережі.</translation>
+<translation id="1657641691196698092">Заблоковані файли cookie</translation>
 <translation id="165877110639533037">Немає відкритих вкладок</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Щоб мати доступ до закладок на всіх своїх пристроях, увімкніть синхронізацію.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">пристрою</translation>
 <translation id="2578571896248130439">Надіслати веб-сторінку</translation>
 <translation id="2584132361465095047">Додати обліковий запис…</translation>
+<translation id="2600682495497606169">Видалити файли cookie сайту</translation>
 <translation id="2625189173221582860">Пароль скопійовано</translation>
 <translation id="2647269890314209800">Активні файли cookie</translation>
 <translation id="2648803196158606475">Видалити прочитані</translation>
@@ -332,6 +334,7 @@
 <translation id="5234764350956374838">Відхилити</translation>
 <translation id="5245322853195994030">Скасувати синхронізацію</translation>
 <translation id="5271549068863921519">Зберегти пароль</translation>
+<translation id="5295239312320826323">Вилучити обліковий запис <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Показати</translation>
 <translation id="5317780077021120954">Зберегти</translation>
 <translation id="5327248766486351172">Назва</translation>
@@ -418,6 +421,7 @@
 <translation id="6362362396625799311">Немає анонімних вкладок</translation>
 <translation id="6363526231572697780">Немає імені користувача</translation>
 <translation id="6374469231428023295">Повторити спробу</translation>
+<translation id="6377118281273296434">Безпека сайту</translation>
 <translation id="6380866119319257197">Якщо ви забули парольну фразу або хочете змінити це налаштування, <ph name="BEGIN_LINK" />скиньте синхронізацію<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Ім’я на картці</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
@@ -525,11 +529,13 @@
 
 Оскільки ваш обліковий запис зареєстровано в домені <ph name="HOSTED_DOMAIN" />, коли ви вийдете з нього, ваші дані Chrome буде видалено з цього пристрою. Синхронізовані дані залишаться у вашому обліковому записі Google.</translation>
 <translation id="7772032839648071052">Підтвердити парольну фразу</translation>
+<translation id="7778472311864276518">Вилучити обліковий запис із цього пристрою</translation>
 <translation id="7781011649027948662">Перекласти сторінку?</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пошук у новій вкладці Chrome.</translation>
 <translation id="7791543448312431591">Додати</translation>
 <translation id="7828557259026017104">Файли cookie – це файли, створені веб-сайтами, які ви відвідали. Сайти використовують їх, щоб запам'ятовувати ваші налаштування. Сторонні файли cookie створюються іншими сайтами. Ці сайти показують власний контент, як-от оголошення чи зображення, на веб-сторінці, яку ви відвідуєте.</translation>
+<translation id="7839985698273989086">Офлайн-сторінка</translation>
 <translation id="7840771868269352570">Вибраний елемент буде видалено.</translation>
 <translation id="7856733331829174190">Не вдалося завантажити</translation>
 <translation id="7859704718976024901">Історія веб-перегляду</translation>

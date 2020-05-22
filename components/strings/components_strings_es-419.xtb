@@ -600,6 +600,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="3539171420378717834">Conservar una copia de la tarjeta en el dispositivo.</translation>
 <translation id="3558573058928565255">Hora del día</translation>
 <translation id="3566021033012934673">La conexión no es privada</translation>
+<translation id="3567778190852720481">No es posible inscribirse con una cuenta empresarial (este tipo de cuentas no son aptas).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Una página incorporada en <ph name="SITE" /> dice</translation>
 <translation id="3581089476000296252">Chrome te avisará cuando esté lista esta página. &lt;a&gt;Cancelar&lt;/a&gt;</translation>
@@ -876,6 +877,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Ejecución del Diagnóstico de red de Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Volver a cargar políticas</translation>
 <translation id="4728558894243024398">Plataforma</translation>
+<translation id="4731638775147756694">El administrador bloqueó esta aplicación</translation>
 <translation id="4731967714531604179">Prc2 (Envelope)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> desea usar la ubicación de tu dispositivo</translation>
 <translation id="4736825316280949806">Reinicia Chromium.</translation>
@@ -1246,6 +1248,7 @@ De lo contrario, la configuración de privacidad bloqueará esta acción. Esto p
 <translation id="6263376278284652872">Favoritos de <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="6266934640124581640">Verde azulado claro</translation>
+<translation id="6272383483618007430">Google Actualización</translation>
 <translation id="6276112860590028508">Las páginas de tu lista de lectura aparecen aquí</translation>
 <translation id="627746635834430766">Para realizar pagos de forma más rápida la próxima vez, guarda tu tarjeta y dirección de facturación en tu cuenta de Google.</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />no guardará<ph name="END_EMPHASIS" /> la siguiente información:
@@ -1619,6 +1622,7 @@ Detalles adicionales:
 <translation id="7844689747373518809">{COUNT,plural, =0{Ninguna}=1{1 app (<ph name="EXAMPLE_APP_1" />)}=2{2 apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# apps (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Sin embargo, no eres invisible. El modo de navegación de incógnito no oculta tu navegación de tu empleador, de tu proveedor de servicios de Internet, ni de los sitios web que visitas.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157">Si quieres ayudar a mejorar la seguridad de la Web para todos, envía <ph name="BEGIN_WHITEPAPER_LINK" />las URL de algunas páginas que visitas, información limitada sobre el sistema y determinado contenido de páginas<ph name="END_WHITEPAPER_LINK" /> a Google. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">¿Deseas abandonar el sitio?</translation>
 <translation id="7865448901209910068">Mejor velocidad</translation>
 <translation id="7874263914261512992">Ingresaste tu contraseña en un sitio engañoso. Chrome te recomienda revisar las contraseñas guardadas para <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> y otros sitios donde uses esta contraseña.</translation>
@@ -1753,7 +1757,6 @@ Detalles adicionales:
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8433057134996913067">Si realizas esta acción, saldrás de la mayoría de los sitios web.</translation>
-<translation id="8433678324664858900">Ver sugerencias</translation>
 <translation id="8437238597147034694">&amp;Deshacer Mover</translation>
 <translation id="8457125768502047971">Indefinida</translation>
 <translation id="8461694314515752532">Encriptar los datos sincronizados con tu propia frase de contraseña de sincronización</translation>

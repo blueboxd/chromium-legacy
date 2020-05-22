@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">Гісторыя</translation>
 <translation id="1650222530560417226">Каб пачаць збор журналаў кансолі JavaScript і памылак з усіх укладак, націсніце кнопку "Пачаць вядзенне журнала". Журналы будуць збірацца (і захоўвацца толькі ў памяці), пакуль гэта старонка не будзе закрыта або пакуль вы не націснеце "Спыніць вядзенне журнала".</translation>
 <translation id="1657011748321897393">Абагуліць не ўдалося: няма падключэння да сеткі.</translation>
+<translation id="1657641691196698092">Заблакіраваныя файлы cookie</translation>
 <translation id="165877110639533037">Няма адкрытых укладак</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Уключыце сінхранізацыю, каб бачыць закладкі на ўсіх сваіх прыладах.</translation>
@@ -132,7 +133,9 @@
 <translation id="2572712655377361602">Доступ да фота заблакіраваны палітыкай прылады</translation>
 <translation id="2578571896248130439">Адпраўка вэб-старонкі</translation>
 <translation id="2584132361465095047">Дадаць уліковы запіс…</translation>
+<translation id="2600682495497606169">Выдаліць файлы cookie сайта</translation>
 <translation id="2625189173221582860">Пароль скапіраваны</translation>
+<translation id="2647269890314209800">Файлы cookie, якія выкарыстоўваюцца</translation>
 <translation id="2648803196158606475">Выдаліць прачытанае</translation>
 <translation id="2653659639078652383">Адправіць</translation>
 <translation id="2690858294534178585">Камера выкарыстоўваецца</translation>
@@ -331,6 +334,7 @@
 <translation id="5234764350956374838">Адхіліць</translation>
 <translation id="5245322853195994030">Скасаваць сінхранізацыю</translation>
 <translation id="5271549068863921519">Захаваць пароль</translation>
+<translation id="5295239312320826323">Выдаліць уліковы запіс <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Паказаць</translation>
 <translation id="5317780077021120954">Захаваць</translation>
 <translation id="5327248766486351172">Імя</translation>
@@ -417,6 +421,7 @@
 <translation id="6362362396625799311">Няма ўкладак інкогніта</translation>
 <translation id="6363526231572697780">Адсутнічае імя карыстальніка</translation>
 <translation id="6374469231428023295">Паўтарыць спробу</translation>
+<translation id="6377118281273296434">Бяспека сайта</translation>
 <translation id="6380866119319257197">Калі вы забылі фразу-пароль або хочаце змяніць гэту наладу, <ph name="BEGIN_LINK" />скіньце параметры сінхранізацыі<ph name="END_LINK" /></translation>
 <translation id="6389470377220713856">Імя на картцы</translation>
 <translation id="6406506848690869874">Сінхранізаваць</translation>
@@ -524,11 +529,13 @@
 
 Вашым уліковым запісам кіруе дамен <ph name="HOSTED_DOMAIN" />, таму пры выхадзе даныя Chrome будуць выдалены з гэтай прылады. Сінхранізаваныя даныя застануцца ва Уліковым запісе Google.</translation>
 <translation id="7772032839648071052">Пацвердзіце фразу-пароль</translation>
+<translation id="7778472311864276518">Выдаліць уліковы запіс з гэтай прылады</translation>
 <translation id="7781011649027948662">Перакласці старонку?</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пачаць пошук у новай укладцы Chrome.</translation>
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="7828557259026017104">Файлы cookie – гэта файлы, якія ствараюцца наведанымі вамі вэб-сайтамі, каб запамінаць вашы налады. Староннія файлы cookie ствараюцца іншымі сайтамі. Гэтым сайтам належыць пэўнае змесціва (напрыклад рэклама або відарысы), размешчанае на вэб-старонцы, якую вы наведваеце.</translation>
+<translation id="7839985698273989086">Пазасеткавая старонка</translation>
 <translation id="7840771868269352570">Выбраныя элементы будуць выдалены.</translation>
 <translation id="7856733331829174190">Не ўдалося спампаваць</translation>
 <translation id="7859704718976024901">Гісторыя прагляду сайтаў</translation>
@@ -569,6 +576,7 @@
 <translation id="8428045167754449968">Горад або населены пункт</translation>
 <translation id="8428213095426709021">Налады</translation>
 <translation id="8458397775385147834">1 элемент выдалены</translation>
+<translation id="8459333855531264009">Небяспечны сайт</translation>
 <translation id="8487667956631253959">Уключаны</translation>
 <translation id="8487700953926739672">Даступна па-за сеткай</translation>
 <translation id="8490978609246021741">Захаваць змяненні</translation>
@@ -595,6 +603,7 @@
 <translation id="8741995161408053644">На сайце <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> размешчаны іншыя формы запісу гісторыі прагляду сайтаў для вашага Уліковага запісу Google.</translation>
 <translation id="8756969031206844760">Абнавіць пароль?</translation>
 <translation id="8775144690796719618">Няправільны URL-адрас</translation>
+<translation id="8803639129939845298">Бяспечны сайт</translation>
 <translation id="8820817407110198400">Закладкі</translation>
 <translation id="8840513115188359703">З Уліковага запісу Google вы не выйдзеце.</translation>
 <translation id="8870413625673593573">Нядаўна закрытыя</translation>

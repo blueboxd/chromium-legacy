@@ -299,7 +299,7 @@ class NonCompositedMainThreadScrollingReasonsTest
     : public MainThreadScrollingReasonsTest {
   static const uint32_t kLCDTextRelatedReasons =
       cc::MainThreadScrollingReason::kHasTransformAndLCDText |
-      cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText;
+      cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText;
 
  protected:
   NonCompositedMainThreadScrollingReasonsTest() {
@@ -386,7 +386,7 @@ TEST_F(NonCompositedMainThreadScrollingReasonsTest, TransformTest) {
 TEST_F(NonCompositedMainThreadScrollingReasonsTest, BackgroundNotOpaqueTest) {
   TestNonCompositedReasons(
       "background-not-opaque",
-      cc::MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
+      cc::MainThreadScrollingReason::kNotOpaqueForTextAndLCDText);
 }
 
 TEST_F(NonCompositedMainThreadScrollingReasonsTest,
@@ -456,8 +456,13 @@ TEST_F(NonCompositedMainThreadScrollingReasonsTest, StackingContextTest) {
                            cc::MainThreadScrollingReason::kNotScrollingOnMain);
 }
 
+TEST_F(NonCompositedMainThreadScrollingReasonsTest, BorderRadiusTest) {
+  TestNonCompositedReasons("border-radius",
+                           cc::MainThreadScrollingReason::kNotScrollingOnMain);
+}
+
 TEST_F(NonCompositedMainThreadScrollingReasonsTest,
-       CompositedWithLCDTextRelatedReasonsTest) {
+       ForcedComositingWithLCDRelatedReasons) {
   // With "will-change:transform" we composite elements with
   // LCDTextRelatedReasons only. For elements with other
   // NonCompositedReasons, we don't create scrollingLayer for their

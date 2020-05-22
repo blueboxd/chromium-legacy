@@ -146,8 +146,7 @@ void PreviewModeClient::FormTextFieldFocusChange(bool in_focus) {
 }
 
 bool PreviewModeClient::IsPrintPreview() {
-  NOTREACHED();
-  return false;
+  return true;
 }
 
 float PreviewModeClient::GetToolbarHeightInScreenCoords() {

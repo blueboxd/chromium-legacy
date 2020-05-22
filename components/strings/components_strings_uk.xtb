@@ -595,6 +595,7 @@
 <translation id="3539171420378717834">Зберігати копію даних цієї картки на цьому пристрої</translation>
 <translation id="3558573058928565255">День</translation>
 <translation id="3566021033012934673">З’єднання не конфіденційне</translation>
+<translation id="3567778190852720481">Не вдається зареєструватися через корпоративний обліковий запис (такі облікові записи не підтримуються).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Повідомлення з вбудованої сторінки сайту <ph name="SITE" /></translation>
 <translation id="3581089476000296252">Chrome повідомить вас, коли сторінка буде готова. &lt;a&gt;Скасувати&lt;/a&gt;</translation>
@@ -870,6 +871,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />провести діагностику мережі Windows<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Перезавантажити правила</translation>
 <translation id="4728558894243024398">Платформа</translation>
+<translation id="4731638775147756694">Цей додаток заблоковано адміністратором</translation>
 <translation id="4731967714531604179">Prc2 (конверт)</translation>
 <translation id="4733082559415072992">Сайт <ph name="URL" /> хоче отримати доступ до геоданих вашого пристрою</translation>
 <translation id="4736825316280949806">Перезапустіть Chromium</translation>
@@ -1240,6 +1242,7 @@
 <translation id="6263376278284652872">Закладки <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Повернутися до безпечного режиму</translation>
 <translation id="6266934640124581640">Світло-бірюзовий</translation>
+<translation id="6272383483618007430">Оновлення Google</translation>
 <translation id="6276112860590028508">Тут з’являтимуться сторінки з вашого списку читання</translation>
 <translation id="627746635834430766">Щоб наступного разу платити швидше, збережіть дані картки та платіжну адресу в обліковому записі Google.</translation>
 <translation id="6279516281132775660">Chrome <ph name="BEGIN_EMPHASIS" />не зберігатиме<ph name="END_EMPHASIS" />:
@@ -1613,6 +1616,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Немає}=1{1 додаток (<ph name="EXAMPLE_APP_1" />)}=2{2 додатки (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}one{# додаток (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}few{# додатки (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}many{# додатків (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}other{# додатка (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" /> <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи веб-сайти, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7858256690562840157">Допоможіть посилити безпеку в Інтернеті для всіх користувачів, надсилаючи в Google <ph name="BEGIN_WHITEPAPER_LINK" />URL-адреси та вміст деяких відвіданих сторінок, а також обмежену системну інформацію<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Залишити сайт?</translation>
 <translation id="7865448901209910068">Оптимальна швидкість</translation>
 <translation id="7874263914261512992">Щойно ви ввели пароль на оманливому сайті. Chrome радить перевірити збережені паролі для <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> та інших сайтів, де використовується цей пароль.</translation>
@@ -1747,7 +1751,6 @@
 <translation id="8425213833346101688">Змінити</translation>
 <translation id="8428213095426709021">Налаштування</translation>
 <translation id="8433057134996913067">Ви вийдете з облікового запису на більшості веб-сайтів.</translation>
-<translation id="8433678324664858900">Показ. пропозиції</translation>
 <translation id="8437238597147034694">&amp;Відмінити переміщення</translation>
 <translation id="8457125768502047971">Необмежено</translation>
 <translation id="8461694314515752532">Шифрувати синхронізовані дані за допомогою власної парольної фрази</translation>

@@ -25,7 +25,6 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/assistant/controller/assistant_suggestions_controller.h"
 #include "ash/public/cpp/assistant/controller/assistant_ui_controller.h"
-#include "ash/public/cpp/assistant/proactive_suggestions.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -53,24 +52,6 @@ constexpr char kAndroidIntentScheme[] = "intent://";
 constexpr char kAndroidIntentPrefix[] = "#Intent";
 
 // Helpers ---------------------------------------------------------------------
-
-// Creates a suggestion to initiate a Google search for the specified |query|.
-chromeos::assistant::mojom::AssistantSuggestionPtr CreateSearchSuggestion(
-    const std::string& query) {
-  constexpr char kIconUrl[] =
-      "https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png";
-  constexpr char kSearchUrl[] = "https://www.google.com/search";
-  constexpr char kQueryParamKey[] = "q";
-
-  chromeos::assistant::mojom::AssistantSuggestionPtr suggestion =
-      chromeos::assistant::mojom::AssistantSuggestion::New();
-  suggestion->text = l10n_util::GetStringUTF8(IDS_ASH_ASSISTANT_CHIP_SEARCH);
-  suggestion->icon_url = GURL(kIconUrl),
-  suggestion->action_url = net::AppendOrReplaceQueryParameter(
-      GURL(kSearchUrl), kQueryParamKey, query);
-
-  return suggestion;
-}
 
 ash::TabletModeController* GetTabletModeController() {
   return Shell::Get()->tablet_mode_controller();
@@ -864,21 +845,6 @@ void AssistantInteractionControllerImpl::OnUiVisible(
     return;
   }
 
-  if (entry_point == AssistantEntryPoint::kProactiveSuggestions) {
-    // When entering Assistant with a proactive suggestions interaction, there
-    // will be no server latency as the response for the interaction has already
-    // been cached on the client. To avoid jank, we need to post a task to start
-    // our interaction to give the Assistant UI a chance to initialize itself.
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&AssistantInteractionControllerImpl::
-                                      StartProactiveSuggestionsInteraction,
-                                  weak_factory_.GetWeakPtr(),
-                                  AssistantSuggestionsController::Get()
-                                      ->GetModel()
-                                      ->GetProactiveSuggestions()));
-    return;
-  }
-
   if (ShouldAttemptWarmerWelcome(entry_point))
     AttemptWarmerWelcome();
 }
@@ -918,41 +884,6 @@ void AssistantInteractionControllerImpl::AttemptWarmerWelcome() {
   assistant_->StartWarmerWelcomeInteraction(num_warmer_welcome_triggered(),
                                             allow_tts);
   IncrementNumWarmerWelcomeTriggered();
-}
-
-void AssistantInteractionControllerImpl::StartProactiveSuggestionsInteraction(
-    scoped_refptr<const ProactiveSuggestions> proactive_suggestions) {
-  // For a proactive suggestions interaction, we've already cached the response
-  // but we still need to spoof lifecycle events. This is only safe to do if we
-  // aren't already in the midst of an interaction.
-  DCHECK_EQ(InteractionState::kInactive, model_.interaction_state());
-
-  // To be extra protective of interaction lifecycle when DCHECK is disabled,
-  // we'll ignore any attempts to start a proactive suggestions interaction if
-  // an interaction is already in progress.
-  if (model_.interaction_state() != InteractionState::kInactive)
-    return;
-
-  const std::string& description = proactive_suggestions->description();
-  const std::string& search_query = proactive_suggestions->search_query();
-
-  model_.SetPendingQuery(std::make_unique<AssistantTextQuery>(
-      description, AssistantQuerySource::kProactiveSuggestions));
-
-  OnInteractionStarted(AssistantInteractionMetadata::New(
-      AssistantInteractionType::kText,
-      AssistantQuerySource::kProactiveSuggestions, /*query=*/description));
-
-  OnHtmlResponse(proactive_suggestions->html(), /*fallback=*/std::string());
-
-  // TODO(dmblack): Support suggestion chips from the server when available.
-  if (!search_query.empty()) {
-    std::vector<AssistantSuggestionPtr> suggestions;
-    suggestions.push_back(CreateSearchSuggestion(search_query));
-    OnSuggestionsResponse(std::move(suggestions));
-  }
-
-  OnInteractionFinished(AssistantInteractionResolution::kNormal);
 }
 
 void AssistantInteractionControllerImpl::StartScreenContextInteraction(

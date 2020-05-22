@@ -62,6 +62,7 @@
 <translation id="1644574205037202324">História</translation>
 <translation id="1650222530560417226">Ak chcete zhromažďovať budúce denníky a chyby konzoly JavaScript zo všetkých kariet, klepnite na tlačidlo Spustiť zapisovanie do denníka. Denníky sa budú zhromažďovať (a ukladať iba v  pamäti), dokým túto stránku nezatvoríte alebo neklepnete na tlačidlo Zastaviť zapisovanie do denníka.</translation>
 <translation id="1657011748321897393">Zdieľanie zlyhalo, pretože nemáte pripojenie k sieti.</translation>
+<translation id="1657641691196698092">Blokované súbory cookie</translation>
 <translation id="165877110639533037">Žiadne otvorené karty</translation>
 <translation id="1674504678466460478"><ph name="SOURCE_LANGUAGE" /> – <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="168715261339224929">Ak chcete získať záložky vo všetkých zariadeniach, zapnite synchronizáciu.</translation>
@@ -132,6 +133,7 @@
 <translation id="2572712655377361602">Pravidlá pre zariadenie zablokovali prístup k vašim fotkám</translation>
 <translation id="2578571896248130439">Odoslanie webovej stránky</translation>
 <translation id="2584132361465095047">Pridať účet…</translation>
+<translation id="2600682495497606169">Vymazať súbory cookie webu</translation>
 <translation id="2625189173221582860">Heslo bolo skopírované.</translation>
 <translation id="2647269890314209800">Používané súbory cookie</translation>
 <translation id="2648803196158606475">Odstrániť prečítané</translation>
@@ -332,6 +334,7 @@ Ak chcete toto nastavenie zmeniť, <ph name="BEGIN_LINK" />resetujte synchroniz�
 <translation id="5234764350956374838">Zatvoriť</translation>
 <translation id="5245322853195994030">Zrušiť synchronizáciu</translation>
 <translation id="5271549068863921519">Uložiť heslo</translation>
+<translation id="5295239312320826323">Chcete odstrániť účet <ph name="USER_EMAIL" />?</translation>
 <translation id="5300589172476337783">Zobraziť</translation>
 <translation id="5317780077021120954">Uložiť</translation>
 <translation id="5327248766486351172">Názov</translation>

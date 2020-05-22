@@ -10,6 +10,7 @@
 <translation id="1030706264415084469">നിങ്ങളുടെ ഉപകരണത്തിൽ ശാശ്വതമായി വലിയ അളവിൽ ഡാറ്റ സംഭരിക്കാന്‍ <ph name="URL" />ആഗ്രഹിക്കുന്നു</translation>
 <translation id="1032854598605920125">ഘടികാരദിശയിൽ‌ തിരിക്കുക</translation>
 <translation id="1036348656032585052">ഓഫാക്കുക</translation>
+<translation id="1038106730571050514">നിർദ്ദേശങ്ങൾ കാണിക്കുക</translation>
 <translation id="1038842779957582377">അജ്ഞാത നാമം</translation>
 <translation id="1041998700806130099">ജോബ് ഷീറ്റ് സന്ദേശം</translation>
 <translation id="1050038467049342496">മറ്റ് ആപ്പുകൾ അടയ്‌ക്കുക</translation>
@@ -397,6 +398,7 @@
 <translation id="2666092431469916601">മുകളിലേക്ക്</translation>
 <translation id="2666117266261740852">മറ്റ് ടാബുകളോ ആപ്‌സുകളോ അടയ്‌ക്കുക</translation>
 <translation id="2674170444375937751">നിങ്ങളുടെ ചരിത്രത്തില്‍ നിന്നും ഈ പേജുകള്‍ മായ്ക്കുന്നതിന് നിങ്ങള്‍ താല്പര്യമുണ്ടോ?</translation>
+<translation id="2674804415323431591">നിർദ്ദേശങ്ങൾ മറയ്‌ക്കുക</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ഉപേക്ഷിക്കുക</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -594,6 +596,7 @@
 <translation id="3539171420378717834">ഈ ഉപകരണത്തിൽ ഈ കാർഡിന്റെ ഒരു പകർപ്പ് സൂക്ഷിക്കുക</translation>
 <translation id="3558573058928565255">പകൽ</translation>
 <translation id="3566021033012934673">നിങ്ങളുടെ കണക്ഷൻ സ്വകാര്യമല്ല</translation>
+<translation id="3567778190852720481">എന്റർപ്രൈസ് അക്കൗണ്ട് ഉപയോഗിച്ച് എൻറോൾ ചെയ്യാനാകുന്നില്ല (എന്റർപ്രൈസ് അക്കൗണ്ട് യോഗ്യമല്ല).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> സൈറ്റിലെ ഉൾച്ചേർത്ത പേജ് പറയുന്നത്:</translation>
 <translation id="3581089476000296252">ഈ പേജ് തയ്യാറാകുമ്പോൾ, Chrome നിങ്ങളെ അറിയിക്കും. &lt;a&gt;റദ്ദാക്കുക&lt;/a&gt;</translation>
@@ -869,6 +872,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows നെറ്റ്‌വർക്ക് ഡയഗണോസ്‌റ്റിക്‌സ് റൺ ചെയ്യുന്നു<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">നയങ്ങൾ വീണ്ടും ലോഡ് ചെയ്യുക</translation>
 <translation id="4728558894243024398">പ്ലാറ്റ്ഫോം</translation>
+<translation id="4731638775147756694">ഈ ആപ്പ് നിങ്ങളുടെ അഡ്‌മിൻ ബ്ലോക്ക് ചെയ്‌തിരിക്കുന്നു</translation>
 <translation id="4731967714531604179">Prc2 (എൻവലപ്പ്)</translation>
 <translation id="4733082559415072992">നിങ്ങളുടെ ഉപകരണത്തിന്‍റെ ലൊക്കേഷൻ ഉപയോഗിക്കാൻ <ph name="URL" /> ആഗ്രഹിക്കുന്നു</translation>
 <translation id="4736825316280949806">Chromium റീസ്‌റ്റാർട്ടുചെയ്യുക</translation>
@@ -1069,6 +1073,7 @@
 <translation id="5523118979700054094">നയത്തിന്റെ പേര്</translation>
 <translation id="55293785478302737">അരിക് കൂട്ടിച്ചേർക്കൽ</translation>
 <translation id="553484882784876924">Prc6 (എൻവലപ്പ്)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" വിഭാഗം കാണിക്കുക</translation>
 <translation id="5539243836947087108">റാഫ്റ്റ്</translation>
 <translation id="5540224163453853">അഭ്യർത്ഥിച്ച ലേഖനം കണ്ടെത്താനായില്ല.</translation>
 <translation id="5541086400771735334">മെയിൽബോക്സ് 7</translation>
@@ -1237,6 +1242,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="6264485186158353794">തിരികെ സുരക്ഷയിലേക്ക്</translation>
 <translation id="6266934640124581640">ഇളം ടീൽ</translation>
+<translation id="6272383483618007430">Google അപ്ഡേറ്റ്</translation>
 <translation id="6276112860590028508">നിങ്ങളുടെ വായന പട്ടികയിൽ നിന്നുള്ള പേജുകൾ ഇവിടെ ദൃശൃമാകും</translation>
 <translation id="627746635834430766">അടുത്ത പ്രാവശ്യം വേഗത്തിൽ പണമടയ്ക്കാൻ, നിങ്ങളുടെ Google അക്കൗണ്ടിൽ ഈ കാർഡും ബില്ലിംഗ് വിലാസവും സംരക്ഷിക്കുക.</translation>
 <translation id="6279516281132775660">ഇനിപ്പറയുന്ന വിവരങ്ങൾ Chrome <ph name="BEGIN_EMPHASIS" />സംരക്ഷിക്കില്ല<ph name="END_EMPHASIS" />:
@@ -1467,6 +1473,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />സുരക്ഷിത ബ്രൗസിംഗ്<ph name="END_LINK" /> മുന്നറിയിപ്പുകൾ</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">കണക്ഷൻ സഹായം</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" വിഭാഗം മറയ്ക്കുക</translation>
 <translation id="733354035281974745">ഉപകരണ ലോക്കൽ അക്കൗണ്ട് അസാധുവാക്കുക</translation>
 <translation id="7333654844024768166">വഞ്ചനാപരമായ സൈറ്റിൽ നിങ്ങൾ ഇപ്പോൾ പാസ്‍വേഡ് നൽകി. നിങ്ങൾ ഈ പാസ്‌വേഡ് ഉപയോഗിക്കുന്ന <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> എന്നിവയിലേക്കും മറ്റ് സൈറ്റുകളിലേക്കും പോയി, ഇപ്പോൾ തന്നെ അത് മാറ്റാൻ Chromium ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="7334320624316649418">&amp;പുനഃക്രമീകരിക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
@@ -1743,7 +1750,6 @@
 <translation id="8425213833346101688">മാറ്റുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണങ്ങള്‍</translation>
 <translation id="8433057134996913067">ഇത് നിങ്ങളെ മിക്ക വെബ്‌സൈറ്റുകളിൽ നിന്നും സൈൻ ഔട്ട് ചെയ്യിക്കും.</translation>
-<translation id="8433678324664858900">നിർദ്ദേശങ്ങൾ കാണിക്കുക</translation>
 <translation id="8437238597147034694">&amp;നീക്കുന്നത് പഴയപടിയാക്കുക</translation>
 <translation id="8457125768502047971">അനിശ്ചിതം</translation>
 <translation id="8461694314515752532">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രെയ്‌സ് ഉപയോഗിച്ച്, സമന്വയിപ്പിച്ച ഡാറ്റ എൻക്രി‌പ്‌റ്റ് ചെയ്യുക</translation>

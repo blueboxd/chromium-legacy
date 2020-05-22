@@ -7,10 +7,10 @@
 
 #include <map>
 
+#include "base/component_export.h"
 #include "base/pickle.h"
 #include "ui/base/dragdrop/file_info/file_info.h"
 #include "ui/base/dragdrop/os_exchange_data_provider.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -26,7 +26,7 @@ class ClipboardFormatType;
 // Simple OSExchangeDataProvider implementation for aura-based ports with no
 // actual platform integration. So data managed by this class is exchangeable
 // only among Chromium windows and is available only while it is alive.
-class UI_BASE_EXPORT OSExchangeDataProviderNonBacked
+class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderNonBacked
     : public OSExchangeDataProvider {
  public:
   OSExchangeDataProviderNonBacked();

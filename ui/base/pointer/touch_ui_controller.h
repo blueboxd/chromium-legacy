@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/callback_list.h"
+#include "base/component_export.h"
 #include "build/build_config.h"
-#include "ui/base/ui_base_export.h"
 
 #if defined(OS_WIN)
 namespace gfx {
@@ -20,7 +20,7 @@ class SingletonHwndObserver;
 namespace ui {
 
 // Central controller to handle touch UI modes.
-class UI_BASE_EXPORT TouchUiController {
+class COMPONENT_EXPORT(UI_BASE) TouchUiController {
  public:
   using CallbackList = base::CallbackList<void()>;
   using Subscription = CallbackList::Subscription;
@@ -31,7 +31,7 @@ class UI_BASE_EXPORT TouchUiController {
     kEnabled,
   };
 
-  class UI_BASE_EXPORT TouchUiScoperForTesting {
+  class COMPONENT_EXPORT(UI_BASE) TouchUiScoperForTesting {
    public:
     explicit TouchUiScoperForTesting(bool enabled,
                                      TouchUiController* controller = Get());

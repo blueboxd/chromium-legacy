@@ -600,6 +600,7 @@
 <translation id="3539171420378717834">Бул картанын көчүрмөсү ушул түзмөктө сакталсын</translation>
 <translation id="3558573058928565255">Күндүз</translation>
 <translation id="3566021033012934673">Туташууңуз купуя эмес</translation>
+<translation id="3567778190852720481">Ишкана аккаунту жараксыз болгондуктан аны менен катталууга болбойт.</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> сайтында кыстарылган баракча мындай дейт:</translation>
 <translation id="3581089476000296252">Бул барак даяр болгондо, Chrome сизге кабарлап коёт. &lt;a&gt;Баш тартуу&lt;/a&gt;</translation>
@@ -876,6 +877,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Windows Тармак мүчүлүштүгүн аныктоону иштетиңиз<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Саясаттарды кайра жүктөө</translation>
 <translation id="4728558894243024398">Платформа</translation>
+<translation id="4731638775147756694">Бул колдонмо администраторуңуз тарабынан бөгөттөлдү</translation>
 <translation id="4731967714531604179">Prc2 (Конверт)</translation>
 <translation id="4733082559415072992"><ph name="URL" /> түзмөгүңүздүн жайгашкан жерин пайдаланганы жатат</translation>
 <translation id="4736825316280949806">Chromium’ду өчүрүп-күйгүзүңүз</translation>
@@ -1246,6 +1248,7 @@
 <translation id="6263376278284652872"><ph name="DOMAIN" /> кыстармалар</translation>
 <translation id="6264485186158353794">Коопсуздукка кайтуу</translation>
 <translation id="6266934640124581640">Мала көгүш жашыл</translation>
+<translation id="6272383483618007430">Google Update</translation>
 <translation id="6276112860590028508">Окуу тизмеңиздеги барактар бул жерде көрүнөт</translation>
 <translation id="627746635834430766">Кийинки жолу тезирээк төлөө үчүн картаңыз менен эсептешүү дарегин Google аккаунтуңузга сактап коюңуз.</translation>
 <translation id="6279516281132775660">Chrome төмөнкү маалыматты <ph name="BEGIN_EMPHASIS" />сактабайт<ph name="END_EMPHASIS" />:
@@ -1619,6 +1622,7 @@
 <translation id="7844689747373518809">{COUNT,plural, =0{Эч бири}=1{1 колдонмо (<ph name="EXAMPLE_APP_1" />)}=2{2 колдонмо (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />)}other{# колдонмо (<ph name="EXAMPLE_APP_1" />, <ph name="EXAMPLE_APP_2" />, <ph name="AND_MORE" />)}}</translation>
 <translation id="785549533363645510">Ошентсе да, сиз көрүнбөй калбайсыз. Жашыруун серептөө аракеттериңизди иш берүүчүңүздөн, интернет кызматын камсыздоочудан же каралган вебсайттардан жашыра албайсыз.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7858256690562840157"><ph name="BEGIN_WHITEPAPER_LINK" />Баш баккан айрым сайттарыңыздын URL'дерин, тутум тууралуу чектелген маалыматты жана барактагы айрым мазмунду<ph name="END_WHITEPAPER_LINK" /> Google'га жөнөтүү менен Интернеттеги коопсуздукту баары үчүн күчөтүүгө жардам бериңиз. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="7862185352068345852">Сайттан чыгасызбы?</translation>
 <translation id="7865448901209910068">Мыкты ылдамдык</translation>
 <translation id="7874263914261512992">Сырсөзүңүздү жаңы эле адаштыруучу сайтта киргиздиңиз. Chrome <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> жана башка сайттарда колдонгон ушул жана сакталган сырсөздөрүңүздү азыр текшерүүнү сунуштайт.</translation>
@@ -1753,7 +1757,6 @@
 <translation id="8425213833346101688">Өзгөртүү</translation>
 <translation id="8428213095426709021">Жөндөөлөр</translation>
 <translation id="8433057134996913067">Ушуну менен көпчүлүк вебсайттардын каттоо эсебинен чыгарыласыз.</translation>
-<translation id="8433678324664858900">Сунуштарды көрстүү</translation>
 <translation id="8437238597147034694">Жылдырууну &amp;жасабоо</translation>
 <translation id="8457125768502047971">Белгисиз</translation>
 <translation id="8461694314515752532">Шайкештирилген дайындарды өзүңүздүн шайкештирүүчү купуя сөз айкашыңыз менен шифрлеңиз</translation>

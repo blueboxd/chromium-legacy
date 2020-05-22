@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">Тіл қосу</translation>
 <translation id="2650751991977523696">Файл қайта жүктеп алынсын ба?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# аудиофайл}other{# аудиофайл}}</translation>
+<translation id="2656405586795711023">Вебқолданбалар</translation>
 <translation id="2677748264148917807">Шығу</translation>
 <translation id="2689830683995595741">Chrome браузерін пайдалану арқылы <ph name="BEGIN_LINK1" />Google Қызмет көрсету шарттарына<ph name="END_LINK1" /> және <ph name="BEGIN_LINK2" />Google Chrome және Chrome OS Қосымша қызмет көрсету шарттарына<ph name="END_LINK2" /> келісім бересіз. <ph name="BEGIN_LINK3" />Family Link арқылы басқарылатын Google есептік жазбаларына арналған Құпиялылық мәлімдемесі<ph name="END_LINK3" /> де қолданылады.</translation>
 <translation id="2707726405694321444">Бетті жаңарту</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">Маңызды емес деректер</translation>
 <translation id="4000212216660919741">Негізгі экран офлайн режимде</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# сағ}other{# сағ}}</translation>
+<translation id="403687620286099920">QR кодын ашу үшін түртіңіз.</translation>
 <translation id="4046123991198612571">Келесі аудиотрек</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4060598801229743805">Опциялар экранның жоғарғы жағында тұрады</translation>
@@ -450,6 +452,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4749960740855309258">Жаңа қойынды ашу</translation>
 <translation id="4759238208242260848">Жүктеп алынғандар</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 файл жүктеп алынды.}other{# файл жүктеп алынды.}}</translation>
+<translation id="478981486571169252"><ph name="SITE_NAME" /> сайтына кіру күйін, браузерді пайдалану деректерін және Chrome-дағы сайт деректерін көресіз.</translation>
 <translation id="4802417911091824046">Google Pay қызметіндегі төлеу әдістері мен мекенжайлар құпия фразамен шифрланбайды.
 
 Бұл параметрді өзгерту үшін <ph name="BEGIN_LINK" />синхрондауды бастапқы күйіне қайтарыңыз<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5292796745632149097">Қойынды жіберілетін құрылғы:</translation>
 <translation id="5304593522240415983">Бұл өріс бос болмауы керек</translation>
 <translation id="5308380583665731573">Қосылу</translation>
+<translation id="5317780077021120954">Сақтау</translation>
 <translation id="5324858694974489420">Басыңқы параметрлер</translation>
 <translation id="5327248766486351172">Аты</translation>
 <translation id="5342314432463739672">Рұқсат сұраулары</translation>
@@ -562,6 +566,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="5659593005791499971">Электрондық пошта</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> қолданбасында оқиға жасау</translation>
 <translation id="5668404140385795438">Веб-сайттардың үлкейтуге тыйым салу туралы сұрауларын елемеу</translation>
+<translation id="5681394891799747640">QR коды жүктеп алынбады</translation>
 <translation id="5684874026226664614">Бұл бетті аудару мүмкін емес.</translation>
 <translation id="5686790454216892815">Файлдың аты тым ұзын</translation>
 <translation id="5694049548840660018">Негізгі экранға оңай өту</translation>
@@ -610,6 +615,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6042308850641462728">Жаю</translation>
 <translation id="604996488070107836">Белгісіз қате себебінен <ph name="FILE_NAME" /> жүктелмеді.</translation>
 <translation id="605721222689873409">ЖЖ</translation>
+<translation id="6059830886158432458">Жаңалықтар мен әрекеттерді осы жерде басқарыңыз.</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> сағат қалды</translation>
 <translation id="6108923351542677676">Орнатылуда…</translation>
 <translation id="6111020039983847643">пайдаланылған деректер</translation>
@@ -633,6 +639,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="629730747756840877">Есептік жазба</translation>
 <translation id="6297765934698848803">Құрылғыңызды басқаратын ұйым камерыңызды өшірді.</translation>
 <translation id="6303969859164067831">Есептік жазбадан шығу және синхрондау функциясын өшіру</translation>
+<translation id="6312687380483398334">Вебқолданбалар (дыбыссыз)</translation>
 <translation id="6316139424528454185">Android: қолдау көрсетілмейді</translation>
 <translation id="6324034347079777476">Android жүйесін синхрондау өшірілді</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> арқылы бөлісу</translation>
@@ -664,6 +671,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6482749332252372425">Жад орны жеткіліксіз болғандықтан, <ph name="FILE_NAME" /> жүктелмеді.</translation>
 <translation id="6496823230996795692"><ph name="APP_NAME" /> қолданбасын алғаш пайдаланар кезде интернетке кіру қажет.</translation>
 <translation id="6508722015517270189">Chrome браузерін қайта іске қосу</translation>
+<translation id="6527303717912515753">Бөлісу</translation>
 <translation id="6532866250404780454">Chrome браузерінде ашқан сайттар көрсетілмейді. Барлық сайт таймерлері жойылады.</translation>
 <translation id="6534565668554028783">Google ұзақ уақыт жауап бермеуде</translation>
 <translation id="6539092367496845964">Бірдеңе дұрыс болмады. Кейінірек қайталап көріңіз.</translation>
@@ -794,6 +802,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7605594153474022051">Синхрондау жұмыс істемейді</translation>
 <translation id="7606077192958116810">Lite режимі қосулы. Оны "Параметрлер" бөлімінде реттеңіз.</translation>
 <translation id="7612619742409846846">Google жүйесіне келесі пайдаланушы атымен кірген:</translation>
+<translation id="7614971007231847352">QR коды жүктеп алынды</translation>
 <translation id="7619072057915878432">Желідегі ақаулықтар себебінен <ph name="FILE_NAME" /> жүктелмеді.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Анықтама алыңыз<ph name="END_LINK1" /> немесе <ph name="BEGIN_LINK2" />қайта сканерлеңіз<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome жүйесіне қош келдіңіз</translation>
@@ -821,6 +830,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7821588508402923572">Деректерді үнемдеу ақпараты осы жерде көрсетіледі</translation>
 <translation id="7835852323729233924">Медиамазмұн ойнату</translation>
 <translation id="783819812427904514">Бейненің дыбысын қосу</translation>
+<translation id="7846296061357476882">Google қызметтері</translation>
 <translation id="784934925303690534">Уақыт ауқымы</translation>
 <translation id="7851858861565204677">Басқа құрылғылар</translation>
 <translation id="7875915731392087153">Электрондық пошта жасау</translation>

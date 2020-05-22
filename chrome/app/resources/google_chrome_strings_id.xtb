@@ -187,6 +187,7 @@
 <translation id="6967962315388095737">Inbound rule untuk Google Chrome Beta guna mengizinkan traffic mDNS.</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> mewajibkan Anda membaca dan menyetujui Persyaratan Layanan sebelum menggunakan perangkat ini. Persyaratan ini tidak memperluas, mengubah, atau membatasi Persyaratan Chrome OS.</translation>
 <translation id="6989339256997917931">Google Chrome telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
+<translation id="7062128746136194023">Orang tuamu telah menonaktifkan "Izin untuk situs, aplikasi, dan ekstensi" untuk Chrome. Tindakan menambahkan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak diizinkan.</translation>
 <translation id="7098166902387133879">Google Chrome menggunakan mikrofon Anda.</translation>
 <translation id="7106741999175697885">Pengelola Tugas - Google Chrome</translation>
 <translation id="7140653346177713799">{COUNT,plural, =0{Update baru untuk Chrome telah tersedia dan akan diterapkan segera setelah diluncurkan kembali.}=1{Update baru untuk Chrome telah tersedia dan akan diterapkan segera setelah diluncurkan kembali. Jendela samaran Anda tidak akan dibuka kembali.}other{Update baru untuk Chrome telah tersedia dan akan diterapkan segera setelah diluncurkan kembali. # jendela samaran Anda tidak akan dibuka kembali.}}</translation>
@@ -227,6 +228,7 @@
 <translation id="8129812357326543296">Tentang &amp;Google Chrome</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>
 <translation id="8286862437124483331">Google Chrome mencoba menampilkan sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
+<translation id="828798499196665338">Orang tuamu telah menonaktifkan "Izin untuk situs, aplikasi, dan ekstensi" untuk Chrome. Tindakan mengaktifkan <ph name="EXTENSION_TYPE_PARAMETER" /> ini tidak diizinkan.</translation>
 <translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>
 <translation id="8342675569599923794">File ini berbahaya, jadi Chrome telah memblokirnya.</translation>
 <translation id="8370517070665726704">Hak cipta <ph name="YEAR" /> Google LLC. Semua hak dilindungi undang-undang.</translation>

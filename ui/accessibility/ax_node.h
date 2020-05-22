@@ -336,14 +336,12 @@ class AX_EXPORT AXNode final {
   AXNode* GetTableCellFromIndex(int index) const;
   AXNode* GetTableCellFromCoords(int row_index, int col_index) const;
   // Get all the column header node ids of the table.
-  void GetTableColHeaderNodeIds(std::vector<int32_t>* col_header_ids) const;
+  std::vector<AXNode::AXID> GetTableColHeaderNodeIds() const;
   // Get the column header node ids associated with |col_index|.
-  void GetTableColHeaderNodeIds(int col_index,
-                                std::vector<int32_t>* col_header_ids) const;
+  std::vector<AXNode::AXID> GetTableColHeaderNodeIds(int col_index) const;
   // Get the row header node ids associated with |row_index|.
-  void GetTableRowHeaderNodeIds(int row_index,
-                                std::vector<int32_t>* row_header_ids) const;
-  void GetTableUniqueCellIds(std::vector<int32_t>* row_header_ids) const;
+  std::vector<AXNode::AXID> GetTableRowHeaderNodeIds(int row_index) const;
+  std::vector<AXNode::AXID> GetTableUniqueCellIds() const;
   // Extra computed nodes for the accessibility tree for macOS:
   // one column node for each table column, followed by one
   // table header container node, or nullptr if not applicable.
@@ -370,8 +368,8 @@ class AX_EXPORT AXNode final {
   base::Optional<int> GetTableCellRowSpan() const;
   base::Optional<int> GetTableCellAriaColIndex() const;
   base::Optional<int> GetTableCellAriaRowIndex() const;
-  void GetTableCellColHeaderNodeIds(std::vector<int32_t>* col_header_ids) const;
-  void GetTableCellRowHeaderNodeIds(std::vector<int32_t>* row_header_ids) const;
+  std::vector<AXNode::AXID> GetTableCellColHeaderNodeIds() const;
+  std::vector<AXNode::AXID> GetTableCellRowHeaderNodeIds() const;
   void GetTableCellColHeaders(std::vector<AXNode*>* col_headers) const;
   void GetTableCellRowHeaders(std::vector<AXNode*>* row_headers) const;
 

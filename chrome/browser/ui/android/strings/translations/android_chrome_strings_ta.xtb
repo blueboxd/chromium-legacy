@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">மொழியைச் சேர்</translation>
 <translation id="2650751991977523696">கோப்பை மீண்டும் பதிவிறக்கவா?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ஆடியோ கோப்பு}other{# ஆடியோ கோப்புகள்}}</translation>
+<translation id="2656405586795711023">இணைய ஆப்ஸ்</translation>
 <translation id="2677748264148917807">வெளியேறு</translation>
 <translation id="2689830683995595741">Chromeமைப் பயன்படுத்துவதன் மூலம் <ph name="BEGIN_LINK1" />Google சேவை விதிமுறைகளையும்<ph name="END_LINK1" /> <ph name="BEGIN_LINK2" />Google Chrome மற்றும் Chrome OS தொடர்பான கூடுதல் சேவை விதிமுறைகளையும்<ph name="END_LINK2" /> ஏற்கிறீர்கள். இவற்றோடு <ph name="BEGIN_LINK3" />Family Link நிர்வகிக்கும் Google கணக்குகளுக்கான தனியுரிமை அறிக்கையும்<ph name="END_LINK3" /> பொருந்தும்.</translation>
 <translation id="2707726405694321444">பக்கத்தைப் புதுப்பி</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">முக்கியமில்லா சேமிப்பகம்</translation>
 <translation id="4000212216660919741">Home ஆஃப்லைனில் உள்ளது</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# மணிநேரம்}other{# மணிநேரம்}}</translation>
+<translation id="403687620286099920">QR குறியீட்டைத் திறக்க தட்டவும்</translation>
 <translation id="4046123991198612571">அடுத்த டிராக்</translation>
 <translation id="4056223980640387499">செபியா</translation>
 <translation id="4060598801229743805">திரையின் மேற்பகுதிக்கு அருகில், விருப்பங்கள் உள்ளன</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">புதிய தாவலைத் திறக்கும்</translation>
 <translation id="4759238208242260848">பதிவிறக்கங்கள்</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{ஒரு பதிவிறக்கம் முடிந்தது.}other{# பதிவிறக்கங்கள் முடிந்தன.}}</translation>
+<translation id="478981486571169252"><ph name="SITE_NAME" /> என்ற தளம் தொடர்பான உங்களின் உள்நுழைவு நிலை, உலாவிய தரவு, தளத்தின் தரவு ஆகியவற்றை Chromeமில் பார்ப்பீர்கள்.</translation>
 <translation id="4802417911091824046">கடவுச்சொற்றொடர் என்க்ரிப்ஷனில் Google Payயிலுள்ள கட்டண முறைகளும் முகவரிகளும் சேர்க்கப்படாது.
 
 இந்த அமைப்பை மாற்ற, <ph name="BEGIN_LINK" />ஒத்திசைவை மீட்டமைக்கவும்<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">இதற்கு அனுப்பு:</translation>
 <translation id="5304593522240415983">இந்தப் புலம் காலியாக இருக்கக் கூடாது</translation>
 <translation id="5308380583665731573">இணை</translation>
+<translation id="5317780077021120954">சேமி</translation>
 <translation id="5324858694974489420">பெற்றோர் அமைப்புகள்</translation>
 <translation id="5327248766486351172">பெயர்</translation>
 <translation id="5342314432463739672">அனுமதிக் கோரிக்கைகள்</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">மின்னஞ்சல்</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" /> இல் நிகழ்வை உருவாக்கு</translation>
 <translation id="5668404140385795438">பெரிதாக்கப்படுவதைத் தடுக்க இணையதளம் விடுத்த கோரிக்கையைப் புறக்கணிக்கவும்</translation>
+<translation id="5681394891799747640">QR குறியீட்டைப் பதிவிறக்க முடியாது</translation>
 <translation id="5684874026226664614">அச்சச்சோ. இந்தப் பக்கத்தை மொழிபெயர்க்க முடியாது.</translation>
 <translation id="5686790454216892815">கோப்பின் பெயர் நீளமாக உள்ளது</translation>
 <translation id="5694049548840660018">முகப்பிற்கு எளிதாகச் செல்லுங்கள்</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">மேலும்</translation>
 <translation id="604996488070107836">அறியப்படாதப் பிழை காரணமாக <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">உங்கள் செய்திகளையும் செயல்பாட்டையும் இங்கே கட்டுப்படுத்தலாம்</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> மணிநேரம் மீதமுள்ளது</translation>
 <translation id="6108923351542677676">அமைவு செயலிலுள்ளது...</translation>
 <translation id="6111020039983847643">பயன்படுத்திய டேட்டா</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">கணக்கு</translation>
 <translation id="6297765934698848803">உங்கள் சாதனத்தை நிர்வகிக்கும் நிறுவனம் கேமராவை முடக்கியுள்ளது.</translation>
 <translation id="6303969859164067831">வெளியேறி ஒத்திசைவை முடக்கு</translation>
+<translation id="6312687380483398334">இணைய ஆப்ஸ் (நிசப்தம்)</translation>
 <translation id="6316139424528454185">Android பதிப்பு ஆதரிக்கப்படாது</translation>
 <translation id="6324034347079777476">Android அமைப்பின் ஒத்திசைவு முடக்கப்பட்டது</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> வழியாகப் பகிர்</translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">போதுமான சேமிப்பிடம் இல்லாததால் <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
 <translation id="6496823230996795692">முதல்முறையாக <ph name="APP_NAME" />ஐப் பயன்படுத்த, இணையத்துடன் இணைக்கவும்.</translation>
 <translation id="6508722015517270189">Chromeஐ மீண்டும் தொடங்கவும்</translation>
+<translation id="6527303717912515753">பகிர்</translation>
 <translation id="6532866250404780454">Chromeமில் நீங்கள் பார்க்கும் தளங்களைக் காட்டாது. தளத்தில் உள்ள அத்தனை டைமர்களும் நீக்கப்படும்.</translation>
 <translation id="6534565668554028783">பதிலளிக்க, Google நீண்ட நேரம் எடுத்துக்கொண்டது</translation>
 <translation id="6539092367496845964">ஏதோ தவறாகிவிட்டது. பிறகு முயலவும்.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">ஒத்திசைவு வேலை செய்யவில்லை</translation>
 <translation id="7606077192958116810">லைட் பயன்முறை இயக்கத்தில் உள்ளது. இதை அமைப்புகளில் நிர்வகிக்கவும்.</translation>
 <translation id="7612619742409846846">Google இல் உள்நுழைந்திருக்கும் கணக்கு</translation>
+<translation id="7614971007231847352">QR குறியீடு பதிவிறக்கப்பட்டது</translation>
 <translation id="7619072057915878432">நெட்வொர்க் தோல்விகளால் <ph name="FILE_NAME" />ஐப் பதிவிறக்க முடியவில்லை.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />உதவி பெறுக<ph name="END_LINK1" /> அல்லது <ph name="BEGIN_LINK2" />மீண்டும் ஸ்கேன் செய்க<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chrome க்கு வருக</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">உங்கள் டேட்டா சேமிப்புகள் இங்கே தோன்றும்</translation>
 <translation id="7835852323729233924">மீடியாவைப் பிளே செய்கிறது</translation>
 <translation id="783819812427904514">வீடியோவின் ஒலியை இயக்கு</translation>
+<translation id="7846296061357476882">Google சேவைகள்</translation>
 <translation id="784934925303690534">நேர வரம்பு</translation>
 <translation id="7851858861565204677">பிற சாதனங்கள்</translation>
 <translation id="7875915731392087153">மின்னஞ்சலை உருவாக்கவும்</translation>

@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/component_export.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -25,7 +26,8 @@
 namespace ui {
 
 // OSExchangeDataProvider implementation for Mac.
-class UI_BASE_EXPORT OSExchangeDataProviderMac : public OSExchangeDataProvider {
+class COMPONENT_EXPORT(UI_BASE) OSExchangeDataProviderMac
+    : public OSExchangeDataProvider {
  public:
   ~OSExchangeDataProviderMac() override;
 

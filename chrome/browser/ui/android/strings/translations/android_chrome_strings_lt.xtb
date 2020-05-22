@@ -519,6 +519,7 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5292796745632149097">Siųsti į</translation>
 <translation id="5304593522240415983">Šis laukas negali būti tuščias</translation>
 <translation id="5308380583665731573">Prisijungti</translation>
+<translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="5324858694974489420">Tėvų nustatymai</translation>
 <translation id="5327248766486351172">Pavadinimas</translation>
 <translation id="5342314432463739672">Leidimų užklausos</translation>
@@ -670,6 +671,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="6482749332252372425">Nepavyko atsisiųsti „<ph name="FILE_NAME" />“ dėl trūkstamos vietos saugykloje.</translation>
 <translation id="6496823230996795692">Jei „<ph name="APP_NAME" />“ norite naudoti pirmą kartą, prisijunkite prie interneto.</translation>
 <translation id="6508722015517270189">Iš naujo paleiskite „Chrome“</translation>
+<translation id="6527303717912515753">Bendrinti</translation>
 <translation id="6532866250404780454">Svetainės, kuriose lankotės naudodami „Chrome“, nebus rodomos. Visi svetainių laikmačiai bus ištrinti.</translation>
 <translation id="6534565668554028783">Per ilgai laukta „Google“ atsako</translation>
 <translation id="6539092367496845964">Įvyko klaida. Vėliau bandykite dar kartą.</translation>

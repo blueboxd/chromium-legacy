@@ -524,10 +524,12 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> GetTableAriaRowCount() const override;
   base::Optional<int> GetTableCellCount() const override;
   base::Optional<bool> GetTableHasColumnOrRowHeaderNode() const override;
-  std::vector<int32_t> GetColHeaderNodeIds() const override;
-  std::vector<int32_t> GetColHeaderNodeIds(int col_index) const override;
-  std::vector<int32_t> GetRowHeaderNodeIds() const override;
-  std::vector<int32_t> GetRowHeaderNodeIds(int row_index) const override;
+  std::vector<ui::AXNode::AXID> GetColHeaderNodeIds() const override;
+  std::vector<ui::AXNode::AXID> GetColHeaderNodeIds(
+      int col_index) const override;
+  std::vector<ui::AXNode::AXID> GetRowHeaderNodeIds() const override;
+  std::vector<ui::AXNode::AXID> GetRowHeaderNodeIds(
+      int row_index) const override;
   ui::AXPlatformNode* GetTableCaption() const override;
 
   bool IsTableRow() const override;

@@ -160,6 +160,7 @@ Disa funksione mund të mos ofrohen dhe ndryshimet në preferenca nuk do të ruh
 Disa funksione mund të mos ofrohen. Specifiko një direktori tjetër profili ose përdor një version më të ri të Chromium.</translation>
 <translation id="6734080038664603509">Përditëso &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium është i instaluar tashmë për të gjithë përdoruesit në kompjuterin tënd.</translation>
+<translation id="6774082503108938489">Prindi yt ka çaktivizuar "Lejet për sajtet, aplikacionet dhe shtesat" për Chromium. Nuk lejohet aktivizimi për këtë <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">Chromium të informon nëse fjalëkalimet e tua komprometohen ndonjëherë</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (kopjuar në Chromium)</translation>
@@ -218,6 +219,7 @@ Chromium nuk është në gjendje të rikuperojë cilësimet e tua.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Hap përsëri Chromium brenda një dite}other{Hap përsëri Chromium brenda # ditësh}}</translation>
 <translation id="8453117565092476964">Arkivi i instaluesit është i dëmtuar ose i pavlefshëm. Shkarkoje Chromium përsëri.</translation>
 <translation id="8493179195440786826">Chromium nuk është i përditësuar</translation>
+<translation id="8558383651099478961">Prindi yt ka çaktivizuar "Lejet për sajtet, aplikacionet dhe shtesat" për Chromium. Nuk lejohet shtimi për këtë <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium mund t'i kontrollojë fjalëkalimet e tua kur të identifikohesh me "Llogarinë tënde të Google"</translation>
 <translation id="8586442755830160949">Të drejtat e autorit <ph name="YEAR" /> Autorët e Chromium. Të gjitha të drejtat të rezervuara.</translation>
 <translation id="8619360774459241877">Po hapet Chromium...</translation>

@@ -204,6 +204,7 @@ Raak en hou enige woord om te soek. Kies meer of minder woorde as jy jou soektog
 <translation id="2647434099613338025">Voeg taal by</translation>
 <translation id="2650751991977523696">Laai lêer weer af?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# oudiolêer}other{# oudiolêers}}</translation>
+<translation id="2656405586795711023">Webprogramme</translation>
 <translation id="2677748264148917807">Gaan uit</translation>
 <translation id="2689830683995595741">As jy Chrome gebruik, stem jy in tot <ph name="BEGIN_LINK1" />Google se diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />Google Chrome en Chrome-bedryfstelsel se bykomende diensbepalings<ph name="END_LINK2" />. Die <ph name="BEGIN_LINK3" />Privaatheidskennisgewing vir Google-rekeninge wat met Family Link bestuur word<ph name="END_LINK3" /> is ook van toepassing.</translation>
 <translation id="2707726405694321444">Herlaai bladsy</translation>
@@ -366,6 +367,7 @@ Net jy kan sien waarna jou kamera kyk. Hierdie werf kan nie jou kamera se prente
 <translation id="3997476611815694295">Berging vir onbelangrike werwe</translation>
 <translation id="4000212216660919741">Vanlyn tuisblad</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# uur}other{# uur}}</translation>
+<translation id="403687620286099920">Tik om QR-modus oop te maak</translation>
 <translation id="4046123991198612571">Volgende snit</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Opsies is naby die bokant van die skerm beskikbaar</translation>
@@ -450,6 +452,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="4749960740855309258">Maak 'n nuwe oortjie oop</translation>
 <translation id="4759238208242260848">Aflaaie</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 aflaai is voltooi.}other{# aflaaie is voltooi.}}</translation>
+<translation id="478981486571169252">Jy sal jou <ph name="SITE_NAME" />-aanmeldingstatus, -blaaierdata en -werfdata in Chrome sien.</translation>
 <translation id="4802417911091824046">Wagfrase-enkripsie sluit nie betaalmetodes en adresse van Google Pay af in nie.
 
 <ph name="BEGIN_LINK" />Stel sinkronisering terug<ph name="END_LINK" /> om hierdie instelling te verander</translation>
@@ -516,6 +519,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5292796745632149097">Stuur na</translation>
 <translation id="5304593522240415983">Hierdie veld mag nie leeg wees nie</translation>
 <translation id="5308380583665731573">Koppel</translation>
+<translation id="5317780077021120954">Berg</translation>
 <translation id="5324858694974489420">Ouerinstellings</translation>
 <translation id="5327248766486351172">Naam</translation>
 <translation id="5342314432463739672">Toestemmingversoeke</translation>
@@ -562,6 +566,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="5659593005791499971">E-pos</translation>
 <translation id="5665379678064389456">Skep geleentheid in <ph name="APP_NAME" /></translation>
 <translation id="5668404140385795438">Ignoreer 'n webwerf se versoek om inzoem te verhoed</translation>
+<translation id="5681394891799747640">Kan nie QR-kode aflaai nie</translation>
 <translation id="5684874026226664614">Oeps. Hierdie bladsy kon nie vertaal word nie.</translation>
 <translation id="5686790454216892815">Lêernaam is te lank</translation>
 <translation id="5694049548840660018">Gaan maklik terug na die tuisblad toe</translation>
@@ -610,6 +615,7 @@ Jou Google-rekening het dalk ander vorme van blaaigeskiedenis, soos soektogte en
 <translation id="6042308850641462728">Meer</translation>
 <translation id="604996488070107836">Kon <ph name="FILE_NAME" /> weens 'n onbekende fout nie aflaai nie.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">Beheer jou stories en aktiwiteit hier</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> uur oor</translation>
 <translation id="6108923351542677676">Opstelling is besig …</translation>
 <translation id="6111020039983847643">data gebruik</translation>
@@ -633,6 +639,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="629730747756840877">Rekening</translation>
 <translation id="6297765934698848803">Die organisasie wat jou toestel bestuur, het jou kamera afgeskakel.</translation>
 <translation id="6303969859164067831">Meld af en skakel sinkronisering af</translation>
+<translation id="6312687380483398334">Webprogramme (stil)</translation>
 <translation id="6316139424528454185">Steun nie Android-weergawe nie</translation>
 <translation id="6324034347079777476">Android-stelsel se sinkronisering is gedeaktiveer</translation>
 <translation id="6333140779060797560">Deel via <ph name="APPLICATION" /></translation>
@@ -664,6 +671,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="6482749332252372425">Kon <ph name="FILE_NAME" /> weens 'n gebrek aan bergingspasie nie aflaai nie.</translation>
 <translation id="6496823230996795692">Koppel aan die internet om <ph name="APP_NAME" /> vir die eerste keer te gebruik.</translation>
 <translation id="6508722015517270189">Herbegin Chrome</translation>
+<translation id="6527303717912515753">Deel</translation>
 <translation id="6532866250404780454">Werwe wat jy in Chrome besoek, sal nie wys nie. Alle werftydtellers sal uitgevee word.</translation>
 <translation id="6534565668554028783">Google het te lank gevat om te reageer</translation>
 <translation id="6539092367496845964">Iets is fout. Probeer later weer.</translation>
@@ -794,6 +802,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7605594153474022051">Sinkronisering werk nie</translation>
 <translation id="7606077192958116810">Ligte Modus is aan. Bestuur dit in Instellings.</translation>
 <translation id="7612619742409846846">By Google aangemeld as</translation>
+<translation id="7614971007231847352">QR-kode is afgelaai</translation>
 <translation id="7619072057915878432">Kon <ph name="FILE_NAME" /> weens netwerkmislukkings nie aflaai nie.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Kry hulp<ph name="END_LINK1" /> of <ph name="BEGIN_LINK2" />soek weer<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Welkom by Chrome</translation>
@@ -821,6 +830,7 @@ Byvoorbeeld, sommige webwerwe kan op hierdie versoek reageer deur vir jou advert
 <translation id="7821588508402923572">Jou databesparing sal hier verskyn</translation>
 <translation id="7835852323729233924">Speel tans media</translation>
 <translation id="783819812427904514">Ontdemp video</translation>
+<translation id="7846296061357476882">Google-dienste</translation>
 <translation id="784934925303690534">Tydomvang</translation>
 <translation id="7851858861565204677">Ander toestelle</translation>
 <translation id="7875915731392087153">Skep e-pos</translation>

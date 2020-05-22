@@ -42,6 +42,7 @@
 <translation id="6058625436358447366">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ចាស់ និងថ្មី​របស់អ្នក</translation>
 <translation id="6106186594183574873">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ចាស់​របស់អ្នក</translation>
 <translation id="6146993107019042706">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ថ្មីរបស់អ្នក</translation>
+<translation id="6517239166834772319">រុករក</translation>
 <translation id="6643016212128521049">ជម្រះ</translation>
 <translation id="7162487448488904999">សាល​រូបភាព</translation>
 <translation id="7658239707568436148">បដិសេធ</translation>
@@ -49,6 +50,7 @@
 <translation id="7805768142964895445">ស្ថានភាព</translation>
 <translation id="808894953321890993">ប្ដូរ​ពាក្យ​សម្ងាត់</translation>
 <translation id="8208861521865154048">អត្ថប្រយោជន៍</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> គ្រប់គ្រង​អ្នកប្រើប្រាស់​នេះ។ ដែននេះអាច​តាមដាន​សកម្មភាព​អ្នកប្រើប្រាស់ និង​គ្រប់គ្រង​ការកំណត់​ពីចម្ងាយ​បាន។</translation>
 <translation id="8747900814994928677">បញ្ជាក់​ការ​ផ្លាស់ប្ដូរ</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> អាច​ព្យាយាម​បាន <ph name="ATTEMPTS_LEFT" /> ដងទៀត</translation>
 <translation id="910415269708673980">ផ្ទុកសំបុត្រ​ឡើងវិញសម្រាប់ <ph name="PRINCIPAL_NAME" /></translation>

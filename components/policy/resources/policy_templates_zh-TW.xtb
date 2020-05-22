@@ -1106,11 +1106,6 @@
       如果不設定這項政策，<ph name="PRODUCT_NAME" /> 將套用預設值 (10000 毫秒)。</translation>
 <translation id="257788512393330403">每 6 小時需輸入密碼</translation>
 <translation id="2580104054820772954">延遲提供檔案，直到系統取得掃描結果</translation>
-<translation id="2586162458524426376">
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。
-      如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
-      如果不設定或停用這項政策，系統會將平台預設的網站隔離設定套用至登入畫面。
-      </translation>
 <translation id="2587719089023392205">將 <ph name="PRODUCT_NAME" /> 設為預設瀏覽器</translation>
 <translation id="2588071938417715443">這項政策可控管本機搜尋 UI (<ph name="CHROME_DEVICES_LINK" />) 中可操控功能的存取權。本機搜尋 UI 會顯示使用者附近的可搜尋裝置，以及註冊於這些可搜尋裝置的雲端裝置。在所有作業系統上 (<ph name="PRODUCT_OS_NAME" />除外)，本機搜尋 UI 也能讓使用者將連接至電腦的傳統印表機新增至 <ph name="CLOUD_PRINT_NAME" />。</translation>
 <translation id="2592091433672667839">螢幕保護程式顯示前的閒置時間會顯示在零售模式下的登入畫面上</translation>
@@ -1147,11 +1142,6 @@
 <translation id="2647069081229792812">允許或禁止編輯書籤</translation>
 <translation id="2649896281375932517">讓使用者決定</translation>
 <translation id="2650049181907741121">使用者蓋上螢幕時所採取的動作</translation>
-<translation id="2650255110448120764">將這項政策設為 None 時，系統會停用放大鏡功能。
-
-      如果設定這項政策，使用者將無法變更。如果未設定，系統會先停用放大鏡功能，但使用者隨時可以啟用。
-
-      有效值：• 0 = 停用 • 1 = 啟用 • 2 = 啟用置頂放大鏡</translation>
 <translation id="2655233147335439767">指定執行預設搜尋時使用的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER" /> 字串，使用者搜尋時輸入的文字會取代這條字串。
 
           您可以使用以下格式指定 Google 的搜尋網址：<ph name="GOOGLE_SEARCH_URL" />。
@@ -1856,6 +1846,7 @@
       如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如未設定這項政策，系統會使用預設的下載目錄，日後使用者可以自行變更這個目錄。</translation>
+<translation id="3803171355925844705">不允許任何網站載入複合型內容</translation>
 <translation id="3805659594028420438">啟用 TLS 網域專屬憑證擴充功能 (已不適用)</translation>
 <translation id="3808945828600697669">指定停用的外掛程式清單</translation>
 <translation id="3810642039169532482">在登入畫面上啟用語音輸入無障礙功能。
@@ -2805,7 +2796,6 @@
 
       如果未設定這項政策，或是將這項政策設為空白字串或無效的通訊埠範圍，WebRTC 即可使用任何可用的本機 UDP 通訊埠。</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
-<translation id="529986401483187205">已停用</translation>
 <translation id="5306186200045823863">信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="5307432759655324440">無痕模式適用性</translation>
 <translation id="5311275381462687162">預設的舊版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> Cookie 行為設定</translation>
@@ -3892,6 +3882,7 @@
 <translation id="7003334574344702284">如果啟用這項政策，則會強制從之前的預設瀏覽器匯入儲存的密碼，並影響匯入對話方塊。如果停用這項政策，則不會匯入儲存的密碼。如果未設定這項政策，系統會自動匯入儲存的密碼，或詢問使用者是否要匯入儲存的密碼。</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 偏好設定</translation>
 <translation id="7008308728445338159">已啟用 DNS 攔截檢查功能</translation>
+<translation id="7019805045859631636">快</translation>
 <translation id="7027785306666625591">設定 <ph name="PRODUCT_OS_NAME" /> 的電源管理。
 
       這些政策可讓你設定當使用者閒置一段時間後，要讓 <ph name="PRODUCT_OS_NAME" /> 採取的動作。</translation>
@@ -4094,7 +4085,6 @@
       如要允許 VirtualMachinesAllowed、CrostiniAllowed 和 DeviceUnaffiliatedCrostiniAllowed 執行 Crostini，這三項政策都必須設為 true。
       將這項政策變更為 false 時，系統會啟動新的 Crostini 容器，而不會關閉執行中的容器。</translation>
 <translation id="7234280155140786597">禁止的內建訊息傳遞主機名稱 (指定 * 表示涵蓋所有內建訊息傳遞主機)。</translation>
-<translation id="7244405731715221632">可用</translation>
 <translation id="7249828445670652637">允許 ARC 應用程式使用「<ph name="PRODUCT_OS_NAME" />」CA 憑證</translation>
 <translation id="7251652588006515288">這項政策可控管使用者是否能夠透過「憑證管理員」匯入及移除用戶端憑證。
 
@@ -4164,9 +4154,6 @@
 <translation id="7339315111520512972">強制網路程式碼在瀏覽器程序中執行</translation>
 <translation id="7340034977315324840">回報裝置活動時間</translation>
 <translation id="7343497214039883642">裝置專用企業印表機設定檔</translation>
-<translation id="7359307926583593395">
-      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值，如果兩者的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
-      </translation>
 <translation id="7360181094056034924">針對系統判定必須掃描的上傳和下載內容，控管 <ph name="PRODUCT_NAME" /> 採取的動作。延遲提供檔案表示 <ph name="PRODUCT_NAME" /> 必須先完成掃描作業並取得結果，使用者才能存取已下載的檔案、選取要上傳的檔案、以及從剪貼簿貼上或拖曳資料。如果 <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />、<ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> 或控管已啟用檢查功能的網域清單政策判斷檔案或資料需要掃描，系統才會套用這項限制。
 
       如果不設定這項政策或設為「None」，<ph name="PRODUCT_NAME" /> 不會延遲任何檔案的上傳作業，也不會延後從剪貼簿貼上或拖曳資料，或是讓使用者延後存取任何下載的檔案。掃描作業會在背景執行。
@@ -5306,6 +5293,7 @@
       調降這項政策的值所造成的影響為永久性的，即使之後再次調高設定值，裝置仍「可能」無法復原至較早的版本。
 
       實際上能否復原也可能會受到裝置型號和重大漏洞修補程式的影響。</translation>
+<translation id="9123464369663964441">允許使用者新增可載入複合型內容的例外網站</translation>
 <translation id="9126014181388780690">「允許 Google 助理存取畫面內容」</translation>
 <translation id="913195841488580904">禁止存取清單中的網址</translation>
 <translation id="9135033364005346124">啟用 <ph name="CLOUD_PRINT_NAME" /> Proxy</translation>

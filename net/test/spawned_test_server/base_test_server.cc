@@ -19,6 +19,7 @@
 #include "net/base/address_list.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/port_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/test_root_certs.h"
@@ -221,7 +222,8 @@ bool BaseTestServer::GetAddressList(AddressList* address_list) const {
   parameters.dns_query_type = DnsQueryType::A;
 
   std::unique_ptr<HostResolver::ResolveHostRequest> request =
-      resolver->CreateRequest(host_port_pair_, NetLogWithSource(), parameters);
+      resolver->CreateRequest(host_port_pair_, NetworkIsolationKey(),
+                              NetLogWithSource(), parameters);
 
   TestCompletionCallback callback;
   int rv = request->Start(callback.callback());

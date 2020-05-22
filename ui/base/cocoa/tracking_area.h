@@ -7,15 +7,15 @@
 
 #import <AppKit/AppKit.h>
 
+#include "base/component_export.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "ui/base/ui_base_export.h"
 
 @class CrTrackingAreaOwnerProxy;
 
 // The CrTrackingArea can be used in place of an NSTrackingArea to shut off
 // messaging to the |owner| at a specific point in time.
-UI_BASE_EXPORT
+COMPONENT_EXPORT(UI_BASE)
 @interface CrTrackingArea : NSTrackingArea {
  @private
   base::scoped_nsobject<CrTrackingAreaOwnerProxy> _ownerProxy;
@@ -39,7 +39,7 @@ namespace ui {
 
 // Use an instance of this class to call |-clearOwner| on the |tracking_area_|
 // when this goes out of scope.
-class UI_BASE_EXPORT ScopedCrTrackingArea {
+class COMPONENT_EXPORT(UI_BASE) ScopedCrTrackingArea {
  public:
   // Takes ownership of |tracking_area| without retaining it.
   explicit ScopedCrTrackingArea(CrTrackingArea* tracking_area = nil);

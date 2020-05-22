@@ -107,14 +107,6 @@ HostResolver::ResolveHostParameters::ResolveHostParameters(
 
 HostResolver::~HostResolver() = default;
 
-std::unique_ptr<HostResolver::ResolveHostRequest> HostResolver::CreateRequest(
-    const HostPortPair& host,
-    const NetLogWithSource& net_log,
-    const base::Optional<ResolveHostParameters>& optional_parameters) {
-  return CreateRequest(host, NetworkIsolationKey(), net_log,
-                       optional_parameters);
-}
-
 std::unique_ptr<HostResolver::ProbeRequest>
 HostResolver::CreateDohProbeRequest() {
   // Should be overridden in any HostResolver implementation where this method

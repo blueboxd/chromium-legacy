@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/assistant/assistant_proactive_suggestions_controller.h"
 #include "ash/assistant/model/assistant_suggestions_model.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
@@ -19,9 +18,6 @@
 
 namespace ash {
 
-class AssistantControllerImpl;
-class ProactiveSuggestions;
-
 // The implementation of the Assistant controller in charge of suggestions.
 class AssistantSuggestionsControllerImpl
     : public AssistantSuggestionsController,
@@ -29,8 +25,7 @@ class AssistantSuggestionsControllerImpl
       public AssistantUiModelObserver,
       public AssistantStateObserver {
  public:
-  explicit AssistantSuggestionsControllerImpl(
-      AssistantControllerImpl* assistant_controller);
+  AssistantSuggestionsControllerImpl();
   ~AssistantSuggestionsControllerImpl() override;
 
   // AssistantSuggestionsController:
@@ -47,12 +42,6 @@ class AssistantSuggestionsControllerImpl
       base::Optional<AssistantEntryPoint> entry_point,
       base::Optional<AssistantExitPoint> exit_point) override;
 
-  // Invoked when the active set of |proactive_suggestions| has changed. Note
-  // that this method should only be called by the sub-controller for the
-  // proactive suggestions feature to update model state.
-  void OnProactiveSuggestionsChanged(
-      scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
-
  private:
   // AssistantStateObserver:
   void OnAssistantContextEnabled(bool enabled) override;
@@ -60,13 +49,6 @@ class AssistantSuggestionsControllerImpl
   void UpdateConversationStarters();
   void FetchConversationStarters();
   void ProvideConversationStarters();
-
-  AssistantControllerImpl* const assistant_controller_;  // Owned by Shell.
-
-  // A sub-controller for the proactive suggestions feature. Note that this will
-  // only exist if the proactive suggestions feature is enabled.
-  std::unique_ptr<AssistantProactiveSuggestionsController>
-      proactive_suggestions_controller_;
 
   AssistantSuggestionsModel model_;
 

@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">ভাষা যোগ কৰক</translation>
 <translation id="2650751991977523696">ফাইল পুনৰ ডাইনল'ড কৰিবনে?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{#টা অডিঅ' ফাইল}one{#টা অডিঅ' ফাইল}other{#টা অডিঅ' ফাইল}}</translation>
+<translation id="2656405586795711023">ৱেব এপ্‌সমূহ</translation>
 <translation id="2677748264148917807">ত্যাগ কৰক</translation>
 <translation id="2689830683995595741">Chrome ব্যৱহাৰ কৰি আপুনি <ph name="BEGIN_LINK1" />Google সেৱাৰ চৰ্তাৱলী<ph name="END_LINK1" /> আৰু <ph name="BEGIN_LINK2" />Google Chrome আৰু Chrome OSৰ সেৱাৰ অতিৰিক্ত চৰ্তাৱলী<ph name="END_LINK2" />ত সন্মতি দিয়ে। <ph name="BEGIN_LINK3" />Family Linkৰ জৰিয়তে পৰিচালনা কৰা Google একাউণ্টৰ বাবে গোপনীয়তাৰ জাননী<ph name="END_LINK3" />ও প্ৰযোজ্য হয়।</translation>
 <translation id="2707726405694321444">পৃষ্ঠাটো ৰিফ্ৰেশ্ব কৰক</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">গুৰুত্বহীন ফাইলৰ ষ্ট’ৰেজ</translation>
 <translation id="4000212216660919741">অফলাইন গৃহপৃষ্ঠা</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# ঘণ্টা}one{# ঘণ্টা}other{# ঘণ্টা}}</translation>
+<translation id="403687620286099920">কিউআৰ ক’ডটো খুলিবলৈ টিপক</translation>
 <translation id="4046123991198612571">পৰৱৰ্তী ট্ৰেক</translation>
 <translation id="4056223980640387499">ছেপিয়া</translation>
 <translation id="4060598801229743805">স্ক্ৰীণৰ ওপৰৰ অংশত কাষত থকা বিকল্প</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">এটা নতুন টেব খোলক</translation>
 <translation id="4759238208242260848">ডাউনল'ডসমূহ</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{১টা ডাউনল'ড সম্পূর্ণ হ'ল।}one{#টা ডাউনল'ড সম্পূর্ণ হ'ল।}other{#টা ডাউনল'ড সম্পূর্ণ হ'ল।}}</translation>
+<translation id="478981486571169252">আপুনি আপোনাৰ <ph name="SITE_NAME" />ৰ ছাইন ইনৰ স্থিতি, ব্ৰাউজ কৰা ডেটা আৰু ছাইটৰ ডেটা Chromeত দেখা পাব।</translation>
 <translation id="4802417911091824046">পাছফ্ৰেজ এনক্ৰিপশ্বনত Google Payৰ পৰিশোধ পদ্ধতি আৰু ঠিকনা অন্তৰ্ভুক্ত নহয়।
 
 এই ছেটিংটো সলনি কৰিবলৈ <ph name="BEGIN_LINK" />ছিংক ৰিছেট কৰক<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">এইটোলৈ পঠিয়াওক</translation>
 <translation id="5304593522240415983">এই ঠাই খালী ৰাখিব নোৱাৰি</translation>
 <translation id="5308380583665731573">সংযোগ কৰক</translation>
+<translation id="5317780077021120954">ছেভ কৰক</translation>
 <translation id="5324858694974489420">অভিভাৱকীয় ছেটিং</translation>
 <translation id="5327248766486351172">নাম</translation>
 <translation id="5342314432463739672">অনুমতিৰ অনুৰোধবোৰ</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">ইমেইল</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />ত কাৰ্যক্ৰম সৃষ্টি কৰক</translation>
 <translation id="5668404140385795438">ৱেবছাইটোৱে জুম ইনৰ ক্ষেত্ৰত বাধা দিবলৈ কৰা অনুৰোধ অ’ভাৰৰাইড কৰে</translation>
+<translation id="5681394891799747640">কিউআৰ ক’ডটো ডাউনল’ড কৰিব নোৱাৰি</translation>
 <translation id="5684874026226664614">ওঁহ এই পৃষ্ঠাটো অনুবাদ কৰিব পৰা নগ’ল।</translation>
 <translation id="5686790454216892815">ফাইলৰ নামটো বহুত দীঘল</translation>
 <translation id="5694049548840660018">সহজে গৃহপৃষ্ঠালৈ উভতি যাওক</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">অধিক</translation>
 <translation id="604996488070107836">কোনো অজ্ঞাত আসোঁৱাহৰ কাৰণে <ph name="FILE_NAME" />ক ডাউনল’ড কৰিব পৰা নগ’ল৷</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">আপোনাৰ কাহিনীসমূহ আৰু কাৰ্যকলাপ ইয়াত নিয়ন্ত্ৰণ কৰক</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> ঘণ্টা বাকী আছে</translation>
 <translation id="6108923351542677676">ছেট আপ প্ৰক্ৰিয়া চলি আছে…</translation>
 <translation id="6111020039983847643">ব্যৱহৃত ডেটা</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">একাউণ্ট</translation>
 <translation id="6297765934698848803">আপোনাৰ ডিভাইচ পৰিচালনা কৰা প্ৰতিষ্ঠানটোৱে আপোনাৰ কেমেৰাটো বন্ধ কৰিছে।</translation>
 <translation id="6303969859164067831">ছাইন আউট কৰি ছিংক অফ কৰক</translation>
+<translation id="6312687380483398334">ৱেব এপ্‌সমূহ (নীৰৱ)</translation>
 <translation id="6316139424528454185">Android সংস্কৰণটো নচলে</translation>
 <translation id="6324034347079777476">Android ছিষ্টেম ছিংক কৰাটো অক্ষম কৰা হ’ল</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" />ৰ জৰিয়তে শ্বেয়াৰ কৰক</translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">ষ্ট’ৰেজৰ ঠাই কম হোৱাৰ কাৰণে <ph name="FILE_NAME" /> ডাউনল’ড কৰিব পৰা নগ’ল৷</translation>
 <translation id="6496823230996795692">প্ৰথমবাৰলৈ <ph name="APP_NAME" /> ব্যৱহাৰ কৰিবলৈ ইন্টাৰনেট সংযোগ কৰক।</translation>
 <translation id="6508722015517270189">Chrome ৰিষ্টাৰ্ট কৰক</translation>
+<translation id="6527303717912515753">শ্বেয়াৰ কৰক</translation>
 <translation id="6532866250404780454">আপুনি Chromeত চোৱা ছাইটসমূহ নেদেখুৱাব। ছাইটৰ সকলো টাইমাৰ মচা যাব।</translation>
 <translation id="6534565668554028783">Googleএ সঁহাৰি জনোৱাত বহুত বেছি সময় লাগিল</translation>
 <translation id="6539092367496845964">কিবা ভুল হ’ল। পাছত পুনৰ চেষ্টা কৰক।</translation>
@@ -792,6 +800,7 @@
 <translation id="7605594153474022051">ছিংক কৰিব পৰা নাই</translation>
 <translation id="7606077192958116810">লাইট ম'ড অন কৰা আছে। ইয়াক ছেটিংসমূহ-ত পৰিচালনা কৰক।</translation>
 <translation id="7612619742409846846">এই হিচাপে Googleত ছাইন ইন কৰক</translation>
+<translation id="7614971007231847352">কিউআৰ ক’ডটো ডাউনল’ড কৰা হৈছে</translation>
 <translation id="7619072057915878432">নেটৱর্কৰ সমস্যাৰ বাবে <ph name="FILE_NAME" /> ডাউনল'ড কৰিব পৰা নগ'ল।</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />সহায় পাওক<ph name="END_LINK1" /> বা <ph name="BEGIN_LINK2" />পুনৰ-স্কেন কৰক<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chromeলৈ স্বাগতম</translation>
@@ -819,6 +828,7 @@
 <translation id="7821588508402923572">আপোনাৰ কিমান ডেটা ৰাহি হৈছে ইয়াত দেখা যাব</translation>
 <translation id="7835852323729233924">মিডিয়া প্লে’ হৈ আছে</translation>
 <translation id="783819812427904514">ভিডিঅ' আনমিউট কৰক</translation>
+<translation id="7846296061357476882">Google সেৱাসমূহ</translation>
 <translation id="784934925303690534">সময় অৱধি</translation>
 <translation id="7851858861565204677">অন্য ডিভাইচ</translation>
 <translation id="7875915731392087153">ইমেইল সৃষ্টি কৰক</translation>

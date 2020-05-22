@@ -7,15 +7,15 @@
 
 #include <set>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/base/ui_base_export.h"
 
 namespace ui {
 
 // Keeps track of the system-wide current and the most recent previous
 // key accelerators.
-class UI_BASE_EXPORT AcceleratorHistory {
+class COMPONENT_EXPORT(UI_BASE) AcceleratorHistory {
  public:
   AcceleratorHistory();
   ~AcceleratorHistory();

@@ -13,9 +13,9 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/i18n/string_compare.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
-#include "ui/base/ui_base_export.h"
 
 namespace l10n_util {
 
@@ -105,7 +105,8 @@ class StringComparator {
 
 // Specialization of operator() method for base::string16 version.
 template <>
-UI_BASE_EXPORT inline bool StringComparator<base::string16>::operator()(
+COMPONENT_EXPORT(UI_BASE)
+inline bool StringComparator<base::string16>::operator()(
     const base::string16& lhs,
     const base::string16& rhs) const {
   // If we can not get collator instance for specified locale, just do simple

@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "base/callback.h"
+#include "base/component_export.h"
 #include "base/observer_list_types.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace ui {
@@ -17,7 +17,7 @@ namespace ui {
 class Accelerator;
 
 // Create MediaKeyListener to receive accelerators on media keys.
-class UI_BASE_EXPORT MediaKeysListener {
+class COMPONENT_EXPORT(UI_BASE) MediaKeysListener {
  public:
   enum class Scope {
     kGlobal,   // Listener works whenever application in focus or not.
@@ -25,7 +25,7 @@ class UI_BASE_EXPORT MediaKeysListener {
   };
 
   // Media keys accelerators receiver.
-  class UI_BASE_EXPORT Delegate : public base::CheckedObserver {
+  class COMPONENT_EXPORT(UI_BASE) Delegate : public base::CheckedObserver {
    public:
     ~Delegate() override;
 

@@ -328,15 +328,16 @@ double NGFlexLayoutAlgorithm::GetMainOverCrossAspectRatio(
   return ratio;
 }
 
-namespace {
-
-LayoutUnit CalculateFixedCrossSize(LayoutUnit available_size,
-                                   const MinMaxSizes& cross_axis_min_max,
-                                   LayoutUnit margin_sum) {
+LayoutUnit NGFlexLayoutAlgorithm::CalculateFixedCrossSize(
+    const MinMaxSizes& cross_axis_min_max,
+    const NGBoxStrut& margins) const {
+  if (!is_column_)
+    DCHECK_NE(content_box_size_.block_size, kIndefiniteSize);
+  LayoutUnit available_size =
+      is_column_ ? content_box_size_.inline_size : content_box_size_.block_size;
+  LayoutUnit margin_sum = is_column_ ? margins.InlineSum() : margins.BlockSum();
   return cross_axis_min_max.ClampSizeToMinAndMax(available_size - margin_sum);
 }
-
-}  // namespace
 
 NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
     const NGBlockNode& flex_item,
@@ -358,17 +359,14 @@ NGConstraintSpace NGFlexLayoutAlgorithm::BuildSpaceForIntrinsicBlockSize(
     space_builder.SetIsShrinkToFit(true);
   } else if (cross_axis_min_max.min_size != kIndefiniteSize &&
              WillChildCrossSizeBeContainerCrossSize(flex_item)) {
+    LayoutUnit cross_size =
+        CalculateFixedCrossSize(cross_axis_min_max, margins);
     if (is_column_) {
       space_builder.SetIsFixedInlineSize(true);
-      child_available_size.inline_size =
-          CalculateFixedCrossSize(child_available_size.inline_size,
-                                  cross_axis_min_max, margins.InlineSum());
+      child_available_size.inline_size = cross_size;
     } else {
       space_builder.SetIsFixedBlockSize(true);
-      DCHECK_NE(content_box_size_.block_size, kIndefiniteSize);
-      child_available_size.block_size =
-          CalculateFixedCrossSize(child_available_size.block_size,
-                                  cross_axis_min_max, margins.BlockSum());
+      child_available_size.block_size = cross_size;
     }
   }
 
@@ -840,8 +838,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node)) {
           space_builder.SetIsFixedInlineSize(true);
           available_size.inline_size = CalculateFixedCrossSize(
-              available_size.inline_size, flex_item.min_max_cross_sizes.value(),
-              margins.InlineSum());
+              flex_item.min_max_cross_sizes.value(), margins);
         }
         // https://drafts.csswg.org/css-flexbox/#definite-sizes
         // If the flex container has a definite main size, a flex item's
@@ -859,8 +856,7 @@ scoped_refptr<const NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
         if (WillChildCrossSizeBeContainerCrossSize(flex_item.ng_input_node)) {
           space_builder.SetIsFixedBlockSize(true);
           available_size.block_size = CalculateFixedCrossSize(
-              available_size.block_size, flex_item.min_max_cross_sizes.value(),
-              margins.BlockSum());
+              flex_item.min_max_cross_sizes.value(), margins);
         } else if (DoesItemStretch(flex_item.ng_input_node)) {
           // If we are in a row flexbox, and we don't have a fixed block-size
           // (yet), use the "measure" cache slot. This will be the first

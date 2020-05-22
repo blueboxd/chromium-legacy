@@ -12,6 +12,8 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::Test;
+
 static_assert(sizeof(CheckedPtr<void>) == sizeof(void*),
               "CheckedPtr shouldn't add memory overhead");
 static_assert(sizeof(CheckedPtr<int>) == sizeof(int*),
@@ -117,55 +119,79 @@ struct Derived : Base1, Base2 {
   int d;
 };
 
-TEST(CheckedPtr, NullStarDereference) {
+class CheckedPtrTest : public Test {
+ protected:
+  void SetUp() override { ClearCounters(); }
+};
+
+TEST_F(CheckedPtrTest, NullStarDereference) {
   CheckedPtr<int> ptr = nullptr;
   EXPECT_DEATH_IF_SUPPORTED(if (*ptr == 42) return, "");
 }
 
-TEST(CheckedPtr, NullArrowDereference) {
+TEST_F(CheckedPtrTest, NullArrowDereference) {
   CheckedPtr<MyStruct> ptr = nullptr;
   EXPECT_DEATH_IF_SUPPORTED(if (ptr->x == 42) return, "");
 }
 
-TEST(CheckedPtr, NullExtractNoDereference) {
-  CheckedPtr<int> ptr = nullptr;
+TEST_F(CheckedPtrTest, NullExtractNoDereference) {
+  CountingCheckedPtr<int> ptr = nullptr;
   int* raw = ptr;
   std::ignore = raw;
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-TEST(CheckedPtr, StarDereference) {
+TEST_F(CheckedPtrTest, StarDereference) {
   int foo = 42;
-  CheckedPtr<int> ptr = &foo;
+  CountingCheckedPtr<int> ptr = &foo;
   EXPECT_EQ(*ptr, 42);
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 1);
 }
 
-TEST(CheckedPtr, ArrowDereference) {
+TEST_F(CheckedPtrTest, ArrowDereference) {
   MyStruct foo = {42};
-  CheckedPtr<MyStruct> ptr = &foo;
+  CountingCheckedPtr<MyStruct> ptr = &foo;
   EXPECT_EQ(ptr->x, 42);
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 1);
 }
 
-TEST(CheckedPtr, ConstVolatileVoidPtr) {
+TEST_F(CheckedPtrTest, ConstVolatileVoidPtr) {
   int32_t foo[] = {1234567890};
-  CheckedPtr<const volatile void> ptr = foo;
+  CountingCheckedPtr<const volatile void> ptr = foo;
   EXPECT_EQ(*static_cast<const volatile int32_t*>(ptr), 1234567890);
+  // Because we're using a cast, the extraction API kicks in, which doesn't
+  // know if the extracted pointer will be dereferenced or not.
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-TEST(CheckedPtr, VoidPtr) {
+TEST_F(CheckedPtrTest, VoidPtr) {
   int32_t foo[] = {1234567890};
-  CheckedPtr<void> ptr = foo;
+  CountingCheckedPtr<void> ptr = foo;
   EXPECT_EQ(*static_cast<int32_t*>(ptr), 1234567890);
+  // Because we're using a cast, the extraction API kicks in, which doesn't
+  // know if the extracted pointer will be dereferenced or not.
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 1);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-TEST(CheckedPtr, OperatorEQ) {
+TEST_F(CheckedPtrTest, OperatorEQ) {
   int foo;
-  CheckedPtr<int> ptr1 = nullptr;
+  CountingCheckedPtr<int> ptr1 = nullptr;
   EXPECT_TRUE(ptr1 == ptr1);
 
-  CheckedPtr<int> ptr2 = nullptr;
+  CountingCheckedPtr<int> ptr2 = nullptr;
   EXPECT_TRUE(ptr1 == ptr2);
 
-  CheckedPtr<int> ptr3 = &foo;
+  CountingCheckedPtr<int> ptr3 = &foo;
   EXPECT_TRUE(&foo == ptr3);
   EXPECT_TRUE(ptr3 == &foo);
   EXPECT_FALSE(ptr1 == ptr3);
@@ -173,17 +199,21 @@ TEST(CheckedPtr, OperatorEQ) {
   ptr1 = &foo;
   EXPECT_TRUE(ptr1 == ptr3);
   EXPECT_TRUE(ptr3 == ptr1);
+
+  EXPECT_EQ(g_get_for_comparison_cnt, 12);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-TEST(CheckedPtr, OperatorNE) {
+TEST_F(CheckedPtrTest, OperatorNE) {
   int foo;
-  CheckedPtr<int> ptr1 = nullptr;
+  CountingCheckedPtr<int> ptr1 = nullptr;
   EXPECT_FALSE(ptr1 != ptr1);
 
-  CheckedPtr<int> ptr2 = nullptr;
+  CountingCheckedPtr<int> ptr2 = nullptr;
   EXPECT_FALSE(ptr1 != ptr2);
 
-  CheckedPtr<int> ptr3 = &foo;
+  CountingCheckedPtr<int> ptr3 = &foo;
   EXPECT_FALSE(&foo != ptr3);
   EXPECT_FALSE(ptr3 != &foo);
   EXPECT_TRUE(ptr1 != ptr3);
@@ -191,10 +221,13 @@ TEST(CheckedPtr, OperatorNE) {
   ptr1 = &foo;
   EXPECT_FALSE(ptr1 != ptr3);
   EXPECT_FALSE(ptr3 != ptr1);
+
+  EXPECT_EQ(g_get_for_comparison_cnt, 12);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-TEST(CheckedPtr, OperatorEQCast) {
-  ClearCounters();
+TEST_F(CheckedPtrTest, OperatorEQCast) {
   int foo = 42;
   const int* raw_int_ptr = &foo;
   volatile void* raw_void_ptr = &foo;
@@ -217,8 +250,9 @@ TEST(CheckedPtr, OperatorEQCast) {
   EXPECT_EQ(g_get_for_comparison_cnt, 16);
   EXPECT_EQ(g_get_for_extraction_cnt, 0);
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
 
-  ClearCounters();
+TEST_F(CheckedPtrTest, OperatorEQCastHierarchy) {
   Derived derived_val(42, 84, 1024);
   Derived* raw_derived_ptr = &derived_val;
   const Base1* raw_base1_ptr = &derived_val;
@@ -259,8 +293,7 @@ TEST(CheckedPtr, OperatorEQCast) {
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-TEST(CheckedPtr, OperatorNECast) {
-  ClearCounters();
+TEST_F(CheckedPtrTest, OperatorNECast) {
   int foo = 42;
   volatile int* raw_int_ptr = &foo;
   const void* raw_void_ptr = &foo;
@@ -283,8 +316,9 @@ TEST(CheckedPtr, OperatorNECast) {
   EXPECT_EQ(g_get_for_comparison_cnt, 16);
   EXPECT_EQ(g_get_for_extraction_cnt, 0);
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
+}
 
-  ClearCounters();
+TEST_F(CheckedPtrTest, OperatorNECastHierarchy) {
   Derived derived_val(42, 84, 1024);
   const Derived* raw_derived_ptr = &derived_val;
   volatile Base1* raw_base1_ptr = &derived_val;
@@ -325,7 +359,7 @@ TEST(CheckedPtr, OperatorNECast) {
   EXPECT_EQ(g_get_for_dereference_cnt, 0);
 }
 
-TEST(CheckedPtr, Cast) {
+TEST_F(CheckedPtrTest, Cast) {
   Derived derived_val(42, 84, 1024);
   CheckedPtr<Derived> checked_derived_ptr = &derived_val;
   Base1* raw_base1_ptr = checked_derived_ptr;
@@ -392,8 +426,7 @@ TEST(CheckedPtr, Cast) {
   EXPECT_EQ(checked_derived_ptr4->d, 1024);
 }
 
-TEST(CheckedPtr, CustomSwap) {
-  ClearCounters();
+TEST_F(CheckedPtrTest, CustomSwap) {
   int foo1, foo2;
   CountingCheckedPtr<int> ptr1(&foo1);
   CountingCheckedPtr<int> ptr2(&foo2);
@@ -405,8 +438,7 @@ TEST(CheckedPtr, CustomSwap) {
   EXPECT_EQ(g_checked_ptr_swap_cnt, 1);
 }
 
-TEST(CheckedPtr, StdSwap) {
-  ClearCounters();
+TEST_F(CheckedPtrTest, StdSwap) {
   int foo1, foo2;
   CountingCheckedPtr<int> ptr1(&foo1);
   CountingCheckedPtr<int> ptr2(&foo2);
@@ -416,69 +448,87 @@ TEST(CheckedPtr, StdSwap) {
   EXPECT_EQ(g_checked_ptr_swap_cnt, 0);
 }
 
-TEST(CheckedPtr, PostIncrementOperator) {
+TEST_F(CheckedPtrTest, PostIncrementOperator) {
   int foo[] = {42, 43, 44, 45};
-  CheckedPtr<int> ptr = foo;
+  CountingCheckedPtr<int> ptr = foo;
   for (int i = 0; i < 4; ++i) {
     ASSERT_EQ(*ptr++, 42 + i);
   }
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 4);
 }
 
-TEST(CheckedPtr, PostDecrementOperator) {
+TEST_F(CheckedPtrTest, PostDecrementOperator) {
   int foo[] = {42, 43, 44, 45};
-  CheckedPtr<int> ptr = &foo[3];
+  CountingCheckedPtr<int> ptr = &foo[3];
   for (int i = 3; i >= 0; --i) {
     ASSERT_EQ(*ptr--, 42 + i);
   }
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 4);
 }
 
-TEST(CheckedPtr, PreIncrementOperator) {
+TEST_F(CheckedPtrTest, PreIncrementOperator) {
   int foo[] = {42, 43, 44, 45};
-  CheckedPtr<int> ptr = foo;
+  CountingCheckedPtr<int> ptr = foo;
   for (int i = 0; i < 4; ++i, ++ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 4);
 }
 
-TEST(CheckedPtr, PreDecrementOperator) {
+TEST_F(CheckedPtrTest, PreDecrementOperator) {
   int foo[] = {42, 43, 44, 45};
-  CheckedPtr<int> ptr = &foo[3];
+  CountingCheckedPtr<int> ptr = &foo[3];
   for (int i = 3; i >= 0; --i, --ptr) {
     ASSERT_EQ(*ptr, 42 + i);
   }
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 4);
 }
 
-TEST(CheckedPtr, PlusEqualsOperator) {
+TEST_F(CheckedPtrTest, PlusEqualsOperator) {
   int foo[] = {42, 43, 44, 45};
-  CheckedPtr<int> ptr = foo;
+  CountingCheckedPtr<int> ptr = foo;
   for (int i = 0; i < 4; i += 2, ptr += 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 2);
 }
 
-TEST(CheckedPtr, PlusMinusOperator) {
+TEST_F(CheckedPtrTest, PlusMinusOperator) {
   int foo[] = {42, 43, 44, 45};
-  CheckedPtr<int> ptr = &foo[3];
+  CountingCheckedPtr<int> ptr = &foo[3];
   for (int i = 3; i >= 0; i -= 2, ptr -= 2) {
     ASSERT_EQ(*ptr, 42 + i);
   }
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 2);
 }
 
-TEST(CheckedPtr, AdvanceString) {
+TEST_F(CheckedPtrTest, AdvanceString) {
   const char kChars[] = "Hello";
   std::string str = kChars;
-  CheckedPtr<const char> ptr = str.c_str();
+  CountingCheckedPtr<const char> ptr = str.c_str();
   for (size_t i = 0; i < str.size(); ++i, ++ptr) {
     ASSERT_EQ(*ptr, kChars[i]);
   }
+  EXPECT_EQ(g_get_for_comparison_cnt, 0);
+  EXPECT_EQ(g_get_for_extraction_cnt, 0);
+  EXPECT_EQ(g_get_for_dereference_cnt, 5);
 }
 
-TEST(CheckedPtr, AssignmentFromNullptr) {
+TEST_F(CheckedPtrTest, AssignmentFromNullptr) {
   CountingCheckedPtr<int> checked_ptr;
-
-  ClearCounters();
   checked_ptr = nullptr;
-
   EXPECT_EQ(g_wrap_raw_ptr_cnt, 0);
   EXPECT_EQ(g_get_for_comparison_cnt, 0);
   EXPECT_EQ(g_get_for_extraction_cnt, 0);

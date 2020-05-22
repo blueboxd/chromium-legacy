@@ -152,7 +152,7 @@
 <translation id="218608176142494674">షేరింగ్</translation>
 <translation id="2227444325776770048"><ph name="USER_FULL_NAME" />గా కొనసాగించు</translation>
 <translation id="2234876718134438132">సింక్ మరియు Google సేవలు</translation>
-<translation id="2239812875700136898">Discover ఆప్షన్‌ల బటన్ కోసం మీ కథనాలను నియంత్రించండి</translation>
+<translation id="2239812875700136898">Discover కోసం ఆప్షన్‌లు' అనే బటన్ ద్వారా మీకు కనపడే కథనాలను నియంత్రించండి</translation>
 <translation id="2259659629660284697">పాస్‌వర్డ్‌లను ఎగుమతి చేయండి…</translation>
 <translation id="2268044343513325586">మరింత మెరుగుపరచండి</translation>
 <translation id="2286841657746966508">బిల్లింగ్ చిరునామా</translation>
@@ -204,6 +204,7 @@
 <translation id="2647434099613338025">భాషను జోడించు</translation>
 <translation id="2650751991977523696">ఫైల్‌ను మళ్లీ డౌన్‌లోడ్ చేయాలా?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# ఆడియో ఫైల్}other{# ఆడియో ఫైల్‌లు}}</translation>
+<translation id="2656405586795711023">వెబ్ యాప్‌లు</translation>
 <translation id="2677748264148917807">నిష్క్రమించు</translation>
 <translation id="2689830683995595741">Chromeను ఉపయోగించడం ద్వారా, మీరు <ph name="BEGIN_LINK1" />Google సేవా నిబంధనలు<ph name="END_LINK1" />, అలాగే <ph name="BEGIN_LINK2" />Google Chrome, Chrome OS అదనపు సేవా నిబంధనలు<ph name="END_LINK2" />కు అంగీకరిస్తున్నారు. <ph name="BEGIN_LINK3" />Family Linkతో మేనేజ్ చేస్తున్న Google ఖాతాల కోసం గోప్యతా ప్రకటన<ph name="END_LINK3" /> కూడా వర్తిస్తుంది.</translation>
 <translation id="2707726405694321444">పేజీని రిఫ్రెష్ చేయండి</translation>
@@ -366,6 +367,7 @@
 <translation id="3997476611815694295">ప్రధానం కాని నిల్వ</translation>
 <translation id="4000212216660919741">ఆఫ్‌లైన్ హోమ్</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# గం}other{# గం}}</translation>
+<translation id="403687620286099920">QR కోడ్‌ను తెరవడానికి ట్యాప్ చేయండి</translation>
 <translation id="4046123991198612571">తరువాత ట్రాక్</translation>
 <translation id="4056223980640387499">సెపియా</translation>
 <translation id="4060598801229743805">ఎంపికలు స్క్రీన్ పైభాగానికి సమీపంలో అందుబాటులో ఉంటాయి</translation>
@@ -450,6 +452,7 @@
 <translation id="4749960740855309258">కొత్త ట్యాబ్‌ను తెరవండి</translation>
 <translation id="4759238208242260848">డౌన్‌లోడ్‌లు</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 డౌన్‌లోడ్ పూర్తయింది.}other{# డౌన్‌లోడ్‌లు పూర్తయ్యాయి.}}</translation>
+<translation id="478981486571169252">మీరు Chromeలో మీ <ph name="SITE_NAME" /> సైన్ ఇన్ స్టేటస్, బ్రౌజింగ్ డేటా, సైట్ డేటాను చూస్తారు.</translation>
 <translation id="4802417911091824046">Google Payకి సంబంధించిన చెల్లింపు పద్ధతులు మరియు చిరునామాలు రహస్య పదబంధం ఎన్‌క్రిప్షన్‌లో ఉండవు.
 
 ఈ సెట్టింగ్‌ని మార్చడం కోసం, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@
 <translation id="5292796745632149097">ఈ పరికరానికి పంపండి</translation>
 <translation id="5304593522240415983">ఈ ఫీల్డ్ ఖాళీగా ఉండరాదు</translation>
 <translation id="5308380583665731573">కనెక్ట్ చేయండి</translation>
+<translation id="5317780077021120954">సేవ్ చేయి</translation>
 <translation id="5324858694974489420">పేరెంటల్ సెట్టింగ్‌లు</translation>
 <translation id="5327248766486351172">పేరు</translation>
 <translation id="5342314432463739672">అనుమతి అభ్యర్థనలు</translation>
@@ -562,6 +566,7 @@
 <translation id="5659593005791499971">ఇమెయిల్</translation>
 <translation id="5665379678064389456"><ph name="APP_NAME" />లో ఈవెంట్‌ను సృష్టించండి</translation>
 <translation id="5668404140385795438">దగ్గరకు జూమ్ చేయడాన్ని నిరోధించడానికి ప్రయత్నించే వెబ్‌సైట్ అభ్యర్థనను పట్టించుకోదు</translation>
+<translation id="5681394891799747640">QR కోడ్‌ను డౌన్‌లోడ్ చేయడం సాధ్యపడదు</translation>
 <translation id="5684874026226664614">అయ్యో. ఈ పేజీని అనువదించడం సాధ్యపడలేదు.</translation>
 <translation id="5686790454216892815">ఫైల్ పేరు చాలా పొడవుగా ఉంది</translation>
 <translation id="5694049548840660018">ఇంటికి సులభంగా తిరిగి రండి</translation>
@@ -610,6 +615,7 @@
 <translation id="6042308850641462728">మరింత</translation>
 <translation id="604996488070107836">తెలియని ఎర్ర‌ర్‌ కారణంగా <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
 <translation id="605721222689873409">YY</translation>
+<translation id="6059830886158432458">ఇక్కడ మీ కథనాలు, యాక్టివిటీని కంట్రోల్ చేయండి</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> గంటలు మిగిలి ఉంది</translation>
 <translation id="6108923351542677676">సెటప్ ప్రోగ్రెస్‌లో ఉంది...</translation>
 <translation id="6111020039983847643">వినియోగించిన డేటా</translation>
@@ -633,6 +639,7 @@
 <translation id="629730747756840877">ఖాతా</translation>
 <translation id="6297765934698848803">మీ పరికరాన్ని మేనేజ్ చేసే సంస్థ మీ కెమెరాను ఆఫ్ చేసింది.</translation>
 <translation id="6303969859164067831">సైన్ అవుట్ చేసి, సమకాలీకరణను ఆఫ్ చేయండి</translation>
+<translation id="6312687380483398334">వెబ్ యాప్‌లు (నిశ్శబ్దం)</translation>
 <translation id="6316139424528454185">Android వెర్షన్‌కు మద్దతు లేదు</translation>
 <translation id="6324034347079777476">Android సిస్టమ్ సమకాలీకరణ నిలిపివేయబడింది</translation>
 <translation id="6333140779060797560"><ph name="APPLICATION" /> ద్వారా భాగస్వామ్యం చేయి</translation>
@@ -664,6 +671,7 @@
 <translation id="6482749332252372425">నిల్వ స్థలం లేనందున <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
 <translation id="6496823230996795692">మొదటి సారి <ph name="APP_NAME" />ని ఉపయోగించడానికి, దయచేసి ఇంటర్నెట్‌కు కనెక్ట్ చేయండి.</translation>
 <translation id="6508722015517270189">Chromeను పునఃప్రారంభించండి</translation>
+<translation id="6527303717912515753">భాగస్వామ్యం చేయి</translation>
 <translation id="6532866250404780454">మీరు Chromeలో సందర్శించిన సైట్‌లు చూపబడవు. అన్ని సైట్ టైమర్‌లు తొలగించబడతాయి.</translation>
 <translation id="6534565668554028783">Google ప్రతిస్పందించడానికి చాలా ఎక్కువ సమయం తీసుకుంది</translation>
 <translation id="6539092367496845964">ఏదో తప్పు జరిగింది. తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
@@ -794,6 +802,7 @@
 <translation id="7605594153474022051">సమకాలీకరణ పని చేయడం లేదు</translation>
 <translation id="7606077192958116810">లైట్ మోడ్ ఆన్ చేయబడింది. సెట్టింగ్‌లలో దీనిని నిర్వహించండి.</translation>
 <translation id="7612619742409846846">Googleకి ఇలా సైన్ ఇన్ చేసారు</translation>
+<translation id="7614971007231847352">QR కోడ్ డౌన్‌లోడ్ చేయబడింది</translation>
 <translation id="7619072057915878432">నెట్‌వర్క్ వైఫల్యాల కారణంగా <ph name="FILE_NAME" /> డౌన్‌లోడ్ విఫలమైంది.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />సహాయం పొందండి<ph name="END_LINK1" /> లేదా <ph name="BEGIN_LINK2" />మళ్లీ స్కాన్ చేయండి<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Chromeకు స్వాగతం</translation>
@@ -821,6 +830,7 @@
 <translation id="7821588508402923572">మీ డేటా పొదుపులు ఇక్కడ కనిపిస్తాయి</translation>
 <translation id="7835852323729233924">మీడియా ప్లే అవుతోంది</translation>
 <translation id="783819812427904514">వీడియోను అన్‌మ్యూట్ చేయండి</translation>
+<translation id="7846296061357476882">Google సర్వీస్‌లు</translation>
 <translation id="784934925303690534">సమయ పరిధి</translation>
 <translation id="7851858861565204677">ఇతర పరికరాలు</translation>
 <translation id="7875915731392087153">ఇమెయిల్‌ను సృష్టించండి</translation>

@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/ash/assistant/assistant_web_view_factory_impl.h"
 #include "chrome/browser/ui/ash/assistant/conversation_starters_client_impl.h"
 #include "chrome/browser/ui/ash/assistant/device_actions_delegate_impl.h"
-#include "chrome/browser/ui/ash/assistant/proactive_suggestions_client_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
@@ -32,6 +31,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/service_process_host.h"
 #include "content/public/common/content_switches.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 AssistantClientImpl::AssistantClientImpl() {
   auto* session_manager = session_manager::SessionManager::Get();
@@ -84,11 +84,6 @@ void AssistantClientImpl::MaybeInit(Profile* profile) {
   if (chromeos::assistant::features::IsConversationStartersV2Enabled()) {
     conversation_starters_client_ =
         std::make_unique<ConversationStartersClientImpl>(profile_);
-  }
-
-  if (chromeos::assistant::features::IsProactiveSuggestionsEnabled()) {
-    proactive_suggestions_client_ =
-        std::make_unique<ProactiveSuggestionsClientImpl>(profile_);
   }
 
   for (auto& receiver : pending_assistant_receivers_)

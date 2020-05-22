@@ -42,6 +42,7 @@
 <translation id="6058625436358447366">Аяқтау үшін ескі және жаңа құпия сөздерді енгізіңіз.</translation>
 <translation id="6106186594183574873">Аяқтау үшін ескі құпия сөзді енгізіңіз.</translation>
 <translation id="6146993107019042706">Аяқтау үшін жаңа құпия сөзді енгізіңіз.</translation>
+<translation id="6517239166834772319">Explore</translation>
 <translation id="6643016212128521049">Тазалау</translation>
 <translation id="7162487448488904999">Галерея</translation>
 <translation id="7658239707568436148">Бас тарту</translation>
@@ -49,6 +50,7 @@
 <translation id="7805768142964895445">Күйі</translation>
 <translation id="808894953321890993">Кұпия сөзді өзгерту</translation>
 <translation id="8208861521865154048">Бонустар</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> пайдаланушыны басқарады. Сонымен қатар қашықтан параметрлерді басқарады және пайдаланушының әрекетін қадағалайды.</translation>
 <translation id="8747900814994928677">Өзгерісті растау</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />. Қалған әрекеттер саны: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> үшін билетті жаңарту</translation>

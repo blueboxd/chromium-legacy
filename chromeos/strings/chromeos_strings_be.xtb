@@ -43,6 +43,7 @@
 <translation id="6058625436358447366">Каб закончыць, увядзіце стары і новы паролі</translation>
 <translation id="6106186594183574873">Каб закончыць, увядзіце стары пароль</translation>
 <translation id="6146993107019042706">Каб закончыць, увядзіце новы пароль</translation>
+<translation id="6517239166834772319">Агляд</translation>
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="7162487448488904999">Галерэя</translation>
 <translation id="7658239707568436148">Скасаваць</translation>
@@ -50,6 +51,7 @@
 <translation id="7805768142964895445">Стан</translation>
 <translation id="808894953321890993">Змяніць пароль</translation>
 <translation id="8208861521865154048">Бонусы</translation>
+<translation id="8701136875688985581">Гэты карыстальнік знаходзіцца пад кіраваннем дамена <ph name="ENROLLMENT_DOMAIN" />. Дамен можа кіраваць наладамі карыстальніка і адсочваць яго дзеянні.</translation>
 <translation id="8747900814994928677">Пацвярджэнне змен</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Засталося спроб: <ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">Абнавіце білет для <ph name="PRINCIPAL_NAME" /></translation>

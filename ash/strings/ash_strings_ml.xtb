@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">ബാറ്ററി നിറഞ്ഞു</translation>
 <translation id="3604801046548457007">ഡെസ്‌ക് <ph name="DESK_TITILE" /> സൃഷ്‌ടിച്ചു</translation>
 <translation id="3606978283550408104">ബ്രെയ്‌ലി ഡിസ്‌പ്ലേ കണക്‌റ്റ് ചെയ്‌തു.</translation>
+<translation id="3616883743181209306">സ്‌ക്രീനിന്റെ മുകളിൽ വലത് കോണിലേക്ക് മെനു നീക്കിയിരിക്കുന്നു.</translation>
 <translation id="3621202678540785336">ഇൻപുട്ട്</translation>
 <translation id="3621712662352432595">ഓഡിയോ ക്രമീകരണങ്ങൾ</translation>
 <translation id="3626281679859535460">മിഴിവ്</translation>
 <translation id="3631369015426612114">ഇനിപ്പറയുന്നതിൽ നിന്നുള്ള അറിയിപ്പുകൾ അനുവദിക്കുക</translation>
 <translation id="3638400994746983214">സ്വകാര്യതാ സ്‌ക്രീൻ മാറ്റുക. <ph name="STATE_TEXT" />.</translation>
+<translation id="366222428570480733">നിയന്ത്രിത ഉപയോക്താവ് <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ആവശ്യമുള്ള ഏരിയ ക്യാപ്‌ചർ ചെയ്യുക</translation>
 <translation id="371370241367527062">മുൻവശത്തുള്ള മൈക്രോഫോൺ</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">മിറർ മോഡിൽ നിന്ന് പുറത്തുകടക്കുന്നു</translation>
 <translation id="602001110135236999">ഇടത്തോട്ട് സ്ക്രോൾ ചെയ്യുക</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>
+<translation id="6030495522958826102">സ്‌ക്രീനിന്റെ ചുവടെ ഇടത് കോണിലേക്ക് മെനു നീക്കിയിരിക്കുന്നു.</translation>
 <translation id="6040143037577758943">അടയ്ക്കുക</translation>
 <translation id="6043212731627905357">ഈ മോണിറ്റർ നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഉപകരണത്തിൽ പ്രവർത്തിക്കുന്നില്ല (മോണിറ്റർ ഇതിൽ പ്രവർത്തിക്കില്ല).</translation>
 <translation id="6043994281159824495">ഇപ്പോൾ സൈൻ ഔട്ട് ചെയ്യുക</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">കണക്റ്റുചെയ്യുന്നു</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />-ൽ പഴയ മിഴിവിലേക്ക് പഴയപടിയാക്കുന്നു</translation>
+<translation id="7188494361780961876">സ്‌ക്രീനിന്റെ മുകളിൽ ഇടത് കോണിലേക്ക് മെനു നീക്കിയിരിക്കുന്നു.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. അപ്‌ഡേറ്റ് നടപ്പിലാക്കാൻ ഈ Chromebook റീസ്‌റ്റാർട്ട് ചെയ്യേണ്ടതുണ്ട്. ഇതിന് ഒരു മിനിറ്റ് വരെ സമയമെടുത്തേക്കാം.</translation>
 <translation id="7256634071279256947">പിൻഭാഗത്തെ മൈക്രോഫോൺ</translation>
 <translation id="726276584504105859">സ്പ്ലിറ്റ് സ്ക്രീൻ ഉപയോഗിക്കുന്നതിന് ഇവിടെ വലിച്ചിടുക</translation>
@@ -613,6 +617,7 @@
 <translation id="8513108775083588393">സ്വയം തിരിയുക</translation>
 <translation id="8517041960877371778">നിങ്ങളുടെ <ph name="DEVICE_TYPE" /> ഓണായിരിക്കുമ്പോൾ അത് ചാർജ്ജാകാതിരിക്കാം.</translation>
 <translation id="8563862697512465947">വിജ്ഞാപന ക്രമീകരണങ്ങള്‍‌</translation>
+<translation id="857201607579416096">സ്‌ക്രീനിന്റെ ചുവടെ വലത് കോണിലേക്ക് മെനു നീക്കിയിരിക്കുന്നു.</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> ഉപകരണത്തിലേക്ക് കണക്റ്റ് ചെയ്‌തു</translation>
 <translation id="8631727435199967028">ഉപയോഗസഹായി ക്രമീകരണം</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />, നിങ്ങളുടെ അഡ്‌മിൻ മാനേജ് ചെയ്യുന്നത്</translation>

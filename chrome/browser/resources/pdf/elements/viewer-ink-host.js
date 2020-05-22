@@ -62,7 +62,6 @@ Polymer({
   /**
    * Whether we should suppress pointer events due to a gesture,
    * eg. pinch-zoom.
-   *
    * @private {boolean}
    */
   pointerGesture_: false,
@@ -96,7 +95,6 @@ Polymer({
 
   /**
    * Dispatches a pointer event to Ink.
-   *
    * @param {PointerEvent} e
    */
   dispatchPointerEvent_(e) {

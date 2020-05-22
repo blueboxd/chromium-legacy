@@ -5,10 +5,10 @@
 #ifndef UI_BASE_ACCELERATORS_SYSTEM_MEDIA_CONTROLS_MEDIA_KEYS_LISTENER_H_
 #define UI_BASE_ACCELERATORS_SYSTEM_MEDIA_CONTROLS_MEDIA_KEYS_LISTENER_H_
 
+#include "base/component_export.h"
 #include "base/containers/flat_set.h"
 #include "components/system_media_controls/system_media_controls_observer.h"
 #include "ui/base/accelerators/media_keys_listener.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 namespace system_media_controls {
@@ -20,7 +20,7 @@ namespace ui {
 // Implementation of MediaKeysListener that uses the SystemMediaControls API to
 // listen for media key presses. It only allows for a single instance to be
 // created in order to prevent conflicts from multiple listeners.
-class UI_BASE_EXPORT SystemMediaControlsMediaKeysListener
+class COMPONENT_EXPORT(UI_BASE) SystemMediaControlsMediaKeysListener
     : public MediaKeysListener,
       public system_media_controls::SystemMediaControlsObserver {
  public:

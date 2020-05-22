@@ -225,11 +225,13 @@
 <translation id="3595596368722241419">ବ୍ୟାଟେରୀ ପୂର୍ଣ୍ଣ</translation>
 <translation id="3604801046548457007"><ph name="DESK_TITILE" /> ଡେସ୍କ ତିଆରି କରାଯାଇଛି</translation>
 <translation id="3606978283550408104">ବ୍ରେଲିର ଡିସ୍‌ପ୍ଲେ ସଂଯୋଗ କରାଯାଇଛି।</translation>
+<translation id="3616883743181209306">ସ୍କ୍ରିନର ଶୀର୍ଷ ଡାହାଣ କୋଣକୁ ମେନୁ ମୁଭ୍ କରାଯାଇଛି।</translation>
 <translation id="3621202678540785336">ଇନ୍‌ପୁଟ୍</translation>
 <translation id="3621712662352432595">ଅଡିଓ ସେଟିଂସ୍</translation>
 <translation id="3626281679859535460">ଉଜ୍ଜ୍ୱଳତା</translation>
 <translation id="3631369015426612114">ନିମ୍ନୋକ୍ତରୁ ବିଜ୍ଞପ୍ତିକୁ ଅନୁମତି ଦିଅନ୍ତୁ</translation>
 <translation id="3638400994746983214">ଗୋପନୀୟତା ସ୍କ୍ରିନ୍ ଟୋଗଲ୍ କରନ୍ତୁ। <ph name="STATE_TEXT" />।</translation>
+<translation id="366222428570480733"><ph name="USER_EMAIL_ADDRESS" /> ପରିଚାଳିତ ଉପଯୋଗକର୍ତ୍ତା</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3712407551474845318">ଅଞ୍ଚଳ କ୍ୟାପ୍‍ଚର୍‌ କରନ୍ତୁ</translation>
 <translation id="371370241367527062">ସାମ୍‌ନାପଟର ମାଇକ୍ରୋଫୋନ୍</translation>
@@ -301,7 +303,7 @@
 <translation id="453661520163887813">ପୂର୍ଣ୍ଣ ଚାର୍ଜ ହେବାକୁ ଆଉ <ph name="TIME" /> ଅଛି</translation>
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">ପାସୱାର୍ଡ୍ ଲୁଚାନ୍ତୁ</translation>
-<translation id="4570957409596482333">'କହିବାକୁ-ଚୟନ କରନ୍ତୁ' ବଟନ୍</translation>
+<translation id="4570957409596482333">ସିଲେକ୍ଟ-ଟୁ-ସ୍ପିକ୍ ବଟନ୍</translation>
 <translation id="4585337515783392668">ଏକ ଅଜଣା ରିସିଭର୍‌ରେ କାଷ୍ଟିଂ କରିବା ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="4628757576491864469">ଡିଭାଇସ୍</translation>
 <translation id="4659419629803378708">ChromeVox ସକ୍ଷମ କରାଯାଇଛି</translation>
@@ -405,6 +407,7 @@
 <translation id="6018164090099858612">ମିରର୍‌ ମୋଡ୍‌ରୁ ପ୍ରସ୍ଥାନ କରୁଛି</translation>
 <translation id="602001110135236999">ବାମକୁ ସ୍କ୍ରୋଲ୍ କରନ୍ତୁ</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />, ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
+<translation id="6030495522958826102">ସ୍କ୍ରିନର ନିମ୍ନ-ବାମ କୋଣକୁ ମେନୁ ମୁଭ୍ କରାଯାଇଛି।</translation>
 <translation id="6040143037577758943">ବନ୍ଦ</translation>
 <translation id="6043212731627905357">ଏହି ମନିଟର୍‌ ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ସହ କାର୍ଯ୍ୟ କରୁନାହିଁ (ମନିଟର୍‌ ସମର୍ଥିତ ନୁହେଁ)।</translation>
 <translation id="6043994281159824495">ବର୍ତ୍ତମାନ ସାଇନ୍ ଆଉଟ୍ କରନ୍ତୁ</translation>
@@ -503,6 +506,7 @@
 <translation id="7143207342074048698">ସଂଯୋଗ କରୁଛି</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> ମଧ୍ୟରେ ପୁରୁଣା ରିଜୋଲ୍ୟୁଶନ୍‌କୁ ଫେରୁଛି</translation>
+<translation id="7188494361780961876">ସ୍କ୍ରିନର ଶୀର୍ଷ-ବାମ କୋଣକୁ ମେନୁ ମୁଭ୍ କରାଯାଇଛି।</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />। ଏକ ଅପଡେଟ୍ ଲାଗୁ କରିବା ନିମନ୍ତେ ଏହି Chromebook ରିଷ୍ଟାର୍ଟ କରିବା ଦରକାର। ଏହା ପାଖାପାଖି 1 ମିନିଟ୍ ସମୟ ନେଇପାରେ।</translation>
 <translation id="7256634071279256947">ପଛପଟର ମାଇକ୍ରୋଫୋନ୍</translation>
 <translation id="726276584504105859">ସ୍ପ୍ଲିଟ୍‍ ସ୍କ୍ରିନ୍‍ ବ୍ୟବହାର କରିବା ପାଇଁ ଏଠାକୁ ଡ୍ରାଗ୍‌ କରନ୍ତୁ</translation>
@@ -613,11 +617,12 @@
 <translation id="8513108775083588393">ସ୍ୱତଃ-ଘୂର୍ଣ୍ଣନ</translation>
 <translation id="8517041960877371778">ଯେତେବେଳେ ଏହା ଚାଲୁ ଅଛି, ସେତେବେଳେ ଆପଣଙ୍କର <ph name="DEVICE_TYPE" /> ଚାର୍ଜ ହୋ‍ଇନପାରେ।</translation>
 <translation id="8563862697512465947">ବିଜ୍ଞପ୍ତି ସେଟିଂସ୍</translation>
+<translation id="857201607579416096">ସ୍କ୍ରିନର ନିମ୍ନ-ଡାହାଣ କୋଣକୁ ମେନୁ ମୁଭ୍ କରାଯାଇଛି।</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> ସହିତ ସଂଯୋଗ କରାଯାଇଛି</translation>
 <translation id="8631727435199967028">ଆକ୍ସେସିବିଲିଟୀ ସେଟିଂସ୍</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" />, ଆପଣଙ୍କର ଆଡ୍‍ମିନିଷ୍ଟ୍ରେଟର୍‍ଙ୍କ ଦ୍ୱାରା ପରିଚାଳିତ</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> ବାକି ଅଛି</translation>
-<translation id="8649101189709089199">କହିବାକୁ ଚୟନ କରନ୍ତୁ</translation>
+<translation id="8649101189709089199">ସିଲେକ୍ଟ-ଟୁ-ସ୍ପିକ୍</translation>
 <translation id="8652175077544655965">ସେଟିଂସ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="8653151467777939995">ବିଜ୍ଞପ୍ତି ସେଟିଂସ୍ ଦେଖାନ୍ତୁ। ବିଜ୍ଞପ୍ତି ଚାଲୁ ଅଛି</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />, ସିଗ୍‍ନାଲ୍‍ର କ୍ଷମତା <ph name="SIGNAL_STRENGTH" /></translation>

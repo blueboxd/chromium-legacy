@@ -160,6 +160,7 @@ Sommige kenmerke kan dalk nie beskikbaar wees nie en veranderings aan voorkeure 
 Sommige kenmerke sal dalk nie beskikbaar wees nie. Spesifiseer 'n ander profielgids of gebruik 'n nuwer weergawe van Chromium.</translation>
 <translation id="6734080038664603509">Dateer Chromium op</translation>
 <translation id="6734291798041940871">Chromium is reeds vir alle gebruikers op jou rekenaar geïnstalleer.</translation>
+<translation id="6774082503108938489">Jou ouer het "Toestemmings vir werwe, programme en uitbreidings" vir Chromium afgeskakel. Hierdie <ph name="EXTENSION_TYPE_PARAMETER" /> mag nie geaktiveer word nie.</translation>
 <translation id="6847869444787758381">Chromium sal jou laat weet as jou wagwoorde gekompromitteer is</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (na Chromium gekopieer)</translation>
@@ -218,6 +219,7 @@ Chromium kan nie jou instellings herwin nie.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Herbegin Chromium binne 'n dag}other{Herbegin Chromium binne # dae}}</translation>
 <translation id="8453117565092476964">Die installeerderargief is korrup of ongeldig. Laai Chromium asseblief weer af.</translation>
 <translation id="8493179195440786826">Chromium is verouderd</translation>
+<translation id="8558383651099478961">Jou ouer het "Toestemmings vir werwe, programme en uitbreidings" vir Chromium afgeskakel. Hierdie <ph name="EXTENSION_TYPE_PARAMETER" /> mag nie bygevoeg word nie.</translation>
 <translation id="8568283329061645092">Chromium kan jou wagwoorde nagaan as jy met jou Google-rekening aanmeld</translation>
 <translation id="8586442755830160949">Kopiereg <ph name="YEAR" /> Die Chromium-outeurs. Alle regte voorbehou.</translation>
 <translation id="8619360774459241877">Begin tans Chromium …</translation>

@@ -160,6 +160,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium har redan installerats för alla användare på datorn.</translation>
+<translation id="6774082503108938489">Din förälder har inaktiverat Behörigheter för webbplatser, appar och tillägg för Chromium. Det är inte tillåtet att aktivera denna <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">Om dina lösenord någonsin skulle läcka ut får du veta det i Chromium</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (har kopierats till Chromium)</translation>
@@ -218,6 +219,7 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Starta om Chromium inom en dag}other{Starta om Chromium inom # dagar}}</translation>
 <translation id="8453117565092476964">Arkivet för installationsfilen är skadat eller ogiltigt. Ladda ned Chromium igen.</translation>
 <translation id="8493179195440786826">Den här versionen av Chromium är inaktuell</translation>
+<translation id="8558383651099478961">Din förälder har inaktiverat Behörigheter för webbplatser, appar och tillägg för Chromium. Det är inte tillåtet att lägga till denna <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium kan kontrollera dina lösenord när du loggar in med Google-kontot</translation>
 <translation id="8586442755830160949">Upphovsrätt <ph name="YEAR" /> The Chromium Authors. Med ensamrätt.</translation>
 <translation id="8619360774459241877">Chromium startas …</translation>

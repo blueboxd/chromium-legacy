@@ -204,6 +204,7 @@ Berühren und halten Sie ein Wort, um eine Suche damit zu starten. Sie können I
 <translation id="2647434099613338025">Sprache hinzufügen</translation>
 <translation id="2650751991977523696">Datei noch einmal herunterladen?</translation>
 <translation id="2651091186440431324">{FILE_COUNT,plural, =1{# Audiodatei}other{# Audiodateien}}</translation>
+<translation id="2656405586795711023">Web-Apps</translation>
 <translation id="2677748264148917807">Verlassen</translation>
 <translation id="2689830683995595741">Wenn Sie Chrome verwenden, stimmen Sie damit den <ph name="BEGIN_LINK1" />Nutzungsbedingungen von Google<ph name="END_LINK1" /> und den <ph name="BEGIN_LINK2" />zusätzlichen Nutzungsbedingungen für Google Chrome und Chrome OS<ph name="END_LINK2" /> zu. Außerdem gelten die <ph name="BEGIN_LINK3" />Datenschutzhinweise für mit Family Link verwaltete Google-Konten<ph name="END_LINK3" />.</translation>
 <translation id="2707726405694321444">Seite aktualisieren</translation>
@@ -366,6 +367,7 @@ Nur Sie können sehen, auf was Ihre Kamera gerichtet ist. Die Website kann die B
 <translation id="3997476611815694295">Speicher für unwichtige Websites</translation>
 <translation id="4000212216660919741">Offline-Startseite</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# h}other{# h}}</translation>
+<translation id="403687620286099920">Tippen, um QR-Code zu öffnen</translation>
 <translation id="4046123991198612571">Nächster Titel</translation>
 <translation id="4056223980640387499">Sepia</translation>
 <translation id="4060598801229743805">Optionen sind oben auf dem Bildschirm verfügbar</translation>
@@ -450,6 +452,7 @@ Eventuell finden Sie unter <ph name="BEGIN_LINK" />history.google.com<ph name="E
 <translation id="4749960740855309258">Neuen Tab öffnen</translation>
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="4763829664323285145">{FILE_COUNT,plural, =1{1 Download abgeschlossen.}other{# Downloads abgeschlossen.}}</translation>
+<translation id="478981486571169252">Sie können Ihren Anmeldestatus für <ph name="SITE_NAME" />, Browserdaten und Websitedaten in Chrome einsehen.</translation>
 <translation id="4802417911091824046">Die Passphrasenverschlüsselung enthält keine Zahlungsmethoden oder Adressen von Google Pay.
 
 Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie die Synchronisierung zurück<ph name="END_LINK" /></translation>
@@ -516,6 +519,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5292796745632149097">Senden an</translation>
 <translation id="5304593522240415983">Dieses Feld darf nicht leer sein.</translation>
 <translation id="5308380583665731573">Verbinden</translation>
+<translation id="5317780077021120954">Speichern</translation>
 <translation id="5324858694974489420">Jugendschutzeinstellungen</translation>
 <translation id="5327248766486351172">Name</translation>
 <translation id="5342314432463739672">Berechtigungsanfragen</translation>
@@ -562,6 +566,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5659593005791499971">E-Mail-Adresse</translation>
 <translation id="5665379678064389456">Termin in <ph name="APP_NAME" /> erstellen</translation>
 <translation id="5668404140385795438">Website-Anfrage zum Verhindern des Vergrößerns übergehen</translation>
+<translation id="5681394891799747640">QR-Code kann nicht heruntergeladen werden</translation>
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="5686790454216892815">Dateiname zu lang</translation>
 <translation id="5694049548840660018">Ganz einfach zur Startseite zurückkehren</translation>
@@ -610,6 +615,7 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="604996488070107836"><ph name="FILE_NAME" /> konnte aufgrund eines unbekannten Fehlers nicht heruntergeladen werden.</translation>
 <translation id="605721222689873409">JJ</translation>
+<translation id="6059830886158432458">Hier können Sie festlegen, welche Meldungen und Aktivitäten Ihnen angezeigt werden</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> Stunden übrig</translation>
 <translation id="6108923351542677676">Einrichtung läuft...</translation>
 <translation id="6111020039983847643">genutzte Datenmenge</translation>
@@ -633,6 +639,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="629730747756840877">Konto</translation>
 <translation id="6297765934698848803">Die Organisation, die Ihr Gerät verwaltet, hat Ihre Kamera deaktiviert.</translation>
 <translation id="6303969859164067831">Abmelden und die Synchronisierung ausschalten</translation>
+<translation id="6312687380483398334">Web-Apps (stumm)</translation>
 <translation id="6316139424528454185">Android-Version nicht unterstützt</translation>
 <translation id="6324034347079777476">Android-Systemsynchronisierung deaktiviert</translation>
 <translation id="6333140779060797560">Über <ph name="APPLICATION" /> teilen</translation>
@@ -664,6 +671,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> konnte nicht heruntergeladen werden, weil nicht genügend Speicherplatz vorhanden ist.</translation>
 <translation id="6496823230996795692">Wenn Sie <ph name="APP_NAME" /> zum ersten Mal nutzen, stellen Sie bitte eine Verbindung zum Internet her.</translation>
 <translation id="6508722015517270189">Chrome neu starten</translation>
+<translation id="6527303717912515753">Teilen</translation>
 <translation id="6532866250404780454">In Chrome aufgerufene Websites werden nicht angezeigt. Alle Timer für Websites werden gelöscht.</translation>
 <translation id="6534565668554028783">Die Antwort von Google hat zu lange gedauert</translation>
 <translation id="6539092367496845964">Ein Fehler ist aufgetreten. Versuchen Sie es später noch einmal.</translation>
@@ -794,6 +802,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7605594153474022051">Synchronisierung funktioniert nicht</translation>
 <translation id="7606077192958116810">Der Lite-Modus ist aktiviert. Sie können ihn in den Einstellungen verwalten.</translation>
 <translation id="7612619742409846846">Bei Google angemeldet als</translation>
+<translation id="7614971007231847352">QR-Code heruntergeladen</translation>
 <translation id="7619072057915878432"><ph name="FILE_NAME" /> konnte aufgrund von Netzwerkfehlern nicht heruntergeladen werden.</translation>
 <translation id="7624880197989616768"><ph name="BEGIN_LINK1" />Hilfe aufrufen<ph name="END_LINK1" /> oder <ph name="BEGIN_LINK2" />noch einmal suchen<ph name="END_LINK2" /></translation>
 <translation id="7626032353295482388">Willkommen bei Chrome</translation>
@@ -821,6 +830,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7821588508402923572">Ihre Einsparungen bei der Datennutzung werden hier angezeigt</translation>
 <translation id="7835852323729233924">Medien werden wiedergegeben</translation>
 <translation id="783819812427904514">Stummschaltung des Videos aufheben</translation>
+<translation id="7846296061357476882">Google-Dienste</translation>
 <translation id="784934925303690534">Zeitraum</translation>
 <translation id="7851858861565204677">Andere Geräte</translation>
 <translation id="7875915731392087153">E-Mail erstellen</translation>

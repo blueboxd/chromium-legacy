@@ -52,50 +52,62 @@ const sizes = [
   {name: 'annotationSize20', size: 1},
 ];
 
-/**
- * Displays a set of radio buttons to select from
- * a predefined list of colors and sizes.
- */
+// Displays a set of radio buttons to select from a predefined list of colors
+// and sizes.
 Polymer({
   is: 'viewer-pen-options',
 
   _template: html`{__html_template__}`,
 
   properties: {
+    /** @private */
     expanded_: {
       type: Boolean,
       value: false,
     },
+
     selectedSize: {
       type: Number,
       value: 0.250,
       notify: true,
     },
+
     selectedColor: {
       type: String,
       value: '#000000',
       notify: true,
     },
+
+    /** @private */
     sizes_: {
       type: Array,
       value: sizes,
     },
+
+    /** @private */
     colors_: {
       type: Array,
       value: colors,
     },
+
     strings: Object,
   },
 
-  /** @type {Array<!Animation>} */
+  /** @private {Array<!Animation>} */
   expandAnimations_: null,
 
-  /** @param {Event} e */
+  /**
+   * @param {!Event} e
+   * @private
+   */
   sizeChanged_(e) {
     this.selectedSize = Number(e.target.value);
   },
 
-  /** @param {Event} e */
+  /**
+   * @param {!Event} e
+   * @private
+   */
   colorChanged_(e) {
     this.selectedColor = e.target.value;
   },
@@ -125,6 +137,7 @@ Polymer({
   /**
    * Updates the state of the UI to reflect the current value of `expanded`.
    * Starts or reverses animations and enables/disable controls.
+   * @private
    */
   updateExpandedState_() {
     const colors = this.$.colors;
@@ -176,19 +189,16 @@ Polymer({
       animation.play();
     }
     for (const input of colors.querySelectorAll('input:nth-child(n+8)')) {
-      if (this.expanded_) {
-        input.removeAttribute('disabled');
-      } else {
-        input.setAttribute('disabled', '');
-      }
+      input.toggleAttribute('disabled', !this.expanded_);
     }
   },
 
   /**
    * Used to determine equality in computed bindings.
-   *
    * @param {*} a
    * @param {*} b
+   * @return {boolean} Whether a === b
+   * @private
    */
   equal_(a, b) {
     return a === b;
@@ -196,10 +206,10 @@ Polymer({
 
   /**
    * Used to lookup a string in a computed binding.
-   *
    * @param {Object} strings
    * @param {string} name
    * @return {string}
+   * @private
    */
   lookup_(strings, name) {
     return strings ? strings[name] : '';
@@ -209,6 +219,7 @@ Polymer({
    * Used to remove focus when clicking or tapping on a styled input
    * element. This is a workaround until we can use the :focus-visible
    * pseudo selector.
+   * @param {!Event} e
    */
   blurOnPointerDown(e) {
     const target = e.target;

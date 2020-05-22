@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_FAKE_S3_SERVER_H_
-#define CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_FAKE_S3_SERVER_H_
+#ifndef CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_SUPPORT_FAKE_S3_SERVER_H_
+#define CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_SUPPORT_FAKE_S3_SERVER_H_
 
 #include <memory>
 #include <string>
@@ -76,4 +76,4 @@ class FakeS3Server {
 }  // namespace assistant
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_FAKE_S3_SERVER_H_
+#endif  // CHROME_BROWSER_UI_ASH_ASSISTANT_TEST_SUPPORT_FAKE_S3_SERVER_H_

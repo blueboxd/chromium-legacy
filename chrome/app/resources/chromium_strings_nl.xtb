@@ -160,6 +160,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirectory op of gebruik een recentere versie van Chromium.</translation>
 <translation id="6734080038664603509">&amp;Chromium updaten</translation>
 <translation id="6734291798041940871">Chromium is al geïnstalleerd voor alle gebruikers op je computer.</translation>
+<translation id="6774082503108938489">Je ouder heeft 'Rechten voor sites, apps en extensies' uitgeschakeld voor Chromium. Je mag deze <ph name="EXTENSION_TYPE_PARAMETER" /> niet inschakelen.</translation>
 <translation id="6847869444787758381">Chromium laat het je weten als je wachtwoorden mogelijk niet veilig meer zijn</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (gekopieerd naar Chromium)</translation>
@@ -217,6 +218,7 @@ Chromium kan je instellingen niet herstellen.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Start Chromium binnen een dag opnieuw}other{Start Chromium binnen # dagen opnieuw}}</translation>
 <translation id="8453117565092476964">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Chromium opnieuw.</translation>
 <translation id="8493179195440786826">Chromium is verouderd</translation>
+<translation id="8558383651099478961">Je ouder heeft 'Rechten voor sites, apps en extensies' uitgeschakeld voor Chromium. Je mag deze <ph name="EXTENSION_TYPE_PARAMETER" /> niet toevoegen.</translation>
 <translation id="8568283329061645092">Chromium kan je wachtwoorden checken als je inlogt met je Google-account</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="8619360774459241877">Chromium starten…</translation>

@@ -7,7 +7,7 @@
 
 #import <objc/objc.h>
 
-#include "ui/base/ui_base_export.h"
+#include "base/component_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 

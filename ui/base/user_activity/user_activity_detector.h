@@ -6,10 +6,10 @@
 #define UI_BASE_USER_ACTIVITY_USER_ACTIVITY_DETECTOR_H_
 
 #include "base/compiler_specific.h"
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "ui/base/ui_base_export.h"
 #include "ui/events/event.h"
 #include "ui/events/platform/platform_event_observer.h"
 
@@ -18,7 +18,8 @@ namespace ui {
 class UserActivityObserver;
 
 // Watches for input events and notifies observers that the user is active.
-class UI_BASE_EXPORT UserActivityDetector : public PlatformEventObserver {
+class COMPONENT_EXPORT(UI_BASE) UserActivityDetector
+    : public PlatformEventObserver {
  public:
   // Minimum amount of time between notifications to observers.
   static const int kNotifyIntervalMs;

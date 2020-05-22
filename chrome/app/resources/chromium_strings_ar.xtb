@@ -158,6 +158,7 @@
 قد تكون بعض الميزات غير متاحة. يُرجى تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chromium.</translation>
 <translation id="6734080038664603509">‏تح&amp;ديث Chromium</translation>
 <translation id="6734291798041940871">‏يتم تثبيت Chromium بالفعل لجميع المستخدمين على جهاز الكمبيوتر.</translation>
+<translation id="6774082503108938489">‏أوقفَ أحد والدَيك "أذونات المواقع الإلكترونية والتطبيقات والإضافات" لمتصفِّح Chromium. ولا يمكن تفعيل <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">‏يتم إعلامك من خلال Chromium في حال تم اختراق كلمات المرور في أي وقت.</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">‏Google Pay (تم النسخ إلى Chromium)</translation>
@@ -216,6 +217,7 @@
 <translation id="8417404458978023919">{0,plural, =1{‏يجب إعادة تشغيل Chromium في غضون يوم واحد}zero{‏يجب إعادة تشغيل Chromium في غضون # يوم}two{‏يجب إعادة تشغيل Chromium في غضون يومين}few{‏يجب إعادة تشغيل Chromium في غضون # أيام}many{‏يجب إعادة تشغيل Chromium في غضون # يومًا}other{‏يجب إعادة تشغيل Chromium في غضون # يوم}}</translation>
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. يُرجى إعادة تنزيل Chromium.</translation>
 <translation id="8493179195440786826">‏إصدار Chromium قديم</translation>
+<translation id="8558383651099478961">‏أوقفَ أحد والدَيك "أذونات المواقع الإلكترونية والتطبيقات والإضافات" لمتصفِّح Chromium. ولا يمكن تثبيت <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">‏لا يستطيع Chromium التحقّق من كلمات المرور إلا عند تسجيل الدخول باستخدام حسابك على Google.</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
 <translation id="8619360774459241877">‏جارٍ إطلاق Chromium...</translation>

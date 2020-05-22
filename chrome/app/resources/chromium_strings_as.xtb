@@ -160,6 +160,7 @@
 কিছুমান সুবিধা নাথাকিব পাৰে। অনুগ্ৰহ কৰি অন্য কোনো প্ৰ’ফাইল ডাইৰেক্টৰী নির্দিষ্ট কৰক বা Chromiumৰ নতুন সংস্কৰণ ব্যৱহাৰ কৰক।</translation>
 <translation id="6734080038664603509">&amp;Chromium আপডে’ট কৰক</translation>
 <translation id="6734291798041940871">Chromium আপোনাৰ কম্পিউটাৰত থকা সকলো ব্যৱহাৰকাৰীৰ বাবে ইতিমধ্যেই ইনষ্টল কৰা হৈছে।</translation>
+<translation id="6774082503108938489">আপোনাৰ অভিভাৱকে Chromiumত "ছাইট, এপ্ আৰু এক্সটেনশ্বনসমূহৰ বাবে অনুমতি" অফ কৰিছে। এই <ph name="EXTENSION_TYPE_PARAMETER" />টো সক্ষম কৰাৰ অনুমতি নাই।</translation>
 <translation id="6847869444787758381">Chromiumএ আপোনাৰ পাছৱৰ্ডসমূহ কেতিয়াবা হেক কৰা হৈছিল নেকি আপোনাক জানিবলৈ দিয়ে</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromiumলৈ প্ৰতিলিপি কৰা হ’ল)</translation>
@@ -218,6 +219,7 @@ Chromiumএ আপোনাৰ ছেটিংসমূহ পুনৰুদ্
 <translation id="8417404458978023919">{0,plural, =1{এদিনৰ ভিতৰত Chromium পুনৰ লঞ্চ কৰক}one{# দিনৰ ভিতৰত Chromium পুনৰ লঞ্চ কৰক}other{# দিনৰ ভিতৰত Chromium পুনৰ লঞ্চ কৰক}}</translation>
 <translation id="8453117565092476964">ইনষ্টলাৰ আৰ্কাইভটো ব্যৱহাৰযোগ্য নহয় বা অমান্য। অনুগ্ৰহ কৰি Chromium আকৌ ডাউনল’ড কৰক।</translation>
 <translation id="8493179195440786826">Chromiumটো অতি পুৰণি</translation>
+<translation id="8558383651099478961">আপোনাৰ অভিভাৱকে Chromiumত "ছাইট, এপ্ আৰু এক্সটেনশ্বনসমূহৰ বাবে অনুমতি" অফ কৰিছে। এই <ph name="EXTENSION_TYPE_PARAMETER" />টো যোগ দিয়াৰ অনুমতি নাই।</translation>
 <translation id="8568283329061645092">আপুনি নিজৰ Google একাউণ্টটোৰ জৰিয়তে ছাইন ইন কৰোঁতে Chromiumএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব পাৰে</translation>
 <translation id="8586442755830160949">স্বত্ত্বাধিকাৰ <ph name="YEAR" /> The Chromium Authors. সর্বস্বত্ব সংৰক্ষিত।</translation>
 <translation id="8619360774459241877">Chromium লঞ্চ কৰি থকা হৈছে...</translation>

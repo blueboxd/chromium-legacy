@@ -159,6 +159,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier un autre répertoire de profil ou utiliser une version plus récente de Chromium.</translation>
 <translation id="6734080038664603509">Mettre à jour &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium est déjà installé pour tous les utilisateurs de votre ordinateur.</translation>
+<translation id="6774082503108938489">L'un de tes parents a désactivé l'option "Autorisations des sites, applications et extensions" pour Chromium. Tu ne peux pas activer cette <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="6847869444787758381">Chromium vous indique si vos mots de passe ont été piratés</translation>
 <translation id="6857782730669500492">Chromium – <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copiée dans Chromium)</translation>
@@ -216,6 +217,7 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Relancer Chromium d'ici un jour}one{Relancer Chromium d'ici # jour}other{Relancer Chromium d'ici # jours}}</translation>
 <translation id="8453117565092476964">L'archive du programme d'installation est corrompue ou n'est pas valide. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="8493179195440786826">Version de Chromium obsolète</translation>
+<translation id="8558383651099478961">L'un de tes parents a désactivé l'option "Autorisations des sites, applications et extensions" pour Chromium. Tu ne peux pas ajouter cette <ph name="EXTENSION_TYPE_PARAMETER" />.</translation>
 <translation id="8568283329061645092">Chromium peut vérifier vos mots de passe lorsque vous vous connectez à votre compte Google</translation>
 <translation id="8586442755830160949">Copyright Auteurs de Chromium <ph name="YEAR" />. Tous droits réservés.</translation>
 <translation id="8619360774459241877">Lancement de Chromium…</translation>

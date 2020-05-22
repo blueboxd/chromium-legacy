@@ -160,6 +160,7 @@
 Айрым мүмкүнчүлүктөр иштебей калышы ыктымал. Башка профиль каталогун көрсөтүңүз же Chromium'дун жаңыраак версиясын колдонуңуз.</translation>
 <translation id="6734080038664603509">Жаңыртуу &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium компьютериңиздин бардык колдонуучулары үчүн орнотулуп коюлган.</translation>
+<translation id="6774082503108938489">Ата-энеңиз Chromium үчүн "Сайттарга, колдонмолорго жана кеңейтүүлөргө уруксаттарды" өчүрүп койгон. Бул <ph name="EXTENSION_TYPE_PARAMETER" /> кеңейтүүсүн иштетүүгө болбойт.</translation>
 <translation id="6847869444787758381">Chromium сырсөздөрүңүздү башка бирөөлөр билип алса сизге кабарлайт</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (Chromium'га көчүрүлдү)</translation>
@@ -218,6 +219,7 @@ Chromium жөндөөлөрүңүздү калыбына келтире алба
 <translation id="8417404458978023919">{0,plural, =1{Chromium 1 күндүн ичинде кайра иштетилет}other{Chromium # күндүн ичинде кайра иштетилет}}</translation>
 <translation id="8453117565092476964">Орноткуч архиви бузулган же жараксыз. Chromium'ду кайра жүктөп алыңыз.</translation>
 <translation id="8493179195440786826">Chromium эскирип калган.</translation>
+<translation id="8558383651099478961">Ата-энеңиз Chromium үчүн "Сайттарга, колдонмолорго жана кеңейтүүлөргө уруксаттарды" өчүрүп койгон. Бул <ph name="EXTENSION_TYPE_PARAMETER" /> кеңейтүүсүн кошууга болбойт.</translation>
 <translation id="8568283329061645092">Google аккаунтуңуз менен киргенде Chromium сырсөздөрүңүздү текшерет</translation>
 <translation id="8586442755830160949">Автордук укук <ph name="YEAR" /> Chromium авторлору. Бардык укуктар корголгон.</translation>
 <translation id="8619360774459241877">Chromium иштетилүүдө…</translation>

@@ -284,6 +284,9 @@ class PDFiumPage {
     // Color of the highlight in ARGB. Alpha is stored in the first 8 MSBs. RGB
     // follows after it with each using 8 bytes.
     uint32_t color;
+
+    // Text of the popup note associated with highlight.
+    std::string note_text;
   };
 
   // Represents a text field within the page.

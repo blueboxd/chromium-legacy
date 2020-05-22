@@ -182,7 +182,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '56b912f2f047b1df1dcbeebb1807ed15d17cf9dc',
+  'v8_revision': '414d114aaaad4f0cac357eb2705a71e3ca7bf898',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,7 +190,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '96a80283cc0fe604d03c0bc0b3f9eb100edd22f9',
+  'angle_revision': '0ee5ef3583d84fa53831b618db900692247e428c',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1298,7 +1298,7 @@ deps = {
       'packages': [
           {
               'package': 'fuchsia/third_party/aemu/linux-amd64',
-              'version': 'UAZDN83lzdK4HxQIv-nYpbO_46U_m9R-ZmkucVXwDbYC'
+              'version': 'Xcay0PnLaMhLVNrfRu--AasKlMAPksiChjIxutqCTNYC'
           },
       ],
       'condition': 'host_os == "linux" and checkout_fuchsia',
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@609a0cffce10c1ca48203d82a41a9278574358af',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@70e7d879d045e97efefe5ae290413852bdb1e71b',
     'condition': 'checkout_src_internal',
   },
 

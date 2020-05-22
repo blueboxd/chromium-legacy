@@ -670,6 +670,7 @@ PDFiumPage::GetHighlightInfo() {
         highlight.bounding_rect.x(), highlight.bounding_rect.y(),
         highlight.bounding_rect.width(), highlight.bounding_rect.height());
     cur_info.color = highlight.color;
+    cur_info.note_text = highlight.note_text;
     highlight_info.push_back(std::move(cur_info));
   }
   return highlight_info;
@@ -1215,6 +1216,14 @@ void PDFiumPage::PopulateHighlight(FPDF_ANNOTATION annot) {
     // pdfium.
     highlight.color = MakeARGB(255, 255, 255, 0);
   }
+
+  // Retrieve the contents of the popup note associated with highlight.
+  // See table 164 in ISO 32000-1 standard for more details around "Contents"
+  // key in a highlight annotation.
+  static constexpr char kContents[] = "Contents";
+  highlight.note_text = base::UTF16ToUTF8(CallPDFiumWideStringBufferApi(
+      base::BindRepeating(&FPDFAnnot_GetStringValue, annot, kContents),
+      /*check_expected_size=*/true));
 
   highlights_.push_back(std::move(highlight));
 }

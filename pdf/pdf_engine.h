@@ -288,6 +288,7 @@ class PDFEngine {
     int char_count;
     pp::FloatRect bounds;
     uint32_t color;
+    std::string note_text;
   };
 
   struct AccessibilityTextFieldInfo {

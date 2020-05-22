@@ -485,7 +485,7 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
   constexpr uint32_t kHighlightNoColor = MakeARGB(0, 0, 0, 0);
   static const pp::PDF::PrivateAccessibilityHighlightInfo
       kExpectedHighlightInfo[] = {
-          {"", 0, 0, 1, {{5, 196}, {49, 26}}, kHighlightDefaultColor},
+          {"Text Note", 0, 0, 1, {{5, 196}, {49, 26}}, kHighlightDefaultColor},
           {"", 1, 2, 1, {{110, 196}, {77, 26}}, kHighlightRedColor},
           {"", 2, 3, 1, {{192, 196}, {13, 26}}, kHighlightNoColor}};
 
@@ -520,6 +520,7 @@ TEST_F(AccessibilityTest, GetAccessibilityHighlightInfo) {
     EXPECT_EQ(highlight_info.text_run_count,
               kExpectedHighlightInfo[i].text_run_count);
     EXPECT_EQ(highlight_info.color, kExpectedHighlightInfo[i].color);
+    EXPECT_EQ(highlight_info.note_text, kExpectedHighlightInfo[i].note_text);
   }
 }
 

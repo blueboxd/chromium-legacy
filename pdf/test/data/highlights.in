@@ -20,7 +20,7 @@ endobj
     >>
   >>
   /Contents 5 0 R
-  /Annots [6 0 R 7 0 R 8 0 R]
+  /Annots [6 0 R 7 0 R 8 0 R 9 0 R]
 >>
 endobj
 {{object 4 0}} <<
@@ -43,6 +43,8 @@ endobj
 {{object 6 0}} <<
   /Type /Annot
   /Subtype /Highlight
+  /Popup 9 0 R
+  /Contents (Text Note)
   /QuadPoints [0 55 36 59 0 36 36 36]
   /Rect [0 36 36 55]
   /P 3 0 R
@@ -66,6 +68,13 @@ endobj
   /C [0 0 0]
   /CA 0
   /P 3 0 R
+>>
+endobj
+{{object 9 0}} <<
+  /Type /Annot
+  /Subtype /Popup
+  /Parent 6 0 R
+  /Rect [140 36 149 55]
 >>
 endobj
 {{xref}}

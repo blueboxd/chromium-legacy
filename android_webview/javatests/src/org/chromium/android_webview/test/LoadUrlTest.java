@@ -255,19 +255,6 @@ public class LoadUrlTest {
         }
     }
 
-    /**
-     * Make a test server URL look like it is a different origin.
-     */
-    private static String toDifferentOriginUrl(String url) {
-        if (url.contains("localhost")) {
-            return url.replace("localhost", "127.0.0.1");
-        } else if (url.contains("127.0.0.1")) {
-            return url.replace("127.0.0.1", "localhost");
-        } else {
-            throw new RuntimeException("Can't convert url " + url + " to different origin");
-        }
-    }
-
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
@@ -292,7 +279,7 @@ public class LoadUrlTest {
         int onReceivedTitleCallCount = onReceivedTitleHelper.getCallCount();
         loadUrlWithExtraHeadersSync(awContents, contentsClient.getOnPageFinishedHelper(), url2,
                 createHeadersMap(extraHeaders));
-        // Verify that extra headers are passed to the loaded url, but not to the image subresource.
+        // Verify that extra headers are passed to the loaded url.
         validateHeadersValue(awContents, contentsClient, extraHeaders, true);
         onReceivedTitleHelper.waitForCallback(onReceivedTitleCallCount);
         Assert.assertEquals("5", onReceivedTitleHelper.getTitle());
@@ -345,30 +332,6 @@ public class LoadUrlTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
-    public void testLoadWithoutExtraHeadersClearsState() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
-        String[] extraHeaders = {
-                "X-ExtraHeaders1", "extra-header-data1", "x-extraHeaders2", "EXTRA-HEADER-DATA2"};
-        final String url =
-                mTestServer.getURL("/echoheader?" + extraHeaders[0] + "&" + extraHeaders[2]);
-
-        loadUrlWithExtraHeadersSync(awContents, contentsClient.getOnPageFinishedHelper(), url,
-                createHeadersMap(extraHeaders));
-        validateHeadersValue(awContents, contentsClient, extraHeaders, true);
-
-        // Load the same URL again without the extra headers specified.
-        mActivityTestRule.loadUrlSync(awContents, contentsClient.getOnPageFinishedHelper(), url);
-        // Check they're not still there.
-        validateHeadersValue(awContents, contentsClient, extraHeaders, false);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
     public void testRedirectAndReloadWithExtraHeaders() throws Throwable {
         final TestAwContentsClient contentsClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
@@ -396,69 +359,6 @@ public class LoadUrlTest {
         // WebView will only reload the main page.
         mActivityTestRule.reloadSync(awContents, contentsClient.getOnPageFinishedHelper());
         // No extra headers. This is consistent with legacy behavior.
-        validateHeadersFromJson(
-                awContents, contentsClient, extraHeaders, echoRedirectedUrlHeader, false);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testCrossOriginRedirectWithExtraHeaders() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final String echoRedirectedUrlHeader = "echo header";
-        final String echoInitialUrlHeader = "data content";
-
-        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
-
-        String[] extraHeaders = {
-                "X-ExtraHeaders1", "extra-header-data1", "x-extraHeaders2", "EXTRA-HEADER-DATA2"};
-        final String redirectedUrl =
-                toDifferentOriginUrl(mTestServer.getURL("/echoheader-and-set-data?header="
-                        + extraHeaders[0] + "&header=" + extraHeaders[2]));
-        final String initialUrl =
-                mTestServer.getURL("/server-redirect-echoheader?url=" + encodeUrl(redirectedUrl)
-                        + "&header=" + extraHeaders[0] + "&header=" + extraHeaders[2]);
-        loadUrlWithExtraHeadersSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                initialUrl, createHeadersMap(extraHeaders));
-        validateHeadersFromJson(
-                awContents, contentsClient, extraHeaders, echoInitialUrlHeader, true);
-        // Check that the headers were removed when the request was redirected to another origin.
-        validateHeadersFromJson(
-                awContents, contentsClient, extraHeaders, echoRedirectedUrlHeader, false);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView"})
-    public void testRedirectToPreviousExtraHeaders() throws Throwable {
-        final TestAwContentsClient contentsClient = new TestAwContentsClient();
-        final AwTestContainerView testContainerView =
-                mActivityTestRule.createAwTestContainerViewOnMainSync(contentsClient);
-        final AwContents awContents = testContainerView.getAwContents();
-        final String echoRedirectedUrlHeader = "echo header";
-
-        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
-
-        String[] extraHeaders = {
-                "X-ExtraHeaders1", "extra-header-data1", "x-extraHeaders2", "EXTRA-HEADER-DATA2"};
-        final String redirectedUrl = mTestServer.getURL("/echoheader-and-set-data?header="
-                + extraHeaders[0] + "&header=" + extraHeaders[2]);
-        final String initialUrl =
-                mTestServer.getURL("/server-redirect-echoheader?url=" + encodeUrl(redirectedUrl));
-
-        // First load the redirect target URL with extra headers
-        loadUrlWithExtraHeadersSync(awContents, contentsClient.getOnPageFinishedHelper(),
-                redirectedUrl, createHeadersMap(extraHeaders));
-        validateHeadersFromJson(
-                awContents, contentsClient, extraHeaders, echoRedirectedUrlHeader, true);
-
-        // Now load the initial URL without any extra headers and let it redirect;
-        // the extra headers should not be added to the redirected request.
-        mActivityTestRule.loadUrlSync(
-                awContents, contentsClient.getOnPageFinishedHelper(), initialUrl);
         validateHeadersFromJson(
                 awContents, contentsClient, extraHeaders, echoRedirectedUrlHeader, false);
     }

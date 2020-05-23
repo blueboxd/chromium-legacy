@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/check_op.h"
 #include "base/strings/pattern.h"
@@ -31,6 +32,114 @@ const char kSkipString[] = "@NO_DUMP";
 const char kSkipChildren[] = "@NO_CHILDREN_DUMP";
 
 }  // namespace
+
+//
+// PropertyNode
+//
+
+// static
+PropertyNode PropertyNode::FromProperty(const base::string16& property) {
+  PropertyNode root;
+  Parse(&root, property.begin(), property.end());
+
+  PropertyNode* node = &root.parameters[0];
+  node->original_property = property;
+  return std::move(*node);
+}
+
+PropertyNode::PropertyNode() = default;
+PropertyNode::PropertyNode(PropertyNode&& o)
+    : value(std::move(o.value)),
+      parameters(std::move(o.parameters)),
+      original_property(std::move(o.original_property)) {}
+PropertyNode::~PropertyNode() = default;
+
+PropertyNode& PropertyNode::operator=(PropertyNode&& o) {
+  value = std::move(o.value);
+  parameters = std::move(o.parameters);
+  original_property = std::move(o.original_property);
+  return *this;
+}
+
+PropertyNode::operator bool() const {
+  return !value.empty();
+}
+
+std::string PropertyNode::ToString() const {
+  std::string out = base::UTF16ToUTF8(value);
+  if (parameters.size()) {
+    out += '(';
+    for (size_t i = 0; i < parameters.size(); i++) {
+      if (i != 0) {
+        out += ", ";
+      }
+      out += parameters[i].ToString();
+    }
+    out += ')';
+  }
+  return out;
+}
+
+// private
+PropertyNode::PropertyNode(const base::string16& v) : value(v) {}
+PropertyNode::PropertyNode(PropertyNode::iterator begin,
+                           PropertyNode::iterator end)
+    : value(begin, end) {}
+
+// private static
+PropertyNode::iterator PropertyNode::Parse(PropertyNode* node,
+                                           PropertyNode::iterator begin,
+                                           PropertyNode::iterator end) {
+  auto iter = begin;
+  while (iter != end) {
+    // Subnode begins: create a new node, record its name and parse its
+    // arguments.
+    if (*iter == '(') {
+      node->parameters.push_back(PropertyNode(begin, iter));
+      begin = iter = Parse(&node->parameters.back(), ++iter, end);
+      continue;
+    }
+
+    // Subnode begins: a special case for arrays, which have [arg1, ..., argN]
+    // form.
+    if (*iter == '[') {
+      node->parameters.push_back(PropertyNode(base::UTF8ToUTF16("[]")));
+      begin = iter = Parse(&node->parameters.back(), ++iter, end);
+      continue;
+    }
+
+    // Subnode ends.
+    if (*iter == ')' || *iter == ']') {
+      if (begin != iter) {
+        node->parameters.push_back(PropertyNode(begin, iter));
+      }
+      return ++iter;
+    }
+
+    // Skip spaces, adjust new node start.
+    if (*iter == ' ') {
+      begin = ++iter;
+    }
+
+    // Subsequent scalar param case.
+    if (*iter == ',' && begin != iter) {
+      node->parameters.push_back(PropertyNode(begin, iter));
+      iter++;
+      begin = iter;
+      continue;
+    }
+
+    iter++;
+  }
+
+  // Single scalar param case.
+  if (begin != iter) {
+    node->parameters.push_back(PropertyNode(begin, iter));
+  }
+  return iter;
+}
+
+// AccessibilityTreeFormatter
 
 AccessibilityTreeFormatter::TestPass AccessibilityTreeFormatter::GetTestPass(
     size_t index) {
@@ -189,26 +298,37 @@ AccessibilityTreeFormatterBase::GetVersionSpecificExpectedFileSuffix() {
   return FILE_PATH_LITERAL("");
 }
 
-bool AccessibilityTreeFormatterBase::FilterPropertyName(
+PropertyNode AccessibilityTreeFormatterBase::GetMatchingPropertyNode(
     const base::string16& text) {
-  // Find the first allow-filter matching the property name. The filter should
-  // be either an exact property match or a wildcard matching to support filter
-  // collections like AXRole* which matches AXRoleDescription.
-  const base::string16 delim = base::ASCIIToUTF16("=");
+  // Find the first allow-filter matching the property name.
+  // The filters have form of name(args)=value. Here we match the name part.
+  const base::string16 filter_delim = base::ASCIIToUTF16("=");
   for (const auto& filter : property_filters_) {
-    base::String16Tokenizer tokenizer(filter.match_str, delim);
-    if (tokenizer.GetNext() && (text == tokenizer.token() ||
-                                base::MatchPattern(text, tokenizer.token()))) {
+    base::String16Tokenizer filter_tokenizer(filter.match_str, filter_delim);
+    if (!filter_tokenizer.GetNext()) {
+      continue;
+    }
+
+    base::string16 property = filter_tokenizer.token();
+    PropertyNode property_node = PropertyNode::FromProperty(property);
+
+    // The filter should be either an exact property match or a wildcard
+    // matching to support filter collections like AXRole* which matches
+    // AXRoleDescription.
+    if (text == property_node.value ||
+        base::MatchPattern(text, property_node.value)) {
       switch (filter.type) {
         case PropertyFilter::ALLOW_EMPTY:
         case PropertyFilter::ALLOW:
-          return true;
+          return property_node;
+        case PropertyFilter::DENY:
+          break;
         default:
           break;
       }
     }
   }
-  return false;
+  return PropertyNode();
 }
 
 bool AccessibilityTreeFormatterBase::MatchesPropertyFilters(
@@ -282,4 +402,5 @@ void AccessibilityTreeFormatterBase::AddPropertyFilter(
 
 void AccessibilityTreeFormatterBase::AddDefaultFilters(
     std::vector<PropertyFilter>* property_filters) {}
+
 }  // namespace content

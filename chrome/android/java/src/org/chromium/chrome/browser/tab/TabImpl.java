@@ -14,6 +14,7 @@ import android.view.View.OnAttachStateChangeListener;
 import android.view.accessibility.AccessibilityEvent;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -97,7 +98,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     private final ObserverList<TabObserver> mObservers = new ObserverList<>();
 
     // Content layer Delegates
-    private TabWebContentsDelegateAndroid mWebContentsDelegate;
+    private TabWebContentsDelegateAndroidImpl mWebContentsDelegate;
 
     /**
      * If this tab was opened from another tab, store the id of the tab that
@@ -304,14 +305,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         return mWindowAndroid;
     }
 
-    /**
-     * Update the attachment state to Window(Activity).
-     * @param window A new {@link WindowAndroid} to attach the tab to. If {@code null},
-     *        the tab is being detached. See {@link ReparentingTask#detach()} for details.
-     * @param tabDelegateFactory The new delegate factory this tab should be using. Can be
-     *        {@code null} even when {@code window} is not, meaning we simply want to swap out
-     *        {@link WindowAndroid} for this tab and keep using the current delegate factory.
-     */
+    @Override
     public void updateAttachment(
             @Nullable WindowAndroid window, @Nullable TabDelegateFactory tabDelegateFactory) {
         // Non-null delegate factory while being detached is not valid.
@@ -927,7 +921,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         return mDelegateFactory;
     }
 
-    TabWebContentsDelegateAndroid getTabWebContentsDelegateAndroid() {
+    @VisibleForTesting
+    TabWebContentsDelegateAndroidImpl getTabWebContentsDelegateAndroid() {
         return mWebContentsDelegate;
     }
 
@@ -1286,7 +1281,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             mContentView.addOnAttachStateChangeListener(mAttachStateChangeListener);
             updateInteractableState();
 
-            mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
+            mWebContentsDelegate = createWebContentsDelegate();
 
             assert mNativeTabAndroid != 0;
             TabImplJni.get().initWebContents(mNativeTabAndroid, TabImpl.this, mIncognito,
@@ -1300,6 +1295,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         } finally {
             TraceEvent.end("ChromeTab.initWebContents");
         }
+    }
+
+    private TabWebContentsDelegateAndroidImpl createWebContentsDelegate() {
+        TabWebContentsDelegateAndroid delegate = mDelegateFactory.createWebContentsDelegate(this);
+        return new TabWebContentsDelegateAndroidImpl(this, delegate);
     }
 
     /**
@@ -1345,7 +1345,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         // Update the delegate factory, then recreate and propagate all delegates.
         mDelegateFactory = factory;
 
-        mWebContentsDelegate = mDelegateFactory.createWebContentsDelegate(this);
+        mWebContentsDelegate = createWebContentsDelegate();
 
         WebContents webContents = getWebContents();
         if (webContents != null) {
@@ -1520,9 +1520,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         void destroy(long nativeTabAndroid, TabImpl caller);
         void initWebContents(long nativeTabAndroid, TabImpl caller, boolean incognito,
                 boolean isBackgroundTab, WebContents webContents, int parentTabId,
-                TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
+                TabWebContentsDelegateAndroidImpl delegate,
+                ContextMenuPopulator contextMenuPopulator);
         void updateDelegates(long nativeTabAndroid, TabImpl caller,
-                TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
+                TabWebContentsDelegateAndroidImpl delegate,
+                ContextMenuPopulator contextMenuPopulator);
         void destroyWebContents(long nativeTabAndroid, TabImpl caller);
         void releaseWebContents(long nativeTabAndroid, TabImpl caller);
         void onPhysicalBackingSizeChanged(long nativeTabAndroid, TabImpl caller,

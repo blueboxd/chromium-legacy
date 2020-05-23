@@ -15,10 +15,10 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.PaymentManifestVerifier.ManifestVerifyCallback;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PackageManagerDelegate;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.intent.WebPaymentIntentHelper;
@@ -205,8 +205,8 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
             agreedAppStoreMethods.add(appStoreMethod);
         }
 
-        boolean allowTwaInstalledFromAnySource =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_APP_STORE_BILLING_DEBUG);
+        boolean allowTwaInstalledFromAnySource = PaymentFeatureList.isEnabled(
+                PaymentFeatureList.WEB_PAYMENTS_APP_STORE_BILLING_DEBUG);
         if (!allowTwaInstalledFromAnySource) {
             String installerPackageName =
                     mTwaPackageManagerDelegate.getInstallerPackage(twaPackageName);

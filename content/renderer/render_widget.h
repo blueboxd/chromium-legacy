@@ -556,7 +556,7 @@ class CONTENT_EXPORT RenderWidget
   blink::WebHitTestResult GetHitTestResultAtPoint(const gfx::PointF& point);
 
   // Forces a redraw and invokes the callback once the frame's been displayed
-  // to the user.
+  // to the user in the display compositor.
   using PresentationTimeCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   virtual void RequestPresentation(PresentationTimeCallback callback);

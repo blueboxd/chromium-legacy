@@ -144,7 +144,7 @@ public class ReparentingTask implements UserData {
 
         // TabModelSelector of this Tab, if present, gets notified to remove the tab from
         // the TabModel it belonged to.
-        ((TabImpl) mTab).updateAttachment(null, null);
+        mTab.updateAttachment(null, null);
     }
 
     /**
@@ -174,7 +174,7 @@ public class ReparentingTask implements UserData {
         // Assert that the tab is currently in detached state.
         assert mTab.getWebContents() == null
                 || mTab.getWebContents().getTopLevelNativeWindow() == null;
-        ((TabImpl) mTab).updateAttachment(window, tabDelegateFactory);
+        mTab.updateAttachment(window, tabDelegateFactory);
         ReparentingTaskJni.get().attachTab(mTab.getWebContents());
     }
 

@@ -25,7 +25,6 @@ import org.chromium.chrome.browser.autofill.PersonalDataManager.NormalizedAddres
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerUiObserver;
 import org.chromium.chrome.browser.payments.handler.PaymentHandlerCoordinator.PaymentHandlerWebContentsObserver;
@@ -60,6 +59,7 @@ import org.chromium.components.payments.OriginSecurityChecker;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentDetailsConverter;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.components.payments.PaymentValidator;
@@ -685,8 +685,8 @@ public class PaymentRequestImpl
 
         mQueryForQuota = new HashMap<>(mMethodData);
         if (mQueryForQuota.containsKey(MethodStrings.BASIC_CARD)
-                && PaymentsExperimentalFeatures.isEnabled(
-                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
+                && PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
             PaymentMethodData paymentMethodData = new PaymentMethodData();
             paymentMethodData.stringifiedData = String.format(
                     "{payerEmail:%s,payerName:%s,payerPhone:%s,shipping:%s}", mRequestPayerEmail,
@@ -709,8 +709,8 @@ public class PaymentRequestImpl
         // If in strict mode, don't give user an option to add an autofill card during the checkout
         // to avoid the "unhappy" basic-card flow.
         mUserCanAddCreditCard = mMerchantSupportsAutofillCards
-                && !PaymentsExperimentalFeatures.isEnabled(
-                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT);
+                && !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT);
 
         if (mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail) {
             mAutofillProfiles = Collections.unmodifiableList(
@@ -799,7 +799,7 @@ public class PaymentRequestImpl
         // information, we can safely go directly to the payment app instead of showing Payment
         // Request UI.
         mShouldSkipShowingPaymentRequestUi =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
+                PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP)
                 // Only allowing payment apps that own their own UIs.
                 // This excludes AutofillPaymentInstrument as its UI is rendered inline in
                 // the payment request UI, thus can't be skipped.
@@ -1096,7 +1096,7 @@ public class PaymentRequestImpl
             return false;
         }
 
-        return ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MINIMAL_UI);
+        return PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MINIMAL_UI);
     }
 
     /**
@@ -1566,7 +1566,7 @@ public class PaymentRequestImpl
 
     /** Updates the modifiers for payment apps and order summary. */
     private void updateAppModifiedTotals() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
+        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
         if (mModifiers == null) return;
         if (mPaymentMethodsSection == null) return;
 
@@ -1584,7 +1584,7 @@ public class PaymentRequestImpl
 
     /** Sets the modifier for the order summary based on the given app, if any. */
     private void updateOrderSummary(@Nullable PaymentApp app) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
+        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
 
         PaymentDetailsModifier modifier = getModifier(app);
         PaymentItem total = modifier == null ? null : modifier.total;
@@ -2553,8 +2553,8 @@ public class PaymentRequestImpl
     @Override
     public boolean getMayCrawl() {
         return !mUserCanAddCreditCard
-                || PaymentsExperimentalFeatures.isEnabled(
-                        ChromeFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
+                || PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP);
     }
 
     // PaymentAppFactoryParams implementation.
@@ -2783,8 +2783,8 @@ public class PaymentRequestImpl
     private boolean disconnectForStrictShow() {
         if (!mIsUserGestureShow || !mMethodData.containsKey(MethodStrings.BASIC_CARD)
                 || mHasEnrolledInstrument || mHasNonAutofillApp
-                || !PaymentsExperimentalFeatures.isEnabled(
-                        ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
+                || !PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                        PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT)) {
             return false;
         }
 
@@ -3006,8 +3006,8 @@ public class PaymentRequestImpl
      * @param shippingAddress The shippingAddress to get redacted.
      */
     private void redactShippingAddress(PaymentAddress shippingAddress) {
-        if (PaymentsExperimentalFeatures.isEnabled(
-                    ChromeFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS)) {
+        if (PaymentFeatureList.isEnabledOrExperimentalFeaturesEnabled(
+                    PaymentFeatureList.WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS)) {
             shippingAddress.organization = "";
             shippingAddress.phone = "";
             shippingAddress.recipient = "";

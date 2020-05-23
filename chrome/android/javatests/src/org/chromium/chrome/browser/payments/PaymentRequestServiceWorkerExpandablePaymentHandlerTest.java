@@ -22,9 +22,9 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -39,10 +39,10 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // For all the tests in this file, we expect abort exception when there is no supported
         // payment apps instead of showing payment request UI.
-        "enable-features=" + ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT + ","
-                + ChromeFeatureList.SCROLL_TO_EXPAND_PAYMENT_HANDLER,
+        "enable-features=" + PaymentFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT + ","
+                + PaymentFeatureList.SCROLL_TO_EXPAND_PAYMENT_HANDLER,
         // Prevent crawling the web for real payment apps.
-        "disable-features=" + ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS})
+        "disable-features=" + PaymentFeatureList.SERVICE_WORKER_PAYMENT_APPS})
 public class PaymentRequestServiceWorkerExpandablePaymentHandlerTest {
     // Disable animations to reduce flakiness.
     @ClassRule

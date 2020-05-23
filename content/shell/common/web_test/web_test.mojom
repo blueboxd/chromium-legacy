@@ -66,7 +66,7 @@ interface WebTestRenderFrame {
 
   // Performs the complete set of document lifecycle phases, including updates
   // to the compositor state and rasterization, then calling the given callback.
-  CompositeWithRaster() => ();
+  SynchronouslyCompositeAfterTest() => ();
 
   // Dumps the frame's contents into a string.
   DumpFrameLayout() => (string frame_layout_dump);

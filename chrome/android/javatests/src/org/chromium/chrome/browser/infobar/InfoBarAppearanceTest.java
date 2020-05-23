@@ -79,17 +79,15 @@ public class InfoBarAppearanceTest {
         List<InfoBar> infobars;
         FramebustBlockInfoBar infoBar;
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url1);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { TabTestUtils.showFramebustBlockInfobarForTesting(mTab, url1); });
         infobars = mActivityTestRule.getInfoBarContainer().getInfoBarsForTesting();
         assertEquals(1, infobars.size());
         infoBar = (FramebustBlockInfoBar) infobars.get(0);
         assertEquals(url1, infoBar.getBlockedUrl());
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url2);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { TabTestUtils.showFramebustBlockInfobarForTesting(mTab, url2); });
         infobars = mActivityTestRule.getInfoBarContainer().getInfoBarsForTesting();
         assertEquals(1, infobars.size());
         infoBar = (FramebustBlockInfoBar) infobars.get(0);
@@ -111,9 +109,8 @@ public class InfoBarAppearanceTest {
         };
         mTab.addObserver(navigationWaiter);
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { TabTestUtils.showFramebustBlockInfobarForTesting(mTab, url); });
         FramebustBlockInfoBar infoBar =
                 (FramebustBlockInfoBar) mActivityTestRule.getInfoBarContainer()
                         .getInfoBarsForTesting()
@@ -135,9 +132,8 @@ public class InfoBarAppearanceTest {
     public void testFramebustBlockInfoBarButtonTapped() {
         String url = "http://very.evil.biz";
 
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            TabTestUtils.getTabWebContentsDelegate(mTab).showFramebustBlockInfobarForTesting(url);
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { TabTestUtils.showFramebustBlockInfobarForTesting(mTab, url); });
         FramebustBlockInfoBar infoBar =
                 (FramebustBlockInfoBar) mActivityTestRule.getInfoBarContainer()
                         .getInfoBarsForTesting()

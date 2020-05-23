@@ -48,6 +48,7 @@
 #include "services/network/public/mojom/cors.mojom.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
+#include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_isolated_world_ids.h"
@@ -94,6 +95,37 @@ using BoundV8Callback =
 // Returns an empty set of args for running the BoundV8Callback.
 std::vector<v8::Local<v8::Value>> NoV8Args() {
   return {};
+}
+
+// Returns 3 arguments, width, height, and an array of pixel values. Takes a
+// v8::Context::Scope just to prove one exists in the caller.
+std::vector<v8::Local<v8::Value>> ConvertBitmapToV8(
+    const v8::Context::Scope& context_scope,
+    const SkBitmap& bitmap) {
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+
+  std::vector<v8::Local<v8::Value>> args;
+  // Note that the bitmap size can be 0 if there's no pixels.
+  args.push_back(v8::Number::New(isolate, bitmap.info().width()));
+  args.push_back(v8::Number::New(isolate, bitmap.info().height()));
+  if (bitmap.isNull()) {
+    // Empty value for the bitmap.
+    args.emplace_back();
+    return args;
+  }
+
+  // Always produce pixels in RGBA order, regardless of the platform default.
+  SkImageInfo info = bitmap.info().makeColorType(kRGBA_8888_SkColorType);
+  size_t row_bytes = info.minRowBytes();
+
+  blink::WebArrayBuffer buffer =
+      blink::WebArrayBuffer::Create(info.computeByteSize(row_bytes), 1);
+  bool read = bitmap.readPixels(info, buffer.Data(), row_bytes, 0, 0);
+  CHECK(read);
+
+  args.push_back(blink::WebArrayBufferConverter::ToV8Value(
+      &buffer, isolate->GetCurrentContext()->Global(), isolate));
+  return args;
 }
 
 void ConvertAndSet(gin::Arguments* args, int* set_param) {
@@ -195,13 +227,10 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
                                      bool allow_destination_subdomains);
   void AddWebPageOverlay();
   void SetHighlightAds();
-  void CapturePixelsAsyncThen(v8::Local<v8::Function> callback);
+  void CapturePrintingPixelsThen(v8::Local<v8::Function> callback);
   void ClearAllDatabases();
-  void ClearPrinting();
   void ClearTrustTokenState(v8::Local<v8::Function> callback);
-  void CopyImageAtAndCapturePixelsAsyncThen(int x,
-                                            int y,
-                                            v8::Local<v8::Function> callback);
+  void CopyImageThen(int x, int y, v8::Local<v8::Function> callback);
   void DidAcquirePointerLock();
   void DidLosePointerLock();
   void DidNotAcquirePointerLock();
@@ -484,17 +513,15 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // Permits the adding of only one opaque overlay. May only be called from
       // inside the main frame.
       .SetMethod("addWebPageOverlay", &TestRunnerBindings::AddWebPageOverlay)
-      .SetMethod("capturePixelsAsyncThen",
-                 &TestRunnerBindings::CapturePixelsAsyncThen)
+      .SetMethod("capturePrintingPixelsThen",
+                 &TestRunnerBindings::CapturePrintingPixelsThen)
       .SetMethod("clearAllDatabases", &TestRunnerBindings::ClearAllDatabases)
       .SetMethod("clearBackForwardList", &TestRunnerBindings::NotImplemented)
-      .SetMethod("clearPrinting", &TestRunnerBindings::ClearPrinting)
       // Clears persistent Trust Tokens state in the browser. See
       // https://github.com/wicg/trust-token-api.
       .SetMethod("clearTrustTokenState",
                  &TestRunnerBindings::ClearTrustTokenState)
-      .SetMethod("copyImageAtAndCapturePixelsAsyncThen",
-                 &TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen)
+      .SetMethod("copyImageThen", &TestRunnerBindings::CopyImageThen)
       .SetMethod("didAcquirePointerLock",
                  &TestRunnerBindings::DidAcquirePointerLock)
       .SetMethod("didLosePointerLock", &TestRunnerBindings::DidLosePointerLock)
@@ -579,6 +606,9 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       // Note, the reply callback is executed synchronously. Wrap in
       // setTimeout() to run asynchronously.
       .SetMethod("updateAllLifecyclePhasesAndCompositeThen",
+                 &TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen)
+      // TODO(danakj): Remove this when devtools is updated to not use it.
+      .SetMethod("capturePixelsAsyncThen",
                  &TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen)
       .SetMethod("setAnimationRequiresRaster",
                  &TestRunnerBindings::SetAnimationRequiresRaster)
@@ -1531,12 +1561,6 @@ void TestRunnerBindings::SetPrintingForFrame(const std::string& frame_name) {
   runner_->SetPrintingForFrame(frame_name);
 }
 
-void TestRunnerBindings::ClearPrinting() {
-  if (invalid_)
-    return;
-  runner_->ClearPrinting();
-}
-
 void TestRunnerBindings::ClearTrustTokenState(
     v8::Local<v8::Function> v8_callback) {
   if (invalid_)
@@ -1835,16 +1859,22 @@ void TestRunnerBindings::RemoveWebPageOverlay() {
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndComposite() {
   if (invalid_)
     return;
-  frame_->GetLocalRootWebWidgetTestProxy()->SynchronouslyComposite(
-      /*raster=*/true);
+  frame_->GetLocalRootRenderWidget()->RequestPresentation(base::DoNothing());
+}
+
+static void UpdateAllLifecyclePhasesAndCompositeThenReply(
+    base::OnceClosure callback,
+    const gfx::PresentationFeedback& feedback) {
+  std::move(callback).Run();
 }
 
 void TestRunnerBindings::UpdateAllLifecyclePhasesAndCompositeThen(
     v8::Local<v8::Function> v8_callback) {
   if (invalid_)
     return;
-  UpdateAllLifecyclePhasesAndComposite();
-  WrapV8Closure(std::move(v8_callback)).Run();
+  frame_->GetLocalRootRenderWidget()->RequestPresentation(
+      base::BindOnce(&UpdateAllLifecyclePhasesAndCompositeThenReply,
+                     WrapV8Closure(std::move(v8_callback))));
 }
 
 void TestRunnerBindings::SetAnimationRequiresRaster(bool do_raster) {
@@ -1867,39 +1897,64 @@ void TestRunnerBindings::GetManifestThen(v8::Local<v8::Function> v8_callback) {
       base::BindOnce(GetManifestReply, WrapV8Callback(std::move(v8_callback))));
 }
 
-void TestRunnerBindings::CapturePixelsAsyncThen(
-    v8::Local<v8::Function> callback) {
-  if (invalid_)
-    return;
-  view_runner_->CapturePixelsAsyncThen(callback);
-}
-
-static void ProxyToRunJSCallbackWithBitmap(
+static void CapturePrintingPixelsThenReply(
     base::WeakPtr<TestRunnerBindings> test_runner,
-    TestRunnerForSpecificView* view_runner,
-    v8::UniquePersistent<v8::Function> callback,
-    const SkBitmap& snapshot) {
-  if (!test_runner)  // Guards the validity of |view_runner|.
+    blink::WebLocalFrame* frame,
+    BoundV8Callback callback,
+    const SkBitmap& bitmap) {
+  if (!test_runner)  // This guards the validity of the |frame|.
     return;
-  // TODO(danakj): Move this method over to TestRunner or TestRunnerBindings
-  // and drop this ProxyTo function.
-  view_runner->RunJSCallbackWithBitmap(std::move(callback), snapshot);
+
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  // ConvertBitmapToV8() requires a v8::Context.
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
+  CHECK(!context.IsEmpty());
+  v8::Context::Scope context_scope(context);
+
+  std::move(callback).Run(ConvertBitmapToV8(context_scope, bitmap));
 }
 
-void TestRunnerBindings::CopyImageAtAndCapturePixelsAsyncThen(
-    int x,
-    int y,
-    v8::Local<v8::Function> callback) {
+void TestRunnerBindings::CapturePrintingPixelsThen(
+    v8::Local<v8::Function> v8_callback) {
   if (invalid_)
     return;
+  PrintFrameAsync(GetWebFrame(),
+                  base::BindOnce(&CapturePrintingPixelsThenReply,
+                                 weak_ptr_factory_.GetWeakPtr(), GetWebFrame(),
+                                 WrapV8Callback(std::move(v8_callback))));
+}
 
-  auto blink_callback = v8::UniquePersistent<v8::Function>(
-      blink::MainThreadIsolate(), std::move(callback));
-  CopyImageAtAndCapturePixels(
-      frame_, x, y,
-      base::BindOnce(&ProxyToRunJSCallbackWithBitmap,
-                     weak_ptr_factory_.GetWeakPtr(), view_runner_,
-                     std::move(blink_callback)));
+void TestRunnerBindings::CopyImageThen(int x,
+                                       int y,
+                                       v8::Local<v8::Function> v8_callback) {
+  mojo::Remote<blink::mojom::ClipboardHost> remote_clipboard;
+  frame_->GetBrowserInterfaceBroker()->GetInterface(
+      remote_clipboard.BindNewPipeAndPassReceiver());
+
+  uint64_t sequence_number_before = 0;
+  remote_clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
+                                      &sequence_number_before);
+  GetWebFrame()->CopyImageAtForTesting(gfx::Point(x, y));
+  uint64_t sequence_number_after = 0;
+  while (sequence_number_before == sequence_number_after) {
+    remote_clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
+                                        &sequence_number_after);
+  }
+
+  SkBitmap bitmap;
+  remote_clipboard->ReadImage(ui::ClipboardBuffer::kCopyPaste, &bitmap);
+
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Local<v8::Context> context = GetWebFrame()->MainWorldScriptContext();
+  CHECK(!context.IsEmpty());
+  v8::Context::Scope context_scope(context);
+
+  WrapV8Callback(std::move(v8_callback))
+      .Run(ConvertBitmapToV8(context_scope, std::move(bitmap)));
 }
 
 void TestRunnerBindings::SetCustomTextOutput(const std::string& output) {
@@ -3017,11 +3072,6 @@ void TestRunner::SetPrinting() {
 void TestRunner::SetPrintingForFrame(const std::string& frame_name) {
   web_test_runtime_flags_.set_printing_frame(frame_name);
   web_test_runtime_flags_.set_is_printing(true);
-  OnWebTestRuntimeFlagsChanged();
-}
-
-void TestRunner::ClearPrinting() {
-  web_test_runtime_flags_.set_is_printing(false);
   OnWebTestRuntimeFlagsChanged();
 }
 

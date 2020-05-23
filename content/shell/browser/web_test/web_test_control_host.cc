@@ -788,33 +788,40 @@ void WebTestControlHost::CompositeAllFramesThen(
 
 void WebTestControlHost::CompositeNodeQueueThen(
     base::OnceCallback<void()> callback) {
-  // Frames can get freed somewhere else while a CompositeWithRaster is taking
-  // place. Therefore, we need to double-check that this frame pointer is
-  // still valid before using it. To do that, grab the list of all frames
-  // again, and make sure it contains the one we're about to composite.
-  // See crbug.com/899465 for an example of this problem.
-  RenderFrameHost* next_node_host;
-  do {
+  RenderFrameHost* frame = nullptr;
+  while (!frame) {
     if (composite_all_frames_node_queue_.empty()) {
       // Done with the queue - call the callback.
       std::move(callback).Run();
       return;
     }
-    next_node_host =
-        composite_all_frames_node_queue_.front()->render_frame_host;
-    GlobalFrameRoutingId next_node_id =
+
+    frame = composite_all_frames_node_queue_.front()->render_frame_host;
+    GlobalFrameRoutingId routing_id =
         composite_all_frames_node_queue_.front()->render_frame_host_id;
     composite_all_frames_node_queue_.pop();
-    if (RenderFrameHost::FromID(next_node_id.child_id,
-                                next_node_id.frame_routing_id) !=
-        next_node_host) {
-      next_node_host = nullptr;  // This one is now gone
+
+    if (!RenderFrameHost::FromID(routing_id.child_id,
+                                 routing_id.frame_routing_id)) {
+      // The frame is gone. Frames can get detached by a parent frame during or
+      // in between SynchronouslyCompositeAfterTest() calls, after the test
+      // claims it has finished. That would be bad test behaviour but the fuzzer
+      // can do it. See crbug.com/899465 for an example of this problem.
+      frame = nullptr;
+    } else if (!frame->IsRenderFrameLive()) {
+      // The renderer is gone. Frames can also crash the renderer after the test
+      // claims to be finished.
+      frame = nullptr;
+    } else if (frame->GetParent() && frame->GetParent()->GetSiteInstance() ==
+                                         frame->GetSiteInstance()) {
+      // The frame is not a local root, so nothing to do.
+      frame = nullptr;
     }
-  } while (!next_node_host || !next_node_host->IsRenderFrameLive());
-  GetWebTestRenderFrameRemote(next_node_host)
-      ->CompositeWithRaster(
-          base::BindOnce(&WebTestControlHost::CompositeNodeQueueThen,
-                         weak_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  GetWebTestRenderFrameRemote(frame)->SynchronouslyCompositeAfterTest(
+      base::BindOnce(&WebTestControlHost::CompositeNodeQueueThen,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void WebTestControlHost::BuildDepthFirstQueue(Node* node) {

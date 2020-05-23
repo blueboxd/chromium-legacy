@@ -40,7 +40,6 @@ class WebFrameTestProxy : public RenderFrameImpl,
 
   // RenderFrameImpl overrides.
   void Initialize() override;
-  void UpdateAllLifecyclePhasesAndCompositeForTesting() override;
 
   // Reset state between tests.
   void Reset();
@@ -83,7 +82,8 @@ class WebFrameTestProxy : public RenderFrameImpl,
  private:
   // mojom::WebTestRenderFrame implementation.
   void CaptureDump(CaptureDumpCallback callback) override;
-  void CompositeWithRaster(CompositeWithRasterCallback callback) override;
+  void SynchronouslyCompositeAfterTest(
+      SynchronouslyCompositeAfterTestCallback callback) override;
   void DumpFrameLayout(DumpFrameLayoutCallback callback) override;
   void SetTestConfiguration(
       mojom::WebTestRunTestConfigurationPtr config) override;

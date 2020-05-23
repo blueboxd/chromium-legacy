@@ -56,7 +56,7 @@ public interface ContextMenuItemDelegate {
      * Returns whether or not the Data Reduction Proxy is enabled for input url.
      * @param url Input url to check for the Data Reduction Proxy setting.
      * @return true if the Data Reduction Proxy is enabled for the url.
-    */
+     */
     boolean isDataReductionProxyEnabledForURL(String url);
 
     /**
@@ -168,9 +168,9 @@ public interface ContextMenuItemDelegate {
      */
     void onAddToContacts(String url);
 
-   /**
-    * @return page url.
-    */
+    /**
+     * @return page url.
+     */
     String getPageUrl();
 
     /**

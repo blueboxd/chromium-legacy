@@ -15,7 +15,8 @@
       return new Promise(resolve => {
         testRunner.setCanOpenWindows(true);
         var popup = window.open("resources/hello.html");
-        popup.onload = () => requestAnimationFrame(() => testRunner.capturePixelsAsyncThen(resolve));
+        popup.onload = () => requestAnimationFrame(
+            () => testRunner.updateAllLifecyclePhasesAndCompositeThen(resolve));
       });
     }
   `);

@@ -16,12 +16,12 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
@@ -35,7 +35,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({
         ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // Speed up the test by not looking up actual apps installed on the device.
-        "disable-features=" + ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS,
+        "disable-features=" + PaymentFeatureList.SERVICE_WORKER_PAYMENT_APPS,
 })
 public class PaymentRequestPaymentAppUiSkipPreloadTest {
     // Disable animations to reduce flakiness.

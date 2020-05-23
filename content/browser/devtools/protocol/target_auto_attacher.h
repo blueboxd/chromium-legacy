@@ -60,6 +60,8 @@ class TargetAutoAttacher : public ServiceWorkerDevToolsManager::Observer {
   // ServiceWorkerDevToolsManager::Observer implementation.
   void WorkerCreated(ServiceWorkerDevToolsAgentHost* host,
                      bool* should_pause_on_start) override;
+  void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) override;
+  void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) override;
   void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) override;
 
   void UpdateFrames();

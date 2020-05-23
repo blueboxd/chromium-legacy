@@ -18,7 +18,7 @@
 #include "content/browser/devtools/protocol/schema_handler.h"
 #include "content/browser/devtools/protocol/target_handler.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -29,26 +29,31 @@ namespace content {
 namespace {
 
 void TerminateServiceWorkerOnCoreThread(
-    scoped_refptr<ServiceWorkerContextWrapper> context,
+    base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id) {
-  if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
-    version->StopWorker(base::DoNothing());
+  if (ServiceWorkerContextCore* context = context_weak.get()) {
+    if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
+      version->StopWorker(base::DoNothing());
+  }
 }
 
 void SetDevToolsAttachedOnCoreThread(
-    scoped_refptr<ServiceWorkerContextWrapper> context,
+    base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     bool attached) {
-  if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
-    version->SetDevToolsAttached(attached);
+  if (ServiceWorkerContextCore* context = context_weak.get()) {
+    if (ServiceWorkerVersion* version = context->GetLiveVersion(version_id))
+      version->SetDevToolsAttached(attached);
+  }
 }
 
 void UpdateLoaderFactoriesOnCoreThread(
-    scoped_refptr<ServiceWorkerContextWrapper> context,
+    base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle> script_bundle,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle> subresource_bundle) {
-  auto* version = context->GetLiveVersion(version_id);
+  auto* version =
+      context_weak ? context_weak->GetLiveVersion(version_id) : nullptr;
   if (!version)
     return;
   version->embedded_worker()->UpdateLoaderFactories(
@@ -60,7 +65,8 @@ void UpdateLoaderFactoriesOnCoreThread(
 ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
     int worker_process_id,
     int worker_route_id,
-    scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+    const ServiceWorkerContextCore* context,
+    base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     const GURL& url,
     const GURL& scope,
@@ -75,7 +81,8 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
       devtools_worker_token_(devtools_worker_token),
       worker_process_id_(worker_process_id),
       worker_route_id_(worker_route_id),
-      context_wrapper_(context_wrapper),
+      context_(context),
+      context_weak_(context_weak),
       version_id_(version_id),
       url_(url),
       scope_(scope),
@@ -87,7 +94,8 @@ ServiceWorkerDevToolsAgentHost::ServiceWorkerDevToolsAgentHost(
 }
 
 BrowserContext* ServiceWorkerDevToolsAgentHost::GetBrowserContext() {
-  return context_wrapper_->browser_context();
+  RenderProcessHost* rph = RenderProcessHost::FromID(worker_process_id_);
+  return rph ? rph->GetBrowserContext() : nullptr;
 }
 
 std::string ServiceWorkerDevToolsAgentHost::GetType() {
@@ -112,7 +120,7 @@ void ServiceWorkerDevToolsAgentHost::Reload() {
 bool ServiceWorkerDevToolsAgentHost::Close() {
   RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
                         base::BindOnce(&TerminateServiceWorkerOnCoreThread,
-                                       context_wrapper_, version_id_));
+                                       context_weak_, version_id_));
   return true;
 }
 
@@ -122,6 +130,12 @@ void ServiceWorkerDevToolsAgentHost::WorkerVersionInstalled() {
 
 void ServiceWorkerDevToolsAgentHost::WorkerVersionDoomed() {
   version_doomed_time_ = base::Time::Now();
+}
+
+bool ServiceWorkerDevToolsAgentHost::Matches(
+    const ServiceWorkerContextCore* context,
+    int64_t version_id) {
+  return context_ == context && version_id_ == version_id;
 }
 
 ServiceWorkerDevToolsAgentHost::~ServiceWorkerDevToolsAgentHost() {
@@ -181,7 +195,7 @@ void ServiceWorkerDevToolsAgentHost::WorkerRestarted(int worker_process_id,
   worker_route_id_ = worker_route_id;
 }
 
-void ServiceWorkerDevToolsAgentHost::WorkerStopped() {
+void ServiceWorkerDevToolsAgentHost::WorkerDestroyed() {
   DCHECK_NE(WORKER_TERMINATED, state_);
   state_ = WORKER_TERMINATED;
   for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
@@ -193,10 +207,9 @@ void ServiceWorkerDevToolsAgentHost::WorkerStopped() {
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateIsAttached(bool attached) {
-  RunOrPostTaskOnThread(
-      FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
-      base::BindOnce(&SetDevToolsAttachedOnCoreThread, context_wrapper_,
-                     version_id_, attached));
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                        base::BindOnce(&SetDevToolsAttachedOnCoreThread,
+                                       context_weak_, version_id_, attached));
 }
 
 void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
@@ -236,14 +249,14 @@ void ServiceWorkerDevToolsAgentHost::UpdateLoaderFactories(
       ContentBrowserClient::URLLoaderFactoryType::kServiceWorkerSubResource);
 
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
-    UpdateLoaderFactoriesOnCoreThread(context_wrapper_, version_id_,
+    UpdateLoaderFactoriesOnCoreThread(context_weak_, version_id_,
                                       std::move(script_bundle),
                                       std::move(subresource_bundle));
     std::move(callback).Run();
   } else {
     base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&UpdateLoaderFactoriesOnCoreThread, context_wrapper_,
+        base::BindOnce(&UpdateLoaderFactoriesOnCoreThread, context_weak_,
                        version_id_, std::move(script_bundle),
                        std::move(subresource_bundle)),
         std::move(callback));

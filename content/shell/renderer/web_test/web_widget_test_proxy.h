@@ -90,14 +90,11 @@ class WebWidgetTestProxy : public RenderWidget {
   void Reset();
   void Install(blink::WebLocalFrame* frame);
 
-  void EndSyntheticGestures();
-
-  // When |do_raster| is false, only a main frame animation step is performed,
-  // but when true, a full composite is performed and a frame submitted to the
-  // display compositor if there is any damage.
-  // Note that compositing has the potential to detach the current frame and
-  // thus destroy |this| before returning.
-  void SynchronouslyComposite(bool do_raster);
+  // Called to composite when the test has ended, in order to ensure the test
+  // produces up-to-date pixel output. This is a separate path as most
+  // compositing paths stop running when the test ends, to avoid tests running
+  // forever.
+  void SynchronouslyCompositeAfterTest();
 
  private:
   TestRunnerForSpecificView* GetViewTestRunner();
@@ -105,6 +102,13 @@ class WebWidgetTestProxy : public RenderWidget {
 
   void ScheduleAnimationInternal(bool do_raster);
   void AnimateNow();
+
+  // When |do_raster| is false, only a main frame animation step is performed,
+  // but when true, a full composite is performed and a frame submitted to the
+  // display compositor if there is any damage.
+  // Note that compositing has the potential to detach the current frame and
+  // thus destroy |this| before returning.
+  void SynchronouslyComposite(bool do_raster);
 
   // Perform the synchronous composite step for a given RenderWidget.
   static void DoComposite(RenderWidget* widget, bool do_raster);

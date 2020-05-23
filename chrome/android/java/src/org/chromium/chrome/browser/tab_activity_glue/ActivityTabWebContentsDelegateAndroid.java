@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -61,11 +62,13 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
 
     private final ArrayMap<WebContents, String> mWebContentsUrlMapping = new ArrayMap<>();
 
+    private final Tab mTab;
+
     @Nullable
     private ChromeActivity mActivity;
 
     public ActivityTabWebContentsDelegateAndroid(Tab tab, ChromeActivity activity) {
-        super(tab);
+        mTab = tab;
         mActivity = activity;
         tab.addObserver(new EmptyTabObserver() {
             @Override
@@ -91,6 +94,11 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     }
 
     @Override
+    protected int getDisplayMode() {
+        return WebDisplayMode.BROWSER;
+    }
+
+    @Override
     public void showRepostFormWarningDialog() {
         // When the dialog is visible, keeping the refresh animation active
         // in the background is distracting and unnecessary (and likely to
@@ -105,9 +113,6 @@ public class ActivityTabWebContentsDelegateAndroid extends TabWebContentsDelegat
     public void webContentsCreated(WebContents sourceWebContents, long openerRenderProcessId,
             long openerRenderFrameId, String frameName, String targetUrl,
             WebContents newWebContents) {
-        super.webContentsCreated(sourceWebContents, openerRenderProcessId, openerRenderFrameId,
-                frameName, targetUrl, newWebContents);
-
         // The URL can't be taken from the WebContents if it's paused.  Save it for later.
         assert !mWebContentsUrlMapping.containsKey(newWebContents);
         mWebContentsUrlMapping.put(newWebContents, targetUrl);

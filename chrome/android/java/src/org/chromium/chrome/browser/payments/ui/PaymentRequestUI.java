@@ -39,7 +39,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorDialog;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentUisShowStateReconciler;
 import org.chromium.chrome.browser.payments.ShippingStrings;
@@ -53,6 +52,7 @@ import org.chromium.components.browser_ui.widget.FadingEdgeScrollView;
 import org.chromium.components.browser_ui.widget.animation.FocusAnimator;
 import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.signin.base.CoreAccountInfo;
 import org.chromium.components.signin.identitymanager.ConsentLevel;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -532,8 +532,8 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
         // Put payment method section on top of address section for
         // WEB_PAYMENTS_METHOD_SECTION_ORDER_V2.
-        boolean methodSectionOrderV2 =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_METHOD_SECTION_ORDER_V2);
+        boolean methodSectionOrderV2 = PaymentFeatureList.isEnabled(
+                PaymentFeatureList.WEB_PAYMENTS_METHOD_SECTION_ORDER_V2);
 
         // Add the necessary sections to the layout.
         mPaymentContainerLayout.addView(mOrderSummarySection, new LinearLayout.LayoutParams(

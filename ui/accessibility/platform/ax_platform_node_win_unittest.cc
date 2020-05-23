@@ -3843,7 +3843,8 @@ TEST_F(AXPlatformNodeWinTest, UIAGetPropertySimple) {
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaPropertiesPropertyId,
                      L"readonly=true;expanded=false;multiline=false;"
                      L"multiselectable=false;required=false;setsize=2");
-  EXPECT_UIA_BSTR_EQ(root_node, UIA_CulturePropertyId, L"en-us");
+  constexpr int en_us_lcid = 1033;
+  EXPECT_UIA_INT_EQ(root_node, UIA_CulturePropertyId, en_us_lcid);
   EXPECT_UIA_BSTR_EQ(root_node, UIA_NamePropertyId, L"fake name");
   EXPECT_UIA_INT_EQ(root_node, UIA_ControlTypePropertyId,
                     int{UIA_ListControlTypeId});

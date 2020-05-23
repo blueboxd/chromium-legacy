@@ -42,6 +42,7 @@ source_set("browsertests") {
       "expandable_payment_handler_browsertest.cc",
       "hybrid_request_skip_ui_browsertest.cc",
     ]
+    deps += [ "//components/payments/content/android" ]
   }
 
   if (!is_android) {

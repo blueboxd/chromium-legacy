@@ -49,7 +49,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
 import org.chromium.chrome.browser.tab.TabBrowserControlsConstraintsHelper;
 import org.chromium.chrome.browser.tab.TabCreationState;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
@@ -544,7 +543,7 @@ public class VrShell extends GvrLayout
         // Reparent all existing tabs.
         for (TabModel model : mActivity.getTabModelSelector().getModels()) {
             for (int i = 0; i < model.getCount(); ++i) {
-                ((TabImpl) model.getTabAt(i)).updateAttachment(window, null);
+                model.getTabAt(i).updateAttachment(window, null);
             }
         }
     }

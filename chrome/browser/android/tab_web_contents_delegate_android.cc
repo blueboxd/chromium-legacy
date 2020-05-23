@@ -18,7 +18,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/rand_util.h"
-#include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroid_jni.h"
+#include "chrome/android/chrome_jni_headers/TabWebContentsDelegateAndroidImpl_jni.h"
 #include "chrome/browser/android/hung_renderer_infobar_delegate.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/banners/app_banner_manager_android.h"
@@ -91,27 +91,21 @@ using content::WebContents;
 
 namespace {
 
-ScopedJavaLocalRef<jobject> JNI_TabWebContentsDelegateAndroid_CreateJavaRectF(
-    JNIEnv* env,
-    const gfx::RectF& rect) {
+ScopedJavaLocalRef<jobject>
+JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRectF(JNIEnv* env,
+                                                      const gfx::RectF& rect) {
   return ScopedJavaLocalRef<jobject>(
-      Java_TabWebContentsDelegateAndroid_createRectF(env,
-                                                        rect.x(),
-                                                        rect.y(),
-                                                        rect.right(),
-                                                        rect.bottom()));
+      Java_TabWebContentsDelegateAndroidImpl_createRectF(
+          env, rect.x(), rect.y(), rect.right(), rect.bottom()));
 }
 
-ScopedJavaLocalRef<jobject> JNI_TabWebContentsDelegateAndroid_CreateJavaRect(
-    JNIEnv* env,
-    const gfx::Rect& rect) {
+ScopedJavaLocalRef<jobject>
+JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRect(JNIEnv* env,
+                                                     const gfx::Rect& rect) {
   return ScopedJavaLocalRef<jobject>(
-      Java_TabWebContentsDelegateAndroid_createRect(
-          env,
-          static_cast<int>(rect.x()),
-          static_cast<int>(rect.y()),
-          static_cast<int>(rect.right()),
-          static_cast<int>(rect.bottom())));
+      Java_TabWebContentsDelegateAndroidImpl_createRect(
+          env, static_cast<int>(rect.x()), static_cast<int>(rect.y()),
+          static_cast<int>(rect.right()), static_cast<int>(rect.bottom())));
 }
 
 infobars::InfoBar* FindHungRendererInfoBar(InfoBarService* infobar_service) {
@@ -236,7 +230,7 @@ blink::mojom::DisplayMode TabWebContentsDelegateAndroid::GetDisplayMode(
     return blink::mojom::DisplayMode::kUndefined;
 
   return static_cast<blink::mojom::DisplayMode>(
-      Java_TabWebContentsDelegateAndroid_getDisplayMode(env, obj));
+      Java_TabWebContentsDelegateAndroidImpl_getDisplayMode(env, obj));
 }
 
 void TabWebContentsDelegateAndroid::FindReply(
@@ -270,19 +264,20 @@ void TabWebContentsDelegateAndroid::FindMatchRectsReply(
 
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
-      Java_TabWebContentsDelegateAndroid_createFindMatchRectsDetails(
+      Java_TabWebContentsDelegateAndroidImpl_createFindMatchRectsDetails(
           env, version, rects.size(),
-          JNI_TabWebContentsDelegateAndroid_CreateJavaRectF(env, active_rect));
+          JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRectF(env,
+                                                                active_rect));
 
   // Add the rects
   for (size_t i = 0; i < rects.size(); ++i) {
-    Java_TabWebContentsDelegateAndroid_setMatchRectByIndex(
+    Java_TabWebContentsDelegateAndroidImpl_setMatchRectByIndex(
         env, details_object, i,
-        JNI_TabWebContentsDelegateAndroid_CreateJavaRectF(env, rects[i]));
+        JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRectF(env, rects[i]));
   }
 
-  Java_TabWebContentsDelegateAndroid_onFindMatchRectsAvailable(env, obj,
-                                                               details_object);
+  Java_TabWebContentsDelegateAndroidImpl_onFindMatchRectsAvailable(
+      env, obj, details_object);
 }
 
 content::JavaScriptDialogManager*
@@ -325,7 +320,8 @@ void TabWebContentsDelegateAndroid::SetOverlayMode(bool use_overlay_mode) {
   if (obj.is_null())
     return;
 
-  Java_TabWebContentsDelegateAndroid_setOverlayMode(env, obj, use_overlay_mode);
+  Java_TabWebContentsDelegateAndroidImpl_setOverlayMode(env, obj,
+                                                        use_overlay_mode);
 }
 
 void TabWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
@@ -387,7 +383,7 @@ bool TabWebContentsDelegateAndroid::ShouldResumeRequestsForCreatedWindow() {
   if (obj.is_null())
     return true;
 
-  return Java_TabWebContentsDelegateAndroid_shouldResumeRequestsForCreatedWindow(
+  return Java_TabWebContentsDelegateAndroidImpl_shouldResumeRequestsForCreatedWindow(
       env, obj);
 }
 
@@ -422,7 +418,7 @@ void TabWebContentsDelegateAndroid::AddNewContents(
     if (new_contents)
       jnew_contents = new_contents->GetJavaWebContents();
 
-    handled = Java_TabWebContentsDelegateAndroid_addNewContents(
+    handled = Java_TabWebContentsDelegateAndroidImpl_addNewContents(
         env, obj, jsource, jnew_contents, static_cast<jint>(disposition),
         nullptr, user_gesture);
   }
@@ -523,17 +519,17 @@ void TabWebContentsDelegateAndroid::OnFindResultAvailable(
       find_in_page::FindTabHelper::FromWebContents(web_contents)->find_result();
 
   ScopedJavaLocalRef<jobject> selection_rect =
-      JNI_TabWebContentsDelegateAndroid_CreateJavaRect(
+      JNI_TabWebContentsDelegateAndroidImpl_CreateJavaRect(
           env, find_result.selection_rect());
 
   // Create the details object.
   ScopedJavaLocalRef<jobject> details_object =
-      Java_TabWebContentsDelegateAndroid_createFindNotificationDetails(
+      Java_TabWebContentsDelegateAndroidImpl_createFindNotificationDetails(
           env, find_result.number_of_matches(), selection_rect,
           find_result.active_match_ordinal(), find_result.final_update());
 
-  Java_TabWebContentsDelegateAndroid_onFindResultAvailable(env, obj,
-                                                           details_object);
+  Java_TabWebContentsDelegateAndroidImpl_onFindResultAvailable(env, obj,
+                                                               details_object);
 }
 
 void TabWebContentsDelegateAndroid::OnFindTabHelperDestroyed(
@@ -547,7 +543,7 @@ bool TabWebContentsDelegateAndroid::ShouldEnableEmbeddedMediaExperience()
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_shouldEnableEmbeddedMediaExperience(
+  return Java_TabWebContentsDelegateAndroidImpl_shouldEnableEmbeddedMediaExperience(
       env, obj);
 }
 
@@ -556,7 +552,8 @@ bool TabWebContentsDelegateAndroid::IsPictureInPictureEnabled() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isPictureInPictureEnabled(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_isPictureInPictureEnabled(env,
+                                                                          obj);
 }
 
 bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
@@ -564,7 +561,7 @@ bool TabWebContentsDelegateAndroid::IsNightModeEnabled() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isNightModeEnabled(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_isNightModeEnabled(env, obj);
 }
 
 bool TabWebContentsDelegateAndroid::CanShowAppBanners() const {
@@ -572,7 +569,7 @@ bool TabWebContentsDelegateAndroid::CanShowAppBanners() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_canShowAppBanners(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_canShowAppBanners(env, obj);
 }
 
 const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {
@@ -581,7 +578,7 @@ const GURL TabWebContentsDelegateAndroid::GetManifestScope() const {
   if (obj.is_null())
     return GURL();
   const JavaRef<jstring>& scope =
-      Java_TabWebContentsDelegateAndroid_getManifestScope(env, obj);
+      Java_TabWebContentsDelegateAndroidImpl_getManifestScope(env, obj);
   return scope.is_null() ? GURL()
                          : GURL(base::android::ConvertJavaStringToUTF8(scope));
 }
@@ -591,12 +588,12 @@ bool TabWebContentsDelegateAndroid::IsCustomTab() const {
   ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
   if (obj.is_null())
     return false;
-  return Java_TabWebContentsDelegateAndroid_isCustomTab(env, obj);
+  return Java_TabWebContentsDelegateAndroidImpl_isCustomTab(env, obj);
 }
 
 }  // namespace android
 
-void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
+void JNI_TabWebContentsDelegateAndroidImpl_OnRendererUnresponsive(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_web_contents) {
   // Rate limit the number of stack dumps so we don't overwhelm our crash
@@ -618,7 +615,7 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererUnresponsive(
       infobar_service, web_contents->GetMainFrame()->GetProcess());
 }
 
-void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
+void JNI_TabWebContentsDelegateAndroidImpl_OnRendererResponsive(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_web_contents) {
   content::WebContents* web_contents =
@@ -636,7 +633,7 @@ void JNI_TabWebContentsDelegateAndroid_OnRendererResponsive(
   infobar_service->RemoveInfoBar(hung_renderer_infobar);
 }
 
-void JNI_TabWebContentsDelegateAndroid_ShowFramebustBlockInfoBar(
+void JNI_TabWebContentsDelegateAndroidImpl_ShowFramebustBlockInfoBar(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_web_contents,
     const JavaParamRef<jstring>& java_url) {

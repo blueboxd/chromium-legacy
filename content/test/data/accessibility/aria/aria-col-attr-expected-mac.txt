@@ -1,5 +1,5 @@
 AXWebArea
-++AXTable AXARIAColumnCount='5'
+++AXTable AXARIAColumnCount='5' AXCellForColumnAndRow([0, 0])=:4
 ++++AXRow
 ++++++AXCell AXARIAColumnIndex='2'
 ++++++++AXStaticText AXValue='cell 2'

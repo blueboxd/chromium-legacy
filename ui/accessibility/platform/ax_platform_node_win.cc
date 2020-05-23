@@ -4044,9 +4044,7 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       break;
 
     case UIA_CulturePropertyId:
-      result->vt = VT_BSTR;
-      GetStringAttributeAsBstr(ax::mojom::StringAttribute::kLanguage,
-                               &result->bstrVal);
+      return GetCultureAttributeAsVariant(result);
       break;
 
     case UIA_DescribedByPropertyId:

@@ -445,9 +445,6 @@ class TestRunner {
   void SetPrinting();
   void SetPrintingForFrame(const std::string& frame_name);
 
-  // Clears the state from SetPrinting().
-  void ClearPrinting();
-
   void SetShouldStayOnPageAfterHandlingBeforeUnload(bool value);
 
   // Causes WillSendRequest to clear certain headers.

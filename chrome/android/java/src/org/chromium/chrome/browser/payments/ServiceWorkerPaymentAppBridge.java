@@ -16,12 +16,12 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentAddressTypeConverter;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -94,7 +94,7 @@ public class ServiceWorkerPaymentAppBridge {
     public static void hasServiceWorkerPaymentApps(HasServiceWorkerPaymentAppsCallback callback) {
         ThreadUtils.assertOnUiThread();
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
+        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {
@@ -115,7 +115,7 @@ public class ServiceWorkerPaymentAppBridge {
             GetServiceWorkerPaymentAppsInfoCallback callback) {
         ThreadUtils.assertOnUiThread();
 
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
+        if (!PaymentFeatureList.isEnabled(PaymentFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
             PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
                 @Override
                 public void run() {

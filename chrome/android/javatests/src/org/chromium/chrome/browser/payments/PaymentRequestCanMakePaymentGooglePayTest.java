@@ -17,10 +17,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
 import java.util.concurrent.TimeoutException;
@@ -58,7 +58,7 @@ public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivitySt
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.
-    Add("enable-features=" + ChromeFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD)
+    Add("enable-features=" + PaymentFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD)
     public void testGooglePayServerCardsAllowed() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());
@@ -73,7 +73,7 @@ public class PaymentRequestCanMakePaymentGooglePayTest implements MainActivitySt
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.
-    Add("disable-features=" + ChromeFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD)
+    Add("disable-features=" + PaymentFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD)
     public void testGooglePayServerCardsNotAllowed() throws TimeoutException {
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(
                 mPaymentRequestTestRule.getCanMakePaymentQueryResponded());

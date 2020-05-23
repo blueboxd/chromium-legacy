@@ -5882,3 +5882,6 @@ crbug.com/1011811 http/tests/devtools/network/download.js [ Pass Failure ]
 crbug.com/1011811 http/tests/devtools/sxg/sxg-disable-cache.js [ Pass Failure ]
 
 crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-offset.html [ Pass Failure ]
+
+# Fails when test moved to use full compositor pipe.
+crbug.com/1085832 [ Fuchsia ] images/size-failure.html [ Timeout ]

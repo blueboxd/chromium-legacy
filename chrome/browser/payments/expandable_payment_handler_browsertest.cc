@@ -4,8 +4,8 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/test/payments/payment_request_platform_browsertest_base.h"
+#include "components/payments/content/android/payment_feature_list.h"
 #include "content/public/test/browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -24,7 +24,7 @@ class ExpandablePaymentHandlerBrowserTest
   ExpandablePaymentHandlerBrowserTest()
       : http_server_(net::EmbeddedTestServer::TYPE_HTTP) {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{chrome::android::kScrollToExpandPaymentHandler},
+        /*enabled_features=*/{payments::android::kScrollToExpandPaymentHandler},
         /*disabled_features=*/{});
   }
 

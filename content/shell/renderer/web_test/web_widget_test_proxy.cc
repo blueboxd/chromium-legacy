@@ -50,6 +50,11 @@ void WebWidgetTestProxy::RequestDecode(
     ScheduleAnimationInternal(/*do_raster=*/true);
 }
 
+void WebWidgetTestProxy::ScheduleAnimation() {
+  if (GetTestRunner()->TestIsRunning())
+    ScheduleAnimationInternal(GetTestRunner()->animation_requires_raster());
+}
+
 void WebWidgetTestProxy::RequestPresentation(
     PresentationTimeCallback callback) {
   RenderWidget::RequestPresentation(std::move(callback));
@@ -62,11 +67,6 @@ void WebWidgetTestProxy::RequestPresentation(
   // progress in the test.
   if (GetTestRunner()->TestIsRunning())
     ScheduleAnimationInternal(/*do_raster=*/true);
-}
-
-void WebWidgetTestProxy::ScheduleAnimation() {
-  if (GetTestRunner()->TestIsRunning())
-    ScheduleAnimationInternal(GetTestRunner()->animation_requires_raster());
 }
 
 void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {
@@ -167,6 +167,10 @@ blink::WebFrameWidget* WebWidgetTestProxy::GetWebFrameWidget() {
 
 void WebWidgetTestProxy::Reset() {
   event_sender_.Reset();
+  // Ends any synthetic gestures started in |event_sender_|.
+  widget_input_handler_manager()->InvokeInputProcessedCallback();
+
+  // Reset state in the RenderWidget base class.
   ClearEditCommands();
 
   GetTestRunner()->ResetWebWidget(this);
@@ -176,8 +180,14 @@ void WebWidgetTestProxy::Install(blink::WebLocalFrame* frame) {
   event_sender_.Install(frame);
 }
 
-void WebWidgetTestProxy::EndSyntheticGestures() {
-  widget_input_handler_manager()->InvokeInputProcessedCallback();
+void WebWidgetTestProxy::SynchronouslyCompositeAfterTest() {
+  // We could DCHECK(!GetTestRunner()->TestIsRunning()) except that frames in
+  // other processes than the main frame do not hear when the test ends.
+
+  // This would be very weird and prevent us from producing pixels.
+  DCHECK(!in_synchronous_composite_);
+
+  SynchronouslyComposite(/*do_raster=*/true);
 }
 
 TestRunnerForSpecificView* WebWidgetTestProxy::GetViewTestRunner() {

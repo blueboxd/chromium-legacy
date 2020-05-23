@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
 import org.chromium.chrome.browser.autofill.prefeditor.EditorTextField;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.OptionRow;
@@ -39,6 +38,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestOb
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.Criteria;
@@ -114,7 +114,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
 
     /** Command line flag to enable payment details modifiers in tests. */
     public static final String ENABLE_WEB_PAYMENTS_MODIFIERS =
-            "enable-features=" + ChromeFeatureList.WEB_PAYMENTS_MODIFIERS;
+            "enable-features=" + PaymentFeatureList.WEB_PAYMENTS_MODIFIERS;
 
     /** Command line flag to enable experimental web platform features in tests. */
     public static final String ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES =

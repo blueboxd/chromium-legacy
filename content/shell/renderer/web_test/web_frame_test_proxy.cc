@@ -268,7 +268,6 @@ void WebFrameTestProxy::Reset() {
   }
   if (IsLocalRoot()) {
     GetLocalRootWebWidgetTestProxy()->Reset();
-    GetLocalRootWebWidgetTestProxy()->EndSyntheticGestures();
   }
 
   spell_check_->Reset();
@@ -288,13 +287,6 @@ std::string WebFrameTestProxy::GetFrameDescriptionForWebTests() {
     return "frame (anonymous)";
   }
   return std::string("frame \"") + name + "\"";
-}
-
-void WebFrameTestProxy::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  if (!IsLocalRoot())
-    return;
-  auto* widget = static_cast<WebWidgetTestProxy*>(GetLocalRootRenderWidget());
-  widget->SynchronouslyComposite(/*do_raster=*/true);
 }
 
 blink::WebPlugin* WebFrameTestProxy::CreatePlugin(
@@ -720,11 +712,12 @@ void WebFrameTestProxy::CaptureDump(CaptureDumpCallback callback) {
   blink_test_runner()->CaptureDump(std::move(callback));
 }
 
-void WebFrameTestProxy::CompositeWithRaster(
-    CompositeWithRasterCallback callback) {
+void WebFrameTestProxy::SynchronouslyCompositeAfterTest(
+    SynchronouslyCompositeAfterTestCallback callback) {
   // When the TestFinished() occurred, if the browser is capturing pixels, it
   // asks each composited RenderFrame to submit a new frame via here.
-  UpdateAllLifecyclePhasesAndCompositeForTesting();
+  if (IsLocalRoot())
+    GetLocalRootWebWidgetTestProxy()->SynchronouslyCompositeAfterTest();
   std::move(callback).Run();
 }
 

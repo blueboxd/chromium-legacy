@@ -12,9 +12,9 @@ import androidx.annotation.Nullable;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -62,8 +62,8 @@ public class AutofillPaymentAppFactory implements PaymentAppFactoryInterface {
 
             mCanMakePayment = true;
             List<CreditCard> cards = PersonalDataManager.getInstance().getCreditCardsToSuggest(
-                    /*includeServerCards=*/ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD));
+                    /*includeServerCards=*/PaymentFeatureList.isEnabled(
+                            PaymentFeatureList.WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD));
             int numberOfCards = cards.size();
             for (int i = 0; i < numberOfCards; i++) {
                 // createPaymentAppForCard(card) returns null if the card network or type does not

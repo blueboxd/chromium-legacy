@@ -65,6 +65,17 @@ public interface Tab extends TabLifecycle {
     WindowAndroid getWindowAndroid();
 
     /**
+     * Update the attachment state to Window(Activity).
+     * @param window A new {@link WindowAndroid} to attach the tab to. If {@code null},
+     *        the tab is being detached. See {@link ReparentingTask#detach()} for details.
+     * @param tabDelegateFactory The new delegate factory this tab should be using. Can be
+     *        {@code null} even when {@code window} is not, meaning we simply want to swap out
+     *        {@link WindowAndroid} for this tab and keep using the current delegate factory.
+     */
+    void updateAttachment(
+            @Nullable WindowAndroid window, @Nullable TabDelegateFactory tabDelegateFactory);
+
+    /**
      * @return Content view used for rendered web contents. Can be null
      *    if web contents is null.
      */

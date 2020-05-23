@@ -6451,12 +6451,6 @@ void RenderFrameImpl::SetRenderFrameMediaPlaybackOptions(
   renderer_media_playback_options_ = opts;
 }
 
-void RenderFrameImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
-  // This is only called for web tests and WebFrameTestProxy overrides this
-  // method to implement it there.
-  NOTREACHED();
-}
-
 void RenderFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
   GetWebFrame()->SetAllowsCrossBrowsingInstanceFrameLookup();
 }

@@ -208,7 +208,6 @@ public abstract class ChromeFeatureList {
             "AndroidNightModeTabReparenting";
     public static final String ANDROID_PARTNER_CUSTOMIZATION_PHENOTYPE =
             "AndroidPartnerCustomizationPhenotype";
-    public static final String ANDROID_PAY_INTEGRATION_V1 = "AndroidPayIntegrationV1";
     public static final String ANDROID_PAY_INTEGRATION_V2 = "AndroidPayIntegrationV2";
     public static final String ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION =
             "AndroidSearchEngineChoiceNotification";
@@ -343,9 +342,6 @@ public abstract class ChromeFeatureList {
     public static final String PASSWORD_MANAGER_ONBOARDING_ANDROID =
             "PasswordManagerOnboardingAndroid";
     public static final String PAY_WITH_GOOGLE_V1 = "PayWithGoogleV1";
-    public static final String PAYMENT_REQUEST_SKIP_TO_GPAY = "PaymentRequestSkipToGPay";
-    public static final String PAYMENT_REQUEST_SKIP_TO_GPAY_IF_NO_CARD =
-            "PaymentRequestSkipToGPayIfNoCard";
     public static final String PERMISSION_DELEGATION = "PermissionDelegation";
     public static final String PER_METHOD_CAN_MAKE_PAYMENT_QUOTA =
             "WebPaymentsPerMethodCanMakePaymentQuota";
@@ -367,10 +363,8 @@ public abstract class ChromeFeatureList {
     public static final String REPORT_FEED_USER_ACTIONS = "ReportFeedUserActions";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
     public static final String SAME_SITE_BY_DEFAULT_COOKIES = "SameSiteByDefaultCookies";
-    public static final String SCROLL_TO_EXPAND_PAYMENT_HANDLER = "ScrollToExpandPaymentHandler";
     public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";
-    public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
     public static final String SHARE_BUTTON_IN_TOP_TOOLBAR = "ShareButtonInTopToolbar";
     public static final String SHARED_CLIPBOARD_UI = "SharedClipboardUI";
     public static final String SHARING_QR_CODE_ANDROID = "SharingQrCodeAndroid";
@@ -378,8 +372,6 @@ public abstract class ChromeFeatureList {
     public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SPANNABLE_INLINE_AUTOCOMPLETE = "SpannableInlineAutocomplete";
     public static final String START_SURFACE_ANDROID = "StartSurfaceAndroid";
-    public static final String STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT =
-            "StrictHasEnrolledAutofillInstrument";
     public static final String SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
             "SwapPixelFormatToFixConvertFromTranslucent";
     public static final String SYNC_USE_SESSIONS_UNREGISTER_DELAY =
@@ -410,21 +402,6 @@ public abstract class ChromeFeatureList {
     public static final String WEBAPK_ADAPTIVE_ICON = "WebApkAdaptiveIcon";
     public static final String WEB_AUTH = "WebAuthentication";
     public static final String WEB_AUTH_PHONE_SUPPORT = "WebAuthenticationPhoneSupport";
-    public static final String WEB_PAYMENTS = "WebPayments";
-    public static final String WEB_PAYMENTS_ALWAYS_ALLOW_JUST_IN_TIME_PAYMENT_APP =
-            "AlwaysAllowJustInTimePaymentApp";
-    public static final String WEB_PAYMENTS_EXPERIMENTAL_FEATURES =
-            "WebPaymentsExperimentalFeatures";
-    public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
-            "WebPaymentsMethodSectionOrderV2";
-    public static final String WEB_PAYMENTS_MINIMAL_UI = "WebPaymentsMinimalUI";
-    public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
-    public static final String WEB_PAYMENTS_APP_STORE_BILLING_DEBUG = "AppStoreBillingDebug";
-    public static final String WEB_PAYMENTS_REDACT_SHIPPING_ADDRESS =
-            "WebPaymentsRedactShippingAddress";
-    public static final String WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD =
-            "ReturnGooglePayInBasicCard";
-    public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
     public static final String SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH =
             "ServiceManagerForBackgroundPrefetch";
     public static final String SPLIT_CACHE_BY_NETWORK_ISOLATION_KEY =

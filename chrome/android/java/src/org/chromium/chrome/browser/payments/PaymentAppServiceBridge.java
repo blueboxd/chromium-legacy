@@ -17,8 +17,8 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.payments.MethodStrings;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -158,7 +158,7 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
                     mDelegate.getParams().getPaymentRequestOrigin(),
                     supportedRequestedMethodData.toArray(new PaymentMethodData[0]),
                     supportedRequestedModifiers.toArray(new PaymentDetailsModifier[0]),
-                    ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MINIMAL_UI)
+                    PaymentFeatureList.isEnabled(PaymentFeatureList.WEB_PAYMENTS_MINIMAL_UI)
                             ? mDelegate.getParams().getTotalAmountCurrency()
                             : null,
                     canMakePaymentEventCallback);

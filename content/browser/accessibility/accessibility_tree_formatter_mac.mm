@@ -42,6 +42,34 @@ const char kHeightDictAttr[] = "height";
 const char kRangeLocDictAttr[] = "loc";
 const char kRangeLenDictAttr[] = "len";
 
+NSArray* PropNodeToIntArray(const PropertyNode& propnode) {
+  if (propnode.parameters.size() != 1) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to IntArray: single argument is expected";
+    return nil;
+  }
+
+  const auto& arraynode = propnode.parameters[0];
+  if (arraynode.value != base::ASCIIToUTF16("[]")) {
+    LOG(ERROR) << "Failed to parse " << propnode.original_property
+               << " to IntArray: " << arraynode.value << " is not array";
+    return nil;
+  }
+
+  NSMutableArray* array =
+      [[NSMutableArray alloc] initWithCapacity:arraynode.parameters.size()];
+  for (const auto& paramnode : arraynode.parameters) {
+    int param = 0;
+    if (!base::StringToInt(paramnode.value, &param)) {
+      LOG(ERROR) << "Failed to parse " << propnode.original_property
+                 << " to IntArray: " << paramnode.value << " is not a number";
+      return nil;
+    }
+    [array addObject:@(param)];
+  }
+  return array;
+}
+
 }  // namespace
 
 class AccessibilityTreeFormatterMac : public AccessibilityTreeFormatterBase {
@@ -202,9 +230,10 @@ void AccessibilityTreeFormatterMac::AddProperties(
   BrowserAccessibility* node = [cocoa_node owner];
   dict->SetKey("id", base::Value(base::NumberToString16(node->GetId())));
 
+  // Attributes
   for (NSString* supportedAttribute in
        [cocoa_node accessibilityAttributeNames]) {
-    if (FilterPropertyName(SysNSStringToUTF16(supportedAttribute))) {
+    if (GetMatchingPropertyNode(SysNSStringToUTF16(supportedAttribute))) {
       id value = [cocoa_node accessibilityAttributeValue:supportedAttribute];
       if (value != nil) {
         dict->SetPath(SysNSStringToUTF8(supportedAttribute),
@@ -212,6 +241,31 @@ void AccessibilityTreeFormatterMac::AddProperties(
       }
     }
   }
+
+  // Parameterized attributes
+  for (NSString* supportedAttribute in
+       [cocoa_node accessibilityParameterizedAttributeNames]) {
+    id param = nil;
+    auto propnode =
+        GetMatchingPropertyNode(SysNSStringToUTF16(supportedAttribute));
+    if (propnode.value == base::ASCIIToUTF16("AXCellForColumnAndRow")) {
+      param = PropNodeToIntArray(propnode);
+      if (param == nil) {
+        dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
+                      base::Value("ERROR:FAILED_TO_PARSE_ARGS"));
+        continue;
+      }
+    }
+
+    if (param != nil) {
+      id value = [cocoa_node accessibilityAttributeValue:supportedAttribute
+                                            forParameter:param];
+      dict->SetPath(base::UTF16ToUTF8(propnode.original_property),
+                    PopulateObject(value, line_indexes_map));
+    }
+  }
+
+  // Position and size
   dict->SetPath(kPositionDictAttr, PopulatePosition(cocoa_node));
   dict->SetPath(kSizeDictAttr, PopulateSize(cocoa_node));
 }

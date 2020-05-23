@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.tab.TabWebContentsDelegateAndroid;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
+import org.chromium.chrome.browser.webapps.WebDisplayMode;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
 import org.chromium.components.browser_ui.util.BrowserControlsVisibilityDelegate;
 import org.chromium.components.external_intents.ExternalNavigationHandler;
@@ -183,7 +184,12 @@ public class SearchActivity extends AsyncInitializationActivity
         TabDelegateFactory factory = new TabDelegateFactory() {
             @Override
             public TabWebContentsDelegateAndroid createWebContentsDelegate(Tab tab) {
-                return new TabWebContentsDelegateAndroid(tab) {
+                return new TabWebContentsDelegateAndroid() {
+                    @Override
+                    protected int getDisplayMode() {
+                        return WebDisplayMode.BROWSER;
+                    }
+
                     @Override
                     protected boolean shouldResumeRequestsForCreatedWindow() {
                         return false;

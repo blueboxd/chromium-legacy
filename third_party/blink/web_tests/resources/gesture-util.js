@@ -19,7 +19,11 @@
 function waitForCompositorCommit() {
   return new Promise((resolve) => {
     if (window.testRunner) {
-      testRunner.capturePixelsAsyncThen(resolve);
+      // After doing the composite, we also allow any async tasks to run before
+      // resolving, via setTimeout().
+      testRunner.updateAllLifecyclePhasesAndCompositeThen(() => {
+        window.setTimeout(resolve, 0);
+      });
     } else {
       // Fall back to just rAF twice.
       window.requestAnimationFrame(() => {

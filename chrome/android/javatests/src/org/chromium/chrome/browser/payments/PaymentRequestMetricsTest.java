@@ -22,13 +22,13 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -497,7 +497,8 @@ public class PaymentRequestMetricsTest implements MainActivityStartCallback {
     @MediumTest
     @Feature({"Payments"})
     @RetryOnFailure
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP})
+    @CommandLineFlags.
+    Add({"disable-features=" + PaymentFeatureList.WEB_PAYMENTS_SINGLE_APP_UI_SKIP})
     public void testMetrics_SkippedShow_Disabled() throws TimeoutException {
         // Complete a Payment Request with Android Pay.
         mPaymentRequestTestRule.addPaymentAppFactory(

@@ -22,7 +22,6 @@
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/shell/common/web_test/web_test_string_util.h"
-#include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/layout_dump.h"
 #include "content/shell/renderer/web_test/mock_content_settings_client.h"
 #include "content/shell/renderer/web_test/mock_screen_orientation_client.h"
@@ -70,7 +69,6 @@ namespace content {
 TestRunnerForSpecificView::TestRunnerForSpecificView(
     WebViewTestProxy* web_view_test_proxy)
     : web_view_test_proxy_(web_view_test_proxy) {
-  Reset();
 }
 
 TestRunnerForSpecificView::~TestRunnerForSpecificView() = default;
@@ -114,125 +112,6 @@ void TestRunnerForSpecificView::PostTask(base::OnceClosure callback) {
   // not the main frame.
   blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostTask(
       FROM_HERE, std::move(callback));
-}
-
-void TestRunnerForSpecificView::PostV8CallbackWithArgs(
-    v8::UniquePersistent<v8::Function> callback,
-    int argc,
-    v8::Local<v8::Value> argv[]) {
-  std::vector<v8::UniquePersistent<v8::Value>> args;
-  for (int i = 0; i < argc; i++) {
-    args.push_back(
-        v8::UniquePersistent<v8::Value>(blink::MainThreadIsolate(), argv[i]));
-  }
-
-  PostTask(base::BindOnce(&TestRunnerForSpecificView::InvokeV8CallbackWithArgs,
-                          weak_factory_.GetWeakPtr(), std::move(callback),
-                          std::move(args)));
-}
-
-void TestRunnerForSpecificView::InvokeV8CallbackWithArgs(
-    const v8::UniquePersistent<v8::Function>& callback,
-    const std::vector<v8::UniquePersistent<v8::Value>>& args) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-
-  blink::WebLocalFrame* frame = GetLocalMainFrame();
-  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
-  if (context.IsEmpty())
-    return;
-  v8::Context::Scope context_scope(context);
-
-  std::vector<v8::Local<v8::Value>> local_args;
-  for (const auto& arg : args) {
-    local_args.push_back(v8::Local<v8::Value>::New(isolate, arg));
-  }
-
-  frame->CallFunctionEvenIfScriptDisabled(
-      v8::Local<v8::Function>::New(isolate, callback), context->Global(),
-      local_args.size(), local_args.data());
-}
-
-void TestRunnerForSpecificView::CapturePixelsAsyncThen(
-    v8::Local<v8::Function> callback) {
-  v8::UniquePersistent<v8::Function> persistent_callback(
-      blink::MainThreadIsolate(), callback);
-
-  CHECK(web_view()->MainFrame()->IsWebLocalFrame())
-      << "Web tests harness doesn't currently support running "
-      << "testRuner.capturePixelsAsyncThen from an OOPIF";
-
-  TestInterfaces* interfaces = web_view_test_proxy_->test_interfaces();
-
-  if (interfaces->GetTestRunner()->CanDumpPixelsFromRenderer()) {
-    // If we're grabbing pixels from printing, we do that in the renderer, and
-    // some tests actually look at the results.
-    interfaces->GetTestRunner()->DumpPixelsAsync(
-        web_view_test_proxy_,
-        base::BindOnce(&TestRunnerForSpecificView::RunJSCallbackWithBitmap,
-                       weak_factory_.GetWeakPtr(),
-                       std::move(persistent_callback)));
-  } else {
-    // If we're running the compositor lifecycle then the pixels aren't
-    // available from the renderer, and they don't matter to tests.
-    // TODO(crbug.com/952399): We could stop pretending they matter and split
-    // this into a separate testRunner API that won't act like its returning
-    // pixels.
-    main_frame_render_widget()->RequestPresentation(base::BindOnce(
-        &TestRunnerForSpecificView::RunJSCallbackAfterCompositorLifecycle,
-        weak_factory_.GetWeakPtr(), std::move(persistent_callback)));
-  }
-}
-
-void TestRunnerForSpecificView::RunJSCallbackAfterCompositorLifecycle(
-    v8::UniquePersistent<v8::Function> callback,
-    const gfx::PresentationFeedback&) {
-  // TODO(crbug.com/952399): We're not testing pixels on this path, remove the
-  // SkBitmap plumbing entirely and rename CapturePixels* to RunLifecycle*.
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(1, 1);
-  bitmap.eraseColor(0);
-  RunJSCallbackWithBitmap(std::move(callback), bitmap);
-}
-
-void TestRunnerForSpecificView::RunJSCallbackWithBitmap(
-    v8::UniquePersistent<v8::Function> callback,
-    const SkBitmap& snapshot) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
-  v8::HandleScope handle_scope(isolate);
-
-  v8::Local<v8::Context> context =
-      GetLocalMainFrame()->MainWorldScriptContext();
-  if (context.IsEmpty())
-    return;
-
-  v8::Context::Scope context_scope(context);
-  v8::Local<v8::Value> argv[3];
-
-  // Size can be 0 for cases where copyImageAt was called on position
-  // that doesn't have an image.
-  int width = snapshot.info().width();
-  argv[0] = v8::Number::New(isolate, width);
-
-  int height = snapshot.info().height();
-  argv[1] = v8::Number::New(isolate, height);
-
-  // Skia's internal byte order is platform-dependent. Always convert to RGBA
-  // in order to provide a consistent ordering to the web tests.
-  const SkImageInfo bufferInfo =
-      snapshot.info().makeColorType(kRGBA_8888_SkColorType);
-  const size_t bufferRowBytes = bufferInfo.minRowBytes();
-  blink::WebArrayBuffer buffer = blink::WebArrayBuffer::Create(
-      bufferInfo.computeByteSize(bufferRowBytes), 1);
-  if (!snapshot.readPixels(bufferInfo, buffer.Data(), bufferRowBytes, 0, 0)) {
-    // We only expect readPixels to fail for null bitmaps.
-    DCHECK(snapshot.isNull());
-  }
-
-  argv[2] = blink::WebArrayBufferConverter::ToV8Value(
-      &buffer, context->Global(), isolate);
-
-  PostV8CallbackWithArgs(std::move(callback), base::size(argv), argv);
 }
 
 void TestRunnerForSpecificView::DidAcquirePointerLock() {
@@ -279,27 +158,8 @@ void TestRunnerForSpecificView::DidLosePointerLockInternal() {
     web_view()->MainFrameWidget()->DidLosePointerLock();
 }
 
-blink::WebLocalFrame* TestRunnerForSpecificView::GetLocalMainFrame() {
-  if (!web_view()->MainFrame()->IsWebLocalFrame()) {
-    // Hitting the check below uncovers a new scenario that requires OOPIF
-    // support in the web tests harness.
-    CHECK(false) << "This function cannot be called if the main frame is not a "
-                    "local frame.";
-  }
-  return web_view()->MainFrame()->ToWebLocalFrame();
-}
-
-WebWidgetTestProxy* TestRunnerForSpecificView::main_frame_render_widget() {
-  return static_cast<WebWidgetTestProxy*>(
-      web_view_test_proxy_->GetMainRenderFrame()->GetLocalRootRenderWidget());
-}
-
 blink::WebView* TestRunnerForSpecificView::web_view() {
   return web_view_test_proxy_->GetWebView();
-}
-
-BlinkTestRunner* TestRunnerForSpecificView::blink_test_runner() {
-  return web_view_test_proxy_->blink_test_runner();
 }
 
 }  // namespace content

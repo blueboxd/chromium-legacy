@@ -6,7 +6,9 @@ include_rules = [
   "+chrome/android/java/src/org/chromium/chrome/browser/compositor/bottombar/ephemeraltab/EphemeralTabCoordinator.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/dom_distiller/ReaderModeManager.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/incognito/IncognitoUtils.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/media/MediaCaptureNotificationService.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/paint_preview/PaintPreviewTabHelper.java",
+  "+chrome/android/java/src/org/chromium/chrome/browser/policy/PolicyAuditor.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/previews/Previews.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ssl/ChromeSecurityStateModelDelegate.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
@@ -56,6 +58,7 @@ specific_include_rules = {
 
     "-components",
     "+components/dom_distiller/core/android/java/src/org/chromium/components/dom_distiller/core/DomDistillerUrlUtils.java",
+    "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/delegate",
     "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/util",
     "+components/embedder_support/android/java/src/org/chromium/components/embedder_support/view",
     "+components/navigation_interception/android/java/src/org/chromium/components/navigation_interception",

@@ -304,12 +304,6 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual void SetRenderFrameMediaPlaybackOptions(
       const RenderFrameMediaPlaybackOptions& opts) = 0;
 
-  // Synchronously performs the complete set of document lifecycle phases,
-  // including updates to the compositor state and rasterization, then sending
-  // a frame to the viz display compositor. Does nothing if RenderFrame is not
-  // a local root.
-  virtual void UpdateAllLifecyclePhasesAndCompositeForTesting() = 0;
-
   // Sets that cross browsing instance frame lookup is allowed.
   virtual void SetAllowsCrossBrowsingInstanceFrameLookup() = 0;
 

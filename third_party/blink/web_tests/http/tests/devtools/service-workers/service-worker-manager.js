@@ -21,8 +21,11 @@
         var serviceWorkerManager = SDK.targetManager.mainTarget().model(SDK.ServiceWorkerManager);
         // Allow agents to do rountrips.
         TestRunner.deprecatedRunAfterPendingDispatches(function() {
-          for (var registration of serviceWorkerManager.registrations().values())
-            serviceWorkerManager.deleteRegistration(registration.id)
+          for (var registration of serviceWorkerManager.registrations().values()) {
+            for (var version of registration.versions.values()) {
+              serviceWorkerManager.stopWorker(version.id);
+            }
+          }
         });
       }
     },

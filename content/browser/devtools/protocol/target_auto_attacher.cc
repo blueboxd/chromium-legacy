@@ -94,10 +94,9 @@ base::flat_set<GURL> GetFrameUrls(RenderFrameHostImpl* render_frame_host) {
   //    (from WorkerCreated). See also https://crbug.com/907072
   //
   // We are not attaching in the following case:
-  // 4. Frame is trying to navigate and we _should_ pick up an existing SW but
-  //    we don't. We _could_ do this, but since we are not pausing the
-  //    navigation, there is no principal difference between picking up SW
-  //    earlier or later.
+  // 4. Frame is trying to navigate and we _should_ pick up an existing SW but we don't.
+  //    We _could_ do this, but since we are not pausing the navigation, there
+  //    is no principal difference between picking up SW earlier or later.
   //
   // We also try to detach from SW picked up for [3] if navigation has failed
   // (from DidFinishNavigation).
@@ -361,6 +360,16 @@ void TargetAutoAttacher::WorkerCreated(ServiceWorkerDevToolsAgentHost* host,
                             wait_for_debugger_on_start_);
     }
   }
+}
+
+void TargetAutoAttacher::WorkerVersionInstalled(
+    ServiceWorkerDevToolsAgentHost* host) {
+  ReattachServiceWorkers(false);
+}
+
+void TargetAutoAttacher::WorkerVersionDoomed(
+    ServiceWorkerDevToolsAgentHost* host) {
+  ReattachServiceWorkers(false);
 }
 
 void TargetAutoAttacher::WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {

@@ -27,6 +27,45 @@ const char kChildrenDictAttr[] = "children";
 
 namespace content {
 
+// Property node is a tree-like structure, representing a property or collection
+// of properties and its invocation parameters. A collection of properties is
+// specified by putting a wildcard into a property name, for exampe, AXRole*
+// will match both AXRole and AXRoleDescription properties. Parameters of a
+// property are given in parentheses like a conventional function call, for
+// example, AXCellForColumnAndRow([0, 0]) will call AXCellForColumnAndRow
+// parameterized property for column/row 0 indexes.
+class CONTENT_EXPORT PropertyNode final {
+ public:
+  // Parses a property node from a string.
+  static PropertyNode FromProperty(const base::string16&);
+
+  PropertyNode();
+  PropertyNode(PropertyNode&&);
+  ~PropertyNode();
+
+  PropertyNode& operator=(PropertyNode&& other);
+  explicit operator bool() const;
+
+  base::string16 value;
+  std::vector<PropertyNode> parameters;
+
+  // Used to store the origianl unparsed property including invocation
+  // parameters if any.
+  base::string16 original_property;
+
+  std::string ToString() const;
+
+ private:
+  using iterator = base::string16::const_iterator;
+
+  explicit PropertyNode(const base::string16&);
+  PropertyNode(iterator begin, iterator end);
+
+  // Builds a property node struct for a string of NAME(ARG1, ..., ARGN) format,
+  // where each ARG is a scalar value or a string of the same format.
+  static iterator Parse(PropertyNode* node, iterator begin, iterator end);
+};
+
 // A utility class for formatting platform-specific accessibility information,
 // for use in testing, debugging, and developer tools.
 // This is extended by a subclass for each platform where accessibility is
@@ -86,8 +125,10 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBase
   // Overridden by platform subclasses.
   //
 
-  // Returns true if the property name matches a property filter.
-  bool FilterPropertyName(const base::string16& text);
+  // Returns a property node struct built for a matching property filter,
+  // which includes a property name and invocation parameters if any.
+  // If no matching property filter, then empty property node is returned.
+  PropertyNode GetMatchingPropertyNode(const base::string16& text);
 
   // Process accessibility tree with filters for output.
   // Given a dictionary that contains a platform-specific dictionary

@@ -31,7 +31,7 @@ namespace content {
 
 class BrowserContext;
 class ServiceWorkerDevToolsAgentHost;
-class ServiceWorkerContextWrapper;
+class ServiceWorkerContextCore;
 
 // Manages ServiceWorkerDevToolsAgentHost's. This class lives on UI thread.
 class CONTENT_EXPORT ServiceWorkerDevToolsManager {
@@ -40,6 +40,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
    public:
     virtual void WorkerCreated(ServiceWorkerDevToolsAgentHost* host,
                                bool* should_pause_on_start) {}
+    virtual void WorkerVersionInstalled(ServiceWorkerDevToolsAgentHost* host) {}
+    virtual void WorkerVersionDoomed(ServiceWorkerDevToolsAgentHost* host) {}
     virtual void WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {}
 
    protected:
@@ -58,10 +60,11 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
       BrowserContext* browser_context,
       std::vector<scoped_refptr<ServiceWorkerDevToolsAgentHost>>* result);
 
-  void WorkerStarting(
+  void WorkerCreated(
       int worker_process_id,
       int worker_route_id,
-      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+      const ServiceWorkerContextCore* context,
+      base::WeakPtr<ServiceWorkerContextCore> context_weak,
       int64_t version_id,
       const GURL& url,
       const GURL& scope,
@@ -84,15 +87,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter);
   void WorkerVersionInstalled(int worker_process_id, int worker_route_id);
-  // If the worker instance is stopped its worker_process_id and
-  // worker_route_id will be invalid. For that case we pass context
-  // and version_id as well.
-  void WorkerVersionDoomed(
-      int worker_process_id,
-      int worker_route_id,
-      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
-      int64_t version_id);
-  void WorkerStopped(int worker_process_id, int worker_route_id);
+  void WorkerVersionDoomed(int worker_process_id, int worker_route_id);
+  void WorkerDestroyed(int worker_process_id, int worker_route_id);
   void NavigationPreloadRequestSent(int worker_process_id,
                                     int worker_route_id,
                                     const std::string& request_id,
@@ -127,10 +123,6 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
   ServiceWorkerDevToolsManager();
   ~ServiceWorkerDevToolsManager();
 
-  scoped_refptr<ServiceWorkerDevToolsAgentHost> TakeStoppedHost(
-      const ServiceWorkerContextWrapper* context_wrapper,
-      int64_t version_id);
-
   base::ObserverList<Observer>::Unchecked observer_list_;
   bool debug_service_worker_on_start_;
 
@@ -139,7 +131,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
 
   // Clients may retain agent host for the terminated shared worker,
   // and we reconnect them when shared worker is restarted.
-  base::flat_set<ServiceWorkerDevToolsAgentHost*> stopped_hosts_;
+  base::flat_set<ServiceWorkerDevToolsAgentHost*> terminated_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerDevToolsManager);
 };

@@ -32,7 +32,6 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
-#include "components/payments/core/features.h"
 #include "components/permissions/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/query_tiles/switches.h"
@@ -85,12 +84,9 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kPrioritizeBootstrapTasks,
     &features::kQuietNotificationPrompts,
-    &features::kServiceWorkerPaymentApps,
     &features::kShowTrustedPublisherURL,
     &features::kWebAuth,
     &features::kWebNfc,
-    &features::kWebPayments,
-    &features::kWebPaymentsMinimalUI,
     &feature_engagement::kIPHChromeDuetHomeButtonFeature,
     &feature_engagement::kIPHChromeDuetSearchFeature,
     &feature_engagement::kIPHChromeDuetTabSwitcherFeature,
@@ -105,7 +101,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kAndroidMultipleDisplay,
     &kAndroidNightModeTabReparenting,
     &kAndroidPartnerCustomizationPhenotype,
-    &kAndroidPayIntegrationV1,
     &kAndroidPayIntegrationV2,
     &kAndroidSearchEngineChoiceNotification,
     &kCastDeviceFilter,
@@ -178,7 +173,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kReaderModeInCCT,
     &kRelatedSearches,
     &kRevampedContextMenu,
-    &kScrollToExpandPaymentHandler,
     &kSearchEnginePromoExistingDevice,
     &kSearchEnginePromoNewDevice,
     &kServiceManagerForBackgroundPrefetch,
@@ -218,17 +212,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &paint_preview::kPaintPreviewCaptureExperiment,
     &paint_preview::kPaintPreviewDemo,
     &paint_preview::kPaintPreviewShowOnStartup,
-    &payments::features::kAlwaysAllowJustInTimePaymentApp,
-    &payments::features::kAppStoreBillingDebug,
-    &payments::features::kPaymentRequestSkipToGPay,
-    &payments::features::kPaymentRequestSkipToGPayIfNoCard,
-    &payments::features::kReturnGooglePayInBasicCard,
-    &payments::features::kStrictHasEnrolledAutofillInstrument,
-    &payments::features::kWebPaymentsExperimentalFeatures,
-    &payments::features::kWebPaymentsMethodSectionOrderV2,
-    &payments::features::kWebPaymentsModifiers,
-    &payments::features::kWebPaymentsRedactShippingAddress,
-    &payments::features::kWebPaymentsSingleAppUiSkip,
     &permissions::features::kPermissionDelegation,
     &language::kExplicitLanguageAsk,
     &ntp_snippets::kArticleSuggestionsFeature,
@@ -290,10 +273,6 @@ const base::Feature kAndroidMultipleDisplay{"AndroidMultipleDisplay",
 const base::Feature kAndroidNightModeTabReparenting{
     "AndroidNightModeTabReparenting", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// TODO(rouslan): Remove this.
-const base::Feature kAndroidPayIntegrationV1{"AndroidPayIntegrationV1",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kAllowNewIncognitoTabIntents{
     "AllowNewIncognitoTabIntents", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -306,7 +285,8 @@ const base::Feature kAllowRemoteContextForNotifications{
 const base::Feature kAndroidPartnerCustomizationPhenotype{
     "AndroidPartnerCustomizationPhenotype", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// TODO(rouslan): Remove this.
+// TODO(rouslan): Remove this. (Currently used in
+// GooglePayPaymentAppFactory.java)
 const base::Feature kAndroidPayIntegrationV2{"AndroidPayIntegrationV2",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -513,7 +493,8 @@ const base::Feature kOverlayNewLayout{"OverlayNewLayout",
 const base::Feature kPageInfoPerformanceHints{
     "PageInfoPerformanceHints", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// TODO(rouslan): Remove this.
+// TODO(rouslan): Remove this. (Currently used in
+// GooglePayPaymentAppFactory.java)
 const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -537,9 +518,6 @@ const base::Feature kRelatedSearches{"RelatedSearches",
 
 const base::Feature kRevampedContextMenu{"RevampedContextMenu",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kScrollToExpandPaymentHandler{
-    "ScrollToExpandPaymentHandler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kServiceManagerForBackgroundPrefetch{
     "ServiceManagerForBackgroundPrefetch", base::FEATURE_DISABLED_BY_DEFAULT};

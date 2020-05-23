@@ -17,12 +17,12 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.payments.PaymentApp;
+import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -1346,7 +1346,7 @@ public class AndroidPaymentAppFinderTest
      * debug mode enabled.
      */
     @Test
-    @Features.EnableFeatures({ChromeFeatureList.WEB_PAYMENTS_APP_STORE_BILLING_DEBUG})
+    @Features.EnableFeatures({PaymentFeatureList.WEB_PAYMENTS_APP_STORE_BILLING_DEBUG})
     @Feature({"Payments"})
     public void testFindAppStoreBillingAppAllowedAnySourceInDebug() throws Throwable {
         Set<String> methods = new HashSet<>();

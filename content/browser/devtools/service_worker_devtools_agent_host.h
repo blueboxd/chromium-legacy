@@ -31,7 +31,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   ServiceWorkerDevToolsAgentHost(
       int worker_process_id,
       int worker_route_id,
-      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+      const ServiceWorkerContextCore* context,
+      base::WeakPtr<ServiceWorkerContextCore> context_weak,
       int64_t version_id,
       const GURL& url,
       const GURL& scope,
@@ -59,7 +60,7 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
       network::CrossOriginEmbedderPolicy cross_origin_embedder_policy,
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter);
-  void WorkerStopped();
+  void WorkerDestroyed();
   void WorkerVersionInstalled();
   void WorkerVersionDoomed();
 
@@ -77,9 +78,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   base::Time version_doomed_time() const { return version_doomed_time_; }
 
   int64_t version_id() const { return version_id_; }
-  const ServiceWorkerContextWrapper* context_wrapper() const {
-    return context_wrapper_.get();
-  }
+
+  bool Matches(const ServiceWorkerContextCore* context, int64_t version_id);
 
  private:
   ~ServiceWorkerDevToolsAgentHost() override;
@@ -100,7 +100,8 @@ class ServiceWorkerDevToolsAgentHost : public DevToolsAgentHostImpl {
   base::UnguessableToken devtools_worker_token_;
   int worker_process_id_;
   int worker_route_id_;
-  scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
+  const ServiceWorkerContextCore* context_;
+  base::WeakPtr<ServiceWorkerContextCore> context_weak_;
   int64_t version_id_;
   GURL url_;
   GURL scope_;

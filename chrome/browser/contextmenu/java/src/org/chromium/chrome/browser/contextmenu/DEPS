@@ -1,0 +1,5 @@
+include_rules = [
+  "-chrome",
+  "+base/android/java/src/org/chromium/base",
+  "+content/public/android/java/src/org/chromium/content_public",
+]

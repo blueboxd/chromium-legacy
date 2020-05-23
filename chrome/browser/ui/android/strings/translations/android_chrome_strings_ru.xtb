@@ -367,7 +367,7 @@
 <translation id="3997476611815694295">Маловажные данные</translation>
 <translation id="4000212216660919741">Офлайн</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# час}one{# час}few{# часа}many{# часов}other{# часа}}</translation>
-<translation id="403687620286099920">Нажмите, чтобы открыть QR-код</translation>
+<translation id="403687620286099920">Нажмите, чтобы открыть QR-код.</translation>
 <translation id="4046123991198612571">Следующий трек</translation>
 <translation id="4056223980640387499">Сепия</translation>
 <translation id="4060598801229743805">Меню доступно в верхней части экрана</translation>
@@ -615,7 +615,7 @@
 <translation id="6042308850641462728">Ещё</translation>
 <translation id="604996488070107836">Не удалось скачать файл <ph name="FILE_NAME" /> из-за неизвестной ошибки.</translation>
 <translation id="605721222689873409">ГГ</translation>
-<translation id="6059830886158432458">Управление статьями и действиями</translation>
+<translation id="6059830886158432458">Управление рекомендациями</translation>
 <translation id="60923314841986378">Осталось <ph name="HOURS" /> ч.</translation>
 <translation id="6108923351542677676">Настройка…</translation>
 <translation id="6111020039983847643">использовано</translation>

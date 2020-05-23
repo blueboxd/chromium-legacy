@@ -1681,7 +1681,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="310671807099593501">Il sito sta usando il Bluetooth</translation>
 <translation id="3115147772012638511">In attesa di elaborazione cache...</translation>
 <translation id="3115580024857770654">Comprimi tutto</translation>
-<translation id="3116968597797150452">Profilo certificato</translation>
+<translation id="3116968597797150452">Profilo di certificato</translation>
 <translation id="3117362587799608430">Il dock non è del tutto compatibile</translation>
 <translation id="3118319026408854581">Guida di <ph name="PRODUCT_NAME" /></translation>
 <translation id="3118654181216384296">Riprova ad avviare Linux tra qualche istante.</translation>
@@ -2551,7 +2551,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4184885522552335684">Trascina per spostare un display</translation>
 <translation id="4187424053537113647">Configurazione di <ph name="APP_NAME" />…</translation>
 <translation id="4190828427319282529">Evidenziazione con stato attivo della tastiera</translation>
-<translation id="4191805472951276951">DLC</translation>
+<translation id="4191805472951276951">Contenuti scaricati</translation>
 <translation id="4194570336751258953">Attiva tocco per fare clic</translation>
 <translation id="4195643157523330669">Apri in un'altra scheda</translation>
 <translation id="4195814663415092787">Continua da dove eri rimasto</translation>
@@ -4819,7 +4819,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="720110658997053098">Mantieni definitivamente questo dispositivo in modalità kiosk</translation>
 <translation id="7201118060536064622">"<ph name="DELETED_ITEM_NAME" />" eliminato</translation>
 <translation id="7201420661433230412">Visualizza i file</translation>
-<translation id="7203826966018112936">L'aggiunta di un account della scuola a un profilo consente di accedere facilmente ai siti web e alle estensioni come studente operando al tempo stesso con il Controllo genitori. Non consente a un minore di accedere a preferiti, password o altri dati di navigazione sincronizzati con l'account della scuola.&lt;br&gt;&lt;br&gt;
+<translation id="7203826966018112936">L'aggiunta di un account della scuola a un profilo consente di accedere facilmente ai siti web e alle estensioni come studente, applicando al tempo stesso il Controllo genitori. Non consente a un minore di accedere a preferiti, password o altri dati di navigazione sincronizzati con l'account della scuola.&lt;br&gt;&lt;br&gt;
     Se tuo figlio usa un Chromebook a scuola e vuoi rispecchiare l'esperienza scolastica a casa per assicurarti che abbia accesso a tutti i compiti necessari, esci da questo account Family Link e accedi all'account della scuola dalla pagina degli account di Chrome OS (tieni però presente che non sarà applicato il Controllo genitori di Family Link).&lt;br&gt;&lt;br&gt;
     Se tuo figlio non usa un Chromebook a scuola o se preferisci gestire la sua esperienza domestica con Family Link, fai clic sul pulsante Avanti qui sotto per aggiungere un account della scuola a questo profilo.</translation>
 <translation id="7206693748120342859">Download di <ph name="PLUGIN_NAME" /> in corso...</translation>

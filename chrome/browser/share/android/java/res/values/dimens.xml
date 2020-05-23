@@ -14,4 +14,5 @@
     <dimen name="url_box_top_padding">128dp</dimen>
     <dimen name="url_box_left_padding">40dp</dimen>
     <dimen name="url_box_bottom_padding">32dp</dimen>
+    <dimen name="qrcode_size">212dp</dimen>
 </resources>

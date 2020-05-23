@@ -10,6 +10,7 @@
 <translation id="1030706264415084469">உங்கள் சாதனத்தில், அதிக அளவு தரவை நிரந்தரமாகச் சேமிக்க <ph name="URL" /> விரும்புகிறது</translation>
 <translation id="1032854598605920125">கடிகாரத்திசையில் சுழற்று</translation>
 <translation id="1036348656032585052">முடக்கு</translation>
+<translation id="1038106730571050514">பரிந்துரைகளைக் காட்டும்</translation>
 <translation id="1038842779957582377">அறியப்படாத பெயர்</translation>
 <translation id="1041998700806130099">பணித் தாள் மெசேஜ்</translation>
 <translation id="1050038467049342496">பிற ஆப்ஸை மூடவும்</translation>
@@ -398,6 +399,7 @@
 <translation id="2666092431469916601">மேலே</translation>
 <translation id="2666117266261740852">பிற தாவல்கள் அல்லது ஆப்ஸை மூடவும்</translation>
 <translation id="2674170444375937751">உங்கள் வரலாற்றிலிருக்கும் பக்கங்களை நிச்சயமாக நீக்க விரும்புகிறீர்களா?</translation>
+<translation id="2674804415323431591">பரிந்துரைகளை மறைக்கும்</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">வெளியேறு</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1071,6 +1073,7 @@
 <translation id="5523118979700054094">கொள்கைப் பெயர்</translation>
 <translation id="55293785478302737">எட்ஜ் ஸ்டிட்ச்</translation>
 <translation id="553484882784876924">Prc6 (என்வலப்)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" பிரிவைக் காட்டும்</translation>
 <translation id="5539243836947087108">ராஃப்ட்</translation>
 <translation id="5540224163453853">கோரப்பட்ட கட்டுரையைக் கண்டுபிடிக்க முடியவில்லை.</translation>
 <translation id="5541086400771735334">அஞ்சல் பெட்டி 7</translation>
@@ -1469,6 +1472,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />பாதுகாப்பு உலாவல்<ph name="END_LINK" /> எச்சரிக்கைகள்</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">இணைப்பிற்கான உதவி</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" பிரிவை மறைக்கும்</translation>
 <translation id="733354035281974745">சாதனத்தின் அகக் கணக்கில் மீறிச் செயல்படுதல்</translation>
 <translation id="7333654844024768166">மோசடி செய்யும் தளத்தில் உங்கள் கடவுச்சொல்லை உள்ளிட்டுள்ளீர்கள். இந்தக் கடவுச்சொல்லைப் பயன்படுத்தும் <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> ஆகியவற்றுக்கும் பிற தளங்களுக்கும் சென்று இதை இப்போதே மாற்றும்படி Chromium பரிந்துரைக்கிறது.</translation>
 <translation id="7334320624316649418">&amp;மறுவரிசைப்படுத்தலை மீண்டும் செய்</translation>

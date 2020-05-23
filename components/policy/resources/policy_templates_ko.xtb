@@ -165,6 +165,7 @@ Google에 전송됩니다.  사용 중지되면 이 정보가 Google에 전송�
       이 정책이 설정되지 않은 경우 기본 빈도는 3시간입니다. 허용되는
       최소 빈도는 60초입니다.</translation>
 <translation id="1204263402976895730">사용 설정된 엔터프라이즈 프린터</translation>
+<translation id="120937472976628837">팬 정보 보고</translation>
 <translation id="1216919699175573511">서명된 HTTP 교환(SXG) 지원 사용 설정</translation>
 <translation id="1219695476179627719">기기가 이미 이후 버전을 실행하는 경우 기기를 <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" />에 설정된 버전으로 롤백할지 여부를 지정합니다.
 
@@ -1230,6 +1231,10 @@ False로 설정하면 개인정보 보호 화면은 항상 사용 중지됩니�
       이러한 제한은 웹페이지 콘텐츠에서 트리거되었거나 '링크 다운로드...' 컨텍스트 메뉴 옵션을 통해 다운로드된 항목에 적용됩니다. 이러한 제한은 현재 표시된 페이지의 저장된 항목/다운로드 항목에 적용되지 않으며 인쇄 옵션 중 PDF로 저장에도 적용되지 않습니다.
 
       https://developers.google.com/safe-browsing에서 세이프 브라우징을 자세히 알아보세요.</translation>
+<translation id="2696077732471707315">
+      이 정책은 M77에서 삭제되었습니다.
+      로그인 화면에 적용되는 정책입니다. 사용자 세션에 적용되는 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 정책도 확인하세요. 두 정책을 같은 값으로 설정하는 것이 좋습니다. 값이 일치하지 않을 경우 사용자 세션을 입력할 때 지연이 발생할 수 있으며 사용자 정책에서 지정된 값이 적용됩니다.
+      </translation>
 <translation id="2706708761587205154">PIN이 있을 때만 인쇄 허용</translation>
 <translation id="2707873794476722903">세이프 브라우징이 표준 모드에서 활성화됩니다.</translation>
 <translation id="2710534340210290498">이 정책을 false로 설정하면 사용자가 화면을 잠글 수 없습니다(사용자 세션에서 로그아웃만 가능). 이 설정이 true로 설정되거나 설정되지 않으면 비밀번호로 인증받은 사용자는 화면을 잠글 수 있습니다.</translation>
@@ -2148,6 +2153,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           이 정책이 설정되어 있지 않은 경우에는 'AllowCookies'가 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="4093716537292423758">지원되지 않는 파일 형식 차단하지 않음</translation>
+<translation id="4097556069183835428">정책을 None으로 설정하면 화면 돋보기가 사용 중지됩니다.
+
+      정책을 설정하면 사용자가 변경할 수 없습니다. 설정하지 않으면 처음에는 화면 돋보기가 사용 중지되지만 사용자가 언제든지 사용 설정할 수 있습니다.</translation>
 <translation id="410068710490553233">추가 Google 계정에 로그인 허용</translation>
 <translation id="4103289232974211388">사용자 확인 후 SAML IdP로 리디렉션</translation>
 <translation id="4105884561459127998">SAML 로그인 인증 유형을 구성합니다.
@@ -2299,6 +2307,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       정책에 앱 ID가 포함되어 있다고 해서 반드시 사용자가 잠금 화면에서 메모 앱을 사용 설정할 수 있는 것은 아닙니다. 예를 들어, Chrome 61에서는 사용 가능한 앱 집합이 플랫폼에서 추가로 제한됩니다.
 
       정책을 설정하지 않은 상태로 두면 사용자가 잠금 화면에서 사용 설정할 수 있는 앱 집합에 이 정책에 따른 제한이 적용되지 않습니다.</translation>
+<translation id="4311195029067684288">Full</translation>
 <translation id="4313767483634435271">기기에서 지정된 도크 MAC 주소</translation>
 <translation id="4322842393287974810">지연 없이 자동 실행된 키오스크 앱에서 <ph name="PRODUCT_OS_NAME" /> 버전을 제어하도록 허용합니다.</translation>
 <translation id="4325690621216251241">작업 표시줄에 로그아웃 버튼 추가</translation>
@@ -2413,6 +2422,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 설정을 사용하거나 사용 중지하면 사용자가 <ph name="PRODUCT_NAME" />에서 이 설정을 변경하거나 무시할 수 없습니다.
 
       이 정책이 설정되어 있지 않으면 사용하도록 설정되며 사용자가 설정을 변경할 수 있습니다.</translation>
+<translation id="4529868888205510667">ARC가 다른 방법으로 사용 중지되지 않은 이상, 정책을 True로 설정하거나 설정하지 않으면 사용자가 ARC를 사용할 수 있습니다. False로 설정하면 제휴되지 않은 사용자가 ARC를 사용할 수 없습니다.
+
+      정책을 변경할 경우 Chrome OS를 시작하는 동안과 같이 ARC가 실행되지 않을 때만 적용됩니다.</translation>
 <translation id="453031441196755904">지원 중단된 정책입니다.</translation>
 <translation id="4531706050939927436">Google Play를 사용해 Google 관리 콘솔에서 Android 앱을 강제 설치할 수 있습니다. Android 앱은 이 정책을 사용하지 않습니다.</translation>
 <translation id="4534500438517478692">Android 제한 이름:</translation>
@@ -3159,6 +3171,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
         정책을 False로 설정하면 사용자가 Google에 의견을 제출할 수 없습니다.
 
         정책을 설정하지 않거나 True로 설정하면 사용자가 메뉴-&gt;도움말-&gt;문제 신고로 이동하거나 키 조합을 사용하여 Google에 의견을 보낼 수 있습니다.</translation>
+<translation id="5579179012798142131">사용자 세션 중에 임시 모드나 멀티 로그인이 사용 설정되어 있지 않는 이상, ArcEnabled를 True로 설정하면 사용자의 ARC가 사용 설정됩니다. 정책을 False로 설정하거나 설정하지 않으면 기업 사용자가 ARC를 사용할 수 없습니다.</translation>
 <translation id="5583806683960333345">이 설정을 사용하면 사용자는 Google 휴대전화의 모바일 데이터를 다른 기기와 공유하도록 허용하는 인스턴트 테더링을 사용할 수 있습니다.
 
       이 설정을 사용 중지하면 사용자는 인스턴트 테더링을 사용할 수 없습니다.
@@ -3296,6 +3309,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       False로 설정되어 있거나 설정되어 있지 않은 경우 Web Components v0 기능이 M80에서부터 기본적으로 사용 중지됩니다.
 
       이 정책은 Chrome 84 이후 삭제됩니다.</translation>
+<translation id="5756680608782814094">기기의 VPD 정보를 보고합니다.
+
+      정책을 False로 설정하거나 설정하지 않으면 정보가 보고되지 않습니다.
+      True로 설정하면 기기의 VPD 정보가 보고됩니다.
+      VPD(필수 제품 데이터)는 기기와 관련된 구성 및 정보 데이터(예: 부품 및 일련번호)의 모음입니다.</translation>
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5770738360657678870">개발자 채널(불안정할 수 있음)</translation>
 <translation id="5774856474228476867">기본 검색 공급자 검색 URL</translation>
@@ -3410,6 +3428,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       false로 설정하면 조절이 사용 중지됩니다.
       true로 설정하면 시스템이 조절되어 선택한 업로드 및 다운로드 속도(kbit/s 단위)가 유지됩니다.</translation>
+<translation id="5907283448020542268"><ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 정책이 <ph name="BLOCK_GEOLOCATION_SETTING" />으로 설정되지 않은 이상, <ph name="GLS_ENABLED" />를 설정하면 초기 설정 중에 Google 위치 서비스가 사용 설정됩니다. 정책을 <ph name="GLS_DISABLED" />로 설정하거나 설정하지 않으면 설정 중에 위치 서비스가 사용 중지된 상태로 유지됩니다.
+
+      <ph name="BR_UNDER_USER_CONTROL" />로 설정하면 사용자에게 Google 위치 서비스를 사용할지 묻는 메시지가 표시됩니다. 사용자가 Google 위치 서비스를 사용 설정하면 Android 앱이 위치 서비스를 사용하여 기기 위치를 검색하고 익명의 위치 데이터를 Google로 전송합니다.
+
+      처음 설치 후 사용자가 Google 위치 서비스를 사용 설정 또는 중지할 수 있습니다.</translation>
 <translation id="591088232153082363">배터리 사용량 패턴에 맞춰 배터리를 충전합니다.</translation>
 <translation id="5921713479449475707">HTTP를 통한 자동 업데이트 다운로드 허용</translation>
 <translation id="5929855945144989709">기기가 Chrome OS에서 가상 머신을 실행하도록 허용</translation>
@@ -3700,6 +3723,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           .pac 프록시 스크립트를 사용하도록 선택한 경우 Android 앱에 스크립트 URL이 제공됩니다.</translation>
 <translation id="6430366557948788869">Chrome 보고 확장 프로그램</translation>
+<translation id="6438972408080276697">정책을 True로 설정하면 키 보고서와 정책에 의해 실행된 Android 앱 설치 이벤트가 Google로 전송됩니다. False로 설정하면 이벤트가 캡처되지 않습니다.</translation>
 <translation id="6440051664870270040">사이트에서 동시에 팝업을 탐색하고 열도록 허용</translation>
 <translation id="6447948611083700881">백업 및 복원이 사용 중지됨</translation>
 <translation id="6449476513004303784">사용자가 인증서를 관리하도록 허용 안함</translation>
@@ -3865,6 +3889,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
       이 정책이 설정되지 않았거나 목록이 비어있는 경우 <ph name="PRODUCT_NAME" />의 모든 스키마에 액세스할 수 있습니다.</translation>
 <translation id="6652197835259177259">로컬 관리 사용자 설정</translation>
+<translation id="6658129069061688328">정책을 True로 설정하면 0 상태 검색에서 앱 추천이 표시됩니다. False로 설정하면 이러한 추천이 표시되지 않습니다.
+
+      정책을 설정하면 사용자가 변경할 수 없습니다. 설정하지 않으면 관리 기기의 설정이 기본적으로 False가 됩니다.</translation>
 <translation id="6658245400435704251">업데이트를 처음 서버로 푸시한 시점부터 기기가 몇 초까지 임의로 업데이트의 다운로드를 지연시킬 수 있는지 지정합니다. 기기가 이 시간의 일부를 일반 시계 시간 기준으로, 그리고 나머지 시간을 업데이트 확인 횟수 기준으로 지연시킵니다. 모든 경우, 기기가 고착되어 업데이트 다운로드를 계속 기다리지 않도록 분산의 상한이 일정 시간으로 제한되어 있습니다.</translation>
 <translation id="6665670272107384733">빠른 잠금 해제를 사용하기 위해 사용자가 비밀번호를 얼마나 자주 입력해야 하는지 설정</translation>
 <translation id="6667586534922258705">로그인 및 잠금 화면에 비밀번호 표시 버튼이 표시됩니다</translation>
@@ -4004,6 +4031,12 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       보고되지 않습니다. True로 설정하면 사용 정보가 보고됩니다.
 
       이 정책은 Linux 앱 지원이 사용 설정된 경우에만 적용됩니다.</translation>
+<translation id="6946652757373377924">
+      이 정책은 M77에서 삭제되었습니다.
+      로그인 화면에 적용되는 정책입니다. 사용자 세션에 적용되는 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 정책도 확인하세요.
+      정책을 사용 설정하면 쉼표로 구분된 목록에서 이름이 지정된 각 출처는 자체 프로세스로 동작합니다. 또한 하위 도메인으로 이름이 지정된 출처도 격리됩니다. 예를 들어 https://example.com/을 지정하면 https://foo.example.com/도 https://example.com/ 사이트의 일부로 격리됩니다.
+      정책을 구성하지 않거나 사용 중지하면 로그인 화면에서 플랫폼 기본 사이트 격리 설정이 사용됩니다.
+      </translation>
 <translation id="69525503251220566">기본 검색엔진에 이미지로 검색 기능을 제공하는 매개변수</translation>
 <translation id="6953102253399571439">기본적으로 PIN 인쇄 사용</translation>
 <translation id="6956272732789158625">모든 사이트에서 키 생성 사용 허용 안함</translation>
@@ -4013,6 +4046,11 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책이 True로 설정되거나 설정되지 않으면 스마트 밝기 낮추기 모델이 사용되며 화면이 어두워질 때까지의 시간을 연장하도록 허용됩니다. 이 정책이 False로 설정되면 스마트 밝기 낮추기 모델이 화면 밝기 낮추기에 영향을 주지 않습니다.</translation>
 <translation id="6972540544240464302">작업 스케줄러 설정 선택</translation>
 <translation id="6979158407327259162">Google 드라이브</translation>
+<translation id="6979739838208297344">정책을 <ph name="BR_ENABLED" />로 설정하면 초기부터 Android 백업 및 복원이 사용 설정됩니다. <ph name="BR_DISABLED" />로 설정하거나 설정하지 않으면 설정 중에 백업 및 복원이 사용 중지된 상태로 유지됩니다.
+
+      <ph name="BR_UNDER_USER_CONTROL" />로 설정하면 사용자에게 백업 및 복원을 사용하라는 메시지가 표시됩니다. 사용자가 백업 및 복원을 사용 설정하면 Android 앱 데이터가 Android 백업 서버에 업로드되고 호환 앱 재설치 중에 복원됩니다.
+
+      초기 설정 후 사용자가 백업 및 복원을 사용 설정 또는 중지할 수 있습니다.</translation>
 <translation id="6991078864332103177">이 정책은 OS 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 로그인 정보, <ph name="PRODUCT_NAME" /> 프로필 이름, <ph name="PRODUCT_NAME" /> 프로필 경로, <ph name="PRODUCT_NAME" /> 실행 경로와 같이 사용자를 식별하는 데 사용할 수 있는 정보의 보고 여부를 제어합니다.
 
       이 정책이 설정되어 있지 않거나 True로 설정되어 있으면 사용자 식별에 사용될 수 있는 정보가 수집됩니다.
@@ -4033,6 +4071,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       설정하지 않은 경우 저장된 비밀번호를 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME" /> 환경설정</translation>
 <translation id="7008308728445338159">DNS 가로채기 검사 사용 설정됨</translation>
+<translation id="7019805045859631636">Fast</translation>
 <translation id="7027785306666625591"><ph name="PRODUCT_OS_NAME" />에서 전원 관리를 설정합니다.
 
       이 정책으로 사용자가 일정 시간 동안 유휴 상태일 때 <ph name="PRODUCT_OS_NAME" />에서 수행할 동작을 설정할 수 있습니다.</translation>
@@ -4078,6 +4117,10 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 
           배율은 100% 이상이어야 합니다.</translation>
 <translation id="7086720321892395256">개인정보 보호 화면 기능과 관련해 사용자 및 기기 정책을 제어합니다.</translation>
+<translation id="7093294902558672021">기기의 팬 정보를 보고합니다.
+
+      정책을 False로 설정하거나 설정하지 않으면 정보가 보고되지 않습니다.
+      True로 설정하면 기기의 팬 정보가 보고됩니다.</translation>
 <translation id="710003290625031750">확장된 스키마 설명:</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> 기기가 유휴 상태이거나 일시 중지되었을 때 잠금을 사용하도록 설정합니다.
 
@@ -4290,6 +4333,7 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
 <translation id="7311458740754205918">true로 설정되거나 설정되지 않으면 새 탭 페이지에서 사용자의 방문 기록, 관심분야 또는 위치를 기반으로 콘텐츠 추천을 표시할 수 있습니다.
 
       false로 설정되어 있다면 자동 생성 콘텐츠 추천이 새 탭 페이지에 표시되지 않습니다.</translation>
+<translation id="731208205557053914">VPD 정보 보고</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" />의 추가 명령줄 매개변수</translation>
 <translation id="7326394567531622570">완전 삭제(값 2)와 유사하지만, 사용자가 다시 로그인할 필요가 없도록 로그인 토큰을 저장합니다.</translation>
 <translation id="7329968046053403405"><ph name="HTTP_NEGOTIATE" /> 인증(예: Kerberos 인증)을 지원하는 Android 인증 앱에서 제공하는 계정의 계정 유형을 지정합니다. 이 정보는 인증 앱 제공업체에서 확인할 수 있습니다. 자세한 내용은 https://goo.gl/hajyfN 페이지를 참조하세요.
@@ -4309,6 +4353,9 @@ False로 설정하면 <ph name="PRODUCT_NAME" />에서 기본 알림을 사용�
       이 정책을 설정하지 않으면 자동 정리는 기본 전략을 사용합니다. 현재 기본 전략은 'RemoveLRUIfDormant'입니다.</translation>
 <translation id="7336785017449297672">시계 및 시간대 설정을 제어합니다.</translation>
 <translation id="7336878834592315572">세션이 지속되는 동안 쿠키를 유지합니다.</translation>
+<translation id="7338217396351647423">정책을 설정하면 ARC 런타임에 전달될 정책 모음이 지정됩니다. 관리자는 이를 사용하여 자동 설치될 Android 앱을 선택할 수 있습니다. 유효한 JSON 형식으로 값을 입력해야 합니다.
+
+      런처에 앱을 고정하려면 PinnedLauncherApps를 참조하세요.</translation>
 <translation id="7339315111520512972">브라우저 프로세스에서 네트워킹 코드를 강제로 실행</translation>
 <translation id="7340034977315324840">기기 활동 시간 보고</translation>
 <translation id="7343497214039883642">기기에 적용되는 엔터프라이즈 프린터 설정 파일</translation>
@@ -5203,6 +5250,10 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8687958770985542440">M84까지 Web Components v0 API를 다시 사용 설정합니다.</translation>
 <translation id="8693243869659262736">내장 DNS 클라이언트 사용</translation>
 <translation id="8698286761337647563">SAML 사용자의 비밀번호가 만료되기 며칠 전에 알림을 표시할지 설정합니다.</translation>
+<translation id="8699392919012430269">기기의 블루투스 정보를 보고합니다.
+
+      정책을 False로 설정하거나 설정하지 않으면 정보가 보고되지 않습니다.
+      True로 설정하면 기기의 블루투스 정보가 보고됩니다.</translation>
 <translation id="8701288965900240388">웹사이트에서 <ph name="FLASH_PLUGIN_NAME" /> 플러그인을 자동으로 실행하도록 허용할지 선택할 수 있습니다. <ph name="FLASH_PLUGIN_NAME" /> 플러그인 자동 실행은 모든 웹사이트에 대해 허용하거나 거부할 수 있습니다.
 
           클릭 재생방식을 사용하면 <ph name="FLASH_PLUGIN_NAME" /> 플러그인을 실행할 수 있지만, 사용자가 자리표시자를 클릭해야 실행됩니다.
@@ -5558,6 +5609,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 
       정책이 설정되어 있지 않거나 false로 설정되면 AppCache가 Chrome의 기본값을 따릅니다.</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> 사용자 데이터 디렉터리 설정</translation>
+<translation id="935779984563655842">블루투스 정보 보고</translation>
 <translation id="940706688964479124">다운로드 시 자동으로 열려야 하는 파일 유형 목록</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치될 때 기본 HTML 렌더러를 설정할 수 있습니다.
       기본 설정은 호스트 브라우저가 렌더링을 실행하도록 허용하지만 원하는 경우 기본 설정을 무시하고 <ph name="PRODUCT_FRAME_NAME" />이(가) HTML 페이지를 기본적으로 렌더링하도록 할 수 있습니다.</translation>
@@ -5571,6 +5623,9 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="981346395360763138">Google 위치 서비스가 사용 중지됨</translation>
 <translation id="982497069985795632">맞춤법 검사 사용 설정</translation>
 <translation id="991560005425213776">기본 프린터로 사용자 이름과 파일 이름 보내기</translation>
+<translation id="99202634486128833">정책을 CopyCaCerts로 설정하면 <ph name="WEB_TRUSTED_BIT" />를 포함하며 ONC가 설치된 모든 CA 인증서를 ARC 앱에 사용할 수 있습니다.
+
+       None으로 설정하거나 설정하지 않으면 ARC 앱에서 <ph name="PRODUCT_OS_NAME" /> 인증서를 사용할 수 없습니다.</translation>
 <translation id="99232017131102456">이 정책은 HTTP 서버 사용자 인증 정보로 단일 전역 프로필별 캐시를 구성합니다.
 
       이 정책이 설정되지 않았거나 사용 중지된 경우 브라우저에서 크로스 사이트 인증의 기본 동작을 사용합니다. 크로스 사이트 인증은 버전 80부터 최상위 수준 사이트의 HTTP 서버 사용자 인증 정보 범위를 지정합니다. 이에 따라 두 개의 사이트가 동일한 인증 도메인에서 리소스를 사용하면 두 사이트 모두의 컨텍스트에서 사용자 인증 정보가 개별적으로 제공되어야 합니다. 캐시된 프록시 사용자 인증 정보는 사이트 전반에서 다시 사용됩니다.

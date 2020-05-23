@@ -535,7 +535,7 @@
 <translation id="1670399744444387456">Негізгі</translation>
 <translation id="167160931442925455">Ең қатты</translation>
 <translation id="1673137583248014546"><ph name="URL" /> сайты Security Key құрылғысының маркасы мен үлгісін білгісі келеді</translation>
-<translation id="1677306805708094828"><ph name="EXTENSION_TYPE_PARAMETER" /> енгізілмеді</translation>
+<translation id="1677306805708094828"><ph name="EXTENSION_TYPE_PARAMETER" /> енгізілмеді.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> қалды</translation>
 <translation id="1679068421605151609">Әзірлеуші құралдары</translation>
 <translation id="1679806121152819234">Plugin VM</translation>
@@ -2730,7 +2730,7 @@
 <translation id="4444304522807523469">USB арқылы немесе жергілікті желіде тіркелген құжат сканерлеріне кіру</translation>
 <translation id="4444512841222467874">Орын босатылмаса, пайдаланушылар мен деректер автоматты түрде өшірілуі мүмкін.</translation>
 <translation id="4446933390699670756">Айнадағы бейнесі</translation>
-<translation id="4449948729197510913">Пайдаланушы атыңыз ұйымның корпоративтік есептік жазбасына тиесілі. Құрылғыларды есептік жазбаға тіркеу үшін, алдымен Әкімші консолінде доменді иелену құқығын растаңыз. Растау үшін есептік жазбада басқару артықшылығыңыз болуы керек.</translation>
+<translation id="4449948729197510913">Пайдаланушы атыңыз ұйымның корпоративтік есептік жазбасына тиесілі. Құрылғыларды есептік жазбаға тіркеу үшін алдымен Әкімші консолінде доменді иелену құқығын растаңыз. Растау үшін есептік жазбада басқару артықшылығыңыз болуы керек.</translation>
 <translation id="4449996769074858870">Бұл қойындыда аудио ойнауда.</translation>
 <translation id="4450974146388585462">Диагностикалау</translation>
 <translation id="4451757071857432900">Мазалайтын немесе жалған ақпаратты жарнамалар көрсететін сайттарда бөгелген (ұсынылады)</translation>
@@ -3056,7 +3056,7 @@
 <translation id="4891089016822695758">Бета форумы</translation>
 <translation id="4892229439761351791">Сайт Bluetooth функциясын пайдалана алады</translation>
 <translation id="489258173289528622">Батареямен істегендегі жұмыссыз режим</translation>
-<translation id="4892811427319351753"><ph name="EXTENSION_TYPE_PARAMETER" /> іске қосылмады</translation>
+<translation id="4892811427319351753"><ph name="EXTENSION_TYPE_PARAMETER" /> іске қосылмады.</translation>
 <translation id="4893336867552636863">Бұл осы құрылғыдағы шолу деректерін біржола жояды.</translation>
 <translation id="4893522937062257019">Құлып экранында</translation>
 <translation id="489454699928748701">Сайттардың қозғалыс датчиктерін пайдалануына рұқсат ету</translation>
@@ -3335,7 +3335,7 @@
 <translation id="5269977353971873915">Басып шығару сәтсіз аяқталды</translation>
 <translation id="5275352920323889391">Ит</translation>
 <translation id="527605982717517565"><ph name="HOST" /> үшін JavaScript қосуға әрдайым рұқсат беру</translation>
-<translation id="5278823018825269962">Идентификатор күйі</translation>
+<translation id="5278823018825269962">Күй идентификаторы</translation>
 <translation id="5280174558369304332">Өшірілетін кеңейтімдер:</translation>
 <translation id="5280243692621919988">Терезелердің барлығы жабылғанда, cookie файлдары мен сайт деректерін өшіріп отыру</translation>
 <translation id="5280426389926346830">Таңбаша жасалсын ба?</translation>
@@ -6255,7 +6255,7 @@
 <translation id="9009369504041480176">Жүктелуде (<ph name="PROGRESS_PERCENT" />%)…</translation>
 <translation id="9009708085379296446">Осы бетті өзгерткіңіз келді ме?</translation>
 <translation id="9011163749350026987">Белгішені әрқашан көрсету</translation>
-<translation id="9013037634206938463">Linux орнату үшін <ph name="INSTALL_SIZE" /> бос орын қажет. Орын босату үшін құрылғыдан файлдарды жойыңыз.</translation>
+<translation id="9013037634206938463">Linux жүйесін орнату үшін <ph name="INSTALL_SIZE" /> бос орын қажет. Орын босату үшін құрылғыдан файлдарды жойыңыз.</translation>
 <translation id="9013707997379828817">Әкімші құрылғыны қалпына келтірді. Маңызды файлдарды сақтап, қайта қосыңыз. Құрылғыдағы барлық деректер жоғалады.</translation>
 <translation id="901668144954885282">Google Drive-та сақтық көшірме жасау</translation>
 <translation id="9018218886431812662">Орнату аяқталды</translation>
@@ -6327,7 +6327,7 @@
 <translation id="9101691533782776290">Қолданбаны іске қосу</translation>
 <translation id="9102610709270966160">Кеңейтімді қосу</translation>
 <translation id="9103868373786083162">Журналды көру үшін, оралу, контекстік мәзір түймесін басыңыз</translation>
-<translation id="9108692355621501797"><ph name="LINK_BEGIN" />G Suite for Education Құпия ақпаратқа қатысты ескертпесінде<ph name="LINK_END" /> қандай деректер жиналатыны, не үшін жиналатыны және қалай өңделетіні G Suite for Education пайдаланушылары мен ата-аналарға түсіндіріледі.</translation>
+<translation id="9108692355621501797"><ph name="LINK_BEGIN" />G Suite for Education Құпия ақпаратқа қатысты ескертпесінде<ph name="LINK_END" /> қандай деректер жиналатыны, не үшін жиналатыны және қалай өңделетіні туралы G Suite for Education пайдаланушылары мен ата-аналарға түсіндіріледі.</translation>
 <translation id="9108808586816295166">Қауіпсіз DNS барлық уақытта қолжетімді болмауы мүмкін.</translation>
 <translation id="9109122242323516435">Орынды босату үшін құрылғы жадынан файлдарды жойыңыз.</translation>
 <translation id="9109283579179481106">Мобильдік желіге қосылу</translation>

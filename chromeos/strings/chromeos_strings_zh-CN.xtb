@@ -51,7 +51,7 @@
 <translation id="7805768142964895445">状态</translation>
 <translation id="808894953321890993">更改密码</translation>
 <translation id="8208861521865154048">福利</translation>
-<translation id="8701136875688985581">此用户由 <ph name="ENROLLMENT_DOMAIN" /> 管理。它可能会远程管理设置并监控用户活动。</translation>
+<translation id="8701136875688985581">此用户由 <ph name="ENROLLMENT_DOMAIN" /> 管理。管理方可能会远程管理设置并监控用户活动。</translation>
 <translation id="8747900814994928677">确认更改</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" />剩余尝试次数：<ph name="ATTEMPTS_LEFT" /></translation>
 <translation id="910415269708673980">刷新 <ph name="PRINCIPAL_NAME" /> 的票据</translation>

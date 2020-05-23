@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> तपाईंको यन्त्रमा स्थायी रूपमा ठुलो परिमाणको डेटा भण्डारण गर्न चाहन्छ</translation>
 <translation id="1032854598605920125">घडीको दिशामा घुमाउनुहोस्</translation>
 <translation id="1036348656032585052">निस्कृय पार्नुहोस्</translation>
+<translation id="1038106730571050514">सुझावहरू देखाइयोस्</translation>
 <translation id="1038842779957582377">अज्ञात नाम</translation>
 <translation id="1041998700806130099">कार्य पानासम्बन्धी सन्देश</translation>
 <translation id="1050038467049342496">अन्य एपहरू बन्द गर्नुहोस्</translation>
@@ -397,6 +398,7 @@
 <translation id="2666092431469916601">शीर्ष</translation>
 <translation id="2666117266261740852">अन्य ट्याब वा एपहरू बन्द गर्नुहोस्</translation>
 <translation id="2674170444375937751">तपाईं आफ्नो इतिहासबाट यी पृष्ठहरू मेटाउन चाहनुहुन्छ भन्ने कुरामा सुनिश्चित हुनुहुन्छ?</translation>
+<translation id="2674804415323431591">सुझावहरू लुकाउनुहोस्</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">छोड्नुहोस्</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1069,6 +1071,7 @@
 <translation id="5523118979700054094">नीति नाम</translation>
 <translation id="55293785478302737">किनारमा स्टिच</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
+<translation id="5536214594743852365">"<ph name="SECTION" />" खण्ड देखाइयोस्</translation>
 <translation id="5539243836947087108">राफ्ट</translation>
 <translation id="5540224163453853">अनुरोध गरिएको लेख फेला पार्न सकिएन।</translation>
 <translation id="5541086400771735334">मेलबक्स ७</translation>
@@ -1468,6 +1471,7 @@
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />सुरक्षित ब्राउजिङसम्बन्धी<ph name="END_LINK" /> चेतावनीहरू</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">जडानसम्बन्धी मद्दत</translation>
+<translation id="7323804146520582233">"<ph name="SECTION" />" खण्ड लुकाइयोस्</translation>
 <translation id="733354035281974745">यन्त्रका स्थानीय खाताको ओभरराइड</translation>
 <translation id="7333654844024768166">तपाईंले भर्खरै कुनै भ्रामक साइटमा आफ्नो पासवर्ड प्रविष्टि गर्नुभएको छ। Chromium ले <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> र तपाईंले यो पासवर्ड प्रयोग गर्ने अन्य साइटहरूमा गई तपाईंको पासवर्ड अहिले नै बदल्न सिफारिस गर्छ।</translation>
 <translation id="7334320624316649418">क्रम परिवर्तन &amp;पुन: गर्नुहोस्</translation>

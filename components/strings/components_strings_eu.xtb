@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> webguneak datu asko gorde nahi ditu gailuan modu iraunkorrean</translation>
 <translation id="1032854598605920125">Biratu eskuinera</translation>
 <translation id="1036348656032585052">Desaktibatu</translation>
+<translation id="1038106730571050514">Erakutsi iradokizunak</translation>
 <translation id="1038842779957582377">izen ezezaguna</translation>
 <translation id="1041998700806130099">Lan-orriko mezua</translation>
 <translation id="1050038467049342496">Itxi beste aplikazio batzuk</translation>
@@ -400,6 +401,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="2666092431469916601">Goiko elementua</translation>
 <translation id="2666117266261740852">Itxi beste fitxa edo aplikazio batzuk</translation>
 <translation id="2674170444375937751">Ziur historiako orri hauek ezabatu nahi dituzula?</translation>
+<translation id="2674804415323431591">Ezkutatu iradokizunak</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">Irten</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -594,7 +596,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="3539171420378717834">Gorde gailu honetan txartelaren kopia bat</translation>
 <translation id="3558573058928565255">Eguna</translation>
 <translation id="3566021033012934673">Konexioa ez da pribatua</translation>
-<translation id="3567778190852720481">Ezin duzu enpresako kontu horrekin eman izena (kontu hori ez da egokia).</translation>
+<translation id="3567778190852720481">Ezin duzu enpresako kontuekin eman izena (ez dira egokiak).</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" />, <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635"><ph name="SITE" /> webguneko orri kapsulatu batek hau dio:</translation>
 <translation id="3581089476000296252">Orria prest dagoenean, horren berri emango dizu Chrome-k. &lt;a&gt;Utzi&lt;/a&gt;</translation>
@@ -1070,6 +1072,7 @@ Bestela, pribatutasun-ezarpenek blokeatu egingo dute baimen hori. Baimen honekin
 <translation id="5523118979700054094">Gidalerroaren izena</translation>
 <translation id="55293785478302737">Josi ertza</translation>
 <translation id="553484882784876924">Prc6 (gutun-azala)</translation>
+<translation id="5536214594743852365">Erakutsi "<ph name="SECTION" />" atala</translation>
 <translation id="5539243836947087108">Goratua</translation>
 <translation id="5540224163453853">Ezin izan da aurkitu eskatutako artikulua.</translation>
 <translation id="5541086400771735334">7. postontzia</translation>
@@ -1468,6 +1471,7 @@ Xehetasun gehiago:
 <translation id="7313965965371928911"><ph name="BEGIN_LINK" />Arakatze seguruaren<ph name="END_LINK" /> abisuak</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">Konexioari buruzko laguntza</translation>
+<translation id="7323804146520582233">Ezkutatu "<ph name="SECTION" />" atala</translation>
 <translation id="733354035281974745">Gailuko kontua ordeztea</translation>
 <translation id="7333654844024768166">Webgune engainagarri batean idatzi duzu pasahitza. <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> eta <ph name="WEBSITE_3" /> webguneetara eta pasahitz hori erabili duzun beste webgune batzuetara joatea eta pasahitza aldatzea gomendatzen dizu Chromium-ek.</translation>
 <translation id="7334320624316649418">&amp;Berregin berrantolatzea</translation>

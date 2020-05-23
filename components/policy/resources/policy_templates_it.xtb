@@ -259,7 +259,7 @@ Se questa norma non viene impostata, verrà applicato il comportamento predefini
 
       Se imposti il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, le opzioni di accessibilità non vengono mostrate nel menu, ma gli utenti possono farle apparire dalla pagina Impostazioni.
 
-      Se attivi le funzioni di accessibilità in altro modo (ad esempio, con una combinazione di tasti), le opzioni di accessibilità vengono sempre mostrate nel menu della barra delle applicazioni.</translation>
+      Se attivi le funzioni di accessibilità in altro modo (ad esempio, con una combinazione di tasti), tali opzioni vengono sempre mostrate nel menu della barra delle applicazioni.</translation>
 <translation id="1456822151187621582">Windows (client <ph name="PRODUCT_OS_NAME" />):</translation>
 <translation id="1464848559468748897">Consente di controllare il comportamento degli utenti in una sessione multiprofilo su dispositivi <ph name="PRODUCT_OS_NAME" />.
 
@@ -2287,7 +2287,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="4438784219739665968">Consenti al dispositivo di eseguire PluginVm.
 
       Se il criterio è impostato su False o non viene impostato, <ph name="PLUGIN_VM_NAME" /> non viene attivato per il dispositivo.
-      Se è impostato su true, <ph name="PLUGIN_VM_NAME" /> viene attivato per il dispositivo, a condizione che anche le altre impostazioni lo permettano. Il valore dei criteri <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> e <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere True ed è necessario impostare i criteri <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
+      Se è impostato su True, <ph name="PLUGIN_VM_NAME" /> viene attivato per il dispositivo, a condizione che anche le altre impostazioni lo permettano. Il valore dei criteri <ph name="PLUGIN_VM_ALLOWED_POLICY_NAME" /> e <ph name="USER_PLUGIN_VM_ALLOWED_POLICY_NAME" /> deve essere True ed è necessario impostare i criteri <ph name="PLUGIN_VM_LICENSE_KEY_POLICY_NAME" /> o <ph name="PLUGIN_VM_USER_ID_POLICY_NAME" /> per consentire l'esecuzione di <ph name="PLUGIN_VM_NAME" />.</translation>
 <translation id="4439336120285389675">Consente di specificare un elenco di funzioni ritirate della piattaforma web da riattivare temporaneamente.
 
       Questa norma consente agli amministratori di riattivare funzioni ritirate della piattaforma web per un periodo di tempo limitato. Le funzioni sono identificate da un tag string e le funzioni corrispondenti ai tag inclusi nell'elenco specificato tramite questa norma verranno riattivate.
@@ -4400,11 +4400,11 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
       Quando questa norma è impostata, il codice di accesso genitori può essere verificato sul dispositivo dell'utente bambino o ragazzo.
       Quando questa norma non è impostata, non è possibile verificare il codice di accesso genitori sul dispositivo dell'utente bambino o ragazzo.</translation>
 <translation id="7625444193696794922">Consente di specificare il canale di rilascio su cui deve essere bloccato questo dispositivo.</translation>
-<translation id="7629840767216985001">Se il criterio è impostato su True, viene attivato il puntatore grande nella schermata di accesso. Se il criterio è impostato su False, viene disattivato il puntatore grande nella schermata di accesso.
+<translation id="7629840767216985001">Se il criterio è impostato su True, viene attivato il cursore grande nella schermata di accesso. Se il criterio è impostato su False, viene disattivato il cursore grande nella schermata di accesso.
 
-      Se imposti il criterio, gli utenti possono attivare o disattivare temporaneamente il puntatore grande. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, il puntatore torna allo stato originale.
+      Se imposti il criterio, gli utenti possono attivare o disattivare temporaneamente il cursore grande. Quando la schermata di accesso viene ricaricata o rimane inattiva per un minuto, il cursore torna allo stato originale.
 
-      Se il criterio non è impostato, il puntatore grande risulta disattivato nella schermata di accesso. Gli utenti possono attivarlo in qualsiasi momento e il suo stato nella schermata di accesso persiste per tutti gli utenti.
+      Se il criterio non è impostato, il cursore grande risulta disattivato nella schermata di accesso. Gli utenti possono attivarlo in qualsiasi momento e il suo stato nella schermata di accesso persiste per tutti gli utenti.
 
           Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_LARGE_CURSOR_ENABLED" /> sostituisce questo criterio.</translation>
 <translation id="7632724434767231364">Nome della libreria GSSAPI</translation>
@@ -4879,9 +4879,9 @@ Se questa norma non viene impostata, le pagine saranno sottoposte a scansione pe
           Tieni presente che questa norma viene ignorata, se <ph name="REMOTE_ACCESS_HOST_FIREWALL_TRAVERSAL_POLICY_NAME" /> viene disattivata.
 
           Se questa norma non è impostata, l'impostazione viene attivata.</translation>
-<translation id="838056554726401140">Elenco di URL che specifica a quali URL è applicato <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Questo criterio non influisce sulla possibilità di aprire automaticamente i valori configurati dagli utenti.
+<translation id="838056554726401140">Elenco di URL che specifica a quali URL è applicato <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Questo criterio non influisce sui valori di apertura automatica impostati dagli utenti.
 
-      Se il criterio è impostato, i file saranno aperti automaticamente dal criterio se l'URL fa parte di questo insieme e il relativo tipo è elencato in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Se una delle condizioni è falsa, il criterio non aprirà automaticamente i download.
+      Se il criterio è impostato, i file saranno aperti automaticamente dal criterio se l'URL fa parte di questo insieme e il tipo di file è elencato in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Se una delle condizioni è falsa, il criterio non aprirà automaticamente i download.
 
       Se il criterio non è impostato, tutti i download con tipo di file contenuto in <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" /> verranno aperti automaticamente.
 
@@ -5118,9 +5118,9 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
       Se questa impostazione è attivata o non è impostata, la cronologia di navigazione e la cronologia dei download possono essere eliminate.
 
       Se questa impostazione è disattivata, la cronologia di navigazione e la cronologia dei download non possono essere eliminate.</translation>
-<translation id="8749536858950505376">Se il criterio è impostato su True, il puntatore grande rimane attivato. Se il criterio è impostato su True, il puntatore grande rimane disattivato.
+<translation id="8749536858950505376">Se il criterio è impostato su True, il cursore grande rimane attivato. Se il criterio è impostato su False, il cursore grande rimane disattivato.
 
-      Se imposti il criterio, gli utenti non possono modificare la funzionalità. Se il criterio non è impostato, il puntatore grande risulta disattivato all'inizio, ma gli utenti possono attivarlo in qualsiasi momento.</translation>
+      Se imposti il criterio, gli utenti non possono modificare la funzionalità. Se il criterio non è impostato, il cursore grande risulta disattivato all'inizio, ma gli utenti possono attivarlo in qualsiasi momento.</translation>
 <translation id="8749803771700374502">Per le stampanti dei tipi inseriti nell'elenco di tipi non consentiti verranno disattivati il rilevamento o il recupero delle relative funzionalità.
 
       L'inserimento di tutti i tipi di stampanti nell'elenco di tipi non consentiti comporta essenzialmente la disattivazione della stampa, perché non ci sarebbero destinazioni disponibili a cui inviare un documento da stampare.

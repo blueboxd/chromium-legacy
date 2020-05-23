@@ -225,7 +225,7 @@
 <translation id="3595596368722241419">Baterai penuh</translation>
 <translation id="3604801046548457007">Desktop <ph name="DESK_TITILE" /> dibuat</translation>
 <translation id="3606978283550408104">Penampil Braille tersambung.</translation>
-<translation id="3616883743181209306">Menu pindah ke pojok kanan atas layar.</translation>
+<translation id="3616883743181209306">Menu dipindahkan ke pojok kanan atas layar.</translation>
 <translation id="3621202678540785336">Masukan</translation>
 <translation id="3621712662352432595">Setelan Audio</translation>
 <translation id="3626281679859535460">Kecerahan</translation>
@@ -407,7 +407,7 @@
 <translation id="6018164090099858612">Keluar dari mode transmisi</translation>
 <translation id="602001110135236999">Scroll ke kiri</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />, Dikelola oleh Administrator Anda</translation>
-<translation id="6030495522958826102">Menu pindah ke pojok kiri bawah layar.</translation>
+<translation id="6030495522958826102">Menu dipindahkan ke pojok kiri bawah layar.</translation>
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6043212731627905357">Monitor ini tidak dapat berfungsi dengan <ph name="DEVICE_TYPE" /> Anda (monitor tidak didukung).</translation>
 <translation id="6043994281159824495">Keluar sekarang</translation>
@@ -506,7 +506,7 @@
 <translation id="7143207342074048698">Menyambungkan</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
 <translation id="7168224885072002358">Mengembalikan ke resolusi lama dalam <ph name="TIMEOUT_SECONDS" /></translation>
-<translation id="7188494361780961876">Menu pindah ke pojok kiri atas layar.</translation>
+<translation id="7188494361780961876">Menu dipindahkan ke pojok kiri atas layar.</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Chromebook ini perlu dimulai ulang untuk menerapkan update. Proses ini dapat memerlukan waktu hingga 1 menit.</translation>
 <translation id="7256634071279256947">Mikrofon belakang</translation>
 <translation id="726276584504105859">Tarik ke sini untuk menggunakan layar terpisah</translation>
@@ -617,7 +617,7 @@
 <translation id="8513108775083588393">Putar otomatis</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> Anda mungkin tidak diisi daya saat dinyalakan.</translation>
 <translation id="8563862697512465947">Setelan Notifikasi</translation>
-<translation id="857201607579416096">Menu pindah ke pojok kanan bawah layar.</translation>
+<translation id="857201607579416096">Menu dipindahkan ke pojok kanan bawah layar.</translation>
 <translation id="8627191004499078455">Tersambung ke <ph name="DEVICE_NAME" /></translation>
 <translation id="8631727435199967028">Setelan Aksesibilitas</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />, Dikelola oleh Administrator Anda</translation>

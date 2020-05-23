@@ -135,8 +135,8 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
 
     private Bitmap addUrlToBitmap(Bitmap bitmap, String url) {
         // Assumes QR code bitmap is a square.
-        int qrCodeSize = bitmap.getWidth();
-
+        int qrCodeSize = mContext.getResources().getDimensionPixelSize(
+                org.chromium.chrome.browser.share.R.dimen.qrcode_size);
         int fontSize = mContext.getResources().getDimensionPixelSize(R.dimen.text_size_large);
         int textLeftPadding = mContext.getResources().getDimensionPixelSize(
                 org.chromium.chrome.browser.share.R.dimen.url_box_left_padding);
@@ -164,7 +164,8 @@ class QrCodeShareMediator implements ShareImageFileUtils.OnImageSaveListener {
         canvas.drawColor(android.graphics.Color.WHITE);
         canvas.translate(textLeftPadding, textTopPadding);
         mTextLayout.draw(canvas);
-        canvas.drawBitmap(bitmap, (int) ((width - qrCodeSize) / 2) - textLeftPadding,
+        canvas.drawBitmap(Bitmap.createScaledBitmap(bitmap, qrCodeSize, qrCodeSize, false),
+                (int) ((width - qrCodeSize) / 2) - textLeftPadding,
                 mTextLayout.getHeight() + textBottomPadding, mTextPaint);
 
         return newBitmap;

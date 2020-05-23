@@ -3021,7 +3021,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4862642413395066333">Signering av OCSP-svar</translation>
 <translation id="4863769717153320198">Ser ut som <ph name="WIDTH" /> x <ph name="HEIGHT" /> (standard)</translation>
 <translation id="4864369630010738180">Logger på ...</translation>
-<translation id="4864805589453749318">Velg forelderen som gir tillatelse til å legge til en skolekonto.</translation>
+<translation id="4864805589453749318">Velg den forelderen som gir tillatelse til å legge til en skolekonto.</translation>
 <translation id="486635084936119914">Åpne visse filtyper automatisk når de lastes ned</translation>
 <translation id="4869289251183233431">Det er lite lagringsplass på enheten. Det trengs minst <ph name="MINIMUM_SPACE" /> ledig lagringsplass for å bruke <ph name="APP_NAME" />, og det anbefales at du har mer enn <ph name="RECOMMENDED_SPACE" /> ledig lagringsplass. For å få mer ledig lagringsplass, slett filer fra enheten.</translation>
 <translation id="48704129375571883">Legg til flere funksjoner</translation>

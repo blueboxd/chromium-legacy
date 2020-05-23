@@ -118,7 +118,6 @@ class CONTENT_EXPORT TtsUtterance {
 
   // Getters and setters for internal state.
   virtual BrowserContext* GetBrowserContext() = 0;
-  virtual void ClearBrowserContext() = 0;
   virtual int GetId() = 0;
   virtual bool IsFinished() = 0;
 };

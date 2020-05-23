@@ -289,7 +289,9 @@ crbug.com/angleproject/3481 [ win nvidia vulkan passthrough ] conformance/textur
 crbug.com/angleproject/2926 [ win nvidia vulkan passthrough ] deqp/data/gles2/shaders/conversions.html [ Failure ]
 crbug.com/angleproject/4569 [ win nvidia vulkan passthrough ] conformance/textures/misc/default-texture.html [ Failure ]
 crbug.com/1082826 [ win nvidia vulkan passthrough ] conformance/buffers/buffer-data-dynamic-delay.html [ Failure ]
-# Causing GPU process crashes which cause the next test to fail, so skipping this.
+# Causing GPU process crashes which cause the next test to fail, so skipping these.
+crbug.com/1085627 [ win nvidia vulkan passthrough ] conformance/glsl/misc/shader-with-non-reserved-words.html [ Skip ]
+crbug.com/1085627 [ win nvidia vulkan passthrough ] conformance/glsl/misc/shader-with-reserved-words.html [ Skip ]
 crbug.com/1085677 [ win nvidia vulkan passthrough ] conformance/glsl/misc/shader-with-preprocessor-whitespace.html [ Skip ]
 
 # Flaky since crbug.com/1017162

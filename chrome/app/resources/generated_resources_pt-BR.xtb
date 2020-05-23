@@ -4823,7 +4823,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7201118060536064622">'<ph name="DELETED_ITEM_NAME" />' excluído</translation>
 <translation id="7201420661433230412">Visualizar arquivos</translation>
 <translation id="7203826966018112936">Adicionar uma conta escolar a um perfil permite fazer login facilitado como estudante em sites e extensões, mesmo sob controle dos pais. Isso não permite que a criança acesse favoritos, senhas e outros dados de navegação sincronizados com a conta escolar.&lt;br&gt;&lt;br&gt;
-    Se a criança utiliza um Chromebook na escola e você quer proporcionar a mesma experiência em casa para garantir que a criança tenha acesso a todos os trabalhos escolares necessários, saia dessa conta do Family Link e faça login na conta escolar na página de contas do Chrome OS (observação: os controles dos pais do Family Link não serão aplicados).&lt;br&gt;&lt;br&gt;
+    Se a criança usa um Chromebook na escola e você quer proporcionar a mesma experiência em casa para garantir que a criança tenha acesso a todos os trabalhos escolares necessários, saia dessa conta do Family Link e faça login na conta escolar na página de contas do Chrome OS (observação: os controles dos pais do Family Link não serão aplicados).&lt;br&gt;&lt;br&gt;
     Se a criança não usa um Chromebook na escola ou se você prefere gerenciar a experiência da criança em casa usando o Family Link, clique no botão "Próximo" abaixo para adicionar uma conta escolar a esse perfil.</translation>
 <translation id="7206693748120342859">Fazendo download do <ph name="PLUGIN_NAME" />...</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Sair da página}one{Sair da página}other{Sair das páginas}}</translation>

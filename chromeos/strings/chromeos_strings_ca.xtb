@@ -51,7 +51,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="808894953321890993">Canvia la contrasenya</translation>
 <translation id="8208861521865154048">Avantatges</translation>
-<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest usuari. És possible que gestioni la configuració i supervisi l'activitat de l'usuari de manera remota.</translation>
+<translation id="8701136875688985581"><ph name="ENROLLMENT_DOMAIN" /> gestiona aquest usuari. És possible que gestioni la configuració i monitori l'activitat de l'usuari de manera remota.</translation>
 <translation id="8747900814994928677">Confirma el canvi</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Intents restants: <ph name="ATTEMPTS_LEFT" />.</translation>
 <translation id="910415269708673980">Actualitza el tiquet de: <ph name="PRINCIPAL_NAME" /></translation>

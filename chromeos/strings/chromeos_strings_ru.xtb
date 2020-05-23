@@ -51,7 +51,7 @@
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="808894953321890993">Сменить пароль</translation>
 <translation id="8208861521865154048">Преимущества</translation>
-<translation id="8701136875688985581">Этот аккаунт находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, из которого можно удаленно контролировать действия пользователя и менять настройки.</translation>
+<translation id="8701136875688985581">Этот аккаунт находится под управлением домена <ph name="ENROLLMENT_DOMAIN" />, из которого можно отслеживать действия пользователя и удаленно изменять настройки.</translation>
 <translation id="8747900814994928677">Подтверждение изменений</translation>
 <translation id="89415009803968170"><ph name="ERROR_MESSAGE" /> Осталось попыток: <ph name="ATTEMPTS_LEFT" />.</translation>
 <translation id="910415269708673980">Обновите билет для аккаунта <ph name="PRINCIPAL_NAME" />.</translation>

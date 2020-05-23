@@ -10,6 +10,7 @@
 <translation id="1030706264415084469"><ph name="URL" /> ចង់ផ្ទុក​ទិន្នន័យ​ទំហំធំ​នៅលើ​ឧបករណ៍​របស់អ្នក​ជា​អចិន្ត្រៃយ៍</translation>
 <translation id="1032854598605920125">បង្វិលតាមទ្រនិចនាឡិកា</translation>
 <translation id="1036348656032585052">បិទ</translation>
+<translation id="1038106730571050514">បង្ហាញ​ការណែនាំ</translation>
 <translation id="1038842779957582377">ឈ្មោះមិនស្គាល់</translation>
 <translation id="1041998700806130099">សារអំពី​សន្លឹកកិច្ចការ</translation>
 <translation id="1050038467049342496">បិទ​កម្មវិធី​ផ្សេងទៀត</translation>
@@ -404,6 +405,7 @@
 <translation id="2666092431469916601">ខាងលើ</translation>
 <translation id="2666117266261740852">បិទផ្ទាំង ឬកម្មវិធីផ្សេងទៀត</translation>
 <translation id="2674170444375937751">តើអ្នកប្រាកដថាចង់លុបទំព័រទាំងនេះចេញពីប្រវត្តិរបស់អ្នកឬទេ?</translation>
+<translation id="2674804415323431591">លាក់​ការ​ណែនាំ</translation>
 <translation id="2676271551327853224">Roc-8K</translation>
 <translation id="2677748264148917807">ចាកចេញ</translation>
 <translation id="2684561033061424857">11x12</translation>
@@ -1085,6 +1087,7 @@
 <translation id="5523118979700054094">ឈ្មោះគោលការណ៍</translation>
 <translation id="55293785478302737">ដេរ​គែម</translation>
 <translation id="553484882784876924">Prc6 (ស្រោម​សំបុត្រ)</translation>
+<translation id="5536214594743852365">បង្ហាញ​ផ្នែក "<ph name="SECTION" />"</translation>
 <translation id="5539243836947087108">ទម្រសំប៉ែត</translation>
 <translation id="5540224163453853">មិនអាចស្វែងរកអត្ថបទដែលបានស្នើទេ។</translation>
 <translation id="5541086400771735334">ប្រអប់​សំបុត្រទី 7</translation>
@@ -1484,6 +1487,7 @@
 <translation id="7313965965371928911">ការព្រមាន​ពី<ph name="BEGIN_LINK" />មុខងាររុករក​ដោយ​សុវត្ថិភាព<ph name="END_LINK" /></translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7320336641823683070">ជំនួយ​ការតភ្ជាប់</translation>
+<translation id="7323804146520582233">លាក់​ផ្នែក "<ph name="SECTION" />"</translation>
 <translation id="733354035281974745">ការលុបពីលើ​គណនី​មូលដ្ឋាន​ក្នុង​ឧបករណ៍</translation>
 <translation id="7333654844024768166">អ្នកទើបតែ​បានបញ្ចូល​ពាក្យសម្ងាត់​របស់អ្នក​នៅលើ​គេហទំព័របញ្ឆោត។ Chromium សូមណែនាំឱ្យ​ចូលទៅកាន់ <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, <ph name="WEBSITE_3" /> និងគេហទំព័រ​ផ្សេងទៀត ​ដែលអ្នកប្រើ​ពាក្យសម្ងាត់​នេះ រួច​ប្ដូរ​វាឥឡូវនេះ។</translation>
 <translation id="7334320624316649418">ធ្វើការតម្រៀបឡើងវិញ</translation>

@@ -15,11 +15,11 @@ MoveTreeWorkItem::~MoveTreeWorkItem() {
 
 MoveTreeWorkItem::MoveTreeWorkItem(const base::FilePath& source_path,
                                    const base::FilePath& dest_path,
-                                   const base::FilePath& temp_dir,
+                                   const base::FilePath& temp_path,
                                    MoveTreeOption duplicate_option)
     : source_path_(source_path),
       dest_path_(dest_path),
-      temp_dir_(temp_dir),
+      temp_path_(temp_path),
       moved_to_dest_path_(false),
       moved_to_backup_(false),
       source_moved_to_backup_(false),
@@ -42,9 +42,9 @@ bool MoveTreeWorkItem::DoImpl() {
   //    fail if files in dest_path_ are in use.
   if (base::PathExists(dest_path_)) {
     // Generate a backup path that can keep the original files under dest_path_.
-    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_dir_)) {
+    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
       PLOG(ERROR) << "Failed to get backup path in folder "
-                  << temp_dir_.value();
+                  << temp_path_.value();
       return false;
     }
     base::FilePath backup =

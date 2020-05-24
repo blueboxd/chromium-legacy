@@ -14,9 +14,6 @@ namespace switches {
 // permissable.
 const char kAllowDowngrade[] = "allow-downgrade";
 
-// Run the installer for Chrome SxS.
-const char kChromeSxS[] = "chrome-sxs";
-
 // Create shortcuts for this user to point to a system-level install (which
 // must already be installed on the machine). The shortcuts created will
 // match the preferences of the already present system-level install as such

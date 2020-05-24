@@ -1865,6 +1865,7 @@ if (!is_android) {
         "//chrome/common/extensions/api",
         "//chrome/services/media_gallery_util/public/cpp:browser_tests",
         "//chrome/test/media_router:browser_tests",
+        "//components/content_settings/core/test:test_support",
         "//components/guest_view/browser:test_support",
         "//components/keep_alive_registry",
         "//google_apis/drive:test_support",

@@ -18,6 +18,8 @@
 #include "chrome/common/extensions/api/settings_private.h"
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/test/content_settings_mock_provider.h"
+#include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -109,6 +111,18 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetDisabledPref) {
       ->SetDefaultContentSetting(ContentSettingsType::COOKIES,
                                  ContentSetting::CONTENT_SETTING_BLOCK);
   EXPECT_TRUE(RunSettingsSubtest("getDisabledPref")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetPartiallyManagedPref) {
+  auto provider = std::make_unique<content_settings::MockProvider>();
+  provider->SetWebsiteSetting(
+      ContentSettingsPattern::Wildcard(), ContentSettingsPattern::Wildcard(),
+      ContentSettingsType::COOKIES, std::string(),
+      std::make_unique<base::Value>(ContentSetting::CONTENT_SETTING_ALLOW));
+  content_settings::TestUtils::OverrideProvider(
+      HostContentSettingsMapFactory::GetForProfile(profile()),
+      std::move(provider), HostContentSettingsMap::POLICY_PROVIDER);
+  EXPECT_TRUE(RunSettingsSubtest("getPartiallyManagedPref")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivateApiTest, GetAllPrefs) {

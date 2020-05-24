@@ -14,12 +14,12 @@ CopyTreeWorkItem::~CopyTreeWorkItem() {
 
 CopyTreeWorkItem::CopyTreeWorkItem(const base::FilePath& source_path,
                                    const base::FilePath& dest_path,
-                                   const base::FilePath& temp_dir,
+                                   const base::FilePath& temp_path,
                                    CopyOverWriteOption overwrite_option,
                                    const base::FilePath& alternative_path)
     : source_path_(source_path),
       dest_path_(dest_path),
-      temp_dir_(temp_dir),
+      temp_path_(temp_path),
       overwrite_option_(overwrite_option),
       alternative_path_(alternative_path),
       copied_to_dest_path_(false),
@@ -70,9 +70,9 @@ bool CopyTreeWorkItem::DoImpl() {
 
   // In all cases that reach here, move dest to a backup path.
   if (dest_exist) {
-    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_dir_)) {
+    if (!backup_path_.CreateUniqueTempDirUnderPath(temp_path_)) {
       PLOG(ERROR) << "Failed to get backup path in folder "
-                  << temp_dir_.value();
+                  << temp_path_.value();
       return false;
     }
     backup_path_created_ = true;

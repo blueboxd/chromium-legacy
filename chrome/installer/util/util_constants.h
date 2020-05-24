@@ -149,7 +149,6 @@ enum InstallerStage {
 namespace switches {
 
 extern const char kAllowDowngrade[];
-extern const char kChromeSxS[];
 extern const char kConfigureUserSettings[];
 extern const char kCriticalUpdateVersion[];
 extern const char kDeleteOldVersions[];

@@ -82,13 +82,13 @@ WorkItem* WorkItemList::AddCallbackWorkItem(
 WorkItem* WorkItemList::AddCopyTreeWorkItem(
     const std::wstring& source_path,
     const std::wstring& dest_path,
-    const std::wstring& temp_dir,
+    const std::wstring& temp_path,
     CopyOverWriteOption overwrite_option,
     const std::wstring& alternative_path) {
   WorkItem* item = WorkItem::CreateCopyTreeWorkItem(
       base::FilePath(source_path),
       base::FilePath(dest_path),
-      base::FilePath(temp_dir),
+      base::FilePath(temp_path),
       overwrite_option,
       base::FilePath(alternative_path));
   AddWorkItem(item);
@@ -139,11 +139,11 @@ WorkItem* WorkItemList::AddDeleteTreeWorkItem(const base::FilePath& root_path,
 
 WorkItem* WorkItemList::AddMoveTreeWorkItem(const std::wstring& source_path,
                                             const std::wstring& dest_path,
-                                            const std::wstring& temp_dir,
+                                            const std::wstring& temp_path,
                                             MoveTreeOption duplicate_option) {
   WorkItem* item = WorkItem::CreateMoveTreeWorkItem(base::FilePath(source_path),
                                                     base::FilePath(dest_path),
-                                                    base::FilePath(temp_dir),
+                                                    base::FilePath(temp_path),
                                                     duplicate_option);
   AddWorkItem(item);
   return item;

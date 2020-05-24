@@ -43,11 +43,11 @@ class WorkItemList : public WorkItem {
 
   // Add a CopyTreeWorkItem to the list of work items.
   // See the NOTE in the documentation for the CopyTreeWorkItem class for
-  // special considerations regarding |temp_dir|.
+  // special considerations regarding |temp_path|.
   virtual WorkItem* AddCopyTreeWorkItem(
       const std::wstring& source_path,
       const std::wstring& dest_path,
-      const std::wstring& temp_dir,
+      const std::wstring& temp_path,
       CopyOverWriteOption overwrite_option,
       const std::wstring& alternative_path = L"");
 
@@ -81,7 +81,7 @@ class WorkItemList : public WorkItem {
   // Add a MoveTreeWorkItem to the list of work items.
   virtual WorkItem* AddMoveTreeWorkItem(const std::wstring& source_path,
                                         const std::wstring& dest_path,
-                                        const std::wstring& temp_dir,
+                                        const std::wstring& temp_path,
                                         MoveTreeOption duplicate_option);
 
   // Add a SetRegValueWorkItem that sets a registry value with REG_SZ type

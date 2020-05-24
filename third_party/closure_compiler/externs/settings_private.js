@@ -57,6 +57,7 @@ chrome.settingsPrivate.Enforcement = {
  *   controlledByName: (string|undefined),
  *   enforcement: (!chrome.settingsPrivate.Enforcement|undefined),
  *   recommendedValue: (*|undefined),
+ *   userSelectableValues: (!Array<*>|undefined),
  *   userControlDisabled: (boolean|undefined),
  *   extensionId: (string|undefined),
  *   extensionCanBeDisabled: (boolean|undefined)

@@ -15,6 +15,18 @@
 namespace content_settings {
 
 extern const char kCookieSessionOnly[];
+extern const char kCookiePrimarySetting[];
+
+// Must be kept in sync with the CookiesControl enum located in
+// chrome/browser/resources/settings/privacy_page/cookies_page.js
+// TODO(crbug.com/1063265): Rename JS enum to match this one when the generated
+//    preference is used in production code.
+enum class CookiePrimarySetting {
+  ALLOW_ALL,
+  BLOCK_THIRD_PARTY_INCOGNITO,
+  BLOCK_THIRD_PARTY,
+  BLOCK_ALL
+};
 
 // The base class for generated preferences which support WebUI cookie controls
 // that do not not map completely to individual preferences or content settings.
@@ -30,6 +42,7 @@ class GeneratedCookiePrefBase
                                const ContentSettingsPattern& secondary_pattern,
                                ContentSettingsType content_type,
                                const std::string& resource_identifier) override;
+  void OnCookiePreferencesChanged();
 
  protected:
   GeneratedCookiePrefBase(Profile* profile, const std::string& pref_name_);
@@ -38,6 +51,18 @@ class GeneratedCookiePrefBase
   const std::string pref_name_;
   ScopedObserver<HostContentSettingsMap, content_settings::Observer>
       content_settings_observer_{this};
+  PrefChangeRegistrar user_prefs_registrar_;
+};
+
+class GeneratedCookiePrimarySettingPref : public GeneratedCookiePrefBase {
+ public:
+  explicit GeneratedCookiePrimarySettingPref(Profile* profile);
+
+  // Generated Preference Interface.
+  extensions::settings_private::SetPrefResult SetPref(
+      const base::Value* value) override;
+  std::unique_ptr<extensions::api::settings_private::PrefObject> GetPrefObject()
+      const override;
 };
 
 class GeneratedCookieSessionOnlyPref : public GeneratedCookiePrefBase {

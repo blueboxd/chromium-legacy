@@ -106,7 +106,7 @@ class WorkItem {
   static CopyTreeWorkItem* CreateCopyTreeWorkItem(
       const base::FilePath& source_path,
       const base::FilePath& dest_path,
-      const base::FilePath& temp_dir,
+      const base::FilePath& temp_path,
       CopyOverWriteOption overwrite_option,
       const base::FilePath& alternative_path);
 
@@ -145,7 +145,7 @@ class WorkItem {
   static MoveTreeWorkItem* CreateMoveTreeWorkItem(
       const base::FilePath& source_path,
       const base::FilePath& dest_path,
-      const base::FilePath& temp_dir,
+      const base::FilePath& temp_path,
       MoveTreeOption duplicate_option);
 
   // Create a SetRegValueWorkItem that sets a registry value with REG_SZ type

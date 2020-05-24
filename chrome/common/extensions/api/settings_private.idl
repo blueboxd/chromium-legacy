@@ -60,6 +60,12 @@ namespace settingsPrivate {
     // The recommended value if enforcement == RECOMMENDED.
     any? recommendedValue;
 
+    // If enforcement == ENFORCED this optionally specifies preference values
+    // that are still available for selection by the user. If set, must contain
+    // at least 2 distinct values, as must contain |value| and
+    // |recommendedValue| (if present).
+    any[]? userSelectableValues;
+
     // If true, user control of the preference is disabled for reasons unrelated
     // to controlledBy (e.g. no signed-in profile is present). A false value is
     // a no-op.

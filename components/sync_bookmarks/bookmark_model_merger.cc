@@ -179,57 +179,102 @@ BookmarksGUIDDuplicates MatchBookmarksGUIDDuplicates(
                        : BookmarksGUIDDuplicates::kDifferentUrls;
 }
 
+void ReparentAllChildren(const std::string& from_parent_id,
+                         const std::string& to_parent_id,
+                         UpdatesPerParentId* updates_per_parent_id) {
+  // Any of parents may be empty.
+  auto from_parent_updates_iter = updates_per_parent_id->find(from_parent_id);
+  if (from_parent_updates_iter == updates_per_parent_id->end()) {
+    // There is nothing to merge.
+    return;
+  }
+
+  // Update parent ids for all entities before moving.
+  for (auto& update : from_parent_updates_iter->second) {
+    DCHECK_EQ(update.entity.parent_id, from_parent_id);
+    update.entity.parent_id = to_parent_id;
+  }
+
+  // Move all elements to a new parent (create one if it didn't exist).
+  (*updates_per_parent_id)[to_parent_id].splice(
+      (*updates_per_parent_id)[to_parent_id].end(),
+      from_parent_updates_iter->second);
+  updates_per_parent_id->erase(from_parent_id);
+
+  // No need to update iterators since splice doesn't invalidate them.
+}
+
 void DeduplicateValidUpdatesByGUID(UpdatesPerParentId* updates_per_parent_id) {
   DCHECK(updates_per_parent_id);
 
   std::unordered_map<std::string, std::list<UpdateResponseData>::iterator>
       guid_to_update;
+
+  // Removing data in a separate loop helps easier merge parents since one of
+  // them may have already been processed.
+  std::list<std::list<UpdateResponseData>::iterator> updates_to_remove;
   for (auto& parent_id_and_updates : *updates_per_parent_id) {
     std::list<UpdateResponseData>* updates = &parent_id_and_updates.second;
-    for (auto updates_iter = updates->begin();
-         updates_iter != updates->end();) {
+    for (auto updates_iter = updates->begin(); updates_iter != updates->end();
+         ++updates_iter) {
       const UpdateResponseData& update = *updates_iter;
+      DCHECK(!update.entity.is_deleted());
+
       const std::string& guid_in_specifics =
           update.entity.specifics.bookmark().guid();
       DCHECK(!guid_in_specifics.empty());
 
       auto it_and_success =
           guid_to_update.emplace(guid_in_specifics, updates_iter);
-      if (!it_and_success.second) {
-        const UpdateResponseData& duplicate_update =
-            *it_and_success.first->second;
-        DCHECK_EQ(guid_in_specifics,
-                  duplicate_update.entity.specifics.bookmark().guid());
-        DLOG(ERROR) << "Duplicate guid for new sync ID " << update.entity.id
-                    << " and original sync ID " << duplicate_update.entity.id;
-        const BookmarksGUIDDuplicates match_result =
-            MatchBookmarksGUIDDuplicates(update, duplicate_update);
-        base::UmaHistogramEnumeration("Sync.BookmarksGUIDDuplicates",
-                                      match_result);
-        if (match_result == BookmarksGUIDDuplicates::kMatchingUrls ||
-            match_result == BookmarksGUIDDuplicates::kDifferentUrls) {
-          // For folders it is too dangerous to remove them since they may have
-          // many descendants.
-          // TODO(rushans): implement for folders by merging all descendants.
-          if (base::FeatureList::IsEnabled(
-                  switches::kSyncDeduplicateAllBookmarksWithSameGUID)) {
-            // Choose the entity which is created later.
-            if (update.entity.creation_time <
-                duplicate_update.entity.creation_time) {
-              updates_iter = updates->erase(updates_iter);
-              continue;
-            }
-            auto duplicate_updates_iter =
-                updates_per_parent_id->find(duplicate_update.entity.parent_id);
-            DCHECK(duplicate_updates_iter != updates_per_parent_id->end());
-            duplicate_updates_iter->second.erase(
-                guid_to_update[guid_in_specifics]);
-            guid_to_update[guid_in_specifics] = updates_iter;
-          }
-        }
+      if (it_and_success.second) {
+        continue;
       }
-      ++updates_iter;
+      const UpdateResponseData& duplicate_update =
+          *it_and_success.first->second;
+      DCHECK_EQ(guid_in_specifics,
+                duplicate_update.entity.specifics.bookmark().guid());
+      DLOG(ERROR) << "Duplicate guid for new sync ID " << update.entity.id
+                  << " and original sync ID " << duplicate_update.entity.id;
+      const BookmarksGUIDDuplicates match_result =
+          MatchBookmarksGUIDDuplicates(update, duplicate_update);
+      base::UmaHistogramEnumeration("Sync.BookmarksGUIDDuplicates",
+                                    match_result);
+      if (match_result == BookmarksGUIDDuplicates::kDifferentTypes ||
+          !base::FeatureList::IsEnabled(
+              switches::kSyncDeduplicateAllBookmarksWithSameGUID)) {
+        // There shouldn't be cases with different types for duplicate
+        // entities.
+        continue;
+      }
+
+      // Choose the latest element to keep.
+      if (update.entity.creation_time > duplicate_update.entity.creation_time) {
+        updates_to_remove.push_back(it_and_success.first->second);
+        // Update |guid_to_update| to find a duplicate folder and merge them.
+        guid_to_update[guid_in_specifics] = updates_iter;
+      } else {
+        updates_to_remove.push_back(updates_iter);
+      }
     }
+  }
+
+  for (std::list<UpdateResponseData>::iterator updates_iter :
+       updates_to_remove) {
+    if (updates_iter->entity.is_folder) {
+      const std::string& guid =
+          updates_iter->entity.specifics.bookmark().guid();
+      DCHECK_EQ(1U, guid_to_update.count(guid));
+      DCHECK(guid_to_update[guid] != updates_iter);
+      // Merge doesn't affect iterators.
+      ReparentAllChildren(
+          /*from_parent_id=*/updates_iter->entity.id,
+          /*to_parent_id=*/guid_to_update[guid]->entity.id,
+          updates_per_parent_id);
+    }
+
+    const std::string& parent_id = updates_iter->entity.parent_id;
+    DCHECK_EQ(1U, updates_per_parent_id->count(parent_id));
+    (*updates_per_parent_id)[parent_id].erase(updates_iter);
   }
 }
 

@@ -228,7 +228,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile) {
 
   // false for incognito mode profile.
   EXPECT_FALSE(
-      IsArcAllowedForProfileOnFirstCall(profile()->GetOffTheRecordProfile()));
+      IsArcAllowedForProfileOnFirstCall(profile()->GetPrimaryOTRProfile()));
 
   // false for Legacy supervised user.
   profile()->SetSupervisedUserId("foo");
@@ -247,7 +247,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfileLegacy) {
 
   // false for incognito mode profile.
   EXPECT_FALSE(
-      IsArcAllowedForProfileOnFirstCall(profile()->GetOffTheRecordProfile()));
+      IsArcAllowedForProfileOnFirstCall(profile()->GetPrimaryOTRProfile()));
 
   // false for Legacy supervised user.
   profile()->SetSupervisedUserId("foo");

@@ -116,55 +116,54 @@ void CheckPasswordGenerationUKM(const ukm::TestAutoSetUkmRecorder& recorder,
 
 class MockFormSaver : public StubFormSaver {
  public:
-  MockFormSaver() = default;
-
-  ~MockFormSaver() override = default;
-
   // FormSaver:
-  MOCK_METHOD1(PermanentlyBlacklist, PasswordForm(PasswordStore::FormDigest));
-  MOCK_METHOD1(Unblacklist, void(const PasswordStore::FormDigest&));
-  MOCK_METHOD3(Save,
-               void(PasswordForm pending,
-                    const std::vector<const PasswordForm*>& matches,
-                    const base::string16& old_password));
-  MOCK_METHOD3(Update,
-               void(PasswordForm pending,
-                    const std::vector<const PasswordForm*>& matches,
-                    const base::string16& old_password));
-  MOCK_METHOD4(UpdateReplace,
-               void(PasswordForm pending,
-                    const std::vector<const PasswordForm*>& matches,
-                    const base::string16& old_password,
-                    const PasswordForm& old_unique_key));
-  MOCK_METHOD1(Remove, void(const PasswordForm&));
+  MOCK_METHOD(PasswordForm,
+              PermanentlyBlacklist,
+              (PasswordStore::FormDigest),
+              (override));
+  MOCK_METHOD(void,
+              Unblacklist,
+              (const PasswordStore::FormDigest&),
+              (override));
+  MOCK_METHOD(void,
+              Save,
+              (PasswordForm pending,
+               const std::vector<const PasswordForm*>& matches,
+               const base::string16& old_password),
+              (override));
+  MOCK_METHOD(void,
+              Update,
+              (PasswordForm pending,
+               const std::vector<const PasswordForm*>& matches,
+               const base::string16& old_password),
+              (override));
+  MOCK_METHOD(void,
+              UpdateReplace,
+              (PasswordForm pending,
+               const std::vector<const PasswordForm*>& matches,
+               const base::string16& old_password,
+               const PasswordForm& old_unique_key),
+              (override));
+  MOCK_METHOD(void, Remove, (const PasswordForm&), (override));
 
   std::unique_ptr<FormSaver> Clone() override {
     return std::make_unique<MockFormSaver>();
   }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockFormSaver);
 };
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MockPasswordManagerClient() = default;
-  ~MockPasswordManagerClient() override = default;
-
-  MOCK_CONST_METHOD0(IsIncognito, bool());
-
-  MOCK_METHOD0(GetAutofillDownloadManager,
-               autofill::AutofillDownloadManager*());
-
-  MOCK_METHOD0(UpdateFormManagers, void());
-
-  MOCK_METHOD2(AutofillHttpAuth,
-               void(const PasswordForm&, const PasswordFormManagerForUI*));
-
-  MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
+  MOCK_METHOD(bool, IsIncognito, (), (const, override));
+  MOCK_METHOD(autofill::AutofillDownloadManager*,
+              GetAutofillDownloadManager,
+              (),
+              (override));
+  MOCK_METHOD(void, UpdateFormManagers, (), (override));
+  MOCK_METHOD(void,
+              AutofillHttpAuth,
+              (const PasswordForm&, const PasswordFormManagerForUI*),
+              (override));
+  MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
 };
 
 class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
@@ -172,13 +171,15 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
   MockAutofillDownloadManager()
       : AutofillDownloadManager(nullptr, &fake_observer) {}
 
-  MOCK_METHOD6(StartUploadRequest,
-               bool(const FormStructure&,
-                    bool,
-                    const autofill::ServerFieldTypeSet&,
-                    const std::string&,
-                    bool,
-                    PrefService*));
+  MOCK_METHOD(bool,
+              StartUploadRequest,
+              (const FormStructure&,
+               bool,
+               const autofill::ServerFieldTypeSet&,
+               const std::string&,
+               bool,
+               PrefService*),
+              (override));
 
  private:
   class StubObserver : public AutofillDownloadManager::Observer {
@@ -296,7 +297,7 @@ class PasswordSaveManagerImplTest : public testing::Test,
     fetcher_->Fetch();
 
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-        client_.IsMainFrameSecure(), client_.GetUkmSourceId());
+        client_.IsCommittedMainFrameSecure(), client_.GetUkmSourceId());
     auto mock_form_saver = std::make_unique<NiceMock<MockFormSaver>>();
     mock_form_saver_ = mock_form_saver.get();
 

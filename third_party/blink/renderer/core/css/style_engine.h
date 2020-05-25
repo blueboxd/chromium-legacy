@@ -134,6 +134,7 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   void WatchedSelectorsChanged();
   void InitialStyleChanged();
   void ColorSchemeChanged();
+  void PrintingStateChanged();
   void InitialViewportChanged();
   void ViewportRulesChanged();
   void HtmlImportAddedOrRemoved();

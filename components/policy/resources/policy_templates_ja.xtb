@@ -164,6 +164,7 @@
 
 このポリシーが未設定の場合は、3 時間に 1 回の頻度となります。最短で 60 秒に 1 回の頻度を指定できます。</translation>
 <translation id="1204263402976895730">有効な企業プリンタ</translation>
+<translation id="120937472976628837">ファン情報を報告する</translation>
 <translation id="1216919699175573511">Signed HTTP Exchange（SXG）のサポートを有効にします</translation>
 <translation id="1219695476179627719">デバイスですでに新しいバージョンを実行している場合に、<ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> で設定されているバージョンに戻すかどうかを指定します。
 
@@ -189,11 +190,6 @@
 <translation id="1257550411839719984">デフォルトのダウンロード ディレクトリを設定する</translation>
 <translation id="1265053460044691532">SAML 経由で認証されたユーザーがオフラインでログインできる時間を制限する</translation>
 <translation id="127264587838521316"><ph name="PRODUCT_NAME" /> 拡張機能のインストールのリクエストを有効にする</translation>
-<translation id="1288785611471943470">このポリシーはサポートが終了しており、バージョン 84 で削除されます。代わりに <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> を使用してください。<ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> を無効にした場合は、<ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> を無効にした場合と同じになります。<ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> を有効にした場合や未設定のままにした場合は、<ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> が未設定の場合と同じになります。
-
-      このポリシーを false に設定した場合、ユーザーは Google サーバーに一部のシステム情報やページのコンテンツを送信するよう指定できなくなります。このポリシーを true に設定するか未設定のままにした場合、ユーザーは危険なアプリやサイトの検出に役立てるため、一部のシステム情報やページのコンテンツをセーフ ブラウジングに送信できます。
-
-      セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。</translation>
 <translation id="1290634681382861275">USB、Bluetooth、ポリシーの更新、デベロッパー モードなど、その他の設定を制御します。</translation>
 <translation id="1291880496936992484">警告: <ph name="PRODUCT_NAME" /> ではバージョン 52 で RC4 のサポートを完全に終了し（2016 年 9 月頃）、このポリシーも機能しなくなります。
 
@@ -1201,6 +1197,10 @@
       注: こうした通常の制限は、ウェブページのコンテンツやコンテキスト メニューの [リンクをダウンロード] オプションからダウンロードを呼び出す場合に適用されます。現在表示中のページを保存またはダウンロードする場合、あるいは印刷オプションから PDF への保存を選択する場合には適用されません。
 
       セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。</translation>
+<translation id="2696077732471707315">
+      このポリシーは M77 で削除されました。
+      このポリシーはログイン画面に適用されます。ユーザー セッションに適用される <ph name="SITE_PER_PROCESS_POLICY_NAME" /> ポリシーもご覧になり、両方のポリシーを同じ値に設定することをおすすめします。値が一致しない場合、ユーザー セッションの開始時にはユーザー ポリシーで指定された値が適用されますが、その際に遅延が生じる可能性があります。
+      </translation>
 <translation id="2706708761587205154">PIN ありの印刷のみを許可します</translation>
 <translation id="2707873794476722903">セーフ ブラウジングを標準モードで有効にする。</translation>
 <translation id="2710534340210290498">このポリシーが false の場合、ユーザーは画面をロックできません（ユーザー セッションからのログアウトのみ可能です）。このポリシーが true または未設定の場合、パスワードで認証されたユーザーは画面をロックできます。</translation>
@@ -2099,6 +2099,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
 このポリシーが未設定の場合は、「AllowCookies」が使用され、ユーザーは設定を変更できます。</translation>
 <translation id="4093716537292423758">サポートされていないファイル形式をブロックしない</translation>
+<translation id="4097556069183835428">このポリシーを None（なし）に設定した場合、拡大鏡が無効になります。
+
+      このポリシーを設定した場合、ユーザーは設定を変更できません。設定しない場合、拡大鏡は最初は無効ですが、ユーザーはいつでも有効にできます。</translation>
 <translation id="410068710490553233">別の Google アカウントへのログインを許可する</translation>
 <translation id="4103289232974211388">ユーザーの確認後に SAML IdP にリダイレクトする</translation>
 <translation id="4105884561459127998">SAML ログインの認証のタイプを設定します。
@@ -2250,6 +2253,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       ポリシーでアプリ ID が指定されているからといって、必ずしもユーザーがそのアプリをロック画面でメモ作成アプリとして有効にできるとは限りません。たとえば Chrome 61 では、プラットフォームによって、利用可能なアプリに関する追加の制限が課されます。
 
       このポリシーが未設定のままの場合は、ユーザーがロック画面で有効にできるアプリに関して、ポリシーによる制限は課されません。</translation>
+<translation id="4311195029067684288">フル</translation>
 <translation id="4313767483634435271">デバイスで指定されたホルダーの MAC アドレス</translation>
 <translation id="4322842393287974810">遅延なしで自動開始されるキオスクアプリから <ph name="PRODUCT_OS_NAME" /> のバージョンを制御できるようにする</translation>
 <translation id="4325690621216251241">システム トレイにログアウト ボタンを追加する</translation>
@@ -2356,6 +2360,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       この設定を有効または無効にすると、ユーザーは <ph name="PRODUCT_NAME" /> でこの設定の変更やオーバーライドができなくなります。
 
       このポリシーが未設定の場合は有効になりますが、ユーザーはこの設定を変更できます。</translation>
+<translation id="4529868888205510667">このポリシーを True に設定するか未設定のままにした場合、ユーザーは ARC を使用できます（ARC が他の方法でオフになっている場合を除く）。このポリシーを False に設定した場合、外部のユーザーは ARC を使用できない場合があります。
+
+      このポリシーの変更内容は、Chrome OS の開始時など、ARC が実行されていないときにのみ適用されます。</translation>
 <translation id="453031441196755904">このポリシーはサポートを終了しました。</translation>
 <translation id="4531706050939927436">Android アプリを強制的にインストールするには、Google 管理コンソールで Google Play からのインストールを指定します。Android アプリでこのポリシーは使用されません。</translation>
 <translation id="4534500438517478692">Android の制限名:</translation>
@@ -3071,6 +3078,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
         このポリシーが false に設定されている場合、ユーザーは Google にフィードバックを送信できません。
 
         このポリシーが未設定か true に設定されている場合、ユーザーはメニューの [ヘルプ] で [問題の報告] をクリックするか、ショートカット キーを押して、Google にフィードバックを送信できます。</translation>
+<translation id="5579179012798142131">ArcEnabled を True に設定するとユーザーの ARC はオンになります（ユーザーのセッション中に一時ログインモードまたはマルチログインがオンになっている場合を除く）。このポリシーを False に設定するか未設定のままにした場合、企業ユーザーは ARC を使用できません。</translation>
 <translation id="5583806683960333345">この設定が有効な場合、ユーザーはインスタント テザリングを使用できます。インスタント テザリングを利用して、Google スマートフォンは関連デバイスとモバイルデータを共有できます。
 
       この設定が無効な場合、ユーザーはインスタント テザリングを使用できません。
@@ -3207,6 +3215,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーを True に設定した場合、Web Components v0 の機能はすべてのサイトで有効になります。このポリシーを False に設定するか未設定のままにした場合、Web Components v0 の機能は M80 以降においてデフォルトで無効になります。
 
       このポリシーは、Chrome 84 以降で削除されます。</translation>
+<translation id="5756680608782814094">デバイスの VPD に関する情報を報告します。
+
+      このポリシーを false に設定するか未設定のままにした場合、この情報は報告されません。
+      このポリシーを true に設定した場合、デバイスの VPD に関する情報が報告されます。
+      バイタル商品データ （VPD）は、デバイスに関連付けられた一連の構成データと情報データ（部品およびシリアル番号など）です。</translation>
 <translation id="5765780083710877561">説明:</translation>
 <translation id="5770738360657678870">Dev チャンネル（不安定な場合があります）</translation>
 <translation id="5774856474228476867">デフォルトの検索プロバイダの検索 URL</translation>
@@ -3321,6 +3334,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーを false に設定した場合、制限は適用されません。
       このポリシーを true に設定した場合は、指定した送受信速度（キロビット / 秒）を超えないようにシステムに制限が適用されます。</translation>
+<translation id="5907283448020542268"><ph name="GLS_ENABLED" /> に設定した場合、Google 位置情報サービスは初期設定中オンになります（<ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> ポリシーが <ph name="BLOCK_GEOLOCATION_SETTING" />に設定されている場合を除く）。このポリシーを <ph name="GLS_DISABLED" /> に設定するか未設定のままにした場合、位置情報サービスは設定中オフになります。
+
+      ポリシーを <ph name="BR_UNDER_USER_CONTROL" /> に設定した場合、Google 位置情報サービスを使用するかどうかを確認するメッセージがユーザーに表示されます。ユーザーが位置情報サービスをオンにした場合、Android アプリでは、このサービスを使ってデバイスの位置情報を照会し、Google に匿名の位置情報データを送信します。
+
+      初期設定が完了した後、ユーザーは Google 位置情報サービスのオンとオフを切り替えることができます。</translation>
 <translation id="591088232153082363">バッテリー使用状況のパターンに基づいてバッテリー充電を自動調整する。</translation>
 <translation id="5921713479449475707">HTTP 経由での自動更新ダウンロードを許可する</translation>
 <translation id="5929855945144989709">Chrome OS での仮想マシンの実行をデバイスに許可する</translation>
@@ -3605,6 +3623,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
           [.pac プロキシ スクリプトを使用する] を選択した場合は、スクリプト URL が Android アプリに通知されます。</translation>
 <translation id="6430366557948788869">Chrome レポート拡張機能</translation>
+<translation id="6438972408080276697">このポリシーを True に設定した場合、ポリシーによってトリガーされた主要な Android アプリ インストールのイベントのレポートが Google に送信されます。このポリシーを False に設定した場合、イベントはキャプチャされません</translation>
 <translation id="6440051664870270040">移動と同時にポップアップを表示することをサイトに許可する</translation>
 <translation id="6447948611083700881">バックアップと復元が無効</translation>
 <translation id="6449476513004303784">証明書の管理をユーザーに許可しない</translation>
@@ -3769,6 +3788,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーが未設定の場合やリストが空の場合は、すべてのスキームが <ph name="PRODUCT_NAME" /> でアクセス可能になります。</translation>
 <translation id="6652197835259177259">ローカルの管理対象ユーザーの設定</translation>
+<translation id="6658129069061688328">このポリシーを True に設定した場合、「ゼロ状態」での検索の際にアプリのおすすめが表示可能になります。このポリシーを False に設定した場合、これらのおすすめは表示されません。
+
+      このポリシーを設定した場合、ユーザーは設定を変更できません。未設定の場合、管理対象デバイスはデフォルトで False に設定されます。</translation>
 <translation id="6658245400435704251">最初にアップデートがサーバーにプッシュされた時刻から、デバイスによるアップデートのダウンロードをランダムに遅延できる最大時間を秒数で指定します。デバイスは、この時間の一部を実際の経過時間として、残りの時間をアップデート チェックとして待機できます。どのような場合でも、係数にはある一定の時間の上限があるため、アップデートのダウンロードを永遠に待機してデバイスが停止し続けることはありません。</translation>
 <translation id="6665670272107384733">ロックのクイック解除機能を使用するために必要なパスワード入力の頻度を設定する</translation>
 <translation id="6667586534922258705">ログイン画面とロック画面にパスワード表示ボタンを表示する</translation>
@@ -3906,6 +3928,12 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       報告されません。true に設定した場合は、使用情報が報告されます。
 
       このポリシーは、Linux アプリが有効になっている場合にのみ適用されます。</translation>
+<translation id="6946652757373377924">
+      このポリシーは M77 で削除されました。
+      このポリシーはログイン画面に適用されます。ユーザー セッションに適用される <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> ポリシーもご覧ください。
+      このポリシーが有効に設定されている場合、カンマ区切りのリストで指定された発行元が各自のプロセスで実行されます。また、サブドメインによって指定された発行元も分離されます。たとえば、https://example.com/ と指定すると、https://foo.example.com/ も https://example.com/ サイトの一部として分離されます。
+      このポリシーが未設定または無効に設定されている場合、ログイン画面ではプラットフォームのデフォルトのサイト分離設定が使用されます。
+      </translation>
 <translation id="69525503251220566">既定の検索プロバイダに画像検索機能を提供するパラメータ</translation>
 <translation id="6953102253399571439">デフォルトで PIN の印刷を有効にします</translation>
 <translation id="6956272732789158625">すべてのサイトにキー生成の使用を許可しない</translation>
@@ -3915,6 +3943,11 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーが True に設定されているか未設定の場合は、スマート消灯モデルが有効になり、画面が暗くなるまでの時間が必要に応じて延長されるようになります。このポリシーが False に設定されている場合は、画面が暗くなるまでの時間がスマート消灯モデルによって変更されることはありません。</translation>
 <translation id="6972540544240464302">タスク スケジューラ設定を選択します</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
+<translation id="6979739838208297344">このポリシーを <ph name="BR_ENABLED" /> に設定した場合、Android のバックアップと復元は初期状態でオンになります。このポリシーを <ph name="BR_DISABLED" /> に設定するか未設定のままにした場合、バックアップと復元は設定中オフになります。
+
+      このポリシーを <ph name="BR_UNDER_USER_CONTROL" /> に設定した場合、バックアップと復元を使用するよう促すメッセージがユーザーに表示されます。ユーザーがバックアップと復元をオンにした場合は、Android アプリのデータが Android のバックアップ サーバーにアップロードされ、対応するアプリの再インストール時にデータが復元されます。
+
+      初期設定が完了した後、ユーザーはバックアップと復元のオンとオフを切り替えることができます。</translation>
 <translation id="6991078864332103177">このポリシーでは、ユーザーを識別できる情報（OS のログイン、<ph name="PRODUCT_NAME" /> プロフィールのログイン、<ph name="PRODUCT_NAME" /> プロフィール名、<ph name="PRODUCT_NAME" /> プロフィールのパス、<ph name="PRODUCT_NAME" /> 実行ファイルのパスなど）について、レポートを作成するかどうかを管理します。
 
       このポリシーが未設定または True に設定されている場合、ユーザーを識別できる情報が収集されます。
@@ -3973,6 +4006,10 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
           調整比率は 100% 以上で指定する必要があります。</translation>
 <translation id="7086720321892395256">プライバシー スクリーン機能のユーザー ポリシーとデバイス ポリシーを管理します。</translation>
+<translation id="7093294902558672021">デバイスのファンに関する情報を報告します。
+
+      このポリシーを false に設定するか未設定のままにした場合、この情報は報告されません。
+      このポリシーを true に設定した場合、デバイスのファンに関する情報が報告されます。</translation>
 <translation id="710003290625031750">拡張スキーマの説明:</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> デバイスがアイドルまたは一時停止の状態になったときにロックを有効にします。
 
@@ -4181,6 +4218,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="7311458740754205918">このオプションが true に設定されているか、未設定の場合、[新しいタブ] ページには、ユーザーの閲覧履歴、興味・関心、場所に応じておすすめのコンテンツが表示されます。
 
       このオプションが false に設定されている場合、自動生成のおすすめのコンテンツは [新しいタブ] ページに表示されません。</translation>
+<translation id="731208205557053914">VPD 情報を報告する</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> の追加コマンド ライン パラメータ</translation>
 <translation id="7326394567531622570">このオプションは Wipe（値 2）と似ていますが、ログイン トークンを保持するように動作します（この場合、ユーザーの再ログインが不要になります）。</translation>
 <translation id="7329968046053403405">「<ph name="HTTP_NEGOTIATE" />」認証（Kerberos 認証など）に対応している Android 認証アプリによって提供されるアカウントの種類を指定します。この情報は、認証アプリの提供者から入手します。詳しくは、https://goo.gl/hajyfN をご覧ください。
@@ -4198,6 +4236,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
       このポリシーが設定されていない場合、自動クリーンアップは組み込みのデフォルト設定を使用します。現在、この設定は「RemoveLRUIfDormant」です。</translation>
 <translation id="7336785017449297672">時計とタイムゾーンの設定を制御します。</translation>
 <translation id="7336878834592315572">セッションの継続中は Cookie を保存する</translation>
+<translation id="7338217396351647423">ARC ランタイムに渡される一連のポリシーを指定します。管理者はこのポリシーを使って、自動インストールする Android アプリを選択できます。有効な JSON 形式で値を入力してください。
+
+      ランチャーにアプリを固定する場合は、PinnedLauncherApps をご覧ください。</translation>
 <translation id="7339315111520512972">ネットワーク用のコードをブラウザ プロセスで実行します</translation>
 <translation id="7340034977315324840">デバイス操作時間を報告する</translation>
 <translation id="7343497214039883642">デバイスの企業プリンタ設定ファイル</translation>
@@ -5072,6 +5113,10 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="8687958770985542440">M84 まで Web Components v0 API を再度有効にします。</translation>
 <translation id="8693243869659262736">組み込みの DNS クライアントを使用する</translation>
 <translation id="8698286761337647563">パスワードの期限切れを SAML ユーザーに通知する際の事前通知日数</translation>
+<translation id="8699392919012430269">デバイスの Bluetooth に関する情報を報告します。
+
+      このポリシーを false に設定するか未設定のままにした場合、この情報は報告されません。
+      このポリシーを true に設定した場合、デバイスの Bluetooth に関する情報が報告されます。</translation>
 <translation id="8701288965900240388">ウェブサイトで <ph name="FLASH_PLUGIN_NAME" /> プラグインの自動実行を許可するかどうかを設定します。<ph name="FLASH_PLUGIN_NAME" /> プラグインの自動実行をすべてのウェブサイトで許可するか、すべてのウェブサイトでブロックするかのいずれかを指定できます。
 
           「クリックして再生する」の場合、<ph name="FLASH_PLUGIN_NAME" /> プラグインの実行は許可されますが、実行されるのはユーザーがプレースホルダをクリックしたときのみとなります。
@@ -5410,6 +5455,7 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 
       このポリシーを未設定のままにするか、false に設定した場合、AppCache の設定は Chrome のデフォルト設定に準拠します。</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> のユーザー データ ディレクトリを設定する</translation>
+<translation id="935779984563655842">Bluetooth 情報を報告する</translation>
 <translation id="940706688964479124">ダウンロード後に自動的に開くファイル形式のリスト</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" /> がインストールされている場合、デフォルトの HTML レンダラを設定できます。
       デフォルト設定では、ホスト ブラウザがレンダリングを実行しますが、必要に応じてこの設定をオーバーライドして <ph name="PRODUCT_FRAME_NAME" /> にデフォルトで HTML ページのレンダリングを実行させることもできます。</translation>
@@ -5423,6 +5469,9 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="981346395360763138">Google 位置情報サービスが無効</translation>
 <translation id="982497069985795632">スペルチェックを有効にする</translation>
 <translation id="991560005425213776">ネイティブ プリンタにユーザー名とファイル名を送信する</translation>
+<translation id="99202634486128833">このポリシーを CopyCaCerts に設定した場合、ARC アプリでは ONC によってインストールされ <ph name="WEB_TRUSTED_BIT" /> を使用するすべての CA 証明書を使用できます。
+
+       None（なし）に設定するか未設定のままにした場合、ARC アプリでは <ph name="PRODUCT_OS_NAME" /> 証明書を使用できません。</translation>
 <translation id="99232017131102456">このポリシーでは、HTTP サーバー認証の認証情報をプロフィール単位でグローバルに 1 つだけキャッシュするよう設定します。
 
       このポリシーが未設定または無効な場合、ブラウザではクロスサイト認証のデフォルトの動作が使用されます。つまりバージョン 80 より、HTTP サーバー認証の認証情報のスコープはトップレベル サイトで区切られます。したがって、2 つのサイトで同じ認証ドメインからのリソースを使用している場合は、両方のサイトのコンテキストごとに認証情報を提供する必要があります。サイト間ではキャッシュされたプロキシ認証情報が再利用されます。

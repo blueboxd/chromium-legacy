@@ -302,11 +302,11 @@ class PasswordManagerClient {
   // Returns the AutofillDownloadManager for votes uploading.
   virtual autofill::AutofillDownloadManager* GetAutofillDownloadManager();
 
-  // Returns the main frame URL.
-  virtual const GURL& GetMainFrameURL() const;
-
   // Returns true if the main frame URL has a secure origin.
-  virtual bool IsMainFrameSecure() const;
+  virtual bool IsCommittedMainFrameSecure() const;
+
+  // Returns the committed main frame URL.
+  virtual const GURL& GetLastCommittedURL() const = 0;
 
   // Returns last committed origin of the main frame.
   virtual url::Origin GetLastCommittedOrigin() const = 0;

@@ -142,21 +142,19 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   MockPasswordManagerClient() = default;
   ~MockPasswordManagerClient() override = default;
 
-  MOCK_CONST_METHOD0(IsIncognito, bool());
-
-  MOCK_METHOD0(GetAutofillDownloadManager,
-               autofill::AutofillDownloadManager*());
-
-  MOCK_METHOD0(UpdateFormManagers, void());
-
-  MOCK_METHOD2(AutofillHttpAuth,
-               void(const PasswordForm&, const PasswordFormManagerForUI*));
-
-  MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
-
-  MOCK_CONST_METHOD0(GetFieldInfoManager, FieldInfoManager*());
-
-  MOCK_METHOD0(GetIdentityManager, signin::IdentityManager*());
+  MOCK_METHOD(bool, IsIncognito, (), (const, override));
+  MOCK_METHOD(autofill::AutofillDownloadManager*,
+              GetAutofillDownloadManager,
+              (),
+              (override));
+  MOCK_METHOD(void, UpdateFormManagers, (), (override));
+  MOCK_METHOD(void,
+              AutofillHttpAuth,
+              (const PasswordForm&, const PasswordFormManagerForUI*),
+              (override));
+  MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
+  MOCK_METHOD(FieldInfoManager*, GetFieldInfoManager, (), (const, override));
+  MOCK_METHOD(signin::IdentityManager*, GetIdentityManager, (), (override));
 };
 
 void CheckPendingCredentials(const PasswordForm& expected,
@@ -394,7 +392,7 @@ class PasswordFormManagerTest : public testing::Test,
 
     EXPECT_CALL(client_, GetAutofillDownloadManager())
         .WillRepeatedly(Return(&mock_autofill_download_manager_));
-    ON_CALL(client_, IsMainFrameSecure()).WillByDefault(Return(true));
+    ON_CALL(client_, IsCommittedMainFrameSecure()).WillByDefault(Return(true));
     ON_CALL(mock_autofill_download_manager_,
             StartUploadRequest(_, _, _, _, _, _))
         .WillByDefault(Return(true));

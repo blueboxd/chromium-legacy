@@ -875,7 +875,7 @@ PasswordFormManager::PasswordFormManager(
       votes_uploader_(client, false /* is_possible_change_password_form */) {
   if (!metrics_recorder_) {
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-        client_->IsMainFrameSecure(), client_->GetUkmSourceId());
+        client_->IsCommittedMainFrameSecure(), client_->GetUkmSourceId());
   }
   password_save_manager_->Init(client_, form_fetcher_, metrics_recorder_,
                                &votes_uploader_);

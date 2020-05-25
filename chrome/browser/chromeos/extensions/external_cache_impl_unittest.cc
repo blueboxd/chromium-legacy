@@ -187,7 +187,7 @@ TEST_F(ExternalCacheImplTest, Basic) {
   extensions::CRXFileInfo crx_info(temp_file2,
                                    extensions::GetTestVerifierFormat());
   crx_info.extension_id = kTestExtensionId2;
-  crx_info.expected_version = "2";
+  crx_info.expected_version = base::Version("2");
   external_cache.OnExtensionDownloadFinished(
       crx_info, true, GURL(),
       extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),
@@ -217,7 +217,7 @@ TEST_F(ExternalCacheImplTest, Basic) {
     extensions::CRXFileInfo crx_info(temp_file4,
                                      extensions::GetTestVerifierFormat());
     crx_info.extension_id = kTestExtensionId4;
-    crx_info.expected_version = "4";
+    crx_info.expected_version = base::Version("4");
     external_cache.OnExtensionDownloadFinished(
         crx_info, true, GURL(),
         extensions::ExtensionDownloaderDelegate::PingResult(), std::set<int>(),

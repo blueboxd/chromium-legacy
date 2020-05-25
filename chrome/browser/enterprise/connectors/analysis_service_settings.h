@@ -26,6 +26,9 @@ class AnalysisServiceSettings {
   // analysis should take place.
   base::Optional<AnalysisSettings> GetAnalysisSettings(const GURL& url) const;
 
+  // Get the block_until_verdict setting if the settings are valid.
+  bool ShouldBlockUntilVerdict() const;
+
  private:
   // The setting to apply when a specific URL pattern is matched.
   struct URLPatternSettings {

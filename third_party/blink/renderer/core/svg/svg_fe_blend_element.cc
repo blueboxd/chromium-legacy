@@ -106,7 +106,7 @@ bool SVGFEBlendElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEBlend* blend = static_cast<FEBlend*>(effect);
   if (attr_name == svg_names::kModeAttr)
-    return blend->SetBlendMode(ToBlendMode(mode_->CurrentValue()->EnumValue()));
+    return blend->SetBlendMode(ToBlendMode(mode_->CurrentEnumValue()));
 
   return SVGFilterPrimitiveStandardAttributes::SetFilterEffectAttribute(
       effect, attr_name);
@@ -138,7 +138,7 @@ FilterEffect* SVGFEBlendElement::Build(SVGFilterBuilder* filter_builder,
   DCHECK(input2);
 
   auto* effect = MakeGarbageCollected<FEBlend>(
-      filter, ToBlendMode(mode_->CurrentValue()->EnumValue()));
+      filter, ToBlendMode(mode_->CurrentEnumValue()));
   FilterEffectVector& input_effects = effect->InputEffects();
   input_effects.ReserveCapacity(2);
   input_effects.push_back(input1);

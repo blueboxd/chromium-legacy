@@ -897,6 +897,107 @@ TEST_F(AutofillMetricsTest, ProfileImportRequirements_AllFulfilled) {
           AddressProfileImportCountrySpecificFieldRequirementsMetric::ALL_GOOD);
 }
 
+// Test that the ProfileImportRequirements are counted correctly if only the
+// ADDRESS_HOME_LINE1 is missing.
+TEST_F(AutofillMetricsTest, ProfileImportRequirements_MissingHomeLineOne) {
+  // Set up our form data.
+  FormData form;
+  form.name = ASCIIToUTF16("TestForm");
+  form.url = GURL("http://example.com/form.html");
+  form.action = GURL("http://example.com/submit.html");
+
+  std::vector<ServerFieldType> heuristic_types, server_types;
+  FormFieldData field;
+
+  test::CreateTestFormField("Name", "name", "Elvis Aaron Presley", "text",
+                            &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(NAME_FULL);
+  server_types.push_back(NAME_FULL);
+
+  test::CreateTestFormField("Address", "home_line_one", "", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_LINE1);
+  server_types.push_back(ADDRESS_HOME_LINE1);
+
+  test::CreateTestFormField("City", "city", "New York", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_CITY);
+  server_types.push_back(ADDRESS_HOME_CITY);
+
+  test::CreateTestFormField("Phone", "phone", "2345678901", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+  server_types.push_back(PHONE_HOME_CITY_AND_NUMBER);
+
+  test::CreateTestFormField("State", "state", "CA", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_STATE);
+  server_types.push_back(ADDRESS_HOME_STATE);
+
+  test::CreateTestFormField("ZIP", "zip", "37373", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_ZIP);
+  server_types.push_back(ADDRESS_HOME_ZIP);
+
+  test::CreateTestFormField("Country", "country", "USA", "text", &field);
+  form.fields.push_back(field);
+  heuristic_types.push_back(ADDRESS_HOME_COUNTRY);
+  server_types.push_back(ADDRESS_HOME_COUNTRY);
+
+  // Simulate having seen this form on page load.
+  autofill_manager_->AddSeenForm(form, heuristic_types, server_types);
+  std::string guid(kTestGuid);
+  autofill_manager_->FillOrPreviewForm(
+      AutofillDriver::FORM_DATA_ACTION_FILL, 0, form, form.fields.front(),
+      autofill_manager_->MakeFrontendIDForTest(std::string(), guid));
+
+  // Simulate form submission.
+  base::HistogramTester histogram_tester;
+  autofill_manager_->OnFormSubmitted(form, false,
+                                     SubmissionSource::FORM_SUBMISSION);
+
+  std::vector<AddressProfileImportRequirementExpectations> expectations = {
+      {AddressImportRequirements::STATE_VALID_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::STATE_VALID_REQUIREMENT_VIOLATED, false},
+      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::EMAIL_VALID_REQUIREMENT_VIOLATED, false},
+      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::ZIP_VALID_REQUIREMENT_VIOLATED, false},
+      {AddressImportRequirements::PHONE_VALID_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::PHONE_VALID_REQUIREMENT_VIOLATED, false},
+      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_FULFILLED,
+       true},
+      {AddressImportRequirements::EMAIL_ADDRESS_UNIQUE_REQUIREMENT_VIOLATED,
+       false},
+      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_FULFILLED,
+       true},
+      {AddressImportRequirements::NO_INVALID_FIELD_TYPES_REQUIREMENT_VIOLATED,
+       false},
+      {AddressImportRequirements::CITY_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::CITY_REQUIREMENT_VIOLATED, false},
+      {AddressImportRequirements::ZIP_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::ZIP_REQUIREMENT_VIOLATED, false},
+      {AddressImportRequirements::STATE_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::STATE_REQUIREMENT_VIOLATED, false},
+      {AddressImportRequirements::OVERALL_REQUIREMENT_FULFILLED, false},
+      {AddressImportRequirements::OVERALL_REQUIREMENT_VIOLATED, true},
+      {AddressImportRequirements::LINE1_REQUIREMENT_FULFILLED, false},
+      {AddressImportRequirements::LINE1_REQUIREMENT_VIOLATED, true},
+      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_FULFILLED, true},
+      {AddressImportRequirements::ZIP_OR_STATE_REQUIREMENT_VIOLATED, false},
+  };
+
+  TestAddressProfileImportRequirements(&histogram_tester, expectations);
+
+  // The country specific ADDRESS_HOME_LINE1 field requirement was violated.
+  TestAddressProfileImportCountrySpecificFieldRequirements(
+      &histogram_tester,
+      AutofillMetrics::
+          AddressProfileImportCountrySpecificFieldRequirementsMetric::
+              LINE1_REQUIREMENT_VIOLATED);
+}
+
 // Test that the ProfileImportRequirements are all counted as fulfilled for a
 // 'perfect' profile import.
 TEST_F(AutofillMetricsTest,

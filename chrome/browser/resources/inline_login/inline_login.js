@@ -148,6 +148,7 @@ cr.define('inline.login', function() {
   function navigateBackInWebview() {
     if ($('signin-frame').canGoBack()) {
       $('signin-frame').back();
+      $('signin-frame').focus();
     } else {
       closeDialog();
     }

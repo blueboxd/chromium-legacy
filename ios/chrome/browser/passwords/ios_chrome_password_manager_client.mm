@@ -163,10 +163,6 @@ IOSChromePasswordManagerClient::GetPasswordFeatureManager() const {
   return &password_feature_manager_;
 }
 
-bool IOSChromePasswordManagerClient::IsMainFrameSecure() const {
-  return password_manager::WebStateContentIsSecureHtml(delegate_.webState);
-}
-
 PrefService* IOSChromePasswordManagerClient::GetPrefs() const {
   return (delegate_.browserState)->GetPrefs();
 }
@@ -225,6 +221,14 @@ bool IOSChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
          GURL(password_manager::kPasswordManagerAccountDashboardURL);
 }
 
+bool IOSChromePasswordManagerClient::IsCommittedMainFrameSecure() const {
+  return password_manager::WebStateContentIsSecureHtml(delegate_.webState);
+}
+
+const GURL& IOSChromePasswordManagerClient::GetLastCommittedURL() const {
+  return delegate_.lastCommittedURL;
+}
+
 url::Origin IOSChromePasswordManagerClient::GetLastCommittedOrigin() const {
   return url::Origin::Create(delegate_.lastCommittedURL);
 }
@@ -252,7 +256,7 @@ ukm::SourceId IOSChromePasswordManagerClient::GetUkmSourceId() {
 PasswordManagerMetricsRecorder*
 IOSChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmSourceId(), delegate_.lastCommittedURL,
+    metrics_recorder_.emplace(GetUkmSourceId(),
                               /*navigation_metric_recorder=*/nullptr);
   }
   return base::OptionalOrNullptr(metrics_recorder_);

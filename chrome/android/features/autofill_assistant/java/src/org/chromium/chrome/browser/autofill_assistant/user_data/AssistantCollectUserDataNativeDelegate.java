@@ -169,6 +169,44 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
         }
     }
 
+    @Override
+    public boolean isContactComplete(@Nullable AutofillContact contact) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            return AssistantCollectUserDataNativeDelegateJni.get().isContactComplete(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this,
+                    contact != null ? contact.getProfile() : null);
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isShippingAddressComplete(@Nullable AutofillAddress address) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            return AssistantCollectUserDataNativeDelegateJni.get().isShippingAddressComplete(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this,
+                    address != null ? address.getProfile() : null);
+        }
+
+        return false;
+    }
+
+    @Override
+    public boolean isPaymentInstrumentComplete(
+            @Nullable AutofillPaymentInstrument paymentInstrument) {
+        if (mNativeAssistantCollectUserDataDelegate != 0) {
+            return AssistantCollectUserDataNativeDelegateJni.get().isPaymentInstrumentComplete(
+                    mNativeAssistantCollectUserDataDelegate,
+                    AssistantCollectUserDataNativeDelegate.this,
+                    paymentInstrument != null ? paymentInstrument.getCard() : null,
+                    paymentInstrument != null ? paymentInstrument.getBillingProfile() : null);
+        }
+
+        return false;
+    }
+
     @CalledByNative
     private void clearNativePtr() {
         mNativeAssistantCollectUserDataDelegate = 0;
@@ -212,5 +250,15 @@ public class AssistantCollectUserDataNativeDelegate implements AssistantCollectU
                 AssistantCollectUserDataNativeDelegate caller, String key, AssistantValue value);
         void onTextFocusLost(long nativeAssistantCollectUserDataDelegate,
                 AssistantCollectUserDataNativeDelegate caller);
+        boolean isContactComplete(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller,
+                @Nullable PersonalDataManager.AutofillProfile address);
+        boolean isShippingAddressComplete(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller,
+                @Nullable PersonalDataManager.AutofillProfile address);
+        boolean isPaymentInstrumentComplete(long nativeAssistantCollectUserDataDelegate,
+                AssistantCollectUserDataNativeDelegate caller,
+                @Nullable PersonalDataManager.CreditCard card,
+                @Nullable PersonalDataManager.AutofillProfile address);
     }
 }

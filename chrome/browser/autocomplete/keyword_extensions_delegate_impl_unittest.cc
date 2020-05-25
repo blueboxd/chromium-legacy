@@ -73,8 +73,8 @@ void KeywordExtensionsDelegateImplTest::RunTest(bool incognito) {
       *(registry()->enabled_extensions().begin());
   ASSERT_FALSE(util::IsIncognitoEnabled(extension->id(), profile()));
 
-  Profile* profile_to_use = incognito ?
-      profile()->GetOffTheRecordProfile() : profile();
+  Profile* profile_to_use =
+      incognito ? profile()->GetPrimaryOTRProfile() : profile();
   KeywordExtensionsDelegateImpl delegate_impl(profile_to_use,
                                               keyword_provider.get());
   KeywordExtensionsDelegate* delegate = &delegate_impl;

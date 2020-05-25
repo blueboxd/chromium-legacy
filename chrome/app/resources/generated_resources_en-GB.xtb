@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Shortcuts are curated by you</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> fingerprints set up</translation>
 <translation id="1213254615020057352">Send usage and diagnostic data. Help improve your child's Android experience by automatically sending diagnostic, device and app usage data to Google. This won't be used to identify your child, and will help system and app stability and other improvements. Some aggregate data will also help Google apps and partners, such as Android developers. This setting is enforced by the owner. The owner may choose to send diagnostic and usage data for this device to Google. If additional Web &amp; App Activity setting is turned on for your child, this data may be saved to their Google Account.</translation>
+<translation id="121384500095351701">This file can't be downloaded securely</translation>
 <translation id="1215411991991485844">New background app added</translation>
 <translation id="1216542092748365687">Remove fingerprint</translation>
 <translation id="1217483152325416304">Your local data will soon be deleted</translation>
@@ -1064,6 +1065,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2336228925368920074">Bookmark All Tabs...</translation>
 <translation id="2336376423977300504">Always clear cookies when windows are closed</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> can't be downloaded securely</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> wants to pair</translation>
 <translation id="2342740338116612727">Bookmarks added</translation>
 <translation id="2343747224442182863">Focus This Tab</translation>
@@ -3254,6 +3256,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="5154702632169343078">Subject</translation>
 <translation id="5157635116769074044">Pin this Page to Start Screen...</translation>
 <translation id="5158983316805876233">Use the same proxy for all protocols</translation>
+<translation id="5159419673777902220">Your parent has disabled extension permissions</translation>
 <translation id="5160857336552977725">Sign in to your <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> was blocked because it is out of date</translation>
 <translation id="5170568018924773124">Show in folder</translation>
@@ -5395,6 +5398,7 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7925247922861151263">AAA check failed</translation>
 <translation id="7925285046818567682">Waiting for <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">This wasn't me.</translation>
+<translation id="7926975587469166629">Card nickname</translation>
 <translation id="7928175190925744466">Already changed this password?</translation>
 <translation id="7928836894214140642">Managed by <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Saved payment methods will appear here</translation>

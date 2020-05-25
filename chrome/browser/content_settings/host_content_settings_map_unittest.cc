@@ -784,7 +784,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritInitialAllow) {
   // The cookie setting has an initial value of ALLOW, so all changes should be
   // inherited from regular to incognito mode.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  Profile* otr_profile = profile.GetPrimaryOTRProfile();
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -883,7 +883,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoInheritPopups) {
   // The popup setting has an initial value of BLOCK, but it is allowed
   // to inherit ALLOW settings because it doesn't provide access to user data.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  Profile* otr_profile = profile.GetPrimaryOTRProfile();
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -931,7 +931,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritPref) {
   // ContentSettingsRegistry only inherit BLOCK and ASK settings from regular
   // to incognito if the initial value is ASK.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  Profile* otr_profile = profile.GetPrimaryOTRProfile();
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -1023,7 +1023,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoPartialInheritDefault) {
   // ContentSettingsRegistry only inherit BLOCK and ASK settings from regular
   // to incognito if the initial value is ASK.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  Profile* otr_profile = profile.GetPrimaryOTRProfile();
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -1080,7 +1080,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoDontInheritSetting) {
   // WebsiteSettingsRegistry (e.g. usb chooser data) don't inherit any values
   // from from regular to incognito.
   TestingProfile profile;
-  Profile* otr_profile = profile.GetOffTheRecordProfile();
+  Profile* otr_profile = profile.GetPrimaryOTRProfile();
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(&profile);
   HostContentSettingsMap* otr_map =
@@ -2200,7 +2200,7 @@ TEST_F(HostContentSettingsMapTest, IncognitoChangesDoNotPersist) {
   TestingProfile profile;
   auto* regular_map = HostContentSettingsMapFactory::GetForProfile(&profile);
   auto* incognito_map = HostContentSettingsMapFactory::GetForProfile(
-      profile.GetOffTheRecordProfile());
+      profile.GetPrimaryOTRProfile());
   auto* registry = content_settings::WebsiteSettingsRegistry::GetInstance();
   auto* content_setting_registry =
       content_settings::ContentSettingsRegistry::GetInstance();

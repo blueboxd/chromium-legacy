@@ -15,10 +15,7 @@
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
-#include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -33,6 +30,7 @@
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
+#include "extensions/browser/management_policy.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
@@ -59,19 +57,14 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : AppBrowserController(
           browser,
-          web_app::GetAppIdFromApplicationName(browser->app_name())) {}
+          web_app::GetAppIdFromApplicationName(browser->app_name())) {
+  DCHECK(!GetExtension() || !GetExtension()->from_bookmark());
+}
 
 HostedAppBrowserController::~HostedAppBrowserController() = default;
 
 bool HostedAppBrowserController::HasMinimalUiButtons() const {
-  const Extension* extension = GetExtension();
-  if (!extension || !extension->from_bookmark())
-    return false;
-
-  return web_app::WebAppProvider::Get(browser()->profile())
-             ->registrar()
-             .GetAppEffectiveDisplayMode(GetAppId()) ==
-         blink::mojom::DisplayMode::kMinimalUi;
+  return false;
 }
 
 gfx::ImageSkia HostedAppBrowserController::GetWindowAppIcon() const {
@@ -174,9 +167,13 @@ bool HostedAppBrowserController::CanUninstall() const {
   if (uninstall_dialog_)
     return false;
 
-  return web_app::WebAppProvider::Get(browser()->profile())
-      ->install_finalizer()
-      .CanUserUninstallExternalApp(GetAppId());
+  const Extension* extension = GetExtension();
+  if (!extension)
+    return false;
+
+  return extensions::ExtensionSystem::Get(browser()->profile())
+      ->management_policy()
+      ->UserMayModifySettings(extension, nullptr);
 }
 
 void HostedAppBrowserController::Uninstall() {

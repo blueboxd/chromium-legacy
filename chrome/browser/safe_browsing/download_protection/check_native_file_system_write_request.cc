@@ -151,13 +151,15 @@ void CheckNativeFileSystemWriteRequest::MaybeStorePingsForDownload(
   // TODO(https://crbug.com/996797): Integrate with DownloadFeedbackService.
 }
 
-bool CheckNativeFileSystemWriteRequest::ShouldUploadBinary(
+base::Optional<enterprise_connectors::AnalysisSettings>
+CheckNativeFileSystemWriteRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
-  return false;
+  return base::nullopt;
 }
 
 void CheckNativeFileSystemWriteRequest::UploadBinary(
-    DownloadCheckResultReason reason) {}
+    DownloadCheckResultReason reason,
+    enterprise_connectors::AnalysisSettings settings) {}
 
 bool CheckNativeFileSystemWriteRequest::ShouldPromptForDeepScanning(
     DownloadCheckResultReason reason) const {

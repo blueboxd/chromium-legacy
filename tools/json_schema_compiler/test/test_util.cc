@@ -13,15 +13,13 @@
 namespace json_schema_compiler {
 namespace test_util {
 
-std::unique_ptr<base::Value> ReadJson(const base::StringPiece& json) {
-  int error_code;
-  std::string error_msg;
-  std::unique_ptr<base::Value> result(
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json, base::JSON_ALLOW_TRAILING_COMMAS, &error_code, &error_msg));
+base::Value ReadJson(const base::StringPiece& json) {
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json, base::JSON_ALLOW_TRAILING_COMMAS);
   // CHECK not ASSERT since passing invalid |json| is a test error.
-  CHECK(result) << error_msg;
-  return result;
+  CHECK(parsed_json.value) << parsed_json.error_message;
+  return std::move(*parsed_json.value);
 }
 
 std::unique_ptr<base::ListValue> List(std::unique_ptr<base::Value> a) {

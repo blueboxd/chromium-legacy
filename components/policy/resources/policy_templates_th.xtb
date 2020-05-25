@@ -189,11 +189,6 @@
 <translation id="1257550411839719984">ตั้งค่าไดเรกทอรีเริ่มต้นสำหรับดาวน์โหลด</translation>
 <translation id="1265053460044691532">จำกัดเวลาที่ผู้ใช้ซึ่งตรวจสอบสิทธิ์ผ่าน SAML สามารถเข้าสู่ระบบในแบบออฟไลน์</translation>
 <translation id="127264587838521316">เปิดใช้คำขอติดตั้งส่วนขยายของ <ph name="PRODUCT_NAME" /></translation>
-<translation id="1288785611471943470">นโยบายนี้เลิกใช้งานแล้วและจะถูกนำออกหลังเวอร์ชัน 84 โปรดใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> แทน การปิดใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> เทียบเท่ากับการปิดใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> การเปิดใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> หรือไม่ได้ตั้งค่าจะเทียบเท่ากับการไม่ได้ตั้งค่า <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />
-
-      การตั้งค่านโยบายนี้เป็น "เท็จ" จะทำให้ผู้ใช้เลือกส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าไปยังเซิร์ฟเวอร์ Google ไม่ได้ หากตั้งค่าเป็น "จริง" หรือไม่ได้ตั้งค่า ผู้ใช้จะส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าไปยัง Google Safe Browsing เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตรายได้
-
-      ดูข้อมูลเพิ่มเติมเกี่ยวกับ Google Safe Browsing ได้ที่ https://developers.google.com/safe-browsing</translation>
 <translation id="1290634681382861275">ควบคุมการตั้งค่าเบ็ดเตล็ด เช่น USB บลูทูธ การรีเฟรชนโยบาย โหมดนักพัฒนาซอฟต์แวร์ และอื่นๆ</translation>
 <translation id="1291880496936992484">คำเตือน: ระบบจะนำ RC4 ออกจาก <ph name="PRODUCT_NAME" /> โดยสมบูรณ์หลังจากเวอร์ชัน 52 (ประมาณเดือนกันยายน 2016) จากนั้นนโยบายนี้จะหยุดทำงาน
 

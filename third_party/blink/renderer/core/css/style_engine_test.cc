@@ -2660,6 +2660,48 @@ TEST_F(StyleEngineTest, RevertUseCount) {
   EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSKeywordRevert));
 }
 
+TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
+  ColorSchemeHelper color_scheme_helper(GetDocument());
+  color_scheme_helper.SetPreferredColorScheme(PreferredColorScheme::kDark);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      :root { color-scheme: dark }
+      body { color: green; }
+      @media (prefers-color-scheme: dark) {
+        body { color: red; }
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  Element* body = GetDocument().body();
+  Element* root = GetDocument().documentElement();
+
+  EXPECT_EQ(Color::kWhite, root->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+  EXPECT_EQ(WebColorScheme::kDark,
+            root->GetComputedStyle()->UsedColorSchemeForInitialColors());
+  EXPECT_EQ(MakeRGB(255, 0, 0), body->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+
+  FloatSize page_size(400, 400);
+  GetDocument().GetFrame()->StartPrinting(page_size, page_size, 1);
+  EXPECT_EQ(Color::kBlack, root->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+  EXPECT_EQ(WebColorScheme::kLight,
+            root->GetComputedStyle()->UsedColorSchemeForInitialColors());
+  EXPECT_EQ(MakeRGB(0, 128, 0), body->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+
+  GetDocument().GetFrame()->EndPrinting();
+  EXPECT_EQ(Color::kWhite, root->GetComputedStyle()->VisitedDependentColor(
+                               GetCSSPropertyColor()));
+  EXPECT_EQ(WebColorScheme::kDark,
+            root->GetComputedStyle()->UsedColorSchemeForInitialColors());
+  EXPECT_EQ(MakeRGB(255, 0, 0), body->GetComputedStyle()->VisitedDependentColor(
+                                    GetCSSPropertyColor()));
+}
+
 class ParameterizedStyleEngineTest
     : public testing::WithParamInterface<bool>,
       private ScopedCSSReducedFontLoadingInvalidationsForTest,

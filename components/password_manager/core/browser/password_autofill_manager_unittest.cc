@@ -111,7 +111,7 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
   ~TestPasswordManagerClient() override = default;
 
   MockPasswordManagerDriver* mock_driver() { return &driver_; }
-  const GURL& GetMainFrameURL() const override { return main_frame_url_; }
+  const GURL& GetLastCommittedURL() const override { return main_frame_url_; }
 
   const MockPasswordFeatureManager* GetPasswordFeatureManager() const override {
     return feature_manager_.get();

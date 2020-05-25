@@ -10,11 +10,11 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/simple_test_clock.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/version_updater/version_updater.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/update_required_screen_handler.h"
 #include "chrome/grit/chromium_strings.h"
@@ -97,17 +98,7 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
   void SetUpOnMainThread() override {
     OobeBaseTest::SetUpOnMainThread();
 
-    tick_clock_.Advance(base::TimeDelta::FromMinutes(1));
-    clock_ = std::make_unique<base::SimpleTestClock>();
-
     error_screen_ = GetOobeUI()->GetErrorScreen();
-    update_required_screen_ = UpdateRequiredScreen::Get(
-        WizardController::default_controller()->screen_manager());
-    update_required_screen_->SetClockForTesting(clock_.get());
-
-    version_updater_ = update_required_screen_->GetVersionUpdaterForTesting();
-    version_updater_->set_tick_clock_for_testing(&tick_clock_);
-
     // Set up fake networks.
     network_state_test_helper_ =
         std::make_unique<chromeos::NetworkStateTestHelper>(
@@ -115,23 +106,12 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
     network_state_test_helper_->manager_test()->SetupDefaultEnvironment();
     // Fake networks have been set up. Connect to WiFi network.
     SetConnected(kWifiServicePath);
+    chromeos::OobeScreenWaiter(chromeos::GaiaView::kScreenId).Wait();
   }
   void TearDownOnMainThread() override {
     network_state_test_helper_.reset();
 
     OobeBaseTest::TearDownOnMainThread();
-  }
-
-  void SetEolDateUTC(const char* utc_date_string) {
-    base::Time utc_date;
-    ASSERT_TRUE(base::Time::FromUTCString(utc_date_string, &utc_date));
-    update_engine_client()->set_eol_date(utc_date);
-  }
-
-  void SetCurrentTimeUTC(const char* utc_date_string) {
-    base::Time utc_time;
-    ASSERT_TRUE(base::Time::FromUTCString(utc_date_string, &utc_time));
-    clock_->SetNow(utc_time);
   }
 
   void SetUpdateEngineStatus(update_engine::Operation operation) {
@@ -148,7 +128,7 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
   }
 
   void ShowUpdateRequiredScreen() {
-    WizardController::default_controller()->AdvanceToScreen(
+    LoginDisplayHost::default_host()->StartWizard(
         UpdateRequiredView::kScreenId);
 
     OobeScreenWaiter update_screen_waiter(UpdateRequiredView::kScreenId);
@@ -167,20 +147,22 @@ class UpdateRequiredScreenTest : public OobeBaseTest {
   // For testing captive portal
   NetworkPortalDetectorMixin network_portal_detector_{&mixin_host_};
 
-  base::SimpleTestTickClock tick_clock_;
-  // Clock to set current time for testing EOL.
-  std::unique_ptr<base::SimpleTestClock> clock_;
   // Handles network connections
   std::unique_ptr<chromeos::NetworkStateTestHelper> network_state_test_helper_;
+  chromeos::DeviceStateMixin device_state_mixin_{
+      &mixin_host_,
+      chromeos::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
 };
 
 IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestCaptivePortal) {
   network_portal_detector_.SimulateDefaultNetworkState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL);
 
-  update_required_screen_->SetErrorMessageDelayForTesting(
-      base::TimeDelta::FromMilliseconds(10));
   ShowUpdateRequiredScreen();
+
+  static_cast<UpdateRequiredScreen*>(
+      WizardController::default_controller()->current_screen())
+      ->SetErrorMessageDelayForTesting(base::TimeDelta::FromMilliseconds(10));
 
   test::OobeJS().ExpectVisiblePath(
       {kUpdateRequiredScreen, kUpdateRequiredDialog});
@@ -217,9 +199,8 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestCaptivePortal) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolReached) {
-  SetEolDateUTC("1 January 2019");
-  SetCurrentTimeUTC("1 November 2019");
-
+  update_engine_client()->set_eol_date(
+      base::DefaultClock::GetInstance()->Now() - base::TimeDelta::FromDays(1));
   ShowUpdateRequiredScreen();
 
   test::OobeJS().ExpectVisiblePath(
@@ -229,9 +210,8 @@ IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolReached) {
 }
 
 IN_PROC_BROWSER_TEST_F(UpdateRequiredScreenTest, TestEolNotReached) {
-  SetEolDateUTC("1 November 2019");
-  SetCurrentTimeUTC("1 January 2019");
-
+  update_engine_client()->set_eol_date(
+      base::DefaultClock::GetInstance()->Now() + base::TimeDelta::FromDays(1));
   ShowUpdateRequiredScreen();
 
   test::OobeJS().ExpectHiddenPath(

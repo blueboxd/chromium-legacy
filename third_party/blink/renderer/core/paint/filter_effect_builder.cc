@@ -424,8 +424,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
     return nullptr;
   FloatRect filter_region =
       SVGLengthContext::ResolveRectangle<SVGFilterElement>(
-          filter_element,
-          filter_element->filterUnits()->CurrentValue()->EnumValue(),
+          filter_element, filter_element->filterUnits()->CurrentEnumValue(),
           reference_box_);
   // TODO(fs): We rely on the presence of a node map here to opt-in to the
   // check for an empty filter region. The reason for this is that we lack a
@@ -434,7 +433,7 @@ Filter* FilterEffectBuilder::BuildReferenceFilter(
     return nullptr;
 
   bool primitive_bounding_box_mode =
-      filter_element->primitiveUnits()->CurrentValue()->EnumValue() ==
+      filter_element->primitiveUnits()->CurrentEnumValue() ==
       SVGUnitTypes::kSvgUnitTypeObjectboundingbox;
   Filter::UnitScaling unit_scaling =
       primitive_bounding_box_mode ? Filter::kBoundingBox : Filter::kUserSpace;

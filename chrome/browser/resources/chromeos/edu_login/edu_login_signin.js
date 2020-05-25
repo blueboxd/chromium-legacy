@@ -153,6 +153,7 @@ Polymer({
   navigateBackInWebview_() {
     if (this.$.signinFrame.canGoBack()) {
       this.$.signinFrame.back();
+      this.$.signinFrame.focus();
     } else {
       // Reload the webview. It allows users to go back and try to add another
       // account if something goes wrong in the webview (e.g. SAML server

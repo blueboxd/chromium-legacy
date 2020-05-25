@@ -252,7 +252,7 @@ TEST_F(BluetoothChooserContextTest, GrantPermissionInIncognito) {
 
   BluetoothChooserContext* context = GetChooserContext(profile());
   BluetoothChooserContext* incognito_context =
-      GetChooserContext(profile()->GetOffTheRecordProfile());
+      GetChooserContext(profile()->GetPrimaryOTRProfile());
 
   EXPECT_CALL(mock_permission_observer_,
               OnChooserObjectPermissionChanged(

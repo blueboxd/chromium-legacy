@@ -109,7 +109,8 @@ Polymer({
   },
 
   /**
-   * Event handler that is invoked when 'chrome://terms' is loaded.
+   * Event handler that is invoked when EULA is loaded. Either online version or
+   * 'chrome://terms' fallback.
    */
   onFrameLoad_() {
     this.acceptButtonDisabled = false;
@@ -124,6 +125,7 @@ Polymer({
     // This forces frame to reload.
     const onlineEulaUrl = loadTimeData.getString('eulaOnlineUrl');
 
+    this.eulaLoadingScreenShown = true;
     this.screen.loadEulaToWebview_(
         this.$.crosEulaFrame, onlineEulaUrl, false /* clear_anchors */);
 

@@ -76,6 +76,10 @@ PasswordStore* StubPasswordManagerClient::GetAccountPasswordStore() const {
   return nullptr;
 }
 
+const GURL& StubPasswordManagerClient::GetLastCommittedURL() const {
+  return GURL::EmptyGURL();
+}
+
 url::Origin StubPasswordManagerClient::GetLastCommittedOrigin() const {
   return url::Origin();
 }
@@ -132,7 +136,7 @@ ukm::SourceId StubPasswordManagerClient::GetUkmSourceId() {
 PasswordManagerMetricsRecorder*
 StubPasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
-    metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL(), nullptr);
+    metrics_recorder_.emplace(GetUkmSourceId(), nullptr);
   }
   return base::OptionalOrNullptr(metrics_recorder_);
 }

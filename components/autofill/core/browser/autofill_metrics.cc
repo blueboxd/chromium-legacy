@@ -2200,12 +2200,13 @@ void AutofillMetrics::
     LogAddressFormImportCountrySpecificFieldRequirementsMetric(
         bool is_zip_missing,
         bool is_state_missing,
-        bool is_city_missing) {
+        bool is_city_missing,
+        bool is_line1_missing) {
   const auto metric = static_cast<
       AutofillMetrics::
           AddressProfileImportCountrySpecificFieldRequirementsMetric>(
       (is_zip_missing ? 0b1 : 0) | (is_state_missing ? 0b10 : 0) |
-      (is_city_missing ? 0b100 : 0));
+      (is_city_missing ? 0b100 : 0) | (is_line1_missing ? 0b1000 : 0));
   base::UmaHistogramEnumeration(
       "Autofill.AddressProfileImportCountrySpecificFieldRequirements", metric);
 }

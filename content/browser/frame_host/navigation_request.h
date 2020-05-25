@@ -45,6 +45,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/cpp/origin_policy.h"
 #include "services/network/public/mojom/blocked_by_response_reason.mojom-shared.h"
+#include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -614,6 +615,14 @@ class CONTENT_EXPORT NavigationRequest
   std::vector<mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
   TakeCookieObservers() WARN_UNUSED_RESULT;
 
+  // The sandbox policy of the document to be loaded. This returns nullopt for
+  // navigations that haven't reached the 'ReadyToCommit' stage yet. In
+  // particular, this returns nullopt for same-document navigations.
+  //
+  // TODO(arthursonzogni): After RenderDocument, this can be computed and stored
+  // directly into the RenderDocumentHost.
+  base::Optional<network::mojom::WebSandboxFlags> SandboxFlagsToCommit();
+
  private:
   friend class NavigationRequestTest;
 
@@ -955,6 +964,10 @@ class CONTENT_EXPORT NavigationRequest
   // Convenience function to return the NavigationControllerImpl this
   // NavigationRequest is in.
   NavigationControllerImpl* GetNavigationController();
+
+  // Compute the sandbox policy of the document to be loaded. Called once when
+  // reaching the 'ReadyToCommit' stage.
+  network::mojom::WebSandboxFlags ComputeSandboxFlagsToCommit();
 
   FrameTreeNode* frame_tree_node_;
 
@@ -1307,6 +1320,10 @@ class CONTENT_EXPORT NavigationRequest
   // Observers listening to cookie access notifications for the network requests
   // made by this navigation.
   mojo::ReceiverSet<network::mojom::CookieAccessObserver> cookie_observers_;
+
+  // The sandbox flags of the document to be loaded. This is computed at
+  // 'ReadyToCommit' time.
+  base::Optional<network::mojom::WebSandboxFlags> sandbox_flags_to_commit_;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 

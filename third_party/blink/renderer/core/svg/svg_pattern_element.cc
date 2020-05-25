@@ -225,14 +225,13 @@ static void SetPatternAttributes(const SVGPatternElement& element,
   }
 
   if (!attributes.HasPatternUnits() && element.patternUnits()->IsSpecified()) {
-    attributes.SetPatternUnits(
-        element.patternUnits()->CurrentValue()->EnumValue());
+    attributes.SetPatternUnits(element.patternUnits()->CurrentEnumValue());
   }
 
   if (!attributes.HasPatternContentUnits() &&
       element.patternContentUnits()->IsSpecified()) {
     attributes.SetPatternContentUnits(
-        element.patternContentUnits()->CurrentValue()->EnumValue());
+        element.patternContentUnits()->CurrentEnumValue());
   }
 
   if (!attributes.HasPatternTransform() &&

@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/safe_browsing/cloud_content_scanning/binary_fcm_service.h"
@@ -170,6 +171,25 @@ class DeepScanningRequestTest : public testing::Test {
     scoped_feature_list_.InitWithFeatures(enabled, disabled);
   }
 
+  void ValidateDefaultSettings(
+      const base::Optional<enterprise_connectors::AnalysisSettings>& settings) {
+    ASSERT_TRUE(settings.has_value());
+
+    enterprise_connectors::AnalysisSettings default_settings;
+    default_settings.tags = {"malware"};
+
+    ASSERT_EQ(settings.value().tags, default_settings.tags);
+    ASSERT_EQ(settings.value().block_large_files,
+              default_settings.block_large_files);
+    ASSERT_EQ(settings.value().block_password_protected_files,
+              default_settings.block_password_protected_files);
+    ASSERT_EQ(settings.value().block_unsupported_file_types,
+              default_settings.block_unsupported_file_types);
+    ASSERT_EQ(settings.value().block_until_verdict,
+              default_settings.block_until_verdict);
+    ASSERT_EQ(settings.value().analysis_url, default_settings.analysis_url);
+  }
+
   void SetLastResult(DownloadCheckResult result) { last_result_ = result; }
 
  protected:
@@ -195,12 +215,21 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
   SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
 
+  // Try each request with settings indicating both DLP and Malware requests
+  // should be sent to show features work correctly.
+  auto dlp_and_malware_settings = []() {
+    enterprise_connectors::AnalysisSettings settings;
+    settings.tags = {"dlp", "malware"};
+    return settings;
+  };
+
   {
     SetFeatures(/*enabled*/ {kMalwareScanEnabled, kContentComplianceEnabled},
                 /*disabled*/ {});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        dlp_and_malware_settings());
     request.Start();
     EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
                     ->last_request()
@@ -214,7 +243,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
                 /*disabled*/ {kContentComplianceEnabled, kMalwareScanEnabled});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        dlp_and_malware_settings());
     request.Start();
     EXPECT_FALSE(download_protection_service_.GetFakeBinaryUploadService()
                      ->last_request()
@@ -228,7 +258,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
                 /*disabled*/ {kMalwareScanEnabled});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        dlp_and_malware_settings());
     request.Start();
     EXPECT_FALSE(download_protection_service_.GetFakeBinaryUploadService()
                      ->last_request()
@@ -242,7 +273,8 @@ TEST_F(DeepScanningRequestTest, ChecksFeatureFlags) {
                 /*disabled*/ {kContentComplianceEnabled});
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        dlp_and_malware_settings());
     request.Start();
     EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
                     ->last_request()
@@ -262,7 +294,8 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
     SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
     request.Start();
     EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
                     ->last_request()
@@ -287,7 +320,8 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
     SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
     request.Start();
     EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
                     ->last_request()
@@ -307,7 +341,8 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
     SetMalwarePolicy(DO_NOT_SCAN);
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
     request.Start();
     EXPECT_FALSE(download_protection_service_.GetFakeBinaryUploadService()
                      ->last_request()
@@ -320,9 +355,11 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
   {
     SetDlpPolicy(CHECK_NONE);
     SetMalwarePolicy(DO_NOT_SCAN);
+    EXPECT_FALSE(DeepScanningRequest::ShouldUploadBinary(&item_).has_value());
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        base::DoNothing(), &download_protection_service_);
+        base::DoNothing(), &download_protection_service_,
+        enterprise_connectors::AnalysisSettings());
     request.Start();
     EXPECT_FALSE(download_protection_service_.GetFakeBinaryUploadService()
                      ->last_request()
@@ -334,9 +371,11 @@ TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestFromPolicy) {
 }
 
 TEST_F(DeepScanningRequestTest, GeneratesCorrectRequestForAPP) {
+  enterprise_connectors::AnalysisSettings settings;
+  settings.tags = {"dlp"};
   DeepScanningRequest request(
       &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_APP_PROMPT,
-      base::DoNothing(), &download_protection_service_);
+      base::DoNothing(), &download_protection_service_, std::move(settings));
   request.Start();
 
   EXPECT_TRUE(download_protection_service_.GetFakeBinaryUploadService()
@@ -384,12 +423,16 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
   // each response.
   TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
       prefs::kUnsafeEventsReportingEnabled, true);
+  SetDlpPolicy(CHECK_UPLOADS_AND_DOWNLOADS);
+  SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
+
   {
     DeepScanningRequest request(
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
                             base::Unretained(this)),
-        &download_protection_service_);
+        &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
 
     DeepScanningClientResponse response;
     response.mutable_malware_scan_verdict()->set_verdict(
@@ -426,7 +469,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
                             base::Unretained(this)),
-        &download_protection_service_);
+        &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
 
     DeepScanningClientResponse response;
     response.mutable_malware_scan_verdict()->set_verdict(
@@ -463,7 +507,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
                             base::Unretained(this)),
-        &download_protection_service_);
+        &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
 
     DeepScanningClientResponse response;
     response.mutable_dlp_scan_verdict()->set_status(
@@ -496,7 +541,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
                             base::Unretained(this)),
-        &download_protection_service_);
+        &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
 
     DeepScanningClientResponse response;
     response.mutable_dlp_scan_verdict()->set_status(
@@ -529,7 +575,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
                             base::Unretained(this)),
-        &download_protection_service_);
+        &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
 
     DeepScanningClientResponse response;
     response.mutable_dlp_scan_verdict()->set_status(
@@ -564,7 +611,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
                             base::Unretained(this)),
-        &download_protection_service_);
+        &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
 
     DeepScanningClientResponse response;
     response.mutable_dlp_scan_verdict()->set_status(
@@ -595,7 +643,8 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
         &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
         base::BindRepeating(&DeepScanningRequestTest::SetLastResult,
                             base::Unretained(this)),
-        &download_protection_service_);
+        &download_protection_service_,
+        DeepScanningRequest::ShouldUploadBinary(&item_).value());
 
     DeepScanningClientResponse response;
     response.mutable_malware_scan_verdict()->set_verdict(
@@ -622,7 +671,7 @@ TEST_F(DeepScanningReportingTest, ProcessesResponseCorrectly) {
   }
 }
 
-TEST_F(DeepScanningRequestTest, ShouldUploadItemByPolicy_MalwareListPolicy) {
+TEST_F(DeepScanningRequestTest, ShouldUploadBinary_MalwareListPolicy) {
   SetFeatures(/*enabled*/ {kMalwareScanEnabled},
               /*disabled*/ {kContentComplianceEnabled});
   SetMalwarePolicy(SEND_UPLOADS_AND_DOWNLOADS);
@@ -631,18 +680,20 @@ TEST_F(DeepScanningRequestTest, ShouldUploadItemByPolicy_MalwareListPolicy) {
   EXPECT_CALL(item_, GetURL()).WillRepeatedly(ReturnRef(download_url_));
 
   // Without the malware policy list set, the item should be uploaded.
-  EXPECT_TRUE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
+  ValidateDefaultSettings(DeepScanningRequest::ShouldUploadBinary(&item_));
+  // EXPECT_TRUE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
 
   // With the old malware policy list set, the item should be uploaded since
   // DeepScanningRequest ignores that policy.
   AddUrlToProfilePrefList(prefs::kSafeBrowsingWhitelistDomains, download_url_);
-  EXPECT_TRUE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
+  // EXPECT_TRUE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
+  ValidateDefaultSettings(DeepScanningRequest::ShouldUploadBinary(&item_));
 
   // With the new malware policy list set, the item should not be uploaded since
   // DeepScanningRequest honours that policy.
   AddUrlToList(prefs::kURLsToNotCheckForMalwareOfDownloadedContent,
                download_url_);
-  EXPECT_FALSE(DeepScanningRequest::ShouldUploadItemByPolicy(&item_));
+  EXPECT_FALSE(DeepScanningRequest::ShouldUploadBinary(&item_).has_value());
 }
 
 TEST_F(DeepScanningRequestTest, PopulatesRequest) {
@@ -653,7 +704,8 @@ TEST_F(DeepScanningRequestTest, PopulatesRequest) {
               /*disabled*/ {});
   DeepScanningRequest request(
       &item_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-      base::DoNothing(), &download_protection_service_);
+      base::DoNothing(), &download_protection_service_,
+      DeepScanningRequest::ShouldUploadBinary(&item_).value());
   request.Start();
   EXPECT_EQ(download_protection_service_.GetFakeBinaryUploadService()
                 ->last_request()

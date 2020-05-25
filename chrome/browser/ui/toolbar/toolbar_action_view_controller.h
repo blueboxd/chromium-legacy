@@ -130,9 +130,11 @@ class ToolbarActionViewController {
   // context menu.
   virtual bool DisabledClickOpensMenu() const = 0;
 
-  // Registers an accelerator. Called when the view is added to the hierarchy.
-  // Unregistering any commands is the responsibility of the controller.
+  // Registers an accelerator. Called when the view is added to a widget.
   virtual void RegisterCommand() {}
+
+  // Unregisters an accelerator. Called when the view is removed from a widget.
+  virtual void UnregisterCommand() {}
 
   // Returns the PageInteractionStatus for the current page.
   virtual PageInteractionStatus GetPageInteractionStatus(

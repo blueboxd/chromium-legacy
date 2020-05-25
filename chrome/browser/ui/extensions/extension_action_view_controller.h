@@ -72,6 +72,7 @@ class ExtensionActionViewController
   bool ExecuteAction(bool by_user, InvocationSource source) override;
   void UpdateState() override;
   void RegisterCommand() override;
+  void UnregisterCommand() override;
   bool DisabledClickOpensMenu() const override;
 
   // ExtensionContextMenuModel::PopupDelegate:

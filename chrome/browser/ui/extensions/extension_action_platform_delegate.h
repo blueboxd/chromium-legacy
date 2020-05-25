@@ -23,6 +23,7 @@ class ExtensionActionPlatformDelegate {
   // The following are forwarded from ToolbarActionViewController. See that
   // class for the definitions.
   virtual void RegisterCommand() = 0;
+  virtual void UnregisterCommand() = 0;
 
   // Called once the delegate is set, in order to do any extra initialization.
   virtual void OnDelegateSet() {}

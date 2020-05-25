@@ -111,6 +111,8 @@ class LocalExtensionCache {
 
  private:
   struct CacheItemInfo {
+    // TODO(https://crbug.com/1076376): Change |version| from std::string to
+    // base::Version.
     std::string version;
     std::string expected_hash;
     base::Time last_used;

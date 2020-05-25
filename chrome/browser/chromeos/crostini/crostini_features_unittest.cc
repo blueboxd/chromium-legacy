@@ -131,11 +131,24 @@ TEST(CrostiniFeaturesTest, TestCanChangeAdbSideloadingManagedDeviceAndUser) {
   profile.ScopedCrosSettingsTestHelper()->InstallAttributes()->SetCloudManaged(
       "domain.com", "device_id");
 
+  // TODO(https://crbug.com/1073928, janagrill): Once the device policy is
+  // implemented, adjust the test accordingly
+
   // Set profile to enterprise-managed
   profile.GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
 
-  // TODO(janagrill): Once the device and user policies are implemented,
-  // adjust the test accordingly
+  // Disallow by user policy
+  profile.GetPrefs()->SetInteger(
+      crostini::prefs::kCrostiniArcAdbSideloadingUserPref,
+      static_cast<int>(CrostiniArcAdbSideloadingUserAllowanceMode::kDisallow));
+
+  EXPECT_FALSE(crostini_features.CanChangeAdbSideloading(&profile));
+
+  // Allow by user policy
+  profile.GetPrefs()->SetInteger(
+      crostini::prefs::kCrostiniArcAdbSideloadingUserPref,
+      static_cast<int>(CrostiniArcAdbSideloadingUserAllowanceMode::kAllow));
+
   EXPECT_TRUE(crostini_features.CanChangeAdbSideloading(&profile));
 }
 
@@ -193,7 +206,18 @@ TEST(CrostiniFeaturesTest, TestCanChangeAdbSideloadingOwnerProfileManagedUser) {
   user_manager->LoginUser(account_id);
   user_manager->SetOwnerId(account_id);
 
-  // TODO(janagrill): Once the user policy is implemented, adjust the test
+  // Disallow by user policy
+  profile.GetPrefs()->SetInteger(
+      crostini::prefs::kCrostiniArcAdbSideloadingUserPref,
+      static_cast<int>(CrostiniArcAdbSideloadingUserAllowanceMode::kDisallow));
+
+  EXPECT_FALSE(crostini_features.CanChangeAdbSideloading(&profile));
+
+  // Allow by user policy
+  profile.GetPrefs()->SetInteger(
+      crostini::prefs::kCrostiniArcAdbSideloadingUserPref,
+      static_cast<int>(CrostiniArcAdbSideloadingUserAllowanceMode::kAllow));
+
   EXPECT_TRUE(crostini_features.CanChangeAdbSideloading(&profile));
 }
 

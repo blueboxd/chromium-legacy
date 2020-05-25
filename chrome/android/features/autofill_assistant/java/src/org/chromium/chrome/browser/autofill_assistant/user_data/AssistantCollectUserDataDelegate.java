@@ -53,4 +53,22 @@ public interface AssistantCollectUserDataDelegate {
 
     /** The focus on a text field has been lost */
     void onTextFocusLost();
+
+    /**
+     * Returns true if the contact is complete.
+     * TODO(b/154068342): Remove this method and send the error message from |Controller|.
+     */
+    boolean isContactComplete(@Nullable AutofillContact contact);
+
+    /**
+     * Returns true if the shipping address is complete.
+     * TODO(b/154068342): Remove this method and send the error message from |Controller|.
+     */
+    boolean isShippingAddressComplete(@Nullable AutofillAddress address);
+
+    /**
+     * Returns true if the payment instrument is complete.
+     * TODO(b/154068342): Remove this method and send the error message from |Controller|.
+     */
+    boolean isPaymentInstrumentComplete(@Nullable AutofillPaymentInstrument paymentInstrument);
 }

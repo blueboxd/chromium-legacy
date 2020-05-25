@@ -195,11 +195,6 @@
 <translation id="1257550411839719984">Указати каталог для завантаження за умовчанням</translation>
 <translation id="1265053460044691532">Обмеження часу, упродовж якого користувач, автентифікований через SAML, може входити в режимі офлайн</translation>
 <translation id="127264587838521316">Вмикає запити на встановлення розширень у <ph name="PRODUCT_NAME" /></translation>
-<translation id="1288785611471943470">Це правило більше не підтримується та буде вилучене, починаючи з версії 84. Натомість скористайтеся правилом <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Вимкнути правило <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> – те саме, що вимкнути правило <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Увімкнути правило <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> або не налаштувати цей параметр – те саме, що не налаштувати правило <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
-
-      Якщо для цього правила вибрано значення false, користувачі не можуть надсилати на сервери Google деяку системну інформацію та вміст сторінок. Якщо цей параметр не налаштовано або має значення true, користувачі можуть надсилати в Безпечний перегляд деяку системну інформацію та вміст сторінок, щоб допомогти виявляти небезпечні додатки й сайти.
-
-      Докладніше про Безпечний перегляд читайте на сторінці https://developers.google.com/safe-browsing.</translation>
 <translation id="1290634681382861275">Керує різними налаштуваннями, зокрема USB, Bluetooth, оновленням правил, режимом розробника тощо.</translation>
 <translation id="1291880496936992484">Застереження: шифри RC4 буде видалено з <ph name="PRODUCT_NAME" /> після версії 52 (приблизно у вересні 2016 року).
 

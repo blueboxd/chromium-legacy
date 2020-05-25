@@ -295,4 +295,12 @@ void RecordAppBounce(const apps::AppUpdate& app) {
   }
 }
 
+void RecordAppsPerNotification(int count) {
+  if (count <= 0) {
+    return;
+  }
+  base::UmaHistogramBoolean("ChromeOS.Apps.NumberOfAppsForNotification",
+                            (count > 1));
+}
+
 }  // namespace apps

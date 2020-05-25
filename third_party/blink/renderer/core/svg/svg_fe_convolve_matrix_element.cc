@@ -166,8 +166,7 @@ bool SVGFEConvolveMatrixElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEConvolveMatrix* convolve_matrix = static_cast<FEConvolveMatrix*>(effect);
   if (attr_name == svg_names::kEdgeModeAttr)
-    return convolve_matrix->SetEdgeMode(
-        edge_mode_->CurrentValue()->EnumValue());
+    return convolve_matrix->SetEdgeMode(edge_mode_->CurrentEnumValue());
   if (attr_name == svg_names::kDivisorAttr)
     return convolve_matrix->SetDivisor(ComputeDivisor());
   if (attr_name == svg_names::kBiasAttr)
@@ -214,7 +213,7 @@ FilterEffect* SVGFEConvolveMatrixElement::Build(
 
   auto* effect = MakeGarbageCollected<FEConvolveMatrix>(
       filter, MatrixOrder(), ComputeDivisor(), bias_->CurrentValue()->Value(),
-      TargetPoint(), edge_mode_->CurrentValue()->EnumValue(),
+      TargetPoint(), edge_mode_->CurrentEnumValue(),
       preserve_alpha_->CurrentValue()->Value(),
       kernel_matrix_->CurrentValue()->ToFloatVector());
   effect->InputEffects().push_back(input1);

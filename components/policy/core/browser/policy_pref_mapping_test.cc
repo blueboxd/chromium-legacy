@@ -315,14 +315,12 @@ class PolicyTestCases {
       ADD_FAILURE();
       return;
     }
-    int error_code = -1;
-    std::string error_string;
     base::DictionaryValue* dict = nullptr;
-    std::unique_ptr<base::Value> value =
-        base::JSONReader::ReadAndReturnErrorDeprecated(
-            json, base::JSON_PARSE_RFC, &error_code, &error_string);
-    if (!value.get() || !value->GetAsDictionary(&dict)) {
-      ADD_FAILURE() << "Error parsing policy_test_cases.json: " << error_string;
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(json);
+    if (!parsed_json.value || !parsed_json.value->GetAsDictionary(&dict)) {
+      ADD_FAILURE() << "Error parsing policy_test_cases.json: "
+                    << parsed_json.error_message;
       return;
     }
     for (const auto& it : dict->DictItems()) {

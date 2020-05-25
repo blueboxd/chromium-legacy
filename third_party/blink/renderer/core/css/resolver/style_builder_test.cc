@@ -48,26 +48,33 @@ TEST_F(StyleBuilderTest, WritingModeChangeDirtiesFont) {
 }
 
 TEST_F(StyleBuilderTest, TextOrientationChangeDirtiesFont) {
+  const CSSProperty* properties[] = {
+      &GetCSSPropertyTextOrientation(),
+      &GetCSSPropertyWebkitTextOrientation(),
+  };
+
   HeapVector<Member<const CSSValue>> values = {
       CSSInitialValue::Create(),
       CSSInheritedValue::Create(),
       CSSIdentifierValue::Create(CSSValueID::kMixed),
   };
 
-  for (const CSSValue* value : values) {
-    auto parent_style = ComputedStyle::Create();
-    auto style = ComputedStyle::Create();
-    // This test assumes that initial 'text-orientation' is not 'upright'.
-    ASSERT_NE(ETextOrientation::kUpright, style->GetTextOrientation());
-    style->SetTextOrientation(ETextOrientation::kUpright);
+  for (const CSSProperty* property : properties) {
+    for (const CSSValue* value : values) {
+      auto parent_style = ComputedStyle::Create();
+      auto style = ComputedStyle::Create();
+      // This test assumes that initial 'text-orientation' is not 'upright'.
+      ASSERT_NE(ETextOrientation::kUpright, style->GetTextOrientation());
+      style->SetTextOrientation(ETextOrientation::kUpright);
 
-    StyleResolverState state(GetDocument(), *GetDocument().body(),
-                             parent_style.get(), parent_style.get());
-    state.SetStyle(style);
+      StyleResolverState state(GetDocument(), *GetDocument().body(),
+                               parent_style.get(), parent_style.get());
+      state.SetStyle(style);
 
-    ASSERT_FALSE(state.GetFontBuilder().FontDirty());
-    StyleBuilder::ApplyProperty(GetCSSPropertyTextOrientation(), state, *value);
-    EXPECT_TRUE(state.GetFontBuilder().FontDirty());
+      ASSERT_FALSE(state.GetFontBuilder().FontDirty());
+      StyleBuilder::ApplyProperty(*property, state, *value);
+      EXPECT_TRUE(state.GetFontBuilder().FontDirty());
+    }
   }
 }
 

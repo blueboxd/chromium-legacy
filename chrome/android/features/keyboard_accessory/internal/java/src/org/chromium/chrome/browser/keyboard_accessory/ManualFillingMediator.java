@@ -224,6 +224,7 @@ class ManualFillingMediator extends EmptyTabObserver
 
     void registerSheetDataProvider(@AccessoryTabType int tabType,
             PropertyProvider<KeyboardAccessoryData.AccessorySheetData> dataProvider) {
+        if (!isInitialized()) return;
         ManualFillingState state = mStateCache.getStateFor(mActivity.getCurrentWebContents());
 
         state.wrapSheetDataProvider(tabType, dataProvider);
@@ -234,6 +235,7 @@ class ManualFillingMediator extends EmptyTabObserver
 
     void registerAutofillProvider(
             PropertyProvider<AutofillSuggestion[]> autofillProvider, AutofillDelegate delegate) {
+        if (!isInitialized()) return;
         if (mKeyboardAccessory == null) return;
         mKeyboardAccessory.registerAutofillProvider(autofillProvider, delegate);
     }

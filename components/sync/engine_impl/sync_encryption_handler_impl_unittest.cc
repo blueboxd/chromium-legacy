@@ -14,7 +14,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "components/sync/base/fake_encryptor.h"
@@ -2455,78 +2454,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
 }
 
 TEST_F(SyncEncryptionHandlerImplTest,
-       InitShouldReportPbkdf2InHistogramWhenPbkdf2Persisted) {
-  KeyParams custom_key = {KeyDerivationParams::CreateForPbkdf2(),
-                          kCustomPassphrase};
-  GetCryptographer()->AddKey(custom_key);
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  InitCustomPassMigratedNigori(
-      /*migration_time=*/1, sync_pb::NigoriSpecifics::PBKDF2_HMAC_SHA1_1003,
-      kCustomPassphrase, /*key_derivation_salt=*/base::nullopt);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodStateOnStartup",
-      /*sample=*/
-      ExpectedKeyDerivationMethodStateForMetrics::PBKDF2_HMAC_SHA1_1003,
-      /*count=*/1);
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       InitShouldReportPbkdf2InHistogramWhenUnspecifiedKeyMethodPersisted) {
-  KeyParams custom_key = {KeyDerivationParams::CreateForPbkdf2(),
-                          kCustomPassphrase};
-  GetCryptographer()->AddKey(custom_key);
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  InitCustomPassMigratedNigori(
-      /*migration_time=*/1, sync_pb::NigoriSpecifics::UNSPECIFIED,
-      kCustomPassphrase, /*key_derivation_salt=*/base::nullopt);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodStateOnStartup",
-      /*sample=*/
-      ExpectedKeyDerivationMethodStateForMetrics::PBKDF2_HMAC_SHA1_1003,
-      /*count=*/1);
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       InitShouldReportScryptInHistogramWhenScryptPersisted) {
-  KeyParams custom_key = {KeyDerivationParams::CreateForScrypt(kScryptSalt),
-                          kCustomPassphrase};
-  GetCryptographer()->AddKey(custom_key);
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  InitCustomPassMigratedNigori(
-      /*migration_time=*/1, sync_pb::NigoriSpecifics::SCRYPT_8192_8_11,
-      kCustomPassphrase, /*key_derivation_salt=*/kScryptSalt);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodStateOnStartup",
-      /*sample=*/ExpectedKeyDerivationMethodStateForMetrics::SCRYPT_8192_8_11,
-      /*count=*/1);
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       InitShouldNotReportKeyMethodInHistogramIfNotCustomPassphrase) {
-  TearDown();
-  test_user_share_.SetUp();
-  SetUpEncryption();
-  SetupKeystoreKeys({kRawKeystoreKey});
-
-  base::HistogramTester histogram_tester;
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
-                                      kKeystoreKey);
-
-  histogram_tester.ExpectTotalCount(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodStateOnStartup",
-      /*count=*/0);
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
        SetEncryptionPassphraseShouldUsePbkdf2IfScryptForNewDisabled) {
   SetScryptFeaturesState(/*force_disabled=*/false,
                          /*use_for_new_passphrases=*/false);
@@ -2545,28 +2472,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_EQ(GetSerializedNigoriKeyForCustomPassphrase(
                 KeyDerivationParams::CreateForPbkdf2(), kCustomPassphrase),
             GetCryptographer()->GetDefaultNigoriKeyData());
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       SetEncryptionPassphraseShouldReportPbkdf2InHistogramWhenPbkdf2Used) {
-  SetScryptFeaturesState(/*force_disabled=*/false,
-                         /*use_for_new_passphrases=*/false);
-  TearDown();
-  test_user_share_.SetUp();
-  SetUpEncryption();
-  SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
-                                      kKeystoreKey);
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnNewPassphrase",
-      /*sample=*/
-      ExpectedKeyDerivationMethodStateForMetrics::PBKDF2_HMAC_SHA1_1003,
-      /*count=*/1);
 }
 
 // Regardless of the state of the "scrypt for new passphrases" feature, turning
@@ -2617,27 +2522,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
   EXPECT_EQ(GetSerializedNigoriKeyForCustomPassphrase(
                 KeyDerivationParams::CreateForScrypt(salt), kCustomPassphrase),
             GetCryptographer()->GetDefaultNigoriKeyData());
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       SetEncryptionPassphraseShouldReportScryptInHistogramWhenScryptUsed) {
-  SetScryptFeaturesState(/*force_disabled=*/false,
-                         /*use_for_new_passphrases=*/true);
-  TearDown();
-  test_user_share_.SetUp();
-  SetUpEncryption();
-  SetupKeystoreKeys({kRawKeystoreKey});
-  InitAndVerifyKeystoreMigratedNigori(/*migration_time=*/1, kKeystoreKey,
-                                      kKeystoreKey);
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  encryption_handler()->SetEncryptionPassphrase(kCustomPassphrase);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnNewPassphrase",
-      /*sample=*/ExpectedKeyDerivationMethodStateForMetrics::SCRYPT_8192_8_11,
-      /*count=*/1);
 }
 
 TEST_F(SyncEncryptionHandlerImplTest,
@@ -2733,58 +2617,6 @@ TEST_F(SyncEncryptionHandlerImplTest,
   encryption_handler()->SetDecryptionPassphrase(kCustomPassphrase);
 
   EXPECT_FALSE(GetCryptographer()->CanEncrypt());
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       SetDecryptionPassphraseShouldReportPersistedPbkdf2InHistogramOnSuccess) {
-  InitAndVerifyCustomPassphraseMigratedNigori(
-      /*migration_time=*/1, sync_pb::NigoriSpecifics::PBKDF2_HMAC_SHA1_1003,
-      kCustomPassphrase, /*key_derivation_salt=*/base::nullopt);
-  GetCryptographer()->SetPendingKeys(ReadNigoriSpecifics().encryption_keybag());
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  encryption_handler()->SetDecryptionPassphrase(kCustomPassphrase);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnSuccessfulDecryption",
-      /*sample=*/
-      ExpectedKeyDerivationMethodStateForMetrics::PBKDF2_HMAC_SHA1_1003,
-      /*count=*/1);
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       SetDecryptionPassphraseShouldReportPersistedScryptInHistogramOnSuccess) {
-  InitAndVerifyCustomPassphraseMigratedNigori(
-      /*migration_time=*/1, sync_pb::NigoriSpecifics::SCRYPT_8192_8_11,
-      kCustomPassphrase, /*key_derivation_salt=*/kScryptSalt);
-  GetCryptographer()->SetPendingKeys(ReadNigoriSpecifics().encryption_keybag());
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  encryption_handler()->SetDecryptionPassphrase(kCustomPassphrase);
-
-  histogram_tester.ExpectUniqueSample(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnSuccessfulDecryption",
-      /*sample=*/ExpectedKeyDerivationMethodStateForMetrics::SCRYPT_8192_8_11,
-      /*count=*/1);
-}
-
-TEST_F(SyncEncryptionHandlerImplTest,
-       SetDecryptionPassphraseShouldNotReportKeyMethodInHistogramOnFailure) {
-  InitAndVerifyCustomPassphraseMigratedNigori(
-      /*migration_time=*/1, sync_pb::NigoriSpecifics::SCRYPT_8192_8_11,
-      kCustomPassphrase, /*key_derivation_salt=*/kScryptSalt);
-  GetCryptographer()->SetPendingKeys(ReadNigoriSpecifics().encryption_keybag());
-
-  IgnoreAllObserverCalls();
-  base::HistogramTester histogram_tester;
-  encryption_handler()->SetDecryptionPassphrase(
-      "Invalid passphrase, not the same as kCustomPassphrase");
-
-  histogram_tester.ExpectTotalCount(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnSuccessfulDecryption",
-      /*count=*/0);
 }
 
 TEST_F(SyncEncryptionHandlerImplTest,

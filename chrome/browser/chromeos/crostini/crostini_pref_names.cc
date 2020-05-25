@@ -121,9 +121,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
       kCrostiniTerminalSettings, base::DictionaryValue(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 
-  // TODO(https://crbug.com/1067577, janagrill): Replace hardcoded 0 with a
-  // constant
-  registry->RegisterIntegerPref(kCrostiniArcAdbSideloadingUserPref, 0);
+  registry->RegisterIntegerPref(
+      kCrostiniArcAdbSideloadingUserPref,
+      static_cast<int>(CrostiniArcAdbSideloadingUserAllowanceMode::kDisallow));
 }
 
 }  // namespace prefs

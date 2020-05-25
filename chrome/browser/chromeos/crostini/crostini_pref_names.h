@@ -8,6 +8,13 @@
 class PrefRegistrySimple;
 
 namespace crostini {
+
+// Enum that specifies allowance modes for the adb sideloading user policy
+enum class CrostiniArcAdbSideloadingUserAllowanceMode {
+  kDisallow = 0,
+  kAllow = 1,
+};
+
 namespace prefs {
 
 extern const char kCrostiniEnabled[];

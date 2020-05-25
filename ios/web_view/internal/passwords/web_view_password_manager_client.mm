@@ -167,10 +167,6 @@ WebViewPasswordManagerClient::GetPasswordFeatureManager() const {
   return &password_feature_manager_;
 }
 
-bool WebViewPasswordManagerClient::IsMainFrameSecure() const {
-  return password_manager::WebStateContentIsSecureHtml(web_state_);
-}
-
 PrefService* WebViewPasswordManagerClient::GetPrefs() const {
   return pref_service_;
 }
@@ -212,6 +208,14 @@ bool WebViewPasswordManagerClient::IsSavingAndFillingEnabled(
   return *saving_passwords_enabled_ && !IsIncognito() &&
          !net::IsCertStatusError(GetMainFrameCertStatus()) &&
          IsFillingEnabled(url);
+}
+
+bool WebViewPasswordManagerClient::IsCommittedMainFrameSecure() const {
+  return password_manager::WebStateContentIsSecureHtml(web_state_);
+}
+
+const GURL& WebViewPasswordManagerClient::GetLastCommittedURL() const {
+  return delegate_.lastCommittedURL;
 }
 
 url::Origin WebViewPasswordManagerClient::GetLastCommittedOrigin() const {

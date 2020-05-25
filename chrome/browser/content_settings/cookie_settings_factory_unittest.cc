@@ -34,7 +34,7 @@ class CookieSettingsFactoryTest : public testing::Test {
 
 TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
   scoped_refptr<content_settings::CookieSettings> incognito_settings =
-      CookieSettingsFactory::GetForProfile(profile_.GetOffTheRecordProfile());
+      CookieSettingsFactory::GetForProfile(profile_.GetPrimaryOTRProfile());
 
   // Modify the regular cookie settings after the incognito cookie settings have
   // been instantiated.
@@ -56,7 +56,7 @@ TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingRules) {
 
 TEST_F(CookieSettingsFactoryTest, IncognitoBehaviorOfBlockingEverything) {
   scoped_refptr<content_settings::CookieSettings> incognito_settings =
-      CookieSettingsFactory::GetForProfile(profile_.GetOffTheRecordProfile());
+      CookieSettingsFactory::GetForProfile(profile_.GetPrimaryOTRProfile());
 
   // Apply the general blocking to the regular profile.
   cookie_settings_->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);

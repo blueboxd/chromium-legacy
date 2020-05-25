@@ -1054,14 +1054,7 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
   DVLOG_IF(1, result == noErr) << "IO buffer size changed to: " << buffer_size;
   // Store the currently used (after a change) I/O buffer frame size.
   *io_buffer_frame_size = buffer_size;
-
-  // If the size was changed, update the actual output buffer size used for the
-  // given device ID.
-  if (!is_input && (result == noErr)) {
-    output_io_buffer_size_map_[device_id] = buffer_size;
-  }
-
-  return (result == noErr);
+  return result == noErr;
 }
 
 // static
@@ -1192,76 +1185,6 @@ void AudioManagerMac::UnsuppressNoiseReduction(AudioDeviceID device_id) {
   }
 }
 
-void AudioManagerMac::IncreaseIOBufferSizeIfPossible(AudioDeviceID device_id) {
-  DCHECK(GetTaskRunner()->BelongsToCurrentThread());
-  DVLOG(1) << "IncreaseIOBufferSizeIfPossible(id=0x" << std::hex << device_id
-           << ")";
-  if (in_shutdown_) {
-    DVLOG(1) << "Disabled since we are shutting down";
-    return;
-  }
-
-  // Start by getting the actual I/O buffer size. Then scan all active output
-  // streams using the specified |device_id| and find the minimum requested
-  // buffer size. In addition, store a reference to the audio unit of the first
-  // output stream using |device_id|.
-  // All active output streams use the same actual I/O buffer size given
-  // a unique device ID.
-  // TODO(henrika): it would also be possible to use AudioUnitGetProperty(...,
-  // kAudioDevicePropertyBufferFrameSize,...) instead of caching the actual
-  // buffer size but I have chosen to use the map instead to avoid possibly
-  // expensive Core Audio API calls and the risk of failure when asking while
-  // closing a stream.
-  // TODO(http://crbug.com/961629): There seems to be bugs in the caching.
-  const size_t actual_size =
-      output_io_buffer_size_map_.find(device_id) !=
-              output_io_buffer_size_map_.end()
-          ? output_io_buffer_size_map_[device_id]
-          : 0;  // This leads to trying to update the buffer size below.
-  AudioUnit audio_unit;
-  size_t min_requested_size = std::numeric_limits<std::size_t>::max();
-  for (auto* stream : output_streams_) {
-    if (stream->device_id() == device_id) {
-      if (min_requested_size == std::numeric_limits<std::size_t>::max()) {
-        // Store reference to the first audio unit using the specified ID.
-        audio_unit = stream->audio_unit();
-      }
-      if (stream->requested_buffer_size() < min_requested_size)
-        min_requested_size = stream->requested_buffer_size();
-      DVLOG(1) << "requested:" << stream->requested_buffer_size()
-               << " actual: " << actual_size;
-    }
-  }
-
-  if (min_requested_size == std::numeric_limits<std::size_t>::max()) {
-    DVLOG(1) << "No action since there is no active stream for given device id";
-    return;
-  }
-
-  // It is only possible to revert to a larger buffer size if the lowest
-  // requested is not in use. Example: if the actual I/O buffer size is 256 and
-  // at least one output stream has asked for 256 as its buffer size, we can't
-  // start using a larger I/O buffer size.
-  DCHECK_GE(min_requested_size, actual_size);
-  if (min_requested_size == actual_size) {
-    DVLOG(1) << "No action since lowest possible size is already in use: "
-             << actual_size;
-    return;
-  }
-
-  // It should now be safe to increase the I/O buffer size to a new (higher)
-  // value using the |min_requested_size|. Doing so will save system resources.
-  // All active output streams with the same |device_id| are affected by this
-  // change but it is only required to apply the change to one of the streams.
-  // We ignore the result from MaybeChangeBufferSize(). Logging is done in that
-  // function and it could fail if the device was removed during the operation.
-  DVLOG(1) << "min_requested_size: " << min_requested_size;
-  bool size_was_changed = false;
-  size_t io_buffer_frame_size = 0;
-  MaybeChangeBufferSize(device_id, audio_unit, 0, min_requested_size,
-                        &size_was_changed, &io_buffer_frame_size);
-}
-
 bool AudioManagerMac::AudioDeviceIsUsedForInput(AudioDeviceID device_id) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   if (!basic_input_streams_.empty()) {
@@ -1299,25 +1222,6 @@ void AudioManagerMac::ReleaseOutputStreamUsingRealDevice(
   // Start by closing down the specified output stream.
   output_streams_.remove(static_cast<AUHALStream*>(stream));
   AudioManagerBase::ReleaseOutputStream(stream);
-
-  // Prevent attempt to alter buffer size if the released stream was the last
-  // output stream.
-  if (output_streams_.empty())
-    return;
-
-  // If the audio device exists (i.e. has not been removed from the system) and
-  // is not used for input, see if it is possible to increase the IO buffer size
-  // (saves power) given the remaining output audio streams and their buffer
-  // size requirements.
-  // TODO(grunell): When closing several idle streams
-  // (AudioOutputDispatcherImpl::CloseIdleStreams), we should ideally only
-  // update the buffer size once after closing all those streams.
-  std::vector<AudioObjectID> device_ids =
-      core_audio_mac::GetAllAudioDeviceIDs();
-  const bool device_exists = std::find(device_ids.begin(), device_ids.end(),
-                                       device_id) != device_ids.end();
-  if (device_exists && !AudioDeviceIsUsedForInput(device_id))
-    IncreaseIOBufferSizeIfPossible(device_id);
 }
 
 void AudioManagerMac::ReleaseInputStream(AudioInputStream* stream) {

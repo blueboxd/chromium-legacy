@@ -115,11 +115,7 @@ PasswordManagerClient::GetAutofillDownloadManager() {
   return nullptr;
 }
 
-const GURL& PasswordManagerClient::GetMainFrameURL() const {
-  return GURL::EmptyGURL();
-}
-
-bool PasswordManagerClient::IsMainFrameSecure() const {
+bool PasswordManagerClient::IsCommittedMainFrameSecure() const {
   return false;
 }
 

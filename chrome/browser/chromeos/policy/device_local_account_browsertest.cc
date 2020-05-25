@@ -2715,7 +2715,7 @@ class AmbientAuthenticationManagedGuestSessionTest
                            .ambientauthenticationinprivatemodesenabled()
                            .value();
     Profile* regular_profile = GetCurrentBrowser()->profile();
-    Profile* incognito_profile = regular_profile->GetOffTheRecordProfile();
+    Profile* incognito_profile = regular_profile->GetPrimaryOTRProfile();
 
     EXPECT_TRUE(AmbientAuthenticationTestHelper::IsAmbientAuthAllowedForProfile(
         regular_profile));

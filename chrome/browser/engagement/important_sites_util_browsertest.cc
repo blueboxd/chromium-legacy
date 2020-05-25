@@ -89,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(ImportantSitesUtilBrowserTest,
   // It also used to produce wrong results, since notification permission
   // information got inherited incorrectly.
   // See crbug.com/993021, crbug.com/1052406
-  auto* incognito_profile = profile()->GetOffTheRecordProfile();
+  auto* incognito_profile = profile()->GetPrimaryOTRProfile();
   ASSERT_TRUE(incognito_profile);
   ASSERT_TRUE(incognito_profile->IsOffTheRecord());
 

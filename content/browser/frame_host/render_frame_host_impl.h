@@ -2344,6 +2344,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::ReportingObserver>
           reporting_observer_receiver);
 
+  // Check the renderer provided sandbox flags matches with what the browser
+  // process computed on its own. This triggers DCHECK and DumpWithoutCrashing()
+  //
+  // TODO(https://crbug.com/1041376) Remove this when we are confident the value
+  // computed from the browser is always matching.
+  void CheckSandboxFlags();
+
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
   // It is kept alive as long as any RenderFrameHosts or RenderFrameProxyHosts
@@ -2716,6 +2723,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // this RenderFrameHost, but may diverge if this RenderFrameHost is pending
   // deletion.
   network::mojom::WebSandboxFlags active_sandbox_flags_;
+
+  // Same as |active_sandbox_flags_|, except this is computed:
+  // - outside of the renderer process.
+  // - before loading the document.
+  //
+  // For now, this is simply used to double check this matches the renderer
+  // computation. Later this will be used as the source of truth.
+  //
+  // [OutOfBlinkSandbox](https://crbug.com/1041376)
+  base::Optional<network::mojom::WebSandboxFlags> active_sandbox_flags_control_;
 
   // Tracks the document policy which has been set on this frame.
   std::unique_ptr<blink::DocumentPolicy> document_policy_;

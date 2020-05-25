@@ -1002,7 +1002,9 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
   CRXFileInfo crx_info(crx_path, required_format);
   crx_info.expected_hash = package_hash;
   crx_info.extension_id = id;
-  crx_info.expected_version = version;
+  // TODO(https://crbug.com/1076376): Change |version| in ExtensionFetch from
+  // std::string to base::Version.
+  crx_info.expected_version = base::Version(version);
   delegate_->OnExtensionDownloadFinished(
       crx_info, file_ownership_passed, url, ping_results_[id], request_ids,
       from_cache ? base::BindRepeating(&ExtensionDownloader::CacheInstallDone,

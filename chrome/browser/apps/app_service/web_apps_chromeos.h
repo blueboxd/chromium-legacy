@@ -86,7 +86,7 @@ class WebAppsChromeOs : public WebAppsBase,
   void OnNotificationDisplayServiceDestroyed(
       NotificationDisplayService* service) override;
 
-  void MaybeAddNotification(const std::string& app_id,
+  bool MaybeAddNotification(const std::string& app_id,
                             const std::string& notification_id);
   void MaybeAddWebPageNotifications(
       const message_center::Notification& notification,

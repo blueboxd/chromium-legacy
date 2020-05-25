@@ -165,8 +165,8 @@ class ChromePasswordManagerClient
       const override;
   password_manager::HttpAuthManager* GetHttpAuthManager() override;
   autofill::AutofillDownloadManager* GetAutofillDownloadManager() override;
-  const GURL& GetMainFrameURL() const override;
-  bool IsMainFrameSecure() const override;
+  bool IsCommittedMainFrameSecure() const override;
+  const GURL& GetLastCommittedURL() const override;
   url::Origin GetLastCommittedOrigin() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()
       const override;

@@ -590,11 +590,11 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
   if (store_password_called_)
     return nullptr;
 
-  const GURL& origin = submitted_form.url;
-  if (ShouldBlockPasswordForSameOriginButDifferentScheme(origin)) {
+  const GURL& submitted_url = submitted_form.url;
+  if (ShouldBlockPasswordForSameOriginButDifferentScheme(submitted_url)) {
     RecordProvisionalSaveFailure(
-        PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS, origin,
-        logger.get());
+        PasswordManagerMetricsRecorder::SAVING_ON_HTTP_AFTER_HTTPS,
+        submitted_url, logger.get());
     return nullptr;
   }
 
@@ -636,10 +636,9 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
       manager->set_not_submitted();
   }
 
-  // Cache the user-visible URL (i.e., the one seen in the omnibox). Once the
-  // post-submit navigation concludes, we compare the landing URL against the
-  // cached and report the difference through UMA.
-  main_frame_url_ = client_->GetMainFrameURL();
+  // Cache the committed URL. Once the post-submit navigation concludes, we
+  // compare the landing URL against the cached and report the difference.
+  submitted_form_url_ = submitted_url;
 
   ReportSubmittedFormFrameMetric(driver, *matched_manager->GetSubmittedForm());
 
@@ -738,10 +737,10 @@ bool PasswordManager::IsAutomaticSavePromptAvailable() {
 }
 
 bool PasswordManager::ShouldBlockPasswordForSameOriginButDifferentScheme(
-    const GURL& origin) const {
-  const GURL& old_origin = main_frame_url_.GetOrigin();
-  return old_origin.host_piece() == origin.host_piece() &&
-         old_origin.SchemeIsCryptographic() && !origin.SchemeIsCryptographic();
+    const GURL& url) const {
+  return submitted_form_url_.host_piece() == url.host_piece() &&
+         submitted_form_url_.SchemeIsCryptographic() &&
+         !url.SchemeIsCryptographic();
 }
 
 void PasswordManager::OnPasswordFormsRendered(
@@ -1072,7 +1071,7 @@ void PasswordManager::RecordProvisionalSaveFailure(
     BrowserSavePasswordProgressLogger* logger) {
   if (client_ && client_->GetMetricsRecorder()) {
     client_->GetMetricsRecorder()->RecordProvisionalSaveFailure(
-        failure, main_frame_url_, form_origin, logger);
+        failure, submitted_form_url_, form_origin, logger);
   }
 }
 
@@ -1102,14 +1101,12 @@ void PasswordManager::ReportSubmittedFormFrameMetric(
   metrics_util::SubmittedFormFrame frame;
   if (driver->IsMainFrame()) {
     frame = metrics_util::SubmittedFormFrame::MAIN_FRAME;
-  } else if (form.origin == main_frame_url_) {
+  } else if (form.origin == client()->GetLastCommittedURL()) {
     frame =
         metrics_util::SubmittedFormFrame::IFRAME_WITH_SAME_URL_AS_MAIN_FRAME;
   } else {
-    GURL::Replacements rep;
-    rep.SetPathStr("");
     std::string main_frame_signon_realm =
-        main_frame_url_.ReplaceComponents(rep).spec();
+        GetSignonRealm(client()->GetLastCommittedURL());
     frame = (main_frame_signon_realm == form.signon_realm)
                 ? metrics_util::SubmittedFormFrame::
                       IFRAME_WITH_DIFFERENT_URL_SAME_SIGNON_REALM_AS_MAIN_FRAME

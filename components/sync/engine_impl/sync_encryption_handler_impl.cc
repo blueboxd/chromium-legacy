@@ -15,7 +15,6 @@
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/base/encryptor.h"
@@ -254,24 +253,6 @@ void UpdateNigoriSpecificsKeyDerivationParams(
   }
 }
 
-KeyDerivationMethodStateForMetrics GetKeyDerivationMethodStateForMetrics(
-    const base::Optional<KeyDerivationParams>& key_derivation_params) {
-  if (!key_derivation_params.has_value()) {
-    return KeyDerivationMethodStateForMetrics::NOT_SET;
-  }
-  switch (key_derivation_params.value().method()) {
-    case KeyDerivationMethod::PBKDF2_HMAC_SHA1_1003:
-      return KeyDerivationMethodStateForMetrics::PBKDF2_HMAC_SHA1_1003;
-    case KeyDerivationMethod::SCRYPT_8192_8_11:
-      return KeyDerivationMethodStateForMetrics::SCRYPT_8192_8_11;
-    case KeyDerivationMethod::UNSUPPORTED:
-      return KeyDerivationMethodStateForMetrics::UNSUPPORTED;
-  }
-
-  NOTREACHED();
-  return KeyDerivationMethodStateForMetrics::UNSUPPORTED;
-}
-
 // The custom passphrase key derivation method in Nigori can be unspecified
 // (which means that PBKDF2 was implicitly used). In those cases, we want to set
 // it explicitly to PBKDF2. This function checks whether this needs to be done.
@@ -356,56 +337,6 @@ bool SyncEncryptionHandlerImpl::Init() {
       break;
   }
 
-  PassphraseType passphrase_type = GetPassphraseType(trans.GetWrappedTrans());
-  UMA_HISTOGRAM_ENUMERATION("Sync.PassphraseType", passphrase_type);
-  if (passphrase_type == PassphraseType::kCustomPassphrase) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Sync.Crypto.CustomPassphraseKeyDerivationMethodStateOnStartup",
-        GetKeyDerivationMethodStateForMetrics(
-            custom_passphrase_key_derivation_params_));
-  }
-
-  bool has_pending_keys =
-      UnlockVault(trans.GetWrappedTrans()).cryptographer.has_pending_keys();
-  bool is_ready =
-      UnlockVault(trans.GetWrappedTrans()).cryptographer.CanEncrypt();
-  // Log the state of the cryptographer regardless of migration state.
-  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerReady", is_ready);
-  UMA_HISTOGRAM_BOOLEAN("Sync.CryptographerPendingKeys", has_pending_keys);
-  if (IsNigoriMigratedToKeystore(node.GetNigoriSpecifics())) {
-    // This account has a nigori node that has been migrated to support
-    // keystore.
-    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState", MIGRATED,
-                              MIGRATION_STATE_SIZE);
-    if (has_pending_keys && GetPassphraseType(trans.GetWrappedTrans()) ==
-                                PassphraseType::kKeystorePassphrase) {
-      // If this is happening, it means the keystore decryptor is either
-      // undecryptable with the available keystore keys or does not match the
-      // nigori keybag's encryption key. Otherwise we're simply missing the
-      // keystore key.
-      UMA_HISTOGRAM_BOOLEAN("Sync.KeystoreDecryptionFailed",
-                            !keystore_key_.empty());
-    }
-  } else if (!is_ready) {
-    // Migration cannot occur until the cryptographer is ready (initialized
-    // with GAIA password and any pending keys resolved).
-    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
-                              NOT_MIGRATED_CRYPTO_NOT_READY,
-                              MIGRATION_STATE_SIZE);
-  } else if (keystore_key_.empty()) {
-    // The client has no keystore key, either because it is not yet enabled or
-    // the server is not sending a valid keystore key.
-    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
-                              NOT_MIGRATED_NO_KEYSTORE_KEY,
-                              MIGRATION_STATE_SIZE);
-  } else {
-    // If the above conditions have been met and the nigori node is still not
-    // migrated, something failed in the migration process.
-    UMA_HISTOGRAM_ENUMERATION("Sync.NigoriMigrationState",
-                              NOT_MIGRATED_UNKNOWN_REASON,
-                              MIGRATION_STATE_SIZE);
-  }
-
   // Always trigger an encrypted types and cryptographer state change event at
   // init time so observers get the initial values.
   for (auto& observer : observers_) {
@@ -455,10 +386,6 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
     // Will fail if we already have an explicit passphrase or we have pending
     // keys.
     SetCustomPassphrase(passphrase, &trans, &node);
-
-    // When keystore migration occurs, the "CustomEncryption" UMA stat must be
-    // logged as true.
-    UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
     return;
   }
 
@@ -505,9 +432,6 @@ void SyncEncryptionHandlerImpl::SetEncryptionPassphrase(
               *passphrase_type, GetExplicitPassphraseTime(*passphrase_type));
         }
         cryptographer->GetBootstrapToken(*encryptor_, &bootstrap_token);
-
-        UMA_HISTOGRAM_BOOLEAN("Sync.CustomEncryption", true);
-
         success = true;
       } else {
         NOTREACHED() << "Failed to add key to cryptographer.";
@@ -1230,8 +1154,6 @@ void SyncEncryptionHandlerImpl::WriteEncryptionStateToNigori(
         // a possible looping of two clients constantly overwriting each other,
         // we limit the absolute number of overwrites per client instantiation.
         nigori_overwrite_count_++;
-        UMA_HISTOGRAM_COUNTS_1M("Sync.AutoNigoriOverwrites",
-                                nigori_overwrite_count_);
       }
 
       // Note: we don't try to set keybag_is_frozen here since if that
@@ -1332,10 +1254,6 @@ void SyncEncryptionHandlerImpl::SetCustomPassphrase(
   DCHECK(IsNigoriMigratedToKeystore(nigori_node->GetNigoriSpecifics()));
   KeyDerivationParams key_derivation_params =
       CreateKeyDerivationParamsForCustomPassphrase(random_salt_generator_);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Sync.Crypto.CustomPassphraseKeyDerivationMethodOnNewPassphrase",
-      GetKeyDerivationMethodStateForMetrics(key_derivation_params));
 
   KeyParams key_params = {key_derivation_params, passphrase};
 
@@ -1438,11 +1356,6 @@ void SyncEncryptionHandlerImpl::DecryptPendingKeysWithExplicitPassphrase(
 
     if (passphrase_type == PassphraseType::kCustomPassphrase) {
       DCHECK(custom_passphrase_key_derivation_params_.has_value());
-      UMA_HISTOGRAM_ENUMERATION(
-          "Sync.Crypto."
-          "CustomPassphraseKeyDerivationMethodOnSuccessfulDecryption",
-          GetKeyDerivationMethodStateForMetrics(
-              custom_passphrase_key_derivation_params_));
     }
   } else {
     DVLOG(1) << "Explicit passphrase failed to decrypt.";
@@ -1738,9 +1651,6 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
       bool cryptographer_was_ready = cryptographer->CanEncrypt();
       if (!cryptographer->AddKey(key_params)) {
         LOG(ERROR) << "Failed to add keystore key as default key";
-        UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                  FAILED_TO_SET_DEFAULT_KEYSTORE,
-                                  MIGRATION_RESULT_SIZE);
         return false;
       }
       if (!cryptographer_was_ready && cryptographer->CanEncrypt()) {
@@ -1756,9 +1666,6 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
       DVLOG(1) << "Migrating keybag while preserving old key";
       if (!cryptographer->AddNonDefaultKey(key_params)) {
         LOG(ERROR) << "Failed to add keystore key as non-default key.";
-        UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                  FAILED_TO_SET_NONDEFAULT_KEYSTORE,
-                                  MIGRATION_RESULT_SIZE);
         return false;
       }
     }
@@ -1779,15 +1686,10 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
           *cryptographer, keystore_key_,
           migrated_nigori.mutable_keystore_decryptor_token())) {
     LOG(ERROR) << "Failed to extract keystore decryptor token.";
-    UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                              FAILED_TO_EXTRACT_DECRYPTOR,
-                              MIGRATION_RESULT_SIZE);
     return false;
   }
   if (!cryptographer->GetKeys(migrated_nigori.mutable_encryption_keybag())) {
     LOG(ERROR) << "Failed to extract encryption keybag.";
-    UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                              FAILED_TO_EXTRACT_KEYBAG, MIGRATION_RESULT_SIZE);
     return false;
   }
 
@@ -1832,32 +1734,6 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
     NotifyObserversOfLocalCustomPassphrase(trans);
   }
 
-  switch (new_passphrase_type) {
-    case PassphraseType::kKeystorePassphrase:
-      if (old_keystore_keys_.size() > 0) {
-        UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                  MIGRATION_SUCCESS_KEYSTORE_NONDEFAULT,
-                                  MIGRATION_RESULT_SIZE);
-      } else {
-        UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                  MIGRATION_SUCCESS_KEYSTORE_DEFAULT,
-                                  MIGRATION_RESULT_SIZE);
-      }
-      break;
-    case PassphraseType::kFrozenImplicitPassphrase:
-      UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                MIGRATION_SUCCESS_FROZEN_IMPLICIT,
-                                MIGRATION_RESULT_SIZE);
-      break;
-    case PassphraseType::kCustomPassphrase:
-      UMA_HISTOGRAM_ENUMERATION("Sync.AttemptNigoriMigration",
-                                MIGRATION_SUCCESS_CUSTOM,
-                                MIGRATION_RESULT_SIZE);
-      break;
-    default:
-      NOTREACHED();
-      break;
-  }
   return true;
 }
 

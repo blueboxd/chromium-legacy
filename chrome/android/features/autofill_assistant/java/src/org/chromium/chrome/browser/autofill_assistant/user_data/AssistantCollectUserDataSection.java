@@ -31,9 +31,23 @@ import java.util.List;
  * such as |AutofillContact|, |AutofillPaymentMethod|, etc.
  */
 public abstract class AssistantCollectUserDataSection<T extends EditableOption> {
+    interface Delegate<T> {
+        boolean isComplete(T element);
+    }
+
+    private class Item {
+        View mFullView;
+        T mOption;
+
+        Item(View fullView, T option) {
+            this.mFullView = fullView;
+            this.mOption = option;
+        }
+    }
+
     private final @Nullable View mTitleAddButton;
-    protected final AssistantVerticalExpander mSectionExpander;
-    protected final AssistantChoiceList mItemsView;
+    private final AssistantVerticalExpander mSectionExpander;
+    private final AssistantChoiceList mItemsView;
     private final View mSummaryView;
     private final int mFullViewResId;
     private final int mTitleToContentPadding;
@@ -46,15 +60,7 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
     private Callback<T> mListener;
     private int mTopPadding;
     private int mBottomPadding;
-
-    private class Item {
-        Item(View fullView, T option) {
-            this.mFullView = fullView;
-            this.mOption = option;
-        }
-        View mFullView;
-        T mOption;
-    }
+    private Delegate<T> mCompletenessDelegate;
 
     /**
      *
@@ -127,8 +133,16 @@ public abstract class AssistantCollectUserDataSection<T extends EditableOption> 
         mSectionExpander.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    void setListener(Callback<T> listener) {
+    void setListener(@Nullable Callback<T> listener) {
         mListener = listener;
+    }
+
+    void setCompletenessDelegate(@Nullable Delegate<T> completenessDelegate) {
+        mCompletenessDelegate = completenessDelegate;
+    }
+
+    boolean isComplete(T element) {
+        return mCompletenessDelegate != null && mCompletenessDelegate.isComplete(element);
     }
 
     void setTitle(String title) {

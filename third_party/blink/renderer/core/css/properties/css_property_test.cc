@@ -32,6 +32,16 @@ class CSSPropertyTest : public PageTestBase {
       const CSSValue& value) {
     StyleResolverState state(GetDocument(), *GetDocument().body());
     state.SetStyle(ComputedStyle::Create());
+
+    // The border-style needs to be non-hidden and non-none, otherwise
+    // the computed values of border-width properties are always zero.
+    //
+    // https://drafts.csswg.org/css-backgrounds-3/#the-border-width
+    state.Style()->SetBorderBottomStyle(EBorderStyle::kSolid);
+    state.Style()->SetBorderLeftStyle(EBorderStyle::kSolid);
+    state.Style()->SetBorderRightStyle(EBorderStyle::kSolid);
+    state.Style()->SetBorderTopStyle(EBorderStyle::kSolid);
+
     StyleBuilder::ApplyProperty(property, state, value);
     return state.TakeStyle();
   }
@@ -138,10 +148,17 @@ namespace {
 
 // Examples must produce unique computed values. For example, it's not
 // allowed to list both 2px and calc(1px + 1px).
+const char* border_style_examples[] = {"none", "solid", "dashed", nullptr};
 const char* color_examples[] = {"red", "green", "#fef", "#faf", nullptr};
 const char* direction_examples[] = {"ltr", "rtl", nullptr};
 const char* length_or_auto_examples[] = {"auto", "1px", "2px", "5%", nullptr};
 const char* length_or_none_examples[] = {"none", "1px", "2px", "5%", nullptr};
+const char* length_size_examples[] = {"4px", "1px 2px", "3%", "calc(1% + 1px)",
+                                      nullptr};
+const char* line_width_examples[] = {"medium", "thin", "100px", nullptr};
+const char* none_auto_examples[] = {"none", "auto", nullptr};
+const char* text_decoration_line_examples[] = {"none", "underline", nullptr};
+const char* text_decoration_style_examples[] = {"solid", "dashed", nullptr};
 const char* vertical_align_examples[] = {"sub", "super", "1px", "3%", nullptr};
 const char* writing_mode_examples[] = {"horizontal-tb", "vertical-rl", nullptr};
 
@@ -151,9 +168,21 @@ struct ComputedValuesEqualData {
 } computed_values_equal_data[] = {
     {"-webkit-writing-mode", writing_mode_examples},
     {"border-bottom-color", color_examples},
+    {"border-bottom-left-radius", length_size_examples},
+    {"border-bottom-right-radius", length_size_examples},
+    {"border-bottom-style", border_style_examples},
+    {"border-bottom-width", line_width_examples},
     {"border-left-color", color_examples},
+    {"border-left-style", border_style_examples},
+    {"border-left-width", line_width_examples},
     {"border-right-color", color_examples},
+    {"border-right-style", border_style_examples},
+    {"border-right-width", line_width_examples},
     {"border-top-color", color_examples},
+    {"border-top-left-radius", length_size_examples},
+    {"border-top-right-radius", length_size_examples},
+    {"border-top-style", border_style_examples},
+    {"border-top-width", line_width_examples},
     {"bottom", length_or_auto_examples},
     {"direction", direction_examples},
     {"height", length_or_auto_examples},
@@ -163,6 +192,11 @@ struct ComputedValuesEqualData {
     {"min-height", length_or_auto_examples},
     {"min-width", length_or_auto_examples},
     {"right", length_or_auto_examples},
+    {"text-decoration-color", color_examples},
+    {"text-decoration-line", text_decoration_line_examples},
+    {"text-decoration-skip-ink", none_auto_examples},
+    {"text-decoration-style", text_decoration_style_examples},
+    {"text-decoration-thickness", length_or_auto_examples},
     {"top", length_or_auto_examples},
     {"vertical-align", vertical_align_examples},
     {"width", length_or_auto_examples},

@@ -2118,7 +2118,8 @@ void StyleEngine::UpdateColorScheme() {
     // darkening is enabled.
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
-
+  if (GetDocument().Printing())
+    preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   if (forced_colors_ != old_forced_colors ||
       preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();
@@ -2197,6 +2198,13 @@ void StyleEngine::PropagateWritingModeAndDirectionToHTMLRoot() {
   if (HTMLHtmlElement* root_element =
           DynamicTo<HTMLHtmlElement>(GetDocument().documentElement()))
     root_element->PropagateWritingModeAndDirectionFromBody();
+}
+
+void StyleEngine::PrintingStateChanged() {
+  ColorSchemeChanged();
+  MarkViewportStyleDirty();
+  MarkAllElementsForStyleRecalc(StyleChangeReasonForTracing::Create(
+      style_change_reason::kStyleSheetChange));
 }
 
 void StyleEngine::Trace(Visitor* visitor) const {

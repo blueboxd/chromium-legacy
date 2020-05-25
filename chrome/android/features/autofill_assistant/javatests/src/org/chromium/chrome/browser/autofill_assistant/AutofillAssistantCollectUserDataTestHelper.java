@@ -178,6 +178,22 @@ public class AutofillAssistantCollectUserDataTestHelper {
 
         @Override
         public void onTextFocusLost() {}
+
+        @Override
+        public boolean isContactComplete(@Nullable AutofillContact contact) {
+            return contact != null && contact.isComplete();
+        }
+
+        @Override
+        public boolean isShippingAddressComplete(@Nullable AutofillAddress address) {
+            return address != null && address.isComplete();
+        }
+
+        @Override
+        public boolean isPaymentInstrumentComplete(
+                @Nullable AutofillPaymentInstrument paymentInstrument) {
+            return paymentInstrument != null && paymentInstrument.isComplete();
+        }
     }
 
     public AutofillAssistantCollectUserDataTestHelper() throws TimeoutException {

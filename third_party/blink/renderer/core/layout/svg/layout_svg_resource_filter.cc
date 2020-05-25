@@ -52,17 +52,13 @@ FloatRect LayoutSVGResourceFilter::ResourceBoundingBox(
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::FilterUnits() const {
-  return To<SVGFilterElement>(GetElement())
-      ->filterUnits()
-      ->CurrentValue()
-      ->EnumValue();
+  return To<SVGFilterElement>(GetElement())->filterUnits()->CurrentEnumValue();
 }
 
 SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::PrimitiveUnits() const {
   return To<SVGFilterElement>(GetElement())
       ->primitiveUnits()
-      ->CurrentValue()
-      ->EnumValue();
+      ->CurrentEnumValue();
 }
 
 bool LayoutSVGResourceFilter::FindCycleFromSelf(

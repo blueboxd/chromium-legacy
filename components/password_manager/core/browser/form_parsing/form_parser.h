@@ -39,7 +39,7 @@ class FormDataParser {
     kHtmlBasedClassifier = 2,
     kAutocompleteAttribute = 3,
     kServerSidePrediction = 4,
-    kCount
+    kMaxValue = kServerSidePrediction,
   };
 
   // Records whether password fields with a "readonly" attribute were ignored

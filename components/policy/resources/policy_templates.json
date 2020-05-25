@@ -16172,7 +16172,7 @@
     },
     {
       'name': 'DeviceCrostiniArcAdbSideloadingAllowed',
-      'owners': ['janagrill@chromium.org', 'okalitova@'],
+      'owners': ['janagrill@chromium.org', 'okalitova@chromium.org'],
       'device_only': True,
       'future': True,
       'type': 'int-enum',

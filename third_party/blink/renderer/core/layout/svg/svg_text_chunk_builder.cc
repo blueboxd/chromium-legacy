@@ -176,8 +176,7 @@ void SVGTextChunkBuilder::HandleTextChunk(BoxListConstIterator box_start,
   if (SVGTextContentElement* text_content_element =
           SVGTextContentElement::ElementFromLineLayoutItem(
               text_line_layout.Parent())) {
-    length_adjust =
-        text_content_element->lengthAdjust()->CurrentValue()->EnumValue();
+    length_adjust = text_content_element->lengthAdjust()->CurrentEnumValue();
 
     SVGLengthContext length_context(text_content_element);
     if (text_content_element->TextLengthIsSpecifiedByUser())

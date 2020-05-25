@@ -631,6 +631,7 @@ blink_core_tests("unit_tests") {
     "cssom/style_property_map_test.cc",
     "drag_update_test.cc",
     "font_face_cache_test.cc",
+    "font_size_functions_test.cc",
     "font_update_invalidation_test.cc",
     "invalidation/invalidation_set_test.cc",
     "invalidation/pending_invalidations_test.cc",

@@ -244,10 +244,15 @@ var TestRunner = class {
     }
   }
 
+  _replaceUUID(url) {
+    const uuidRegex = new RegExp('[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}');
+    return url.replace(uuidRegex, 'UUID');
+  }
+
   logCallFrames(callFrames) {
     for (let frame of callFrames) {
       let functionName = frame.functionName || '(anonymous)';
-      let url = frame.url;
+      let url = this._replaceUUID(frame.url);
       let location = frame.location || frame;
       this.log(`${functionName} at ${url}:${
                                             location.lineNumber

@@ -67,7 +67,7 @@ ConnectorsManager* ConnectorsManager::GetInstance() {
   return base::Singleton<ConnectorsManager>::get();
 }
 
-bool ConnectorsManager::IsConnectorEnabled(AnalysisConnector connector) {
+bool ConnectorsManager::IsConnectorEnabled(AnalysisConnector connector) const {
   if (!base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled))
     return false;
 
@@ -78,7 +78,7 @@ bool ConnectorsManager::IsConnectorEnabled(AnalysisConnector connector) {
   return pref && g_browser_process->local_state()->HasPrefPath(pref);
 }
 
-bool ConnectorsManager::IsConnectorEnabled(ReportingConnector connector) {
+bool ConnectorsManager::IsConnectorEnabled(ReportingConnector connector) const {
   if (!base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabled))
     return false;
 
@@ -157,9 +157,22 @@ void ConnectorsManager::CacheReportingConnectorPolicy(
   }
 }
 
-bool ConnectorsManager::DelayUntilVerdict(AnalysisConnector connector) const {
-  bool upload = connector != AnalysisConnector::FILE_DOWNLOADED;
-  return LegacyBlockUntilVerdict(upload) == BlockUntilVerdict::BLOCK;
+bool ConnectorsManager::DelayUntilVerdict(AnalysisConnector connector) {
+  if (IsConnectorEnabled(connector)) {
+    if (analysis_connector_settings_.count(connector) == 0)
+      CacheAnalysisConnectorPolicy(connector);
+
+    if (analysis_connector_settings_.count(connector) &&
+        !analysis_connector_settings_.at(connector).empty()) {
+      return analysis_connector_settings_.at(connector)
+          .at(0)
+          .ShouldBlockUntilVerdict();
+    }
+    return false;
+  } else {
+    bool upload = connector != AnalysisConnector::FILE_DOWNLOADED;
+    return LegacyBlockUntilVerdict(upload) == BlockUntilVerdict::BLOCK;
+  }
 }
 
 base::Optional<AnalysisSettings>

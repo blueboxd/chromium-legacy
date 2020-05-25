@@ -80,7 +80,9 @@ public class AssistantPaymentMethodSection
         if (method == null) {
             return;
         }
-        updateSummaryView(fullView, method);
+
+        updateView(fullView, method);
+
         TextView cardNameView = fullView.findViewById(R.id.credit_card_name);
         cardNameView.setText(method.getCard().getName());
         hideIfEmpty(cardNameView);
@@ -92,34 +94,34 @@ public class AssistantPaymentMethodSection
             return;
         }
 
-        ImageView cardIssuerImageView = summaryView.findViewById(R.id.credit_card_issuer_icon);
+        updateView(summaryView, method);
+    }
+
+    private void updateView(View view, AutofillPaymentInstrument method) {
+        ImageView cardIssuerImageView = view.findViewById(R.id.credit_card_issuer_icon);
         try {
-            cardIssuerImageView.setImageDrawable(
-                    summaryView.getContext().getResources().getDrawable(
-                            method.getCard().getIssuerIconDrawableId()));
+            cardIssuerImageView.setImageDrawable(view.getContext().getResources().getDrawable(
+                    method.getCard().getIssuerIconDrawableId()));
         } catch (Resources.NotFoundException e) {
             cardIssuerImageView.setImageDrawable(null);
         }
 
-        /**
-         * By default, the obfuscated number contains the issuer (e.g., 'Visa'). This is needlessly
-         * verbose, so we strip it away. See |PersonalDataManagerTest::testAddAndEditCreditCards|
-         * for explanation of "\u0020...\u2060".
-         */
+        // By default, the obfuscated number contains the issuer (e.g., 'Visa'). This is needlessly
+        // verbose, so we strip it away. See |PersonalDataManagerTest::testAddAndEditCreditCards|
+        // for explanation of "\u0020...\u2060".
         String obfuscatedNumber = method.getCard().getObfuscatedNumber();
         int beginningOfObfuscatedNumber =
                 Math.max(obfuscatedNumber.indexOf("\u0020\u202A\u2022\u2060"), 0);
         obfuscatedNumber = obfuscatedNumber.substring(beginningOfObfuscatedNumber);
-        TextView cardNumberView = summaryView.findViewById(R.id.credit_card_number);
+        TextView cardNumberView = view.findViewById(R.id.credit_card_number);
         cardNumberView.setText(obfuscatedNumber);
         hideIfEmpty(cardNumberView);
 
-        TextView cardExpirationView = summaryView.findViewById(R.id.credit_card_expiration);
-        cardExpirationView.setText(
-                method.getCard().getFormattedExpirationDate(summaryView.getContext()));
+        TextView cardExpirationView = view.findViewById(R.id.credit_card_expiration);
+        cardExpirationView.setText(method.getCard().getFormattedExpirationDate(view.getContext()));
         hideIfEmpty(cardExpirationView);
 
-        TextView errorMessageView = summaryView.findViewById(R.id.incomplete_error);
+        TextView errorMessageView = view.findViewById(R.id.incomplete_error);
         setErrorMessage(errorMessageView, method);
         hideIfEmpty(errorMessageView);
     }
@@ -186,7 +188,7 @@ public class AssistantPaymentMethodSection
         int selectedMethodIndex = -1;
         if (mSelectedOption != null) {
             for (int i = 0; i < paymentMethods.size(); ++i) {
-                if (areEqual(mSelectedOption, paymentMethods.get(i))) {
+                if (areEqual(paymentMethods.get(i), mSelectedOption)) {
                     selectedMethodIndex = i;
                     break;
                 }
@@ -218,12 +220,10 @@ public class AssistantPaymentMethodSection
     }
 
     private void setErrorMessage(TextView errorMessageView, AutofillPaymentInstrument method) {
-        if (!method.isComplete()) {
-            errorMessageView.setText(R.string.autofill_assistant_payment_information_missing);
-            return;
-        }
-        if (method.getBillingProfile() != null
-                && AutofillAddress.checkAddressCompletionStatus(method.getBillingProfile(),
+        // TODO(b/154068342): Remove these granular checks and send the error message directly
+        //  from |Controller|.
+        if (!method.isComplete() || method.getBillingProfile() == null
+                || AutofillAddress.checkAddressCompletionStatus(method.getBillingProfile(),
                            AutofillAddress.CompletenessCheckType.IGNORE_PHONE)
                         != AutofillAddress.CompletionStatus.COMPLETE) {
             errorMessageView.setText(R.string.autofill_assistant_payment_information_missing);
@@ -231,8 +231,7 @@ public class AssistantPaymentMethodSection
         }
 
         if (mRequiresBillingPostalCode
-                && (method.getBillingProfile() == null
-                        || TextUtils.isEmpty(method.getBillingProfile().getPostalCode()))) {
+                && TextUtils.isEmpty(method.getBillingProfile().getPostalCode())) {
             errorMessageView.setText(mBillingPostalCodeMissingText);
             return;
         }
@@ -241,6 +240,12 @@ public class AssistantPaymentMethodSection
                     & AutofillPaymentInstrument.CompletionStatus.CREDIT_CARD_EXPIRED)
                 == 1) {
             errorMessageView.setText(mCreditCardExpiredText);
+            return;
+        }
+
+        // Final check to catch things we might have missed above.
+        if (!isComplete(method)) {
+            errorMessageView.setText(R.string.autofill_assistant_payment_information_missing);
             return;
         }
 

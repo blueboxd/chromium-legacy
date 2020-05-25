@@ -2579,6 +2579,37 @@ TEST_F(StyleCascadeTest, RubyPositionSurrogateCanCascadeAsOriginal) {
   }
 }
 
+TEST_F(StyleCascadeTest, TextOrientationPriority) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("text-orientation:upright !important");
+  cascade.Add("-webkit-text-orientation:sideways");
+  cascade.Apply();
+
+  EXPECT_EQ("upright", cascade.ComputedValue("text-orientation"));
+  EXPECT_EQ("upright", cascade.ComputedValue("-webkit-text-orientation"));
+}
+
+TEST_F(StyleCascadeTest, TextOrientationRevert) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("text-orientation:upright", CascadeOrigin::kUserAgent);
+  cascade.Add("-webkit-text-orientation:mixed");
+  cascade.Add("-webkit-text-orientation:revert");
+  cascade.Apply();
+
+  EXPECT_EQ("upright", cascade.ComputedValue("text-orientation"));
+  EXPECT_EQ("upright", cascade.ComputedValue("-webkit-text-orientation"));
+}
+
+TEST_F(StyleCascadeTest, TextOrientationLegacyKeyword) {
+  TestCascade cascade(GetDocument());
+  cascade.Add("-webkit-text-orientation:vertical-right");
+  cascade.Apply();
+
+  EXPECT_EQ("mixed", cascade.ComputedValue("text-orientation"));
+  EXPECT_EQ("vertical-right",
+            cascade.ComputedValue("-webkit-text-orientation"));
+}
+
 TEST_F(StyleCascadeTest, WebkitBorderImageCascadeOrder) {
   String gradient1("linear-gradient(rgb(0, 0, 0), rgb(0, 128, 0))");
   String gradient2("linear-gradient(rgb(0, 0, 0), rgb(0, 200, 0))");

@@ -169,9 +169,9 @@ class AdaptiveScreenBrightnessManagerTest
                                              bool is_focused,
                                              bool is_incognito = false) {
     Profile* const original_profile = profile();
-    Profile* const used_profile =
-        is_incognito ? original_profile->GetOffTheRecordProfile()
-                     : original_profile;
+    Profile* const used_profile = is_incognito
+                                      ? original_profile->GetPrimaryOTRProfile()
+                                      : original_profile;
     Browser::CreateParams params(used_profile, true);
 
     auto dummy_window = std::make_unique<aura::Window>(nullptr);

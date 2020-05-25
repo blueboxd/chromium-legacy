@@ -185,8 +185,7 @@ void SVGTextLayoutEngine::BeginTextPathLayout(SVGInlineFlowBox* flow_box) {
   if (SVGTextContentElement* text_content_element =
           SVGTextContentElement::ElementFromLineLayoutItem(text_path)) {
     SVGLengthContext length_context(text_content_element);
-    length_adjust =
-        text_content_element->lengthAdjust()->CurrentValue()->EnumValue();
+    length_adjust = text_content_element->lengthAdjust()->CurrentEnumValue();
     if (text_content_element->TextLengthIsSpecifiedByUser())
       desired_text_length =
           text_content_element->textLength()->CurrentValue()->Value(
@@ -252,7 +251,7 @@ static bool DefinesTextLengthWithSpacing(const InlineFlowBox* start) {
       SVGTextContentElement::ElementFromLineLayoutItem(
           start->GetLineLayoutItem());
   return text_content_element &&
-         text_content_element->lengthAdjust()->CurrentValue()->EnumValue() ==
+         text_content_element->lengthAdjust()->CurrentEnumValue() ==
              kSVGLengthAdjustSpacing &&
          text_content_element->TextLengthIsSpecifiedByUser();
 }

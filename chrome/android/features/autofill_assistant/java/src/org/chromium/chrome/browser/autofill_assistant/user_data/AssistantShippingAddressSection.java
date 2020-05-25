@@ -70,7 +70,7 @@ public class AssistantShippingAddressSection
         hideIfEmpty(fullAddressView);
 
         TextView methodIncompleteView = fullView.findViewById(R.id.incomplete_error);
-        methodIncompleteView.setVisibility(address.isComplete() ? View.GONE : View.VISIBLE);
+        methodIncompleteView.setVisibility(isComplete(address) ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -89,7 +89,7 @@ public class AssistantShippingAddressSection
         hideIfEmpty(shortAddressView);
 
         TextView methodIncompleteView = summaryView.findViewById(R.id.incomplete_error);
-        methodIncompleteView.setVisibility(address.isComplete() ? View.GONE : View.VISIBLE);
+        methodIncompleteView.setVisibility(isComplete(address) ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -131,6 +131,7 @@ public class AssistantShippingAddressSection
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
+
         int selectedAddressIndex = -1;
         if (mSelectedOption != null) {
             for (int i = 0; i < addresses.size(); i++) {
@@ -140,6 +141,7 @@ public class AssistantShippingAddressSection
                 }
             }
         }
+
         // Replace current set of items, keep selection if possible.
         setItems(addresses, selectedAddressIndex);
     }

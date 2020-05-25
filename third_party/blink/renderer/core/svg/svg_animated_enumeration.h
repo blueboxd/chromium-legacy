@@ -66,19 +66,10 @@ class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
                                    initial_value,
                                    initial_enum_value) {}
 
-  SVGEnumeration<Enum>* BaseValue() {
-    return static_cast<SVGEnumeration<Enum>*>(
-        SVGAnimatedEnumerationBase::BaseValue());
-  }
-
-  SVGEnumeration<Enum>* CurrentValue() {
-    return static_cast<SVGEnumeration<Enum>*>(
-        SVGAnimatedEnumerationBase::CurrentValue());
-  }
-
-  const SVGEnumeration<Enum>* CurrentValue() const {
+  Enum CurrentEnumValue() const {
     return static_cast<const SVGEnumeration<Enum>*>(
-        SVGAnimatedEnumerationBase::CurrentValue());
+               SVGAnimatedEnumerationBase::CurrentValue())
+        ->EnumValue();
   }
 };
 

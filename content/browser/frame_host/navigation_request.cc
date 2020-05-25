@@ -2578,6 +2578,11 @@ void NavigationRequest::OnServiceWorkerAccessed(
   GetDelegate()->OnServiceWorkerAccessed(this, scope, allowed);
 }
 
+base::Optional<network::mojom::WebSandboxFlags>
+NavigationRequest::SandboxFlagsToCommit() {
+  return sandbox_flags_to_commit_;
+}
+
 void NavigationRequest::OnRedirectChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
@@ -2805,6 +2810,7 @@ void NavigationRequest::CommitErrorPage(
     }
   }
 
+  sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
   ReadyToCommitNavigation(true);
   render_frame_host_->FailedNavigation(this, *common_params_, *commit_params_,
                                        has_stale_copy_in_cache_, net_error_,
@@ -2873,6 +2879,7 @@ void NavigationRequest::CommitNavigation() {
     }
   }
 
+  sandbox_flags_to_commit_ = ComputeSandboxFlagsToCommit();
   CreateCoepReporter(render_frame_host_->GetProcess()->GetStoragePartition());
 
   blink::mojom::ServiceWorkerContainerInfoForClientPtr
@@ -4397,6 +4404,45 @@ void NavigationRequest::Clone(
 std::vector<mojo::PendingReceiver<network::mojom::CookieAccessObserver>>
 NavigationRequest::TakeCookieObservers() {
   return cookie_observers_.TakeReceivers();
+}
+
+network::mojom::WebSandboxFlags
+NavigationRequest::ComputeSandboxFlagsToCommit() {
+  DCHECK(commit_params_);
+
+  network::mojom::WebSandboxFlags out;
+  if (IsErrorPage()) {
+    // An error page allows everything except scripts.
+    // TODO(arthursonzogni): Why stopping at script?
+    out = ~network::mojom::WebSandboxFlags::kScripts &
+          ~network::mojom::WebSandboxFlags::kAutomaticFeatures;
+  } else if (commit_params_->frame_policy) {
+    // This corresponds to the sandbox policy of the frame embedding the
+    // document that were active when the navigation started.
+    out = commit_params_->frame_policy->sandbox_flags;
+  } else {
+    // The document doesn't have a sandbox policy. This case should in theory
+    // contains only the navigations that are:
+    // - main frame.
+    // - browser initiated.
+    // - non-history.
+    // - non-error.
+    //
+    // TODO(arthursonzogni): In practice, a few navigations not complying with
+    // one of the 4 items above are using this path. They must be identified
+    // and removed. A set of DCHECK must be added.
+    out = network::mojom::WebSandboxFlags::kNone;
+  }
+
+  // The response can also restrict the policy further.
+  if (response_head_) {
+    for (const auto& csp :
+         response_head_->parsed_headers->content_security_policy) {
+      out |= ~(csp->sandbox);
+    }
+  }
+
+  return out;
 }
 
 }  // namespace content

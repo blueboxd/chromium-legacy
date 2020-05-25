@@ -80,17 +80,11 @@ float LayoutSVGResourceMarker::Angle() const {
 }
 
 SVGMarkerUnitsType LayoutSVGResourceMarker::MarkerUnits() const {
-  return To<SVGMarkerElement>(GetElement())
-      ->markerUnits()
-      ->CurrentValue()
-      ->EnumValue();
+  return To<SVGMarkerElement>(GetElement())->markerUnits()->CurrentEnumValue();
 }
 
 SVGMarkerOrientType LayoutSVGResourceMarker::OrientType() const {
-  return To<SVGMarkerElement>(GetElement())
-      ->orientType()
-      ->CurrentValue()
-      ->EnumValue();
+  return To<SVGMarkerElement>(GetElement())->orientType()->CurrentEnumValue();
 }
 
 AffineTransform LayoutSVGResourceMarker::MarkerTransformation(

@@ -73,12 +73,14 @@ bool SVGFEDisplacementMapElement::SetFilterEffectAttribute(
     FilterEffect* effect,
     const QualifiedName& attr_name) {
   FEDisplacementMap* displacement_map = static_cast<FEDisplacementMap*>(effect);
-  if (attr_name == svg_names::kXChannelSelectorAttr)
+  if (attr_name == svg_names::kXChannelSelectorAttr) {
     return displacement_map->SetXChannelSelector(
-        x_channel_selector_->CurrentValue()->EnumValue());
-  if (attr_name == svg_names::kYChannelSelectorAttr)
+        x_channel_selector_->CurrentEnumValue());
+  }
+  if (attr_name == svg_names::kYChannelSelectorAttr) {
     return displacement_map->SetYChannelSelector(
-        y_channel_selector_->CurrentValue()->EnumValue());
+        y_channel_selector_->CurrentEnumValue());
+  }
   if (attr_name == svg_names::kScaleAttr)
     return displacement_map->SetScale(scale_->CurrentValue()->Value());
 
@@ -116,9 +118,8 @@ FilterEffect* SVGFEDisplacementMapElement::Build(
   DCHECK(input2);
 
   auto* effect = MakeGarbageCollected<FEDisplacementMap>(
-      filter, x_channel_selector_->CurrentValue()->EnumValue(),
-      y_channel_selector_->CurrentValue()->EnumValue(),
-      scale_->CurrentValue()->Value());
+      filter, x_channel_selector_->CurrentEnumValue(),
+      y_channel_selector_->CurrentEnumValue(), scale_->CurrentValue()->Value());
   FilterEffectVector& input_effects = effect->InputEffects();
   input_effects.ReserveCapacity(2);
   input_effects.push_back(input1);

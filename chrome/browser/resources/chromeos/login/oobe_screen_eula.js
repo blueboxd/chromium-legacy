@@ -228,18 +228,11 @@ login.createScreen('EulaScreen', 'eula', function() {
     },
 
     /**
-     * Event handler that is invoked when 'chrome://terms' is loaded.
-     */
-    onFrameLoad() {
-      $('eula').classList.remove('eula-loading');
-    },
-
-    /**
      * Event handler that is invoked just before the screen is shown.
      * @param {object} data Screen init payload.
      */
     onBeforeShow() {
-      $('eula').classList.add('eula-loading');
+      $('oobe-eula-md').onBeforeShow();
       this.updateLocalizedContent();
     },
 

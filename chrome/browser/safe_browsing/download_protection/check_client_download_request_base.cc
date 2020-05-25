@@ -221,8 +221,9 @@ void CheckClientDownloadRequestBase::FinishRequest(
     reason = DownloadCheckResultReason::REASON_ADVANCED_PROTECTION_PROMPT;
   }
 
-  if (ShouldUploadBinary(reason)) {
-    UploadBinary(reason);
+  auto settings = ShouldUploadBinary(reason);
+  if (settings.has_value()) {
+    UploadBinary(reason, std::move(settings.value()));
   } else {
     std::move(callback_).Run(result);
   }

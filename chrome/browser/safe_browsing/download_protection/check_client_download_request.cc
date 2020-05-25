@@ -259,27 +259,30 @@ void CheckClientDownloadRequest::MaybeStorePingsForDownload(
       result, upload_requested, item_, request_data, response_body);
 }
 
-bool CheckClientDownloadRequest::ShouldUploadBinary(
+base::Optional<enterprise_connectors::AnalysisSettings>
+CheckClientDownloadRequest::ShouldUploadBinary(
     DownloadCheckResultReason reason) {
   // If the download was destroyed, we can't upload it.
   if (reason == REASON_DOWNLOAD_DESTROYED)
-    return false;
+    return base::nullopt;
 
-  return DeepScanningRequest::ShouldUploadItemByPolicy(item_);
+  return DeepScanningRequest::ShouldUploadBinary(item_);
 }
 
 void CheckClientDownloadRequest::UploadBinary(
-    DownloadCheckResultReason reason) {
+    DownloadCheckResultReason reason,
+    enterprise_connectors::AnalysisSettings settings) {
   if (reason == REASON_DOWNLOAD_DANGEROUS || reason == REASON_WHITELISTED_URL) {
+    settings.tags.erase("malware");
     service()->UploadForDeepScanning(
         item_,
         base::BindRepeating(&MaybeOverrideDlpScanResult, reason, callback_),
         DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        {DeepScanningRequest::DeepScanType::SCAN_DLP});
+        std::move(settings));
   } else {
     service()->UploadForDeepScanning(
         item_, callback_, DeepScanningRequest::DeepScanTrigger::TRIGGER_POLICY,
-        DeepScanningRequest::AllScans());
+        std::move(settings));
   }
 }
 

@@ -90,7 +90,7 @@ bool SVGFECompositeElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEComposite* composite = static_cast<FEComposite*>(effect);
   if (attr_name == svg_names::kOperatorAttr)
-    return composite->SetOperation(svg_operator_->CurrentValue()->EnumValue());
+    return composite->SetOperation(svg_operator_->CurrentEnumValue());
   if (attr_name == svg_names::kK1Attr)
     return composite->SetK1(k1_->CurrentValue()->Value());
   if (attr_name == svg_names::kK2Attr)
@@ -133,9 +133,9 @@ FilterEffect* SVGFECompositeElement::Build(SVGFilterBuilder* filter_builder,
   DCHECK(input2);
 
   auto* effect = MakeGarbageCollected<FEComposite>(
-      filter, svg_operator_->CurrentValue()->EnumValue(),
-      k1_->CurrentValue()->Value(), k2_->CurrentValue()->Value(),
-      k3_->CurrentValue()->Value(), k4_->CurrentValue()->Value());
+      filter, svg_operator_->CurrentEnumValue(), k1_->CurrentValue()->Value(),
+      k2_->CurrentValue()->Value(), k3_->CurrentValue()->Value(),
+      k4_->CurrentValue()->Value());
   FilterEffectVector& input_effects = effect->InputEffects();
   input_effects.ReserveCapacity(2);
   input_effects.push_back(input1);

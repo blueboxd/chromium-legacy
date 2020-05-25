@@ -34,6 +34,8 @@ void RecordBuiltInAppSearchResult(const std::string& app_id);
 
 void RecordAppBounce(const apps::AppUpdate& app);
 
+void RecordAppsPerNotification(int count);
+
 }  // namespace apps
 
 #endif  // CHROME_BROWSER_APPS_APP_SERVICE_APP_SERVICE_METRICS_H_

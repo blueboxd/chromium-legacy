@@ -856,28 +856,10 @@ def main():
     CopyDirectoryContents(rt_lib_src_dir, rt_lib_dst_dir)
 
   if args.with_android:
-    make_toolchain = os.path.join(
-        ANDROID_NDK_DIR, 'build', 'tools', 'make_standalone_toolchain.py')
     # TODO(thakis): Now that the NDK uses clang, try to build all archs in
-    # one LLVM build instead of making 3 different toolchains and building
-    # 3 times.
+    # one LLVM build instead of building 3 times.
+    toolchain_dir = ANDROID_NDK_DIR + '/toolchains/llvm/prebuilt/linux-x86_64'
     for target_arch in ['aarch64', 'arm', 'i686']:
-      # Make standalone Android toolchain for target_arch.
-      toolchain_dir = os.path.join(
-          LLVM_BUILD_DIR, 'android-toolchain-' + target_arch)
-      api_level = '21' if target_arch == 'aarch64' else '19'
-      RunCommand([
-          make_toolchain,
-          '--api=' + api_level,
-          '--force',
-          '--install-dir=%s' % toolchain_dir,
-          '--stl=libc++',
-          '--arch=' + {
-              'aarch64': 'arm64',
-              'arm': 'arm',
-              'i686': 'x86',
-          }[target_arch]])
-
       # Build compiler-rt runtimes needed for Android in a separate build tree.
       build_dir = os.path.join(LLVM_BUILD_DIR, 'android-' + target_arch)
       if not os.path.exists(build_dir):
@@ -886,10 +868,13 @@ def main():
       target_triple = target_arch
       if target_arch == 'arm':
         target_triple = 'armv7'
+      api_level = '21' if target_arch == 'aarch64' else '19'
       target_triple += '-linux-android' + api_level
-      cflags = ['--target=%s' % target_triple,
-                '--sysroot=%s/sysroot' % toolchain_dir,
-                '-B%s' % toolchain_dir]
+      cflags = [
+          '--target=' + target_triple,
+          '--sysroot=%s/sysroot' % toolchain_dir,
+          '--gcc-toolchain=' + toolchain_dir,
+      ]
       android_args = base_cmake_args + [
         '-DCMAKE_C_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang'),
         '-DCMAKE_CXX_COMPILER=' + os.path.join(LLVM_BUILD_DIR, 'bin/clang++'),

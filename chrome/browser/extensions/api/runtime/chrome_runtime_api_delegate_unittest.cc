@@ -94,7 +94,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
       no_updates_.erase(id);
     DownloadFinishedArgs args;
     args.path = path;
-    args.version = version;
+    args.version = base::Version(version);
     updates_[id] = std::move(args);
   }
 
@@ -147,7 +147,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
   // Simple holder for the data passed in AddUpdateResponse calls.
   struct DownloadFinishedArgs {
     base::FilePath path;
-    std::string version;
+    base::Version version;
   };
 
   // These keep track of what response we should give for update checks, keyed

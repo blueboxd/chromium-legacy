@@ -207,7 +207,7 @@ bool IsMinimumAddress(const AutofillProfile& profile,
           : AddressImportRequirement::ZIP_OR_STATE_REQUIREMENT_FULFILLED);
 
   AutofillMetrics::LogAddressFormImportCountrySpecificFieldRequirementsMetric(
-      is_zip_missing, is_state_missing, is_city_missing);
+      is_zip_missing, is_state_missing, is_city_missing, is_line1_missing);
 
   // Return true if all requirements are fulfilled.
   return !(is_line1_missing || is_city_missing || is_state_missing ||

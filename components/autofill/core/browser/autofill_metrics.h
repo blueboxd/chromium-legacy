@@ -955,7 +955,15 @@ class AutofillMetrics {
     ZIP_CITY_REQUIREMENT_VIOLATED = 5,
     STATE_CITY_REQUIREMENT_VIOLATED = 6,
     ZIP_STATE_CITY_REQUIREMENT_VIOLATED = 7,
-    kMaxValue = ZIP_STATE_CITY_REQUIREMENT_VIOLATED,
+    LINE1_REQUIREMENT_VIOLATED = 8,
+    LINE1_ZIP_REQUIREMENT_VIOLATED = 9,
+    LINE1_STATE_REQUIREMENT_VIOLATED = 10,
+    LINE1_ZIP_STATE_REQUIREMENT_VIOLATED = 11,
+    LINE1_CITY_REQUIREMENT_VIOLATED = 12,
+    LINE1_ZIP_CITY_REQUIREMENT_VIOLATED = 13,
+    LINE1_STATE_CITY_REQUIREMENT_VIOLATED = 14,
+    LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED = 15,
+    kMaxValue = LINE1_ZIP_STATE_CITY_REQUIREMENT_VIOLATED,
   };
 
   // Utility to log URL keyed form interaction events.
@@ -1523,7 +1531,8 @@ class AutofillMetrics {
   static void LogAddressFormImportCountrySpecificFieldRequirementsMetric(
       bool is_zip_missing,
       bool is_state_missing,
-      bool is_city_missing);
+      bool is_city_missing,
+      bool is_line1_missing);
 
   static const char* GetMetricsSyncStateSuffix(
       AutofillSyncSigninState sync_state);

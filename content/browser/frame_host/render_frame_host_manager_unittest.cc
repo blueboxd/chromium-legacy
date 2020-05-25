@@ -3284,31 +3284,26 @@ TEST_P(RenderFrameHostManagerTest, BeginNavigationIgnoredWhenNotActive) {
 // Tests that sandbox flags received after a navigation away has started do not
 // affect the document being navigated to.
 TEST_P(RenderFrameHostManagerTest, ReceivedFramePolicyAfterNavigationStarted) {
-  const GURL kUrl1("http://www.google.com");
-  const GURL kUrl2("http://www.chromium.org");
-
-  contents()->NavigateAndCommit(kUrl1);
-  TestRenderFrameHost* initial_rfh = main_test_rfh();
-
-  // The RFH should start out with an empty frame policy.
+  // The RFH should start out with an fully permissive sandbox policy.
   EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
-            initial_rfh->frame_tree_node()->active_sandbox_flags());
+            main_test_rfh()->frame_tree_node()->active_sandbox_flags());
 
-  // Navigate cross-site but don't commit the navigation.
-  auto navigation_to_kUrl2 =
-      NavigationSimulator::CreateBrowserInitiated(kUrl2, contents());
-  navigation_to_kUrl2->ReadyToCommit();
+  // Navigate, but don't commit the navigation.
+  auto navigation = NavigationSimulator::CreateBrowserInitiated(
+      GURL("http://a.com"), contents());
+  navigation->ReadyToCommit();
 
   // Now send the frame policy for the initial page.
-  initial_rfh->SendFramePolicy(network::mojom::WebSandboxFlags::kAll,
-                               {} /* feature_policy_header */,
-                               {} /* document_policy_header */);
-  // Verify that the policy landed in the frame tree.
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
-            initial_rfh->frame_tree_node()->active_sandbox_flags());
+  main_test_rfh()->SendFramePolicy(network::mojom::WebSandboxFlags::kAll,
+                                   {} /* feature_policy_header */,
+                                   {} /* document_policy_header */);
 
-  // Commit the naviagation; the new frame should have a clear frame policy.
-  navigation_to_kUrl2->Commit();
+  // Check 'SendFramePolicy' updated the active sandbox flags.
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            main_test_rfh()->frame_tree_node()->active_sandbox_flags());
+
+  // Commit the navigation. The new frame should have a clear frame policy.
+  navigation->Commit();
   EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             main_test_rfh()->frame_tree_node()->active_sandbox_flags());
 }

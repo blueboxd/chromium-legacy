@@ -272,6 +272,10 @@ void ExtensionActionViewController::RegisterCommand() {
   platform_delegate_->RegisterCommand();
 }
 
+void ExtensionActionViewController::UnregisterCommand() {
+  platform_delegate_->UnregisterCommand();
+}
+
 bool ExtensionActionViewController::DisabledClickOpensMenu() const {
   return true;
 }

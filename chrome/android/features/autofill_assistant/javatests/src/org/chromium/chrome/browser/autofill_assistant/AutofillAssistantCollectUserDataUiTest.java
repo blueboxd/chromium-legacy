@@ -969,20 +969,24 @@ public class AutofillAssistantCollectUserDataUiTest {
     }
 
     /**
-     * For expired credit cards, an error message should be displayed.
+     * Check the order in which errors are shown:
+     * - Incomplete card / missing or incomplete address -> Generic information missing
+     * - Missing required zip code
+     * - Expired card
      */
     @Test
     @MediumTest
-    public void testExpiredCreditCard() throws Exception {
-        // add credit card without postcode.
+    public void testOrderOfCreditCardErrorMessages() throws Exception {
         PersonalDataManager.AutofillProfile profile =
-                mHelper.createDummyProfile("John Doe", "john@gmail.com", "");
+                mHelper.createDummyProfile("John Doe", "john@gmail.com", /* postcode= */ "");
         String profileId = mHelper.setProfile(profile);
         PersonalDataManager.CreditCard creditCard = mHelper.createDummyCreditCard(profileId);
-        creditCard.setYear("2019");
+        creditCard.setYear("2000");
 
         AssistantCollectUserDataModel model = new AssistantCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper.MockDelegate delegate =
+                new AutofillAssistantCollectUserDataTestHelper.MockDelegate();
         AutofillAssistantCollectUserDataTestHelper
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
@@ -990,26 +994,60 @@ public class AutofillAssistantCollectUserDataUiTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // WEB_CONTENTS are necessary for the creation of the editors.
             model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
+            model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.REQUEST_PAYMENT, true);
+            model.set(AssistantCollectUserDataModel.BILLING_POSTAL_CODE_MISSING_TEXT,
+                    "Missing Zip Code");
+            model.set(AssistantCollectUserDataModel.REQUIRE_BILLING_POSTAL_CODE, true);
             model.set(AssistantCollectUserDataModel.CREDIT_CARD_EXPIRED_TEXT, "Card is expired");
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
-            AutofillPaymentInstrument expiredPaymentInstrument =
+            AutofillPaymentInstrument paymentInstrument =
+                    AssistantCollectUserDataModel.createAutofillPaymentInstrument(
+                            mTestRule.getWebContents(), creditCard, /* billingProfile= */ null);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
+        });
+
+        // Without billing profile, a generic information missing error should be shown.
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
+        onView(is(getPaymentSummaryErrorView(viewHolder)))
+                .check(matches(withText("Information missing")));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            AutofillPaymentInstrument paymentInstrument =
                     AssistantCollectUserDataModel.createAutofillPaymentInstrument(
                             mTestRule.getWebContents(), creditCard, profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
-                    Collections.singletonList(expiredPaymentInstrument));
-            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT,
-                    expiredPaymentInstrument);
+                    Collections.singletonList(paymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT, paymentInstrument);
         });
 
-        // check that the card is not accepted (i.e. an error message is shown).
+        // A missing zip code with an otherwise valid billing address should show a specialized
+        // error message.
+        onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
+        onView(is(getPaymentSummaryErrorView(viewHolder)))
+                .check(matches(withText("Missing Zip Code")));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            profile.setPostalCode("90210");
+            AutofillPaymentInstrument validPaymentInstrument =
+                    AssistantCollectUserDataModel.createAutofillPaymentInstrument(
+                            mTestRule.getWebContents(), creditCard, profile);
+            model.set(AssistantCollectUserDataModel.AVAILABLE_PAYMENT_INSTRUMENTS,
+                    Collections.singletonList(validPaymentInstrument));
+            model.set(AssistantCollectUserDataModel.SELECTED_PAYMENT_INSTRUMENT,
+                    validPaymentInstrument);
+        });
+
+        // An expired card should only show a specialized error message if everything else is
+        // complete.
         onView(is(getPaymentSummaryErrorView(viewHolder))).check(matches(isDisplayed()));
         onView(is(getPaymentSummaryErrorView(viewHolder)))
                 .check(matches(withText("Card is expired")));
 
-        creditCard.setYear("2050");
-
         TestThreadUtils.runOnUiThreadBlocking(() -> {
+            creditCard.setYear("2050");
             AutofillPaymentInstrument validPaymentInstrument =
                     AssistantCollectUserDataModel.createAutofillPaymentInstrument(
                             mTestRule.getWebContents(), creditCard, profile);

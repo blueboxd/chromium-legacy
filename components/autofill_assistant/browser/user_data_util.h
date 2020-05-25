@@ -62,6 +62,18 @@ bool CompareContactDetails(
     const autofill::AutofillProfile* a,
     const autofill::AutofillProfile* b);
 
+bool IsCompleteContact(const autofill::AutofillProfile* profile,
+                       const CollectUserDataOptions& collect_user_data_options);
+
+bool IsCompleteShippingAddress(
+    const autofill::AutofillProfile* profile,
+    const CollectUserDataOptions& collect_user_data_options);
+
+bool IsCompleteCreditCard(
+    const autofill::CreditCard* credit_card,
+    const autofill::AutofillProfile* billing_profile,
+    const CollectUserDataOptions& collect_user_data_options);
+
 }  // namespace autofill_assistant
 
 #endif  // COMPONENTS_AUTOFILL_ASSISTANT_BROWSER_USER_DATA_UTIL_H_

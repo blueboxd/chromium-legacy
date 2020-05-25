@@ -114,14 +114,15 @@ void PrefModelAssociator::InitPrefAndAssociate(
   if (sync_pref.IsValid()) {
     const sync_pb::PreferenceSpecifics& preference = GetSpecifics(sync_pref);
     DCHECK(pref_name == preference.name());
-    base::JSONReader reader;
-    std::unique_ptr<base::Value> sync_value(
-        reader.ReadToValueDeprecated(preference.value()));
-    if (!sync_value.get()) {
+    base::JSONReader::ValueWithError parsed_json =
+        base::JSONReader::ReadAndReturnValueWithError(preference.value());
+    if (!parsed_json.value) {
       LOG(ERROR) << "Failed to deserialize value of preference '" << pref_name
-                 << "': " << reader.GetErrorMessage();
+                 << "': " << parsed_json.error_message;
       return;
     }
+    std::unique_ptr<base::Value> sync_value =
+        base::Value::ToUniquePtrValue(std::move(*parsed_json.value));
 
     if (user_pref_value) {
       DVLOG(1) << "Found user pref value for " << pref_name;

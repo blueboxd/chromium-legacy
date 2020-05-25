@@ -650,6 +650,13 @@ IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, SubframeRedirectsToHostedApp) {
       EvalJs(subframe, "document.body.innerText.trim();").ExtractString());
 }
 
+IN_PROC_BROWSER_TEST_P(HostedOrWebAppTest, CanUserUninstall) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL app_url = embedded_test_server()->GetURL("app.com", "/title1.html");
+  SetupAppWithURL(app_url);
+  EXPECT_TRUE(app_browser_->app_controller()->CanUninstall());
+}
+
 using BookmarkAppTest = HostedOrWebAppTest;
 
 IN_PROC_BROWSER_TEST_P(BookmarkAppTest, InstallFromSync) {

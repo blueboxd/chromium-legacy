@@ -38,7 +38,7 @@ TEST_F(DriveIntegrationServiceTest, DISABLED_ServiceInstanceIdentity) {
   EXPECT_TRUE(DriveIntegrationServiceFactory::GetForProfile(user1));
 
   // Shares the same instance with the incognito mode profile.
-  Profile* user1_incognito = user1->GetOffTheRecordProfile();
+  Profile* user1_incognito = user1->GetPrimaryOTRProfile();
   EXPECT_EQ(DriveIntegrationServiceFactory::GetForProfile(user1),
             DriveIntegrationServiceFactory::GetForProfile(user1_incognito));
 

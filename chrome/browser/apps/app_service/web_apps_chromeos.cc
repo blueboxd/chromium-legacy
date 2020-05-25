@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -315,17 +316,18 @@ void WebAppsChromeOs::OnNotificationDisplayServiceDestroyed(
   notification_display_service_.Remove(service);
 }
 
-void WebAppsChromeOs::MaybeAddNotification(const std::string& app_id,
+bool WebAppsChromeOs::MaybeAddNotification(const std::string& app_id,
                                            const std::string& notification_id) {
   const web_app::WebApp* web_app = GetWebApp(app_id);
   if (!web_app || !Accepts(app_id)) {
-    return;
+    return false;
   }
 
   app_notifications_.AddNotification(app_id, notification_id);
   Publish(app_notifications_.GetAppWithHasBadgeStatus(
               apps::mojom::AppType::kWeb, app_id),
           subscribers());
+  return true;
 }
 
 void WebAppsChromeOs::MaybeAddWebPageNotifications(
@@ -349,9 +351,13 @@ void WebAppsChromeOs::MaybeAddWebPageNotifications(
     // under the origin url.
     DCHECK(provider());
     auto app_ids = provider()->registrar().FindAppsInScope(url);
+    int count = 0;
     for (const auto& app_id : app_ids) {
-      MaybeAddNotification(app_id, notification.id());
+      if (MaybeAddNotification(app_id, notification.id())) {
+        ++count;
+      }
     }
+    RecordAppsPerNotification(count);
   }
 }
 

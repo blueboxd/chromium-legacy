@@ -22,6 +22,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
+#include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -528,16 +529,17 @@ void ExtensionAppsChromeOs::OnNotificationDisplayServiceDestroyed(
   notification_display_service_.Remove(service);
 }
 
-void ExtensionAppsChromeOs::MaybeAddNotification(
+bool ExtensionAppsChromeOs::MaybeAddNotification(
     const std::string& app_id,
     const std::string& notification_id) {
   if (MaybeGetExtension(app_id) == nullptr) {
-    return;
+    return false;
   }
 
   app_notifications_.AddNotification(app_id, notification_id);
   Publish(app_notifications_.GetAppWithHasBadgeStatus(app_type(), app_id),
           subscribers());
+  return true;
 }
 
 void ExtensionAppsChromeOs::MaybeAddWebPageNotifications(
@@ -577,9 +579,13 @@ void ExtensionAppsChromeOs::MaybeAddWebPageNotifications(
     }
 
     auto app_ids = web_app_provider->registrar().FindAppsInScope(url);
+    int count = 0;
     for (const auto& app_id : app_ids) {
-      MaybeAddNotification(app_id, notification.id());
+      if (MaybeAddNotification(app_id, notification.id())) {
+        ++count;
+      }
     }
+    RecordAppsPerNotification(count);
   }
 }
 

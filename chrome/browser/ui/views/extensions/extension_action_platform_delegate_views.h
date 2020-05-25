@@ -33,6 +33,7 @@ class ExtensionActionPlatformDelegateViews
  private:
   // ExtensionActionPlatformDelegate:
   void RegisterCommand() override;
+  void UnregisterCommand() override;
   void ShowPopup(
       std::unique_ptr<extensions::ExtensionViewHost> host,
       bool grant_tab_permissions,
@@ -49,11 +50,6 @@ class ExtensionActionPlatformDelegateViews
   // ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   bool CanHandleAccelerators() const override;
-
-  // Unregisters the accelerator for the extension action's command, if one
-  // exists. If |only_if_removed| is true, then this will only unregister if the
-  // command has been removed.
-  void UnregisterCommand(bool only_if_removed);
 
   ToolbarActionViewDelegateViews* GetDelegateViews() const;
 

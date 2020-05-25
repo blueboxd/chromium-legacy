@@ -216,8 +216,7 @@ void LayoutSVGResourceClipper::CalculateLocalClipBounds() {
 SVGUnitTypes::SVGUnitType LayoutSVGResourceClipper::ClipPathUnits() const {
   return To<SVGClipPathElement>(GetElement())
       ->clipPathUnits()
-      ->CurrentValue()
-      ->EnumValue();
+      ->CurrentEnumValue();
 }
 
 AffineTransform LayoutSVGResourceClipper::CalculateClipTransform(

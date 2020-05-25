@@ -198,21 +198,17 @@ class NavigationPasswordMetricsRecorder
   explicit NavigationPasswordMetricsRecorder(content::WebContents* web_contents)
       : web_contents_(web_contents) {}
 
-  void OnUserFocusedPasswordFieldFirstTime(
-      const GURL& main_frame_url) override {
-    RecordEngagementLevel(main_frame_url,
-                          "Security.PasswordFocus.SiteEngagementLevel");
+  void OnUserFocusedPasswordFieldFirstTime() override {
+    RecordEngagementLevel("Security.PasswordFocus.SiteEngagementLevel");
   }
 
-  void OnUserModifiedPasswordFieldFirstTime(
-      const GURL& main_frame_url) override {
-    RecordEngagementLevel(main_frame_url,
-                          "Security.PasswordEntry.SiteEngagementLevel");
+  void OnUserModifiedPasswordFieldFirstTime() override {
+    RecordEngagementLevel("Security.PasswordEntry.SiteEngagementLevel");
   }
 
  private:
-  void RecordEngagementLevel(const GURL& main_frame_url,
-                             const char* histogram_name) {
+  void RecordEngagementLevel(const char* histogram_name) {
+    const GURL& main_frame_url = web_contents_->GetLastCommittedURL();
     if (main_frame_url.SchemeIsHTTPOrHTTPS()) {
       SiteEngagementService* site_engagement_service =
           SiteEngagementService::Get(
@@ -698,12 +694,13 @@ ChromePasswordManagerClient::GetAutofillDownloadManager() {
   return nullptr;
 }
 
-const GURL& ChromePasswordManagerClient::GetMainFrameURL() const {
-  return web_contents()->GetVisibleURL();
+bool ChromePasswordManagerClient::IsCommittedMainFrameSecure() const {
+  return content::IsPotentiallyTrustworthyOrigin(
+      web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 }
 
-bool ChromePasswordManagerClient::IsMainFrameSecure() const {
-  return content::IsOriginSecure(web_contents()->GetVisibleURL());
+const GURL& ChromePasswordManagerClient::GetLastCommittedURL() const {
+  return web_contents()->GetLastCommittedURL();
 }
 
 url::Origin ChromePasswordManagerClient::GetLastCommittedOrigin() const {
@@ -810,7 +807,7 @@ PasswordManagerMetricsRecorder*
 ChromePasswordManagerClient::GetMetricsRecorder() {
   if (!metrics_recorder_) {
     metrics_recorder_.emplace(
-        GetUkmSourceId(), GetMainFrameURL(),
+        GetUkmSourceId(),
         std::make_unique<NavigationPasswordMetricsRecorder>(web_contents()));
   }
   return base::OptionalOrNullptr(metrics_recorder_);
@@ -870,7 +867,7 @@ bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
 }
 
 bool ChromePasswordManagerClient::IsNewTabPage() const {
-  auto origin = GetMainFrameURL().GetOrigin();
+  auto origin = GetLastCommittedURL().GetOrigin();
   return origin == GURL(chrome::kChromeSearchLocalNtpUrl).GetOrigin() ||
          origin == GURL(chrome::kChromeUINewTabPageURL).GetOrigin() ||
          origin == GURL(chrome::kChromeUINewTabURL).GetOrigin();
@@ -1178,7 +1175,7 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   content_credential_manager_.DisconnectBinding();
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-  password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
+  password_reuse_detection_manager_.DidNavigateMainFrame(GetLastCommittedURL());
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   AddToWidgetInputEventObservers(
       web_contents()->GetRenderViewHost()->GetWidget(), this);

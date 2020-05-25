@@ -174,11 +174,20 @@ class AssistantCollectUserDataBinder
             view.mContactDetailsSection.setListener(collectUserDataDelegate != null
                             ? collectUserDataDelegate::onContactInfoChanged
                             : null);
+            view.mContactDetailsSection.setCompletenessDelegate(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::isContactComplete
+                            : null);
             view.mPaymentMethodSection.setListener(collectUserDataDelegate != null
                             ? collectUserDataDelegate::onPaymentMethodChanged
                             : null);
+            view.mPaymentMethodSection.setCompletenessDelegate(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::isPaymentInstrumentComplete
+                            : null);
             view.mShippingAddressSection.setListener(collectUserDataDelegate != null
                             ? collectUserDataDelegate::onShippingAddressChanged
+                            : null);
+            view.mShippingAddressSection.setCompletenessDelegate(collectUserDataDelegate != null
+                            ? collectUserDataDelegate::isShippingAddressComplete
                             : null);
             view.mLoginSection.setListener(collectUserDataDelegate != null
                             ? collectUserDataDelegate::onLoginChoiceChanged

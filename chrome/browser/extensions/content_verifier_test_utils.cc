@@ -27,7 +27,8 @@ DownloaderTestDelegate::~DownloaderTestDelegate() {}
 void DownloaderTestDelegate::AddResponse(const ExtensionId& extension_id,
                                          const std::string& version_string,
                                          const base::FilePath& crx_path) {
-  responses_[extension_id] = std::make_pair(version_string, crx_path);
+  responses_[extension_id] =
+      std::make_pair(base::Version(version_string), crx_path);
 }
 
 const std::vector<std::unique_ptr<ManifestFetchData>>&

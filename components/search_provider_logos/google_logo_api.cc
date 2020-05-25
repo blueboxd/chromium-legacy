@@ -189,20 +189,16 @@ std::unique_ptr<EncodedLogo> ParseDoodleLogoResponse(
   // Default parsing failure to be true.
   *parsing_failed = true;
 
-  int error_code;
-  std::string error_string;
-  int error_line;
-  int error_col;
-  std::unique_ptr<base::Value> value =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          response_sp, 0, &error_code, &error_string, &error_line, &error_col);
-  if (!value) {
-    LOG(WARNING) << error_string << " at " << error_line << ":" << error_col;
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(response_sp);
+  if (!parsed_json.value) {
+    LOG(WARNING) << parsed_json.error_message << " at "
+                 << parsed_json.error_line << ":" << parsed_json.error_column;
     return nullptr;
   }
 
-  std::unique_ptr<base::DictionaryValue> config =
-      base::DictionaryValue::From(std::move(value));
+  std::unique_ptr<base::DictionaryValue> config = base::DictionaryValue::From(
+      base::Value::ToUniquePtrValue(std::move(*parsed_json.value)));
   if (!config)
     return nullptr;
 

@@ -69,17 +69,6 @@ class MockFormSaver : public StubFormSaver {
   DISALLOW_COPY_AND_ASSIGN(MockFormSaver);
 };
 
-class MockPasswordManagerClient : public StubPasswordManagerClient {
- public:
-  MockPasswordManagerClient() = default;
-  ~MockPasswordManagerClient() override = default;
-
-  MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(MockPasswordManagerClient);
-};
-
 class MultiStorePasswordSaveManagerTest : public testing::Test {
  public:
   MultiStorePasswordSaveManagerTest()
@@ -156,7 +145,7 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
     fetcher_->Fetch();
 
     metrics_recorder_ = base::MakeRefCounted<PasswordFormMetricsRecorder>(
-        client_.IsMainFrameSecure(), client_.GetUkmSourceId());
+        client_.IsCommittedMainFrameSecure(), client_.GetUkmSourceId());
 
     auto mock_profile_form_saver = std::make_unique<NiceMock<MockFormSaver>>();
     mock_profile_form_saver_ = mock_profile_form_saver.get();
@@ -204,7 +193,7 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
     return federated;
   }
 
-  MockPasswordManagerClient* client() { return &client_; }
+  StubPasswordManagerClient* client() { return &client_; }
   MockFormSaver* mock_account_form_saver() { return mock_account_form_saver_; }
   MockFormSaver* mock_profile_form_saver() { return mock_profile_form_saver_; }
   FakeFormFetcher* fetcher() { return fetcher_.get(); }
@@ -220,7 +209,7 @@ class MultiStorePasswordSaveManagerTest : public testing::Test {
   PasswordForm parsed_submitted_form_;
 
  private:
-  NiceMock<MockPasswordManagerClient> client_;
+  StubPasswordManagerClient client_;
   VotesUploader votes_uploader_;
   scoped_refptr<PasswordFormMetricsRecorder> metrics_recorder_;
 

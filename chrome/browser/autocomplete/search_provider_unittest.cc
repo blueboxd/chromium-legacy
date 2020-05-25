@@ -3478,7 +3478,7 @@ TEST_F(SearchProviderTest, CanSendURL) {
 
   // Incognito.
   ChromeAutocompleteProviderClient client_incognito(
-      profile_.GetOffTheRecordProfile());
+      profile_.GetPrimaryOTRProfile());
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,

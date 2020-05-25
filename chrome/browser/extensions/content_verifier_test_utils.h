@@ -58,7 +58,7 @@ class DownloaderTestDelegate : public ExtensionDownloaderTestDelegate {
 
   // The prepared responses - this maps an extension id to a (version string,
   // crx file path) pair.
-  std::map<std::string, std::pair<ExtensionId, base::FilePath>> responses_;
+  std::map<ExtensionId, std::pair<base::Version, base::FilePath>> responses_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloaderTestDelegate);
 };

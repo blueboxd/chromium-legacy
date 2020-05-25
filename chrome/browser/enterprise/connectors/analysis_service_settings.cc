@@ -100,6 +100,12 @@ base::Optional<AnalysisSettings> AnalysisServiceSettings::GetAnalysisSettings(
   return settings;
 }
 
+bool AnalysisServiceSettings::ShouldBlockUntilVerdict() const {
+  if (!IsValid())
+    return false;
+  return block_until_verdict_ == BlockUntilVerdict::BLOCK;
+}
+
 void AnalysisServiceSettings::AddUrlPatternSettings(
     const base::Value& url_settings_value,
     bool enabled,

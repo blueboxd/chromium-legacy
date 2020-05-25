@@ -1629,7 +1629,7 @@ TEST_F(SiteEngagementServiceTest, IncognitoEngagementService) {
   service->AddPoints(url2, 2);
 
   auto incognito_service = base::WrapUnique(
-      new SiteEngagementService(profile()->GetOffTheRecordProfile(), &clock_));
+      new SiteEngagementService(profile()->GetPrimaryOTRProfile(), &clock_));
   EXPECT_EQ(1, incognito_service->GetScore(url1));
   EXPECT_EQ(2, incognito_service->GetScore(url2));
   EXPECT_EQ(0, incognito_service->GetScore(url3));
@@ -1670,7 +1670,7 @@ TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {
       HostContentSettingsMapFactory::GetForProfile(profile());
   HostContentSettingsMap* incognito_settings_map =
       HostContentSettingsMapFactory::GetForProfile(
-          profile()->GetOffTheRecordProfile());
+          profile()->GetPrimaryOTRProfile());
 
   // All scores are 0 to start.
   EXPECT_EQ(0, CheckScoreFromSettingsOnThread(content::BrowserThread::IO,
@@ -1697,7 +1697,7 @@ TEST_F(SiteEngagementServiceTest, GetScoreFromSettings) {
                                               incognito_settings_map, url2));
 
   SiteEngagementService* incognito_service =
-      SiteEngagementService::Get(profile()->GetOffTheRecordProfile());
+      SiteEngagementService::Get(profile()->GetPrimaryOTRProfile());
   ASSERT_TRUE(incognito_service);
   incognito_service->AddPoints(url1, 3);
   incognito_service->AddPoints(url2, 1);

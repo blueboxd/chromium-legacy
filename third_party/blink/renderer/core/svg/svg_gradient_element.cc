@@ -168,10 +168,10 @@ void SVGGradientElement::InvalidateDependentGradients() {
 void SVGGradientElement::CollectCommonAttributes(
     GradientAttributes& attributes) const {
   if (!attributes.HasSpreadMethod() && spreadMethod()->IsSpecified())
-    attributes.SetSpreadMethod(spreadMethod()->CurrentValue()->EnumValue());
+    attributes.SetSpreadMethod(spreadMethod()->CurrentEnumValue());
 
   if (!attributes.HasGradientUnits() && gradientUnits()->IsSpecified())
-    attributes.SetGradientUnits(gradientUnits()->CurrentValue()->EnumValue());
+    attributes.SetGradientUnits(gradientUnits()->CurrentEnumValue());
 
   if (!attributes.HasGradientTransform() &&
       HasTransform(SVGElement::kExcludeMotionTransform)) {

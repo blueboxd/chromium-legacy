@@ -378,8 +378,8 @@ class PasswordManager : public FormSubmissionObserver {
   // Server predictions for the forms on the page.
   std::map<autofill::FormSignature, FormPredictions> predictions_;
 
-  // The user-visible URL from the last time a password was provisionally saved.
-  GURL main_frame_url_;
+  // The URL of the last submitted form.
+  GURL submitted_form_url_;
 
   // True if Credential Management API function store() was called. In this case
   // PasswordManager does not need to show a save/update prompt since

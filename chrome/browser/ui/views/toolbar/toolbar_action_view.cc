@@ -265,14 +265,20 @@ void ToolbarActionView::OnDragDone() {
   delegate_->OnToolbarActionViewDragDone();
 }
 
-void ToolbarActionView::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
-  if (details.is_add && !called_register_command_ && GetFocusManager()) {
-    view_controller_->RegisterCommand();
-    called_register_command_ = true;
-  }
+void ToolbarActionView::AddedToWidget() {
+  MenuButton::AddedToWidget();
 
-  MenuButton::ViewHierarchyChanged(details);
+  // This cannot happen until there's a focus controller, which lives on the
+  // widget.
+  view_controller_->RegisterCommand();
+}
+
+void ToolbarActionView::RemovedFromWidget() {
+  // This must happen before the focus controller, which lives on the widget,
+  // becomes unreachable.
+  view_controller_->UnregisterCommand();
+
+  MenuButton::RemovedFromWidget();
 }
 
 views::View* ToolbarActionView::GetAsView() {

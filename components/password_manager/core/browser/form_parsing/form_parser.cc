@@ -13,7 +13,7 @@
 #include <utility>
 #include <vector>
 
-#include "base/metrics/histogram_macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
@@ -1027,27 +1027,23 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
     return nullptr;
 
   SignificantFields significant_fields;
-  UsernameDetectionMethod username_detection_method =
-      UsernameDetectionMethod::kNoUsernameDetected;
+  UsernameDetectionMethod method = UsernameDetectionMethod::kNoUsernameDetected;
 
   // (1) First, try to parse with server predictions.
   if (predictions_) {
     ParseUsingPredictions(&processed_fields, *predictions_, mode,
                           &significant_fields);
     if (significant_fields.username) {
-      username_detection_method =
-          UsernameDetectionMethod::kServerSidePrediction;
+      method = UsernameDetectionMethod::kServerSidePrediction;
     }
   }
 
   // (2) If that failed, try to parse with autocomplete attributes.
   if (!significant_fields.is_single_username) {
     ParseUsingAutocomplete(processed_fields, &significant_fields);
-    if (username_detection_method ==
-            UsernameDetectionMethod::kNoUsernameDetected &&
+    if (method == UsernameDetectionMethod::kNoUsernameDetected &&
         significant_fields.username) {
-      username_detection_method =
-          UsernameDetectionMethod::kAutocompleteAttribute;
+      method = UsernameDetectionMethod::kAutocompleteAttribute;
     }
   }
 
@@ -1067,10 +1063,9 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
     Interactability username_max = Interactability::kUnlikely;
     ParseUsingBaseHeuristics(processed_fields, mode, &significant_fields,
                              &username_max, &readonly_status_);
-    if (username_detection_method ==
-            UsernameDetectionMethod::kNoUsernameDetected &&
+    if (method == UsernameDetectionMethod::kNoUsernameDetected &&
         significant_fields.username) {
-      username_detection_method = UsernameDetectionMethod::kBaseHeuristic;
+      method = UsernameDetectionMethod::kBaseHeuristic;
     }
 
     // Additionally, and based on the best interactability computed by base
@@ -1085,20 +1080,16 @@ std::unique_ptr<PasswordForm> FormDataParser::Parse(const FormData& form_data,
           !(mode == FormDataParser::Mode::kSaving &&
             username_field_by_context->value.empty())) {
         significant_fields.username = username_field_by_context;
-        if (username_detection_method ==
-                UsernameDetectionMethod::kNoUsernameDetected ||
-            username_detection_method ==
-                UsernameDetectionMethod::kBaseHeuristic) {
-          username_detection_method =
-              UsernameDetectionMethod::kHtmlBasedClassifier;
+        if (method == UsernameDetectionMethod::kNoUsernameDetected ||
+            method == UsernameDetectionMethod::kBaseHeuristic) {
+          method = UsernameDetectionMethod::kHtmlBasedClassifier;
         }
       }
     }
   }
 
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.UsernameDetectionMethod",
-                            username_detection_method,
-                            UsernameDetectionMethod::kCount);
+  base::UmaHistogramEnumeration("PasswordManager.UsernameDetectionMethod",
+                                method);
 
   return AssemblePasswordForm(form_data, significant_fields,
                               std::move(all_possible_passwords),

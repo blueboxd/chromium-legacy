@@ -101,8 +101,8 @@ class ToolbarActionView : public views::MenuButton,
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnDragDone() override;
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
 
   // ToolbarActionViewDelegateViews:
   views::View* GetAsView() override;
@@ -121,9 +121,6 @@ class ToolbarActionView : public views::MenuButton,
 
   // Delegate that usually represents a container for ToolbarActionView.
   Delegate* delegate_;
-
-  // Used to make sure we only register the command once.
-  bool called_register_command_ = false;
 
   // Set to true by a mouse press that will hide a popup due to deactivation.
   // In this case, the next click should not trigger an action, so the popup

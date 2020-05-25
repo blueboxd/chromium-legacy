@@ -985,8 +985,9 @@
       property_methods: ["CSSValueFromComputedStyleInternal"],
       inherited: true,
       type_name: "TextOrientation",
-      style_builder_custom_functions: ["value"],
+      style_builder_custom_functions: ["initial", "inherit", "value"],
       priority: "High",
+      surrogate_for: "text-orientation",
     },
     {
       name: "writing-mode",
@@ -1303,6 +1304,7 @@
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-bottom-right-radius",
@@ -1317,6 +1319,7 @@
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-bottom-style",
@@ -1332,6 +1335,7 @@
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-bottom-width",
@@ -1348,6 +1352,7 @@
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-collapse",
@@ -1451,6 +1456,7 @@
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-left-width",
@@ -1467,6 +1473,7 @@
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-right-color",
@@ -1501,6 +1508,7 @@
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-right-width",
@@ -1517,6 +1525,7 @@
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-top-color",
@@ -1550,6 +1559,7 @@
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-top-right-radius",
@@ -1564,6 +1574,7 @@
       typedom_types: ["Length", "Percentage"],
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-top-style",
@@ -1579,6 +1590,7 @@
       type_name: "EBorderStyle",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "border-top-width",
@@ -1595,6 +1607,7 @@
       converter: "ConvertBorderWidth",
       valid_for_first_letter: true,
       is_border: true,
+      computed_value_comparable: true,
     },
     {
       name: "bottom",
@@ -3538,6 +3551,7 @@
       affected_by_forced_colors: true,
       valid_for_first_letter: true,
       valid_for_cue: true,
+      computed_value_comparable: true,
     },
     {
       name: "text-decoration-line",
@@ -3552,6 +3566,7 @@
       converter: "ConvertFlags<TextDecoration>",
       valid_for_first_letter: true,
       valid_for_cue: true,
+      computed_value_comparable: true,
     },
     {
       name: "text-decoration-skip-ink",
@@ -3564,6 +3579,7 @@
       default_value: "auto",
       valid_for_first_letter: true,
       valid_for_cue: true,
+      computed_value_comparable: true,
     },
     {
       name: "text-decoration-style",
@@ -3575,12 +3591,12 @@
       default_value: "solid",
       valid_for_first_letter: true,
       valid_for_cue: true,
+      computed_value_comparable: true,
     },
     {
       name: "text-decoration-thickness",
       runtime_flag: "UnderlineOffsetThickness",
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
-      # TODO: Move to core/style?
       include_paths: ["third_party/blink/renderer/core/style/text_decoration_thickness.h"],
       inherited: true,
       field_group: "*",
@@ -3591,6 +3607,7 @@
       keywords: ["auto", "from-font"],
       typedom_types: ["Keyword", "Length", "Percentage"],
       valid_for_first_letter: true,
+      computed_value_comparable: true,
     },
     {
       name: "text-indent",

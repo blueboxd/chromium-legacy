@@ -26,6 +26,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
@@ -50,6 +51,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.autofill_assistant.R;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
@@ -589,8 +591,8 @@ public class AutofillAssistantPersonalDataManagerTest {
 
     /**
      * Catch the insert of a credit card with a billing address missing the postal code added
-     * outside of the Autofill Assistant, e.g. with the Chrome settings UI, and fill it into the
-     * form.
+     * outside of the Autofill Assistant, e.g. with the Chrome settings UI and verify the error
+     * message.
      */
     @Test
     @MediumTest
@@ -623,7 +625,79 @@ public class AutofillAssistantPersonalDataManagerTest {
         waitUntilViewMatchesCondition(allOf(withText("Missing Billing Code"),
                                               isDescendantOfA(withId(R.id.payment_method_summary))),
                 isDisplayed());
-        waitUntilViewMatchesCondition(withText("Continue"), isEnabled());
+        onView(withContentDescription("Continue")).check(matches(not(isEnabled())));
+
+        // TODO(b/154068342): Update billing zip, verify that error message is gone and Continue
+        //  is enabled.
+    }
+
+    /**
+     * Catch the insert of a credit card with an invalid expiration date added outside of the
+     * Autofill Assistant, e.g. with the Chrome settings UI and verify the error message.
+     */
+    @Test
+    @MediumTest
+    public void testExternalAddExpiredCreditCard() throws Exception {
+        // Add address for card.
+        String profileId = mHelper.addDummyProfile("John Doe", "johndoe@google.com");
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                     .setRequestPaymentMethod(true)
+                                                     .setBillingAddressName("billing_address")
+                                                     .setCreditCardExpiredText("Card is expired")
+                                                     .setRequestTermsAndConditions(false))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Payment")))
+                        .build(),
+                list);
+        runScript(script);
+
+        waitUntilViewMatchesCondition(
+                allOf(withId(R.id.section_title_add_button_label), withText("Add card")),
+                isCompletelyDisplayed());
+        CreditCard card = new CreditCard("", "https://example.com", /* isLocal= */ true,
+                /* isCached= */ true, "John Doe", "4111111111111111", "1111", "12", "2000", "visa",
+                org.chromium.chrome.autofill_assistant.R.drawable.visa_card, profileId,
+                /* serverId= */ "");
+        mHelper.setCreditCard(card);
+        waitUntilViewMatchesCondition(allOf(withText("Card is expired"),
+                                              isDescendantOfA(withId(R.id.payment_method_summary))),
+                isDisplayed());
+        onView(withContentDescription("Continue")).check(matches(not(isEnabled())));
+
+        onView(withText("Payment method")).perform(click());
+        waitUntilViewMatchesCondition(
+                allOf(withContentDescription("Edit card"),
+                        isNextAfterSibling(hasDescendant(withText(containsString("John Doe"))))),
+                isDisplayed());
+        onView(allOf(withContentDescription("Edit card"),
+                       isNextAfterSibling(hasDescendant(withText(containsString("John Doe"))))))
+                .perform(click());
+        waitUntilViewMatchesCondition(
+                withContentDescription("Card number*"), allOf(isDisplayed(), isEnabled()));
+        onView(allOf(withId(org.chromium.chrome.R.id.spinner), withChild(withText("2000"))))
+                .perform(click());
+        // Select 2 years in the future, 0 is the currently invalid year, 1 is the current year.
+        onData(anything())
+                .atPosition(3)
+                .inRoot(withDecorView(withClassName(containsString("Popup"))))
+                .perform(click());
+        onView(withId(org.chromium.chrome.R.id.editor_dialog_done_button))
+                .perform(scrollTo(), click());
+        // Updating the card does not collapse the card section.
+        waitUntilViewMatchesCondition(allOf(withId(R.id.credit_card_number),
+                                              isDescendantOfA(withId(R.id.payment_method_full))),
+                allOf(withText(containsString("1111")), isDisplayed()));
+        waitUntilViewMatchesCondition(allOf(withId(R.id.incomplete_error),
+                                              isDescendantOfA(withId(R.id.payment_method_full))),
+                not(isDisplayed()));
+        onView(withContentDescription("Continue")).check(matches(isEnabled()));
     }
 
     /**

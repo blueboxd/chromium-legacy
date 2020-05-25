@@ -7809,6 +7809,15 @@ const CSSValue* WebkitTextOrientation::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetTextOrientation());
 }
 
+void WebkitTextOrientation::ApplyInitial(StyleResolverState& state) const {
+  state.SetTextOrientation(
+      ComputedStyleInitialValues::InitialTextOrientation());
+}
+
+void WebkitTextOrientation::ApplyInherit(StyleResolverState& state) const {
+  state.SetTextOrientation(state.ParentStyle()->GetTextOrientation());
+}
+
 void WebkitTextOrientation::ApplyValue(StyleResolverState& state,
                                        const CSSValue& value) const {
   state.SetTextOrientation(

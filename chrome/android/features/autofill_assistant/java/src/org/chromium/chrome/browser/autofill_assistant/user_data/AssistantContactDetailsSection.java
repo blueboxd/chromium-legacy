@@ -67,12 +67,14 @@ public class AssistantContactDetailsSection
         if (contact == null || mFullOptions == null) {
             return;
         }
+
         TextView fullViewText = fullView.findViewById(R.id.contact_full);
         String description = createContactDescription(mFullOptions, contact);
         fullViewText.setText(description);
         hideIfEmpty(fullViewText);
+
         fullView.findViewById(R.id.incomplete_error)
-                .setVisibility(contact.isComplete() ? View.GONE : View.VISIBLE);
+                .setVisibility(isComplete(contact) ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -80,12 +82,14 @@ public class AssistantContactDetailsSection
         if (contact == null || mSummaryOptions == null) {
             return;
         }
+
         TextView contactSummaryView = summaryView.findViewById(R.id.contact_summary);
         String description = createContactDescription(mSummaryOptions, contact);
         contactSummaryView.setText(description);
         hideIfEmpty(contactSummaryView);
+
         summaryView.findViewById(R.id.incomplete_error)
-                .setVisibility(contact.isComplete() ? View.GONE : View.VISIBLE);
+                .setVisibility(isComplete(contact) ? View.GONE : View.VISIBLE);
     }
 
     @Override
@@ -129,6 +133,7 @@ public class AssistantContactDetailsSection
         if (mIgnoreProfileChangeNotifications) {
             return;
         }
+
         int selectedContactIndex = -1;
         if (mSelectedOption != null) {
             for (int i = 0; i < contacts.size(); i++) {
@@ -138,6 +143,7 @@ public class AssistantContactDetailsSection
                 }
             }
         }
+
         // Replace current set of items, keep selection if possible.
         setItems(contacts, selectedContactIndex);
     }

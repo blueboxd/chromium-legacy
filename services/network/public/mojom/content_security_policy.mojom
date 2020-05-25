@@ -98,7 +98,8 @@ struct ContentSecurityPolicy {
   bool treat_as_public_address = false;
 
   // https://www.w3.org/TR/CSP3/#directive-sandbox
-  WebSandboxFlags sandbox; // WebSandboxFlags::kNone.
+  // This uses the convention: kAll means "everything is allowed".
+  WebSandboxFlags sandbox = WebSandboxFlags.kAll;
 
   ContentSecurityPolicyHeader header;
 

@@ -165,7 +165,7 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
   EColorInterpolation filter_color_interpolation =
       ColorInterpolationForElement(filter_element, CI_AUTO);
   SVGUnitTypes::SVGUnitType primitive_units =
-      filter_element.primitiveUnits()->CurrentValue()->EnumValue();
+      filter_element.primitiveUnits()->CurrentEnumValue();
 
   for (SVGElement* element = Traversal<SVGElement>::FirstChild(filter_element);
        element; element = Traversal<SVGElement>::NextSibling(*element)) {

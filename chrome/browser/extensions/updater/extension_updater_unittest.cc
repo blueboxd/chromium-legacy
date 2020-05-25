@@ -1535,7 +1535,7 @@ class ExtensionUpdaterTest : public testing::Test {
       helper.test_url_loader_factory().AddResponse(
           test_url.spec(), "Any content. It is irrelevant.");
       delegate.Wait();
-      EXPECT_EQ(version.GetString(), crx_file_info.expected_version);
+      EXPECT_EQ(version, crx_file_info.expected_version);
     }
 
     if (fail) {

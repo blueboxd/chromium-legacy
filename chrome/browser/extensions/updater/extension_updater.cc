@@ -558,11 +558,12 @@ void ExtensionUpdater::UpdatePingData(const ExtensionId& id,
 void ExtensionUpdater::PutExtensionInCache(const CRXFileInfo& crx_info) {
   if (extension_cache_) {
     const std::string& extension_id = crx_info.extension_id;
-    const std::string& version = crx_info.expected_version;
+    const base::Version& expected_version = crx_info.expected_version;
     const std::string& expected_hash = crx_info.expected_hash;
     const base::FilePath& crx_path = crx_info.path;
+    DCHECK(expected_version.IsValid());
     extension_cache_->PutExtension(
-        extension_id, expected_hash, crx_path, version,
+        extension_id, expected_hash, crx_path, expected_version.GetString(),
         base::BindRepeating(&ExtensionUpdater::CleanUpCrxFileIfNeeded,
                             weak_ptr_factory_.GetWeakPtr()));
   } else {

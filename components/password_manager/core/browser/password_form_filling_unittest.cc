@@ -56,22 +56,23 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
   ~MockPasswordManagerDriver() override = default;
 
-  MOCK_CONST_METHOD0(GetId, int());
-  MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
-  MOCK_METHOD0(InformNoSavedCredentials, void());
-  MOCK_METHOD1(ShowInitialPasswordAccountSuggestions,
-               void(const PasswordFormFillData&));
-  MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
+  MOCK_METHOD(int, GetId, (), (const, override));
+  MOCK_METHOD(void,
+              FillPasswordForm,
+              (const PasswordFormFillData&),
+              (override));
+  MOCK_METHOD(void, InformNoSavedCredentials, (), (override));
 };
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MOCK_METHOD3(PasswordWasAutofilled,
-               void(const std::vector<const PasswordForm*>&,
-                    const url::Origin&,
-                    const std::vector<const PasswordForm*>*));
-
-  MOCK_CONST_METHOD0(IsMainFrameSecure, bool());
+  MOCK_METHOD(void,
+              PasswordWasAutofilled,
+              (const std::vector<const PasswordForm*>&,
+               const url::Origin&,
+               const std::vector<const PasswordForm*>*),
+              (override));
+  MOCK_METHOD(bool, IsCommittedMainFrameSecure, (), (const, override));
 };
 
 PasswordForm CreateForm(std::string username,
@@ -105,7 +106,7 @@ PasswordFormFillData::LoginCollection::const_iterator FindPasswordByUsername(
 class PasswordFormFillingTest : public testing::Test {
  public:
   PasswordFormFillingTest() {
-    ON_CALL(client_, IsMainFrameSecure()).WillByDefault(Return(true));
+    ON_CALL(client_, IsCommittedMainFrameSecure()).WillByDefault(Return(true));
 
     observed_form_.origin = GURL("https://accounts.google.com/a/LoginAuth");
     observed_form_.action = GURL("https://accounts.google.com/a/Login");
@@ -152,7 +153,6 @@ TEST_F(PasswordFormFillingTest, NoSavedCredentials) {
 
   EXPECT_CALL(driver_, InformNoSavedCredentials());
   EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
-  EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
       &client_, &driver_, observed_form_, best_matches, federated_matches_,
@@ -171,7 +171,6 @@ TEST_F(PasswordFormFillingTest, Autofill) {
   EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
-  EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
   EXPECT_CALL(client_, PasswordWasAutofilled);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -259,7 +258,6 @@ TEST_F(PasswordFormFillingTest, AutofillPSLMatch) {
   EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
-  EXPECT_CALL(driver_, ShowInitialPasswordAccountSuggestions(_)).Times(0);
   EXPECT_CALL(client_, PasswordWasAutofilled);
 
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
@@ -293,7 +291,7 @@ TEST_F(PasswordFormFillingTest, NoAutofillOnHttp) {
   ASSERT_FALSE(GURL(saved_http_match.signon_realm).SchemeIsCryptographic());
   std::vector<const PasswordForm*> best_matches = {&saved_http_match};
 
-  EXPECT_CALL(client_, IsMainFrameSecure).WillOnce(Return(false));
+  EXPECT_CALL(client_, IsCommittedMainFrameSecure).WillOnce(Return(false));
   LikelyFormFilling likely_form_filling = SendFillInformationToRenderer(
       &client_, &driver_, observed_http_form, best_matches, federated_matches_,
       &saved_http_match, metrics_recorder_.get());

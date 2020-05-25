@@ -4069,11 +4069,19 @@ Unknown properties are collapsed to zero. -->
   <int value="0" label="All required fields present"/>
   <int value="1" label="Missing: ZIP"/>
   <int value="2" label="Missing: State"/>
-  <int value="3" label="Missing: City"/>
-  <int value="4" label="Missing: Zip, State"/>
+  <int value="3" label="Missing: Zip, State"/>
+  <int value="4" label="Missing: City"/>
   <int value="5" label="Missing: Zip, City"/>
   <int value="6" label="Missing: State, City"/>
   <int value="7" label="Missing: ZIP, State, City"/>
+  <int value="8" label="Missing: Line1"/>
+  <int value="9" label="Missing: Line1, ZIP"/>
+  <int value="10" label="Missing: Line1, State"/>
+  <int value="11" label="Missing: Line1, Zip, State"/>
+  <int value="12" label="Missing: Line1, City"/>
+  <int value="13" label="Missing: Line1, Zip, City"/>
+  <int value="14" label="Missing: Line1, State, City"/>
+  <int value="15" label="Missing: Line1, ZIP, State, City"/>
 </enum>
 
 <enum name="AutofillAddressProfileImportRequirement">
@@ -7295,6 +7303,11 @@ Unknown properties are collapsed to zero. -->
 <enum name="BooleanMissingFromDiskCache">
   <int value="0" label="Has data in disk cache"/>
   <int value="1" label="Missing data in disk cache"/>
+</enum>
+
+<enum name="BooleanMultipleApps">
+  <int value="0" label="Match one app"/>
+  <int value="1" label="Match multiple apps"/>
 </enum>
 
 <enum name="BooleanNativeNotifications">

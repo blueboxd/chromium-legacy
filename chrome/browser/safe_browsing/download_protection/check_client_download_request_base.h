@@ -17,6 +17,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/connectors/common.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_util.h"
 #include "chrome/browser/safe_browsing/download_protection/file_analyzer.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
@@ -130,14 +131,17 @@ class CheckClientDownloadRequestBase {
                                           const std::string& request_data,
                                           const std::string& response_body) = 0;
 
-  // Called after receiving, or failing to receive a response from the server.
   // Returns whether or not the file should be uploaded to Safe Browsing for
-  // deep scanning.
-  virtual bool ShouldUploadBinary(DownloadCheckResultReason reason) = 0;
+  // deep scanning. Returns the settings to apply for analysis if the file
+  // should be uploaded for deep scanning, or base::nullopt if it should not.
+  virtual base::Optional<enterprise_connectors::AnalysisSettings>
+  ShouldUploadBinary(DownloadCheckResultReason reason) = 0;
 
-  // If ShouldUploadBinary is true, actually performs the upload to Safe
-  // Browsing for deep scanning.
-  virtual void UploadBinary(DownloadCheckResultReason reason) = 0;
+  // If ShouldUploadBinary returns settings, actually performs the upload to
+  // Safe Browsing for deep scanning.
+  virtual void UploadBinary(
+      DownloadCheckResultReason reason,
+      enterprise_connectors::AnalysisSettings settings) = 0;
 
   // Called whenever a request has completed.
   virtual void NotifyRequestFinished(DownloadCheckResult result,

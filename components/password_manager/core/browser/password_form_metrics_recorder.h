@@ -387,7 +387,7 @@ class PasswordFormMetricsRecorder
   // RecordUkmMetric.
   ~PasswordFormMetricsRecorder();
 
-  // True if the main frame's visible URL, at the time this PasswordFormManager
+  // True if the main frame's committed URL, at the time PasswordFormManager
   // was created, is secure.
   const bool is_main_frame_secure_;
 

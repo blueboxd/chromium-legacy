@@ -66,8 +66,7 @@ bool SVGFEMorphologyElement::SetFilterEffectAttribute(
     const QualifiedName& attr_name) {
   FEMorphology* morphology = static_cast<FEMorphology*>(effect);
   if (attr_name == svg_names::kOperatorAttr)
-    return morphology->SetMorphologyOperator(
-        svg_operator_->CurrentValue()->EnumValue());
+    return morphology->SetMorphologyOperator(svg_operator_->CurrentEnumValue());
   if (attr_name == svg_names::kRadiusAttr) {
     // Both setRadius functions should be evaluated separately.
     bool is_radius_x_changed =
@@ -114,7 +113,7 @@ FilterEffect* SVGFEMorphologyElement::Build(SVGFilterBuilder* filter_builder,
   float x_radius = radiusX()->CurrentValue()->Value();
   float y_radius = radiusY()->CurrentValue()->Value();
   auto* effect = MakeGarbageCollected<FEMorphology>(
-      filter, svg_operator_->CurrentValue()->EnumValue(), x_radius, y_radius);
+      filter, svg_operator_->CurrentEnumValue(), x_radius, y_radius);
   effect->InputEffects().push_back(input1);
   return effect;
 }

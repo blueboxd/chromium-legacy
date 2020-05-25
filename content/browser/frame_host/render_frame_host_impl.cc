@@ -3706,6 +3706,8 @@ void RenderFrameHostImpl::DidSetFramePolicyHeaders(
 
   // Save a copy of the now-active sandbox flags on this RFHI.
   active_sandbox_flags_ = frame_tree_node()->active_sandbox_flags();
+
+  CheckSandboxFlags();
 }
 
 void RenderFrameHostImpl::EnforceInsecureRequestPolicy(
@@ -5663,6 +5665,8 @@ void RenderFrameHostImpl::CommitNavigation(
     // iframe and its srcdoc attribute.
     CHECK_EQ(GetSiteInstance(), parent_->GetSiteInstance());
   }
+
+  // TODO(https://crbug.com/888079): Compute the Origin to commit here.
 
   // If this is an attempt to commit a URL in an incompatible process, capture a
   // crash dump to diagnose why it is occurring.
@@ -7940,6 +7944,11 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     }
   }
 
+  // Keep track of the sandbox policy of the document that has just committed.
+  // It will be compared with the value computed from the renderer. The latter
+  // is expected to be received in DidSetFramePolicyHeaders(..).
+  active_sandbox_flags_control_ = navigation_request->SandboxFlagsToCommit();
+
   // If we still have a PeakGpuMemoryTracker, then the loading it was observing
   // never completed. Cancel it's callback so that we don't report partial
   // loads to UMA.
@@ -8966,6 +8975,29 @@ void RenderFrameHostImpl::OnCookiesAccessed(
     delegate_->OnCookiesAccessed(this, allowed);
   if (!blocked.cookie_list.empty())
     delegate_->OnCookiesAccessed(this, blocked);
+}
+
+void RenderFrameHostImpl::CheckSandboxFlags() {
+  if (is_mhtml_document_)
+    return;
+
+  if (!active_sandbox_flags_control_)
+    return;
+
+  if (active_sandbox_flags_ == *active_sandbox_flags_control_)
+    return;
+
+  base::debug::ScopedCrashKeyString scoped_url(
+      base::debug::AllocateCrashKeyString("url",
+                                          base::debug::CrashKeySize::Size256),
+      GetLastCommittedURL().possibly_invalid_spec());
+  base::debug::ScopedCrashKeyString scoped_sandbox(
+      base::debug::AllocateCrashKeyString("sandbox",
+                                          base::debug::CrashKeySize::Size256),
+      base::StringPrintf("%u, %u", uint32_t(active_sandbox_flags_),
+                         uint32_t(*active_sandbox_flags_control_)));
+  DCHECK(false);
+  base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace content

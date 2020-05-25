@@ -54,7 +54,7 @@ class ChromeAutocompleteProviderClientTest : public testing::Test {
   // |client_| will be off the record.
   void GoOffTheRecord() {
     client_ = std::make_unique<ChromeAutocompleteProviderClient>(
-        profile_->GetOffTheRecordProfile());
+        profile_->GetPrimaryOTRProfile());
   }
 
  protected:

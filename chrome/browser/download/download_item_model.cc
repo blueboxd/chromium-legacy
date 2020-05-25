@@ -24,6 +24,8 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/offline_item_utils.h"
+#include "chrome/browser/enterprise/connectors/common.h"
+#include "chrome/browser/enterprise/connectors/connectors_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/download_protection/deep_scanning_request.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
@@ -742,6 +744,8 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
       ChromeDownloadManagerDelegate* delegate =
           download_core_service->GetDownloadManagerDelegate();
       DCHECK(delegate);
+      enterprise_connectors::AnalysisSettings settings;
+      settings.tags = {"malware"};
       protection_service->UploadForDeepScanning(
           download_,
           base::BindRepeating(
@@ -749,7 +753,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
               delegate->GetWeakPtr(), download_->GetId()),
           safe_browsing::DeepScanningRequest::DeepScanTrigger::
               TRIGGER_APP_PROMPT,
-          {safe_browsing::DeepScanningRequest::DeepScanType::SCAN_MALWARE});
+          std::move(settings));
       break;
   }
 }

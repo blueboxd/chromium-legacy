@@ -965,6 +965,34 @@ void UiControllerAndroid::OnTextFocusLost() {
       base::TimeDelta::FromMilliseconds(50));
 }
 
+bool UiControllerAndroid::IsContactComplete(
+    autofill::AutofillProfile* contact) {
+  auto* options = ui_delegate_->GetCollectUserDataOptions();
+  if (options == nullptr) {
+    return false;
+  }
+  return IsCompleteContact(contact, *options);
+}
+
+bool UiControllerAndroid::IsShippingAddressComplete(
+    autofill::AutofillProfile* address) {
+  auto* options = ui_delegate_->GetCollectUserDataOptions();
+  if (options == nullptr) {
+    return false;
+  }
+  return IsCompleteShippingAddress(address, *options);
+}
+
+bool UiControllerAndroid::IsPaymentInstrumentComplete(
+    autofill::CreditCard* card,
+    autofill::AutofillProfile* address) {
+  auto* options = ui_delegate_->GetCollectUserDataOptions();
+  if (options == nullptr) {
+    return false;
+  }
+  return IsCompleteCreditCard(card, address, *options);
+}
+
 void UiControllerAndroid::HideKeyboardIfFocusNotOnText() {
   Java_AutofillAssistantUiController_hideKeyboardIfFocusNotOnText(
       AttachCurrentThread(), java_object_);

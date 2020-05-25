@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/files/file_path.h"
+#include "base/version.h"
 #include "extensions/common/extension_id.h"
 
 namespace crx_file {
@@ -32,7 +33,7 @@ struct CRXFileInfo {
   crx_file::VerifierFormat required_format;
   ExtensionId extension_id;
   std::string expected_hash;
-  std::string expected_version;
+  base::Version expected_version;
 };
 
 }  // namespace extensions

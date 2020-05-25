@@ -114,7 +114,6 @@ class IOSChromePasswordManagerClient
   const password_manager::PasswordManager* GetPasswordManager() const override;
   const password_manager::PasswordFeatureManager* GetPasswordFeatureManager()
       const override;
-  bool IsMainFrameSecure() const override;
   PrefService* GetPrefs() const override;
   password_manager::PasswordStore* GetProfilePasswordStore() const override;
   password_manager::PasswordStore* GetAccountPasswordStore() const override;
@@ -133,6 +132,8 @@ class IOSChromePasswordManagerClient
       const base::string16& username) override;
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsFillingEnabled(const GURL& url) const override;
+  bool IsCommittedMainFrameSecure() const override;
+  const GURL& GetLastCommittedURL() const override;
   url::Origin GetLastCommittedOrigin() const override;
   std::string GetPageLanguage() const override;
   const password_manager::CredentialsFilter* GetStoreResultFilter()

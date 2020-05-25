@@ -34,7 +34,6 @@
 // <include src="screen_fatal_error.js">
 // <include src="screen_active_directory_password_change.js">
 // <include src="screen_encryption_migration.js">
-// <include src="screen_update_required.js">
 // <include src="screen_sync_consent.js">
 // <include src="screen_fingerprint_setup.js">
 // <include src="screen_app_downloading.js">
@@ -86,7 +85,6 @@ cr.define('cr.ui.Oobe', function() {
       login.DiscoverScreen.register();
       login.AssistantOptInFlowScreen.register();
       login.MultiDeviceSetupScreen.register();
-      login.UpdateRequiredScreen.register();
 
       cr.ui.Bubble.decorate($('bubble-persistent'));
       $('bubble-persistent').persistent = true;

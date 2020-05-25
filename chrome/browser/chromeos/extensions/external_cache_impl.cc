@@ -223,8 +223,10 @@ void ExternalCacheImpl::OnExtensionDownloadFinished(
     const std::set<int>& request_ids,
     const InstallCallback& callback) {
   DCHECK(file_ownership_passed);
+  DCHECK(file.expected_version.IsValid());
   local_cache_.PutExtension(
-      file.extension_id, file.expected_hash, file.path, file.expected_version,
+      file.extension_id, file.expected_hash, file.path,
+      file.expected_version.GetString(),
       base::Bind(&ExternalCacheImpl::OnPutExtension,
                  weak_ptr_factory_.GetWeakPtr(), file.extension_id));
   if (!callback.is_null())

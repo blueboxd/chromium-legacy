@@ -5,7 +5,6 @@
 import("//build/config/jumbo.gni")
 import("//third_party/closure_compiler/closure_args.gni")
 import("//third_party/closure_compiler/compile_js.gni")
-import("//third_party/protobuf/proto_library.gni")
 import("//ui/webui/webui_features.gni")
 
 # TODO(rockot): Maybe we can factor these dependencies out of //mojo. They're
@@ -905,83 +904,6 @@ template("mojom") {
     }
   }
 
-  if (generate_fuzzing) {
-    # This block generates the proto files used for the MojoLPM fuzzer,
-    # and the corresponding proto targets that will be linked in the fuzzer
-    # targets. These are independent of the typemappings, and can be done
-    # separately here.
-
-    generator_mojolpm_proto_target_name =
-        "${target_name}_mojolpm_proto_generator"
-    action(generator_mojolpm_proto_target_name) {
-      script = mojom_generator_script
-      inputs = mojom_generator_sources + jinja2_sources
-      sources = invoker.sources
-      deps = [
-        ":$parser_target_name",
-        "//mojo/public/tools/bindings:precompile_templates",
-      ]
-
-      outputs = []
-      args = common_generator_args
-      filelist = []
-      foreach(source, invoker.sources) {
-        filelist += [ rebase_path("$source", root_build_dir) ]
-        outputs += [ "$target_gen_dir/$source.mojolpm.proto" ]
-      }
-
-      response_file_contents = filelist
-
-      args += [
-        "--filelist={{response_file_name}}",
-        "--generate_non_variant_code",
-        "-g",
-        "mojolpm",
-      ]
-    }
-
-    mojolpm_proto_target_name = "${target_name}_mojolpm_proto"
-    if (defined(invoker.sources)) {
-      proto_library(mojolpm_proto_target_name) {
-        testonly = true
-        generate_python = false
-        sources = process_file_template(
-                invoker.sources,
-                [ "{{source_gen_dir}}/{{source_file_part}}.mojolpm.proto" ])
-        import_dirs = [ "${root_gen_dir}" ]
-        proto_in_dir = "${root_gen_dir}"
-        proto_out_dir = "."
-        proto_deps = [ "//mojo/public/tools/fuzzers:mojolpm_proto_copy" ]
-        proto_deps += [ ":$generator_mojolpm_proto_target_name" ]
-        link_deps = [ "//mojo/public/tools/fuzzers:mojolpm_proto" ]
-
-        foreach(d, all_deps) {
-          # Resolve the name, so that a target //mojo/something becomes
-          # //mojo/something:something and we can append mojolpm_proto_suffix
-          # to get the proto dependency name.
-          full_name = get_label_info("$d", "label_no_toolchain")
-          proto_deps += [ "${full_name}_mojolpm_proto" ]
-          link_deps += [ "${full_name}_mojolpm_proto" ]
-        }
-      }
-    } else {
-      group(mojolpm_proto_target_name) {
-        testonly = true
-        public_deps = [ "//mojo/public/tools/fuzzers:mojolpm_proto" ]
-        if (defined(generator_shared_target_name)) {
-          public_deps += [ ":$generator_shared_target_name" ]
-        }
-        foreach(d, all_deps) {
-          # Resolve the name, so that a target //mojo/something becomes
-          # //mojo/something:something and we can append #mojolpm_proto_suffix
-          # to get the proto dependency name.
-          full_name = get_label_info("$d", "label_no_toolchain")
-          public_deps += [ "${full_name}_mojolpm_proto" ]
-        }
-      }
-    }
-  }
-
   # Generate code for variants.
   if (!defined(invoker.disable_variants) || !invoker.disable_variants) {
     enabled_configurations = _bindings_configurations
@@ -1159,12 +1081,6 @@ template("mojom") {
             "$root_gen_dir/${base_path}${variant_dash_suffix}.cc",
             "$root_gen_dir/${base_path}${variant_dash_suffix}.h",
           ]
-          if (generate_fuzzing && !defined(bindings_configuration.variant)) {
-            outputs += [
-              "$root_gen_dir/${base_path}${variant_dash_suffix}-mojolpm.cc",
-              "$root_gen_dir/${base_path}${variant_dash_suffix}-mojolpm.h",
-            ]
-          }
         }
 
         response_file_contents = filelist
@@ -1172,13 +1088,8 @@ template("mojom") {
         args += [
           "--filelist={{response_file_name}}",
           "-g",
+          "c++",
         ]
-
-        if (generate_fuzzing && !defined(bindings_configuration.variant)) {
-          args += [ "c++,mojolpm" ]
-        } else {
-          args += [ "c++" ]
-        }
 
         if (defined(bindings_configuration.variant)) {
           args += [
@@ -1225,79 +1136,6 @@ template("mojom") {
               template_file_name = get_path_info("$extra_cpp_template", "name")
               outputs += [ "$root_gen_dir/${base_path}${variant_dash_suffix}-${template_file_name}" ]
             }
-          }
-        }
-      }
-    }
-
-    if (generate_fuzzing && !defined(variant)) {
-      # This block contains the C++ targets for the MojoLPM fuzzer, we need to
-      # do this here so that we can use the typemap configuration for the
-      # empty-variant Mojo target.
-
-      mojolpm_target_name = "${target_name}_mojolpm"
-      mojolpm_generator_target_name = "${target_name}__generator"
-      source_set(mojolpm_target_name) {
-        # There are still a few missing header dependencies between mojo targets
-        # with typemaps and the dependencies of their typemap headers. It would
-        # be good to enable include checking for these in the future though.
-        check_includes = false
-        testonly = true
-        if (defined(invoker.sources)) {
-          sources = process_file_template(
-                  invoker.sources,
-                  [
-                    "{{source_gen_dir}}/{{source_file_part}}-mojolpm.cc",
-                    "{{source_gen_dir}}/{{source_file_part}}-mojolpm.h",
-                  ])
-          deps = []
-        } else {
-          sources = []
-          deps = []
-        }
-
-        public_deps = [
-          ":$generator_shared_target_name",
-
-          # NB: hardcoded dependency on the no-variant variant generator, since
-          # mojolpm only uses the no-variant type.
-          ":$mojolpm_generator_target_name",
-          ":$mojolpm_proto_target_name",
-          "//mojo/public/tools/fuzzers:mojolpm",
-        ]
-
-        foreach(d, all_deps) {
-          # Resolve the name, so that a target //mojo/something becomes
-          # //mojo/something:something and we can append variant_suffix to
-          # get the cpp dependency name.
-          full_name = get_label_info("$d", "label_no_toolchain")
-          public_deps += [ "${full_name}_mojolpm" ]
-        }
-
-        foreach(typemap, active_typemaps) {
-          _typemap_config = {
-          }
-          _typemap_config = typemap.config
-
-          if (defined(_typemap_config.sources)) {
-            sources += _typemap_config.sources
-          }
-          if (defined(_typemap_config.deps)) {
-            deps += _typemap_config.deps
-          }
-          if (defined(_typemap_config.public_deps)) {
-            public_deps += _typemap_config.public_deps
-          }
-        }
-        foreach(config, cpp_typemap_configs) {
-          if (defined(config.traits_sources)) {
-            sources += config.traits_sources
-          }
-          if (defined(config.traits_deps)) {
-            deps += config.traits_deps
-          }
-          if (defined(config.traits_public_deps)) {
-            public_deps += config.traits_public_deps
           }
         }
       }

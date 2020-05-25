@@ -61,7 +61,11 @@ class TestDataDeviceDelegate : public DataDeviceDelegate {
     return out->size();
   }
   Surface* entered_surface() const { return entered_surface_; }
-  void DeleteDataOffer() { data_offer_.reset(); }
+  void DeleteDataOffer(bool finished) {
+    if (finished)
+      data_offer_->Finish();
+    data_offer_.reset();
+  }
   void set_can_accept_data_events_for_surface(bool value) {
     can_accept_data_events_for_surface_ = value;
   }
@@ -186,7 +190,12 @@ TEST_F(DataDeviceTest, DataEventsDrop) {
   ASSERT_EQ(1u, delegate_.PopEvents(&events));
   EXPECT_EQ(DataEvent::kMotion, events[0]);
 
-  device_->OnPerformDrop(event);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
+                                base::Unretained(&delegate_), true));
+
+  int result = device_->OnPerformDrop(event);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_LINK, result);
   ASSERT_EQ(1u, delegate_.PopEvents(&events));
   EXPECT_EQ(DataEvent::kDrop, events[0]);
 }
@@ -222,13 +231,38 @@ TEST_F(DataDeviceTest, DeleteDataOfferDuringDrag) {
   EXPECT_EQ(DataEvent::kOffer, events[0]);
   EXPECT_EQ(DataEvent::kEnter, events[1]);
 
-  delegate_.DeleteDataOffer();
+  delegate_.DeleteDataOffer(false);
 
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, device_->OnDragUpdated(event));
   EXPECT_EQ(0u, delegate_.PopEvents(&events));
 
   device_->OnPerformDrop(event);
   EXPECT_EQ(0u, delegate_.PopEvents(&events));
+}
+
+TEST_F(DataDeviceTest, DataOfferNotFinished) {
+  ui::DropTargetEvent event(data_, gfx::PointF(), gfx::PointF(),
+                            ui::DragDropTypes::DRAG_MOVE);
+  ui::Event::DispatcherApi(&event).set_target(surface_->window());
+
+  std::vector<DataEvent> events;
+  device_->OnDragEntered(event);
+  ASSERT_EQ(2u, delegate_.PopEvents(&events));
+  EXPECT_EQ(DataEvent::kOffer, events[0]);
+  EXPECT_EQ(DataEvent::kEnter, events[1]);
+
+  EXPECT_EQ(ui::DragDropTypes::DRAG_LINK, device_->OnDragUpdated(event));
+  ASSERT_EQ(1u, delegate_.PopEvents(&events));
+  EXPECT_EQ(DataEvent::kMotion, events[0]);
+
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&TestDataDeviceDelegate::DeleteDataOffer,
+                                base::Unretained(&delegate_), false));
+
+  int result = device_->OnPerformDrop(event);
+  EXPECT_EQ(ui::DragDropTypes::DRAG_NONE, result);
+  ASSERT_EQ(1u, delegate_.PopEvents(&events));
+  EXPECT_EQ(DataEvent::kDrop, events[0]);
 }
 
 TEST_F(DataDeviceTest, NotAcceptDataEventsForSurface) {

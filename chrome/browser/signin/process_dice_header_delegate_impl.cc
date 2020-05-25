@@ -24,7 +24,7 @@ namespace {
 void RedirectToNtp(content::WebContents* contents) {
   VLOG(1) << "RedirectToNtp";
   contents->GetController().LoadURL(
-      GURL(chrome::kChromeUINewTabURL), content::Referrer(),
+      GURL(chrome::kChromeSearchLocalNtpUrl), content::Referrer(),
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 

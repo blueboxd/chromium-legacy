@@ -13,7 +13,7 @@
     let customDialog = Object.create(HTMLElement.prototype);
 
     customDialog.createdCallback = function() {
-      this.createShadowRoot().innerHTML = '<dialog></dialog>';
+      this.attachShadow({mode: 'open'}).innerHTML = '<dialog></dialog>';
     };
 
     customDialog.show = function() {

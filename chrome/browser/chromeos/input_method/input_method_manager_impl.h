@@ -245,9 +245,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Sets |candidate_window_controller_|.
   void SetCandidateWindowControllerForTesting(
       CandidateWindowController* candidate_window_controller);
-  // Sets |assistive_window_controller_|.
-  void SetAssistiveWindowControllerForTesting(
-      AssistiveWindowController* assistive_window_controller);
   // Sets |keyboard_|.
   void SetImeKeyboardForTesting(ImeKeyboard* keyboard);
   // Initialize |component_extension_manager_|.

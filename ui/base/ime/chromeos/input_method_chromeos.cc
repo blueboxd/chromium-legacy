@@ -31,6 +31,11 @@
 
 namespace ui {
 
+ui::IMEEngineHandlerInterface* GetEngine() {
+  auto* bridge = ui::IMEBridge::Get();
+  return bridge ? bridge->GetCurrentEngineHandler() : nullptr;
+}
+
 // InputMethodChromeOS implementation -----------------------------------------
 InputMethodChromeOS::InputMethodChromeOS(
     internal::InputMethodDelegate* delegate)

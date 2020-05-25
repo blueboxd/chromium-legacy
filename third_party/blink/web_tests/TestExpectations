@@ -4521,8 +4521,7 @@ crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch-fail.js [ Pass Failure ]
 crbug.com/851363 http/tests/devtools/sxg/sxg-prefetch.js [ Pass Failure ]
 
 # Sheriff 2018-03-22
-crbug.com/824775 [ Win ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
-crbug.com/824775 [ Mac ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
+crbug.com/824775 media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824848 [ Linux ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824848 [ Mac ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824848 [ Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
@@ -5885,3 +5884,5 @@ crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-
 
 # Fails when test moved to use full compositor pipe.
 crbug.com/1085832 [ Fuchsia ] images/size-failure.html [ Timeout ]
+
+crbug.com/971031 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]

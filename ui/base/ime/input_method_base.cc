@@ -18,11 +18,6 @@
 
 namespace ui {
 
-ui::IMEEngineHandlerInterface* InputMethodBase::GetEngine() {
-  auto* bridge = ui::IMEBridge::Get();
-  return bridge ? bridge->GetCurrentEngineHandler() : nullptr;
-}
-
 InputMethodBase::InputMethodBase(internal::InputMethodDelegate* delegate)
     : InputMethodBase(delegate, nullptr) {}
 

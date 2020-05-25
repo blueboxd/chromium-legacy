@@ -110,14 +110,12 @@ void InputMethodWinTSF::OnCaretBoundsChanged(const TextInputClient* client) {
   }
   NotifyTextInputCaretBoundsChanged(client);
   ui::TSFBridge::GetInstance()->OnTextLayoutChanged();
-  InputMethodWinBase::UpdateCompositionBoundsForEngine(client);
 }
 
 void InputMethodWinTSF::CancelComposition(const TextInputClient* client) {
   if (ui::TSFBridge::GetInstance() && IsTextInputClientFocused(client) &&
       IsWindowFocused(client)) {
     ui::TSFBridge::GetInstance()->CancelComposition();
-    InputMethodWinBase::CancelCompositionForEngine();
   }
 }
 
@@ -181,8 +179,6 @@ void InputMethodWinTSF::ConfirmCompositionText(bool reset_engine,
   if (IsTextInputTypeNone())
     return;
 
-  if (reset_engine && GetTextInputClient()->HasCompositionText())
-    InputMethodWinBase::ResetEngine();
   if (ui::TSFBridge::GetInstance())
     ui::TSFBridge::GetInstance()->ConfirmComposition();
 }

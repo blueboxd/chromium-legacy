@@ -4,6 +4,7 @@
 
 #include "components/exo/data_device.h"
 
+#include "base/run_loop.h"
 #include "components/exo/data_device_delegate.h"
 #include "components/exo/data_offer.h"
 #include "components/exo/data_source.h"
@@ -16,10 +17,34 @@
 
 namespace exo {
 
+namespace {
+
+constexpr base::TimeDelta kDataOfferDestructionTimeout =
+    base::TimeDelta::FromMilliseconds(1000);
+
+ui::DragDropTypes::DragOperation DndActionToDragOperation(
+    DndAction dnd_action) {
+  switch (dnd_action) {
+    case DndAction::kMove:
+      return ui::DragDropTypes::DRAG_MOVE;
+    case DndAction::kCopy:
+      return ui::DragDropTypes::DRAG_COPY;
+    case DndAction::kAsk:
+      return ui::DragDropTypes::DRAG_LINK;
+    case DndAction::kNone:
+      return ui::DragDropTypes::DRAG_NONE;
+  }
+}
+
+}  // namespace
+
 DataDevice::DataDevice(DataDeviceDelegate* delegate,
                        Seat* seat,
                        FileHelper* file_helper)
-    : delegate_(delegate), seat_(seat), file_helper_(file_helper) {
+    : delegate_(delegate),
+      seat_(seat),
+      file_helper_(file_helper),
+      drop_succeeded_(false) {
   WMHelper::GetInstance()->AddDragDropObserver(this);
   ui::ClipboardMonitor::GetInstance()->AddObserver(this);
 
@@ -83,16 +108,7 @@ int DataDevice::OnDragUpdated(const ui::DropTargetEvent& event) {
 
   // TODO(hirono): dnd_action() here may not be updated. Chrome needs to provide
   // a way to update DND action asynchronously.
-  switch (data_offer_->get()->dnd_action()) {
-    case DndAction::kMove:
-      return ui::DragDropTypes::DRAG_MOVE;
-    case DndAction::kCopy:
-      return ui::DragDropTypes::DRAG_COPY;
-    case DndAction::kAsk:
-      return ui::DragDropTypes::DRAG_LINK;
-    case DndAction::kNone:
-      return ui::DragDropTypes::DRAG_NONE;
-  }
+  return DndActionToDragOperation(data_offer_->get()->dnd_action());
 }
 
 void DataDevice::OnDragExited() {
@@ -107,9 +123,29 @@ int DataDevice::OnPerformDrop(const ui::DropTargetEvent& event) {
   if (!data_offer_)
     return ui::DragDropTypes::DRAG_NONE;
 
+  DndAction dnd_action = data_offer_->get()->dnd_action();
+
   delegate_->OnDrop();
-  data_offer_.reset();
-  return ui::DragDropTypes::DRAG_NONE;
+
+  // TODO(tetsui): Avoid using nested loop by adding asynchronous callback to
+  // aura::client::DragDropDelegate.
+  base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), kDataOfferDestructionTimeout);
+  quit_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
+
+  if (quit_closure_) {
+    // DataOffer not destroyed by the client until the timeout.
+    quit_closure_.Reset();
+    data_offer_.reset();
+    drop_succeeded_ = false;
+  }
+
+  if (!drop_succeeded_)
+    return ui::DragDropTypes::DRAG_NONE;
+
+  return DndActionToDragOperation(dnd_action);
 }
 
 void DataDevice::OnClipboardDataChanged() {
@@ -140,8 +176,12 @@ void DataDevice::OnSurfaceFocusing(Surface* surface) {
 void DataDevice::OnSurfaceFocused(Surface* surface) {}
 
 void DataDevice::OnDataOfferDestroying(DataOffer* data_offer) {
-  if (data_offer_ && data_offer_->get() == data_offer)
+  if (data_offer_ && data_offer_->get() == data_offer) {
+    drop_succeeded_ = data_offer_->get()->finished();
+    if (quit_closure_)
+      std::move(quit_closure_).Run();
     data_offer_.reset();
+  }
 }
 
 void DataDevice::OnSurfaceDestroying(Surface* surface) {

@@ -5,7 +5,7 @@
 <div id="host"></div>
 <script>
   test(() => {
-    const root = host.createShadowRoot();
+    const root = host.attachShadow({mode: 'open'});
     root.innerHTML = "<style>content::selection {color:green}</style><content>Fallback</content>";
     const range = document.createRange();
     range.selectNode(document.body);

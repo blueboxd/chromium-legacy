@@ -1577,11 +1577,6 @@ if (!is_android) {
         if (enable_nacl_nonsfi) {
           data_deps += [ "//components/nacl/loader:helper_nonsfi" ]
         }
-      } else if (is_linux || is_win) {
-        sources += [
-          "../browser/ui/views/ime/ime_warning_bubble_browsertest.cc",
-          "../browser/ui/views/ime/ime_window_browsertest.cc",
-        ]
       }
 
       if (is_win || is_linux) {
@@ -2525,10 +2520,6 @@ if (!is_android) {
         sources -= [
           "../browser/ui/views/select_file_dialog_extension_browsertest.cc",
         ]
-      }
-      if (is_win || is_linux) {
-        sources +=
-            [ "../browser/ui/views/ime/input_ime_apitest_nonchromeos.cc" ]
       }
     }
     if (enable_kaleidoscope) {
@@ -4943,7 +4934,6 @@ test("unit_tests") {
   if (!is_chromeos && is_linux) {
     sources += [
       "../browser/shell_integration_linux_unittest.cc",
-      "../browser/ui/input_method/input_method_engine_unittest.cc",
       "../browser/upgrade_detector/get_installed_version_linux_unittest.cc",
     ]
   }
@@ -5270,7 +5260,6 @@ test("unit_tests") {
     sources += [
       "../browser/notifications/win/notification_image_retainer_unittest.cc",
       "../browser/notifications/win/notification_template_builder_unittest.cc",
-      "../browser/ui/input_method/input_method_engine_unittest.cc",
       "../browser/ui/views/uninstall_view_unittest.cc",
     ]
     deps += [

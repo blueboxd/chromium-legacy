@@ -101,7 +101,6 @@ void InputMethodWinImm32::OnCaretBoundsChanged(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client) || !IsWindowFocused(client))
     return;
   NotifyTextInputCaretBoundsChanged(client);
-  InputMethodWinBase::UpdateCompositionBoundsForEngine(client);
   if (!enabled_)
     return;
 
@@ -126,13 +125,8 @@ void InputMethodWinImm32::OnCaretBoundsChanged(const TextInputClient* client) {
 }
 
 void InputMethodWinImm32::CancelComposition(const TextInputClient* client) {
-  if (IsTextInputClientFocused(client)) {
-    // |enabled_| == false could be faked, and the engine should rely on the
-    // real type get from GetTextInputType().
-    InputMethodWinBase::CancelCompositionForEngine();
-
-    if (enabled_)
-      imm32_manager_.CancelIME(toplevel_window_handle_);
+  if (IsTextInputClientFocused(client) && enabled_) {
+    imm32_manager_.CancelIME(toplevel_window_handle_);
   }
 }
 
@@ -326,8 +320,6 @@ void InputMethodWinImm32::RefreshInputLanguage() {
 void InputMethodWinImm32::ConfirmCompositionText(bool reset_engine,
                                                  bool keep_selection) {
   InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);
-  if (reset_engine)
-    InputMethodWinBase::ResetEngine();
 
   // Makes sure the native IME app can be informed about the composition is
   // cleared, so that it can clean up its internal states.
@@ -339,8 +331,7 @@ void InputMethodWinImm32::UpdateIMEState() {
   // Use switch here in case we are going to add more text input types.
   // We disable input method in password field.
   const HWND window_handle = toplevel_window_handle_;
-  const TextInputType text_input_type =
-      GetEngine() ? TEXT_INPUT_TYPE_NONE : GetTextInputType();
+  const TextInputType text_input_type = GetTextInputType();
   const TextInputMode text_input_mode = GetTextInputMode();
   switch (text_input_type) {
     case ui::TEXT_INPUT_TYPE_NONE:

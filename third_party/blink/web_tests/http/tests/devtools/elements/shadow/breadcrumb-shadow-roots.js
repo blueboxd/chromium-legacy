@@ -18,7 +18,7 @@
     `);
   await TestRunner.evaluateInPagePromise(`
       var template = document.querySelector("#tmpl");
-      var root = document.querySelector("#host").createShadowRoot();
+      var root = document.querySelector("#host").attachShadow({mode: 'open'});
       root.appendChild(template.content.cloneNode(true));
       var rootClosed = document.querySelector("#hostClosed").attachShadow({mode: 'closed'});
       rootClosed.appendChild(template.content.cloneNode(true));

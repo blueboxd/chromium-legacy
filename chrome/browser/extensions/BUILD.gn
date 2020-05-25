@@ -1160,17 +1160,6 @@ static_library("extensions") {
     ]
   }
 
-  if (is_win || (is_linux && !is_chromeos)) {
-    sources += [
-      "api/input_ime/input_ime_api.cc",
-      "api/input_ime/input_ime_api.h",
-      "api/input_ime/input_ime_api_nonchromeos.cc",
-      "api/input_ime/input_ime_api_nonchromeos.h",
-      "api/input_ime/input_ime_event_router_base.cc",
-      "api/input_ime/input_ime_event_router_base.h",
-    ]
-  }
-
   if (enable_plugins) {
     sources += [
       "plugin_manager.cc",

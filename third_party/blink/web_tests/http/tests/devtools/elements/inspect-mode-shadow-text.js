@@ -11,7 +11,7 @@
     `);
   await TestRunner.evaluateInPagePromise(`
         var host = document.querySelector('#host');
-        var sr = host.createShadowRoot();
+        var sr = host.attachShadow({mode: 'open'});
         sr.innerHTML = "Text Text Text<br>Text Text Text";
     `);
   await TestRunner.evaluateInPagePromise(`

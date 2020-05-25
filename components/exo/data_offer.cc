@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "components/exo/data_device.h"
 #include "components/exo/data_offer_delegate.h"
 #include "components/exo/data_offer_observer.h"
 #include "components/exo/file_helper.h"
@@ -181,7 +182,10 @@ ScopedDataOffer::~ScopedDataOffer() {
 }
 
 DataOffer::DataOffer(DataOfferDelegate* delegate, Purpose purpose)
-    : delegate_(delegate), purpose_(purpose) {}
+    : delegate_(delegate),
+      dnd_action_(DndAction::kNone),
+      purpose_(purpose),
+      finished_(false) {}
 
 DataOffer::~DataOffer() {
   delegate_->OnDataOfferDestroying(this);
@@ -226,7 +230,9 @@ void DataOffer::Receive(const std::string& mime_type, base::ScopedFD fd) {
   }
 }
 
-void DataOffer::Finish() {}
+void DataOffer::Finish() {
+  finished_ = true;
+}
 
 void DataOffer::SetActions(const base::flat_set<DndAction>& dnd_actions,
                            DndAction preferred_action) {

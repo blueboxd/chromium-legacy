@@ -201,10 +201,6 @@ const base::Feature kTerminalSystemApp{"TerminalSystemApp",
 const base::Feature kTerminalSystemAppLegacySettings{
     "TerminalSystemAppLegacySettings", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable splits in the Terminal System App.
-const base::Feature kTerminalSystemAppSplits{"TerminalSystemAppSplits",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable uploading of a zip archive of system logs instead of individual files.
 const base::Feature kUploadZippedSystemLogs{"UploadZippedSystemLogs",
                                             base::FEATURE_ENABLED_BY_DEFAULT};

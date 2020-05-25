@@ -88,40 +88,7 @@ ui::EventDispatchDetails InputMethodAuraLinux::DispatchKeyEvent(
     }
   }
 
-  // If there's an active IME extension is listening to the key event, and the
-  // current text input client is not password input client, the key event
-  // should be dispatched to the extension engine in the two conditions:
-  // 1) |filtered| == false: the ET_KEY_PRESSED event of non-character key,
-  // or the ET_KEY_RELEASED event of all key.
-  // 2) |filtered| == true && NeedInsertChar(): the ET_KEY_PRESSED event of
-  // character key.
-  if (text_input_type_ != TEXT_INPUT_TYPE_PASSWORD && GetEngine() &&
-      (!filtered || NeedInsertChar())) {
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
-        base::BindOnce(&InputMethodAuraLinux::ProcessKeyEventByEngineDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Owned(new ui::KeyEvent(*event)), filtered,
-                       composition_changed_,
-                       base::Owned(new ui::CompositionText(composition_)),
-                       base::Owned(new base::string16(result_text_)));
-    GetEngine()->ProcessKeyEvent(*event, std::move(callback));
-    return ui::EventDispatchDetails();
-  }
-
   return ProcessKeyEventDone(event, filtered, false);
-}
-
-void InputMethodAuraLinux::ProcessKeyEventByEngineDone(
-    ui::KeyEvent* event,
-    bool filtered,
-    bool composition_changed,
-    ui::CompositionText* composition,
-    base::string16* result_text,
-    bool is_handled) {
-  composition_changed_ = composition_changed;
-  composition_ = *composition;
-  result_text_ = *result_text;
-  ignore_result(ProcessKeyEventDone(event, filtered, is_handled));
 }
 
 ui::EventDispatchDetails InputMethodAuraLinux::ProcessKeyEventDone(
@@ -256,14 +223,6 @@ void InputMethodAuraLinux::UpdateContextFocusState() {
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
       ui::TextInputClient::FOCUS_REASON_OTHER, GetClientShouldDoLearning());
   ui::IMEBridge::Get()->SetCurrentInputContext(context);
-
-  ui::IMEEngineHandlerInterface* engine = GetEngine();
-  if (engine) {
-    if (old_text_input_type != TEXT_INPUT_TYPE_NONE)
-      engine->FocusOut();
-    if (text_input_type_ != TEXT_INPUT_TYPE_NONE)
-      engine->FocusIn(context);
-  }
 }
 
 void InputMethodAuraLinux::OnTextInputTypeChanged(
@@ -286,18 +245,11 @@ void InputMethodAuraLinux::OnCaretBoundsChanged(const TextInputClient* client) {
       client->GetEditableSelectionRange(&selection_range)) {
     context_->SetSurroundingText(text, selection_range);
   }
-
-  if (!IsTextInputTypeNone() && text_input_type_ != TEXT_INPUT_TYPE_PASSWORD &&
-      GetEngine())
-    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
 }
 
 void InputMethodAuraLinux::CancelComposition(const TextInputClient* client) {
   if (!IsTextInputClientFocused(client))
     return;
-
-  if (GetEngine())
-    GetEngine()->Reset();
 
   ResetContext();
 }
@@ -457,8 +409,6 @@ void InputMethodAuraLinux::ConfirmCompositionText(bool reset_engine,
     NOTIMPLEMENTED_LOG_ONCE();
   }
   InputMethodBase::ConfirmCompositionText(reset_engine, keep_selection);
-  if (reset_engine && GetEngine())
-    GetEngine()->Reset();
   ResetContext();
 }
 

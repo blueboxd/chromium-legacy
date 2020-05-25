@@ -1235,11 +1235,6 @@ void InputMethodManagerImpl::SetCandidateWindowControllerForTesting(
   candidate_window_controller_->AddObserver(this);
 }
 
-void InputMethodManagerImpl::SetAssistiveWindowControllerForTesting(
-    AssistiveWindowController* assistive_window_controller) {
-  assistive_window_controller_.reset(assistive_window_controller);
-}
-
 void InputMethodManagerImpl::SetImeKeyboardForTesting(ImeKeyboard* keyboard) {
   keyboard_.reset(keyboard);
 }

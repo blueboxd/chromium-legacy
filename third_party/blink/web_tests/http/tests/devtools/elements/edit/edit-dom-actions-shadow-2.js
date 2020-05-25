@@ -16,7 +16,7 @@
       function createRootWithContents(id, html)
       {
           var container = document.getElementById(id);
-          var root = container.createShadowRoot();
+          var root = container.attachShadow({mode: 'open'});
           root.innerHTML = html;
       }
 

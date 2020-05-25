@@ -2088,9 +2088,6 @@ extern const char kTerminalSystemAppDescription[];
 extern const char kTerminalSystemAppLegacySettingsName[];
 extern const char kTerminalSystemAppLegacySettingsDescription[];
 
-extern const char kTerminalSystemAppSplitsName[];
-extern const char kTerminalSystemAppSplitsDescription[];
-
 extern const char kTrimOnFreezeName[];
 extern const char kTrimOnFreezeDescription[];
 

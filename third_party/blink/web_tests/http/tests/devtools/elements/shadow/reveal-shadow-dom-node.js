@@ -16,7 +16,7 @@
       var input = document.createElement("input");
       input.id = "nested-input";
       input.value = "test";
-      test1.createShadowRoot().appendChild(input);
+      test1.attachShadow({mode: 'open'}).appendChild(input);
     `);
 
   ElementsTestRunner.firstElementsTreeOutline().addEventListener(

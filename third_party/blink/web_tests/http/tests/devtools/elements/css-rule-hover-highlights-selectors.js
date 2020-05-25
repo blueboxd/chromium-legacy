@@ -35,7 +35,7 @@
       }
 
       var host = document.querySelector("body");
-      var root = host.createShadowRoot();
+      var root = host.attachShadow({mode: 'open'});
       var template = document.querySelector("#dom-template");
       var clone = document.importNode(template.content, true);
       root.appendChild(clone);

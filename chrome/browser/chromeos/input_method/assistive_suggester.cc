@@ -72,6 +72,9 @@ bool AssistiveSuggester::IsActionEnabled(AssistiveType action) {
     case AssistiveType::kPersonalAddress:
     case AssistiveType::kPersonalPhoneNumber:
     case AssistiveType::kPersonalName:
+    case AssistiveType::kPersonalNumber:
+    case AssistiveType::kPersonalFirstName:
+    case AssistiveType::kPersonalLastName:
       // TODO: Use value from settings when crbug/1068457 is done.
       return IsAssistPersonalInfoEnabled();
       break;

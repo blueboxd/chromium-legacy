@@ -17,7 +17,7 @@
       function createShadowRoot()
       {
           var template = document.querySelector('#tmpl');
-          var root = document.querySelector('#host').createShadowRoot();
+          var root = document.querySelector('#host').attachShadow({mode: 'open'});
           root.appendChild(template.content.cloneNode(true));
       }
   `);

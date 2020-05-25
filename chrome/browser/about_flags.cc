@@ -2595,10 +2595,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kTerminalSystemAppLegacySettingsName,
      flag_descriptions::kTerminalSystemAppLegacySettingsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kTerminalSystemAppLegacySettings)},
-    {"terminal-system-app-splits",
-     flag_descriptions::kTerminalSystemAppSplitsName,
-     flag_descriptions::kTerminalSystemAppSplitsDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kTerminalSystemAppSplits)},
 #endif  // OS_CHROMEOS
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
 #if BUILDFLAG(USE_TCMALLOC)

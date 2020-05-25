@@ -120,11 +120,10 @@ void WMHelperChromeOS::OnDragExited() {
 
 int WMHelperChromeOS::OnPerformDrop(const ui::DropTargetEvent& event,
                                     std::unique_ptr<ui::OSExchangeData> data) {
+  int valid_operation = ui::DragDropTypes::DRAG_NONE;
   for (DragDropObserver& observer : drag_drop_observers_)
-    observer.OnPerformDrop(event);
-  // TODO(hirono): Return the correct result instead of always returning
-  // DRAG_MOVE.
-  return ui::DragDropTypes::DRAG_MOVE;
+    valid_operation = valid_operation | observer.OnPerformDrop(event);
+  return valid_operation;
 }
 
 void WMHelperChromeOS::AddVSyncParameterObserver(

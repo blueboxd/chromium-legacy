@@ -3841,10 +3841,6 @@ const char kTerminalSystemAppLegacySettingsName[] =
 const char kTerminalSystemAppLegacySettingsDescription[] =
     "Use the legacy settings page for Terminal System App.";
 
-const char kTerminalSystemAppSplitsName[] = "Terminal System App Splits";
-const char kTerminalSystemAppSplitsDescription[] =
-    "Enables splits for the Terminal System App.";
-
 const char kTetherName[] = "Instant Tethering";
 const char kTetherDescription[] =
     "Enables Instant Tethering. Instant Tethering allows your nearby Google "

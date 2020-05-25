@@ -178,7 +178,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'ec8e0bf6d75a522c3d6d97edd24e7f0b068fe51a',
+  'skia_revision': '0e6d4f1bcfd13807d79917724097160bd852be8b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -301,7 +301,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '65ee6497d620110546181c1dfbd0cc3064f9f7f9',
+  'dawn_revision': '31c9c6949e0224dbeeea566902fb4f7e6c21afde',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@cc548742574760036721de3d29830eb0ad8c724b',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@2c63db0f9a765cdd353bd6bf2ef6294c63933efb',
     'condition': 'checkout_src_internal',
   },
 

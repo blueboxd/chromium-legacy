@@ -34137,6 +34137,9 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="4" label="PERSONAL_NAME"/>
   <int value="5" label="EMOJI"/>
   <int value="6" label="ASSISTIVE_AUTOCORRECT"/>
+  <int value="7" label="PERSONAL_NUMBER"/>
+  <int value="8" label="PERSONAL_FIRST_NAME"/>
+  <int value="9" label="PERSONAL_LAST_NAME"/>
 </enum>
 
 <enum name="IMECommitType">
@@ -39138,7 +39141,6 @@ from previous Chrome versions.
   <int value="-1250965985" label="MediaFeeds:enabled"/>
   <int value="-1250611337" label="ChromeVoxArcSupport:disabled"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
-  <int value="-1247631459" label="TerminalSystemAppSplits:disabled"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1245617305" label="NewProfilePicker:enabled"/>
   <int value="-1244772303" label="NtpRealboxMatchOmniboxTheme:enabled"/>
@@ -41497,7 +41499,6 @@ from previous Chrome versions.
   <int value="1448684258" label="TabHoverCardImages:enabled"/>
   <int value="1449177114"
       label="EnablePasswordsAccountStorageSavingUi:enabled"/>
-  <int value="1452492841" label="TerminalSystemAppSplits:enabled"/>
   <int value="1452546183" label="PwaPersistentNotification:enabled"/>
   <int value="1454006695" label="BlinkHeapUnifiedGarbageCollection:disabled"/>
   <int value="1454143461" label="CaptureThumbnailOnNavigatingAway:disabled"/>

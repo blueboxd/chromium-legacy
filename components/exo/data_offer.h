@@ -79,7 +79,8 @@ class DataOffer final : public ui::PropertyHandler {
   // DataOffer object.
   void SetSourceActions(const base::flat_set<DndAction>& source_actions);
 
-  DndAction dnd_action() { return dnd_action_; }
+  DndAction dnd_action() const { return dnd_action_; }
+  bool finished() const { return finished_; }
 
  private:
   void OnPickledUrlsResolved(const std::string& uri_list_mime_type,
@@ -104,6 +105,7 @@ class DataOffer final : public ui::PropertyHandler {
   DndAction dnd_action_;
   base::ObserverList<DataOfferObserver>::Unchecked observers_;
   Purpose purpose_;
+  bool finished_;
 
   base::WeakPtrFactory<DataOffer> weak_ptr_factory_{this};
 

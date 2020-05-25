@@ -8,7 +8,7 @@
     <div id="inner"></div>
 </div>
 <script>
-var root = host.createShadowRoot();
+var root = host.attachShadow({mode: 'open'});
 root.innerHTML = '<style>::slotted(*) { color: green }</style>';
 getComputedStyle(inner).color;
 </script>

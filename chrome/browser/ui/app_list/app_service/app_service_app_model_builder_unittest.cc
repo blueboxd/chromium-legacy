@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
@@ -153,6 +154,11 @@ class AppServiceAppModelBuilderTest
   AppServiceAppModelBuilderTest& operator=(
       const AppServiceAppModelBuilderTest&) = delete;
 
+  void SetUp() override {
+    AppListTestBase::SetUp();
+    web_app::TestWebAppProvider::Get(testing_profile())->Start();
+  }
+
   void TearDown() override {
     ResetBuilder();
     AppListTestBase::TearDown();
@@ -258,7 +264,7 @@ TEST_P(ExtensionAppTest, HideWebStore) {
               std::string(extension_misc::kEnterpriseWebStoreAppId));
   service_->AddExtension(enterprise_store.get());
 
-  app_service_test_.SetUp(profile_.get());
+  app_service_test_.SetUp(profile());
 
   // Web stores should be present in the model.
   FakeAppListModelUpdater model_updater1;
@@ -431,8 +437,7 @@ TEST_P(ExtensionAppTest, BookmarkApp) {
             GetModelContent(model_updater_.get()));
 }
 
-class CrostiniAppTest : public AppListTestBase,
-                        public ::testing::WithParamInterface<ProviderType> {
+class CrostiniAppTest : public AppServiceAppModelBuilderTest {
  public:
   CrostiniAppTest() {
     if (GetParam() == web_app::ProviderType::kWebApps) {
@@ -450,7 +455,7 @@ class CrostiniAppTest : public AppListTestBase,
   CrostiniAppTest& operator=(const CrostiniAppTest&) = delete;
 
   void SetUp() override {
-    AppListTestBase::SetUp();
+    AppServiceAppModelBuilderTest::SetUp();
     test_helper_ = std::make_unique<CrostiniTestHelper>(testing_profile());
     test_helper_->ReInitializeAppServiceIntegration();
     CreateBuilder();
@@ -683,6 +688,7 @@ class PluginVmAppTest : public ::testing::TestWithParam<ProviderType> {
 
   void SetUp() override {
     testing_profile_ = std::make_unique<TestingProfile>();
+    web_app::TestWebAppProvider::Get(testing_profile_.get())->Start();
     test_helper_ = std::make_unique<PluginVmTestHelper>(testing_profile_.get());
     CreateBuilder();
   }
@@ -759,11 +765,10 @@ TEST_P(PluginVmAppTest, PluginVmEnabled) {
             GetModelContent(model_updater_.get()));
 }
 
-// TODO(crbug.com/1082879): Test with BMO enabled.
-
 INSTANTIATE_TEST_SUITE_P(All,
                          BuiltInAppTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(All,
@@ -773,10 +778,12 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          CrostiniAppTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 INSTANTIATE_TEST_SUITE_P(All,
                          PluginVmAppTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);

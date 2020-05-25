@@ -5,6 +5,7 @@
 import("//build/config/ios/ios_sdk.gni")
 import("//build/config/ios/rules.gni")
 import("//build/config/locales.gni")
+import("//build/mac/tweak_info_plist.gni")
 import("//components/cronet/native/include/headers.gni")
 import("//components/grpc_support/include/headers.gni")
 import("//ios/build/config.gni")
@@ -366,9 +367,13 @@ action("web_view_umbrella_header_old") {
   args += rebase_path(ios_web_view_public_headers, root_build_dir)
 }
 
+tweak_info_plist("info_plist") {
+  info_plists = [ "Info.plist" ]
+}
+
 ios_framework_bundle("web_view") {
   output_name = ios_web_view_output_name
-  info_plist = "Info.plist"
+  info_plist_target = ":info_plist"
 
   public_headers = get_target_outputs(":web_view_umbrella_header_old")
   if (ios_web_view_generate_extra_umbrella_header) {

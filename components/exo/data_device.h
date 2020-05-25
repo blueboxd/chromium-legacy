@@ -91,6 +91,9 @@ class DataDevice : public WMHelper::DragDropObserver,
   std::unique_ptr<ScopedDataOffer> data_offer_;
   std::unique_ptr<ScopedSurface> focused_surface_;
 
+  base::OnceClosure quit_closure_;
+  bool drop_succeeded_;
+
   DISALLOW_COPY_AND_ASSIGN(DataDevice);
 };
 

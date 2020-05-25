@@ -15,7 +15,7 @@
       function createShadowRoot(id)
       {
           var container = document.getElementById("container");
-          var root = container.createShadowRoot();
+          var root = container.attachShadow({mode: 'open'});
           root.innerHTML = "<div id='" + id + "'></div>";
       }
 

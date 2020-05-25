@@ -65,18 +65,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_LINUX) InputMethodAuraLinux
                                                bool is_handled)
       WARN_UNUSED_RESULT;
 
-  // Callback function for IMEEngineHandlerInterface::ProcessKeyEvent().
-  // It recovers the context when the event is being passed to the extension and
-  // call ProcessKeyEventDone() for the following processing. This is necessary
-  // as this method is async. The environment may be changed by other generated
-  // key events by the time the callback is run.
-  void ProcessKeyEventByEngineDone(ui::KeyEvent* event,
-                                   bool filtered,
-                                   bool composition_changed,
-                                   ui::CompositionText* composition,
-                                   base::string16* result_text,
-                                   bool is_handled);
-
   std::unique_ptr<LinuxInputMethodContext> context_;
   std::unique_ptr<LinuxInputMethodContext> context_simple_;
 

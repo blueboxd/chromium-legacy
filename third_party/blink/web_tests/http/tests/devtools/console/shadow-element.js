@@ -12,7 +12,7 @@
   `);
   await TestRunner.evaluateInPagePromise(`
         var host = document.querySelector('#host');
-        var sr = host.createShadowRoot();
+        var sr = host.attachShadow({mode: 'open'});
         sr.innerHTML = "<div><div><div id='shadow'><input id='user-agent-host' type='range'></div></div></div>";
     `);
 

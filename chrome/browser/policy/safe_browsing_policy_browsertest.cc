@@ -25,40 +25,6 @@ using testing::Return;
 
 namespace policy {
 
-// Test that when extended reporting opt-in is disabled by policy, the
-// opt-in checkbox does not appear on SSL blocking pages.
-// Note: SafeBrowsingExtendedReportingOptInAllowed policy is being deprecated.
-IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingOptInAllowed) {
-  net::EmbeddedTestServer https_server_expired(
-      net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server_expired.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
-  https_server_expired.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server_expired.Start());
-
-  // First, navigate to an SSL error page and make sure the checkbox appears by
-  // default.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_FOUND,
-            IsExtendedReportingCheckboxVisibleOnInterstitial());
-
-  // Set the enterprise policy to disallow opt-in.
-  const PrefService* const prefs = browser()->profile()->GetPrefs();
-  EXPECT_TRUE(
-      prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
-  PolicyMap policies;
-  policies.Set(key::kSafeBrowsingExtendedReportingOptInAllowed,
-               POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-               base::WrapUnique(new base::Value(false)), nullptr);
-  UpdateProviderPolicy(policies);
-  EXPECT_FALSE(
-      prefs->GetBoolean(prefs::kSafeBrowsingExtendedReportingOptInAllowed));
-
-  // Navigate to an SSL error page, the checkbox should not appear.
-  ui_test_utils::NavigateToURL(browser(), https_server_expired.GetURL("/"));
-  EXPECT_EQ(security_interstitials::CMD_TEXT_NOT_FOUND,
-            IsExtendedReportingCheckboxVisibleOnInterstitial());
-}
-
 // Test that when extended reporting is managed by policy, the opt-in checkbox
 // does not appear on SSL blocking pages.
 IN_PROC_BROWSER_TEST_F(PolicyTest, SafeBrowsingExtendedReportingPolicyManaged) {

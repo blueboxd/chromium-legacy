@@ -14,7 +14,7 @@
       </div>
     `);
   await TestRunner.evaluateInPagePromise(`
-      var shadowRoot = host.createShadowRoot();
+      var shadowRoot = host.attachShadow({mode: 'open'});
       shadowRoot.innerHTML = "<div></div>";
     `);
   await TestRunner.evaluateInPagePromise(`

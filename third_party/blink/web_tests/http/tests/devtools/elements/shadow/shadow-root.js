@@ -18,7 +18,7 @@
       </div>
     `);
   await TestRunner.evaluateInPagePromise(`
-      test1.createShadowRoot();
+      test1.attachShadow({mode: 'open'});
       test2.attachShadow({ mode: "open" });
       test3.attachShadow({ mode: "closed" });
     `);

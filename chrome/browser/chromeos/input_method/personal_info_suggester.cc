@@ -28,6 +28,9 @@ const char kAssistEmailPrefix[] = "my email is ";
 const char kAssistNamePrefix[] = "my name is ";
 const char kAssistAddressPrefix[] = "my address is ";
 const char kAssistPhoneNumberPrefix[] = "my phone number is ";
+const char kAssistNumberPrefix[] = "my number is ";
+const char kAssistFirstNamePrefix[] = "my first name is ";
+const char kAssistLastNamePrefix[] = "my last name is ";
 const char kAnnounceShowTab[] = "Press tab to insert.";
 
 constexpr base::TimeDelta kTtsShowDelay =
@@ -85,6 +88,18 @@ AssistiveType ProposeAssistiveAction(const base::string16& text) {
   if (base::EndsWith(text, base::UTF8ToUTF16(kAssistPhoneNumberPrefix),
                      base::CompareCase::INSENSITIVE_ASCII)) {
     action = AssistiveType::kPersonalPhoneNumber;
+  }
+  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistNumberPrefix),
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    action = AssistiveType::kPersonalNumber;
+  }
+  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistFirstNamePrefix),
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    action = AssistiveType::kPersonalFirstName;
+  }
+  if (base::EndsWith(text, base::UTF8ToUTF16(kAssistLastNamePrefix),
+                     base::CompareCase::INSENSITIVE_ASCII)) {
+    action = AssistiveType::kPersonalLastName;
   }
   return action;
 }
@@ -193,8 +208,15 @@ base::string16 PersonalInfoSuggester::GetSuggestion(
           autofill::ServerFieldType::ADDRESS_HOME_STREET_ADDRESS);
       break;
     case AssistiveType::kPersonalPhoneNumber:
+    case AssistiveType::kPersonalNumber:
       suggestion = profile->GetRawInfo(
           autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
+      break;
+    case AssistiveType::kPersonalFirstName:
+      suggestion = profile->GetRawInfo(autofill::ServerFieldType::NAME_FIRST);
+      break;
+    case AssistiveType::kPersonalLastName:
+      suggestion = profile->GetRawInfo(autofill::ServerFieldType::NAME_LAST);
       break;
     default:
       NOTREACHED();

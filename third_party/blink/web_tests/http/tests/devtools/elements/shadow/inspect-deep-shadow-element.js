@@ -16,7 +16,7 @@
       </div>
     `);
   await TestRunner.evaluateInPagePromise(`
-          document.querySelector('#host').createShadowRoot().innerHTML = "<div><div><span id='shadow'>Shadow</span></div></div>";
+          document.querySelector('#host').attachShadow({mode: 'open'}).innerHTML = "<div><div><span id='shadow'>Shadow</span></div></div>";
           document.querySelector('#hostOpen').attachShadow({ mode: "open" }).innerHTML = "<div><div><span id='shadow-open'>Shadow</span></div></div>";
     `);
 

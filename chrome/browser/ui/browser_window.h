@@ -82,8 +82,6 @@ namespace web_modal {
 class WebContentsModalDialogHost;
 }
 
-enum class ImeWarningBubblePermissionStatus;
-
 enum class ShowTranslateBubbleResult {
   // The translate bubble was successfully shown.
   SUCCESS,
@@ -470,12 +468,6 @@ class BrowserWindow : public ui::BaseWindow {
 
   // Returns object implementing ExclusiveAccessContext interface.
   virtual ExclusiveAccessContext* GetExclusiveAccessContext() = 0;
-
-  // Shows the IME warning bubble.
-  virtual void ShowImeWarningBubble(
-      const extensions::Extension* extension,
-      const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
-          callback) = 0;
 
   // Shows in-product help for the given feature.
   virtual void ShowInProductHelpPromo(InProductHelpFeature iph_feature) = 0;

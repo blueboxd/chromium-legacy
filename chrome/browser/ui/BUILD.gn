@@ -2396,18 +2396,11 @@ static_library("ui") {
     ]
   }
 
-  if (is_win || is_linux) {
+  if (is_chromeos) {
     sources += [
       "input_method/input_method_engine_base.cc",
       "input_method/input_method_engine_base.h",
     ]
-
-    if (!is_chromeos) {
-      sources += [
-        "input_method/input_method_engine.cc",
-        "input_method/input_method_engine.h",
-      ]
-    }
   }
 
   if (is_mac) {
@@ -3101,8 +3094,6 @@ static_library("ui") {
       "views/hover_button_controller.h",
       "views/hung_renderer_view.cc",
       "views/hung_renderer_view.h",
-      "views/ime/ime_warning_bubble_view.cc",
-      "views/ime/ime_warning_bubble_view.h",
       "views/importer/import_lock_dialog_view.cc",
       "views/importer/import_lock_dialog_view.h",
       "views/infobars/alternate_nav_infobar_view.cc",
@@ -3711,10 +3702,6 @@ static_library("ui") {
       "aura/native_window_tracker_aura.h",
       "aura/tab_contents/web_drag_bookmark_handler_aura.cc",
       "aura/tab_contents/web_drag_bookmark_handler_aura.h",
-      "input_method/ime_native_window.h",
-      "input_method/ime_window.cc",
-      "input_method/ime_window.h",
-      "input_method/ime_window_observer.h",
       "views/accelerator_utils_aura.cc",
       "views/apps/app_window_desktop_native_widget_aura_win.cc",
       "views/apps/app_window_desktop_native_widget_aura_win.h",
@@ -3734,10 +3721,6 @@ static_library("ui") {
       "views/apps/shaped_app_window_targeter.h",
       "views/dropdown_bar_host_aura.cc",
       "views/frame/browser_non_client_frame_view_factory_chromeos.cc",
-      "views/ime/ime_window_frame_view.cc",
-      "views/ime/ime_window_frame_view.h",
-      "views/ime/ime_window_view.cc",
-      "views/ime/ime_window_view.h",
       "views/renderer_context_menu/render_view_context_menu_views.cc",
       "views/renderer_context_menu/render_view_context_menu_views.h",
       "views/tab_contents/chrome_web_contents_view_delegate_views.cc",

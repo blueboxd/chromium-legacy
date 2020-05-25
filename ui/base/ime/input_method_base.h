@@ -134,8 +134,6 @@ class COMPONENT_EXPORT(UI_BASE_IME) InputMethodBase
 
   internal::InputMethodDelegate* delegate() const { return delegate_; }
 
-  static IMEEngineHandlerInterface* GetEngine();
-
  private:
   internal::InputMethodDelegate* delegate_;
 

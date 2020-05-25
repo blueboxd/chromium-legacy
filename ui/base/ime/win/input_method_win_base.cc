@@ -237,21 +237,6 @@ ui::EventDispatchDetails InputMethodWinBase::DispatchKeyEvent(
       !std::iswcntrl(static_cast<wint_t>(char_msgs[0].wParam)))
     event->set_character(static_cast<base::char16>(char_msgs[0].wParam));
 
-  // Dispatches the key events to the Chrome IME extension which is listening to
-  // key events on the following two situations:
-  // 1) |char_msgs| is empty when the event is non-character key.
-  // 2) |char_msgs|.size() == 1 when the event is character key and the WM_CHAR
-  // messages have been combined in the event processing flow.
-  if (char_msgs.size() <= 1 && GetEngine()) {
-    ui::IMEEngineHandlerInterface::KeyEventDoneCallback callback =
-        base::BindOnce(&InputMethodWinBase::ProcessKeyEventDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       base::Owned(new ui::KeyEvent(*event)),
-                       base::Owned(new std::vector<MSG>(char_msgs)));
-    GetEngine()->ProcessKeyEvent(*event, std::move(callback));
-    return ui::EventDispatchDetails();
-  }
-
   return ProcessUnhandledKeyEvent(event, &char_msgs);
 }
 
@@ -506,48 +491,14 @@ ui::EventDispatchDetails InputMethodWinBase::ProcessUnhandledKeyEvent(
   return details;
 }
 
-void InputMethodWinBase::UpdateCompositionBoundsForEngine(
-    const TextInputClient* client) {
-  TextInputType text_input_type = GetTextInputType();
-  if (client == GetTextInputClient() &&
-      text_input_type != TEXT_INPUT_TYPE_NONE &&
-      text_input_type != TEXT_INPUT_TYPE_PASSWORD && GetEngine()) {
-    GetEngine()->SetCompositionBounds(GetCompositionBounds(client));
-  }
-}
-
-void InputMethodWinBase::ResetEngine() {
-  if (GetEngine())
-    GetEngine()->Reset();
-}
-
-void InputMethodWinBase::CancelCompositionForEngine() {
-  TextInputType text_input_type = GetTextInputType();
-  if (text_input_type != TEXT_INPUT_TYPE_NONE &&
-      text_input_type != TEXT_INPUT_TYPE_PASSWORD) {
-    InputMethodWinBase::ResetEngine();
-  }
-}
-
 void InputMethodWinBase::UpdateEngineFocusAndInputContext() {
   if (!ui::IMEBridge::Get())  // IMEBridge could be null for tests.
     return;
 
-  const TextInputType old_text_input_type =
-      ui::IMEBridge::Get()->GetCurrentInputContext().type;
   ui::IMEEngineHandlerInterface::InputContext context(
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
       ui::TextInputClient::FOCUS_REASON_OTHER, GetClientShouldDoLearning());
   ui::IMEBridge::Get()->SetCurrentInputContext(context);
-
-  // Update IME Engine state.
-  ui::IMEEngineHandlerInterface* engine = GetEngine();
-  if (engine) {
-    if (old_text_input_type != ui::TEXT_INPUT_TYPE_NONE)
-      engine->FocusOut();
-    if (GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE)
-      engine->FocusIn(context);
-  }
 }
 
 }  // namespace ui

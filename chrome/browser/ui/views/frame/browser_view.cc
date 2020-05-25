@@ -100,7 +100,6 @@
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
 #include "chrome/browser/ui/views/global_media_controls/media_toolbar_button_view.h"
 #include "chrome/browser/ui/views/hats/hats_bubble_view.h"
-#include "chrome/browser/ui/views/ime/ime_warning_bubble_view.h"
 #include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
@@ -3273,13 +3272,6 @@ void BrowserView::ExecuteExtensionCommand(
 
 ExclusiveAccessContext* BrowserView::GetExclusiveAccessContext() {
   return this;
-}
-
-void BrowserView::ShowImeWarningBubble(
-    const extensions::Extension* extension,
-    const base::Callback<void(ImeWarningBubblePermissionStatus status)>&
-        callback) {
-  ImeWarningBubbleView::ShowBubble(extension, this, callback);
 }
 
 std::string BrowserView::GetWorkspace() const {

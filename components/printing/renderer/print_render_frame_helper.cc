@@ -46,6 +46,7 @@
 #include "printing/printing_features.h"
 #include "printing/units.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/common/css/page_orientation.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_element_type.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_data.h"
@@ -147,6 +148,18 @@ bool IsWebPrintScalingOptionFitToPage(const PrintMsg_Print_Params& params) {
          blink::kWebPrintScalingOptionFitToPrintableArea;
 }
 
+mojom::PageOrientation FromBlinkPageOrientation(
+    blink::PageOrientation orientation) {
+  switch (orientation) {
+    case blink::PageOrientation::kUpright:
+      return printing::mojom::PageOrientation::kUpright;
+    case blink::PageOrientation::kRotateLeft:
+      return printing::mojom::PageOrientation::kRotateLeft;
+    case blink::PageOrientation::kRotateRight:
+      return printing::mojom::PageOrientation::kRotateRight;
+  }
+}
+
 PrintMsg_Print_Params GetCssPrintParams(
     blink::WebLocalFrame* frame,
     int page_index,
@@ -186,6 +199,9 @@ PrintMsg_Print_Params GetCssPrintParams(
     page_css_params = GetCssPrintParams(nullptr, page_index, page_params);
     return page_css_params;
   }
+
+  page_css_params.page_orientation =
+      FromBlinkPageOrientation(description.orientation);
 
   page_css_params.page_size =
       gfx::Size(ConvertUnit(description.size.Width(), kPixelsPerInch, dpi),
@@ -1333,8 +1349,8 @@ void PrintRenderFrameHelper::PrintFrameContent(
   gfx::Size area_size = params->printable_area.size();
   // Since GetVectorCanvasForNewPage() starts a new recording, it will return
   // a valid canvas.
-  cc::PaintCanvas* canvas =
-      metafile.GetVectorCanvasForNewPage(area_size, gfx::Rect(area_size), 1.0f);
+  cc::PaintCanvas* canvas = metafile.GetVectorCanvasForNewPage(
+      area_size, gfx::Rect(area_size), 1.0f, mojom::PageOrientation::kUpright);
   DCHECK(canvas);
 
   canvas->SetPrintingMetafile(&metafile);
@@ -1544,6 +1560,15 @@ PrintRenderFrameHelper::CreatePreviewDocument() {
   while (!print_preview_context_.IsFinalPageRendered()) {
     int page_number = print_preview_context_.GetNextPageNumber();
     DCHECK_GE(page_number, 0);
+
+    blink::WebLocalFrame* frame = print_preview_context_.source_frame();
+    if (frame) {
+      blink::WebPrintPageDescription description;
+      frame->GetPageDescription(page_number, &description);
+      print_pages_params_->params.page_orientation =
+          FromBlinkPageOrientation(description.orientation);
+    }
+
     if (!RenderPreviewPage(page_number))
       return CREATE_FAIL;
 
@@ -2264,7 +2289,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
 #endif
 
   cc::PaintCanvas* canvas = metafile->GetVectorCanvasForNewPage(
-      page_size, canvas_area, final_scale_factor);
+      page_size, canvas_area, final_scale_factor, params.page_orientation);
   if (!canvas)
     return;
 

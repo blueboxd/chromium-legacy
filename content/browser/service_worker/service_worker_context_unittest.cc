@@ -17,8 +17,8 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -1044,17 +1044,16 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
           blink::mojom::ScriptType::kClassic, 1L /* version_id */,
           helper_->context()->AsWeakPtr());
   remote_endpoints.emplace_back();
-  // ServiceWorkrProviderHost creates ServiceWorkerContainerHost for a service
-  // worker execution context.
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host4 =
-      CreateProviderHostForServiceWorkerContext(
-          kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
-          context()->AsWeakPtr(), &remote_endpoints.back());
+  // ServiceWorkerHost creates ServiceWorkerContainerHost for a service worker
+  // execution context.
+  std::unique_ptr<ServiceWorkerHost> worker_host4 = CreateServiceWorkerHost(
+      kRenderProcessId2, true /* is_parent_frame_secure */, version.get(),
+      context()->AsWeakPtr(), &remote_endpoints.back());
 
   ASSERT_TRUE(container_host1);
   ASSERT_TRUE(container_host2);
   ASSERT_TRUE(container_host3);
-  ASSERT_TRUE(provider_host4->container_host());
+  ASSERT_TRUE(worker_host4->container_host());
 
   // Iterate over the client container hosts that belong to kOrigin1.
   std::set<ServiceWorkerContainerHost*> results;
@@ -1069,7 +1068,7 @@ TEST_F(ServiceWorkerContextTest, ContainerHostIterator) {
   EXPECT_TRUE(base::Contains(results, container_host3.get()));
 
   // Iterate over the container hosts that belong to kOrigin2. This should not
-  // include provider_host4->container_host() as it's not for controllee.
+  // include worker_host4->container_host() as it's not for controllee.
   results.clear();
   for (auto it = context()->GetClientContainerHostIterator(
            kOrigin2, true /* include_reserved_clients */,

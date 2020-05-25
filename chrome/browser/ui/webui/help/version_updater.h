@@ -58,6 +58,7 @@ class VersionUpdater {
   // |progress| should only be non-zero for the UPDATING state.
   // |rollback| indicates whether the update is actually a rollback, which
   //     requires wiping the device upon reboot.
+  // |powerwash| indicates whether the device will be wiped on reboot.
   // |version| is the version of the available update and should be empty string
   //     when update is not available.
   // |update_size| is the size of the available update in bytes and should be 0
@@ -66,6 +67,7 @@ class VersionUpdater {
   typedef base::Callback<void(Status status,
                               int progress,
                               bool rollback,
+                              bool powerwash,
                               const std::string& version,
                               int64_t update_size,
                               const base::string16& message)>

@@ -107,7 +107,7 @@ class CrostiniImpl {
 
     // Record UMA.
     const root = this.getRoot_(entry);
-    let suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(root) ||
+    const suffix = CrostiniImpl.VALID_ROOT_TYPES_FOR_SHARE.get(root) ||
         CrostiniImpl.UMA_ROOT_TYPE_OTHER;
     metrics.recordSmallCount(
         'CrostiniSharedPaths.Depth.' + suffix,
@@ -143,7 +143,7 @@ class CrostiniImpl {
 
   /**
    * Handles events for enable/disable, share/unshare.
-   * @param {chrome.fileManagerPrivate.CrostiniEvent} event
+   * @param {!chrome.fileManagerPrivate.CrostiniEvent} event
    * @private
    */
   onCrostiniChanged_(event) {
@@ -156,12 +156,12 @@ class CrostiniImpl {
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.SHARE:
         for (const entry of event.entries) {
-          this.registerSharedPath(event.vmName, entry);
+          this.registerSharedPath(event.vmName, assert(entry));
         }
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.UNSHARE:
         for (const entry of event.entries) {
-          this.unregisterSharedPath(event.vmName, entry);
+          this.unregisterSharedPath(event.vmName, assert(entry));
         }
         break;
     }

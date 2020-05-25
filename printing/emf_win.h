@@ -60,7 +60,8 @@ class PRINTING_EXPORT Emf : public Metafile {
   // ignored.
   void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
-                 float scale_factor) override;
+                 float scale_factor,
+                 mojom::PageOrientation page_orientation) override;
   bool FinishPage() override;
   bool FinishDocument() override;
 

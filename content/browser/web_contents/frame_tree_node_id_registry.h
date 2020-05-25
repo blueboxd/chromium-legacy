@@ -19,8 +19,8 @@ class WebContents;
 
 // A global map of UnguessableToken to FrameTreeNode id. This registry lives and
 // is used only on the thread identified by
-// ServiceWorkerContext::GetCoreThreadId(), as that's the thread the
-// class that adds/removes from this registry is on (ServiceWorkerProviderHost).
+// ServiceWorkerContext::GetCoreThreadId(), as that's the thread the class that
+// adds/removes from this registry is on (ServiceWorkerContainerHost).
 // TODO(crbug.com/824858): Make this live on the UI thread once the service
 // worker core thread moves to the UI thread.
 //

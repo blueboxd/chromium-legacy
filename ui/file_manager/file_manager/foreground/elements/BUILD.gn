@@ -104,9 +104,6 @@ js_library("files_spinner") {
 js_library("files_toast") {
   visibility += [ "//ui/file_manager/gallery/*" ]
   deps = [
-    # TODO(crbug.com/1033660) Remove this line once CL:2144427 follow-up adds
-    # an iron-a11y-announcer deps to the js_library('cr_toast') rule.
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-announcer:iron-a11y-announcer-extracted",
     "//ui/webui/resources/cr_elements/cr_button:cr_button",
     "//ui/webui/resources/cr_elements/cr_toast:cr_toast",
   ]

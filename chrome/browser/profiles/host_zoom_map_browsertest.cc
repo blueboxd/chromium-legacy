@@ -332,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
 
   Profile* parent_profile = browser()->profile();
   Profile* child_profile =
-      static_cast<ProfileImpl*>(parent_profile)->GetOffTheRecordProfile();
+      static_cast<ProfileImpl*>(parent_profile)->GetPrimaryOTRProfile();
   HostZoomMap* parent_zoom_map =
       HostZoomMap::GetDefaultForBrowserContext(parent_profile);
   ASSERT_TRUE(parent_zoom_map);
@@ -377,7 +377,7 @@ IN_PROC_BROWSER_TEST_F(HostZoomMapBrowserTest,
                        ParentDefaultZoomPropagatesToIncognitoChild) {
   Profile* parent_profile = browser()->profile();
   Profile* child_profile =
-      static_cast<ProfileImpl*>(parent_profile)->GetOffTheRecordProfile();
+      static_cast<ProfileImpl*>(parent_profile)->GetPrimaryOTRProfile();
 
   double new_default_zoom_level =
       parent_profile->GetZoomLevelPrefs()->GetDefaultZoomLevelPref() + 1.f;

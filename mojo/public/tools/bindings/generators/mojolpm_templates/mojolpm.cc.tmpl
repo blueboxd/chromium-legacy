@@ -1,0 +1,758 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "{{module.path}}-mojolpm.h"
+
+#include <functional>
+
+#include "base/no_destructor.h"
+#include "base/task/post_task.h"
+#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+
+{% for extra_traits_header in all_extra_traits_headers %}
+#include "{{extra_traits_header}}"
+{%- endfor %}
+
+{%- import "mojolpm_macros.tmpl" as util %}
+{%- import "mojolpm_from_proto_macros.tmpl" as from_proto %}
+{%- import "mojolpm_to_proto_macros.tmpl" as to_proto %}
+{%- import "mojolpm_traits_specialization_macros.tmpl" as traits_specialization %}
+
+namespace mojo {
+{%- for struct in structs %}
+{{- traits_specialization.define_struct(struct) }}
+{%- endfor %}
+
+{%- for union in unions %}
+{{ traits_specialization.define_union(union) }}
+{%- endfor %}
+} // namespace mojo
+
+namespace mojolpm {
+{%- for enum in all_enums %}
+{{- from_proto.define_enum(enum) }}
+{{- to_proto.define_enum(enum) }}
+{%- endfor %}
+
+{%- for struct in structs %}
+{%-   set proto_type = "::mojolpm" ~ (struct|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
+{%-   set struct_type = proto_type ~ "_ProtoStruct" %}
+{%-   for field in struct.fields %}
+{%-       set name = field.name|camel_to_under %}
+{%-       set kind = field.kind %}
+{%-       if kind|is_array_kind or kind|is_map_kind %}
+{{- from_proto.define(struct_type, kind, name) }}
+{{- to_proto.define(struct_type, kind, name) }}
+{%-       endif %}
+{%-   endfor %}
+{{- from_proto.define_struct(struct) }}
+{{- to_proto.define_struct(struct) }}
+{%- endfor %}
+
+{%- for union in unions %}
+{%-   set proto_type = "::mojolpm" ~ (union|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
+{%-   set union_type = proto_type ~ "_ProtoUnion" %}
+{%-     for field in union.fields %}
+{%-       set name = field.name|camel_to_under %}
+{%-       set kind = field.kind %}
+{%-       if kind|is_array_kind or kind|is_map_kind %}
+{{- from_proto.define(union_type, kind, name)}}
+{{- to_proto.define(union_type, kind, name)}}
+{%-       endif %}
+{%-     endfor %}
+{{- from_proto.define_union(union) }}
+{{- to_proto.define_union(union) }}
+{%- endfor %}
+
+{%- for interface in interfaces %}
+{%-   set mojom_type = interface|get_qualified_name_for_kind(flatten_nested_kind=True) %}
+{%-   set proto_type = "::mojolpm" ~ (interface|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
+class {{interface.name}}Impl : public {{mojom_type}} {
+  ::mojo::BindingSet<{{mojom_type}}> bindings_;
+  ::mojo::AssociatedBindingSet<{{mojom_type}}> associated_bindings_;
+
+ public:
+  {{interface.name}}Impl() {
+  }
+
+  void Bind({{mojom_type}}Request&& request) {
+    DCHECK(mojolpm::GetContext()->task_runner()->RunsTasksInCurrentSequence());
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+  void Bind({{mojom_type}}AssociatedRequest&& request) {
+    DCHECK(mojolpm::GetContext()->task_runner()->RunsTasksInCurrentSequence());
+    associated_bindings_.AddBinding(this, std::move(request));
+  }
+
+{%-   for method in interface.methods -%}{{"\n"}}
+  void {{method.name}}({{ "\n" }}
+{%-     for param in method.parameters -%}
+{%-       set name = param.name|camel_to_under -%}
+{%-       set kind = param.kind -%}
+{%-       set param_mojom_type = kind|cpp_wrapper_param_type(add_same_module_namespaces=true) -%}
+{{ ",\n" if not loop.first }}      {{param_mojom_type}} {{name}}
+{%-     endfor -%}
+{%-     if method.response_parameters != None -%}
+{{ ",\n" if method.parameters }}    {{mojom_type}}::{{method.name}}Callback callback
+{%-     endif -%}
+) override {
+{%-     for param in method.parameters -%}
+{%-       set name = param.name|camel_to_under -%}
+{%-       set kind = param.kind -%}
+{{ util.add_instance(kind, name, False)|indent(2, True) }}
+{%-     endfor %}
+    mojolpmdbg("{{interface.name}}Impl.{{method.name}}\n");
+    mojolpm::GetContext()->NextAction();
+  }
+{%-   endfor %}
+};
+
+bool FromProto(const {{proto_type}}::Ptr& input,
+               {{mojom_type}}PtrInfo& output) {
+  bool result = false;
+  std::unique_ptr<{{mojom_type}}Ptr> output_ptr = nullptr;
+
+  if (input.id()) {
+    output_ptr = mojolpm::GetContext()->GetAndRemoveInstance<{{mojom_type}}Ptr>(input.id());
+  } else {
+    output_ptr = NewInstance<{{mojom_type}}>();
+  }
+
+  if (output_ptr) {
+    // NB: PassInterface is allowed, since output_ptr is bound on this sequence
+    // (the fuzzer sequence)
+    output = output_ptr.release()->PassInterface();
+    result = true;
+  } else {
+    // we otherwise create a local instance
+    ::mojo::InterfacePtr<{{mojom_type}}> ptr;
+    ::mojo::InterfaceRequest<{{mojom_type}}> request = ::mojo::MakeRequest(&ptr);
+    auto impl = std::make_unique<{{interface.name}}Impl>();
+    impl->Bind(std::move(request));
+    mojolpm::GetContext()->AddInstance(std::move(impl));
+    output = ptr.PassInterface();
+    result = true;
+  }
+
+  return result;
+}
+
+bool FromProto(const {{proto_type}}::AssociatedPtr& input,
+               {{mojom_type}}AssociatedPtrInfo& output) {
+  bool result = false;
+  std::unique_ptr<{{mojom_type}}AssociatedPtr> output_ptr;
+
+  if (input.id()) {
+    output_ptr = mojolpm::GetContext()->GetAndRemoveInstance<{{mojom_type}}AssociatedPtr>(input.id());
+  } else {
+    output_ptr = NewAssociatedInstance<{{mojom_type}}>();
+  }
+
+  if (output_ptr) {
+    // NB: PassInterface is allowed, since output_ptr is bound on this sequence
+    // (the fuzzer sequence)
+    output = output_ptr.release()->PassInterface();
+    result = true;
+  } else {
+    // we otherwise create a local instance
+    ::mojo::AssociatedInterfacePtr<{{mojom_type}}> ptr;
+    ::mojo::AssociatedInterfaceRequest<{{mojom_type}}> request = ::mojo::MakeRequest(&ptr);
+    auto impl = std::make_unique<{{interface.name}}Impl>();
+    impl->Bind(std::move(request));
+    mojolpm::GetContext()->AddInstance(std::move(impl));
+    output = ptr.PassInterface();
+    result = true;
+  }
+
+  return result;
+}
+
+bool FromProto(const {{proto_type}}::Request& input,
+               {{mojom_type}}Request& output) {
+  {{mojom_type}}Ptr ptr;
+
+  output = ::mojo::MakeRequest(&ptr);
+  mojolpm::GetContext()->AddInstance(input.id(), std::move(ptr));
+
+  return true;
+}
+
+bool FromProto(const {{proto_type}}::AssociatedRequest& input,
+               {{mojom_type}}AssociatedRequest& output) {
+  {{mojom_type}}AssociatedPtr ptr;
+
+  output = ::mojo::MakeRequest(&ptr);
+  mojolpm::GetContext()->AddInstance(input.id(), std::move(ptr));
+
+  return true;
+}
+
+bool ToProto({{mojom_type}}PtrInfo&& input,
+             {{proto_type}}::Ptr& output) {
+  bool result = false;
+
+  // NB: Not implementing this at present as it only has limited applicability,
+  // and the corresponding types are being deprecated. If your target needs this
+  // to fuzz effectively, consider porting to the new mojo types.
+  NOTREACHED();
+
+  return result;
+}
+
+bool ToProto({{mojom_type}}Ptr&& input,
+             {{proto_type}}::Ptr& output) {
+  bool result = false;
+
+  // NB: Not implementing this at present as it only has limited applicability,
+  // and the corresponding types are being deprecated. If your target needs this
+  // to fuzz effectively, consider porting to the new mojo types.
+  CHECK(false);
+
+  return result;
+}
+
+bool ToProto({{mojom_type}}AssociatedPtrInfo&& input,
+             {{proto_type}}::AssociatedPtr& output) {
+  bool result = false;
+
+  // NB: Not implementing this at present as it only has limited applicability,
+  // and the corresponding types are being deprecated. If your target needs this
+  // to fuzz effectively, consider porting to the new mojo types.
+  CHECK(false);
+
+  return result;
+}
+
+bool ToProto({{mojom_type}}Request&& input,
+             {{proto_type}}::Request& output) {
+  bool result = false;
+
+  // NB: Not implementing this at present as it only has limited applicability,
+  // and the corresponding types are being deprecated. If your target needs this
+  // to fuzz effectively, consider porting to the new mojo types.
+  CHECK(false);
+
+  return result;
+}
+
+bool ToProto({{mojom_type}}AssociatedRequest&& input,
+             {{proto_type}}::AssociatedRequest& output) {
+  bool result = false;
+
+  // NB: Not implementing this at present as it only has limited applicability,
+  // and the corresponding types are being deprecated. If your target needs this
+  // to fuzz effectively, consider porting to the new mojo types.
+  CHECK(false);
+
+  return result;
+}
+
+bool FromProto(const {{proto_type}}::PendingRemote& input,
+               ::mojo::PendingRemote<{{mojom_type}}>& output) {
+  bool result = false;
+  ::mojo::Remote<{{mojom_type}}>* output_ptr = nullptr;
+
+  if (input.id()) {
+    output_ptr = mojolpm::GetContext()->GetInstance<::mojo::Remote<{{mojom_type}}>>(input.id());
+    if (output_ptr) {
+      // TODO(markbrand): look for a cleaner way to handle this check.
+      if (output_ptr->internal_state()
+          && output_ptr->internal_state()->has_pending_callbacks()) {
+        // not safe to Unbind, so fail instead.
+        output_ptr = nullptr;
+      } else {
+        output = output_ptr->Unbind();
+        result = true;
+      }
+    }
+  } else {
+    auto impl = std::make_unique<{{interface.name}}Impl>();
+    auto receiver_ptr = std::make_unique<::mojo::Receiver<{{mojom_type}}>>(impl.get());
+    output = receiver_ptr->BindNewPipeAndPassRemote();
+    mojolpm::GetContext()->AddInstance(std::move(impl));
+    mojolpm::GetContext()->AddInstance(input.id(), std::move(receiver_ptr));
+    result = true;
+  }
+
+  return result;
+}
+
+bool ToProto(::mojo::PendingRemote<{{mojom_type}}>&& input,
+             {{proto_type}}::PendingRemote& output) {
+  bool result = false;
+
+  ::mojo::Remote<{{mojom_type}}> remote(std::move(input));
+  int next_id = NextId<{{mojom_type}}>();
+  output.set_id(AddRemote<{{mojom_type}}>(next_id, std::move(remote)));
+
+  return result;
+}
+
+bool FromProto(const {{proto_type}}::PendingReceiver& input,
+               ::mojo::PendingReceiver<{{mojom_type}}>& output) {
+  ::mojo::Remote<{{mojom_type}}> remote = ::mojo::Remote<{{mojom_type}}>();
+
+  output = remote.BindNewPipeAndPassReceiver();
+
+  mojolpm::GetContext()->task_runner()->PostTask(
+    FROM_HERE,
+    base::BindOnce(
+      base::IgnoreResult(&AddRemote<{{mojom_type}}>),
+      input.id(),
+      std::move(remote)));
+
+  return true;
+}
+
+bool ToProto(::mojo::PendingReceiver<{{mojom_type}}>&& input,
+             {{proto_type}}::PendingReceiver& output) {
+  bool result = true;
+
+  // This should only get called from callbacks into the fuzzer, ie from one of
+  // the XxxImpls or from a return callback. Since that is the case, we want to
+  // bind the receiver and store it.
+
+  auto impl = std::make_unique<{{interface.name}}Impl>();
+  auto receiver = std::make_unique<::mojo::Receiver<{{mojom_type}}>>(
+    impl.get(), std::move(input));
+  mojolpm::GetContext()->AddInstance(std::move(impl));
+  output.set_id(mojolpm::GetContext()->AddInstance(std::move(receiver)));
+
+  return result;
+}
+
+bool FromProto(const {{proto_type}}::PendingAssociatedRemote& input,
+               ::mojo::PendingAssociatedRemote<{{mojom_type}}>& output) {
+  mojolpmdbg("PendingAssociatedRemote {{interface.name}}\n");
+  bool result = false;
+  ::mojo::AssociatedRemote<{{mojom_type}}>* output_ptr;
+
+  if (input.id()) {
+    output_ptr = mojolpm::GetContext()->GetInstance<::mojo::AssociatedRemote<{{mojom_type}}>>(input.id());
+    if (output_ptr) {
+      // TODO(markbrand): look for a cleaner way to handle this check.
+      if (output_ptr->internal_state()
+          && output_ptr->internal_state()->has_pending_callbacks()) {
+        // not safe to Unbind, so fail instead.
+        output_ptr = nullptr;
+      } else {
+        output = output_ptr->Unbind();
+        result = true;
+      }
+    }
+  } else {
+    auto impl = std::make_unique<{{interface.name}}Impl>();
+    auto receiver = std::make_unique<::mojo::AssociatedReceiver<{{mojom_type}}>>(impl.get());
+    output = receiver->BindNewEndpointAndPassRemote();
+    mojolpm::GetContext()->AddInstance(std::move(impl));
+    mojolpm::GetContext()->AddInstance(input.id(), std::move(receiver));
+    result = true;
+  }
+
+  return result;
+}
+
+bool ToProto(::mojo::PendingAssociatedRemote<{{mojom_type}}>&& input,
+             {{proto_type}}::PendingAssociatedRemote& output) {
+  bool result = true;
+
+  ::mojo::AssociatedRemote<{{mojom_type}}> remote(std::move(input));
+  int next_id = NextId<{{mojom_type}}>();
+  output.set_id(AddAssociatedRemote(next_id, std::move(remote)));
+
+  return result;
+}
+
+bool FromProto(const {{proto_type}}::PendingAssociatedReceiver& input,
+               ::mojo::PendingAssociatedReceiver<{{mojom_type}}>& output) {
+  mojolpmdbg("PendingAssociatedReceiver {{interface.name}}\n");
+  ::mojo::AssociatedRemote<{{mojom_type}}> remote = ::mojo::AssociatedRemote<{{mojom_type}}>();
+  output = remote.BindNewEndpointAndPassReceiver();
+
+  mojolpm::GetContext()->task_runner()->PostTask(
+    FROM_HERE,
+    base::BindOnce(
+      base::IgnoreResult(&AddAssociatedRemote<{{mojom_type}}>),
+      input.id(),
+      std::move(remote)));
+
+  return true;
+}
+
+bool ToProto(::mojo::PendingAssociatedReceiver<{{mojom_type}}>&& input,
+             {{proto_type}}::PendingAssociatedReceiver& output) {
+  bool result = true;
+
+  // This should only get called from callbacks into the fuzzer, ie from one of
+  // the XxxImpls or from a return callback. Since that is the case, we want to
+  // bind the receiver and store it.
+
+  auto impl = std::make_unique<{{interface.name}}Impl>();
+  auto receiver = std::make_unique<::mojo::AssociatedReceiver<{{mojom_type}}>>(
+    impl.get(), std::move(input));
+  mojolpm::GetContext()->AddInstance(std::move(impl));
+  output.set_id(mojolpm::GetContext()->AddInstance(std::move(receiver)));
+
+  return result;
+}{{"\n"-}}
+
+{%-   for method in interface.methods %}
+{%-     set method_type = proto_type ~ "::" ~ interface.name ~ "_" ~ method.name %}
+{%-     for param in method.parameters %}
+{%-       set name = param.name|camel_to_under %}
+{%-       set kind = param.kind %}
+{%-       if kind|is_array_kind or kind|is_map_kind -%}
+{{ from_proto.define(method_type, kind, name) }}
+{{ to_proto.define(method_type, kind, name) }}
+{%-       endif %}
+{%-     endfor %}
+{%-   endfor %}
+{%- endfor %}
+
+{%- for interface in interfaces %}
+{%-   set mojom_type = interface|get_qualified_name_for_kind(flatten_nested_kind=True) %}
+{%-   set proto_type = "::mojolpm" ~ (interface|get_qualified_name_for_kind(flatten_nested_kind=True)) %}
+{%-   if interface.methods %}
+bool HandleMethodCall(const {{proto_type}}::MethodCall& input) {
+  bool result = false;
+
+  //mojolpmdbg("HandleMethodCall({{interface.name}})\n");
+
+  {{mojom_type}}Ptr* instance_ptr;
+  instance_ptr = mojolpm::GetContext()->GetInstance<{{mojom_type}}Ptr>(input.ptr().id());
+
+  if (instance_ptr && *instance_ptr) {
+    result = true;
+  }
+
+  if (result) {
+    switch (input.method_case()) {
+{%-     for method in interface.methods %}
+      case {{proto_type}}::MethodCall::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
+        result = HandleMethodCall(*instance_ptr, input.{{("m" ~ method.name)|camel_to_under}}());
+      } break;
+{%-     endfor %}
+case {{proto_type}}::MethodCall::kReset: {
+        mojolpm::GetContext()->GetAndRemoveInstance<{{mojom_type}}Ptr>(input.ptr().id());
+      } break;
+      default: {
+        result = false;
+      }
+    }
+  }
+
+  return result;
+}
+
+bool HandleMethodCallA(const {{proto_type}}::MethodCallA& input) {
+  bool result = false;
+
+  //mojolpmdbg("HandleMethodCall({{interface.name}})\n");
+
+  {{mojom_type}}AssociatedPtr* instance_ptr;
+  instance_ptr = mojolpm::GetContext()->GetInstance<{{mojom_type}}AssociatedPtr>(input.ptr().id());
+
+  if (instance_ptr && instance_ptr->is_bound() && *instance_ptr) {
+    result = true;
+  }
+
+  if (result) {
+    switch (input.method_case()) {
+{%-     for method in interface.methods %}
+      case {{proto_type}}::MethodCallA::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
+        result = HandleMethodCallA(*instance_ptr, input.{{("m" ~ method.name)|camel_to_under}}());
+      } break;
+{%-     endfor %}
+      case {{proto_type}}::MethodCallA::kReset: {
+        mojolpm::GetContext()->GetAndRemoveInstance<{{mojom_type}}AssociatedPtr>(input.ptr().id());
+      } break;
+
+      default: {
+        result = false;
+      }
+    }
+  }
+
+  return result;
+}
+
+bool HandleRemoteMethodCall(const {{proto_type}}::RemoteMethodCall& input) {
+  bool result = false;
+
+  ::mojo::Remote<{{mojom_type}}>* instance_ptr;
+  instance_ptr = mojolpm::GetContext()->GetInstance<::mojo::Remote<{{mojom_type}}>>(input.remote().id());
+
+  if (instance_ptr && *instance_ptr && instance_ptr->is_bound()) {
+    result = true;
+  }
+
+  if (result) {
+    switch (input.method_case()) {
+{%-     for method in interface.methods %}
+      case {{proto_type}}::RemoteMethodCall::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
+        result = HandleRemoteMethodCall(*instance_ptr, input.{{("m" ~ method.name)|camel_to_under}}());
+      } break;
+{%-     endfor %}
+case {{proto_type}}::RemoteMethodCall::kReset: {
+        mojolpm::GetContext()->GetAndRemoveInstance<::mojo::Remote<{{mojom_type}}>>(input.remote().id());
+      } break;
+      default: {
+        result = false;
+      }
+    }
+  }
+
+  return result;
+}
+
+bool HandleAssociatedRemoteMethodCall(const {{proto_type}}::AssociatedRemoteMethodCall& input) {
+  bool result = false;
+
+  ::mojo::AssociatedRemote<{{mojom_type}}>* instance_ptr;
+  instance_ptr = mojolpm::GetContext()->GetInstance<::mojo::AssociatedRemote<{{mojom_type}}>>(input.remote().id());
+
+  if (instance_ptr && *instance_ptr && instance_ptr->is_bound()) {
+    result = true;
+  }
+
+  if (result) {
+    switch (input.method_case()) {
+{%-     for method in interface.methods %}
+      case {{proto_type}}::AssociatedRemoteMethodCall::k{{("m_" ~ method.name)|under_to_camel(digits_split=True)}}: {
+        result = HandleAssociatedRemoteMethodCall(*instance_ptr, input.{{("m" ~ method.name)|camel_to_under}}());
+      } break;
+{%-     endfor %}
+      case {{proto_type}}::AssociatedRemoteMethodCall::kReset: {
+        mojolpm::GetContext()->GetAndRemoveInstance<::mojo::AssociatedRemote<{{mojom_type}}>>(input.remote().id());
+      } break;
+
+      default: {
+        result = false;
+      }
+    }
+  }
+
+  return result;
+}{{"\n"-}}
+{%-     for method in interface.methods %}
+{%-       if method.response_parameters != None %}
+static void {{interface.name}}_{{method.name}}Callback(
+{%-         for param in method.response_parameters %}
+{%-           set name = param.name|camel_to_under %}
+{%-           set kind = param.kind %}
+{%-           set param_mojom_type = kind|cpp_wrapper_param_type(add_same_module_namespaces=true) %}{{ ',' if not loop.first }}
+  {{param_mojom_type}} param_{{name}}
+{%-         endfor -%}
+) {
+{%-         for param in method.response_parameters %}
+{%-           set name = param.name|camel_to_under %}
+{%-           set kind = param.kind %}
+{{ util.add_instance(kind, 'param_' ~ name, False) }}
+{%-         endfor %}
+  mojolpmdbg("{{interface.name}}.{{method.name}}Callback\n");
+  mojolpm::GetContext()->NextAction();
+}{{"\n"-}}
+{%-       endif %}
+bool HandleMethodCall({{mojom_type}}Ptr& instance,
+                      const {{proto_type}}::{{interface.name}}_{{method.name}}& input) {
+  bool mojolpm_result = true;
+  mojolpmdbg("HandleMethodCall({{interface.name}}::{{method.name}})\n");
+{%-       for param in method.parameters %}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         set param_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true) %}
+{%-         set param_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=True) %}
+  {{param_mojom_type}} local_{{name}};
+{%-         if kind|is_nullable_kind %}
+  {{param_maybe_mojom_type}} local_maybe_{{name}};
+{%-         endif %}
+{%-       endfor %}
+
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if not kind|is_nullable_kind %}
+  mojolpm_result &= FromProto(input.m_{{name}}(), local_{{name}});
+  mojolpmdbg("{{name}} %i\n", mojolpm_result);
+{%-         else %}
+  if (FromProto(input.m_{{name}}(), local_maybe_{{name}})) {
+    local_{{name}} = std::move(local_maybe_{{name}});
+  }
+{%-         endif %}
+{%-       endfor %}
+  if (mojolpm_result) {
+    instance->{{method.name}}(
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if kind|is_interface_kind or kind|is_associated_kind %}
+      {{kind|cpp_wrapper_param_type(add_same_module_namespaces=true)}}(std::move(local_{{name}})){{ ',' if not loop.last }}
+{%-         else %}
+      std::move(local_{{name}}){{ ',' if not loop.last }}
+{%-         endif %}
+{%-       endfor -%}
+{%-       if method.response_parameters != None -%}
+{{ ',' if method.parameters }}
+      base::BindOnce(&{{interface.name}}_{{method.name}}Callback));
+  }
+{%-       else -%}
+);
+  }
+{%-       endif %}
+  return mojolpm_result;
+}
+
+bool HandleMethodCallA({{mojom_type}}AssociatedPtr& instance,
+                       const {{proto_type}}::{{interface.name}}_{{method.name}}& input) {
+  bool mojolpm_result = true;
+  mojolpmdbg("HandleMethodCallA({{interface.name}}::{{method.name}})\n");
+{%-       for param in method.parameters %}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         set param_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true) %}
+{%-         set param_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=True) %}
+  {{param_mojom_type}} local_{{name}};
+{%-         if kind|is_nullable_kind %}
+  {{param_maybe_mojom_type}} local_maybe_{{name}};
+{%-         endif %}
+{%-       endfor %}
+
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if not kind|is_nullable_kind %}
+  mojolpm_result &= FromProto(input.m_{{name}}(), local_{{name}});
+{%-         else %}
+  if (FromProto(input.m_{{name}}(), local_maybe_{{name}})) {
+    local_{{name}} = std::move(local_maybe_{{name}});
+  }
+{%-         endif %}
+{%-       endfor %}
+  if (mojolpm_result) {
+    instance->{{method.name}}(
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if kind|is_interface_kind or kind|is_associated_kind %}
+      {{kind|cpp_wrapper_param_type(add_same_module_namespaces=true)}}(std::move(local_{{name}})){{ ',' if not loop.last }}
+{%-         else %}
+      std::move(local_{{name}}){{ ',' if not loop.last }}
+{%-         endif %}
+{%-       endfor -%}
+{%-       if method.response_parameters != None -%}
+{{ ',' if method.parameters }}
+      base::BindOnce(&{{interface.name}}_{{method.name}}Callback));
+  }
+{%-       else -%}
+);
+  }
+{%-       endif %}
+  return mojolpm_result;
+}
+bool HandleRemoteMethodCall(::mojo::Remote<{{mojom_type}}>& instance,
+                            const {{proto_type}}::{{interface.name}}_{{method.name}}& input) {
+  bool mojolpm_result = true;
+  mojolpmdbg("HandleRemoteMethodCall({{interface.name}}::{{method.name}})\n");
+{%-       for param in method.parameters %}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         set param_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true) %}
+{%-         set param_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=True) %}
+  {{param_mojom_type}} local_{{name}};
+{%-         if kind|is_nullable_kind %}
+  {{param_maybe_mojom_type}} local_maybe_{{name}};
+{%-         endif %}
+{%-       endfor %}
+
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if not kind|is_nullable_kind %}
+  mojolpm_result &= FromProto(input.m_{{name}}(), local_{{name}});
+{%-         else %}
+  if (FromProto(input.m_{{name}}(), local_maybe_{{name}})) {
+    local_{{name}} = std::move(local_maybe_{{name}});
+  }
+{%-         endif %}
+{%-       endfor %}
+  if (mojolpm_result) {
+    instance->{{method.name}}(
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if kind|is_interface_kind or kind|is_associated_kind %}
+      {{kind|cpp_wrapper_param_type(add_same_module_namespaces=true)}}(std::move(local_{{name}})){{ ',' if not loop.last }}
+{%-         else %}
+      std::move(local_{{name}}){{ ',' if not loop.last }}
+{%-         endif %}
+{%-       endfor -%}
+{%-       if method.response_parameters != None -%}
+{{ ',' if method.parameters }}
+      base::BindOnce(&{{interface.name}}_{{method.name}}Callback));
+  } else {
+    mojolpmdbg("call failed\n");
+  }
+{%-       else -%}
+);
+  }
+{%-       endif %}
+  return mojolpm_result;
+}
+
+bool HandleAssociatedRemoteMethodCall(
+  ::mojo::AssociatedRemote<{{mojom_type}}>& instance,
+  const {{proto_type}}::{{interface.name}}_{{method.name}}& input) {
+  bool mojolpm_result = true;
+  mojolpmdbg("HandleAssociatedRemoteMethodCall({{interface.name}}::{{method.name}})\n");
+{%-       for param in method.parameters %}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         set param_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true) %}
+{%-         set param_maybe_mojom_type = kind|cpp_wrapper_type(add_same_module_namespaces=true, ignore_nullable=True) %}
+  {{param_mojom_type}} local_{{name}};
+{%-         if kind|is_nullable_kind %}
+  {{param_maybe_mojom_type}} local_maybe_{{name}};
+{%-         endif %}
+{%-       endfor %}
+
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if not kind|is_nullable_kind %}
+  mojolpm_result &= FromProto(input.m_{{name}}(), local_{{name}});
+{%-         else %}
+  if (FromProto(input.m_{{name}}(), local_maybe_{{name}})) {
+    local_{{name}} = std::move(local_maybe_{{name}});
+  }
+{%-         endif %}
+{%-       endfor %}
+  if (mojolpm_result) {
+    instance->{{method.name}}(
+{%-       for param in method.parameters -%}
+{%-         set name = param.name|camel_to_under %}
+{%-         set kind = param.kind %}
+{%-         if kind|is_interface_kind or kind|is_associated_kind %}
+      {{kind|cpp_wrapper_param_type(add_same_module_namespaces=true)}}(std::move(local_{{name}})){{ ',' if not loop.last }}
+{%-         else %}
+      std::move(local_{{name}}){{ ',' if not loop.last }}
+{%-         endif %}
+{%-       endfor -%}
+{%-       if method.response_parameters != None -%}
+{{ ',' if method.parameters }}
+      base::BindOnce(&{{interface.name}}_{{method.name}}Callback));
+  }
+{%-       else -%}
+);
+  } else {
+    mojolpmdbg("call failed\n");
+  }
+{%-       endif %}
+  return mojolpm_result;
+}{{"\n"-}}
+{%-     endfor %}
+{%-   endif %}
+{%- endfor -%}
+}  // namespace mojolpm

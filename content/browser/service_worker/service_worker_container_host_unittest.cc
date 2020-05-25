@@ -19,7 +19,7 @@
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
@@ -687,11 +687,10 @@ TEST_F(ServiceWorkerContainerHostTest, AllowsServiceWorker) {
   registration1_->SetActiveVersion(version);
 
   ServiceWorkerRemoteContainerEndpoint remote_endpoint;
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host =
-      CreateProviderHostForServiceWorkerContext(
-          helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
-          version.get(), helper_->context()->AsWeakPtr(), &remote_endpoint);
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  std::unique_ptr<ServiceWorkerHost> worker_host = CreateServiceWorkerHost(
+      helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
+      version.get(), helper_->context()->AsWeakPtr(), &remote_endpoint);
+  ServiceWorkerContainerHost* container_host = worker_host->container_host();
 
   ServiceWorkerTestContentBrowserClient test_browser_client;
   ContentBrowserClient* old_browser_client =
@@ -1133,7 +1132,7 @@ class ServiceWorkerContainerHostTestWithBackForwardCache
 // exposed via the Clients API.
 void ServiceWorkerContainerHostTest::TestBackForwardCachedClientsAreNotExposed(
     const GURL& url) {
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host;
+  std::unique_ptr<ServiceWorkerHost> worker_host;
   {
     // Create an active version.
     scoped_refptr<ServiceWorkerVersion> version =
@@ -1143,10 +1142,10 @@ void ServiceWorkerContainerHostTest::TestBackForwardCachedClientsAreNotExposed(
     registration1_->SetActiveVersion(version);
 
     ServiceWorkerRemoteContainerEndpoint remote_endpoint;
-    provider_host = CreateProviderHostForServiceWorkerContext(
+    worker_host = CreateServiceWorkerHost(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         version.get(), helper_->context()->AsWeakPtr(), &remote_endpoint);
-    ASSERT_TRUE(provider_host);
+    ASSERT_TRUE(worker_host);
   }
   {
     std::unique_ptr<ServiceWorkerContainerHostAndInfo> host_and_info =

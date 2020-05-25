@@ -10,5 +10,6 @@ TestVersionUpdater::~TestVersionUpdater() = default;
 
 void TestVersionUpdater::CheckForUpdate(const StatusCallback& callback,
                                         const PromoteCallback&) {
-  callback.Run(status_, progress_, rollback_, version_, update_size_, message_);
+  callback.Run(status_, progress_, rollback_, powerwash_, version_,
+               update_size_, message_);
 }

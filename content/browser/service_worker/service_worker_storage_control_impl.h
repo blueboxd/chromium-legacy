@@ -10,6 +10,7 @@
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace content {
 
@@ -31,6 +32,13 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       const ServiceWorkerStorageControlImpl&) = delete;
 
   ~ServiceWorkerStorageControlImpl() override;
+
+  // TODO(crbug.com/1055677): Remove this accessor after all
+  // ServiceWorkerStorage method calls are replaced with mojo methods.
+  ServiceWorkerStorage* storage() const { return storage_.get(); }
+
+  void Bind(mojo::PendingReceiver<storage::mojom::ServiceWorkerStorageControl>
+                receiver);
 
   void LazyInitializeForTest();
 
@@ -124,6 +132,8 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
           policy_updates) override;
 
   const std::unique_ptr<ServiceWorkerStorage> storage_;
+
+  mojo::ReceiverSet<storage::mojom::ServiceWorkerStorageControl> receivers_;
 };
 
 }  // namespace content

@@ -15,7 +15,6 @@ namespace blink {
 
 class LayoutObject;
 class ShapeResultView;
-struct NGInlineItemResult;
 
 class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
   STACK_ALLOCATED();
@@ -30,8 +29,10 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
 
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(const String& text_content,
-               NGInlineItemResult*,
-               LayoutUnit line_height);
+               const NGInlineItem& inline_item,
+               scoped_refptr<const ShapeResultView> shape_result,
+               const NGTextOffset& text_offset,
+               const LogicalSize& size);
 
   // Set text for generated text, e.g. hyphen and ellipsis.
   void SetText(LayoutObject*,
@@ -45,8 +46,7 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
 
  private:
   String text_;
-  unsigned start_offset_;
-  unsigned end_offset_;
+  NGTextOffset text_offset_;
   scoped_refptr<const ShapeResultView> shape_result_;
 
   NGTextType text_type_ = NGTextType::kNormal;

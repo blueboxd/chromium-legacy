@@ -10,8 +10,6 @@
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/trees/layer_tree_host.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/network/public/mojom/referrer_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_gesture_device.h"
@@ -25,6 +23,9 @@
 #include "third_party/blink/renderer/platform/graphics/apply_viewport_changes.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/widget/frame_widget.h"
@@ -34,7 +35,7 @@
 namespace gfx {
 class Point;
 class PointF;
-}
+}  // namespace gfx
 
 namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
@@ -310,8 +311,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // the page is shutting down, but will be valid at all other times.
   Page* GetPage() const;
 
-  const mojo::AssociatedRemote<mojom::blink::FrameWidgetHost>&
-  GetAssociatedFrameWidgetHost() const;
+  mojom::blink::FrameWidgetHost* GetAssociatedFrameWidgetHost() const;
 
   // Helper function to process events while pointer locked.
   void PointerLockMouseEvent(const WebCoalescedInputEvent&);
@@ -372,8 +372,15 @@ class CORE_EXPORT WebFrameWidgetBase
   std::unique_ptr<TaskRunnerTimer<WebFrameWidgetBase>>
       request_animation_after_delay_timer_;
 
-  mojo::AssociatedRemote<mojom::blink::FrameWidgetHost> frame_widget_host_;
-  mojo::AssociatedReceiver<mojom::blink::FrameWidget> receiver_;
+  // WebFrameWidgetBase is not tied to ExecutionContext
+  HeapMojoAssociatedRemote<mojom::blink::FrameWidgetHost,
+                           HeapMojoWrapperMode::kWithoutContextObserver>
+      frame_widget_host_{nullptr};
+  // WebFrameWidgetBase is not tied to ExecutionContext
+  HeapMojoAssociatedReceiver<mojom::blink::FrameWidget,
+                             WebFrameWidgetBase,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_{this, nullptr};
 
   // Different consumers in the browser process makes different assumptions, so
   // must always send the first IPC regardless of value.

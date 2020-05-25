@@ -96,6 +96,7 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
   base::Optional<base::Time> time_override_for_testing_;
   ResultCallback result_callback_for_testing_;
 
+  bool started_ = false;
   bool hang_update_checks_for_testing_ = false;
 };
 

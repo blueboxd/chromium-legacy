@@ -432,10 +432,10 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   observer.RunUntilActivated(registration->installing_version(), runner);
   scoped_refptr<ServiceWorkerVersion> version = registration->active_version();
 
-  ServiceWorkerProviderHost* provider_host =
-      registration->active_version()->provider_host();
-  ASSERT_NE(nullptr, provider_host);
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  ServiceWorkerHost* worker_host =
+      registration->active_version()->worker_host();
+  ASSERT_NE(nullptr, worker_host);
+  ServiceWorkerContainerHost* container_host = worker_host->container_host();
   // One ServiceWorkerRegistrationObjectHost should have been created for the
   // new registration.
   EXPECT_EQ(1UL, container_host->registration_object_hosts_.size());
@@ -448,7 +448,7 @@ TEST_F(ServiceWorkerJobTest, Unregister) {
   WaitForVersionRunningStatus(version, EmbeddedWorkerStatus::STOPPED);
 
   // The service worker registration object host and service worker object host
-  // have been destroyed together with |provider_host| by the above
+  // have been destroyed together with |worker_host| by the above
   // unregistration. Then |registration| and |version| should be the last one
   // reference to the corresponding instance.
   EXPECT_TRUE(registration->HasOneRef());
@@ -534,11 +534,11 @@ TEST_F(ServiceWorkerJobTest, RegisterDuplicateScript) {
 
   // During the above registration, a service worker registration object host
   // for ServiceWorkerGlobalScope#registration has been created/added into
-  // |provider_host|.
-  ServiceWorkerProviderHost* provider_host =
-      old_registration->active_version()->provider_host();
-  ASSERT_NE(nullptr, provider_host);
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  // |worker_host|.
+  ServiceWorkerHost* worker_host =
+      old_registration->active_version()->worker_host();
+  ASSERT_NE(nullptr, worker_host);
+  ServiceWorkerContainerHost* container_host = worker_host->container_host();
 
   // Clear all service worker object hosts.
   container_host->service_worker_object_hosts_.clear();
@@ -1122,7 +1122,7 @@ TEST_F(ServiceWorkerJobTest, HasFetchHandler) {
 // Test that clients are alerted of new registrations if they are
 // in-scope, so that Clients.claim() or ServiceWorkerContainer.ready work
 // correctly.
-TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
+TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingerHosts) {
   GURL scope("https://www.example.com/scope/");
   GURL in_scope("https://www.example.com/scope/page");
   GURL out_scope("https://www.example.com/page");
@@ -1441,11 +1441,11 @@ TEST_F(ServiceWorkerUpdateJobTest, RegisterWithDifferentUpdateViaCache) {
 
   // During the above registration, a service worker registration object host
   // for ServiceWorkerGlobalScope#registration has been created/added into
-  // |provider_host|.
-  ServiceWorkerProviderHost* provider_host =
-      old_registration->active_version()->provider_host();
-  ASSERT_TRUE(provider_host);
-  ServiceWorkerContainerHost* container_host = provider_host->container_host();
+  // |worker_host|.
+  ServiceWorkerHost* worker_host =
+      old_registration->active_version()->worker_host();
+  ASSERT_TRUE(worker_host);
+  ServiceWorkerContainerHost* container_host = worker_host->container_host();
 
   // Remove references to |old_registration| so that |old_registration| is the
   // only reference to the registration.

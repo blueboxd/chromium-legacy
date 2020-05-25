@@ -127,14 +127,10 @@
             </div>
             <div class="separator" hidden="[[!showButtonContainer_]]"></div>
             <span id="buttonContainer" hidden="[[!showButtonContainer_]]">
-              <cr-button id="relaunch" hidden="[[!showRelaunch_]]"
-                  on-click="onRelaunchClick_">
-                $i18n{aboutRelaunch}
-              </cr-button>
-              <cr-button id="relaunchAndPowerwash"
-                  hidden="[[!showRelaunchAndPowerwash_]]"
-                  on-click="onRelaunchAndPowerwashClick_">
-                $i18n{aboutRelaunchAndPowerwash}
+              <cr-button id="relaunch" hidden$="[[!showRelaunch_]]"
+                         on-click="onRelaunchClick_">
+                  [[getRelaunchButtonText_(
+                                  currentUpdateStatusEvent_)]]
               </cr-button>
               <cr-button id="checkForUpdates" hidden="[[!showCheckUpdates_]]"
                   on-click="onCheckUpdatesClick_">

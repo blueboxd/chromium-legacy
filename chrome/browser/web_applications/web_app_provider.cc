@@ -149,6 +149,7 @@ SystemWebAppManager& WebAppProvider::system_web_app_manager() {
 }
 
 void WebAppProvider::Shutdown() {
+  ui_manager_->Shutdown();
   shortcut_manager_->Shutdown();
   pending_app_manager_->Shutdown();
   install_manager_->Shutdown();
@@ -277,6 +278,7 @@ void WebAppProvider::OnRegistryControllerReady() {
   shortcut_manager_->Start();
   manifest_update_manager_->Start();
   file_handler_manager_->Start();
+  ui_manager_->Start();
 
   on_registry_ready_.Signal();
 }

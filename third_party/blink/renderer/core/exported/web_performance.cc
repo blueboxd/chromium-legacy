@@ -69,6 +69,11 @@ base::TimeTicks WebPerformance::NavigationStartAsMonotonicTime() const {
   return private_->timing()->NavigationStartAsMonotonicTime();
 }
 
+double WebPerformance::LastBackForwardCacheRestoreNavigationStart() const {
+  return MillisecondsToSeconds(
+      private_->timing()->LastBackForwardCacheRestoreNavigationStart());
+}
+
 double WebPerformance::InputForNavigationStart() const {
   return MillisecondsToSeconds(private_->timing()->inputStart());
 }
@@ -152,6 +157,11 @@ double WebPerformance::LoadEventEnd() const {
 
 double WebPerformance::FirstPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstPaint());
+}
+
+double WebPerformance::FirstPaintAfterBackForwardCacheRestore() const {
+  return MillisecondsToSeconds(
+      private_->timing()->FirstPaintAfterBackForwardCacheRestore());
 }
 
 double WebPerformance::FirstImagePaint() const {

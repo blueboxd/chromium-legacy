@@ -33,6 +33,7 @@ namespace {
 void CheckNotification(VersionUpdater::Status /* status */,
                        int /* progress */,
                        bool /* rollback */,
+                       bool /* powerwash */,
                        const std::string& /* version */,
                        int64_t /* size */,
                        const base::string16& /* message */) {}

@@ -93,7 +93,7 @@ class WorkerScriptLoaderFactoryTest : public testing::Test {
   WorkerScriptLoaderFactory::BrowserContextGetter browser_context_getter_;
 };
 
-TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerProviderHost) {
+TEST_F(WorkerScriptLoaderFactoryTest, ServiceWorkerContainerHost) {
   // Make the factory.
   auto factory = std::make_unique<WorkerScriptLoaderFactory>(
       kProcessId, DedicatedWorkerId(), SharedWorkerId(),

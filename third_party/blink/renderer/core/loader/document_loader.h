@@ -103,6 +103,9 @@ enum class CommitResult : int32_t;
 enum class GlobalObjectReusePolicy { kCreateNew, kUseExisting };
 
 // The DocumentLoader fetches a main resource and handles the result.
+// TODO(https://crbug.com/855189). This was originally structured to have a
+// provisional load, then commit but that is no longer necessary and this class
+// can be simplified.
 class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
                                    public UseCounter,
                                    public WebNavigationBodyLoader::Client {
@@ -218,10 +221,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   ApplicationCacheHostForFrame* GetApplicationCacheHost() const {
     return application_cache_host_.Get();
-  }
-
-  ClientHintsPreferences& GetClientHintsPreferences() {
-    return client_hints_preferences_;
   }
 
   WebURLRequest::PreviewsState GetPreviewsState() const {
@@ -432,6 +431,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
            commit_reason_ == CommitReason::kXSLT;
   }
 
+  // Params are saved in constructor and are cleared after StartLoading().
+  // TODO(dgozman): remove once StartLoading is merged with constructor.
+  std::unique_ptr<WebNavigationParams> params_;
+
   // These fields are copied from WebNavigationParams, see there for definition.
   KURL url_;
   AtomicString http_method_;
@@ -440,18 +443,14 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   AtomicString http_content_type_;
   WebURLRequest::PreviewsState previews_state_;
   base::Optional<WebOriginPolicy> origin_policy_;
-  scoped_refptr<const SecurityOrigin> requestor_origin_;
-  KURL unreachable_url_;
+  const scoped_refptr<const SecurityOrigin> requestor_origin_;
+  const KURL unreachable_url_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
-  network::mojom::IPAddressSpace ip_address_space_ =
+  const network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;
-  bool grant_load_local_resources_ = false;
-  base::Optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode_;
-  FramePolicy frame_policy_;
-
-  // Params are saved in constructor and are cleared after StartLoading().
-  // TODO(dgozman): remove once StartLoading is merged with constructor.
-  std::unique_ptr<WebNavigationParams> params_;
+  const bool grant_load_local_resources_ = false;
+  const base::Optional<blink::mojom::FetchCacheMode> force_fetch_cache_mode_;
+  const FramePolicy frame_policy_;
 
   Member<LocalFrame> frame_;
 
@@ -470,7 +469,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // A reference to actual request's url and referrer used to
   // inititate this load.
   KURL original_url_;
-  Referrer original_referrer_;
+  const Referrer original_referrer_;
 
   ResourceResponse response_;
 
@@ -482,8 +481,11 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   bool replaces_current_history_item_;
   bool data_received_;
 
+  const Member<ContentSecurityPolicy> content_security_policy_;
+  const bool was_blocked_by_csp_;
+
+  const scoped_refptr<SecurityOrigin> origin_to_commit_;
   WebNavigationType navigation_type_;
-  scoped_refptr<SecurityOrigin> origin_to_commit_;
 
   DocumentLoadTiming document_load_timing_;
 
@@ -498,9 +500,6 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   bool was_blocked_by_document_policy_;
   Vector<PolicyParserMessageBuffer::Message> document_policy_parsing_messages_;
 
-  const Member<ContentSecurityPolicy> content_security_policy_;
-  const bool was_blocked_by_csp_;
-
   ClientHintsPreferences client_hints_preferences_;
   InitialScrollState initial_scroll_state_;
 
@@ -514,28 +513,28 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   // Used to protect against reentrancy into CommitData().
   bool in_commit_data_;
   scoped_refptr<SharedBuffer> data_buffer_;
-  base::UnguessableToken devtools_navigation_token_;
+  const base::UnguessableToken devtools_navigation_token_;
 
   bool defers_loading_ = false;
 
   // Whether this load request comes with a sitcky user activation.
-  bool had_sticky_activation_ = false;
+  const bool had_sticky_activation_ = false;
   // Whether this load request had a user activation when created.
-  bool had_transient_activation_ = false;
+  const bool had_transient_activation_ = false;
 
   // Whether this load request was initiated by the browser.
-  bool is_browser_initiated_ = false;
+  const bool is_browser_initiated_ = false;
 
   // Whether this load request was initiated by the same origin.
   bool is_same_origin_navigation_ = false;
 
   // See WebNavigationParams for definition.
-  bool was_discarded_ = false;
+  const bool was_discarded_ = false;
 
   bool listing_ftp_directory_ = false;
   bool loading_mhtml_archive_ = false;
-  bool loading_srcdoc_ = false;
-  bool loading_url_as_empty_document_ = false;
+  const bool loading_srcdoc_ = false;
+  const bool loading_url_as_empty_document_ = false;
   CommitReason commit_reason_ = CommitReason::kRegular;
   uint64_t main_resource_identifier_ = 0;
   scoped_refptr<ResourceTimingInfo> navigation_timing_info_;
@@ -543,8 +542,8 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
-  KURL web_bundle_physical_url_;
-  KURL web_bundle_claimed_url_;
+  const KURL web_bundle_physical_url_;
+  const KURL web_bundle_claimed_url_;
 
   // This UseCounterHelper tracks feature usage associated with the lifetime of
   // the document load. Features recorded prior to commit will be recorded
@@ -557,9 +556,9 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const base::TickClock* clock_;
 
-  Vector<OriginTrialFeature> initiator_origin_trial_features_;
+  const Vector<OriginTrialFeature> initiator_origin_trial_features_;
 
-  Vector<String> force_enabled_origin_trials_;
+  const Vector<String> force_enabled_origin_trials_;
 
   // Whether this load request is a result of a browser initiated same-document
   // navigation.

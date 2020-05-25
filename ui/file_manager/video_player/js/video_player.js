@@ -31,7 +31,7 @@ function FullWindowVideoControls(
   this.isRtl_ =
       window.getComputedStyle(this.playerContainer_)['direction'] === 'rtl';
 
-  var currentWindow = chrome.app.window.current();
+  const currentWindow = chrome.app.window.current();
   currentWindow.onFullscreened.addListener(this.onFullScreenChanged.bind(this));
   currentWindow.onRestored.addListener(this.onFullScreenChanged.bind(this));
   document.addEventListener('keydown', function(e) {
@@ -39,16 +39,20 @@ function FullWindowVideoControls(
     switch (util.getKeyModifiers(e) + e.key) {
       // Handle debug shortcut keys.
       case 'Ctrl-Shift-I': // Ctrl+Shift+I
-        chrome.fileManagerPrivate.openInspector('normal');
+        chrome.fileManagerPrivate.openInspector(
+            chrome.fileManagerPrivate.InspectionType.NORMAL);
         break;
       case 'Ctrl-Shift-J': // Ctrl+Shift+J
-        chrome.fileManagerPrivate.openInspector('console');
+        chrome.fileManagerPrivate.openInspector(
+            chrome.fileManagerPrivate.InspectionType.CONSOLE);
         break;
       case 'Ctrl-Shift-C': // Ctrl+Shift+C
-        chrome.fileManagerPrivate.openInspector('element');
+        chrome.fileManagerPrivate.openInspector(
+            chrome.fileManagerPrivate.InspectionType.ELEMENT);
         break;
       case 'Ctrl-Shift-B': // Ctrl+Shift+B
-        chrome.fileManagerPrivate.openInspector('background');
+        chrome.fileManagerPrivate.openInspector(
+            chrome.fileManagerPrivate.InspectionType.BACKGROUND);
         break;
 
       case ' ': // Space
@@ -64,10 +68,10 @@ function FullWindowVideoControls(
             false);  // Leave the full screen mode.
         break;
       case 'MediaTrackNext':
-        player.advance_(1);
+        player.advance_(true);
         break;
       case 'MediaTrackPrevious':
-        player.advance_(0);
+        player.advance_(false);
         break;
       case 'ArrowRight':
         if (!e.target.classList.contains('volume')) {
@@ -101,14 +105,14 @@ function FullWindowVideoControls(
   });
 
   // TODO(mtomasz): Simplify. crbug.com/254318.
-  var clickInProgress = false;
+  let clickInProgress = false;
   videoContainer.addEventListener('click', function(e) {
     if (clickInProgress) {
       return;
     }
 
     clickInProgress = true;
-    var togglePlayState = function() {
+    const togglePlayState = function() {
       clickInProgress = false;
 
       if (e.ctrlKey) {
@@ -152,7 +156,7 @@ FullWindowVideoControls.prototype.getInactivityWatcher = function() {
  * @param {string} message Message id.
  */
 FullWindowVideoControls.prototype.showErrorMessage = function(message) {
-  var errorBanner = getRequiredElement('error');
+  const errorBanner = getRequiredElement('error');
   errorBanner.textContent = str(message);
   errorBanner.setAttribute('visible', 'true');
 
@@ -196,7 +200,7 @@ FullWindowVideoControls.prototype.onPlaybackError_ = function(error) {
  * @private
  */
 FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
-  var appWindow = chrome.app.window.current();
+  const appWindow = chrome.app.window.current();
   util.toggleFullScreen(appWindow, !util.isFullScreen(appWindow));
 };
 
@@ -206,7 +210,7 @@ FullWindowVideoControls.prototype.toggleFullScreen_ = function() {
 FullWindowVideoControls.prototype.onMediaComplete = function() {
   VideoControls.prototype.onMediaComplete.apply(this, arguments);
   if (!this.getMedia().loop) {
-    player.advance_(1);
+    player.advance_(true);
   }
 };
 
@@ -253,7 +257,7 @@ VideoPlayer.prototype = /** @struct */ {
 VideoPlayer.prototype.prepare = function(videos) {
   this.videos_ = videos;
 
-  var preventDefault = function(event) {
+  const preventDefault = function(event) {
     event.preventDefault();
   }.wrap(null);
 
@@ -266,8 +270,8 @@ VideoPlayer.prototype.prepare = function(videos) {
       getRequiredElement('video-container'),
       getRequiredElement('controls'));
 
-  var observer = new MutationObserver(function(mutations) {
-    var isLoadingOrDisabledChanged = mutations.some(function(mutation) {
+  const observer = new MutationObserver(function(mutations) {
+    const isLoadingOrDisabledChanged = mutations.some(function(mutation) {
       return mutation.attributeName === 'loading' ||
              mutation.attributeName === 'disabled';
     });
@@ -278,7 +282,7 @@ VideoPlayer.prototype.prepare = function(videos) {
   observer.observe(getRequiredElement('video-player'),
       { attributes: true, childList: false });
 
-  var reloadVideo = function(e) {
+  const reloadVideo = function(e) {
     if (this.controls_.decodeErrorOccured &&
         // Ignore shortcut keys
         !e.ctrlKey && !e.altKey && !e.shiftKey && !e.metaKey) {
@@ -289,19 +293,19 @@ VideoPlayer.prototype.prepare = function(videos) {
     }
   }.wrap(this);
 
-  var arrowRight = queryRequiredElement('.arrow-box .arrow.right');
+  const arrowRight = queryRequiredElement('.arrow-box .arrow.right');
   arrowRight.addEventListener('click', this.advance_.wrap(this, 1));
-  var arrowLeft = queryRequiredElement('.arrow-box .arrow.left');
+  const arrowLeft = queryRequiredElement('.arrow-box .arrow.left');
   arrowLeft.addEventListener('click', this.advance_.wrap(this, 0));
 
-  var videoPlayerElement = getRequiredElement('video-player');
+  const videoPlayerElement = getRequiredElement('video-player');
   if (videos.length > 1) {
     videoPlayerElement.setAttribute('multiple', true);
   } else {
     videoPlayerElement.removeAttribute('multiple');
   }
 
-  var castButton = queryRequiredElement('.cast-button');
+  const castButton = queryRequiredElement('.cast-button');
   castButton.addEventListener('click',
       this.onCastButtonClicked_.wrap(this));
 
@@ -341,7 +345,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
   this.loadQueue_.run(function(callback) {
     document.title = video.name;
 
-    var videoPlayerElement = getRequiredElement('video-player');
+    const videoPlayerElement = getRequiredElement('video-player');
     if (this.currentPos_ === (this.videos_.length - 1)) {
       videoPlayerElement.setAttribute('last-video', true);
     } else {
@@ -363,7 +367,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
 
     videoPlayerElement.setAttribute('loading', true);
 
-    var media = new MediaManager(video);
+    const media = new MediaManager(video);
 
     // Show video's thumbnail if available while loading the video.
     media.getThumbnail()
@@ -392,7 +396,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
           getRequiredElement('thumbnail').style.backgroundImage = '';
         });
 
-    var videoElementInitializePromise;
+    let videoElementInitializePromise;
     if (this.currentCast_) {
       metrics.recordPlayType(metrics.PLAY_TYPE.CAST);
 
@@ -430,8 +434,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       this.videoElement_.autoPictureInPicture = true;
       getRequiredElement('video-container').appendChild(this.videoElement_);
 
-      var videoUrl = video.toURL();
-      var source = document.createElement('source');
+      const videoUrl = video.toURL();
+      const source = document.createElement('source');
       source.src = videoUrl;
       this.videoElement_.appendChild(source);
 
@@ -450,7 +454,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
       videoElementInitializePromise = this.searchSubtitle_(videoUrl)
           .then(function(subltitleUrl) {
             if (subltitleUrl) {
-              var track = document.createElement('track');
+              const track = document.createElement('track');
               track.src = subltitleUrl;
               track.kind = 'subtitles';
               track.default = true;
@@ -460,7 +464,7 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
     }
     videoElementInitializePromise
         .then(function() {
-          var handler = function(currentPos) {
+          const handler = function(currentPos) {
             if (currentPos === this.currentPos_) {
               if (opt_callback) {
                 opt_callback();
@@ -509,8 +513,8 @@ VideoPlayer.prototype.loadVideo_ = function(video, opt_callback) {
  * @return {string} a url of subtitle file, or an empty string.
  */
 VideoPlayer.prototype.searchSubtitle_ = function(url) {
-  var baseUrl = util.splitExtension(url)[0];
-  var resolveLocalFileSystemWithExtension = function(extension) {
+  const baseUrl = util.splitExtension(url)[0];
+  const resolveLocalFileSystemWithExtension = function(extension) {
     return new Promise(
         window.webkitResolveLocalFileSystemURL.bind(null, baseUrl + extension));
   };
@@ -574,15 +578,15 @@ VideoPlayer.prototype.unloadVideo = function(opt_keepSession) {
  * @private
  */
 VideoPlayer.prototype.onFirstVideoReady_ = function() {
-  var videoWidth = this.videoElement_.videoWidth;
-  var videoHeight = this.videoElement_.videoHeight;
+  const videoWidth = this.videoElement_.videoWidth;
+  const videoHeight = this.videoElement_.videoHeight;
 
-  var aspect = videoWidth / videoHeight;
-  var newWidth = videoWidth;
-  var newHeight = videoHeight;
+  const aspect = videoWidth / videoHeight;
+  let newWidth = videoWidth;
+  let newHeight = videoHeight;
 
-  var shrinkX = newWidth / window.screen.availWidth;
-  var shrinkY = newHeight / window.screen.availHeight;
+  const shrinkX = newWidth / window.screen.availWidth;
+  const shrinkY = newHeight / window.screen.availHeight;
   if (shrinkX > 1 || shrinkY > 1) {
     if (shrinkY > shrinkX) {
       newHeight = newHeight / shrinkY;
@@ -593,17 +597,17 @@ VideoPlayer.prototype.onFirstVideoReady_ = function() {
     }
   }
 
-  var oldLeft = window.screenX;
-  var oldTop = window.screenY;
-  var oldWidth = window.innerWidth;
-  var oldHeight = window.innerHeight;
+  let oldLeft = window.screenX;
+  let oldTop = window.screenY;
+  const oldWidth = window.innerWidth;
+  const oldHeight = window.innerHeight;
 
   if (!oldWidth && !oldHeight) {
     oldLeft = window.screen.availWidth / 2;
     oldTop = window.screen.availHeight / 2;
   }
 
-  var appWindow = chrome.app.window.current();
+  const appWindow = chrome.app.window.current();
   appWindow.innerBounds.width = Math.round(newWidth);
   appWindow.innerBounds.height = Math.round(newHeight);
   appWindow.outerBounds.left = Math.max(
@@ -622,7 +626,7 @@ VideoPlayer.prototype.onFirstVideoReady_ = function() {
  * @private
  */
 VideoPlayer.prototype.advance_ = function(direction) {
-  var newPos = this.currentPos_ + (direction ? 1 : -1);
+  const newPos = this.currentPos_ + (direction ? 1 : -1);
   if (0 <= newPos && newPos < this.videos_.length) {
     this.currentPos_ = newPos;
     this.reloadCurrentVideo(function() {
@@ -637,7 +641,7 @@ VideoPlayer.prototype.advance_ = function(direction) {
  * @param {function()=} opt_callback Completion callback.
  */
 VideoPlayer.prototype.reloadCurrentVideo = function(opt_callback) {
-  var currentVideo = this.videos_[this.currentPos_];
+  const currentVideo = this.videos_[this.currentPos_];
   this.loadVideo_(currentVideo, opt_callback);
 };
 
@@ -668,8 +672,8 @@ VideoPlayer.prototype.onCastSelected_ = function(cast) {
  * @param {Array<Object>} casts List of casts.
  */
 VideoPlayer.prototype.setCastList = function(casts) {
-  var videoPlayerElement = getRequiredElement('video-player');
-  var menu = getRequiredElement('cast-menu');
+  const videoPlayerElement = getRequiredElement('video-player');
+  const menu = getRequiredElement('cast-menu');
   menu.innerHTML = '';
 
   // TODO(yoshiki): Handle the case that the current cast disappears.
@@ -683,7 +687,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
   }
 
   if (this.currentCast_) {
-    var currentCastAvailable = casts.some(function(cast) {
+    const currentCastAvailable = casts.some(function(cast) {
       return this.currentCast_.label === cast.label;
     }.wrap(this));
 
@@ -692,15 +696,17 @@ VideoPlayer.prototype.setCastList = function(casts) {
     }
   }
 
-  var item = new cr.ui.MenuItem();
-  item.label = str('VIDEO_PLAYER_PLAY_THIS_COMPUTER');
-  item.setAttribute('aria-label', item.label);
-  item.castLabel = '';
-  item.addEventListener('activate', this.onCastSelected_.wrap(this, null));
-  menu.appendChild(item);
+  {
+    const item = new cr.ui.MenuItem();
+    item.label = str('VIDEO_PLAYER_PLAY_THIS_COMPUTER');
+    item.setAttribute('aria-label', item.label);
+    item.castLabel = '';
+    item.addEventListener('activate', this.onCastSelected_.wrap(this, null));
+    menu.appendChild(item);
+  }
 
-  for (var i = 0; i < casts.length; i++) {
-    var item = new cr.ui.MenuItem();
+  for (let i = 0; i < casts.length; i++) {
+    const item = new cr.ui.MenuItem();
     item.label = casts[i].friendlyName;
     item.setAttribute('aria-label', item.label);
     item.castLabel = casts[i].label;
@@ -718,7 +724,7 @@ VideoPlayer.prototype.setCastList = function(casts) {
  * @param {boolean} available Whether at least one cast receiver is available.
  */
 VideoPlayer.prototype.setCastAvailability = function(available) {
-  var videoPlayerElement = getRequiredElement('video-player');
+  const videoPlayerElement = getRequiredElement('video-player');
   if (available) {
     videoPlayerElement.setAttribute('mr-cast-available', true);
   } else {
@@ -763,10 +769,10 @@ VideoPlayer.prototype.onCastButtonClicked_ = function() {
  * @private
  */
 VideoPlayer.prototype.updateCheckOnCastMenu_ = function() {
-  var menuItems =
+  const menuItems =
       /** @type {cr.ui.Menu} */ (getRequiredElement('cast-menu')).menuItems;
-  for (var i = 0; i < menuItems.length; i++) {
-    var item = menuItems[i];
+  for (let i = 0; i < menuItems.length; i++) {
+    const item = menuItems[i];
     if (this.currentCast_ === null) {
       // Playing on this computer.
       if (item.castLabel === '') {
@@ -806,7 +812,7 @@ VideoPlayer.prototype.onCurrentCastDisappear_ = function() {
  */
 VideoPlayer.prototype.onCastSessionUpdate_ = function(alive) {
   if (!alive) {
-    var videoPlayerElement = getRequiredElement('video-player');
+    const videoPlayerElement = getRequiredElement('video-player');
     videoPlayerElement.removeAttribute('casting');
 
     // Loads the current video in local player.
@@ -828,7 +834,7 @@ VideoPlayer.prototype.onCastSessionUpdate_ = function(alive) {
  * @private
  */
 VideoPlayer.prototype.updateInactivityWatcherState_ = function() {
-  var videoPlayerElement = getRequiredElement('video-player');
+  const videoPlayerElement = getRequiredElement('video-player');
   // If any of following condition is met, we don't hide the tool bar.
   // - Loaded video is paused.
   // - Loading a video is in progress.
@@ -855,9 +861,9 @@ VideoPlayer.prototype.updateMediaSessionPlaybackState_ = function() {
       MediaSessionPlaybackState.PAUSED;
 };
 
-var player = new VideoPlayer();
+const player = new VideoPlayer();
 
-let nativePlayer = new NativeControlsVideoPlayer();
+const nativePlayer = new NativeControlsVideoPlayer();
 
 /**
  * Initializes the load time data.
@@ -877,7 +883,7 @@ function initStrings(callback) {
  * @param {function()} callback Called when the volume manager is ready.
  */
 function initVolumeManager(callback) {
-  var volumeManager = new FilteredVolumeManager(AllowedPaths.ANY_PATH, false);
+  const volumeManager = new FilteredVolumeManager(AllowedPaths.ANY_PATH, false);
   volumeManager.ensureInitialized(callback);
 }
 
@@ -914,7 +920,8 @@ initPromise
 
           if (!useNativeControls) {
             player.prepare(entries);
-            player.playFirstVideo(player, fulfill);
+            // TODO(lucmult): |player| and |fulfill| are not used.
+            player.playFirstVideo(/*player, fulfill*/);
           } else {
             nativePlayer.prepare(entries);
             nativePlayer.playFirstVideo();

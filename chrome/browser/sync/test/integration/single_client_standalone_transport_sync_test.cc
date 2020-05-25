@@ -47,7 +47,7 @@ syncer::ModelTypeSet AllowedTypesInStandaloneTransportMode() {
     allowed_types.PutAll({syncer::APPS, syncer::APP_SETTINGS, syncer::APP_LIST,
                           syncer::APP_SETTINGS, syncer::ARC_PACKAGE,
                           syncer::PRINTERS, syncer::OS_PREFERENCES,
-                          syncer::OS_PRIORITY_PREFERENCES});
+                          syncer::OS_PRIORITY_PREFERENCES, syncer::WEB_APPS});
   }
   if (base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
     allowed_types.Put(syncer::WIFI_CONFIGURATIONS);

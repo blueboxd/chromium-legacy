@@ -22,7 +22,7 @@ namespace content {
 
 class ServiceWorkerCacheWriter;
 class ServiceWorkerContextCore;
-class ServiceWorkerProviderHost;
+class ServiceWorkerHost;
 
 // Created per one running service worker for loading its scripts. This is kept
 // alive while the WebServiceWorkerNetworkProvider in the renderer process is
@@ -50,7 +50,7 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
   // error.
   ServiceWorkerScriptLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
-      base::WeakPtr<ServiceWorkerProviderHost> provider_host,
+      base::WeakPtr<ServiceWorkerHost> worker_host,
       scoped_refptr<network::SharedURLLoaderFactory>
           loader_factory_for_new_scripts);
   ~ServiceWorkerScriptLoaderFactory() override;
@@ -108,7 +108,7 @@ class CONTENT_EXPORT ServiceWorkerScriptLoaderFactory
       int64_t resource_id);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
+  base::WeakPtr<ServiceWorkerHost> worker_host_;
   // Can be null if this factory is for an installed service worker.
   scoped_refptr<network::SharedURLLoaderFactory>
       loader_factory_for_new_scripts_;

@@ -22,8 +22,13 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   STACK_ALLOCATED();
 
  public:
-  NGFragmentItemsBuilder() = default;
-  explicit NGFragmentItemsBuilder(const NGInlineNode& node);
+  NGFragmentItemsBuilder(WritingMode writing_mode, TextDirection direction);
+  NGFragmentItemsBuilder(const NGInlineNode& node,
+                         WritingMode writing_mode,
+                         TextDirection direction);
+
+  WritingMode GetWritingMode() const { return writing_mode_; }
+  TextDirection Direction() const { return direction_; }
 
   wtf_size_t Size() const { return items_.size(); }
 
@@ -74,8 +79,6 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   // items and stops copying before the first dirty line.
   AddPreviousItemsResult AddPreviousItems(
       const NGFragmentItems& items,
-      WritingMode writing_mode,
-      TextDirection direction,
       const PhysicalSize& container_size,
       NGBoxFragmentBuilder* container_builder = nullptr,
       bool stop_at_dirty = false);
@@ -108,23 +111,16 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   // containing block geometry for OOF-positioned nodes.
   //
   // Once this method has been called, new items cannot be added.
-  const ItemWithOffsetList& Items(WritingMode,
-                                  TextDirection,
-                                  const PhysicalSize& outer_size);
+  const ItemWithOffsetList& Items(const PhysicalSize& outer_size);
 
   // Build a |NGFragmentItems|. The builder cannot build twice because data set
   // to this builder may be cleared.
-  void ToFragmentItems(WritingMode,
-                       TextDirection,
-                       const PhysicalSize& outer_size,
-                       void* data);
+  void ToFragmentItems(const PhysicalSize& outer_size, void* data);
 
  private:
   void AddItems(NGLogicalLineItem* child_begin, NGLogicalLineItem* child_end);
 
-  void ConvertToPhysical(WritingMode writing_mode,
-                         TextDirection direction,
-                         const PhysicalSize& outer_size);
+  void ConvertToPhysical(const PhysicalSize& outer_size);
 
   ItemWithOffsetList items_;
   String text_content_;
@@ -132,6 +128,9 @@ class CORE_EXPORT NGFragmentItemsBuilder {
 
   // Keeps children of a line until the offset is determined. See |AddLine|.
   NGLogicalLineItems current_line_;
+
+  WritingMode writing_mode_;
+  TextDirection direction_;
 
   bool has_floating_descendants_for_paint_ = false;
   bool is_converted_to_physical_ = false;

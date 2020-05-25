@@ -32,7 +32,7 @@
 #include "content/browser/renderer_host/media/media_stream_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/screen_enumeration/screen_enumeration_impl.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/web_contents/file_chooser_impl.h"
@@ -212,14 +212,14 @@ void BindBadgeServiceForServiceWorkerOnUI(
 }
 
 void BindBadgeServiceForServiceWorker(
-    ServiceWorkerProviderHost* service_worker_host,
+    ServiceWorkerHost* service_worker_host,
     mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   content::RunOrPostTaskOnThread(
       FROM_HERE, content::BrowserThread::UI,
       base::BindOnce(&BindBadgeServiceForServiceWorkerOnUI,
                      service_worker_host->worker_process_id(),
-                     service_worker_host->running_hosted_version()->scope(),
+                     service_worker_host->version()->scope(),
                      std::move(receiver)));
 }
 
@@ -388,7 +388,7 @@ BindWorkerReceiverForOriginAndFrameId(
 
 template <typename... Args>
 void RunOrPostTaskToBindServiceWorkerReceiver(
-    ServiceWorkerProviderHost* host,
+    ServiceWorkerHost* host,
     void (RenderProcessHostImpl::*method)(Args...),
     Args... args) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
@@ -409,9 +409,9 @@ template <typename Interface>
 base::RepeatingCallback<void(mojo::PendingReceiver<Interface>)>
 BindServiceWorkerReceiver(
     void (RenderProcessHostImpl::*method)(mojo::PendingReceiver<Interface>),
-    ServiceWorkerProviderHost* host) {
+    ServiceWorkerHost* host) {
   return base::BindRepeating(
-      [](ServiceWorkerProviderHost* host,
+      [](ServiceWorkerHost* host,
          void (RenderProcessHostImpl::*method)(
              mojo::PendingReceiver<Interface>),
          mojo::PendingReceiver<Interface> receiver) {
@@ -427,9 +427,9 @@ base::RepeatingCallback<void(const ServiceWorkerVersionInfo&,
 BindServiceWorkerReceiverForOrigin(
     void (RenderProcessHostImpl::*method)(const url::Origin&,
                                           mojo::PendingReceiver<Interface>),
-    ServiceWorkerProviderHost* host) {
+    ServiceWorkerHost* host) {
   return base::BindRepeating(
-      [](ServiceWorkerProviderHost* host,
+      [](ServiceWorkerHost* host,
          void (RenderProcessHostImpl::*method)(
              const url::Origin&, mojo::PendingReceiver<Interface>),
          const ServiceWorkerVersionInfo& info,
@@ -449,9 +449,9 @@ BindServiceWorkerReceiverForOriginAndFrameId(
     void (RenderProcessHostImpl::*method)(int,
                                           const url::Origin&,
                                           mojo::PendingReceiver<Interface>),
-    ServiceWorkerProviderHost* host) {
+    ServiceWorkerHost* host) {
   return base::BindRepeating(
-      [](ServiceWorkerProviderHost* host,
+      [](ServiceWorkerHost* host,
          void (RenderProcessHostImpl::*method)(
              int, const url::Origin&, mojo::PendingReceiver<Interface>),
          const ServiceWorkerVersionInfo& info,
@@ -936,13 +936,12 @@ void PopulateBinderMap(SharedWorkerHost* host, mojo::BinderMap* map) {
 }
 
 // Service workers
-ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host) {
+ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerHost* host) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-  return host->running_hosted_version()->GetInfo();
+  return host->version()->GetInfo();
 }
 
-void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
+void PopulateServiceWorkerBinders(ServiceWorkerHost* host,
                                   mojo::BinderMap* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
@@ -959,11 +958,11 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
       base::BindRepeating(&BindTextDetection));
 
   // worker host binders
-  map->Add<blink::mojom::QuicTransportConnector>(base::BindRepeating(
-      &ServiceWorkerProviderHost::CreateQuicTransportConnector,
-      base::Unretained(host)));
+  map->Add<blink::mojom::QuicTransportConnector>(
+      base::BindRepeating(&ServiceWorkerHost::CreateQuicTransportConnector,
+                          base::Unretained(host)));
   map->Add<blink::mojom::CacheStorage>(base::BindRepeating(
-      &ServiceWorkerProviderHost::BindCacheStorage, base::Unretained(host)));
+      &ServiceWorkerHost::BindCacheStorage, base::Unretained(host)));
   map->Add<blink::mojom::BadgeService>(
       base::BindRepeating(&BindBadgeServiceForServiceWorker, host));
 
@@ -973,13 +972,13 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
 }
 
 void PopulateBinderMapWithContext(
-    ServiceWorkerProviderHost* host,
+    ServiceWorkerHost* host,
     mojo::BinderMapWithContext<const ServiceWorkerVersionInfo&>* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   // static binders
-  // Use a task runner if ServiceWorkerProviderHost lives on the IO
-  // thread, as CreateForWorker() needs to be called on the UI thread.
+  // Use a task runner if ServiceWorkerHost lives on the IO thread, as
+  // CreateForWorker() needs to be called on the UI thread.
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     map->Add<blink::mojom::BackgroundFetchService>(
         base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
@@ -1032,7 +1031,7 @@ void PopulateBinderMapWithContext(
           &RenderProcessHostImpl::BindQuotaManagerHost, host));
 }
 
-void PopulateBinderMap(ServiceWorkerProviderHost* host, mojo::BinderMap* map) {
+void PopulateBinderMap(ServiceWorkerHost* host, mojo::BinderMap* map) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   PopulateServiceWorkerBinders(host, map);
 }

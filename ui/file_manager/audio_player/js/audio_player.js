@@ -59,26 +59,23 @@ function AudioPlayer(container) {
 
   // Restore the saved state from local storage, and update the local storage
   // if the states are changed.
-  var STORAGE_PREFIX = 'audioplayer-';
-  var KEYS_TO_SAVE_STATES =
-      ['shuffle',
-       'repeat-mode',
-       'volume',
-       'playlist-expanded',
-       'track-info-expanded'];
-  var storageKeys = KEYS_TO_SAVE_STATES.map(a => STORAGE_PREFIX + a);
+  const STORAGE_PREFIX = 'audioplayer-';
+  const KEYS_TO_SAVE_STATES = [
+    'shuffle', 'repeat-mode', 'volume', 'playlist-expanded',
+    'track-info-expanded'
+  ];
+  const storageKeys = KEYS_TO_SAVE_STATES.map(a => STORAGE_PREFIX + a);
   chrome.storage.local.get(storageKeys, function(results) {
     // Update the UI by loaded state.
-    for (var storageKey in results) {
-      var key = storageKey.substr(STORAGE_PREFIX.length);
+    for (const storageKey in results) {
+      const key = storageKey.substr(STORAGE_PREFIX.length);
       this.player_[Polymer.CaseMap.dashToCamelCase(key)] = results[storageKey];
     }
     // Start listening to UI changes to write back the states to local storage.
-    for (var i = 0; i < KEYS_TO_SAVE_STATES.length; i++) {
+    for (let i = 0; i < KEYS_TO_SAVE_STATES.length; i++) {
       this.player_.addEventListener(
-          KEYS_TO_SAVE_STATES[i] + '-changed',
-          function(storageKey, event) {
-            var objectToBeSaved = {};
+          KEYS_TO_SAVE_STATES[i] + '-changed', function(storageKey, event) {
+            const objectToBeSaved = {};
             objectToBeSaved[storageKey] = event.detail.value;
             chrome.storage.local.set(objectToBeSaved);
           }.bind(this, storageKeys[i]));
@@ -134,7 +131,7 @@ function AudioPlayer(container) {
     document.addEventListener('keydown', this.onKeyDown_.bind(this));
 
     // Show the window after DOM is processed.
-    var currentWindow = chrome.app.window.current();
+    const currentWindow = chrome.app.window.current();
     if (currentWindow) {
       setTimeout(currentWindow.show.bind(currentWindow), 0);
     }
@@ -193,19 +190,18 @@ AudioPlayer.prototype.load = function(playlist) {
     util.URLsToEntries(playlist.items || [], function(entries) {
       this.entries_ = entries;
 
-      var position = playlist.position || 0;
-      var time = playlist.time || 0;
+      const position = playlist.position || 0;
 
       if (this.entries_.length == 0) {
         return;
       }
 
-      var newTracks = [];
-      var currentTracks = this.player_.tracks;
-      var unchanged = (currentTracks.length === this.entries_.length);
+      const newTracks = [];
+      const currentTracks = this.player_.tracks;
+      let unchanged = (currentTracks.length === this.entries_.length);
 
-      for (var i = 0; i != this.entries_.length; i++) {
-        var entry = this.entries_[i];
+      for (let i = 0; i != this.entries_.length; i++) {
+        const entry = this.entries_[i];
         newTracks.push(new AudioPlayer.TrackInfo(entry));
 
         if (unchanged && entry.toURL() !== currentTracks[i].url) {
@@ -224,7 +220,7 @@ AudioPlayer.prototype.load = function(playlist) {
 
         // Load the selected track metadata first, then load the rest.
         this.loadMetadata_(position);
-        for (i = 0; i != this.entries_.length; i++) {
+        for (let i = 0; i != this.entries_.length; i++) {
           if (i != position) {
             this.loadMetadata_(i);
           }
@@ -311,7 +307,7 @@ AudioPlayer.prototype.select_ = function(newTrack) {
     window.appState.time = 0;
     appUtil.saveAppState();
 
-    var entry = this.entries_[this.currentTrackIndex_];
+    const entry = this.entries_[this.currentTrackIndex_];
 
     this.fetchMetadata_(entry, function(metadata) {
       if (this.currentTrackIndex_ != newTrack) {
@@ -345,18 +341,17 @@ AudioPlayer.prototype.fetchMetadata_ = function(entry, callback) {
  * @private
  */
 AudioPlayer.prototype.onError_ = function() {
-  var track = this.currentTrackIndex_;
+  const track = this.currentTrackIndex_;
 
   this.invalidTracks_[track] = true;
 
-  this.fetchMetadata_(
-      this.entries_[track],
-      function(metadata) {
-        var error = (!navigator.onLine && !metadata.present) ?
-            this.offlineString_ : this.errorString_;
-        this.displayMetadata_(track, metadata, error);
-        this.player_.onAudioError();
-      }.bind(this));
+  this.fetchMetadata_(this.entries_[track], function(metadata) {
+    const error = (!navigator.onLine && !metadata.present) ?
+        this.offlineString_ :
+        this.errorString_;
+    this.displayMetadata_(track, metadata, error);
+    this.player_.onAudioError();
+  }.bind(this));
 };
 
 /**
@@ -366,8 +361,8 @@ AudioPlayer.prototype.onError_ = function() {
  * @private
  */
 AudioPlayer.prototype.onResize_ = function(event) {
-  var trackListHeight =
-          (/** @type {{trackList:TrackListElement}} */ (this.player_.$))
+  const trackListHeight =
+      (/** @type {{trackList:TrackListElement}} */ (this.player_.$))
           .trackList.clientHeight;
   if (trackListHeight > AudioPlayer.TOP_PADDING_HEIGHT) {
     this.isPlaylistExpanded_ = true;
@@ -393,16 +388,20 @@ AudioPlayer.prototype.onKeyDown_ = function(event) {
 
     // Handle debug shortcut keys.
     case 'Ctrl-Shift-I': // Ctrl+Shift+I
-      chrome.fileManagerPrivate.openInspector('normal');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.NORMAL);
       break;
     case 'Ctrl-Shift-J': // Ctrl+Shift+J
-      chrome.fileManagerPrivate.openInspector('console');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.CONSOLE);
       break;
     case 'Ctrl-Shift-C': // Ctrl+Shift+C
-      chrome.fileManagerPrivate.openInspector('element');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.ELEMENT);
       break;
     case 'Ctrl-Shift-B': // Ctrl+Shift+B
-      chrome.fileManagerPrivate.openInspector('background');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.BACKGROUND);
       break;
 
     case ' ': // Space
@@ -416,16 +415,16 @@ AudioPlayer.prototype.onKeyDown_ = function(event) {
     case 'ArrowDown':
       this.player_.dispatchEvent(new Event('small-backword-skip-event'));
       break;
-    case 'ArrowRight':
-      var eventName = this.isRtl_ ? 'small-backword-skip-event' :
-                                    'small-forward-skip-event';
+    case 'ArrowRight': {
+      const eventName = this.isRtl_ ? 'small-backword-skip-event' :
+                                      'small-forward-skip-event';
       this.player_.dispatchEvent(new Event(eventName));
-      break;
-    case 'ArrowLeft':
-      var eventName = this.isRtl_ ? 'small-forward-skip-event' :
-                                    'small-backword-skip-event';
+    } break;
+    case 'ArrowLeft': {
+      const eventName = this.isRtl_ ? 'small-forward-skip-event' :
+                                      'small-backword-skip-event';
       this.player_.dispatchEvent(new Event(eventName));
-      break;
+    } break;
     case 'l':
       this.player_.dispatchEvent(new Event('big-forward-skip-event'));
       break;
@@ -571,8 +570,8 @@ AudioPlayer.prototype.onTrackInfoExpandedChanged_ = function(newValue) {
 
   if (this.isTrackInfoExpanded_ !== newValue) {
     this.isTrackInfoExpanded_ = newValue;
-    var state = chrome.app.window.current();
-    var newHeight = window.outerHeight;
+    const state = chrome.app.window.current();
+    let newHeight = window.outerHeight;
     if (newValue) {
       state.innerBounds.minHeight = AudioPlayer.EXPANDED_MODE_MIN_HEIGHT;
       newHeight += AudioPlayer.EXPANDED_MODE_MIN_HEIGHT -
@@ -594,15 +593,15 @@ AudioPlayer.prototype.onTrackInfoExpandedChanged_ = function(newValue) {
  * @private
  */
 AudioPlayer.prototype.syncHeightForPlaylist_ = function() {
-  var targetInnerHeight;
+  let targetInnerHeight;
 
   if (this.player_.playlistExpanded) {
     // playllist expanded.
     if (!this.lastExpandedInnerHeight_ ||
         this.lastExpandedInnerHeight_ < AudioPlayer.EXPANDED_MODE_MIN_HEIGHT) {
-      var expandedListHeight =
+      const expandedListHeight =
           Math.min(this.entries_.length, AudioPlayer.DEFAULT_EXPANDED_ITEMS) *
-              AudioPlayer.TRACK_HEIGHT;
+          AudioPlayer.TRACK_HEIGHT;
       if (this.player_.trackInfoExpanded) {
         targetInnerHeight = AudioPlayer.TOP_PADDING_HEIGHT +
                             AudioPlayer.EXPANDED_ARTWORK_HEIGHT +
@@ -653,9 +652,11 @@ AudioPlayer.TrackInfo = function(entry) {
  * @return {string} Default track title (file name extracted from the url).
  */
 AudioPlayer.TrackInfo.prototype.getDefaultTitle = function() {
-  var title = this.url.split('/').pop();
-  var dotIndex = title.lastIndexOf('.');
-  if (dotIndex >= 0) title = title.substr(0, dotIndex);
+  let title = this.url.split('/').pop();
+  const dotIndex = title.lastIndexOf('.');
+  if (dotIndex >= 0) {
+    title = title.substr(0, dotIndex);
+  }
   title = decodeURIComponent(title);
   return title;
 };

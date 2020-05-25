@@ -669,8 +669,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // ResumeEvaluation() evaluates the top level script when this flag is true.
   bool global_scope_initialized_ = false;
 
-  // Connected by the ServiceWorkerProviderHost in the browser process and by
-  // the controllees. |controller_bindings_| should be destroyed before
+  // Connected by the ServiceWorkerHost in the browser process and by the
+  // controllees. |controller_bindings_| should be destroyed before
   // |event_queue_| since the pipe needs to be disconnected before callbacks
   // passed by DispatchSomeEvent() get destructed, which may be stored in
   // |event_queue_|.

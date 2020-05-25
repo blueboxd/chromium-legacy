@@ -193,6 +193,7 @@ class SafetyCheckHandler
   void OnVersionUpdaterResult(VersionUpdater::Status status,
                               int progress,
                               bool rollback,
+                              bool powerwash,
                               const std::string& version,
                               int64_t update_size,
                               const base::string16& message);

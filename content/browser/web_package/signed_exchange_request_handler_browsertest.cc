@@ -1025,7 +1025,7 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeRequestHandlerBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(shell()->web_contents(),
                                           register_sw_script, &result));
   // serviceWorker.register() fails because the document URL of
-  // ServiceWorkerProviderHost is empty.
+  // ServiceWorkerHost is empty.
   EXPECT_FALSE(result);
 }
 

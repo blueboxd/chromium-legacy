@@ -141,6 +141,7 @@ namespace {
 const char* color_examples[] = {"red", "green", "#fef", "#faf", nullptr};
 const char* direction_examples[] = {"ltr", "rtl", nullptr};
 const char* length_or_auto_examples[] = {"auto", "1px", "2px", "5%", nullptr};
+const char* length_or_none_examples[] = {"none", "1px", "2px", "5%", nullptr};
 const char* vertical_align_examples[] = {"sub", "super", "1px", "3%", nullptr};
 const char* writing_mode_examples[] = {"horizontal-tb", "vertical-rl", nullptr};
 
@@ -155,10 +156,16 @@ struct ComputedValuesEqualData {
     {"border-top-color", color_examples},
     {"bottom", length_or_auto_examples},
     {"direction", direction_examples},
+    {"height", length_or_auto_examples},
     {"left", length_or_auto_examples},
+    {"max-height", length_or_none_examples},
+    {"max-width", length_or_none_examples},
+    {"min-height", length_or_auto_examples},
+    {"min-width", length_or_auto_examples},
     {"right", length_or_auto_examples},
     {"top", length_or_auto_examples},
     {"vertical-align", vertical_align_examples},
+    {"width", length_or_auto_examples},
     {"writing-mode", writing_mode_examples},
 };
 

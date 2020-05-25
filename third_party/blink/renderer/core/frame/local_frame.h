@@ -35,8 +35,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
-#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/unique_receiver_set.h"
@@ -63,6 +61,11 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_unique_receiver_set.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_wrapper_mode.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -447,8 +450,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
-  const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
-      const;
+  mojom::blink::ReportingServiceProxy* GetReportingService();
 
   // Returns the frame host ptr. The interface returned is backed by an
   // associated interface with the legacy Chrome IPC channel.
@@ -680,8 +682,13 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Holds all PauseSubresourceLoadingHandles allowing either |this| to delete
   // them explicitly or the pipe closing to delete them.
-  mojo::UniqueReceiverSet<blink::mojom::blink::PauseSubresourceLoadingHandle>
-      pause_handle_receivers_;
+  //
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoUniqueReceiverSet<
+      blink::mojom::blink::PauseSubresourceLoadingHandle,
+      std::default_delete<blink::mojom::blink::PauseSubresourceLoadingHandle>,
+      HeapMojoWrapperMode::kWithoutContextObserver>
+      pause_handle_receivers_{nullptr};
 
   // Keeps track of all the registered VK observers.
   HeapHashSet<WeakMember<VirtualKeyboardOverlayChangedObserver>>
@@ -738,10 +745,17 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceRegistry* const interface_registry_;
   // This is declared mutable so that the service endpoint can be cached by
   // const methods.
-  mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
+  //
+  // LocalFrame can be reused by multiple ExecutionContext.
+  mutable HeapMojoRemote<mojom::blink::ReportingServiceProxy,
+                         HeapMojoWrapperMode::kWithoutContextObserver>
+      reporting_service_{nullptr};
 
 #if defined(OS_MACOSX)
-  mojo::Remote<mojom::blink::TextInputHost> text_input_host_;
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoRemote<mojom::blink::TextInputHost,
+                 HeapMojoWrapperMode::kWithoutContextObserver>
+      text_input_host_{nullptr};
 #endif
 
   ViewportIntersectionState intersection_state_;
@@ -771,10 +785,20 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   std::unique_ptr<WebPrescientNetworking> prescient_networking_;
 
-  mojo::AssociatedRemote<mojom::blink::LocalFrameHost> local_frame_host_remote_;
-  mojo::AssociatedReceiver<mojom::blink::LocalFrame> receiver_{this};
-  mojo::AssociatedReceiver<mojom::blink::LocalMainFrame> main_frame_receiver_{
-      this};
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoAssociatedRemote<mojom::blink::LocalFrameHost,
+                           HeapMojoWrapperMode::kWithoutContextObserver>
+      local_frame_host_remote_{nullptr};
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoAssociatedReceiver<mojom::blink::LocalFrame,
+                             LocalFrame,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_{this, nullptr};
+  // LocalFrame can be reused by multiple ExecutionContext.
+  HeapMojoAssociatedReceiver<mojom::blink::LocalMainFrame,
+                             LocalFrame,
+                             HeapMojoWrapperMode::kWithoutContextObserver>
+      main_frame_receiver_{this, nullptr};
 
   // Variable to control burst of download requests.
   int num_burst_download_requests_ = 0;

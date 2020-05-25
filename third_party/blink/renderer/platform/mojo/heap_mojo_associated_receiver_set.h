@@ -35,7 +35,6 @@ class HeapMojoAssociatedReceiverSet {
                   "Owner should implement Interface");
     static_assert(IsGarbageCollectedType<Owner>::value,
                   "Owner needs to be a garbage collected object");
-    DCHECK(context);
   }
   HeapMojoAssociatedReceiverSet(const HeapMojoAssociatedReceiverSet&) = delete;
   HeapMojoAssociatedReceiverSet& operator=(

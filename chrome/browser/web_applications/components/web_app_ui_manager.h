@@ -30,6 +30,9 @@ class WebAppUiManager {
 
   virtual ~WebAppUiManager() = default;
 
+  virtual void Start() = 0;
+  virtual void Shutdown() = 0;
+
   // A safe downcast.
   virtual WebAppUiManagerImpl* AsImpl() = 0;
 

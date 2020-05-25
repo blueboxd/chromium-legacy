@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/os_settings_provider.h"
 
+#include <algorithm>
 #include <memory>
 #include <string>
 
@@ -28,7 +29,11 @@
 namespace app_list {
 namespace {
 
+using SearchResultPtr = chromeos::settings::mojom::SearchResultPtr;
+
 constexpr char kOsSettingsResultPrefix[] = "os-settings://";
+constexpr float kScoreEps = 1e-5;
+constexpr int kMaxResults = 2;
 
 // Various error states of the OsSettingsProvider. kOk is currently not emitted,
 // but may be used in future. These values persist to logs. Entries should not
@@ -50,12 +55,13 @@ void LogError(Error error) {
 OsSettingsResult::OsSettingsResult(
     Profile* profile,
     const chromeos::settings::mojom::SearchResultPtr& result,
+    const float relevance_score,
     const gfx::ImageSkia& icon)
     : profile_(profile), url_path_(result->url_path_with_parameters) {
-  // TODO(crbug.com/1068851): Results need a useful relevance score and details
-  // text. Once this is available in the SearchResultPtr, set the metadata here.
+  // TODO(crbug.com/1068851): Results need useful details text. Once this is
+  // available in the SearchResultPtr, set the metadata here.
   set_id(kOsSettingsResultPrefix + url_path_);
-  set_relevance(8.0f);
+  set_relevance(relevance_score);
   SetTitle(result->result_text);
   SetResultType(ResultType::kOsSettings);
   SetDisplayType(DisplayType::kList);
@@ -112,8 +118,9 @@ void OsSettingsProvider::Start(const base::string16& query) {
 
   ClearResultsSilently();
 
-  // This provider does not handle zero-state.
-  if (query.empty())
+  // This provider does not handle zero-state, and shouldn't return any results
+  // for a single-character query because they aren't meaningful enough.
+  if (query.size() <= 1)
     return;
 
   // Invalidate weak pointers to cancel existing searches.
@@ -129,10 +136,22 @@ void OsSettingsProvider::Start(const base::string16& query) {
 
 void OsSettingsProvider::OnSearchReturned(
     std::vector<chromeos::settings::mojom::SearchResultPtr> results) {
+  std::sort(results.begin(), results.end(),
+            [](const SearchResultPtr& a, const SearchResultPtr& b) {
+              return a->relevance_score > b->relevance_score;
+            });
+
+  // TODO(crbug.com/1068851): We are currently not ranking settings results.
+  // Instead, we are gluing at most two to the top of the search box. Consider
+  // ranking these with other results in the next version of the feature.
   SearchProvider::Results search_results;
-  for (const auto& result : results) {
+  const int num_results =
+      std::min(static_cast<int>(results.size()), kMaxResults);
+  for (int i = 0; i < num_results; ++i) {
+    const auto& result = results[i];
+    const float score = 1.0f - i * kScoreEps;
     search_results.emplace_back(
-        std::make_unique<OsSettingsResult>(profile_, result, icon_));
+        std::make_unique<OsSettingsResult>(profile_, result, score, icon_));
   }
 
   if (icon_.isNull())

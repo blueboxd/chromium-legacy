@@ -274,6 +274,18 @@ class TaskController {
                 this.ui_.fileContextMenu.defaultTaskMenuItem.taskId),
             title: /** @type {string} */ (
                 this.ui_.fileContextMenu.defaultTaskMenuItem.label),
+            get iconUrl() {
+              assert(false);
+              return '';
+            },
+            get isDefault() {
+              assert(false);
+              return false;
+            },
+            get isGenericFileHandler() {
+              assert(false);
+              return false;
+            },
           };
           tasks.execute(task);
         })

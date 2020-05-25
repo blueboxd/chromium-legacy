@@ -17,30 +17,28 @@ NGTextFragmentBuilder::NGTextFragmentBuilder(
     const NGPhysicalTextFragment& fragment)
     : NGFragmentBuilder(fragment),
       text_(fragment.text_),
-      start_offset_(fragment.StartOffset()),
-      end_offset_(fragment.EndOffset()),
+      text_offset_(fragment.TextOffset()),
       shape_result_(fragment.TextShapeResult()),
       text_type_(fragment.TextType()) {}
 
-void NGTextFragmentBuilder::SetItem(const String& text_content,
-                                    NGInlineItemResult* item_result,
-                                    LayoutUnit line_height) {
-  DCHECK(item_result);
-  const NGInlineItem* item = item_result->item;
-  DCHECK(item);
-  DCHECK_NE(item->TextType(), NGTextType::kLayoutGenerated)
+void NGTextFragmentBuilder::SetItem(
+    const String& text_content,
+    const NGInlineItem& item,
+    scoped_refptr<const ShapeResultView> shape_result,
+    const NGTextOffset& text_offset,
+    const LogicalSize& size) {
+  DCHECK_NE(item.TextType(), NGTextType::kLayoutGenerated)
       << "Please use SetText() instead.";
-  DCHECK(item->Style());
+  DCHECK(item.Style());
 
-  text_type_ = item->TextType();
+  text_type_ = item.TextType();
   text_ = text_content;
-  start_offset_ = item_result->start_offset;
-  end_offset_ = item_result->end_offset;
-  resolved_direction_ = item->Direction();
-  SetStyle(item->Style(), item->StyleVariant());
-  size_ = {item_result->inline_size, line_height};
-  shape_result_ = std::move(item_result->shape_result);
-  layout_object_ = item->GetLayoutObject();
+  text_offset_ = text_offset;
+  resolved_direction_ = item.Direction();
+  SetStyle(item.Style(), item.StyleVariant());
+  size_ = size;
+  shape_result_ = std::move(shape_result);
+  layout_object_ = item.GetLayoutObject();
 }
 
 void NGTextFragmentBuilder::SetText(
@@ -55,8 +53,7 @@ void NGTextFragmentBuilder::SetText(
 
   text_type_ = NGTextType::kLayoutGenerated;
   text_ = text;
-  start_offset_ = shape_result->StartIndex();
-  end_offset_ = shape_result->EndIndex();
+  text_offset_ = {shape_result->StartIndex(), shape_result->EndIndex()};
   resolved_direction_ = shape_result->Direction();
   SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
                                     : NGStyleVariant::kStandard);

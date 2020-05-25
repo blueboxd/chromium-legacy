@@ -244,13 +244,16 @@ void NGInlineLayoutAlgorithm::CreateLine(
              item.TextType() == NGTextType::kSymbolMarker);
       if (UNLIKELY(item_result.hyphen_shape_result)) {
         LayoutUnit hyphen_inline_size = item_result.HyphenInlineSize();
-        line_box_.AddChild(&item_result, box->text_top,
+        line_box_.AddChild(item, std::move(item_result.shape_result),
+                           item_result.TextOffset(), box->text_top,
                            item_result.inline_size - hyphen_inline_size,
                            box->text_height, item.BidiLevel());
         PlaceHyphen(item_result, hyphen_inline_size, box);
       } else {
-        line_box_.AddChild(&item_result, box->text_top, item_result.inline_size,
-                           box->text_height, item.BidiLevel());
+        line_box_.AddChild(item, std::move(item_result.shape_result),
+                           item_result.TextOffset(), box->text_top,
+                           item_result.inline_size, box->text_height,
+                           item.BidiLevel());
       }
       has_logical_text_items = true;
 
@@ -458,8 +461,10 @@ void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
     box->EnsureTextMetrics(*item.Style(), baseline_type_);
 
   NGTextFragmentBuilder text_builder(ConstraintSpace().GetWritingMode());
-  text_builder.SetItem(line_info.ItemsData().text_content, item_result,
-                       box->text_height);
+  text_builder.SetItem(line_info.ItemsData().text_content, item,
+                       std::move(item_result->shape_result),
+                       item_result->TextOffset(),
+                       {item_result->inline_size, box->text_height});
   line_box_.AddChild(text_builder.ToTextFragment(), box->text_top,
                      item_result->inline_size, item.BidiLevel());
 }
@@ -1141,8 +1146,8 @@ void NGInlineLayoutAlgorithm::BidiReorder(TextDirection base_direction) {
   for (unsigned logical_index : indices_in_visual_order) {
     visual_items.AddChild(std::move(line_box_[logical_index]));
     DCHECK(!line_box_[logical_index].HasInFlowFragment() ||
-           // |item_result| will not be null by moving.
-           line_box_[logical_index].item_result);
+           // |inline_item| will not be null by moving.
+           line_box_[logical_index].inline_item);
   }
   DCHECK_EQ(line_box_.size(), visual_items.size());
   line_box_ = std::move(visual_items);

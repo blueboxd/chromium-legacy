@@ -247,9 +247,19 @@ TEST_F(SearchPermissionsServiceTest, InitializationInconsistent) {
       GetContentSetting(kGoogleAusURL, ContentSettingsType::NOTIFICATIONS));
 }
 
-TEST_F(SearchPermissionsServiceTest, OffTheRecord) {
-  // Service isn't constructed for an OTR profile.
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+TEST_F(SearchPermissionsServiceTest, Incognito) {
+  // Service isn't constructed for Incognito profile.
+  Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
+  SearchPermissionsService* service =
+      SearchPermissionsService::Factory::GetForBrowserContext(
+          incognito_profile);
+  EXPECT_EQ(nullptr, service);
+}
+
+TEST_F(SearchPermissionsServiceTest, NonPrimaryOffTheRecord) {
+  // Service isn't constructed for non-primary OTR profiles.
+  Profile* otr_profile = profile()->GetOffTheRecordProfile(
+      Profile::OTRProfileID("Test::SearchPermissions"));
   SearchPermissionsService* service =
       SearchPermissionsService::Factory::GetForBrowserContext(otr_profile);
   EXPECT_EQ(nullptr, service);

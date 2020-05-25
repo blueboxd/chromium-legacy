@@ -42,7 +42,8 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
 
   void StartPage(const gfx::Size& page_size,
                  const gfx::Rect& content_area,
-                 float scale_factor) override;
+                 float scale_factor,
+                 mojom::PageOrientation page_orientation) override;
   bool FinishPage() override;
   bool FinishDocument() override;
 
@@ -87,9 +88,11 @@ class PRINTING_EXPORT MetafileSkia : public Metafile {
   // is returned is owned by this MetafileSkia object and does not
   // need to be ref()ed or unref()ed.  The canvas will remain valid
   // until FinishPage() or FinishDocument() is called.
-  cc::PaintCanvas* GetVectorCanvasForNewPage(const gfx::Size& page_size,
-                                             const gfx::Rect& content_area,
-                                             float scale_factor);
+  cc::PaintCanvas* GetVectorCanvasForNewPage(
+      const gfx::Size& page_size,
+      const gfx::Rect& content_area,
+      float scale_factor,
+      mojom::PageOrientation page_orientation);
 
   // This is used for painting content of out-of-process subframes.
   // For such a subframe, since the content is in another process, we create a

@@ -311,6 +311,8 @@ void WebAppSyncBridge::OnDatabaseOpened(
     base::OnceClosure callback,
     Registry registry,
     std::unique_ptr<syncer::MetadataBatch> metadata_batch) {
+  DCHECK(database_->is_opened());
+
   // Provide sync metadata to the processor _before_ any local changes occur.
   change_processor()->ModelReadyToSync(std::move(metadata_batch));
 

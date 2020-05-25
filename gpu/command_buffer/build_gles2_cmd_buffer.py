@@ -1843,6 +1843,8 @@ _FUNCTION_INFO = {
     'expectation': False,
   },
   'ColorMaskiOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
+    'unit_test': False,
     'extension': 'OES_draw_buffers_indexed',
   },
   'ContextVisibilityHintCHROMIUM': {
@@ -1972,6 +1974,8 @@ _FUNCTION_INFO = {
     },
   },
   'BlendEquationiOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
+    'unit_test': False,
     'extension': 'OES_draw_buffers_indexed',
     'valid_args': {
       '1': 'GL_FUNC_SUBTRACT',
@@ -1986,6 +1990,8 @@ _FUNCTION_INFO = {
     },
   },
   'BlendEquationSeparateiOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
+    'unit_test': False,
     'extension': 'OES_draw_buffers_indexed',
     'valid_args': {
       '1': 'GL_FUNC_SUBTRACT',
@@ -1997,6 +2003,8 @@ _FUNCTION_INFO = {
     'state': 'BlendFunc',
   },
   'BlendFunciOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
+    'unit_test': False,
     'extension': 'OES_draw_buffers_indexed',
   },
   'BlendFuncSeparate': {
@@ -2004,6 +2012,8 @@ _FUNCTION_INFO = {
     'state': 'BlendFunc',
   },
   'BlendFuncSeparateiOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
+    'unit_test': False,
     'extension': 'OES_draw_buffers_indexed',
   },
   'BlendBarrierKHR': {
@@ -2117,6 +2127,7 @@ _FUNCTION_INFO = {
     'client_test': False,
   },
   'DisableiOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
     'extension': 'OES_draw_buffers_indexed',
     'decoder_func': 'DoDisableiOES',
     'impl_func': False,
@@ -2183,6 +2194,7 @@ _FUNCTION_INFO = {
     'client_test': False,
   },
   'EnableiOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
     'extension': 'OES_draw_buffers_indexed',
     'decoder_func': 'DoEnableiOES',
     'impl_func': False,
@@ -2780,6 +2792,8 @@ _FUNCTION_INFO = {
     'expectation': False,
   },
   'IsEnablediOES': {
+    'extension_flag': 'oes_draw_buffers_indexed',
+    'unit_test': False,
     'extension': 'OES_draw_buffers_indexed',
     'type': 'Is',
     'decoder_func': 'DoIsEnablediOES',

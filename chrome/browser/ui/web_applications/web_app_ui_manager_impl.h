@@ -34,6 +34,9 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
   explicit WebAppUiManagerImpl(Profile* profile);
   ~WebAppUiManagerImpl() override;
 
+  void Start() override;
+  void Shutdown() override;
+
   WebAppDialogManager& dialog_manager();
 
   // WebAppUiManager:
@@ -73,6 +76,7 @@ class WebAppUiManagerImpl : public BrowserListObserver, public WebAppUiManager {
 
   std::map<AppId, std::vector<base::OnceClosure>> windows_closed_requests_map_;
   std::map<AppId, size_t> num_windows_for_apps_map_;
+  bool started_ = false;
 
   base::WeakPtrFactory<WebAppUiManagerImpl> weak_ptr_factory_{this};
 

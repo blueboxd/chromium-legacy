@@ -14,7 +14,6 @@
 namespace blink {
 
 class LayoutObject;
-struct NGInlineItemResult;
 
 // This class represents an item in a line, after line break, but still mutable
 // and in the logical coordinate system.
@@ -50,12 +49,16 @@ struct NGLogicalLineItem {
         children_count(children_count),
         bidi_level(bidi_level) {}
   // Create an in-flow text fragment.
-  NGLogicalLineItem(NGInlineItemResult* item_result,
+  NGLogicalLineItem(const NGInlineItem& inline_item,
+                    scoped_refptr<const ShapeResultView> shape_result,
+                    const NGTextOffset& text_offset,
                     LayoutUnit block_offset,
                     LayoutUnit inline_size,
                     LayoutUnit text_height,
                     UBiDiLevel bidi_level)
-      : item_result(item_result),
+      : inline_item(&inline_item),
+        shape_result(std::move(shape_result)),
+        text_offset(text_offset),
         rect(LayoutUnit(), block_offset, LayoutUnit(), text_height),
         inline_size(inline_size),
         bidi_level(bidi_level) {}
@@ -94,16 +97,11 @@ struct NGLogicalLineItem {
         bidi_level(bidi_level) {}
 
   bool HasInFlowFragment() const {
-    if (fragment_item)
-      return true;
-    if (fragment)
-      return true;
-    if (item_result)
-      return true;
-    if (layout_result && !layout_result->PhysicalFragment().IsFloating())
-      return true;
-
-    return false;
+    return fragment_item || fragment || inline_item ||
+           (layout_result && !layout_result->PhysicalFragment().IsFloating());
+  }
+  bool HasInFlowOrFloatingFragment() const {
+    return fragment_item || fragment || inline_item || layout_result;
   }
   bool HasOutOfFlowFragment() const { return out_of_flow_positioned_box; }
   bool HasFragment() const {
@@ -128,6 +126,7 @@ struct NGLogicalLineItem {
   const LogicalOffset& Offset() const { return rect.offset; }
   LayoutUnit InlineOffset() const { return rect.offset.inline_offset; }
   const LogicalSize& Size() const { return rect.size; }
+  LogicalSize MarginSize() const { return {inline_size, Size().block_size}; }
   const NGPhysicalFragment* PhysicalFragment() const {
     if (layout_result)
       return &layout_result->PhysicalFragment();
@@ -143,8 +142,12 @@ struct NGLogicalLineItem {
   scoped_refptr<NGFragmentItem> fragment_item;
   scoped_refptr<const NGLayoutResult> layout_result;
   scoped_refptr<const NGPhysicalTextFragment> fragment;
-  // |NGInlineItemResult| to create a text fragment from.
-  NGInlineItemResult* item_result = nullptr;
+
+  // Data to create a text fragment from.
+  const NGInlineItem* inline_item = nullptr;
+  scoped_refptr<const ShapeResultView> shape_result;
+  NGTextOffset text_offset;
+
   LayoutObject* out_of_flow_positioned_box = nullptr;
   LayoutObject* unpositioned_float = nullptr;
   // The offset of the border box, initially in this child coordinate system.

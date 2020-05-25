@@ -215,6 +215,10 @@ static std::string ToString(bool b) {
   return b ? "true" : "false";
 }
 
+static std::string ToString(int i) {
+  return base::NumberToString(i);
+}
+
 static std::string ToString(const std::string& string) {
   return '"' + string + '"';
 }
@@ -261,6 +265,7 @@ static std::string ToString(const vm_tools::apps::App& app) {
 
 static std::string ToString(const vm_tools::apps::ApplicationList& list) {
   return "{apps: " + Join(list.apps()) +
+         ", vm_type: " + ToString(list.vm_type()) +
          ", vm_name: " + ToString(list.vm_name()) +
          ", container_name: " + ToString(list.container_name()) +
          ", owner_id: " + ToString(list.owner_id()) + "}";

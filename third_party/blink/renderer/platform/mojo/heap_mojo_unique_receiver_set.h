@@ -31,9 +31,7 @@ class HeapMojoUniqueReceiverSet {
       mojo::UniquePtrImplRefTraits<Interface, Deleter>>::ImplPointerType;
 
   explicit HeapMojoUniqueReceiverSet(ContextLifecycleNotifier* context)
-      : wrapper_(MakeGarbageCollected<Wrapper>(context)) {
-    DCHECK(context);
-  }
+      : wrapper_(MakeGarbageCollected<Wrapper>(context)) {}
   HeapMojoUniqueReceiverSet(const HeapMojoUniqueReceiverSet&) = delete;
   HeapMojoUniqueReceiverSet& operator=(const HeapMojoUniqueReceiverSet&) =
       delete;

@@ -665,12 +665,12 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
         chrome::NOTIFICATION_PROFILE_CREATED,
         content::NotificationService::AllSources());
 
-    otr_profile = profile->GetOffTheRecordProfile();
+    otr_profile = profile->GetPrimaryOTRProfile();
     profile_created_observer.Wait();
 
     EXPECT_EQ(profile_created_observer.source(),
               content::Source<Profile>(otr_profile));
-    EXPECT_TRUE(profile->HasOffTheRecordProfile());
+    EXPECT_TRUE(profile->HasPrimaryOTRProfile());
     EXPECT_TRUE(otr_profile->IsOffTheRecord());
     EXPECT_TRUE(otr_profile->IsPrimaryOTRProfile());
     EXPECT_TRUE(otr_profile->IsIncognitoProfile());
@@ -698,7 +698,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, Notifications) {
       profile_destroyed_observer.Wait();
     }
 
-    EXPECT_FALSE(profile->HasOffTheRecordProfile());
+    EXPECT_FALSE(profile->HasPrimaryOTRProfile());
   }
 
   // Destroy the regular profile.

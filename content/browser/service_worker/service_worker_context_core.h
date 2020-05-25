@@ -400,7 +400,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   // |container_host_by_uuid_| owns container hosts for service worker clients.
   // Container hosts for service worker execution contexts are owned by
-  // ServiceWorkerProviderHost.
+  // ServiceWorkerHost.
   ContainerHostByClientUUIDMap container_host_by_uuid_;
 
   std::unique_ptr<

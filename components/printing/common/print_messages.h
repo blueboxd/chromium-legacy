@@ -45,6 +45,7 @@ struct PrintMsg_Print_Params {
   gfx::Rect printable_area;
   int margin_top;
   int margin_left;
+  printing::mojom::PageOrientation page_orientation;
   gfx::Size dpi;
   double scale_factor;
   bool rasterize_pdf;

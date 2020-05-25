@@ -499,7 +499,9 @@ NOINLINE scoped_refptr<const NGLayoutResult>
 NGBlockLayoutAlgorithm::LayoutWithItemsBuilder(
     const NGInlineNode& first_child,
     NGInlineChildLayoutContext* context) {
-  NGFragmentItemsBuilder items_builder(first_child);
+  NGFragmentItemsBuilder items_builder(first_child,
+                                       container_builder_.GetWritingMode(),
+                                       container_builder_.Direction());
   container_builder_.SetItemsBuilder(&items_builder);
   context->SetItemsBuilder(&items_builder);
   scoped_refptr<const NGLayoutResult> result = Layout(context);
@@ -1009,10 +1011,13 @@ bool NGBlockLayoutAlgorithm::TryReuseFragmentsFromCache(
 
   const auto& children = container_builder_.Children();
   const wtf_size_t children_before = children.size();
+  NGFragmentItemsBuilder* items_builder = container_builder_.ItemsBuilder();
   const NGConstraintSpace& space = ConstraintSpace();
-  const auto result = container_builder_.ItemsBuilder()->AddPreviousItems(
-      *previous_items, space.GetWritingMode(), space.Direction(),
-      previous_fragment.Size(), &container_builder_, /* stop_at_dirty */ true);
+  DCHECK_EQ(items_builder->GetWritingMode(), space.GetWritingMode());
+  DCHECK_EQ(items_builder->Direction(), space.Direction());
+  const auto result = items_builder->AddPreviousItems(
+      *previous_items, previous_fragment.Size(), &container_builder_,
+      /* stop_at_dirty */ true);
 
   if (UNLIKELY(!result.succeeded)) {
     DCHECK_EQ(children.size(), children_before);

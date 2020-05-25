@@ -414,8 +414,10 @@ void WebAppDatabase::OnAllMetadataRead(
       registry.emplace(app_id, std::move(web_app));
   }
 
-  std::move(callback).Run(std::move(registry), std::move(metadata_batch));
   opened_ = true;
+  // This should be a tail call: a callback code may indirectly call |this|
+  // methods, like WebAppDatabase::Write()
+  std::move(callback).Run(std::move(registry), std::move(metadata_batch));
 }
 
 void WebAppDatabase::OnDataWritten(

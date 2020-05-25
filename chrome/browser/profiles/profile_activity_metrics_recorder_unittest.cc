@@ -65,7 +65,7 @@ class ProfileActivityMetricsRecorderTest : public testing::Test {
   }
 
   void ActivateIncognitoBrowser(Profile* profile) {
-    ActivateBrowser(profile->GetOffTheRecordProfile());
+    ActivateBrowser(profile->GetPrimaryOTRProfile());
   }
 
   void SimulateUserEvent() {

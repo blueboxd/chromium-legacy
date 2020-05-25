@@ -18,6 +18,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/win/scoped_hdc.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/printing_context.h"
 #include "printing/printing_context_win.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -145,7 +146,8 @@ TEST_F(EmfPrintingTest, PageBreak) {
     EXPECT_TRUE(emf.context());
     int pages = 3;
     while (pages) {
-      emf.StartPage(gfx::Size(), gfx::Rect(), 1);
+      emf.StartPage(gfx::Size(), gfx::Rect(), 1,
+                    mojom::PageOrientation::kUpright);
       ::Rectangle(emf.context(), 10, 10, 190, 190);
       EXPECT_TRUE(emf.FinishPage());
       --pages;

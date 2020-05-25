@@ -42,6 +42,15 @@ namespace {
 
 // Maximum number of results to show in each mixer group.
 
+// A generic value for max results, which is large enough to not interfere with
+// the actual results displayed. This should be used by providers that configure
+// their maximum number of results within the provider itself.
+//
+// TODO(crbug.com/1028447): Use this value for other providers that don't really
+// need a max results limit. Eventually, make this an optional constraint on a
+// Group.
+constexpr size_t kGenericMaxResults = 10;
+
 // Some app results may be blacklisted(e.g. continue reading) for rendering
 // in some UI, so we need to allow returning more results than actual maximum
 // number of results to be displayed in UI.
@@ -52,7 +61,6 @@ constexpr size_t kMaxLauncherSearchResults = 2;
 constexpr size_t kMaxZeroStateFileResults = 20;
 constexpr size_t kMaxDriveQuickAccessResults = 10;
 constexpr size_t kMaxAppReinstallSearchResults = 1;
-constexpr size_t kMaxOsSettingsResults = 5;
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
 // we request twice as many Play Store apps as we can show. Note that this still
@@ -198,7 +206,7 @@ std::unique_ptr<SearchController> CreateSearchController(
 
   if (app_list_features::IsLauncherSettingsSearchEnabled()) {
     size_t os_settings_search_group_id =
-        controller->AddGroup(kMaxOsSettingsResults, 1.0, 0.0);
+        controller->AddGroup(kGenericMaxResults, 1.0, 0.0);
     controller->AddProvider(os_settings_search_group_id,
                             std::make_unique<OsSettingsProvider>(profile));
   }

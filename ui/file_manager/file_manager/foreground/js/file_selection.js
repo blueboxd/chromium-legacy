@@ -180,9 +180,11 @@ class FileSelectionHandler extends cr.EventTarget {
     this.selectionUpdateTimer_ = 0;
 
     /**
+     * The time, in ms since the epoch, when it is OK to post next throttled
+     * selection event. Can be directly compared with Date.now().
      * @private {number}
      */
-    this.lastFileSelectionTime_ = Date.now();
+    this.nextThrottledEventTime_ = 0;
 
     /**
      * @private {AllowedPaths}
@@ -220,7 +222,7 @@ class FileSelectionHandler extends cr.EventTarget {
     let updateDelay = FileSelectionHandler.UPDATE_DELAY;
     const now = Date.now();
 
-    if (now > (this.lastFileSelectionTime_ || 0) + updateDelay &&
+    if (now >= this.nextThrottledEventTime_ &&
         indexes.length <
             FileSelectionHandler.NUMBER_OF_ITEMS_HEAVY_TO_COMPUTE) {
       // The previous selection change happened a while ago and there is few
@@ -228,14 +230,11 @@ class FileSelectionHandler extends cr.EventTarget {
       // delay.
       updateDelay = 0;
     }
-    this.lastFileSelectionTime_ = now;
 
     const selection = this.selection;
     this.selectionUpdateTimer_ = setTimeout(() => {
       this.selectionUpdateTimer_ = null;
-      if (this.selection === selection) {
-        this.updateFileSelectionAsync_(selection);
-      }
+      this.updateFileSelectionAsync_(selection);
     }, updateDelay);
 
     cr.dispatchSimpleEvent(this, FileSelectionHandler.EventType.CHANGE);
@@ -258,6 +257,8 @@ class FileSelectionHandler extends cr.EventTarget {
         return;
       }
 
+      this.nextThrottledEventTime_ =
+          Date.now() + FileSelectionHandler.UPDATE_DELAY;
       cr.dispatchSimpleEvent(
           this, FileSelectionHandler.EventType.CHANGE_THROTTLED);
     });

@@ -115,19 +115,12 @@ class AccessibilityFocusHighlightBrowserTest : public InProcessBrowserTest {
 
 // Smoke test that ensures that when a node gets focus, the layer with the
 // focus highlight actually gets drawn.
-//
-// Flaky on Mac. TODO(crbug.com/1083806): Enable this test.
-#if defined(OS_MACOSX)
-#define MAYBE_DrawsHighlight DISABLED_DrawsHighlight
-#else
-#define MAYBE_DrawsHighlight DrawsHighlight
-#endif
-IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest,
-                       MAYBE_DrawsHighlight) {
+IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest, DrawsHighlight) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("data:text/html,"
                       "<body style='background-color: rgb(204, 255, 255)'>"
-                      "<input id='textfield' style='width: 100%'>"));
+                      "<input id='textfield' "
+                      " style='width: 100%; height: 100px;'>"));
 
   AccessibilityFocusHighlight::SetNoFadeForTesting();
   AccessibilityFocusHighlight::SkipActivationCheckForTesting();
@@ -139,13 +132,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest,
     base::RunLoop().RunUntilIdle();
     image = CaptureWindowContents();
   } while (CountPercentPixelsWithColor(image, SkColorSetRGB(204, 255, 255)) <
-           90.0f);
+           80.0f);
 
-  // Initially less than 0.01% of the image should be the focus ring's highlight
+  // Initially less than 0.02% of the image should be the focus ring's highlight
   // color.
   SkColor highlight_color =
       AccessibilityFocusHighlight::GetHighlightColorForTesting();
-  ASSERT_LT(CountPercentPixelsWithColor(image, highlight_color), 0.01f);
+  ASSERT_LT(CountPercentPixelsWithColor(image, highlight_color), 0.02f);
 
   // Focus something.
   content::WebContents* web_contents =
@@ -153,10 +146,10 @@ IN_PROC_BROWSER_TEST_F(AccessibilityFocusHighlightBrowserTest,
   std::string script("document.getElementById('textfield').focus();");
   EXPECT_TRUE(content::ExecuteScript(web_contents, script));
 
-  // Now wait until at least 0.1% of the image has the focus ring's highlight
+  // Now wait until at least 0.5% of the image has the focus ring's highlight
   // color. If it never does, the test will time out.
   do {
     base::RunLoop().RunUntilIdle();
     image = CaptureWindowContents();
-  } while (CountPercentPixelsWithColor(image, highlight_color) < 0.1f);
+  } while (CountPercentPixelsWithColor(image, highlight_color) < 0.5f);
 }

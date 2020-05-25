@@ -17,7 +17,7 @@ class RenderFrameHost;
 class RenderFrameHostImpl;
 class DedicatedWorkerHost;
 class SharedWorkerHost;
-class ServiceWorkerProviderHost;
+class ServiceWorkerHost;
 
 namespace internal {
 
@@ -52,11 +52,11 @@ void PopulateBinderMapWithContext(
 url::Origin GetContextForHost(SharedWorkerHost* host);
 
 // Registers the handlers for interfaces requested by service workers.
-void PopulateBinderMap(ServiceWorkerProviderHost* host, mojo::BinderMap* map);
+void PopulateBinderMap(ServiceWorkerHost* host, mojo::BinderMap* map);
 void PopulateBinderMapWithContext(
-    ServiceWorkerProviderHost* host,
+    ServiceWorkerHost* host,
     mojo::BinderMapWithContext<const ServiceWorkerVersionInfo&>* map);
-ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerProviderHost* host);
+ServiceWorkerVersionInfo GetContextForHost(ServiceWorkerHost* host);
 
 }  // namespace internal
 

@@ -31,7 +31,7 @@ void VersionUpdaterWin::CheckForUpdate(const StatusCallback& callback,
   // There is no supported integration with Google Update for Chromium.
   callback_ = callback;
 
-  callback_.Run(CHECKING, 0, false, std::string(), 0, base::string16());
+  callback_.Run(CHECKING, 0, false, false, std::string(), 0, base::string16());
   DoBeginUpdateCheck(false /* !install_update_if_possible */);
 }
 
@@ -52,18 +52,20 @@ void VersionUpdaterWin::OnUpdateCheckComplete(
 
   // Notify the caller that the update is now beginning and initiate it.
   DoBeginUpdateCheck(true /* install_update_if_possible */);
-  callback_.Run(UPDATING, 0, false, std::string(), 0, base::string16());
+  callback_.Run(UPDATING, 0, false, false, std::string(), 0, base::string16());
 }
 
 void VersionUpdaterWin::OnUpgradeProgress(int progress,
                                           const base::string16& new_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  callback_.Run(UPDATING, progress, false, std::string(), 0, base::string16());
+  callback_.Run(UPDATING, progress, false, false, std::string(), 0,
+                base::string16());
 }
 
 void VersionUpdaterWin::OnUpgradeComplete(const base::string16& new_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  callback_.Run(NEARLY_UPDATED, 0, false, std::string(), 0, base::string16());
+  callback_.Run(NEARLY_UPDATED, 0, false, false, std::string(), 0,
+                base::string16());
 }
 
 void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
@@ -94,7 +96,7 @@ void VersionUpdaterWin::OnError(GoogleUpdateErrorCode error_code,
       }
       break;
   }
-  callback_.Run(status, 0, false, std::string(), 0, message);
+  callback_.Run(status, 0, false, false, std::string(), 0, message);
 }
 
 void VersionUpdaterWin::DoBeginUpdateCheck(bool install_update_if_possible) {
@@ -107,7 +109,7 @@ void VersionUpdaterWin::DoBeginUpdateCheck(bool install_update_if_possible) {
 
 void VersionUpdaterWin::OnPendingRestartCheck(bool is_update_pending_restart) {
   callback_.Run(is_update_pending_restart ? NEARLY_UPDATED : UPDATED, 0, false,
-                std::string(), 0, base::string16());
+                false, std::string(), 0, base::string16());
 }
 
 VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {

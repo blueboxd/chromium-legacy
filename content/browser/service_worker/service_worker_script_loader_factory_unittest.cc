@@ -45,12 +45,12 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
         context->registry(), registration_.get(), script_url_,
         blink::mojom::ScriptType::kClassic);
 
-    provider_host_ = CreateProviderHostForServiceWorkerContext(
+    worker_host_ = CreateServiceWorkerHost(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         version_.get(), context->AsWeakPtr(), &remote_endpoint_);
 
     factory_ = std::make_unique<ServiceWorkerScriptLoaderFactory>(
-        helper_->context()->AsWeakPtr(), provider_host_->GetWeakPtr(),
+        helper_->context()->AsWeakPtr(), worker_host_->GetWeakPtr(),
         helper_->url_loader_factory_getter()->GetNetworkFactory());
   }
 
@@ -79,7 +79,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
   GURL script_url_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host_;
+  std::unique_ptr<ServiceWorkerHost> worker_host_;
   ServiceWorkerRemoteContainerEndpoint remote_endpoint_;
   std::unique_ptr<ServiceWorkerScriptLoaderFactory> factory_;
 };
@@ -102,8 +102,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryTest, Redundant) {
   EXPECT_EQ(net::ERR_ABORTED, client.completion_status().error_code);
 }
 
-TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoProviderHost) {
-  provider_host_.reset();
+TEST_F(ServiceWorkerScriptLoaderFactoryTest, NoWorkerHost) {
+  worker_host_.reset();
 
   network::TestURLLoaderClient client;
   mojo::PendingRemote<network::mojom::URLLoader> loader =

@@ -25,6 +25,7 @@ Polymer({
         message: '',
         progress: 0,
         rollback: false,
+        powerwash: false,
         status: UpdateStatus.DISABLED
       },
     },
@@ -102,14 +103,7 @@ Polymer({
     showRelaunch_: {
       type: Boolean,
       value: false,
-    },
-
-    /** @private */
-    showRelaunchAndPowerwash_: {
-      type: Boolean,
-      value: false,
-      computed: 'computeShowRelaunchAndPowerwash_(' +
-          'currentUpdateStatusEvent_, targetChannel_, currentChannel_)',
+      computed: 'computeShowRelaunch_(currentUpdateStatusEvent_)',
     },
 
     /** @private */
@@ -156,10 +150,8 @@ Polymer({
     'updateShowUpdateStatus_(' +
         'hasEndOfLife_, currentUpdateStatusEvent_,' +
         'hasCheckedForUpdates_)',
-    'updateShowRelaunch_(currentUpdateStatusEvent_, targetChannel_,' +
-        'currentChannel_)',
     'updateShowButtonContainer_(' +
-        'showRelaunch_, showRelaunchAndPowerwash_, showCheckUpdates_)',
+        'showRelaunch_, showCheckUpdates_)',
     'handleCrostiniEnabledChanged_(prefs.crostini.enabled.value)',
   ],
 
@@ -301,14 +293,12 @@ Polymer({
    * @private
    */
   updateShowButtonContainer_() {
-    this.showButtonContainer_ = this.showRelaunch_ ||
-        this.showRelaunchAndPowerwash_ || this.showCheckUpdates_;
+    this.showButtonContainer_ = this.showRelaunch_ || this.showCheckUpdates_;
   },
 
   /** @private */
-  updateShowRelaunch_() {
-    this.showRelaunch_ =
-        this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && !this.isRollback_();
+  computeShowRelaunch_() {
+    return this.checkStatus_(UpdateStatus.NEARLY_UPDATED);
   },
 
   /**
@@ -445,15 +435,8 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  isRollback_() {
-    assert(this.currentChannel_.length > 0);
-    assert(this.targetChannel_.length > 0);
-    if (this.currentUpdateStatusEvent_.rollback) {
-      return true;
-    }
-    // Channel switch to a more stable channel is also a rollback
-    return settings.isTargetChannelMoreStable(
-        this.currentChannel_, this.targetChannel_);
+  isPowerwash_() {
+    return this.currentUpdateStatusEvent_.powerwash;
   },
 
   /** @private */
@@ -462,24 +445,18 @@ Polymer({
         settings.routes.DETAILED_BUILD_INFO);
   },
 
-  /** @private */
-  onRelaunchAndPowerwashClick_() {
-    settings.recordSettingChange();
-    if (this.currentUpdateStatusEvent_.rollback) {
-      // Wipe already initiated, simply relaunch.
-      this.lifetimeBrowserProxy_.relaunch();
-    } else {
-      this.lifetimeBrowserProxy_.factoryReset(
-          /* requestTpmFirmwareUpdate= */ false);
-    }
-  },
-
   /**
-   * @return {boolean}
+   * @return {string}
    * @private
    */
-  computeShowRelaunchAndPowerwash_() {
-    return this.checkStatus_(UpdateStatus.NEARLY_UPDATED) && this.isRollback_();
+  getRelaunchButtonText_() {
+    if (this.checkStatus_(UpdateStatus.NEARLY_UPDATED)) {
+      if (this.isPowerwash_()) {
+        return this.i18nAdvanced('aboutRelaunchAndPowerwash');
+      } else {
+        return this.i18nAdvanced('aboutRelaunch');
+      }
+    }
   },
 
   /** @private */

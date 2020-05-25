@@ -53,7 +53,7 @@ void PrintRenderFrameHelper::PrintPageInternal(
   float final_scale_factor = css_scale_factor * webkit_page_shrink_factor;
 
   cc::PaintCanvas* canvas = metafile->GetVectorCanvasForNewPage(
-      page_size, canvas_area, final_scale_factor);
+      page_size, canvas_area, final_scale_factor, params.page_orientation);
   if (!canvas)
     return;
 

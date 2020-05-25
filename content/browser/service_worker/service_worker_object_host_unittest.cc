@@ -282,7 +282,7 @@ TEST_F(ServiceWorkerObjectHostTest,
   // execution context (e.g., self.registration.active inside the active
   // worker and self.serviceWorker).
   ServiceWorkerContainerHost* container_host =
-      version_->provider_host()->container_host();
+      version_->worker_host()->container_host();
   blink::mojom::ServiceWorkerObjectInfoPtr info =
       container_host->GetOrCreateServiceWorkerObjectHost(version_)
           ->CreateCompleteObjectInfoToSend();
@@ -436,7 +436,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnConnectionError) {
   // Set up the case where the last reference to the version is owned by the
   // service worker object host.
   ServiceWorkerContainerHost* container_host =
-      version_->provider_host()->container_host();
+      version_->worker_host()->container_host();
   ServiceWorkerVersion* version_rawptr = version_.get();
   version_ = nullptr;
   ASSERT_TRUE(version_rawptr->HasOneRef());

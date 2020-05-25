@@ -329,11 +329,7 @@ bool WebAppInstallFinalizer::WasExternalAppUninstalledByUser(
 void WebAppInstallFinalizer::FinalizeUpdate(
     const WebApplicationInfo& web_app_info,
     InstallFinalizedCallback callback) {
-  if (!started_) {
-    std::move(callback).Run(AppId(),
-                            InstallResultCode::kWebAppProviderNotReady);
-    return;
-  }
+  CHECK(started_);
 
   const AppId app_id = GenerateAppIdFromURL(web_app_info.app_url);
   const WebApp* existing_web_app = GetWebAppRegistrar().GetAppById(app_id);

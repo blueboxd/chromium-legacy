@@ -24,7 +24,6 @@ class NGInlineBreakToken;
 class NGLogicalLineItems;
 class NGPhysicalTextFragment;
 struct NGTextFragmentPaintInfo;
-struct NGInlineItemResult;
 
 // This class represents a text run or a box in an inline formatting context.
 //
@@ -353,7 +352,10 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
 
  private:
   // Create a text item.
-  NGFragmentItem(NGInlineItemResult&& item_result, const PhysicalSize& size);
+  NGFragmentItem(const NGInlineItem& inline_item,
+                 scoped_refptr<const ShapeResultView> shape_result,
+                 const NGTextOffset& text_offset,
+                 const PhysicalSize& size);
 
   const LayoutBox* InkOverflowOwnerBox() const;
   LayoutBox* MutableInkOverflowOwnerBox();

@@ -108,16 +108,20 @@ class NativeControlsVideoPlayer {
       switch (key) {
           // Handle debug shortcut keys.
         case 'Ctrl+Shift+I':
-          chrome.fileManagerPrivate.openInspector('normal');
+          chrome.fileManagerPrivate.openInspector(
+              chrome.fileManagerPrivate.InspectionType.NORMAL);
           break;
         case 'Ctrl+Shift+J':
-          chrome.fileManagerPrivate.openInspector('console');
+          chrome.fileManagerPrivate.openInspector(
+              chrome.fileManagerPrivate.InspectionType.CONSOLE);
           break;
         case 'Ctrl+Shift+C':
-          chrome.fileManagerPrivate.openInspector('element');
+          chrome.fileManagerPrivate.openInspector(
+              chrome.fileManagerPrivate.InspectionType.ELEMENT);
           break;
         case 'Ctrl+Shift+B':
-          chrome.fileManagerPrivate.openInspector('background');
+          chrome.fileManagerPrivate.openInspector(
+              chrome.fileManagerPrivate.InspectionType.BACKGROUND);
           break;
 
         case 'k':
@@ -262,7 +266,7 @@ class NativeControlsVideoPlayer {
       oldTop = window.screen.availHeight / 2;
     }
 
-    let appWindow = chrome.app.window.current();
+    const appWindow = chrome.app.window.current();
     appWindow.innerBounds.width = Math.round(newWidth);
     appWindow.innerBounds.height = Math.round(newHeight);
     appWindow.outerBounds.left =

@@ -94,8 +94,9 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       has_fragment_items_ = true;
       NGFragmentItems* items =
           const_cast<NGFragmentItems*>(ComputeItemsAddress());
-      items_builder->ToFragmentItems(block_or_line_writing_mode,
-                                     builder->Direction(), Size(), items);
+      DCHECK_EQ(items_builder->GetWritingMode(), block_or_line_writing_mode);
+      DCHECK_EQ(items_builder->Direction(), builder->Direction());
+      items_builder->ToFragmentItems(Size(), items);
     }
   }
 

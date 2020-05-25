@@ -419,9 +419,10 @@ void NGBoxFragmentBuilder::ComputeInlineContainerGeometry(
   if (items_builder_) {
     // To access the items correctly we need to convert them to the physical
     // coordinate space.
+    DCHECK_EQ(items_builder_->GetWritingMode(), GetWritingMode());
+    DCHECK_EQ(items_builder_->Direction(), Direction());
     GatherInlineContainerFragmentsFromItems(
-        items_builder_->Items(GetWritingMode(), Direction(),
-                              ToPhysicalSize(Size(), GetWritingMode())),
+        items_builder_->Items(ToPhysicalSize(Size(), GetWritingMode())),
         PhysicalOffset(), inline_containing_block_map, &containing_linebox_map);
     return;
   }

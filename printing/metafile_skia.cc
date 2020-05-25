@@ -17,6 +17,7 @@
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "printing/mojom/print.mojom.h"
 #include "printing/print_settings.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
@@ -116,7 +117,12 @@ bool MetafileSkia::InitFromData(base::span<const uint8_t> data) {
 
 void MetafileSkia::StartPage(const gfx::Size& page_size,
                              const gfx::Rect& content_area,
-                             float scale_factor) {
+                             float scale_factor,
+                             mojom::PageOrientation page_orientation) {
+  gfx::Size physical_page_size = page_size;
+  if (page_orientation != mojom::PageOrientation::kUpright)
+    physical_page_size.SetSize(page_size.height(), page_size.width());
+
   DCHECK_GT(page_size.width(), 0);
   DCHECK_GT(page_size.height(), 0);
   DCHECK_GT(scale_factor, 0.0f);
@@ -126,17 +132,26 @@ void MetafileSkia::StartPage(const gfx::Size& page_size,
 
   float inverse_scale = 1.0 / scale_factor;
   cc::PaintCanvas* canvas = data_->recorder.beginRecording(
-      inverse_scale * page_size.width(), inverse_scale * page_size.height());
+      inverse_scale * physical_page_size.width(),
+      inverse_scale * physical_page_size.height());
   // Recording canvas is owned by the |data_->recorder|.  No ref() necessary.
-  if (content_area != gfx::Rect(page_size)) {
+  if (content_area != gfx::Rect(page_size) ||
+      page_orientation != mojom::PageOrientation::kUpright) {
     canvas->scale(inverse_scale, inverse_scale);
+    if (page_orientation == mojom::PageOrientation::kRotateLeft) {
+      canvas->translate(0, physical_page_size.height());
+      canvas->rotate(-90);
+    } else if (page_orientation == mojom::PageOrientation::kRotateRight) {
+      canvas->translate(physical_page_size.width(), 0);
+      canvas->rotate(90);
+    }
     SkRect sk_content_area = gfx::RectToSkRect(content_area);
     canvas->clipRect(sk_content_area);
     canvas->translate(sk_content_area.x(), sk_content_area.y());
     canvas->scale(scale_factor, scale_factor);
   }
 
-  data_->size = gfx::SizeFToSkSize(gfx::SizeF(page_size));
+  data_->size = gfx::SizeFToSkSize(gfx::SizeF(physical_page_size));
   data_->scale_factor = scale_factor;
   // We scale the recording canvas's size so that
   // canvas->getTotalMatrix() returns a value that ignores the scale
@@ -147,8 +162,9 @@ void MetafileSkia::StartPage(const gfx::Size& page_size,
 cc::PaintCanvas* MetafileSkia::GetVectorCanvasForNewPage(
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
-    float scale_factor) {
-  StartPage(page_size, content_area, scale_factor);
+    float scale_factor,
+    mojom::PageOrientation page_orientation) {
+  StartPage(page_size, content_area, scale_factor, page_orientation);
   return data_->recorder.getRecordingCanvas();
 }
 

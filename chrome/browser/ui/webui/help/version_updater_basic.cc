@@ -13,7 +13,8 @@ void VersionUpdaterBasic::CheckForUpdate(
   const Status status = UpgradeDetector::GetInstance()->notify_upgrade()
                             ? NEARLY_UPDATED
                             : DISABLED;
-  status_callback.Run(status, 0, false, std::string(), 0, base::string16());
+  status_callback.Run(status, 0, false, false, std::string(), 0,
+                      base::string16());
 }
 
 VersionUpdater* VersionUpdater::Create(content::WebContents* web_contents) {

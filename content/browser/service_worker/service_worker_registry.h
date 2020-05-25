@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -27,6 +28,7 @@ namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerVersion;
+class ServiceWorkerStorageControlImpl;
 
 class ServiceWorkerRegistryTest;
 FORWARD_DECLARE_TEST(ServiceWorkerRegistryTest, StoragePolicyChange);
@@ -78,7 +80,7 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
 
   ~ServiceWorkerRegistry();
 
-  ServiceWorkerStorage* storage() const { return storage_.get(); }
+  ServiceWorkerStorage* storage() const;
 
   // Creates a new in-memory representation of registration. Can be null when
   // storage is disabled. This method must be called after storage is
@@ -345,10 +347,18 @@ class CONTENT_EXPORT ServiceWorkerRegistry {
   void OnStoragePolicyChanged();
   bool ShouldPurgeOnShutdown(const url::Origin& origin);
 
+  void BindRemoteStorageControlIfNeeded();
+
   // The ServiceWorkerContextCore object must outlive this.
   ServiceWorkerContextCore* const context_;
 
-  std::unique_ptr<ServiceWorkerStorage> storage_;
+  mojo::Remote<storage::mojom::ServiceWorkerStorageControl>
+      remote_storage_control_;
+  // TODO(crbug.com/1055677): Remove this field after all storage operations are
+  // called via |remote_storage_control_|. An instance of this impl should live
+  // in the storage service.
+  std::unique_ptr<ServiceWorkerStorageControlImpl> storage_control_;
+
   bool is_storage_disabled_ = false;
 
   const scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;

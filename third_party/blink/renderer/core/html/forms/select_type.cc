@@ -616,6 +616,9 @@ class ListBoxSelectType final : public SelectType {
   void Trace(Visitor* visitor) const override;
 
   bool DefaultEventHandler(const Event& event) override;
+  void DidSelectOption(HTMLOptionElement* element,
+                       HTMLSelectElement::SelectOptionFlags flags,
+                       bool should_update_popup) override;
   void OptionRemoved(HTMLOptionElement& option) override;
   void DidBlur() override;
   void DidSetSuggestedOption(HTMLOptionElement* option) override;
@@ -910,6 +913,27 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
     return false;
   }
   return false;
+}
+
+void ListBoxSelectType::DidSelectOption(
+    HTMLOptionElement* element,
+    HTMLSelectElement::SelectOptionFlags flags,
+    bool should_update_popup) {
+  // We should update active selection after finishing OPTION state change
+  // because SetActiveSelectionAnchor() stores OPTION's selection state.
+  if (element) {
+    const bool is_single = !select_->IsMultiple();
+    const bool deselect_other_options =
+        flags & HTMLSelectElement::kDeselectOtherOptionsFlag;
+    // SetActiveSelectionAnchor is O(N).
+    if (!select_->active_selection_anchor_ || is_single ||
+        deselect_other_options)
+      select_->SetActiveSelectionAnchor(element);
+    if (!select_->active_selection_end_ || is_single || deselect_other_options)
+      select_->SetActiveSelectionEnd(element);
+  }
+
+  SelectType::DidSelectOption(element, flags, should_update_popup);
 }
 
 void ListBoxSelectType::OptionRemoved(HTMLOptionElement& option) {

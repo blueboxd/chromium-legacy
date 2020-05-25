@@ -169,6 +169,77 @@ def _make_forward_declarations(cg_context):
             source_class_fwd_decls, source_struct_fwd_decls)
 
 
+def _is_default_ctor_available(dictionary):
+    for member in dictionary.members:
+        if member.default_value is None:
+            continue
+        default_expr = make_default_value_expr(member.idl_type,
+                                               member.default_value)
+        if default_expr.initializer_deps:
+            return False
+    return True
+
+
+def make_create_dict_funcs(cg_context):
+    assert isinstance(cg_context, CodeGenContext)
+
+    dictionary = cg_context.dictionary
+    name = "Create"
+    return_type = "${class_name}*"
+
+    decls = ListNode()
+    defs = ListNode()
+
+    if _is_default_ctor_available(dictionary):
+        func_def = CxxFuncDefNode(name=name,
+                                  arg_decls=[],
+                                  return_type=return_type,
+                                  static=True)
+        decls.append(func_def)
+        func_def.set_base_template_vars(cg_context.template_bindings())
+        func_def.body.append(
+            TextNode("return MakeGarbageCollected<${class_name}>();"))
+
+    func_def = CxxFuncDefNode(name=name,
+                              arg_decls=["v8::Isolate* isolate"],
+                              return_type=return_type,
+                              static=True)
+    decls.append(func_def)
+    func_def.set_base_template_vars(cg_context.template_bindings())
+    func_def.body.append(
+        TextNode("return MakeGarbageCollected<${class_name}>(isolate);"))
+
+    arg_decls = [
+        "v8::Isolate* isolate",
+        "v8::Local<v8::Value> v8_value",
+        "ExceptionState& exception_state",
+    ]
+    func_decl = CxxFuncDeclNode(name=name,
+                                arg_decls=arg_decls,
+                                return_type=return_type,
+                                static=True)
+    decls.append(func_decl)
+    func_def = CxxFuncDefNode(name=name,
+                              class_name=cg_context.class_name,
+                              arg_decls=arg_decls,
+                              return_type=return_type)
+    defs.append(func_def)
+    func_def.set_base_template_vars(cg_context.template_bindings())
+
+    func_def.body.append(
+        TextNode("""\
+DCHECK(!v8_value.IsEmpty());
+
+${class_name}* dictionary = Create(isolate);
+dictionary->FillMembers(isolate, v8_value, exception_state);
+if (exception_state.HadException()) {
+  return nullptr;
+}
+return dictionary;"""))
+
+    return decls, defs
+
+
 def make_dict_constructors(cg_context):
     decls = ListNode()
     defs = ListNode()
@@ -176,11 +247,39 @@ def make_dict_constructors(cg_context):
     dictionary = cg_context.dictionary
     class_name = blink_class_name(dictionary)
 
+    if _is_default_ctor_available(dictionary):
+        ctor_decl = CxxFuncDeclNode(name=class_name,
+                                    arg_decls=[],
+                                    return_type="",
+                                    default=True)
+        decls.append(ctor_decl)
+
     ctor_decl = CxxFuncDeclNode(name=class_name,
-                                arg_decls=[],
+                                arg_decls=["v8::Isolate* isolate"],
                                 return_type="",
-                                default=True)
+                                explicit=True)
     decls.append(ctor_decl)
+    ctor_decl.set_base_template_vars(cg_context.template_bindings())
+
+    member_initializer_list = ["BaseClass(${isolate})"]
+    for member in dictionary.own_members:
+        if member.default_value is None:
+            continue
+        default_expr = make_default_value_expr(member.idl_type,
+                                               member.default_value)
+        if default_expr.initializer_deps == ["isolate"]:
+            _1 = _blink_member_name(member).value_var
+            _2 = default_expr.initializer_expr
+            member_initializer_list.append(_format("{_1}({_2})", _1=_1, _2=_2))
+
+    ctor_def = CxxFuncDefNode(name=class_name,
+                              class_name=class_name,
+                              arg_decls=["v8::Isolate* isolate"],
+                              return_type="",
+                              member_initializer_list=member_initializer_list)
+    defs.append(ctor_def)
+    ctor_def.set_base_template_vars(cg_context.template_bindings())
+    ctor_def.add_template_var("isolate", "isolate")
 
     return decls, defs
 
@@ -315,7 +414,8 @@ def make_dict_member_vars(cg_context):
     if member.default_value:
         default_expr = make_default_value_expr(member.idl_type,
                                                member.default_value)
-        if default_expr.initializer_expr is not None:
+        if (default_expr.initializer_expr is not None
+                and not default_expr.initializer_deps):
             default_value_initializer = _format("{{{}}}",
                                                 default_expr.initializer_expr)
 
@@ -464,55 +564,6 @@ if ({_1}()) {{
     body.append(T("return true;"))
 
     return func_decl, func_def
-
-
-def make_dict_create_funcs(cg_context):
-    assert isinstance(cg_context, CodeGenContext)
-
-    name = "Create"
-    arg_decls = [
-        "v8::Isolate* isolate",
-        "v8::Local<v8::Value> v8_value",
-        "ExceptionState& exception_state",
-    ]
-    return_type = "${class_name}*"
-
-    default_create_def = CxxFuncDefNode(
-        name=name, arg_decls=[], return_type=return_type, static=True)
-    default_create_def.set_base_template_vars(cg_context.template_bindings())
-
-    default_create_def.body.append(
-        TextNode("return MakeGarbageCollected<${class_name}>();"))
-
-    create_decl = CxxFuncDeclNode(
-        name=name, arg_decls=arg_decls, return_type=return_type, static=True)
-    create_def = CxxFuncDefNode(
-        name=name,
-        class_name=cg_context.class_name,
-        arg_decls=arg_decls,
-        return_type=return_type)
-    create_def.set_base_template_vars(cg_context.template_bindings())
-
-    create_def.body.append(
-        TextNode("""\
-DCHECK(!v8_value.IsEmpty());
-
-${class_name}* dictionary = MakeGarbageCollected<${class_name}>();
-dictionary->FillMembers(isolate, v8_value, exception_state);
-if (exception_state.HadException()) {
-  return nullptr;
-}
-return dictionary;"""))
-
-    decls = ListNode([
-        default_create_def,
-        create_decl,
-    ])
-    defs = ListNode([
-        create_def,
-    ])
-
-    return decls, defs
 
 
 def make_fill_dict_members_func(cg_context):
@@ -758,7 +809,7 @@ def generate_dictionary(dictionary):
         TextNode("using BaseClass = ${base_class_name};"))
 
     # Create functions
-    create_decl, create_def = make_dict_create_funcs(cg_context)
+    create_decl, create_def = make_create_dict_funcs(cg_context)
 
     # Constructor and destructor
     constructor_decls, constructor_defs = make_dict_constructors(cg_context)

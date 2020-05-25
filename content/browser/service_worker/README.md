@@ -169,9 +169,8 @@ to request the renderer to start and stop the service worker thread.
 > use the same "embedded worker" classes. But it turned out only service workers
 > use it.
 
-A running service worker has a corresponding host in the browser process
-called `ServiceWorkerProviderHost` ([to be renamed
-`ServiceWorkerHost`](https://crbug.com/931087)).
+A running service worker has a corresponding host in the browser process called
+`ServiceWorkerHost`.
 
 In addition, service worker clients (windows and web workers) are represented by
 a `ServiceWorkerContainerHost` in the browser process. This host holds

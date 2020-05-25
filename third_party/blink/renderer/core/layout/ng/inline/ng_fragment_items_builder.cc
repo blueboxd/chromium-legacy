@@ -11,7 +11,14 @@
 
 namespace blink {
 
-NGFragmentItemsBuilder::NGFragmentItemsBuilder(const NGInlineNode& node) {
+NGFragmentItemsBuilder::NGFragmentItemsBuilder(WritingMode writing_mode,
+                                               TextDirection direction)
+    : writing_mode_(writing_mode), direction_(direction) {}
+
+NGFragmentItemsBuilder::NGFragmentItemsBuilder(const NGInlineNode& node,
+                                               WritingMode writing_mode,
+                                               TextDirection direction)
+    : NGFragmentItemsBuilder(writing_mode, direction) {
   const NGInlineItemsData& items_data = node.ItemsData(false);
   text_content_ = items_data.text_content;
   const NGInlineItemsData& first_line = node.ItemsData(true);
@@ -136,8 +143,6 @@ void NGFragmentItemsBuilder::AddListMarker(
 NGFragmentItemsBuilder::AddPreviousItemsResult
 NGFragmentItemsBuilder::AddPreviousItems(
     const NGFragmentItems& items,
-    WritingMode writing_mode,
-    TextDirection direction,
     const PhysicalSize& container_size,
     NGBoxFragmentBuilder* container_builder,
     bool stop_at_dirty) {
@@ -160,7 +165,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
   // This is needed because the container size may be different, in that case,
   // the physical offsets are different when `writing-mode: vertial-rl`.
   DCHECK(!is_converted_to_physical_);
-  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
+  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode_);
 
   const NGFragmentItem* const end_item =
       stop_at_dirty ? items.EndOfReusableItems() : nullptr;
@@ -176,7 +181,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
 
     const LogicalOffset item_offset =
         item.OffsetInContainerBlock().ConvertToLogical(
-            writing_mode, direction, container_size, item.Size());
+            writing_mode_, direction_, container_size, item.Size());
     items_.emplace_back(&item, item_offset);
 
     if (item.Type() == NGFragmentItem::kLine) {
@@ -197,7 +202,7 @@ NGFragmentItemsBuilder::AddPreviousItems(
         container_builder->AddChild(*item.LineBoxFragment(), item_offset);
         last_line_start_item = &item;
         used_block_size +=
-            item.Size().ConvertToLogical(writing_mode).block_size;
+            item.Size().ConvertToLogical(writing_mode_).block_size;
       }
       continue;
     }
@@ -220,28 +225,24 @@ NGFragmentItemsBuilder::AddPreviousItems(
 }
 
 const NGFragmentItemsBuilder::ItemWithOffsetList& NGFragmentItemsBuilder::Items(
-    WritingMode writing_mode,
-    TextDirection direction,
     const PhysicalSize& outer_size) {
-  ConvertToPhysical(writing_mode, direction, outer_size);
+  ConvertToPhysical(outer_size);
   return items_;
 }
 
 // Convert internal logical offsets to physical. Items are kept with logical
 // offset until outer box size is determined.
-void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
-                                               TextDirection direction,
-                                               const PhysicalSize& outer_size) {
+void NGFragmentItemsBuilder::ConvertToPhysical(const PhysicalSize& outer_size) {
   if (is_converted_to_physical_)
     return;
 
   // Children of lines have line-relative offsets. Use line-writing mode to
   // convert their logical offsets.
-  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode);
+  const WritingMode line_writing_mode = ToLineWritingMode(writing_mode_);
 
   for (ItemWithOffset* iter = items_.begin(); iter != items_.end(); ++iter) {
     NGFragmentItem* item = const_cast<NGFragmentItem*>(iter->item.get());
-    item->SetOffset(iter->offset.ConvertToPhysical(writing_mode, direction,
+    item->SetOffset(iter->offset.ConvertToPhysical(writing_mode_, direction_,
                                                    outer_size, item->Size()));
 
     // Transform children of lines separately from children of the block,
@@ -279,12 +280,10 @@ base::Optional<LogicalOffset> NGFragmentItemsBuilder::LogicalOffsetFor(
   return base::nullopt;
 }
 
-void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,
-                                             TextDirection direction,
-                                             const PhysicalSize& outer_size,
+void NGFragmentItemsBuilder::ToFragmentItems(const PhysicalSize& outer_size,
                                              void* data) {
   DCHECK(text_content_);
-  ConvertToPhysical(writing_mode, direction, outer_size);
+  ConvertToPhysical(outer_size);
   new (data) NGFragmentItems(this);
 }
 

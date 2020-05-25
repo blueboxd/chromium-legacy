@@ -285,7 +285,8 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
         drivefsUrlMatches[1],
         entry => {
           chrome.fileManagerPrivate.getThumbnail(
-              entry, !!this.request_.crop, thumbnail => {
+              /** @type {FileEntry} */ (entry), !!this.request_.crop,
+              thumbnail => {
                 if (!thumbnail) {
                   onFailure();
                   return;

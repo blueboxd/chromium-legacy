@@ -53,6 +53,7 @@ class CORE_EXPORT DocumentLoadTiming final {
 
   void MarkNavigationStart();
   void SetNavigationStart(base::TimeTicks);
+  void MarkLastBackForwardCacheRestoreNavigationStart(base::TimeTicks);
 
   void SetInputStart(base::TimeTicks);
 
@@ -81,6 +82,9 @@ class CORE_EXPORT DocumentLoadTiming final {
 
   base::TimeTicks InputStart() const { return input_start_; }
   base::TimeTicks NavigationStart() const { return navigation_start_; }
+  base::TimeTicks LastBackForwardCacheRestoreNavigationStart() const {
+    return last_bfcache_restore_navigation_start_;
+  }
   base::TimeTicks UnloadEventStart() const { return unload_event_start_; }
   base::TimeTicks UnloadEventEnd() const { return unload_event_end_; }
   base::TimeTicks RedirectStart() const { return redirect_start_; }
@@ -115,6 +119,7 @@ class CORE_EXPORT DocumentLoadTiming final {
   base::TimeDelta reference_wall_time_;
   base::TimeTicks input_start_;
   base::TimeTicks navigation_start_;
+  base::TimeTicks last_bfcache_restore_navigation_start_;
   base::TimeTicks unload_event_start_;
   base::TimeTicks unload_event_end_;
   base::TimeTicks redirect_start_;

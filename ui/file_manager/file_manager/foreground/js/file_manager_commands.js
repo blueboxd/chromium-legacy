@@ -2263,7 +2263,8 @@ CommandHandler.COMMANDS_['unpin-folder'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['zoom-in'] = new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.zoom('in');
+    chrome.fileManagerPrivate.zoom(
+        chrome.fileManagerPrivate.ZoomOperationType.IN);
   }
 };
 
@@ -2272,7 +2273,8 @@ CommandHandler.COMMANDS_['zoom-in'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['zoom-out'] = new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.zoom('out');
+    chrome.fileManagerPrivate.zoom(
+        chrome.fileManagerPrivate.ZoomOperationType.OUT);
   }
 };
 
@@ -2281,7 +2283,8 @@ CommandHandler.COMMANDS_['zoom-out'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['zoom-reset'] = new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.zoom('reset');
+    chrome.fileManagerPrivate.zoom(
+        chrome.fileManagerPrivate.ZoomOperationType.RESET);
   }
 };
 
@@ -2342,7 +2345,8 @@ CommandHandler.COMMANDS_['sort-by-date'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['inspect-normal'] = new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.openInspector('normal');
+    chrome.fileManagerPrivate.openInspector(
+        chrome.fileManagerPrivate.InspectionType.NORMAL);
   }
 };
 
@@ -2351,7 +2355,8 @@ CommandHandler.COMMANDS_['inspect-normal'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['inspect-console'] = new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.openInspector('console');
+    chrome.fileManagerPrivate.openInspector(
+        chrome.fileManagerPrivate.InspectionType.CONSOLE);
   }
 };
 
@@ -2360,7 +2365,8 @@ CommandHandler.COMMANDS_['inspect-console'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['inspect-element'] = new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.openInspector('element');
+    chrome.fileManagerPrivate.openInspector(
+        chrome.fileManagerPrivate.InspectionType.ELEMENT);
   }
 };
 
@@ -2369,7 +2375,8 @@ CommandHandler.COMMANDS_['inspect-element'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['inspect-background'] = new class extends Command {
   execute(event, fileManager) {
-    chrome.fileManagerPrivate.openInspector('background');
+    chrome.fileManagerPrivate.openInspector(
+        chrome.fileManagerPrivate.InspectionType.BACKGROUND);
   }
 };
 

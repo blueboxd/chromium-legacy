@@ -734,6 +734,7 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   align-items: center;
   border-radius: 4px;
   height: 40px;
+  transition: background-color 200ms ease;
 }
 
 .dialog-header.files-ng #search-wrapper.has-cursor,

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // Namespace
-var importer = importer || {};
+window.importer = window.importer || {};
 
 /**
  * A duplicate finder for Google Drive.
@@ -138,7 +138,6 @@ importer.DriveDuplicateFinder = class DriveDuplicateFinder {
               volumeId, [hash],
               /**
                * @param {!Object<string, !Array<string>>|undefined} urls
-               * @this {importer.DriveDuplicateFinder}
                */
               urls => {
                 const elapsedTime = new Date().getTime() - startTime;

@@ -55,7 +55,7 @@ PaintTiming& PaintTiming::From(Document& document) {
 }
 
 void PaintTiming::MarkFirstPaint() {
-  // Test that m_firstPaint is non-zero here, as well as in setFirstPaint, so
+  // Test that |first_paint_| is non-zero here, as well as in setFirstPaint, so
   // we avoid invoking monotonicallyIncreasingTime() on every call to
   // markFirstPaint().
   if (!first_paint_.is_null())
@@ -64,7 +64,7 @@ void PaintTiming::MarkFirstPaint() {
 }
 
 void PaintTiming::MarkFirstContentfulPaint() {
-  // Test that m_firstContentfulPaint is non-zero here, as well as in
+  // Test that |first_contentful_paint_| is non-zero here, as well as in
   // setFirstContentfulPaint, so we avoid invoking
   // monotonicallyIncreasingTime() on every call to
   // markFirstContentfulPaint().
@@ -204,6 +204,9 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
     case PaintEvent::kFirstPaint:
       SetFirstPaintSwap(timestamp);
       return;
+    case PaintEvent::kFirstPaintAfterBackForwardCacheRestore:
+      SetFirstPaintAfterBackForwardCacheRestoreSwap(timestamp);
+      return;
     case PaintEvent::kFirstContentfulPaint:
       SetFirstContentfulPaintSwap(timestamp);
       return;
@@ -261,12 +264,23 @@ void PaintTiming::SetFirstImagePaintSwap(base::TimeTicks stamp) {
   NotifyPaintTimingChanged();
 }
 
+void PaintTiming::SetFirstPaintAfterBackForwardCacheRestoreSwap(
+    base::TimeTicks stamp) {
+  first_paint_after_back_forward_cache_restore_swap_ = stamp;
+  NotifyPaintTimingChanged();
+}
+
 void PaintTiming::ReportSwapResultHistogram(WebSwapResult result) {
   DEFINE_STATIC_LOCAL(
       EnumerationHistogram, did_swap_histogram,
       ("PageLoad.Internal.Renderer.PaintTiming.SwapResult",
        static_cast<uint32_t>(WebSwapResult::kSwapResultLast) + 1));
   did_swap_histogram.Count(static_cast<uint32_t>(result));
+}
+
+void PaintTiming::OnRestoredFromBackForwardCache() {
+  first_paint_after_back_forward_cache_restore_swap_ = base::TimeTicks();
+  RegisterNotifySwapTime(PaintEvent::kFirstPaintAfterBackForwardCacheRestore);
 }
 
 }  // namespace blink

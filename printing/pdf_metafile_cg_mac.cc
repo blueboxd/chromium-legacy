@@ -14,6 +14,7 @@
 #include "base/numerics/math_constants.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
+#include "printing/mojom/print.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -105,7 +106,10 @@ bool PdfMetafileCg::InitFromData(base::span<const uint8_t> data) {
 
 void PdfMetafileCg::StartPage(const gfx::Size& page_size,
                               const gfx::Rect& content_area,
-                              float scale_factor) {
+                              float scale_factor,
+                              mojom::PageOrientation page_orientation) {
+  DCHECK_EQ(page_orientation, mojom::PageOrientation::kUpright)
+      << "Not implemented";
   DCHECK(context_.get());
   DCHECK(!page_is_open_);
 

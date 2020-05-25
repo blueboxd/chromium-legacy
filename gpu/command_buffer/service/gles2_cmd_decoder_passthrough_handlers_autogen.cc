@@ -4924,6 +4924,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleEnableiOES(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::EnableiOES& c =
       *static_cast<const volatile gles2::cmds::EnableiOES*>(cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLuint index = static_cast<GLuint>(c.index);
   error::Error error = DoEnableiOES(target, index);
@@ -4938,6 +4942,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleDisableiOES(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::DisableiOES& c =
       *static_cast<const volatile gles2::cmds::DisableiOES*>(cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLuint index = static_cast<GLuint>(c.index);
   error::Error error = DoDisableiOES(target, index);
@@ -4952,6 +4960,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleBlendEquationiOES(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::BlendEquationiOES& c =
       *static_cast<const volatile gles2::cmds::BlendEquationiOES*>(cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLuint buf = static_cast<GLuint>(c.buf);
   GLenum mode = static_cast<GLenum>(c.mode);
   error::Error error = DoBlendEquationiOES(buf, mode);
@@ -4967,6 +4979,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleBlendEquationSeparateiOES(
   const volatile gles2::cmds::BlendEquationSeparateiOES& c =
       *static_cast<const volatile gles2::cmds::BlendEquationSeparateiOES*>(
           cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLuint buf = static_cast<GLuint>(c.buf);
   GLenum modeRGB = static_cast<GLenum>(c.modeRGB);
   GLenum modeAlpha = static_cast<GLenum>(c.modeAlpha);
@@ -4982,6 +4998,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleBlendFunciOES(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::BlendFunciOES& c =
       *static_cast<const volatile gles2::cmds::BlendFunciOES*>(cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLuint buf = static_cast<GLuint>(c.buf);
   GLenum src = static_cast<GLenum>(c.src);
   GLenum dst = static_cast<GLenum>(c.dst);
@@ -4998,6 +5018,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleBlendFuncSeparateiOES(
   const volatile gles2::cmds::BlendFuncSeparateiOES& c =
       *static_cast<const volatile gles2::cmds::BlendFuncSeparateiOES*>(
           cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLuint buf = static_cast<GLuint>(c.buf);
   GLenum srcRGB = static_cast<GLenum>(c.srcRGB);
   GLenum dstRGB = static_cast<GLenum>(c.dstRGB);
@@ -5016,6 +5040,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleColorMaskiOES(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::ColorMaskiOES& c =
       *static_cast<const volatile gles2::cmds::ColorMaskiOES*>(cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLuint buf = static_cast<GLuint>(c.buf);
   GLboolean r = static_cast<GLboolean>(c.r);
   GLboolean g = static_cast<GLboolean>(c.g);
@@ -5033,6 +5061,10 @@ error::Error GLES2DecoderPassthroughImpl::HandleIsEnablediOES(
     const volatile void* cmd_data) {
   const volatile gles2::cmds::IsEnablediOES& c =
       *static_cast<const volatile gles2::cmds::IsEnablediOES*>(cmd_data);
+  if (!features().oes_draw_buffers_indexed) {
+    return error::kUnknownCommand;
+  }
+
   GLenum target = static_cast<GLenum>(c.target);
   GLuint index = static_cast<GLuint>(c.index);
   typedef cmds::IsEnablediOES::Result Result;

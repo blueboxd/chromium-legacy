@@ -1187,7 +1187,7 @@ class FileManager extends cr.EventTarget {
             (entries, firstForSession) => {
               showToast = showToast || firstForSession;
               for (const entry of entries) {
-                this.crostini_.registerSharedPath(vmName, entry);
+                this.crostini_.registerSharedPath(vmName, assert(entry));
               }
               resolve(entries.length);
             });

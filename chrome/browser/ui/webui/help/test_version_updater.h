@@ -42,6 +42,7 @@ class TestVersionUpdater : public VersionUpdater {
   Status status_ = Status::UPDATED;
   int progress_ = 0;
   bool rollback_ = false;
+  bool powerwash_ = false;
   std::string version_;
   int64_t update_size_ = 0;
   base::string16 message_;

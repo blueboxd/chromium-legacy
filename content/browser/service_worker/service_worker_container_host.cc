@@ -1038,14 +1038,14 @@ ServiceWorkerRegistration* ServiceWorkerContainerHost::controller_registration()
 }
 
 void ServiceWorkerContainerHost::set_service_worker_host(
-    ServiceWorkerProviderHost* service_worker_host) {
+    ServiceWorkerHost* service_worker_host) {
   DCHECK(IsContainerForServiceWorker());
   DCHECK(!service_worker_host_);
   DCHECK(service_worker_host);
   service_worker_host_ = service_worker_host;
 }
 
-ServiceWorkerProviderHost* ServiceWorkerContainerHost::service_worker_host() {
+ServiceWorkerHost* ServiceWorkerContainerHost::service_worker_host() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(IsContainerForServiceWorker());
   return service_worker_host_;

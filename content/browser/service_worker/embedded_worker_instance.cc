@@ -27,7 +27,7 @@
 #include "content/browser/service_worker/service_worker_content_settings_proxy_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_script_loader_factory.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/url_loader_factory_params_helper.h"
@@ -1009,7 +1009,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
 
   // The host must be alive as long as |params->provider_info| is alive.
-  owner_version_->provider_host()->CompleteStartWorkerPreparation(
+  owner_version_->worker_host()->CompleteStartWorkerPreparation(
       process_id(), params->provider_info->browser_interface_broker
                         .InitWithNewPipeAndPassReceiver());
 
@@ -1477,7 +1477,7 @@ EmbeddedWorkerInstance::MakeScriptLoaderFactoryRemote(
           std::move(script_bundle));
   script_loader_factory_ = mojo::MakeSelfOwnedReceiver(
       std::make_unique<ServiceWorkerScriptLoaderFactory>(
-          context_, owner_version_->provider_host()->GetWeakPtr(),
+          context_, owner_version_->worker_host()->GetWeakPtr(),
           std::move(script_bundle_factory)),
       script_loader_factory_remote.InitWithNewPipeAndPassReceiver());
 

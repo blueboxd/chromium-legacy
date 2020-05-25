@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 15: Uncaught TypeError: host.createShadowRoot is not a function
+CONSOLE ERROR: line 19: Uncaught TypeError: a.getDestinationInsertionPoints is not a function
 Distributions from disconnected subtrees should be cleared when inserted again to avoid cycles.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

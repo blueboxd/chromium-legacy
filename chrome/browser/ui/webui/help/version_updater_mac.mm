@@ -108,7 +108,7 @@ void VersionUpdaterMac::CheckForUpdate(
   } else {
     // There is no glue, or the application is on a read-only filesystem.
     // Updates and promotions are impossible.
-    status_callback_.Run(DISABLED, 0, false, std::string(), 0,
+    status_callback_.Run(DISABLED, 0, false, false, std::string(), 0,
                          base::string16());
   }
 }
@@ -231,7 +231,7 @@ void VersionUpdaterMac::UpdateStatus(NSDictionary* dictionary) {
   }
 
   if (!status_callback_.is_null())
-    status_callback_.Run(status, 0, false, std::string(), 0, message);
+    status_callback_.Run(status, 0, false, false, std::string(), 0, message);
 
   PromotionState promotion_state;
   if (!promote_callback_.is_null()) {

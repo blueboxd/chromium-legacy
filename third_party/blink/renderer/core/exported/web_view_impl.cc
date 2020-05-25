@@ -140,6 +140,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
+#include "third_party/blink/renderer/core/paint/paint_timing.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
@@ -3372,6 +3373,17 @@ void WebViewImpl::RestorePageFromBackForwardCache(
     if (!local_frame)
       continue;
     local_frame->RemoveBackForwardCacheEviction();
+
+    if (local_frame->View()) {
+      Document* document = local_frame->GetDocument();
+      if (document)
+        PaintTiming::From(*document).OnRestoredFromBackForwardCache();
+      DocumentLoader* loader = local_frame->Loader().GetDocumentLoader();
+      if (loader) {
+        loader->GetTiming().MarkLastBackForwardCacheRestoreNavigationStart(
+            navigation_start);
+      }
+    }
   }
 
   // Resume the page.

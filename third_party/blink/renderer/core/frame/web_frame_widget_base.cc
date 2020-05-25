@@ -83,9 +83,12 @@ WebFrameWidgetBase::WebFrameWidgetBase(
     : widget_base_(std::make_unique<WidgetBase>(this,
                                                 std::move(widget_host),
                                                 std::move(widget))),
-      client_(&client),
-      frame_widget_host_(std::move(frame_widget_host)),
-      receiver_(this, std::move(frame_widget)) {}
+      client_(&client) {
+  frame_widget_host_.Bind(std::move(frame_widget_host),
+                          ThreadScheduler::Current()->IPCTaskRunner());
+  receiver_.Bind(std::move(frame_widget),
+                 ThreadScheduler::Current()->IPCTaskRunner());
+}
 
 WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 
@@ -373,9 +376,9 @@ Page* WebFrameWidgetBase::GetPage() const {
   return View()->GetPage();
 }
 
-const mojo::AssociatedRemote<mojom::blink::FrameWidgetHost>&
+mojom::blink::FrameWidgetHost*
 WebFrameWidgetBase::GetAssociatedFrameWidgetHost() const {
-  return frame_widget_host_;
+  return frame_widget_host_.get();
 }
 
 void WebFrameWidgetBase::DidAcquirePointerLock() {
@@ -404,6 +407,8 @@ void WebFrameWidgetBase::RequestDecode(
 void WebFrameWidgetBase::Trace(Visitor* visitor) const {
   visitor->Trace(local_root_);
   visitor->Trace(current_drag_data_);
+  visitor->Trace(frame_widget_host_);
+  visitor->Trace(receiver_);
 }
 
 void WebFrameWidgetBase::SetNeedsRecalculateRasterScales() {

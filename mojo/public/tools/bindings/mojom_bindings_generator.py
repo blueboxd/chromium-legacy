@@ -50,10 +50,11 @@ import crbug_1001171
 
 
 _BUILTIN_GENERATORS = {
-  "c++": "mojom_cpp_generator",
-  "javascript": "mojom_js_generator",
-  "java": "mojom_java_generator",
-  "typescript": "mojom_ts_generator",
+    "c++": "mojom_cpp_generator",
+    "javascript": "mojom_js_generator",
+    "java": "mojom_java_generator",
+    "mojolpm": "mojom_mojolpm_generator",
+    "typescript": "mojom_ts_generator",
 }
 
 
@@ -163,6 +164,8 @@ class MojomProcessor(object):
           language_map = self._typemap.get(language, {})
           language_map.update(typemap)
           self._typemap[language] = language_map
+    if 'c++' in self._typemap:
+      self._typemap['mojolpm'] = self._typemap['c++']
 
   def _GenerateModule(self, args, remaining_args, generator_modules,
                       rel_filename, imported_filename_stack):
@@ -276,10 +279,11 @@ def main():
   generate_parser.add_argument("--filelist", help="mojom input file list")
   generate_parser.add_argument("-d", "--depth", dest="depth", default=".",
                                help="depth from source root")
-  generate_parser.add_argument("-g", "--generators",
+  generate_parser.add_argument("-g",
+                               "--generators",
                                dest="generators_string",
                                metavar="GENERATORS",
-                               default="c++,javascript,java",
+                               default="c++,javascript,java,mojolpm",
                                help="comma-separated list of generators")
   generate_parser.add_argument(
       "--gen_dir", dest="gen_directories", action="append", metavar="directory",

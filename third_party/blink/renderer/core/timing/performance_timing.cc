@@ -321,12 +321,30 @@ base::TimeTicks PerformanceTiming::NavigationStartAsMonotonicTime() const {
   return timing->NavigationStart();
 }
 
+uint64_t PerformanceTiming::LastBackForwardCacheRestoreNavigationStart() const {
+  DocumentLoadTiming* timing = GetDocumentLoadTiming();
+  if (!timing)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      timing->LastBackForwardCacheRestoreNavigationStart());
+}
+
 uint64_t PerformanceTiming::FirstPaint() const {
   const PaintTiming* timing = GetPaintTiming();
   if (!timing)
     return 0;
 
   return MonotonicTimeToIntegerMilliseconds(timing->FirstPaint());
+}
+
+uint64_t PerformanceTiming::FirstPaintAfterBackForwardCacheRestore() const {
+  const PaintTiming* timing = GetPaintTiming();
+  if (!timing)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      timing->FirstPaintAfterBackForwardCacheRestore());
 }
 
 uint64_t PerformanceTiming::FirstImagePaint() const {

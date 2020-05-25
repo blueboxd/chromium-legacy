@@ -35,8 +35,8 @@
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -458,7 +458,7 @@ void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
 
   // Ensure the live registration during starting worker so that the worker can
   // get associated with it in
-  // ServiceWorkerProviderHost::CompleteStartWorkerPreparation.
+  // ServiceWorkerHost::CompleteStartWorkerPreparation.
   context_->registry()->FindRegistrationForId(
       registration_id_, scope_.GetOrigin(),
       base::BindOnce(
@@ -787,8 +787,8 @@ void ServiceWorkerVersion::RemoveControllee(const std::string& client_uuid) {
   embedded_worker_->UpdateForegroundPriority();
 
   // Notify observers asynchronously since this gets called during
-  // ServiceWorkerProviderHost's destructor, and we don't want observers to do
-  // work during that.
+  // ServiceWorkerHost's destructor, and we don't want observers to do work
+  // during that.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&ServiceWorkerVersion::NotifyControlleeRemoved,
                                 weak_factory_.GetWeakPtr(), client_uuid));
@@ -998,13 +998,12 @@ void ServiceWorkerVersion::InitializeGlobalScope(
         /*subresource_loader_factories=*/nullptr);
   }
 
-  DCHECK(provider_host_);
+  DCHECK(worker_host_);
   service_worker_remote_->InitializeGlobalScope(
       std::move(service_worker_host_),
-      provider_host_->container_host()
-          ->CreateServiceWorkerRegistrationObjectInfo(std::move(registration)),
-      provider_host_->container_host()->CreateServiceWorkerObjectInfoToSend(
-          this),
+      worker_host_->container_host()->CreateServiceWorkerRegistrationObjectInfo(
+          std::move(registration)),
+      worker_host_->container_host()->CreateServiceWorkerObjectInfoToSend(this),
       fetch_handler_existence_, std::move(subresource_loader_factories),
       std::move(reporting_observer_receiver_));
 }
@@ -1807,8 +1806,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
 
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-  DCHECK(!provider_host_);
-  provider_host_ = std::make_unique<ServiceWorkerProviderHost>(
+  DCHECK(!worker_host_);
+  worker_host_ = std::make_unique<content::ServiceWorkerHost>(
       provider_info->host_remote.InitWithNewEndpointAndPassReceiver(), this,
       context());
 
@@ -1926,8 +1925,8 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
     // Detach the worker. Remove |this| as a listener first; otherwise
     // OnStoppedInternal might try to restart before the new worker
     // is created. Also, protect |this|, since swapping out the
-    // EmbeddedWorkerInstance could destroy our ServiceWorkerProviderHost
-    // which could in turn destroy |this|.
+    // EmbeddedWorkerInstance could destroy our ServiceWorkerHost which could in
+    // turn destroy |this|.
     scoped_refptr<ServiceWorkerVersion> protect_this(this);
     embedded_worker_->RemoveObserver(this);
     embedded_worker_->Detach();
@@ -2212,7 +2211,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   receiver_.reset();
   pending_external_requests_.clear();
   worker_is_idle_on_renderer_ = true;
-  provider_host_.reset();
+  worker_host_.reset();
 
   for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);

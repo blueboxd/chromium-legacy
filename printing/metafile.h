@@ -12,6 +12,7 @@
 #include "base/containers/span.h"
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "printing/mojom/print.mojom-forward.h"
 #include "printing/native_drawing_context.h"
 #include "printing/printing_export.h"
 
@@ -101,7 +102,8 @@ class PRINTING_EXPORT Metafile : public MetafilePlayer {
   // in points (=1/72 in).
   virtual void StartPage(const gfx::Size& page_size,
                          const gfx::Rect& content_area,
-                         float scale_factor) = 0;
+                         float scale_factor,
+                         mojom::PageOrientation page_orientation) = 0;
 
   // Closes the current page and destroys the context used in rendering that
   // page. The results of current page will be appended into the underlying

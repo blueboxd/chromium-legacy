@@ -342,7 +342,8 @@ bool Emf::Record::SafePlayback(Emf::EnumerationContext* context) const {
 
 void Emf::StartPage(const gfx::Size& /*page_size*/,
                     const gfx::Rect& /*content_area*/,
-                    float /*scale_factor*/) {}
+                    float /*scale_factor*/,
+                    mojom::PageOrientation /*page_orientation*/) {}
 
 bool Emf::FinishPage() {
   return true;

@@ -66,6 +66,7 @@ namespace IPC {
 PrintMsg_Print_Params::PrintMsg_Print_Params()
     : margin_top(0),
       margin_left(0),
+      page_orientation(printing::mojom::PageOrientation::kUpright),
       scale_factor(1.0f),
       rasterize_pdf(false),
       document_cookie(0),
@@ -93,6 +94,7 @@ void PrintMsg_Print_Params::Reset() {
   printable_area = gfx::Rect();
   margin_top = 0;
   margin_left = 0;
+  page_orientation = printing::mojom::PageOrientation::kUpright;
   dpi = gfx::Size();
   scale_factor = 1.0f;
   rasterize_pdf = false;

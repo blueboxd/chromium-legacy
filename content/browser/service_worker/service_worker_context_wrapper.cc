@@ -28,9 +28,9 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
 #include "content/browser/service_worker/service_worker_context_watcher.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_object_host.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
@@ -796,7 +796,7 @@ void ServiceWorkerContextWrapper::DidStartServiceWorkerForMessageDispatch(
   event->message = std::move(message);
   event->source_origin = url::Origin::Create(source_origin);
   event->source_info_for_service_worker =
-      version->provider_host()
+      version->worker_host()
           ->container_host()
           ->GetOrCreateServiceWorkerObjectHost(version)
           ->CreateCompleteObjectInfoToSend();

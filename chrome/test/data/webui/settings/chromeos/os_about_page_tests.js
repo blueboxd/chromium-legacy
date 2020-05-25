@@ -9,6 +9,8 @@ cr.define('settings_about_page', function() {
      * @param {{
      *   progress: number|undefined,
      *   message: string|undefined
+     *   rollback: bool|undefined
+     *   powerwash: bool|undefined
      * }} opt_options
      */
     function fireStatusChanged(status, opt_options) {
@@ -17,6 +19,8 @@ cr.define('settings_about_page', function() {
         progress: options.progress === undefined ? 1 : options.progress,
         message: options.message,
         status: status,
+        rollback: options.rollback,
+        powerwash: options.powerwash,
       });
     }
 
@@ -155,16 +159,14 @@ cr.define('settings_about_page', function() {
        * channel are the same.
        */
       test('ButtonsUpdate_SameChannel', function() {
-        const {checkForUpdates, relaunch, relaunchAndPowerwash} = page.$;
+        const {checkForUpdates, relaunch} = page.$;
 
         assertTrue(!!relaunch);
-        assertTrue(!!relaunchAndPowerwash);
         assertTrue(!!checkForUpdates);
 
         function assertAllHidden() {
           assertTrue(checkForUpdates.hidden);
           assertTrue(relaunch.hidden);
-          assertTrue(relaunchAndPowerwash.hidden);
           // Ensure that when all buttons are hidden, the container is also
           // hidden.
           assertTrue(page.$.buttonContainer.hidden);
@@ -175,7 +177,6 @@ cr.define('settings_about_page', function() {
         fireStatusChanged(UpdateStatus.UPDATED);
         assertFalse(checkForUpdates.hidden);
         assertTrue(relaunch.hidden);
-        assertTrue(relaunchAndPowerwash.hidden);
 
         // Check that the "Check for updates" button gets hidden for certain
         // UpdateStatus values, even if the CHECKING state was never
@@ -186,7 +187,6 @@ cr.define('settings_about_page', function() {
         fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
         assertTrue(checkForUpdates.hidden);
         assertFalse(relaunch.hidden);
-        assertTrue(relaunchAndPowerwash.hidden);
 
         fireStatusChanged(UpdateStatus.CHECKING);
         assertAllHidden();
@@ -197,7 +197,6 @@ cr.define('settings_about_page', function() {
         fireStatusChanged(UpdateStatus.NEARLY_UPDATED);
         assertTrue(checkForUpdates.hidden);
         assertFalse(relaunch.hidden);
-        assertTrue(relaunchAndPowerwash.hidden);
 
         fireStatusChanged(UpdateStatus.UPDATED);
         assertAllHidden();
@@ -205,7 +204,6 @@ cr.define('settings_about_page', function() {
         fireStatusChanged(UpdateStatus.FAILED);
         assertFalse(checkForUpdates.hidden);
         assertTrue(relaunch.hidden);
-        assertTrue(relaunchAndPowerwash.hidden);
 
         fireStatusChanged(UpdateStatus.DISABLED);
         assertAllHidden();
@@ -217,24 +215,24 @@ cr.define('settings_about_page', function() {
       /**
        * Test that buttons update according to incoming
        * 'update-status-changed' events for the case where the target channel
-       * is more stable than current channel.
+       * is more stable than current channel and update will powerwash.
        */
       test('ButtonsUpdate_BetaToStable', async () => {
         aboutBrowserProxy.setChannels(
             BrowserChannel.BETA, BrowserChannel.STABLE);
-        aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
-
         await initNewPage();
+
+        fireStatusChanged(UpdateStatus.NEARLY_UPDATED, {powerwash: true});
+
         assertTrue(!!page.$.relaunch);
-        assertTrue(!!page.$.relaunchAndPowerwash);
+        assertFalse(page.$.relaunch.hidden);
 
-        assertTrue(page.$.relaunch.hidden);
-        assertFalse(page.$.relaunchAndPowerwash.hidden);
+        assertEquals(
+            page.$.relaunch.innerText,
+            loadTimeData.getString('aboutRelaunchAndPowerwash'));
 
-        page.$.relaunchAndPowerwash.click();
-        const requestTpmFirmwareUpdate =
-            await lifetimeBrowserProxy.whenCalled('factoryReset');
-        assertFalse(requestTpmFirmwareUpdate);
+        page.$.relaunch.click();
+        await lifetimeBrowserProxy.whenCalled('relaunch');
       });
 
       /**
@@ -245,39 +243,38 @@ cr.define('settings_about_page', function() {
       test('ButtonsUpdate_StableToBeta', async () => {
         aboutBrowserProxy.setChannels(
             BrowserChannel.STABLE, BrowserChannel.BETA);
-        aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
-
         await initNewPage();
-        assertTrue(!!page.$.relaunch);
-        assertTrue(!!page.$.relaunchAndPowerwash);
 
+        fireStatusChanged(UpdateStatus.NEARLY_UPDATED, {powerwash: false});
+
+        assertTrue(!!page.$.relaunch);
         assertFalse(page.$.relaunch.hidden);
-        assertTrue(page.$.relaunchAndPowerwash.hidden);
+
+        assertEquals(
+            page.$.relaunch.innerText, loadTimeData.getString('aboutRelaunch'));
 
         page.$.relaunch.click();
         await lifetimeBrowserProxy.whenCalled('relaunch');
       });
 
       /**
-       * Test that buttons update as a result of receiving a
-       * 'target-channel-changed' event (normally fired from
-       * <settings-channel-switcher-dialog>).
+       * The relaunch and powerwash button is shown if the powerwash flag is set
+       * in the update status.
        */
-      test('ButtonsUpdate_TargetChannelChangedEvent', async () => {
-        aboutBrowserProxy.setChannels(BrowserChannel.BETA, BrowserChannel.BETA);
-        aboutBrowserProxy.setUpdateStatus(UpdateStatus.NEARLY_UPDATED);
-
+      test('ButtonsUpdate_Powerwash', async () => {
         await initNewPage();
-        assertFalse(page.$.relaunch.hidden);
-        assertTrue(page.$.relaunchAndPowerwash.hidden);
 
-        page.fire('target-channel-changed', BrowserChannel.DEV);
-        assertFalse(page.$.relaunch.hidden);
-        assertTrue(page.$.relaunchAndPowerwash.hidden);
+        fireStatusChanged(UpdateStatus.NEARLY_UPDATED, {powerwash: true});
 
-        page.fire('target-channel-changed', BrowserChannel.STABLE);
-        assertTrue(page.$.relaunch.hidden);
-        assertFalse(page.$.relaunchAndPowerwash.hidden);
+        assertTrue(!!page.$.relaunch);
+        assertFalse(page.$.relaunch.hidden);
+
+        assertEquals(
+            page.$.relaunch.innerText,
+            loadTimeData.getString('aboutRelaunchAndPowerwash'));
+
+        page.$.relaunch.click();
+        await lifetimeBrowserProxy.whenCalled('relaunch');
       });
 
       /**

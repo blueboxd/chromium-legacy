@@ -47,7 +47,7 @@ function Gallery(volumeManager) {
   this.initialized_ = false;
 
   this.dataModel_ = new GalleryDataModel(this.metadataModel_);
-  var downloadVolumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
+  const downloadVolumeInfo = this.volumeManager_.getCurrentProfileVolumeInfo(
       VolumeManagerCommon.VolumeType.DOWNLOADS);
   downloadVolumeInfo.resolveDisplayRoot().then(function(entry) {
     this.dataModel_.fallbackSaveDirectory = entry;
@@ -76,7 +76,7 @@ function Gallery(volumeManager) {
   cr.ui.dialogs.BaseDialog.OK_LABEL = str('GALLERY_OK_LABEL');
   cr.ui.dialogs.BaseDialog.CANCEL_LABEL = str('GALLERY_CANCEL_LABEL');
 
-  var content = getRequiredElement('content');
+  const content = getRequiredElement('content');
   content.addEventListener('click', this.onContentClick_.bind(this));
 
   this.topToolbar_ = getRequiredElement('top-toolbar');
@@ -96,7 +96,7 @@ function Gallery(volumeManager) {
   this.filenameCanvasContext_ = this.filenameCanvas_.getContext('2d');
 
   // Set font style of canvas context to same font style with rename field.
-  var filenameEditComputedStyle = window.getComputedStyle(this.filenameEdit_);
+  const filenameEditComputedStyle = window.getComputedStyle(this.filenameEdit_);
   this.filenameCanvasContext_.font = filenameEditComputedStyle.font;
 
   this.filenameEdit_.addEventListener('blur',
@@ -107,8 +107,6 @@ function Gallery(volumeManager) {
       this.resizeRenameField_.bind(this));
   this.filenameEdit_.addEventListener('keydown',
       this.onFilenameEditKeydown_.bind(this));
-
-  var buttonSpacer = queryRequiredElement('.button-spacer', this.topToolbar_);
 
   this.prompt_ = new ImageEditorPrompt(this.container_, strf);
 
@@ -302,9 +300,9 @@ Gallery.prototype.load = function(selectedEntries) {
  */
 Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   // Add the entries to data model.
-  var items = [];
-  for (var i = 0; i < entries.length; i++) {
-    var locationInfo = this.volumeManager_.getLocationInfo(entries[i]);
+  let items = [];
+  for (let i = 0; i < entries.length; i++) {
+    const locationInfo = this.volumeManager_.getLocationInfo(entries[i]);
     if (!locationInfo) {  // Skip the item, since gone.
       return;
     }
@@ -322,11 +320,11 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
       this.dataModel_, [0, 0].concat(items));
 
   // Apply the selection.
-  var selectedSet = {};
-  for (var i = 0; i < selectedEntries.length; i++) {
+  const selectedSet = {};
+  for (let i = 0; i < selectedEntries.length; i++) {
     selectedSet[selectedEntries[i].toURL()] = true;
   }
-  for (var i = 0; i < items.length; i++) {
+  for (let i = 0; i < items.length; i++) {
     if (!selectedSet[items[i].getEntry().toURL()]) {
       continue;
     }
@@ -341,10 +339,10 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   }
 
   // Sort the selected image first
-  var containsInSelection = function(galleryItem) {
+  const containsInSelection = function(galleryItem) {
     return selectedEntries.indexOf(galleryItem.getEntry()) >= 0;
   };
-  var notContainsInSelection = function(galleryItem) {
+  const notContainsInSelection = function(galleryItem) {
     return !containsInSelection(galleryItem);
   };
   items = items.filter(containsInSelection)
@@ -352,25 +350,25 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
 
   // Load entries.
   // Use the self variable capture-by-closure because it is faster than bind.
-  var self = this;
-  var thumbnailModel = new ThumbnailModel(this.metadataModel_);
-  var loadNext = function(index) {
+  const self = this;
+  const thumbnailModel = new ThumbnailModel(this.metadataModel_);
+  const loadNext = function(index) {
     // Extract chunk.
     if (index >= items.length) {
       return;
     }
-    var item = items[index];
-    var entry = item.getEntry();
-    var metadataPromise = self.metadataModel_.get([entry],
-        GalleryItem.PREFETCH_PROPERTY_NAMES);
-    var thumbnailPromise = thumbnailModel.get([entry]);
+    const item = items[index];
+    const entry = item.getEntry();
+    const metadataPromise =
+        self.metadataModel_.get([entry], GalleryItem.PREFETCH_PROPERTY_NAMES);
+    const thumbnailPromise = thumbnailModel.get([entry]);
     return Promise.all([metadataPromise, thumbnailPromise]).then(
         function(metadataLists) {
       // Add items to the model.
       item.setMetadataItem(metadataLists[0][0]);
       item.setThumbnailMetadataItem(metadataLists[1][0]);
 
-      var event = new Event('content');
+      const event = new Event('content');
       event.item = item;
       event.oldEntry = entry;
       event.thumbnailChanged = true;
@@ -383,7 +381,7 @@ Gallery.prototype.loadInternal_ = function(entries, selectedEntries) {
   // init modes before loading images.
   if (!this.initialized_) {
     // Determine the initial mode.
-    var shouldShowThumbnail = selectedEntries.length > 1 ||
+    const shouldShowThumbnail = selectedEntries.length > 1 ||
         (this.context_.pageState &&
          this.context_.pageState.gallery === 'thumbnail');
     this.setCurrentMode_(
@@ -542,13 +540,13 @@ Gallery.prototype.changeCurrentMode_ = function(mode, activate, opt_event) {
 
     this.changingMode_ = true;
 
-    var onModeChanged = function() {
+    const onModeChanged = function() {
       this.changingMode_ = false;
       fulfill();
     }.bind(this);
 
-    var thumbnailIndex = Math.max(0, this.selectionModel_.selectedIndex);
-    var thumbnailRect = ImageRect.createFromBounds(
+    const thumbnailIndex = Math.max(0, this.selectionModel_.selectedIndex);
+    const thumbnailRect = ImageRect.createFromBounds(
         this.thumbnailMode_.getThumbnailRect(thumbnailIndex));
 
     if (mode === this.thumbnailMode_) {
@@ -558,7 +556,7 @@ Gallery.prototype.changeCurrentMode_ = function(mode, activate, opt_event) {
           function() {
             // Show thumbnail mode and perform animation.
             this.thumbnailMode_.show();
-            var fromRect = this.slideMode_.getSelectedImageRect();
+            const fromRect = this.slideMode_.getSelectedImageRect();
             if (fromRect) {
               this.thumbnailMode_.performEnterAnimation(
                   thumbnailIndex, fromRect);
@@ -597,10 +595,11 @@ Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
     this.slideMode_.toggleEditor();
   }
 
-  var targetMode = this.currentMode_ === this.slideMode_ ?
-      this.thumbnailMode_ : this.slideMode_;
+  const targetMode = this.currentMode_ === this.slideMode_ ?
+      this.thumbnailMode_ :
+      this.slideMode_;
 
-  let activate = false;
+  const activate = false;
   this.changeCurrentMode_(targetMode, activate, opt_event).then(function() {
     if (opt_callback) {
       opt_callback();
@@ -616,23 +615,23 @@ Gallery.prototype.delete_ = function() {
   this.onUserAction_();
 
   // Clone the sorted selected indexes array.
-  var indexesToRemove = this.selectionModel_.selectedIndexes.slice();
+  const indexesToRemove = this.selectionModel_.selectedIndexes.slice();
   if (!indexesToRemove.length) {
     return;
   }
 
   /* TODO(dgozman): Implement Undo delete, Remove the confirmation dialog. */
 
-  var itemsToRemove = this.getSelectedItems();
-  var plural = itemsToRemove.length > 1;
-  var param = plural ? itemsToRemove.length : itemsToRemove[0].getFileName();
+  const itemsToRemove = this.getSelectedItems();
+  const plural = itemsToRemove.length > 1;
+  const param = plural ? itemsToRemove.length : itemsToRemove[0].getFileName();
 
   function deleteNext() {
     if (!itemsToRemove.length) {
       return;  // All deleted.
     }
 
-    var entry = itemsToRemove.pop().getEntry();
+    const entry = itemsToRemove.pop().getEntry();
     entry.remove(deleteNext, function() {
       console.error('Error deleting: ' + entry.name);
       deleteNext();
@@ -641,11 +640,11 @@ Gallery.prototype.delete_ = function() {
 
   // Prevent the Gallery from handling Esc and Enter.
   this.document_.body.removeEventListener('keydown', this.keyDownBound_);
-  var restoreListener = function() {
+  const restoreListener = function() {
     this.document_.body.addEventListener('keydown', this.keyDownBound_);
   }.bind(this);
 
-  var confirm = new FilesConfirmDialog(this.container_);
+  const confirm = new FilesConfirmDialog(this.container_);
   confirm.setOkLabel(str('DELETE_BUTTON_LABEL'));
   confirm.show(strf(plural ?
       'GALLERY_CONFIRM_DELETE_SOME' : 'GALLERY_CONFIRM_DELETE_ONE', param),
@@ -688,7 +687,7 @@ Gallery.prototype.getSelectedEntries = function() {
  * @return {?GalleryItem} Current single selection.
  */
 Gallery.prototype.getSingleSelectedItem = function() {
-  var items = this.getSelectedItems();
+  const items = this.getSelectedItems();
   if (items.length > 1) {
     console.error('Unexpected multiple selection');
     return null;
@@ -735,21 +734,25 @@ Gallery.prototype.onContentChange_ = function(event) {
  * @private
  */
 Gallery.prototype.onKeyDown_ = function(event) {
-  var keyString = util.getKeyModifiers(event) + event.key;
+  const keyString = util.getKeyModifiers(event) + event.key;
 
   // Handle debug shortcut keys.
   switch (keyString) {
     case 'Ctrl-Shift-I': // Ctrl+Shift+I
-      chrome.fileManagerPrivate.openInspector('normal');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.NORMAL);
       break;
     case 'Ctrl-Shift-J': // Ctrl+Shift+J
-      chrome.fileManagerPrivate.openInspector('console');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.CONSOLE);
       break;
     case 'Ctrl-Shift-C': // Ctrl+Shift+C
-      chrome.fileManagerPrivate.openInspector('element');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.ELEMENT);
       break;
     case 'Ctrl-Shift-B': // Ctrl+Shift+B
-      chrome.fileManagerPrivate.openInspector('background');
+      chrome.fileManagerPrivate.openInspector(
+          chrome.fileManagerPrivate.InspectionType.BACKGROUND);
       break;
   }
 
@@ -809,8 +812,8 @@ Gallery.prototype.onKeyDown_ = function(event) {
  * @private
  */
 Gallery.prototype.updateSelectionAndState_ = function() {
-  var numSelectedItems = this.selectionModel_.selectedIndexes.length;
-  var selectedEntryURL = null;
+  const numSelectedItems = this.selectionModel_.selectedIndexes.length;
+  let selectedEntryURL = null;
 
   // If it's selecting something, update the variable values.
   if (numSelectedItems) {
@@ -824,7 +827,7 @@ Gallery.prototype.updateSelectionAndState_ = function() {
         }, this);
 
     // Obtains selected item.
-    var selectedItem =
+    const selectedItem =
         this.dataModel_.item(this.selectionModel_.selectedIndex);
     this.selectedEntry_ = selectedItem.getEntry();
     selectedEntryURL = this.selectedEntry_.toURL();
@@ -902,14 +905,14 @@ Gallery.prototype.onFilenameFocus_ = function() {
  * @private
  */
 Gallery.prototype.onFilenameEditBlur_ = function(event) {
-  var item = this.getSingleSelectedItem();
+  const item = this.getSingleSelectedItem();
   if (item) {
-    var oldEntry = item.getEntry();
+    const oldEntry = item.getEntry();
 
     item.rename(this.filenameEdit_.value)
         .then(
             function() {
-              var event = new Event('content');
+              const event = new Event('content');
               event.item = item;
               event.oldEntry = oldEntry;
               event.thumbnailChanged = false;
@@ -958,9 +961,10 @@ Gallery.END_PADDING_RENAME_FIELD_ = 20;  // px
  * @private
  */
 Gallery.prototype.resizeRenameField_ = function() {
-  var size = this.filenameCanvasContext_.measureText(this.filenameEdit_.value);
+  const size =
+      this.filenameCanvasContext_.measureText(this.filenameEdit_.value);
 
-  var width = Math.min(
+  const width = Math.min(
       Math.max(
           size.width + Gallery.END_PADDING_RENAME_FIELD_,
           Gallery.MIN_WIDTH_RENAME_FIELD_),
@@ -1011,7 +1015,7 @@ Gallery.prototype.onContentClick_ = function() {
  * @private
  */
 Gallery.prototype.onShareButtonClick_ = function() {
-  var item = this.getSingleSelectedItem();
+  const item = this.getSingleSelectedItem();
   if (!item) {
     return;
   }
@@ -1078,7 +1082,7 @@ const loadTimeDataPromise = new Promise(function(fulfill, reject) {
  * @type {!Promise}
  */
 const volumeManagerPromise = new Promise(function(fulfill, reject) {
-  let volumeManager = new FilteredVolumeManager(AllowedPaths.ANY_PATH, false);
+  const volumeManager = new FilteredVolumeManager(AllowedPaths.ANY_PATH, false);
   volumeManager.ensureInitialized(fulfill.bind(null, volumeManager));
 });
 

@@ -68,15 +68,25 @@ void TextMetrics::Update(const Font& font,
       TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion,
       direction, false);
   text_run.SetNormalizeSpace(true);
-  FloatRect bbox = font.BoundingBox(text_run);
   const FontMetrics& font_metrics = font_data->GetFontMetrics();
 
   advances_ = font.IndividualCharacterAdvances(text_run);
 
   // x direction
-  width_ = bbox.Width();
   FloatRect glyph_bounds;
   double real_width = font.Width(text_run, nullptr, &glyph_bounds);
+#if DCHECK_IS_ON()
+  // This DCHECK is for limited time only; to use |glyph_bounds| instead of
+  // |BoundingBox| and make sure they are compatible.
+  FloatRect bbox = font.BoundingBox(text_run);
+  // |GetCharacterRange|, the underlying function of |BoundingBox|, clamps
+  // negative |MaxY| to 0. This is unintentional, and that we are not copying
+  // the behavior.
+  DCHECK_EQ(bbox.Y(), std::min(glyph_bounds.Y(), .0f));
+  DCHECK_EQ(bbox.MaxY(), std::max(glyph_bounds.MaxY(), .0f));
+  DCHECK_EQ(bbox.Width(), real_width);
+#endif
+  width_ = real_width;
 
   float dx = 0.0f;
   if (align == kCenterTextAlign)
@@ -94,8 +104,8 @@ void TextMetrics::Update(const Font& font,
   const float baseline_y = GetFontBaseline(baseline, *font_data);
   font_bounding_box_ascent_ = ascent - baseline_y;
   font_bounding_box_descent_ = descent + baseline_y;
-  actual_bounding_box_ascent_ = -bbox.Y() - baseline_y;
-  actual_bounding_box_descent_ = bbox.MaxY() + baseline_y;
+  actual_bounding_box_ascent_ = -glyph_bounds.Y() - baseline_y;
+  actual_bounding_box_descent_ = glyph_bounds.MaxY() + baseline_y;
   em_height_ascent_ = font_data->EmHeightAscent() - baseline_y;
   em_height_descent_ = font_data->EmHeightDescent() + baseline_y;
 

@@ -2777,9 +2777,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-images/image-orientation/image-ori
 crbug.com/626703 [ Linux ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/svg/painting/reftests/display-none-mask.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
 crbug.com/626703 [ Retina ] external/wpt/html/cross-origin-opener-policy/popup-coop-by-sw-from-coop.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/webrtc/RTCRtpSender-replaceTrack.https.html [ Timeout ]
@@ -2835,12 +2832,6 @@ crbug.com/626703 [ Mac10.12 ] external/wpt/css/css-fonts/matching/range-descript
 crbug.com/626703 [ Linux ] external/wpt/workers/shared-worker-parse-error-failure.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/workers/shared-worker-parse-error-failure.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/workers/shared-worker-parse-error-failure.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/html/cross-origin-embedder-policy/javascript.https.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/html/cross-origin-embedder-policy/coep-frame-javascript.https.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/html/cross-origin-embedder-policy/coep-frame-javascript.https.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/html/cross-origin-embedder-policy/coep-frame-javascript.https.html [ Timeout ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/auto-block-size/absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/css/css-layout-api/auto-block-size/absolute.https.html [ Failure ]
 crbug.com/626703 [ Mac10.10 ] external/wpt/css/css-layout-api/edges/all.https.html [ Failure ]
@@ -3528,10 +3519,6 @@ crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inlin
 crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inline-007.html [ Failure ]
 crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inline-009.html [ Failure ]
 crbug.com/964181 external/wpt/css/css-text/word-break/word-break-break-all-inline-010.html [ Failure ]
-
-# Sheriff 2019-08-19:
-crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Pass Failure ]
-crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
 
 # Failure due to on-going off-thread paint worklet project.
 crbug.com/957457 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/invalid-image-pending-script.https.html [ Crash ]
@@ -5287,7 +5274,6 @@ crbug.com/1010483 [ Win ] fast/selectors/specificity-overflow.html [ Crash Pass 
 
 # Sheriff 2019-10-11
 crbug.com/1013391 http/tests/devtools/a11y-axe-core/settings/shortcuts-a11y-test.js [ Pass Timeout ]
-crbug.com/1013523 [ Release ] external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/calendar-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 [ Mac ] virtual/scalefactor200/fast/hidpi/static/data-suggestion-picker-appearance.html [ Failure Pass ]
 crbug.com/1013779 virtual/scalefactor200/fast/hidpi/static/pointerevents/pointerevent_touch-adjustment_click_target.html [ Failure Pass ]
@@ -5358,7 +5344,6 @@ crbug.com/977033 http/tests/priorities/resource-load-priorities-media-preload.ht
 # Sheriff 2019-11-26
 crbug.com/1028482 http/tests/devtools/sources/debugger/navigator-view.js [ Pass Crash ]
 crbug.com/1028684 inspector-protocol/animation/animation-release.js [ Pass Failure ]
-crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Failure ]
 
 # Sheriff 2019-11-29
 crbug.com/1019079 fast/canvas/OffscreenCanvas-placeholder-createImageBitmap.html [ Pass Failure ]
@@ -5425,7 +5410,7 @@ crbug.com/1034492 http/tests/devtools/unit/filtered-list-widget-providers.js [ P
 
 # Sheriff 2019-12-17
 crbug.com/1034789 [ Mac ] http/tests/security/frameNavigation/xss-ALLOWED-parent-navigation-change-async.html [ Pass Timeout ]
-crbug.com/1034789 [ Mac10.13 ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Timeout ]
+crbug.com/1034789 virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Timeout ]
 crbug.com/1034789 [ Mac10.13 ] external/wpt/pointerevents/pointerevent_coalesced_events_attributes.html [ Pass Failure ]
 
 # Sheriff 2019-12-23
@@ -5469,7 +5454,6 @@ crbug.com/1041993 http/tests/origin_trials/sample-api-script-added-after-css-dec
 
 # Sheriff 2020-01-16
 crbug.com/1042205 virtual/off-main-thread-css-paint/external/wpt/css/css-paint-api/paint2d-filter.https.html [ Pass Timeout ]
-crbug.com/1042681 external/wpt/html/cross-origin-embedder-policy/blob.https.html [ Pass Failure ]
 crbug.com/1042689 [ Linux ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 crbug.com/1042689 [ Win ] http/tests/devtools/coverage/gutter-css.js [ Pass Timeout ]
 
@@ -5769,7 +5753,6 @@ crbug.com/1070995 external/wpt/html/infrastructure/safe-passing-of-structured-da
 crbug.com/1057020 [ Fuchsia ] http/tests/streams/chromium/get-reader-byob.html [ Pass Timeout ]
 
 # Sheriff 2020-03-05
-crbug.com/1058073 [ Retina ] virtual/threaded/fast/scroll-snap/snap-to-target-on-layout-change.html [ Pass Failure ]
 crbug.com/1058073 [ Mac10.14 ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]
 crbug.com/1058073 [ Retina ] accessibility/content-changed-notification-causes-crash.html [ Pass Failure ]
 
@@ -5792,9 +5775,10 @@ crbug.com/1061131 [ Mac ] editing/selection/replaced-boundaries-1.html [ Pass Fa
 
 crbug.com/1058888 [ Linux ] animations/animationworklet/peek-updated-composited-property-on-main.html [ Pass Failure ]
 
-# Sheriff 2020-03-16
-crbug.com/1061029 [ Win ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
-crbug.com/1061029 [ Mac ] external/wpt/html/cross-origin-embedder-policy/cache-storage-reporting.https.html [ Pass Failure ]
+crbug.com/1086066 external/wpt/html/cross-origin-embedder-policy/no-secure-context.html [ Timeout ]
+crbug.com/1015187 external/wpt/html/cross-origin-embedder-policy/none.https.html [ Pass Timeout ]
+crbug.com/1013523 external/wpt/html/cross-origin-embedder-policy/require-corp.https.html [ Failure Pass ]
+crbug.com/626703 [ Debug ] external/wpt/html/cross-origin-embedder-policy/reporting-navigation.https.html [ Pass Failure ]
 
 # [virtual/...]external/wpt/web-animation test flakes
 crbug.com/1064065 virtual/threaded/external/wpt/css/css-animations/event-dispatch.tentative.html [ Pass Failure ]

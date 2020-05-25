@@ -22,3 +22,6 @@ struct PageSizeMargins {
   double margin_bottom;
   double margin_left;
 };
+
+// CSS @page page-orientation descriptor values.
+enum PageOrientation { kUpright, kRotateLeft, kRotateRight };

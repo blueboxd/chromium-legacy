@@ -10,7 +10,7 @@
 
 <script>
 var div = document.getElementById('container');
-var root = div.createShadowRoot();
+var root = div.attachShadow({mode: 'open'});
 root.innerHTML = "<content select='span'>PASS</content>";
 </script>
 

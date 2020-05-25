@@ -69,6 +69,10 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // current document.
   base::TimeTicks FirstPaint() const { return first_paint_swap_; }
 
+  base::TimeTicks FirstPaintAfterBackForwardCacheRestore() const {
+    return first_paint_after_back_forward_cache_restore_swap_;
+  }
+
   // FirstContentfulPaint returns the first time that 'contentful' content was
   // painted. For instance, the first time that text or image content was
   // painted.
@@ -105,6 +109,8 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // The caller owns the |clock| which must outlive the PaintTiming.
   void SetTickClockForTesting(const base::TickClock* clock);
 
+  void OnRestoredFromBackForwardCache();
+
   void Trace(Visitor*) const override;
 
  private:
@@ -132,6 +138,8 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   void SetFirstContentfulPaintSwap(base::TimeTicks stamp);
   void SetFirstImagePaintSwap(base::TimeTicks stamp);
 
+  void SetFirstPaintAfterBackForwardCacheRestoreSwap(base::TimeTicks stamp);
+
   void RegisterNotifySwapTime(PaintEvent);
 
   base::TimeTicks FirstPaintRendered() const { return first_paint_; }
@@ -145,6 +153,7 @@ class CORE_EXPORT PaintTiming final : public GarbageCollected<PaintTiming>,
   // confirm the deltas and discrepancies look reasonable.
   base::TimeTicks first_paint_;
   base::TimeTicks first_paint_swap_;
+  base::TimeTicks first_paint_after_back_forward_cache_restore_swap_;
   base::TimeTicks first_image_paint_;
   base::TimeTicks first_image_paint_swap_;
   base::TimeTicks first_contentful_paint_;

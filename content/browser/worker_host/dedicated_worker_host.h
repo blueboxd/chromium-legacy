@@ -94,8 +94,8 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   void LifecycleStateChanged(blink::mojom::FrameLifecycleState state) override;
 
   // TODO(dtapuska): This state needs to be hooked up to the
-  // ServiceWorkerProviderHost so the correct state is queried when looking
-  // for frozen dedicated workers. crbug.com/968417
+  // ServiceWorkerHost so the correct state is queried when looking for frozen
+  // dedicated workers. crbug.com/968417
   bool is_frozen() const { return is_frozen_; }
 
   // PlzDedicatedWorker:

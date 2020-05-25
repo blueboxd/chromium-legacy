@@ -121,8 +121,7 @@ class CONTENT_EXPORT ControllerServiceWorkerConnector
   base::ObserverList<Observer>::Unchecked observer_list_;
 
   // The web-exposed client id, used for FetchEvent#clientId (i.e.,
-  // ServiceWorkerProviderHost::client_uuid and not
-  // ServiceWorkerProviderHost::provider_id).
+  // ServiceWorkerContainerHost::client_uuid).
   std::string client_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerServiceWorkerConnector);

@@ -17,6 +17,10 @@ TestWebAppUiManager::TestWebAppUiManager() = default;
 
 TestWebAppUiManager::~TestWebAppUiManager() = default;
 
+void TestWebAppUiManager::Start() {}
+
+void TestWebAppUiManager::Shutdown() {}
+
 void TestWebAppUiManager::SetNumWindowsForApp(const AppId& app_id,
                                               size_t num_windows_for_app) {
   app_id_to_num_windows_map_[app_id] = num_windows_for_app;

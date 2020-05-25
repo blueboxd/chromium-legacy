@@ -60,7 +60,7 @@ NGPhysicalTextFragment::NGPhysicalTextFragment(NGTextFragmentBuilder* builder)
                          kFragmentText,
                          static_cast<unsigned>(builder->text_type_)),
       text_(builder->text_),
-      text_offset_({builder->start_offset_, builder->end_offset_}),
+      text_offset_(builder->text_offset_),
       shape_result_(std::move(builder->shape_result_)) {
   DCHECK(shape_result_ || IsFlowControl()) << *this;
   base_or_resolved_direction_ =

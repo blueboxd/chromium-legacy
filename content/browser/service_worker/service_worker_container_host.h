@@ -40,8 +40,8 @@ class ServiceWorkerObjectHostTest;
 }
 
 class ServiceWorkerContextCore;
+class ServiceWorkerHost;
 class ServiceWorkerObjectHost;
-class ServiceWorkerProviderHost;
 class ServiceWorkerRegistrationObjectHost;
 class ServiceWorkerVersion;
 
@@ -82,9 +82,9 @@ class ServiceWorkerVersion;
 // registration settles, if need.
 //
 // For service worker execution contexts, ServiceWorkerContainerHost is owned
-// by ServiceWorkerProviderHost, which in turn is owned by ServiceWorkerVersion.
-// The container host and provider host are destructed when the service worker
-// is stopped.
+// by ServiceWorkerHost, which in turn is owned by ServiceWorkerVersion. The
+// container host and worker host are destructed when the service worker is
+// stopped.
 class CONTENT_EXPORT ServiceWorkerContainerHost final
     : public blink::mojom::ServiceWorkerContainerHost,
       public ServiceWorkerRegistration::Listener {
@@ -420,8 +420,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
   ServiceWorkerRegistration* controller_registration() const;
 
   // For service worker execution contexts.
-  void set_service_worker_host(ServiceWorkerProviderHost* service_worker_host);
-  ServiceWorkerProviderHost* service_worker_host();
+  void set_service_worker_host(ServiceWorkerHost* service_worker_host);
+  ServiceWorkerHost* service_worker_host();
 
   // BackForwardCache:
   // For service worker clients that are windows.
@@ -675,8 +675,8 @@ class CONTENT_EXPORT ServiceWorkerContainerHost final
 
   // For service worker execution contexts -------------------------------------
 
-  // The ServiceWorkerProviderHost that owns |this|.
-  ServiceWorkerProviderHost* service_worker_host_ = nullptr;
+  // The ServiceWorkerHost that owns |this|.
+  ServiceWorkerHost* service_worker_host_ = nullptr;
 
   base::WeakPtrFactory<ServiceWorkerContainerHost> weak_factory_{this};
 };

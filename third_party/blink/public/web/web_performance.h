@@ -68,6 +68,7 @@ class WebPerformance {
   BLINK_EXPORT double InputForNavigationStart() const;
   BLINK_EXPORT double NavigationStart() const;
   BLINK_EXPORT base::TimeTicks NavigationStartAsMonotonicTime() const;
+  BLINK_EXPORT double LastBackForwardCacheRestoreNavigationStart() const;
   BLINK_EXPORT double UnloadEventEnd() const;
   BLINK_EXPORT double RedirectStart() const;
   BLINK_EXPORT double RedirectEnd() const;
@@ -88,6 +89,7 @@ class WebPerformance {
   BLINK_EXPORT double LoadEventStart() const;
   BLINK_EXPORT double LoadEventEnd() const;
   BLINK_EXPORT double FirstPaint() const;
+  BLINK_EXPORT double FirstPaintAfterBackForwardCacheRestore() const;
   BLINK_EXPORT double FirstImagePaint() const;
   BLINK_EXPORT double FirstContentfulPaint() const;
   BLINK_EXPORT base::TimeTicks FirstContentfulPaintAsMonotonicTime() const;

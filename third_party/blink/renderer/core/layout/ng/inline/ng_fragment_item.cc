@@ -61,16 +61,19 @@ NGFragmentItem::NGFragmentItem(const NGPhysicalTextFragment& text)
   DCHECK(!IsFormattingContextRoot());
 }
 
-NGFragmentItem::NGFragmentItem(NGInlineItemResult&& item_result,
-                               const PhysicalSize& size)
-    : layout_object_(item_result.item->GetLayoutObject()),
-      text_({std::move(item_result.shape_result), item_result.TextOffset()}),
+NGFragmentItem::NGFragmentItem(
+    const NGInlineItem& inline_item,
+    scoped_refptr<const ShapeResultView> shape_result,
+    const NGTextOffset& text_offset,
+    const PhysicalSize& size)
+    : layout_object_(inline_item.GetLayoutObject()),
+      text_({std::move(shape_result), text_offset}),
       rect_({PhysicalOffset(), size}),
       type_(kText),
-      sub_type_(static_cast<unsigned>(item_result.item->TextType())),
-      style_variant_(static_cast<unsigned>(item_result.item->StyleVariant())),
+      sub_type_(static_cast<unsigned>(inline_item.TextType())),
+      style_variant_(static_cast<unsigned>(inline_item.StyleVariant())),
       is_hidden_for_paint_(false),  // TODO(kojii): not supported yet.
-      text_direction_(static_cast<unsigned>(item_result.item->Direction())),
+      text_direction_(static_cast<unsigned>(inline_item.Direction())),
       ink_overflow_computed_(false),
       is_dirty_(false),
       is_last_for_node_(true) {
@@ -128,11 +131,10 @@ void NGFragmentItem::Create(NGLogicalLineItems* child_list,
       continue;
     }
 
-    if (child.item_result) {
+    if (child.inline_item) {
       child.fragment_item = base::AdoptRef(new NGFragmentItem(
-          std::move(*child.item_result),
-          ToPhysicalSize({child.inline_size, child.rect.size.block_size},
-                         writing_mode)));
+          *child.inline_item, std::move(child.shape_result), child.text_offset,
+          ToPhysicalSize(child.MarginSize(), writing_mode)));
       continue;
     }
 

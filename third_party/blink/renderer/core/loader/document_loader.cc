@@ -114,35 +114,123 @@
 
 namespace blink {
 
+namespace {
+Vector<OriginTrialFeature> CopyInitiatorOriginTrials(
+    const WebVector<int>& initiator_origin_trial_features) {
+  Vector<OriginTrialFeature> result;
+  for (auto feature : initiator_origin_trial_features) {
+    // Convert from int to OriginTrialFeature. These values are passed between
+    // blink navigations. OriginTrialFeature isn't visible outside of blink (and
+    // doesn't need to be) so the values are transferred outside of blink as
+    // ints and casted to OriginTrialFeature once being processed in blink.
+    result.push_back(static_cast<OriginTrialFeature>(feature));
+  }
+  return result;
+}
+
+Vector<String> CopyForceEnabledOriginTrials(
+    const WebVector<WebString>& force_enabled_origin_trials) {
+  Vector<String> result;
+  result.ReserveInitialCapacity(
+      SafeCast<wtf_size_t>(force_enabled_origin_trials.size()));
+  for (const auto& trial : force_enabled_origin_trials)
+    result.push_back(trial);
+  return result;
+}
+
+}  // namespace
+
 DocumentLoader::DocumentLoader(
     LocalFrame* frame,
     WebNavigationType navigation_type,
     ContentSecurityPolicy* content_security_policy,
     std::unique_ptr<WebNavigationParams> navigation_params)
     : params_(std::move(navigation_params)),
+      url_(params_->url),
+      http_method_(static_cast<String>(params_->http_method)),
+      referrer_(Referrer(params_->referrer.IsEmpty()
+                             ? Referrer::NoReferrer()
+                             : static_cast<String>(params_->referrer),
+                         params_->referrer_policy)),
+      http_body_(params_->http_body),
+      http_content_type_(static_cast<String>(params_->http_content_type)),
+      origin_policy_(params_->origin_policy),
+      requestor_origin_(params_->requestor_origin),
+      unreachable_url_(params_->unreachable_url),
+      ip_address_space_(params_->ip_address_space),
+      grant_load_local_resources_(params_->grant_load_local_resources),
+      force_fetch_cache_mode_(params_->force_fetch_cache_mode),
+      frame_policy_(params_->frame_policy.value_or(FramePolicy())),
       frame_(frame),
+      // For back/forward navigations, the browser passed a history item to use
+      // at commit time in |params_|. Set it as the current history item of this
+      // DocumentLoader. For other navigations, |history_item_| will be created
+      // when the FrameLoader calls SetHistoryItemStateForCommit.
+      history_item_(IsBackForwardLoadType(params_->frame_load_type)
+                        ? params_->history_item
+                        : nullptr),
+      original_url_(params_->url),
+      original_referrer_(referrer_),
+      response_(params_->response.ToResourceResponse()),
       load_type_(params_->frame_load_type),
       is_client_redirect_(params_->is_client_redirect),
-      replaces_current_history_item_(false),
+      // TODO(japhet): This is needed because the browser process DCHECKs if the
+      // first entry we commit in a new frame has replacement set. It's unclear
+      // whether the DCHECK is right, investigate removing this special case.
+      // TODO(dgozman): we should get rid of this boolean field, and make client
+      // responsible for it's own view of "replaces current item", based on the
+      // frame load type.
+      replaces_current_history_item_(
+          load_type_ == WebFrameLoadType::kReplaceCurrentItem &&
+          (!frame_->Loader().Opener() || !url_.IsEmpty())),
       data_received_(false),
+      // The CSP is null when the CSP check done in the FrameLoader failed.
+      content_security_policy_(content_security_policy),
+      was_blocked_by_csp_(!content_security_policy),
+      // Loading the document was blocked by the CSP check. Pretend that this
+      // was an empty document instead and don't reuse the original URL. More
+      // details in: https://crbug.com/622385.
+      // TODO(https://crbug.com/555418) Remove this once XFO moves to the
+      // browser.
+
+      // Update |origin_to_commit_| to contain an opaque origin with precursor
+      // information that is consistent with the final request URL.
+      // Note: this doesn't use |url_| for the origin calculation, because
+      // redirects are not yet accounted for (this happens later in
+      // StartLoadingInternal).
+      origin_to_commit_(
+          was_blocked_by_csp_
+              ? blink::SecurityOrigin::Create(response_.CurrentRequestUrl())
+                    ->DeriveNewOpaqueOrigin()
+              : params_->origin_to_commit.IsNull()
+                    ? nullptr
+                    : params_->origin_to_commit.Get()->IsolatedCopy()),
       navigation_type_(navigation_type),
       document_load_timing_(*this),
       service_worker_network_provider_(
           std::move(params_->service_worker_network_provider)),
       was_blocked_by_document_policy_(false),
-      content_security_policy_(content_security_policy),
-      // The CSP is null when the CSP check done in the FrameLoader failed.
-      was_blocked_by_csp_(!content_security_policy),
       state_(kNotStarted),
       in_commit_data_(false),
       data_buffer_(SharedBuffer::Create()),
       devtools_navigation_token_(params_->devtools_navigation_token),
       had_sticky_activation_(params_->is_user_activated),
+      had_transient_activation_(
+          LocalFrame::HasTransientUserActivation(frame_) ||
+          params_->had_transient_activation),
       is_browser_initiated_(params_->is_browser_initiated),
       was_discarded_(params_->was_discarded),
-      use_counter_(),
+      loading_srcdoc_(url_.IsAboutSrcdocURL()),
+      loading_url_as_empty_document_(!params_->is_static_data &&
+                                     WillLoadUrlAsEmpty(url_)),
+      web_bundle_physical_url_(params_->web_bundle_physical_url),
+      web_bundle_claimed_url_(params_->web_bundle_claimed_url),
       clock_(params_->tick_clock ? params_->tick_clock
-                                 : base::DefaultTickClock::GetInstance()) {
+                                 : base::DefaultTickClock::GetInstance()),
+      initiator_origin_trial_features_(
+          CopyInitiatorOriginTrials(params_->initiator_origin_trial_features)),
+      force_enabled_origin_trials_(
+          CopyForceEnabledOriginTrials(params_->force_enabled_origin_trials)) {
   DCHECK(frame_);
 
   // TODO(nasko): How should this work with OOPIF?
@@ -154,23 +242,6 @@ DocumentLoader::DocumentLoader(
       archive_ = parent->Loader().GetDocumentLoader()->archive_;
   }
 
-  url_ = params_->url;
-  original_url_ = url_;
-  had_transient_activation_ = LocalFrame::HasTransientUserActivation(frame_) ||
-                              params_->had_transient_activation;
-  http_method_ = params_->http_method;
-  if (params_->referrer.IsEmpty()) {
-    referrer_ = Referrer(Referrer::NoReferrer(), params_->referrer_policy);
-  } else {
-    referrer_ = Referrer(params_->referrer, params_->referrer_policy);
-  }
-
-  original_referrer_ = referrer_;
-  http_body_ = params_->http_body;
-  http_content_type_ = params_->http_content_type;
-  origin_policy_ = params_->origin_policy;
-  requestor_origin_ = params_->requestor_origin;
-  unreachable_url_ = params_->unreachable_url;
   if (frame_->IsMainFrame()) {
     previews_state_ = params_->previews_state;
   } else {
@@ -178,11 +249,6 @@ DocumentLoader::DocumentLoader(
     if (auto* parent = DynamicTo<LocalFrame>(frame_->Tree().Parent()))
       previews_state_ = parent->Loader().GetDocumentLoader()->previews_state_;
   }
-  ip_address_space_ = params_->ip_address_space;
-  grant_load_local_resources_ = params_->grant_load_local_resources;
-  force_fetch_cache_mode_ = params_->force_fetch_cache_mode;
-  response_ = params_->response.ToResourceResponse();
-  frame_policy_ = params_->frame_policy.value_or(FramePolicy());
 
   document_policy_ = CreateDocumentPolicy();
 
@@ -205,43 +271,10 @@ DocumentLoader::DocumentLoader(
     }
   }
 
-  // TODO(japhet): This is needed because the browser process DCHECKs if the
-  // first entry we commit in a new frame has replacement set. It's unclear
-  // whether the DCHECK is right, investigate removing this special case.
-  // TODO(dgozman): we should get rid of this boolean field, and make client
-  // responsible for it's own view of "replaces current item", based on the
-  // frame load type.
-  replaces_current_history_item_ =
-      load_type_ == WebFrameLoadType::kReplaceCurrentItem &&
-      (!frame_->Loader().Opener() || !url_.IsEmpty());
-
   // The document URL needs to be added to the head of the list as that is
   // where the redirects originated.
   if (is_client_redirect_)
     redirect_chain_.push_back(frame_->GetDocument()->Url());
-
-  if (!params_->origin_to_commit.IsNull())
-    origin_to_commit_ = params_->origin_to_commit.Get()->IsolatedCopy();
-
-  loading_srcdoc_ = url_.IsAboutSrcdocURL();
-  loading_url_as_empty_document_ =
-      !params_->is_static_data && WillLoadUrlAsEmpty(url_);
-
-  if (was_blocked_by_csp_) {
-    // Loading the document was blocked by the CSP check. Pretend that this was
-    // an empty document instead and don't reuse the original URL. More details
-    // in: https://crbug.com/622385.
-    // TODO(https://crbug.com/555418) Remove this once XFO moves to the browser.
-
-    // Update |origin_to_commit_| to contain an opaque origin with precursor
-    // information that is consistent with the final request URL.
-    // Note: this doesn't use |url_| for the origin calculation, because
-    // redirects are not yet accounted for (this happens later in
-    // StartLoadingInternal).
-    const auto request_url_origin =
-        blink::SecurityOrigin::Create(response_.CurrentRequestUrl());
-    origin_to_commit_ = request_url_origin->DeriveNewOpaqueOrigin();
-  }
 
   if (was_blocked_by_csp_ || was_blocked_by_document_policy_)
     ReplaceWithEmptyDocument();
@@ -249,32 +282,8 @@ DocumentLoader::DocumentLoader(
   if (!GetFrameLoader().StateMachine()->CreatingInitialEmptyDocument())
     redirect_chain_.push_back(url_);
 
-  for (auto feature : params_->initiator_origin_trial_features) {
-    // Convert from int to OriginTrialFeature. These values are passed between
-    // blink navigations. OriginTrialFeature isn't visible outside of blink (and
-    // doesn't need to be) so the values are transferred outside of blink as
-    // ints and casted to OriginTrialFeature once being processed in blink.
-    initiator_origin_trial_features_.push_back(
-        static_cast<OriginTrialFeature>(feature));
-  }
-
-  // For back/forward navigations, the browser passed a history item to use at
-  // commit time in |params_|. Set it as the current history item of this
-  // DocumentLoader. For other navigations, |history_item_| will be created when
-  // the FrameLoader calls SetHistoryItemStateForCommit.
-  if (IsBackForwardLoadType(params_->frame_load_type)) {
-    HistoryItem* history_item = params_->history_item;
-    DCHECK(history_item);
-    history_item_ = history_item;
-  }
-
-  web_bundle_physical_url_ = params_->web_bundle_physical_url;
-  web_bundle_claimed_url_ = params_->web_bundle_claimed_url;
-
-  force_enabled_origin_trials_.ReserveInitialCapacity(
-      SafeCast<wtf_size_t>(params_->force_enabled_origin_trials.size()));
-  for (const auto& trial : params_->force_enabled_origin_trials)
-    force_enabled_origin_trials_.push_back(trial);
+  if (IsBackForwardLoadType(params_->frame_load_type))
+    DCHECK(history_item_);
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {

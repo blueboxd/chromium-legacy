@@ -16,7 +16,7 @@ function doTest() {
 
     div = document.createElement('div');
     // we should call webKitCreateShadowRoot first.
-    root1 = div.createShadowRoot();
+    root1 = div.attachShadow({mode: 'open'});
     root2 = internals.shadowRoot(div);
 
     shouldBe('root1', 'root2');

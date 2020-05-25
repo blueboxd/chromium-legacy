@@ -193,8 +193,9 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
     if (const NGFragmentItems* previous_items = previous_fragment.Items()) {
       auto* items_builder = container_builder_.ItemsBuilder();
       DCHECK(items_builder);
-      items_builder->AddPreviousItems(*previous_items, writing_mode_,
-                                      direction_,
+      DCHECK_EQ(items_builder->GetWritingMode(), writing_mode_);
+      DCHECK_EQ(items_builder->Direction(), direction_);
+      items_builder->AddPreviousItems(*previous_items,
                                       previous_physical_container_size_);
     }
   }
@@ -210,7 +211,7 @@ scoped_refptr<const NGLayoutResult> NGSimplifiedLayoutAlgorithm::Layout() {
 
 NOINLINE scoped_refptr<const NGLayoutResult>
 NGSimplifiedLayoutAlgorithm::LayoutWithItemsBuilder() {
-  NGFragmentItemsBuilder items_builder;
+  NGFragmentItemsBuilder items_builder(writing_mode_, direction_);
   container_builder_.SetItemsBuilder(&items_builder);
   scoped_refptr<const NGLayoutResult> result = Layout();
   // Ensure stack-allocated |NGFragmentItemsBuilder| is not used anymore.

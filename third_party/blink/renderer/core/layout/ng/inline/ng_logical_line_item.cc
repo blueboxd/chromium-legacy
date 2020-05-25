@@ -13,15 +13,14 @@ void NGLogicalLineItems::CreateTextFragments(WritingMode writing_mode,
                                              const String& text_content) {
   NGTextFragmentBuilder text_builder(writing_mode);
   for (auto& child : *this) {
-    if (NGInlineItemResult* item_result = child.item_result) {
-      DCHECK(item_result->item);
-      const NGInlineItem& item = *item_result->item;
-      DCHECK(item.Type() == NGInlineItem::kText ||
-             item.Type() == NGInlineItem::kControl);
-      DCHECK(item.TextType() == NGTextType::kNormal ||
-             item.TextType() == NGTextType::kSymbolMarker);
-      text_builder.SetItem(text_content, item_result,
-                           child.rect.size.block_size);
+    if (const NGInlineItem* inline_item = child.inline_item) {
+      DCHECK(inline_item->Type() == NGInlineItem::kText ||
+             inline_item->Type() == NGInlineItem::kControl);
+      DCHECK(inline_item->TextType() == NGTextType::kNormal ||
+             inline_item->TextType() == NGTextType::kSymbolMarker);
+      text_builder.SetItem(text_content, *inline_item,
+                           std::move(child.shape_result), child.text_offset,
+                           child.MarginSize());
       DCHECK(!child.fragment);
       child.fragment = text_builder.ToTextFragment();
     }

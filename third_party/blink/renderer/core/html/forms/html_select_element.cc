@@ -831,18 +831,6 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
   if (flags & kDeselectOtherOptionsFlag)
     should_update_popup |= DeselectItemsWithoutValidation(element);
 
-  // We should update active selection after finishing OPTION state change
-  // because setActiveSelectionAnchorIndex() stores OPTION's selection state.
-  if (element) {
-    // setActiveSelectionAnchor is O(N).
-    if (!active_selection_anchor_ || !IsMultiple() ||
-        flags & kDeselectOtherOptionsFlag)
-      SetActiveSelectionAnchor(element);
-    if (!active_selection_end_ || !IsMultiple() ||
-        flags & kDeselectOtherOptionsFlag)
-      SetActiveSelectionEnd(element);
-  }
-
   select_type_->DidSelectOption(element, flags, should_update_popup);
   NotifyFormStateChanged();
 

@@ -36,17 +36,25 @@ void ManifestUpdateManager::SetSubsystems(
 
 void ManifestUpdateManager::Start() {
   registrar_observer_.Add(registrar_);
+
+  DCHECK(!started_);
+  started_ = true;
 }
 
 void ManifestUpdateManager::Shutdown() {
   registrar_observer_.RemoveAll();
+
+  tasks_.clear();
+  started_ = false;
 }
 
 void ManifestUpdateManager::MaybeUpdate(const GURL& url,
                                         const AppId& app_id,
                                         content::WebContents* web_contents) {
-  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsLocalUpdating))
+  if (!started_ ||
+      !base::FeatureList::IsEnabled(features::kDesktopPWAsLocalUpdating)) {
     return;
+  }
 
   if (app_id.empty() || !registrar_->IsLocallyInstalled(app_id)) {
     NotifyResult(url, ManifestUpdateResult::kNoAppInScope);
@@ -82,6 +90,8 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
 
 // AppRegistrarObserver:
 void ManifestUpdateManager::OnWebAppUninstalled(const AppId& app_id) {
+  DCHECK(started_);
+
   auto it = tasks_.find(app_id);
   if (it != tasks_.end()) {
     NotifyResult(it->second->url(), ManifestUpdateResult::kAppUninstalled);

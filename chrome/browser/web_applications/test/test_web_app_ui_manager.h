@@ -17,6 +17,9 @@ class TestWebAppUiManager : public WebAppUiManager {
   TestWebAppUiManager();
   ~TestWebAppUiManager() override;
 
+  void Start() override;
+  void Shutdown() override;
+
   void SetNumWindowsForApp(const AppId& app_id, size_t num_windows_for_app);
   bool DidUninstallAndReplace(const AppId& from_app, const AppId& to_app);
 

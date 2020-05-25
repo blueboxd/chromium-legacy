@@ -66,8 +66,8 @@ namespace content {
 
 class ServiceWorkerContainerHost;
 class ServiceWorkerContextCore;
+class ServiceWorkerHost;
 class ServiceWorkerInstalledScriptsSender;
-class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 struct ServiceWorkerVersionInfo;
 
@@ -395,11 +395,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
       ServiceWorkerContainerHost* controllee,
       BackForwardCacheMetrics::NotRestoredReason reason);
 
-  // The provider host hosting this version. Only valid while the version is
+  // The worker host hosting this version. Only valid while the version is
   // running.
-  ServiceWorkerProviderHost* provider_host() {
-    DCHECK(provider_host_);
-    return provider_host_.get();
+  content::ServiceWorkerHost* worker_host() {
+    DCHECK(worker_host_);
+    return worker_host_.get();
   }
 
   base::WeakPtr<ServiceWorkerContextCore> context() const { return context_; }
@@ -532,9 +532,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   //
   // On each request that dispatches a fetch event to this worker (or would
   // have, in the case of a no-fetch event worker), this count is incremented.
-  // When the browser-side provider host receives a hint from the renderer that
+  // When the browser-side worker host receives a hint from the renderer that
   // it is a good time to update the service worker, the count is decremented.
-  // It is also decremented when if the provider host is destroyed before
+  // It is also decremented when if the worker host is destroyed before
   // receiving the hint.
   //
   // When the count transitions from 1 to 0, update is scheduled.
@@ -954,10 +954,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // (e.g. activation).
   bool needs_to_be_terminated_asap_ = false;
 
-  // Keeps track of the provider hosting this running service worker for this
-  // version. |provider_host_| is always valid as long as this version is
-  // running.
-  std::unique_ptr<ServiceWorkerProviderHost> provider_host_;
+  // The host for this version's running service worker. |worker_host_| is
+  // always valid as long as this version is running.
+  std::unique_ptr<content::ServiceWorkerHost> worker_host_;
 
   // |controllee_map_| and |bfcached_controllee_map_| should not share the same
   // controllee.

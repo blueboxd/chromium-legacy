@@ -80,7 +80,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       public blink::mojom::ServiceWorkerContainer,
       public blink::mojom::ServiceWorkerWorkerClientRegistry {
  public:
-  // |receiver_| is connected to the content::ServiceWorkerProviderHost that
+  // |receiver| is connected to the content::ServiceWorkerContainerHost that
   // notifies of changes to the registration's and workers' status.
   //
   // |controller_info| contains the endpoint and object info that is needed to
@@ -155,11 +155,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   CloneRemoteContainerHost();
 
   // Called when WebServiceWorkerNetworkProvider is destructed. This function
-  // severs the Mojo binding to the browser-side ServiceWorkerProviderHost. The
+  // severs the Mojo binding to the browser-side ServiceWorkerContainerHost. The
   // reason WebServiceWorkerNetworkProvider is special compared to the other
   // providers, is that it is destructed synchronously when a service worker
   // client (Document) is removed from the DOM. Once this happens, the
-  // ServiceWorkerProviderHost must destruct quickly in order to remove the
+  // ServiceWorkerContainerHost must destruct quickly in order to remove the
   // ServiceWorkerClient from the system (thus allowing unregistration/update to
   // occur and ensuring the Clients API doesn't return the client).
   //
@@ -167,9 +167,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // state.
   void OnNetworkProviderDestroyed();
 
-  // Gets the blink::mojom::ServiceWorkerContainerHost* for sending requests to
-  // browser-side ServiceWorkerProviderHost. May be nullptr if
-  // OnNetworkProviderDestroyed() has already been called.
+  // May be nullptr if OnNetworkProviderDestroyed() has already been called.
   // Currently this can be called only for clients that are Documents,
   // see comments of |container_host_|.
   blink::mojom::ServiceWorkerContainerHost* container_host() const;
@@ -237,12 +235,12 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   const blink::mojom::ServiceWorkerContainerType container_type_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
-  // This keeps the connection to the content::ServiceWorkerProviderHost in the
+  // This keeps the connection to the content::ServiceWorkerContainerHost in the
   // browser process alive.
   mojo::AssociatedReceiver<blink::mojom::ServiceWorkerContainer> receiver_;
 
   // The |container_host_| remote represents the connection to the
-  // browser-side ServiceWorkerProviderHost, whose lifetime is bound to
+  // browser-side ServiceWorkerContainerHost, whose lifetime is bound to
   // |container_host_| via the Mojo connection. This may be nullptr if the Mojo
   // connection was broken in OnNetworkProviderDestroyed().
   //

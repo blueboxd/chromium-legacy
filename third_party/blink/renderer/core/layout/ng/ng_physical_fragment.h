@@ -432,7 +432,8 @@ class CORE_EXPORT NGPhysicalFragment
   mutable unsigned ink_overflow_computed_ : 1;
 
   // Note: We've used 32-bit bit field. If you need more bits, please think to
-  // share bit fields.
+  // share bit fields, or put them before layout_object_ to fill the gap after
+  // RefCounted on 64-bit systems.
 
  private:
   friend struct NGPhysicalFragmentTraits;

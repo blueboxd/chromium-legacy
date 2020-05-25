@@ -12,14 +12,14 @@
 
     // Put "a" it into a disconnected element with a shadow root with an insertion point.
     var host = document.createElement("div");
-    var content = host.createShadowRoot().appendChild(document.createElement("content"));
+    var content = host.attachShadow({mode: 'open'}).appendChild(document.createElement("content"));
     host.appendChild(a);
 
     // Cause a distribution of "a" into the disconnected host.
     a.getDestinationInsertionPoints();
 
     // Distribute "a" into a host in the page.
-    b.createShadowRoot().appendChild(document.createElement("content"));
+    b.attachShadow({mode: 'open'}).appendChild(document.createElement("content"));
     b.appendChild(a);
 
     // Cause an attach of all elements in the page.

@@ -312,8 +312,8 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistrationForReady(
   // GetRegistrationForReady() needs to respond some non-sense params even if it
   // has found that the request is a bad message and has called
   // mojo::ReportBadMessage(), this is forced by Mojo, please see
-  // content::ServiceWorkerProviderHost::GetRegistrationForReady(). We'll find a
-  // better solution once the discussion at
+  // content::ServiceWorkerContainerHost::GetRegistrationForReady(). We'll find
+  // a better solution once the discussion at
   // https://groups.google.com/a/chromium.org/forum/#!topic/chromium-mojo/NNsogKNurlA
   // settled.
   CHECK(registration);

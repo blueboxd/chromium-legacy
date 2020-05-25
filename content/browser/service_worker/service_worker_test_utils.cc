@@ -22,7 +22,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/frame.mojom.h"
@@ -390,8 +390,7 @@ void StopServiceWorker(ServiceWorkerVersion* version) {
   run_loop.Run();
 }
 
-std::unique_ptr<ServiceWorkerProviderHost>
-CreateProviderHostForServiceWorkerContext(
+std::unique_ptr<ServiceWorkerHost> CreateServiceWorkerHost(
     int process_id,
     bool is_parent_frame_secure,
     ServiceWorkerVersion* hosted_version,
@@ -399,7 +398,7 @@ CreateProviderHostForServiceWorkerContext(
     ServiceWorkerRemoteContainerEndpoint* output_endpoint) {
   auto provider_info =
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
-  auto host = std::make_unique<ServiceWorkerProviderHost>(
+  auto host = std::make_unique<ServiceWorkerHost>(
       provider_info->host_remote.InitWithNewEndpointAndPassReceiver(),
       hosted_version, std::move(context));
 

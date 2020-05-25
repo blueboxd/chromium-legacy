@@ -2195,6 +2195,7 @@
       default_value: "Length()",
       typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthSizing",
+      computed_value_comparable: true,
     },
     {
       name: "hyphens",
@@ -2518,7 +2519,8 @@
       default_value: "Length::None()",
       converter: "ConvertLengthMaxSizing",
       keywords: ["none"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      computed_value_comparable: true,
     },
     {
       name: "max-width",
@@ -2530,7 +2532,8 @@
       default_value: "Length::None()",
       converter: "ConvertLengthMaxSizing",
       keywords: ["none"],
-      typedom_types: ["Keyword", "Length", "Percentage"]
+      typedom_types: ["Keyword", "Length", "Percentage"],
+      computed_value_comparable: true,
     },
     {
       name: "min-height",
@@ -2541,7 +2544,8 @@
       field_template: "<length>",
       default_value: "Length()",
       converter: "ConvertLengthSizing",
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Length", "Percentage"],
+      computed_value_comparable: true,
     },
     {
       name: "min-width",
@@ -2552,7 +2556,8 @@
       field_template: "<length>",
       default_value: "Length()",
       converter: "ConvertLengthSizing",
-      typedom_types: ["Length", "Percentage"]
+      typedom_types: ["Length", "Percentage"],
+      computed_value_comparable: true,
     },
     {
       name: "mix-blend-mode",
@@ -4500,6 +4505,7 @@
       default_value: "Length()",
       typedom_types: ["Keyword", "Length", "Percentage"],
       converter: "ConvertLengthSizing",
+      computed_value_comparable: true,
     },
     {
       name: "will-change",

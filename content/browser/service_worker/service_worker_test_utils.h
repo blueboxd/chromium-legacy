@@ -15,7 +15,7 @@
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
-#include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
 #include "content/common/navigation_client.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -33,7 +33,7 @@ namespace content {
 
 class EmbeddedWorkerTestHelper;
 class ServiceWorkerContextCore;
-class ServiceWorkerProviderHost;
+class ServiceWorkerHost;
 class ServiceWorkerRegistry;
 class ServiceWorkerStorage;
 class ServiceWorkerVersion;
@@ -135,8 +135,7 @@ CreateContainerHostAndInfoForWindow(
     base::WeakPtr<ServiceWorkerContextCore> context,
     bool are_ancestors_secure);
 
-std::unique_ptr<ServiceWorkerProviderHost>
-CreateProviderHostForServiceWorkerContext(
+std::unique_ptr<ServiceWorkerHost> CreateServiceWorkerHost(
     int process_id,
     bool is_parent_frame_secure,
     ServiceWorkerVersion* hosted_version,

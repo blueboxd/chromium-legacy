@@ -92,8 +92,14 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // fetchStart.  Intended to be used for correlation with other events internal
   // to blink. Not to be exposed to JavaScript.
   base::TimeTicks NavigationStartAsMonotonicTime() const;
+  // The latest navigation start time after the page is restored from
+  // back-forward cache.
+  uint64_t LastBackForwardCacheRestoreNavigationStart() const;
   // The time the first paint operation was performed.
   uint64_t FirstPaint() const;
+  // The time the first paint operation was performed after the latest time when
+  // the page was restored from the back-forward cache.
+  uint64_t FirstPaintAfterBackForwardCacheRestore() const;
   // The time the first paint operation for image was performed.
   uint64_t FirstImagePaint() const;
   // The time of the first 'contentful' paint. A contentful paint is a paint

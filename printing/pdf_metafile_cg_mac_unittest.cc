@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/hash/sha1.h"
 #include "base/path_service.h"
+#include "printing/mojom/print.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/rect.h"
@@ -151,13 +152,13 @@ TEST(PdfMetafileCgTest, Pdf) {
   // Render page 1.
   constexpr gfx::Rect kRect1(10, 10, 520, 700);
   constexpr gfx::Size kSize1(540, 720);
-  pdf.StartPage(kSize1, kRect1, 1.25);
+  pdf.StartPage(kSize1, kRect1, 1.25, mojom::PageOrientation::kUpright);
   pdf.FinishPage();
 
   // Render page 2.
   constexpr gfx::Rect kRect2(10, 10, 520, 700);
   constexpr gfx::Size kSize2(720, 540);
-  pdf.StartPage(kSize2, kRect2, 2.0);
+  pdf.StartPage(kSize2, kRect2, 2.0, mojom::PageOrientation::kUpright);
   pdf.FinishPage();
 
   pdf.FinishDocument();

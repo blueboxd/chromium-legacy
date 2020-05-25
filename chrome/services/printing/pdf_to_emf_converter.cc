@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "pdf/pdf.h"
 #include "printing/emf_win.h"
+#include "printing/mojom/print.mojom.h"
 #include "ui/gfx/gdi_util.h"
 
 namespace printing {
@@ -156,7 +157,8 @@ base::ReadOnlySharedMemoryRegion PdfToEmfConverter::RenderPdfPageToMetafile(
 
   // The underlying metafile is of type Emf and ignores the arguments passed
   // to StartPage().
-  metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
+  metafile.StartPage(gfx::Size(), gfx::Rect(), 1,
+                     mojom::PageOrientation::kUpright);
   int offset_x = postscript ? pdf_render_settings_.offsets.x() : 0;
   int offset_y = postscript ? pdf_render_settings_.offsets.y() : 0;
 

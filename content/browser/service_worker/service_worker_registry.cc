@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_info.h"
 #include "content/browser/service_worker/service_worker_registration.h"
+#include "content/browser/service_worker/service_worker_storage_control_impl.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -121,9 +122,10 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
     storage::QuotaManagerProxy* quota_manager_proxy,
     storage::SpecialStoragePolicy* special_storage_policy)
     : context_(context),
-      storage_(ServiceWorkerStorage::Create(user_data_directory,
-                                            std::move(database_task_runner),
-                                            quota_manager_proxy)),
+      storage_control_(std::make_unique<ServiceWorkerStorageControlImpl>(
+          ServiceWorkerStorage::Create(user_data_directory,
+                                       std::move(database_task_runner),
+                                       quota_manager_proxy))),
       special_storage_policy_(special_storage_policy) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
@@ -134,7 +136,8 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
     ServiceWorkerContextCore* context,
     ServiceWorkerRegistry* old_registry)
     : context_(context),
-      storage_(ServiceWorkerStorage::Create(old_registry->storage())),
+      storage_control_(std::make_unique<ServiceWorkerStorageControlImpl>(
+          ServiceWorkerStorage::Create(old_registry->storage()))),
       special_storage_policy_(old_registry->special_storage_policy_) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(context_);
@@ -142,6 +145,10 @@ ServiceWorkerRegistry::ServiceWorkerRegistry(
 }
 
 ServiceWorkerRegistry::~ServiceWorkerRegistry() = default;
+
+ServiceWorkerStorage* ServiceWorkerRegistry::storage() const {
+  return storage_control_->storage();
+}
 
 void ServiceWorkerRegistry::CreateNewRegistration(
     blink::mojom::ServiceWorkerRegistrationOptions options,
@@ -461,7 +468,8 @@ void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
     base::Time last_update_check_time,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  storage()->UpdateLastUpdateCheckTime(
+  BindRemoteStorageControlIfNeeded();
+  remote_storage_control_->UpdateLastUpdateCheckTime(
       registration_id, origin, last_update_check_time,
       CreateDatabaseStatusCallback(std::move(callback)));
 }
@@ -1373,6 +1381,17 @@ bool ServiceWorkerRegistry::ShouldPurgeOnShutdown(const url::Origin& origin) {
     return false;
   return special_storage_policy_->IsStorageSessionOnly(origin.GetURL()) &&
          !special_storage_policy_->IsStorageProtected(origin.GetURL());
+}
+
+void ServiceWorkerRegistry::BindRemoteStorageControlIfNeeded() {
+  DCHECK(!(remote_storage_control_.is_bound() &&
+           !remote_storage_control_.is_connected()))
+      << "Rebinding is not supported yet.";
+
+  if (remote_storage_control_.is_bound())
+    return;
+
+  storage_control_->Bind(remote_storage_control_.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace content

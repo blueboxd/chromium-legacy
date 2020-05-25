@@ -322,7 +322,8 @@ void LocalFrame::Init() {
   CoreInitializer::GetInstance().InitLocalFrame(*this);
 
   GetRemoteNavigationAssociatedInterfaces()->GetInterface(
-      local_frame_host_remote_.BindNewEndpointAndPassReceiver());
+      local_frame_host_remote_.BindNewEndpointAndPassReceiver(
+          GetTaskRunner(blink::TaskType::kInternalDefault)));
   GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
       &LocalFrame::BindToReceiver, WrapWeakPersistent(this)));
 
@@ -413,6 +414,14 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(system_clipboard_);
   visitor->Trace(raw_system_clipboard_);
   visitor->Trace(virtual_keyboard_overlay_changed_observers_);
+  visitor->Trace(pause_handle_receivers_);
+  visitor->Trace(reporting_service_);
+#if defined(OS_MACOSX)
+  visitor->Trace(text_input_host_);
+#endif
+  visitor->Trace(local_frame_host_remote_);
+  visitor->Trace(receiver_);
+  visitor->Trace(main_frame_receiver_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -1115,7 +1124,8 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   // It should be bound before accessing TextInputHost which is the interface to
   // respond to GetCharacterIndexAtPoint.
   GetBrowserInterfaceBroker().GetInterface(
-      text_input_host_.BindNewPipeAndPassReceiver());
+      text_input_host_.BindNewPipeAndPassReceiver(
+          GetTaskRunner(blink::TaskType::kInternalDefault)));
 #endif
 }
 
@@ -1714,7 +1724,8 @@ void LocalFrame::PauseSubresourceLoading(
   auto handle = GetFrameScheduler()->GetPauseSubresourceLoadingHandle();
   if (!handle)
     return;
-  pause_handle_receivers_.Add(std::move(handle), std::move(receiver));
+  pause_handle_receivers_.Add(std::move(handle), std::move(receiver),
+                              GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
 void LocalFrame::ResumeSubresourceLoading() {
@@ -1761,13 +1772,13 @@ const base::UnguessableToken& LocalFrame::GetAgentClusterId() const {
                        : base::UnguessableToken::Null();
 }
 
-const mojo::Remote<mojom::blink::ReportingServiceProxy>&
-LocalFrame::GetReportingService() const {
-  if (!reporting_service_) {
+mojom::blink::ReportingServiceProxy* LocalFrame::GetReportingService() {
+  if (!reporting_service_.is_bound()) {
     Platform::Current()->GetBrowserInterfaceBroker()->GetInterface(
-        reporting_service_.BindNewPipeAndPassReceiver());
+        reporting_service_.BindNewPipeAndPassReceiver(
+            GetTaskRunner(blink::TaskType::kInternalDefault)));
   }
-  return reporting_service_;
+  return reporting_service_.get();
 }
 
 // static
@@ -2310,7 +2321,8 @@ void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
 
 void LocalFrame::AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr info) {
   if (GetPage()) {
-    GetPage()->GetInspectorIssueStorage().AddInspectorIssue(DomWindow(), std::move(info));
+    GetPage()->GetInspectorIssueStorage().AddInspectorIssue(DomWindow(),
+                                                            std::move(info));
   }
 }
 
@@ -2732,7 +2744,7 @@ bool LocalFrame::ShouldThrottleDownload() {
 
 #if defined(OS_MACOSX)
 mojom::blink::TextInputHost& LocalFrame::GetTextInputHost() {
-  DCHECK(text_input_host_);
+  DCHECK(text_input_host_.is_bound());
   return *text_input_host_.get();
 }
 #endif

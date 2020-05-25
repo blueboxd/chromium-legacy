@@ -247,8 +247,8 @@ Object.freeze(DriveMetadataSearchContentScanner.SearchType);
 class RecentContentScanner extends ContentScanner {
   /**
    * @param {string} query Search query.
-   * @param {string=} opt_sourceRestriction
-   * @param {string=} opt_recentFileType
+   * @param {chrome.fileManagerPrivate.SourceRestriction=} opt_sourceRestriction
+   * @param {chrome.fileManagerPrivate.RecentFileType=} opt_recentFileType
    */
   constructor(query, opt_sourceRestriction, opt_recentFileType) {
     super();
@@ -259,13 +259,13 @@ class RecentContentScanner extends ContentScanner {
     this.query_ = query.toLowerCase();
 
     /**
-     * @private {string}
+     * @private {chrome.fileManagerPrivate.SourceRestriction}
      */
     this.sourceRestriction_ = opt_sourceRestriction ||
         chrome.fileManagerPrivate.SourceRestriction.ANY_SOURCE;
 
     /**
-     * @private {string}
+     * @private {chrome.fileManagerPrivate.RecentFileType}
      */
     this.recentFileType_ =
         opt_recentFileType || chrome.fileManagerPrivate.RecentFileType.ALL;

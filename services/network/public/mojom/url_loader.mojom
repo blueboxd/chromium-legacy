@@ -355,7 +355,7 @@ struct URLRequest {
   // practical terms, it's empty for requests that didn't go through a service
   // worker, or if the original requestor is not a window. When the request
   // goes through a service worker, the id is
-  // ServiceWorkerProviderHost::fetch_request_window_id.
+  // ServiceWorkerContainerHost::fetch_request_window_id.
   mojo_base.mojom.UnguessableToken? fetch_window_id;
 
   // The ID that DevTools uses to track network requests. It is generated in the

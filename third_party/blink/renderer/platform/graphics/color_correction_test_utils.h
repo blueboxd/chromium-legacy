@@ -32,26 +32,12 @@ enum UnpremulRoundTripTolerance {
   kUnpremulRoundTripTolerance,
 };
 
-enum ColorSpaceConversion {
-  kColorSpaceConversion_None,
-  kColorSpaceConversion_Default,
-  kColorSpaceConversion_Preserve,
-  kColorSpaceConversion_SRGB,
-  kColorSpaceConversion_P3,
-  kColorSpaceConversion_Rec2020,
-  kColorSpaceConversion_Last = kColorSpaceConversion_Rec2020,
-};
-
 class ColorCorrectionTestUtils {
   STATIC_ONLY(ColorCorrectionTestUtils);
 
  public:
   // ImageBitmap color space conversion test utils
   static sk_sp<SkColorSpace> ColorSpinSkColorSpace();
-  static sk_sp<SkColorSpace> ColorSpaceConversionToSkColorSpace(
-      ColorSpaceConversion conversion);
-  static String ColorSpaceConversionToString(
-      ColorSpaceConversion color_space_conversion);
 
   static void CompareColorCorrectedPixels(
       const void* actual_pixels,

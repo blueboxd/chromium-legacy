@@ -497,15 +497,17 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     ]
 
     expected_tests = [
-      {
-        'annotations': {
-          'Feature': {'value': ['Foo']},
-          'MediumTest': None,
+        {
+            'annotations': {
+                'Feature': {
+                    'value': ['Foo']
+                },
+                'MediumTest': None,
+            },
+            'class': 'org.chromium.test.SampleTest',
+            'is_junit4': True,
+            'method': 'testMethod2',
         },
-        'class': 'org.chromium.test.SampleTest',
-        'is_junit4': False,
-        'method': 'testMethod2',
-      },
     ]
 
     o._excluded_annotations = [('SmallTest', None)]
@@ -556,16 +558,18 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     ]
 
     expected_tests = [
-      {
-        'annotations': {
-          'Feature': {'value': ['Foo']},
-          'SmallTest': None,
-          'TestValue': '1',
+        {
+            'annotations': {
+                'Feature': {
+                    'value': ['Foo']
+                },
+                'SmallTest': None,
+                'TestValue': '1',
+            },
+            'class': 'org.chromium.test.SampleTest',
+            'is_junit4': True,
+            'method': 'testMethod1',
         },
-        'class': 'org.chromium.test.SampleTest',
-        'is_junit4': False,
-        'method': 'testMethod1',
-      },
     ]
 
     o._annotations = [('TestValue', '1')]
@@ -724,24 +728,28 @@ class InstrumentationTestInstanceTest(unittest.TestCase):
     ]
 
     expected_tests = [
-      {
-        'annotations': {
-          'Feature': {'value': ['Baz']},
-          'MediumTest': None,
+        {
+            'annotations': {
+                'Feature': {
+                    'value': ['Baz']
+                },
+                'MediumTest': None,
+            },
+            'class': 'org.chromium.test.SampleTest',
+            'is_junit4': True,
+            'method': 'testMethod2',
         },
-        'class': 'org.chromium.test.SampleTest',
-        'is_junit4': False,
-        'method': 'testMethod2',
-      },
-      {
-        'annotations': {
-          'Feature': {'value': ['Bar']},
-          'SmallTest': None,
+        {
+            'annotations': {
+                'Feature': {
+                    'value': ['Bar']
+                },
+                'SmallTest': None,
+            },
+            'class': 'org.chromium.test.SampleTest2',
+            'is_junit4': True,
+            'method': 'testMethod1',
         },
-        'class': 'org.chromium.test.SampleTest2',
-        'is_junit4': False,
-        'method': 'testMethod1',
-      },
     ]
 
     o._annotations = [('Feature', 'Bar'), ('Feature', 'Baz')]

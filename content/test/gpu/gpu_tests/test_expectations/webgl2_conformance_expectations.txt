@@ -446,6 +446,7 @@ crbug.com/1027776 [ mac nvidia-0xfe9 ] deqp/data/gles3/shaders/conversions.html 
 crbug.com/1027776 [ mac nvidia-0xfe9 ] conformance2/rendering/framebuffer-texture-level1.html [ Failure ]
 crbug.com/1037650 [ mac nvidia-0xfe9 ] conformance2/textures/canvas_sub_rectangle/* [ RetryOnFailure ]
 crbug.com/1073538 [ mac nvidia-0xfe9 ] deqp/functional/gles3/shadermatrix/div_dynamic.html [ RetryOnFailure ]
+crbug.com/1086194 [ mac nvidia-0xfe9 ] conformance/textures/canvas_sub_rectangle/tex-2d-rgb-rgb-unsigned_byte.html [ RetryOnFailure ]
 
 # Mac AMD
 # TODO(kbr): uncomment the following two exepectations after test

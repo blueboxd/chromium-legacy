@@ -134,6 +134,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                     const DisplayItemClient& display_item_client,
                     const NGPaintFragment* line_box_paint_fragment,
                     const NGFragmentItem* line_box_item,
+                    wtf_size_t line_fragment_id,
                     const PaintInfo&,
                     const PhysicalOffset& paint_offset);
   void PaintBackplate(NGInlineCursor* descendants,
@@ -386,7 +387,7 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGFragmentItem& item,
     const NGPhysicalBoxFragment& fragment)
     : NGBoxFragmentPainter(fragment,
-                           item,
+                           *item.GetDisplayItemClient(),
                            /* paint_fragment */ nullptr,
                            &inline_box_cursor,
                            &item) {

@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PREFS_PREFS_TAB_HELPER_H_
 #define CHROME_BROWSER_UI_PREFS_PREFS_TAB_HELPER_H_
 
-#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -63,8 +62,6 @@ class PrefsTabHelper : public content::NotificationObserver,
   content::WebContents* web_contents_;
   Profile* profile_;
   content::NotificationRegistrar registrar_;
-  std::unique_ptr<base::CallbackList<void(void)>::Subscription>
-      style_sheet_subscription_;
 #if !defined(OS_ANDROID)
   std::unique_ptr<ChromeZoomLevelPrefs::DefaultZoomLevelSubscription>
       default_zoom_level_subscription_;

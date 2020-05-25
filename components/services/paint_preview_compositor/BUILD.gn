@@ -14,6 +14,8 @@ static_library("paint_preview_compositor") {
     "paint_preview_compositor_impl.h",
     "paint_preview_frame.cc",
     "paint_preview_frame.h",
+    "skp_result.cc",
+    "skp_result.h",
   ]
 
   deps = [

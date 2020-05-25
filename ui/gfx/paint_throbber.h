@@ -68,10 +68,6 @@ GFX_EXPORT void PaintNewThrobberWaiting(Canvas* canvas,
                                         SkColor color,
                                         const base::TimeDelta& elapsed_time);
 
-// Cycle time for the throbber above. Used to be able to smoothly transition
-// between the throbber and the determinite progress-bar animation.
-constexpr int kNewThrobberWaitingAnimationCycleMs = 1000;
-
 }  // namespace gfx
 
 #endif  // UI_GFX_PAINT_THROBBER_H_

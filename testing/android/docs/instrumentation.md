@@ -72,6 +72,18 @@ Instrumentation tests in Chromium use a wide variety of annotations to control
 and manipulate test execution. Some of these are implemented in Chromium, while
 others are pulled in from outside. They include:
 
+#### Test Batching
+
+The [`@Batch("group_name")`](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/UnitTest.java)
+annotation is used to run all tests with the same batch group name in the same
+instrumentation invocation. In other words, the browser process is not
+restarted between these tests, and so any changes to global state, like
+launching an Activity, will persist between tests within a batch group. The
+benefit of this is that these tests run significantly faster - the per-test cost
+of restarting the process can be as high as 10 seconds (usually around 2
+seconds), and that doesn't count the cost of starting an Activity like
+ChromeTabbedActivity.
+
 #### Size annotations
 
 Size annotations are used primarily by the test runner to determine the length
@@ -207,7 +219,7 @@ up to date, and whether the build was an official one.
 @Restriction(
     // Possible values include:
     //
-    // base: 
+    // base:
     //  - Restriction.RESTRICTION_TYPE_LOW_END_DEVICE
     //    Restricts the test to low-end devices as determined by SysUtils.isLowEndDevice().
     //

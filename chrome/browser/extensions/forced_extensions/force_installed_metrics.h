@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_METRICS_H_
-#define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_METRICS_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_FORCE_INSTALLED_METRICS_H_
+#define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_FORCE_INSTALLED_METRICS_H_
 
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
+#include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
@@ -18,18 +19,18 @@ namespace extensions {
 
 // Used to report force-installed extension stats to UMA.
 // ExtensionService owns this class and outlives it.
-class InstallationMetrics : public InstallationTracker::Observer {
+class ForceInstalledMetrics : public ForceInstalledTracker::Observer {
  public:
-  InstallationMetrics(ExtensionRegistry* registry,
-                      Profile* profile,
-                      InstallationTracker* tracker,
-                      std::unique_ptr<base::OneShotTimer> timer =
-                          std::make_unique<base::OneShotTimer>());
+  ForceInstalledMetrics(ExtensionRegistry* registry,
+                        Profile* profile,
+                        ForceInstalledTracker* tracker,
+                        std::unique_ptr<base::OneShotTimer> timer =
+                            std::make_unique<base::OneShotTimer>());
 
-  InstallationMetrics(const InstallationMetrics&) = delete;
-  InstallationMetrics& operator=(const InstallationMetrics&) = delete;
+  ForceInstalledMetrics(const ForceInstalledMetrics&) = delete;
+  ForceInstalledMetrics& operator=(const ForceInstalledMetrics&) = delete;
 
-  ~InstallationMetrics() override;
+  ~ForceInstalledMetrics() override;
 
   // Note: enum used for UMA. Do NOT reorder or remove entries. Don't forget to
   // update enums.xml (name: SessionType) when adding new
@@ -54,7 +55,7 @@ class InstallationMetrics : public InstallationTracker::Observer {
     kMaxValue = SESSION_TYPE_WEB_KIOSK_APP
   };
 
-  // InstallationTracker::Observer overrides:
+  // ForceInstalledTracker::Observer overrides:
   //
   // Calls ReportMetrics method if there is a non-empty list of
   // force-installed extensions, and is responsible for cleanup of
@@ -66,7 +67,7 @@ class InstallationMetrics : public InstallationTracker::Observer {
   // easy to detect. Can return false for misconfigurations which are hard to
   // distinguish with other errors.
   bool IsMisconfiguration(
-      const InstallationReporter::InstallationData& installation_data,
+      const InstallStageTracker::InstallationData& installation_data,
       const ExtensionId& id);
 
 #if defined(OS_CHROMEOS)
@@ -85,7 +86,7 @@ class InstallationMetrics : public InstallationTracker::Observer {
 
   ExtensionRegistry* const registry_;
   Profile* const profile_;
-  InstallationTracker* const tracker_;
+  ForceInstalledTracker* const tracker_;
 
   // Moment when the class was initialized.
   base::Time start_time_;
@@ -93,7 +94,7 @@ class InstallationMetrics : public InstallationTracker::Observer {
   // Tracks whether stats were already reported for the session.
   bool reported_ = false;
 
-  ScopedObserver<InstallationTracker, InstallationTracker::Observer>
+  ScopedObserver<ForceInstalledTracker, ForceInstalledTracker::Observer>
       tracker_observer_{this};
 
   // Tracks installation reporting timeout.
@@ -102,4 +103,4 @@ class InstallationMetrics : public InstallationTracker::Observer {
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_METRICS_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_FORCE_INSTALLED_METRICS_H_

@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/core/style/nine_piece_image.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scoped_display_item_fragment.h"
 
 namespace blink {
 
@@ -57,6 +58,12 @@ const NGBorderEdges NGInlineBoxFragmentPainter::BorderEdges() const {
 
 void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                                        const PhysicalOffset& paint_offset) {
+  base::Optional<ScopedDisplayItemFragment> display_item_fragment;
+  if (inline_box_item_) {
+    display_item_fragment.emplace(paint_info.context,
+                                  inline_box_item_->FragmentId());
+  }
+
   const PhysicalOffset adjusted_paint_offset =
       paint_offset + (inline_box_paint_fragment_
                           ? inline_box_paint_fragment_->Offset()
@@ -150,6 +157,14 @@ void NGLineBoxFragmentPainter::PaintBackgroundBorderShadow(
   DCHECK_EQ(paint_info.phase, PaintPhase::kForeground);
   DCHECK_EQ(inline_box_fragment_.Type(), NGPhysicalFragment::kFragmentLineBox);
   DCHECK(NeedsPaint(inline_box_fragment_));
+#if DCHECK_IS_ON()
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    DCHECK(inline_box_item_);
+    // |NGFragmentItem| uses the fragment id when painting the background of
+    // line boxes. Please see |NGFragmentItem::kInitialLineFragmentId|.
+    DCHECK_NE(paint_info.context.GetPaintController().CurrentFragment(), 0u);
+  }
+#endif
 
   if (line_style_ == style_ ||
       line_style_.Visibility() != EVisibility::kVisible)

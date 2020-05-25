@@ -115,10 +115,11 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   return proxy.release();
 }
 
+// static
 RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     int routing_id,
     int render_view_routing_id,
-    blink::WebFrame* opener,
+    const base::UnguessableToken& opener_frame_token,
     int parent_routing_id,
     const FrameReplicationState& replicated_state,
     const base::UnguessableToken& frame_token,
@@ -139,6 +140,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
   RenderWidget* ancestor_widget = nullptr;
   blink::WebRemoteFrame* web_frame = nullptr;
 
+  auto* opener = blink::WebFrame::FromFrameToken(opener_frame_token);
   if (!parent) {
     // Create a top level WebRemoteFrame.
     render_view = RenderViewImpl::FromRoutingID(render_view_routing_id);

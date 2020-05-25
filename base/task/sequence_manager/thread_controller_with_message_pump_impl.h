@@ -17,6 +17,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"
 #include "base/task/sequence_manager/thread_controller.h"
+#include "base/task/sequence_manager/thread_controller_power_monitor.h"
 #include "base/task/sequence_manager/work_deduplicator.h"
 #include "base/thread_annotations.h"
 #include "base/threading/hang_watcher.h"
@@ -94,17 +95,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
   void Quit() override;
   void EnsureWorkScheduled() override;
 
- private:
-  friend class DoWorkScope;
-  friend class RunScope;
-
-  // Returns the delay till the next task. If there's no delay TimeDelta::Max()
-  // will be returned.
-  TimeDelta DoWorkImpl(LazyNow* continuation_lazy_now);
-
-  void InitializeThreadTaskRunnerHandle()
-      EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);
-
   struct MainThreadOnly {
     MainThreadOnly();
     ~MainThreadOnly();
@@ -134,6 +124,25 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
     bool task_execution_allowed = true;
   };
 
+  const MainThreadOnly& MainThreadOnlyForTesting() const {
+    return main_thread_only_;
+  }
+
+  ThreadControllerPowerMonitor* ThreadControllerPowerMonitorForTesting() {
+    return &power_monitor_;
+  }
+
+ private:
+  friend class DoWorkScope;
+  friend class RunScope;
+
+  // Returns the delay till the next task. If there's no delay TimeDelta::Max()
+  // will be returned.
+  TimeDelta DoWorkImpl(LazyNow* continuation_lazy_now);
+
+  void InitializeThreadTaskRunnerHandle()
+      EXCLUSIVE_LOCKS_REQUIRED(task_runner_lock_);
+
   MainThreadOnly& main_thread_only() {
     DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
     return main_thread_only_;
@@ -153,6 +162,8 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
       GUARDED_BY(task_runner_lock_);
 
   WorkDeduplicator work_deduplicator_;
+
+  ThreadControllerPowerMonitor power_monitor_;
 
   // Can only be set once (just before calling
   // work_deduplicator_.BindToCurrentThread()). After that only read access is
@@ -187,11 +198,6 @@ class BASE_EXPORT ThreadControllerWithMessagePumpImpl
 };
 
 }  // namespace internal
-
-// Initialize ThreadController features. Called after FeatureList is available
-// when the process is still single-threaded.
-BASE_EXPORT void PostFieldTrialInitialization();
-
 }  // namespace sequence_manager
 }  // namespace base
 

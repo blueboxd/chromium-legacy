@@ -589,6 +589,12 @@ int WebFrame::InstanceCount() {
   return g_frame_count;
 }
 
+// static
+WebFrame* WebFrame::FromFrameToken(const base::UnguessableToken& frame_token) {
+  auto* frame = Frame::ResolveFrame(frame_token);
+  return WebFrame::FromFrame(frame);
+}
+
 WebLocalFrame* WebLocalFrame::FrameForCurrentContext() {
   v8::Local<v8::Context> context =
       v8::Isolate::GetCurrent()->GetCurrentContext();

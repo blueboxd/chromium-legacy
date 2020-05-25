@@ -18,6 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -223,6 +224,8 @@ TEST_F(PaintPreviewClientRenderViewHostTest, CaptureFailureMock) {
   ASSERT_NE(client, nullptr);
   client->CapturePaintPreview(params, main_rfh(), std::move(callback));
   loop.Run();
+  content::RunAllTasksUntilIdle();
+  EXPECT_TRUE(base::IsDirectoryEmpty(temp_dir_.GetPath()));
 }
 
 TEST_F(PaintPreviewClientRenderViewHostTest, RenderFrameDeletedNotCapturing) {

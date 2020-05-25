@@ -13,12 +13,15 @@ namespace base {
 
 class PowerMonitorTest : public testing::Test {
  protected:
-  PowerMonitorTest() {
+  PowerMonitorTest() = default;
+
+  void TearDown() override { PowerMonitor::ShutdownForTesting(); }
+
+  void PowerMonitorInitialize() {
     power_monitor_source_ = new PowerMonitorTestSource();
     PowerMonitor::Initialize(
         std::unique_ptr<PowerMonitorSource>(power_monitor_source_));
   }
-  ~PowerMonitorTest() override { PowerMonitor::ShutdownForTesting(); }
 
   PowerMonitorTestSource* source() { return power_monitor_source_; }
 
@@ -34,9 +37,11 @@ class PowerMonitorTest : public testing::Test {
 TEST_F(PowerMonitorTest, PowerNotifications) {
   const int kObservers = 5;
 
+  PowerMonitorInitialize();
+
   PowerMonitorTestObserver observers[kObservers];
   for (auto& index : observers)
-    EXPECT_TRUE(PowerMonitor::AddObserver(&index));
+    PowerMonitor::AddObserver(&index);
 
   // Sending resume when not suspended should have no effect.
   source()->GenerateResumeEvent();
@@ -84,7 +89,9 @@ TEST_F(PowerMonitorTest, PowerNotifications) {
 
 TEST_F(PowerMonitorTest, ThermalThrottling) {
   PowerMonitorTestObserver observer;
-  EXPECT_TRUE(PowerMonitor::AddObserver(&observer));
+  PowerMonitor::AddObserver(&observer);
+
+  PowerMonitorInitialize();
 
   constexpr PowerObserver::DeviceThermalState kThermalStates[] = {
       PowerObserver::DeviceThermalState::kUnknown,
@@ -100,4 +107,32 @@ TEST_F(PowerMonitorTest, ThermalThrottling) {
 
   PowerMonitor::RemoveObserver(&observer);
 }
+
+TEST_F(PowerMonitorTest, AddObserverBeforeAndAfterInitialization) {
+  PowerMonitorTestObserver observer1;
+  PowerMonitorTestObserver observer2;
+
+  // An observer is added before the PowerMonitor initialization.
+  PowerMonitor::AddObserver(&observer1);
+
+  PowerMonitorInitialize();
+
+  // An observer is added after the PowerMonitor initialization.
+  PowerMonitor::AddObserver(&observer2);
+
+  // Simulate suspend/resume notifications.
+  source()->GenerateSuspendEvent();
+  EXPECT_EQ(observer1.suspends(), 1);
+  EXPECT_EQ(observer2.suspends(), 1);
+  EXPECT_EQ(observer1.resumes(), 0);
+  EXPECT_EQ(observer2.resumes(), 0);
+
+  source()->GenerateResumeEvent();
+  EXPECT_EQ(observer1.resumes(), 1);
+  EXPECT_EQ(observer2.resumes(), 1);
+
+  PowerMonitor::RemoveObserver(&observer1);
+  PowerMonitor::RemoveObserver(&observer2);
+}
+
 }  // namespace base

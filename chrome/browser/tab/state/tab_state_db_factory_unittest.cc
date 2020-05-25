@@ -25,7 +25,7 @@ class TabStateDBFactoryTest : public testing::Test {
 
 TEST_F(TabStateDBFactoryTest, TestIncognitoProfile) {
   EXPECT_EQ(nullptr, TabStateDBFactory::GetInstance()->GetForProfile(
-                         profile()->GetOffTheRecordProfile()));
+                         profile()->GetPrimaryOTRProfile()));
 }
 
 TEST_F(TabStateDBFactoryTest, TestSameProfile) {

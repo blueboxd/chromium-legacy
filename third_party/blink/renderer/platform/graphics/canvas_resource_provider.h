@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/platform/graphics/identifiability_paint_op_digest.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 class GrContext;
@@ -56,7 +57,8 @@ class WebGraphicsContext3DProviderWrapper;
 //   3) Call Snapshot() to acquire a bitmap with the rendered image in it.
 
 class PLATFORM_EXPORT CanvasResourceProvider
-    : public WebGraphicsContext3DProviderWrapper::DestructionObserver {
+    : public WebGraphicsContext3DProviderWrapper::DestructionObserver,
+      public CanvasMemoryDumpClient {
  public:
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
@@ -301,6 +303,10 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // Notifies before any drawing will be done on the resource used by this
   // provider.
   virtual void WillDraw() {}
+
+  size_t ComputeSurfaceSize() const;
+  void OnMemoryDump(base::trace_event::ProcessMemoryDump*) override;
+  size_t GetSize() const override;
 
   cc::ImageDecodeCache* ImageDecodeCacheRGBA8();
   cc::ImageDecodeCache* ImageDecodeCacheF16();

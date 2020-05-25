@@ -457,7 +457,7 @@ const DisplayItemClient* NGInlineCursorPosition::GetDisplayItemClient() const {
   if (paint_fragment_)
     return paint_fragment_;
   if (item_)
-    return item_;
+    return item_->GetDisplayItemClient();
   NOTREACHED();
   return nullptr;
 }

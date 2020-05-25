@@ -78,6 +78,7 @@ WebRemoteFrame* WebRemoteFrame::CreateForPortal(
                                              frame_token, portal_element);
 }
 
+// static
 WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
     WebView* web_view,
     WebRemoteFrameClient* client,

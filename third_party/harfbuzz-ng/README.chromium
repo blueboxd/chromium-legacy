@@ -1,10 +1,10 @@
 Name: harfbuzz-ng
 Short Name: harfbuzz-ng
 URL: http://harfbuzz.org
-Version: 2.6.5-89
+Version: 2.6.6-46
 CPEPrefix: cpe:/a:harfbuzz_project:harfbuzz:2.6.4
-Date: 20200506
-Revision: 100d40c827eb8336b2b671856f151275d47e71ad
+Date: 20200525
+Revision: e3af529e511ca492284cdd9f4584666b88a9e00f
 Security Critical: yes
 License: MIT
 License File: src/COPYING

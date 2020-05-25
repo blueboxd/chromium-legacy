@@ -240,7 +240,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
     BuildReport();
 
     EXPECT_CALL(cloud_policy_client_,
-                UploadRealtimeReport_(MatchEvents(&events_value_), _))
+                UploadAppInstallReport_(MatchEvents(&events_value_), _))
         .WillOnce(MoveArg<1>(callback));
   }
 
@@ -254,7 +254,7 @@ class AppInstallEventLogManagerTest : public testing::Test {
     BuildReport();
 
     EXPECT_CALL(cloud_policy_client_,
-                UploadRealtimeReport_(MatchEvents(&events_value_), _))
+                UploadAppInstallReport_(MatchEvents(&events_value_), _))
         .WillOnce(Invoke(
             [](base::Value&, CloudPolicyClient::StatusCallback& callback) {
               std::move(callback).Run(true /* success */);

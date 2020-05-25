@@ -21,7 +21,6 @@
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine/sync_encryption_handler.h"
 #include "components/sync/engine_impl/nudge_handler.h"
-#include "components/sync/engine_impl/uss_migrator.h"
 #include "components/sync/syncable/user_share.h"
 
 namespace syncer {
@@ -45,7 +44,6 @@ class ModelTypeRegistry : public ModelTypeConnector,
   ModelTypeRegistry(const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
                     UserShare* user_share,
                     NudgeHandler* nudge_handler,
-                    const UssMigrator& uss_migrator,
                     CancelationSignal* cancelation_signal,
                     KeystoreKeysHandler* keystore_keys_handler);
   ~ModelTypeRegistry() override;
@@ -156,9 +154,6 @@ class ModelTypeRegistry : public ModelTypeConnector,
   ModelTypeSet encrypted_types_;
 
   NudgeHandler* const nudge_handler_;
-
-  // Function to call to migrate data from the directory to USS.
-  UssMigrator uss_migrator_;
 
   // CancelationSignal is signalled on engine shutdown. It is passed to
   // ModelTypeWorker to cancel blocking operation.

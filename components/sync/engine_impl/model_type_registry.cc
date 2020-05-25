@@ -61,12 +61,10 @@ ModelTypeRegistry::ModelTypeRegistry(
     const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
     UserShare* user_share,
     NudgeHandler* nudge_handler,
-    const UssMigrator& uss_migrator,
     CancelationSignal* cancelation_signal,
     KeystoreKeysHandler* keystore_keys_handler)
     : user_share_(user_share),
       nudge_handler_(nudge_handler),
-      uss_migrator_(uss_migrator),
       cancelation_signal_(cancelation_signal),
       keystore_keys_handler_(keystore_keys_handler) {
   for (size_t i = 0u; i < workers.size(); ++i) {
@@ -75,7 +73,7 @@ ModelTypeRegistry::ModelTypeRegistry(
   }
 }
 
-ModelTypeRegistry::~ModelTypeRegistry() {}
+ModelTypeRegistry::~ModelTypeRegistry() = default;
 
 void ModelTypeRegistry::ConnectNonBlockingType(
     ModelType type,
@@ -84,17 +82,6 @@ void ModelTypeRegistry::ConnectNonBlockingType(
   DCHECK(update_handler_map_.find(type) == update_handler_map_.end());
   DCHECK(commit_contributor_map_.find(type) == commit_contributor_map_.end());
   DVLOG(1) << "Enabling an off-thread sync type: " << ModelTypeToString(type);
-
-  bool initial_sync_done =
-      activation_response->model_type_state.initial_sync_done();
-  // Attempt migration if the USS initial sync hasn't been done, there is a
-  // migrator function, and directory has data for this |type|, and |type| is
-  // not NIGORI. Nigori is exceptional, because it has a small amount of data,
-  // which is just downloaded from the server again.
-  bool do_migration = !initial_sync_done && !uss_migrator_.is_null() &&
-                      directory()->InitialSyncEndedForType(type) &&
-                      type != NIGORI;
-  bool trigger_initial_sync = !initial_sync_done && !do_migration;
 
   // Save a raw pointer to the processor for connecting later.
   ModelTypeProcessor* type_processor =
@@ -113,8 +100,11 @@ void ModelTypeRegistry::ConnectNonBlockingType(
         std::make_pair(type, std::move(new_emitter)));
   }
 
+  bool initial_sync_done =
+      activation_response->model_type_state.initial_sync_done();
   auto worker = std::make_unique<ModelTypeWorker>(
-      type, activation_response->model_type_state, trigger_initial_sync,
+      type, activation_response->model_type_state,
+      /*trigger_initial_sync=*/!initial_sync_done,
       std::move(cryptographer_copy), passphrase_type_, nudge_handler_,
       std::move(activation_response->type_processor), emitter,
       cancelation_signal_);
@@ -129,33 +119,18 @@ void ModelTypeRegistry::ConnectNonBlockingType(
   type_processor->ConnectSync(std::make_unique<CommitQueueProxy>(
       worker_ptr->AsWeakPtr(), base::SequencedTaskRunnerHandle::Get()));
 
-  // Attempt migration if necessary.
-  if (do_migration && type == BOOKMARKS) {
-    // Almost all bookmarks are known to have migrated so let's avoid the USS
-    // migrator for bookmarks, since it's known to be problematic and hard to
-    // maintain (diverges from the data fetched from the actual server).
-    //
-    // Instead, the local copy in the directory should be purged, and the
-    // initial data fetched from the server.
-    directory()->PurgeEntriesWithTypeIn(ModelTypeSet(BOOKMARKS), ModelTypeSet(),
-                                        ModelTypeSet());
-  } else if (do_migration) {
-    // TODO(crbug.com/658002): Store a pref before attempting migration
-    // indicating that it was attempted so we can avoid failure loops.
-    int migrated_entity_count = 0;
-    if (uss_migrator_.Run(type, user_share_, worker_ptr,
-                          &migrated_entity_count)) {
-      // If we succesfully migrated, purge the directory of data for the type.
-      // Purging removes the directory's local copy of the data only.
-      directory()->PurgeEntriesWithTypeIn(ModelTypeSet(type), ModelTypeSet(),
-                                          ModelTypeSet());
-    }
+  // If there is still data for this type left in the directory, purge it now.
+  // TODO(crbug.com/1084499): The purge should be safe to do even if the initial
+  // USS sync has already happened, and also for NIGORI.
+  if (!initial_sync_done && directory()->InitialSyncEndedForType(type) &&
+      type != NIGORI) {
+    directory()->PurgeEntriesWithTypeIn(/*disabled_types=*/ModelTypeSet(type),
+                                        /*types_to_journal=*/ModelTypeSet(),
+                                        /*types_to_unapply=*/ModelTypeSet());
   }
 
   // We want to check that we haven't accidentally enabled both the non-blocking
-  // and directory implementations for a given model type. This is true even if
-  // migration fails; our fallback in this case is to do an initial GetUpdates,
-  // not to use the directory implementation.
+  // and directory implementations for a given model type.
   DCHECK(Intersection(GetEnabledDirectoryTypes(), GetEnabledNonBlockingTypes())
              .Empty());
 }
@@ -253,14 +228,7 @@ ModelTypeSet ModelTypeRegistry::GetEnabledTypes() const {
 }
 
 ModelTypeSet ModelTypeRegistry::GetInitialSyncEndedTypes() const {
-  // To prevent initial sync of USS types before we reach UssMigrator, we
-  // collect initial sync state from Directory.
-  // TODO(crbug.com/981480): consider cleaning configuration flow in a way,
-  // that this logic is not needed.
-  ModelTypeSet result = directory()->InitialSyncEndedTypes();
-  // We don't apply UssMigrator for Nigori, so we need to check only update
-  // handler state.
-  result.Remove(NIGORI);
+  ModelTypeSet result;
   for (const auto& kv : update_handler_map_) {
     if (kv.second->IsInitialSyncEnded())
       result.Put(kv.first);

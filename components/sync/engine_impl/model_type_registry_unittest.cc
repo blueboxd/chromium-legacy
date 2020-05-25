@@ -37,8 +37,6 @@ class ModelTypeRegistryTest : public ::testing::Test {
 
     registry_ = std::make_unique<ModelTypeRegistry>(
         workers_, test_user_share_.user_share(), &mock_nudge_handler_,
-        base::BindRepeating(&ModelTypeRegistryTest::MigrateDirectory,
-                            base::Unretained(this)),
         &cancelation_signal_, test_user_share_.keystore_keys_handler());
   }
 
@@ -83,21 +81,11 @@ class ModelTypeRegistryTest : public ::testing::Test {
     directory()->SetDownloadProgress(type, progress_marker);
   }
 
-  bool migration_attempted() { return migration_attempted_; }
-
   syncable::MetahandleSet metahandles_to_purge() {
     return directory()->kernel()->metahandles_to_purge;
   }
 
  private:
-  bool MigrateDirectory(ModelType type,
-                        UserShare* user_share,
-                        ModelTypeWorker* worker,
-                        int* migrated_entity_count) {
-    migration_attempted_ = true;
-    return true;
-  }
-
   syncable::Directory* directory() {
     return test_user_share_.user_share()->directory.get();
   }
@@ -109,7 +97,6 @@ class ModelTypeRegistryTest : public ::testing::Test {
   std::vector<scoped_refptr<ModelSafeWorker>> workers_;
   std::unique_ptr<ModelTypeRegistry> registry_;
   MockNudgeHandler mock_nudge_handler_;
-  bool migration_attempted_ = false;
 };
 
 TEST_F(ModelTypeRegistryTest, NonBlockingTypes) {
@@ -191,24 +178,6 @@ TEST_F(ModelTypeRegistryTest, GetInitialSyncEndedTypes) {
 
   EXPECT_EQ(ModelTypeSet(AUTOFILL, THEMES),
             registry()->GetInitialSyncEndedTypes());
-}
-
-// Tests that when directory data is present for type ConnectNonBlockingType
-// triggers USS migration and purges old directory data.
-TEST_F(ModelTypeRegistryTest, UssMigration) {
-  EXPECT_FALSE(migration_attempted());
-
-  MarkInitialSyncEndedForDirectoryType(THEMES);
-  // Purge only proceeds in the presence of a progress marker for the type(s)
-  // being purged.
-  SetDummyProgressMarkerForType(THEMES);
-  EXPECT_EQ(0u, metahandles_to_purge().size());
-  registry()->ConnectNonBlockingType(
-      THEMES,
-      MakeDataTypeActivationResponse(MakeInitialModelTypeState(THEMES)));
-
-  EXPECT_TRUE(migration_attempted());
-  EXPECT_NE(0u, metahandles_to_purge().size());
 }
 
 }  // namespace syncer

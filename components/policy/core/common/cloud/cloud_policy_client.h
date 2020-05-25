@@ -307,7 +307,16 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void UploadRealtimeReport(base::Value report,
                                     StatusCallback callback);
 
-  // Cancels the pending app push-install status report upload, if an.
+  // Uploads a report on the status of app push-installs. The client must be in
+  // a registered state. The |callback| will be called when the operation
+  // completes.
+  // Only one outstanding app push-install report upload is allowed.
+  // In case the new push-installs report upload is started, the previous one
+  // will be canceled.
+  virtual void UploadAppInstallReport(base::Value report,
+                                      StatusCallback callback);
+
+  // Cancels the pending app push-install status report upload, if exists.
   virtual void CancelAppInstallReportUpload();
 
   // Attempts to fetch remote commands, with |last_command_id| being the ID of

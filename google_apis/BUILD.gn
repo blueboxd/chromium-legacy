@@ -213,6 +213,7 @@ test("google_apis_unittests") {
     "gaia/gaia_auth_fetcher_unittest.cc",
     "gaia/gaia_auth_util_unittest.cc",
     "gaia/gaia_oauth_client_unittest.cc",
+    "gaia/gaia_urls_unittest.cc",
     "gaia/google_service_auth_error_unittest.cc",
     "gaia/oauth2_access_token_fetcher_impl_unittest.cc",
     "gaia/oauth2_access_token_manager_unittest.cc",
@@ -224,8 +225,6 @@ test("google_apis_unittests") {
     "google_api_keys_unittest.cc",
     "google_api_keys_unittest.h",
   ]
-
-  data = [ "test/" ]
 
   configs += [ ":key_defines" ]
 
@@ -241,6 +240,12 @@ test("google_apis_unittests") {
     "//testing/gtest",
   ]
 
+  if (is_ios) {
+    deps += [ ":google_apis_unittest_bundle_data" ]
+  } else {
+    data = [ "test/" ]
+  }
+
   if (enable_extensions) {
     deps += [ "//google_apis/drive:drive_unittests" ]
   }
@@ -252,4 +257,20 @@ test("google_apis_unittests") {
 
     deps += [ "//third_party/ocmock" ]
   }
+}
+
+bundle_data("google_apis_unittest_bundle_data") {
+  testonly = true
+  sources = [
+    "test/data/gaia/all_base_urls.json",
+    "test/data/gaia/all_urls.json",
+    "test/data/gaia/bad_url.json",
+    "test/data/gaia/bad_url_key.json",
+    "test/data/gaia/bad_urls_key.json",
+    "test/data/gaia/not_a_json.txt",
+    "test/data/gaia/one_base_url.json",
+    "test/data/gaia/one_url.json",
+  ]
+  outputs = [ "{{bundle_resources_dir}}/" +
+              "{{source_root_relative_dir}}/{{source_file_part}}" ]
 }

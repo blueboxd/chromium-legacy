@@ -126,7 +126,7 @@ class CONTENT_EXPORT RenderFrameHostManager
     virtual bool CreateRenderFrameForRenderManager(
         RenderFrameHost* render_frame_host,
         int proxy_routing_id,
-        int opener_routing_id,
+        const base::Optional<base::UnguessableToken>& opener_frame_token,
         int parent_routing_id,
         int previous_sibling_routing_id) = 0;
     virtual void BeforeUnloadFiredFromRenderManager(

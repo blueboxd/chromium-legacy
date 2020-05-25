@@ -24,11 +24,14 @@ namespace blink {
 // that the interface is not used after ContextDestroyed().
 template <typename Interface,
           typename Owner,
-          HeapMojoWrapperMode Mode = HeapMojoWrapperMode::kWithContextObserver>
+          HeapMojoWrapperMode Mode = HeapMojoWrapperMode::kWithContextObserver,
+          typename ContextType = void>
 class HeapMojoReceiverSet {
   DISALLOW_NEW();
 
  public:
+  using ContextTraits = mojo::ReceiverSetContextTraits<ContextType>;
+  using Context = typename ContextTraits::Type;
   explicit HeapMojoReceiverSet(Owner* owner, ContextLifecycleNotifier* context)
       : wrapper_(MakeGarbageCollected<Wrapper>(owner, context)) {
     static_assert(std::is_base_of<Interface, Owner>::value,
@@ -47,6 +50,14 @@ class HeapMojoReceiverSet {
                                         task_runner);
   }
 
+  mojo::ReceiverId Add(mojo::PendingReceiver<Interface> receiver,
+                       Context context,
+                       scoped_refptr<base::SequencedTaskRunner> task_runner) {
+    DCHECK(task_runner);
+    return wrapper_->receiver_set().Add(wrapper_->owner(), std::move(receiver),
+                                        std::move(context), task_runner);
+  }
+
   bool Remove(mojo::ReceiverId id) {
     return wrapper_->receiver_set().Remove(id);
   }
@@ -55,6 +66,12 @@ class HeapMojoReceiverSet {
 
   bool HasReceiver(mojo::ReceiverId id) {
     return wrapper_->receiver_set().HasReceiver(id);
+  }
+
+  bool empty() const { return wrapper_->receiver_set().empty(); }
+  size_t size() const { return wrapper_->receiver_set().size(); }
+  const Context& current_context() const {
+    return wrapper_->receiver_set().current_context();
   }
 
   void Trace(Visitor* visitor) const { visitor->Trace(wrapper_); }
@@ -82,7 +99,9 @@ class HeapMojoReceiverSet {
 
     void Dispose() { receiver_set_.Clear(); }
 
-    mojo::ReceiverSet<Interface>& receiver_set() { return receiver_set_; }
+    mojo::ReceiverSet<Interface, ContextType>& receiver_set() {
+      return receiver_set_;
+    }
     Owner* owner() { return owner_; }
 
     // ContextLifecycleObserver methods
@@ -93,7 +112,7 @@ class HeapMojoReceiverSet {
 
    private:
     Member<Owner> owner_;
-    mojo::ReceiverSet<Interface> receiver_set_;
+    mojo::ReceiverSet<Interface, ContextType> receiver_set_;
   };
 
   Member<Wrapper> wrapper_;

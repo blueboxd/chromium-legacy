@@ -17,7 +17,7 @@
 #include "base/scoped_observer.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/background/background_application_list_model.h"
-#include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
+#include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_observer.h"
@@ -157,7 +157,7 @@ class BackgroundModeManager : public content::NotificationObserver,
   // Manages the background clients and menu items for a single profile. A
   // client is an extension.
   class BackgroundModeData : public StatusIconMenuModel::Delegate,
-                             public extensions::InstallationTracker::Observer,
+                             public extensions::ForceInstalledTracker::Observer,
                              public ProfileObserver {
    public:
     BackgroundModeData(BackgroundModeManager* manager,
@@ -165,9 +165,9 @@ class BackgroundModeManager : public content::NotificationObserver,
                        CommandIdHandlerVector* command_id_handler_vector);
     ~BackgroundModeData() override;
 
-    void SetTracker(extensions::InstallationTracker* tracker);
+    void SetTracker(extensions::ForceInstalledTracker* tracker);
 
-    // Overrides from extensions::InstallationTracker::Observer.
+    // Overrides from extensions::ForceInstalledTracker::Observer.
     void OnForceInstalledExtensionsReady() override;
 
     // Overrides from StatusIconMenuModel::Delegate implementation.
@@ -220,9 +220,9 @@ class BackgroundModeManager : public content::NotificationObserver,
     BackgroundModeManager* const manager_;
 
     ScopedObserver<Profile, ProfileObserver> profile_observer_{this};
-    ScopedObserver<extensions::InstallationTracker,
-                   extensions::InstallationTracker::Observer>
-        installation_tracker_observer_{this};
+    ScopedObserver<extensions::ForceInstalledTracker,
+                   extensions::ForceInstalledTracker::Observer>
+        force_installed_tracker_observer_{this};
 
     // The cached list of BackgroundApplications.
     std::unique_ptr<BackgroundApplicationListModel> applications_;

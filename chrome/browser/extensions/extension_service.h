@@ -22,8 +22,8 @@
 #include "base/strings/string16.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/browser/extensions/forced_extensions/installation_metrics.h"
-#include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
+#include "chrome/browser/extensions/forced_extensions/force_installed_metrics.h"
+#include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 #include "chrome/browser/extensions/install_gate.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -398,8 +398,8 @@ class ExtensionService : public ExtensionServiceInterface,
     return external_install_manager_.get();
   }
 
-  InstallationTracker* forced_extensions_tracker() {
-    return &forced_extensions_tracker_;
+  ForceInstalledTracker* force_installed_tracker() {
+    return &force_installed_tracker_;
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -697,10 +697,10 @@ class ExtensionService : public ExtensionServiceInterface,
   ExtensionRegistrar extension_registrar_;
 
   // Tracker of enterprise policy forced installation.
-  InstallationTracker forced_extensions_tracker_;
+  ForceInstalledTracker force_installed_tracker_;
 
   // Reports force-installed extension metrics to UMA.
-  InstallationMetrics forced_extensions_metrics_;
+  ForceInstalledMetrics force_installed_metrics_;
 
   ScopedObserver<ProfileManager, ProfileManagerObserver>
       profile_manager_observer_{this};

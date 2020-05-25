@@ -208,7 +208,7 @@ TEST_F(CookieControlsTest, Incognito) {
   // Create incognito web_contents and CookieControlsController.
   std::unique_ptr<content::WebContents> incognito_web_contents =
       content::WebContentsTester::CreateTestWebContents(
-          profile()->GetOffTheRecordProfile(), nullptr);
+          profile()->GetPrimaryOTRProfile(), nullptr);
   content_settings::TabSpecificContentSettings::CreateForWebContents(
       incognito_web_contents.get(),
       std::make_unique<chrome::TabSpecificContentSettingsDelegate>(

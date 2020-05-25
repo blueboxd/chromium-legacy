@@ -2427,12 +2427,12 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
 
 bool PrintRenderFrameHelper::CheckForCancel() {
   const PrintMsg_Print_Params& print_params = print_pages_params_->params;
-  bool cancel = false;
-  Send(new PrintHostMsg_CheckForCancel(
-      routing_id(),
-      PrintHostMsg_PreviewIds(print_params.preview_request_id,
-                              print_params.preview_ui_id),
-      &cancel));
+  bool cancel = true;
+
+  // Cancels if the preview UI is closed and |preview_ui_| is unbound.
+  if (preview_ui_)
+    preview_ui_->CheckForCancel(print_params.preview_request_id, &cancel);
+
   if (cancel)
     notify_browser_of_print_failure_ = false;
   return cancel;

@@ -67,31 +67,6 @@ sk_sp<SkColorSpace> ColorCorrectionTestUtils::ColorSpinSkColorSpace() {
   return SkColorSpace::Make(colorspin_profile);
 }
 
-sk_sp<SkColorSpace>
-ColorCorrectionTestUtils::ColorSpaceConversionToSkColorSpace(
-    ColorSpaceConversion conversion) {
-  if (conversion == kColorSpaceConversion_Default ||
-      conversion == kColorSpaceConversion_SRGB) {
-    return SkColorSpace::MakeSRGB();
-  }
-  if (conversion == kColorSpaceConversion_P3) {
-    return SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
-                                 SkNamedGamut::kDCIP3);
-  }
-  if (conversion == kColorSpaceConversion_Rec2020) {
-    return SkColorSpace::MakeRGB(SkNamedTransferFn::kLinear,
-                                 SkNamedGamut::kRec2020);
-  }
-  return nullptr;
-}
-
-String ColorCorrectionTestUtils::ColorSpaceConversionToString(
-    ColorSpaceConversion color_space_conversion) {
-  static const Vector<String> kConversions = {"none", "default", "preserve",
-                                              "srgb", "p3",      "rec2020"};
-  return kConversions[static_cast<uint8_t>(color_space_conversion)];
-}
-
 void ColorCorrectionTestUtils::CompareColorCorrectedPixels(
     const void* actual_pixels,
     const void* expected_pixels,

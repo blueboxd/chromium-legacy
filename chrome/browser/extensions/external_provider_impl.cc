@@ -31,7 +31,7 @@
 #include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
@@ -149,11 +149,11 @@ void ExternalProviderImpl::SetPrefs(
   // away while |loader_| was working on the FILE thread.
   if (!service_) return;
 
-  InstallationReporter* installation_reporter =
-      InstallationReporter::Get(profile_);
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
   for (const auto& it : prefs->DictItems()) {
-    installation_reporter->ReportInstallationStage(
-        it.first, InstallationReporter::Stage::SEEN_BY_EXTERNAL_PROVIDER);
+    install_stage_tracker->ReportInstallationStage(
+        it.first, InstallStageTracker::Stage::SEEN_BY_EXTERNAL_PROVIDER);
   }
 
   prefs_ = std::move(prefs);
@@ -214,8 +214,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     std::vector<ExternalInstallInfoFile>* external_file_extensions) {
   // Set of unsupported extensions that need to be deleted from prefs_.
   std::set<std::string> unsupported_extensions;
-  InstallationReporter* installation_reporter =
-      InstallationReporter::Get(profile_);
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
 
   // Discover all the extensions this provider has.
   for (base::DictionaryValue::Iterator i(*prefs_); !i.IsAtEnd(); i.Advance()) {
@@ -227,9 +227,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
       VLOG(1) << "Extension with key: " << extension_id << " was replaced "
               << "by a default ARC app, and will be uninstalled.";
       unsupported_extensions.emplace(extension_id);
-      installation_reporter->ReportFailure(
+      install_stage_tracker->ReportFailure(
           extension_id,
-          InstallationReporter::FailureReason::REPLACED_BY_ARC_APP);
+          InstallStageTracker::FailureReason::REPLACED_BY_ARC_APP);
       continue;
     }
 #endif  // defined(OS_CHROMEOS)
@@ -237,8 +237,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     if (!crx_file::id_util::IdIsValid(extension_id)) {
       LOG(WARNING) << "Malformed extension dictionary: key "
                    << extension_id.c_str() << " is not a valid id.";
-      installation_reporter->ReportFailure(
-          extension_id, InstallationReporter::FailureReason::INVALID_ID);
+      install_stage_tracker->ReportFailure(
+          extension_id, InstallStageTracker::FailureReason::INVALID_ID);
       continue;
     }
 
@@ -246,9 +246,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
       LOG(WARNING) << "Malformed extension dictionary: key "
                    << extension_id.c_str()
                    << " has a value that is not a dictionary.";
-      installation_reporter->ReportFailure(
+      install_stage_tracker->ReportFailure(
           extension_id,
-          InstallationReporter::FailureReason::MALFORMED_EXTENSION_DICT);
+          InstallStageTracker::FailureReason::MALFORMED_EXTENSION_DICT);
       continue;
     }
 
@@ -265,8 +265,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
         external_version_value->GetAsString(&external_version);
         has_external_version = true;
       } else {
-        installation_reporter->ReportFailure(
-            extension_id, InstallationReporter::FailureReason::
+        install_stage_tracker->ReportFailure(
+            extension_id, InstallStageTracker::FailureReason::
                               MALFORMED_EXTENSION_DICT_VERSION);
         LOG(WARNING) << "Malformed extension dictionary for extension: "
                      << extension_id.c_str() << ". " << kExternalVersion
@@ -278,9 +278,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     bool has_external_update_url = extension->GetString(kExternalUpdateUrl,
                                                         &external_update_url);
     if (has_external_crx != has_external_version) {
-      installation_reporter->ReportFailure(
+      install_stage_tracker->ReportFailure(
           extension_id,
-          InstallationReporter::FailureReason::MALFORMED_EXTENSION_DICT);
+          InstallStageTracker::FailureReason::MALFORMED_EXTENSION_DICT);
       LOG(WARNING) << "Malformed extension dictionary for extension: "
                    << extension_id.c_str() << ".  " << kExternalCrx
                    << " and " << kExternalVersion << " must be used together.";
@@ -288,9 +288,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     }
 
     if (has_external_crx == has_external_update_url) {
-      installation_reporter->ReportFailure(
+      install_stage_tracker->ReportFailure(
           extension_id,
-          InstallationReporter::FailureReason::MALFORMED_EXTENSION_DICT);
+          InstallStageTracker::FailureReason::MALFORMED_EXTENSION_DICT);
       LOG(WARNING) << "Malformed extension dictionary for extension: "
                    << extension_id.c_str() << ".  Exactly one of the "
                    << "followng keys should be used: " << kExternalCrx
@@ -325,9 +325,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
 
       if (!locale_supported) {
         unsupported_extensions.insert(extension_id);
-        installation_reporter->ReportFailure(
+        install_stage_tracker->ReportFailure(
             extension_id,
-            InstallationReporter::FailureReason::LOCALE_NOT_SUPPORTED);
+            InstallStageTracker::FailureReason::LOCALE_NOT_SUPPORTED);
         VLOG(1) << "Skip installing (or uninstall) external extension: "
                 << extension_id << " because the extension doesn't support "
                 << "the browser locale.";
@@ -356,9 +356,9 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
                              : nullptr;
       if (!extension) {
         unsupported_extensions.insert(extension_id);
-        installation_reporter->ReportFailure(
+        install_stage_tracker->ReportFailure(
             extension_id,
-            InstallationReporter::FailureReason::NOT_PERFORMING_NEW_INSTALL);
+            InstallStageTracker::FailureReason::NOT_PERFORMING_NEW_INSTALL);
         VLOG(1) << "Skip installing (or uninstall) external extension: "
                 << extension_id << " because the extension should be kept "
                 << "only if it is already installed.";
@@ -391,17 +391,17 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
 
     if (has_external_crx) {
       if (crx_location_ == Manifest::INVALID_LOCATION) {
-        installation_reporter->ReportFailure(
+        install_stage_tracker->ReportFailure(
             extension_id,
-            InstallationReporter::FailureReason::NOT_SUPPORTED_EXTENSION_DICT);
+            InstallStageTracker::FailureReason::NOT_SUPPORTED_EXTENSION_DICT);
         LOG(WARNING) << "This provider does not support installing external "
                      << "extensions from crx files.";
         continue;
       }
       if (external_crx.find(base::FilePath::kParentDirectory) !=
           base::StringPiece::npos) {
-        installation_reporter->ReportFailure(
-            extension_id, InstallationReporter::FailureReason::
+        install_stage_tracker->ReportFailure(
+            extension_id, InstallStageTracker::FailureReason::
                               MALFORMED_EXTENSION_DICT_FILE_PATH);
         LOG(WARNING) << "Path traversal not allowed in path: "
                      << external_crx.c_str();
@@ -414,8 +414,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
       if (!path.IsAbsolute()) {
         base::FilePath base_path = loader_->GetBaseCrxFilePath();
         if (base_path.empty()) {
-          installation_reporter->ReportFailure(
-              extension_id, InstallationReporter::FailureReason::
+          install_stage_tracker->ReportFailure(
+              extension_id, InstallStageTracker::FailureReason::
                                 MALFORMED_EXTENSION_DICT_FILE_PATH);
           LOG(WARNING) << "File path " << external_crx.c_str()
                        << " is relative.  An absolute path is required.";
@@ -426,8 +426,8 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
 
       base::Version version(external_version);
       if (!version.IsValid()) {
-        installation_reporter->ReportFailure(
-            extension_id, InstallationReporter::FailureReason::
+        install_stage_tracker->ReportFailure(
+            extension_id, InstallStageTracker::FailureReason::
                               MALFORMED_EXTENSION_DICT_VERSION);
         LOG(WARNING) << "Malformed extension dictionary for extension: "
                      << extension_id.c_str() << ".  Invalid version string \""
@@ -440,17 +440,17 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     } else {  // if (has_external_update_url)
       CHECK(has_external_update_url);  // Checking of keys above ensures this.
       if (download_location_ == Manifest::INVALID_LOCATION) {
-        installation_reporter->ReportFailure(
+        install_stage_tracker->ReportFailure(
             extension_id,
-            InstallationReporter::FailureReason::NOT_SUPPORTED_EXTENSION_DICT);
+            InstallStageTracker::FailureReason::NOT_SUPPORTED_EXTENSION_DICT);
         LOG(WARNING) << "This provider does not support installing external "
                      << "extensions from update URLs.";
         continue;
       }
       GURL update_url(external_update_url);
       if (!update_url.is_valid()) {
-        installation_reporter->ReportFailure(
-            extension_id, InstallationReporter::FailureReason::
+        install_stage_tracker->ReportFailure(
+            extension_id, InstallStageTracker::FailureReason::
                               MALFORMED_EXTENSION_DICT_UPDATE_URL);
         LOG(WARNING) << "Malformed extension dictionary for extension: "
                      << extension_id.c_str() << ".  Key " << kExternalUpdateUrl
@@ -536,8 +536,8 @@ bool ExternalProviderImpl::HandleMinProfileVersion(
     base::Version min_version(min_profile_created_by_version);
     if (min_version.IsValid() && profile_version.CompareTo(min_version) < 0) {
       unsupported_extensions->insert(extension_id);
-      InstallationReporter::Get(profile_)->ReportFailure(
-          extension_id, InstallationReporter::FailureReason::TOO_OLD_PROFILE);
+      InstallStageTracker::Get(profile_)->ReportFailure(
+          extension_id, InstallStageTracker::FailureReason::TOO_OLD_PROFILE);
       VLOG(1) << "Skip installing (or uninstall) external extension: "
               << extension_id
               << " profile.created_by_version: " << profile_version.GetString()
@@ -561,9 +561,9 @@ bool ExternalProviderImpl::HandleDoNotInstallForEnterprise(
         profile_->GetProfilePolicyConnector();
     if (connector->IsManaged()) {
       unsupported_extensions->insert(extension_id);
-      InstallationReporter::Get(profile_)->ReportFailure(
+      InstallStageTracker::Get(profile_)->ReportFailure(
           extension_id,
-          InstallationReporter::FailureReason::DO_NOT_INSTALL_FOR_ENTERPRISE);
+          InstallStageTracker::FailureReason::DO_NOT_INSTALL_FOR_ENTERPRISE);
       VLOG(1) << "Skip installing (or uninstall) external extension "
               << extension_id << " restricted for managed user";
       return false;

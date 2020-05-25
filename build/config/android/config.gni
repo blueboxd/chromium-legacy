@@ -236,7 +236,7 @@ if (is_android || is_chromeos) {
     enable_bazel_desugar = true
 
     # Enables Java library desugaring.
-    # This will cause an extra 1MB classes.dex file to appear in every apk.
+    # This will cause an extra classes.dex file to appear in every apk.
     enable_jdk_library_desugaring = false
   }
 

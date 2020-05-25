@@ -20,7 +20,7 @@
 #include "base/process/process_handle.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
+#include "base/task/sequence_manager/thread_controller_power_monitor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event_impl.h"
@@ -630,7 +630,8 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
 #if defined(OS_WIN)
   SetUpExtendedCrashReporting(is_browser_process);
   base::Time::ReadMinTimerIntervalLowResMs();
-  base::sequence_manager::PostFieldTrialInitialization();
+  base::sequence_manager::internal::ThreadControllerPowerMonitor::
+      InitializeOnMainThread();
 #endif
 }
 

@@ -50,13 +50,14 @@ enum class ScrollBeginThreadState {
 };
 
 struct CC_EXPORT InputHandlerPointerResult {
-  InputHandlerPointerResult();
+  InputHandlerPointerResult() = default;
   // Tells what type of processing occurred in the input handler as a result of
   // the pointer event.
-  PointerResultType type;
+  PointerResultType type = kUnhandled;
 
   // Tells what scroll_units should be used.
-  ui::ScrollGranularity scroll_units;
+  ui::ScrollGranularity scroll_units =
+      ui::ScrollGranularity::kScrollByPrecisePixel;
 
   // If the input handler processed the event as a scrollbar scroll, it will
   // return a gfx::ScrollOffset that produces the necessary scroll. However,
@@ -73,11 +74,11 @@ struct CC_EXPORT InputHandlerPointerResult {
 };
 
 struct CC_EXPORT InputHandlerScrollResult {
-  InputHandlerScrollResult();
+  InputHandlerScrollResult() = default;
   // Did any layer scroll as a result this ScrollUpdate call?
-  bool did_scroll;
+  bool did_scroll = false;
   // Was any of the scroll delta argument to this ScrollUpdate call not used?
-  bool did_overscroll_root;
+  bool did_overscroll_root = false;
   // The total overscroll that has been accumulated by all ScrollUpdate calls
   // that have had overscroll since the last ScrollBegin call. This resets upon
   // a ScrollUpdate with no overscroll.
@@ -139,32 +140,25 @@ class CC_EXPORT InputHandler {
   InputHandler& operator=(const InputHandler&) = delete;
 
   struct ScrollStatus {
-    ScrollStatus()
-        : thread(SCROLL_ON_IMPL_THREAD),
-          main_thread_scrolling_reasons(
-              MainThreadScrollingReason::kNotScrollingOnMain),
-          bubble(false),
-          needs_main_thread_hit_test(false) {}
+    ScrollStatus() = default;
     ScrollStatus(ScrollThread thread, uint32_t main_thread_scrolling_reasons)
         : thread(thread),
-          main_thread_scrolling_reasons(main_thread_scrolling_reasons),
-          bubble(false),
-          needs_main_thread_hit_test(false) {}
+          main_thread_scrolling_reasons(main_thread_scrolling_reasons) {}
     ScrollStatus(ScrollThread thread,
                  uint32_t main_thread_scrolling_reasons,
                  bool needs_main_thread_hit_test)
         : thread(thread),
           main_thread_scrolling_reasons(main_thread_scrolling_reasons),
-          bubble(false),
           needs_main_thread_hit_test(needs_main_thread_hit_test) {}
-    ScrollThread thread;
-    uint32_t main_thread_scrolling_reasons;
-    bool bubble;
+    ScrollThread thread = SCROLL_ON_IMPL_THREAD;
+    uint32_t main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollingOnMain;
+    bool bubble = false;
 
     // Used only in scroll unification. Tells the caller that the input handler
     // detected a case where it cannot reliably target a scroll node and needs
     // the main thread to perform a hit test.
-    bool needs_main_thread_hit_test;
+    bool needs_main_thread_hit_test = false;
   };
 
   enum class TouchStartOrMoveEventListenerType {

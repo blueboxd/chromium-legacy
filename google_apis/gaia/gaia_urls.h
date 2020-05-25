@@ -11,7 +11,13 @@
 #include "base/memory/singleton.h"
 #include "url/gurl.h"
 
+namespace base {
+class FilePath;
+}  // namespace base
+
 // A signleton that provides all the URLs that are used for connecting to GAIA.
+//
+// Please update InitializeFromConfig() when adding new URLs.
 class GaiaUrls {
  public:
   static GaiaUrls* GetInstance();
@@ -63,11 +69,19 @@ class GaiaUrls {
   ~GaiaUrls();
 
   friend struct base::DefaultSingletonTraits<GaiaUrls>;
+  friend class GaiaUrlsTest;
+
+  void InitializeDefault();
+  void InitializeFromConfig(const base::FilePath& config_path);
 
   GURL google_url_;
   GURL secure_google_url_;
   GURL gaia_url_;
   GURL captcha_base_url_;
+
+  GURL lso_origin_url_;
+  GURL google_apis_origin_url_;
+  GURL oauth_account_manager_origin_url_;
 
   GURL client_login_url_;
   GURL service_login_url_;

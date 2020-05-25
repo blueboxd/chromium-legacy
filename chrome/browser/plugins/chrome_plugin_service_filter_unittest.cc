@@ -132,7 +132,7 @@ TEST_F(ChromePluginServiceFilterTest,
 
 TEST_F(ChromePluginServiceFilterTest,
        PreferHtmlOverPluginsIncognitoHasIndependentSetting) {
-  Profile* incognito = profile()->GetOffTheRecordProfile();
+  Profile* incognito = profile()->GetPrimaryOTRProfile();
   filter_->RegisterProfile(incognito);
 
   content::WebPluginInfo flash_plugin(

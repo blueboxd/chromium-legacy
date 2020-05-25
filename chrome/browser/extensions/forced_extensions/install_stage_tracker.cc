@@ -2,25 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
-
-#include <map>
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 
 #include "base/check_op.h"
-#include "base/no_destructor.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter_factory.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker_factory.h"
 #include "net/base/net_errors.h"
 
 namespace extensions {
 
-InstallationReporter::InstallationData::InstallationData() = default;
+// InstallStageTracker::InstallationData implementation.
 
-InstallationReporter::InstallationData::InstallationData(
+InstallStageTracker::InstallationData::InstallationData() = default;
+
+InstallStageTracker::InstallationData::InstallationData(
     const InstallationData&) = default;
 
-// TODO(crbug/1071837): Add all fields from
-// InstallationReporter::InstallationData to this method.
-std::string InstallationReporter::GetFormattedInstallationData(
+std::string InstallStageTracker::GetFormattedInstallationData(
     const InstallationData& data) {
   std::ostringstream str;
   str << "failure_reason: "
@@ -75,21 +72,24 @@ std::string InstallationReporter::GetFormattedInstallationData(
   return str.str();
 }
 
-InstallationReporter::Observer::~Observer() = default;
+// InstallStageTracker::Observer implementation.
 
-InstallationReporter::InstallationReporter(
-    const content::BrowserContext* context)
+InstallStageTracker::Observer::~Observer() = default;
+
+// InstallStageTracker implementation.
+
+InstallStageTracker::InstallStageTracker(const content::BrowserContext* context)
     : browser_context_(context) {}
 
-InstallationReporter::~InstallationReporter() = default;
+InstallStageTracker::~InstallStageTracker() = default;
 
 // static
-InstallationReporter* InstallationReporter::Get(
+InstallStageTracker* InstallStageTracker::Get(
     content::BrowserContext* context) {
-  return InstallationReporterFactory::GetForBrowserContext(context);
+  return InstallStageTrackerFactory::GetForBrowserContext(context);
 }
 
-void InstallationReporter::ReportManifestInvalidFailure(
+void InstallStageTracker::ReportManifestInvalidFailure(
     const ExtensionId& id,
     ManifestInvalidError error) {
   InstallationData& data = installation_data_map_[id];
@@ -98,8 +98,8 @@ void InstallationReporter::ReportManifestInvalidFailure(
   NotifyObserversOfFailure(id, data.failure_reason.value(), data);
 }
 
-void InstallationReporter::ReportInstallationStage(const ExtensionId& id,
-                                                   Stage stage) {
+void InstallStageTracker::ReportInstallationStage(const ExtensionId& id,
+                                                  Stage stage) {
   InstallationData& data = installation_data_map_[id];
   data.install_stage = stage;
   for (auto& observer : observers_) {
@@ -107,7 +107,7 @@ void InstallationReporter::ReportInstallationStage(const ExtensionId& id,
   }
 }
 
-void InstallationReporter::ReportDownloadingStage(
+void InstallStageTracker::ReportDownloadingStage(
     const ExtensionId& id,
     ExtensionDownloaderDelegate::Stage stage) {
   InstallationData& data = installation_data_map_[id];
@@ -117,7 +117,7 @@ void InstallationReporter::ReportDownloadingStage(
   }
 }
 
-void InstallationReporter::ReportDownloadingCacheStatus(
+void InstallStageTracker::ReportDownloadingCacheStatus(
     const ExtensionId& id,
     ExtensionDownloaderDelegate::CacheStatus cache_status) {
   DCHECK_NE(cache_status,
@@ -129,7 +129,7 @@ void InstallationReporter::ReportDownloadingCacheStatus(
   }
 }
 
-void InstallationReporter::ReportManifestUpdateCheckStatus(
+void InstallStageTracker::ReportManifestUpdateCheckStatus(
     const ExtensionId& id,
     const std::string& status) {
   InstallationData& data = installation_data_map_[id];
@@ -156,7 +156,7 @@ void InstallationReporter::ReportManifestUpdateCheckStatus(
   }
 }
 
-void InstallationReporter::ReportFetchError(
+void InstallStageTracker::ReportFetchError(
     const ExtensionId& id,
     FailureReason reason,
     const ExtensionDownloaderDelegate::FailureData& failure_data) {
@@ -170,22 +170,22 @@ void InstallationReporter::ReportFetchError(
   NotifyObserversOfFailure(id, reason, data);
 }
 
-void InstallationReporter::ReportFailure(const ExtensionId& id,
-                                         FailureReason reason) {
+void InstallStageTracker::ReportFailure(const ExtensionId& id,
+                                        FailureReason reason) {
   DCHECK_NE(reason, FailureReason::UNKNOWN);
   InstallationData& data = installation_data_map_[id];
   data.failure_reason = reason;
   NotifyObserversOfFailure(id, reason, data);
 }
 
-void InstallationReporter::ReportExtensionTypeForPolicyDisallowedExtension(
+void InstallStageTracker::ReportExtensionTypeForPolicyDisallowedExtension(
     const ExtensionId& id,
     Manifest::Type extension_type) {
   InstallationData& data = installation_data_map_[id];
   data.extension_type = extension_type;
 }
 
-void InstallationReporter::ReportCrxInstallError(
+void InstallStageTracker::ReportCrxInstallError(
     const ExtensionId& id,
     FailureReason reason,
     CrxInstallErrorDetail crx_install_error) {
@@ -197,7 +197,7 @@ void InstallationReporter::ReportCrxInstallError(
   NotifyObserversOfFailure(id, reason, data);
 }
 
-void InstallationReporter::ReportSandboxedUnpackerFailureReason(
+void InstallStageTracker::ReportSandboxedUnpackerFailureReason(
     const ExtensionId& id,
     SandboxedUnpackerFailureReason unpacker_failure_reason) {
   InstallationData& data = installation_data_map_[id];
@@ -208,25 +208,25 @@ void InstallationReporter::ReportSandboxedUnpackerFailureReason(
       id, FailureReason::CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE, data);
 }
 
-InstallationReporter::InstallationData InstallationReporter::Get(
+InstallStageTracker::InstallationData InstallStageTracker::Get(
     const ExtensionId& id) {
   auto it = installation_data_map_.find(id);
   return it == installation_data_map_.end() ? InstallationData() : it->second;
 }
 
-void InstallationReporter::Clear() {
+void InstallStageTracker::Clear() {
   installation_data_map_.clear();
 }
 
-void InstallationReporter::AddObserver(Observer* observer) {
+void InstallStageTracker::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
 
-void InstallationReporter::RemoveObserver(Observer* observer) {
+void InstallStageTracker::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void InstallationReporter::NotifyObserversOfFailure(
+void InstallStageTracker::NotifyObserversOfFailure(
     const ExtensionId& id,
     FailureReason reason,
     const InstallationData& data) {

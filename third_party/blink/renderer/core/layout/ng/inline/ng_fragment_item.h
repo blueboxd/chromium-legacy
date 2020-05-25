@@ -29,8 +29,7 @@ struct NGTextFragmentPaintInfo;
 //
 // This class consumes less memory than a full fragment, and can be stored in a
 // flat list (NGFragmentItems) for easier and faster traversal.
-class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
-                                   public DisplayItemClient {
+class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem> {
  public:
   // Represents regular text that exists in the DOM.
   struct TextItem {
@@ -80,7 +79,7 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
                      const String& text_content,
                      WritingMode writing_mode);
 
-  ~NGFragmentItem() final;
+  ~NGFragmentItem();
 
   ItemType Type() const { return static_cast<ItemType>(type_); }
 
@@ -94,6 +93,7 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   bool IsListMarker() const;
 
   // A sequence number of fragments generated from a |LayoutObject|.
+  // For line boxes, please see |kInitialLineFragmentId|.
   wtf_size_t FragmentId() const {
     DCHECK_NE(Type(), kLine);
     return fragment_id_;
@@ -102,6 +102,14 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
     DCHECK_NE(Type(), kLine);
     fragment_id_ = id;
   }
+  // The initial framgent_id for line boxes.
+  // TODO(kojii): This is to avoid conflict with multicol because line boxes use
+  // its |LayoutBlockFlow| as their |DisplayItemClient|, but multicol also uses
+  // fragment id for |LayoutBlockFlow| today. The plan is to make |FragmentData|
+  // a |DisplayItemClient| instead.
+  // TODO(kojii): The fragment id for line boxes must be unique across NG block
+  // fragmentation. This is not implemented yet.
+  static constexpr wtf_size_t kInitialLineFragmentId = 0x80000000;
 
   // Return true if this is the first fragment generated from a node.
   bool IsFirstForNode() const { return !FragmentId(); }
@@ -136,6 +144,11 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
   void LayoutObjectWillBeMoved() const;
   Node* GetNode() const { return layout_object_->GetNode(); }
   Node* NodeForHitTest() const { return layout_object_->NodeForHitTest(); }
+
+  // Use |LayoutObject|+|FragmentId()| for |DisplayItem::Id|.
+  const DisplayItemClient* GetDisplayItemClient() const {
+    return GetLayoutObject();
+  }
 
   wtf_size_t DeltaToNextForSameLayoutObject() const {
     return delta_to_next_for_same_layout_object_;
@@ -204,11 +217,6 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
     NOTREACHED() << this;
     return NGLineBoxType::kNormalLineBox;
   }
-
-  // DisplayItemClient overrides
-  String DebugName() const override;
-  IntRect VisualRect() const override;
-  IntRect PartialInvalidationVisualRect() const override;
 
   static PhysicalRect LocalVisualRectFor(const LayoutObject& layout_object);
 
@@ -349,6 +357,9 @@ class CORE_EXPORT NGFragmentItem : public RefCounted<NGFragmentItem>,
 
   // Returns true if this item is reusable.
   bool CanReuse() const;
+
+  // Get a description of |this| for the debug purposes.
+  String ToString() const;
 
  private:
   // Create a text item.

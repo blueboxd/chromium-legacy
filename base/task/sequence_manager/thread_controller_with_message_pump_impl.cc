@@ -4,11 +4,12 @@
 
 #include "base/task/sequence_manager/thread_controller_with_message_pump_impl.h"
 
+#include <algorithm>
+#include <utility>
+
 #include "base/auto_reset.h"
-#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump.h"
-#include "base/power_monitor/power_monitor.h"
 #include "base/threading/hang_watcher.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
@@ -24,12 +25,6 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 namespace {
-
-// Activate the power management events that affect the tasks scheduling.
-const Feature kUsePowerMonitorWithThreadController{
-    "UsePowerMonitorWithThreadController", FEATURE_DISABLED_BY_DEFAULT};
-
-bool g_use_power_monitor_with_thread_controller = false;
 
 // Returns |next_run_time| capped at 1 day from |lazy_now|. This is used to
 // mitigate https://crbug.com/850450 where some platforms are unhappy with
@@ -105,6 +100,7 @@ void ThreadControllerWithMessagePumpImpl::BindToCurrentThread(
       ShouldScheduleWork::kScheduleImmediate) {
     pump_->ScheduleWork();
   }
+  power_monitor_.BindToCurrentThread();
 }
 
 void ThreadControllerWithMessagePumpImpl::SetWorkBatchSize(
@@ -368,8 +364,7 @@ bool ThreadControllerWithMessagePumpImpl::DoIdleWork() {
 
   work_id_provider_->IncrementWorkId();
 #if defined(OS_WIN)
-  if (!g_use_power_monitor_with_thread_controller ||
-      !base::PowerMonitor::IsProcessSuspended()) {
+  if (!power_monitor_.IsProcessInPowerSuspendState()) {
     // Avoid calling Time::ActivateHighResolutionTimer() between
     // suspend/resume as the system hangs if we do (crbug.com/1074028).
     // OnResume() will generate a task on this thread per the
@@ -532,11 +527,5 @@ bool ThreadControllerWithMessagePumpImpl::ShouldQuitRunLoopWhenIdle() {
 }
 
 }  // namespace internal
-
-void PostFieldTrialInitialization() {
-  internal::g_use_power_monitor_with_thread_controller =
-      FeatureList::IsEnabled(internal::kUsePowerMonitorWithThreadController);
-}
-
 }  // namespace sequence_manager
 }  // namespace base

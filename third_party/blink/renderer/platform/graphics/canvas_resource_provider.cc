@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "build/build_config.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/paint/display_item_list.h"
@@ -24,6 +26,7 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
+#include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -1179,6 +1182,7 @@ CanvasResourceProvider::CanvasResourceProvider(
       identifiability_paint_op_digest_(size_) {
   if (context_provider_wrapper_)
     context_provider_wrapper_->AddObserver(this);
+  CanvasMemoryDumpProvider::Instance()->RegisterClient(this);
 }
 
 CanvasResourceProvider::~CanvasResourceProvider() {
@@ -1186,6 +1190,7 @@ CanvasResourceProvider::~CanvasResourceProvider() {
                              max_inflight_resources_, 20);
   if (context_provider_wrapper_)
     context_provider_wrapper_->RemoveObserver(this);
+  CanvasMemoryDumpProvider::Instance()->UnregisterClient(this);
 }
 
 SkSurface* CanvasResourceProvider::GetSkSurface() const {
@@ -1520,6 +1525,43 @@ bool CanvasResourceProvider::HasRecordedDrawOps() const {
 void CanvasResourceProvider::TearDownSkSurface() {
   skia_canvas_ = nullptr;
   surface_ = nullptr;
+}
+
+size_t CanvasResourceProvider::ComputeSurfaceSize() const {
+  if (!surface_)
+    return 0;
+
+  SkImageInfo info = surface_->imageInfo();
+  return info.computeByteSize(info.minRowBytes());
+}
+
+void CanvasResourceProvider::OnMemoryDump(
+    base::trace_event::ProcessMemoryDump* pmd) {
+  if (!surface_)
+    return;
+
+  std::string dump_name =
+      base::StringPrintf("canvas/ResourceProvider/SkSurface/0x%" PRIXPTR,
+                         reinterpret_cast<uintptr_t>(surface_.get()));
+  auto* dump = pmd->CreateAllocatorDump(dump_name);
+
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  ComputeSurfaceSize());
+  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+                  base::trace_event::MemoryAllocatorDump::kUnitsObjects, 1);
+
+  // SkiaMemoryDumpProvider reports only sk_glyph_cache and sk_resource_cache.
+  // So the SkSurface is suballocation of malloc, not SkiaDumpProvider.
+  if (const char* system_allocator_name =
+          base::trace_event::MemoryDumpManager::GetInstance()
+              ->system_allocator_pool_name()) {
+    pmd->AddSuballocation(dump->guid(), system_allocator_name);
+  }
+}
+
+size_t CanvasResourceProvider::GetSize() const {
+  return ComputeSurfaceSize();
 }
 
 }  // namespace blink

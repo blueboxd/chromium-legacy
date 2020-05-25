@@ -1939,6 +1939,18 @@ crbug.com/946022 [ Win7 ] paint/invalidation/resize-iframe-text.html [ Skip ]
 crbug.com/946022 [ Win7 ] paint/invalidation/scroll/scrollbar-damage-and-full-viewport-repaint.html [ Skip ]
 crbug.com/946022 [ Win7 ] paint/invalidation/window-resize/* [ Skip ]
 
+# These text-antialias tests are flaky on Win7. Won't fix as we have test coverage on Win10.
+crbug.com/657646 [ Win7 ] virtual/text-antialias/font-weight.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/textIteratorNilRenderer.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/font-stretch.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/sub-pixel/text-scaling-pixel.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/international/bidi-listbox-atsui.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/international/bidi-listbox.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/international/lang-glyph-cache-separation.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/font-stretch-variant.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/drawBidiText.html [ Skip ]
+crbug.com/657646 [ Win7 ] virtual/text-antialias/font-features/caps-native-synthesis.html [ Skip ]
+
 # We don't plan to support this use-case in the near future.
 crbug.com/940797 external/wpt/signed-exchange/appcache/sxg-served-from-appcache.tentative.https.html [ Skip ]
 

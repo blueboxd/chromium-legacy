@@ -2503,9 +2503,9 @@ bool RenderFrameHostManager::InitRenderFrame(
 
   SiteInstance* site_instance = render_frame_host->GetSiteInstance();
 
-  int opener_routing_id = MSG_ROUTING_NONE;
+  base::Optional<base::UnguessableToken> opener_frame_token;
   if (frame_tree_node_->opener())
-    opener_routing_id = GetOpenerRoutingID(site_instance);
+    opener_frame_token = GetOpenerFrameToken(site_instance);
 
   int parent_routing_id = MSG_ROUTING_NONE;
   if (frame_tree_node_->parent()) {
@@ -2552,7 +2552,7 @@ bool RenderFrameHostManager::InitRenderFrame(
   }
 
   return delegate_->CreateRenderFrameForRenderManager(
-      render_frame_host, previous_routing_id, opener_routing_id,
+      render_frame_host, previous_routing_id, opener_frame_token,
       parent_routing_id, previous_sibling_routing_id);
 }
 

@@ -192,21 +192,21 @@ function compareBitmaps(bitmap1, bitmap2)
 function testImageBitmap(source, colorInfo, sourceType)
 {
     return Promise.all([
-        createImageBitmap(source, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, {
             resizeWidth: 40, resizeHeight: 40, resizeQuality: "high"}),
-        createImageBitmap(source, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, {
             resizeWidth: 40, resizeHeight: 40, resizeQuality: "medium"}),
-        createImageBitmap(source, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, {
             resizeWidth: 40, resizeHeight: 40, resizeQuality: "low"}),
-        createImageBitmap(source, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, {
             resizeWidth: 40, resizeHeight: 40, resizeQuality: "pixelated"}),
-        createImageBitmap(source, 5, 5, 10, 10, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, 5, 5, 10, 10, {
             resizeWidth: 20, resizeHeight: 20, resizeQuality: "high"}),
-        createImageBitmap(source, 5, 5, 10, 10, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, 5, 5, 10, 10, {
             resizeWidth: 20, resizeHeight: 20, resizeQuality: "medium"}),
-        createImageBitmap(source, 5, 5, 10, 10, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, 5, 5, 10, 10, {
             resizeWidth: 20, resizeHeight: 20, resizeQuality: "low"}),
-        createImageBitmap(source, 5, 5, 10, 10, {colorSpaceConversion: "rec2020",
+        createImageBitmap(source, 5, 5, 10, 10, {
             resizeWidth: 20, resizeHeight: 20, resizeQuality: "pixelated"}),
     ]).then(([noCropHigh, noCropMedium, noCropLow, noCropPixelated, cropHigh,
               cropMedium, cropLow, cropPixelated]) => {
@@ -557,15 +557,13 @@ promise_test(function() {
 // ImageBitmap - Opaque Rec2020
 promise_test(function() {
     var testCanvas = initializeTestCanvas('rec2020', 'float16');
-    return createImageBitmap(testCanvas, {colorSpaceConversion: "rec2020"}
-        ).then(testImageBitmapOpaque);
+    return createImageBitmap(testCanvas).then(testImageBitmapOpaque);
 }, 'createImageBitmap in Rec2020 from an opaque Rec2020 ImageBitmap with resize.');
 
 // ImageBitmap - Opaque P3
 promise_test(function() {
     var testCanvas = initializeTestCanvas('p3', 'float16');
-    return createImageBitmap(testCanvas, {colorSpaceConversion: "p3"}
-        ).then(testImageBitmapOpaque);
+    return createImageBitmap(testCanvas).then(testImageBitmapOpaque);
 }, 'createImageBitmap in Rec2020 from an opaque P3 ImageBitmap with resize.');
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -579,15 +577,13 @@ promise_test(function() {
 // ImageBitmap - Transparent Rec2020
 promise_test(function() {
     var testCanvas = initializeTestCanvasTransparent('rec2020', 'float16');
-    return createImageBitmap(testCanvas, {colorSpaceConversion: "rec2020"}
-        ).then(testImageBitmapTransparent);
+    return createImageBitmap(testCanvas).then(testImageBitmapTransparent);
 }, 'createImageBitmap in Rec2020 from a transparent Rec2020 ImageBitmap with resize.');
 
 // ImageBitmap - Transparent P3
 promise_test(function() {
     var testCanvas = initializeTestCanvasTransparent('p3', 'float16');
-    return createImageBitmap(testCanvas, {colorSpaceConversion: "p3"}
-        ).then(testImageBitmapTransparent);
+    return createImageBitmap(testCanvas).then(testImageBitmapTransparent);
 }, 'createImageBitmap in Rec2020 from a transparent P3 ImageBitmap with resize.');
 
 ////////////////////////////////////////////////////////////////////////////////

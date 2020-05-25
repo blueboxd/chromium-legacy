@@ -36,7 +36,7 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
 // Alphabetical:
 const base::Feature kIntentBlockExternalFormRedirectsNoGesture{
     "IntentBlockExternalFormRedirectsNoGesture",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 static jboolean JNI_ExternalIntentsFeatureList_IsEnabled(
     JNIEnv* env,

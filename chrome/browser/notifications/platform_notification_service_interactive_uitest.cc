@@ -966,8 +966,14 @@ IN_PROC_BROWSER_TEST_F(
 // display notifications whilst fullscreen is deferred to the operating system.
 #if !defined(OS_MACOSX)
 
+// TODO(https://crbug.com/1086169) Test is flaky on Linux TSan.
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(THREAD_SANITIZER)
+#define MAYBE_TestShouldDisplayFullscreen DISABLED_TestShouldDisplayFullscreen
+#else
+#define MAYBE_TestShouldDisplayFullscreen TestShouldDisplayFullscreen
+#endif
 IN_PROC_BROWSER_TEST_F(PlatformNotificationServiceBrowserTest,
-                       TestShouldDisplayFullscreen) {
+                       MAYBE_TestShouldDisplayFullscreen) {
   GrantNotificationPermissionForTest();
 
   // Set the page fullscreen

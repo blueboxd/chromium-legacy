@@ -853,19 +853,15 @@ void RendererImpl::OnRendererEnded(DemuxerStream::Type type) {
   DCHECK((type == DemuxerStream::AUDIO) || (type == DemuxerStream::VIDEO));
   TRACE_EVENT1("media", "RendererImpl::OnRendererEnded", "type", type_string);
 
-  if (state_ != STATE_PLAYING)
+  // If all streams are ended, do not propagate a redundant ended event.
+  if (state_ != STATE_PLAYING || PlaybackHasEnded())
     return;
 
   if (type == DemuxerStream::AUDIO) {
-    // If all streams are ended, do not propagate a redundant ended event.
-    if (audio_ended_ && PlaybackHasEnded())
-      return;
+    DCHECK(audio_renderer_);
     audio_ended_ = true;
   } else {
     DCHECK(video_renderer_);
-    // If all streams are ended, do not propagate a redundant ended event.
-    if (audio_ended_ && PlaybackHasEnded())
-      return;
     video_ended_ = true;
     video_renderer_->OnTimeStopped();
   }

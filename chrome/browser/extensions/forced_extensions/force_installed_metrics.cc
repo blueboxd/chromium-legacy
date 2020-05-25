@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/forced_extensions/installation_metrics.h"
+#include "chrome/browser/extensions/forced_extensions/force_installed_metrics.h"
 
 #include <set>
 
@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/disable_reason.h"
@@ -27,7 +27,7 @@
 
 namespace extensions {
 
-using ExtensionStatus = InstallationTracker::ExtensionStatus;
+using ExtensionStatus = ForceInstalledTracker::ExtensionStatus;
 
 namespace {
 // Timeout to report UMA if not all force-installed extension were loaded.
@@ -36,39 +36,39 @@ constexpr base::TimeDelta kInstallationTimeout =
 
 #if defined(OS_CHROMEOS)
 
-InstallationMetrics::SessionType GetSessionFromUserType(
+ForceInstalledMetrics::SessionType GetSessionFromUserType(
     user_manager::UserType user_type) {
   switch (user_type) {
     case user_manager::USER_TYPE_REGULAR:
-      return InstallationMetrics::SessionType::SESSION_TYPE_REGULAR_EXISTING;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_REGULAR_EXISTING;
     case user_manager::USER_TYPE_GUEST:
-      return InstallationMetrics::SessionType::SESSION_TYPE_GUEST;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_GUEST;
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-      return InstallationMetrics::SessionType::SESSION_TYPE_PUBLIC_ACCOUNT;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_PUBLIC_ACCOUNT;
     case user_manager::USER_TYPE_SUPERVISED:
-      return InstallationMetrics::SessionType::SESSION_TYPE_SUPERVISED;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_SUPERVISED;
     case user_manager::USER_TYPE_KIOSK_APP:
-      return InstallationMetrics::SessionType::SESSION_TYPE_KIOSK_APP;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_KIOSK_APP;
     case user_manager::USER_TYPE_CHILD:
-      return InstallationMetrics::SessionType::SESSION_TYPE_CHILD;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_CHILD;
     case user_manager::USER_TYPE_ARC_KIOSK_APP:
-      return InstallationMetrics::SessionType::SESSION_TYPE_ARC_KIOSK_APP;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_ARC_KIOSK_APP;
     case user_manager::USER_TYPE_ACTIVE_DIRECTORY:
-      return InstallationMetrics::SessionType::SESSION_TYPE_ACTIVE_DIRECTORY;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_ACTIVE_DIRECTORY;
     case user_manager::USER_TYPE_WEB_KIOSK_APP:
-      return InstallationMetrics::SessionType::SESSION_TYPE_WEB_KIOSK_APP;
+      return ForceInstalledMetrics::SessionType::SESSION_TYPE_WEB_KIOSK_APP;
     default:
       NOTREACHED();
   }
-  return InstallationMetrics::SessionType::kMaxValue;
+  return ForceInstalledMetrics::SessionType::kMaxValue;
 }
 #endif  // defined(OS_CHROMEOS)
 }  // namespace
 
-InstallationMetrics::InstallationMetrics(
+ForceInstalledMetrics::ForceInstalledMetrics(
     ExtensionRegistry* registry,
     Profile* profile,
-    InstallationTracker* tracker,
+    ForceInstalledTracker* tracker,
     std::unique_ptr<base::OneShotTimer> timer)
     : registry_(registry),
       profile_(profile),
@@ -77,7 +77,7 @@ InstallationMetrics::InstallationMetrics(
       timer_(std::move(timer)) {
   timer_->Start(
       FROM_HERE, kInstallationTimeout,
-      base::BindOnce(&InstallationMetrics::OnForceInstalledExtensionsLoaded,
+      base::BindOnce(&ForceInstalledMetrics::OnForceInstalledExtensionsLoaded,
                      base::Unretained(this)));
   if (tracker_->IsDoneLoading())
     OnForceInstalledExtensionsLoaded();
@@ -85,10 +85,10 @@ InstallationMetrics::InstallationMetrics(
     tracker_observer_.Add(tracker_);
 }
 
-InstallationMetrics::~InstallationMetrics() = default;
+ForceInstalledMetrics::~ForceInstalledMetrics() = default;
 
-bool InstallationMetrics::IsMisconfiguration(
-    const InstallationReporter::InstallationData& installation_data,
+bool ForceInstalledMetrics::IsMisconfiguration(
+    const InstallStageTracker::InstallationData& installation_data,
     const ExtensionId& id) {
   if (installation_data.install_error_detail) {
     ExtensionManagement* management =
@@ -110,12 +110,12 @@ bool InstallationMetrics::IsMisconfiguration(
   if (profile_->GetPrefs()->IsManagedPreference(arc::prefs::kArcEnabled) &&
       profile_->GetPrefs()->GetBoolean(arc::prefs::kArcEnabled) &&
       installation_data.failure_reason ==
-          InstallationReporter::FailureReason::REPLACED_BY_ARC_APP)
+          InstallStageTracker::FailureReason::REPLACED_BY_ARC_APP)
     return true;
 #endif  // defined(OS_CHROMEOS)
 
   if (installation_data.failure_reason ==
-      InstallationReporter::FailureReason::NOT_PERFORMING_NEW_INSTALL)
+      InstallStageTracker::FailureReason::NOT_PERFORMING_NEW_INSTALL)
     return true;
 
   return false;
@@ -123,7 +123,7 @@ bool InstallationMetrics::IsMisconfiguration(
 
 #if defined(OS_CHROMEOS)
 // Returns the type of session in case extension fails to install.
-InstallationMetrics::SessionType InstallationMetrics::GetSessionType() {
+ForceInstalledMetrics::SessionType ForceInstalledMetrics::GetSessionType() {
   SessionType current_session = GetSessionFromUserType(
       user_manager::UserManager::Get()->GetActiveUser()->GetType());
   // Check if it is regular user and if the user is a new one.
@@ -135,7 +135,8 @@ InstallationMetrics::SessionType InstallationMetrics::GetSessionType() {
 }
 #endif  // defined(OS_CHROMEOS)
 
-void InstallationMetrics::ReportDisableReason(const ExtensionId& extension_id) {
+void ForceInstalledMetrics::ReportDisableReason(
+    const ExtensionId& extension_id) {
   int disable_reasons =
       ExtensionPrefs::Get(profile_)->GetDisableReasons(extension_id);
   // Choose any disable reason among the disable reasons for this extension.
@@ -144,7 +145,7 @@ void InstallationMetrics::ReportDisableReason(const ExtensionId& extension_id) {
                            disable_reasons);
 }
 
-void InstallationMetrics::ReportMetrics() {
+void ForceInstalledMetrics::ReportMetrics() {
   base::UmaHistogramCounts100("Extensions.ForceInstalledTotalCandidateCount",
                               tracker_->extensions().size());
   std::set<ExtensionId> missing_forced_extensions;
@@ -160,8 +161,8 @@ void InstallationMetrics::ReportMetrics() {
     VLOG(2) << "All forced extensions seems to be installed";
     return;
   }
-  InstallationReporter* installation_reporter =
-      InstallationReporter::Get(profile_);
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
   size_t enabled_missing_count = missing_forced_extensions.size();
   size_t blacklisted_count = 0;
   auto installed_extensions = registry_->GenerateInstalledExtensionsSet();
@@ -188,20 +189,20 @@ void InstallationMetrics::ReportMetrics() {
   VLOG(2) << "Failed to install " << installed_missing_count
           << " forced extensions.";
   for (const auto& extension_id : missing_forced_extensions) {
-    InstallationReporter::InstallationData installation =
-        installation_reporter->Get(extension_id);
+    InstallStageTracker::InstallationData installation =
+        install_stage_tracker->Get(extension_id);
     base::UmaHistogramEnumeration(
         "Extensions.ForceInstalledFailureCacheStatus",
         installation.downloading_cache_status.value_or(
             ExtensionDownloaderDelegate::CacheStatus::CACHE_UNKNOWN));
     if (!installation.failure_reason && installation.install_stage) {
       installation.failure_reason =
-          InstallationReporter::FailureReason::IN_PROGRESS;
-      InstallationReporter::Stage install_stage =
+          InstallStageTracker::FailureReason::IN_PROGRESS;
+      InstallStageTracker::Stage install_stage =
           installation.install_stage.value();
       base::UmaHistogramEnumeration("Extensions.ForceInstalledStage",
                                     install_stage);
-      if (install_stage == InstallationReporter::Stage::DOWNLOADING) {
+      if (install_stage == InstallStageTracker::Stage::DOWNLOADING) {
         DCHECK(installation.downloading_stage);
         ExtensionDownloaderDelegate::Stage downloading_stage =
             installation.downloading_stage.value();
@@ -211,9 +212,9 @@ void InstallationMetrics::ReportMetrics() {
     }
     if (IsMisconfiguration(installation, extension_id))
       misconfigured_extensions++;
-    InstallationReporter::FailureReason failure_reason =
+    InstallStageTracker::FailureReason failure_reason =
         installation.failure_reason.value_or(
-            InstallationReporter::FailureReason::UNKNOWN);
+            InstallStageTracker::FailureReason::UNKNOWN);
     base::UmaHistogramEnumeration("Extensions.ForceInstalledFailureReason3",
                                   failure_reason);
     if (tracker_->extensions().at(extension_id).is_from_store) {
@@ -227,7 +228,7 @@ void InstallationMetrics::ReportMetrics() {
     // In case of CRX_FETCH_FAILURE, report the network error code, HTTP
     // error code and number of fetch tries made.
     if (failure_reason ==
-        InstallationReporter::FailureReason::CRX_FETCH_FAILED) {
+        InstallStageTracker::FailureReason::CRX_FETCH_FAILED) {
       base::UmaHistogramSparse("Extensions.ForceInstalledNetworkErrorCode",
                                installation.network_error_code.value());
 
@@ -243,7 +244,7 @@ void InstallationMetrics::ReportMetrics() {
     // In case of MANIFEST_FETCH_FAILURE, report the network error code,
     // HTTP error code and number of fetch tries made.
     if (failure_reason ==
-        InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED) {
+        InstallStageTracker::FailureReason::MANIFEST_FETCH_FAILED) {
       base::UmaHistogramSparse(
           "Extensions.ForceInstalledManifestFetchFailedNetworkErrorCode",
           installation.network_error_code.value());
@@ -269,7 +270,7 @@ void InstallationMetrics::ReportMetrics() {
 #endif  // defined(OS_CHROMEOS)
     VLOG(2) << "Forced extension " << extension_id
             << " failed to install with data="
-            << InstallationReporter::GetFormattedInstallationData(installation);
+            << InstallStageTracker::GetFormattedInstallationData(installation);
     if (installation.install_error_detail) {
       CrxInstallErrorDetail detail = installation.install_error_detail.value();
       base::UmaHistogramEnumeration(
@@ -282,7 +283,7 @@ void InstallationMetrics::ReportMetrics() {
           SandboxedUnpackerFailureReason::NUM_FAILURE_REASONS);
     }
     if (failure_reason ==
-            InstallationReporter::FailureReason::CRX_FETCH_URL_EMPTY &&
+            InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY &&
         installation.update_check_status) {
       base::UmaHistogramEnumeration(
           "Extensions.ForceInstalledFailureUpdateCheckStatus",
@@ -290,7 +291,7 @@ void InstallationMetrics::ReportMetrics() {
     }
     if (installation.manifest_invalid_error) {
       DCHECK_EQ(failure_reason,
-                InstallationReporter::FailureReason::MANIFEST_INVALID);
+                InstallStageTracker::FailureReason::MANIFEST_INVALID);
       UMA_HISTOGRAM_ENUMERATION(
           "Extensions.ForceInstalledFailureManifestInvalidErrorDetail",
           installation.manifest_invalid_error.value());
@@ -304,7 +305,7 @@ void InstallationMetrics::ReportMetrics() {
       non_misconfigured_failure_occurred);
 }
 
-void InstallationMetrics::OnForceInstalledExtensionsLoaded() {
+void ForceInstalledMetrics::OnForceInstalledExtensionsLoaded() {
   if (reported_)
     return;
   // Report only if there was non-empty list of force-installed extensions.

@@ -24,7 +24,7 @@
 #include "chrome/browser/extensions/api/module/module.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -346,12 +346,12 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
                      pending_id, info->update_url(), info->install_source(),
                      is_corrupt_reinstall, request_id, params.fetch_priority)) {
         request.in_progress_ids_.insert(pending_id);
-        InstallationReporter::Get(profile_)->ReportInstallationStage(
-            pending_id, InstallationReporter::Stage::DOWNLOADING);
+        InstallStageTracker::Get(profile_)->ReportInstallationStage(
+            pending_id, InstallStageTracker::Stage::DOWNLOADING);
       } else {
-        InstallationReporter::Get(profile_)->ReportFailure(
+        InstallStageTracker::Get(profile_)->ReportFailure(
             pending_id,
-            InstallationReporter::FailureReason::DOWNLOADER_ADD_FAILED);
+            InstallStageTracker::FailureReason::DOWNLOADER_ADD_FAILED);
       }
     }
 
@@ -405,21 +405,21 @@ void ExtensionUpdater::CheckNow(CheckParams params) {
 
 void ExtensionUpdater::OnExtensionDownloadStageChanged(const ExtensionId& id,
                                                        Stage stage) {
-  InstallationReporter::Get(profile_)->ReportDownloadingStage(id, stage);
+  InstallStageTracker::Get(profile_)->ReportDownloadingStage(id, stage);
 }
 
 void ExtensionUpdater::OnExtensionDownloadCacheStatusRetrieved(
     const ExtensionId& id,
     CacheStatus cache_status) {
-  InstallationReporter::Get(profile_)->ReportDownloadingCacheStatus(
+  InstallStageTracker::Get(profile_)->ReportDownloadingCacheStatus(
       id, cache_status);
 }
 
 void ExtensionUpdater::OnExtensionManifestUpdateCheckStatusReceived(
     const ExtensionId& id,
     const std::string& status) {
-  InstallationReporter::Get(profile_)->ReportManifestUpdateCheckStatus(id,
-                                                                       status);
+  InstallStageTracker::Get(profile_)->ReportManifestUpdateCheckStatus(id,
+                                                                      status);
 }
 
 void ExtensionUpdater::OnExtensionDownloadFailed(
@@ -429,34 +429,34 @@ void ExtensionUpdater::OnExtensionDownloadFailed(
     const std::set<int>& request_ids,
     const FailureData& data) {
   DCHECK(alive_);
-  InstallationReporter* installation_reporter =
-      InstallationReporter::Get(profile_);
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
 
   switch (error) {
     case Error::CRX_FETCH_FAILED:
-      installation_reporter->ReportFetchError(
-          id, InstallationReporter::FailureReason::CRX_FETCH_FAILED, data);
+      install_stage_tracker->ReportFetchError(
+          id, InstallStageTracker::FailureReason::CRX_FETCH_FAILED, data);
       break;
     case Error::CRX_FETCH_URL_EMPTY:
-      installation_reporter->ReportFailure(
-          id, InstallationReporter::FailureReason::CRX_FETCH_URL_EMPTY);
+      install_stage_tracker->ReportFailure(
+          id, InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
       break;
     case Error::CRX_FETCH_URL_INVALID:
-      installation_reporter->ReportFailure(
-          id, InstallationReporter::FailureReason::CRX_FETCH_URL_INVALID);
+      install_stage_tracker->ReportFailure(
+          id, InstallStageTracker::FailureReason::CRX_FETCH_URL_INVALID);
       break;
     case Error::MANIFEST_FETCH_FAILED:
-      installation_reporter->ReportFetchError(
-          id, InstallationReporter::FailureReason::MANIFEST_FETCH_FAILED, data);
+      install_stage_tracker->ReportFetchError(
+          id, InstallStageTracker::FailureReason::MANIFEST_FETCH_FAILED, data);
       break;
     case Error::MANIFEST_INVALID:
       DCHECK(data.manifest_invalid_error);
-      installation_reporter->ReportManifestInvalidFailure(
+      install_stage_tracker->ReportManifestInvalidFailure(
           id, data.manifest_invalid_error.value());
       break;
     case Error::NO_UPDATE_AVAILABLE:
-      installation_reporter->ReportFailure(
-          id, InstallationReporter::FailureReason::NO_UPDATE);
+      install_stage_tracker->ReportFailure(
+          id, InstallStageTracker::FailureReason::NO_UPDATE);
       break;
     case Error::DISABLED:
       // Error::DISABLED corresponds to the browser having disabled extension
@@ -490,8 +490,8 @@ void ExtensionUpdater::OnExtensionDownloadFinished(
     const std::set<int>& request_ids,
     const InstallCallback& callback) {
   DCHECK(alive_);
-  InstallationReporter::Get(profile_)->ReportInstallationStage(
-      file.extension_id, InstallationReporter::Stage::INSTALLING);
+  InstallStageTracker::Get(profile_)->ReportInstallationStage(
+      file.extension_id, InstallStageTracker::Stage::INSTALLING);
   UpdatePingData(file.extension_id, ping);
 
   VLOG(2) << download_url << " written to " << file.path.value();

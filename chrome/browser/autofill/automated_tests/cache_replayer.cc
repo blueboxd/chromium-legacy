@@ -489,6 +489,169 @@ ServerCacheReplayer::Status PopulateCacheFromJSONFile(
 
 }  // namespace
 
+// Convert query protobuf from one environment to another.
+template <typename ReadEnv, typename WriteEnv>
+typename WriteEnv::Query ConvertQuery(const typename ReadEnv::Query& in) {
+  VLOG(1) << "ConvertQuery: identity";
+  // Easy case: ReadEnv and WriteEnv are identical, no conversion necessary.
+  return in;
+}
+
+// Instantiate functions that are not specialized.
+template typename ApiEnv::Query ConvertQuery<ApiEnv, ApiEnv>(
+    const typename ApiEnv::Query& in);
+template typename LegacyEnv::Query ConvertQuery<LegacyEnv, LegacyEnv>(
+    const typename LegacyEnv::Query& in);
+
+template <>
+typename ApiEnv::Query ConvertQuery<LegacyEnv, ApiEnv>(
+    const typename LegacyEnv::Query& in) {
+  VLOG(1) << "ConvertQuery: legacy->api";
+  ApiEnv::Query out;
+  for (const auto& in_form : in.form()) {
+    auto* out_form = out.add_forms();
+    out_form->set_signature(in_form.signature());
+    if (in_form.has_form_metadata())
+      out_form->mutable_metadata()->CopyFrom(in_form.form_metadata());
+    for (const auto& in_field : in_form.field()) {
+      auto* out_field = out_form->add_fields();
+      out_field->set_signature(in_field.signature());
+      if (in_field.has_name())
+        out_field->set_name(in_field.name());
+      if (in_field.has_type())
+        out_field->set_control_type(in_field.type());
+      if (in_field.has_field_metadata())
+        out_field->mutable_metadata()->CopyFrom(in_field.field_metadata());
+    }
+  }
+  if (in.experiments_size() > 0)
+    out.mutable_experiments()->CopyFrom(in.experiments());
+  return out;
+}
+
+template <>
+typename LegacyEnv::Query ConvertQuery<ApiEnv, LegacyEnv>(
+    const typename ApiEnv::Query& in) {
+  VLOG(1) << "ConvertQuery: api->legacy";
+  LegacyEnv::Query out;
+  out.set_client_version("DummyClient");
+  for (const auto& in_form : in.forms()) {
+    auto* out_form = out.add_form();
+    out_form->set_signature(in_form.signature());
+    if (in_form.has_metadata())
+      out_form->mutable_form_metadata()->CopyFrom(in_form.metadata());
+    for (const auto& in_field : in_form.fields()) {
+      auto* out_field = out_form->add_field();
+      out_field->set_signature(in_field.signature());
+      if (in_field.has_name())
+        out_field->set_name(in_field.name());
+      if (in_field.has_control_type())
+        out_field->set_type(in_field.control_type());
+      if (in_field.has_metadata())
+        out_field->mutable_field_metadata()->CopyFrom(in_field.metadata());
+    }
+  }
+  if (in.experiments_size() > 0)
+    out.mutable_experiments()->CopyFrom(in.experiments());
+  return out;
+}
+
+// Convert response protobuf from one environment to another.
+// The |query| is passed as a helper because the legacy response does not
+// contain enough information to create an api response.
+template <typename ReadEnv, typename WriteEnv>
+typename WriteEnv::Response ConvertResponse(
+    const typename ReadEnv::Response& in,
+    const typename ReadEnv::Query& query) {
+  // Easy case: ReadEnv and WriteEnv are identical, no conversion necessary.
+  VLOG(1) << "ConvertResponse: identity";
+  return in;
+}
+
+// Instantiate functions that are not specialized.
+template typename LegacyEnv::Response ConvertResponse<LegacyEnv, LegacyEnv>(
+    const typename LegacyEnv::Response& in,
+    const typename LegacyEnv::Query& query);
+template typename ApiEnv::Response ConvertResponse<ApiEnv, ApiEnv>(
+    const typename ApiEnv::Response& in,
+    const typename ApiEnv::Query& query);
+
+template <>
+typename ApiEnv::Response ConvertResponse<LegacyEnv, ApiEnv>(
+    const typename LegacyEnv::Response& in,
+    const typename LegacyEnv::Query& query) {
+  VLOG(1) << "ConvertResponse: legacy->api";
+  ApiEnv::Response out;
+  // The Legacy response does not carry enough information to create an api
+  // server response. Therefore, we wal the legacy query.
+  int in_field_index = 0;
+  for (const auto& query_form : query.form()) {
+    auto* out_form = out.add_form_suggestions();
+    for (const auto& query_field : query_form.field()) {
+      const auto& in_field = in.field(in_field_index);
+      auto* out_field = out_form->add_field_suggestions();
+      out_field->set_field_signature(query_field.signature());
+      if (in_field.has_overall_type_prediction()) {
+        out_field->set_primary_type_prediction(
+            in_field.overall_type_prediction());
+      } else if (in_field.predictions_size() > 0) {
+        out_field->set_primary_type_prediction(in_field.predictions(0).type());
+      }
+      for (const auto& in_prediction : in_field.predictions())
+        out_field->add_predictions()->set_type(in_prediction.type());
+      if (in_field.predictions().size() > 0 &&
+          in_field.predictions(0).has_may_use_prefilled_placeholder()) {
+        out_field->set_may_use_prefilled_placeholder(
+            in_field.predictions(0).may_use_prefilled_placeholder());
+      }
+      if (in_field.has_password_requirements()) {
+        out_field->mutable_password_requirements()->CopyFrom(
+            in_field.password_requirements());
+      }
+      ++in_field_index;
+    }
+  }
+  return out;
+}
+
+template <>
+typename LegacyEnv::Response ConvertResponse<ApiEnv, LegacyEnv>(
+    const typename ApiEnv::Response& in,
+    const typename ApiEnv::Query& query) {
+  VLOG(1) << "ConvertResponse: api->legacy";
+  LegacyEnv::Response out;
+  for (const auto& in_form : in.form_suggestions()) {
+    for (const auto& in_field : in_form.field_suggestions()) {
+      auto* out_field = out.add_field();
+      out_field->set_overall_type_prediction(
+          in_field.primary_type_prediction());
+      for (const auto& in_prediction : in_field.predictions()) {
+        auto* out_prediction = out_field->add_predictions();
+        out_prediction->set_type(in_prediction.type());
+        if (in_field.has_may_use_prefilled_placeholder()) {
+          out_prediction->set_may_use_prefilled_placeholder(
+              in_field.may_use_prefilled_placeholder());
+        }
+      }
+      // In case the predictions were not filled for sloppyness,
+      // just rely on the main prediction.
+      if (out_field->predictions_size() == 0) {
+        auto* out_prediction = out_field->add_predictions();
+        out_prediction->set_type(in_field.primary_type_prediction());
+        if (in_field.has_may_use_prefilled_placeholder()) {
+          out_prediction->set_may_use_prefilled_placeholder(
+              in_field.may_use_prefilled_placeholder());
+        }
+      }
+      if (in_field.has_password_requirements()) {
+        out_field->mutable_password_requirements()->CopyFrom(
+            in_field.password_requirements());
+      }
+    }
+  }
+  return out;
+}
+
 // Decompressed HTTP response read from WPR capture file. Will set
 // |decompressed_http| to "" and return false if there is an error.
 bool ServerCacheReplayer::RetrieveAndDecompressStoredHTTP(
@@ -581,6 +744,21 @@ std::ostream& operator<<(std::ostream& out,
   return out;
 }
 
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillPageQueryRequest& query) {
+  for (const auto& form : query.forms()) {
+    out << "\nForm\n signature: " << form.signature();
+    for (const auto& field : form.fields()) {
+      out << "\n Field\n  signature: " << field.signature();
+      if (!field.name().empty())
+        out << "\n  name: " << field.name();
+      if (!field.control_type().empty())
+        out << "\n  control_type: " << field.control_type();
+    }
+  }
+  return out;
+}
+
 // Streams in text format. For consistency, taken from anonymous namespace in
 // components/autofill/core/browser/form_structure.cc
 std::ostream& operator<<(
@@ -588,6 +766,23 @@ std::ostream& operator<<(
     const autofill::AutofillQueryResponseContents& response) {
   for (const auto& field : response.field()) {
     out << "\nautofill_type: " << field.overall_type_prediction();
+    for (const auto& prediction : field.predictions())
+      out << "\n  prediction: " << prediction.type();
+  }
+  return out;
+}
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillQueryResponse& response) {
+  for (const auto& form : response.form_suggestions()) {
+    out << "\nForm";
+    for (const auto& field : form.field_suggestions()) {
+      out << "\n Field\n  signature: " << field.field_signature();
+      if (field.has_primary_type_prediction())
+        out << "\n  primary_type_prediction: "
+            << field.primary_type_prediction();
+      for (const auto& prediction : field.predictions())
+        out << "\n  prediction: " << prediction.type();
+    }
   }
   return out;
 }

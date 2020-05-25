@@ -215,6 +215,11 @@ TEST(PaintPreviewCompositorTest, TestBeginComposite) {
   // results.
   file_map.erase(kSubframe_0_0_ID);
   expected_data.erase(kSubframe_0_0_ID);
+  // Remove the kSubframe_0_0_ID from the subframe list since it isn't
+  // available.
+  auto& vec = expected_data[kSubframe_0_ID]->subframes;
+  vec.front() = std::move(vec.back());
+  vec.pop_back();
 
   mojom::PaintPreviewBeginCompositeRequestPtr request =
       mojom::PaintPreviewBeginCompositeRequest::New();

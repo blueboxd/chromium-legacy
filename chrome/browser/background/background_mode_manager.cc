@@ -117,15 +117,15 @@ BackgroundModeManager::BackgroundModeData::BackgroundModeData(
 BackgroundModeManager::BackgroundModeData::~BackgroundModeData() = default;
 
 void BackgroundModeManager::BackgroundModeData::SetTracker(
-    extensions::InstallationTracker* tracker) {
-  installation_tracker_observer_.Add(tracker);
+    extensions::ForceInstalledTracker* tracker) {
+  force_installed_tracker_observer_.Add(tracker);
 }
 
 void BackgroundModeManager::BackgroundModeData::OnProfileWillBeDestroyed(
     Profile* profile) {
   DCHECK_EQ(profile_, profile);
   profile_observer_.RemoveAll();
-  installation_tracker_observer_.RemoveAll();
+  force_installed_tracker_observer_.RemoveAll();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -451,7 +451,7 @@ void BackgroundModeManager::OnExtensionsReady(Profile* profile) {
 
   auto* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  auto* tracker = extension_service->forced_extensions_tracker();
+  auto* tracker = extension_service->force_installed_tracker();
   if (tracker->IsReady() || !bmd)
     ReleaseForceInstalledExtensionsKeepAlive();
   else

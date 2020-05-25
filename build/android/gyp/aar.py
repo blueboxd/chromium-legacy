@@ -24,14 +24,20 @@ import gn_helpers
 
 
 def _IsManifestEmpty(manifest_str):
-  """Returns whether the given manifest has merge-worthy elements.
+  """Decides whether the given manifest has merge-worthy elements.
 
   E.g.: <activity>, <service>, etc.
+
+  Args:
+    manifest_str: Content of a manifiest XML.
+
+  Returns:
+    Whether the manifest has merge-worthy elements.
   """
   doc = ElementTree.fromstring(manifest_str)
   for node in doc:
     if node.tag == 'application':
-      if len(node):
+      if node.getchildren():
         return False
     elif node.tag != 'uses-sdk':
       return False
@@ -40,6 +46,14 @@ def _IsManifestEmpty(manifest_str):
 
 
 def _CreateInfo(aar_file):
+  """Extracts and return .info data from an .aar file.
+
+  Args:
+    aar_file: Path to an input .aar file.
+
+  Returns:
+    A dict containing .info data.
+  """
   data = {}
   data['aidl'] = []
   data['assets'] = []
@@ -81,7 +95,7 @@ def _CreateInfo(aar_file):
       elif name == 'R.txt':
         # Some AARs, e.g. gvr_controller_java, have empty R.txt. Such AARs
         # have no resources as well. We treat empty R.txt as having no R.txt.
-        data['has_r_text_file'] = (z.read('R.txt').strip() != '')
+        data['has_r_text_file'] = bool(z.read('R.txt').strip())
   return data
 
 

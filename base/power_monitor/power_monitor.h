@@ -40,12 +40,10 @@ class BASE_EXPORT PowerMonitor {
   // from which it was registered.
   // Must not be called from within a notification callback.
   //
-  // AddObserver() fails and returns false if PowerMonitor::Initialize() has not
-  // been invoked. Failure should only happen in unit tests, where the
-  // PowerMonitor is generally not initialized. It is safe to call
-  // RemoveObserver with a PowerObserver that was not successfully added as an
+  // It is safe to add observers before the PowerMonitor is initialized. It is
+  // safe to call RemoveObserver with a PowerObserver that was not added as an
   // observer.
-  static bool AddObserver(PowerObserver* observer);
+  static void AddObserver(PowerObserver* observer);
   static void RemoveObserver(PowerObserver* observer);
 
   // Is the computer currently on battery power. May only be called if the

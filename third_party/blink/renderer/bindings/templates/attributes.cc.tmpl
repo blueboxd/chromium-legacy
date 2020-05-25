@@ -573,7 +573,7 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
   {% set setter_callback_for_main_world =
       '%sForMainWorld' % setter_callback if attribute.has_setter else 'nullptr' %}
 {% endif %}
-{% set config_pre = {
+{% set world_dependent_config = {
     'main' : [
         '"%s"' % attribute.name,
         getter_callback_for_main_world,
@@ -585,26 +585,37 @@ void {{v8_class_or_partial}}::{{attribute.camel_case_name}}AttributeSetterCallba
         setter_callback,
     ],
 } %}
-{% set accessor_only_fields = [] if config_type == 'attribute' else [cached_property_key] %}
-{% set config_post = [
+{% if config_type == 'attribute' %}
+{% set world_common_config = [
     property_attribute,
     property_location(attribute),
     holder_check,
     getter_side_effect_type,
     getter_behavior,
 ] %}
+{% else %}{# config_type == 'accessor' #}
+{% set world_common_config = [
+    cached_property_key,
+    property_attribute,
+    property_location(attribute),
+    holder_check,
+    'V8DOMConfiguration::kCheckAccess',
+    'V8DOMConfiguration::kCheckAccess',
+    getter_side_effect_type,
+] %}
+{% endif %}
 
 {% if attribute.is_per_world_bindings %}
-  {% set main_config_list = config_pre["main"] + accessor_only_fields +
-      config_post + ['V8DOMConfiguration::kMainWorld'] %}
-  {% set non_main_config_list = config_pre["non_main"] + accessor_only_fields +
-      config_post + ['V8DOMConfiguration::kNonMainWorlds'] %}
+  {% set main_config_list = world_dependent_config["main"] +
+      world_common_config + ['V8DOMConfiguration::kMainWorld'] %}
+  {% set non_main_config_list = world_dependent_config["non_main"] +
+      world_common_config + ['V8DOMConfiguration::kNonMainWorlds'] %}
   {# Emit for main world then non-main.#}
 { {{main_config_list | join(', ')}} },
 { {{non_main_config_list | join(', ')}} }
 {%- else -%}
-  {% set all_worlds_config_list = config_pre["non_main"] + accessor_only_fields +
-      config_post + ['V8DOMConfiguration::kAllWorlds'] %}
+  {% set all_worlds_config_list = world_dependent_config["non_main"] +
+      world_common_config + ['V8DOMConfiguration::kAllWorlds'] %}
   {# Emit only for all worlds #}
 { {{all_worlds_config_list | join(', ')}} }
 {%- endif -%}

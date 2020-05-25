@@ -166,7 +166,7 @@ TEST_F(SiteDataCacheFacadeTest, IsDataCacheRecordingForTesting) {
   EXPECT_TRUE(cache_is_recording);
 
   SiteDataCacheFacade off_record_data_cache_facade(
-      profile()->GetOffTheRecordProfile());
+      profile()->GetPrimaryOTRProfile());
   {
     base::RunLoop run_loop;
     auto quit_closure = run_loop.QuitClosure();

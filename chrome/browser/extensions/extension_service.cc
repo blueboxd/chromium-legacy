@@ -47,7 +47,7 @@
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/external_install_manager.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -230,8 +230,8 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
         info.extension_id);
   }
 
-  InstallationReporter* installation_reporter =
-      InstallationReporter::Get(profile_);
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
 
   const Extension* extension = registry_->GetExtensionById(
       info.extension_id, ExtensionRegistry::EVERYTHING);
@@ -244,9 +244,9 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
             info.extension_id) &&
         current == Manifest::GetHigherPriorityLocation(
                        current, info.download_location)) {
-      installation_reporter->ReportFailure(
+      install_stage_tracker->ReportFailure(
           info.extension_id,
-          InstallationReporter::FailureReason::ALREADY_INSTALLED);
+          InstallStageTracker::FailureReason::ALREADY_INSTALLED);
       return false;
     }
     // If the installation is requested from a higher priority source, update
@@ -305,15 +305,15 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
   // be added, then there is already a pending record from a higher-priority
   // install source.  In this case, signal that this extension will not be
   // installed by returning false.
-  installation_reporter->ReportInstallationStage(
-      info.extension_id, InstallationReporter::Stage::PENDING);
+  install_stage_tracker->ReportInstallationStage(
+      info.extension_id, InstallStageTracker::Stage::PENDING);
   if (!pending_extension_manager()->AddFromExternalUpdateUrl(
           info.extension_id, info.install_parameter, info.update_url,
           info.download_location, info.creation_flags,
           info.mark_acknowledged)) {
-    installation_reporter->ReportFailure(
+    install_stage_tracker->ReportFailure(
         info.extension_id,
-        InstallationReporter::FailureReason::PENDING_ADD_FAILED);
+        InstallStageTracker::FailureReason::PENDING_ADD_FAILED);
     return false;
   }
 
@@ -376,10 +376,8 @@ ExtensionService::ExtensionService(Profile* profile,
       ready_(ready),
       shared_module_service_(new SharedModuleService(profile_)),
       extension_registrar_(profile_, this),
-      forced_extensions_tracker_(registry_, profile_),
-      forced_extensions_metrics_(registry_,
-                                 profile_,
-                                 &forced_extensions_tracker_) {
+      force_installed_tracker_(registry_, profile_),
+      force_installed_metrics_(registry_, profile_, &force_installed_tracker_) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   TRACE_EVENT0("browser,startup", "ExtensionService::ExtensionService::ctor");
 

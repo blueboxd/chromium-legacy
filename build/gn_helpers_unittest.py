@@ -27,7 +27,7 @@ class UnitTest(unittest.TestCase):
         gn_helpers.FromGNString('[1, -20, true, false,["as\\"", []]]'),
         [ 1, -20, True, False, [ 'as"', [] ] ])
 
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('123 456')
       parser.Parse()
 
@@ -42,10 +42,10 @@ class UnitTest(unittest.TestCase):
     parser = gn_helpers.GNValueParser('123')
     self.assertEqual(parser.ParseNumber(), 123)
 
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('')
       parser.ParseNumber()
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('a123')
       parser.ParseNumber()
 
@@ -53,13 +53,13 @@ class UnitTest(unittest.TestCase):
     parser = gn_helpers.GNValueParser('"asdf"')
     self.assertEqual(parser.ParseString(), 'asdf')
 
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('')  # Empty.
       parser.ParseString()
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('asdf')  # Unquoted.
       parser.ParseString()
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('"trailing')  # Unterminated.
       parser.ParseString()
 
@@ -67,16 +67,16 @@ class UnitTest(unittest.TestCase):
     parser = gn_helpers.GNValueParser('[1,]')  # Optional end comma OK.
     self.assertEqual(parser.ParseList(), [ 1 ])
 
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('')  # Empty.
       parser.ParseList()
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('asdf')  # No [].
       parser.ParseList()
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('[1, 2')  # Unterminated
       parser.ParseList()
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser('[1 2]')  # No separating comma.
       parser.ParseList()
 
@@ -107,15 +107,15 @@ class UnitTest(unittest.TestCase):
     self.assertEqual(gn_helpers.FromGNArgs(' \n '), {})
 
     # Non-identifiers should raise an exception.
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       gn_helpers.FromGNArgs('123 = true')
 
     # References to other variables should raise an exception.
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       gn_helpers.FromGNArgs('foo = bar')
 
     # References to functions should raise an exception.
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       gn_helpers.FromGNArgs('foo = exec_script("//build/baz.py")')
 
     # Underscores in identifiers should work.
@@ -161,19 +161,19 @@ class UnitTest(unittest.TestCase):
     """))
 
     # No trailing parenthesis should raise an exception.
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser(
           textwrap.dedent('import("//some/args/file.gni"'))
       parser.ReplaceImports()
 
     # No double quotes should raise an exception.
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser(
           textwrap.dedent('import(//some/args/file.gni)'))
       parser.ReplaceImports()
 
     # A path that's not source absolute should raise an exception.
-    with self.assertRaises(gn_helpers.GNException):
+    with self.assertRaises(gn_helpers.GNError):
       parser = gn_helpers.GNValueParser(
           textwrap.dedent('import("some/relative/args/file.gni")'))
       parser.ReplaceImports()

@@ -3163,8 +3163,7 @@ if (enable_java_templates) {
 
         deps = _deps + [ ":$_build_config_target" ]
 
-        # TODO(https://crbug.com/1056751): Add support for proguarding jdk libs.
-        if (enable_jdk_library_desugaring) {
+        if (!_proguard_enabled && enable_jdk_library_desugaring) {
           _all_jdk_libs = "//build/android:all_jdk_libs"
           deps += [ _all_jdk_libs ]
           jdk_libs_dex = get_label_info(_all_jdk_libs, "target_out_dir") +
@@ -4706,6 +4705,7 @@ if (enable_java_templates) {
                                  "is_multi_abi",
                                  "min_sdk_version",
                                  "uncompress_dex",
+                                 "proguard_enabled",
                                ])
         module_name = _module.name
         build_config = _module_build_config

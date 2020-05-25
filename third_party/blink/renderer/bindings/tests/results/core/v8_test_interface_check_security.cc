@@ -757,8 +757,8 @@ static void InstallV8TestInterfaceCheckSecurityTemplate(
       kAttributeConfigurations, base::size(kAttributeConfigurations));
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
-      { "readonlyLongAttribute", V8TestInterfaceCheckSecurity::ReadonlyLongAttributeAttributeGetterCallback, nullptr, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
-      { "longAttribute", V8TestInterfaceCheckSecurity::LongAttributeAttributeGetterCallback, V8TestInterfaceCheckSecurity::LongAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "readonlyLongAttribute", V8TestInterfaceCheckSecurity::ReadonlyLongAttributeAttributeGetterCallback, nullptr, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
+      { "longAttribute", V8TestInterfaceCheckSecurity::LongAttributeAttributeGetterCallback, V8TestInterfaceCheckSecurity::LongAttributeAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
   };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,

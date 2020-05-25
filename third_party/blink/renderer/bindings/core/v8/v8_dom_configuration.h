@@ -153,10 +153,11 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned property_location_configuration : 3;
     // HolderCheckConfiguration
     unsigned holder_check_configuration : 1;
+    // AccessCheckConfiguration
+    unsigned getter_access_check_configuration : 1;
+    unsigned setter_access_check_configuration : 1;
     // SideEffectConfiguration
     unsigned getter_side_effect_type : 1;
-    // AttributeGetterBehavior (should always be kReplaceWithDataProperty)
-    unsigned getter_behavior : 1;
     // WorldConfiguration
     unsigned world_configuration : 2;
   };

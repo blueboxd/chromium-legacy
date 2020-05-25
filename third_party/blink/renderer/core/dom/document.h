@@ -1686,6 +1686,9 @@ class CORE_EXPORT Document : public ContainerNode,
   FontPreloadManager& GetFontPreloadManager() { return font_preload_manager_; }
   void FontPreloadingFinishedOrTimedOut();
 
+  void IncrementAsyncScriptCount() { async_script_count_++; }
+  void RecordAsyncScriptCount();
+
   void SetFindInPageActiveMatchNode(Node*);
   const Node* GetFindInPageActiveMatchNode() const;
 
@@ -2268,6 +2271,8 @@ class CORE_EXPORT Document : public ContainerNode,
       pending_has_trust_tokens_resolvers_;
 
   FontPreloadManager font_preload_manager_;
+
+  int async_script_count_ = 0;
 
   WeakMember<Node> find_in_page_active_match_node_;
 };

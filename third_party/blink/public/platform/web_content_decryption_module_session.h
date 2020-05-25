@@ -88,7 +88,6 @@ class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
   virtual void InitializeNewSession(media::EmeInitDataType,
                                     const unsigned char* init_data,
                                     size_t init_data_length,
-                                    WebEncryptedMediaSessionType,
                                     WebContentDecryptionModuleResult) = 0;
   virtual void Load(const WebString& session_id,
                     WebContentDecryptionModuleResult) = 0;

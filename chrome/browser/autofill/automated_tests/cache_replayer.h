@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/files/file_path.h"
+#include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/proto/server.pb.h"
 #include "content/public/test/url_loader_interceptor.h"
 
@@ -27,17 +28,56 @@ std::pair<std::string, std::string> SplitHTTP(const std::string& http_text);
 // components/autofill/core/browser/autofill_download_manager.cc
 std::ostream& operator<<(std::ostream& out,
                          const autofill::AutofillQueryContents& query);
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillPageQueryRequest& query);
 
 // Streams in text format. For consistency, taken from anonymous namespace in
 // components/autofill/core/browser/form_structure.cc
 std::ostream& operator<<(
     std::ostream& out,
     const autofill::AutofillQueryResponseContents& response);
+std::ostream& operator<<(std::ostream& out,
+                         const autofill::AutofillQueryResponse& response);
 
+class LegacyEnv {
+ public:
+  using Query = AutofillQueryContents;
+  using Response = AutofillQueryResponseContents;
+};
 // Gets a key from a given query request.
 std::string GetKeyFromQueryRequest(const AutofillQueryContents& query_request);
 
+class ApiEnv {
+ public:
+  using Query = AutofillPageQueryRequest;
+  using Response = AutofillQueryResponse;
+};
+
 enum class RequestType { kLegacyQueryProtoGET, kLegacyQueryProtoPOST };
+
+// Conversion between different versions of queries.
+template <typename ReadEnv, typename WriteEnv>
+typename WriteEnv::Query ConvertQuery(const typename ReadEnv::Query& in);
+template <>
+typename ApiEnv::Query ConvertQuery<LegacyEnv, ApiEnv>(
+    const typename LegacyEnv::Query& in);
+template <>
+typename LegacyEnv::Query ConvertQuery<ApiEnv, LegacyEnv>(
+    const typename ApiEnv::Query& in);
+
+// Conversion between different versions of responses.
+template <typename ReadEnv, typename WriteEnv>
+typename WriteEnv::Response ConvertResponse(
+    const typename ReadEnv::Response& in,
+    const typename ReadEnv::Query& query);
+template <>
+typename ApiEnv::Response ConvertResponse<LegacyEnv, ApiEnv>(
+    const typename LegacyEnv::Response& in,
+    const typename LegacyEnv::Query& query);
+template <>
+typename LegacyEnv::Response ConvertResponse<ApiEnv, LegacyEnv>(
+    const typename ApiEnv::Response& in,
+    const typename ApiEnv::Query& query);
 
 // Switch `--autofill-server-type` is used to override the default behavior of
 // using the cached responses from the wpr archive. The valid values match the

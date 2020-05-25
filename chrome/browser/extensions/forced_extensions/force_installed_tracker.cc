@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/forced_extensions/installation_tracker.h"
+#include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
@@ -17,8 +17,8 @@
 
 namespace extensions {
 
-InstallationTracker::InstallationTracker(ExtensionRegistry* registry,
-                                         Profile* profile)
+ForceInstalledTracker::ForceInstalledTracker(ExtensionRegistry* registry,
+                                             Profile* profile)
     : registry_(registry),
       profile_(profile),
       pref_service_(profile->GetPrefs()) {
@@ -30,11 +30,11 @@ InstallationTracker::InstallationTracker(ExtensionRegistry* registry,
     policy_service()->AddObserver(policy::POLICY_DOMAIN_CHROME, this);
 }
 
-InstallationTracker::~InstallationTracker() {
+ForceInstalledTracker::~ForceInstalledTracker() {
   policy_service()->RemoveObserver(policy::POLICY_DOMAIN_CHROME, this);
 }
 
-void InstallationTracker::UpdateCounters(ExtensionStatus status, int delta) {
+void ForceInstalledTracker::UpdateCounters(ExtensionStatus status, int delta) {
   switch (status) {
     case ExtensionStatus::PENDING:
       load_pending_count_ += delta;
@@ -48,17 +48,18 @@ void InstallationTracker::UpdateCounters(ExtensionStatus status, int delta) {
   }
 }
 
-void InstallationTracker::AddExtensionInfo(const ExtensionId& extension_id,
-                                           ExtensionStatus status,
-                                           bool is_from_store) {
+void ForceInstalledTracker::AddExtensionInfo(const ExtensionId& extension_id,
+                                             ExtensionStatus status,
+                                             bool is_from_store) {
   auto result =
       extensions_.emplace(extension_id, ExtensionInfo{status, is_from_store});
   DCHECK(result.second);
   UpdateCounters(result.first->second.status, +1);
 }
 
-void InstallationTracker::ChangeExtensionStatus(const ExtensionId& extension_id,
-                                                ExtensionStatus status) {
+void ForceInstalledTracker::ChangeExtensionStatus(
+    const ExtensionId& extension_id,
+    ExtensionStatus status) {
   DCHECK_GE(status_, kWaitingForExtensionLoads);
   auto item = extensions_.find(extension_id);
   if (item == extensions_.end())
@@ -68,11 +69,11 @@ void InstallationTracker::ChangeExtensionStatus(const ExtensionId& extension_id,
   UpdateCounters(item->second.status, +1);
 }
 
-void InstallationTracker::OnPolicyUpdated(const policy::PolicyNamespace& ns,
-                                          const policy::PolicyMap& previous,
-                                          const policy::PolicyMap& current) {}
+void ForceInstalledTracker::OnPolicyUpdated(const policy::PolicyNamespace& ns,
+                                            const policy::PolicyMap& previous,
+                                            const policy::PolicyMap& current) {}
 
-void InstallationTracker::OnPolicyServiceInitialized(
+void ForceInstalledTracker::OnPolicyServiceInitialized(
     policy::PolicyDomain domain) {
   DCHECK_EQ(domain, policy::POLICY_DOMAIN_CHROME);
   DCHECK_EQ(status_, kWaitingForPolicyService);
@@ -80,7 +81,7 @@ void InstallationTracker::OnPolicyServiceInitialized(
   OnForcedExtensionsPrefReady();
 }
 
-void InstallationTracker::OnForcedExtensionsPrefReady() {
+void ForceInstalledTracker::OnForcedExtensionsPrefReady() {
   DCHECK(
       policy_service()->IsInitializationComplete(policy::POLICY_DOMAIN_CHROME));
   DCHECK_EQ(status_, kWaitingForPolicyService);
@@ -88,7 +89,7 @@ void InstallationTracker::OnForcedExtensionsPrefReady() {
   // Listen for extension loads and install failures.
   status_ = kWaitingForExtensionLoads;
   registry_observer_.Add(registry_);
-  reporter_observer_.Add(InstallationReporter::Get(profile_));
+  collector_observer_.Add(InstallStageTracker::Get(profile_));
 
   const base::DictionaryValue* value =
       pref_service_->GetDictionary(pref_names::kInstallForceList);
@@ -118,35 +119,35 @@ void InstallationTracker::OnForcedExtensionsPrefReady() {
   MaybeNotifyObservers();
 }
 
-void InstallationTracker::OnShutdown(ExtensionRegistry*) {
+void ForceInstalledTracker::OnShutdown(ExtensionRegistry*) {
   registry_observer_.RemoveAll();
 }
 
-void InstallationTracker::AddObserver(Observer* obs) {
+void ForceInstalledTracker::AddObserver(Observer* obs) {
   observers_.AddObserver(obs);
 }
 
-void InstallationTracker::RemoveObserver(Observer* obs) {
+void ForceInstalledTracker::RemoveObserver(Observer* obs) {
   observers_.RemoveObserver(obs);
 }
 
-void InstallationTracker::OnExtensionLoaded(
+void ForceInstalledTracker::OnExtensionLoaded(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   ChangeExtensionStatus(extension->id(), ExtensionStatus::LOADED);
   MaybeNotifyObservers();
 }
 
-void InstallationTracker::OnExtensionReady(
+void ForceInstalledTracker::OnExtensionReady(
     content::BrowserContext* browser_context,
     const Extension* extension) {
   ChangeExtensionStatus(extension->id(), ExtensionStatus::READY);
   MaybeNotifyObservers();
 }
 
-void InstallationTracker::OnExtensionInstallationFailed(
+void ForceInstalledTracker::OnExtensionInstallationFailed(
     const ExtensionId& extension_id,
-    InstallationReporter::FailureReason reason) {
+    InstallStageTracker::FailureReason reason) {
   auto item = extensions_.find(extension_id);
   // If the extension is loaded, ignore the failure.
   if (item == extensions_.end() ||
@@ -157,19 +158,19 @@ void InstallationTracker::OnExtensionInstallationFailed(
   MaybeNotifyObservers();
 }
 
-bool InstallationTracker::IsDoneLoading() const {
+bool ForceInstalledTracker::IsDoneLoading() const {
   return status_ == kWaitingForExtensionReady || status_ == kComplete;
 }
 
-bool InstallationTracker::IsReady() const {
+bool ForceInstalledTracker::IsReady() const {
   return status_ == kComplete;
 }
 
-policy::PolicyService* InstallationTracker::policy_service() {
+policy::PolicyService* ForceInstalledTracker::policy_service() {
   return profile_->GetProfilePolicyConnector()->policy_service();
 }
 
-void InstallationTracker::MaybeNotifyObservers() {
+void ForceInstalledTracker::MaybeNotifyObservers() {
   DCHECK_GE(status_, kWaitingForExtensionLoads);
   if (status_ == kWaitingForExtensionLoads && load_pending_count_ == 0) {
     for (auto& obs : observers_)
@@ -181,8 +182,8 @@ void InstallationTracker::MaybeNotifyObservers() {
       obs.OnForceInstalledExtensionsReady();
     status_ = kComplete;
     registry_observer_.RemoveAll();
-    reporter_observer_.RemoveAll();
-    InstallationReporter::Get(profile_)->Clear();
+    collector_observer_.RemoveAll();
+    InstallStageTracker::Get(profile_)->Clear();
   }
 }
 

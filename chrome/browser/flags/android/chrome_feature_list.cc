@@ -264,8 +264,7 @@ const base::Feature kAdjustWebApkInstallationSpace = {
     "AdjustWebApkInstallationSpace", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kAndroidBlockIntentNonSafelistedHeaders{
-    "AndroidBlockIntentNonSafelistedHeaders",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    "AndroidBlockIntentNonSafelistedHeaders", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAndroidMultipleDisplay{"AndroidMultipleDisplay",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

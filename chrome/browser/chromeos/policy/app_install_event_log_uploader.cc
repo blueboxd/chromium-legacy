@@ -107,7 +107,7 @@ void AppInstallEventLogUploader::OnSerialized(
 
   // base::Unretained() is safe here as the destructor cancels any pending
   // upload, after which the |client_| is guaranteed to not call the callback.
-  client_->UploadRealtimeReport(
+  client_->UploadAppInstallReport(
       std::move(value_report),
       base::AdaptCallbackForRepeating(base::BindOnce(
           &AppInstallEventLogUploader::OnUploadDone, base::Unretained(this))));

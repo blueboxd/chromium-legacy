@@ -12,6 +12,7 @@ import sys
 import tempfile
 import zipfile
 
+import dex_jdk_libs
 from util import build_utils
 from util import diff_utils
 
@@ -116,6 +117,8 @@ def _ParseOptions():
                       action='append',
                       required=True,
                       help='GN-list of .jar files to optimize.')
+  parser.add_argument('--desugar-jdk-libs-jar',
+                      help='Path to desugar_jdk_libs.jar.')
   parser.add_argument('--output-path', help='Path to the generated .jar file.')
   parser.add_argument(
       '--proguard-configs',
@@ -196,6 +199,8 @@ def _ParseOptions():
   parser.add_argument(
       '--stamp',
       help='File to touch upon success. Mutually exclusive with --output-path')
+  parser.add_argument('--desugared-library-keep-rule-output',
+                      help='Path to desugared library keep rule output file.')
 
   options = parser.parse_args(args)
 
@@ -265,12 +270,18 @@ class _DexPathContext(object):
     self.staging_dir = os.path.join(work_dir, name)
     os.mkdir(self.staging_dir)
 
-  def CreateOutput(self):
+  def CreateOutput(self, has_imported_lib=False, keep_rule_output=None):
     found_files = build_utils.FindInDirectory(self.staging_dir)
     if not found_files:
       raise Exception('Missing dex outputs in {}'.format(self.staging_dir))
 
     if self._final_output_path.endswith('.dex'):
+      if has_imported_lib:
+        raise Exception(
+            'Trying to create a single .dex file, but a dependency requires '
+            'JDK Library Desugaring (which necessitates a second file).'
+            'Refer to %s to see what desugaring was required' %
+            keep_rule_output)
       if len(found_files) != 1:
         raise Exception('Expected exactly 1 dex file output, found: {}'.format(
             '\t'.join(found_files)))
@@ -330,7 +341,12 @@ def _OptimizeWithR8(options,
     ]
 
     if options.desugar_jdk_libs_json:
-      cmd += ['--desugared-lib', options.desugar_jdk_libs_json]
+      cmd += [
+          '--desugared-lib',
+          options.desugar_jdk_libs_json,
+          '--desugared-library-keep-rule-output',
+          options.desugared_library_keep_rule_output,
+      ]
 
     if options.min_api:
       cmd += ['--min-api', options.min_api]
@@ -379,7 +395,18 @@ def _OptimizeWithR8(options,
           'android/docs/java_optimization.md#Debugging-common-failures\n'))
       raise ProguardProcessError(err, debugging_link)
 
-    base_dex_context.CreateOutput()
+    base_has_imported_lib = False
+    if options.desugar_jdk_libs_json:
+      existing_files = build_utils.FindInDirectory(base_dex_context.staging_dir)
+      base_has_imported_lib = dex_jdk_libs.DexJdkLibJar(
+          options.r8_path, options.min_api, options.desugar_jdk_libs_json,
+          options.desugar_jdk_libs_jar,
+          options.desugared_library_keep_rule_output,
+          os.path.join(base_dex_context.staging_dir,
+                       'classes%d.dex' % (len(existing_files) + 1)))
+
+    base_dex_context.CreateOutput(base_has_imported_lib,
+                                  options.desugared_library_keep_rule_output)
     for feature in feature_contexts:
       feature.CreateOutput()
 

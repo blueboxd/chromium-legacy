@@ -21,7 +21,7 @@ TEST(LanguageModelManagerFactoryTest, SharedWithIncognito) {
       LanguageModelManagerFactory::GetForBrowserContext(&profile);
   EXPECT_THAT(manager, Not(IsNull()));
 
-  Profile* const incognito = profile.GetOffTheRecordProfile();
+  Profile* const incognito = profile.GetPrimaryOTRProfile();
   ASSERT_THAT(incognito, Not(IsNull()));
   EXPECT_THAT(LanguageModelManagerFactory::GetForBrowserContext(incognito),
               Eq(manager));

@@ -461,7 +461,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void CreateFrameProxy(
       int32_t routing_id,
       int32_t render_view_routing_id,
-      int32_t opener_routing_id,
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
       int32_t parent_routing_id,
       const FrameReplicationState& replicated_state,
       const base::UnguessableToken& frame_token,

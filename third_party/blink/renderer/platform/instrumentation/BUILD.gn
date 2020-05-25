@@ -13,6 +13,8 @@ blink_platform_sources("instrumentation") {
   ]
 
   sources = [
+    "canvas_memory_dump_provider.cc",
+    "canvas_memory_dump_provider.h",
     "histogram.cc",
     "histogram.h",
     "instance_counters.cc",

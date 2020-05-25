@@ -59,6 +59,9 @@ public class PaintPreviewTabHelper extends EmptyTabObserver implements UserData 
 
     @Override
     public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
+        // Note this doesn't apply to forced reloads, which is desirable in this case.
+        if (!toDifferentDocument) return;
+
         removePaintPreviewDemoIfShowing();
     }
 

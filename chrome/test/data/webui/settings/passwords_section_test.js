@@ -274,7 +274,7 @@ suite('PasswordsSection', function() {
 
   // Test verifies that pressing the 'remove' button will trigger a remove
   // event. Does not actually remove any passwords.
-  test('verifyPasswordItemRemoveButton', function() {
+  test('verifyPasswordItemRemoveButton', async function() {
     const passwordList = [
       createPasswordEntry('one', 'six'),
       createPasswordEntry('two', 'five'),
@@ -295,13 +295,12 @@ suite('PasswordsSection', function() {
     firstNode.$$('#passwordMenu').click();
     passwordsSection.$.menuRemovePassword.click();
 
-    return passwordManager.whenCalled('removeSavedPassword').then(id => {
-      // Verify that the expected value was passed to the proxy.
-      assertEquals(firstPassword.id, id);
-      assertEquals(
-          passwordsSection.i18n('passwordDeleted'),
-          getToastManager().$.content.textContent);
-    });
+    const ids = await passwordManager.whenCalled('removeSavedPasswords');
+    // Verify that the expected value was passed to the proxy.
+    assertDeepEquals([firstPassword.id], ids);
+    assertEquals(
+        passwordsSection.i18n('passwordDeleted'),
+        getToastManager().$.content.textContent);
   });
 
   // Test verifies that 'Copy password' button is hidden for Federated

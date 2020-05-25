@@ -38,6 +38,7 @@ import '../controls/extension_controlled_indicator.m.js';
 import '../controls/settings_toggle_button.m.js';
 import {GlobalScrollTargetBehavior} from '../global_scroll_target_behavior.m.js';
 import {loadTimeData} from '../i18n_setup.js';
+import {RemovalResult} from './remove_password_behavior.js';
 import {SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '../people_page/sync_browser_proxy.m.js';
 import {PluralStringProxyImpl} from '../plural_string_proxy.js';
 import '../prefs/prefs.m.js';
@@ -551,13 +552,25 @@ Polymer({
    * @private
    */
   onMenuRemovePasswordTap_() {
-    this.passwordManager_.removeSavedPassword(
-        this.activePassword.item.entry.getAnyId());
-    getToastManager().show(
-        this.getRemovePasswordText_(this.activePassword.item));
-    this.fire('iron-announce', {
-      text: this.i18n('undoDescription'),
-    });
+    // TODO(crbug.com/1049141): Open removal dialog if password is present in
+    // both locations. Add tests for when no password is selected in the dialog.
+    /** @type {!RemovalResult} */
+    const result = this.activePassword.requestRemove();
+
+    if (result.removedFromDevice || result.removedFromAccount) {
+      let text = this.i18n('passwordDeleted');
+      if (this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_) {
+        // TODO(crbug.com/1049141): Style the text according to mocks.
+        // TODO(crbug.com/1049141): Adapt the string when the user can delete
+        // from both account and device.
+        text = result.removedFromAccount ?
+            this.i18n('passwordDeletedFromAccount') :
+            this.i18n('passwordDeletedFromDevice');
+      }
+      getToastManager().show(text);
+      this.fire('iron-announce', {text: this.i18n('undoDescription')});
+    }
+
     /** @type {CrActionMenuElement} */ (this.$.menu).close();
   },
 
@@ -698,23 +711,6 @@ Polymer({
    */
   showImportOrExportPasswords_(showExportPasswords, showImportPasswords) {
     return showExportPasswords || showImportPasswords;
-  },
-
-  /**
-   * @private
-   * @param {!MultiStorePasswordUiEntryWithPassword} item The deleted item.
-   * @return {string}
-   */
-  getRemovePasswordText_(item) {
-    // TODO(crbug.com/1049141): Adapt the string when the user can delete from
-    // both account and device.
-    // TODO(crbug.com/1049141): Style the text according to mocks.
-    if (this.eligibleForAccountStorage_ && this.isOptedInForAccountStorage_) {
-      return item.entry.isPresentInAccount() ?
-          this.i18n('passwordDeletedFromAccount') :
-          this.i18n('passwordDeletedFromDevice');
-    }
-    return this.i18n('passwordDeleted');
   },
 
   /**

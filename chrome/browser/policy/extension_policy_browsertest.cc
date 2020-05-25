@@ -17,7 +17,7 @@
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
@@ -868,21 +868,21 @@ class ExtensionRequestInterceptor {
   content::URLLoaderInterceptor interceptor_;
 };
 
-class MockedInstallationReporterObserver
-    : public extensions::InstallationReporter::Observer {
+class MockedInstallationCollectorObserver
+    : public extensions::InstallStageTracker::Observer {
  public:
-  explicit MockedInstallationReporterObserver(
+  explicit MockedInstallationCollectorObserver(
       const content::BrowserContext* context)
       : context_(context) {}
-  ~MockedInstallationReporterObserver() override = default;
+  ~MockedInstallationCollectorObserver() override = default;
 
   MOCK_METHOD1(ExtensionStageChanged,
-               void(extensions::InstallationReporter::Stage));
+               void(extensions::InstallStageTracker::Stage));
 
   void OnExtensionDataChangedForTesting(
       const extensions::ExtensionId& id,
       const content::BrowserContext* context,
-      const extensions::InstallationReporter::InstallationData& data) override {
+      const extensions::InstallStageTracker::InstallationData& data) override {
     // For simplicity policies are pushed into all profiles, so we need to track
     // only one here.
     if (context != context_) {
@@ -895,8 +895,8 @@ class MockedInstallationReporterObserver
   }
 
  private:
-  extensions::InstallationReporter::Stage stage_ =
-      extensions::InstallationReporter::Stage::CREATED;
+  extensions::InstallStageTracker::Stage stage_ =
+      extensions::InstallStageTracker::Stage::CREATED;
   const content::BrowserContext* context_;
 };
 
@@ -1122,52 +1122,53 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
   EXPECT_FALSE(
       extension_cache()->GetExtension(kGoodCrxId, "", nullptr, nullptr));
 
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
-  MockedInstallationReporterObserver reporter_observer(browser()->profile());
-  // CREATED is the default stage in MockedInstallationReporterObserver, so it
+  extensions::TestExtensionRegistryObserver registry_observer(
+      extension_registry());
+  MockedInstallationCollectorObserver collector_observer(browser()->profile());
+  // CREATED is the default stage in MockedInstallationCollectorObserver, so it
   // wouldn't be reported here.
   Sequence sequence;
   EXPECT_CALL(
-      reporter_observer,
+      collector_observer,
       ExtensionStageChanged(
-          extensions::InstallationReporter::Stage::NOTIFIED_FROM_MANAGEMENT))
+          extensions::InstallStageTracker::Stage::NOTIFIED_FROM_MANAGEMENT))
       .InSequence(sequence);
   EXPECT_CALL(
-      reporter_observer,
+      collector_observer,
       ExtensionStageChanged(
-          extensions::InstallationReporter::Stage::SEEN_BY_POLICY_LOADER))
+          extensions::InstallStageTracker::Stage::SEEN_BY_POLICY_LOADER))
       .InSequence(sequence);
   EXPECT_CALL(
-      reporter_observer,
+      collector_observer,
       ExtensionStageChanged(
-          extensions::InstallationReporter::Stage::SEEN_BY_EXTERNAL_PROVIDER))
+          extensions::InstallStageTracker::Stage::SEEN_BY_EXTERNAL_PROVIDER))
       .InSequence(sequence);
   EXPECT_CALL(
-      reporter_observer,
-      ExtensionStageChanged(extensions::InstallationReporter::Stage::PENDING))
+      collector_observer,
+      ExtensionStageChanged(extensions::InstallStageTracker::Stage::PENDING))
       .InSequence(sequence);
-  EXPECT_CALL(reporter_observer,
+  EXPECT_CALL(collector_observer,
               ExtensionStageChanged(
-                  extensions::InstallationReporter::Stage::DOWNLOADING))
-      .InSequence(sequence);
-  EXPECT_CALL(reporter_observer,
-              ExtensionStageChanged(
-                  extensions::InstallationReporter::Stage::INSTALLING))
+                  extensions::InstallStageTracker::Stage::DOWNLOADING))
       .InSequence(sequence);
   EXPECT_CALL(
-      reporter_observer,
-      ExtensionStageChanged(extensions::InstallationReporter::Stage::COMPLETE))
+      collector_observer,
+      ExtensionStageChanged(extensions::InstallStageTracker::Stage::INSTALLING))
+      .InSequence(sequence);
+  EXPECT_CALL(
+      collector_observer,
+      ExtensionStageChanged(extensions::InstallStageTracker::Stage::COMPLETE))
       .InSequence(sequence);
 
-  extensions::InstallationReporter* installation_reporter =
-      extensions::InstallationReporter::Get(browser()->profile());
-  installation_reporter->AddObserver(&reporter_observer);
+  extensions::InstallStageTracker* install_stage_tracker =
+      extensions::InstallStageTracker::Get(browser()->profile());
+  install_stage_tracker->AddObserver(&collector_observer);
   UpdateProviderPolicy(policies);
-  observer.WaitForExtensionWillBeInstalled();
-  installation_reporter->RemoveObserver(&reporter_observer);
+  registry_observer.WaitForExtensionWillBeInstalled();
+  install_stage_tracker->RemoveObserver(&collector_observer);
   // Note: Cannot check that the notification details match the expected
   // exception, since the details object has already been freed prior to
-  // the completion of observer.WaitForExtensionWillBeInstalled().
+  // the completion of registry_observer.WaitForExtensionWillBeInstalled().
   EXPECT_TRUE(
       extension_cache()->GetExtension(kGoodCrxId, "", nullptr, nullptr));
   EXPECT_TRUE(registry->enabled_extensions().GetByID(kGoodCrxId));
@@ -1296,7 +1297,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   }
 
   extensions::TestContentVerifyJobObserver content_verify_job_observer;
-  extensions::TestExtensionRegistryObserver observer(extension_registry());
+  extensions::TestExtensionRegistryObserver registry_observer(
+      extension_registry());
 
   // Step 3: Fetch resource to trigger corruption check and wait for content
   // verify job completion.
@@ -1316,7 +1318,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
   // extension reinstall.
   EXPECT_TRUE(service->pending_extension_manager()
                   ->IsPolicyReinstallForCorruptionExpected(kGoodCrxId));
-  observer.WaitForExtensionWillBeInstalled();
+  registry_observer.WaitForExtensionWillBeInstalled();
 
   // Extension was reloaded, old extension object is invalid.
   extension = extension_registry()->enabled_extensions().GetByID(kGoodCrxId);

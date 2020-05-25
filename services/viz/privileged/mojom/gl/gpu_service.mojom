@@ -153,7 +153,7 @@ interface GpuService {
 
   // Write out the accumulated code profiling profile to the configured file.
   // The callback is invoked once the profile has been flushed to disk.
-  [EnableIf=use_clang_profiling]
+  [EnableIf=use_clang_profiling_inside_sandbox]
   WriteClangProfilingProfile() => ();
 
   Crash();

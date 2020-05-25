@@ -1085,6 +1085,19 @@ if (enable_java_templates) {
         rebase_path(_desugar_jdk_libs_json, root_build_dir),
       ]
       _inputs += [ _desugar_jdk_libs_json ]
+
+      _args += [
+        "--desugar-jdk-libs-jar",
+        rebase_path(_desugar_jdk_libs_jar, root_build_dir),
+      ]
+      _inputs += [ _desugar_jdk_libs_jar ]
+
+      _desugared_library_keep_rule_output_path =
+          "$target_gen_dir/$target_name.desugared_library_keep_rules.flags"
+      _args += [
+        "--desugared-library-keep-rule-output",
+        rebase_path(_desugared_library_keep_rule_output_path, root_build_dir),
+      ]
     }
 
     _enable_assert = is_java_debug || dcheck_always_on
@@ -3304,9 +3317,7 @@ if (enable_java_templates) {
         _final_jar_path = invoker.final_jar_path
       }
 
-      # TODO(wnwen): Enable turbine for non-chromium code when r8 optimizes out
-      #              bridge methods.
-      _enable_turbine = _has_sources && _chromium_code
+      _enable_turbine = _has_sources
       if (defined(invoker.enable_turbine)) {
         _enable_turbine = invoker.enable_turbine
       }
@@ -3826,10 +3837,15 @@ if (enable_java_templates) {
 #   verify_native_libs_and_assets_target_name: (optional): If set, will verify
 #     the list of included native libraries and assets is consistent with an
 #     expectation file.
+#   proguard_enabled: Optional. True if proguarding is enabled for this
+#     bundle. Default is to enable this only for release builds. Note that
+#     this will always perform synchronized proguarding.
 template("create_android_app_bundle_module") {
   _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
   _rebased_native_libraries_config =
       rebase_path(invoker.native_libraries_config, root_build_dir)
+  _proguard_enabled =
+      defined(invoker.proguard_enabled) && invoker.proguard_enabled
 
   forward_variables_from(invoker,
                          [
@@ -3900,8 +3916,9 @@ template("create_android_app_bundle_module") {
     _args += [ "--dex-file=@FileArg($_rebased_build_config:final_dex:path)" ]
   }
 
-  # TODO(https://crbug.com/1056751): Add support for proguarding jdk libs.
-  if (enable_jdk_library_desugaring && invoker.module_name == "base") {
+  # The library is imported via proguard when proguard is enabled.
+  if (!_proguard_enabled && enable_jdk_library_desugaring &&
+      invoker.module_name == "base") {
     _all_jdk_libs = "//build/android:all_jdk_libs"
     _deps += [ _all_jdk_libs ]
     _jdk_libs_dex =

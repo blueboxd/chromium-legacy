@@ -355,7 +355,7 @@ MediaKeySession::MediaKeySession(ScriptState* script_state,
   // initializeNewSession() is called in response to the user calling
   // generateRequest().
   WebContentDecryptionModule* cdm = media_keys->ContentDecryptionModule();
-  session_ = cdm->CreateSession();
+  session_ = cdm->CreateSession(session_type);
   session_->SetClientInterface(this);
 
   // From https://w3c.github.io/encrypted-media/#createSession:
@@ -501,7 +501,7 @@ void MediaKeySession::GenerateRequestTask(ContentDecryptionModuleResult* result,
   // initializeNewSession() in Chromium will execute steps 10.1 to 10.9.
   session_->InitializeNewSession(
       init_data_type, static_cast<unsigned char*>(init_data_buffer->Data()),
-      init_data_buffer->ByteLengthAsSizeT(), session_type_, result->Result());
+      init_data_buffer->ByteLengthAsSizeT(), result->Result());
 
   // Remaining steps (10.10) executed in finishGenerateRequest(),
   // called when |result| is resolved.

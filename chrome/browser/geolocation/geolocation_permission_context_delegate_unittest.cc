@@ -134,7 +134,7 @@ TEST_F(GeolocationPermissionContextDelegateTests,
                                       requesting_frame, requesting_frame)
                 .content_setting);
 
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+  Profile* otr_profile = profile()->GetPrimaryOTRProfile();
 
   // A DSE setting of ALLOW should not flow through to incognito.
   ASSERT_EQ(CONTENT_SETTING_ASK,

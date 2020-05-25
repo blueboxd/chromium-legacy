@@ -249,6 +249,7 @@ class KioskAppManager : public KioskAppManagerBase,
   friend struct base::LazyInstanceTraitsBase<KioskAppManager>;
   friend std::default_delete<KioskAppManager>;
   friend class KioskAppManagerTest;
+  friend class KioskAutoLaunchViewsTest;
   friend class KioskTest;
   friend class KioskUpdateTest;
 

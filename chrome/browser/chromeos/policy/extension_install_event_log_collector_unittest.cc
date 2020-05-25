@@ -116,8 +116,8 @@ class ExtensionInstallEventLogCollectorTest : public testing::Test {
     chromeos::NetworkHandler::Initialize();
     profile_ = std::make_unique<TestingProfile>();
     registry_ = extensions::ExtensionRegistry::Get(profile_.get());
-    installation_reporter_ =
-        extensions::InstallationReporter::Get(profile_.get());
+    install_stage_tracker_ =
+        extensions::InstallStageTracker::Get(profile_.get());
     service_test_ = chromeos::DBusThreadManager::Get()
                         ->GetShillServiceClient()
                         ->GetTestInterface();
@@ -176,7 +176,7 @@ class ExtensionInstallEventLogCollectorTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   extensions::ExtensionRegistry* registry_;
-  extensions::InstallationReporter* installation_reporter_;
+  extensions::InstallStageTracker* install_stage_tracker_;
   FakeExtensionInstallEventLogCollectorDelegate delegate_;
   TestingPrefServiceSimple pref_service_;
 };
@@ -346,7 +346,7 @@ TEST_F(ExtensionInstallEventLogCollectorTest, ExtensionInstallFailed) {
   // One extension failed.
   collector->OnExtensionInstallationFailed(
       kExtensionId1,
-      extensions::InstallationReporter::FailureReason::CRX_FETCH_URL_EMPTY);
+      extensions::InstallStageTracker::FailureReason::CRX_FETCH_URL_EMPTY);
   ASSERT_EQ(1, delegate()->add_count());
   ASSERT_EQ(0, delegate()->add_for_all_count());
   EXPECT_EQ(kExtensionId1, delegate()->last_request().extension_id);

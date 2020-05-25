@@ -170,6 +170,7 @@ v8::Local<FunctionOrTemplate> CreateAccessorFunctionOrTemplate(
     v8::Local<v8::Signature>,
     const char* name,
     AccessorType,
+    V8DOMConfiguration::AccessCheckConfiguration access_check_configuration,
     v8::SideEffectType side_effect_type = v8::SideEffectType::kHasSideEffect);
 
 template <>
@@ -182,6 +183,7 @@ CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
     v8::Local<v8::Signature> signature,
     const char* name,
     AccessorType type,
+    V8DOMConfiguration::AccessCheckConfiguration access_check_configuration,
     v8::SideEffectType side_effect_type) {
   v8::Local<v8::FunctionTemplate> function_template;
   if (callback) {
@@ -208,7 +210,8 @@ CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
 
     if (!function_template.IsEmpty()) {
       function_template->RemovePrototype();
-      function_template->SetAcceptAnyReceiver(false);
+      function_template->SetAcceptAnyReceiver(
+          access_check_configuration == V8DOMConfiguration::kDoNotCheckAccess);
 
       // https://heycam.github.io/webidl/#dfn-attribute-getter has:
       //
@@ -245,6 +248,7 @@ v8::Local<v8::Function> CreateAccessorFunctionOrTemplate<v8::Function>(
     v8::Local<v8::Signature> signature,
     const char* name,
     AccessorType type,
+    V8DOMConfiguration::AccessCheckConfiguration access_check_configuration,
     v8::SideEffectType side_effect_type) {
   if (!callback)
     return v8::Local<v8::Function>();
@@ -252,7 +256,7 @@ v8::Local<v8::Function> CreateAccessorFunctionOrTemplate<v8::Function>(
   v8::Local<v8::FunctionTemplate> function_template =
       CreateAccessorFunctionOrTemplate<v8::FunctionTemplate>(
           isolate, callback, V8PrivateProperty::CachedAccessor::kNone, data,
-          signature, name, type, side_effect_type);
+          signature, name, type, access_check_configuration, side_effect_type);
   if (function_template.IsEmpty())
     return v8::Local<v8::Function>();
 
@@ -293,7 +297,6 @@ void InstallAccessorInternal(
   DCHECK(!IsObjectAndEmpty(instance_or_template) ||
          !IsObjectAndEmpty(prototype_or_template) ||
          !IsObjectAndEmpty(interface_or_template));
-  DCHECK_EQ(config.getter_behavior, V8DOMConfiguration::kAlwaysCallGetter);
   if (!WorldConfigurationApplies(config, world))
     return;
 
@@ -317,6 +320,13 @@ void InstallAccessorInternal(
       V8DOMConfiguration::kDoNotCheckHolder)
     signature = v8::Local<v8::Signature>();
 
+  V8DOMConfiguration::AccessCheckConfiguration getter_access_check =
+      static_cast<V8DOMConfiguration::AccessCheckConfiguration>(
+          config.getter_access_check_configuration);
+  V8DOMConfiguration::AccessCheckConfiguration setter_access_check =
+      static_cast<V8DOMConfiguration::AccessCheckConfiguration>(
+          config.setter_access_check_configuration);
+
   const unsigned location = config.property_location_configuration;
   v8::SideEffectType getter_side_effect_type =
       config.getter_side_effect_type == V8DOMConfiguration::kHasNoSideEffect
@@ -329,12 +339,12 @@ void InstallAccessorInternal(
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, getter_callback, cached_property_key,
             v8::Local<v8::Value>(), signature, config.name,
-            AccessorType::Getter, getter_side_effect_type);
+            AccessorType::Getter, getter_access_check, getter_side_effect_type);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setter_callback, V8PrivateProperty::CachedAccessor::kNone,
             v8::Local<v8::Value>(), signature, config.name,
-            AccessorType::Setter);
+            AccessorType::Setter, setter_access_check);
     if (location & V8DOMConfiguration::kOnInstance &&
         !IsObjectAndEmpty(instance_or_template)) {
       instance_or_template->SetAccessorProperty(
@@ -357,12 +367,12 @@ void InstallAccessorInternal(
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, getter_callback, V8PrivateProperty::CachedAccessor::kNone,
             v8::Local<v8::Value>(), v8::Local<v8::Signature>(), config.name,
-            AccessorType::Getter, getter_side_effect_type);
+            AccessorType::Getter, getter_access_check, getter_side_effect_type);
     v8::Local<FunctionOrTemplate> setter =
         CreateAccessorFunctionOrTemplate<FunctionOrTemplate>(
             isolate, setter_callback, V8PrivateProperty::CachedAccessor::kNone,
             v8::Local<v8::Value>(), v8::Local<v8::Signature>(), config.name,
-            AccessorType::Setter);
+            AccessorType::Setter, setter_access_check);
     interface_or_template->SetAccessorProperty(
         name, getter, setter,
         static_cast<v8::PropertyAttribute>(config.attribute));
@@ -480,8 +490,9 @@ void InstallMethodInternal(v8::Isolate* isolate,
             isolate, callback, v8::Local<v8::Value>(), signature, method.length,
             v8::ConstructorBehavior::kAllow, side_effect_type);
     function_template->RemovePrototype();
-    if (method.access_check_configuration == V8DOMConfiguration::kCheckAccess)
-      function_template->SetAcceptAnyReceiver(false);
+    function_template->SetAcceptAnyReceiver(
+        method.access_check_configuration ==
+        V8DOMConfiguration::kDoNotCheckAccess);
     if (method.property_location_configuration &
         V8DOMConfiguration::kOnInstance) {
       AddMethodToTemplate(isolate, instance_template, function_template,
@@ -548,9 +559,9 @@ void InstallMethodInternal(
             isolate, callback, v8::Local<v8::Value>(), signature, config.length,
             v8::ConstructorBehavior::kAllow, side_effect_type);
     function_template->RemovePrototype();
-    if (config.access_check_configuration == V8DOMConfiguration::kCheckAccess) {
-      function_template->SetAcceptAnyReceiver(false);
-    }
+    function_template->SetAcceptAnyReceiver(
+        config.access_check_configuration ==
+        V8DOMConfiguration::kDoNotCheckAccess);
     v8::Local<v8::Function> function =
         function_template->GetFunction(isolate->GetCurrentContext())
             .ToLocalChecked();

@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_REPORTER_H_
-#define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_REPORTER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALL_STAGE_TRACKER_H_
+#define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALL_STAGE_TRACKER_H_
 
 #include <map>
 #include <utility>
 
-#include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/optional.h"
@@ -25,9 +24,10 @@ class BrowserContext;
 
 namespace extensions {
 
-// Helper class to save and retrieve extension installation stage and failure
-// reasons.
-class InstallationReporter : public KeyedService {
+// Tracker for extension installation events. Different parts of extension
+// installation process report stage changes and failures to this one, where
+// these events could be observed or retrieved later.
+class InstallStageTracker : public KeyedService {
  public:
   // Stage of extension installing process. Typically forced extensions from
   // policies should go through all stages in this order, other extensions skip
@@ -215,14 +215,12 @@ class InstallationReporter : public KeyedService {
     InstallationData();
     InstallationData(const InstallationData&);
 
-    base::Optional<extensions::InstallationReporter::Stage> install_stage;
-    base::Optional<extensions::ExtensionDownloaderDelegate::Stage>
-        downloading_stage;
-    base::Optional<extensions::ExtensionDownloaderDelegate::CacheStatus>
+    base::Optional<Stage> install_stage;
+    base::Optional<ExtensionDownloaderDelegate::Stage> downloading_stage;
+    base::Optional<ExtensionDownloaderDelegate::CacheStatus>
         downloading_cache_status;
-    base::Optional<extensions::InstallationReporter::FailureReason>
-        failure_reason;
-    base::Optional<extensions::CrxInstallErrorDetail> install_error_detail;
+    base::Optional<FailureReason> failure_reason;
+    base::Optional<CrxInstallErrorDetail> install_error_detail;
     // Network error codes when failure_reason is CRX_FETCH_FAILED or
     // MANIFEST_FETCH_FAILED.
     base::Optional<int> network_error_code;
@@ -232,8 +230,7 @@ class InstallationReporter : public KeyedService {
     base::Optional<int> fetch_tries;
     // Unpack failure reason in case of
     // CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE.
-    base::Optional<extensions::SandboxedUnpackerFailureReason>
-        unpacker_failure_reason;
+    base::Optional<SandboxedUnpackerFailureReason> unpacker_failure_reason;
     // Type of extension, assigned when CRX installation error detail is
     // DISALLOWED_BY_POLICY.
     base::Optional<Manifest::Type> extension_type;
@@ -261,12 +258,15 @@ class InstallationReporter : public KeyedService {
         const InstallationData& data) {}
   };
 
-  explicit InstallationReporter(const content::BrowserContext* context);
+  explicit InstallStageTracker(const content::BrowserContext* context);
 
-  ~InstallationReporter() override;
+  ~InstallStageTracker() override;
 
-  // Convenience function to get the InstallationReporter for a BrowserContext.
-  static InstallationReporter* Get(content::BrowserContext* context);
+  InstallStageTracker(const InstallStageTracker&) = delete;
+  InstallStageTracker& operator=(const InstallStageTracker&) = delete;
+
+  // Convenience function to get the InstallStageTracker for a BrowserContext.
+  static InstallStageTracker* Get(content::BrowserContext* context);
 
   // Reports detailed error type when extension fails to install with failure
   // reason MANIFEST_INVALID. See InstallationData::manifest_invalid_error
@@ -319,14 +319,11 @@ class InstallationReporter : public KeyedService {
 
   const content::BrowserContext* browser_context_;
 
-  std::map<ExtensionId, InstallationReporter::InstallationData>
-      installation_data_map_;
+  std::map<ExtensionId, InstallationData> installation_data_map_;
 
   base::ObserverList<Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstallationReporter);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_REPORTER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALL_STAGE_TRACKER_H_

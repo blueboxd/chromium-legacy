@@ -2623,6 +2623,7 @@ crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failu
 crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Mac10.14 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/first-line-opacity-001.html [ Failure ]
@@ -3709,19 +3710,6 @@ crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03a.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03b.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-04.html [ Failure ]
-
-# TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
-# this is not meant to be here for more than a few days (from 2016-11-03 SYD)
-crbug.com/657646 [ Win ] virtual/text-antialias/font-weight.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/textIteratorNilRenderer.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/font-stretch.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/sub-pixel/text-scaling-pixel.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/international/bidi-listbox-atsui.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/international/bidi-listbox.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/international/lang-glyph-cache-separation.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/font-stretch-variant.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/drawBidiText.html [ Failure Pass ]
-crbug.com/657646 [ Win ] virtual/text-antialias/font-features/caps-native-synthesis.html [ Failure Pass ]
 
 crbug.com/664450 http/tests/devtools/console/console-on-animation-worklet.js [ Skip ]
 
@@ -5204,9 +5192,6 @@ crbug.com/994008 [ Linux ] http/tests/devtools/elements/styles-3/styles-computed
 crbug.com/994008 [ Win ] http/tests/devtools/elements/styles-3/styles-computed-trace.js [ Pass Failure Timeout ]
 crbug.com/994034 [ Linux ] http/tests/devtools/elements/styles-3/styles-add-new-rule-colon.js [ Pass Failure Timeout ]
 crbug.com/994034 [ Win ] http/tests/devtools/elements/styles-3/styles-add-new-rule-colon.js [ Pass Failure Timeout ]
-crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-canvas.html [ Pass Failure ]
-crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated-resize.html [ Pass Failure ]
-crbug.com/995142 crbug.com/900706 [ Mac ] virtual/gpu/fast/canvas/pixelated.html [ Pass Failure ]
 
 crbug.com/995669 [ Win ] http/tests/media/video-throttled-load-metadata.html [ Pass Failure Crash ]
 

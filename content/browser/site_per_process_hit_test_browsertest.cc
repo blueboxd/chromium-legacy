@@ -650,28 +650,6 @@ class SetMouseCaptureInterceptor
 // that might otherwise cause unpredictable behaviour in tests.
 class SystemEventRewriter : public ui::EventRewriter {
  public:
-  // Helper class to allow events to pass through for the lifetime of the
-  // object. Use this when tests generate events. This is needed under mash
-  // because the generate events reach SystemEventRewriter and will be dropped
-  // if there is no ScopedAllow instance.
-  // Note that allowing system events can cause flakiness in browser tests that
-  // don't expect them.
-  class ScopedAllow {
-   public:
-    explicit ScopedAllow(SystemEventRewriter* rewriter) : rewriter_(rewriter) {
-      ++rewriter_->num_of_scoped_allows_;
-    }
-    ~ScopedAllow() {
-      DCHECK_GT(rewriter_->num_of_scoped_allows_, 0);
-      --rewriter_->num_of_scoped_allows_;
-    }
-
-   private:
-    SystemEventRewriter* const rewriter_;
-
-    DISALLOW_COPY_AND_ASSIGN(ScopedAllow);
-  };
-
   SystemEventRewriter() = default;
   ~SystemEventRewriter() override = default;
 
@@ -679,13 +657,8 @@ class SystemEventRewriter : public ui::EventRewriter {
   ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
       const Continuation continuation) override {
-    return num_of_scoped_allows_ ? SendEvent(continuation, &event)
-                                 : DiscardEvent(continuation);
+    return DiscardEvent(continuation);
   }
-
-  // Count of ScopedAllow objects. When it is greater than 0, events are allowed
-  // to pass. Otherwise, they are discarded.
-  int num_of_scoped_allows_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(SystemEventRewriter);
 };
@@ -4846,10 +4819,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   InputEventAckWaiter ack_waiter(child_frame_host->GetRenderWidgetHost(),
                                  blink::WebInputEvent::Type::kGestureTap);
 
-#if defined(USE_AURA)
-  // Allows the gesture events to go through under mash.
-  SystemEventRewriter::ScopedAllow scoped_allow(&event_rewriter_);
-#endif
   render_widget_host->QueueSyntheticGesture(
       std::move(gesture), base::BindOnce([](SyntheticGesture::Result result) {
         EXPECT_EQ(SyntheticGesture::GESTURE_FINISHED, result);

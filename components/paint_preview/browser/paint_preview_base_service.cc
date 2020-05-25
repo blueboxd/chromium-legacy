@@ -148,7 +148,9 @@ void PaintPreviewBaseService::OnCaptured(
   if (web_contents)
     web_contents->DecrementCapturerCount(true);
 
-  if (status != mojom::PaintPreviewStatus::kOk || !proto) {
+  if (!(status == mojom::PaintPreviewStatus::kOk ||
+        status == mojom::PaintPreviewStatus::kPartialSuccess) ||
+      !proto) {
     DVLOG(1) << "ERROR: Paint Preview failed to capture for document "
              << guid.ToString() << " with error " << status;
     std::move(callback).Run(kCaptureFailed, nullptr);

@@ -142,7 +142,7 @@ static void InstallV8TestInterfaceDocumentTemplate(
   // Register IDL constants, attributes and operations.
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
-      { "location", V8TestInterfaceDocument::LocationAttributeGetterCallback, V8TestInterfaceDocument::LocationAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasNoSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "location", V8TestInterfaceDocument::LocationAttributeGetterCallback, V8TestInterfaceDocument::LocationAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::DontDelete), V8DOMConfiguration::kOnInstance, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasNoSideEffect, V8DOMConfiguration::kAllWorlds },
   };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,

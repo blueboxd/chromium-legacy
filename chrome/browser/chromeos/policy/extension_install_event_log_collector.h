@@ -13,7 +13,7 @@
 
 #include "base/logging.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "extensions/browser/extension_registry.h"
@@ -35,7 +35,7 @@ class ExtensionInstallEventLogCollector
     : public chromeos::PowerManagerClient::Observer,
       public network::NetworkConnectionTracker::NetworkConnectionObserver,
       public extensions::ExtensionRegistryObserver,
-      public extensions::InstallationReporter::Observer {
+      public extensions::InstallStageTracker::Observer {
  public:
   // The delegate that events are forwarded to for inclusion in the log.
   class Delegate {
@@ -93,10 +93,10 @@ class ExtensionInstallEventLogCollector
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
 
-  // InstallationReporter::Observer overrides
+  // InstallStageTracker::Observer overrides
   void OnExtensionInstallationFailed(
       const extensions::ExtensionId& extension_id,
-      extensions::InstallationReporter::FailureReason reason) override;
+      extensions::InstallStageTracker::FailureReason reason) override;
 
   // Reports success events for the extensions which are requested from policy
   // and are already loaded.
@@ -117,9 +117,9 @@ class ExtensionInstallEventLogCollector
   ScopedObserver<extensions::ExtensionRegistry,
                  extensions::ExtensionRegistryObserver>
       registry_observer_{this};
-  ScopedObserver<extensions::InstallationReporter,
-                 extensions::InstallationReporter::Observer>
-      reporter_observer_{this};
+  ScopedObserver<extensions::InstallStageTracker,
+                 extensions::InstallStageTracker::Observer>
+      collector_observer_{this};
 };
 
 }  // namespace policy

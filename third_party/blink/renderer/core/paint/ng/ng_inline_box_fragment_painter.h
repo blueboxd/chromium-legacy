@@ -99,7 +99,7 @@ class NGInlineBoxFragmentPainterBase : public InlineBoxPainterBase {
     if (inline_box_paint_fragment_)
       return *inline_box_paint_fragment_;
     DCHECK(inline_box_item_);
-    return *inline_box_item_;
+    return *inline_box_item_->GetDisplayItemClient();
   }
 
   const virtual NGBorderEdges BorderEdges() const = 0;

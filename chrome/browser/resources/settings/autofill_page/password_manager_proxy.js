@@ -50,6 +50,13 @@ export class PasswordManagerProxy {
   removeSavedPassword(id) {}
 
   /**
+   * Should remove the saved passwords and notify that the list has changed.
+   * @param {!Array<number>} ids The ids for the password entries being removed.
+   *     Any id not in the list is ignored.
+   */
+  removeSavedPasswords(ids) {}
+
+  /**
    * Add an observer to the list of password exceptions.
    * @param {function(!Array<!PasswordManagerProxy.ExceptionEntry>):void}
    *     listener
@@ -350,6 +357,11 @@ export class PasswordManagerImpl {
   /** @override */
   removeSavedPassword(id) {
     chrome.passwordsPrivate.removeSavedPassword(id);
+  }
+
+  /** @override */
+  removeSavedPasswords(ids) {
+    chrome.passwordsPrivate.removeSavedPasswords(ids);
   }
 
   /** @override */

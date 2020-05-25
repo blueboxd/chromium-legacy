@@ -4,20 +4,21 @@
 
 """Helper functions useful when writing scripts that integrate with GN.
 
-The main functions are ToGNString and FromGNString which convert between
+The main functions are ToGNString() and FromGNString(), to convert between
 serialized GN veriables and Python variables.
 
-To use in a random python file in the build:
+To use in an arbitrary Python file in the build:
 
   import os
   import sys
 
   sys.path.append(os.path.join(os.path.dirname(__file__),
-                               os.pardir, os.pardir, "build"))
+                               os.pardir, os.pardir, 'build'))
   import gn_helpers
 
 Where the sequence of parameters to join is the relative path from your source
-file to the build directory."""
+file to the build directory.
+"""
 
 import os
 import re
@@ -27,19 +28,28 @@ import sys
 IMPORT_RE = re.compile(r'^import\("//(\S+)"\)')
 
 
-class GNException(Exception):
+class GNError(Exception):
   pass
 
 
-def ToGNString(value, allow_dicts = True):
-  """Returns a stringified GN equivalent of the Python value.
+def ToGNString(value, allow_dicts=True):
+  """Returns a stringified GN equivalent of a Python value.
 
-  allow_dicts indicates if this function will allow converting dictionaries
-  to GN scopes. This is only possible at the top level, you can't nest a
-  GN scope in a list, so this should be set to False for recursive calls."""
+  Args:
+    value: The Python value to convert.
+    allow_dicts: Whether to enable converting dictionaries to GN scopes. This is
+      only possible at the top level (GN scope cannot be nested in a list), so
+      recursive calls should set this to False.
+
+  Returns:
+    The stringified GN equivalent to |value|.
+
+  Raises:
+    GNError: |value| cannot be printed to GN.
+  """
   if isinstance(value, str):
     if value.find('\n') >= 0:
-      raise GNException("Trying to print a string with a newline in it.")
+      raise GNError('Trying to print a string with a newline in it.')
     return '"' + \
         value.replace('\\', '\\\\').replace('"', '\\"').replace('$', '\\$') + \
         '"'
@@ -48,27 +58,25 @@ def ToGNString(value, allow_dicts = True):
     return ToGNString(value.encode('utf-8'))
 
   if isinstance(value, bool):
-    if value:
-      return "true"
-    return "false"
+    return 'true' if value else 'false'
 
   if isinstance(value, list):
     return '[ %s ]' % ', '.join(ToGNString(v) for v in value)
 
   if isinstance(value, dict):
     if not allow_dicts:
-      raise GNException("Attempting to recursively print a dictionary.")
-    result = ""
+      raise GNError('Attempting to recursively print a dictionary.')
+    result = ''
     for key in sorted(value):
       if not isinstance(key, str) and not isinstance(key, unicode):
-        raise GNException("Dictionary key is not a string.")
-      result += "%s = %s\n" % (key, ToGNString(value[key], False))
+        raise GNError('Dictionary key is not a string.')
+      result += '%s = %s\n' % (key, ToGNString(value[key], False))
     return result
 
   if isinstance(value, int):
     return str(value)
 
-  raise GNException("Unsupported type when printing to GN.")
+  raise GNError('Unsupported type when printing to GN.')
 
 
 def FromGNString(input_string):
@@ -106,7 +114,8 @@ def FromGNString(input_string):
   The main use cases for this is for other types, in particular lists. When
   using string interpolation on a list (as in the top example) the embedded
   strings will be quoted and escaped according to GN rules so the list can be
-  re-parsed to get the same result."""
+  re-parsed to get the same result.
+  """
   parser = GNValueParser(input_string)
   return parser.Parse()
 
@@ -120,7 +129,7 @@ def FromGNArgs(input_string):
 
   gn assignments, this returns a Python dict, i.e.:
 
-    FromGNArgs("foo=true\nbar=1\n") -> { 'foo': True, 'bar': 1 }.
+    FromGNArgs('foo=true\nbar=1\n') -> { 'foo': True, 'bar': 1 }.
 
   Only simple types and lists supported; variables, structs, calls
   and other, more complicated things are not.
@@ -137,7 +146,11 @@ def UnescapeGNString(value):
 
   Be careful not to feed with input from a Python parsing function like
   'ast' because it will do Python unescaping, which will be incorrect when
-  fed into the GN unescaper."""
+  fed into the GN unescaper.
+
+  Args:
+    value: Input string to unescape.
+  """
   result = ''
   i = 0
   while i < len(value):
@@ -158,7 +171,7 @@ def UnescapeGNString(value):
 
 
 def _IsDigitOrMinus(char):
-  return char in "-0123456789"
+  return char in '-0123456789'
 
 
 class GNValueParser(object):
@@ -167,7 +180,8 @@ class GNValueParser(object):
   Normally you would use the wrapper function FromGNValue() below.
 
   If you expect input as a specific type, you can also call one of the Parse*
-  functions directly. All functions throw GNException on invalid input. """
+  functions directly. All functions throw GNError on invalid input.
+  """
   def __init__(self, string):
     self.input = string
     self.cur = 0
@@ -189,7 +203,7 @@ class GNValueParser(object):
         continue
       regex_match = IMPORT_RE.match(line)
       if not regex_match:
-        raise GNException('Not a valid import string: %s' % line)
+        raise GNError('Not a valid import string: %s' % line)
       import_path = os.path.join(
           os.path.dirname(__file__), os.pardir, regex_match.group(1))
       with open(import_path) as f:
@@ -220,31 +234,37 @@ class GNValueParser(object):
   def Parse(self):
     """Converts a string representing a printed GN value to the Python type.
 
-    See additional usage notes on FromGNString above.
+    See additional usage notes on FromGNString() above.
 
-    - GN booleans ('true', 'false') will be converted to Python booleans.
+    * GN booleans ('true', 'false') will be converted to Python booleans.
 
-    - GN numbers ('123') will be converted to Python numbers.
+    * GN numbers ('123') will be converted to Python numbers.
 
-    - GN strings (double-quoted as in '"asdf"') will be converted to Python
+    * GN strings (double-quoted as in '"asdf"') will be converted to Python
       strings with GN escaping rules. GN string interpolation (embedded
       variables preceded by $) are not supported and will be returned as
       literals.
 
-    - GN lists ('[1, "asdf", 3]') will be converted to Python lists.
+    * GN lists ('[1, "asdf", 3]') will be converted to Python lists.
 
-    - GN scopes ('{ ... }') are not supported."""
+    * GN scopes ('{ ... }') are not supported.
+
+    Raises:
+      GNError: Parse fails.
+    """
     result = self._ParseAllowTrailing()
     self.ConsumeWhitespace()
     if not self.IsDone():
-      raise GNException("Trailing input after parsing:\n  " +
-                        self.input[self.cur:])
+      raise GNError("Trailing input after parsing:\n  " + self.input[self.cur:])
     return result
 
   def ParseArgs(self):
     """Converts a whitespace-separated list of ident=literals to a dict.
 
-    See additional usage notes on FromGNArgs, above.
+    See additional usage notes on FromGNArgs(), above.
+
+    Raises:
+      GNError: Parse fails.
     """
     d = {}
 
@@ -255,7 +275,7 @@ class GNValueParser(object):
       ident = self._ParseIdent()
       self.ConsumeWhitespace()
       if self.input[self.cur] != '=':
-        raise GNException("Unexpected token: " + self.input[self.cur:])
+        raise GNError("Unexpected token: " + self.input[self.cur:])
       self.cur += 1
       self.ConsumeWhitespace()
       val = self._ParseAllowTrailing()
@@ -266,10 +286,10 @@ class GNValueParser(object):
     return d
 
   def _ParseAllowTrailing(self):
-    """Internal version of Parse that doesn't check for trailing stuff."""
+    """Internal version of Parse() that doesn't check for trailing stuff."""
     self.ConsumeWhitespace()
     if self.IsDone():
-      raise GNException("Expected input to parse.")
+      raise GNError("Expected input to parse.")
 
     next_char = self.input[self.cur]
     if next_char == '[':
@@ -283,14 +303,14 @@ class GNValueParser(object):
     elif self._ConstantFollows('false'):
       return False
     else:
-      raise GNException("Unexpected token: " + self.input[self.cur:])
+      raise GNError("Unexpected token: " + self.input[self.cur:])
 
   def _ParseIdent(self):
     ident = ''
 
     next_char = self.input[self.cur]
     if not next_char.isalpha() and not next_char=='_':
-      raise GNException("Expected an identifier: " + self.input[self.cur:])
+      raise GNError("Expected an identifier: " + self.input[self.cur:])
 
     ident += next_char
     self.cur += 1
@@ -306,7 +326,7 @@ class GNValueParser(object):
   def ParseNumber(self):
     self.ConsumeWhitespace()
     if self.IsDone():
-      raise GNException('Expected number but got nothing.')
+      raise GNError('Expected number but got nothing.')
 
     begin = self.cur
 
@@ -318,17 +338,17 @@ class GNValueParser(object):
 
     number_string = self.input[begin:self.cur]
     if not len(number_string) or number_string == '-':
-      raise GNException("Not a valid number.")
+      raise GNError('Not a valid number.')
     return int(number_string)
 
   def ParseString(self):
     self.ConsumeWhitespace()
     if self.IsDone():
-      raise GNException('Expected string but got nothing.')
+      raise GNError('Expected string but got nothing.')
 
     if self.input[self.cur] != '"':
-      raise GNException('Expected string beginning in a " but got:\n  ' +
-                        self.input[self.cur:])
+      raise GNError('Expected string beginning in a " but got:\n  ' +
+                    self.input[self.cur:])
     self.cur += 1  # Skip over quote.
 
     begin = self.cur
@@ -336,12 +356,11 @@ class GNValueParser(object):
       if self.input[self.cur] == '\\':
         self.cur += 1  # Skip over the backslash.
         if self.IsDone():
-          raise GNException("String ends in a backslash in:\n  " +
-                            self.input)
+          raise GNError('String ends in a backslash in:\n  ' + self.input)
       self.cur += 1
 
     if self.IsDone():
-      raise GNException('Unterminated string:\n  ' + self.input[begin:])
+      raise GNError('Unterminated string:\n  ' + self.input[begin:])
 
     end = self.cur
     self.cur += 1  # Consume trailing ".
@@ -351,16 +370,15 @@ class GNValueParser(object):
   def ParseList(self):
     self.ConsumeWhitespace()
     if self.IsDone():
-      raise GNException('Expected list but got nothing.')
+      raise GNError('Expected list but got nothing.')
 
     # Skip over opening '['.
     if self.input[self.cur] != '[':
-      raise GNException("Expected [ for list but got:\n  " +
-                        self.input[self.cur:])
+      raise GNError('Expected [ for list but got:\n  ' + self.input[self.cur:])
     self.cur += 1
     self.ConsumeWhitespace()
     if self.IsDone():
-      raise GNException("Unterminated list:\n  " + self.input)
+      raise GNError('Unterminated list:\n  ' + self.input)
 
     list_result = []
     previous_had_trailing_comma = True
@@ -370,7 +388,7 @@ class GNValueParser(object):
         return list_result
 
       if not previous_had_trailing_comma:
-        raise GNException("List items not separated by comma.")
+        raise GNError('List items not separated by comma.')
 
       list_result += [ self._ParseAllowTrailing() ]
       self.ConsumeWhitespace()
@@ -384,13 +402,19 @@ class GNValueParser(object):
         self.cur += 1
         self.ConsumeWhitespace()
 
-    raise GNException("Unterminated list:\n  " + self.input)
+    raise GNError('Unterminated list:\n  ' + self.input)
 
   def _ConstantFollows(self, constant):
-    """Returns true if the given constant follows immediately at the current
-    location in the input. If it does, the text is consumed and the function
-    returns true. Otherwise, returns false and the current position is
-    unchanged."""
+    """Checks and maybe consumes a string constant at current input location.
+
+    Param:
+      constant: The string constant to check.
+
+    Returns:
+      True if |constant| follows immediately at the current location in the
+      input. In this case, the string is consumed as a side effect. Otherwise,
+      returns False and the current position is unchanged.
+    """
     end = self.cur + len(constant)
     if end > len(self.input):
       return False  # Not enough room.

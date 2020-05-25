@@ -63,6 +63,9 @@ class PrintMockRenderThread : public content::MockRenderThread {
 
   // Get a vector of print preview pages.
   const std::vector<std::pair<int, uint32_t>>& print_preview_pages() const;
+
+  // Determines whether to cancel a print preview request.
+  bool ShouldCancelRequest() const;
 #endif
 
  private:
@@ -85,7 +88,6 @@ class PrintMockRenderThread : public content::MockRenderThread {
                          const PrintHostMsg_PreviewIds& ids);
   void OnDidPreviewPage(const PrintHostMsg_DidPreviewPage_Params& params,
                         const PrintHostMsg_PreviewIds& ids);
-  void OnCheckForCancel(const PrintHostMsg_PreviewIds& ids, bool* cancel);
 #endif
 
   // For print preview, PrintRenderFrameHelper will update settings.

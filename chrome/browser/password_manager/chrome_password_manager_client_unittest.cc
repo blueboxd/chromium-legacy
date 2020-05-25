@@ -401,7 +401,7 @@ TEST_F(ChromePasswordManagerClientTest,
        SavingAndFillingDisabledConditionsInIncognito) {
   std::unique_ptr<WebContents> incognito_web_contents(
       content::WebContentsTester::CreateTestWebContents(
-          profile()->GetOffTheRecordProfile(), nullptr));
+          profile()->GetPrimaryOTRProfile(), nullptr));
   std::unique_ptr<MockChromePasswordManagerClient> client(
       new MockChromePasswordManagerClient(incognito_web_contents.get()));
   EXPECT_CALL(*client, GetMainFrameCertStatus()).WillRepeatedly(Return(0));
@@ -423,8 +423,7 @@ TEST_F(ChromePasswordManagerClientTest,
   // In guest mode saving is disabled, filling is enabled but there is in fact
   // nothing to fill, manual filling is disabled.
   profile()->SetGuestSession(true);
-  profile()->GetOffTheRecordProfile()->AsTestingProfile()->SetGuestSession(
-      true);
+  profile()->GetPrimaryOTRProfile()->AsTestingProfile()->SetGuestSession(true);
   EXPECT_FALSE(client->IsSavingAndFillingEnabled(kUrlOn));
   EXPECT_TRUE(client->IsFillingEnabled(kUrlOn));
   EXPECT_FALSE(client->IsFillingFallbackEnabled(kUrlOn));

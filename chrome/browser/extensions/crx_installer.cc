@@ -28,7 +28,7 @@
 #include "chrome/browser/extensions/convert_web_app.h"
 #include "chrome/browser/extensions/extension_assets_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
@@ -1029,33 +1029,33 @@ void CrxInstaller::NotifyCrxInstallComplete(
     const base::Optional<CrxInstallError>& error) {
   const std::string extension_id =
       expected_id_.empty() && extension() ? extension()->id() : expected_id_;
-  InstallationReporter* installation_reporter =
-      InstallationReporter::Get(profile_);
-  installation_reporter->ReportInstallationStage(
-      extension_id, InstallationReporter::Stage::COMPLETE);
+  InstallStageTracker* install_stage_tracker =
+      InstallStageTracker::Get(profile_);
+  install_stage_tracker->ReportInstallationStage(
+      extension_id, InstallStageTracker::Stage::COMPLETE);
   const bool success = !error.has_value();
 
   if (!success && (!expected_id_.empty() || extension())) {
     switch (error->type()) {
       case CrxInstallErrorType::DECLINED:
         if (error->detail() == CrxInstallErrorDetail::DISALLOWED_BY_POLICY) {
-          installation_reporter
+          install_stage_tracker
               ->ReportExtensionTypeForPolicyDisallowedExtension(
                   extension_id, extension()->GetType());
         }
-        installation_reporter->ReportCrxInstallError(
+        install_stage_tracker->ReportCrxInstallError(
             extension_id,
-            InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
+            InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_DECLINED,
             error->detail());
         break;
       case CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE:
-        installation_reporter->ReportSandboxedUnpackerFailureReason(
+        install_stage_tracker->ReportSandboxedUnpackerFailureReason(
             extension_id, error->sandbox_failure_detail());
         break;
       case CrxInstallErrorType::OTHER:
-        installation_reporter->ReportCrxInstallError(
+        install_stage_tracker->ReportCrxInstallError(
             extension_id,
-            InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
+            InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_OTHER,
             error->detail());
         break;
       case CrxInstallErrorType::NONE:

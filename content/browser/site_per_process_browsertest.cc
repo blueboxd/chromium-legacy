@@ -6131,7 +6131,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // used to crash, as parent_routing_id refers to a proxy that doesn't exist
   // anymore.
   process_a->GetRendererInterface()->CreateFrameProxy(
-      new_routing_id, view_routing_id, MSG_ROUTING_NONE, parent_routing_id,
+      new_routing_id, view_routing_id, base::nullopt, parent_routing_id,
       FrameReplicationState(), base::UnguessableToken::Create(),
       base::UnguessableToken::Create());
 
@@ -6198,7 +6198,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = previous_routing_id;
-    params->opener_routing_id = IPC::mojom::kRoutingIdNone;
+    params->opener_frame_token = base::nullopt;
     params->parent_routing_id =
         shell()->web_contents()->GetMainFrame()->GetRoutingID();
     params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
@@ -6270,7 +6270,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
     ignore_result(params->interface_bundle->browser_interface_broker
                       .InitWithNewPipeAndPassReceiver());
     params->previous_routing_id = IPC::mojom::kRoutingIdNone;
-    params->opener_routing_id = IPC::mojom::kRoutingIdNone;
+    params->opener_frame_token = base::nullopt;
     params->parent_routing_id = parent_routing_id;
     params->previous_sibling_routing_id = IPC::mojom::kRoutingIdNone;
     params->frame_owner_properties = blink::mojom::FrameOwnerProperties::New();

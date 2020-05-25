@@ -17,8 +17,7 @@ namespace blink {
 
 namespace {
 
-struct SameSizeAsNGFragmentItem : RefCounted<NGFragmentItem>,
-                                  public DisplayItemClient {
+struct SameSizeAsNGFragmentItem : RefCounted<NGFragmentItem> {
   struct {
     void* pointer;
     NGTextOffset text_offset;
@@ -325,7 +324,7 @@ TextDirection NGFragmentItem::ResolvedDirection() const {
   return static_cast<TextDirection>(text_direction_);
 }
 
-String NGFragmentItem::DebugName() const {
+String NGFragmentItem::ToString() const {
   // TODO(yosin): Once |NGPaintFragment| is removed, we should get rid of
   // following if-statements.
   // For ease of rebasing, we use same |DebugName()| as |NGPaintFrgment|.
@@ -355,20 +354,6 @@ String NGFragmentItem::DebugName() const {
   if (Type() == NGFragmentItem::kLine)
     return "NGPhysicalLineBoxFragment";
   return "NGFragmentItem";
-}
-
-IntRect NGFragmentItem::VisualRect() const {
-  // TODO(kojii): Need to reconsider the storage of |VisualRect|, to integrate
-  // better with |FragmentData| and to avoid dependency to |LayoutObject|.
-  DCHECK(GetLayoutObject());
-  return GetLayoutObject()->VisualRectForInlineBox();
-}
-
-IntRect NGFragmentItem::PartialInvalidationVisualRect() const {
-  // TODO(yosin): Need to reconsider the storage of |VisualRect|, to integrate
-  // better with |FragmentData| and to avoid dependency to |LayoutObject|.
-  DCHECK(GetLayoutObject());
-  return GetLayoutObject()->PartialInvalidationVisualRectForInlineBox();
 }
 
 PhysicalRect NGFragmentItem::LocalVisualRectFor(

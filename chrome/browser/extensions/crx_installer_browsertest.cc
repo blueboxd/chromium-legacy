@@ -28,7 +28,7 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/fake_safe_browsing_database_manager.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -714,8 +714,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest, Blacklist) {
   EXPECT_FALSE(InstallExtension(crx_path, 0));
 
   auto installation_failure =
-      InstallationReporter::Get(profile())->Get(extension_id);
-  EXPECT_EQ(InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
+      InstallStageTracker::Get(profile())->Get(extension_id);
+  EXPECT_EQ(InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_DECLINED,
             installation_failure.failure_reason);
   EXPECT_EQ(CrxInstallErrorDetail::EXTENSION_IS_BLOCKLISTED,
             installation_failure.install_error_detail);
@@ -977,8 +977,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   EXPECT_EQ("0.0", extension->VersionString());
 
   auto installation_failure =
-      InstallationReporter::Get(profile())->Get(extension_id);
-  EXPECT_EQ(InstallationReporter::FailureReason::
+      InstallStageTracker::Get(profile())->Get(extension_id);
+  EXPECT_EQ(InstallStageTracker::FailureReason::
                 CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE,
             installation_failure.failure_reason);
   EXPECT_EQ(base::nullopt, installation_failure.install_error_detail);
@@ -1020,8 +1020,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionCrxInstallerTest,
   EXPECT_EQ("0.0", extension->VersionString());
 
   auto installation_failure =
-      InstallationReporter::Get(profile())->Get(extension_id);
-  EXPECT_EQ(InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
+      InstallStageTracker::Get(profile())->Get(extension_id);
+  EXPECT_EQ(InstallStageTracker::FailureReason::CRX_INSTALL_ERROR_OTHER,
             installation_failure.failure_reason);
   EXPECT_EQ(CrxInstallErrorDetail::UNEXPECTED_ID,
             *installation_failure.install_error_detail);

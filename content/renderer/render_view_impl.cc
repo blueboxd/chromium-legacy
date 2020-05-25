@@ -442,6 +442,8 @@ void RenderViewImpl::Initialize(
 
   WebFrame* opener_frame =
       RenderFrameImpl::ResolveWebFrame(params->opener_frame_route_id);
+  auto opener_frame_token =
+      opener_frame ? opener_frame->GetFrameToken() : base::UnguessableToken();
 
   // The newly created webview_ is owned by this instance.
   webview_ = WebView::Create(this, params->hidden,
@@ -462,7 +464,7 @@ void RenderViewImpl::Initialize(
         this, compositor_deps, opener_frame, &params, std::move(show_callback));
   } else {
     RenderFrameProxy::CreateFrameProxy(
-        params->proxy_routing_id, GetRoutingID(), opener_frame,
+        params->proxy_routing_id, GetRoutingID(), opener_frame_token,
         MSG_ROUTING_NONE, params->replicated_frame_state,
         params->main_frame_frame_token, params->devtools_main_frame_token);
   }

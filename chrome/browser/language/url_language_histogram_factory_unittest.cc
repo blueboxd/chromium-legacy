@@ -18,7 +18,7 @@ TEST(UrlLanguageHistogramFactoryTest, NotCreatedInIncognito) {
   EXPECT_THAT(UrlLanguageHistogramFactory::GetForBrowserContext(&profile),
               Not(IsNull()));
 
-  Profile* incognito = profile.GetOffTheRecordProfile();
+  Profile* incognito = profile.GetPrimaryOTRProfile();
   ASSERT_THAT(incognito, Not(IsNull()));
   EXPECT_THAT(UrlLanguageHistogramFactory::GetForBrowserContext(incognito),
               IsNull());

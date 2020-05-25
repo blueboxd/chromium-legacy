@@ -471,7 +471,7 @@ def _DoApkAnalysis(apk_filename, apks_path, tool_prefix, out_dir, report_func):
   padding_fraction = -_PercentageDifference(
       native_code.ComputeUncompressedSize(), native_code_unaligned_size)
   # Ignore this check for small / no native code
-  if native_code.ComputeUncompressedSize() > 100000:
+  if native_code.ComputeUncompressedSize() > 1000000:
     assert 0 <= padding_fraction < .02, (
         'Padding was: {} (file_size={}, sections_sum={})'.format(
             padding_fraction, native_code.ComputeUncompressedSize(),

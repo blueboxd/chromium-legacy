@@ -42,6 +42,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/mojom/base/text_direction.mojom-blink.h"
+#include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
@@ -6855,9 +6856,24 @@ void SetOriginTrialFreezePolicy(
 
 }  // namespace
 
+void Document::RecordAsyncScriptCount() {
+  // Only record async script count for mainframe documents, as per UKM policy.
+  if (!IsInMainFrame())
+    return;
+
+  auto* recorder = UkmRecorder();
+  DCHECK(recorder);
+  DCHECK(UkmSourceID() != ukm::kInvalidSourceId);
+  ukm::builders::Blink_Script_AsyncScripts(UkmSourceID())
+      .SetAsyncScriptCount(
+          ukm::GetExponentialBucketMin(async_script_count_, 1.3))
+      .Record(recorder);
+}
+
 void Document::FinishedParsing() {
   DCHECK(!GetScriptableDocumentParser() || !parser_->IsParsing());
   DCHECK(!GetScriptableDocumentParser() || ready_state_ != kLoading);
+  RecordAsyncScriptCount();
   SetParsingState(kInDOMContentLoaded);
   DocumentParserTiming::From(*this).MarkParserStop();
 

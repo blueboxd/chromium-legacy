@@ -104,6 +104,12 @@ class MockCloudPolicyClient : public CloudPolicyClient {
   }
   MOCK_METHOD2(UploadRealtimeReport_, void(base::Value&, StatusCallback&));
 
+  void UploadAppInstallReport(base::Value value,
+                              StatusCallback callback) override {
+    UploadAppInstallReport_(value, callback);
+  }
+  MOCK_METHOD2(UploadAppInstallReport_, void(base::Value&, StatusCallback&));
+
   MOCK_METHOD5(ClientCertProvisioningStartCsr,
                void(const std::string& cert_scope,
                     const std::string& cert_profile_id,

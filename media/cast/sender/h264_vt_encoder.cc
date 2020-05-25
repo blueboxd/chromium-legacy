@@ -181,22 +181,17 @@ H264VideoToolboxEncoder::H264VideoToolboxEncoder(
             weak_factory_.GetWeakPtr(), cast_environment_));
 
     // Register for power state changes.
-    if (base::PowerMonitor::AddObserver(this)) {
-      VLOG(1) << "Registered for power state changes.";
-    } else {
-      DLOG(WARNING) << "No power monitor. Process suspension will invalidate "
-                       "the encoder.";
-    }
+    base::PowerMonitor::AddObserver(this);
+    VLOG(1) << "Registered for power state changes.";
   }
 }
 
 H264VideoToolboxEncoder::~H264VideoToolboxEncoder() {
   DestroyCompressionSession();
 
-  // If video_frame_factory_ is not null, the encoder registered for power state
-  // changes in the ctor and it must now unregister.
-  if (video_frame_factory_)
-    base::PowerMonitor::RemoveObserver(this);
+  // Unregister the power observer. It is valid to remove an observer that was
+  // not added.
+  base::PowerMonitor::RemoveObserver(this);
 }
 
 void H264VideoToolboxEncoder::ResetCompressionSession() {

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_TRACKER_H_
-#define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_TRACKER_H_
+#ifndef CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_FORCE_INSTALLED_TRACKER_H_
+#define CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_FORCE_INSTALLED_TRACKER_H_
 
 #include <map>
 
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/browser/extension_registry.h"
@@ -26,12 +26,12 @@ class BrowserContext;
 
 namespace extensions {
 
-// Used to track installation of force-installed extensions for the profile
-// and report stats to UMA.
+// Used to track status of force-installed extensions for the profile: are they
+// successfully loaded, failed to install, or neither happened yet.
 // ExtensionService owns this class and outlives it.
-class InstallationTracker : public ExtensionRegistryObserver,
-                            public InstallationReporter::Observer,
-                            public policy::PolicyService::Observer {
+class ForceInstalledTracker : public ExtensionRegistryObserver,
+                              public InstallStageTracker::Observer,
+                              public policy::PolicyService::Observer {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -52,9 +52,12 @@ class InstallationTracker : public ExtensionRegistryObserver,
     virtual void OnForceInstalledExtensionsReady() {}
   };
 
-  InstallationTracker(ExtensionRegistry* registry, Profile* profile);
+  ForceInstalledTracker(ExtensionRegistry* registry, Profile* profile);
 
-  ~InstallationTracker() override;
+  ~ForceInstalledTracker() override;
+
+  ForceInstalledTracker(const ForceInstalledTracker&) = delete;
+  ForceInstalledTracker& operator=(const ForceInstalledTracker&) = delete;
 
   // Returns true if all extensions loaded/failed loading.
   bool IsDoneLoading() const;
@@ -74,10 +77,10 @@ class InstallationTracker : public ExtensionRegistryObserver,
                         const Extension* extension) override;
   void OnShutdown(ExtensionRegistry*) override;
 
-  // InstallationReporter::Observer overrides:
+  // InstallStageTracker::Observer overrides:
   void OnExtensionInstallationFailed(
       const ExtensionId& extension_id,
-      InstallationReporter::FailureReason reason) override;
+      InstallStageTracker::FailureReason reason) override;
 
   // policy::PolicyService::Observer overrides:
   void OnPolicyUpdated(const policy::PolicyNamespace& ns,
@@ -180,14 +183,12 @@ class InstallationTracker : public ExtensionRegistryObserver,
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_{this};
-  ScopedObserver<InstallationReporter, InstallationReporter::Observer>
-      reporter_observer_{this};
+  ScopedObserver<InstallStageTracker, InstallStageTracker::Observer>
+      collector_observer_{this};
 
   base::ObserverList<Observer> observers_;
-
-  DISALLOW_COPY_AND_ASSIGN(InstallationTracker);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_INSTALLATION_TRACKER_H_
+#endif  // CHROME_BROWSER_EXTENSIONS_FORCED_EXTENSIONS_FORCE_INSTALLED_TRACKER_H_

@@ -23,6 +23,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
@@ -38,6 +39,8 @@
 #include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/fake_gaia_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/local_state_mixin.h"
+#include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
@@ -52,6 +55,7 @@
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
+#include "chrome/browser/chromeos/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -70,6 +74,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
@@ -2667,6 +2672,64 @@ IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
   // Wait for the wallpaper to load.
   WaitForWallpaper();
   EXPECT_TRUE(wallpaper_loaded());
+}
+
+class KioskAutoLaunchViewsTest : public OobeBaseTest,
+                                 public LocalStateMixin::Delegate {
+ public:
+  KioskAutoLaunchViewsTest() { login_manager_mixin_.AppendRegularUsers(1); }
+
+  KioskAutoLaunchViewsTest(const KioskAutoLaunchViewsTest& other) = delete;
+  KioskAutoLaunchViewsTest& operator=(const KioskAutoLaunchViewsTest& other) =
+      delete;
+
+  ~KioskAutoLaunchViewsTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    OobeBaseTest::SetUpInProcessBrowserTestFixture();
+
+    owner_settings_service_ = std::make_unique<FakeOwnerSettingsService>(
+        scoped_testing_cros_settings_.device_settings(), nullptr);
+
+    // Add a new device local account and set its id for auto login.
+    std::vector<policy::DeviceLocalAccount> accounts;
+    accounts.push_back(policy::DeviceLocalAccount(
+        policy::DeviceLocalAccount::TYPE_KIOSK_APP, kTestEnterpriseAccountId,
+        kTestEnterpriseKioskApp, ""));
+    policy::SetDeviceLocalAccounts(owner_settings_service_.get(), accounts);
+    scoped_testing_cros_settings_.device_settings()->SetString(
+        kAccountsPrefDeviceLocalAccountAutoLoginId, kTestEnterpriseAccountId);
+  }
+
+  // chromeos::LocalStateMixin::Delegate:
+  void SetUpLocalState() override {
+    // Simulate auto login request from the previous session.
+    PrefService* prefs = g_browser_process->local_state();
+    DictionaryPrefUpdate dict_update(prefs,
+                                     KioskAppManager::kKioskDictionaryName);
+    // The AutoLoginState is taken from KioskAppManager::AutoLoginState.
+    dict_update->SetInteger(
+        KioskAppManager::kKeyAutoLoginState,
+        KioskAppManager::AutoLoginState::AUTOLOGIN_REQUESTED);
+  }
+
+  void TearDownOnMainThread() override {
+    owner_settings_service_.reset();
+    OobeBaseTest::TearDownOnMainThread();
+  }
+
+ protected:
+  std::unique_ptr<FakeOwnerSettingsService> owner_settings_service_;
+  chromeos::ScopedTestingCrosSettings scoped_testing_cros_settings_;
+  chromeos::LocalStateMixin local_state_mixin_{&mixin_host_, this};
+  LoginManagerMixin login_manager_mixin_{&mixin_host_};
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CONSUMER_OWNED};
+};
+
+IN_PROC_BROWSER_TEST_F(KioskAutoLaunchViewsTest, ShowAutoLaunchScreen) {
+  OobeScreenWaiter(KioskAutolaunchScreenView::kScreenId).Wait();
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
 }  // namespace chromeos

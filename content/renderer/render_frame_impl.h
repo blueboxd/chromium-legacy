@@ -224,7 +224,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
           browser_interface_broker,
       int previous_routing_id,
-      int opener_routing_id,
+      const base::UnguessableToken& opener_frame_token,
       int parent_routing_id,
       int previous_sibling_routing_id,
       const base::UnguessableToken& frame_token,

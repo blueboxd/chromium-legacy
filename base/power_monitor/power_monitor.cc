@@ -25,12 +25,8 @@ bool PowerMonitor::IsInitialized() {
   return GetInstance()->source_.get() != nullptr;
 }
 
-bool PowerMonitor::AddObserver(PowerObserver* obs) {
-  PowerMonitor* power_monitor = GetInstance();
-  if (!IsInitialized())
-    return false;
-  power_monitor->observers_->AddObserver(obs);
-  return true;
+void PowerMonitor::AddObserver(PowerObserver* obs) {
+  GetInstance()->observers_->AddObserver(obs);
 }
 
 void PowerMonitor::RemoveObserver(PowerObserver* obs) {
@@ -47,9 +43,8 @@ bool PowerMonitor::IsOnBatteryPower() {
 }
 
 void PowerMonitor::ShutdownForTesting() {
-  PowerMonitor::GetInstance()->observers_->AssertEmpty();
   GetInstance()->source_ = nullptr;
-  g_is_process_suspended.store(false);
+  g_is_process_suspended.store(false, std::memory_order_relaxed);
 }
 
 bool PowerMonitor::IsProcessSuspended() {

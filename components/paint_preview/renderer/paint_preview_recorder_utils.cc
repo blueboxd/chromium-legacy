@@ -48,7 +48,7 @@ bool SerializeAsSkPicture(sk_sp<const cc::PaintRecord> record,
   auto skp = ToSkPicture(
       record, SkRect::MakeWH(dimensions.width(), dimensions.height()), nullptr,
       custom_callback);
-  if (!skp)
+  if (!skp || skp->cullRect().width() == 0 || skp->cullRect().height() == 0)
     return false;
 
   TypefaceSerializationContext typeface_context(tracker->GetTypefaceUsageMap());

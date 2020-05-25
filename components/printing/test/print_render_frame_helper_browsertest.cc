@@ -160,7 +160,8 @@ class DidPreviewPageListener : public IPC::Listener {
 
 class FakePrintPreviewUI : public mojom::PrintPreviewUI {
  public:
-  FakePrintPreviewUI() = default;
+  explicit FakePrintPreviewUI(PrintMockRenderThread* thread)
+      : thread_(thread) {}
   ~FakePrintPreviewUI() override = default;
 
   mojo::PendingAssociatedRemote<mojom::PrintPreviewUI> BindReceiver() {
@@ -192,6 +193,10 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
     invalid_printer_setting_ = true;
     RunQuitClosure();
   }
+  void CheckForCancel(int32_t request_id,
+                      CheckForCancelCallback callback) override {
+    std::move(callback).Run(thread_->ShouldCancelRequest());
+  }
 
  private:
   void RunQuitClosure() {
@@ -200,6 +205,7 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
     std::move(quit_closure_).Run();
   }
 
+  PrintMockRenderThread* thread_;
   bool preview_failed_ = false;
   bool preview_cancelled_ = false;
   bool invalid_printer_setting_ = false;
@@ -228,6 +234,9 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
         static_cast<PrintMockRenderThread*>(render_thread_.get());
 
     content::RenderViewTest::SetUp();
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+    preview_ui_ = std::make_unique<FakePrintPreviewUI>(print_render_thread_);
+#endif
   }
 
   void TearDown() override {
@@ -268,7 +277,7 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void BindToFakePrintPreviewUI() {
     PrintRenderFrameHelper* frame_helper = GetPrintRenderFrameHelper();
-    frame_helper->SetPrintPreviewUI(preview_ui_.BindReceiver());
+    frame_helper->SetPrintPreviewUI(preview_ui_->BindReceiver());
   }
 
   void WaitMojoMessages(base::RunLoop* run_loop) {
@@ -402,12 +411,12 @@ class PrintRenderFrameHelperTestBase : public content::RenderViewTest {
 
   PrintMockRenderThread* print_render_thread() { return print_render_thread_; }
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  FakePrintPreviewUI* preview_ui() { return &preview_ui_; }
+  FakePrintPreviewUI* preview_ui() { return preview_ui_.get(); }
 #endif
 
  private:
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  FakePrintPreviewUI preview_ui_;
+  std::unique_ptr<FakePrintPreviewUI> preview_ui_;
 #endif
   // Naked pointer as ownership is with
   // |content::RenderViewTest::render_thread_|.

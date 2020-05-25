@@ -226,11 +226,12 @@ class IgnoreResponsePromise : public SimpleCdmPromise {
 }  // namespace
 
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
-    const scoped_refptr<CdmSessionAdapter>& adapter)
+    const scoped_refptr<CdmSessionAdapter>& adapter,
+    blink::WebEncryptedMediaSessionType session_type)
     : adapter_(adapter),
+      session_type_(convertSessionType(session_type)),
       has_close_been_called_(false),
-      is_closed_(false),
-      is_persistent_session_(false) {}
+      is_closed_(false) {}
 
 WebContentDecryptionModuleSessionImpl::
     ~WebContentDecryptionModuleSessionImpl() {
@@ -269,7 +270,6 @@ void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
     EmeInitDataType eme_init_data_type,
     const unsigned char* init_data,
     size_t init_data_length,
-    blink::WebEncryptedMediaSessionType session_type,
     blink::WebContentDecryptionModuleResult result) {
   DCHECK(init_data);
   DCHECK(session_id_.empty());
@@ -334,10 +334,8 @@ void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
   // 10.8 Let cdm be the CDM instance represented by this object's cdm
   //      instance value.
   // 10.9 Use the cdm to execute the following steps:
-  CdmSessionType cdm_session_type = convertSessionType(session_type);
-  is_persistent_session_ = cdm_session_type != CdmSessionType::kTemporary;
   adapter_->InitializeNewSession(
-      eme_init_data_type, sanitized_init_data, cdm_session_type,
+      eme_init_data_type, sanitized_init_data, session_type_,
       std::unique_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix(), kGenerateRequestUMAName,
           base::BindOnce(
@@ -352,6 +350,8 @@ void WebContentDecryptionModuleSessionImpl::Load(
   DCHECK(!session_id.IsEmpty());
   DCHECK(session_id_.empty());
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(session_type_ == CdmSessionType::kPersistentLicense ||
+         session_type_ == CdmSessionType::kPersistentUsageRecord);
 
   // From https://w3c.github.io/encrypted-media/#load.
   // 8.1 Let sanitized session ID be a validated and/or sanitized version of
@@ -368,12 +368,8 @@ void WebContentDecryptionModuleSessionImpl::Load(
     return;
   }
 
-  // TODO(jrummell): Now that there are 2 types of persistent sessions, the
-  // session type should be passed from blink. Type should also be passed in the
-  // constructor (and removed from initializeNewSession()).
-  is_persistent_session_ = true;
   adapter_->LoadSession(
-      CdmSessionType::kPersistentLicense, sanitized_session_id,
+      session_type_, sanitized_session_id,
       std::unique_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix(), kLoadSessionUMAName,
           base::BindOnce(

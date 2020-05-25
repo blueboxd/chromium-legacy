@@ -58,7 +58,7 @@ ExtensionInstallEventLogCollector::ExtensionInstallEventLogCollector(
   chromeos::PowerManagerClient::Get()->AddObserver(this);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   registry_observer_.Add(registry_);
-  reporter_observer_.Add(extensions::InstallationReporter::Get(profile_));
+  collector_observer_.Add(extensions::InstallStageTracker::Get(profile_));
 }
 
 ExtensionInstallEventLogCollector::~ExtensionInstallEventLogCollector() {
@@ -118,7 +118,7 @@ void ExtensionInstallEventLogCollector::OnConnectionChanged(
 
 void ExtensionInstallEventLogCollector::OnExtensionInstallationFailed(
     const extensions::ExtensionId& extension_id,
-    extensions::InstallationReporter::FailureReason reason) {
+    extensions::InstallStageTracker::FailureReason reason) {
   if (!delegate_->IsExtensionPending(extension_id))
     return;
   auto event = std::make_unique<em::ExtensionInstallReportLogEvent>();

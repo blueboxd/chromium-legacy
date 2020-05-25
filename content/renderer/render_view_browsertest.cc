@@ -1248,7 +1248,7 @@ TEST_F(RenderViewImplEnableZoomForDSFTest,
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
-      MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
+      base::UnguessableToken(), MSG_ROUTING_NONE, MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       replication_state, compositor_deps_.get(), std::move(widget_params),
       blink::mojom::FrameOwnerProperties::New(),
@@ -1316,7 +1316,7 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_browser_interface_broker), kProxyRoutingId,
-      MSG_ROUTING_NONE, frame()->GetRoutingID(), MSG_ROUTING_NONE,
+      base::UnguessableToken(), frame()->GetRoutingID(), MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), base::UnguessableToken::Create(),
       replication_state, nullptr,
       /*widget_params=*/nullptr, blink::mojom::FrameOwnerProperties::New(),

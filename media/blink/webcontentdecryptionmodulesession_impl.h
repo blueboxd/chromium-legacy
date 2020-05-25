@@ -29,7 +29,8 @@ class WebContentDecryptionModuleSessionImpl
     : public blink::WebContentDecryptionModuleSession {
  public:
   WebContentDecryptionModuleSessionImpl(
-      const scoped_refptr<CdmSessionAdapter>& adapter);
+      const scoped_refptr<CdmSessionAdapter>& adapter,
+      blink::WebEncryptedMediaSessionType session_type);
   ~WebContentDecryptionModuleSessionImpl() override;
 
   // blink::WebContentDecryptionModuleSession implementation.
@@ -40,7 +41,6 @@ class WebContentDecryptionModuleSessionImpl
       EmeInitDataType init_data_type,
       const unsigned char* initData,
       size_t initDataLength,
-      blink::WebEncryptedMediaSessionType session_type,
       blink::WebContentDecryptionModuleResult result) override;
   void Load(const blink::WebString& session_id,
             blink::WebContentDecryptionModuleResult result) override;
@@ -66,6 +66,10 @@ class WebContentDecryptionModuleSessionImpl
 
   scoped_refptr<CdmSessionAdapter> adapter_;
 
+  // Keep track of the session type to be passed into InitializeNewSession() and
+  // LoadSession().
+  const CdmSessionType session_type_;
+
   // Non-owned pointer.
   Client* client_;
 
@@ -83,9 +87,6 @@ class WebContentDecryptionModuleSessionImpl
   // close event has been received or not.
   bool has_close_been_called_;
   bool is_closed_;
-
-  // Keep track of whether this is a persistent session or not.
-  bool is_persistent_session_;
 
   base::ThreadChecker thread_checker_;
   // Since promises will live until they are fired, use a weak reference when

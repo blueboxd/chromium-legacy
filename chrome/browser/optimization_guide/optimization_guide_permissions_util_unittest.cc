@@ -201,8 +201,8 @@ TEST_F(OptimizationGuidePermissionsUtilTest,
   SetSyncServiceEnabled(true);
   SetUrlKeyedAnonymizedDataCollectionEnabled(true);
 
-  Profile* off_the_record_profile = profile()->GetOffTheRecordProfile();
-  EXPECT_TRUE(off_the_record_profile->IsOffTheRecord());
-  EXPECT_FALSE(IsUserPermittedToFetchFromRemoteOptimizationGuide(
-      off_the_record_profile));
+  Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
+  EXPECT_TRUE(incognito_profile->IsOffTheRecord());
+  EXPECT_FALSE(
+      IsUserPermittedToFetchFromRemoteOptimizationGuide(incognito_profile));
 }

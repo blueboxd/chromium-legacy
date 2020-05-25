@@ -940,7 +940,8 @@ class InstrumentationTestInstance(test_instance.TestInstance):
             'class': c['class'],
             'method': m['method'],
             'annotations': a,
-            'is_junit4': c['superclass'] == 'java.lang.Object'
+            # TODO(https://crbug.com/1084729): Remove is_junit4.
+            'is_junit4': True
         })
     return inflated_tests
 

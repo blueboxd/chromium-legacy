@@ -29,30 +29,44 @@ def _ParseArgs(args):
   return options
 
 
-def main(args):
-  options = _ParseArgs(args)
-
+def DexJdkLibJar(r8_path, min_api, desugar_jdk_libs_json, desugar_jdk_libs_jar,
+                 keep_rule_file, output):
   # TODO(agrieve): Spews a lot of stderr about missing classes.
   with build_utils.TempDir() as tmp_dir:
     cmd = [
         build_utils.JAVA_PATH,
         '-jar',
-        options.r8_path,
+        r8_path,
         'l8',
         '--min-api',
-        options.min_api,
-        #'--lib', build_utils.JAVA_HOME,
+        min_api,
+        '--lib',
+        build_utils.JAVA_HOME,
         '--desugared-lib',
-        options.desugar_jdk_libs_json,
-        '--output',
-        tmp_dir,
-        options.desugar_jdk_libs_jar
+        desugar_jdk_libs_json,
     ]
-    subprocess.check_output(cmd, stderr=subprocess.STDOUT)
 
+    if keep_rule_file:
+      cmd += ['--pg-conf', keep_rule_file]
+
+    cmd += ['--output', tmp_dir, desugar_jdk_libs_jar]
+
+    subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     if os.path.exists(os.path.join(tmp_dir, 'classes2.dex')):
       raise Exception('Achievement unlocked: desugar_jdk_libs is multidex!')
-    shutil.move(os.path.join(tmp_dir, 'classes.dex'), options.output)
+
+    # classes.dex might not exists if the "desugar_jdk_libs_jar" is not used
+    # at all.
+    if os.path.exists(os.path.join(tmp_dir, 'classes.dex')):
+      shutil.move(os.path.join(tmp_dir, 'classes.dex'), output)
+      return True
+    return False
+
+
+def main(args):
+  options = _ParseArgs(args)
+  DexJdkLibJar(options.r8_path, options.min_api, options.desugar_jdk_libs_json,
+               options.desugar_jdk_libs_jar, None, options.output)
 
 
 if __name__ == '__main__':

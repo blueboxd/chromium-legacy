@@ -102,6 +102,8 @@ RENDER_TEST_MODEL_SDK_CONFIGS = {
     'Nexus 5X': [23],
 }
 
+_TEST_BATCH_MAX_GROUP_SIZE = 256
+
 
 @contextlib.contextmanager
 def _LogTestEndpoints(device, test_name):
@@ -462,6 +464,31 @@ class LocalDeviceInstrumentationTestRun(
     return tests
 
   #override
+  def _GroupTests(self, tests):
+    batched_tests = dict()
+    other_tests = []
+    for test in tests:
+      if 'Batch' in test['annotations']:
+        batch_name = test['annotations']['Batch']['value']
+        if not batch_name:
+          batch_name = test['class']
+        if not batch_name in batched_tests:
+          batched_tests[batch_name] = []
+        batched_tests[batch_name].append(test)
+      else:
+        other_tests.append(test)
+
+    all_tests = []
+    for _, tests in batched_tests.items():
+      tests.sort()  # Ensure a consistent ordering across external shards.
+      all_tests.extend([
+          tests[i:i + _TEST_BATCH_MAX_GROUP_SIZE]
+          for i in range(0, len(tests), _TEST_BATCH_MAX_GROUP_SIZE)
+      ])
+    all_tests.extend(other_tests)
+    return all_tests
+
+  #override
   def _GetUniqueTestName(self, test):
     return instrumentation_test_instance.GetUniqueTestName(test)
 
@@ -509,12 +536,9 @@ class LocalDeviceInstrumentationTestRun(
           device.adb, suffix='.json', dir=device.GetExternalStoragePath())
       extras[EXTRA_TRACE_FILE] = trace_device_file.name
 
+    target = '%s/%s' % (self._test_instance.test_package,
+                        self._test_instance.junit4_runner_class)
     if isinstance(test, list):
-      if not self._test_instance.driver_apk:
-        raise Exception('driver_apk does not exist. '
-                        'Please build it and try again.')
-      if any(t.get('is_junit4') for t in test):
-        raise Exception('driver apk does not support JUnit4 tests')
 
       def name_and_timeout(t):
         n = instrumentation_test_instance.GetTestName(t)
@@ -523,26 +547,15 @@ class LocalDeviceInstrumentationTestRun(
 
       test_names, timeouts = zip(*(name_and_timeout(t) for t in test))
 
-      test_name = ','.join(test_names)
+      test_name = instrumentation_test_instance.GetTestName(test[0]) + '_batch'
+      extras['class'] = ','.join(test_names)
       test_display_name = test_name
-      target = '%s/%s' % (
-          self._test_instance.driver_package,
-          self._test_instance.driver_name)
-      extras.update(
-          self._test_instance.GetDriverEnvironmentVars(
-              test_list=test_names))
       timeout = sum(timeouts)
     else:
+      assert test['is_junit4']
       test_name = instrumentation_test_instance.GetTestName(test)
       test_display_name = self._GetUniqueTestName(test)
-      if test['is_junit4']:
-        target = '%s/%s' % (
-            self._test_instance.test_package,
-            self._test_instance.junit4_runner_class)
-      else:
-        target = '%s/%s' % (
-            self._test_instance.test_package,
-            self._test_instance.junit3_runner_class)
+
       extras['class'] = test_name
       if 'flags' in test and test['flags']:
         flags_to_add.extend(test['flags'])

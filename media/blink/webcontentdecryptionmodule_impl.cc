@@ -119,8 +119,9 @@ WebContentDecryptionModuleImpl::WebContentDecryptionModuleImpl(
 WebContentDecryptionModuleImpl::~WebContentDecryptionModuleImpl() = default;
 
 std::unique_ptr<blink::WebContentDecryptionModuleSession>
-WebContentDecryptionModuleImpl::CreateSession() {
-  return adapter_->CreateSession();
+WebContentDecryptionModuleImpl::CreateSession(
+    blink::WebEncryptedMediaSessionType session_type) {
+  return adapter_->CreateSession(session_type);
 }
 
 void WebContentDecryptionModuleImpl::SetServerCertificate(

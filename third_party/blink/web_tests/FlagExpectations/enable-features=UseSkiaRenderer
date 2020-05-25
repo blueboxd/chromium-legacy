@@ -14,3 +14,6 @@ crbug.com/1026375 [ Win ] media/video-currentTime-delay.html [ Timeout Pass ]
 crbug.com/1026375 [ Win ] media/encrypted-media/encrypted-media-playback-setmediakeys-before-src.html [ Timeout Pass ]
 crbug.com/1026375 [ Win ] media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Failure Pass ]
 crbug.com/1026375 [ Win ] media/video-pause-immediately.html [ Failure Pass ]
+
+# Failing on Linux.
+crbug.com/1086181 [ Linux ] media/controls-layout-direction.html [ Failure ]

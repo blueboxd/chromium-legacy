@@ -73,6 +73,8 @@ class BLINK_EXPORT WebFrame {
   // Returns the number of live WebFrame objects, used for leak checking.
   static int InstanceCount();
 
+  static WebFrame* FromFrameToken(const base::UnguessableToken&);
+
   virtual bool IsWebLocalFrame() const = 0;
   virtual WebLocalFrame* ToWebLocalFrame() = 0;
   virtual bool IsWebRemoteFrame() const = 0;

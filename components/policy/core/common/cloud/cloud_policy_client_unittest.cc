@@ -270,8 +270,6 @@ class CloudPolicyClientTest : public testing::Test {
 
     gcm_id_update_request_.mutable_gcm_id_update_request()->set_gcm_id(kGcmID);
 
-    upload_app_install_report_response_.mutable_app_install_report_response();
-
     em::PolicyValidationReportRequest* policy_validation_report_request =
         upload_policy_validation_report_request_
             .mutable_policy_validation_report_request();
@@ -324,6 +322,25 @@ class CloudPolicyClientTest : public testing::Test {
             base::Unretained(&device_dmtoken_callback_observer_)));
     client_->AddPolicyTypeToFetch(policy_type_, std::string());
     client_->AddObserver(&observer_);
+  }
+
+  base::Value MakeDefaultRealtimeReport() {
+    base::Value context(base::Value::Type::DICTIONARY);
+    context.SetStringPath("profile.gaiaEmail", "name@gmail.com");
+    context.SetStringPath("browser.userAgent", "User-Agent");
+    context.SetStringPath("profile.profileName", "Profile 1");
+    context.SetStringPath("profile.profilePath", "C:\\User Data\\Profile 1");
+
+    base::Value event;
+    event.SetStringPath("time", "2019-05-22T13:01:45Z");
+    event.SetStringPath("foo.prop1", "value1");
+    event.SetStringPath("foo.prop2", "value2");
+    event.SetStringPath("foo.prop3", "value3");
+
+    base::Value event_list(base::Value::Type::LIST);
+    event_list.Append(std::move(event));
+    return policy::RealtimeReportingJobConfiguration::BuildReport(
+        std::move(event_list), std::move(context));
   }
 
   void ExpectRegistration(const std::string& oauth_token) {
@@ -550,7 +567,6 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementResponse attribute_update_permission_response_;
   em::DeviceManagementResponse attribute_update_response_;
   em::DeviceManagementResponse gcm_id_update_response_;
-  em::DeviceManagementResponse upload_app_install_report_response_;
   em::DeviceManagementResponse upload_policy_validation_report_response_;
 
   base::test::SingleThreadTaskEnvironment task_environment_;
@@ -1442,8 +1458,7 @@ TEST_F(CloudPolicyClientTest, UploadChromeOsUserReport) {
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
 TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
   RegisterClient();
 
@@ -1453,25 +1468,8 @@ TEST_F(CloudPolicyClientTest, UploadRealtimeReport) {
       base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
                      base::Unretained(&callback_observer_));
 
-  base::Value context(base::Value::Type::DICTIONARY);
-  context.SetStringPath("profile.gaiaEmail", "name@gmail.com");
-  context.SetStringPath("browser.userAgent", "User-Agent");
-  context.SetStringPath("profile.profileName", "Profile 1");
-  context.SetStringPath("profile.profilePath", "C:\\User Data\\Profile 1");
-
-  base::Value event;
-  event.SetStringPath("time", "2019-05-22T13:01:45Z");
-  event.SetStringPath("foo.prop1", "value1");
-  event.SetStringPath("foo.prop2", "value2");
-  event.SetStringPath("foo.prop3", "value3");
-
-  base::Value event_list(base::Value::Type::LIST);
-  event_list.Append(std::move(event));
-
-  client_->UploadRealtimeReport(
-      policy::RealtimeReportingJobConfiguration::BuildReport(
-          std::move(event_list), std::move(context)),
-      std::move(callback));
+  client_->UploadRealtimeReport(MakeDefaultRealtimeReport(),
+                                std::move(callback));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
@@ -1577,6 +1575,86 @@ TEST_F(CloudPolicyClientTest, RealtimeReportMerge) {
                 ->GetList()
                 .size());
 }
+
+TEST_F(CloudPolicyClientTest, UploadAppInstallReport) {
+  RegisterClient();
+
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+  CloudPolicyClient::StatusCallback callback =
+      base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                     base::Unretained(&callback_observer_));
+
+  client_->UploadAppInstallReport(MakeDefaultRealtimeReport(),
+                                  std::move(callback));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
+      job_type_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, CancelUploadAppInstallReport) {
+  RegisterClient();
+
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(0);
+
+  CloudPolicyClient::StatusCallback callback =
+      base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                     base::Unretained(&callback_observer_));
+
+  em::AppInstallReportRequest app_install_report;
+  client_->UploadAppInstallReport(MakeDefaultRealtimeReport(),
+                                  std::move(callback));
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+
+  // The job expected by the call to ExpectUploadAppInstallReport() completes
+  // when base::RunLoop().RunUntilIdle() is called.  To simulate a cancel
+  // before the response for the request is processed, make sure to cancel it
+  // before running a loop.
+  client_->CancelAppInstallReportUpload();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
+      job_type_);
+}
+
+TEST_F(CloudPolicyClientTest, UploadAppInstallReportSupersedesPending) {
+  RegisterClient();
+
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(0);
+  CloudPolicyClient::StatusCallback callback =
+      base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                     base::Unretained(&callback_observer_));
+
+  client_->UploadAppInstallReport(MakeDefaultRealtimeReport(),
+                                  std::move(callback));
+
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+  Mock::VerifyAndClearExpectations(&service_);
+  Mock::VerifyAndClearExpectations(&callback_observer_);
+
+  // Starting another app push-install report upload should cancel the pending
+  // one.
+  ExpectRealtimeReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+  callback = base::BindOnce(&MockStatusCallbackObserver::OnCallbackComplete,
+                            base::Unretained(&callback_observer_));
+  client_->UploadAppInstallReport(MakeDefaultRealtimeReport(),
+                                  std::move(callback));
+  EXPECT_EQ(1, client_->GetActiveRequestCountForTest());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_REAL_TIME_REPORT,
+      job_type_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+  EXPECT_EQ(0, client_->GetActiveRequestCountForTest());
+}
+
 #endif
 
 TEST_F(CloudPolicyClientTest, MultipleActiveRequests) {

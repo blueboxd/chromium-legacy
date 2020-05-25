@@ -250,17 +250,18 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
     CHECK_NE(parent_routing_id, MSG_ROUTING_NONE);
   }
 
-  int opener_routing_id = MSG_ROUTING_NONE;
+  base::Optional<base::UnguessableToken> opener_frame_token;
   if (frame_tree_node_->opener()) {
-    opener_routing_id = frame_tree_node_->render_manager()->GetOpenerRoutingID(
-        site_instance_.get());
+    opener_frame_token =
+        frame_tree_node_->render_manager()->GetOpenerFrameToken(
+            site_instance_.get());
   }
 
   int view_routing_id = frame_tree_node_->frame_tree()
                             ->GetRenderViewHost(site_instance_.get())
                             ->GetRoutingID();
   GetProcess()->GetRendererInterface()->CreateFrameProxy(
-      routing_id_, view_routing_id, opener_routing_id, parent_routing_id,
+      routing_id_, view_routing_id, opener_frame_token, parent_routing_id,
       frame_tree_node_->current_replication_state(), frame_token_,
       frame_tree_node_->devtools_frame_token());
 

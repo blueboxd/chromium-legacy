@@ -1835,6 +1835,21 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Blink.Script.AsyncScripts" singular="True">
+  <owner>dom@chromium.org</owner>
+  <owner>chrome-loading@google.com</owner>
+  <summary>
+    Metrics associated with the async script count associated with a document,
+    recorded when the HTML parsing of a mainframe has completed.
+  </summary>
+  <metric name="AsyncScriptCount">
+    <summary>
+      The total number of async scripts associated with a document at the time
+      parsing has finished.
+    </summary>
+  </metric>
+</event>
+
 <event name="Blink.UpdateTime">
   <owner>schenney@chromium.org</owner>
   <owner>paint-dev@chromium.org</owner>
@@ -6122,6 +6137,11 @@ be describing additional metrics about the same event.
   <metric name="BlinkGC.AllocatedObjects">
     <summary>
       Measure of memory consumed by live allocations made from Oilpan.
+    </summary>
+  </metric>
+  <metric name="CanvasResourceProvider.SkSurface">
+    <summary>
+      Measure of memory used due to CanvasResourceProvider's SkSurface.
     </summary>
   </metric>
   <metric name="CommandBuffer">

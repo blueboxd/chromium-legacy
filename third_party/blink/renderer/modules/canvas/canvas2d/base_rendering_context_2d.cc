@@ -8,6 +8,7 @@
 #include <cmath>
 #include <memory>
 
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/checked_math.h"
 #include "third_party/blink/public/common/features.h"
@@ -1836,7 +1837,13 @@ void BaseRenderingContext2D::PutByteArray(const unsigned char* source,
   DCHECK_GE(origin_y, 0);
   DCHECK_LT(origin_y, source_rect.MaxY());
 
-  const size_t src_bytes_per_row = bytes_per_pixel * source_size.Width();
+  const base::CheckedNumeric<size_t> src_bytes_per_row_checked =
+      base::CheckMul(bytes_per_pixel, source_size.Width());
+  if (!src_bytes_per_row_checked.IsValid()) {
+    VLOG(1) << "Invalid sizes";
+    return;
+  }
+  const size_t src_bytes_per_row = src_bytes_per_row_checked.ValueOrDie();
   const void* src_addr =
       source + origin_y * src_bytes_per_row + origin_x * bytes_per_pixel;
 

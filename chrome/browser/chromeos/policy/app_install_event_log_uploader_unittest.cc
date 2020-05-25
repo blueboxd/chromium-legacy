@@ -128,7 +128,7 @@ class AppInstallEventLogUploaderTest : public testing::Test {
     value_report_ = RealtimeReportingJobConfiguration::BuildReport(
         ConvertProtoToValue(&log_, context), std::move(context));
 
-    EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))
+    EXPECT_CALL(client_, UploadAppInstallReport_(MatchValue(&value_report_), _))
         .WillOnce(WithArgs<1>(
             Invoke([=](CloudPolicyClient::StatusCallback& callback) {
               std::move(callback).Run(success);
@@ -142,7 +142,7 @@ class AppInstallEventLogUploaderTest : public testing::Test {
         ConvertProtoToValue(&log_, context), std::move(context));
 
     CloudPolicyClient::StatusCallback status_callback;
-    EXPECT_CALL(client_, UploadRealtimeReport_(MatchValue(&value_report_), _))
+    EXPECT_CALL(client_, UploadAppInstallReport_(MatchValue(&value_report_), _))
         .WillOnce(MoveArg<1>(callback));
   }
 
@@ -246,7 +246,7 @@ TEST_F(AppInstallEventLogUploaderTest, RequestCancelAndSerialize) {
   uploader_->CancelUpload();
   Mock::VerifyAndClearExpectations(&client_);
 
-  EXPECT_CALL(client_, UploadRealtimeReport_(_, _)).Times(0);
+  EXPECT_CALL(client_, UploadAppInstallReport_(_, _)).Times(0);
   EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
   std::move(serialization_callback).Run(&log_);
 }
@@ -396,7 +396,7 @@ TEST_F(AppInstallEventLogUploaderTest,
   UnregisterClient();
   Mock::VerifyAndClearExpectations(&client_);
 
-  EXPECT_CALL(client_, UploadRealtimeReport_(_, _)).Times(0);
+  EXPECT_CALL(client_, UploadAppInstallReport_(_, _)).Times(0);
   EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
   std::move(serialization_callback).Run(&log_);
   Mock::VerifyAndClearExpectations(&delegate_);
@@ -435,7 +435,7 @@ TEST_F(AppInstallEventLogUploaderTest,
   CaptureSerialize(&serialization_callback_2);
   RegisterClient();
 
-  EXPECT_CALL(client_, UploadRealtimeReport_(_, _)).Times(0);
+  EXPECT_CALL(client_, UploadAppInstallReport_(_, _)).Times(0);
   EXPECT_CALL(delegate_, OnUploadSuccess()).Times(0);
   std::move(serialization_callback_1).Run(&log_);
   Mock::VerifyAndClearExpectations(&delegate_);

@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/gc_task_runner.h"
+#include "third_party/blink/renderer/platform/instrumentation/canvas_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/instance_counters_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/instrumentation/memory_pressure_listener.h"
 #include "third_party/blink/renderer/platform/instrumentation/partition_alloc_memory_dump_provider.h"
@@ -236,6 +237,9 @@ void Platform::InitializeMainThreadCommon(Platform* platform,
       base::ThreadTaskRunnerHandle::Get());
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
       ParkableStringManagerDumpProvider::Instance(), "ParkableStrings",
+      base::ThreadTaskRunnerHandle::Get());
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      CanvasMemoryDumpProvider::Instance(), "Canvas",
       base::ThreadTaskRunnerHandle::Get());
 
   RendererResourceCoordinator::MaybeInitialize();

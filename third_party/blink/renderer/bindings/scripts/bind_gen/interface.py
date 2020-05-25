@@ -4126,6 +4126,24 @@ def _make_property_entry_check_receiver(property_):
         return "V8DOMConfiguration::kCheckHolder"
 
 
+def _make_property_entry_check_cross_origin_access(property_,
+                                                   is_get=False,
+                                                   is_set=False):
+    constants = {
+        True: "V8DOMConfiguration::kDoNotCheckAccess",
+        False: "V8DOMConfiguration::kCheckAccess",
+    }
+    if "CrossOrigin" not in property_.extended_attributes:
+        return constants[False]
+    values = property_.extended_attributes.values_of("CrossOrigin")
+    if is_get:
+        return constants[not values or "Getter" in values]
+    elif is_set:
+        return constants["Setter" in values]
+    else:
+        return constants[True]
+
+
 def _make_property_entry_has_side_effect(property_):
     if property_.extended_attributes.value_of("Affects") == "Nothing":
         return "V8DOMConfiguration::kHasNoSideEffect"
@@ -4178,8 +4196,9 @@ def _make_attribute_registration_table(table_name, attribute_entries):
                    "{v8_property_attribute}, "
                    "{on_which_object}, "
                    "{check_receiver}, "
+                   "{check_cross_origin_get_access}, "
+                   "{check_cross_origin_set_access}, "
                    "{has_side_effect}, "
-                   "V8DOMConfiguration::kAlwaysCallGetter, "
                    "{world}"
                    "}},")
         text = _format(
@@ -4195,6 +4214,12 @@ def _make_attribute_registration_table(table_name, attribute_entries):
                 entry.property_),
             check_receiver=_make_property_entry_check_receiver(
                 entry.property_),
+            check_cross_origin_get_access=(
+                _make_property_entry_check_cross_origin_access(entry.property_,
+                                                               is_get=True)),
+            check_cross_origin_set_access=(
+                _make_property_entry_check_cross_origin_access(entry.property_,
+                                                               is_set=True)),
             has_side_effect=_make_property_entry_has_side_effect(
                 entry.property_),
             world=_make_property_entry_world(entry.world))
@@ -4327,7 +4352,7 @@ def _make_operation_registration_table(table_name, operation_entries):
                    "{v8_property_attribute}, "
                    "{on_which_object}, "
                    "{check_receiver}, "
-                   "V8DOMConfiguration::kDoNotCheckAccess, "
+                   "{check_cross_origin_access}, "
                    "{has_side_effect}, "
                    "{world}"
                    "}}, ")
@@ -4342,6 +4367,9 @@ def _make_operation_registration_table(table_name, operation_entries):
                 entry.property_),
             check_receiver=_make_property_entry_check_receiver(
                 entry.property_),
+            check_cross_origin_access=(
+                _make_property_entry_check_cross_origin_access(
+                    entry.property_)),
             has_side_effect=_make_property_entry_has_side_effect(
                 entry.property_),
             world=_make_property_entry_world(entry.world))
@@ -6121,7 +6149,7 @@ def generate_interface(interface):
                     attribute_set=True,
                     arg_decls=[
                         "v8::Local<v8::Value>",
-                        "const v8::PropertyCallbackInfo<v8::Value>&",
+                        "const v8::PropertyCallbackInfo<void>&",
                     ])
     for operation_group in interface.operation_groups:
         if "Custom" in operation_group.extended_attributes:

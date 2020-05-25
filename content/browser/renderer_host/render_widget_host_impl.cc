@@ -2406,8 +2406,6 @@ bool RenderWidgetHostImpl::StoredVisualPropertiesNeedsUpdate(
              new_visual_properties.screen_info ||
          old_visual_properties->compositor_viewport_pixel_rect !=
              new_visual_properties.compositor_viewport_pixel_rect ||
-         old_visual_properties->compositor_viewport_pixel_rect !=
-             new_visual_properties.compositor_viewport_pixel_rect ||
          old_visual_properties->is_fullscreen_granted !=
              new_visual_properties.is_fullscreen_granted ||
          old_visual_properties->display_mode !=

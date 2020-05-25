@@ -192,7 +192,7 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
 
   if (ShouldUseCompositor(print_preview_ui)) {
     // Don't bother compositing if this request has been cancelled already.
-    if (PrintPreviewUI::ShouldCancelRequest(ids))
+    if (print_preview_ui->ShouldCancelRequest(ids.request_id))
       return;
 
     auto* client = PrintCompositeClient::FromWebContents(web_contents());
@@ -245,7 +245,7 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 
   if (composite_document_using_individual_pages) {
     // Don't bother compositing if this request has been cancelled already.
-    if (PrintPreviewUI::ShouldCancelRequest(ids))
+    if (print_preview_ui->ShouldCancelRequest(ids.request_id))
       return;
 
     auto callback = base::BindOnce(
@@ -292,7 +292,7 @@ void PrintPreviewMessageHandler::NotifyUIPreviewPageReady(
     return;
 
   // Don't bother notifying the UI if this request has been cancelled already.
-  if (PrintPreviewUI::ShouldCancelRequest(ids))
+  if (print_preview_ui->ShouldCancelRequest(ids.request_id))
     return;
 
   print_preview_ui->OnDidPreviewPage(page_number, std::move(data_bytes),
@@ -307,7 +307,7 @@ void PrintPreviewMessageHandler::NotifyUIPreviewDocumentReady(
     return;
 
   // Don't bother notifying the UI if this request has been cancelled already.
-  if (PrintPreviewUI::ShouldCancelRequest(ids))
+  if (print_preview_ui->ShouldCancelRequest(ids.request_id))
     return;
 
   print_preview_ui->OnPreviewDataIsAvailable(std::move(data_bytes),

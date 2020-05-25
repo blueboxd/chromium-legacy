@@ -2493,11 +2493,21 @@ void LayoutText::InvalidateDisplayItemClients(
   ObjectPaintInvalidator paint_invalidator(*this);
 
   if (IsInLayoutNGInlineFormattingContext()) {
-    NGInlineCursor cursor;
-    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject()) {
-      paint_invalidator.InvalidateDisplayItemClient(
-          *cursor.Current().GetDisplayItemClient(), invalidation_reason);
+    if (!RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+      NGInlineCursor cursor;
+      for (cursor.MoveTo(*this); cursor;
+           cursor.MoveToNextForSameLayoutObject()) {
+        paint_invalidator.InvalidateDisplayItemClient(
+            *cursor.Current().GetDisplayItemClient(), invalidation_reason);
+      }
+      return;
     }
+#if DCHECK_IS_ON()
+    NGInlineCursor cursor;
+    for (cursor.MoveTo(*this); cursor; cursor.MoveToNextForSameLayoutObject())
+      DCHECK_EQ(cursor.Current().GetDisplayItemClient(), this);
+#endif
+    paint_invalidator.InvalidateDisplayItemClient(*this, invalidation_reason);
     return;
   }
 

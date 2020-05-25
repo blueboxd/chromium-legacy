@@ -27,48 +27,44 @@ namespace {
 
 void PrepareLanguageModels(Profile* const profile,
                            language::LanguageModelManager* const manager) {
-      language::GetOverrideLanguageModel();
-
-      // Create and set the primary Language Model to use based on the state of
-      // experiments.
-      switch (language::GetOverrideLanguageModel()) {
-        case language::OverrideLanguageModel::FLUENT:
-          manager->AddModel(
-              language::LanguageModelManager::ModelType::FLUENT,
-              std::make_unique<language::FluentLanguageModel>(
-                  profile->GetPrefs(), language::prefs::kAcceptLanguages));
-          manager->SetPrimaryModel(
-              language::LanguageModelManager::ModelType::FLUENT);
-          break;
-        case language::OverrideLanguageModel::HEURISTIC:
-          manager->AddModel(
-              language::LanguageModelManager::ModelType::HEURISTIC,
-              std::make_unique<language::HeuristicLanguageModel>(
-                  profile->GetPrefs(),
-                  g_browser_process->GetApplicationLocale(),
-                  language::prefs::kAcceptLanguages,
-                  language::prefs::kUserLanguageProfile));
-          manager->SetPrimaryModel(
-              language::LanguageModelManager::ModelType::HEURISTIC);
-          break;
-        case language::OverrideLanguageModel::GEO:
-          manager->AddModel(language::LanguageModelManager::ModelType::GEO,
-                            std::make_unique<language::GeoLanguageModel>(
-                                language::GeoLanguageProvider::GetInstance()));
-          manager->SetPrimaryModel(
-              language::LanguageModelManager::ModelType::GEO);
-          break;
-        case language::OverrideLanguageModel::DEFAULT:
-        default:
-          manager->AddModel(language::LanguageModelManager::ModelType::BASELINE,
-                            std::make_unique<language::BaselineLanguageModel>(
-                                profile->GetPrefs(),
-                                g_browser_process->GetApplicationLocale(),
-                                language::prefs::kAcceptLanguages));
-          manager->SetPrimaryModel(
-              language::LanguageModelManager::ModelType::BASELINE);
-          break;
-      }
+  // Create and set the primary Language Model to use based on the state of
+  // experiments.
+  switch (language::GetOverrideLanguageModel()) {
+    case language::OverrideLanguageModel::FLUENT:
+      manager->AddModel(
+          language::LanguageModelManager::ModelType::FLUENT,
+          std::make_unique<language::FluentLanguageModel>(
+              profile->GetPrefs(), language::prefs::kAcceptLanguages));
+      manager->SetPrimaryModel(
+          language::LanguageModelManager::ModelType::FLUENT);
+      break;
+    case language::OverrideLanguageModel::HEURISTIC:
+      manager->AddModel(
+          language::LanguageModelManager::ModelType::HEURISTIC,
+          std::make_unique<language::HeuristicLanguageModel>(
+              profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
+              language::prefs::kAcceptLanguages,
+              language::prefs::kUserLanguageProfile));
+      manager->SetPrimaryModel(
+          language::LanguageModelManager::ModelType::HEURISTIC);
+      break;
+    case language::OverrideLanguageModel::GEO:
+      manager->AddModel(language::LanguageModelManager::ModelType::GEO,
+                        std::make_unique<language::GeoLanguageModel>(
+                            language::GeoLanguageProvider::GetInstance()));
+      manager->SetPrimaryModel(language::LanguageModelManager::ModelType::GEO);
+      break;
+    case language::OverrideLanguageModel::DEFAULT:
+    default:
+      manager->AddModel(
+          language::LanguageModelManager::ModelType::BASELINE,
+          std::make_unique<language::BaselineLanguageModel>(
+              profile->GetPrefs(), g_browser_process->GetApplicationLocale(),
+              language::prefs::kAcceptLanguages));
+      manager->SetPrimaryModel(
+          language::LanguageModelManager::ModelType::BASELINE);
+      break;
+  }
 }
 
 }  // namespace

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -332,9 +333,23 @@ void PaintPreviewClient::OnPaintPreviewCapturedCallback(
   // |status|
   MarkFrameAsProcessed(guid, frame_guid);
 
-  if (status == mojom::PaintPreviewStatus::kOk)
+  if (status == mojom::PaintPreviewStatus::kOk) {
     status = RecordFrame(guid, frame_guid, is_main_frame, filename,
                          render_frame_id, std::move(response));
+  } else {
+    // If the capture failed then cleanup the file.
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+        base::BindOnce(base::IgnoreResult(&base::DeleteFile), filename, false));
+
+    // If this is the main frame we should just abort the capture.
+    if (is_main_frame) {
+      auto it = all_document_data_.find(guid);
+      if (it != all_document_data_.end())
+        OnFinished(guid, &it->second);
+    }
+  }
+
   auto it = all_document_data_.find(guid);
   if (it == all_document_data_.end())
     return;

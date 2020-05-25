@@ -6,7 +6,7 @@
 
 #include "chrome/browser/extensions/blacklist_factory.h"
 #include "chrome/browser/extensions/extension_management.h"
-#include "chrome/browser/extensions/forced_extensions/installation_reporter_factory.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker_factory.h"
 #include "chrome/browser/extensions/install_verifier_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -56,7 +56,7 @@ ExtensionSystemSharedFactory::ExtensionSystemSharedFactory()
   // This depends on ExtensionDownloader, which depends on
   // IdentityManager for webstore authentication.
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(InstallationReporterFactory::GetInstance());
+  DependsOn(InstallStageTrackerFactory::GetInstance());
 }
 
 ExtensionSystemSharedFactory::~ExtensionSystemSharedFactory() {

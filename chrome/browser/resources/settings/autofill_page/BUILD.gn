@@ -30,6 +30,7 @@ js_type_check("closure_compile_module") {
     ":passwords_section",
     ":payments_list",
     ":payments_section",
+    ":remove_password_behavior",
     ":show_password_behavior",
     ":upi_id_list_entry",
   ]
@@ -173,6 +174,7 @@ js_library("password_remove_confirmation_dialog") {
 js_library("password_list_item") {
   deps = [
     ":blocking_request_manager",
+    ":remove_password_behavior",
     ":show_password_behavior",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/js:load_time_data.m",
@@ -198,6 +200,7 @@ js_library("passwords_section") {
     ":password_edit_dialog",
     ":password_list_item",
     ":password_manager_proxy",
+    ":remove_password_behavior",
     "..:global_scroll_target_behavior.m",
     "..:plural_string_proxy",
     "..:route",
@@ -250,9 +253,17 @@ js_library("payments_section") {
 js_library("show_password_behavior") {
   deps = [
     ":blocking_request_manager",
+    ":multi_store_password_ui_entry",
     ":password_manager_proxy",
   ]
   externs_list = [ "$externs_path/passwords_private.js" ]
+}
+
+js_library("remove_password_behavior") {
+  deps = [
+    ":multi_store_password_ui_entry",
+    ":password_manager_proxy",
+  ]
 }
 
 js_library("upi_id_list_entry") {

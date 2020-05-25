@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "components/paint_preview/common/proto/paint_preview.pb.h"
+#include "components/paint_preview/common/serial_utils.h"
 #include "components/services/paint_preview_compositor/paint_preview_frame.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -18,6 +19,8 @@
 #include "url/gurl.h"
 
 namespace paint_preview {
+
+struct SkpResult;
 
 class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
  public:
@@ -45,16 +48,12 @@ class PaintPreviewCompositorImpl : public mojom::PaintPreviewCompositor {
   void SetRootFrameUrl(const GURL& url) override;
 
  private:
-  // Deserializes the contents of |file_handle| and associates it with the
-  // metadata in |frame_proto|.
-  PaintPreviewFrame DeserializeFrame(const PaintPreviewFrameProto& frame_proto,
-                                     base::File file_handle);
-
   // Adds |frame_proto| to |frames_| and copies required data into |response|.
   // Consumes the corresponding file in |file_map|. Returns true on success.
-  bool AddFrame(const PaintPreviewFrameProto& frame_proto,
-                FileMap* file_map,
-                mojom::PaintPreviewBeginCompositeResponsePtr* response);
+  bool AddFrame(
+      const PaintPreviewFrameProto& frame_proto,
+      const base::flat_map<base::UnguessableToken, SkpResult>& skp_map,
+      mojom::PaintPreviewBeginCompositeResponsePtr* response);
 
   mojo::Receiver<mojom::PaintPreviewCompositor> receiver_{this};
 

@@ -363,7 +363,7 @@ static void InstallV8TestIntegerIndexedTemplate(
   // Register IDL constants, attributes and operations.
   static constexpr V8DOMConfiguration::AccessorConfiguration
   kAccessorConfigurations[] = {
-      { "length", V8TestIntegerIndexed::LengthAttributeGetterCallback, V8TestIntegerIndexed::LengthAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAlwaysCallGetter, V8DOMConfiguration::kAllWorlds },
+      { "length", V8TestIntegerIndexed::LengthAttributeGetterCallback, V8TestIntegerIndexed::LengthAttributeSetterCallback, static_cast<unsigned>(V8PrivateProperty::CachedAccessor::kNone), static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds },
   };
   V8DOMConfiguration::InstallAccessors(
       isolate, world, instance_template, prototype_template, interface_template,

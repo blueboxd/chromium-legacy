@@ -2008,10 +2008,11 @@ blink::mojom::FrameInputHandler* RenderFrameHostImpl::GetFrameInputHandler() {
   return frame_input_handler_.get();
 }
 
-bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
-                                            int opener_routing_id,
-                                            int parent_routing_id,
-                                            int previous_sibling_routing_id) {
+bool RenderFrameHostImpl::CreateRenderFrame(
+    int previous_routing_id,
+    const base::Optional<base::UnguessableToken>& opener_frame_token,
+    int parent_routing_id,
+    int previous_sibling_routing_id) {
   TRACE_EVENT0("navigation", "RenderFrameHostImpl::CreateRenderFrame");
   DCHECK(!IsRenderFrameLive()) << "Creating frame twice";
 
@@ -2040,7 +2041,7 @@ bool RenderFrameHostImpl::CreateRenderFrame(int previous_routing_id,
 
   params->routing_id = routing_id_;
   params->previous_routing_id = previous_routing_id;
-  params->opener_routing_id = opener_routing_id;
+  params->opener_frame_token = opener_frame_token;
   params->parent_routing_id = parent_routing_id;
   params->previous_sibling_routing_id = previous_sibling_routing_id;
   params->replication_state = frame_tree_node()->current_replication_state();

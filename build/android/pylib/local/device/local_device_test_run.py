@@ -137,6 +137,7 @@ class LocalDeviceTestRun(test_run.TestRun):
       with signal_handler.AddSignalHandler(signal.SIGTERM, stop_tests):
         tries = 0
         while tries < self._env.max_tries and tests:
+          grouped_tests = self._GroupTests(tests)
           logging.info('STARTING TRY #%d/%d', tries + 1, self._env.max_tries)
           if tries > 0 and self._env.recover_devices:
             if any(d.build_version_sdk == version_codes.LOLLIPOP_MR1
@@ -171,12 +172,14 @@ class LocalDeviceTestRun(test_run.TestRun):
 
           try:
             if self._ShouldShard():
-              tc = test_collection.TestCollection(self._CreateShards(tests))
+              tc = test_collection.TestCollection(
+                  self._CreateShards(grouped_tests))
               self._env.parallel_devices.pMap(
                   run_tests_on_device, tc, try_results).pGet(None)
             else:
-              self._env.parallel_devices.pMap(
-                  run_tests_on_device, tests, try_results).pGet(None)
+              self._env.parallel_devices.pMap(run_tests_on_device,
+                                              grouped_tests,
+                                              try_results).pGet(None)
           except TestsTerminated:
             for unknown_result in try_results.GetUnknown():
               try_results.AddResult(
@@ -236,9 +239,16 @@ class LocalDeviceTestRun(test_run.TestRun):
     if total_shards < 0 or shard_index < 0 or total_shards <= shard_index:
       raise InvalidShardingSettings(shard_index, total_shards)
 
-    return [
-        t for t in tests
-        if hash(self._GetUniqueTestName(t)) % total_shards == shard_index]
+    sharded_tests = []
+    for t in self._GroupTests(tests):
+      if (hash(self._GetUniqueTestName(t[0] if isinstance(t, list) else t)) %
+          total_shards == shard_index):
+        if isinstance(t, list):
+          sharded_tests.extend(t)
+        else:
+          sharded_tests.append(t)
+
+    return sharded_tests
 
   def GetTool(self, device):
     if str(device) not in self._tools:
@@ -259,6 +269,10 @@ class LocalDeviceTestRun(test_run.TestRun):
 
   def _GetTests(self):
     raise NotImplementedError
+
+  def _GroupTests(self, tests):
+    # pylint: disable=no-self-use
+    return tests
 
   def _RunTest(self, device, test):
     raise NotImplementedError

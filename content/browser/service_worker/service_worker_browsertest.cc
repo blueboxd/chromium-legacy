@@ -2207,8 +2207,6 @@ class CodeCacheHostInterceptor
 
 class CacheStorageContextForBadOrigin : public CacheStorageContextImpl {
  public:
-  CacheStorageContextForBadOrigin() : CacheStorageContextImpl(nullptr) {}
-
   scoped_refptr<CacheStorageManager> CacheManager() override {
     // The CodeCacheHostImpl should not try to access the CacheManager()
     // if the origin is bad.

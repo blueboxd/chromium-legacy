@@ -110,7 +110,7 @@ class FileOperationManagerImpl {
    * @return {Object} Status object with optional volume information.
    */
   getTaskStatus(task) {
-    let status = task.getStatus();
+    const status = task.getStatus();
     // If there's no target directory name, use the volume name for UI display.
     if (status['targetDirEntryName'] === '' && task.targetDirEntry) {
       const entry = /** {Entry} */ (task.targetDirEntry);
@@ -129,7 +129,7 @@ class FileOperationManagerImpl {
     let task = null;
 
     // If the task is not on progress, remove it immediately.
-    for (var i = 0; i < this.pendingCopyTasks_.length; i++) {
+    for (let i = 0; i < this.pendingCopyTasks_.length; i++) {
       task = this.pendingCopyTasks_[i];
       if (task.taskId !== taskId) {
         continue;
@@ -148,7 +148,7 @@ class FileOperationManagerImpl {
       }
     }
 
-    for (var i = 0; i < this.deleteTasks_.length; i++) {
+    for (let i = 0; i < this.deleteTasks_.length; i++) {
       task = this.deleteTasks_[i];
       if (task.taskId !== taskId) {
         continue;
@@ -171,26 +171,16 @@ class FileOperationManagerImpl {
    *     target directory.
    * @param {boolean} isMove True if the operation is "move", otherwise (i.e.
    *     if the operation is "copy") false.
-   * @return {Promise} Promise fulfilled with the filtered entry. This is not
-   *     rejected.
+   * @return {!Promise<Array<Entry>>} Promise fulfilled with the filtered entry.
+   *     This is not rejected.
    */
-  filterSameDirectoryEntry(sourceEntries, targetEntry, isMove) {
+  async filterSameDirectoryEntry(sourceEntries, targetEntry, isMove) {
     if (!isMove) {
-      return Promise.resolve(sourceEntries);
+      return sourceEntries;
     }
-    // Utility function to concat arrays.
-    const compactArrays = arrays => {
-      return arrays.filter(element => {
-        return !!element;
-      });
-    };
-    // Call processEntry for each item of entries.
-    const processEntries = entries => {
-      const promises = entries.map(processFileOrDirectoryEntries);
-      return Promise.all(promises).then(compactArrays);
-    };
+
     // Check all file entries and keeps only those need sharing operation.
-    var processFileOrDirectoryEntries = entry => {
+    const processEntry = entry => {
       return new Promise(resolve => {
         entry.getParent(
             inParentEntry => {
@@ -206,7 +196,12 @@ class FileOperationManagerImpl {
             });
       });
     };
-    return processEntries(sourceEntries);
+
+    // Call processEntry for each item of sourceEntries.
+    const result = await Promise.all(sourceEntries.map(processEntry));
+
+    // Remove null entries.
+    return result.filter(entry => !!entry);
   }
 
   /**

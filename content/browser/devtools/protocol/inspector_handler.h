@@ -38,7 +38,8 @@ class InspectorHandler : public DevToolsDomainHandler,
 
  private:
   std::unique_ptr<Inspector::Frontend> frontend_;
-  RenderFrameHostImpl* host_;
+  RenderFrameHostImpl* host_ = nullptr;
+  bool target_crashed_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(InspectorHandler);
 };

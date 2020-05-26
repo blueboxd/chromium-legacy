@@ -7,14 +7,17 @@
 
 #include <memory>
 
+#include "base/containers/flat_map.h"
+#include "base/memory/weak_ptr.h"
 #include "components/services/storage/public/mojom/service_worker_storage_control.mojom.h"
+#include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace content {
 
-class ServiceWorkerStorage;
+class ServiceWorkerLiveVersionRefImpl;
 
 // This class wraps ServiceWorkerStorage to implement mojo interface defined by
 // the storage service, i.e., ServiceWorkerStorageControl.
@@ -39,6 +42,8 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
 
   void Bind(mojo::PendingReceiver<storage::mojom::ServiceWorkerStorageControl>
                 receiver);
+
+  void OnNoLiveVersion(int64_t version_id);
 
   void LazyInitializeForTest();
 
@@ -131,9 +136,40 @@ class CONTENT_EXPORT ServiceWorkerStorageControlImpl
       const std::vector<storage::mojom::LocalStoragePolicyUpdatePtr>
           policy_updates) override;
 
+  using ResourceList =
+      std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>;
+
+  // Callbacks for ServiceWorkerStorage methods.
+  void DidFindRegistration(
+      base::OnceCallback<void(
+          storage::mojom::ServiceWorkerFindRegistrationResultPtr)> callback,
+      storage::mojom::ServiceWorkerRegistrationDataPtr data,
+      std::unique_ptr<ResourceList> resources,
+      storage::mojom::ServiceWorkerDatabaseStatus status);
+  void DidStoreRegistration(
+      StoreRegistrationCallback callback,
+      storage::mojom::ServiceWorkerDatabaseStatus status,
+      int64_t deleted_version_id,
+      const std::vector<int64_t>& newly_purgeable_resources);
+  void DidDeleteRegistration(
+      DeleteRegistrationCallback callback,
+      storage::mojom::ServiceWorkerDatabaseStatus status,
+      ServiceWorkerStorage::OriginState origin_state,
+      int64_t deleted_version_id,
+      const std::vector<int64_t>& newly_purgeable_resources);
+
+  void MaybePurgeResources(int64_t version_id,
+                           const std::vector<int64_t>& purgeable_resources);
+
   const std::unique_ptr<ServiceWorkerStorage> storage_;
 
   mojo::ReceiverSet<storage::mojom::ServiceWorkerStorageControl> receivers_;
+
+  base::flat_map<int64_t /*version_id*/,
+                 std::unique_ptr<ServiceWorkerLiveVersionRefImpl>>
+      live_versions_;
+
+  base::WeakPtrFactory<ServiceWorkerStorageControlImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace content

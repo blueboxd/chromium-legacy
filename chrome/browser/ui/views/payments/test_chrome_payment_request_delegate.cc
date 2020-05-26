@@ -26,7 +26,7 @@ TestChromePaymentRequestDelegate::TestChromePaymentRequestDelegate(
       skip_ui_for_basic_card_(skip_ui_for_basic_card) {}
 
 void TestChromePaymentRequestDelegate::ShowDialog(PaymentRequest* request) {
-  shown_dialog_ = new PaymentRequestDialogView(request, observer_);
+  shown_dialog_ = PaymentRequestDialogView::Create(request, observer_);
   shown_dialog_->ShowDialog();
 }
 

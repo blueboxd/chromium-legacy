@@ -6,6 +6,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/test_timeouts.h"
+#include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_smooth_scroll_gesture.h"
@@ -133,7 +134,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SmoothScrollWheel) {
 
   // Use a speed that's fast enough that the entire scroll occurs in a single
   // GSU, avoiding precision loss. SyntheticGestures can lose delta over time
-  // in slower scrolls.
+  // in slower scrolls on some platforms.
   params.speed_in_pixels_s = 10000000.f;
 
   // Use PrecisePixel to avoid animating.
@@ -154,6 +155,59 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SmoothScrollWheel) {
 
   EXPECT_EQ(256, EvalJs(shell()->web_contents(),
                         "document.scrollingElement.scrollTop"));
+}
+
+// This test ensures that slow synthetic wheel scrolling does not lose precision
+// over time.
+IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SlowSmoothScrollWheel) {
+  LoadURL(R"HTML(
+    data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <meta name='viewport' content='width=device-width'>
+    <style>
+      body {
+        width: 10px;
+        height: 2000px;
+      }
+    </style>
+    <script>
+      document.title = 'ready';
+    </script>
+  )HTML");
+
+  SyntheticSmoothScrollGestureParams params;
+  params.gesture_source_type = SyntheticGestureParams::MOUSE_INPUT;
+  params.anchor = gfx::PointF(1, 1);
+
+  // Note: 1024 is precisely chosen since Android's minimum granularity is 64px.
+  // All other platforms can specify the delta per-pixel.
+  params.distances.push_back(gfx::Vector2d(0, -1024));
+
+  // Use a speed that's slow enough that it requires the browser to require
+  // multiple wheel-events to be dispatched, so that precision is needed to
+  // scroll the correct amount.
+  params.speed_in_pixels_s = 1000.f;
+
+  // Use PrecisePixel to avoid animating.
+  params.granularity = ui::ScrollGranularity::kScrollByPrecisePixel;
+
+  runner_ = std::make_unique<base::RunLoop>();
+
+  auto* web_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver scroll_offset_wait(web_contents);
+  std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
+      new SyntheticSmoothScrollGesture(params));
+  GetRenderWidgetHost()->QueueSyntheticGesture(
+      std::move(gesture),
+      base::BindOnce(&SyntheticInputTest::OnSyntheticGestureCompleted,
+                     base::Unretained(this)));
+  float device_scale_factor =
+      web_contents->GetRenderWidgetHostView()->GetDeviceScaleFactor();
+  scroll_offset_wait.WaitForScrollOffset(
+      gfx::Vector2dF(0.f, 1024.f * device_scale_factor));
+
+  EXPECT_EQ(1024, EvalJs(shell()->web_contents(),
+                         "document.scrollingElement.scrollTop"));
 }
 
 }  // namespace content

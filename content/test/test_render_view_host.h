@@ -207,23 +207,27 @@ class TestRenderViewHost
   }
 
   // The opener frame route id passed to CreateRenderView().
-  int opener_frame_route_id() const { return opener_frame_route_id_; }
+  const base::Optional<base::UnguessableToken>& opener_frame_token() const {
+    return opener_frame_token_;
+  }
 
   // RenderWidgetHost overrides (same value, but in the Mock* type)
   MockRenderProcessHost* GetProcess() override;
 
-  bool CreateTestRenderView(const base::string16& frame_name,
-                            int opener_frame_route_id,
-                            int proxy_route_id,
-                            bool window_was_created_with_opener) override;
+  bool CreateTestRenderView(
+      const base::string16& frame_name,
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
+      int proxy_route_id,
+      bool window_was_created_with_opener) override;
 
   // RenderViewHost:
-  bool CreateRenderView(int opener_frame_route_id,
-                        int proxy_route_id,
-                        const base::UnguessableToken& frame_token,
-                        const base::UnguessableToken& devtools_frame_token,
-                        const FrameReplicationState& replicated_frame_state,
-                        bool window_was_created_with_opener) override;
+  bool CreateRenderView(
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
+      int proxy_route_id,
+      const base::UnguessableToken& frame_token,
+      const base::UnguessableToken& devtools_frame_token,
+      const FrameReplicationState& replicated_frame_state,
+      bool window_was_created_with_opener) override;
   void OnWebkitPreferencesChanged() override;
 
   // RenderViewHostImpl:
@@ -255,7 +259,7 @@ class TestRenderViewHost
   int* webkit_preferences_changed_counter_;
 
   // See opener_frame_route_id() above.
-  int opener_frame_route_id_;
+  base::Optional<base::UnguessableToken> opener_frame_token_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };

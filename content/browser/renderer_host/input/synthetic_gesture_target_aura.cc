@@ -90,10 +90,13 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
     modifiers |= ui::EF_SCROLL_BY_PAGE;
   }
 
+  float delta_x = web_wheel.delta_x + wheel_precision_x_;
+  float delta_y = web_wheel.delta_y + wheel_precision_y_;
   ui::MouseWheelEvent wheel_event(
-      gfx::Vector2d(web_wheel.delta_x, web_wheel.delta_y),
-      web_wheel.PositionInWidget(), web_wheel.PositionInWidget(), timestamp,
-      modifiers, ui::EF_NONE);
+      gfx::Vector2d(delta_x, delta_y), web_wheel.PositionInWidget(),
+      web_wheel.PositionInWidget(), timestamp, modifiers, ui::EF_NONE);
+  wheel_precision_x_ = delta_x - wheel_event.x_offset();
+  wheel_precision_y_ = delta_y - wheel_event.y_offset();
 
   aura::Window* window = GetWindow();
   wheel_event.ConvertLocationToTarget(window, window->GetRootWindow());

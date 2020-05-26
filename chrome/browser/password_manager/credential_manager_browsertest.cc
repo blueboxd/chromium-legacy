@@ -132,10 +132,8 @@ class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
     ASSERT_NO_FATAL_FAILURE(ScheduleNavigatorStoreCredentialAtUnload(
         WebContents(), "user", "hunter2"));
 
-    // Trigger a same-site navigation carried out in the same RenderFrame.
-    content::RenderFrameHost* old_rfh = WebContents()->GetMainFrame();
+    // Trigger a same-site navigation.
     ui_test_utils::NavigateToURL(browser(), a_url2);
-    ASSERT_EQ(old_rfh, WebContents()->GetMainFrame());
 
     // Ensure that the old document no longer has a mojom::CredentialManager
     // interface connection to the ContentCredentialManager, nor can it get one
@@ -848,9 +846,7 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_TRUE(client->was_store_ever_called());
 
   // Trigger a same-site navigation.
-  content::RenderFrameHost* old_rfh = WebContents()->GetMainFrame();
   ui_test_utils::NavigateToURL(browser(), a_url2);
-  ASSERT_EQ(old_rfh, WebContents()->GetMainFrame());
 
   // Expect the Mojo connection closed.
   EXPECT_FALSE(client->has_binding_for_credential_manager());
@@ -864,7 +860,6 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
 
   // Same-document navigation. Call to get() succeeds.
   ui_test_utils::NavigateToURL(browser(), a_url2_ref);
-  ASSERT_EQ(old_rfh, WebContents()->GetMainFrame());
   EXPECT_TRUE(client->has_binding_for_credential_manager());
   ASSERT_NO_FATAL_FAILURE(
       TriggerNavigatorGetPasswordCredentialsAndExpectHasResult(WebContents(),

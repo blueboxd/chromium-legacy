@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
@@ -133,10 +134,11 @@ class RenderViewHostTester {
   virtual ~RenderViewHostTester() {}
 
   // Gives tests access to RenderViewHostImpl::CreateRenderView.
-  virtual bool CreateTestRenderView(const base::string16& frame_name,
-                                    int opener_frame_route_id,
-                                    int proxy_routing_id,
-                                    bool created_with_opener) = 0;
+  virtual bool CreateTestRenderView(
+      const base::string16& frame_name,
+      const base::Optional<base::UnguessableToken>& opener_frame_route_id,
+      int proxy_routing_id,
+      bool created_with_opener) = 0;
 
   // Makes the WasHidden/WasShown calls to the RenderWidget that
   // tell it it has been hidden or restored from having been hidden.

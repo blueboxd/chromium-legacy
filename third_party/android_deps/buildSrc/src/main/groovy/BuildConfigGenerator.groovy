@@ -421,6 +421,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # Ignore the dependency to org.apache.http.legacy. See crbug.com/1084879.\n')
                 sb.append('  ignore_manifest = true\n')
                 break
+            case 'org_robolectric_shadows_multidex':
+                sb.append('  # Relies on com_android_support_multidex.\n')
+                sb.append('  enable_jetify = true\n')
+                break
         }
     }
 

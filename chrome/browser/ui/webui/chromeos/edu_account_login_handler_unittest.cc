@@ -230,7 +230,7 @@ TEST_F(EduAccountLoginHandlerTest, HandleGetParentsFailure) {
   handler()->HandleGetParents(&list_args);
 
   // Simulate failed fetching of family members.
-  handler()->OnFailure(FamilyInfoFetcher::ErrorCode::NETWORK_ERROR);
+  handler()->OnFailure(FamilyInfoFetcher::ErrorCode::kNetworkError);
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   VerifyJavascriptCallbackResolved(data, callback_id, false /*success*/);
 

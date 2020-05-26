@@ -1429,6 +1429,33 @@ java_prebuilt("org_robolectric_robolectric_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("org_robolectric_shadows_multidex_java") {
+  jar_path = "libs/org_robolectric_shadows_multidex/shadows-multidex-4.3.1.jar"
+  output_name = "org_robolectric_shadows_multidex"
+  enable_bytecode_checks = false
+  testonly = true
+  deps = [ ":org_robolectric_annotations_java" ]
+  bypass_platform_checks = true
+
+  # Relies on com_android_support_multidex.
+  enable_jetify = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("org_robolectric_shadows_playservices_java") {
+  jar_path =
+      "libs/org_robolectric_shadows_playservices/shadows-playservices-4.3.1.jar"
+  output_name = "org_robolectric_shadows_playservices"
+  enable_bytecode_checks = false
+  testonly = true
+  deps = [
+    ":com_google_guava_guava_java",
+    ":org_robolectric_annotations_java",
+  ]
+  bypass_platform_checks = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("android_arch_core_common_java") {
   jar_path = "libs/android_arch_core_common/common-1.1.1.jar"
   output_name = "android_arch_core_common"

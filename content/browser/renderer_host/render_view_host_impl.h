@@ -19,6 +19,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/process/kill.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/input_device_change_observer.h"
@@ -136,7 +137,7 @@ class CONTENT_EXPORT RenderViewHostImpl
   // |replicated_frame_state| contains replicated data for the top-level
   //   frame, such as its name and sandbox flags.
   virtual bool CreateRenderView(
-      int opener_frame_route_id,
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
       int proxy_route_id,
       const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,

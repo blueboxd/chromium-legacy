@@ -306,7 +306,8 @@ void ChildAccountService::OnGetFamilyMembersSuccess(
 }
 
 void ChildAccountService::OnFailure(FamilyInfoFetcher::ErrorCode error) {
-  DLOG(WARNING) << "GetFamilyMembers failed with code " << error;
+  DLOG(WARNING) << "GetFamilyMembers failed with code "
+                << static_cast<int>(error);
   family_fetch_backoff_.InformOfRequest(false);
   ScheduleNextFamilyInfoUpdate(family_fetch_backoff_.GetTimeUntilRelease());
 }

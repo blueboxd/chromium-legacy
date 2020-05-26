@@ -11,9 +11,7 @@ namespace content {
 namespace protocol {
 
 InspectorHandler::InspectorHandler()
-    : DevToolsDomainHandler(Inspector::Metainfo::domainName),
-      host_(nullptr) {
-}
+    : DevToolsDomainHandler(Inspector::Metainfo::domainName) {}
 
 InspectorHandler::~InspectorHandler() {
 }
@@ -36,10 +34,15 @@ void InspectorHandler::SetRenderer(int process_host_id,
 }
 
 void InspectorHandler::TargetCrashed() {
+  target_crashed_ = true;
   frontend_->TargetCrashed();
 }
 
 void InspectorHandler::TargetReloadedAfterCrash() {
+  // Only send the event if targetCrashed was previously sent in this session.
+  if (!target_crashed_)
+    return;
+  target_crashed_ = true;
   frontend_->TargetReloadedAfterCrash();
 }
 
@@ -49,7 +52,7 @@ void InspectorHandler::TargetDetached(const std::string& reason) {
 
 Response InspectorHandler::Enable() {
   if (host_ && !host_->IsRenderFrameLive())
-    frontend_->TargetCrashed();
+    TargetCrashed();
   return Response::Success();
 }
 

@@ -2377,11 +2377,11 @@ bool RenderFrameHostManager::InitRenderView(
   if (render_view_host->IsRenderViewLive())
     return true;
 
-  int opener_frame_routing_id =
-      GetOpenerRoutingID(render_view_host->GetSiteInstance());
+  auto opener_frame_token =
+      GetOpenerFrameToken(render_view_host->GetSiteInstance());
 
   bool created = delegate_->CreateRenderViewForRenderManager(
-      render_view_host, opener_frame_routing_id,
+      render_view_host, opener_frame_token,
       proxy ? proxy->GetRoutingID() : MSG_ROUTING_NONE,
       proxy
           ? proxy->GetFrameToken()
@@ -3044,15 +3044,6 @@ void RenderFrameHostManager::CreateOpenerProxiesForFrameTree(
   if (skip_this_node && skip_this_node->frame_tree() != frame_tree)
     skip_this_node = nullptr;
   frame_tree->CreateProxiesForSiteInstance(skip_this_node, instance);
-}
-
-int RenderFrameHostManager::GetOpenerRoutingID(SiteInstance* instance) {
-  if (!frame_tree_node_->opener())
-    return MSG_ROUTING_NONE;
-
-  return frame_tree_node_->opener()
-      ->render_manager()
-      ->GetRoutingIdForSiteInstance(instance);
 }
 
 base::Optional<base::UnguessableToken>

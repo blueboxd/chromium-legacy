@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -438,7 +439,7 @@ void RenderViewTest::SetUp() {
   process_ = std::make_unique<RenderProcess>();
 
   mojom::CreateViewParamsPtr view_params = mojom::CreateViewParams::New();
-  view_params->opener_frame_route_id = MSG_ROUTING_NONE;
+  view_params->opener_frame_token = base::nullopt;
   view_params->window_was_created_with_opener = false;
   view_params->renderer_preferences = blink::mojom::RendererPreferences::New();
   view_params->web_preferences = WebPreferences();

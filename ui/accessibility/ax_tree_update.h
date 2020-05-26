@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
+#include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event_intent.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -102,6 +103,16 @@ std::string AXTreeUpdateBase<AXNodeData, AXTreeData>::ToString() const {
 
   if (root_id != 0) {
     result += "AXTreeUpdate: root id " + base::NumberToString(root_id) + "\n";
+  }
+
+  if (event_from != ax::mojom::EventFrom::kNone)
+    result += "event_from=" + std::string(ui::ToString(event_from)) + "\n";
+
+  if (!event_intents.empty()) {
+    result += "event_intents=[\n";
+    for (const auto& event_intent : event_intents)
+      result += "  " + event_intent.ToString() + "\n";
+    result += "]\n";
   }
 
   // The challenge here is that we want to indent the nodes being updated

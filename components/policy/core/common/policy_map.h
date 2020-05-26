@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/values.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_types.h"
@@ -48,6 +49,11 @@ class POLICY_EXPORT PolicyMap {
           PolicyScope scope,
           PolicySource source,
           std::unique_ptr<base::Value> value,
+          std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
+    Entry(PolicyLevel level,
+          PolicyScope scope,
+          PolicySource source,
+          base::Optional<base::Value> value,
           std::unique_ptr<ExternalDataFetcher> external_data_fetcher);
     ~Entry();
 

@@ -9,7 +9,6 @@
 #include "base/check_op.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model_impl/model_type_store_backend.h"
@@ -240,8 +239,6 @@ base::Optional<ModelError> BlockingModelTypeStoreImpl::CommitWriteBatch(
   std::unique_ptr<LevelDbWriteBatch> write_batch_impl(
       static_cast<LevelDbWriteBatch*>(write_batch.release()));
   DCHECK_EQ(write_batch_impl->GetModelType(), type_);
-  UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeStoreCommitCount",
-                            ModelTypeHistogramValue(type_));
   return backend_->WriteModifications(
       LevelDbWriteBatch::ToLevelDbWriteBatch(std::move(write_batch_impl)));
 }

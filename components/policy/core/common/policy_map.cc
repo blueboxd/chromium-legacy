@@ -48,6 +48,18 @@ PolicyMap::Entry::Entry(
       source(source),
       value(std::move(value)),
       external_data_fetcher(std::move(external_data_fetcher)) {}
+PolicyMap::Entry::Entry(
+    PolicyLevel level,
+    PolicyScope scope,
+    PolicySource source,
+    base::Optional<base::Value> value,
+    std::unique_ptr<ExternalDataFetcher> external_data_fetcher)
+    : Entry(level,
+            scope,
+            source,
+            value.has_value() ? std::make_unique<base::Value>(std::move(*value))
+                              : nullptr,
+            std::move(external_data_fetcher)) {}
 
 PolicyMap::Entry::~Entry() = default;
 
@@ -153,7 +165,7 @@ bool PolicyMap::Entry::IsIgnoredByAtomicGroup() const {
          error_message_ids_.end();
 }
 
-PolicyMap::PolicyMap() {}
+PolicyMap::PolicyMap() = default;
 
 PolicyMap::~PolicyMap() {
   Clear();

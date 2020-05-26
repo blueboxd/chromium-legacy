@@ -17,15 +17,33 @@ struct SerializedServiceWorkerRegistration {
   array<ServiceWorkerResourceRecord> resources;
 };
 
+// An interface that is used to keep track of which service worker versions are
+// being used by clients of the storage service. This is an empty interface that
+// is mapped internally by the storage service to a single version.
+//
+// This is used to decide when it's safe to purge resources for a service worker
+// version whose registration has been deleted. A service worker version can be
+// still be used and may need to be started and stopped multiple times after
+// unregistration. The client of the storage service should hold on to the
+// reference as long as it's using the version, i.e., by making the reference
+// owned by the C++ ServiceWorkerVersion instance.
+interface ServiceWorkerLiveVersionRef {};
+
 // Conveys a result of finding a registration. If a registration is found,
-// |status| will be kOk. |registration| and |resources| are null and empty
-// if there is no matching registration.
+// |status| will be kOk. |version_reference|, |registration| and |resources| are
+// null or empty if there is no matching registration.
 //
 // The Storage Service (components/services/storage) supplies this
 // information and the //content consumes the information.
 struct ServiceWorkerFindRegistrationResult {
+  // The result of a find operation.
   ServiceWorkerDatabaseStatus status;
+  // A reference to a service worker version associated with
+  // |registration->version_id|.
+  pending_remote<ServiceWorkerLiveVersionRef>? version_reference;
+  // Stored registration.
   ServiceWorkerRegistrationData? registration;
+  // Resources associated with |registration|.
   array<ServiceWorkerResourceRecord> resources;
 };
 
@@ -140,6 +158,8 @@ interface ServiceWorkerStorageControl {
   // Returns a new service worker version id which is guaranteed to be unique
   // in the storage. Returns blink::mojom::kInvalidServiceWorkerVersionId if
   // the storage is disabled.
+  // TODO(crbug.com/1055677): This method should return a
+  // ServiceWorkerLiveVersionRef.
   GetNewVersionId() => (int64 version_id);
   // Returns a new resource id which is guaranteed to be unique in the storage.
   // Returns blink::mojom::kInvalidServiceWorkerResourceId if the storage

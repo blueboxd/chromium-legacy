@@ -440,10 +440,9 @@ void RenderViewImpl::Initialize(
   bool has_show_callback = !!show_callback;
 #endif
 
-  WebFrame* opener_frame =
-      RenderFrameImpl::ResolveWebFrame(params->opener_frame_route_id);
   auto opener_frame_token =
-      opener_frame ? opener_frame->GetFrameToken() : base::UnguessableToken();
+      params->opener_frame_token.value_or(base::UnguessableToken());
+  auto* opener_frame = WebFrame::FromFrameToken(opener_frame_token);
 
   // The newly created webview_ is owned by this instance.
   webview_ = WebView::Create(this, params->hidden,
@@ -1297,7 +1296,7 @@ WebView* RenderViewImpl::CreateView(
   // disagrees.
   mojom::CreateViewParamsPtr view_params = mojom::CreateViewParams::New();
 
-  view_params->opener_frame_route_id = creator_frame->GetRoutingID();
+  view_params->opener_frame_token = creator->GetFrameToken();
   DCHECK_EQ(GetRoutingID(), creator_frame->render_view()->GetRoutingID());
 
   view_params->window_was_created_with_opener = true;

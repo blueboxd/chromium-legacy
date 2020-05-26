@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -74,7 +75,7 @@ class TextInputClientMacTest : public content::RenderViewHostTestHarness {
     content::RenderViewHostTestHarness::SetUp();
     local_frame_ = std::make_unique<TextInputClientLocalFrame>(web_contents());
     RenderViewHostTester::For(rvh())->CreateTestRenderView(
-        base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+        base::string16(), base::nullopt, MSG_ROUTING_NONE, false);
     widget_ = rvh()->GetWidget();
     FocusWebContentsOnMainFrame();
   }

@@ -30,6 +30,8 @@
 namespace content {
 
 using DatabaseStatus = storage::mojom::ServiceWorkerDatabaseStatus;
+using RegistrationData = storage::mojom::ServiceWorkerRegistrationDataPtr;
+using ResourceRecord = storage::mojom::ServiceWorkerResourceRecordPtr;
 using FindRegistrationResult =
     storage::mojom::ServiceWorkerFindRegistrationResultPtr;
 
@@ -190,7 +192,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     storage()->FindRegistrationForClientUrl(
         client_url,
         base::BindLambdaForTesting([&](FindRegistrationResult result) {
-          return_value = result.Clone();
+          return_value = std::move(result);
           loop.Quit();
         }));
     loop.Run();
@@ -202,7 +204,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     base::RunLoop loop;
     storage()->FindRegistrationForScope(
         scope, base::BindLambdaForTesting([&](FindRegistrationResult result) {
-          return_value = result.Clone();
+          return_value = std::move(result);
           loop.Quit();
         }));
     loop.Run();
@@ -216,7 +218,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     storage()->FindRegistrationForId(
         registration_id, origin,
         base::BindLambdaForTesting([&](FindRegistrationResult result) {
-          return_value = result.Clone();
+          return_value = std::move(result);
           loop.Quit();
         }));
     loop.Run();
@@ -243,7 +245,7 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
   }
 
   DatabaseStatus StoreRegistration(
-      storage::mojom::ServiceWorkerRegistrationDataPtr registration,
+      RegistrationData registration,
       std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources) {
     DatabaseStatus out_status;
     base::RunLoop loop;
@@ -511,17 +513,14 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     return return_value;
   }
 
-  // Create a registration with a single resource and stores the registration.
-  DatabaseStatus CreateAndStoreRegistration(int64_t registration_id,
-                                            int64_t version_id,
-                                            int64_t resource_id,
-                                            const GURL& scope,
-                                            const GURL& script_url,
-                                            int64_t script_size) {
-    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
-    resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
-        resource_id, script_url, script_size));
-
+  // Creates a registration with the given resource records.
+  RegistrationData CreateRegistrationData(
+      int64_t registration_id,
+      int64_t version_id,
+      const GURL& scope,
+      const GURL& script_url,
+      const std::vector<storage::mojom::ServiceWorkerResourceRecordPtr>&
+          resources) {
     auto data = storage::mojom::ServiceWorkerRegistrationData::New();
     data->registration_id = registration_id;
     data->version_id = version_id;
@@ -536,9 +535,51 @@ class ServiceWorkerStorageControlImplTest : public testing::Test {
     }
     data->resources_total_size_bytes = resources_total_size_bytes;
 
+    return data;
+  }
+
+  // Creates a registration with a single resource and stores the registration.
+  DatabaseStatus CreateAndStoreRegistration(int64_t registration_id,
+                                            int64_t version_id,
+                                            int64_t resource_id,
+                                            const GURL& scope,
+                                            const GURL& script_url,
+                                            int64_t script_size) {
+    std::vector<storage::mojom::ServiceWorkerResourceRecordPtr> resources;
+    resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+        resource_id, script_url, script_size));
+
+    RegistrationData data = CreateRegistrationData(
+        registration_id, version_id, scope, script_url, resources);
+
     DatabaseStatus status =
         StoreRegistration(std::move(data), std::move(resources));
     return status;
+  }
+
+  int WriteResource(int64_t resource_id, const std::string& data) {
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(
+            "HTTP/1.1 200 OK\n"
+            "Content-Type: application/javascript\n"));
+    response_head->headers->GetMimeType(&response_head->mime_type);
+
+    mojo::Remote<storage::mojom::ServiceWorkerResourceWriter> writer =
+        CreateResourceWriter(resource_id);
+    int result = WriteResponseHead(writer.get(), std::move(response_head));
+    if (result < 0)
+      return result;
+
+    mojo_base::BigBuffer buffer(base::as_bytes(base::make_span(data)));
+    result = WriteResponseData(writer.get(), std::move(buffer));
+    return result;
+  }
+
+  std::string ReadResource(int64_t resource_id, int data_size) {
+    mojo::Remote<storage::mojom::ServiceWorkerResourceReader> reader =
+        CreateResourceReader(resource_id);
+    return ReadResponseData(reader.get(), data_size);
   }
 
   mojo::Remote<storage::mojom::ServiceWorkerResourceReader>
@@ -1245,6 +1286,95 @@ TEST_F(ServiceWorkerStorageControlImplTest, ApplyPolicyUpdates) {
   {
     FindRegistrationResult result = FindRegistrationForScope(kScope2);
     ASSERT_EQ(result->status, DatabaseStatus::kErrorNotFound);
+  }
+}
+
+TEST_F(ServiceWorkerStorageControlImplTest, TrackRunningVersion) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  const GURL kImportedScriptUrl("https://www.example.com/imported.js");
+
+  LazyInitializeForTest();
+
+  // Preparation: Create a registration with two resources (The main script and
+  // an imported script).
+  int result;
+  std::vector<ResourceRecord> resources;
+  const int64_t resource_id1 = GetNewResourceId();
+  const std::string resource_data1 = "main script data";
+  result = WriteResource(resource_id1, resource_data1);
+  ASSERT_GT(result, 0);
+  resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      resource_id1, kScriptUrl, resource_data1.size()));
+
+  const int64_t resource_id2 = GetNewResourceId();
+  const std::string resource_data2 = "imported script data";
+  result = WriteResource(resource_id2, resource_data2);
+  ASSERT_GT(result, 0);
+  resources.push_back(storage::mojom::ServiceWorkerResourceRecord::New(
+      resource_id2, kImportedScriptUrl, resource_data2.size()));
+
+  const int64_t registration_id = GetNewRegistrationId();
+  const int64_t version_id = GetNewVersionId();
+  RegistrationData registration_data = CreateRegistrationData(
+      registration_id, version_id, kScope, kScriptUrl, resources);
+  DatabaseStatus status =
+      StoreRegistration(std::move(registration_data), std::move(resources));
+  ASSERT_EQ(status, DatabaseStatus::kOk);
+
+  // Create two references.
+  mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> reference1;
+  {
+    FindRegistrationResult result =
+        FindRegistrationForId(registration_id, kScope.GetOrigin());
+    ASSERT_EQ(result->status, DatabaseStatus::kOk);
+    ASSERT_TRUE(result->version_reference);
+    reference1.Bind(std::move(result->version_reference));
+  }
+
+  mojo::Remote<storage::mojom::ServiceWorkerLiveVersionRef> reference2;
+  {
+    FindRegistrationResult result =
+        FindRegistrationForId(registration_id, kScope.GetOrigin());
+    ASSERT_EQ(result->status, DatabaseStatus::kOk);
+    ASSERT_TRUE(result->version_reference);
+    reference2.Bind(std::move(result->version_reference));
+  }
+
+  // Drop the first reference and delete the registration.
+  reference1.reset();
+  {
+    DeleteRegistrationResult result =
+        DeleteRegistration(registration_id, kScope.GetOrigin());
+    ASSERT_EQ(result.status, DatabaseStatus::kOk);
+  }
+
+  // Make sure all tasks are ran.
+  // TODO(bashi): Don't rely on RunAllTasksUntilIdle()?
+  content::RunAllTasksUntilIdle();
+
+  // Resources shouldn't be purged because there is an active reference.
+  {
+    std::string read_resource_data1 =
+        ReadResource(resource_id1, resource_data1.size());
+    ASSERT_EQ(read_resource_data1, resource_data1);
+    std::string read_resource_data2 =
+        ReadResource(resource_id2, resource_data2.size());
+    ASSERT_EQ(read_resource_data2, resource_data2);
+  }
+
+  // Drop the second reference.
+  reference2.reset();
+  content::RunAllTasksUntilIdle();
+
+  // Resources should have been purged.
+  {
+    std::string read_resource_data1 =
+        ReadResource(resource_id1, resource_data1.size());
+    ASSERT_EQ(read_resource_data1, "");
+    std::string read_resource_data2 =
+        ReadResource(resource_id2, resource_data2.size());
+    ASSERT_EQ(read_resource_data2, "");
   }
 }
 

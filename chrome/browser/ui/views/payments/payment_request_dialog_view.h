@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
 #include "components/payments/content/initialization_task.h"
 #include "components/payments/content/payment_request_dialog.h"
@@ -91,9 +92,9 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // Build a Dialog around the PaymentRequest object. |observer| is used to
   // be notified of dialog events as they happen (but may be NULL) and should
   // outlive this object.
-  PaymentRequestDialogView(PaymentRequest* request,
-                           PaymentRequestDialogView::ObserverForTest* observer);
-  ~PaymentRequestDialogView() override;
+  static base::WeakPtr<PaymentRequestDialogView> Create(
+      PaymentRequest* request,
+      PaymentRequestDialogView::ObserverForTest* observer);
 
   // views::View
   void RequestFocus() override;
@@ -194,6 +195,10 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // The browsertest validates the calculated dialog size.
   friend class PaymentHandlerWindowSizeTest;
 
+  PaymentRequestDialogView(PaymentRequest* request,
+                           PaymentRequestDialogView::ObserverForTest* observer);
+  ~PaymentRequestDialogView() override;
+
   void OnDialogOpened();
   void ShowInitialPaymentSheet();
   void SetupSpinnerOverlay();
@@ -235,6 +240,8 @@ class PaymentRequestDialogView : public views::DialogDelegateView,
   // Calculated based on the browser content size at the time of opening payment
   // handler window.
   int payment_handler_window_height_ = 0;
+
+  base::WeakPtrFactory<PaymentRequestDialogView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestDialogView);
 };

@@ -368,10 +368,10 @@ void ServiceWorkerRegistry::StoreRegistration(
         version->cross_origin_embedder_policy().value();
   }
 
-  auto resources = std::make_unique<ResourceList>();
-  version->script_cache_map()->GetResources(resources.get());
+  ResourceList resources;
+  version->script_cache_map()->GetResources(&resources);
 
-  if (resources->empty()) {
+  if (resources.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
                            blink::ServiceWorkerStatusCode::kErrorFailed));
@@ -379,7 +379,7 @@ void ServiceWorkerRegistry::StoreRegistration(
   }
 
   uint64_t resources_total_size_bytes = 0;
-  for (const auto& resource : *resources) {
+  for (const auto& resource : resources) {
     DCHECK_GE(resource->size_bytes, 0);
     resources_total_size_bytes += resource->size_bytes;
   }

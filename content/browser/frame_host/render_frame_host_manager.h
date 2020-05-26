@@ -16,6 +16,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/should_swap_browsing_instance.h"
@@ -116,7 +117,7 @@ class CONTENT_EXPORT RenderFrameHostManager
     // automatically called from LoadURL.
     virtual bool CreateRenderViewForRenderManager(
         RenderViewHost* render_view_host,
-        int opener_frame_routing_id,
+        const base::Optional<base::UnguessableToken>& opener_frame_token,
         int proxy_routing_id,
         const base::UnguessableToken& frame_token,
         const base::UnguessableToken& devtools_frame_token,
@@ -402,19 +403,11 @@ class CONTENT_EXPORT RenderFrameHostManager
   // https://crbug.com/511474.
   void CreateProxiesForNewNamedFrame();
 
-  // Returns a routing ID for the current FrameTreeNode's opener node in the
-  // given SiteInstance.  May return a routing ID of either a RenderFrameHost
-  // (if opener's current or pending RFH has SiteInstance |instance|) or a
-  // RenderFrameProxyHost.  Returns MSG_ROUTING_NONE if there is no opener, or
-  // if the opener node doesn't have a proxy for |instance|.
-  int GetOpenerRoutingID(SiteInstance* instance);
-
   // Returns a base::UnguessableToken for the current FrameTreeNode's opener
   // node in the given SiteInstance.  May return a frame token of either a
   // RenderFrameHost (if opener's current or pending RFH has SiteInstance
-  // |instance|) or a RenderFrameProxyHost.  Returns an empty frame token if
-  // there is no opener, or if the opener node doesn't have a proxy for
-  // |instance|.
+  // |instance|) or a RenderFrameProxyHost.  Returns base::nullopt if there is
+  // no opener, or if the opener node doesn't have a proxy for |instance|.
   base::Optional<base::UnguessableToken> GetOpenerFrameToken(
       SiteInstance* instance);
 

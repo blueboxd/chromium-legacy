@@ -6520,7 +6520,7 @@ void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(
 
 bool WebContentsImpl::CreateRenderViewForRenderManager(
     RenderViewHost* render_view_host,
-    int opener_frame_routing_id,
+    const base::Optional<base::UnguessableToken>& opener_frame_token,
     int proxy_routing_id,
     const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
@@ -6532,9 +6532,9 @@ bool WebContentsImpl::CreateRenderViewForRenderManager(
     CreateRenderWidgetHostViewForRenderManager(render_view_host);
 
   if (!static_cast<RenderViewHostImpl*>(render_view_host)
-           ->CreateRenderView(opener_frame_routing_id, proxy_routing_id,
-                              frame_token, devtools_frame_token,
-                              replicated_frame_state, created_with_opener_)) {
+           ->CreateRenderView(opener_frame_token, proxy_routing_id, frame_token,
+                              devtools_frame_token, replicated_frame_state,
+                              created_with_opener_)) {
     return false;
   }
   // Set the TextAutosizer state from the main frame's renderer on the new view,

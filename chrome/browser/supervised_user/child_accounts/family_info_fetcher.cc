@@ -5,6 +5,7 @@
 #include "chrome/browser/supervised_user/child_accounts/family_info_fetcher.h"
 
 #include <stddef.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -142,7 +143,7 @@ void FamilyInfoFetcher::OnAccessTokenFetchComplete(
   access_token_fetcher_.reset();
   if (error.state() != GoogleServiceAuthError::NONE) {
     DLOG(WARNING) << "Failed to get an access token: " << error.ToString();
-    consumer_->OnFailure(TOKEN_ERROR);
+    consumer_->OnFailure(ErrorCode::kTokenError);
     return;
   }
   access_token_ = access_token_info.token;
@@ -229,13 +230,13 @@ void FamilyInfoFetcher::OnSimpleLoaderCompleteInternal(
 
   if (response_code != net::HTTP_OK) {
     DLOG(WARNING) << "HTTP error " << response_code;
-    consumer_->OnFailure(NETWORK_ERROR);
+    consumer_->OnFailure(ErrorCode::kNetworkError);
     return;
   }
 
   if (net_error != net::OK) {
     DLOG(WARNING) << "NetError " << net_error;
-    consumer_->OnFailure(NETWORK_ERROR);
+    consumer_->OnFailure(ErrorCode::kNetworkError);
     return;
   }
 
@@ -294,27 +295,27 @@ void FamilyInfoFetcher::FamilyProfileFetched(const std::string& response) {
       base::JSONReader::ReadDeprecated(response);
   const base::DictionaryValue* dict = NULL;
   if (!value || !value->GetAsDictionary(&dict)) {
-    consumer_->OnFailure(SERVICE_ERROR);
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   const base::DictionaryValue* family_dict = NULL;
   if (!dict->GetDictionary(kIdFamily, &family_dict)) {
-    consumer_->OnFailure(SERVICE_ERROR);
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   FamilyProfile family;
   if (!family_dict->GetStringWithoutPathExpansion(kIdFamilyId, &family.id)) {
-    consumer_->OnFailure(SERVICE_ERROR);
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   const base::DictionaryValue* profile_dict = NULL;
   if (!family_dict->GetDictionary(kIdProfile, &profile_dict)) {
-    consumer_->OnFailure(SERVICE_ERROR);
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   if (!profile_dict->GetStringWithoutPathExpansion(kIdFamilyName,
                                                    &family.name)) {
-    consumer_->OnFailure(SERVICE_ERROR);
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   consumer_->OnGetFamilyProfileSuccess(family);
@@ -325,17 +326,17 @@ void FamilyInfoFetcher::FamilyMembersFetched(const std::string& response) {
       base::JSONReader::ReadDeprecated(response);
   const base::DictionaryValue* dict = NULL;
   if (!value || !value->GetAsDictionary(&dict)) {
-    consumer_->OnFailure(SERVICE_ERROR);
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   const base::ListValue* members_list = NULL;
   if (!dict->GetList(kIdMembers, &members_list)) {
-    consumer_->OnFailure(SERVICE_ERROR);
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   std::vector<FamilyMember> members;
-  if (!ParseMembers(members_list, &members)){
-    consumer_->OnFailure(SERVICE_ERROR);
+  if (!ParseMembers(members_list, &members)) {
+    consumer_->OnFailure(ErrorCode::kServiceError);
     return;
   }
   consumer_->OnGetFamilyMembersSuccess(members);

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 
 namespace content {
@@ -61,7 +62,7 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
   // reference is invalid once CloseDialog() has been called on it, because the
   // dialog will be destroyed. Owned by the views:: dialog machinery. Protected
   // for testing.
-  PaymentRequestDialog* shown_dialog_;
+  base::WeakPtr<PaymentRequestDialog> shown_dialog_;
 
  private:
   // Not owned but outlives the PaymentRequest object that owns this.

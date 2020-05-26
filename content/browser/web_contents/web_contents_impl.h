@@ -921,7 +921,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host,
-      int opener_frame_routing_id,
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
       int proxy_routing_id,
       const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,

@@ -20739,6 +20739,7 @@
       'name': 'PrintRasterizationMode',
       'owners': ['thestig@chromium.org', 'file://printing/OWNERS'],
       'type': 'int-enum',
+      'future': True,
       'schema': {
         'type': 'integer',
         'enum': [ 0, 1 ],

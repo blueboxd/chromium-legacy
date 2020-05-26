@@ -9,6 +9,9 @@
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
 #include "base/bind.h"
 #include "base/check_op.h"
+#include "base/debug/alias.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
@@ -124,6 +127,45 @@ void SurfaceTextureGLOwner::GetCodedSizeAndVisibleRect(
   surface_texture_->GetTransformMatrix(mtx);
 
   DecomposeTransform(mtx, rotated_visible_size, coded_size, visible_rect);
+
+  // TODO(https://crbug.com/1081695): This is to debug crash when we fail to
+  // create video frame later.
+  {
+    gfx::Size coded_size_for_debug = *coded_size;
+    gfx::Rect visible_rect_for_debug = *visible_rect;
+
+    base::debug::Alias(mtx);
+    base::debug::Alias(&coded_size_for_debug);
+    base::debug::Alias(&visible_rect_for_debug);
+    // This is copy paste of VideoFrame::IsValidConfig, we'are not allowed to
+    // include media/base here and need this code only for debug.
+    constexpr int kMaxDimension = (1 << 15) - 1;
+    constexpr int kMaxCanvas = (1 << (14 * 2));
+    int coded_size_area =
+        coded_size_for_debug.GetCheckedArea().ValueOrDefault(INT_MAX);
+    if (coded_size_area > kMaxCanvas ||
+        coded_size_for_debug.width() > kMaxDimension ||
+        coded_size_for_debug.height() > kMaxDimension ||
+        visible_rect_for_debug.x() < 0 || visible_rect_for_debug.y() < 0 ||
+        visible_rect_for_debug.right() > coded_size_for_debug.width() ||
+        visible_rect_for_debug.bottom() > coded_size_for_debug.height()) {
+      LOG(ERROR) << "Wrong matrix decomposition: coded: "
+                 << coded_size_for_debug.ToString()
+                 << "visible: " << visible_rect_for_debug.ToString()
+                 << "matrix: " << mtx[0] << ", " << mtx[1] << ", " << mtx[4]
+                 << ", " << mtx[5] << ", " << mtx[12] << ", " << mtx[13];
+
+      static auto* coded_size_str = base::debug::AllocateCrashKeyString(
+          "coded_size", base::debug::CrashKeySize::Size64);
+      static auto* visible_rect_str = base::debug::AllocateCrashKeyString(
+          "visible_rect", base::debug::CrashKeySize::Size256);
+      base::debug::SetCrashKeyString(coded_size_str,
+                                     coded_size_for_debug.ToString());
+      base::debug::SetCrashKeyString(visible_rect_str,
+                                     visible_rect_for_debug.ToString());
+      base::debug::DumpWithoutCrashing();
+    }
+  }
 }
 
 // static

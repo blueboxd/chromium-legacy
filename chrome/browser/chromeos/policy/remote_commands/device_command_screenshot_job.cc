@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/syslog_logging.h"
@@ -129,9 +130,8 @@ void DeviceCommandScreenshotJob::OnFailure(UploadJob::ErrorCode error_code) {
 
 bool DeviceCommandScreenshotJob::ParseCommandPayload(
     const std::string& command_payload) {
-  std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValueDeprecated(command_payload));
-  if (!root.get())
+  base::Optional<base::Value> root(base::JSONReader::Read(command_payload));
+  if (!root)
     return false;
   base::DictionaryValue* payload = nullptr;
   if (!root->GetAsDictionary(&payload))

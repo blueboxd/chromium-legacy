@@ -143,15 +143,6 @@ void LoadBookmarks(const base::FilePath& path,
       details->set_model_meta_info_map(codec.model_meta_info_map());
       UMA_HISTOGRAM_TIMES("Bookmarks.DecodeTime",
                           TimeTicks::Now() - start_time);
-      int64_t size = 0;
-      if (base::GetFileSize(path, &size)) {
-        int64_t size_kb = size / 1024;
-        // For 0 bookmarks, file size is 700 bytes (less than 1KB)
-        // Bookmarks file size is not expected to exceed 50000KB (50MB) for most
-        // of the users.
-        UMA_HISTOGRAM_CUSTOM_COUNTS("Bookmarks.FileSize", size_kb, 1, 50000,
-                                    25);
-      }
 
       load_index = true;
     }

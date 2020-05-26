@@ -61,49 +61,13 @@ std::unique_ptr<views::View> CreateViewAndInstallController(
 
 }  // namespace
 
-PaymentRequestDialogView::PaymentRequestDialogView(
+// static
+base::WeakPtr<PaymentRequestDialogView> PaymentRequestDialogView::Create(
     PaymentRequest* request,
-    PaymentRequestDialogView::ObserverForTest* observer)
-    : request_(request), observer_for_testing_(observer) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  SetButtons(ui::DIALOG_BUTTON_NONE);
-
-  SetCloseCallback(base::BindOnce(&PaymentRequestDialogView::OnDialogClosed,
-                                  base::Unretained(this)));
-
-  request->spec()->AddObserver(this);
-  SetLayoutManager(std::make_unique<views::FillLayout>());
-
-  view_stack_ = AddChildView(std::make_unique<ViewStack>());
-
-  SetupSpinnerOverlay();
-
-  if (!request->state()->IsInitialized()) {
-    request->state()->AddInitializationObserver(this);
-    ++number_of_initialization_tasks_;
-  }
-
-  if (!request->spec()->IsInitialized()) {
-    request->spec()->AddInitializationObserver(this);
-    ++number_of_initialization_tasks_;
-  }
-
-  if (number_of_initialization_tasks_ > 0) {
-    ShowProcessingSpinner();
-  } else if (observer_for_testing_) {
-    // When testing, signal that the processing spinner events have passed, even
-    // though the UI does not need to show it.
-    observer_for_testing_->OnProcessingSpinnerShown();
-    observer_for_testing_->OnProcessingSpinnerHidden();
-  }
-
-  ShowInitialPaymentSheet();
-
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::PAYMENT_REQUEST);
+    PaymentRequestDialogView::ObserverForTest* observer) {
+  return (new PaymentRequestDialogView(request, observer))
+      ->weak_ptr_factory_.GetWeakPtr();
 }
-
-PaymentRequestDialogView::~PaymentRequestDialogView() {}
 
 void PaymentRequestDialogView::RequestFocus() {
   view_stack_->RequestFocus();
@@ -450,6 +414,50 @@ Profile* PaymentRequestDialogView::GetProfile() {
   return Profile::FromBrowserContext(
       request_->web_contents()->GetBrowserContext());
 }
+
+PaymentRequestDialogView::PaymentRequestDialogView(
+    PaymentRequest* request,
+    PaymentRequestDialogView::ObserverForTest* observer)
+    : request_(request), observer_for_testing_(observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  SetButtons(ui::DIALOG_BUTTON_NONE);
+
+  SetCloseCallback(base::BindOnce(&PaymentRequestDialogView::OnDialogClosed,
+                                  base::Unretained(this)));
+
+  request->spec()->AddObserver(this);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  view_stack_ = AddChildView(std::make_unique<ViewStack>());
+
+  SetupSpinnerOverlay();
+
+  if (!request->state()->IsInitialized()) {
+    request->state()->AddInitializationObserver(this);
+    ++number_of_initialization_tasks_;
+  }
+
+  if (!request->spec()->IsInitialized()) {
+    request->spec()->AddInitializationObserver(this);
+    ++number_of_initialization_tasks_;
+  }
+
+  if (number_of_initialization_tasks_ > 0) {
+    ShowProcessingSpinner();
+  } else if (observer_for_testing_) {
+    // When testing, signal that the processing spinner events have passed, even
+    // though the UI does not need to show it.
+    observer_for_testing_->OnProcessingSpinnerShown();
+    observer_for_testing_->OnProcessingSpinnerHidden();
+  }
+
+  ShowInitialPaymentSheet();
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::PAYMENT_REQUEST);
+}
+
+PaymentRequestDialogView::~PaymentRequestDialogView() = default;
 
 void PaymentRequestDialogView::OnDialogOpened() {
   if (request_->spec()->request_shipping() &&

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/json/json_reader.h"
+#include "base/optional.h"
 #include "base/syslog_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -34,9 +35,8 @@ enterprise_management::RemoteCommand_Type DeviceCommandSetVolumeJob::GetType()
 
 bool DeviceCommandSetVolumeJob::ParseCommandPayload(
     const std::string& command_payload) {
-  std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValueDeprecated(command_payload));
-  if (!root.get())
+  base::Optional<base::Value> root(base::JSONReader::Read(command_payload));
+  if (!root)
     return false;
   base::DictionaryValue* payload = nullptr;
   if (!root->GetAsDictionary(&payload))

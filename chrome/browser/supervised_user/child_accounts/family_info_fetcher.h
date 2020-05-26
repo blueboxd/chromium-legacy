@@ -34,10 +34,14 @@ class SharedURLLoaderFactory;
 // family members and their properties.
 class FamilyInfoFetcher {
  public:
-  enum ErrorCode {
-    TOKEN_ERROR,    // Failed to get OAuth2 token.
-    NETWORK_ERROR,  // Network failure.
-    SERVICE_ERROR,  // Service returned an error or malformed reply.
+  // Used in UMA, do not delete or reorder values.
+  // Update enums.xml when adding entries.
+  enum class ErrorCode : int {
+    kSuccess = 0,
+    kTokenError,    // Failed to get OAuth2 token.
+    kNetworkError,  // Network failure.
+    kServiceError,  // Service returned an error or malformed reply.
+    kMaxValue = kServiceError
   };
   // Note: If you add or update an entry, also update |kFamilyMemberRoleStrings|
   // in the .cc file.

@@ -328,7 +328,7 @@ void ServiceWorkerStorage::GetAllRegistrations(
 
 void ServiceWorkerStorage::StoreRegistrationData(
     storage::mojom::ServiceWorkerRegistrationDataPtr registration_data,
-    std::unique_ptr<ResourceList> resources,
+    ResourceList resources,
     StoreRegistrationDataCallback callback) {
   DCHECK_EQ(state_, STORAGE_STATE_INITIALIZED);
 
@@ -1366,13 +1366,12 @@ void ServiceWorkerStorage::WriteRegistrationInDB(
     ServiceWorkerDatabase* database,
     scoped_refptr<base::SequencedTaskRunner> original_task_runner,
     storage::mojom::ServiceWorkerRegistrationDataPtr registration,
-    std::unique_ptr<ResourceList> resources,
+    ResourceList resources,
     WriteRegistrationCallback callback) {
   DCHECK(database);
-  DCHECK(resources);
   ServiceWorkerDatabase::DeletedVersion deleted_version;
   ServiceWorkerDatabase::Status status =
-      database->WriteRegistration(*registration, *resources, &deleted_version);
+      database->WriteRegistration(*registration, resources, &deleted_version);
   original_task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), registration->script.GetOrigin(),

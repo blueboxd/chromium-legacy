@@ -39,7 +39,6 @@ class Origin;
 
 namespace content {
 
-class BrowserContext;
 class ChromeBlobStorageContext;
 class CacheStorageDispatcherHost;
 class CacheStorageManager;
@@ -65,7 +64,7 @@ class CONTENT_EXPORT CacheStorageContextWithManager
 class CONTENT_EXPORT CacheStorageContextImpl
     : public CacheStorageContextWithManager {
  public:
-  explicit CacheStorageContextImpl(BrowserContext* browser_context);
+  CacheStorageContextImpl();
 
   class Observer {
    public:

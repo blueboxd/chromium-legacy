@@ -1036,7 +1036,7 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
       web_contents1->GetRenderManagerForTesting();
   // Test the case that new RVH is considered live.
   manager1->current_host()->CreateRenderView(
-      -1, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
+      base::nullopt, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
       base::UnguessableToken::Create(), FrameReplicationState(), false);
   EXPECT_TRUE(manager1->current_host()->IsRenderViewLive());
   EXPECT_TRUE(manager1->current_frame_host()->IsRenderFrameLive());
@@ -1072,7 +1072,7 @@ TEST_P(RenderFrameHostManagerTest, WebUIInNewTab) {
   // Make sure the new RVH is considered live.  This is usually done in
   // RenderWidgetHost::Init when opening a new tab from a link.
   manager2->current_host()->CreateRenderView(
-      -1, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
+      base::nullopt, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
       base::UnguessableToken::Create(), FrameReplicationState(), false);
   EXPECT_TRUE(manager2->current_host()->IsRenderViewLive());
 
@@ -1393,7 +1393,7 @@ TEST_P(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
 
   // Make sure the new opener RVH is considered live.
   opener1_manager->current_host()->CreateRenderView(
-      -1, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
+      base::nullopt, MSG_ROUTING_NONE, base::UnguessableToken::Create(),
       base::UnguessableToken::Create(), FrameReplicationState(), false);
   EXPECT_TRUE(opener1_manager->current_host()->IsRenderViewLive());
   EXPECT_TRUE(opener1_manager->current_frame_host()->IsRenderFrameLive());
@@ -1431,8 +1431,8 @@ TEST_P(RenderFrameHostManagerTest, CleanUpProxiesOnProcessCrash) {
                   ->GetRenderViewHost()
                   ->IsRenderViewLive());
   EXPECT_EQ(
-      opener1_manager->GetRoutingIdForSiteInstance(rfh2->GetSiteInstance()),
-      rfh2->GetRenderViewHost()->opener_frame_route_id());
+      opener1_manager->GetFrameTokenForSiteInstance(rfh2->GetSiteInstance()),
+      rfh2->GetRenderViewHost()->opener_frame_token());
 }
 
 // Test that we reuse the same guest SiteInstance if we navigate across sites.

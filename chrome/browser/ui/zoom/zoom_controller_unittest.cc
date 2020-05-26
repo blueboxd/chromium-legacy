@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/zoom/zoom_controller.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -30,7 +31,7 @@ class ZoomControllerTest : public ChromeRenderViewHostTestHarness {
     // This call is needed so that the RenderViewHost reports being alive. This
     // is only important for tests that call ZoomController::SetZoomLevel().
     content::RenderViewHostTester::For(rvh())->CreateTestRenderView(
-        base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+        base::string16(), base::nullopt, MSG_ROUTING_NONE, false);
   }
 
   void TearDown() override {

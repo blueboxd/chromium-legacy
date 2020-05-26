@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/policy/proto/device_management_backend.pb.h"
@@ -139,8 +140,7 @@ DeviceCommandStartCRDSessionJob::GetType() const {
 
 bool DeviceCommandStartCRDSessionJob::ParseCommandPayload(
     const std::string& command_payload) {
-  std::unique_ptr<base::Value> root(
-      base::JSONReader().ReadToValueDeprecated(command_payload));
+  base::Optional<base::Value> root(base::JSONReader::Read(command_payload));
   if (!root)
     return false;
   if (!root->is_dict())

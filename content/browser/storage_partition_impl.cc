@@ -1258,7 +1258,7 @@ void StoragePartitionImpl::Initialize() {
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
       /*task_runner=*/nullptr);
 
-  cache_storage_context_ = new CacheStorageContextImpl(browser_context_);
+  cache_storage_context_ = new CacheStorageContextImpl();
   cache_storage_context_->Init(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy);
 

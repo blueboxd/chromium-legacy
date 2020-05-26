@@ -165,8 +165,12 @@ dependencies {
     androidTestCompile "androidx.test.uiautomator:uiautomator:2.2.0"
     androidTestCompile "com.googlecode.java-diff-utils:diffutils:1.3.0"
 
-    // Need to avoid having support_android = true set on dependencies.
-    testCompile "org.robolectric:robolectric:4.3.1"
+    def robolectricVersion = '4.3.1'
+    // Use testCompile to avoid having support_android = true set on
+    // robolectric dependencies.
+    testCompile "org.robolectric:robolectric:${robolectricVersion}"
+    testCompile "org.robolectric:shadows-multidex:${robolectricVersion}"
+    testCompile "org.robolectric:shadows-playservices:${robolectricVersion}"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {

@@ -14,6 +14,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/web_contents_tester.h"
@@ -120,7 +121,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   // Prevent interaction with views.
   bool CreateRenderViewForRenderManager(
       RenderViewHost* render_view_host,
-      int opener_frame_routing_id,
+      const base::Optional<base::UnguessableToken>& opener_frame_token,
       int proxy_routing_id,
       const base::UnguessableToken& frame_token,
       const base::UnguessableToken& devtools_frame_token,

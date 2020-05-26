@@ -5701,7 +5701,7 @@ crbug.com/1053903 [ Linux ] external/wpt/webxr/events_referenceSpace_reset_inlin
 crbug.com/1053903 [ Win ] external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Pass Failure Timeout ]
 
 # Sheriff 2020-02-21
-crbug.com/1054977 [ Mac ] media/video-controls-rendering.html [ Pass Failure ]
+crbug.com/1054977 media/video-controls-rendering.html [ Pass Failure ]
 
 # Sheriff 2020-02-21
 crbug.com/1054916 [ Linux ] external/wpt/webxr/dom-overlay/ar_dom_overlay.https.html [ Pass Failure Timeout ]

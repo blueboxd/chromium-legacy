@@ -48,7 +48,7 @@ class TestChromePaymentRequestDelegate : public ChromePaymentRequestDelegate {
   bool SkipUiForBasicCard() const override;
 
   PaymentRequestDialogView* dialog_view() {
-    return static_cast<PaymentRequestDialogView*>(shown_dialog_);
+    return static_cast<PaymentRequestDialogView*>(shown_dialog_.get());
   }
 
  private:

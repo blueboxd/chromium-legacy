@@ -586,6 +586,9 @@
   <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item's label, showing dialog to share the selected Google Drive files. This message is also used as a tooltip label and a spoken feedback label of a button which also shows the dialog to share the files. The translation should be consistent with the sharing dialog's title in Google Drive Web UI.">
     Share with others
   </message>
+  <message name="IDS_FILE_BROWSER_MANAGE_TOAST_BUTTON_LABEL" desc="Toast button label, manage file and folder sharing">
+    Manage
+  </message>
   <message name="IDS_FILE_BROWSER_MANAGE_IN_DRIVE_BUTTON_LABEL" desc="Menu item's label, showing dialog to open the selected Google Drive files in the Drive webpage for managing sharing permissions, etc.">
     Manage in Drive
   </message>

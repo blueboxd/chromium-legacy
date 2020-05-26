@@ -17,7 +17,6 @@
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/cache_storage/cross_sequence/cross_sequence_cache_storage_manager.h"
 #include "content/browser/cache_storage/legacy/legacy_cache_storage_manager.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/blob_storage_context.h"
@@ -50,8 +49,7 @@ scoped_refptr<base::SequencedTaskRunner> CreateSchedulerTaskRunner() {
 
 }  // namespace
 
-CacheStorageContextImpl::CacheStorageContextImpl(
-    BrowserContext* browser_context)
+CacheStorageContextImpl::CacheStorageContextImpl()
     : task_runner_(CreateSchedulerTaskRunner()),
       observers_(base::MakeRefCounted<ObserverList>()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

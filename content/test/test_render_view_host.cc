@@ -232,8 +232,7 @@ TestRenderViewHost::TestRenderViewHost(
                          swapped_out,
                          false /* has_initialized_audio_host */),
       delete_counter_(nullptr),
-      webkit_preferences_changed_counter_(nullptr),
-      opener_frame_route_id_(MSG_ROUTING_NONE) {
+      webkit_preferences_changed_counter_(nullptr) {
   // TestRenderWidgetHostView installs itself into this->view_ in its
   // constructor, and deletes itself when TestRenderWidgetHostView::Destroy() is
   // called.
@@ -247,19 +246,19 @@ TestRenderViewHost::~TestRenderViewHost() {
 
 bool TestRenderViewHost::CreateTestRenderView(
     const base::string16& frame_name,
-    int opener_frame_route_id,
+    const base::Optional<base::UnguessableToken>& opener_frame_token,
     int proxy_route_id,
     bool window_was_created_with_opener) {
   FrameReplicationState replicated_state;
   replicated_state.name = base::UTF16ToUTF8(frame_name);
-  return CreateRenderView(opener_frame_route_id, proxy_route_id,
+  return CreateRenderView(opener_frame_token, proxy_route_id,
                           base::UnguessableToken::Create(),
                           base::UnguessableToken::Create(), replicated_state,
                           window_was_created_with_opener);
 }
 
 bool TestRenderViewHost::CreateRenderView(
-    int opener_frame_route_id,
+    const base::Optional<base::UnguessableToken>& opener_frame_token,
     int proxy_route_id,
     const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
@@ -269,7 +268,7 @@ bool TestRenderViewHost::CreateRenderView(
   GetWidget()->SetRendererInitialized(
       true, RenderWidgetHostImpl::RendererInitializer::kTest);
   DCHECK(IsRenderViewLive());
-  opener_frame_route_id_ = opener_frame_route_id;
+  opener_frame_token_ = opener_frame_token;
   RenderFrameHostImpl* main_frame =
       static_cast<RenderFrameHostImpl*>(GetMainFrame());
   if (main_frame && is_active()) {

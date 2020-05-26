@@ -58,6 +58,9 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   // before dispatching it into platform.
   float device_scale_factor_;
 
+  float wheel_precision_x_ = 0.f;
+  float wheel_precision_y_ = 0.f;
+
   aura::EventInjector event_injector_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureTargetAura);

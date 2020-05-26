@@ -331,7 +331,7 @@ SiteInstanceImpl* RenderViewHostImpl::GetSiteInstance() {
 }
 
 bool RenderViewHostImpl::CreateRenderView(
-    int opener_frame_route_id,
+    const base::Optional<base::UnguessableToken>& opener_frame_token,
     int proxy_route_id,
     const base::UnguessableToken& frame_token,
     const base::UnguessableToken& devtools_frame_token,
@@ -395,7 +395,7 @@ bool RenderViewHostImpl::CreateRenderView(
   params->session_storage_namespace_id =
       delegate_->GetSessionStorageNamespace(instance_.get())->id();
   // Ensure the RenderView sets its opener correctly.
-  params->opener_frame_route_id = opener_frame_route_id;
+  params->opener_frame_token = opener_frame_token;
   params->replicated_frame_state = replicated_frame_state;
   params->proxy_routing_id = proxy_route_id;
   params->hidden = GetWidget()->delegate()->IsHidden();

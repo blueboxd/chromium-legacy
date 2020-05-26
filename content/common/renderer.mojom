@@ -54,9 +54,9 @@ struct CreateViewParams {
   // The session storage namespace ID this view should use.
   string session_storage_namespace_id;
 
-  // The route ID of the opener RenderFrame or RenderFrameProxy, if we need to
-  // set one (MSG_ROUTING_NONE otherwise).
-  int32 opener_frame_route_id = IPC.mojom.kRoutingIdNone;
+  // The frame token of the opener RenderFrame or RenderFrameProxy, if we need
+  // to set one (base::nullopt otherwise).
+  mojo_base.mojom.UnguessableToken? opener_frame_token;
 
   // Carries replicated information, such as frame name and sandbox flags, for
   // this view's main frame, which will be a proxy when |main_frame_routing_id|

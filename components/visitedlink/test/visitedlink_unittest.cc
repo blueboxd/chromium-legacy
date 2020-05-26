@@ -15,6 +15,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/process/process_handle.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -764,7 +765,7 @@ TEST_F(VisitedLinkEventsTest, Coalescence) {
 
 TEST_F(VisitedLinkEventsTest, Basics) {
   RenderViewHostTester::For(rvh())->CreateTestRenderView(
-      base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+      base::string16(), base::nullopt, MSG_ROUTING_NONE, false);
 
   // Waiting complete rebuild the table.
   content::RunAllTasksUntilIdle();
@@ -796,7 +797,7 @@ TEST_F(VisitedLinkEventsTest, Basics) {
 
 TEST_F(VisitedLinkEventsTest, TabVisibility) {
   RenderViewHostTester::For(rvh())->CreateTestRenderView(
-      base::string16(), MSG_ROUTING_NONE, MSG_ROUTING_NONE, false);
+      base::string16(), base::nullopt, MSG_ROUTING_NONE, false);
 
   // Waiting complete rebuild the table.
   content::RunAllTasksUntilIdle();

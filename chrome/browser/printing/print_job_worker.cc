@@ -258,7 +258,10 @@ void PrintJobWorker::GetSettingsWithUI(int document_page_count,
                                        SettingsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  content::WebContents* web_contents = GetWebContents();
+  PrintingContextDelegate* printing_context_delegate =
+      static_cast<PrintingContextDelegate*>(printing_context_delegate_.get());
+  content::WebContents* web_contents =
+      printing_context_delegate->GetWebContents();
 
 #if defined(OS_ANDROID)
   if (is_scripted) {
@@ -269,8 +272,6 @@ void PrintJobWorker::GetSettingsWithUI(int document_page_count,
     // call will return since startPendingPrint will make it return immediately
     // in case of error.
     if (tab) {
-      auto* printing_context_delegate = static_cast<PrintingContextDelegate*>(
-          printing_context_delegate_.get());
       PrintingContextAndroid::SetPendingPrint(
           web_contents->GetTopLevelNativeWindow(),
           GetPrintableForTab(tab->GetJavaObject()),
@@ -518,12 +519,6 @@ void PrintJobWorker::OnFailure() {
   // Makes sure the variables are reinitialized.
   document_ = nullptr;
   page_number_ = PageNumber::npos();
-}
-
-content::WebContents* PrintJobWorker::GetWebContents() {
-  PrintingContextDelegate* printing_context_delegate =
-      static_cast<PrintingContextDelegate*>(printing_context_delegate_.get());
-  return printing_context_delegate->GetWebContents();
 }
 
 }  // namespace printing

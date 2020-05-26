@@ -145,7 +145,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   // Stores |registration_data| and |resources| on persistent storage.
   void StoreRegistrationData(
       storage::mojom::ServiceWorkerRegistrationDataPtr registration_data,
-      std::unique_ptr<ResourceList> resources,
+      ResourceList resources,
       StoreRegistrationDataCallback callback);
 
   // Updates the state of the registration's stored version to active.
@@ -448,7 +448,7 @@ class CONTENT_EXPORT ServiceWorkerStorage {
       ServiceWorkerDatabase* database,
       scoped_refptr<base::SequencedTaskRunner> original_task_runner,
       storage::mojom::ServiceWorkerRegistrationDataPtr registration,
-      std::unique_ptr<ResourceList> resources,
+      ResourceList resources,
       WriteRegistrationCallback callback);
   static void FindForClientUrlInDB(
       ServiceWorkerDatabase* database,

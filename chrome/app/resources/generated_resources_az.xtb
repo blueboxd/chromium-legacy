@@ -167,6 +167,7 @@
 <translation id="1211769675100312947">Qısayolları siz seçirsiniz</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> barmaq izi quraşdırması</translation>
 <translation id="1213254615020057352">İstifadə və diaqnostika datasını göndərin. Diaqnostika, cihaz və tətbiqdən istifadə datasını avtomatik olaraq Google'a göndərməklə uşağınızın Android təcrübəsini təkmilləşdirməyə kömək edin. Bu məlumatlardan uşağınızı müəyyən etmək üçün istifadə edilməyəcək. Onlar sistem və tətbiq sabitliyi və digər təkmilləşdirmələrə kömək edəcək. Bəzi ümumiləşdirilmiş məlumatlar Google tətbiqlərinə və Android tərtibatçıları kimi partnyorlara da kömək edəcək. Bu ayar sahibi tərəfindən tətbiq edilir. Sahibi bu cihaz üzrə diaqnostika və istifadə datasını Google'a göndərməyi seçə bilər. Uşağınız üçün əlavə Veb və Tətbiq Fəaliyyəti ayarı aktiv edilərsə, bu data onun Google Hesabında yadda saxlanıla bilər.</translation>
+<translation id="121384500095351701">Bu faylı təhlükəsiz şəkildə endirmək mümkün deyil</translation>
 <translation id="1215411991991485844">Yeni arxa fon tətbiqi əlavə edildi</translation>
 <translation id="1216542092748365687">Barmaq izini silin</translation>
 <translation id="1217483152325416304">Lokal datanız tezliklə silinəcək</translation>
@@ -1060,6 +1061,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="2336228925368920074">Bütün Panelləri Əlfəcinləyin...</translation>
 <translation id="2336376423977300504">Həmişə pəncərələri bağladıqda kukilər silinsin</translation>
 <translation id="2336381494582898602">Sıfırlama</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> faylını təhlükəsiz şəkildə endirmək mümkün deyil</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ütləndirmək istəyir</translation>
 <translation id="2342740338116612727">Əlfəcinlər əlavə edildi</translation>
 <translation id="2343747224442182863">Bu Tabı Mərkəzə Gətirin</translation>
@@ -1763,7 +1765,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="32101887417650595">Printerə qoşulmaq mümkün deyil</translation>
 <translation id="321084946921799184">Sarı və ağ</translation>
 <translation id="321356136776075234">Cihaz OU (məs, OU=Chromebooks,DC=example,DC=com)</translation>
-<translation id="3216825226035747725">İstifadəçilər G Suite for Education hesabına daxil olduqları zaman hansı Google xidmətlərinə giriş imkanlarının olacağını G Suite for Education administratorları müəyyənləşdirir. Övladınızın bu nəzarət edilən hesabla daha əvvəl giriş edə bilmədiyi bəzi funksiyalar və ya xidmətlər daxil ola bilər. Məktəb administratorlarından azyaşlı istifadəçiləri tərəfindən xidmətlərin istifadəsi üzrə razılıq vermək və ya razılıq əldə etmək tələb edilir.</translation>
+<translation id="3216825226035747725">İstifadəçilər G Suite for Education hesabına daxil olduqları zaman hansı Google xidmətlərinə giriş imkanlarının olacağını G Suite for Education administratorları müəyyənləşdirir. Buraya övladınızın bu nəzarət edilən hesabla daha əvvəl giriş edə bilmədiyi bəzi funksiyalar və ya xidmətlər daxil ola bilər. Məktəb administratorlarından azyaşlı istifadəçiləri tərəfindən xidmətlərin istifadəsi üçün razılıq vermək və ya razılıq əldə etmək tələb edilir.</translation>
 <translation id="3217843140356091325">Qısayol yaradılsın?</translation>
 <translation id="321799795901478485">Zip Archiver</translation>
 <translation id="321834671654278338">Linux üçün quraşdırılmanın ləğvi</translation>
@@ -3247,6 +3249,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="5154702632169343078">Mövzu</translation>
 <translation id="5157635116769074044">Ekrana başlamaq üçün bu səhifəyə sancın...</translation>
 <translation id="5158983316805876233">Bütün protokollar üçün eyni proksi istifadə edin</translation>
+<translation id="5159419673777902220">Valideyniniz artırma icazələrini deaktiv edib</translation>
 <translation id="5160857336552977725"><ph name="DEVICE_TYPE" /> cihazınıza daxil olun</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> vaxtı keçdiyi üçün blok edilib</translation>
 <translation id="5170568018924773124">Qovluqda göstərin</translation>
@@ -5386,6 +5389,7 @@ Cihazda Family Link tətbiqini quraşdırmaqla bu hesabın ayarlarını idarə e
 <translation id="7925247922861151263">AAA yoxlanışı uğursuz oldu</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> gözlənilir...</translation>
 <translation id="7926423016278357561">Mən deyildim.</translation>
+<translation id="7926975587469166629">Kart ləqəbi</translation>
 <translation id="7928175190925744466">Artıq bu parolu dəyişmisiniz?</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> tərəfindən idarə edilir</translation>
 <translation id="7930294771522048157">Yadda saxlanmış ödəniş üsulları burada görünəcək</translation>

@@ -5,9 +5,9 @@
 #ifndef CRYPTO_SCOPED_NSS_TYPES_H_
 #define CRYPTO_SCOPED_NSS_TYPES_H_
 
+#include <certt.h>
 #include <keyhi.h>
 #include <nss.h>
-#include <nss/certt.h>
 #include <pk11pub.h>
 #include <plarena.h>
 

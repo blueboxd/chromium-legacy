@@ -100,7 +100,7 @@ HTMLImportLoader::State HTMLImportLoader::StartWritingAndParsing(
   document_ = MakeGarbageCollected<HTMLDocument>(
       DocumentInit::Create()
           .WithImportsController(controller_)
-          .WithContextDocument(master->ContextDocument())
+          .WithExecutionContext(master->GetExecutionContext())
           .WithRegistrationContext(master->RegistrationContext())
           .WithContentSecurityPolicy(master->GetContentSecurityPolicy())
           .WithURL(response.CurrentRequestUrl()));

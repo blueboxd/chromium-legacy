@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the Chromium source repository LICENSE file.
 
+#include "infcover.h"
+
 #include <cstddef>
 #include <vector>
 
-#include "infcover.h"
-#include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/zlib/google/compression_utils_portable.h"
+#include "compression_utils_portable.h"
+#include "gtest.h"
 #include "zlib.h"
 
 void TestPayloads(size_t input_size, zlib_internal::WrapperType type) {

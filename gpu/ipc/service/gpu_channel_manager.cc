@@ -721,7 +721,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
   }
 
   // TODO(penghuang): https://crbug.com/899735 Handle device lost for Vulkan.
-  shared_context_state_ = base::MakeRefCounted<SharedContextState>(
+  auto shared_context_state = base::MakeRefCounted<SharedContextState>(
       std::move(share_group), std::move(surface), std::move(context),
       use_virtualized_gl_contexts,
       base::BindOnce(&GpuChannelManager::OnContextLost, base::Unretained(this),
@@ -742,20 +742,25 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     if (gpu_preferences_.gr_context_type == gpu::GrContextType::kGL) {
       auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
           gpu_driver_bug_workarounds(), gpu_feature_info());
-      if (!shared_context_state_->InitializeGL(gpu_preferences_,
-                                               feature_info.get())) {
-        shared_context_state_ = nullptr;
+      if (!shared_context_state->InitializeGL(gpu_preferences_,
+                                              feature_info.get())) {
         LOG(ERROR) << "ContextResult::kFatalFailure: Failed to Initialize GL "
                       "for SharedContextState";
         *result = ContextResult::kFatalFailure;
         return nullptr;
       }
     }
-    shared_context_state_->InitializeGrContext(
-        gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
-        &activity_flags_, watchdog_);
+    if (!shared_context_state->InitializeGrContext(
+            gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
+            &activity_flags_, watchdog_)) {
+      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to Initialize"
+                    "GrContext for SharedContextState";
+      *result = ContextResult::kFatalFailure;
+      return nullptr;
+    }
   }
 
+  shared_context_state_ = std::move(shared_context_state);
   gr_cache_controller_.emplace(shared_context_state_.get(), task_runner_);
 
   *result = ContextResult::kSuccess;

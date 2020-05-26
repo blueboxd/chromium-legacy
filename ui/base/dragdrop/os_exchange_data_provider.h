@@ -33,8 +33,7 @@ namespace ui {
 
 // Controls whether or not filenames should be converted to file: URLs when
 // getting a URL.
-// TODO(crbug.com/1070138): convert to enum class.
-enum FilenameToURLPolicy {
+enum class FilenameToURLPolicy {
   CONVERT_FILENAMES,
   DO_NOT_CONVERT_FILENAMES,
 };

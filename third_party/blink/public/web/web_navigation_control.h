@@ -90,11 +90,6 @@ class WebNavigationControl : public WebLocalFrame {
   // dropped.
   virtual void DidDropNavigation() = 0;
 
-  // Marks the frame as loading, without performing any loading. Used for
-  // initial history navigations in child frames, which may actually happen
-  // in another process.
-  virtual void MarkAsLoading() = 0;
-
   // TODO(ahemery): Remove all IsClientNavigationInitialHistoryLoad functions
   // when IsPerNavigationMojoInterface is enabled.
   virtual bool IsClientNavigationInitialHistoryLoad() = 0;

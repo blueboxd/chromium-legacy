@@ -29,16 +29,13 @@ class SaveUnsyncedCredentialsLocallyBubbleController
   // Drops the unsynced credentials.
   void OnCancelClicked();
 
-  const std::vector<autofill::PasswordForm>& unsynced_credentials() const {
-    return unsynced_credentials_;
-  }
+  const std::vector<autofill::PasswordForm>& GetUnsyncedCredentials() const;
 
  private:
   // PasswordBubbleControllerBase methods:
   base::string16 GetTitle() const override;
   void ReportInteractions() override;
 
-  std::vector<autofill::PasswordForm> unsynced_credentials_;
   password_manager::metrics_util::UIDismissalReason dismissal_reason_;
 };
 

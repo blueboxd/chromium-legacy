@@ -1938,26 +1938,6 @@ bool WebViewImpl::SelectionBounds(WebRect& anchor_web,
   return true;
 }
 
-void WebViewImpl::DidAcquirePointerLock() {
-  if (MainFrameImpl())
-    MainFrameImpl()->FrameWidget()->DidAcquirePointerLock();
-}
-
-void WebViewImpl::DidNotAcquirePointerLock() {
-  if (MainFrameImpl())
-    MainFrameImpl()->FrameWidget()->DidNotAcquirePointerLock();
-}
-
-void WebViewImpl::DidLosePointerLock() {
-  // Make sure that the main frame wasn't swapped-out when the pointer lock is
-  // lost. There's a race that can happen when a pointer lock is requested, but
-  // the browser swaps out the main frame while the pointer lock request is in
-  // progress. This won't be needed once the main frame is refactored to not use
-  // the WebViewImpl as its WebWidget.
-  if (MainFrameImpl())
-    MainFrameImpl()->FrameWidget()->DidLosePointerLock();
-}
-
 // WebView --------------------------------------------------------------------
 
 WebSettingsImpl* WebViewImpl::SettingsImpl() {
@@ -2818,15 +2798,6 @@ void WebViewImpl::PerformCustomContextMenuAction(unsigned action) {
     AsView().page->GetContextMenuController().CustomContextMenuItemSelected(
         action);
   }
-}
-
-void WebViewImpl::ShowContextMenu(WebMenuSourceType source_type) {
-  if (!MainFrameImpl())
-    return;
-
-  // If MainFrameImpl() is non-null, then FrameWidget() will also be non-null.
-  DCHECK(MainFrameImpl()->FrameWidget());
-  MainFrameImpl()->FrameWidget()->ShowContextMenu(source_type);
 }
 
 WebURL WebViewImpl::GetURLForDebugTrace() {

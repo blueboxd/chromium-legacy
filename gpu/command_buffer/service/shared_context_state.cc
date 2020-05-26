@@ -191,7 +191,7 @@ SharedContextState::~SharedContextState() {
       this);
 }
 
-void SharedContextState::InitializeGrContext(
+bool SharedContextState::InitializeGrContext(
     const GpuPreferences& gpu_preferences,
     const GpuDriverBugWorkarounds& workarounds,
     GrContextOptions::PersistentCache* cache,
@@ -220,7 +220,7 @@ void SharedContextState::InitializeGrContext(
     if (!interface) {
       LOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
                     "failed.";
-      return;
+      return false;
     }
 
     if (activity_flags && cache) {
@@ -255,12 +255,13 @@ void SharedContextState::InitializeGrContext(
   }
 
   if (!gr_context_) {
-    LOG(ERROR) << "OOP raster support disabled: GrContext creation "
-                  "failed.";
-  } else {
-    gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
+    LOG(ERROR) << "OOP raster support disabled: GrContext creation failed.";
+    return false;
   }
+
+  gr_context_->setResourceCacheLimit(max_resource_cache_bytes);
   transfer_cache_ = std::make_unique<ServiceTransferCache>(gpu_preferences);
+  return true;
 }
 
 bool SharedContextState::InitializeGL(

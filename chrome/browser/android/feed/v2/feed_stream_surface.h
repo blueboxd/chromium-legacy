@@ -38,9 +38,10 @@ class FeedStreamSurface : public FeedStreamApi::SurfaceInterface {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jbyteArray>& data);
 
-  int ExecuteEphemeralChange(JNIEnv* env,
-                             const base::android::JavaParamRef<jobject>& obj,
-                             const base::android::JavaParamRef<jobject>& data);
+  int ExecuteEphemeralChange(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jbyteArray>& data);
 
   void CommitEphemeralChange(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj,

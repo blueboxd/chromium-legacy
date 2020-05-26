@@ -61,6 +61,7 @@ class ViewAXPlatformNodeDelegate : public ViewAccessibility,
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   gfx::NativeViewAccessible GetParent() override;
+  bool IsLeaf() const override;
   gfx::Rect GetBoundsRect(
       const ui::AXCoordinateSystem coordinate_system,
       const ui::AXClippingBehavior clipping_behavior,

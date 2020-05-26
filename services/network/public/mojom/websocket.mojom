@@ -94,12 +94,6 @@ interface WebSocketClient {
               WebSocketMessageType type,
               uint64 data_length);
 
-  // Add |quota| bytes of send quota. |quota| must be positive. Initial quota
-  // is 0. The renderer will wait for an AddSendFlowControlQuota() message
-  // before forwarding any messages to the browser. Total quota must never
-  // exceed 0x7FFFFFFFFFFFFFFF bytes.
-  AddSendFlowControlQuota(int64 quota);
-
   // Drop the channel.
   //
   // When sent by the renderer, this will cause a Close message will be sent and
@@ -128,19 +122,6 @@ interface WebSocket {
   // service side:
   const uint32 kInsufficientResources = 1;
   const uint32 kInternalFailure = 2;
-
-  // Send a non-control frame to the remote server.
-  // - |fin| indicates that this frame is the last in the current message.
-  // - |type| is the type of the message. On the first frame of a message, it
-  //   must be set to either WebSocketMessageType.TEXT or
-  //   WebSocketMessageType.BINARY. On subsequent frames, it must be set to
-  //   WebSocketMessageType.CONTINUATION, and the type is the same as that of
-  //   the first message. If |type| is WebSocketMessageType.TEXT, then the
-  //   concatenation of the |data| from every frame in the message must be valid
-  //   UTF-8. If |fin| is not set, |data| must be non-empty.
-  SendFrame(bool fin,
-            WebSocketMessageType type,
-            mojo_base.mojom.ReadOnlyBuffer data);
 
   // Sends a message via mojo datapipe to the remote server.
   // - |type| is the type of the message. It must be set to either

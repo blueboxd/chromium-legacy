@@ -294,7 +294,7 @@ void AutoclickController::CreateAutoclickRingWidget(
     const gfx::Point& point_in_screen) {
   aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
-  ring_widget_.reset(new views::Widget);
+  ring_widget_ = std::make_unique<views::Widget>();
   ring_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
   ring_widget_->SetOpacity(1.f);
 }
@@ -303,7 +303,7 @@ void AutoclickController::CreateAutoclickScrollPositionWidget(
     const gfx::Point& point_in_screen) {
   aura::Window* target = window_util::GetRootWindowAt(point_in_screen);
   SetTapDownTarget(target);
-  scroll_position_widget_.reset(new views::Widget);
+  scroll_position_widget_ = std::make_unique<views::Widget>();
   scroll_position_widget_->Init(CreateAutoclickOverlayWidgetParams(target));
 }
 

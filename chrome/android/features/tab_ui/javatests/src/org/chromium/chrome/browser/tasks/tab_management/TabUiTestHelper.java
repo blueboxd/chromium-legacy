@@ -159,8 +159,7 @@ public class TabUiTestHelper {
      */
     static void clickNthTabInDialog(ChromeTabbedActivity cta, int index) {
         OverviewModeBehaviorWatcher hideWatcher = createOverviewHideWatcher(cta);
-        onView(withId(R.id.tab_list_view))
-                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(index, click()));
         hideWatcher.waitForBehavior();
     }
@@ -169,18 +168,16 @@ public class TabUiTestHelper {
      * Close the first tab in tab gri dialog.
      * @param cta  The current running activity.
      */
-    static void closeFirstTabInDialog(ChromeTabbedActivity cta) {
-        closeNthTabInDialog(cta, 0);
+    static void closeFirstTabInDialog() {
+        closeNthTabInDialog(0);
     }
 
     /**
      * Close the Nth tab in tab gri dialog.
-     * @param cta  The current running activity.
      * @param index The index of the target tab to close.
      */
-    static void closeNthTabInDialog(ChromeTabbedActivity cta, int index) {
-        onView(withId(R.id.tab_list_view))
-                .inRoot(withDecorView(not(cta.getWindow().getDecorView())))
+    static void closeNthTabInDialog(int index) {
+        onView(allOf(withId(R.id.tab_list_view), withParent(withId(R.id.dialog_container_view))))
                 .perform(new ViewAction() {
                     @Override
                     public Matcher<View> getConstraints() {

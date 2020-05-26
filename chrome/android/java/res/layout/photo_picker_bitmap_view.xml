@@ -63,8 +63,8 @@
 
     <ImageView
         android:id="@+id/large_play_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/photo_picker_play_button_size"
+        android:layout_height="@dimen/photo_picker_play_button_size"
         android:layout_gravity="center"
         android:contentDescription="@string/accessibility_play_video"
         android:visibility="gone"

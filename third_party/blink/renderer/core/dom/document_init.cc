@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -136,10 +137,11 @@ Settings* DocumentInit::GetSettings() const {
 
 DocumentInit& DocumentInit::WithDocumentLoader(DocumentLoader* loader) {
   DCHECK(!document_loader_);
+  DCHECK(!execution_context_);
   DCHECK(!imports_controller_);
+  DCHECK(loader);
   document_loader_ = loader;
-  if (document_loader_)
-    parent_document_ = ParentDocument(document_loader_);
+  parent_document_ = ParentDocument(document_loader_);
   return *this;
 }
 
@@ -238,9 +240,11 @@ DocumentInit& DocumentInit::WithTypeFrom(const String& mime_type) {
   return *this;
 }
 
-DocumentInit& DocumentInit::WithContextDocument(Document* context_document) {
-  DCHECK(!context_document_);
-  context_document_ = context_document;
+DocumentInit& DocumentInit::WithExecutionContext(
+    ExecutionContext* execution_context) {
+  DCHECK(!execution_context_);
+  DCHECK(!document_loader_);
+  execution_context_ = execution_context;
   return *this;
 }
 
@@ -335,8 +339,10 @@ V0CustomElementRegistrationContext* DocumentInit::RegistrationContext(
   return registration_context_;
 }
 
-Document* DocumentInit::ContextDocument() const {
-  return context_document_;
+ExecutionContext* DocumentInit::GetExecutionContext() const {
+  if (execution_context_)
+    return execution_context_;
+  return GetFrame() ? GetFrame()->DomWindow() : nullptr;
 }
 
 DocumentInit& DocumentInit::WithFeaturePolicyHeader(const String& header) {
@@ -371,19 +377,18 @@ DocumentInit& DocumentInit::WithContentSecurityPolicy(
   return *this;
 }
 
-DocumentInit& DocumentInit::WithContentSecurityPolicyFromContextDoc() {
-  content_security_policy_from_context_doc_ = true;
+DocumentInit& DocumentInit::WithContentSecurityPolicyFromExecutionContext() {
+  content_security_policy_from_context_ = true;
   return *this;
 }
 
 ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
-  DCHECK(
-      !(content_security_policy_ && content_security_policy_from_context_doc_));
-  if (context_document_ && content_security_policy_from_context_doc_) {
+  DCHECK(!(content_security_policy_ && content_security_policy_from_context_));
+  if (execution_context_ && content_security_policy_from_context_) {
     // Return a copy of the context documents' CSP. The return value will be
     // modified, so this must be a copy.
     ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();
-    csp->CopyStateFrom(context_document_->GetContentSecurityPolicy());
+    csp->CopyStateFrom(execution_context_->GetContentSecurityPolicy());
     return csp;
   }
   return content_security_policy_;
@@ -436,8 +441,8 @@ WindowAgentFactory* DocumentInit::GetWindowAgentFactory() const {
     frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
   else if (GetFrame())
     frame = GetFrame();
-  else if (Document* context_document = ContextDocument())
-    return context_document->GetWindowAgentFactory();
+  else if (execution_context_)
+    frame = To<LocalDOMWindow>(execution_context_)->GetFrame();
   return frame ? &frame->window_agent_factory() : nullptr;
 }
 
@@ -447,8 +452,8 @@ Settings* DocumentInit::GetSettingsForWindowAgentFactory() const {
     frame = GetFrame()->PagePopupOwner()->GetDocument().GetFrame();
   else if (GetFrame())
     frame = GetFrame();
-  else if (Document* context_document = ContextDocument())
-    frame = context_document->GetFrame();
+  else if (execution_context_)
+    frame = To<LocalDOMWindow>(execution_context_)->GetFrame();
   return frame ? frame->GetSettings() : nullptr;
 }
 

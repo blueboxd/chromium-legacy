@@ -83,10 +83,11 @@ public class StatusIndicatorCoordinator {
             root.getResourceAdapter().invalidate(null);
             requestRender.onResult(callback);
         };
+        Runnable requestLayout = () -> root.requestLayout();
 
         mMediator = new StatusIndicatorMediator(model, fullscreenManager,
                 statusBarColorWithoutStatusIndicatorSupplier, canAnimateNativeBrowserControls,
-                invalidateCompositorView);
+                invalidateCompositorView, requestLayout);
         resourceManager.getDynamicResourceLoader().registerResource(
                 root.getId(), root.getResourceAdapter());
         root.addOnLayoutChangeListener(mMediator);

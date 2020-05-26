@@ -43,6 +43,9 @@ struct FetchAPIResponse {
   // The response headers. It's case insensitive for header name as key.
   map<string, string> headers;
 
+  // The mime type of the response, if one has been set.
+  string? mime_type;
+
   // Mojo interface to read the response payload.
   SerializedBlob? blob;
 

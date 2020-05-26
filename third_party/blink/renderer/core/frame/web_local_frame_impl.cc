@@ -2223,10 +2223,6 @@ void WebLocalFrameImpl::DidDropNavigation() {
   GetFrame()->Loader().DidDropNavigation();
 }
 
-void WebLocalFrameImpl::MarkAsLoading() {
-  GetFrame()->Loader().MarkAsLoading();
-}
-
 bool WebLocalFrameImpl::IsClientNavigationInitialHistoryLoad() {
   return GetFrame()->Loader().IsClientNavigationInitialHistoryLoad();
 }

@@ -36,7 +36,6 @@
 #include "content/shell/renderer/web_test/spell_check_client.h"
 #include "content/shell/renderer/web_test/test_interfaces.h"
 #include "content/shell/renderer/web_test/test_preferences.h"
-#include "content/shell/renderer/web_test/test_runner_for_specific_view.h"
 #include "content/shell/renderer/web_test/web_frame_test_proxy.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
 #include "content/shell/renderer/web_test/web_widget_test_proxy.h"
@@ -172,7 +171,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   static gin::WrapperInfo kWrapperInfo;
 
   static void Install(TestRunner* test_runner,
-                      TestRunnerForSpecificView* view_test_runner,
                       WebFrameTestProxy* frame,
                       SpellCheckClient* spell_check,
                       bool is_wpt_reftest,
@@ -212,7 +210,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   };
 
   explicit TestRunnerBindings(TestRunner* test_runner,
-                              TestRunnerForSpecificView* view_test_runner,
                               WebFrameTestProxy* frame,
                               SpellCheckClient* spell_check);
   ~TestRunnerBindings() override;
@@ -400,7 +397,6 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   bool invalid_ = false;
 
   TestRunner* runner_;
-  TestRunnerForSpecificView* const view_runner_;
   WebFrameTestProxy* const frame_;
   SpellCheckClient* const spell_check_;
   TestPreferences prefs_;
@@ -415,7 +411,6 @@ gin::WrapperInfo TestRunnerBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
 
 // static
 void TestRunnerBindings::Install(TestRunner* test_runner,
-                                 TestRunnerForSpecificView* view_test_runner,
                                  WebFrameTestProxy* frame,
                                  SpellCheckClient* spell_check,
                                  bool is_wpt_test,
@@ -429,7 +424,7 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
   v8::Context::Scope context_scope(context);
 
   TestRunnerBindings* wrapped =
-      new TestRunnerBindings(test_runner, view_test_runner, frame, spell_check);
+      new TestRunnerBindings(test_runner, frame, spell_check);
   gin::Handle<TestRunnerBindings> bindings =
       gin::CreateHandle(isolate, wrapped);
   CHECK(!bindings.IsEmpty());
@@ -492,12 +487,10 @@ void TestRunnerBindings::Install(TestRunner* test_runner,
 }
 
 TestRunnerBindings::TestRunnerBindings(TestRunner* runner,
-                                       TestRunnerForSpecificView* view_runner,
                                        WebFrameTestProxy* frame,
                                        SpellCheckClient* spell_check)
     : frame_observer_(this, frame),
       runner_(runner),
-      view_runner_(view_runner),
       frame_(frame),
       spell_check_(spell_check) {}
 
@@ -522,11 +515,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("clearTrustTokenState",
                  &TestRunnerBindings::ClearTrustTokenState)
       .SetMethod("copyImageThen", &TestRunnerBindings::CopyImageThen)
-      .SetMethod("didAcquirePointerLock",
-                 &TestRunnerBindings::DidAcquirePointerLock)
-      .SetMethod("didLosePointerLock", &TestRunnerBindings::DidLosePointerLock)
-      .SetMethod("didNotAcquirePointerLock",
-                 &TestRunnerBindings::DidNotAcquirePointerLock)
       .SetMethod("disableAutoResizeMode",
                  &TestRunnerBindings::DisableAutoResizeMode)
       .SetMethod("disableMockScreenOrientation",
@@ -708,10 +696,6 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
       .SetMethod("setPermission", &TestRunnerBindings::SetPermission)
       .SetMethod("setPluginsAllowed", &TestRunnerBindings::SetPluginsAllowed)
       .SetMethod("setPluginsEnabled", &TestRunnerBindings::SetPluginsEnabled)
-      .SetMethod("setPointerLockWillFailSynchronously",
-                 &TestRunnerBindings::SetPointerLockWillFailSynchronously)
-      .SetMethod("setPointerLockWillRespondAsynchronously",
-                 &TestRunnerBindings::SetPointerLockWillRespondAsynchronously)
       .SetMethod("setPopupBlockingEnabled",
                  &TestRunnerBindings::SetPopupBlockingEnabled)
       .SetMethod("setPrinting", &TestRunnerBindings::SetPrinting)
@@ -1266,36 +1250,6 @@ void TestRunnerBindings::SetDisallowedSubresourcePathSuffixes(
   if (invalid_)
     return;
   runner_->SetDisallowedSubresourcePathSuffixes(suffixes, block_subresources);
-}
-
-void TestRunnerBindings::DidAcquirePointerLock() {
-  if (invalid_)
-    return;
-  view_runner_->DidAcquirePointerLock();
-}
-
-void TestRunnerBindings::DidNotAcquirePointerLock() {
-  if (invalid_)
-    return;
-  view_runner_->DidNotAcquirePointerLock();
-}
-
-void TestRunnerBindings::DidLosePointerLock() {
-  if (invalid_)
-    return;
-  view_runner_->DidLosePointerLock();
-}
-
-void TestRunnerBindings::SetPointerLockWillFailSynchronously() {
-  if (invalid_)
-    return;
-  view_runner_->SetPointerLockWillFailSynchronously();
-}
-
-void TestRunnerBindings::SetPointerLockWillRespondAsynchronously() {
-  if (invalid_)
-    return;
-  view_runner_->SetPointerLockWillRespondAsynchronously();
 }
 
 void TestRunnerBindings::SetPopupBlockingEnabled(bool block_popups) {
@@ -2224,11 +2178,10 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
 TestRunner::~TestRunner() = default;
 
 void TestRunner::Install(WebFrameTestProxy* frame,
-                         SpellCheckClient* spell_check,
-                         TestRunnerForSpecificView* view_test_runner) {
+                         SpellCheckClient* spell_check) {
   // In WPT, only reftests generate pixel results.
   TestRunnerBindings::Install(
-      this, view_test_runner, frame, spell_check, IsWebPlatformTestsMode(),
+      this, frame, spell_check, IsWebPlatformTestsMode(),
       IsFramePartOfMainTestWindow(frame->GetWebFrame()));
   mock_screen_orientation_client_.OverrideAssociatedInterfaceProviderForFrame(
       frame->GetWebFrame());

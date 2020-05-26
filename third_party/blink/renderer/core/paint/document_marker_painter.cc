@@ -108,7 +108,7 @@ void DrawDocumentMarker(GraphicsContext& context,
 #endif
 
   const auto rect = SkRect::MakeWH(width, kMarkerHeight * zoom);
-  const auto local_matrix = SkMatrix::MakeScale(zoom, zoom);
+  const auto local_matrix = SkMatrix::Scale(zoom, zoom);
 
   PaintFlags flags;
   flags.setAntiAlias(true);

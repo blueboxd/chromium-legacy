@@ -99,16 +99,6 @@ class WebSocketChannelImplTest : public PageTestBase {
   using WebSocketMessageType = network::mojom::WebSocketMessageType;
   class TestWebSocket final : public network::mojom::blink::WebSocket {
    public:
-    struct Frame {
-      bool fin;
-      WebSocketMessageType type;
-      Vector<uint8_t> data;
-
-      bool operator==(const Frame& that) const {
-        return fin == that.fin && type == that.type && data == that.data;
-      }
-    };
-
     struct DataFrame final {
       DataFrame(WebSocketMessageType type, uint64_t data_length)
           : type(type), data_length(data_length) {}
@@ -126,13 +116,6 @@ class WebSocketChannelImplTest : public PageTestBase {
             pending_receiver)
         : receiver_(this, std::move(pending_receiver)) {}
 
-    void SendFrame(bool fin,
-                   WebSocketMessageType type,
-                   base::span<const uint8_t> data) override {
-      Vector<uint8_t> data_to_pass;
-      data_to_pass.AppendRange(data.begin(), data.end());
-      frames_.push_back(Frame{fin, type, std::move(data_to_pass)});
-    }
     void SendMessage(WebSocketMessageType type, uint64_t data_length) override {
       pending_send_data_frames_.push_back(DataFrame(type, data_length));
       return;
@@ -148,8 +131,6 @@ class WebSocketChannelImplTest : public PageTestBase {
       closing_reason_ = reason;
     }
 
-    const Vector<Frame>& GetFrames() const { return frames_; }
-    void ClearFrames() { frames_.clear(); }
     const Vector<DataFrame>& GetDataFrames() const {
       return pending_send_data_frames_;
     }
@@ -162,7 +143,6 @@ class WebSocketChannelImplTest : public PageTestBase {
     const String& GetClosingReason() const { return closing_reason_; }
 
    private:
-    Vector<Frame> frames_;
     Vector<DataFrame> pending_send_data_frames_;
     bool is_start_receiving_called_ = false;
     bool is_start_closing_handshake_called_ = false;
@@ -171,7 +151,6 @@ class WebSocketChannelImplTest : public PageTestBase {
 
     mojo::Receiver<network::mojom::blink::WebSocket> receiver_;
   };
-  using Frames = Vector<TestWebSocket::Frame>;
   using DataFrames = Vector<TestWebSocket::DataFrame>;
 
   class WebSocketConnector final : public mojom::blink::WebSocketConnector {
@@ -413,8 +392,8 @@ class CallTrackingClosure {
 
 std::ostream& operator<<(
     std::ostream& o,
-    const WebSocketChannelImplTest::TestWebSocket::Frame& f) {
-  return o << "fin = " << f.fin << ", type = " << f.type << ", data = (...)";
+    const WebSocketChannelImplTest::TestWebSocket::DataFrame& f) {
+  return o << " type = " << f.type << ", data = (...)";
 }
 
 TEST_F(WebSocketChannelImplTest, ConnectSuccess) {

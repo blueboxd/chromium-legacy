@@ -231,10 +231,8 @@ export class PasswordSectionElementFactory {
    */
   createPasswordListItem(passwordEntry) {
     const passwordListItem = this.document.createElement('password-list-item');
-    passwordListItem.item = {
-      entry: new MultiStorePasswordUiEntry(passwordEntry),
-      password: ''
-    };
+    passwordListItem.entry = new MultiStorePasswordUiEntry(passwordEntry);
+    passwordListItem.password = '';
     this.document.body.appendChild(passwordListItem);
     flush();
     return passwordListItem;
@@ -247,10 +245,8 @@ export class PasswordSectionElementFactory {
    */
   createPasswordEditDialog(passwordEntry) {
     const passwordDialog = this.document.createElement('password-edit-dialog');
-    passwordDialog.item = {
-      entry: new MultiStorePasswordUiEntry(passwordEntry),
-      password: ''
-    };
+    passwordDialog.entry = new MultiStorePasswordUiEntry(passwordEntry);
+    passwordDialog.password = '';
     this.document.body.appendChild(passwordDialog);
     flush();
     return passwordDialog;

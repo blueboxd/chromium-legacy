@@ -72,9 +72,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   ~WebSocket() override;
 
   // mojom::WebSocket methods:
-  void SendFrame(bool fin,
-                 mojom::WebSocketMessageType type,
-                 base::span<const uint8_t> data) override;
   void SendMessage(mojom::WebSocketMessageType type,
                    uint64_t data_length) override;
   void StartReceiving() override;

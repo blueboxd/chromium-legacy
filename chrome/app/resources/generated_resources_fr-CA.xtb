@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Vous organisez les raccourcis vous-même</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> empreintes digitales configurées</translation>
 <translation id="1213254615020057352">Envoyer les données d'utilisation et de diagnostic. Aidez-nous à améliorer l'expérience Android de votre enfant en envoyant automatiquement à Google des données de diagnostic, de l'appareil et d'utilisation des applications. L'envoi de ces données ne sera pas utilisé pour identifier votre enfant, mais pour assurer la stabilité du système et des applications, et pour apporter d'autres améliorations. Certaines données collectées contribueront également à améliorer les applications Google et aideront nos partenaires, comme les concepteurs Android. Ce paramètre est appliqué par le propriétaire du compte. C'est à lui de choisir d'envoyer ou non à Google les données de diagnostic et d'utilisation de cet appareil. Si le paramètre relatif aux autres activités sur le Web et dans les applications est activé pour votre enfant, ces données peuvent être enregistrées dans son compte Google.</translation>
+<translation id="121384500095351701">Ce fichier ne peut pas être téléchargé de manière sécuritaire</translation>
 <translation id="1215411991991485844">Nouvelle application en arrière-plan ajoutée</translation>
 <translation id="1216542092748365687">Supprimer l'empreinte digitale</translation>
 <translation id="1217483152325416304">Vos données locales seront bientôt supprimées</translation>
@@ -1064,6 +1065,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2336228925368920074">Ajouter tous les onglets aux favoris…</translation>
 <translation id="2336376423977300504">Toujours effacer les témoins à la fermeture des fenêtres</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> ne peut pas être téléchargé de manière sécuritaire</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> veut s'associer</translation>
 <translation id="2342740338116612727">Favoris ajoutés</translation>
 <translation id="2343747224442182863">Mettre cet onglet en évidence</translation>
@@ -3255,6 +3257,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5154702632169343078">Destinataire</translation>
 <translation id="5157635116769074044">Épingler cette page à l'écran de démarrage...</translation>
 <translation id="5158983316805876233">Utiliser le même mandataire pour tous les protocoles</translation>
+<translation id="5159419673777902220">Ton parent a désactivé les autorisations pour les extensions</translation>
 <translation id="5160857336552977725">Connexion à votre <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Le plugiciel <ph name="PLUGIN_NAME" /> a été bloqué, car il est obsolète</translation>
 <translation id="5170568018924773124">Afficher dans le dossier</translation>
@@ -5396,6 +5399,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="7925247922861151263">Échec de la vérification AAA</translation>
 <translation id="7925285046818567682">En attente d'une réponse de <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Ce n'était pas moi.</translation>
+<translation id="7926975587469166629">Pseudo de la carte</translation>
 <translation id="7928175190925744466">Avez-vous déjà modifié ce mot de passe?</translation>
 <translation id="7928836894214140642">Géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Les modes de paiement enregistrés s'afficheront ici</translation>
@@ -6041,7 +6045,7 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 
         &lt;p&gt;Vous avez toujours la possibilité d'effectuer la configuration à l'aide de la ligne de commande. Pour obtenir davantage d'information à propos des indicateurs et des variables d'environnement, veuillez consulter &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;.&lt;/p&gt;</translation>
 <translation id="8755376271068075440">&amp;Agrandir</translation>
-<translation id="8756143264090841047">Supprimer le contenu téléchargé</translation>
+<translation id="8756143264090841047">Supprimer le CT</translation>
 <translation id="8756969031206844760">Mettre à jour le mot de passe?</translation>
 <translation id="8757090071857742562">Impossible de diffuser le bureau. Vérifiez que vous avez confirmé l'invite à commencer le partage de votre écran.</translation>
 <translation id="8757803915342932642">Appareil infonuagique Google</translation>

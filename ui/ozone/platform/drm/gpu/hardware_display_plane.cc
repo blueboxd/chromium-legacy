@@ -126,11 +126,12 @@ std::vector<uint64_t> HardwareDisplayPlane::ModifiersForFormat(
     uint32_t format) const {
   std::vector<uint64_t> modifiers;
 
-  uint32_t format_index =
-      std::find(supported_formats_.begin(), supported_formats_.end(), format) -
-      supported_formats_.begin();
-  DCHECK_LT(format_index, supported_formats_.size());
+  auto it =
+      std::find(supported_formats_.begin(), supported_formats_.end(), format);
+  if (it == supported_formats_.end())
+    return modifiers;
 
+  uint32_t format_index = it - supported_formats_.begin();
   for (const auto& modifier : supported_format_modifiers_) {
     // modifier.formats is a bitmask of the formats the modifier
     // applies to, starting at format modifier.offset. That is, if bit

@@ -712,7 +712,7 @@ TEST_F(PredictionManagerTest, UpdatePredictionModelsWithInvalidModel) {
   histogram_tester.ExpectTotalCount(
       "OptimizationGuide.PredictionModelValidationLatency", 0);
   histogram_tester.ExpectTotalCount(
-      "OptimizationGuide.PredictionModelUpdatedVersion.PainfulPageLoad", 0);
+      "OptimizationGuide.PredictionModelUpdateVersion.PainfulPageLoad", 0);
 }
 
 TEST_F(PredictionManagerTest, UpdateModelWithSameVersion) {

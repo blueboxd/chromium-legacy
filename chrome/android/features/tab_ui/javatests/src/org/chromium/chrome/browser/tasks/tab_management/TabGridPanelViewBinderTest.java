@@ -9,18 +9,15 @@ import static org.chromium.chrome.browser.tasks.tab_management.TabUiTestHelper.a
 import android.content.res.ColorStateList;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
-import android.os.SystemClock;
 import android.support.test.annotation.UiThreadTest;
 import android.support.test.filters.SmallTest;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.PopupWindow;
 
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -54,27 +51,30 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     private PropertyModelChangeProcessor mMCP;
     private TabGroupUiToolbarView mToolbarView;
     private RecyclerView mContentView;
-    private TabGridDialogParent mTabGridDialogParent;
+    private TabGridDialogView mTabGridDialogView;
     private ChromeImageView mRightButton;
     private ChromeImageView mLeftButton;
     private EditText mTitleTextView;
     private View mMainContent;
-    private ViewGroup mTabGridDialogParentView;
+    private ScrimView mScrimView;
 
     @Override
     public void setUpTest() throws Exception {
         super.setUpTest();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             FrameLayout parentView = new FrameLayout(getActivity());
+            getActivity().setContentView(parentView);
             mContentView =
                     (TabListRecyclerView) LayoutInflater.from(getActivity())
                             .inflate(R.layout.tab_list_recycler_view_layout, parentView, false);
             mContentView.setLayoutManager(new GridLayoutManager(getActivity(), 2));
             mToolbarView = (TabGroupUiToolbarView) LayoutInflater.from(getActivity())
                                    .inflate(R.layout.bottom_tab_grid_toolbar, mContentView, false);
-            mTabGridDialogParent =
-                    new TabGridDialogParent(getActivity(), new FrameLayout(getActivity()));
-            mTabGridDialogParentView = mTabGridDialogParent.getTabGridDialogParentViewForTesting();
+            mScrimView = new ScrimView(getActivity(), null, parentView);
+            LayoutInflater.from(getActivity())
+                    .inflate(R.layout.tab_grid_dialog_layout, parentView, true);
+            mTabGridDialogView = parentView.findViewById(R.id.dialog_parent_view);
+            mTabGridDialogView.setupScrimView(mScrimView);
             mLeftButton = mToolbarView.findViewById(R.id.toolbar_left_button);
             mRightButton = mToolbarView.findViewById(R.id.toolbar_right_button);
             mTitleTextView = mToolbarView.findViewById(R.id.title);
@@ -84,7 +84,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
 
             mMCP = PropertyModelChangeProcessor.create(mModel,
                     new TabGridPanelViewBinder.ViewHolder(
-                            mToolbarView, mContentView, mTabGridDialogParent),
+                            mToolbarView, mContentView, mTabGridDialogView),
                     TabGridPanelViewBinder::bind);
         });
     }
@@ -204,51 +204,45 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         mModel.set(TabGridPanelProperties.SCRIMVIEW_OBSERVER, scrimObserver);
         // Open the dialog to show the ScrimView.
         mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
-        // ScrimView is inserted at the lowest level of the parent view hierarchy.
-        View scrimView = mTabGridDialogParentView.getChildAt(0);
-        Assert.assertTrue(scrimView instanceof ScrimView);
-        Assert.assertEquals(View.VISIBLE, scrimView.getVisibility());
-        scrimView.performClick();
+        Assert.assertEquals(View.VISIBLE, mScrimView.getVisibility());
+        mScrimView.performClick();
         Assert.assertTrue(scrimViewClicked.get());
     }
 
     @Test
     @SmallTest
     public void testSetDialogVisibility() {
-        Assert.assertFalse(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
-        Assert.assertNull(mTabGridDialogParent.getCurrentDialogAnimatorForTesting());
+        Assert.assertNull(mTabGridDialogView.getCurrentDialogAnimatorForTesting());
 
         // Setup basic dialog animation. The dialog show/hide animation is always initialized before
         // the visibility of dialog is set.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> mTabGridDialogParent.setupDialogAnimation(null));
+        TestThreadUtils.runOnUiThreadBlocking(() -> mTabGridDialogView.setupDialogAnimation(null));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true));
 
         if (areAnimatorsEnabled()) {
-            Assert.assertNotNull(mTabGridDialogParent.getCurrentDialogAnimatorForTesting());
+            Assert.assertNotNull(mTabGridDialogView.getCurrentDialogAnimatorForTesting());
         }
-        Assert.assertTrue(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
+        Assert.assertEquals(View.VISIBLE, mTabGridDialogView.getVisibility());
         CriteriaHelper.pollUiThread(
                 ()
                         -> Assert.assertThat(
-                                mTabGridDialogParent.getCurrentDialogAnimatorForTesting(),
+                                mTabGridDialogView.getCurrentDialogAnimatorForTesting(),
                                 Matchers.nullValue()));
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false));
 
         if (areAnimatorsEnabled()) {
-            Assert.assertNotNull(mTabGridDialogParent.getCurrentDialogAnimatorForTesting());
-            Assert.assertTrue(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
+            Assert.assertNotNull(mTabGridDialogView.getCurrentDialogAnimatorForTesting());
         }
         CriteriaHelper.pollUiThread(
                 ()
                         -> Assert.assertThat(
-                                mTabGridDialogParent.getCurrentDialogAnimatorForTesting(),
+                                mTabGridDialogView.getCurrentDialogAnimatorForTesting(),
                                 Matchers.nullValue()));
-        Assert.assertFalse(mTabGridDialogParent.getPopupWindowForTesting().isShowing());
+        Assert.assertEquals(View.GONE, mTabGridDialogView.getVisibility());
     }
 
     @Test
@@ -257,17 +251,13 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     public void testSetAnimationSourceView() {
         // Initially, the show animation set is empty.
         Assert.assertEquals(0,
-                mTabGridDialogParent.getShowDialogAnimationForTesting()
-                        .getChildAnimations()
-                        .size());
+                mTabGridDialogView.getShowDialogAnimationForTesting().getChildAnimations().size());
 
         // When set animation source view as null, the show animation is set to be basic fade-in
         // which contains only one animation in animation set.
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, null);
         Assert.assertEquals(1,
-                mTabGridDialogParent.getShowDialogAnimationForTesting()
-                        .getChildAnimations()
-                        .size());
+                mTabGridDialogView.getShowDialogAnimationForTesting().getChildAnimations().size());
 
         // Create a dummy source view to setup the dialog animation.
         View sourceView = new View(getActivity());
@@ -276,9 +266,7 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         // animations.
         mModel.set(TabGridPanelProperties.ANIMATION_SOURCE_VIEW, sourceView);
         Assert.assertEquals(6,
-                mTabGridDialogParent.getShowDialogAnimationForTesting()
-                        .getChildAnimations()
-                        .size());
+                mTabGridDialogView.getShowDialogAnimationForTesting().getChildAnimations().size());
     }
 
     @Test
@@ -286,18 +274,18 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
     @UiThreadTest
     public void testSetUngroupbarStatus() {
         // Default status for ungroup bar is hidden.
-        Assert.assertEquals(TabGridDialogParent.UngroupBarStatus.HIDE,
-                mTabGridDialogParent.getUngroupBarStatusForTesting());
+        Assert.assertEquals(TabGridDialogView.UngroupBarStatus.HIDE,
+                mTabGridDialogView.getUngroupBarStatusForTesting());
+
+        mModel.set(
+                TabGridPanelProperties.UNGROUP_BAR_STATUS, TabGridDialogView.UngroupBarStatus.SHOW);
+        Assert.assertEquals(TabGridDialogView.UngroupBarStatus.SHOW,
+                mTabGridDialogView.getUngroupBarStatusForTesting());
 
         mModel.set(TabGridPanelProperties.UNGROUP_BAR_STATUS,
-                TabGridDialogParent.UngroupBarStatus.SHOW);
-        Assert.assertEquals(TabGridDialogParent.UngroupBarStatus.SHOW,
-                mTabGridDialogParent.getUngroupBarStatusForTesting());
-
-        mModel.set(TabGridPanelProperties.UNGROUP_BAR_STATUS,
-                TabGridDialogParent.UngroupBarStatus.HOVERED);
-        Assert.assertEquals(TabGridDialogParent.UngroupBarStatus.HOVERED,
-                mTabGridDialogParent.getUngroupBarStatusForTesting());
+                TabGridDialogView.UngroupBarStatus.HOVERED);
+        Assert.assertEquals(TabGridDialogView.UngroupBarStatus.HOVERED,
+                mTabGridDialogView.getUngroupBarStatusForTesting());
     }
 
     @Test
@@ -308,12 +296,12 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         int incognitoResourceId = R.drawable.tab_grid_dialog_background_incognito;
         // Default setup is in normal mode.
         Assert.assertEquals(
-                normalResourceId, mTabGridDialogParent.getBackgroundDrawableResourceIdForTesting());
+                normalResourceId, mTabGridDialogView.getBackgroundDrawableResourceIdForTesting());
 
         mModel.set(TabGridPanelProperties.DIALOG_BACKGROUND_RESOUCE_ID, incognitoResourceId);
 
         Assert.assertEquals(incognitoResourceId,
-                mTabGridDialogParent.getBackgroundDrawableResourceIdForTesting());
+                mTabGridDialogView.getBackgroundDrawableResourceIdForTesting());
     }
 
     @Test
@@ -324,12 +312,12 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         int incognitoColorId = R.color.tab_grid_dialog_background_color_incognito;
         // Default setup is in normal mode.
         Assert.assertEquals(normalColorId,
-                mTabGridDialogParent.getUngroupBarBackgroundColorResourceIdForTesting());
+                mTabGridDialogView.getUngroupBarBackgroundColorResourceIdForTesting());
 
         mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_BACKGROUND_COLOR_ID, incognitoColorId);
 
         Assert.assertEquals(incognitoColorId,
-                mTabGridDialogParent.getUngroupBarBackgroundColorResourceIdForTesting());
+                mTabGridDialogView.getUngroupBarBackgroundColorResourceIdForTesting());
     }
 
     @Test
@@ -340,13 +328,13 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         int incognitoColorId = R.color.tab_grid_card_selected_color_incognito;
         // Default setup is in normal mode.
         Assert.assertEquals(normalColorId,
-                mTabGridDialogParent.getUngroupBarHoveredBackgroundColorResourceIdForTesting());
+                mTabGridDialogView.getUngroupBarHoveredBackgroundColorResourceIdForTesting());
 
         mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_HOVERED_BACKGROUND_COLOR_ID,
                 incognitoColorId);
 
         Assert.assertEquals(incognitoColorId,
-                mTabGridDialogParent.getUngroupBarHoveredBackgroundColorResourceIdForTesting());
+                mTabGridDialogView.getUngroupBarHoveredBackgroundColorResourceIdForTesting());
     }
 
     @Test
@@ -357,12 +345,12 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         int incognitoStyleId = R.style.TextAppearance_TextMediumThick_Blue_Light;
         // Default setup is in normal mode.
         Assert.assertEquals(
-                normalStyleId, mTabGridDialogParent.getUngroupBarTextAppearanceForTesting());
+                normalStyleId, mTabGridDialogView.getUngroupBarTextAppearanceForTesting());
 
         mModel.set(TabGridPanelProperties.DIALOG_UNGROUP_BAR_TEXT_APPEARANCE, incognitoStyleId);
 
         Assert.assertEquals(
-                incognitoStyleId, mTabGridDialogParent.getUngroupBarTextAppearanceForTesting());
+                incognitoStyleId, mTabGridDialogView.getUngroupBarTextAppearanceForTesting());
     }
 
     @Test
@@ -449,44 +437,9 @@ public class TabGridPanelViewBinderTest extends DummyUiActivityTestCase {
         Assert.assertFalse(mTitleTextView.isFocused());
     }
 
-    @Test
-    @SmallTest
-    @UiThreadTest
-    public void testSetPopupWindowFocusable() {
-        PopupWindow popupWindow = mTabGridDialogParent.getPopupWindowForTesting();
-        Assert.assertFalse(popupWindow.isFocusable());
-
-        mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, true);
-        Assert.assertTrue(popupWindow.isFocusable());
-
-        mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
-        Assert.assertFalse(popupWindow.isFocusable());
-    }
-
-    @Test
-    @SmallTest
-    @UiThreadTest
-    public void testSetTitleTextOnTouchListener() {
-        AtomicBoolean titleTextTouched = new AtomicBoolean();
-        titleTextTouched.set(false);
-
-        View.OnTouchListener listener = (view, event) -> {
-            titleTextTouched.set(true);
-            return false;
-        };
-        mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER, listener);
-        // Create a dummy MotionEvent.
-        MotionEvent e = MotionEvent.obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(),
-                MotionEvent.ACTION_DOWN, 0, 0, 0);
-        mTitleTextView.dispatchTouchEvent(e);
-
-        Assert.assertTrue(titleTextTouched.get());
-    }
-
     @Override
     public void tearDownTest() throws Exception {
         mMCP.destroy();
-        mTabGridDialogParent.destroy();
         super.tearDownTest();
     }
 }

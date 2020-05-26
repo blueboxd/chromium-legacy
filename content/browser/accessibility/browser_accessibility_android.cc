@@ -116,55 +116,6 @@ base::string16 BrowserAccessibilityAndroid::GetValue() const {
   return value;
 }
 
-bool BrowserAccessibilityAndroid::PlatformIsLeafIncludingIgnored() const {
-  if (BrowserAccessibility::PlatformIsLeafIncludingIgnored())
-    return true;
-
-  // Iframes are always allowed to contain children.
-  if (IsIframe() || GetRole() == ax::mojom::Role::kRootWebArea ||
-      GetRole() == ax::mojom::Role::kWebArea) {
-    return false;
-  }
-
-  // Button, date and time controls should drop their children.
-  switch (GetRole()) {
-    case ax::mojom::Role::kButton:
-    case ax::mojom::Role::kDate:
-    case ax::mojom::Role::kDateTime:
-    case ax::mojom::Role::kInputTime:
-      return true;
-    default:
-      break;
-  }
-
-  // Links are never a leaf
-  if (IsLink())
-    return false;
-
-  // If it has a focusable child, we definitely can't leave out children.
-  if (HasFocusableNonOptionChild())
-    return false;
-
-  BrowserAccessibilityManagerAndroid* manager_android =
-      static_cast<BrowserAccessibilityManagerAndroid*>(manager());
-  if (manager_android->prune_tree_for_screen_reader()) {
-    // Headings with text can drop their children.
-    base::string16 name = GetInnerText();
-    if (GetRole() == ax::mojom::Role::kHeading && !name.empty())
-      return true;
-
-    // Focusable nodes with text can drop their children.
-    if (HasState(ax::mojom::State::kFocusable) && !name.empty())
-      return true;
-
-    // Nodes with only static text as children can drop their children.
-    if (HasOnlyTextChildren())
-      return true;
-  }
-
-  return false;
-}
-
 bool BrowserAccessibilityAndroid::IsCheckable() const {
   return HasIntAttribute(ax::mojom::IntAttribute::kCheckedState);
 }
@@ -391,7 +342,7 @@ bool BrowserAccessibilityAndroid::IsInterestingOnAndroid() const {
   }
 
   // Otherwise, the interesting nodes are leaf nodes with non-whitespace text.
-  return PlatformIsLeaf() &&
+  return IsLeaf() &&
          !base::ContainsOnlyChars(GetInnerText(), base::kWhitespaceUTF16);
 }
 
@@ -458,6 +409,67 @@ const char* BrowserAccessibilityAndroid::GetClassName() const {
   return ui::AXRoleToAndroidClassName(role, PlatformGetParent() != nullptr);
 }
 
+bool BrowserAccessibilityAndroid::IsChildOfLeaf() const {
+  BrowserAccessibility* ancestor = InternalGetParent();
+
+  while (ancestor) {
+    if (ancestor->IsLeaf())
+      return true;
+    ancestor = ancestor->InternalGetParent();
+  }
+
+  return false;
+}
+
+bool BrowserAccessibilityAndroid::IsLeaf() const {
+  if (BrowserAccessibility::IsLeaf())
+    return true;
+
+  // Iframes are always allowed to contain children.
+  if (IsIframe() || GetRole() == ax::mojom::Role::kRootWebArea ||
+      GetRole() == ax::mojom::Role::kWebArea) {
+    return false;
+  }
+
+  // Button, date and time controls should drop their children.
+  switch (GetRole()) {
+    case ax::mojom::Role::kButton:
+    case ax::mojom::Role::kDate:
+    case ax::mojom::Role::kDateTime:
+    case ax::mojom::Role::kInputTime:
+      return true;
+    default:
+      break;
+  }
+
+  // Links are never leaves.
+  if (IsLink())
+    return false;
+
+  // If it has a focusable child, we definitely can't leave out children.
+  if (HasFocusableNonOptionChild())
+    return false;
+
+  BrowserAccessibilityManagerAndroid* manager_android =
+      static_cast<BrowserAccessibilityManagerAndroid*>(manager());
+  if (manager_android->prune_tree_for_screen_reader()) {
+    // Headings with text can drop their children.
+    base::string16 name = GetInnerText();
+    if (GetRole() == ax::mojom::Role::kHeading && !name.empty())
+      return true;
+
+    // Focusable nodes with text can drop their children.
+    if (HasState(ax::mojom::State::kFocusable) && !name.empty())
+      return true;
+
+    // Nodes with only static text as children can drop their children.
+    if (HasOnlyTextChildren())
+      return true;
+  }
+
+  return false;
+}
+
 base::string16 BrowserAccessibilityAndroid::GetInnerText() const {
   if (IsIframe() || GetRole() == ax::mojom::Role::kWebArea) {
     return base::string16();
@@ -492,7 +504,7 @@ base::string16 BrowserAccessibilityAndroid::GetInnerText() const {
   if (GetRole() == ax::mojom::Role::kRootWebArea)
     return text;
 
-  // This is called from PlatformIsLeaf, so don't call PlatformChildCount
+  // This is called from IsLeaf, so don't call PlatformChildCount
   // from within this!
   if (text.empty() && (HasOnlyTextChildren() ||
                        (IsFocusable() && HasOnlyTextAndImageChildren()))) {
@@ -1674,7 +1686,7 @@ void BrowserAccessibilityAndroid::GetWordBoundaries(
 }
 
 bool BrowserAccessibilityAndroid::HasFocusableNonOptionChild() const {
-  // This is called from PlatformIsLeaf, so don't call PlatformChildCount
+  // This is called from IsLeaf, so don't call PlatformChildCount
   // from within this!
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibility* child = it.get();
@@ -1705,7 +1717,7 @@ void BrowserAccessibilityAndroid::GetSuggestions(
     return;
 
   // TODO(accessibility): using FindTextOnlyObjectsInRange or NextInTreeOrder
-  // doesn't work because Android's PlatformIsLeafIncludingIgnored
+  // doesn't work because Android's IsLeaf
   // implementation deliberately excludes a lot of nodes. We need a version of
   // FindTextOnlyObjectsInRange and/or NextInTreeOrder that only walk
   // the internal tree.
@@ -1786,7 +1798,7 @@ bool BrowserAccessibilityAndroid::HasImage() const {
 }
 
 bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
-  // This is called from PlatformIsLeaf, so don't call PlatformChildCount
+  // This is called from IsLeaf, so don't call PlatformChildCount
   // from within this!
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     if (!it->IsTextOnlyObject())
@@ -1796,7 +1808,7 @@ bool BrowserAccessibilityAndroid::HasOnlyTextChildren() const {
 }
 
 bool BrowserAccessibilityAndroid::HasOnlyTextAndImageChildren() const {
-  // This is called from PlatformIsLeaf, so don't call PlatformChildCount
+  // This is called from IsLeaf, so don't call PlatformChildCount
   // from within this!
   for (auto it = InternalChildrenBegin(); it != InternalChildrenEnd(); ++it) {
     BrowserAccessibility* child = it.get();

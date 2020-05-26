@@ -18,8 +18,10 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/base/features.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_delegate_impl.h"
@@ -73,13 +75,12 @@ struct FetchResult {
   base::string16 text;
 };
 
-// A non-mock URL request which can access http:// and file:// urls, in the case
-// the tests were built with file support.
+// A non-mock URL request which can access http:// urls.
 class RequestContext : public URLRequestContext {
  public:
   RequestContext() : storage_(this) {
     ProxyConfig no_proxy;
-    storage_.set_host_resolver(std::make_unique<MockHostResolver>());
+    storage_.set_host_resolver(std::make_unique<MockCachingHostResolver>());
     storage_.set_cert_verifier(std::make_unique<MockCertVerifier>());
     storage_.set_transport_security_state(
         std::make_unique<TransportSecurityState>());
@@ -319,6 +320,58 @@ TEST_F(PacFileFetcherImplTest, ContentDisposition) {
   EXPECT_THAT(result, IsError(ERR_IO_PENDING));
   EXPECT_THAT(callback.WaitForResult(), IsOk());
   EXPECT_EQ(ASCIIToUTF16("-downloadable.pac-\n"), text);
+}
+
+// Verifies that fetches are made using the fetcher's IsolationInfo, by checking
+// the DNS cache.
+TEST_F(PacFileFetcherImplTest, IsolationInfo) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      // enabled_features
+      {features::kPartitionConnectionsByNetworkIsolationKey,
+       features::kSplitHostCacheByNetworkIsolationKey},
+      // disabled_features
+      {});
+  const char kHost[] = "foo.test";
+
+  ASSERT_TRUE(test_server_.Start());
+
+  auto pac_fetcher = PacFileFetcherImpl::Create(&context_);
+
+  GURL url(test_server_.GetURL(kHost, "/downloadable.pac"));
+  base::string16 text;
+  TestCompletionCallback callback;
+  int result = pac_fetcher->Fetch(url, &text, callback.callback(),
+                                  TRAFFIC_ANNOTATION_FOR_TESTS);
+  EXPECT_THAT(callback.GetResult(result), IsOk());
+  EXPECT_EQ(ASCIIToUTF16("-downloadable.pac-\n"), text);
+
+  // Check that the URL in kDestination is in the HostCache, with
+  // the fetcher's IsolationInfo / NetworkIsolationKey, and no others.
+  const net::HostPortPair kHostPortPair =
+      net::HostPortPair(kHost, 0 /* port */);
+  net::HostResolver::ResolveHostParameters params;
+  params.source = net::HostResolverSource::LOCAL_ONLY;
+  std::unique_ptr<net::HostResolver::ResolveHostRequest> host_request =
+      context_.host_resolver()->CreateRequest(
+          kHostPortPair,
+          pac_fetcher->isolation_info_for_testing().network_isolation_key(),
+          net::NetLogWithSource(), params);
+  net::TestCompletionCallback callback2;
+  result = host_request->Start(callback2.callback());
+  EXPECT_EQ(net::OK, callback2.GetResult(result));
+
+  // Make sure there are no other entries in the HostCache (which would
+  // potentially be associated with other NetworkIsolationKeys).
+  EXPECT_EQ(1u, context_.host_resolver()->GetHostCache()->size());
+
+  // Make sure the cache is actually returning different results based on
+  // NetworkIsolationKey.
+  host_request = context_.host_resolver()->CreateRequest(
+      kHostPortPair, NetworkIsolationKey(), net::NetLogWithSource(), params);
+  net::TestCompletionCallback callback3;
+  result = host_request->Start(callback3.callback());
+  EXPECT_EQ(net::ERR_NAME_NOT_RESOLVED, callback3.GetResult(result));
 }
 
 // Verifies that PAC scripts are not being cached.

@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">קיצורי הדרך מנוהלים על-ידך</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> טביעות אצבעות הוגדרו</translation>
 <translation id="1213254615020057352">‏שליחת מידע לגבי אופן השימוש בנתונים וניתוח הביצועים. כדי לתרום לשיפור חוויית המשתמש של הילד/ה ב-Android, אפשר לשלוח אל Google באופן אוטומטי נתוני אבחון, נתוני מכשיר ונתוני שימוש באפליקציות. הנתונים האלה לא ישמשו כדי לזהות את הילד/ה שלך, והם יעזרו לנו לשמור על היציבות של המערכת ושל האפליקציות ולבצע שיפורים אחרים. חלק מהנתונים הנצברים יעזרו גם לשפר את האפליקציות של Google וכן יעזרו לשותפים של Google, כמו מפתחים של Android. ההגדרה הזו נאכפת על-ידי הבעלים. ייתכן שהבעלים יבחרו לשלוח אל Google נתוני אבחון ונתוני שימוש של המכשיר. אם ההגדרה 'פעילות באתרי אינטרנט ובאפליקציות נוספים' הופעלה עבור הילד/ה שלך, ייתכן שהנתונים יישמרו בחשבון Google שלהם.</translation>
+<translation id="121384500095351701">לא ניתן להוריד את הקובץ הזה בצורה מאובטחת</translation>
 <translation id="1215411991991485844">נוסף יישום רקע חדש</translation>
 <translation id="1216542092748365687">הסרה של טביעת אצבע</translation>
 <translation id="1217483152325416304">הנתונים המקומיים שלך יימחקו בקרוב</translation>
@@ -1061,6 +1062,7 @@
 <translation id="2336228925368920074">צור סימניה לכל הכרטיסיות...</translation>
 <translation id="2336376423977300504">‏ניקוי קובצי cookie בכל פעם שחלונות נסגרים</translation>
 <translation id="2336381494582898602">שחזור הגדרות יצרן</translation>
+<translation id="2340239562261172947">לא ניתן להוריד את <ph name="FILE_NAME" /> בצורה מאובטחת</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> רוצה לבצע התאמה עם</translation>
 <translation id="2342740338116612727">סימניות נוספו</translation>
 <translation id="2343747224442182863">הדגשת הכרטיסייה הזו</translation>
@@ -3252,6 +3254,7 @@
 <translation id="5154702632169343078">נושא</translation>
 <translation id="5157635116769074044">הצמד דף זה למסך הפתיחה...</translation>
 <translation id="5158983316805876233">‏השתמש באותו שרת proxy עבור כל הפרוטוקולים</translation>
+<translation id="5159419673777902220">ההרשאות של התוסף הושבתו על ידי ההורה שלך</translation>
 <translation id="5160857336552977725">היכנס אל ה-<ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> נחסם כי הוא לא מעודכן</translation>
 <translation id="5170568018924773124">הצג בתיקייה</translation>
@@ -5392,6 +5395,7 @@
 <translation id="7925247922861151263">‏בדיקת AAA נכשלה</translation>
 <translation id="7925285046818567682">ממתין ל- <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">זה לא הייתי אני.</translation>
+<translation id="7926975587469166629">כינוי הכרטיס</translation>
 <translation id="7928175190925744466">כבר שינית את הסיסמה הזו?</translation>
 <translation id="7928836894214140642">מנוהל על-ידי <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">אמצעי תשלום שנשמרו יופיעו כאן</translation>

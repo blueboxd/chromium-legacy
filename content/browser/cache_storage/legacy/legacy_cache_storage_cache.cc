@@ -416,11 +416,15 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
           ? metadata.response().alpn_negotiated_protocol()
           : "unknown";
 
+  base::Optional<std::string> mime_type;
+  if (metadata.response().has_mime_type())
+    mime_type = metadata.response().mime_type();
+
   return blink::mojom::FetchAPIResponse::New(
       url_list, metadata.response().status_code(),
       metadata.response().status_text(),
       ProtoResponseTypeToFetchResponseType(metadata.response().response_type()),
-      network::mojom::FetchResponseSource::kCacheStorage, headers,
+      network::mojom::FetchResponseSource::kCacheStorage, headers, mime_type,
       nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,
       base::Time::FromInternalValue(metadata.response().response_time()),
       cache_name,
@@ -1790,6 +1794,8 @@ void LegacyCacheStorageCache::PutDidCreateEntry(
       put_context->response->alpn_negotiated_protocol);
   response_metadata->set_was_fetched_via_spdy(
       put_context->response->was_fetched_via_spdy);
+  if (put_context->response->mime_type.has_value())
+    response_metadata->set_mime_type(put_context->response->mime_type.value());
   response_metadata->set_response_time(
       put_context->response->response_time.ToInternalValue());
   for (ResponseHeaderMap::const_iterator it =

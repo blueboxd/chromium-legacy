@@ -25,6 +25,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -123,19 +124,13 @@ class TabDesktopMediaListTest : public testing::Test {
     WebContentsTester::For(contents.get())
         ->SetLastActiveTime(base::TimeTicks::Now());
 
-    // Get or create the transient NavigationEntry and add a title and a
-    // favicon to it.
+    // Get or create a NavigationEntry and add a title and a favicon to it.
     content::NavigationEntry* entry =
-        contents->GetController().GetTransientEntry();
+        contents->GetController().GetLastCommittedEntry();
     if (!entry) {
-      std::unique_ptr<content::NavigationEntry> entry_new =
-          content::NavigationController::CreateNavigationEntry(
-              GURL("chrome://blank"), content::Referrer(), base::nullopt,
-              ui::PAGE_TRANSITION_LINK, false, std::string(), profile_,
-              nullptr /* blob_url_loader_factory */);
-
-      contents->GetController().SetTransientEntry(std::move(entry_new));
-      entry = contents->GetController().GetTransientEntry();
+      content::NavigationSimulator::NavigateAndCommitFromBrowser(
+          contents.get(), GURL("chrome://blank"));
+      entry = contents->GetController().GetLastCommittedEntry();
     }
 
     contents->UpdateTitleForEntry(entry, base::ASCIIToUTF16("Test tab"));
@@ -336,7 +331,7 @@ TEST_F(TabDesktopMediaListTest, UpdateTitle) {
       tab_strip_model->GetWebContentsAt(kDefaultSourceCount - 1);
   ASSERT_TRUE(contents);
   content::NavigationController& controller = contents->GetController();
-  contents->UpdateTitleForEntry(controller.GetTransientEntry(),
+  contents->UpdateTitleForEntry(controller.GetLastCommittedEntry(),
                                 base::ASCIIToUTF16("New test tab"));
 
   EXPECT_CALL(observer_, OnSourceNameChanged(list_.get(), 0))
@@ -361,7 +356,8 @@ TEST_F(TabDesktopMediaListTest, UpdateThumbnail) {
 
   content::FaviconStatus favicon_info;
   favicon_info.image = CreateGrayscaleImage(gfx::Size(10, 10), 100);
-  contents->GetController().GetTransientEntry()->GetFavicon() = favicon_info;
+  contents->GetController().GetLastCommittedEntry()->GetFavicon() =
+      favicon_info;
 
   EXPECT_CALL(observer_, OnSourceThumbnailChanged(list_.get(), 0))
       .WillOnce(QuitMessageLoop());

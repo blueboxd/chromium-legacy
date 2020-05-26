@@ -653,6 +653,11 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se questo criterio è impostato su un percorso file, tale file viene usato come eseguibile.</translation>
 <translation id="2113068765175018713">Limita il tempo di attività del dispositivo riavviandolo automaticamente</translation>
+<translation id="2124881675920287921">Questo criterio è stato ritirato in M82 e rimosso in M85; usa il criterio <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> equivale a disattivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Attivare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> o non configurare questa impostazione equivale a non configurare <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
+
+      L'impostazione di questo criterio su false impedisce agli utenti di decidere di inviare ai server di Google alcune informazioni sul sistema e alcuni contenuti delle pagine. Se questo criterio viene impostato su true o non viene configurato, gli utenti potranno inviare alcune informazioni sul sistema e alcuni contenuti delle pagine alla funzionalità Navigazione sicura per contribuire a rilevare app e siti pericolosi.
+
+      Visita il sito https://developers.google.com/safe-browsing per ulteriori informazioni sulla funzionalità Navigazione sicura.</translation>
 <translation id="2127599828444728326">Consenti notifiche su questi siti</translation>
 <translation id="2131902621292742709">Ritardo oscuramento schermo in caso di utilizzo della batteria</translation>
 <translation id="2134437727173969994">Consenti blocco dello schermo</translation>
@@ -2076,7 +2081,7 @@ Avviso. È consigliabile mantenere attivati gli aggiornamenti automatici per con
 <translation id="4093716537292423758">Non bloccare i tipi di file non supportati</translation>
 <translation id="4097556069183835428">Se il criterio è impostato su None, la Lente d'ingrandimento è disattivata.
 
-      Se configuri il criterio, gli utenti non possono modificarlo. Se il criterio non è impostato, la Lente d'ingrandimento risulta disattivata all'inizio, ma gli utenti possono attivarla in qualsiasi momento.</translation>
+      Se configuri il criterio, gli utenti non possono modificarlo. Se il criterio non è configurato, la Lente d'ingrandimento risulta disattivata all'inizio, ma gli utenti possono attivarla in qualsiasi momento.</translation>
 <translation id="410068710490553233">Consenti l'accesso ad altri Account Google</translation>
 <translation id="4103289232974211388">Reindirizza a IdP SAML dopo la conferma dell'utente</translation>
 <translation id="4105884561459127998">Consente di configurare il tipo di autenticazione per gli accessi SAML.
@@ -2329,7 +2334,7 @@ Se questa impostazione viene attivata, i suggerimenti di ricerca verranno utiliz
 Se questa impostazione viene attivata o disattivata, gli utenti non potranno modificarla o sostituirla in <ph name="PRODUCT_NAME" />.
 
 Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utenti potranno modificarla.</translation>
-<translation id="4529868888205510667">A meno che ARC sia disattivato da altri mezzi, se il criterio è impostato su True o non è configurato, gli utenti possono utilizzare ARC. Se il criterio è impostato su False, gli utenti non affiliati non possono utilizzare ARC.
+<translation id="4529868888205510667">Se il criterio è impostato su True o non è configurato, gli utenti possono utilizzare ARC, a meno che ARC sia stato disattivato in altri modi. Se il criterio è impostato su False, gli utenti non affiliati non possono utilizzare ARC.
 
       Le modifiche al criterio vengono applicate solo mentre ARC non è in esecuzione, ad esempio durante l'avvio di Chrome OS.</translation>
 <translation id="453031441196755904">Questa norma è obsoleta.</translation>
@@ -2808,7 +2813,6 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5307432759655324440">Disponibilità della modalità di navigazione in incognito</translation>
 <translation id="5311275381462687162">Impostazione del comportamento precedente predefinito <ph name="ATTRIBUTE_SAMESITE_NAME" /> per i cookie</translation>
 <translation id="5318185076587284965">Attiva l'utilizzo dei server relay per l'host di accesso remoto</translation>
-<translation id="5321755462836179869">Consente le notifiche native</translation>
 <translation id="5323128137188992869">Consente di trasmettere contenuti al dispositivo usando <ph name="PRODUCT_NAME" />.
 
           Se questa norma viene impostata su False, gli utenti non potranno trasmettere contenuti al proprio dispositivo. Se questa norma viene impostata su True, gli utenti potranno trasmettere contenuti. Se questa norma non viene impostata, gli utenti non potranno trasmettere contenuti a dispositivi Chrome OS registrati, ma potranno trasmetterli a dispositivi non registrati.</translation>
@@ -3054,7 +3058,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
         Se il criterio viene impostato su false, gli utenti non possono inviare feedback a Google.
 
         Se il criterio non viene impostato o viene impostato su true, gli utenti possono inviare feedback a Google dal percorso Menu -&gt; Guida -&gt; Segnala un problema o tramite una combinazione di tasti.</translation>
-<translation id="5579179012798142131">A meno che la modalità temporanea o l'accesso simultaneo sia attivo durante la sessione utente, se ArcEnabled è impostato su True, ARC viene attivato per l'utente. Se il criterio è impostato su False o non è configurato, gli utenti aziendali non possono utilizzare ARC.</translation>
+<translation id="5579179012798142131">Se ArcEnabled è impostato su True, ARC viene attivato per l'utente, a meno che la modalità temporanea o l'accesso simultaneo siano attivi durante la sessione utente. Se il criterio è impostato su False o non è configurato, gli utenti aziendali non possono utilizzare ARC.</translation>
 <translation id="5583806683960333345">Se questa impostazione viene attivata, gli utenti potranno utilizzare il tethering istantaneo, che consente al loro telefono Google di condividere i dati mobili con il dispositivo.
 
       Se questa impostazione viene disattivata, gli utenti non potranno utilizzare il tethering istantaneo.
@@ -3901,7 +3905,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6946652757373377924">
       Questo criterio è stato rimosso da M77.
       Questo criterio si applica alla schermata di accesso. Vedi anche il criterio <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> che viene applicato alla sessione utente.
-      Se il criterio è attivato, ciascuna delle origini denominate all'interno di un elenco separato da virgole viene eseguita nel proprio processo. Ciò isola anche le origini indicate dai sottodomini, ad esempio specificando https://example.com/ si isola anche https://foo.example.com/, perché fa parte del sito https://example.com/.
+      Se il criterio è attivato, ciascuna delle origini denominate all'interno di un elenco separato da virgole viene eseguita nel proprio processo. In questo modo, si isolano anche le origini indicate dai sottodomini; ad esempio specificando https://example.com/ si isola anche https://foo.example.com/, perché fa parte del sito https://example.com/.
       Se il criterio non è configurato o è disattivato, per la schermata di accesso vengono utilizzate le impostazioni di isolamento dei siti predefinite della piattaforma.
       </translation>
 <translation id="69525503251220566">Parametro che fornisce la funzione di ricerca tramite immagine per il provider di ricerca predefinito</translation>
@@ -4210,9 +4214,9 @@ Se l'impostazione viene disattivata, questa funzione non sarà disponibile.</tra
       Se questa norma non viene impostata, la pulizia automatica utilizza la strategia incorporata predefinita, che al momento è "RemoveLRUIfDormant".</translation>
 <translation id="7336785017449297672">Consente di gestire le impostazioni relative all'orologio e al fuso orario.</translation>
 <translation id="7336878834592315572">Conserva cookie per tutta la durata della sessione</translation>
-<translation id="7338217396351647423">Se il criterio è configurato, viene specificato un insieme di criteri per passare al tempo di esecuzione di ARC. Gli amministratori possono utilizzarlo per selezionare le app Android che vengono installate automaticamente. Inserisci il valore in formato JSON valido.
+<translation id="7338217396351647423">Se il criterio è configurato, viene specificato un insieme di criteri da trasferire al runtime ARC. Gli amministratori possono utilizzarlo per selezionare le app Android che vengono installate automaticamente. Inserisci il valore in formato JSON valido.
 
-      Per bloccare le app nell'Avvio app, vedi PinnedLauncherApps.</translation>
+      Per bloccare le app in Avvio app, vedi PinnedLauncherApps.</translation>
 <translation id="7339315111520512972">Forza l'esecuzione del codice di networking nel processo di browser</translation>
 <translation id="7340034977315324840">Indicazione tempi di attività del dispositivo</translation>
 <translation id="7343497214039883642">File di configurazione delle stampanti aziendali per i dispositivi</translation>

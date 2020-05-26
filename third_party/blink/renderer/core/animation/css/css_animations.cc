@@ -407,7 +407,13 @@ std::unique_ptr<TypedInterpolationValue> SampleAnimation(
   DCHECK_LE(sample.size(), 1u);
   if (sample.IsEmpty())
     return nullptr;
-  return To<TransitionInterpolation>(*sample.at(0)).GetInterpolatedValue();
+  if (auto* transition_interpolation =
+          DynamicTo<TransitionInterpolation>(*sample.at(0)))
+    return transition_interpolation->GetInterpolatedValue();
+  // TODO(crbug.com/1086167): The *sample.at(0) could be
+  // InvalidtableInterpolation pointer. In this case, we currently return a
+  // nullptr, but we will need to support the InvalidtableInterpolation type.
+  return nullptr;
 }
 
 // Returns the start time of an animation given the start delay. A negative

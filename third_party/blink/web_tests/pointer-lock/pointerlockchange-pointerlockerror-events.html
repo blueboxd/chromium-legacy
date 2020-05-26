@@ -84,31 +84,31 @@
             targetIframe1.contentDocument.exitPointerLock();
         },
         function () {
-            shouldBeDefined("testRunner.setPointerLockWillFailSynchronously");
-            testRunner.setPointerLockWillFailSynchronously();
+            shouldBeDefined("eventSender.setPointerLockWillFailSynchronously");
+            eventSender.setPointerLockWillFailSynchronously();
             expectOnlyErrorEvent("Lock with synchronous failure.");
             targetDiv1.requestPointerLock();
         },
         function () {
-            shouldBeDefined("testRunner.setPointerLockWillRespondAsynchronously");
-            shouldBeDefined("testRunner.didAcquirePointerLock");
-            shouldBeDefined("testRunner.didNotAcquirePointerLock");
-            testRunner.setPointerLockWillRespondAsynchronously();
+            shouldBeDefined("eventSender.setPointerLockWillRespondAsynchronously");
+            shouldBeDefined("eventSender.didAcquirePointerLock");
+            shouldBeDefined("eventSender.didNotAcquirePointerLock");
+            eventSender.setPointerLockWillRespondAsynchronously();
             expectOnlyErrorEvent("Lock with asynchronous failure.");
             targetDiv1.requestPointerLock();
             doNextStep();
         },
         function () {
-            testRunner.didNotAcquirePointerLock();
+            eventSender.didNotAcquirePointerLock();
         },
         function () {
-            testRunner.setPointerLockWillRespondAsynchronously();
+            eventSender.setPointerLockWillRespondAsynchronously();
             expectOnlyChangeEvent("Lock with asynchronous success.");
             targetDiv1.requestPointerLock();
             doNextStep();
         },
         function () {
-            testRunner.didAcquirePointerLock();
+            eventSender.didAcquirePointerLock();
         },
     ];
     doNextStep();

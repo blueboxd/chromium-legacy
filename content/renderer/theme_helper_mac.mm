@@ -8,6 +8,10 @@
 
 #include "base/strings/sys_string_conversions.h"
 
+extern "C" {
+bool CGFontRenderingGetFontSmoothingDisabled(void) API_AVAILABLE(macos(10.14));
+}
+
 namespace content {
 
 void SystemColorsDidChange(int aqua_color_variant,
@@ -50,6 +54,14 @@ void SystemColorsDidChange(int aqua_color_variant,
   // color change.
   [center postNotificationName:NSControlTintDidChangeNotification
                         object:nil];
+}
+
+bool IsSubpixelAntialiasingAvailable() {
+  if (__builtin_available(macOS 10.14, *)) {
+    // See https://trac.webkit.org/changeset/239306/webkit for more info.
+    return !CGFontRenderingGetFontSmoothingDisabled();
+  }
+  return true;
 }
 
 }  // namespace content

@@ -169,6 +169,7 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="1211769675100312947">Izinqamuleli zikhethwa nguwe</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> isethaphu yezigxivizo zeminwe</translation>
 <translation id="1213254615020057352">Thumela idatha yokusetshenziswa neyokuxilonga. Siza ukuthuthukisa umuzwa we-Android wengane yakho ngokuthumela ngokuzenzakalela idatha yokuxilonga, yedivayisi, neyokusetshenziswa kohlelo lokusebenza ku-Google. Lokhu ngeke kusetshenziselwe ukukhomba ingane yakho futhi kuzosiza ukuzinza kwesistimu nokohlelo lokusebenza nokunye ukuthuthukiswa. Enye idatha izophinda isize izinhlelo zokusebenza ze-Google nozakwethu, abafana nonjiniyela be-Android. Lesi silungiselelo siphoqelelwa umnikazi. Umnikazi angakhetha ukuthumela idatha yokuxilonga neyokusetshenziswa yale divayisi ku-Google. Uma isilungiselelo esingeziwe sewebhu nesohlelo lokusebenza sivulelwe ingane yakho, le datha ingalondolozwa ku-akhawunti yakhe ye-Google.</translation>
+<translation id="121384500095351701">Leli fayela alikwazi ukulandwa ngokuvikelekile</translation>
 <translation id="1215411991991485844">Kungezwe uhlelo lokusebenza olungemuva olusha</translation>
 <translation id="1216542092748365687">Susa izigxivizo zeminwe</translation>
 <translation id="1217483152325416304">Idatha yakho yasendaweni maduze izosuswa</translation>
@@ -1062,6 +1063,7 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="2336228925368920074">Beka uphawu lokubekisa kuwo wonke amathebhu...</translation>
 <translation id="2336376423977300504">Isula njalo amakhukhi lapho amawindi evaliwe</translation>
 <translation id="2336381494582898602">I-Powerwash</translation>
+<translation id="2340239562261172947">I-<ph name="FILE_NAME" /> ayikwazi ukulandwa ngokuvikelekile</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ufuna ukubhangqa</translation>
 <translation id="2342740338116612727">Amabhukhimakhi angeziwe</translation>
 <translation id="2343747224442182863">Gxilisa le thebhu</translation>
@@ -3251,6 +3253,7 @@ Ungaphatha izilungiselelo zale akhawunti ngokufaka uhlelo lokusebenza lwe-Family
 <translation id="5154702632169343078">Isihloko</translation>
 <translation id="5157635116769074044">Phina leli khasi kusikrini sokuqala...</translation>
 <translation id="5158983316805876233">Sebenzisa ummeleli ofanayo wawo wonke amaphrothokholi</translation>
+<translation id="5159419673777902220">Umzali wakho ukhubaze izimvume zezandiso</translation>
 <translation id="5160857336552977725">Ngena ngemvume ku-<ph name="DEVICE_TYPE" /> yakho</translation>
 <translation id="5166596762332123936">I-<ph name="PLUGIN_NAME" /> iye yavinjelwa ngoba iphelelwe isikhathi</translation>
 <translation id="5170568018924773124">Bonisa kufolda</translation>
@@ -5395,6 +5398,7 @@ I-<ph name="EXTENSION_NAME" /></translation>
 <translation id="7925247922861151263">Ukuhlolwa kwe-AAA kuhlulekile</translation>
 <translation id="7925285046818567682">Ilindele i-<ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Lo kwakungemina.</translation>
+<translation id="7926975587469166629">Igama lesidlaliso lekhadi</translation>
 <translation id="7928175190925744466">Usuyishintshile kakade le phasiwedi?</translation>
 <translation id="7928836894214140642">Iphethwe yi-<ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Izindlela zokukhokha ezilondoloziwe zizovela lapha</translation>

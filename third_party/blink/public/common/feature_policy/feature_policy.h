@@ -5,13 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_FEATURE_POLICY_H_
 #define THIRD_PARTY_BLINK_PUBLIC_COMMON_FEATURE_POLICY_FEATURE_POLICY_H_
 
-#include <memory>
-#include <utility>
+#include <map>
 #include <vector>
 
-#include "base/containers/flat_map.h"
-#include "base/containers/flat_set.h"
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-shared.h"
 #include "third_party/blink/public/common/common_export.h"

@@ -1389,20 +1389,13 @@ void WebContentsImpl::SetDisplayCutoutSafeArea(gfx::Insets insets) {
 #endif
 
 const base::string16& WebContentsImpl::GetTitle() {
-  // Transient entries take precedence. They are used for interstitial pages
-  // that are shown on top of existing pages.
-  NavigationEntry* entry = controller_.GetTransientEntry();
-  if (entry) {
-    return entry->GetTitleForDisplay();
-  }
-
   WebUI* our_web_ui =
       GetRenderManager()->speculative_frame_host()
           ? GetRenderManager()->speculative_frame_host()->web_ui()
           : GetRenderManager()->current_frame_host()->web_ui();
   if (our_web_ui) {
     // Don't override the title in view source mode.
-    entry = controller_.GetVisibleEntry();
+    NavigationEntry* entry = controller_.GetVisibleEntry();
     if (!(entry && entry->IsViewSourceMode())) {
       // Give the Web UI the chance to override our title.
       const base::string16& title = our_web_ui->GetOverriddenTitle();
@@ -1415,7 +1408,7 @@ const base::string16& WebContentsImpl::GetTitle() {
   // navigation entry. For example, when the user types in a URL, we want to
   // keep the old page's title until the new load has committed and we get a new
   // title.
-  entry = controller_.GetLastCommittedEntry();
+  NavigationEntry* entry = controller_.GetLastCommittedEntry();
 
   // We make an exception for initial navigations. We only want to use the title
   // from the visible entry if:
@@ -6398,6 +6391,9 @@ void WebContentsImpl::RendererUnresponsive(
 
 void WebContentsImpl::RendererResponsive(
     RenderWidgetHostImpl* render_widget_host) {
+  for (auto& observer : observers_)
+    observer.OnRendererResponsive(render_widget_host->GetProcess());
+
   if (delegate_)
     delegate_->RendererResponsive(this, render_widget_host);
 }

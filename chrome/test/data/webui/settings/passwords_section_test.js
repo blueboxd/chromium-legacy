@@ -44,8 +44,7 @@ function validatePasswordList(passwordsSection, passwordList) {
     assertEquals(passwordInfo.urls.link, node.$$('#originUrl').href);
     assertEquals(passwordInfo.username, node.$$('#username').value);
     assertDeepEquals(
-        listElement.items[index].entry,
-        new MultiStorePasswordUiEntry(passwordInfo));
+        listElement.items[index], new MultiStorePasswordUiEntry(passwordInfo));
   }
 }
 
@@ -186,7 +185,7 @@ suite('PasswordsSection', function() {
     // then other expectations will also fail.
     assertDeepEquals(
         passwordList.map(entry => new MultiStorePasswordUiEntry(entry)),
-        passwordsSection.$.passwordList.items.map(entry => entry.entry));
+        passwordsSection.$.passwordList.items);
 
     validatePasswordList(passwordsSection, passwordList);
 
@@ -212,9 +211,8 @@ suite('PasswordsSection', function() {
         passwordList);
     flush();
 
-    assertFalse(listContainsUrl(
-        passwordsSection.savedPasswords.map(entry => entry.entry),
-        'longwebsite.com'));
+    assertFalse(
+        listContainsUrl(passwordsSection.savedPasswords, 'longwebsite.com'));
     assertFalse(listContainsUrl(passwordList, 'longwebsite.com'));
 
     validatePasswordList(passwordsSection, passwordList);
@@ -590,7 +588,7 @@ suite('PasswordsSection', function() {
 
     assertFalse(passwordDialog.$.showPasswordButton.hidden);
 
-    passwordDialog.set('item.password', PASSWORD);
+    passwordDialog.password = PASSWORD;
     flush();
 
     assertEquals(PASSWORD, passwordDialog.$.passwordInput.value);
@@ -606,7 +604,7 @@ suite('PasswordsSection', function() {
     // Hidden passwords should be disabled.
     assertTrue(passwordListItem.$$('#password').disabled);
 
-    passwordListItem.set('item.password', PASSWORD);
+    passwordListItem.password = PASSWORD;
     flush();
 
     assertEquals(PASSWORD, passwordListItem.$$('#password').value);
@@ -626,7 +624,7 @@ suite('PasswordsSection', function() {
     const expectedItem = createPasswordEntry('goo.gl', 'bart', 1);
     const passwordDialog =
         elementFactory.createPasswordEditDialog(expectedItem);
-    assertEquals('', passwordDialog.item.password);
+    assertEquals('', passwordDialog.password);
 
     passwordManager.setPlaintextPassword('password');
     passwordDialog.$.showPasswordButton.click();
@@ -634,7 +632,7 @@ suite('PasswordsSection', function() {
         .then(({id, reason}) => {
           assertEquals(1, id);
           assertEquals('VIEW', reason);
-          assertEquals('password', passwordDialog.item.password);
+          assertEquals('password', passwordDialog.password);
         });
   });
 
@@ -642,7 +640,7 @@ suite('PasswordsSection', function() {
     const expectedItem = createPasswordEntry('goo.gl', 'bart', 1);
     const passwordListItem =
         elementFactory.createPasswordListItem(expectedItem);
-    assertEquals('', passwordListItem.item.password);
+    assertEquals('', passwordListItem.password);
 
     passwordManager.setPlaintextPassword('password');
     passwordListItem.$$('#showPasswordButton').click();
@@ -650,7 +648,7 @@ suite('PasswordsSection', function() {
         .then(({id, reason}) => {
           assertEquals(1, id);
           assertEquals('VIEW', reason);
-          assertEquals('password', passwordListItem.item.password);
+          assertEquals('password', passwordListItem.password);
         });
   });
 

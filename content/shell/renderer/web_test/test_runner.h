@@ -58,7 +58,6 @@ class MockScreenOrientationClient;
 class RenderFrame;
 class SpellCheckClient;
 class TestInterfaces;
-class TestRunnerForSpecificView;
 class WebFrameTestProxy;
 class WebWidgetTestProxy;
 class WebViewTestProxy;
@@ -70,8 +69,6 @@ class WebViewTestProxy;
 //    - TestRunner.SetAllowRunningOfInsecureContent (test flag affecting product
 //      behavior)
 //    - TestRunner.SetTextSubpixelPositioning (directly interacts with product).
-//    Note that "per-view" (non-"global") bindings are handled by
-//    instances of TestRunnerForSpecificView class.
 // 2. It manages global test state.  Example:
 //    - Tracking topLoadingFrame that can finish the test when it loads.
 //    - WorkQueue holding load requests from the TestInterfaces
@@ -81,9 +78,7 @@ class TestRunner {
   explicit TestRunner(TestInterfaces*);
   virtual ~TestRunner();
 
-  void Install(WebFrameTestProxy* frame,
-               SpellCheckClient* spell_check,
-               TestRunnerForSpecificView* view_test_runner);
+  void Install(WebFrameTestProxy* frame, SpellCheckClient* spell_check);
 
   void SetDelegate(BlinkTestRunner*);
   void SetMainView(blink::WebView*);

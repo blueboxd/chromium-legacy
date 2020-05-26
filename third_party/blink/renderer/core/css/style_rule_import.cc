@@ -24,6 +24,7 @@
 
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/loader/resource/css_style_sheet_resource.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -118,11 +119,9 @@ void StyleRuleImport::RequestStyleSheet() {
     // context document for getting origin and ResourceFetcher to use the main
     // Document's origin, while using the element document for CompleteURL() to
     // use imported Documents' base URLs.
-    document_for_origin = document->ContextDocument();
+    document_for_origin =
+        To<LocalDOMWindow>(document->GetExecutionContext())->document();
   }
-
-  if (!document_for_origin)
-    return;
 
   ResourceFetcher* fetcher = document_for_origin->Fetcher();
   if (!fetcher)

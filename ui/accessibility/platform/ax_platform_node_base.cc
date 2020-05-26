@@ -4,6 +4,9 @@
 
 #include "ui/accessibility/platform/ax_platform_node_base.h"
 
+#include <algorithm>
+#include <limits>
+#include <set>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -26,6 +29,7 @@
 namespace ui {
 
 namespace {
+
 // A function to call when focus changes, for testing only.
 base::LazyInstance<std::map<ax::mojom::Event, base::RepeatingClosure>>::
     DestructorAtExit g_on_notify_event_for_testing;
@@ -54,6 +58,7 @@ bool FindDescendantRoleWithMaxDepth(AXPlatformNodeBase* node,
 
   return false;
 }
+
 }  // namespace
 
 const base::char16 AXPlatformNodeBase::kEmbeddedCharacter = L'\xfffc';
@@ -139,7 +144,7 @@ gfx::NativeViewAccessible AXPlatformNodeBase::ChildAtIndex(int index) const {
 std::string AXPlatformNodeBase::GetName() const {
   if (delegate_)
     return delegate_->GetName();
-  return base::EmptyString();
+  return std::string();
 }
 
 base::string16 AXPlatformNodeBase::GetNameAsString16() const {
@@ -499,7 +504,7 @@ bool AXPlatformNodeBase::IsTextOnlyObject() const {
 }
 
 bool AXPlatformNodeBase::IsTextField() const {
-  return IsPlainTextField() || IsRichTextField();
+  return GetData().IsTextField();
 }
 
 bool AXPlatformNodeBase::IsPlainTextField() const {
@@ -507,16 +512,18 @@ bool AXPlatformNodeBase::IsPlainTextField() const {
 }
 
 bool AXPlatformNodeBase::IsRichTextField() const {
-  return GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot) &&
-         GetData().HasState(ax::mojom::State::kRichlyEditable);
+  return GetData().IsRichTextField();
 }
 
 base::string16 AXPlatformNodeBase::GetHypertext() const {
+  if (!delegate_)
+    return base::string16();
+
   // Hypertext of platform leaves, which internally are composite objects, are
   // represented with the inner text of the internal composite object. These
   // don't exist on non-web content.
   if (IsChildOfLeaf())
-    return GetDelegate()->GetInnerText();
+    return GetInnerText();
 
   if (hypertext_.needs_update)
     UpdateComputedHypertext();
@@ -524,38 +531,9 @@ base::string16 AXPlatformNodeBase::GetHypertext() const {
 }
 
 base::string16 AXPlatformNodeBase::GetInnerText() const {
-  // In order to get the inner text for web content, we potentially need access
-  // to nodes that are not exposed to platform APIs, i.e. they are only visible
-  // in the internal accessibility tree. For example, nodes representing the
-  // shadow DOM inside a native text field.
-  if (GetDelegate()->IsWebContent())
-    return GetDelegate()->GetInnerText();
-
-  // Allows us to get text even in non-web content, e.g. in the browser's UI
-  // (AKA Views).
-  //
-  // Unlike in web content The "kValue" attribute takes precedence, because the
-  // accessibility of Views controls are carefully crafted by hand, in contrast
-  // to HTML pages, where any content that might be present in the shadow DOM
-  // (i.e. in the internal accessibility tree) is actually used by the renderer.
-  base::string16 value =
-      GetString16Attribute(ax::mojom::StringAttribute::kValue);
-  if (!value.empty())
-    return value;
-
-  // TODO(https://crbug.com/1030703): The check for IsInvisibleOrIgnored()
-  // should not be needed. ChildAtIndex() and GetChildCount() are already
-  // supposed to skip over nodes that are invisible or ignored, but
-  // ViewAXPlatformNodeDelegate does not currently implement this behavior.
-  if (!GetChildCount() && !IsInvisibleOrIgnored())
-    return GetNameAsString16();
-
-  base::string16 text;
-  for (auto child_iter = AXPlatformNodeChildrenBegin();
-       child_iter != AXPlatformNodeChildrenEnd(); ++child_iter) {
-    text += child_iter->GetInnerText();
-  }
-  return text;
+  if (!delegate_)
+    return base::string16();
+  return delegate_->GetInnerText();
 }
 
 bool AXPlatformNodeBase::IsSelectionItemSupported() const {
@@ -847,48 +825,15 @@ bool AXPlatformNodeBase::HasCaret(
 }
 
 bool AXPlatformNodeBase::IsLeaf() const {
-  if (!GetChildCount())
-    return true;
-
-  // These types of objects may have children that we use as internal
-  // implementation details, but we want to expose them as leaves to platform
-  // accessibility APIs because screen readers might be confused if they find
-  // any children.
-  if (IsPlainTextField() || IsTextOnlyObject())
-    return true;
-
-  // Roles whose children are only presentational according to the ARIA and
-  // HTML5 Specs should be hidden from screen readers.
-  // (Note that whilst ARIA buttons can have only presentational children, HTML5
-  // buttons are allowed to have content.)
-  switch (GetData().role) {
-    case ax::mojom::Role::kImage:
-    case ax::mojom::Role::kMeter:
-    case ax::mojom::Role::kScrollBar:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSplitter:
-    case ax::mojom::Role::kProgressIndicator:
-      return true;
-    default:
-      return false;
-  }
+  return delegate_ && delegate_->IsLeaf();
 }
 
 bool AXPlatformNodeBase::IsChildOfLeaf() const {
-  AXPlatformNodeBase* ancestor = FromNativeViewAccessible(GetParent());
-
-  while (ancestor) {
-    if (ancestor->IsLeaf())
-      return true;
-    ancestor = FromNativeViewAccessible(ancestor->GetParent());
-  }
-
-  return false;
+  return delegate_ && delegate_->IsChildOfLeaf();
 }
 
 bool AXPlatformNodeBase::IsInvisibleOrIgnored() const {
-  const AXNodeData& data = GetData();
-  return data.HasState(ax::mojom::State::kInvisible) || data.IsIgnored();
+  return GetData().IsInvisibleOrIgnored();
 }
 
 bool AXPlatformNodeBase::IsScrollable() const {
@@ -1280,6 +1225,8 @@ AXHypertext::AXHypertext(const AXHypertext& other) = default;
 AXHypertext& AXHypertext::operator=(const AXHypertext& other) = default;
 
 void AXPlatformNodeBase::UpdateComputedHypertext() const {
+  if (!delegate_)
+    return;
   hypertext_ = AXHypertext();
 
   if (IsLeaf()) {

@@ -570,16 +570,41 @@ AXNodeTextStyles AXNodeData::GetTextStyles() const {
 }
 
 void AXNodeData::SetName(const std::string& name) {
+  DCHECK_NE(role, ax::mojom::Role::kNone)
+      << "A valid role is required before setting the name attribute, because "
+         "the role is used for setting the required NameFrom attribute.";
+
   auto iter = std::find_if(string_attributes.begin(), string_attributes.end(),
                            [](const auto& string_attribute) {
                              return string_attribute.first ==
                                     ax::mojom::StringAttribute::kName;
                            });
+
   if (iter == string_attributes.end()) {
     string_attributes.push_back(
         std::make_pair(ax::mojom::StringAttribute::kName, name));
   } else {
     iter->second = name;
+  }
+
+  if (HasIntAttribute(ax::mojom::IntAttribute::kNameFrom))
+    return;
+  // Since this method is mostly used by tests which don't always set the
+  // "NameFrom" attribute, we need to set it here to the most likely value if
+  // not set, otherwise code that tries to calculate the node's inner text, its
+  // hypertext, or even its value, might not know whether to include the name in
+  // the result or not.
+  //
+  // For example, if there is a text field, but it is empty, i.e. it has no
+  // value, its value could be its name if "NameFrom" is set to "kPlaceholder"
+  // or to "kContents" but not if it's set to "kAttribute". Similarly, if there
+  // is a button without any unignored children, it's name can only be
+  // equivalent to its inner text if "NameFrom" is set to "kContents" or to
+  // "kValue", but not if it is set to "kAttribute".
+  if (IsText(role)) {
+    SetNameFrom(ax::mojom::NameFrom::kContents);
+  } else {
+    SetNameFrom(ax::mojom::NameFrom::kAttribute);
   }
 }
 

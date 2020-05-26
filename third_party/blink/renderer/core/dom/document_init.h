@@ -47,6 +47,7 @@ namespace blink {
 class ContentSecurityPolicy;
 class Document;
 class DocumentLoader;
+class ExecutionContext;
 class HTMLImportsController;
 class LocalFrame;
 class PluginData;
@@ -65,8 +66,7 @@ class CORE_EXPORT DocumentInit final {
   // Example:
   //
   //   DocumentInit init = DocumentInit::Create()
-  //       .WithDocumentLoader(loader)
-  //       .WithContextDocument(context_document)
+  //       .WithExecutionContext(context)
   //       .WithURL(url);
   //   Document* document = MakeGarbageCollected<Document>(init);
   static DocumentInit Create();
@@ -123,11 +123,9 @@ class CORE_EXPORT DocumentInit final {
   bool IsForExternalHandler() const { return is_for_external_handler_; }
   Color GetPluginBackgroundColor() const { return plugin_background_color_; }
 
-  // Used by the DOMImplementation and DOMParser to pass their parent Document
-  // so that the created Document will return the Document when the
-  // ContextDocument() method is called.
-  DocumentInit& WithContextDocument(Document*);
-  Document* ContextDocument() const;
+  // Used when creating Documents not attached to a window.
+  DocumentInit& WithExecutionContext(ExecutionContext*);
+  ExecutionContext* GetExecutionContext() const;
 
   DocumentInit& WithURL(const KURL&);
   const KURL& Url() const { return url_; }
@@ -175,7 +173,7 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
-  DocumentInit& WithContentSecurityPolicyFromContextDoc();
+  DocumentInit& WithContentSecurityPolicyFromExecutionContext();
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
 
   DocumentInit& WithFramePolicy(
@@ -220,7 +218,7 @@ class CORE_EXPORT DocumentInit final {
 
   HTMLImportsController* imports_controller_ = nullptr;
 
-  Document* context_document_ = nullptr;
+  ExecutionContext* execution_context_ = nullptr;
   KURL url_;
   Document* owner_document_ = nullptr;
 
@@ -267,7 +265,7 @@ class CORE_EXPORT DocumentInit final {
 
   // Loader's CSP
   ContentSecurityPolicy* content_security_policy_ = nullptr;
-  bool content_security_policy_from_context_doc_ = false;
+  bool content_security_policy_from_context_ = false;
 
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;

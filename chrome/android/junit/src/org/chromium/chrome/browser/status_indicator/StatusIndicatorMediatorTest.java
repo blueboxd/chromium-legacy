@@ -41,18 +41,16 @@ public class StatusIndicatorMediatorTest {
 
     @Mock
     BrowserControlsStateProvider mBrowserControlsStateProvider;
-
     @Mock
     View mStatusIndicatorView;
-
     @Mock
     StatusIndicatorCoordinator.StatusIndicatorObserver mObserver;
-
     @Mock
     Supplier<Boolean> mCanAnimateNativeBrowserControls;
-
     @Mock
     Callback<Runnable> mInvalidateCompositorView;
+    @Mock
+    Runnable mRequestLayout;
 
     private PropertyModel mModel;
     private StatusIndicatorMediator mMediator;
@@ -62,12 +60,14 @@ public class StatusIndicatorMediatorTest {
         MockitoAnnotations.initMocks(this);
         when(mCanAnimateNativeBrowserControls.get()).thenReturn(true);
         doNothing().when(mInvalidateCompositorView).onResult(any(Runnable.class));
+        doNothing().when(mRequestLayout).run();
         mModel = new PropertyModel.Builder(StatusIndicatorProperties.ALL_KEYS)
                          .with(StatusIndicatorProperties.ANDROID_VIEW_VISIBILITY, View.GONE)
                          .with(StatusIndicatorProperties.COMPOSITED_VIEW_VISIBLE, false)
                          .build();
         mMediator = new StatusIndicatorMediator(mModel, mBrowserControlsStateProvider,
-                () -> Color.WHITE, mCanAnimateNativeBrowserControls, mInvalidateCompositorView);
+                () -> Color.WHITE, mCanAnimateNativeBrowserControls, mInvalidateCompositorView,
+                mRequestLayout);
     }
 
     @Test

@@ -993,8 +993,13 @@ class Graph {
     if (!d3.event.active) {
       this.simulation_.alphaTarget(0);
     }
-    d.fx = null;
-    d.fy = null;
+    // Leave the node pinned where it was dropped. Return it to free
+    // positioning if it's dropped outside its designated area.
+    const bounds = d.allowedYRange(this.height_);
+    if (d3.event.y < bounds[0] || d3.event.y > bounds[1]) {
+      d.fx = null;
+      d.fy = null;
+    }
   }
 
   /**

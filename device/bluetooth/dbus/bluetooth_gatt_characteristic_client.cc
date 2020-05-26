@@ -133,7 +133,7 @@ class BluetoothGattCharacteristicClientImpl
     // Append option dict
     base::DictionaryValue dict;
     if (!type_option.empty()) {
-      // NB: the "type" option was added in BlueZ 5.50. Older versions of BlueZ
+      // NB: the "type" option was added in BlueZ 5.51. Older versions of BlueZ
       // will ignore this option.
       dict.SetStringKey(bluetooth_gatt_characteristic::kOptionType,
                         type_option);

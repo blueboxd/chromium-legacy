@@ -69,7 +69,7 @@ const base::Feature kPromptAppForDeepScanning{
     "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabled{
-    "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingRealTimeUrlLookupEnabled", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kRealTimeUrlLookupEnabledForAllAndroidDevices{
     "SafeBrowsingRealTimeUrlLookupEnabledForAllAndroidDevices",

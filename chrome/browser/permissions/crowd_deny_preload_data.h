@@ -22,6 +22,10 @@ namespace base {
 class FilePath;
 }
 
+namespace testing {
+class ScopedCrowdDenyPreloadDataOverride;
+}
+
 // Stores information relevant for making permission decision on popular sites.
 //
 // The preloaded list contains reputation data for popular sites, and is
@@ -51,25 +55,46 @@ class CrowdDenyPreloadData {
   // in binary wire format from the file at |preload_data_path|.
   void LoadFromDisk(const base::FilePath& preload_data_path);
 
-  // Sets the notification UX for a particular origin. Only used for testing.
-  void set_origin_notification_user_experience_for_testing(
-      const url::Origin& origin,
-      chrome_browser_crowd_deny::
-          SiteReputation_NotificationUserExperienceQuality quality) {
-    domain_to_reputation_map_[origin.host()] = SiteReputation();
-    domain_to_reputation_map_[origin.host()].set_notification_ux_quality(
-        quality);
-  }
-
  private:
+  friend class testing::ScopedCrowdDenyPreloadDataOverride;
+
   void set_site_reputations(DomainToReputationMap map) {
     domain_to_reputation_map_ = std::move(map);
   }
+
+  DomainToReputationMap TakeSiteReputations();
 
   DomainToReputationMap domain_to_reputation_map_;
   scoped_refptr<base::SequencedTaskRunner> loading_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CrowdDenyPreloadData);
 };
+
+namespace testing {
+
+// Overrides the production preload list, while the instance is in scope, with
+// a testing list that is initially empty.
+class ScopedCrowdDenyPreloadDataOverride {
+ public:
+  using SiteReputation = CrowdDenyPreloadData::SiteReputation;
+  using DomainToReputationMap = CrowdDenyPreloadData::DomainToReputationMap;
+
+  ScopedCrowdDenyPreloadDataOverride();
+  ~ScopedCrowdDenyPreloadDataOverride();
+
+  ScopedCrowdDenyPreloadDataOverride(
+      const ScopedCrowdDenyPreloadDataOverride&) = delete;
+  ScopedCrowdDenyPreloadDataOverride& operator=(
+      const ScopedCrowdDenyPreloadDataOverride&) = delete;
+
+  void SetOriginReputation(const url::Origin& origin,
+                           SiteReputation site_reputation);
+  void ClearAllReputations();
+
+ private:
+  DomainToReputationMap old_map_;
+};
+
+}  // namespace testing
 
 #endif  // CHROME_BROWSER_PERMISSIONS_CROWD_DENY_PRELOAD_DATA_H_

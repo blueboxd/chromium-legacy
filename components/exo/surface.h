@@ -281,7 +281,7 @@ class Surface final : public ui::PropertyHandler {
   void OnWindowOcclusionChanged();
 
   // True if the window for this surface has its occlusion tracked.
-  bool is_tracking_occlusion() const { return is_tracking_occlusion_; }
+  bool IsTrackingOcclusion();
 
   // Sets the |surface_hierarchy_content_bounds_|.
   void SetSurfaceHierarchyContentBoundsForTest(const gfx::Rect& content_bounds);
@@ -309,6 +309,7 @@ class Surface final : public ui::PropertyHandler {
     float alpha = 1.0f;
     gfx::Vector2d offset;
     gfx::ColorSpace color_space;
+    bool is_tracking_occlusion = false;
   };
   class BufferAttachment {
    public:
@@ -450,9 +451,6 @@ class Surface final : public ui::PropertyHandler {
 
   // Surface observer list. Surface does not own the observers.
   base::ObserverList<SurfaceObserver, true>::Unchecked observers_;
-
-  // Whether this surface is tracking occlusion for the client.
-  bool is_tracking_occlusion_ = false;
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<ash::OutputProtectionDelegate> output_protection_;

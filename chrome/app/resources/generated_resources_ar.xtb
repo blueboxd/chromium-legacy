@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">الاختصارات التي نظمتها</translation>
 <translation id="1213037489357051291">تم إعداد <ph name="NUM_FINGERPRINTS" /> من بصمات الإصبع</translation>
 <translation id="1213254615020057352">‏يمكنك إرسال بيانات الاستخدام والتشخيص. يمكنك المساعدة في تحسين تجربة نظام التشغيل Android على حسابك الفرعي من خلال إرسال بيانات التطبيق والجهاز والتشخيص تلقائيًا إلى Google. ولن يتم استخدام هذه البيانات للتعرّف على حسابك الفرعي، بل ستُستخدَم لتعزيز استقرار النظام والتطبيقات وإجراء المزيد من التحسينات. وسيستفيد أيضًا مطوّرو التطبيقات والشركاء في Google، مثل مطوّري البرامج المتوافقة مع Android، من بعض البيانات المجمّعة. ويفرض المالك هذا الإعداد. قد يختار المالك إرسال بيانات الاستخدام والتشخيص لهذا الجهاز إلى Google. في حال تفعيل إعداد "النشاط الإضافي على الويب وفي التطبيقات" لحسابك الفرعي، قد يتم حفظ هذه البيانات في حسابك على Google.</translation>
+<translation id="121384500095351701">لا يمكن تنزيل هذا الملف بشكل آمن.</translation>
 <translation id="1215411991991485844">تمت إضافة تطبيق جديد في الخلفية</translation>
 <translation id="1216542092748365687">إزالة بصمة الإصبع</translation>
 <translation id="1217483152325416304">سيتم قريبًا حذف البيانات المحلية.</translation>
@@ -1064,6 +1065,7 @@
 <translation id="2336228925368920074">وضع إشارة على جميع علامات التبويب...</translation>
 <translation id="2336376423977300504">محو ملفات تعريف الارتباط عند إغلاق النوافذ دائمًا</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">لا يمكن تنزيل الملف <ph name="FILE_NAME" /> بشكل آمن.</translation>
 <translation id="2340263603246777781">يريد <ph name="ORIGIN" /> الاقتران</translation>
 <translation id="2342740338116612727">تمت إضافة الإشارات المرجعية</translation>
 <translation id="2343747224442182863">التركيز على علامة التبويب هذه</translation>
@@ -3251,6 +3253,7 @@
 <translation id="5154702632169343078">الموضوع</translation>
 <translation id="5157635116769074044">تثبيت هذه الصفحة في شاشة البدء...</translation>
 <translation id="5158983316805876233">استخدام نفس الخادم الوكيل مع جميع البروتوكولات</translation>
+<translation id="5159419673777902220">أوقَف أحد والدَيك أذونات الإضافة.</translation>
 <translation id="5160857336552977725">سجّل الدخول إلى <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">تم حظر <ph name="PLUGIN_NAME" /> لأنه قديم.</translation>
 <translation id="5170568018924773124">العرض في المجلد</translation>
@@ -5394,6 +5397,7 @@
 <translation id="7925247922861151263">‏تعذّر فحص AAA</translation>
 <translation id="7925285046818567682">في انتظار <ph name="HOST_NAME" />‏ ...</translation>
 <translation id="7926423016278357561">لم يكن هذا أنا.</translation>
+<translation id="7926975587469166629">لقب البطاقة</translation>
 <translation id="7928175190925744466">هل سبق وغيرت كلمة المرور هذه؟</translation>
 <translation id="7928836894214140642">تتم الإدارة من خلال <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">ستظهر هنا طرق الدفع المحفوظة</translation>

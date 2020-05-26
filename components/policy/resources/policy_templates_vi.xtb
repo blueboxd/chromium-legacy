@@ -691,6 +691,11 @@ Nếu bạn tắt chính sách này, thì việc cuộn trang web đến các ph
       Khi bạn đặt chính sách này thành một đường dẫn tệp, thì tệp đó sẽ được dùng làm
       tệp thực thi.</translation>
 <translation id="2113068765175018713">Giới hạn thời gian hoạt động của thiết bị bằng cách tự động khởi động lại</translation>
+<translation id="2124881675920287921">Chính sách này không còn dùng trong phiên bản M82 nữa và sẽ bị xóa khỏi phiên bản M85. Thay vào đó, hãy sử dụng <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Việc tắt <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> cũng giống như tắt <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Việc bật <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> hoặc không đặt tùy chọn cài đặt này cũng giống như không đặt <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
+
+      Việc đặt chính sách này thành false sẽ ngăn người dùng chọn gửi một số thông tin hệ thống và nội dung trang đến máy chủ Google. Nếu bạn đặt chính sách này là true hoặc không định cấu hình chính sách này, thì người dùng sẽ được phép gửi một số thông tin hệ thống và nội dung trang đến dịch vụ Duyệt web an toàn nhằm giúp phát hiện các ứng dụng cũng như trang web nguy hiểm.
+
+      Để biết thông tin chi tiết về dịch vụ Duyệt web an toàn, vui lòng truy cập vào https://developers.google.com/safe-browsing.</translation>
 <translation id="2127599828444728326">Cho phép thông báo trên các trang web này</translation>
 <translation id="2131902621292742709">Độ trễ mờ màn hình khi chạy trên nguồn pin</translation>
 <translation id="2134437727173969994">Cho phép khóa màn hình</translation>
@@ -2418,7 +2423,7 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
       Nếu bạn bật hoặc tắt cài đặt này, người dùng sẽ không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
 
       Nếu chính sách này không được đặt, cài đặt này sẽ được bật nhưng người dùng có thể thay đổi cài đặt này.</translation>
-<translation id="4529868888205510667">Nếu bạn không tắt ARC bằng bất kỳ phương tiện nào khác, thì việc đặt chính sách này thành True hoặc không đặt đều có nghĩa là cho phép người dùng sử dụng ARC. Nếu bạn đặt chính sách này thành False, thì người dùng chưa liên kết có thể không dùng được ARC.
+<translation id="4529868888205510667">Nếu bạn không tắt ARC theo cách khác, thì việc đặt chính sách này thành True hoặc không đặt đều có nghĩa là cho phép người dùng sử dụng ARC. Nếu bạn đặt chính sách này thành False, thì người dùng chưa liên kết có thể không dùng được ARC.
 
       Các thay đổi đối với chính sách chỉ được áp dụng khi ARC không chạy, chẳng hạn như khi đang khởi động Chrome OS.</translation>
 <translation id="453031441196755904">Chính sách này không còn dùng nữa.</translation>
@@ -2916,7 +2921,6 @@ Nếu đặt thành False, thì <ph name="PRODUCT_NAME" /> sẽ không sử dụ
 <translation id="5307432759655324440">Tính khả dụng của chế độ ẩn danh</translation>
 <translation id="5311275381462687162">Tùy chọn cài đặt mặc định cho hành vi <ph name="ATTRIBUTE_SAMESITE_NAME" /> cũ của cookie</translation>
 <translation id="5318185076587284965">Cho phép máy chủ truy cập từ xa sử dụng máy chủ chuyển tiếp</translation>
-<translation id="5321755462836179869">Cho phép các thông báo gốc</translation>
 <translation id="5323128137188992869">Cho phép truyền nội dung đến thiết bị này bằng cách sử dụng <ph name="PRODUCT_NAME" />.
 
           Nếu bạn đặt chính sách này thành False, người dùng sẽ không thể truyền nội dung đến thiết bị của họ. Nếu bạn đặt chính sách này thành True, người dùng sẽ được phép truyền nội dung. Nếu bạn không đặt chính sách này, người dùng sẽ không được phép truyền nội dung đến thiết bị Chrome OS đã đăng ký, nhưng có thể truyền đến các thiết bị không được đăng ký.</translation>

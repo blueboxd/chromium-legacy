@@ -96,6 +96,17 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
   out_head->was_fallback_required_by_service_worker = false;
   out_head->url_list_via_service_worker = response.url_list;
   out_head->response_type = response.response_type;
+  if (response.mime_type.has_value()) {
+    std::string charset;
+    bool had_charset = false;
+    // The mime type set on |response| may have a charset included.  The
+    // loading stack, however, expects the charset to already have been
+    // stripped.  Parse out the mime type essence without any charset and
+    // store the result on |out_head|.
+    net::HttpUtil::ParseContentType(response.mime_type.value(),
+                                    &out_head->mime_type, &charset,
+                                    &had_charset, nullptr);
+  }
   out_head->response_time = response.response_time;
   out_head->is_in_cache_storage =
       response.response_source ==

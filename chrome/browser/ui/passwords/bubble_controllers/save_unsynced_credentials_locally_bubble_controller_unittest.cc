@@ -20,9 +20,11 @@ class SaveUnsyncedCredentialsLocallyBubbleControllerTest
     : public ::testing::Test {
  public:
   SaveUnsyncedCredentialsLocallyBubbleControllerTest() {
-    unsynced_credentials_.resize(1);
-    unsynced_credentials_[0].username_value = ASCIIToUTF16("user");
-    unsynced_credentials_[0].password_value = ASCIIToUTF16("password");
+    unsynced_credentials_.resize(2);
+    unsynced_credentials_[0].username_value = ASCIIToUTF16("user1");
+    unsynced_credentials_[0].password_value = ASCIIToUTF16("password1");
+    unsynced_credentials_[1].username_value = ASCIIToUTF16("user2");
+    unsynced_credentials_[1].password_value = ASCIIToUTF16("password2");
   }
   ~SaveUnsyncedCredentialsLocallyBubbleControllerTest() override = default;
 
@@ -37,5 +39,21 @@ TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
       .WillOnce(ReturnRef(unsynced_credentials_));
   SaveUnsyncedCredentialsLocallyBubbleController controller(
       model_delegate_mock_.AsWeakPtr());
-  EXPECT_EQ(controller.unsynced_credentials(), unsynced_credentials_);
+  EXPECT_EQ(controller.GetUnsyncedCredentials(), unsynced_credentials_);
+}
+
+TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
+       ShouldSaveCredentialsInProfileStoreOnSaveButtonClicked) {
+  SaveUnsyncedCredentialsLocallyBubbleController controller(
+      model_delegate_mock_.AsWeakPtr());
+  EXPECT_CALL(model_delegate_mock_, SaveUnsyncedCredentialsInProfileStore);
+  controller.OnSaveClicked();
+}
+
+TEST_F(SaveUnsyncedCredentialsLocallyBubbleControllerTest,
+       ShouldDiscardCredentialsInProfileStoreOnCancelButtonClicked) {
+  SaveUnsyncedCredentialsLocallyBubbleController controller(
+      model_delegate_mock_.AsWeakPtr());
+  EXPECT_CALL(model_delegate_mock_, DiscardUnsyncedCredentials);
+  controller.OnCancelClicked();
 }

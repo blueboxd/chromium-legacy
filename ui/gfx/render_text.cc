@@ -2244,7 +2244,7 @@ internal::GraphemeIterator RenderText::GetGraphemeIteratorAtIndex(
 }
 
 void RenderText::DrawSelections(Canvas* canvas,
-                                const std::vector<Range> selections) {
+                                const std::vector<Range>& selections) {
   for (auto selection : selections) {
     if (!selection.is_empty()) {
       for (Rect s : GetSubstringBounds(selection)) {

@@ -93,22 +93,6 @@ int GetNumDuplicateUrls(const BookmarkNode* root) {
   return num_duplicate_urls;
 }
 
-// Computes the number of bookmarks with an empty title. This includes folders
-// too except for the root.
-int GetNumNodesWithEmptyTitle(const BookmarkNode* node) {
-  DCHECK(node);
-
-  int num_nodes_with_empty_title = 0;
-
-  if (!node->is_root() && node->GetTitle().empty())
-    ++num_nodes_with_empty_title;
-
-  for (const auto& child : node->children())
-    num_nodes_with_empty_title += GetNumNodesWithEmptyTitle(child.get());
-
-  return num_nodes_with_empty_title;
-}
-
 }  // namespace
 
 void LoadBookmarks(const base::FilePath& path,
@@ -173,13 +157,6 @@ void LoadBookmarks(const base::FilePath& path,
     if (num_duplicate_urls > 0) {
       base::UmaHistogramCounts10000(
           "Bookmarks.Count.OnProfileLoad.DuplicateUrl", num_duplicate_urls);
-    }
-
-    int num_nodes_with_empty_title =
-        GetNumNodesWithEmptyTitle(details->root_node());
-    if (num_nodes_with_empty_title > 0) {
-      base::UmaHistogramCounts10000("Bookmarks.Count.OnProfileLoad.EmptyTitle",
-                                    num_nodes_with_empty_title);
     }
 
     UMA_HISTOGRAM_TIMES("Bookmarks.DuplicateAndEmptyTitleDetectionTime",

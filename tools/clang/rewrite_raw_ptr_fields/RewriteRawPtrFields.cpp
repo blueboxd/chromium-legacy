@@ -48,6 +48,10 @@ namespace {
 // replaces a raw pointer.
 const char kIncludePath[] = "base/memory/checked_ptr.h";
 
+// Name of a cmdline parameter that can be used to specify a file listing fields
+// that should not be rewritten to use CheckedPtr<T>.
+const char kExcludeFieldsParamName[] = "exclude-fields";
+
 // Output format is documented in //docs/clang_tool_refactoring.md
 class ReplacementsPrinter {
  public:
@@ -62,6 +66,8 @@ class ReplacementsPrinter {
         source_manager, clang::CharSourceRange::getCharRange(replacement_range),
         replacement_text);
     llvm::StringRef file_path = replacement.getFilePath();
+    assert(!file_path.empty());
+
     std::replace(replacement_text.begin(), replacement_text.end(), '\n', '\0');
     llvm::outs() << "r:::" << file_path << ":::" << replacement.getOffset()
                  << ":::" << replacement.getLength()
@@ -119,12 +125,80 @@ AST_MATCHER(clang::FieldDecl, isInThirdPartyLocation) {
   return file_path.contains("third_party");
 }
 
+class FieldDeclFilterFile {
+ public:
+  explicit FieldDeclFilterFile(const std::string& filepath) {
+    if (!filepath.empty())
+      ParseInputFile(filepath);
+  }
+
+  bool Contains(const clang::FieldDecl& field_decl) const {
+    std::string qualified_name = field_decl.getQualifiedNameAsString();
+    auto it = fields_to_filter_.find(qualified_name);
+    return it != fields_to_filter_.end();
+  }
+
+ private:
+  // Expected file format:
+  // - '#' character starts a comment (which gets ignored).
+  // - Blank or whitespace-only or comment-only lines are ignored.
+  // - Other lines are expected to contain a fully-qualified name of a field
+  //   like:
+  //       autofill::AddressField::address1_ # some comment
+  // - Templates are represented without template arguments, like:
+  //       WTF::HashTable::table_ # some comment
+  void ParseInputFile(const std::string& filepath) {
+    llvm::ErrorOr<std::unique_ptr<llvm::MemoryBuffer>> file_or_err =
+        llvm::MemoryBuffer::getFile(filepath);
+    if (std::error_code err = file_or_err.getError()) {
+      llvm::errs() << "ERROR: Cannot open the file specified in --"
+                   << kExcludeFieldsParamName << " argument: " << filepath
+                   << ": " << err.message() << "\n";
+      assert(false);
+      return;
+    }
+
+    llvm::line_iterator it(**file_or_err, true /* SkipBlanks */, '#');
+    for (; !it.is_at_eof(); ++it) {
+      llvm::StringRef line = *it;
+
+      // Remove trailing comments.
+      size_t comment_start_pos = line.find('#');
+      if (comment_start_pos != llvm::StringRef::npos)
+        line = line.substr(0, comment_start_pos);
+      line = line.trim();
+
+      if (line.empty())
+        continue;
+
+      fields_to_filter_.insert(line);
+    }
+  }
+
+  // Stores fully-namespace-qualified names of fields matched by the filter.
+  llvm::StringSet<> fields_to_filter_;
+};
+
+AST_MATCHER_P(clang::FieldDecl,
+              isListedInFilterFile,
+              FieldDeclFilterFile,
+              Filter) {
+  return Filter.Contains(Node);
+}
+
 AST_MATCHER(clang::ClassTemplateSpecializationDecl, isImplicitSpecialization) {
   return !Node.isExplicitSpecialization();
 }
 
 AST_MATCHER(clang::Type, anyCharType) {
   return Node.isAnyCharacterType();
+}
+
+AST_POLYMORPHIC_MATCHER(isInMacroLocation,
+                        AST_POLYMORPHIC_SUPPORTED_TYPES(clang::Decl,
+                                                        clang::Stmt,
+                                                        clang::TypeLoc)) {
+  return Node.getBeginLoc().isMacroID();
 }
 
 // Matcher for FieldDecl that has a TypeLoc with a unique start location
@@ -242,6 +316,9 @@ int main(int argc, const char* argv[]) {
   llvm::InitializeNativeTargetAsmParser();
   llvm::cl::OptionCategory category(
       "rewrite_raw_ptr_fields: changes |T* field_| to |CheckedPtr<T> field_|.");
+  llvm::cl::opt<std::string> exclude_fields_param(
+      kExcludeFieldsParamName, llvm::cl::value_desc("filepath"),
+      llvm::cl::desc("file listing fields to be blocked (not rewritten)"));
   clang::tooling::CommonOptionsParser options(argc, argv, category);
   clang::tooling::ClangTool tool(options.getCompilations(),
                                  options.getSourcePathList());
@@ -293,11 +370,16 @@ int main(int argc, const char* argv[]) {
   // matches |int* y|.  Doesn't match:
   // - non-pointer types
   // - fields of lambda-supporting classes
+  // - fields listed in the --exclude-fields cmdline param
+  // - "implicit" fields (i.e. field decls that are not explicitly present in
+  //   the source code)
+  FieldDeclFilterFile fields_to_exclude(exclude_fields_param);
   auto field_decl_matcher =
-      fieldDecl(allOf(hasType(supported_pointer_types_matcher),
-                      hasUniqueTypeLoc(),
-                      unless(anyOf(isInThirdPartyLocation(),
-                                   implicit_field_decl_matcher))))
+      fieldDecl(
+          allOf(hasType(supported_pointer_types_matcher), hasUniqueTypeLoc(),
+                unless(anyOf(isInThirdPartyLocation(), isInMacroLocation(),
+                             isListedInFilterFile(fields_to_exclude),
+                             implicit_field_decl_matcher))))
           .bind("fieldDecl");
   FieldDeclRewriter field_decl_rewriter(&replacements_printer);
   match_finder.addMatcher(field_decl_matcher, &field_decl_rewriter);

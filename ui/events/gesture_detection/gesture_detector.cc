@@ -340,9 +340,19 @@ bool GestureDetector::OnTouchEvent(const MotionEvent& ev,
         last_focus_y_ = focus_y;
       }
 
-      if (stylus_button_accelerated_longpress_enabled_ &&
-          (ev.GetFlags() & ui::EF_LEFT_MOUSE_BUTTON)) {
-        OnStylusButtonPress(ev);
+      // Try to activate long press gesture early.
+      if (ev.GetPointerCount() == 1 &&
+          timeout_handler_->HasTimeout(LONG_PRESS)) {
+        if (ev.GetToolType(0) == MotionEvent::ToolType::STYLUS &&
+            stylus_button_accelerated_longpress_enabled_ &&
+            (ev.GetFlags() & ui::EF_LEFT_MOUSE_BUTTON)) {
+          // This will generate a ET_GESTURE_LONG_PRESS event with
+          // EF_LEFT_MOUSE_BUTTON, which is consumed by MetalayerMode if that
+          // feature is enabled, because MetalayerMode is also activated by a
+          // stylus button press and has precedence over this press acceleration
+          // feature.
+          ActivateLongPressGesture(ev);
+        }
       }
 
       if (!two_finger_tap_allowed_for_gesture_)
@@ -479,9 +489,7 @@ void GestureDetector::OnShowPressTimeout() {
 }
 
 void GestureDetector::OnLongPressTimeout() {
-  timeout_handler_->StopTimeout(TAP);
-  defer_confirm_single_tap_ = false;
-  listener_->OnLongPress(*current_down_event_);
+  ActivateLongPressGesture(*current_down_event_);
 }
 
 void GestureDetector::OnTapTimeout() {
@@ -495,17 +503,9 @@ void GestureDetector::OnTapTimeout() {
   }
 }
 
-void GestureDetector::OnStylusButtonPress(const MotionEvent& ev) {
-  if (!timeout_handler_->HasTimeout(LONG_PRESS))
-    return;
-  timeout_handler_->StopTimeout(TAP);
-  timeout_handler_->StopTimeout(SHOW_PRESS);
-  timeout_handler_->StopTimeout(LONG_PRESS);
+void GestureDetector::ActivateLongPressGesture(const MotionEvent& ev) {
+  timeout_handler_->Stop();
   defer_confirm_single_tap_ = false;
-  // This will generate a ET_GESTURE_LONG_PRESS event with EF_LEFT_MOUSE_BUTTON,
-  // which is consumed by MetalayerMode if that feature is enabled, because
-  // MetalayerMode is also activated by a stylus button press and has precedence
-  // over this press acceleration feature.
   listener_->OnLongPress(ev);
 }
 

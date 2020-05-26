@@ -283,7 +283,8 @@ void ProcessMirrorHeader(
 
     // Display a re-authentication dialog.
     chromeos::InlineLoginHandlerDialogChromeOS::Show(
-        manage_accounts_params.email);
+        manage_accounts_params.email,
+        chromeos::InlineLoginHandlerDialogChromeOS::Source::kContentArea);
     return;
   }
 

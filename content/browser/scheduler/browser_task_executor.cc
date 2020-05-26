@@ -96,10 +96,6 @@ BaseBrowserTaskExecutor::CreateCOMSTATaskRunner(
 scoped_refptr<base::SingleThreadTaskRunner>
 BaseBrowserTaskExecutor::GetTaskRunner(BrowserThread::ID identifier,
                                        const base::TaskTraits& traits) const {
-  DCHECK(traits.extension_id() ==
-             base::TaskTraitsExtensionStorage::kInvalidExtensionId ||
-         ExtractBrowserThreadId(traits) == identifier);
-
   const QueueType queue_type = GetQueueType(traits);
 
   switch (identifier) {

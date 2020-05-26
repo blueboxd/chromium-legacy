@@ -90,13 +90,7 @@ public class ShareHelper extends org.chromium.components.browser_ui.share.ShareH
             params.setCallback(new SaveComponentCallback(params.getCallback()));
         }
 
-        if (TargetChosenReceiver.isSupported()) {
-            // On L+ open system share sheet.
-            shareWithSystemSheet(params);
-        } else {
-            // On K and below open custom share dialog.
-            showCompatShareDialog(params);
-        }
+        ShareHelper.shareWithUi(params);
     }
 
     /**

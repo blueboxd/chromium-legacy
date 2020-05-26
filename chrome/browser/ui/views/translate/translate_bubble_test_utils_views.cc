@@ -26,12 +26,7 @@ void PressTranslate(Browser* browser) {
   TranslateBubbleView* bubble = TranslateBubbleView::GetCurrentBubble();
   DCHECK(bubble);
 
-  views::LabelButton button(nullptr, base::string16());
-  button.SetID(TranslateBubbleView::BUTTON_ID_TRANSLATE);
-
-  bubble->ButtonPressed(&button,
-                        ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
-                                     ui::DomCode::ENTER, ui::EF_NONE));
+  bubble->TabSelectedAt(1);
 }
 
 void PressRevert(Browser* browser) {
@@ -39,12 +34,7 @@ void PressRevert(Browser* browser) {
   TranslateBubbleView* bubble = TranslateBubbleView::GetCurrentBubble();
   DCHECK(bubble);
 
-  views::LabelButton button(nullptr, base::string16());
-  button.SetID(TranslateBubbleView::BUTTON_ID_SHOW_ORIGINAL);
-
-  bubble->ButtonPressed(&button,
-                        ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
-                                     ui::DomCode::ENTER, ui::EF_NONE));
+  bubble->TabSelectedAt(0);
 }
 
 void SelectTargetLanguageByDisplayName(Browser* browser,

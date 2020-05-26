@@ -38,6 +38,9 @@ void NativeAppWindowViews::Init(
       create_params.GetContentMaximumSize(gfx::Insets()));
   Observe(app_window_->web_contents());
 
+  web_view_ = AddChildView(std::make_unique<views::WebView>(nullptr));
+  web_view_->SetWebContents(app_window_->web_contents());
+
   widget_ = new views::Widget;
   widget_->AddObserver(this);
   InitializeWindow(app_window, create_params);
@@ -281,15 +284,6 @@ void NativeAppWindowViews::RenderViewHostChanged(
 }
 
 // views::View implementation.
-
-void NativeAppWindowViews::ViewHierarchyChanged(
-    const views::ViewHierarchyChangedDetails& details) {
-  if (details.is_add && details.child == this) {
-    DCHECK(!web_view_);
-    web_view_ = AddChildView(std::make_unique<views::WebView>(nullptr));
-    web_view_->SetWebContents(app_window_->web_contents());
-  }
-}
 
 gfx::Size NativeAppWindowViews::GetMinimumSize() const {
   return size_constraints_.GetMinimumSize();

@@ -852,7 +852,7 @@ TEST_P(OopImagePixelTest, DrawImageWithSetMatrix) {
   display_item_list->StartPaint();
   PaintFlags flags;
   flags.setFilterQuality(FilterQuality());
-  display_item_list->push<SetMatrixOp>(SkMatrix::MakeScale(0.5f, 0.5f));
+  display_item_list->push<SetMatrixOp>(SkMatrix::Scale(0.5f, 0.5f));
   display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
@@ -1546,12 +1546,12 @@ class OopRecordFilterPixelTest : public OopPixelTest,
 };
 
 TEST_P(OopRecordFilterPixelTest, FilterWithTextScaled) {
-  SkMatrix mat = SkMatrix::MakeScale(2.f, 2.f);
+  SkMatrix mat = SkMatrix::Scale(2.f, 2.f);
   RunTest(mat);
 }
 
 TEST_P(OopRecordFilterPixelTest, FilterWithTextAndComplexCTM) {
-  SkMatrix mat = SkMatrix::MakeScale(2.f, 2.f);
+  SkMatrix mat = SkMatrix::Scale(2.f, 2.f);
   mat.preSkew(2.f, 2.f);
   RunTest(mat);
 }

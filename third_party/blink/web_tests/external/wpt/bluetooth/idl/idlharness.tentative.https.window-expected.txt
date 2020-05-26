@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 205 tests; 149 PASS, 56 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 205 tests; 151 PASS, 54 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
@@ -162,8 +162,8 @@ PASS BluetoothRemoteGATTCharacteristic interface: operation getDescriptor(Blueto
 PASS BluetoothRemoteGATTCharacteristic interface: operation getDescriptors(optional BluetoothDescriptorUUID)
 PASS BluetoothRemoteGATTCharacteristic interface: operation readValue()
 PASS BluetoothRemoteGATTCharacteristic interface: operation writeValue(BufferSource)
-FAIL BluetoothRemoteGATTCharacteristic interface: operation writeValueWithResponse(BufferSource) assert_own_property: interface prototype object missing non-static operation expected property "writeValueWithResponse" missing
-FAIL BluetoothRemoteGATTCharacteristic interface: operation writeValueWithoutResponse(BufferSource) assert_own_property: interface prototype object missing non-static operation expected property "writeValueWithoutResponse" missing
+PASS BluetoothRemoteGATTCharacteristic interface: operation writeValueWithResponse(BufferSource)
+PASS BluetoothRemoteGATTCharacteristic interface: operation writeValueWithoutResponse(BufferSource)
 PASS BluetoothRemoteGATTCharacteristic interface: operation startNotifications()
 PASS BluetoothRemoteGATTCharacteristic interface: operation stopNotifications()
 PASS BluetoothRemoteGATTCharacteristic interface: attribute oncharacteristicvaluechanged

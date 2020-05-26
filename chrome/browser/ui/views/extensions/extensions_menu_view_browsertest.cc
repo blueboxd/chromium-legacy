@@ -148,7 +148,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
     if (ui_test_name_ == "InstallDialog") {
       ExtensionsToolbarContainer* const container =
           GetExtensionsToolbarContainer();
-      views::BubbleDialogDelegateView* const install_bubble =
+      views::BubbleDialogDelegate* const install_bubble =
           container->GetViewForId(extensions()[0]->id())
               ->GetProperty(views::kAnchoredDialogKey);
       ASSERT_TRUE(install_bubble);
@@ -164,7 +164,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
     ExtensionsToolbarContainer* const container =
         GetExtensionsToolbarContainer();
     // Accept or cancel the dialog.
-    views::BubbleDialogDelegateView* const uninstall_bubble =
+    views::BubbleDialogDelegate* const uninstall_bubble =
         container->GetViewForId(extensions()[0]->id())
             ->GetProperty(views::kAnchoredDialogKey);
     ASSERT_TRUE(uninstall_bubble);

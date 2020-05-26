@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Teie kureerite otseteid</translation>
 <translation id="1213037489357051291">Seadistati <ph name="NUM_FINGERPRINTS" /> sõrmejälg(e)</translation>
 <translation id="1213254615020057352">Kasutus- ja diagnostikaandmete saatmine. Aidake täiustada oma lapse Androidi kasutuskogemust, saates Google'ile automaatselt seadme teavet ning rakenduse kasutus- ja diagnostikaandmeid. Neid andmeid ei kasutata teie lapse isiku tuvastamiseks ning need aitavad parandada süsteemi ja rakenduse stabiilsust ning muud. Teatud koondandmed on abiks ka Google'i rakendustele ja partneritele, näiteks Androidi arendajatele. Selle seade on jõustanud omanik. Omanik võib otsustada saata Google'ile selle seadme diagnostika- ja kasutusandmeid. Kui täiendavad veebi- ja rakendustegevused on teie lapse jaoks sisse lülitatud, võidakse need andmed salvestada tema Google'i kontole.</translation>
+<translation id="121384500095351701">Seda faili ei saa turvaliselt alla laadida</translation>
 <translation id="1215411991991485844">Uus taustarakendus on lisatud</translation>
 <translation id="1216542092748365687">Sõrmejälje eemaldamine</translation>
 <translation id="1217483152325416304">Teie kohalikud andmed kustutatakse peagi</translation>
@@ -1064,6 +1065,7 @@ Selle konto seadete haldamiseks installige oma seadmesse Family Link.  Saatsime 
 <translation id="2336228925368920074">Lisa kõik vahelehed järjehoidjatesse...</translation>
 <translation id="2336376423977300504">Akende sulgemisel kustutatakse küpsisefailid alati</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Faili <ph name="FILE_NAME" /> ei saa turvaliselt alla laadida</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> soovib siduda</translation>
 <translation id="2342740338116612727">Järjehoidjad on lisatud</translation>
 <translation id="2343747224442182863">Tõsta see vaheleht esile</translation>
@@ -3254,6 +3256,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5154702632169343078">Teema</translation>
 <translation id="5157635116769074044">Kinnita leht avakuvale ...</translation>
 <translation id="5158983316805876233">Kasuta kõikide protokollide jaoks sama puhverserverit</translation>
+<translation id="5159419673777902220">Sinu vanem on laienduste load keelanud</translation>
 <translation id="5160857336552977725">Logige sisse seadmesse <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> blokeeriti, kuna see on aegunud</translation>
 <translation id="5170568018924773124">Kuva kaustas</translation>
@@ -5395,6 +5398,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7925247922861151263">AAA kontrollimine nurjus</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> vastuse ootel...</translation>
 <translation id="7926423016278357561">See ei olnud mina.</translation>
+<translation id="7926975587469166629">Kaardi hüüdnimi</translation>
 <translation id="7928175190925744466">Kas muutsite juba seda parooli?</translation>
 <translation id="7928836894214140642">Haldab <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Salvestatud makseviisid kuvatakse siin</translation>

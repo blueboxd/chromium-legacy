@@ -2316,21 +2316,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
    public:
     // Convenience mutator that clears paint invalidation flags and this object
     // and its descendants' needs-paint-property-update flags.
-    void ClearPaintFlags() {
-      DCHECK_EQ(layout_object_.GetDocument().Lifecycle().GetState(),
-                DocumentLifecycle::kInPrePaint);
-      layout_object_.ClearPaintInvalidationFlags();
-      layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
-      layout_object_.bitfields_.SetEffectiveAllowedTouchActionChanged(false);
-
-      if (!layout_object_.PrePaintBlockedByDisplayLock(
-              DisplayLockLifecycleTarget::kChildren)) {
-        layout_object_.bitfields_.SetDescendantNeedsPaintPropertyUpdate(false);
-        layout_object_.bitfields_
-            .SetDescendantEffectiveAllowedTouchActionChanged(false);
-        layout_object_.bitfields_.ResetSubtreePaintPropertyUpdateReasons();
-      }
-    }
+    void ClearPaintFlags() { layout_object_.ClearPaintFlags(); }
     void SetShouldCheckForPaintInvalidation() {
       // This method is only intended to be called when visiting this object
       // during pre-paint, and as such it should only mark itself, and not the
@@ -2745,6 +2731,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     DCHECK(!NeedsLayout() ||
            LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren));
   }
+  virtual void ClearPaintFlags();
 
   void SetIsBackgroundAttachmentFixedObject(bool);
 

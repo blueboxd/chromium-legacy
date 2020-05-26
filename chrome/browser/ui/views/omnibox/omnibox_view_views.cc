@@ -1828,10 +1828,11 @@ int OmniboxViewViews::OnDrop(const ui::OSExchangeData& data) {
     return ui::DragDropTypes::DRAG_NONE;
 
   base::string16 text;
-  if (data.HasURL(ui::CONVERT_FILENAMES)) {
+  if (data.HasURL(ui::FilenameToURLPolicy::CONVERT_FILENAMES)) {
     GURL url;
     base::string16 title;
-    if (data.GetURLAndTitle(ui::CONVERT_FILENAMES, &url, &title)) {
+    if (data.GetURLAndTitle(ui::FilenameToURLPolicy::CONVERT_FILENAMES, &url,
+                            &title)) {
       text = StripJavascriptSchemas(base::UTF8ToUTF16(url.spec()));
     }
   } else if (data.HasString() && data.GetString(&text)) {

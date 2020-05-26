@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Pintasan dikelola oleh Anda</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> sidik jari disiapkan</translation>
 <translation id="1213254615020057352">Kirimkan data penggunaan dan diagnostik. Bantu sempurnakan pengalaman penggunaan Android anak Anda dengan otomatis mengirimkan data diagnostik, perangkat, dan penggunaan aplikasi ke Google. Data ini tidak akan digunakan untuk mengidentifikasi anak Anda dan akan membantu sistem dan stabilitas aplikasi serta penyempurnaan lainnya. Beberapa data gabungan juga akan membantu aplikasi dan partner Google, seperti developer Android. Setelan ini diterapkan oleh pemilik. Pemilik dapat memilih untuk mengirim data diagnostik dan penggunaan untuk perangkat ini ke Google. Jika setelan Aktivitas Web &amp; Aplikasi tambahan diaktifkan untuk anak Anda, data ini mungkin akan disimpan ke Akun Google miliknya.</translation>
+<translation id="121384500095351701">File ini tidak dapat didownload dengan aman</translation>
 <translation id="1215411991991485844">Apl latar belakang yang baru telah ditambahkan</translation>
 <translation id="1216542092748365687">Hapus sidik jari</translation>
 <translation id="1217483152325416304">Data lokal Anda akan segera dihapus</translation>
@@ -1064,6 +1065,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="2336228925368920074">Bookmark Semua Tab...</translation>
 <translation id="2336376423977300504">Selalu hapus cookie saat jendela ditutup</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> tidak dapat didownload dengan aman</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> ingin menyandingkan</translation>
 <translation id="2342740338116612727">Bookmark ditambahkan</translation>
 <translation id="2343747224442182863">Fokuskan Tab Ini</translation>
@@ -3254,6 +3256,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="5154702632169343078">Subjek</translation>
 <translation id="5157635116769074044">Sematkan halaman ini ke Layar Awal...</translation>
 <translation id="5158983316805876233">Gunakan proxy yang sama untuk semua protokol</translation>
+<translation id="5159419673777902220">Orang tuamu telah menonaktifkan izin ekstensi</translation>
 <translation id="5160857336552977725">Login ke <ph name="DEVICE_TYPE" /> Anda</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> diblokir karena sudah tidak berlaku</translation>
 <translation id="5170568018924773124">Tampilkan dalam folder</translation>
@@ -5395,6 +5398,7 @@ Anda dapat mengelola setelan akun ini dengan menginstal aplikasi Family Link di 
 <translation id="7925247922861151263">Pemeriksaan AAA gagal</translation>
 <translation id="7925285046818567682">Menunggu <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Ini bukan saya.</translation>
+<translation id="7926975587469166629">Nama panggilan kartu</translation>
 <translation id="7928175190925744466">Telah mengubah sandi ini?</translation>
 <translation id="7928836894214140642">Dikelola oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Metode pembayaran yang tersimpan akan muncul di sini</translation>

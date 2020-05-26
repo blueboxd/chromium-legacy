@@ -39,6 +39,7 @@ VkResult CreateAllocator(VkPhysicalDevice physical_device,
       function_pointers->vkGetImageMemoryRequirements2.get(),
   };
 
+  static_assert(kVulkanRequiredApiVersion >= VK_API_VERSION_1_1, "");
   VmaAllocatorCreateInfo allocator_info = {
       .flags = VMA_ALLOCATOR_CREATE_EXTERNALLY_SYNCHRONIZED_BIT,
       .physicalDevice = physical_device,
@@ -51,6 +52,7 @@ VkResult CreateAllocator(VkPhysicalDevice physical_device,
       .preferredLargeHeapBlockSize = 4 * 1024 * 1024,
       .pVulkanFunctions = &functions,
       .instance = instance,
+      .vulkanApiVersion = kVulkanRequiredApiVersion,
   };
 
   return vmaCreateAllocator(&allocator_info, pAllocator);

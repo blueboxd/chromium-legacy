@@ -17,6 +17,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.notifications.channels.ChromeChannelDefinitions;
 import org.chromium.components.browser_ui.notifications.ChromeNotification;
@@ -33,6 +34,7 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
  * during testEnsureNormalizedIconBehavior().
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class NotificationBuilderBaseTest {
     @Rule
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();

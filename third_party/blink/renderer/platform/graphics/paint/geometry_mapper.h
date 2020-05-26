@@ -108,7 +108,7 @@ class PLATFORM_EXPORT GeometryMapper {
 
     SkMatrix ToSkMatrix() const {
       if (LIKELY(IsIdentityOr2DTranslation())) {
-        return SkMatrix::MakeTrans(Translation2D().Width(),
+        return SkMatrix::Translate(Translation2D().Width(),
                                    Translation2D().Height());
       }
       return SkMatrix(TransformationMatrix::ToSkMatrix44(Matrix()));

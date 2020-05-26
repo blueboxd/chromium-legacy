@@ -251,7 +251,8 @@ public final class BrowserViewController
     }
 
     /**
-     * Causes the browser controls to be fully shown.
+     * Causes the browser controls to be fully shown. Take care in calling this. Normally the
+     * renderer drives the offsets, but this method circumvents that.
      */
     public void showControls() {
         mTopControlsContainerView.onOffsetsChanged(0, mTopControlsContainerView.getHeight());

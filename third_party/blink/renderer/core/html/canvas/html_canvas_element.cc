@@ -256,8 +256,7 @@ void HTMLCanvasElement::RegisterRenderingContextFactory(
 void HTMLCanvasElement::RecordIdentifiabilityMetric(
     const blink::IdentifiableSurface& surface,
     int64_t value) const {
-  blink::IdentifiabilityMetricBuilder(
-      base::UkmSourceId::FromInt64(GetDocument().UkmSourceID()))
+  blink::IdentifiabilityMetricBuilder(GetDocument().UkmSourceID())
       .Set(surface, value)
       .Record(GetDocument().UkmRecorder());
 }

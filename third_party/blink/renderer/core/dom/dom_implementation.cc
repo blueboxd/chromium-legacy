@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/dom/sink_document.h"
 #include "third_party/blink/renderer/core/dom/text.h"
 #include "third_party/blink/renderer/core/dom/xml_document.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -82,9 +83,10 @@ XMLDocument* DOMImplementation::createDocument(
     DocumentType* doctype,
     ExceptionState& exception_state) {
   XMLDocument* doc = nullptr;
-  DocumentInit init = DocumentInit::Create()
-                          .WithContextDocument(document_->ContextDocument())
-                          .WithOwnerDocument(document_->ContextDocument());
+  auto* window = To<LocalDOMWindow>(document_->GetExecutionContext());
+  DocumentInit init =
+      DocumentInit::Create().WithExecutionContext(window).WithOwnerDocument(
+          window->document());
   if (namespace_uri == svg_names::kNamespaceURI) {
     doc = XMLDocument::CreateSVG(init);
   } else if (namespace_uri == html_names::xhtmlNamespaceURI) {
@@ -184,12 +186,13 @@ bool DOMImplementation::IsTextMIMEType(const String& mime_type) {
 }
 
 Document* DOMImplementation::createHTMLDocument(const String& title) {
+  auto* window = To<LocalDOMWindow>(document_->GetExecutionContext());
   DocumentInit init =
       DocumentInit::Create()
-          .WithContextDocument(document_->ContextDocument())
-          .WithOwnerDocument(document_->ContextDocument())
+          .WithExecutionContext(window)
+          .WithOwnerDocument(window->document())
           .WithRegistrationContext(document_->RegistrationContext())
-          .WithContentSecurityPolicyFromContextDoc();
+          .WithContentSecurityPolicyFromExecutionContext();
   auto* d = MakeGarbageCollected<HTMLDocument>(init);
   d->open();
   d->write("<!doctype html><html><head></head><body></body></html>");

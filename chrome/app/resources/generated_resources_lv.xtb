@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Jūs atlasāt saīsnes</translation>
 <translation id="1213037489357051291">Ir iestatīti pirkstu nospiedumi (<ph name="NUM_FINGERPRINTS" />)</translation>
 <translation id="1213254615020057352">Lietojuma un diagnostikas datu sūtīšana. Palīdziet uzlabot bērna Android lietošanas pieredzi, automātiski nosūtot diagnostikas, ierīces un lietotņu lietojuma datus uzņēmumam Google. Šī informācija netiks izmantota jūsu bērna identificēšanai, un tā palīdzēs uzlabot sistēmas un lietotņu stabilitāti un daudz ko citu. Noteiktus apkopotus datus izmantos arī Google lietotņu izstrādātāji un partneri, piemēram, Android izstrādātāji. Šo iestatījumu ir noteicis īpašnieks. Īpašnieks var izvēlēties nosūtīt šīs ierīces diagnostikas un lietojuma datus uz Google serveriem. Ja jūsu bērnam ir ieslēgts iestatījums “papildu darbības tīmeklī un lietotnēs”, šie dati var tikt saglabāti bērna Google kontā.</translation>
+<translation id="121384500095351701">Šo failu nevar droši lejupielādēt.</translation>
 <translation id="1215411991991485844">Pievienota jauna fona lietotne</translation>
 <translation id="1216542092748365687">Pirksta nospieduma noņemšana</translation>
 <translation id="1217483152325416304">Jūsu lokālie dati drīz tiks dzēsti</translation>
@@ -1064,6 +1065,7 @@ Varat pārvaldīt šī konta iestatījumus, savā ierīcē instalējot lietotni 
 <translation id="2336228925368920074">Saglabāt visas cilnes kā grāmatzīmes...</translation>
 <translation id="2336376423977300504">Vietnes, kurās vienmēr jānotīra sīkfaili, aizverot logus</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Failu “<ph name="FILE_NAME" />” nevar droši lejupielādēt.</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> vēlas savienot pārī</translation>
 <translation id="2342740338116612727">Grāmatzīmes pievienotas</translation>
 <translation id="2343747224442182863">Izcelt šo cilni</translation>
@@ -3254,6 +3256,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5154702632169343078">Tēma</translation>
 <translation id="5157635116769074044">Piespraust šo lapu sākuma ekrānam...</translation>
 <translation id="5158983316805876233">Izmantojiet vienu starpniekserveri visiem protokoliem</translation>
+<translation id="5159419673777902220">Viens no jūsu vecākiem ir atspējojis paplašinājumu atļaujas.</translation>
 <translation id="5160857336552977725">Pierakstieties ierīcē <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Spraudnis <ph name="PLUGIN_NAME" /> tika bloķēts, jo tas ir novecojis.</translation>
 <translation id="5170568018924773124">Rādīt mapē</translation>
@@ -5394,6 +5397,7 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="7925247922861151263">AAA pārbaude neizdevās</translation>
 <translation id="7925285046818567682">Gaida <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Tas nebiju es.</translation>
+<translation id="7926975587469166629">Kredītkartes apzīmējums</translation>
 <translation id="7928175190925744466">Vai jūs jau nomainījāt šo paroli?</translation>
 <translation id="7928836894214140642">Pārvalda <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Šeit tiks parādīti saglabātie maksājumu veidi.</translation>

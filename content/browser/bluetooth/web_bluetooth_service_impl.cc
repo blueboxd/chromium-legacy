@@ -48,6 +48,7 @@
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
 
 using device::BluetoothAdapterFactoryWrapper;
+using device::BluetoothGattCharacteristic;
 using device::BluetoothUUID;
 
 namespace content {
@@ -1049,6 +1050,7 @@ void WebBluetoothServiceImpl::RemoteCharacteristicReadValue(
 void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
     const std::string& characteristic_instance_id,
     const std::vector<uint8_t>& value,
+    blink::mojom::WebBluetoothWriteType write_type,
     RemoteCharacteristicWriteValueCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -1084,13 +1086,30 @@ void WebBluetoothServiceImpl::RemoteCharacteristicWriteValue(
   // TODO(crbug.com/730593): Remove AdaptCallbackForRepeating() by updating
   // the callee interface.
   auto copyable_callback = base::AdaptCallbackForRepeating(std::move(callback));
-  query_result.characteristic->DeprecatedWriteRemoteCharacteristic(
-      value,
-      base::BindOnce(
-          &WebBluetoothServiceImpl::OnCharacteristicWriteValueSuccess,
-          weak_ptr_factory_.GetWeakPtr(), copyable_callback),
+  base::OnceClosure write_callback = base::BindOnce(
+      &WebBluetoothServiceImpl::OnCharacteristicWriteValueSuccess,
+      weak_ptr_factory_.GetWeakPtr(), copyable_callback);
+  device::BluetoothGattCharacteristic::ErrorCallback write_error_callback =
       base::BindOnce(&WebBluetoothServiceImpl::OnCharacteristicWriteValueFailed,
-                     weak_ptr_factory_.GetWeakPtr(), copyable_callback));
+                     weak_ptr_factory_.GetWeakPtr(), copyable_callback);
+  using WebBluetoothWriteType = blink::mojom::WebBluetoothWriteType;
+  using WriteType = device::BluetoothRemoteGattCharacteristic::WriteType;
+  switch (write_type) {
+    case WebBluetoothWriteType::kWriteDefaultDeprecated:
+      query_result.characteristic->DeprecatedWriteRemoteCharacteristic(
+          value, std::move(write_callback), std::move(write_error_callback));
+      break;
+    case WebBluetoothWriteType::kWriteWithResponse:
+      query_result.characteristic->WriteRemoteCharacteristic(
+          value, WriteType::kWithResponse, std::move(write_callback),
+          std::move(write_error_callback));
+      break;
+    case WebBluetoothWriteType::kWriteWithoutResponse:
+      query_result.characteristic->WriteRemoteCharacteristic(
+          value, WriteType::kWithoutResponse, std::move(write_callback),
+          std::move(write_error_callback));
+      break;
+  }
 }
 
 void WebBluetoothServiceImpl::RemoteCharacteristicStartNotifications(

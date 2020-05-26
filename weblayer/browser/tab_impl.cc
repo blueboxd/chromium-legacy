@@ -635,6 +635,12 @@ base::android::ScopedJavaLocalRef<jobjectArray> TabImpl::GetData(JNIEnv* env) {
   }
   return base::android::ToJavaArrayOfStrings(env, flattened_map);
 }
+
+jboolean TabImpl::IsRendererControllingBrowserControlsOffsets(JNIEnv* env) {
+  return browser_controls_navigation_state_handler_
+      ->IsRendererControllingOffsets();
+}
+
 #endif  // OS_ANDROID
 
 content::WebContents* TabImpl::OpenURLFromTab(
@@ -940,6 +946,11 @@ void TabImpl::OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
                                        content::BROWSER_CONTROLS_STATE_HIDDEN);
   }
 }
+
+void TabImpl::OnForceBrowserControlsShown() {
+  Java_TabImpl_onForceBrowserControlsShown(AttachCurrentThread(), java_impl_);
+}
+
 #endif
 
 void TabImpl::DidChangeVisibleSecurityState() {

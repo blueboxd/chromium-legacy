@@ -407,8 +407,7 @@ void CheckerImageTracker::ScheduleNextImageDecode() {
     draw_image = DrawImage(
         candidate, SkIRect::MakeWH(candidate.width(), candidate.height()),
         it->second.filter_quality,
-        SkMatrix::MakeScale(it->second.scale.width(),
-                            it->second.scale.height()),
+        SkMatrix::Scale(it->second.scale.width(), it->second.scale.height()),
         it->second.frame_index, it->second.color_space);
     outstanding_image_decode_.emplace(candidate);
     break;

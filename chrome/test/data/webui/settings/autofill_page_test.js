@@ -186,10 +186,7 @@ suite('PasswordsAndForms', function() {
       passwordManager.lastCallback.addSavedPasswordListChangedListener(list);
       flush();
 
-      assertDeepEquals(
-          list,
-          element.$$('#passwordSection')
-              .savedPasswords.map(entry => entry.entry));
+      assertDeepEquals(list, element.$$('#passwordSection').savedPasswords);
 
       // The callback is coming from the manager, so the element shouldn't
       // have additional calls to the manager after the base expectations.

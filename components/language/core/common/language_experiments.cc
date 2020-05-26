@@ -31,11 +31,6 @@ const base::Feature kUseFluentLanguageModel {
 const base::Feature kNotifySyncOnLanguageDetermined{
     "NotifySyncOnLanguageDetermined", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Base feature for Translate desktop UI experiment
-// TODO(crbug.com/1054643): Clean up this flag and old UI code.
-const base::Feature kUseButtonTranslateBubbleUi{
-    "UseButtonTranslateBubbleUI", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Params:
 const char kBackoffThresholdKey[] = "backoff_threshold";
 const char kOverrideModelKey[] = "override_model";
@@ -98,13 +93,6 @@ bool IsForceTriggerBackoffThresholdReached(int force_trigger_count) {
   }
 
   return force_trigger_count >= threshold;
-}
-
-TranslateUIBubbleModel GetTranslateUiBubbleModel() {
-  if (base::FeatureList::IsEnabled(language::kUseButtonTranslateBubbleUi)) {
-    return language::TranslateUIBubbleModel::TAB;
-  }
-  return language::TranslateUIBubbleModel::DEFAULT;
 }
 
 }  // namespace language

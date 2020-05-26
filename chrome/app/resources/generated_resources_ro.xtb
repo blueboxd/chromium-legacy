@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Comenzile rapide sunt organizate de tine</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> amprente configurate</translation>
 <translation id="1213254615020057352">Trimite date de utilizare și diagnosticare. Contribuie la îmbunătățirea experienței Android a copilului trimițând automat la Google date de diagnosticare și utilizare a dispozitivului și a aplicațiilor. Acestea nu vor fi folosite la identificarea copilului și vor ajuta la stabilitatea sistemului, a aplicațiilor și altele. Unele date cumulate vor ajuta aplicațiile și partenerii Google, cum ar fi dezvoltatorii Android. Această setare este impusă de proprietar. Proprietarul poate alege să trimită date de diagnosticare și utilizare a dispozitivului la Google. Dacă ai activat setarea Activitatea suplimentară de pe web și din aplicații pentru copilul tău, aceste date pot fi salvate în Contul său Google.</translation>
+<translation id="121384500095351701">Fișierul nu se poate descărca în siguranță</translation>
 <translation id="1215411991991485844">Nouă aplicație de fundal adăugată</translation>
 <translation id="1216542092748365687">Elimină amprenta</translation>
 <translation id="1217483152325416304">Datele tale locale vor fi șterse în curând</translation>
@@ -1064,6 +1065,7 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2336228925368920074">Marchează toate filele...</translation>
 <translation id="2336376423977300504">Șterge întotdeauna cookie-urile când închizi ferestrele</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> nu se poate descărca în siguranță</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> dorește să se asocieze</translation>
 <translation id="2342740338116612727">Au fost adăugate marcaje</translation>
 <translation id="2343747224442182863">Focalizează această filă</translation>
@@ -3254,6 +3256,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="5154702632169343078">Subiect</translation>
 <translation id="5157635116769074044">Fixați această pagină pe ecranul de pornire...</translation>
 <translation id="5158983316805876233">Utilizează același server proxy pentru toate protocoalele</translation>
+<translation id="5159419673777902220">Părintele tău a dezactivat permisiunile pentru extensii</translation>
 <translation id="5160857336552977725">Conectează-te la <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Pluginul <ph name="PLUGIN_NAME" /> a fost blocat deoarece este învechit</translation>
 <translation id="5170568018924773124">Afișează în dosar</translation>
@@ -4930,7 +4933,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7346909386216857016">OK, am înțeles</translation>
 <translation id="7347452120014970266">Astfel, se vor șterge toate datele și cookie-urile stocate de <ph name="ORIGIN_NAME" /> și aplicațiile instalate asociate</translation>
 <translation id="7347751611463936647">Pentru a utiliza această extensie, introdu „<ph name="EXTENSION_KEYWORD" />”, apoi apasă pe TAB și folosește comanda sau căutarea.</translation>
-<translation id="7347943691222276892">Dă clic pentru a închide <ph name="SUBPAGE_TITLE" />.</translation>
+<translation id="7347943691222276892">Dă clic pentru a părăsi pagina <ph name="SUBPAGE_TITLE" />.</translation>
 <translation id="7348093485538360975">Tastatură pe ecran</translation>
 <translation id="7352651011704765696">A apărut o eroare</translation>
 <translation id="735361434055555355">Se instalează Linux...</translation>
@@ -5395,6 +5398,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7925247922861151263">Verificarea AAA nu a reușit</translation>
 <translation id="7925285046818567682">Se așteaptă <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Nu am fost eu.</translation>
+<translation id="7926975587469166629">Pseudonimul cardului</translation>
 <translation id="7928175190925744466">Ai schimbat deja parola?</translation>
 <translation id="7928836894214140642">Gestionat de <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Metodele de plată salvate vor fi afișate aici</translation>

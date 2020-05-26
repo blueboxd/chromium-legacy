@@ -35,7 +35,6 @@ import org.chromium.ui.base.PageTransition;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * Bridge class that lets Android code access native code for feed related functionalities.
@@ -265,12 +264,9 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
     }
 
     @Override
-    public int requestDismissal() {
-        // TODO(jianli): may need to pass parameters from UI.
-        List<byte[]> serializedDataOperations = new ArrayList<byte[]>();
-        // TODO(jianli): append data to serializedDataOperations.
+    public int requestDismissal(byte[] data) {
         return FeedStreamSurfaceJni.get().executeEphemeralChange(
-                mNativeFeedStreamSurface, FeedStreamSurface.this, serializedDataOperations);
+                mNativeFeedStreamSurface, FeedStreamSurface.this, data);
     }
 
     @Override
@@ -342,8 +338,8 @@ public class FeedStreamSurface implements SurfaceActionsHandler, FeedActionsHand
         void loadMore(long nativeFeedStreamSurface, FeedStreamSurface caller);
         void processThereAndBackAgain(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);
-        int executeEphemeralChange(long nativeFeedStreamSurface, FeedStreamSurface caller,
-                List<byte[]> serializedDataOperations);
+        int executeEphemeralChange(
+                long nativeFeedStreamSurface, FeedStreamSurface caller, byte[] data);
         void commitEphemeralChange(
                 long nativeFeedStreamSurface, FeedStreamSurface caller, int changeId);
         void discardEphemeralChange(

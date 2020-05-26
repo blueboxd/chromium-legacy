@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Ikaw ang nagku-curate ng mga shortcut</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> ang naka-set up na fingerprint</translation>
 <translation id="1213254615020057352">Magpadala ng data ng paggamit at diagnostic. Tumulong sa pagpapaganda ng karanasan sa Android ng iyong anak sa pamamagitan ng awtomatikong pagpapadala ng diagnostic na data, data ng device, at data ng paggamit sa app sa Google. Hindi ito gagamitin para tukuyin ang pagkakakilanlan ng iyong anak, at makakatulong ito sa stability ng system at ng app, at sa iba pang pagpapahusay. Makakatulong din ang ilang pinagsama-samang data sa mga app at partner ng Google, gaya ng mga developer ng Android. Ipinapatupad ng may-ari ang setting na ito. Puwedeng piliin ng may-ari na magpadala ng data ng diagnostic at paggamit para sa device na ito sa Google. Kung naka-on ang karagdagang setting ng Aktibidad sa Web at App para sa iyong anak, posibleng ma-save ang data na ito sa kanyang Google Account.</translation>
+<translation id="121384500095351701">Hindi ligtas na mada-download ang file na ito</translation>
 <translation id="1215411991991485844">Nadagdag ang bagong background na app</translation>
 <translation id="1216542092748365687">Alisin ang fingerprint</translation>
 <translation id="1217483152325416304">Malapit nang i-delete ang iyong lokal na data</translation>
@@ -1064,6 +1065,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2336228925368920074">I-bookmark ang Lahat ng Mga Tab...</translation>
 <translation id="2336376423977300504">Palaging i-clear ang cookies kapag nakasara ang mga window</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Hindi ligtas na mada-download ang <ph name="FILE_NAME" /></translation>
 <translation id="2340263603246777781">Gustong makipagpares ng <ph name="ORIGIN" /></translation>
 <translation id="2342740338116612727">Nagdagdag ng mga bookmark</translation>
 <translation id="2343747224442182863">I-focus ang Tab na Ito</translation>
@@ -3254,6 +3256,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="5154702632169343078">Paksa</translation>
 <translation id="5157635116769074044">I-pin ang Pahinang ito sa Screen ng Simula...</translation>
 <translation id="5158983316805876233">Gumamit ng parehong proxy para sa lahat ng mga protocol</translation>
+<translation id="5159419673777902220">Na-disable ng iyong magulang ang mga pahintulot sa extension</translation>
 <translation id="5160857336552977725">Mag-sign in sa iyong <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Na-block ang <ph name="PLUGIN_NAME" /> dahil hindi ito napapanahon</translation>
 <translation id="5170568018924773124">Ipinakita sa folder</translation>
@@ -5395,6 +5398,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="7925247922861151263">Nabigo ang pagsusuri sa AAA</translation>
 <translation id="7925285046818567682">Naghihintay para sa <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Hindi ako ito.</translation>
+<translation id="7926975587469166629">Nickname ng card</translation>
 <translation id="7928175190925744466">Napalitan mo na ang password na ito?</translation>
 <translation id="7928836894214140642">Pinapamahalaan ng <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Lalabas dito ang mga naka-save na paraan ng pagbabayad</translation>

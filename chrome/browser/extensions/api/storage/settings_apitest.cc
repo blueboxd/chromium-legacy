@@ -339,9 +339,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
   EXPECT_TRUE(catcher_incognito.GetNextResult()) << catcher.message();
 }
 
-// Disabled, see crbug.com/101110
 IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest,
-    DISABLED_OnChangedNotificationsFromSync) {
+                       OnChangedNotificationsFromSync) {
   // We need 2 ResultCatchers because we'll be running the same test in both
   // regular and incognito mode.
   ResultCatcher catcher, catcher_incognito;

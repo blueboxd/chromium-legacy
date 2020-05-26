@@ -38,6 +38,14 @@ enum CentralState {
   POWERED_OFF,
 };
 
+// GATT characteristic write type.
+enum WriteType {
+  kNone,
+  kWriteDefaultDeprecated,
+  kWriteWithResponse,
+  kWriteWithoutResponse,
+};
+
 // Stores the external appearance description of the device.
 struct Appearance {
   bool has_value;
@@ -323,7 +331,8 @@ interface FakeCentral {
   GetLastWrittenCharacteristicValue(
       string characteristic_id,
       string service_id,
-      string peripheral_address) => (bool success, array<uint8>? value);
+      string peripheral_address) => (bool success, array<uint8>? value,
+                                     WriteType write_type);
 
   // Sets the next read response for descriptor with |descriptor_id| in
   // |characteristics_id| in |service_id| and in |peripheral_address| to |code|

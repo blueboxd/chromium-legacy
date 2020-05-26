@@ -45,31 +45,20 @@ class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
       : SVGAnimatedEnumerationBase(
             context_element,
             attribute_name,
-            MakeGarbageCollected<SVGEnumeration<Enum>>(initial_value),
+            MakeGarbageCollected<SVGEnumeration>(initial_value),
             static_cast<unsigned>(initial_value)) {}
 
   SVGAnimatedEnumeration(SVGElement* context_element,
                          const QualifiedName& attribute_name,
-                         SVGEnumeration<Enum>* initial_value)
+                         SVGEnumeration* initial_value)
       : SVGAnimatedEnumerationBase(
             context_element,
             attribute_name,
             initial_value,
-            static_cast<unsigned>(initial_value->EnumValue())) {}
-
-  SVGAnimatedEnumeration(SVGElement* context_element,
-                         const QualifiedName& attribute_name,
-                         SVGEnumeration<Enum>* initial_value,
-                         unsigned initial_enum_value)
-      : SVGAnimatedEnumerationBase(context_element,
-                                   attribute_name,
-                                   initial_value,
-                                   initial_enum_value) {}
+            static_cast<unsigned>(initial_value->EnumValue<Enum>())) {}
 
   Enum CurrentEnumValue() const {
-    return static_cast<const SVGEnumeration<Enum>*>(
-               SVGAnimatedEnumerationBase::CurrentValue())
-        ->EnumValue();
+    return CurrentValue()->template EnumValue<Enum>();
   }
 };
 

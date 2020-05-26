@@ -328,7 +328,6 @@ public final class TabImpl extends ITab.Stub {
         TabImplJni.get().setBrowserControlsContainerViews(
                 mNativeTab, topControlsContainerViewHandle, bottomControlsContainerViewHandle);
         updateWebContentsVisibility();
-        mWebContents.onShow();
     }
 
     /**
@@ -336,7 +335,6 @@ public final class TabImpl extends ITab.Stub {
      */
     public void onDidLoseActive() {
         hideFindInPageUiAndNotifyClient();
-        mWebContents.onHide();
         updateWebContentsVisibility();
         TabImplJni.get().setBrowserControlsContainerViews(mNativeTab, 0, 0);
     }
@@ -738,6 +736,17 @@ public final class TabImpl extends ITab.Stub {
                 ObjectWrapper.wrap(nonEmptyOrNull(params.getSrcUrl())));
     }
 
+    @CalledByNative
+    private void onForceBrowserControlsShown() {
+        // At this time, the only place HIDDEN is used is fullscreen, in which case we don't show
+        // the controls.
+        if (mBrowserControlsVisibility.get() == BrowserControlsState.HIDDEN) return;
+
+        if (mBrowser.getActiveTab() != this) return;
+
+        onBrowserControlsStateUpdated(mBrowserControlsVisibility.get());
+    }
+
     private void onBrowserControlsStateUpdated(int state) {
         // If something has overridden the FIP's SHOWN constraint, cancel FIP. This causes FIP to
         // dismiss when entering fullscreen.
@@ -748,13 +757,13 @@ public final class TabImpl extends ITab.Stub {
         // Don't animate when hiding the controls.
         boolean animate = state != BrowserControlsState.HIDDEN;
 
-        // When a js dialog is shown, the renderer will not process updates to the controls state,
-        // so override the renderer. The renderer's update will come when the dialog is hidden, and
+        // If the renderer is not controlling the offsets (possiblye hung or crashed). Then this
+        // needs to force the controls to show (because notification from the renderer will not
+        // happen). For js dialogs, the renderer's update will come when the dialog is hidden, and
         // since that animates from 0 height, it causes a flicker since the override is already set
         // to fully show. Thus, disable animation.
-        if (state == BrowserControlsState.SHOWN
-                && mWebContents.getMainFrame().areInputEventsIgnored()
-                && mBrowser.getActiveTab() == this) {
+        if (state == BrowserControlsState.SHOWN && mBrowser.getActiveTab() == this
+                && !TabImplJni.get().isRendererControllingBrowserControlsOffsets(mNativeTab)) {
             mViewAndroidDelegate.setIgnoreRendererUpdates(true);
             getViewController().showControls();
             animate = false;
@@ -791,5 +800,6 @@ public final class TabImpl extends ITab.Stub {
                 ValueCallback<Pair<Bitmap, Integer>> valueCallback);
         boolean setData(long nativeTabImpl, String[] data);
         String[] getData(long nativeTabImpl);
+        boolean isRendererControllingBrowserControlsOffsets(long nativeTabImpl);
     }
 }

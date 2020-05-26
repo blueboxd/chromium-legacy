@@ -117,7 +117,7 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMenuCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMenuItemBinder.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMenuItemProperties.java",
-    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogParent.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogView.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridIphDialogCoordinator.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridIphDialogView.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/TabGridItemTouchHelperCallback.java",

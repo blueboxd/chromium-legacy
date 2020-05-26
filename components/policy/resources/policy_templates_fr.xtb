@@ -698,6 +698,11 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent choisir d'utiliser 
       Si elle est définie sur un chemin d'accès à un fichier, ce dernier est utilisé comme fichier
       exécutable.</translation>
 <translation id="2113068765175018713">Limiter le temps de fonctionnement de l'appareil en redémarrant automatiquement</translation>
+<translation id="2124881675920287921">Cette règle étant obsolète dans la version M82 et supprimée de M85, utilisez <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> à sa place. Si vous désactivez <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" />, cela revient à désactiver <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Si vous activez <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> ou que vous ne définissez pas ce paramètre, cela revient à ne pas définir <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
+
+      Si cette règle est définie sur "False", les utilisateurs ne peuvent pas envoyer d'informations système ni de contenu de pages aux serveurs Google. Si ce paramètre est défini sur "True" ou s'il n'est pas configuré, les utilisateurs sont autorisés à envoyer des informations système et du contenu de pages au service de navigation sécurisée pour contribuer à la détection d'applications et de sites dangereux.
+
+      Pour en savoir plus sur la navigation privée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="2127599828444728326">Autoriser les notifications sur ces sites</translation>
 <translation id="2131902621292742709">Délai d'assombrissement de l'écran (batterie)</translation>
 <translation id="2134437727173969994">Autoriser le verrouillage de l'écran</translation>
@@ -2919,7 +2924,6 @@ Si cette règle n'est pas configurée, ce paramètre est activé, mais l'utilisa
 <translation id="5307432759655324440">Disponibilité du mode navigation privée</translation>
 <translation id="5311275381462687162">Rétablir l'ancien comportement <ph name="ATTRIBUTE_SAMESITE_NAME" /> pour tous les cookies</translation>
 <translation id="5318185076587284965">Autoriser l'hôte d'accès à distance à utiliser des serveurs de relais</translation>
-<translation id="5321755462836179869">Autorise les notifications natives</translation>
 <translation id="5323128137188992869">Permet de caster du contenu sur l'appareil avec <ph name="PRODUCT_NAME" />.
 
           Si cette règle est définie sur "False", les utilisateurs ne peuvent pas caster de contenu sur leur appareil. Si elle est définie sur "True", les utilisateurs sont autorisés à caster du contenu. Si elle n'est pas définie, les utilisateurs ne peuvent pas caster de contenu sur les appareils Chrome OS enregistrés, mais ils peuvent le faire sur des appareils non enregistrés.</translation>

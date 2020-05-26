@@ -32,6 +32,11 @@ class BrowserControlsNavigationStateHandler
       const BrowserControlsNavigationStateHandler&) = delete;
   ~BrowserControlsNavigationStateHandler() override;
 
+  // Returns true if the renderer is responsible for controlling the offsets.
+  // This is normally true, but if the renderer is unresponsive (hung and/or
+  // crashed), then the renderer won't be able to drive the offsets.
+  bool IsRendererControllingOffsets();
+
   // content::WebContentsObserver:
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -45,6 +50,8 @@ class BrowserControlsNavigationStateHandler
   void DidChangeVisibleSecurityState() override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void OnRendererUnresponsive(
+      content::RenderProcessHost* render_process_host) override;
+  void OnRendererResponsive(
       content::RenderProcessHost* render_process_host) override;
 
  private:
@@ -61,6 +68,8 @@ class BrowserControlsNavigationStateHandler
   // Calcultes the current browser controls state.
   content::BrowserControlsState CalculateCurrentState();
 
+  bool IsRendererHungOrCrashed();
+
   BrowserControlsNavigationStateHandlerDelegate* delegate_;
 
   // The controls are forced visible when a navigation starts, and allowed to
@@ -75,6 +84,10 @@ class BrowserControlsNavigationStateHandler
 
   // True if an error page is showing.
   bool is_showing_error_page_ = false;
+
+  // This is cached as WebContents::IsCrashed() does not always return the
+  // right thing.
+  bool is_crashed_ = false;
 };
 
 }  // namespace weblayer

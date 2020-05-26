@@ -2886,7 +2886,6 @@ Als dit beleid is ingesteld op False, gebruikt <ph name="PRODUCT_NAME" /> geen n
 <translation id="5307432759655324440">Beschikbaarheid van incognitomodus</translation>
 <translation id="5311275381462687162">Instelling voor standaardgedrag voor verouderde cookies van <ph name="ATTRIBUTE_SAMESITE_NAME" /></translation>
 <translation id="5318185076587284965">Het gebruik van relayservers door de host voor externe toegang inschakelen</translation>
-<translation id="5321755462836179869">Staat native meldingen toe</translation>
 <translation id="5323128137188992869">Toestaan dat content wordt gecast naar het apparaat via <ph name="PRODUCT_NAME" />.
 
           Als dit beleid is ingesteld op 'False', kunnen gebruikers geen content casten naar hun apparaat. Als dit beleid is ingesteld op 'True', mogen gebruikers content casten. Als dit beleid niet is ingesteld, mogen gebruikers geen content naar geregistreerde Chrome OS-apparaten casten, maar wel naar niet-geregistreerde apparaten.</translation>

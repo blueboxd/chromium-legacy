@@ -117,10 +117,10 @@ class TabListMediator {
         /**
          * This method updates the status of the ungroup bar in TabGridDialog.
          *
-         * @param status The status in {@link TabGridDialogParent.UngroupBarStatus} that the ungroup
+         * @param status The status in {@link TabGridDialogView.UngroupBarStatus} that the ungroup
          *         bar should be updated to.
          */
-        void updateUngroupBarStatus(@TabGridDialogParent.UngroupBarStatus int status);
+        void updateUngroupBarStatus(@TabGridDialogView.UngroupBarStatus int status);
 
         /**
          * This method updates the content of the TabGridDialog.

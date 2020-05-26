@@ -36,6 +36,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/form_saver_impl.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -483,6 +484,30 @@ void ManagePasswordsUIController::SavePassword(const base::string16& username,
   bubble_status_ = BubbleStatus::SHOWN_PENDING_ICON_UPDATE;
   if (Browser* browser = chrome::FindBrowserWithWebContents(web_contents()))
     browser->window()->GetAutofillBubbleHandler()->OnPasswordSaved();
+}
+
+void ManagePasswordsUIController::SaveUnsyncedCredentialsInProfileStore() {
+  auto profile_store_form_saver =
+      std::make_unique<password_manager::FormSaverImpl>(
+          passwords_data_.client()->GetProfilePasswordStore());
+  for (const autofill::PasswordForm& form :
+       passwords_data_.unsynced_credentials()) {
+    // Only newly-saved or newly-updated credentials can be unsynced. Since
+    // conflicts are solved in that process, any entry in the profile store
+    // similar to |form| actually contains the same essential information. This
+    // means Save() can be safely called here, no password loss happens.
+    profile_store_form_saver->Save(form, /*matches=*/{},
+                                   /*old_password=*/base::string16());
+  }
+  ClearPopUpFlagForBubble();
+  passwords_data_.OnInactive();
+  UpdateBubbleAndIconVisibility();
+}
+
+void ManagePasswordsUIController::DiscardUnsyncedCredentials() {
+  ClearPopUpFlagForBubble();
+  passwords_data_.OnInactive();
+  UpdateBubbleAndIconVisibility();
 }
 
 void ManagePasswordsUIController::MovePasswordToAccountStore() {

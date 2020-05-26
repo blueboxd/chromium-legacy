@@ -1475,7 +1475,7 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   // general solution should be desirable to find any bubbles anchored in the
   // views hierarchy.
   if (toolbar_ && toolbar_->app_menu_button()) {
-    views::BubbleDialogDelegateView* bubble =
+    views::BubbleDialogDelegate* bubble =
         toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
     if (!bubble && GetLocationBarView())
       bubble = GetLocationBarView()->GetProperty(views::kAnchoredDialogKey);

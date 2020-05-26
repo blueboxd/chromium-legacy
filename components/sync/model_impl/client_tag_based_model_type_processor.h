@@ -115,6 +115,17 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   bool IsModelReadyToSyncForTest() const;
 
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused. Public for tests.
+  enum class ErrorSite {
+    kBridgeInitiated = 0,
+    kApplyFullUpdates = 1,
+    kApplyIncrementalUpdates = 2,
+    kApplyUpdatesOnCommitResponse = 3,
+    kSupportsIncrementalUpdatesMismatch = 4,
+    kMaxValue = kSupportsIncrementalUpdatesMismatch,
+  };
+
  private:
   friend class ModelTypeDebugInfo;
   friend class ClientTagBasedModelTypeProcessorTest;
@@ -208,6 +219,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Checks for valid cache GUID and data type id. Resets state if metadata is
   // invalid.
   void CheckForInvalidPersistedMetadata();
+
+  // Reports error and records a metric about |site| where the error occurred.
+  void ReportErrorImpl(const ModelError& error, ErrorSite site);
 
   /////////////////////
   // Processor state //

@@ -805,12 +805,6 @@ Navigator::GetNavigationEntryForRendererInitiatedNavigation(
   if (renderer_provisional_load_to_pending_url)
     return nullptr;
 
-  // If there is a transient entry, creating a new pending entry will result
-  // in deleting it, which leads to inconsistent state.
-  bool has_transient_entry = !!controller_->GetTransientEntry();
-  if (has_transient_entry)
-    return nullptr;
-
   // Since GetNavigationEntryForRendererInitiatedNavigation is called from
   // OnBeginNavigation, we can assume that no frame proxies are involved and
   // therefore that |current_site_instance| is also the |source_site_instance|.

@@ -5,9 +5,11 @@
 #include "gpu/ipc/service/gpu_channel_test_common.h"
 
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "components/viz/common/features.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/scheduler.h"
 #include "gpu/command_buffer/service/shared_image_manager.h"
@@ -77,10 +79,14 @@ GpuChannelTestCommon::GpuChannelTestCommon(
       channel_manager_delegate_(
           new TestGpuChannelManagerDelegate(scheduler_.get())) {
   // We need GL bindings to actually initialize command buffers.
-  if (use_stub_bindings)
+  if (use_stub_bindings) {
     gl::GLSurfaceTestSupport::InitializeOneOffWithStubBindings();
-  else
+    // GrContext cannot be created with stub bindings.
+    scoped_feature_list_ = std::make_unique<base::test::ScopedFeatureList>();
+    scoped_feature_list_->InitAndDisableFeature(features::kUseSkiaRenderer);
+  } else {
     gl::GLSurfaceTestSupport::InitializeOneOff();
+  }
 
   GpuFeatureInfo feature_info;
   feature_info.enabled_gpu_driver_bug_workarounds =

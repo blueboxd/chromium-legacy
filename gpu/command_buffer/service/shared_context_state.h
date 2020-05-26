@@ -68,7 +68,7 @@ class GPU_GLES2_EXPORT SharedContextState
       base::WeakPtr<gpu::MemoryTracker::Observer> peak_memory_monitor =
           nullptr);
 
-  void InitializeGrContext(const GpuPreferences& gpu_preferences,
+  bool InitializeGrContext(const GpuPreferences& gpu_preferences,
                            const GpuDriverBugWorkarounds& workarounds,
                            GrContextOptions::PersistentCache* cache,
                            GpuProcessActivityFlags* activity_flags = nullptr,

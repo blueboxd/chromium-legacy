@@ -50,6 +50,10 @@ ScopedJavaLocalRef<jobject> FormFieldDataAndroid::GetJavaPeer() {
     if (!heuristic_type_.IsUnknown())
       jheuristic_type =
           ConvertUTF8ToJavaString(env, heuristic_type_.ToString());
+    ScopedJavaLocalRef<jobjectArray> jdatalist_values =
+        ToJavaArrayOfStrings(env, field_ptr_->datalist_values);
+    ScopedJavaLocalRef<jobjectArray> jdatalist_labels =
+        ToJavaArrayOfStrings(env, field_ptr_->datalist_labels);
 
     obj = Java_FormFieldData_createFormFieldData(
         env, jname, jlabel, jvalue, jautocomplete_attr,
@@ -57,7 +61,8 @@ ScopedJavaLocalRef<jobject> FormFieldDataAndroid::GetJavaPeer() {
         joption_values, joption_contents, IsCheckable(field_ptr_->check_status),
         IsChecked(field_ptr_->check_status), field_ptr_->max_length,
         jheuristic_type, field_ptr_->bounds.x(), field_ptr_->bounds.y(),
-        field_ptr_->bounds.right(), field_ptr_->bounds.bottom());
+        field_ptr_->bounds.right(), field_ptr_->bounds.bottom(),
+        jdatalist_values, jdatalist_labels);
     java_ref_ = JavaObjectWeakGlobalRef(env, obj);
   }
   return obj;

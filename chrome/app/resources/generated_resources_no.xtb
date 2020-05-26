@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Snarveiene er utvalgt av deg</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> fingeravtrykk er registrert</translation>
 <translation id="1213254615020057352">Send bruks- og diagnostikkdata. Hjelp til med å gjøre Android-opplevelsen bedre for barnet ditt ved å sende diagnostikk-, enhets- og appbruksdata til Google automatisk. Disse dataene brukes ikke til å identifisere barnet ditt, men bidrar til å gjøre systemet og appene bedre og mer stabile. Noen aggregerte data hjelper også Google-apper og -partnere, for eksempel Android-utviklere. Denne innstillingen håndheves av eieren. Eieren kan velge å sende diagnostikk- og bruksdata for denne enheten til Google. Hvis du har slått på innstillingen for annen nett- og appaktivitet for barnet ditt, kan disse dataene bli lagret i barnets Google-konto.</translation>
+<translation id="121384500095351701">Denne filen kan ikke lastes ned sikkert</translation>
 <translation id="1215411991991485844">Nytt bakgrunnsprogram er lagt til</translation>
 <translation id="1216542092748365687">Fjern fingeravtrykket</translation>
 <translation id="1217483152325416304">De lokale dataene dine slettes snart</translation>
@@ -1061,6 +1062,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2336228925368920074">Legg inn bokmerke for alle åpne faner</translation>
 <translation id="2336376423977300504">Slett alltid informasjonskapsler når vinduer lukkes</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> kan ikke lastes ned sikkert</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> vil koble til</translation>
 <translation id="2342740338116612727">Bokmerkene er lagt til</translation>
 <translation id="2343747224442182863">Fokusér på denne fanen</translation>
@@ -3249,6 +3251,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="5154702632169343078">Emne</translation>
 <translation id="5157635116769074044">Fest denne siden til startsiden</translation>
 <translation id="5158983316805876233">Bruk samme proxy-tjener for alle protokoller</translation>
+<translation id="5159419673777902220">Forelderen din har slått av utvidelsestillatelser</translation>
 <translation id="5160857336552977725">Logg på <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Programtillegget <ph name="PLUGIN_NAME" /> ble blokkert fordi det er utdatert</translation>
 <translation id="5170568018924773124">Vis i mappen</translation>
@@ -5390,6 +5393,7 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7925247922861151263">AAA-kontroll mislyktes</translation>
 <translation id="7925285046818567682">Venter på <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Dette var ikke meg.</translation>
+<translation id="7926975587469166629">Kallenavn på kortet</translation>
 <translation id="7928175190925744466">Har du allerede endret dette passordet?</translation>
 <translation id="7928836894214140642">Administreres av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Lagrede betalingsmåter vises her</translation>

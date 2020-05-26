@@ -99,6 +99,7 @@ public class TabGridDialogMediator {
     private final AnimationSourceViewProvider mAnimationSourceViewProvider;
     private final DialogHandler mTabGridDialogHandler;
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
+    private final ScrimView.ScrimObserver mScrimObserver;
     private final String mComponentName;
 
     private TabGroupTitleEditor mTabGroupTitleEditor;
@@ -206,6 +207,19 @@ public class TabGridDialogMediator {
             }
         };
         mTabModelSelector.addObserver(mTabModelSelectorObserver);
+
+        // Setup ScrimView observer.
+        mScrimObserver = new ScrimView.ScrimObserver() {
+            @Override
+            public void onScrimClick() {
+                mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
+                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
+                hideDialog(true);
+                RecordUserAction.record("TabGridDialog.Exit");
+            }
+            @Override
+            public void onScrimVisibilityChanged(boolean visible) {}
+        };
     }
 
     public void initWithNative(@Nullable TabSelectionEditorCoordinator
@@ -219,7 +233,8 @@ public class TabGridDialogMediator {
 
         mToolbarMenuCallback = result -> {
             if (result == R.id.ungroup_tab) {
-                mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
+                mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
+                mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, false);
                 List<Tab> tabs = getRelatedTabs(mCurrentTabId);
                 if (mTabSelectionEditorController != null) {
                     mTabSelectionEditorController.show(tabs);
@@ -258,9 +273,6 @@ public class TabGridDialogMediator {
             setupDialogSelectionEditor();
             mModel.set(TabGridPanelProperties.MENU_CLICK_LISTENER, getMenuButtonClickListener());
         }
-
-        // Setup ScrimView observer.
-        setupScrimViewObserver();
     }
 
     void hideDialog(boolean showAnimation) {
@@ -297,6 +309,7 @@ public class TabGridDialogMediator {
             }
             updateDialog();
             updateDialogScrollPosition();
+            mModel.set(TabGridPanelProperties.SCRIMVIEW_OBSERVER, mScrimObserver);
             mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, true);
         } else {
             mModel.set(TabGridPanelProperties.IS_DIALOG_VISIBLE, false);
@@ -385,9 +398,9 @@ public class TabGridDialogMediator {
         mKeyboardVisibilityListener = isShowing -> {
             mModel.set(TabGridPanelProperties.TITLE_CURSOR_VISIBILITY, isShowing);
             mModel.set(TabGridPanelProperties.IS_TITLE_TEXT_FOCUSED, isShowing);
+            mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, isShowing);
             if (!isShowing) {
                 saveCurrentGroupModifiedTitle();
-                mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, false);
             }
         };
         KeyboardVisibilityDelegate.getInstance().addKeyboardVisibilityListener(
@@ -411,31 +424,11 @@ public class TabGridDialogMediator {
         View.OnFocusChangeListener onFocusChangeListener =
                 (v, hasFocus) -> mIsUpdatingTitle = hasFocus;
         mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_FOCUS_LISTENER, onFocusChangeListener);
-
-        View.OnTouchListener onTouchListener = (v, event) -> {
-            // When touching title text field, make the PopupWindow focusable and request focus.
-            mModel.set(TabGridPanelProperties.IS_POPUP_WINDOW_FOCUSABLE, true);
-            v.performClick();
-            return false;
-        };
-        mModel.set(TabGridPanelProperties.TITLE_TEXT_ON_TOUCH_LISTENER, onTouchListener);
-    }
-
-    private void setupScrimViewObserver() {
-        ScrimView.ScrimObserver scrimObserver = new ScrimView.ScrimObserver() {
-            @Override
-            public void onScrimClick() {
-                hideDialog(true);
-                RecordUserAction.record("TabGridDialog.Exit");
-            }
-            @Override
-            public void onScrimVisibilityChanged(boolean visible) {}
-        };
-        mModel.set(TabGridPanelProperties.SCRIMVIEW_OBSERVER, scrimObserver);
     }
 
     private View.OnClickListener getCollapseButtonClickListener() {
         return view -> {
+            mModel.set(TabGridPanelProperties.IS_KEYBOARD_VISIBLE, false);
             hideDialog(true);
             RecordUserAction.record("TabGridDialog.Exit");
         };
@@ -517,7 +510,7 @@ public class TabGridDialogMediator {
      */
     class DialogHandler implements TabListMediator.TabGridDialogHandler {
         @Override
-        public void updateUngroupBarStatus(@TabGridDialogParent.UngroupBarStatus int status) {
+        public void updateUngroupBarStatus(@TabGridDialogView.UngroupBarStatus int status) {
             mModel.set(TabGridPanelProperties.UNGROUP_BAR_STATUS, status);
         }
 
@@ -572,5 +565,10 @@ public class TabGridDialogMediator {
     @VisibleForTesting
     Callback<Integer> getToolbarMenuCallbackForTesting() {
         return mToolbarMenuCallback;
+    }
+
+    @VisibleForTesting
+    ScrimView.ScrimObserver getScrimObserverForTesting() {
+        return mScrimObserver;
     }
 }

@@ -107,13 +107,13 @@ void FocusRing::ViewHierarchyChanged(
   if (details.is_add) {
     // Need to start observing the parent.
     view_observer_.Add(details.parent);
+    RefreshLayer();
   } else if (view_observer_.IsObserving(details.parent)) {
     // This view is being removed from its parent. It needs to remove itself
-    // from its parent's observer list. Otherwise, since its |parent_| will
-    // become a nullptr, it won't be able to do so in its destructor.
+    // from its parent's observer list in the case where the FocusView is
+    // removed from its parent but not deleted.
     view_observer_.Remove(details.parent);
   }
-  RefreshLayer();
 }
 
 void FocusRing::OnPaint(gfx::Canvas* canvas) {

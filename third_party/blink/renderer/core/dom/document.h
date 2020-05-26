@@ -268,8 +268,24 @@ using ExplicitlySetAttrElementsMap =
 
 // A document (https://dom.spec.whatwg.org/#concept-document) is the root node
 // of a tree of DOM nodes, generally resulting from the parsing of an markup
-// (typically, HTML) resource. It provides both the content to be displayed to
-// the user in a frame and an execution context for JavaScript code.
+// (typically, HTML) resource.
+//
+// A document may or may not have a browsing context
+// (https://html.spec.whatwg.org/#browsing-context). A document with a browsing
+// context is created by navigation, and has a non-null domWindow(), GetFrame(),
+// Loader(), etc., and is visible to the user. It will have a valid
+// GetExecutionContext(), which will be equal to domWindow(). If the Document
+// constructor receives a DocumentInit created WithDocumentLoader(), it will
+// have a browsing context.
+// Documents created by all other APIs do not have a browsing context. These
+// Documents still have a valid GetExecutionContext() (i.e., the domWindow() of
+// the Document in which they were created), so they can still access
+// script, but return null for domWindow(), GetFrame() and Loader(). Generally,
+// they should not downcast the ExecutionContext to a LocalDOMWindow and access
+// the properties of the window directly.
+// Finally, unit tests are allowed to create a Document that does not even
+// have a valid GetExecutionContext(). This is a lightweight way to test
+// properties of the Document and the DOM that do not require script.
 class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
                              public UseCounter,
@@ -574,8 +590,8 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentState* GetDocumentState() const;
   void SetStateForNewControls(const Vector<String>&);
 
-  LocalFrameView* View() const;                    // can be null
-  LocalFrame* GetFrame() const { return frame_; }  // can be null
+  LocalFrameView* View() const;  // can be null
+  LocalFrame* GetFrame() const;  // can be null
   // Returns frame_ for current document, or if this is an HTML import, master
   // document's frame_, if any.  Can be null.
   // TODO(kochi): Audit usage of this interface (crbug.com/746150).
@@ -1152,7 +1168,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // The document of the parent frame.
   Document* ParentDocument() const;
   Document& TopDocument() const;
-  Document* ContextDocument() const;
+
+  // Will only return nullptr in unit tests.
+  ExecutionContext* GetExecutionContext() const final;
 
   ScriptRunner* GetScriptRunner() { return script_runner_.Get(); }
 
@@ -1856,7 +1874,6 @@ class CORE_EXPORT Document : public ContainerNode,
   PendingSheetLayout pending_sheet_layout_;
 
   Member<WindowAgentFactory> window_agent_factory_;
-  Member<LocalFrame> frame_;
   Member<LocalDOMWindow> dom_window_;
   Member<HTMLImportsController> imports_controller_;
 
@@ -1868,9 +1885,14 @@ class CORE_EXPORT Document : public ContainerNode,
   // TODO(dgozman): we should probably explicitly set and clear loader instead.
   Member<UseCounter> use_counter_during_construction_;
 
-  // The document of creator browsing context for frame-less documents such as
-  // documents created by DOMParser and DOMImplementation.
-  WeakMember<Document> context_document_;
+  // For Documents given a dom_window_ at creation that are not Shutdown(),
+  // execution_context_ and dom_window_ will be equal.
+  // For Documents given a dom_window_ at creation that are Shutdown(),
+  // execution_context_ will be nullptr.
+  // For Documents not given a dom_window_ at creation, execution_context_
+  // will be the LocalDOMWindow where script will execute (which may be nullptr
+  // in unit tests).
+  Member<ExecutionContext> execution_context_;
 
   Member<ResourceFetcher> fetcher_;
   Member<DocumentParser> parser_;

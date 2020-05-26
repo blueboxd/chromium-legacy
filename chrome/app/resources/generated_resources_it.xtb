@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Le scorciatoie vengono selezionate in base a te</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> impronte digitali configurate</translation>
 <translation id="1213254615020057352">Invia dati diagnostici e sull'utilizzo. Contribuisci a migliorare l'esperienza Android di tuo figlio tramite l'invio automatico a Google di dati diagnostici e sull'utilizzo delle app e del dispositivo. Non verranno utilizzati per identificare tuo figlio e contribuiranno alla stabilità delle app e del sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, come ad esempio agli sviluppatori Android. Questa impostazione è applicata dal proprietario. Il proprietario potrebbe decidere di inviare a Google dati di diagnostica e utilizzo relativi a questo dispositivo. Se l'impostazione Attività web e app aggiuntiva è attiva per tuo figlio, questi dati potrebbero essere salvati nel suo Account Google.</translation>
+<translation id="121384500095351701">Impossibile scaricare il file in modo sicuro</translation>
 <translation id="1215411991991485844">Nuova applicazione in background aggiunta</translation>
 <translation id="1216542092748365687">Rimuovere l'impronta</translation>
 <translation id="1217483152325416304">I tuoi dati locali verranno eliminati a breve</translation>
@@ -252,7 +253,7 @@
 <translation id="1316136264406804862">Ricerca in corso...</translation>
 <translation id="1316495628809031177">Sincronizzazione in pausa</translation>
 <translation id="1317637799698924700">La dock station funzionerà alla modalità compatibile con USB Type-C.</translation>
-<translation id="1319983966058170660">Pulsante indietro pagina secondaria <ph name="SUBPAGE_TITLE" /></translation>
+<translation id="1319983966058170660">Pulsante Indietro pagina secondaria <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1322046419516468189">Visualizza e gestisci le password salvate in <ph name="SAVED_PASSWORDS_STORE" /></translation>
 <translation id="1324106254079708331">Protegge gli Account Google personali di chiunque a rischio di attacchi mirati</translation>
 <translation id="1326317727527857210">Accedi a Chrome per trovare le tue schede degli altri dispositivi.</translation>
@@ -718,7 +719,7 @@
 <translation id="1884013283844450420">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, connetti</translation>
 <translation id="1884705339276589024">Ridimensiona disco Linux</translation>
 <translation id="1885106732301550621">Spazio su disco</translation>
-<translation id="1885190042244431215">L'aggiunta di un account della scuola consente di accedere facilmente ai siti web e alle estensioni come studente operando al tempo stesso con il Controllo genitori.</translation>
+<translation id="1885190042244431215">L'aggiunta di un account della scuola consente di accedere facilmente ai siti web e alle estensioni come studente, applicando al tempo stesso il Controllo genitori.</translation>
 <translation id="1886996562706621347">Consenti ai siti di chiedere di diventare gestori predefiniti dei protocolli (consigliata)</translation>
 <translation id="1887442540531652736">Errore di accesso</translation>
 <translation id="1887597546629269384">Dì di nuovo "Ok Google"</translation>
@@ -1064,6 +1065,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2336228925368920074">Aggiungi tutte le schede ai Preferiti...</translation>
 <translation id="2336376423977300504">Cancella sempre i cookie alla chiusura delle finestre</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Impossibile scaricare <ph name="FILE_NAME" /> in modo sicuro</translation>
 <translation id="2340263603246777781">Il sito <ph name="ORIGIN" /> desidera accoppiarsi</translation>
 <translation id="2342740338116612727">Preferiti aggiunti</translation>
 <translation id="2343747224442182863">Imposta stato attivo su questa scheda</translation>
@@ -2471,7 +2473,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4077919383365622693">Tutti i dati e i cookie memorizzati da <ph name="SITE" /> verranno cancellati.</translation>
 <translation id="4079140982534148664">Usa il controllo ortografico avanzato</translation>
 <translation id="4081242589061676262">Impossibile trasmettere il file.</translation>
-<translation id="4083648855651348665">Per continuare, inserisci la password del tuo Account Google per rendere disponibili le password del tuo account su questo dispositivo.</translation>
+<translation id="4083648855651348665">Per continuare, inserisci la password del tuo Account Google; così facendo, le password del tuo account saranno disponibili su questo dispositivo.</translation>
 <translation id="4084682180776658562">Aggiungi ai Preferiti</translation>
 <translation id="4084835346725913160">Chiudi <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Chiedi conferma quando un sito vuole accedere alle porte seriali</translation>
@@ -3253,6 +3255,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="5154702632169343078">Oggetto</translation>
 <translation id="5157635116769074044">Esponi questa pagina nella schermata iniziale...</translation>
 <translation id="5158983316805876233">Usa lo stesso proxy per tutti i protocolli</translation>
+<translation id="5159419673777902220">Uno dei tuoi genitori ha disattivato le autorizzazioni per le estensioni</translation>
 <translation id="5160857336552977725">Accedi al tuo dispositivo <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Il plug-in <ph name="PLUGIN_NAME" /> è stato bloccato perché non è aggiornato</translation>
 <translation id="5170568018924773124">Mostra nella cartella</translation>
@@ -4826,7 +4829,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Esci dalla pagina}other{Esci dalle pagine}}</translation>
 <translation id="7207457272187520234">Invia dati diagnostici e sull'utilizzo. Attualmente, questo dispositivo invia a Google dati diagnostici e sull'utilizzo delle app e del dispositivo. Tali dati contribuiranno alla stabilità delle app e del sistema, nonché ad altri miglioramenti. Alcuni dati aggregati saranno utili anche alle app e ai partner di Google, come ad esempio agli sviluppatori Android. Questa impostazione è applicata dal proprietario. Se hai attivato l'impostazione Attività web e app aggiuntiva, queste informazioni potrebbero essere salvate nel tuo Account Google.</translation>
 <translation id="7207631048330366454">Cerca nelle app</translation>
-<translation id="7210171324714276060">L'estensione <ph name="EXTENSION_NAME" /> ha modificato la ricerca per utilizzare <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
+<translation id="7210171324714276060">L'estensione <ph name="EXTENSION_NAME" /> ha modificato la ricerca; d'ora in poi verrà utilizzato <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Stampanti estensione</translation>
 <translation id="7212097698621322584">Inserisci il PIN attuale per modificarlo. Se non conosci il PIN, devi reimpostare il token di sicurezza, quindi creare un nuovo PIN.</translation>
 <translation id="7216409898977639127">Fornitore del servizio di telefonia mobile</translation>
@@ -5394,6 +5397,7 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7925247922861151263">Controllo AAA non riuscito</translation>
 <translation id="7925285046818567682">In attesa di risposta da <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Non ero io.</translation>
+<translation id="7926975587469166629">Nickname carta</translation>
 <translation id="7928175190925744466">Hai già modificato questa password?</translation>
 <translation id="7928836894214140642">Gestito da <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">I metodi di pagamento salvati verranno visualizzati qui</translation>
@@ -5564,7 +5568,7 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8136269678443988272">I PIN inseriti non corrispondono</translation>
 <translation id="8137559199583651773">Gestisci estensioni</translation>
 <translation id="8138082791834443598">Facoltativo. Inserisci nuove informazioni o aggiorna informazioni esistenti da associare a questo dispositivo.</translation>
-<translation id="8138217203226449454">Forse intendevi cambiare il tuo provider di ricerca?</translation>
+<translation id="8138217203226449454">Era tua intenzione cambiare provider di ricerca?</translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
 <translation id="8140778357236808512">Importa un utente supervisionato esistente</translation>
 <translation id="8141584439523427891">Apertura browser alternativo</translation>

@@ -14,7 +14,7 @@ class Insets;
 
 namespace views {
 
-class BubbleDialogDelegateView;
+class BubbleDialogDelegate;
 class FlexSpecification;
 class HighlightPathGenerator;
 
@@ -41,7 +41,7 @@ VIEWS_EXPORT extern const ui::ClassProperty<gfx::Insets*>* const
 
 // A property to store the bubble dialog anchored to this view, to
 // enable the bubble's contents to be included in the focus order.
-VIEWS_EXPORT extern const ui::ClassProperty<BubbleDialogDelegateView*>* const
+VIEWS_EXPORT extern const ui::ClassProperty<BubbleDialogDelegate*>* const
     kAnchoredDialogKey;
 
 // A property to store a highlight-path generator. This generator is used to
@@ -63,7 +63,7 @@ VIEWS_EXPORT extern const ui::ClassProperty<FlexSpecification*>* const
 // translation unit is a C++ error.
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, gfx::Insets*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
-                                        views::BubbleDialogDelegateView*)
+                                        views::BubbleDialogDelegate*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT,
                                         views::HighlightPathGenerator*)
 DECLARE_EXPORTED_UI_CLASS_PROPERTY_TYPE(VIEWS_EXPORT, views::FlexSpecification*)

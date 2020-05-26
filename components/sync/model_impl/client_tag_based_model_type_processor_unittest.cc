@@ -259,6 +259,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   void SetUp() override {
     bridge_ = std::make_unique<TestModelTypeSyncBridge>(
         IsCommitOnly(), GetModelType(), SupportsIncrementalUpdates());
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   void InitializeToMetadataLoaded(bool initial_sync_done = true) {
@@ -346,6 +347,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     worker_ = nullptr;
     run_loop_.reset();
     CheckPostConditions();
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
   virtual bool IsCommitOnly() { return false; }
@@ -387,9 +389,9 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   }
 
   // Expect to receive an error from the processor.
-  void ExpectError() {
+  void ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite error_site) {
     EXPECT_FALSE(expect_error_);
-    expect_error_ = true;
+    expect_error_ = error_site;
   }
 
   TestModelTypeSyncBridge* bridge() const { return bridge_.get(); }
@@ -423,7 +425,9 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   void ErrorReceived(const ModelError& error) {
     EXPECT_TRUE(expect_error_);
-    expect_error_ = false;
+    histogram_tester_->ExpectBucketCount("Sync.ModelTypeErrorSite.PREFERENCE",
+                                         *expect_error_, /*count=*/1);
+    expect_error_ = base::nullopt;
     // Do not expect for a start callback anymore.
     if (run_loop_) {
       run_loop_->Quit();
@@ -455,8 +459,9 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
   // The current mock queue, which is owned by |type_processor()|.
   MockModelTypeWorker* worker_;
 
-  // Whether to expect an error from the processor.
-  bool expect_error_ = false;
+  // Whether to expect an error from the processor (and from which site).
+  base::Optional<ClientTagBasedModelTypeProcessor::ErrorSite> expect_error_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,
@@ -625,33 +630,33 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReportErrorDuringMerge) {
   OnSyncStarting();
 
   bridge()->ErrorOnNextCall();
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::kApplyFullUpdates);
   worker()->UpdateFromServer();
 }
 
 // Test that errors before it's called are passed to |start_callback| correctly.
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldDeferErrorsBeforeStart) {
   type_processor()->ReportError({FROM_HERE, "boom"});
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::kBridgeInitiated);
   OnSyncStarting();
 
   // Test OnSyncStarting happening first.
   ResetState(false);
   OnSyncStarting();
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::kBridgeInitiated);
   type_processor()->ReportError({FROM_HERE, "boom"});
 
   // Test an error loading pending data.
   ResetStateWriteItem(kKey1, kValue1);
   bridge()->ErrorOnNextCall();
   InitializeToMetadataLoaded();
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::kBridgeInitiated);
   OnSyncStarting();
 
   // Test an error prior to metadata load.
   ResetState(false);
   type_processor()->ReportError({FROM_HERE, "boom"});
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::kBridgeInitiated);
   OnSyncStarting();
   ModelReadyToSync();
 
@@ -659,7 +664,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldDeferErrorsBeforeStart) {
   ResetStateWriteItem(kKey1, kValue1);
   InitializeToMetadataLoaded();
   type_processor()->ReportError({FROM_HERE, "boom"});
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::kBridgeInitiated);
   OnSyncStarting();
 }
 
@@ -927,7 +932,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReportErrorApplyingAck) {
   InitializeToReadyState();
   bridge()->WriteItem(kKey1, kValue1);
   bridge()->ErrorOnNextCall();
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::
+                  kApplyUpdatesOnCommitResponse);
   worker()->AckOnePendingCommit();
 }
 
@@ -1168,7 +1174,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldIgnoreRedundantLocalUpdate) {
 TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldReportErrorApplyingUpdate) {
   InitializeToReadyState();
   bridge()->ErrorOnNextCall();
-  ExpectError();
+  ExpectError(
+      ClientTagBasedModelTypeProcessor::ErrorSite::kApplyIncrementalUpdates);
   worker()->UpdateFromServer(GetHash(kKey1), GenerateSpecifics(kKey1, kValue1));
 }
 
@@ -1719,7 +1726,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
   InitializeToReadyState();
   WriteItemAndAck(kKey1, kValue1);
   bridge()->ErrorOnNextCall();
-  ExpectError();
+  ExpectError(
+      ClientTagBasedModelTypeProcessor::ErrorSite::kApplyIncrementalUpdates);
   worker()->UpdateWithEncryptionKey("k1");
 }
 
@@ -1998,7 +2006,8 @@ TEST_F(FullUpdateClientTagBasedModelTypeProcessorTest,
        ShouldReportErrorForUnsupportedIncrementalUpdate) {
   InitializeToReadyState();
 
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::
+                  kSupportsIncrementalUpdatesMismatch);
   worker()->UpdateFromServer(GetHash(kKey1), GenerateSpecifics(kKey1, kValue1));
 }
 
@@ -2261,7 +2270,8 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
        ShouldNotApplyGarbageCollectionByVersion) {
   InitializeToReadyState();
 
-  ExpectError();
+  ExpectError(ClientTagBasedModelTypeProcessor::ErrorSite::
+                  kSupportsIncrementalUpdatesMismatch);
   sync_pb::GarbageCollectionDirective garbage_collection_directive;
   garbage_collection_directive.set_version_watermark(2);
   worker()->UpdateWithGarbageCollection(garbage_collection_directive);

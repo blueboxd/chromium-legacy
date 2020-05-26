@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Resources for user-facing security interstitial pages. -->
 <grit-part>
-  <include name="IDR_SECURITY_INTERSTITIAL_COMMON_CSS" file="../security_interstitials/core/common/resources/interstitial_common.css" compress="gzip" type="BINDATA" />
-  <include name="IDR_SECURITY_INTERSTITIAL_CORE_CSS" file="../security_interstitials/core/common/resources/interstitial_core.css" compress="gzip" type="BINDATA" />
-  <include name="IDR_SECURITY_INTERSTITIAL_HTML" file="../security_interstitials/core/browser/resources/interstitial_large.html" compress="gzip" flattenhtml="true" type="BINDATA"/>
-  <include name="IDR_SECURITY_INTERSTITIAL_QUIET_HTML" file="../security_interstitials/core/browser/resources/interstitial_webview_quiet.html" compress="gzip" flattenhtml="true" type="BINDATA" />
-  <include name="IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_HTML" file="../security_interstitials/content/resources/connection_help.html" compress="gzip" type="BINDATA" />
-  <include name="IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_CSS" file="../security_interstitials/content/resources/connection_help.css" compress="gzip" type="BINDATA" />
-  <include name="IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_JS" file="../security_interstitials/content/resources/connection_help.js" compress="gzip" type="BINDATA" />
-  <include name="IDR_KNOWN_INTERCEPTION_HTML" file="../security_interstitials/content/resources/known_interception_disclosure.html" compress="gzip" type="BINDATA" />
-  <include name="IDR_KNOWN_INTERCEPTION_CSS" file="../security_interstitials/content/resources/known_interception_disclosure.css" compress="gzip" type="BINDATA" />
+  <include name="IDR_SECURITY_INTERSTITIAL_COMMON_CSS" file="../security_interstitials/core/common/resources/interstitial_common.css" type="BINDATA" />
+  <include name="IDR_SECURITY_INTERSTITIAL_CORE_CSS" file="../security_interstitials/core/common/resources/interstitial_core.css" type="BINDATA" />
+  <include name="IDR_SECURITY_INTERSTITIAL_HTML" file="../security_interstitials/core/browser/resources/interstitial_large.html" flattenhtml="true" type="BINDATA"/>
+  <include name="IDR_SECURITY_INTERSTITIAL_QUIET_HTML" file="../security_interstitials/core/browser/resources/interstitial_webview_quiet.html" flattenhtml="true" type="BINDATA" />
+  <include name="IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_HTML" file="../security_interstitials/content/resources/connection_help.html" type="BINDATA" />
+  <include name="IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_CSS" file="../security_interstitials/content/resources/connection_help.css" type="BINDATA" />
+  <include name="IDR_SECURITY_INTERSTITIAL_CONNECTION_HELP_JS" file="../security_interstitials/content/resources/connection_help.js" type="BINDATA" />
+  <include name="IDR_KNOWN_INTERCEPTION_HTML" file="../security_interstitials/content/resources/known_interception_disclosure.html" type="BINDATA" />
+  <include name="IDR_KNOWN_INTERCEPTION_CSS" file="../security_interstitials/content/resources/known_interception_disclosure.css" type="BINDATA" />
   <include name="IDR_KNOWN_INTERCEPTION_ICON_1X_PNG" file="../security_interstitials/core/browser/resources/images/1x/triangle_red.png" compress="gzip" type="BINDATA" />
   <include name="IDR_KNOWN_INTERCEPTION_ICON_2X_PNG" file="../security_interstitials/core/browser/resources/images/2x/triangle_red.png" compress="gzip" type="BINDATA" />
 

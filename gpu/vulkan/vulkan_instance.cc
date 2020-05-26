@@ -60,8 +60,6 @@ VulkanWarningCallback(VkDebugReportFlagsEXT flags,
 }
 #endif  // DCHECK_IS_ON()
 
-constexpr uint32_t kRequiredApiVersion = VK_MAKE_VERSION(1, 1, 0);
-
 }  // namespace
 
 VulkanInstance::VulkanInstance() = default;
@@ -87,13 +85,13 @@ bool VulkanInstance::Initialize(
     return false;
   }
 
-  if (vulkan_info_.api_version < kRequiredApiVersion)
+  if (vulkan_info_.api_version < kVulkanRequiredApiVersion)
     return false;
 
   gpu::crash_keys::vulkan_api_version.Set(
       VkVersionToString(vulkan_info_.api_version));
 
-  vulkan_info_.used_api_version = kRequiredApiVersion;
+  vulkan_info_.used_api_version = kVulkanRequiredApiVersion;
 
   VkApplicationInfo app_info = {};
   app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -306,24 +304,21 @@ bool VulkanInstance::CollectInfo() {
     // API version of the VkPhysicalDevice, so we need to check the GPU's
     // API version instead of just testing to see if
     // vkGetPhysicalDeviceFeatures2 is non-null.
-    if (info.properties.apiVersion >= VK_MAKE_VERSION(1, 1, 0)) {
-      VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_conversion_features =
-          {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
-      VkPhysicalDeviceProtectedMemoryFeatures protected_memory_feature = {
-          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
-      VkPhysicalDeviceFeatures2 features_2 = {
-          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-      features_2.pNext = &ycbcr_conversion_features;
-      ycbcr_conversion_features.pNext = &protected_memory_feature;
+    static_assert(kVulkanRequiredApiVersion >= VK_API_VERSION_1_1, "");
+    VkPhysicalDeviceSamplerYcbcrConversionFeatures ycbcr_conversion_features = {
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
+    VkPhysicalDeviceProtectedMemoryFeatures protected_memory_feature = {
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
+    VkPhysicalDeviceFeatures2 features_2 = {
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+    features_2.pNext = &ycbcr_conversion_features;
+    ycbcr_conversion_features.pNext = &protected_memory_feature;
 
-      vkGetPhysicalDeviceFeatures2(device, &features_2);
-      info.features = features_2.features;
-      info.feature_sampler_ycbcr_conversion =
-          ycbcr_conversion_features.samplerYcbcrConversion;
-      info.feature_protected_memory = protected_memory_feature.protectedMemory;
-    } else {
-      vkGetPhysicalDeviceFeatures(device, &info.features);
-    }
+    vkGetPhysicalDeviceFeatures2(device, &features_2);
+    info.features = features_2.features;
+    info.feature_sampler_ycbcr_conversion =
+        ycbcr_conversion_features.samplerYcbcrConversion;
+    info.feature_protected_memory = protected_memory_feature.protectedMemory;
 
     count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);

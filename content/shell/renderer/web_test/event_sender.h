@@ -23,6 +23,7 @@
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
+#include "third_party/blink/public/web/web_widget_client.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace blink {
@@ -63,6 +64,12 @@ class EventSender {
   void SetContextMenuData(const blink::WebContextMenuData&);
 
   void DoDragDrop(const blink::WebDragData&, blink::WebDragOperationsMask);
+
+  // Methods used to implement pointer requests and override behaviour.
+  bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
+                          blink::WebWidgetClient::PointerLockCallback callback);
+  void RequestPointerUnlock();
+  bool IsPointerLocked() { return pointer_locked_; }
 
  private:
   friend class EventSenderBindings;
@@ -107,6 +114,19 @@ class EventSender {
   };
 
   enum class MouseScrollType { PIXEL, TICK };
+
+  enum class NextPointerLockAction {
+    kWillSucceedAsync,
+    kTestWillRespond,
+    kWillFail,
+  };
+
+  TestInterfaces* interfaces();
+  BlinkTestRunner* blink_test_runner();
+  const blink::WebView* view() const;
+  blink::WebView* view();
+  blink::WebWidget* widget();
+  blink::WebFrameWidget* MainFrameWidget();
 
   void EnableDOMUIEventLogging();
   void FireKeyboardEventsToElement();
@@ -166,6 +186,18 @@ class EventSender {
   // Consumes the transient user activation state for follow-up tests that don't
   // expect it.
   void ConsumeUserActivation();
+
+  // Controls behaviour of the next call to RequestPointerLock().
+  void SetNextPointerLockAction(NextPointerLockAction action);
+  // One possible response to RequestPointerLock(). May be called automatically
+  // or by the test directly, depending on NextPointerLockAction.
+  void DidAcquirePointerLock();
+  // One possible response to RequestPointerLock(). May be called automatically
+  // or by the test directly, depending on NextPointerLockAction.
+  void DidNotAcquirePointerLock();
+  // Ends a pointer lock. May be called in response to RequestPointerUnlock() or
+  // by the test directly.
+  void DidLosePointerLock();
 
   base::TimeTicks GetCurrentEventTime() const;
 
@@ -249,13 +281,7 @@ class EventSender {
   int wm_sys_dead_char_;
 #endif
 
-  WebWidgetTestProxy* web_widget_test_proxy_;
-  TestInterfaces* interfaces();
-  BlinkTestRunner* blink_test_runner();
-  const blink::WebView* view() const;
-  blink::WebView* view();
-  blink::WebWidget* widget();
-  blink::WebFrameWidget* MainFrameWidget();
+  WebWidgetTestProxy* const web_widget_test_proxy_;
 
   bool force_layout_on_events_;
 
@@ -316,6 +342,17 @@ class EventSender {
   int click_count_;
   // Timestamp of the last event that was dispatched
   base::TimeTicks last_event_timestamp_;
+
+  bool pointer_lock_pending_;
+  bool pointer_unlock_pending_;
+  bool pointer_locked_;
+  // Tests can control the behaviour of RequestPointerLock() by specifying what
+  // the next action should be though this.
+  NextPointerLockAction next_pointer_lock_action_;
+  // Callback held until a pointer lock request completes/fails. It is run
+  // before calling through to DidAcquirePointerLock() or
+  // DidNotAcquirePointerLock().
+  blink::WebWidgetClient::PointerLockCallback pointer_locked_callback_;
 
   base::WeakPtrFactory<EventSender> weak_factory_{this};
 

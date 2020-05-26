@@ -668,6 +668,11 @@
 
       เมื่อตั้งค่านโยบายนี้เป็นเส้นทางของไฟล์ ระบบจะใช้ไฟล์นั้นเป็นไฟล์ที่สั่งการได้</translation>
 <translation id="2113068765175018713">จำกัดเวลาใช้งานของอุปกรณ์โดยการรีบูตอัตโนมัติ</translation>
+<translation id="2124881675920287921">นโยบายนี้มีการเลิกใช้งานแล้วใน M82 และนำออกใน M85 โดยใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> แทน การปิดใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> เทียบเท่ากับการปิดใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> การเปิดใช้ <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> หรือไม่ได้ตั้งค่าจะเทียบเท่ากับการไม่ได้ตั้งค่า <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />
+
+      การตั้งค่านโยบายนี้เป็น "เท็จ" จะทำให้ผู้ใช้เลือกส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าไปยังเซิร์ฟเวอร์ Google ไม่ได้ หากตั้งค่าเป็น "จริง" หรือไม่ได้ตั้งค่า ผู้ใช้จะส่งข้อมูลบางอย่างของระบบและเนื้อหาของหน้าไปยัง Google Safe Browsing เพื่อช่วยตรวจหาแอปและเว็บไซต์ที่เป็นอันตรายได้
+
+      ดูข้อมูลเพิ่มเติมเกี่ยวกับ Google Safe Browsing ได้ที่ https://developers.google.com/safe-browsing</translation>
 <translation id="2127599828444728326">อนุญาตการแจ้งเตือนในไซต์เหล่านี้</translation>
 <translation id="2131902621292742709">ระยะหน่วงเวลาการหรี่แสงหน้าจอเมื่อทำงานโดยใช้พลังงานแบตเตอรี่</translation>
 <translation id="2134437727173969994">อนุญาตให้ล็อกหน้าจอ</translation>
@@ -2827,7 +2832,6 @@
 <translation id="5307432759655324440">ความพร้อมใช้งานของโหมดไม่ระบุตัวตน</translation>
 <translation id="5311275381462687162">กำหนดค่าเริ่มต้นของการตั้งค่าลักษณะการทำงานของคุกกี้ <ph name="ATTRIBUTE_SAMESITE_NAME" /> เดิม</translation>
 <translation id="5318185076587284965">เปิดใช้รีเลย์เซิร์ฟเวอร์โดยโฮสต์การเข้าถึงระยะไกล</translation>
-<translation id="5321755462836179869">อนุญาตการแจ้งเตือนดั้งเดิม</translation>
 <translation id="5323128137188992869">อนุญาตให้แคสต์เนื้อหาไปยังอุปกรณ์โดยใช้ <ph name="PRODUCT_NAME" />
 
           หากตั้งค่านโยบายนี้เป็น False ผู้ใช้จะไม่สามารถแคสต์เนื้อหาไปยังอุปกรณ์ หากตั้งค่าเป็น True ผู้ใช้จะแคสต์เนื้อหาได้ และหากไม่ได้ตั้งค่านโยบาย ผู้ใช้จะไม่สามารถแคสต์เนื้อหาไปยังอุปกรณ์ที่ใช้ Chrome OS ที่ลงทะเบียนไว้ แต่จะแคสต์ไปยังอุปกรณ์ที่ไม่ได้ลงทะเบียนได้</translation>

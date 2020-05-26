@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Atalhos selecionados por você</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> impressões digitais configuradas</translation>
 <translation id="1213254615020057352">Envie dados de uso e diagnóstico. Ajude a melhorar a experiência da criança com o Android enviando automaticamente ao Google dados de diagnóstico, de uso de apps e do dispositivo. Eles não serão usados para identificar a criança e ajudarão a melhorar o sistema, a estabilidade de apps e muito mais. Alguns dados agregados também ajudarão os apps do Google e nossos parceiros, como os desenvolvedores Android. Essa configuração é aplicada pelo proprietário, que pode optar por enviar dados de uso e diagnóstico deste dispositivo para o Google. Se a configuração "Atividade na Web e de apps adicional" estiver ativada para a criança, esses dados poderão ser salvos na Conta do Google dela.</translation>
+<translation id="121384500095351701">Não é possível fazer o download desse arquivo por motivos de segurança</translation>
 <translation id="1215411991991485844">Novo aplicativo de fundo adicionado</translation>
 <translation id="1216542092748365687">Remover impressão digital</translation>
 <translation id="1217483152325416304">Seus dados locais serão excluídos em breve</translation>
@@ -718,7 +719,7 @@
 <translation id="1884013283844450420">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, conectar</translation>
 <translation id="1884705339276589024">Redimensionar disco do Linux</translation>
 <translation id="1885106732301550621">Espaço em disco</translation>
-<translation id="1885190042244431215">A adição de uma conta escolar permite fazer login facilitado como estudante em sites e extensões, sem desativar o "controle dos pais".</translation>
+<translation id="1885190042244431215">A adição de uma conta escolar facilita o login como estudante em sites e extensões, sem desativar o "controle dos pais".</translation>
 <translation id="1886996562706621347">Permitir que os sites peçam para se tornar manipuladores padrão de protocolos (recomendado)</translation>
 <translation id="1887442540531652736">Erro de login</translation>
 <translation id="1887597546629269384">Diga "Ei Google" novamente</translation>
@@ -1064,6 +1065,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="2336228925368920074">Adicionar todas as guias aos favoritos...</translation>
 <translation id="2336376423977300504">Sempre limpar cookies quando as janelas forem fechadas</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Não é possível fazer o download de <ph name="FILE_NAME" /> por motivos de segurança</translation>
 <translation id="2340263603246777781">O <ph name="ORIGIN" /> deseja realizar o pareamento</translation>
 <translation id="2342740338116612727">Favoritos adicionados</translation>
 <translation id="2343747224442182863">Focar esta guia</translation>
@@ -3254,6 +3256,7 @@ Para gerenciar as configurações dessa conta, instale o app Family Link no seu 
 <translation id="5154702632169343078">Assunto</translation>
 <translation id="5157635116769074044">Fixar guia dessa página na tela inicial.</translation>
 <translation id="5158983316805876233">Use o mesmo proxy para todos os protocolos</translation>
+<translation id="5159419673777902220">Seu pai/mãe desativou as permissões da extensão</translation>
 <translation id="5160857336552977725">Faça login no seu <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">O plug-in <ph name="PLUGIN_NAME" /> foi bloqueado porque está desatualizado</translation>
 <translation id="5170568018924773124">Mostrar na pasta</translation>
@@ -5397,6 +5400,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7925247922861151263">Falha ao verificar AAA</translation>
 <translation id="7925285046818567682">Aguardando <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Não fui eu.</translation>
+<translation id="7926975587469166629">Apelido do cartão</translation>
 <translation id="7928175190925744466">Já mudou essa senha?</translation>
 <translation id="7928836894214140642">Gerenciado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">As formas de pagamento salvas serão exibidas aqui</translation>

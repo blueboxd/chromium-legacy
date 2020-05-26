@@ -118,8 +118,7 @@ class WebSocket::WebSocketEventHandler final
   void OnAddChannelResponse(
       std::unique_ptr<net::WebSocketHandshakeResponseInfo> response,
       const std::string& selected_subprotocol,
-      const std::string& extensions,
-      int64_t send_flow_control_quota) override;
+      const std::string& extensions) override;
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
                    base::span<const char> payload) override;
@@ -172,8 +171,7 @@ void WebSocket::WebSocketEventHandler::OnCreateURLRequest(
 void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
     std::unique_ptr<net::WebSocketHandshakeResponseInfo> response,
     const std::string& selected_protocol,
-    const std::string& extensions,
-    int64_t send_flow_control_quota) {
+    const std::string& extensions) {
   DVLOG(3) << "WebSocketEventHandler::OnAddChannelResponse @"
            << reinterpret_cast<void*>(this) << " selected_protocol=\""
            << selected_protocol << "\""
@@ -444,32 +442,6 @@ WebSocket::~WebSocket() {
 
 // static
 const void* const WebSocket::kUserDataKey = &WebSocket::kUserDataKey;
-
-void WebSocket::SendFrame(bool fin,
-                          mojom::WebSocketMessageType type,
-                          base::span<const uint8_t> data) {
-  DVLOG(3) << "WebSocket::SendFrame @" << reinterpret_cast<void*>(this)
-           << " fin=" << fin << " type=" << type << " data is " << data.size()
-           << " bytes";
-
-  DCHECK(channel_)
-      << "WebSocket::SendFrame is called but there is no active channel.";
-  DCHECK(handshake_succeeded_);
-  // This is guaranteed by the maximum size enforced on mojo messages.
-  DCHECK_LE(data.size(), static_cast<size_t>(INT_MAX));
-
-  // This is guaranteed by mojo.
-  DCHECK(IsKnownEnumValue(type));
-
-  // TODO(darin): Avoid this copy.
-  auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(data.size());
-  memcpy(data_to_pass->data(), data.data(), data.size());
-
-  // It's okay to ignore the result here because we don't access |this| after
-  // this point.
-  ignore_result(channel_->SendFrame(fin, MessageTypeToOpCode(type),
-                                    std::move(data_to_pass), data.size()));
-}
 
 void WebSocket::SendMessage(mojom::WebSocketMessageType type,
                             uint64_t data_length) {

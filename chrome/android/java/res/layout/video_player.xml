@@ -66,8 +66,8 @@
 
             <ImageView
                 android:id="@+id/video_player_play_button"
-                android:layout_width="84dp"
-                android:layout_height="84dp"
+                android:layout_width="@dimen/photo_picker_play_button_size"
+                android:layout_height="@dimen/photo_picker_play_button_size"
                 android:layout_gravity="center"
                 android:contentDescription="@string/accessibility_pause_video"
                 app:srcCompat="@drawable/ic_pause_circle_outline_white_24dp" />

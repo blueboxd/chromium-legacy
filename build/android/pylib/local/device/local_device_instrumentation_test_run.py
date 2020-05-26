@@ -139,6 +139,12 @@ _CURRENT_FOCUS_CRASH_RE = re.compile(
     r'\s*mCurrentFocus.*Application (Error|Not Responding): (\S+)}')
 
 
+def _GetTargetPackageName(test_apk):
+  # apk_under_test does not work for smoke tests, where it is set to an
+  # apk that is not listed as the targetPackage in the test apk's manifest.
+  return test_apk.GetAllInstrumentations()[0]['android:targetPackage']
+
+
 class LocalDeviceInstrumentationTestRun(
     local_device_test_run.LocalDeviceTestRun):
   def __init__(self, env, test_instance):
@@ -158,6 +164,8 @@ class LocalDeviceInstrumentationTestRun(
 
   #override
   def SetUp(self):
+    target_package = _GetTargetPackageName(self._test_instance.test_apk)
+
     @local_device_environment.handle_shard_failures_with(
         self._env.BlacklistDevice)
     @trace_event.traced
@@ -272,18 +280,10 @@ class LocalDeviceInstrumentationTestRun(
       def set_debug_app(dev):
         # Set debug app in order to enable reading command line flags on user
         # builds
-        package_name = None
-        if self._test_instance.apk_under_test:
-          package_name = self._test_instance.apk_under_test.GetPackageName()
-        elif self._test_instance.test_apk:
-          package_name = self._test_instance.test_apk.GetPackageName()
-        else:
-          logging.error("Couldn't set debug app: no package name found")
-          return
         cmd = ['am', 'set-debug-app', '--persistent']
         if self._test_instance.wait_for_java_debugger:
           cmd.append('-w')
-        cmd.append(package_name)
+        cmd.append(target_package)
         dev.RunShellCommand(cmd, check_return=True)
 
       @trace_event.traced
@@ -387,10 +387,9 @@ class LocalDeviceInstrumentationTestRun(
     self._skia_gold_session_manager = gold_utils.SkiaGoldSessionManager(
         self._skia_gold_work_dir, self._test_instance.skia_gold_properties)
     if self._test_instance.wait_for_java_debugger:
-      apk = self._test_instance.apk_under_test or self._test_instance.test_apk
       logging.warning('*' * 80)
       logging.warning('Waiting for debugger to attach to process: %s',
-                      apk.GetPackageName())
+                      target_package)
       logging.warning('*' * 80)
 
   #override
@@ -625,7 +624,7 @@ class LocalDeviceInstrumentationTestRun(
         result_code, result_bundle, statuses = (
             self._test_instance.ParseAmInstrumentRawOutput(output))
         results = self._test_instance.GenerateTestResults(
-            result_code, result_bundle, statuses, start_ms, duration_ms,
+            result_code, result_bundle, statuses, duration_ms,
             device.product_cpu_abi, self._test_instance.symbolizer)
 
       if self._env.trace_output:

@@ -471,15 +471,19 @@ static void WaitForInputProcessedFromMain(
   auto redraw_complete_callback = base::BindOnce(
       &WidgetInputHandlerManager::InputWasProcessed, manager->AsWeakPtr());
 
-  // We consider all observable effects of an input gesture to be processed
+  // Since wheel-events can kick off animations, we can not consider
+  // all observable effects of an input gesture to be processed
   // when the CompositorFrame caused by that input has been produced, send, and
-  // displayed. RequestPresentation will force a a commit and redraw and
-  // callback when the CompositorFrame has been displayed in the display
-  // service. Some examples of non-trivial effects that require waiting that
-  // long: committing NonFastScrollRegions to the compositor, sending
-  // touch-action rects to the browser, and sending updated surface information
-  // to the display compositor for up-to-date OOPIF hit-testing.
-  render_widget->RequestPresentation(std::move(redraw_complete_callback));
+  // displayed. Therefore, explicitly request the presentation *after* any
+  // ongoing scroll-animation ends. After the scroll-animation ends (if any),
+  // the call will force a commit and redraw and callback when the
+  // CompositorFrame has been displayed in the display service. Some examples of
+  // non-trivial effects that require waiting that long: committing
+  // NonFastScrollRegions to the compositor, sending touch-action rects to the
+  // browser, and sending updated surface information to the display compositor
+  // for up-to-date OOPIF hit-testing.
+  render_widget->RequestPresentationAfterScrollAnimationEnd(
+      std::move(redraw_complete_callback));
 }
 
 void WidgetInputHandlerManager::WaitForInputProcessed(
@@ -490,9 +494,9 @@ void WidgetInputHandlerManager::WaitForInputProcessed(
   input_processed_callback_ = std::move(callback);
 
   // We mustn't touch render_widget_ from the impl thread so post all the setup
-  // to the main thread.
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
+  // to the main thread. Make sure the callback runs after all the queued events
+  // are dispatched.
+  input_event_queue_->QueueClosure(
       base::BindOnce(&WaitForInputProcessedFromMain, render_widget_));
 }
 

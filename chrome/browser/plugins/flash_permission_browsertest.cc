@@ -7,7 +7,6 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permissions_browsertest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -48,8 +47,6 @@ class PageReloadWaiter {
 
 }  // namespace
 
-// crbug.com/1081782
-#if !defined(OS_WIN)
 class FlashPermissionBrowserTest : public PermissionsBrowserTest {
  public:
   FlashPermissionBrowserTest()
@@ -225,7 +222,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
   EXPECT_EQ(1, prompt_factory()->TotalRequestCount());
 }
 
-IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, DISABLED_AllowFileURL) {
+IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, AllowFileURL) {
   base::FilePath test_path;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_path);
   ui_test_utils::NavigateToURL(
@@ -240,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, DISABLED_AllowFileURL) {
   EXPECT_TRUE(FeatureUsageSucceeds());
 }
 
-IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, DISABLED_BlockFileURL) {
+IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, BlockFileURL) {
   base::FilePath test_path;
   base::PathService::Get(chrome::DIR_TEST_DATA, &test_path);
   ui_test_utils::NavigateToURL(
@@ -254,5 +251,3 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, DISABLED_BlockFileURL) {
       GURL("file://" + test_path.AsUTF8Unsafe() + "/permissions/flash2.html"));
   EXPECT_FALSE(FeatureUsageSucceeds());
 }
-
-#endif  // !defined(OS_WIN)

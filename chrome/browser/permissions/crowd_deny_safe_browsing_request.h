@@ -37,10 +37,10 @@ class CrowdDenySafeBrowsingRequest {
   // be renumbered and numeric values should not be reused.
   enum class Verdict {
     kAcceptable = 0,
-    kKnownToShowUnsolicitedNotificationPermissionRequests = 1,
+    kUnacceptable = 1,
 
     // Must be equal to the greatest among enumeraiton values.
-    kMaxValue = kKnownToShowUnsolicitedNotificationPermissionRequests,
+    kMaxValue = kUnacceptable,
   };
 
   using VerdictCallback = base::OnceCallback<void(Verdict)>;

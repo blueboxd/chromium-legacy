@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Kortpaaie word deur jou saamgestel</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> vingerafdrukke is opgestel</translation>
 <translation id="1213254615020057352">Stuur gebruik- en diagnostiese data. Help om jou kind se Android-ervaring beter te maak deur diagnostiese, toestel- en programgebruikdata outomaties na Google toe te stuur. Dit sal nie gebruik word om jou kind te identifiseer nie en sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. Hierdie instelling word deur die eienaar toegepas. Die eienaar kan kies om diagnostiese en gebruikdata van hierdie toestel na Google toe te stuur. As die bykomende Web- en Programaktiwiteit-instelling vir jou kind aangeskakel is, kan hierdie data in hul Google-rekening gestoor word.</translation>
+<translation id="121384500095351701">Hierdie lêer kan nie veilig afgelaai word nie</translation>
 <translation id="1215411991991485844">Nuwe agtergrondprogram bygevoeg</translation>
 <translation id="1216542092748365687">Verwyder vingerafdruk</translation>
 <translation id="1217483152325416304">Jou plaaslike data sal binnekort uitgevee word</translation>
@@ -1064,6 +1065,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2336228925368920074">Boekmerk alle oortjies …</translation>
 <translation id="2336376423977300504">Vee altyd webkoekies uit wanneer vensters toegemaak word</translation>
 <translation id="2336381494582898602">Kragwas</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> kan nie veilig afgelaai word nie</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> wil saambind</translation>
 <translation id="2342740338116612727">Boekmerke is bygevoeg</translation>
 <translation id="2343747224442182863">Fokus hierdie oortjie</translation>
@@ -1412,7 +1414,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2757338480560142065">Maak seker dat die wagwoord wat jy stoor, ooreenstem met jou wagwoord vir <ph name="WEBSITE" /></translation>
 <translation id="276221322463921688">Monitor-oriëntasie</translation>
 <translation id="2762441749940182211">Kamera word geblokkeer</translation>
-<translation id="2764786626780673772">VPN-details</translation>
+<translation id="2764786626780673772">VPN-besonderhede</translation>
 <translation id="2765217105034171413">Klein</translation>
 <translation id="2766161002040448006">Vra 'n ouer</translation>
 <translation id="2767127727915954024"><ph name="ORIGIN" /> sal <ph name="FILENAME" /> kan wysig totdat jy alle oortjies vir hierdie werf toemaak</translation>
@@ -3254,6 +3256,7 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="5154702632169343078">Onderwerp</translation>
 <translation id="5157635116769074044">Speld hierdie bladsy aan die beginskerm vas …</translation>
 <translation id="5158983316805876233">Gebruik dieselfde instaanbediener vir alle protokolle</translation>
+<translation id="5159419673777902220">Jou ouer het uitbreidingtoestemmings gedeaktiveer</translation>
 <translation id="5160857336552977725">Meld by jou <ph name="DEVICE_TYPE" /> aan</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> is geblokkeer omdat dit verouderd is</translation>
 <translation id="5170568018924773124">Wys in vouer</translation>
@@ -5396,6 +5399,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7925247922861151263">AAA-kontrolering het misluk</translation>
 <translation id="7925285046818567682">Wag tans vir <ph name="HOST_NAME" /> …</translation>
 <translation id="7926423016278357561">Dit was nie ek nie.</translation>
+<translation id="7926975587469166629">Kaart se bynaam</translation>
 <translation id="7928175190925744466">Het jy hierdie wagwoord reeds verander?</translation>
 <translation id="7928836894214140642">Bestuur deur <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Gestoorde betaalmetodes sal hier verskyn</translation>

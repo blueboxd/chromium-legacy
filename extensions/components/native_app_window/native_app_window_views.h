@@ -116,8 +116,6 @@ class NativeAppWindowViews : public extensions::NativeAppWindow,
                              content::RenderViewHost* new_host) override;
 
   // views::View:
-  void ViewHierarchyChanged(
-      const views::ViewHierarchyChangedDetails& details) override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

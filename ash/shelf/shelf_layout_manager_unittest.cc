@@ -1669,9 +1669,7 @@ TEST_P(ShelfLayoutManagerTest, ShelfAnimatesToVisibleWhenGestureInComplete) {
 
 // Tests that the shelf animates to the auto hidden bounds after a swipe down
 // on the visible shelf.
-// TODO(https://crbug.com/1000463): Flaky.
-TEST_P(ShelfLayoutManagerTest,
-       DISABLED_ShelfAnimatesToHiddenWhenGestureOutComplete) {
+TEST_P(ShelfLayoutManagerTest, ShelfAnimatesToHiddenWhenGestureOutComplete) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -1691,10 +1689,8 @@ TEST_P(ShelfLayoutManagerTest,
     ui::test::EventGenerator* generator = GetEventGenerator();
 
     // Show the shelf first.
-    display::Display display =
-        display::Screen::GetScreen()->GetPrimaryDisplay();
     WidgetAnimationWaiter waiter1(GetShelfWidget(), visible_bounds);
-    generator->MoveMouseTo(display.bounds().bottom_center());
+    SwipeUpOnShelf();
     waiter1.WaitForAnimation();
     EXPECT_TRUE(waiter1.WasValidAnimation());
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());

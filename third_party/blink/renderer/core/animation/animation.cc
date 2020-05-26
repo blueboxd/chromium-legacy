@@ -1005,14 +1005,6 @@ void Animation::ResetPendingTasks() {
 
 // https://drafts.csswg.org/web-animations/#pausing-an-animation-section
 void Animation::pause(ExceptionState& exception_state) {
-  // TODO(crbug.com/916117): Implement pause for scroll-linked animations.
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Scroll-linked WebAnimation currently does not support pause.");
-    return;
-  }
-
   // 1. If animation has a pending pause task, abort these steps.
   // 2. If the play state of animation is paused, abort these steps.
   if (pending_pause_ || CalculateAnimationPlayState() == kPaused)
@@ -1195,6 +1187,12 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
     else
       hold_time_ = 0;
   }
+  // TODO(crbug.com/1081267): Update based on upcoming spec change.
+  // https://github.com/w3c/csswg-drafts/pull/5059
+  if (performed_seek && has_finite_timeline) {
+    hold_time_ = base::nullopt;
+    ApplyPendingPlaybackRate();
+  }
 
   // 6. If animation has a pending play task or a pending pause task,
   //   6.1 Cancel that task.
@@ -1242,14 +1240,6 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
 
 // https://drafts.csswg.org/web-animations/#reversing-an-animation-section
 void Animation::reverse(ExceptionState& exception_state) {
-  // TODO(crbug.com/916117): Implement reverse for scroll-linked animations.
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Scroll-linked WebAnimation currently does not support reverse.");
-    return;
-  }
-
   // 1. If there is no timeline associated with animation, or the associated
   //    timeline is inactive throw an "InvalidStateError" DOMException and abort
   //    these steps.
@@ -1446,16 +1436,6 @@ void Animation::CommitFinishNotification() {
 // https://drafts.csswg.org/web-animations/#setting-the-playback-rate-of-an-animation
 void Animation::updatePlaybackRate(double playback_rate,
                                    ExceptionState& exception_state) {
-  // TODO(crbug.com/916117): Implement updatePlaybackRate for scroll-linked
-  // animations.
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Scroll-linked WebAnimation currently does not support"
-        " updatePlaybackRate.");
-    return;
-  }
-
   // 1. Let previous play state be animation’s play state.
   // 2. Let animation’s pending playback rate be new playback rate.
   AnimationPlayState play_state = CalculateAnimationPlayState();

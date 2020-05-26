@@ -582,7 +582,6 @@ void ArcAuthService::HandleAddAccountRequest() {
   DCHECK(chromeos::IsAccountManagerAvailable(profile_));
 
   chromeos::InlineLoginHandlerDialogChromeOS::Show(
-      std::string() /*email*/,
       chromeos::InlineLoginHandlerDialogChromeOS::Source::kArc);
 }
 

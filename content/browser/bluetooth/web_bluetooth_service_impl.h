@@ -225,6 +225,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RemoteCharacteristicWriteValue(
       const std::string& characteristic_instance_id,
       const std::vector<uint8_t>& value,
+      blink::mojom::WebBluetoothWriteType write_type,
       RemoteCharacteristicWriteValueCallback callback) override;
   void RemoteCharacteristicStartNotifications(
       const std::string& characteristic_instance_id,

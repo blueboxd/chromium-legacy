@@ -68,11 +68,15 @@ class FakeRemoteGattCharacteristic
   // any of its descriptors.
   bool AllResponsesConsumed();
 
-  // Returns the last sucessfully written value to the characteristic. Returns
+  // Returns the last successfully written value to the characteristic. Returns
   // nullopt if no value has been written yet.
   const base::Optional<std::vector<uint8_t>>& last_written_value() {
     return last_written_value_;
   }
+
+  // Returns the write type of the last successfully written value to the
+  // characteristic. Returns kNone if no value has been written yet.
+  mojom::WriteType last_write_type() { return last_write_type_; }
 
   // device::BluetoothGattCharacteristic overrides:
   std::string GetIdentifier() const override;
@@ -124,7 +128,8 @@ class FakeRemoteGattCharacteristic
                             ErrorCallback error_callback);
   void DispatchWriteResponse(base::OnceClosure callback,
                              ErrorCallback error_callback,
-                             const std::vector<uint8_t>& value);
+                             const std::vector<uint8_t>& value,
+                             mojom::WriteType write_type);
   void DispatchSubscribeToNotificationsResponse(base::OnceClosure callback,
                                                 ErrorCallback error_callback);
   void DispatchUnsubscribeFromNotificationsResponse(
@@ -139,6 +144,9 @@ class FakeRemoteGattCharacteristic
 
   // Last successfully written value to the characteristic.
   base::Optional<std::vector<uint8_t>> last_written_value_;
+
+  // Write type of last successfully written value to the characteristic.
+  mojom::WriteType last_write_type_ = mojom::WriteType::kNone;
 
   // Used to decide which callback should be called when
   // ReadRemoteCharacteristic is called.

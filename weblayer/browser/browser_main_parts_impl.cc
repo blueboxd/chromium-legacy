@@ -45,6 +45,7 @@
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "weblayer/browser/android/metrics/uma_utils.h"
+#include "weblayer/browser/java/jni/MojoInterfaceRegistrar_jni.h"
 #endif
 
 #if defined(USE_X11)
@@ -191,6 +192,9 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
                 base::android::AttachCurrentThread(), controller,
                 controller->web_contents()->GetTopLevelNativeWindow());
           }));
+
+  Java_MojoInterfaceRegistrar_registerMojoInterfaces(
+      base::android::AttachCurrentThread());
 #endif
 }
 

@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">तुम्ही निवडलेले शॉर्टकट</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> फिंगरप्रिंट सेट केले</translation>
 <translation id="1213254615020057352">वापर आणि निदान डेटा पाठवा. Google ला निदान आणि डिव्हाइस आणि अ‍ॅप वापर डेटा आपोआप पाठवून तुमच्या मुलाच्या Android अनुभवात सुधारणा करण्यात मदत करा. हे तुमच्या मुलाला ओळखण्यासाठी वापरले जाणार नाही आणि सिस्टम व अ‍ॅप स्थिरता तसेच इतर सुधारणांमध्ये मदत करेल. काही एकत्रित केलेला डेटा Google अ‍ॅप्स आणि Android डेव्हलपर यांसारख्या भागीदारांनादेखील मदत करेल. हे सेटिंग मालकाद्वारे लागू केले जाते. या डिव्हाइससाठी Google ला निदान आणि वापर डेटा पाठवणे मालकाला निवडता येते. तुमच्या मुलासाठी अतिरिक्त वेब आणि अ‍ॅप अ‍ॅक्टिव्हिटी सेटिंग सुरू केलेले असल्यास, हा डेटा त्यांच्या Google खात्यामध्ये स्टोअर केला जाऊ शकतो.</translation>
+<translation id="121384500095351701">ही फाइल सुरक्षितपणे डाउनलोड केली जाऊ शकत नाही</translation>
 <translation id="1215411991991485844">नवीन पार्श्वभूमी ॲप्लिकेशन जोडला</translation>
 <translation id="1216542092748365687">फिंगरप्रिंट काढा</translation>
 <translation id="1217483152325416304">तुमचा स्थानिक डेटा लवकरच हटवला जाईल</translation>
@@ -1063,6 +1064,7 @@
 <translation id="2336228925368920074">सर्व टॅब बुकमार्क करा...</translation>
 <translation id="2336376423977300504">विंडो बंद असताना नेहमी कुकी साफ करा</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> सुरक्षितपणे डाउनलोड केली जाऊ शकत नाही</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> जोडू इच्छिते</translation>
 <translation id="2342740338116612727">बुकमार्क जोडले</translation>
 <translation id="2343747224442182863">या टॅबवर फोकस करा</translation>
@@ -3251,6 +3253,7 @@
 <translation id="5154702632169343078">विषय</translation>
 <translation id="5157635116769074044">हे पृष्ठ प्रारंभ स्क्रीनवर पिन करा...</translation>
 <translation id="5158983316805876233">सर्व प्रोटोकॉलसाठी एकच प्रॉक्सी वापरा</translation>
+<translation id="5159419673777902220">तुमच्या पालकाने एक्स्टेंशन परवानग्या बंद केल्या आहेत</translation>
 <translation id="5160857336552977725">आपल्या <ph name="DEVICE_TYPE" /> वर साइन इन करा</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> ब्लॉक करण्यात आले कारण ते कालबाह्य झाले आहे</translation>
 <translation id="5170568018924773124">फोल्डरमध्ये दर्शवा</translation>
@@ -5391,6 +5394,7 @@ https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featu
 <translation id="7925247922861151263">AAA तपास अयशस्वी</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> साठी प्रतीक्षा करीत आहे...</translation>
 <translation id="7926423016278357561">ही व्यक्ती मी नाही.</translation>
+<translation id="7926975587469166629">कार्डावरील टोपणनाव</translation>
 <translation id="7928175190925744466">हा पासवर्ड आधीच बदलला आहे का?</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> द्वारे व्यवस्थापित केले आहे</translation>
 <translation id="7930294771522048157">सेव्ह केलेल्या पेमेंट पद्धती येथे दिसतील</translation>

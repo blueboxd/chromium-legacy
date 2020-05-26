@@ -57,8 +57,10 @@ Lohit-Devanagari.ttf       https://pagure.io/lohit
 Lohit-Gurmukhi.ttf         https://pagure.io/lohit
 Lohit-Tamil.ttf            https://pagure.io/lohit
 MuktiNarrow.ttf            http://www.nongnu.org/freebangfont/downloads.html#mukti
+NotoColorEmoji.ttf         https://github.com/googlefonts/noto-emoji
 NotoSansCJKjp-Regular.otf  https://www.google.com/get/noto/#sans-jpan
 NotoSansKhmer-Regular.ttf  https://www.google.com/get/noto/#sans-khmr
+NotoSansSymbols2-Regular.ttf  https://github.com/googlefonts/noto-fonts/tree/master/hinted/NotoSansSymbols2
 Tinos-Bold.ttf             https://github.com/google/fonts/tree/master/apache/tinos
 Tinos-BoldItalic.ttf       https://github.com/google/fonts/tree/master/apache/tinos
 Tinos-Italic.ttf           https://github.com/google/fonts/tree/master/apache/tinos

@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">A megjelenő parancsikonokat Ön választhatja ki</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> ujjlenyomat van beállítva</translation>
 <translation id="1213254615020057352">Használati és diagnosztikai adatok küldése. Segítsen gyermeke Android-élményének továbbfejlesztésében azzal, hogy automatikusan diagnosztikai, valamint eszköz- és alkalmazáshasználati adatokat küld a Google-nak. Az adatok a rendszer- és alkalmazásstabilitás javításában, valamint más fejlesztésekben segítenek, nem használjuk fel őket az Ön gyermekének azonosítására. Bizonyos összesített adatok a Google-alkalmazásoknak és -partnereknek, például az Android-fejlesztőknek is segítenek. Ezt a beállítást kötelezővé tette az eszköz tulajdonosa. A tulajdonos dönthet úgy, hogy elküldi az eszközzel kapcsolatos diagnosztikai és használati adatokat a Google-nak. Ha az Internetes és alkalmazástevékenységek beállítás is be van kapcsolva a gyermekénél, akkor a rendszer ezeket az adatokat mentheti a gyermek Google-fiókjába.</translation>
+<translation id="121384500095351701">Ezt a fájlt nem lehet biztonságosan letölteni</translation>
 <translation id="1215411991991485844">Új háttéralkalmazás hozzáadva</translation>
 <translation id="1216542092748365687">Ujjlenyomat eltávolítása</translation>
 <translation id="1217483152325416304">Helyi adatai hamarosan törlődnek</translation>
@@ -1064,6 +1065,7 @@ Ha kezelni szeretné a fiók beállításait, telepítse eszközére a Family Li
 <translation id="2336228925368920074">Összes lap hozzáadása a könyvjelzőkhöz...</translation>
 <translation id="2336376423977300504">A cookie-k mindig törlődjenek az ablakok bezárásakor</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">A következő fájlt nem lehet biztonságosan letölteni: <ph name="FILE_NAME" /></translation>
 <translation id="2340263603246777781">A(z) <ph name="ORIGIN" /> párosítást szeretne végrehajtani</translation>
 <translation id="2342740338116612727">Könyvjelzők hozzáadva</translation>
 <translation id="2343747224442182863">Fókusz erre a lapra</translation>
@@ -3253,6 +3255,7 @@ Elindítja a következőt: <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation
 <translation id="5154702632169343078">Tárgy</translation>
 <translation id="5157635116769074044">Az oldal rögzítése a kezdőképernyőn...</translation>
 <translation id="5158983316805876233">Azonos proxy használata minden protokollhoz</translation>
+<translation id="5159419673777902220">Szülőd letiltotta a bővítményhez tartozó engedélyeket</translation>
 <translation id="5160857336552977725">Jelentkezzen be <ph name="DEVICE_TYPE" /> eszközén</translation>
 <translation id="5166596762332123936">Letiltottuk a(z) <ph name="PLUGIN_NAME" /> beépülő modult, mivel már lejárt</translation>
 <translation id="5170568018924773124">Megjelenítés mappában</translation>
@@ -5396,6 +5399,7 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7925247922861151263">AAA-ellenőrzés sikertelen</translation>
 <translation id="7925285046818567682">Várakozás a szerverre: <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Nem én voltam.</translation>
+<translation id="7926975587469166629">Kártya beceneve</translation>
 <translation id="7928175190925744466">Módosította már ezt a jelszót?</translation>
 <translation id="7928836894214140642">Kezelő: <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Az elmentett fizetési módok itt jelennek meg</translation>

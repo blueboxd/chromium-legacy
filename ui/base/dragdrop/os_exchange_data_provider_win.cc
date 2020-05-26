@@ -542,9 +542,9 @@ bool OSExchangeDataProviderWin::GetURLAndTitle(FilenameToURLPolicy policy,
                                                GURL* url,
                                                base::string16* title) const {
   base::string16 url_str;
-  bool success =
-      ClipboardUtil::GetUrl(source_object_.Get(), url, title,
-                            policy == CONVERT_FILENAMES ? true : false);
+  bool success = ClipboardUtil::GetUrl(
+      source_object_.Get(), url, title,
+      policy == FilenameToURLPolicy::CONVERT_FILENAMES ? true : false);
   if (success) {
     DCHECK(url->is_valid());
     return true;
@@ -658,7 +658,9 @@ bool OSExchangeDataProviderWin::HasString() const {
 
 bool OSExchangeDataProviderWin::HasURL(FilenameToURLPolicy policy) const {
   return (ClipboardUtil::HasUrl(source_object_.Get(),
-                                policy == CONVERT_FILENAMES ? true : false) ||
+                                policy == FilenameToURLPolicy::CONVERT_FILENAMES
+                                    ? true
+                                    : false) ||
           HasPlainTextURL(source_object_.Get()));
 }
 

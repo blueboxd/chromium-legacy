@@ -98,7 +98,8 @@ bool OSExchangeDataProviderNonBacked::GetURLAndTitle(
   if ((formats_ & OSExchangeData::URL) == 0) {
     title->clear();
     return GetPlainTextURL(url) ||
-           (policy == CONVERT_FILENAMES && GetFileURL(url));
+           (policy == FilenameToURLPolicy::CONVERT_FILENAMES &&
+            GetFileURL(url));
   }
 
   if (!url_.is_valid())
@@ -146,7 +147,8 @@ bool OSExchangeDataProviderNonBacked::HasURL(FilenameToURLPolicy policy) const {
   }
   // No URL, see if we have plain text that can be parsed as a URL.
   return GetPlainTextURL(nullptr) ||
-         (policy == CONVERT_FILENAMES && GetFileURL(nullptr));
+         (policy == FilenameToURLPolicy::CONVERT_FILENAMES &&
+          GetFileURL(nullptr));
 }
 
 bool OSExchangeDataProviderNonBacked::HasFile() const {

@@ -20,6 +20,9 @@ bluetooth_test(() => getMeasurementIntervalCharacteristic()
     .then(() => assert_array_equals(
         new Uint8Array(characteristic.value.buffer), newValue))
     .then(() => fake_characteristic.getLastWrittenValue())
-    .then(lastValue => assert_array_equals(lastValue, newValue)),
+    .then(({lastValue, lastWriteType}) => {
+      assert_array_equals(lastValue, newValue);
+      assert_equals(lastWriteType, 'default-deprecated');
+    }),
     test_desc);
 </script>

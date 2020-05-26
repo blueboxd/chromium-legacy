@@ -451,6 +451,7 @@ bool TestFragmentRootDelegate::IsAXFragmentRootAControlElement() {
 TEST_F(AXPlatformNodeWinTest, IAccessibleDetachedObject) {
   AXNodeData root;
   root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.SetName("Name");
   Init(root);
 
@@ -472,12 +473,14 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleHitTest) {
 
   AXNodeData node1;
   node1.id = 2;
+  node1.role = ax::mojom::Role::kGenericContainer;
   node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
   node1.SetName("Name1");
   root.child_ids.push_back(node1.id);
 
   AXNodeData node2;
   node2.id = 3;
+  node2.role = ax::mojom::Role::kGenericContainer;
   node2.relative_bounds.bounds = gfx::RectF(20, 20, 20, 20);
   node2.SetName("Name2");
   root.child_ids.push_back(node2.id);
@@ -512,6 +515,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleHitTestDoesNotLoopForever) {
 
   AXNodeData node1;
   node1.id = 2;
+  node1.role = ax::mojom::Role::kGenericContainer;
   node1.relative_bounds.bounds = gfx::RectF(0, 0, 10, 10);
   node1.SetName("Name1");
   root.child_ids.push_back(node1.id);
@@ -535,6 +539,7 @@ TEST_F(AXPlatformNodeWinTest, IAccessibleHitTestDoesNotLoopForever) {
 TEST_F(AXPlatformNodeWinTest, IAccessibleName) {
   AXNodeData root;
   root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
   root.SetName("Name");
   Init(root);
 
@@ -3808,6 +3813,7 @@ TEST_F(AXPlatformNodeWinTest, IA2GetAttribute) {
 
 TEST_F(AXPlatformNodeWinTest, UIAGetPropertySimple) {
   AXNodeData root;
+  root.role = ax::mojom::Role::kList;
   root.SetName("fake name");
   root.AddStringAttribute(ax::mojom::StringAttribute::kAccessKey, "Ctrl+Q");
   root.AddStringAttribute(ax::mojom::StringAttribute::kLanguage, "en-us");
@@ -3817,7 +3823,6 @@ TEST_F(AXPlatformNodeWinTest, UIAGetPropertySimple) {
   root.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 2);
   root.AddIntAttribute(ax::mojom::IntAttribute::kInvalidState, 1);
   root.id = 1;
-  root.role = ax::mojom::Role::kList;
 
   AXNodeData child1;
   child1.id = 2;

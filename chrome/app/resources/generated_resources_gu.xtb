@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">શૉર્ટકટ તમારા દ્વારા પસંદ કરવામાં આવે છે</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> ફિંગરપ્રિન્ટ સેટ અપ</translation>
 <translation id="1213254615020057352">વપરાશ અને નિદાનનો ડેટા મોકલો. Googleને નિદાન, ડિવાઇસ અને ઍપ વપરાશનો ડેટા ઑટોમૅટિક રીતે મોકલીને તમારા બાળકના Android અનુભવને બહેતર બનાવવામાં સહાય કરો. આનો ઉપયોગ તમારા બાળકને ઓળખવા માટે થશે નહીં અને સિસ્ટમ અને ઍપની સ્થિરતા અને અન્ય સુધારણાઓમાં સહાય કરશે. એકત્ર કરેલો કેટલોક ડેટા Google ઍપ અને ભાગીદારો, જેમ કે Android ડેવલપરને પણ સહાય કરશે. આ સેટિંગ માલિક દ્વારા લાગુ કરવામાં આવ્યું છે. માલિક Googleને આ ડિવાઇસ માટે નિદાન અને વપરાશનો ડેટા મોકલવાનું પસંદ કરી શકે છે. જો તમારા બાળક માટે વધારાનું વેબ અને ઍપ પ્રવૃત્તિ સેટિંગ ચાલુ હોય, તો આ ડેટા તેમના Google એકાઉન્ટમાં સાચવવામાં આવી શકે છે.</translation>
+<translation id="121384500095351701">આ ફાઇલ સુરક્ષિતપણે ડાઉનલોડ કરી શકાતી નથી</translation>
 <translation id="1215411991991485844">નવી પૃષ્ઠભૂમિ ઍપ્લિકેશન ઉમેરી છે</translation>
 <translation id="1216542092748365687">ફિંગરપ્રિન્ટ કાઢી નાખો</translation>
 <translation id="1217483152325416304">તમારો સ્થાનિક ડેટા ટૂંક સમયમાં ડિલીટ કરવામાં આવશે</translation>
@@ -1060,6 +1061,7 @@
 <translation id="2336228925368920074">બધા ટૅબ્સ બુકમાર્ક  કરો...</translation>
 <translation id="2336376423977300504">જ્યારે પણ વિંડો બંધ હોય ત્યારે કુકી સાફ કરો</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> સુરક્ષિતપણે ડાઉનલોડ કરી શકાતી નથી</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" />, જોડી કરવા માગે છે</translation>
 <translation id="2342740338116612727">બુકમાર્ક ઉમેર્યા</translation>
 <translation id="2343747224442182863">આ ટૅબ પર ફોકસ કરો</translation>
@@ -3250,6 +3252,7 @@
 <translation id="5154702632169343078">વિષય</translation>
 <translation id="5157635116769074044">પ્રારંભ સ્ક્રીન પર આ પૃષ્ઠ પિન કરો...</translation>
 <translation id="5158983316805876233">બધા પ્રોટોકૉલ માટે એક સરખી પ્રૉક્સીનો ઉપયોગ કરો</translation>
+<translation id="5159419673777902220">તમારા માતાપિતાએ એક્સ્ટેન્શનની પરવાનગીઓ બંધ કરી દીધી છે</translation>
 <translation id="5160857336552977725">તમારા <ph name="DEVICE_TYPE" /> પર સાઇન ઇન કરો</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> બ્લૉક કર્યું હતું કારણ કે તે જૂનું છે</translation>
 <translation id="5170568018924773124">ફોલ્ડરમાં બતાવો</translation>
@@ -5392,6 +5395,7 @@ USB ડિવાઇસ</translation>
 <translation id="7925247922861151263">AAA તપાસ નિષ્ફળ</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> ની પ્રતીક્ષા કરે છે...</translation>
 <translation id="7926423016278357561">આ હું ન હતો/હતી.</translation>
+<translation id="7926975587469166629">કાર્ડનું ઉપનામ</translation>
 <translation id="7928175190925744466">આ પાસવર્ડ પહેલેથી બદલી નાખ્યો છે?</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> દ્વારા સંચાલિત</translation>
 <translation id="7930294771522048157">સાચવેલ ચુકવણી પદ્ધતિઓ અહીં દેખાશે</translation>

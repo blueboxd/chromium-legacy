@@ -869,34 +869,8 @@ WKBasedNavigationManagerImpl::GetLastCommittedItemInCurrentOrRestoredSession()
     DCHECK_EQ(0, GetItemCount());
     return nullptr;
   }
-  bool existing_last_committed_item =
-      web_view_cache_.GetNavigationItemImplAtIndex(
-          index, false /* create_if_missing */) != nullptr;
   NavigationItemImpl* last_committed_item =
       GetNavigationItemImplAtIndex(static_cast<size_t>(index));
-  id<CRWWebViewNavigationProxy> proxy = delegate_->GetWebViewNavigationProxy();
-  if (!existing_last_committed_item &&
-      ![proxy.URL isEqual:proxy.backForwardList.currentItem.URL]) {
-    // In some cases (especially google websites),
-    // webViewBackForwardStateDidChange callback is called first, leading to
-    // creating a NavigationItem to match the WKBackForwardList and considering
-    // that it is committed. In that case, the URL of the WebView isn't matching
-    // the one of the |wk_item|. It is possible to use this fact to detect this
-    // case and have this new item inheriting the UserAgent of the previous
-    // page. See https://crbug.com/1049094 for more details.
-    NavigationItemImpl* current_committed_item = nullptr;
-    if ([proxy.backForwardList.backItem.URL isEqual:proxy.URL]) {
-      current_committed_item =
-          GetNavigationItemFromWKItem(proxy.backForwardList.backItem);
-    } else if ([proxy.backForwardList.forwardItem.URL isEqual:proxy.URL]) {
-      current_committed_item =
-          GetNavigationItemFromWKItem(proxy.backForwardList.forwardItem);
-    }
-    if (current_committed_item) {
-      last_committed_item->SetUserAgentType(
-          current_committed_item->GetUserAgentForInheritance());
-    }
-  }
   if (last_committed_item && GetWebState() &&
       !CanTrustLastCommittedItem(last_committed_item)) {
     // Don't check trust level here, as at this point it's expected

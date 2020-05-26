@@ -20,16 +20,53 @@ namespace content_settings {
 
 namespace {
 
-// Implements the small subset of possible cookie controls management state
-// needed to support testing of the SettingsPrivate API. Only device policy
-// applied to the content setting is considered. Other sources of management
-// and the management of third party cookie blocking preferences are ignored.
-// This code is currently not reachable by production code.
-// TODO(crbug.com/1063265): Move complete management logic and exhaustive
-//    test cases from site_settings_helper.cc into this file and associated
-//    unit tests and remove this function.
-void ApplyCookieControlsManagedState(settings_api::PrefObject* pref_object,
-                                     Profile* profile) {
+settings_api::ControlledBy GetControlledByForContentSettingSource(
+    SettingSource source) {
+  switch (source) {
+    case SETTING_SOURCE_POLICY:
+      return settings_api::ControlledBy::CONTROLLED_BY_DEVICE_POLICY;
+    case SETTING_SOURCE_EXTENSION:
+      return settings_api::ControlledBy::CONTROLLED_BY_EXTENSION;
+    case SETTING_SOURCE_SUPERVISED:
+      return settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
+    default:
+      NOTREACHED();
+      return settings_api::ControlledBy::CONTROLLED_BY_DEVICE_POLICY;
+  }
+}
+
+settings_api::ControlledBy GetControlledByForPreference(
+    const PrefService::Preference* pref) {
+  if (pref->IsManaged())
+    return settings_api::ControlledBy::CONTROLLED_BY_DEVICE_POLICY;
+
+  if (pref->IsExtensionControlled())
+    return settings_api::ControlledBy::CONTROLLED_BY_EXTENSION;
+
+  if (pref->IsManagedByCustodian())
+    return settings_api::ControlledBy::CONTROLLED_BY_CHILD_RESTRICTION;
+
+  NOTREACHED();
+  return settings_api::ControlledBy::CONTROLLED_BY_DEVICE_POLICY;
+}
+
+// Adds the provided |value| to the user selectable values of |pref_object|,
+// creating the base::Value vector if required.
+void AddUserSelectableValue(settings_api::PrefObject* pref_object,
+                            CookiePrimarySetting value) {
+  if (!pref_object->user_selectable_values) {
+    pref_object->user_selectable_values =
+        std::make_unique<std::vector<std::unique_ptr<base::Value>>>();
+  }
+  pref_object->user_selectable_values->push_back(
+      std::make_unique<base::Value>(static_cast<int>(value)));
+}
+
+// Applies the effective primary cookie setting management state from |profile|
+// to |pref_object|.
+void ApplyPrimaryCookieSettingManagedState(
+    settings_api::PrefObject* pref_object,
+    Profile* profile) {
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   std::string content_setting_provider;
@@ -38,30 +75,102 @@ void ApplyCookieControlsManagedState(settings_api::PrefObject* pref_object,
   auto content_setting_source =
       HostContentSettingsMap::GetSettingSourceFromProviderName(
           content_setting_provider);
+  bool content_setting_enforced =
+      content_setting_source !=
+      content_settings::SettingSource::SETTING_SOURCE_USER;
 
-  if (content_setting_source == SettingSource::SETTING_SOURCE_POLICY) {
-    pref_object->controlled_by =
-        settings_api::ControlledBy::CONTROLLED_BY_DEVICE_POLICY;
-    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
-  } else {
-    // Other sources of management are currently ignored (see function comment).
+  // Both the content setting and the block_third_party preference can
+  // be controlled via policy.
+  const PrefService::Preference* block_third_party_pref =
+      profile->GetPrefs()->FindPreference(prefs::kBlockThirdPartyCookies);
+  bool block_third_party_on = block_third_party_pref->GetValue()->GetBool();
+  bool block_third_party_enforced = !block_third_party_pref->IsUserModifiable();
+  // IsRecommended() cannot be used as we care if a recommended value exists at
+  // all, even if a user has overwritten it.
+  bool block_third_party_recommended =
+      (block_third_party_pref && block_third_party_pref->GetRecommendedValue());
+  bool block_third_party_recommended_on =
+      block_third_party_recommended &&
+      block_third_party_pref->GetRecommendedValue()->GetBool();
+
+  if (!content_setting_enforced && !block_third_party_enforced &&
+      !block_third_party_recommended) {
+    // No cookie controls are managed or recommended.
     return;
   }
 
-  // If the content setting is not set to block, the user is still able to
-  // select from available third party cookie blocking options.
-  if (content_setting != ContentSetting::CONTENT_SETTING_BLOCK) {
-    pref_object->user_selectable_values =
-        std::make_unique<std::vector<std::unique_ptr<base::Value>>>();
-    pref_object->user_selectable_values->push_back(
-        std::make_unique<base::Value>(
-            static_cast<int>(CookiePrimarySetting::ALLOW_ALL)));
-    pref_object->user_selectable_values->push_back(
-        std::make_unique<base::Value>(static_cast<int>(
-            CookiePrimarySetting::BLOCK_THIRD_PARTY_INCOGNITO)));
-    pref_object->user_selectable_values->push_back(
-        std::make_unique<base::Value>(
-            static_cast<int>(CookiePrimarySetting::BLOCK_THIRD_PARTY)));
+  if (content_setting_enforced && content_setting == CONTENT_SETTING_BLOCK) {
+    // Preference is fully managed by the content setting.
+    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->controlled_by =
+        GetControlledByForContentSettingSource(content_setting_source);
+    return;
+  }
+
+  if (content_setting_enforced && block_third_party_enforced) {
+    // Preference is considered fully managed by the third party preference.
+    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->controlled_by =
+        GetControlledByForPreference(block_third_party_pref);
+    return;
+  }
+
+  DCHECK(!content_setting_enforced ||
+         content_setting == CONTENT_SETTING_ALLOW ||
+         content_setting == CONTENT_SETTING_SESSION_ONLY);
+  DCHECK(!content_setting_enforced || !block_third_party_enforced);
+
+  // At this stage the content setting is not enforcing a BLOCK state. Given
+  // this, allow and block_third_party are still valid choices that do not
+  // contradict the content setting. They can thus be controlled or recommended
+  // by the block_third_party preference.
+  if (block_third_party_recommended) {
+    pref_object->recommended_value = std::make_unique<base::Value>(
+        static_cast<int>(block_third_party_recommended_on
+                             ? CookiePrimarySetting::BLOCK_THIRD_PARTY
+                             : CookiePrimarySetting::ALLOW_ALL));
+
+    // Based on state assessed so far the enforcement is only recommended. This
+    // may be changed to ENFORCED later in this function.
+    pref_object->enforcement =
+        settings_api::Enforcement::ENFORCEMENT_RECOMMENDED;
+    if (!content_setting_enforced)
+      return;
+  }
+
+  if (!content_setting_enforced) {
+    AddUserSelectableValue(pref_object, CookiePrimarySetting::BLOCK_ALL);
+  } else {
+    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
+    // This may overwritten later in the function by the third party preference,
+    // if it too is enforced.
+    pref_object->controlled_by =
+        GetControlledByForContentSettingSource(content_setting_source);
+  }
+
+  if (block_third_party_enforced) {
+    DCHECK(!content_setting_enforced);
+    pref_object->enforcement = settings_api::Enforcement::ENFORCEMENT_ENFORCED;
+    pref_object->controlled_by =
+        GetControlledByForPreference(block_third_party_pref);
+    if (block_third_party_on && !content_setting_enforced) {
+      AddUserSelectableValue(pref_object,
+                             CookiePrimarySetting::BLOCK_THIRD_PARTY);
+    } else {
+      AddUserSelectableValue(pref_object, CookiePrimarySetting::ALLOW_ALL);
+    }
+    return;
+  }
+
+  AddUserSelectableValue(pref_object, CookiePrimarySetting::ALLOW_ALL);
+  AddUserSelectableValue(pref_object, CookiePrimarySetting::BLOCK_THIRD_PARTY);
+  AddUserSelectableValue(pref_object,
+                         CookiePrimarySetting::BLOCK_THIRD_PARTY_INCOGNITO);
+  if (block_third_party_recommended) {
+    pref_object->recommended_value = std::make_unique<base::Value>(
+        static_cast<int>(block_third_party_recommended_on
+                             ? CookiePrimarySetting::BLOCK_THIRD_PARTY
+                             : CookiePrimarySetting::ALLOW_ALL));
   }
 }
 
@@ -220,8 +329,24 @@ GeneratedCookiePrimarySettingPref::GetPrefObject() const {
         static_cast<int>(CookiePrimarySetting::ALLOW_ALL));
   }
 
-  ApplyCookieControlsManagedState(pref_object.get(), profile_);
+  ApplyPrimaryCookieSettingManagedState(pref_object.get(), profile_);
 
+  // Ensure that if any user selectable values were added, at least two values
+  // were, so the user is able to select between them.
+  DCHECK(!pref_object->user_selectable_values ||
+         pref_object->user_selectable_values->size() >= 2);
+
+  if (pref_object->user_selectable_values) {
+    // Sort user selectable values to make interacting with them simpler in C++.
+    // This is not required by the SettingsPrivate API, but is expected in the
+    // unit_tests associated with this file.
+    std::sort(pref_object->user_selectable_values->begin(),
+              pref_object->user_selectable_values->end(),
+              [](const std::unique_ptr<base::Value>& a,
+                 std::unique_ptr<base::Value>& b) {
+                return a->GetInt() < b->GetInt();
+              });
+  }
   return pref_object;
 }
 

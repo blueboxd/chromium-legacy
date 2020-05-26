@@ -1043,6 +1043,7 @@ if (!is_android) {
       "../browser/policy/component_updater_policy_browsertest.cc",
       "../browser/policy/content_settings_policy_browsertest.cc",
       "../browser/policy/cors_policy_browsertest.cc",
+      "../browser/policy/hsts_policy_browsertest.cc",
       "../browser/policy/media_stream_policy_browsertest.cc",
       "../browser/policy/policy_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
@@ -2003,6 +2004,7 @@ if (!is_android) {
         "../browser/ui/views/status_bubble_views_browsertest_mac.mm",
         "../browser/ui/views/sync/inline_login_ui_browsertest.cc",
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
+        "../browser/ui/views/tab_search/tab_search_bubble_view_browsertest.cc",
         "../browser/ui/views/tab_sharing/tab_sharing_ui_views_browsertest.cc",
         "../browser/ui/views/tabs/tab_group_editor_bubble_view_browsertest.cc",
         "../browser/ui/views/tabs/tab_hover_card_bubble_view_browsertest.cc",
@@ -3265,6 +3267,7 @@ test("unit_tests") {
     "../browser/performance_monitor/system_monitor_unittest.cc",
     "../browser/permissions/chrome_permission_manager_unittest.cc",
     "../browser/permissions/chrome_permission_request_manager_unittest.cc",
+    "../browser/permissions/contextual_notification_permission_ui_selector_unittest.cc",
     "../browser/permissions/crowd_deny_preload_data_unittest.cc",
     "../browser/permissions/crowd_deny_safe_browsing_request_unittest.cc",
     "../browser/permissions/permission_context_base_feature_policy_unittest.cc",
@@ -3505,13 +3508,20 @@ test("unit_tests") {
     "../../base/path_service_unittest.cc",
     "../../testing/gtest_mac_unittest.mm",
 
-    # Chromium's zlib unit tests
+    # Chromium's zlib unit tests.
     "../../third_party/zlib/contrib/tests/infcover.cc",
     "../../third_party/zlib/contrib/tests/infcover.h",
     "../../third_party/zlib/contrib/tests/utils_unittest.cc",
     "../../third_party/zlib/google/compression_utils_unittest.cc",
     "../../third_party/zlib/google/zip_reader_unittest.cc",
     "../../third_party/zlib/google/zip_unittest.cc",
+  ]
+
+  # Required by Chromium's zlib unit tests.
+  include_dirs = [
+    "//third_party/googletest/src/googletest/include/gtest",
+    "//third_party/zlib",
+    "//third_party/zlib/google",
   ]
 
   if (enable_downgrade_processing) {

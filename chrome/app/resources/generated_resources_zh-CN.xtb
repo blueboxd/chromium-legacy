@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">快捷方式由您自己挑选</translation>
 <translation id="1213037489357051291">已设置 <ph name="NUM_FINGERPRINTS" /> 个指纹</translation>
 <translation id="1213254615020057352">发送使用情况数据和诊断数据。自动向 Google 发送诊断数据、设备数据和应用使用情况数据，帮助改善您孩子的 Android 使用体验。我们会使用这些数据提高系统和应用的稳定性，并改进其他方面，但不会利用数据辨识您孩子的身份。部分汇总数据还会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。此设备的所有者可以选择向 Google 发送此设备的诊断数据和使用情况数据。如果您已为孩子开启“其他网络与应用活动记录”设置，这些数据可能会被保存到其 Google 帐号中。</translation>
+<translation id="121384500095351701">无法安全地下载此文件</translation>
 <translation id="1215411991991485844">已添加新的后台应用</translation>
 <translation id="1216542092748365687">移除指纹</translation>
 <translation id="1217483152325416304">您的本地数据即将被删除</translation>
@@ -1061,6 +1062,7 @@
 <translation id="2336228925368920074">为所有标签页添加书签...</translation>
 <translation id="2336376423977300504">始终在关闭窗口时清除 Cookie</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">无法安全地下载“<ph name="FILE_NAME" />”</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> 希望与以下所选设备配对：</translation>
 <translation id="2342740338116612727">书签已添加</translation>
 <translation id="2343747224442182863">聚焦此标签页</translation>
@@ -1873,7 +1875,7 @@
 <translation id="3371140690572404006">USB-C 设备（右侧前端端口）</translation>
 <translation id="337286756654493126">读取您在该应用中打开的文件夹</translation>
 <translation id="3378572629723696641">此扩展程序可能已损坏。</translation>
-<translation id="3379169026479470857">移除 DLC</translation>
+<translation id="3379169026479470857">移除已下载的内容</translation>
 <translation id="337920581046691015">系统将要安装<ph name="PRODUCT_NAME" />。</translation>
 <translation id="3380365263193509176">未知错误</translation>
 <translation id="3382073616108123819">糟糕！系统无法识别此设备的标识符。</translation>
@@ -3249,6 +3251,7 @@
 <translation id="5154702632169343078">主题背景</translation>
 <translation id="5157635116769074044">将此页固定到“开始”屏幕…</translation>
 <translation id="5158983316805876233">对所有协议使用同一代理</translation>
+<translation id="5159419673777902220">您的家长已停用扩展程序权限</translation>
 <translation id="5160857336552977725">登录您的<ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">“<ph name="PLUGIN_NAME" />”已因过期而被停用</translation>
 <translation id="5170568018924773124">在文件夹中显示</translation>
@@ -4822,7 +4825,7 @@
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{退出网页}other{退出网页}}</translation>
 <translation id="7207457272187520234">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会有助于提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据还会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。这项设置是由此设备的所有者强制指定的。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。</translation>
 <translation id="7207631048330366454">搜索应用</translation>
-<translation id="7210171324714276060">扩展程序“<ph name="EXTENSION_NAME" />”将搜索服务提供商改成了 <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
+<translation id="7210171324714276060">扩展程序“<ph name="EXTENSION_NAME" />”已改用 <ph name="SEARCH_PROVIDER_DOMAIN" /> 进行搜索</translation>
 <translation id="7210499381659830293">扩展打印机</translation>
 <translation id="7212097698621322584">请输入您的当前 PIN 码以更改它。如果您不知道 PIN 码，则需要重置安全密钥，然后创建新 PIN 码。</translation>
 <translation id="7216409898977639127">移动网络服务提供商</translation>
@@ -5390,6 +5393,7 @@
 <translation id="7925247922861151263">AAA 检查失败</translation>
 <translation id="7925285046818567682">正在等待 <ph name="HOST_NAME" /> 的响应...</translation>
 <translation id="7926423016278357561">不是我本人。</translation>
+<translation id="7926975587469166629">卡的昵称</translation>
 <translation id="7928175190925744466">已经更改了此密码？</translation>
 <translation id="7928836894214140642">由 <ph name="ENROLLMENT_DOMAIN" /> 管理</translation>
 <translation id="7930294771522048157">已保存的付款方式会显示在这里</translation>
@@ -6035,7 +6039,7 @@
 
           &lt;p&gt;但您仍可通过命令行进行配置。如需详细了解各项实验功能和环境变量，请参见 &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;。&lt;/p&gt;</translation>
 <translation id="8755376271068075440">放大(&amp;L)</translation>
-<translation id="8756143264090841047">删除 DLC</translation>
+<translation id="8756143264090841047">删除已下载的内容</translation>
 <translation id="8756969031206844760">要更新密码吗？</translation>
 <translation id="8757090071857742562">无法投射桌面，请查看您是否已确认开始共享屏幕的提示。</translation>
 <translation id="8757803915342932642">Google Cloud Devices上的设备</translation>

@@ -470,7 +470,7 @@ TEST_F(CheckerImageTrackerTest, ChoosesMaxScaleAndQuality) {
                           gfx::ColorSpace());
   DrawImage scaled_image2 =
       DrawImage(image.paint_image(), image.src_rect(), kHigh_SkFilterQuality,
-                SkMatrix::MakeScale(1.8f), PaintImage::kDefaultFrameIndex,
+                SkMatrix::Scale(1.8f, 1.8f), PaintImage::kDefaultFrameIndex,
                 gfx::ColorSpace());
 
   std::vector<DrawImage> draw_images = {scaled_image1, scaled_image2};

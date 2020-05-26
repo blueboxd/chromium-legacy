@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Sinä valitset pikakuvakkeet</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> sormenjälkeä määritetty</translation>
 <translation id="1213254615020057352">Lähetä käyttö- ja diagnostiikkadataa. Auta parantamaan lapsesi Android-käyttökokemusta lähettämällä diagnostiikkadataa sekä laitteen ja sovellusten käyttödataa automaattisesti Googlelle. Dataa ei käytetä lapsesi henkilöllisyyden selvittämiseen – sen avulla parannetaan esimerkiksi järjestelmän ja sovellusten vakautta. Kootusta datasta on hyötyä myös Googlen sovelluksille ja kumppaneille, kuten Android-kehittäjille. Omistaja on ottanut tämän asetuksen käyttöön. Omistaja voi lähettää tätä laitetta koskevaa diagnostiikka- ja käyttödataa Googlelle. Jos muun verkko- ja sovellustoiminnan asetus on lapsella päällä, tätä dataa voidaan tallentaa hänen Google-tililleen.</translation>
+<translation id="121384500095351701">Tätä tiedostoa ei voi ladata turvallisesti.</translation>
 <translation id="1215411991991485844">Uusi taustasovellus lisätty</translation>
 <translation id="1216542092748365687">Poista sormenjälki</translation>
 <translation id="1217483152325416304">Paikallinen datasi poistetaan pian</translation>
@@ -718,7 +719,7 @@
 <translation id="1884013283844450420">Verkko <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, yhdistä</translation>
 <translation id="1884705339276589024">Muuta Linux-levyn kokoa</translation>
 <translation id="1885106732301550621">Levytila</translation>
-<translation id="1885190042244431215">Kun opilaitostili lisätään, kirjautuminen sivustoille ja laajennuksiin on helppoa oppilaille lapsilukon asettamissa rajoissa.</translation>
+<translation id="1885190042244431215">Kun oppilaitostili lisätään, kirjautuminen sivustoille ja laajennuksiin on helppoa oppilaille lapsilukon asettamissa rajoissa.</translation>
 <translation id="1886996562706621347">Anna sivustojen ehdottaa protokollien oletuskäsittelypalveluiden määrittämistä (suositus)</translation>
 <translation id="1887442540531652736">Sisäänkirjautumisvirhe</translation>
 <translation id="1887597546629269384">Sano taas Hei Google</translation>
@@ -1064,6 +1065,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2336228925368920074">Lisää kaikki välilehdet kirjanmerkkeihin...</translation>
 <translation id="2336376423977300504">Tyhjennä evästeet aina, kun ikkunat suljetaan</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Tiedostoa (<ph name="FILE_NAME" />) ei voi ladata turvallisesti.</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> haluaa muodostaa laiteparin</translation>
 <translation id="2342740338116612727">Kirjanmerkit lisätty</translation>
 <translation id="2343747224442182863">Aseta tämä välilehti aktiiviseksi</translation>
@@ -2469,7 +2471,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="4077919383365622693">Kaikki data ja evästeet, jotka <ph name="SITE" /> on tallentanut, poistetaan.</translation>
 <translation id="4079140982534148664">Käytä parannettua oikeinkirjoituksen tarkistusta</translation>
 <translation id="4081242589061676262">Tiedoston suoratoisto epäonnistui</translation>
-<translation id="4083648855651348665">Jatkaaksesi lisää Google-tilisi salasana, jolloin tilillä olevat salasanat tulevat käyttöön tällä laitteella.</translation>
+<translation id="4083648855651348665">Jatka lisäämällä Google-tilisi salasana, jolloin tilillä olevat salasanat tulevat käyttöön tällä laitteella.</translation>
 <translation id="4084682180776658562">Kirjanmerkki</translation>
 <translation id="4084835346725913160">Sulje <ph name="TAB_NAME" /></translation>
 <translation id="4085270836953633510">Kysy aina, kun sivusto pyytää sarjaportin käyttölupaa</translation>
@@ -3251,6 +3253,7 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="5154702632169343078">Kohde</translation>
 <translation id="5157635116769074044">Kiinnitä tämä sivu aloitusruutuun…</translation>
 <translation id="5158983316805876233">Käytä samaa välityspalvelinta kaikille protokollille</translation>
+<translation id="5159419673777902220">Vanhempasi on estänyt laajennukset</translation>
 <translation id="5160857336552977725">Kirjaudu sisään <ph name="DEVICE_TYPE" />-laitteeseesi.</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> estettiin, koska se on vanhentunut.</translation>
 <translation id="5170568018924773124">Näytä kansiossa</translation>
@@ -5393,6 +5396,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7925247922861151263">AAA-testi epäonnistui</translation>
 <translation id="7925285046818567682">Odotetaan palvelinta osoitteessa <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Luo uusi profiili.</translation>
+<translation id="7926975587469166629">Kortin lempinimi</translation>
 <translation id="7928175190925744466">Vaihdoitko jo tämän salasanan?</translation>
 <translation id="7928836894214140642">Ylläpitäjä: <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Tallennetut maksutavat näkyvät tässä</translation>

@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.chrome.R;
@@ -45,18 +46,19 @@ import org.chromium.content_public.browser.test.NativeLibraryTestRule;
  * during notification construction.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class StandardNotificationBuilderTest {
     private static final String NOTIFICATION_TAG = "TestNotificationTag";
     private static final int NOTIFICATION_ID = 99;
 
     @Rule
-    public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();
+    public NativeLibraryTestRule mLibraryTestRule = new NativeLibraryTestRule();
 
     @Before
     public void setUp() {
         // Not initializing the browser process is safe because GetDomainAndRegistry() is
         // stand-alone.
-        mActivityTestRule.loadNativeLibraryNoBrowserProcess();
+        mLibraryTestRule.loadNativeLibraryNoBrowserProcess();
     }
 
     private NotificationBuilderBase createAllOptionsBuilder(

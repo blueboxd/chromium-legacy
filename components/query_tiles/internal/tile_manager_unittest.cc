@@ -16,9 +16,9 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::Invoke;
-using testing::StrictMock;
+using ::testing::_;
+using ::testing::Invoke;
+using ::testing::StrictMock;
 
 namespace query_tiles {
 namespace {
@@ -28,10 +28,17 @@ const char kGuid[] = "awesome_guid";
 class MockTileStore : public Store<TileGroup> {
  public:
   MockTileStore() = default;
-  MOCK_METHOD1(InitAndLoad, void(TileStore::LoadCallback));
-  MOCK_METHOD3(Update,
-               void(const std::string&, const TileGroup&, UpdateCallback));
-  MOCK_METHOD2(Delete, void(const std::string&, TileStore::DeleteCallback));
+  ~MockTileStore() override = default;
+
+  MOCK_METHOD(void, InitAndLoad, (TileStore::LoadCallback), (override));
+  MOCK_METHOD(void,
+              Update,
+              (const std::string&, const TileGroup&, UpdateCallback),
+              (override));
+  MOCK_METHOD(void,
+              Delete,
+              (const std::string&, TileStore::DeleteCallback),
+              (override));
 };
 
 class TileManagerTest : public testing::Test {
@@ -51,17 +58,14 @@ class TileManagerTest : public testing::Test {
     manager_ = TileManager::Create(std::move(tile_store), &clock_, "en-US");
   }
 
-  // Initial and load entries from store_, compare the |expected_status| to the
+  // Initialize the store, compare the |expected_status| to the
   // actual returned status.
-  void Init(TileGroupStatus expected_status) {
-    base::RunLoop loop;
-    manager()->Init(base::BindOnce(&TileManagerTest::OnInitCompleted,
-                                   base::Unretained(this), loop.QuitClosure(),
-                                   expected_status));
-    loop.Run();
+  void Init(TileGroupStatus expected_status, bool success = true) {
+    InitWithData(expected_status, std::vector<TileGroup>(), success);
   }
 
-  // TODO(crbug.com/1078163): Replace Init() with InitWithData.
+  // Initialize the store and load |groups|, compare the |expected_status| to
+  // the actual returned status.
   void InitWithData(TileGroupStatus expected_status,
                     std::vector<TileGroup> groups,
                     bool success = true) {
@@ -175,13 +179,7 @@ class TileManagerTest : public testing::Test {
 };
 
 TEST_F(TileManagerTest, InitAndLoadWithDbOperationFailed) {
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke([](base::OnceCallback<void(
-                              bool, MockTileStore::KeysAndEntries)> callback) {
-        std::move(callback).Run(false, MockTileStore::KeysAndEntries());
-      }));
-
-  Init(TileGroupStatus::kFailureDbOperation);
+  Init(TileGroupStatus::kFailureDbOperation, false /*success*/);
   GetTiles(std::vector<Tile>() /*expect an empty result*/);
 }
 
@@ -222,15 +220,9 @@ TEST_F(TileManagerTest, InitAndLoadSuccess) {
 // Failed to init an empty db, and save tiles call failed because of db is
 // uninitialized. GetTiles should return empty result.
 TEST_F(TileManagerTest, SaveTilesWhenUnintialized) {
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke([](base::OnceCallback<void(
-                              bool, MockTileStore::KeysAndEntries)> callback) {
-        std::move(callback).Run(false, MockTileStore::KeysAndEntries());
-      }));
   EXPECT_CALL(*tile_store(), Update(_, _, _)).Times(0);
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
-
-  Init(TileGroupStatus::kFailureDbOperation);
+  Init(TileGroupStatus::kFailureDbOperation, false /*success*/);
 
   auto tile_to_save = std::make_unique<Tile>();
   test::ResetTestEntry(tile_to_save.get());
@@ -244,18 +236,12 @@ TEST_F(TileManagerTest, SaveTilesWhenUnintialized) {
 // Init with empty db successfully, and save tiles failed because of db
 // operation failed. GetTiles should return empty result.
 TEST_F(TileManagerTest, SaveTilesFailed) {
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke([](base::OnceCallback<void(
-                              bool, MockTileStore::KeysAndEntries)> callback) {
-        std::move(callback).Run(true, MockTileStore::KeysAndEntries());
-      }));
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
                           MockTileStore::UpdateCallback callback) {
         std::move(callback).Run(false);
       }));
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
-
   Init(TileGroupStatus::kNoTiles);
 
   auto tile_to_save = std::make_unique<Tile>();
@@ -270,18 +256,12 @@ TEST_F(TileManagerTest, SaveTilesFailed) {
 // Init with empty db successfully, and save tiles successfully. GetTiles should
 // return the recent saved tiles, and no Delete call is executed.
 TEST_F(TileManagerTest, SaveTilesSuccess) {
-  EXPECT_CALL(*tile_store(), InitAndLoad(_))
-      .WillOnce(Invoke([](base::OnceCallback<void(
-                              bool, MockTileStore::KeysAndEntries)> callback) {
-        std::move(callback).Run(true, MockTileStore::KeysAndEntries());
-      }));
   EXPECT_CALL(*tile_store(), Update(_, _, _))
       .WillOnce(Invoke([](const std::string& id, const TileGroup& group,
                           MockTileStore::UpdateCallback callback) {
         std::move(callback).Run(true);
       }));
   EXPECT_CALL(*tile_store(), Delete(_, _)).Times(0);
-
   Init(TileGroupStatus::kNoTiles);
 
   auto tile_to_save = std::make_unique<Tile>();

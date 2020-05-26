@@ -86,7 +86,8 @@ void OnFindURLMimeType(const GURL& url,
 bool GetURLForDrop(const ui::DropTargetEvent& event, GURL* url) {
   DCHECK(url);
   base::string16 title;
-  return event.data().GetURLAndTitle(ui::CONVERT_FILENAMES, url, &title) &&
+  return event.data().GetURLAndTitle(ui::FilenameToURLPolicy::CONVERT_FILENAMES,
+                                     url, &title) &&
          url->is_valid();
 }
 
@@ -147,7 +148,7 @@ bool BrowserRootView::CanDrop(const ui::OSExchangeData& data) {
     return false;
 
   // If there is a URL, we'll allow the drop.
-  if (data.HasURL(ui::CONVERT_FILENAMES))
+  if (data.HasURL(ui::FilenameToURLPolicy::CONVERT_FILENAMES))
     return true;
 
   // If there isn't a URL, see if we can 'paste and go'.

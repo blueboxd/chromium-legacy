@@ -13,6 +13,8 @@ bluetooth_test(() => {
         measurement_interval.CALLS([
           readValue()|
           writeValue(val)|
+          writeValueWithResponse(val)|
+          writeValueWithoutResponse(val)|
           startNotifications()|
           stopNotifications()]),
         new DOMException(

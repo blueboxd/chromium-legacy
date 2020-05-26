@@ -7,6 +7,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/arc/user_session/arc_user_session_service.h"
+#include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -44,11 +45,15 @@ void RunUntilIdle() {
 
 class ArcUserSessionServiceTest : public InProcessBrowserTest {
  public:
-  ArcUserSessionServiceTest() = default;
-
-  // InProcessBrowserTest:
+  ArcUserSessionServiceTest() {
+    // SplitSettingsSync makes an untitled Play Store icon appear in the shelf
+    // due to app pin syncing code. Sync isn't relevant to this test, so skip
+    // pinned app sync. https://crbug.com/1085597
+    SkipPinnedAppsFromSyncForTest();
+  }
   ~ArcUserSessionServiceTest() override = default;
 
+  // InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }

@@ -155,12 +155,7 @@ bool ShouldTreatNavigationAsReload(const GURL& url,
                                    bool is_post,
                                    bool is_reload,
                                    bool is_navigation_to_existing_entry,
-                                   bool has_interstitial,
                                    NavigationEntryImpl* last_committed_entry) {
-  // Don't convert when an interstitial is showing.
-  if (has_interstitial)
-    return false;
-
   // Only convert main frame navigations to a new entry.
   if (!is_main_frame || is_reload || is_navigation_to_existing_entry)
     return false;
@@ -592,18 +587,6 @@ void NavigationControllerImpl::Restore(
 void NavigationControllerImpl::Reload(ReloadType reload_type,
                                       bool check_for_repost) {
   DCHECK_NE(ReloadType::NONE, reload_type);
-
-  if (transient_entry_index_ != -1) {
-    // If an interstitial is showing, treat a reload as a navigation to the
-    // transient entry's URL.
-    NavigationEntryImpl* transient_entry = GetTransientEntry();
-    if (!transient_entry)
-      return;
-    LoadURL(transient_entry->GetURL(), Referrer(), ui::PAGE_TRANSITION_RELOAD,
-            transient_entry->extra_headers());
-    return;
-  }
-
   NavigationEntryImpl* entry = nullptr;
   int current_index = -1;
 
@@ -722,16 +705,12 @@ void NavigationControllerImpl::SetPendingEntry(
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetActiveEntry() {
-  if (transient_entry_index_ != -1)
-    return entries_[transient_entry_index_].get();
   if (pending_entry_)
     return pending_entry_;
   return GetLastCommittedEntry();
 }
 
 NavigationEntryImpl* NavigationControllerImpl::GetVisibleEntry() {
-  if (transient_entry_index_ != -1)
-    return entries_[transient_entry_index_].get();
   // The pending entry is safe to return for new (non-history), browser-
   // initiated navigations.  Most renderer-initiated navigations should not
   // show the pending entry, to prevent URL spoof attacks.
@@ -760,8 +739,6 @@ NavigationEntryImpl* NavigationControllerImpl::GetVisibleEntry() {
 }
 
 int NavigationControllerImpl::GetCurrentEntryIndex() {
-  if (transient_entry_index_ != -1)
-    return transient_entry_index_;
   if (pending_entry_index_ != -1)
     return pending_entry_index_;
   return last_committed_entry_index_;
@@ -784,16 +761,14 @@ bool NavigationControllerImpl::CanViewSource() {
 
 int NavigationControllerImpl::GetLastCommittedEntryIndex() {
   // The last committed entry index must always be less than the number of
-  // entries.  If there are no entries, it must be -1. However, there may be a
-  // transient entry while the last committed entry index is still -1.
+  // entries.  If there are no entries, it must be -1.
   DCHECK_LT(last_committed_entry_index_, GetEntryCount());
   DCHECK(GetEntryCount() || last_committed_entry_index_ == -1);
   return last_committed_entry_index_;
 }
 
 int NavigationControllerImpl::GetEntryCount() {
-  DCHECK_LE(entries_.size(),
-            max_entry_count() + (transient_entry_index_ == -1 ? 0 : 1));
+  DCHECK_LE(entries_.size(), max_entry_count());
   return static_cast<int>(entries_.size());
 }
 
@@ -904,17 +879,6 @@ void NavigationControllerImpl::GoToIndex(int index,
   if (index < 0 || index >= static_cast<int>(entries_.size())) {
     NOTREACHED();
     return;
-  }
-
-  if (transient_entry_index_ != -1) {
-    if (index == transient_entry_index_) {
-      // Nothing to do when navigating to the transient.
-      return;
-    }
-    if (index > transient_entry_index_) {
-      // Removing the transient is goint to shift all entries by 1.
-      index--;
-    }
   }
 
   DiscardNonCommittedEntries();
@@ -1743,8 +1707,7 @@ void NavigationControllerImpl::RendererDidNavigateToExistingPage(
   if (!keep_pending_entry)
     DiscardNonCommittedEntries();
 
-  // If a transient entry was removed, the indices might have changed, so we
-  // have to query the entry index again.
+  // Update the last committed index to reflect the committed entry.
   last_committed_entry_index_ = GetIndexOfEntry(entry);
 }
 
@@ -2037,9 +2000,8 @@ void NavigationControllerImpl::CopyStateFromAndPrune(NavigationController* temp,
   if (!replace_entry)
     source->PruneOldestSkippableEntryIfFull();
 
-  // Insert the entries from source. Don't use source->GetCurrentEntryIndex as
-  // we don't want to copy over the transient entry. Ignore any pending entry,
-  // since it has not committed in source.
+  // Insert the entries from source. Ignore any pending entry, since it has not
+  // committed in source.
   int max_source_index = source->last_committed_entry_index_;
   if (max_source_index == -1)
     max_source_index = source->GetEntryCount();
@@ -2073,10 +2035,6 @@ bool NavigationControllerImpl::CanPruneAllButLastCommitted() {
   // there is no sensible place to keep the pending entry.  It is ok to have
   // a new pending entry, which can optionally commit as a new navigation.
   if (pending_entry_index_ != -1)
-    return false;
-
-  // We should not prune if we are currently showing a transient entry.
-  if (transient_entry_index_ != -1)
     return false;
 
   return true;
@@ -2482,17 +2440,7 @@ void NavigationControllerImpl::SetNeedsReload(NeedsReloadType type) {
 void NavigationControllerImpl::RemoveEntryAtIndexInternal(int index) {
   DCHECK_LT(index, GetEntryCount());
   DCHECK_NE(index, last_committed_entry_index_);
-
-  const bool was_transient = index == transient_entry_index_;
-
   DiscardNonCommittedEntries();
-
-  if (was_transient) {
-    // There's nothing left to do if the index referred to a transient entry
-    // that we just discarded.
-    DCHECK(!GetTransientEntry());
-    return;
-  }
 
   entries_.erase(entries_.begin() + index);
   if (last_committed_entry_index_ > index)
@@ -2935,7 +2883,6 @@ void NavigationControllerImpl::NavigateWithoutEntry(
           params.load_type ==
               NavigationController::LOAD_TYPE_HTTP_POST /* is_post */,
           false /* is_reload */, false /* is_navigation_to_existing_entry */,
-          transient_entry_index_ != -1 /* has_interstitial */,
           GetLastCommittedEntry())) {
     reload_type = ReloadType::NORMAL;
   }
@@ -3478,26 +3425,12 @@ void NavigationControllerImpl::DiscardNonCommittedEntries() {
   // Avoid sending a notification if there is nothing to discard.
   // TODO(mthiesse): Temporarily checking failed_pending_entry_id_ to help
   // diagnose https://bugs.chromium.org/p/chromium/issues/detail?id=1007570.
-  if (!pending_entry_ && transient_entry_index_ == -1 &&
-      failed_pending_entry_id_ == 0) {
+  if (!pending_entry_ && failed_pending_entry_id_ == 0) {
     return;
   }
-
   DiscardPendingEntry(false);
-  DiscardTransientEntry();
   if (delegate_)
     delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
-}
-
-void NavigationControllerImpl::DiscardTransientEntry() {
-  if (transient_entry_index_ == -1)
-    return;
-  entries_.erase(entries_.begin() + transient_entry_index_);
-  if (last_committed_entry_index_ > transient_entry_index_)
-    last_committed_entry_index_--;
-  if (pending_entry_index_ > transient_entry_index_)
-    pending_entry_index_--;
-  transient_entry_index_ = -1;
 }
 
 int NavigationControllerImpl::GetEntryIndexWithUniqueID(
@@ -3507,27 +3440,6 @@ int NavigationControllerImpl::GetEntryIndexWithUniqueID(
       return i;
   }
   return -1;
-}
-
-NavigationEntryImpl* NavigationControllerImpl::GetTransientEntry() {
-  if (transient_entry_index_ == -1)
-    return nullptr;
-  return entries_[transient_entry_index_].get();
-}
-
-void NavigationControllerImpl::SetTransientEntry(
-    std::unique_ptr<NavigationEntry> entry) {
-  // Discard any current transient entry, we can only have one at a time.
-  DiscardTransientEntry();
-  int index = 0;
-  if (last_committed_entry_index_ != -1)
-    index = last_committed_entry_index_ + 1;
-  entries_.insert(entries_.begin() + index,
-                  NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
-  if (pending_entry_index_ >= index)
-    pending_entry_index_++;
-  transient_entry_index_ = index;
-  delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
 }
 
 void NavigationControllerImpl::InsertEntriesFrom(
@@ -3639,8 +3551,6 @@ void NavigationControllerImpl::PendingEntryRefDeleted(PendingEntryRef* ref) {
   // Do not leave the pending entry visible if it has an invalid URL, since this
   // might be formatted in an unexpected or unsafe way.
   // TODO(creis): Block navigations to invalid URLs in https://crbug.com/850824.
-  //
-  // Note: don't touch the transient entry, since an interstitial may exist.
   bool should_preserve_entry =
       (pending_entry_ == GetVisibleEntry()) &&
       pending_entry_->GetURL().is_valid() &&

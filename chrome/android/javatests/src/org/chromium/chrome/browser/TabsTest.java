@@ -1592,7 +1592,8 @@ public class TabsTest {
     private void performToolbarSideSwipe(@ScrollDirection int direction) {
         Assert.assertTrue("Unexpected direction for side swipe " + direction,
                 direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT);
-        final View toolbar = mActivityTestRule.getActivity().getToolbarManager().getToolbarView();
+        final View toolbar = mActivityTestRule.getActivity().findViewById(R.id.toolbar);
+
         int[] toolbarPos = new int[2];
         toolbar.getLocationOnScreen(toolbarPos);
         final int width = toolbar.getWidth();

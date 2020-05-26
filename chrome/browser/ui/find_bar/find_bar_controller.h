@@ -74,13 +74,6 @@ class FindBarController : public content::NotificationObserver,
 
   FindBar* find_bar() const { return find_bar_.get(); }
 
-  // Reposition |view_location| such that it avoids |avoid_overlapping_rect|,
-  // and return the new location.
-  static gfx::Rect GetLocationForFindbarView(
-      gfx::Rect view_location,
-      const gfx::Rect& dialog_bounds,
-      const gfx::Rect& avoid_overlapping_rect);
-
  private:
   // Sends an update to the find bar with the tab contents' current result. The
   // web_contents_ must be non-NULL before this call. This handles

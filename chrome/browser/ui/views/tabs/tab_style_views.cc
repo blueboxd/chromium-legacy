@@ -393,7 +393,7 @@ SkPath GM2TabStyle::GetPath(PathType path_type,
 
   // Possibly convert back to DIPs.
   if (render_units == RenderUnits::kDips && scale != 1.0f)
-    path.transform(SkMatrix::MakeScale(1.f / scale));
+    path.transform(SkMatrix::Scale(1.0f / scale, 1.0f / scale));
 
   return path;
 }

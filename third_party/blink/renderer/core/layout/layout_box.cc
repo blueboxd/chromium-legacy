@@ -2199,6 +2199,19 @@ void LayoutBox::InvalidatePaint(const PaintInvalidatorContext& context) const {
   BoxPaintInvalidator(*this, context).InvalidatePaint();
 }
 
+void LayoutBox::ClearPaintFlags() {
+  LayoutObject::ClearPaintFlags();
+
+  if (auto* scrollable_area = GetScrollableArea()) {
+    if (auto* scrollbar =
+            DynamicTo<CustomScrollbar>(scrollable_area->HorizontalScrollbar()))
+      scrollbar->ClearPaintFlags();
+    if (auto* scrollbar =
+            DynamicTo<CustomScrollbar>(scrollable_area->VerticalScrollbar()))
+      scrollbar->ClearPaintFlags();
+  }
+}
+
 PhysicalRect LayoutBox::OverflowClipRect(
     const PhysicalOffset& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {

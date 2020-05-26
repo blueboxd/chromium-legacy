@@ -13,6 +13,8 @@ bluetooth_test(() => {
             error_characteristic.CALLS([
               readValue()|
               writeValue(val)|
+              writeValueWithResponse(val)|
+              writeValueWithoutResponse(val)|
               startNotifications()]),
             new DOMException(
               'GATT Server is disconnected. Cannot perform GATT operations. ' +

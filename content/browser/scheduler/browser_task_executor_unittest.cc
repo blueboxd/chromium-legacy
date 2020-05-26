@@ -120,6 +120,16 @@ TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnIOIsReentrant) {
   BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
 }
 
+TEST_F(BrowserTaskExecutorTest, GetTaskRunnerWithBrowserTaskTraits) {
+  StrictMockTask task_1;
+
+  GetUIThreadTaskRunner({BrowserTaskType::kPreconnect})
+      ->PostTask(FROM_HERE, task_1.Get());
+
+  EXPECT_CALL(task_1, Run);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+}
+
 // Helper to perform the same tets for all BrowserThread::ID values.
 class BrowserTaskTraitsMappingTest : public BrowserTaskExecutorTest {
  protected:

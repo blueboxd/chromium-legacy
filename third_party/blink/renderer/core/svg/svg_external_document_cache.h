@@ -31,6 +31,7 @@
 
 namespace blink {
 class Document;
+class ExecutionContext;
 
 class SVGExternalDocumentCache
     : public GarbageCollected<SVGExternalDocumentCache>,
@@ -52,8 +53,7 @@ class SVGExternalDocumentCache
     USING_GARBAGE_COLLECTED_MIXIN(Entry);
 
    public:
-    explicit Entry(Document* context_document)
-        : context_document_(context_document) {}
+    explicit Entry(ExecutionContext* context) : context_(context) {}
     ~Entry() override = default;
     void Trace(Visitor*) const override;
     Document* GetDocument();
@@ -68,7 +68,7 @@ class SVGExternalDocumentCache
     String DebugName() const override { return "SVGExternalDocumentCache"; }
 
     Member<Document> document_;
-    Member<Document> context_document_;
+    Member<ExecutionContext> context_;
     HeapHashSet<WeakMember<Client>> clients_;
   };
 

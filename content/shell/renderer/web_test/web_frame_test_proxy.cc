@@ -695,8 +695,7 @@ void WebFrameTestProxy::DidClearWindowObject() {
   // frame before JS has a chance to run.
   GCController::Install(GetWebFrame());
   interfaces->Install(GetWebFrame());
-  test_runner()->Install(this, spell_check_.get(),
-                         web_view_test_proxy_->view_test_runner());
+  test_runner()->Install(this, spell_check_.get());
   web_view_test_proxy_->Install(GetWebFrame());
   GetLocalRootWebWidgetTestProxy()->Install(GetWebFrame());
   blink::WebTestingSupport::InjectInternalsObject(GetWebFrame());

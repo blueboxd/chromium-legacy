@@ -4,10 +4,12 @@
 
 #include "components/feed/core/v2/protocol_translator.h"
 
+#include <string>
 #include <utility>
 
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/feed/core/proto/v2/packing.pb.h"
 #include "components/feed/core/proto/v2/wire/data_operation.pb.h"
 #include "components/feed/core/proto/v2/wire/feature.pb.h"
 #include "components/feed/core/proto/v2/wire/feed_response.pb.h"
@@ -293,6 +295,20 @@ RefreshResponseData TranslateWireResponse(
   response_data.request_schedule = std::move(global_data.request_schedule);
 
   return response_data;
+}
+
+std::vector<feedstore::DataOperation> TranslateDismissData(
+    base::Time current_time,
+    feedpacking::DismissData data) {
+  std::vector<feedstore::DataOperation> result;
+  for (auto& operation : data.data_operations()) {
+    base::Optional<feedstore::DataOperation> translated_operation =
+        TranslateDataOperation(current_time, operation);
+    if (translated_operation) {
+      result.push_back(std::move(translated_operation.value()));
+    }
+  }
+  return result;
 }
 
 }  // namespace feed

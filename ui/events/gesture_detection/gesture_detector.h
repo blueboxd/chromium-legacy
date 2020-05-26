@@ -116,7 +116,7 @@ class GESTURE_DETECTION_EXPORT GestureDetector {
   void OnShowPressTimeout();
   void OnLongPressTimeout();
   void OnTapTimeout();
-  void OnStylusButtonPress(const MotionEvent& ev);
+  void ActivateLongPressGesture(const MotionEvent& ev);
   void Cancel();
   void CancelTaps();
   bool IsRepeatedTap(const MotionEvent& first_down,

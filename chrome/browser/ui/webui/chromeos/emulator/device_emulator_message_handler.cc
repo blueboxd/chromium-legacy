@@ -91,11 +91,10 @@ class DeviceEmulatorMessageHandler::BluetoothObserver
 
 void DeviceEmulatorMessageHandler::BluetoothObserver::DeviceAdded(
     const dbus::ObjectPath& object_path) {
-  std::unique_ptr<base::DictionaryValue> device =
-      owner_->GetDeviceInfo(object_path);
+  base::Value device = owner_->GetDeviceInfo(object_path);
 
   // Request to add the device to the view's list of devices.
-  owner_->FireWebUIListener("bluetooth-device-added", *device);
+  owner_->FireWebUIListener("bluetooth-device-added", device);
 }
 
 void DeviceEmulatorMessageHandler::BluetoothObserver::DevicePropertyChanged(
@@ -223,42 +222,40 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo(
       fake_bluetooth_device_client_->GetDevicesForAdapter(
           dbus::ObjectPath(bluez::FakeBluetoothAdapterClient::kAdapterPath));
 
-  auto devices = std::make_unique<base::ListValue>();
   // Get each device's properties.
-  for (const dbus::ObjectPath& path : paths) {
-    std::unique_ptr<base::DictionaryValue> device = GetDeviceInfo(path);
-    devices->Append(std::move(device));
-  }
+  base::Value devices(base::Value::Type::LIST);
+  for (const dbus::ObjectPath& path : paths)
+    devices.Append(GetDeviceInfo(path));
 
-  std::unique_ptr<base::ListValue> predefined_devices =
+  base::Value predefined_devices =
       fake_bluetooth_device_client_->GetBluetoothDevicesAsDictionaries();
 
-  auto pairing_method_options = std::make_unique<base::ListValue>();
-  pairing_method_options->AppendString(
+  base::Value pairing_method_options(base::Value::Type::LIST);
+  pairing_method_options.Append(
       bluez::FakeBluetoothDeviceClient::kPairingMethodNone);
-  pairing_method_options->AppendString(
+  pairing_method_options.Append(
       bluez::FakeBluetoothDeviceClient::kPairingMethodPinCode);
-  pairing_method_options->AppendString(
+  pairing_method_options.Append(
       bluez::FakeBluetoothDeviceClient::kPairingMethodPassKey);
 
-  auto pairing_action_options = std::make_unique<base::ListValue>();
-  pairing_action_options->AppendString(
+  base::Value pairing_action_options(base::Value::Type::LIST);
+  pairing_action_options.Append(
       bluez::FakeBluetoothDeviceClient::kPairingActionDisplay);
-  pairing_action_options->AppendString(
+  pairing_action_options.Append(
       bluez::FakeBluetoothDeviceClient::kPairingActionRequest);
-  pairing_action_options->AppendString(
+  pairing_action_options.Append(
       bluez::FakeBluetoothDeviceClient::kPairingActionConfirmation);
-  pairing_action_options->AppendString(
+  pairing_action_options.Append(
       bluez::FakeBluetoothDeviceClient::kPairingActionFail);
 
-  auto info = std::make_unique<base::DictionaryValue>();
-  info->Set("predefined_devices", std::move(predefined_devices));
-  info->Set("devices", std::move(devices));
-  info->Set("pairing_method_options", std::move(pairing_method_options));
-  info->Set("pairing_action_options", std::move(pairing_action_options));
+  base::Value info(base::Value::Type::DICTIONARY);
+  info.SetKey("predefined_devices", std::move(predefined_devices));
+  info.SetKey("devices", std::move(devices));
+  info.SetKey("pairing_method_options", std::move(pairing_method_options));
+  info.SetKey("pairing_action_options", std::move(pairing_action_options));
 
   // Send the list of devices to the view.
-  FireWebUIListener("bluetooth-info-updated", *info);
+  FireWebUIListener("bluetooth-info-updated", info);
 }
 
 void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
@@ -579,39 +576,36 @@ std::string DeviceEmulatorMessageHandler::CreateBluetoothDeviceFromListValue(
   return props.device_path;
 }
 
-std::unique_ptr<base::DictionaryValue>
-DeviceEmulatorMessageHandler::GetDeviceInfo(
+base::Value DeviceEmulatorMessageHandler::GetDeviceInfo(
     const dbus::ObjectPath& object_path) {
   // Get the device's properties.
   bluez::FakeBluetoothDeviceClient::Properties* props =
       fake_bluetooth_device_client_->GetProperties(object_path);
-  std::unique_ptr<base::DictionaryValue> device(new base::DictionaryValue());
-  std::unique_ptr<base::ListValue> uuids(new base::ListValue);
   bluez::FakeBluetoothDeviceClient::SimulatedPairingOptions* options =
       fake_bluetooth_device_client_->GetPairingOptions(object_path);
 
-  device->SetString("path", object_path.value());
-  device->SetString("name", props->name.value());
-  device->SetString("alias", props->alias.value());
-  device->SetString("address", props->address.value());
+  base::Value device(base::Value::Type::DICTIONARY);
+  device.SetStringKey("path", object_path.value());
+  device.SetStringKey("name", props->name.value());
+  device.SetStringKey("alias", props->alias.value());
+  device.SetStringKey("address", props->address.value());
   if (options) {
-    device->SetString("pairingMethod", options->pairing_method);
-    device->SetString("pairingAuthToken", options->pairing_auth_token);
-    device->SetString("pairingAction", options->pairing_action);
+    device.SetStringKey("pairingMethod", options->pairing_method);
+    device.SetStringKey("pairingAuthToken", options->pairing_auth_token);
+    device.SetStringKey("pairingAction", options->pairing_action);
   } else {
-    device->SetString("pairingMethod", "");
-    device->SetString("pairingAuthToken", "");
-    device->SetString("pairingAction", "");
+    device.SetStringKey("pairingMethod", "");
+    device.SetStringKey("pairingAuthToken", "");
+    device.SetStringKey("pairingAction", "");
   }
-  device->SetInteger("classValue", props->bluetooth_class.value());
-  device->SetBoolean("isTrusted", props->trusted.value());
-  device->SetBoolean("incoming", false);
+  device.SetIntKey("classValue", props->bluetooth_class.value());
+  device.SetBoolKey("isTrusted", props->trusted.value());
+  device.SetBoolKey("incoming", false);
 
-  for (const std::string& uuid : props->uuids.value()) {
-    uuids->AppendString(uuid);
-  }
-
-  device->Set("uuids", std::move(uuids));
+  base::Value uuids(base::Value::Type::LIST);
+  for (const std::string& uuid : props->uuids.value())
+    uuids.Append(uuid);
+  device.SetKey("uuids", std::move(uuids));
 
   return device;
 }

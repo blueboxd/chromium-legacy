@@ -35,7 +35,7 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get the accessibility tree data for this node.
   const AXTreeData& GetTreeData() const override;
 
-  // Get the unignored selection from the tree
+  base::string16 GetInnerText() const override;
   const AXTree::Selection GetUnignoredSelection() const override;
 
   // Creates a text position rooted at this object.
@@ -67,14 +67,9 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetNextSibling() override;
   gfx::NativeViewAccessible GetPreviousSibling() override;
 
-  // Returns true if an ancestor of this node (not including itself) is a
-  // leaf node, meaning that this node is not actually exposed to the
-  // platform.
   bool IsChildOfLeaf() const override;
   bool IsChildOfPlainTextField() const override;
-
-  // If this object is exposed to the platform, returns this object. Otherwise,
-  // returns the platform leaf under which this object is found.
+  bool IsLeaf() const override;
   gfx::NativeViewAccessible GetClosestPlatformObject() const override;
 
   class ChildIteratorBase : public ChildIterator {
@@ -107,8 +102,6 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   TextAttributeMap ComputeTextAttributeMap(
       const TextAttributeList& default_attributes) const override;
   std::string GetInheritedFontFamilyName() const override;
-
-  base::string16 GetInnerText() const override;
 
   gfx::Rect GetBoundsRect(const AXCoordinateSystem coordinate_system,
                           const AXClippingBehavior clipping_behavior,

@@ -16,9 +16,6 @@
 namespace ash {
 namespace {
 
-// The default values of the autoclick ring widget size.
-const int kAutoclickRingInnerRadius = 20;
-
 // The following is half width to avoid division by 2.
 const int kAutoclickRingArcWidth = 2;
 
@@ -79,21 +76,19 @@ void PaintAutoclickRing(gfx::Canvas* canvas,
 // animation is shown in.
 class AutoclickRingHandler::AutoclickRingView : public views::View {
  public:
-  AutoclickRingView(const gfx::Point& event_location,
-                    views::Widget* ring_widget,
-                    int radius)
-      : views::View(),
-        widget_(ring_widget),
-        current_angle_(kAutoclickRingAngleStartValue),
-        radius_(radius) {
-    widget_->SetContentsView(this);
-
-    // We are owned by the AutoclickRingHandler.
-    set_owned_by_client();
-    SetLocation(event_location);
-  }
+  AutoclickRingView(views::Widget* ring_widget, int radius)
+      : views::View(), widget_(ring_widget), radius_(radius) {}
 
   ~AutoclickRingView() override = default;
+
+  static AutoclickRingView* Create(const gfx::Point& event_location,
+                                   views::Widget* ring_widget,
+                                   int radius) {
+    AutoclickRingView* ring_view = ring_widget->SetContentsView(
+        std::make_unique<AutoclickRingView>(ring_widget, radius));
+    ring_view->SetLocation(event_location);
+    return ring_view;
+  }
 
   void SetLocation(const gfx::Point& new_event_location) {
     gfx::Point point = new_event_location;
@@ -132,8 +127,8 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
   }
 
   views::Widget* widget_;
-  int current_angle_;
   int radius_;
+  int current_angle_ = kAutoclickRingAngleStartValue;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickRingView);
 };
@@ -141,11 +136,7 @@ class AutoclickRingHandler::AutoclickRingView : public views::View {
 ////////////////////////////////////////////////////////////////////////////////
 
 // AutoclickRingHandler, public
-AutoclickRingHandler::AutoclickRingHandler()
-    : gfx::LinearAnimation(nullptr),
-      ring_widget_(nullptr),
-      current_animation_type_(AnimationType::NONE),
-      radius_(kAutoclickRingInnerRadius) {}
+AutoclickRingHandler::AutoclickRingHandler() : gfx::LinearAnimation(nullptr) {}
 
 AutoclickRingHandler::~AutoclickRingHandler() {
   StopAutoclickRing();
@@ -185,8 +176,9 @@ void AutoclickRingHandler::SetSize(int radius) {
 void AutoclickRingHandler::StartAnimation(base::TimeDelta delay) {
   switch (current_animation_type_) {
     case AnimationType::GROW_ANIMATION: {
-      view_.reset(
-          new AutoclickRingView(tap_down_location_, ring_widget_, radius_));
+      DCHECK(!view_);
+      view_ =
+          AutoclickRingView::Create(tap_down_location_, ring_widget_, radius_);
       SetDuration(delay);
       Start();
       break;
@@ -203,11 +195,14 @@ void AutoclickRingHandler::StopAutoclickRing() {
   // start the timer again.
   current_animation_type_ = AnimationType::NONE;
   Stop();
-  view_.reset();
+  if (view_) {
+    ring_widget_->GetRootView()->RemoveChildViewT(view_);
+    view_ = nullptr;
+  }
 }
 
 void AutoclickRingHandler::AnimateToState(double state) {
-  DCHECK(view_.get());
+  DCHECK(view_);
   switch (current_animation_type_) {
     case AnimationType::GROW_ANIMATION:
       view_->SetLocation(tap_down_location_);
@@ -226,7 +221,10 @@ void AutoclickRingHandler::AnimationStopped() {
       break;
     case AnimationType::NONE:
       // Fall through to reset the view.
-      view_.reset();
+      if (view_) {
+        ring_widget_->GetRootView()->RemoveChildViewT(view_);
+        view_ = nullptr;
+      }
       break;
   }
 }

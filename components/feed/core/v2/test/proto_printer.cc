@@ -192,6 +192,14 @@ class TextProtoPrinter {
     return *this;
   }
 
+  TextProtoPrinter& operator<<(const feedstore::DataOperation& v) {
+    BeginMessage();
+    PRINT_FIELD(structure);
+    PRINT_FIELD(content);
+    EndMessage();
+    return *this;
+  }
+
   TextProtoPrinter& operator<<(const feedstore::ContentInfo& v) {
     BeginMessage();
     PRINT_FIELD(score);
@@ -329,6 +337,9 @@ std::string ToTextProto(const feedstore::StoredAction& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedstore::Record& v) {
+  return TextProtoPrinter::ToString(v);
+}
+std::string ToTextProto(const feedstore::DataOperation& v) {
   return TextProtoPrinter::ToString(v);
 }
 std::string ToTextProto(const feedui::StreamUpdate& v) {

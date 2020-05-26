@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
 #include "crypto/ec_private_key.h"
@@ -562,7 +563,9 @@ FidoTransportProtocol VirtualFidoDevice::DeviceTransport() const {
 
 // static
 std::string VirtualFidoDevice::MakeVirtualFidoDeviceId() {
-  return "VirtualFidoDevice-" + base::RandBytesAsString(32);
+  uint8_t rand_bytes[32];
+  base::RandBytes(rand_bytes, sizeof(rand_bytes));
+  return "VirtualFidoDevice-" + base::HexEncode(rand_bytes);
 }
 
 }  // namespace device

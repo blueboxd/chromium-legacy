@@ -1081,8 +1081,8 @@ std::vector<uint32_t> test_ids = {0, 1, 56, 0xFFFFFFFF, 0xFFFFFFFE, 0x10001};
 
 std::vector<SkMatrix> test_matrices = {
     SkMatrix::I(),
-    SkMatrix::MakeScale(3.91f, 4.31f),
-    SkMatrix::MakeTrans(-5.2f, 8.7f),
+    SkMatrix::Scale(3.91f, 4.31f),
+    SkMatrix::Translate(-5.2f, 8.7f),
     [] {
       SkMatrix matrix;
       SkScalar buffer[] = {0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -2974,7 +2974,7 @@ TEST(PaintOpBufferTest, RasterPaintWorkletImageRectTranslated) {
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
-  EXPECT_CALL(canvas, didConcat(SkMatrix::MakeTrans(5.0f, 7.0f)));
+  EXPECT_CALL(canvas, didConcat(SkMatrix::Translate(5.0f, 7.0f)));
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, didScale(1.0f / scale_adjustment[0].width(),
                                1.0f / scale_adjustment[0].height()));
@@ -3019,7 +3019,7 @@ TEST(PaintOpBufferTest, RasterPaintWorkletImageRectScaled) {
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
   EXPECT_CALL(canvas, OnSaveLayer()).InSequence(s);
-  EXPECT_CALL(canvas, didConcat(SkMatrix::MakeScale(2.f, 1.5f)));
+  EXPECT_CALL(canvas, didConcat(SkMatrix::Scale(2.f, 1.5f)));
   EXPECT_CALL(canvas, willSave()).InSequence(s);
   EXPECT_CALL(canvas, didScale(1.0f / scale_adjustment[0].width(),
                                1.0f / scale_adjustment[0].height()));

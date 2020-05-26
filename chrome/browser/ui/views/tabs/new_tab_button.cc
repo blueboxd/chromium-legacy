@@ -215,7 +215,7 @@ bool NewTabButton::GetHitTestMask(SkPath* mask) const {
   // TODO(pkasting): Fitts' Law horizontally when appropriate.
   SkPath border = GetBorderPath(GetContentsBounds().origin(), scale,
                                 tab_strip_->controller()->IsFrameCondensed());
-  mask->addPath(border, SkMatrix::MakeScale(1 / scale));
+  mask->addPath(border, SkMatrix::Scale(1 / scale, 1 / scale));
   return true;
 }
 

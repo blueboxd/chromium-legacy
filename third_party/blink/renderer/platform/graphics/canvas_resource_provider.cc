@@ -1361,14 +1361,6 @@ bool CanvasResourceProvider::WritePixels(const SkImageInfo& orig_info,
 
   EnsureSkiaCanvas();
 
-  // Apply clipstack to skia_canvas_ and then restore it to original state once
-  // we leave this scope. This is needed because each recording initializes and
-  // resets this state after every flush. restore_clip_stack_callback_ sets the
-  // initial save required for a restore.
-  cc::PaintCanvasAutoRestore auto_restore(skia_canvas_.get(), false);
-  if (restore_clip_stack_callback_)
-    restore_clip_stack_callback_.Run(skia_canvas_.get());
-
   return GetSkSurface()->getCanvas()->writePixels(orig_info, pixels, row_bytes,
                                                   x, y);
 }

@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Snelkoppelingen worden door jou beheerd</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> vingerafdrukken ingesteld</translation>
 <translation id="1213254615020057352">Stuur gebruiks- en diagnostische gegevens. Verbeter de Android-functionaliteit voor je kind door automatisch diagnostische, apparaat- en app-gebruiksgegevens naar Google te sturen. Deze gegevens worden niet gebruikt om je kind te identificeren en kunnen helpen om de systeem- en app-stabiliteit te verbeteren en andere optimalisaties mogelijk te maken. Daarnaast zijn bepaalde verzamelde gegevens nuttig voor Google-apps en -partners, zoals Android-ontwikkelaars. Deze instelling wordt afgedwongen door de eigenaar. De eigenaar kan ervoor kiezen diagnostische en gebruiksgegevens voor dit apparaat naar Google te sturen. Als je de instelling voor aanvullende Web- en app-activiteit hebt ingeschakeld voor je kind, kunnen deze gegevens worden opgeslagen in het Google-account van je kind.</translation>
+<translation id="121384500095351701">Dit bestand kan niet beveiligd worden gedownload</translation>
 <translation id="1215411991991485844">Nieuwe achtergrondapp toegevoegd</translation>
 <translation id="1216542092748365687">Vingerafdruk verwijderen</translation>
 <translation id="1217483152325416304">Je lokale gegevens worden binnenkort verwijderd.</translation>
@@ -561,7 +562,7 @@
 <translation id="1697686431566694143">Bestand bewerken</translation>
 <translation id="1698122934742150150">Alleen huidige incognitosessie</translation>
 <translation id="1700079447639026019">Sites die nooit cookies mogen gebruiken</translation>
-<translation id="1700845716982723710">Ambient-modus uitschakelen</translation>
+<translation id="1700845716982723710">Sfeerstand uitschakelen</translation>
 <translation id="1701062906490865540">Deze persoon verwijderen</translation>
 <translation id="1703331064825191675">Maak je nooit meer zorgen over je wachtwoorden</translation>
 <translation id="1704970325597567340">Veiligheidscheck is uitgevoerd op <ph name="DATE" /></translation>
@@ -686,7 +687,7 @@
 <translation id="1842766183094193446">Weet je zeker dat je de demomodus wilt inschakelen?</translation>
 <translation id="1846308012215045257">Ctrl-klik om <ph name="PLUGIN_NAME" /> uit te voeren</translation>
 <translation id="1846880379134204029">Groep <ph name="GROUP_NAME" /> - <ph name="GROUP_CONTENTS" /></translation>
-<translation id="184715642345428649">Ambient-modus inschakelen</translation>
+<translation id="184715642345428649">Sfeerstand inschakelen</translation>
 <translation id="1849186935225320012">Deze pagina heeft volledig beheer van MIDI-apparaten.</translation>
 <translation id="1850508293116537636">Rechtsom &amp;draaien</translation>
 <translation id="1852141627593563189">Schadelijke software zoeken</translation>
@@ -1064,6 +1065,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="2336228925368920074">Bladwijzer toevoegen aan alle tabbladen...</translation>
 <translation id="2336376423977300504">Cookies altijd wissen als vensters worden gesloten</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> kan niet beveiligd worden gedownload</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> wil koppelen</translation>
 <translation id="2342740338116612727">Bladwijzers toegevoegd</translation>
 <translation id="2343747224442182863">Focus op dit tabblad plaatsen</translation>
@@ -3154,7 +3156,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5027562294707732951">Extensie toevoegen</translation>
 <translation id="5029568752722684782">Kopie wissen</translation>
 <translation id="5033266061063942743">Geometrische vormen</translation>
-<translation id="5033370009438029887">Ambient-modus uitschakelen</translation>
+<translation id="5033370009438029887">Sfeerstand uitschakelen</translation>
 <translation id="5036662165765606524">Sites niet toestaan automatisch meerdere bestanden te downloaden</translation>
 <translation id="5037676449506322593">Selecteer alles</translation>
 <translation id="5038022729081036555">Je kunt de app morgen <ph name="TIME_LIMIT" /> gebruiken.</translation>
@@ -3254,6 +3256,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="5154702632169343078">Onderwerp</translation>
 <translation id="5157635116769074044">Deze pagina vastzetten op het startscherm…</translation>
 <translation id="5158983316805876233">Dezelfde proxy gebruiken voor alle protocollen</translation>
+<translation id="5159419673777902220">Je ouder heeft extensierechten uitgeschakeld</translation>
 <translation id="5160857336552977725">Log in bij je <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> is geblokkeerd omdat deze is verouderd</translation>
 <translation id="5170568018924773124">Weergeven in map</translation>
@@ -4219,7 +4222,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="6412931879992742813">Nieuw incognitovenster</translation>
 <translation id="641469293210305670">Updates en apps installeren</translation>
 <translation id="6414888972213066896">Je hebt je ouder of voogd gevraagd of je deze site mag bezoeken</translation>
-<translation id="6415659939354280526">Bron voor Ambient-modus kiezen</translation>
+<translation id="6415659939354280526">Bron voor Sfeerstand kiezen</translation>
 <translation id="6415900369006735853">Verbinding maken met internet via je telefoon</translation>
 <translation id="6416743254476733475">Toestaan of blokkeren op je computer.</translation>
 <translation id="6417265370957905582">Google Assistent</translation>
@@ -5129,7 +5132,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7616214729753637086">Apparaat registreren...</translation>
 <translation id="7617263010641145920">Play Store inschakelen</translation>
 <translation id="7617366389578322136">Verbinding maken met '<ph name="DEVICE_NAME" />'</translation>
-<translation id="761763866592998929">Ambient-modus</translation>
+<translation id="761763866592998929">Sfeerstand</translation>
 <translation id="7621382409404463535">Het systeem kan de apparaatconfiguratie niet opslaan.</translation>
 <translation id="7622114377921274169">Opladen.</translation>
 <translation id="7624337243375417909">Caps Lock uit</translation>
@@ -5361,7 +5364,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7881483672146086348">Account bekijken</translation>
 <translation id="7882358943899516840">Type provider</translation>
 <translation id="7883262476066478211">Apparaat is geblokkeerd</translation>
-<translation id="78851824530736377">Ambient-modus inschakelen</translation>
+<translation id="78851824530736377">Sfeerstand inschakelen</translation>
 <translation id="7885253890047913815">Recente bestemmingen</translation>
 <translation id="7887334752153342268">Dupliceren</translation>
 <translation id="7887864092952184874">Bluetooth-muis gekoppeld</translation>
@@ -5394,6 +5397,7 @@ Je kunt de instellingen van dit account beheren door de Family Link-app op je ap
 <translation id="7925247922861151263">AAA-controle mislukt</translation>
 <translation id="7925285046818567682">Wachten op <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Dit was ik niet.</translation>
+<translation id="7926975587469166629">Bijnaam kaart</translation>
 <translation id="7928175190925744466">Heb je dit wachtwoord al gewijzigd?</translation>
 <translation id="7928836894214140642">Beheerd door <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Opgeslagen betaalmethoden worden hier weergegeven</translation>

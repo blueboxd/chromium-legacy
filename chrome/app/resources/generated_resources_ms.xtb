@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Pintasan dipilih susun oleh anda</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> cap jari disediakan</translation>
 <translation id="1213254615020057352">Hantar data penggunaan dan diagnostik. Bantu kami meningkatkan pengalaman Android anak anda dengan menghantar data diagnostik dan penggunaan peranti serta apl kepada Google secara automatik. Data ini tidak akan digunakan untuk mengenal pasti anak anda dan akan membantu peningkatan kestabilan sistem dan apl serta pelbagai lagi. Sesetengah data agregat juga akan membantu apl dan rakan kongsi Google, seperti pembangun Android. Tetapan ini dikuatkuasakan oleh pemilik. Pemilik mungkin memilih untuk menghantar data diagnostik dan penggunaan peranti ini kepada Google. Jika tetapan Aktiviti Web &amp; Apl tambahan dihidupkan untuk anak anda, data ini mungkin disimpan pada Akaun Googlenya.</translation>
+<translation id="121384500095351701">Fail ini tidak dapat dimuat turun dengan selamat</translation>
 <translation id="1215411991991485844">Apl latar belakang baharu ditambah</translation>
 <translation id="1216542092748365687">Alih keluar cap jari</translation>
 <translation id="1217483152325416304">Data setempat anda akan dipadamkan tidak lama lagi</translation>
@@ -1064,6 +1065,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="2336228925368920074">Tanda Halaman Semua Tab...</translation>
 <translation id="2336376423977300504">Sentiasa kosongkan kuki apabila tetingkap ditutup</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> tidak dapat dimuat turun dengan selamat</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> mahu digandingkan</translation>
 <translation id="2342740338116612727">Penanda halaman ditambahkan</translation>
 <translation id="2343747224442182863">Fokus pada Tab Ini</translation>
@@ -3254,6 +3256,7 @@ Anda boleh mengurus tetapan akaun ini dengan memasang apl Family Link pada peran
 <translation id="5154702632169343078">Subjek</translation>
 <translation id="5157635116769074044">Pin halaman ini pada Skrin Mula...</translation>
 <translation id="5158983316805876233">Gunakan proksi yang sama untuk semua protokol</translation>
+<translation id="5159419673777902220">Ibu bapa anda telah melumpuhkan kebenaran sambungan</translation>
 <translation id="5160857336552977725">Log masuk ke <ph name="DEVICE_TYPE" /> anda</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> telah disekat kerana telah lapuk</translation>
 <translation id="5170568018924773124">Paparkan dalam folder</translation>
@@ -5395,6 +5398,7 @@ Jika anak anda tidak menggunakan Chromebook di sekolah atau jika anda lebih suka
 <translation id="7925247922861151263">Gagal periksa AAA</translation>
 <translation id="7925285046818567682">Menunggu untuk <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Ini bukan saya.</translation>
+<translation id="7926975587469166629">Nama panggilan kad</translation>
 <translation id="7928175190925744466">Sudah menukar kata laluan ini?</translation>
 <translation id="7928836894214140642">Diurus oleh <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Kaedah pembayaran yang disimpan akan dipaparkan di sini</translation>

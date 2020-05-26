@@ -121,6 +121,10 @@ const ui::AXUniqueId& ViewAccessibility::GetUniqueId() const {
   return unique_id_;
 }
 
+bool ViewAccessibility::IsLeaf() const {
+  return is_leaf_;
+}
+
 void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
   data->id = GetUniqueId().Get();
 

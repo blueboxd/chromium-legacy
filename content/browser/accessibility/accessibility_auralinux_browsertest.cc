@@ -228,7 +228,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   // "Before".
   //
   // The embedded object character representing the image is at offset 6.
-  for (int i = 0; i <= 6; ++i) {
+  for (int i = 0; i < 6; ++i) {
     CheckTextAtOffset(contenteditable_text, i, ATK_TEXT_BOUNDARY_CHAR, i,
                       (i + 1), expected_hypertext[i].c_str());
   }

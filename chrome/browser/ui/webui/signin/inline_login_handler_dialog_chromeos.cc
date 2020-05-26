@@ -12,6 +12,7 @@
 #include "base/check_op.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
@@ -37,6 +38,9 @@ namespace {
 InlineLoginHandlerDialogChromeOS* dialog = nullptr;
 constexpr int kSigninDialogWidth = 768;
 constexpr int kSigninDialogHeight = 640;
+
+constexpr char kAccountAdditionSource[] =
+    "AccountManager.AccountAdditionSource";
 
 // Keep in sync with resources/chromeos/account_manager_error.js
 enum class AccountManagerErrorType {
@@ -93,6 +97,7 @@ GURL GetInlineLoginUrl(const std::string& email,
 // static
 void InlineLoginHandlerDialogChromeOS::Show(const std::string& email,
                                             const Source& source) {
+  base::UmaHistogramEnumeration(kAccountAdditionSource, source);
   // If the dialog was triggered as a response to background request, it could
   // get displayed on the lock screen. In this case it is safe to ignore it,
   // since in this case user will get it again after a request to Google
@@ -114,6 +119,10 @@ void InlineLoginHandlerDialogChromeOS::Show(const std::string& email,
   // Chrome OS is defined.
   ash::WindowBackdrop::Get(dialog->dialog_window())
       ->SetBackdropType(ash::WindowBackdrop::BackdropType::kSemiOpaque);
+}
+
+void InlineLoginHandlerDialogChromeOS::Show(const Source& source) {
+  Show(/* email= */ std::string(), source);
 }
 
 void InlineLoginHandlerDialogChromeOS::AdjustWidgetInitParams(

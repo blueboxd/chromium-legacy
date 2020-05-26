@@ -10,7 +10,11 @@ bluetooth_test(() => {
       let disconnected = eventPromise(characteristic.service.device, 'gattserverdisconnected');
       let promise = assert_promise_rejects_with_message(
         characteristic.CALLS([
-          readValue()| writeValue(val)| startNotifications()]),
+          readValue()|
+          writeValue(val)|
+          writeValueWithResponse(val)|
+          writeValueWithoutResponse(val)|
+          startNotifications()]),
         new DOMException('GATT Server is disconnected. Cannot perform GATT operations. ' +
                          '(Re)connect first with `device.gatt.connect`.',
                          'NetworkError'));

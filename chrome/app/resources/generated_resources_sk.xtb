@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Skratky vyberáte vy</translation>
 <translation id="1213037489357051291">Počet nastavených odtlačkov: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Odosielanie údajov o využití a diagnostiky. Pomôžte zlepšiť prostredie Androidu svojho dieťaťa automatickým odosielaním diagnostík a údajov o používaní zariadenia a aplikácií do Googlu. Nebudú slúžiť na zistenie totožnosti vášho dieťaťa. Pomôžu zvýšiť stabilitu systému a aplikácií a poskytovať ďalšie zlepšenia. Niektoré súhrnné údaje tiež pomôžu aplikáciám Google a partnerom, ako napríklad vývojárom pre Android. Používanie tohto nastavenia je presadzované vlastníkom. Vlastník môže odosielať Googlu diagnostiky a údaje o používaní pre toto zariadenie. Ak pre dieťa zapnete nastavenie ďalšej aktivity na internete a v aplikáciách, tieto údaje sa môžu uložiť do jeho účtu Google.</translation>
+<translation id="121384500095351701">Tento súbor nie je možné bezpečne stiahnuť</translation>
 <translation id="1215411991991485844">Bola pridaná nová aplikácia na pozadí</translation>
 <translation id="1216542092748365687">Odstrániť odtlačok prsta</translation>
 <translation id="1217483152325416304">Vaše miestne údaje budú čoskoro odstránené</translation>
@@ -1064,6 +1065,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="2336228925368920074">Všetky karty uložiť ako záložky...</translation>
 <translation id="2336376423977300504">Vždy vymazať súbory cookie pri zavretí okien</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Súbor <ph name="FILE_NAME" /> nie je možné bezpečne stiahnuť</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> žiada o spárovanie</translation>
 <translation id="2342740338116612727">Boli pridané záložky</translation>
 <translation id="2343747224442182863">Označiť túto kartu</translation>
@@ -1876,7 +1878,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="3371140690572404006">zariadenia USB-C (port vpravo vpredu)</translation>
 <translation id="337286756654493126">Čítať priečinky, ktoré v aplikácii otvoríte</translation>
 <translation id="3378572629723696641">Toto rozšírenie mohlo byť poškodené.</translation>
-<translation id="3379169026479470857">Odstrániť DLC</translation>
+<translation id="3379169026479470857">Odstrániť stiahnutý obsah</translation>
 <translation id="337920581046691015">Nainštaluje sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3380365263193509176">Neznáma chyba</translation>
 <translation id="3382073616108123819">Ojoj! Systém nedokázal rozpoznať identifikátory tohto zariadenia</translation>
@@ -3253,6 +3255,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5154702632169343078">Predmet</translation>
 <translation id="5157635116769074044">Pripnúť túto stránku na Úvodnú obrazovku...</translation>
 <translation id="5158983316805876233">Použiť rovnaký server proxy pre všetky protokoly</translation>
+<translation id="5159419673777902220">Tvoj rodič deaktivoval povolenia rozšírenia</translation>
 <translation id="5160857336552977725">Prihláste sa do svojho zariadenia <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Doplnok <ph name="PLUGIN_NAME" /> bol zablokovaný, pretože je zastaraný</translation>
 <translation id="5170568018924773124">Zobraziť v priečinku</translation>
@@ -3499,7 +3502,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5488468185303821006">Povoliť v režime inkognito</translation>
 <translation id="5489435190927933437">Uložené heslá domény <ph name="DOMAIN" /></translation>
 <translation id="5490721031479690399">Odpojiť zariadenie Bluetooth</translation>
-<translation id="5490798133083738649">Povoľte systému Linux prístup k mikrofónu</translation>
+<translation id="5490798133083738649">Povoliť systému Linux prístup k mikrofónu</translation>
 <translation id="549211519852037402">Béžová a biela</translation>
 <translation id="5493792505296048976">obrazovka je zapnutá</translation>
 <translation id="5494362494988149300">Po &amp;stiahnutí otvoriť</translation>
@@ -4564,7 +4567,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="6880587130513028875">Obrázky boli na tejto stránke zablokované.</translation>
 <translation id="6882836635272038266">Štandardná ochrana pred nebezpečnými webmi, stiahnutými súbormi a rozšíreniami.</translation>
 <translation id="6883319974225028188">Ojoj! Systém nedokázal uložiť konfiguráciu zariadenia.</translation>
-<translation id="6885064901301703683">Uchovajte raz, používajte všade</translation>
+<translation id="6885064901301703683">Uložte raz, používajte všade</translation>
 <translation id="6885771755599377173">Ukážka systémových informácií</translation>
 <translation id="6886476658664859389">Bezpečnostný kľúč NFC</translation>
 <translation id="6886871292305414135">Otvoriť odkaz na novej &amp;karte</translation>
@@ -5394,6 +5397,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="7925247922861151263">Kontrola AAA zlyhala</translation>
 <translation id="7925285046818567682">Čakanie na <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To som nebol(a) ja.</translation>
+<translation id="7926975587469166629">Prezývka karty</translation>
 <translation id="7928175190925744466">Už ste zmenili toto heslo?</translation>
 <translation id="7928836894214140642">Spravuje <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Tu sa zobrazia uložené spôsoby platby</translation>
@@ -6039,7 +6043,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 
           &lt;p&gt;Stále však môžete nastavenia nakonfigurovať pomocou príkazového riadka. Ďalšie informácie o príznakoch a premenných prostredia nájdete v príručke &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;.&lt;/p&gt;</translation>
 <translation id="8755376271068075440">&amp;Väčší</translation>
-<translation id="8756143264090841047">Odstrániť DLC</translation>
+<translation id="8756143264090841047">Odstrániť stiahnutý obsah</translation>
 <translation id="8756969031206844760">Aktualizovať heslo?</translation>
 <translation id="8757090071857742562">Plochu sa nepodarilo prenášať. Skontrolujte, či ste potvrdili výzvu na zdieľanie obrazovky.</translation>
 <translation id="8757803915342932642">Zariadenia Google Cloud – zariadenie</translation>

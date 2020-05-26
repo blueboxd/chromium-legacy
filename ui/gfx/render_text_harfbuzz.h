@@ -229,7 +229,7 @@ class GFX_EXPORT RenderTextHarfBuzz : public RenderText {
   void OnDisplayTextAttributeChanged() override;
   void EnsureLayout() override;
   void DrawVisualText(internal::SkiaTextRenderer* renderer,
-                      const std::vector<Range> selections) override;
+                      const std::vector<Range>& selections) override;
 
  private:
   friend class test::RenderTextTestApi;

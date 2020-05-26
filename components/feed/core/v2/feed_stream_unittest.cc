@@ -28,6 +28,7 @@
 #include "components/feed/core/proto/v2/ui.pb.h"
 #include "components/feed/core/proto/v2/wire/action_request.pb.h"
 #include "components/feed/core/proto/v2/wire/request.pb.h"
+#include "components/feed/core/proto/v2/wire/there_and_back_again_data.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/config.h"
 #include "components/feed/core/v2/feed_network.h"
@@ -1254,15 +1255,17 @@ TEST_F(FeedStreamTest, StorePendingAction) {
 TEST_F(FeedStreamTest, StorePendingActionAndUploadNow) {
   network_.consistency_token = "token-11";
 
-  CallbackReceiver<UploadActionsTask::Result> cr;
-  stream_->UploadAction(MakeFeedAction(42ul), true, cr.Bind());
+  // Call |ProcessThereAndBackAgain()|, which triggers Upload() with
+  // upload_now=true.
+  {
+    feedwire::ThereAndBackAgainData msg;
+    *msg.mutable_action_payload() = MakeFeedAction(42ul).action_payload();
+    stream_->ProcessThereAndBackAgain(msg.SerializeAsString());
+  }
   WaitForIdleTaskQueue();
 
-  ASSERT_TRUE(cr.GetResult());
-  EXPECT_EQ(1ul, cr.GetResult()->upload_attempt_count);
-  EXPECT_EQ(UploadActionsStatus::kUpdatedConsistencyToken,
-            cr.GetResult()->status);
-
+  // Verify the action was uploaded.
+  EXPECT_EQ(1, network_.action_request_call_count);
   std::vector<feedstore::StoredAction> result =
       ReadStoredActions(stream_->GetStore());
   ASSERT_EQ(0ul, result.size());

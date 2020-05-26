@@ -46,7 +46,7 @@ View* WidgetDelegate::GetInitiallyFocusedView() {
   return nullptr;
 }
 
-BubbleDialogDelegateView* WidgetDelegate::AsBubbleDialogDelegate() {
+BubbleDialogDelegate* WidgetDelegate::AsBubbleDialogDelegate() {
   return nullptr;
 }
 

@@ -25,6 +25,11 @@
 #include "components/sync/protocol/proto_value_conversions.h"
 
 namespace syncer {
+namespace {
+
+const char kErrorSiteHistogramPrefix[] = "Sync.ModelTypeErrorSite.";
+
+}  // namespace
 
 ClientTagBasedModelTypeProcessor::ClientTagBasedModelTypeProcessor(
     ModelType type,
@@ -252,6 +257,11 @@ std::string ClientTagBasedModelTypeProcessor::TrackedCacheGuid() {
 }
 
 void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
+  ReportErrorImpl(error, ErrorSite::kBridgeInitiated);
+}
+
+void ClientTagBasedModelTypeProcessor::ReportErrorImpl(const ModelError& error,
+                                                       ErrorSite site) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Ignore all errors after the first.
@@ -260,6 +270,9 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
   }
 
   model_error_ = error;
+
+  const std::string type_suffix = ModelTypeToHistogramSuffix(type_);
+  base::UmaHistogramEnumeration(kErrorSiteHistogramPrefix + type_suffix, site);
 
   if (dump_stack_) {
     // Upload a stack trace if possible.
@@ -621,7 +634,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
   }
 
   if (error) {
-    ReportError(*error);
+    ReportErrorImpl(*error, ErrorSite::kApplyUpdatesOnCommitResponse);
   }
 }
 
@@ -660,14 +673,18 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
   // on the client, without having to know exactly which entities the client
   // has.
   const bool is_initial_sync = !IsTrackingMetadata();
-  if (is_initial_sync || HasClearAllDirective(model_type_state)) {
+  const bool treating_as_full_update =
+      is_initial_sync || HasClearAllDirective(model_type_state);
+  if (treating_as_full_update) {
     error = OnFullUpdateReceived(model_type_state, std::move(updates));
   } else {
     error = OnIncrementalUpdateReceived(model_type_state, std::move(updates));
   }
 
   if (error) {
-    ReportError(*error);
+    ReportErrorImpl(*error, treating_as_full_update
+                                ? ErrorSite::kApplyFullUpdates
+                                : ErrorSite::kApplyIncrementalUpdates);
     return;
   }
 
@@ -708,9 +725,10 @@ bool ClientTagBasedModelTypeProcessor::ValidateUpdate(
 
   if (HasClearAllDirective(model_type_state) &&
       bridge_->SupportsIncrementalUpdates()) {
-    ReportError(ModelError(FROM_HERE,
-                           "Received an update with version watermark for "
-                           "bridge that supports incremental updates"));
+    ReportErrorImpl(ModelError(FROM_HERE,
+                               "Received an update with version watermark for "
+                               "bridge that supports incremental updates"),
+                    ErrorSite::kSupportsIncrementalUpdatesMismatch);
 
     return false;
   } else if (!HasClearAllDirective(model_type_state) &&
@@ -721,10 +739,11 @@ bool ClientTagBasedModelTypeProcessor::ValidateUpdate(
     // (If the last condition does not hold true and the list of updates is
     // empty, we still need to pass the empty update to the bridge because the
     // progress marker might have changed.)
-    ReportError(ModelError(FROM_HERE,
-                           "Received a non-empty update without version "
-                           "watermark for bridge that does not support "
-                           "incremental updates"));
+    ReportErrorImpl(ModelError(FROM_HERE,
+                               "Received a non-empty update without version "
+                               "watermark for bridge that does not support "
+                               "incremental updates"),
+                    ErrorSite::kSupportsIncrementalUpdatesMismatch);
     return false;
   }
   return true;

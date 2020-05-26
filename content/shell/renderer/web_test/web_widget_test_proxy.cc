@@ -10,7 +10,6 @@
 #include "content/shell/renderer/web_test/blink_test_runner.h"
 #include "content/shell/renderer/web_test/test_interfaces.h"
 #include "content/shell/renderer/web_test/test_runner.h"
-#include "content/shell/renderer/web_test/test_runner_for_specific_view.h"
 #include "content/shell/renderer/web_test/web_view_test_proxy.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -100,18 +99,27 @@ void WebWidgetTestProxy::ScheduleAnimationInternal(bool do_raster) {
 }
 
 bool WebWidgetTestProxy::RequestPointerLock(
-    blink::WebLocalFrame*,
-    blink::WebWidgetClient::PointerLockCallback,
-    bool) {
-  return GetViewTestRunner()->RequestPointerLock();
+    blink::WebLocalFrame* requester_frame,
+    blink::WebWidgetClient::PointerLockCallback callback,
+    bool request_unadjusted_movement) {
+  return event_sender_.RequestPointerLock(requester_frame, std::move(callback));
+}
+
+bool WebWidgetTestProxy::RequestPointerLockChange(
+    blink::WebLocalFrame* requester_frame,
+    blink::WebWidgetClient::PointerLockCallback callback,
+    bool request_unadjusted_movement) {
+  // This isn't implemented yet for web tests.
+  CHECK(false);
+  return false;
 }
 
 void WebWidgetTestProxy::RequestPointerUnlock() {
-  return GetViewTestRunner()->RequestPointerUnlock();
+  event_sender_.RequestPointerUnlock();
 }
 
 bool WebWidgetTestProxy::IsPointerLocked() {
-  return GetViewTestRunner()->isPointerLocked();
+  return event_sender_.IsPointerLocked();
 }
 
 void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
@@ -123,7 +131,7 @@ void WebWidgetTestProxy::StartDragging(network::mojom::ReferrerPolicy policy,
 
   // When running a test, we need to fake a drag drop operation otherwise
   // Windows waits for real mouse events to know when the drag is over.
-  event_sender()->DoDragDrop(data, mask);
+  event_sender_.DoDragDrop(data, mask);
 }
 
 blink::WebScreenInfo WebWidgetTestProxy::GetScreenInfo() {
@@ -188,10 +196,6 @@ void WebWidgetTestProxy::SynchronouslyCompositeAfterTest() {
   DCHECK(!in_synchronous_composite_);
 
   SynchronouslyComposite(/*do_raster=*/true);
-}
-
-TestRunnerForSpecificView* WebWidgetTestProxy::GetViewTestRunner() {
-  return GetWebViewTestProxy()->view_test_runner();
 }
 
 TestRunner* WebWidgetTestProxy::GetTestRunner() {

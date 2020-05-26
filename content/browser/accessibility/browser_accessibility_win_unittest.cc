@@ -4,6 +4,9 @@
 
 #include "content/browser/accessibility/browser_accessibility_win.h"
 
+#include <string>
+#include <vector>
+
 #include <objbase.h>
 #include <stdint.h>
 #include <wrl/client.h>
@@ -129,18 +132,18 @@ TEST_F(BrowserAccessibilityWinTest, TestNoLeaks) {
   // BrowserAccessibilityManager.
   ui::AXNodeData button;
   button.id = 2;
-  button.SetName("Button");
   button.role = ax::mojom::Role::kButton;
+  button.SetName("Button");
 
   ui::AXNodeData checkbox;
   checkbox.id = 3;
-  checkbox.SetName("Checkbox");
   checkbox.role = ax::mojom::Role::kCheckBox;
+  checkbox.SetName("Checkbox");
 
   ui::AXNodeData root;
   root.id = 1;
-  root.SetName("Document");
   root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("Document");
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -193,8 +196,8 @@ TEST_F(BrowserAccessibilityWinTest, TestChildrenChange) {
 
   ui::AXNodeData root;
   root.id = 1;
-  root.SetName("Document");
   root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("Document");
   root.child_ids.push_back(2);
 
   // Construct a BrowserAccessibilityManager with this
@@ -701,22 +704,28 @@ TEST_F(BrowserAccessibilityWinTest, TestComplexHypertext) {
   check_box.role = ax::mojom::Role::kCheckBox;
   check_box.SetCheckedState(ax::mojom::CheckedState::kTrue);
   check_box.SetName(base::UTF16ToUTF8(check_box_name));
+  // ARIA checkbox where the name is derived from its inner text.
+  check_box.SetNameFrom(ax::mojom::NameFrom::kContents);
   check_box.SetValue(base::UTF16ToUTF8(check_box_value));
 
   ui::AXNodeData button, button_text;
   button.id = 15;
   button_text.id = 17;
-  button_text.SetName(base::UTF16ToUTF8(button_text_name));
   button.role = ax::mojom::Role::kButton;
+  button.SetName(base::UTF16ToUTF8(button_text_name));
+  button.SetNameFrom(ax::mojom::NameFrom::kContents);
+  // A single text child with the same name should be hidden from accessibility
+  // to prevent double speaking.
   button_text.role = ax::mojom::Role::kStaticText;
+  button_text.SetName(base::UTF16ToUTF8(button_text_name));
   button.child_ids.push_back(button_text.id);
 
   ui::AXNodeData link, link_text;
   link.id = 16;
   link_text.id = 18;
-  link_text.SetName(base::UTF16ToUTF8(link_text_name));
   link.role = ax::mojom::Role::kLink;
   link_text.role = ax::mojom::Role::kStaticText;
+  link_text.SetName(base::UTF16ToUTF8(link_text_name));
   link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData root;
@@ -1068,15 +1077,15 @@ TEST_F(BrowserAccessibilityWinTest, TestIA2Attributes) {
 
   ui::AXNodeData checkbox;
   checkbox.id = 3;
-  checkbox.SetName("Checkbox");
   checkbox.role = ax::mojom::Role::kCheckBox;
   checkbox.SetCheckedState(ax::mojom::CheckedState::kTrue);
+  checkbox.SetName("Checkbox");
 
   ui::AXNodeData root;
   root.id = 1;
-  root.SetName("Document");
   root.role = ax::mojom::Role::kRootWebArea;
   root.AddState(ax::mojom::State::kFocusable);
+  root.SetName("Document");
   root.child_ids.push_back(2);
   root.child_ids.push_back(3);
 
@@ -1112,7 +1121,7 @@ TEST_F(BrowserAccessibilityWinTest, TestIA2Attributes) {
   EXPECT_EQ(S_OK, hr);
   EXPECT_NE(nullptr, attributes.Get());
   attributes_str = std::wstring(attributes.Get(), attributes.Length());
-  EXPECT_EQ(L"checkable:true;", attributes_str);
+  EXPECT_EQ(L"checkable:true;explicit-name:true;", attributes_str);
 
   manager.reset();
 }
@@ -1126,10 +1135,10 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   ui::AXNodeData combo_box, combo_box_text;
   combo_box.id = 2;
   combo_box_text.id = 3;
-  combo_box.SetName("Combo box:");
-  combo_box_text.SetName("Combo box text");
   combo_box.role = ax::mojom::Role::kTextFieldWithComboBox;
   combo_box_text.role = ax::mojom::Role::kStaticText;
+  combo_box.SetName("Combo box:");
+  combo_box_text.SetName("Combo box text");
   combo_box.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
   combo_box.AddState(ax::mojom::State::kEditable);
   combo_box.AddState(ax::mojom::State::kRichlyEditable);
@@ -1142,12 +1151,12 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   search_box.id = 4;
   search_box_text.id = 5;
   new_line.id = 6;
-  search_box.SetName("Search for:");
-  search_box_text.SetName("Search box text");
-  new_line.SetName("\n");
   search_box.role = ax::mojom::Role::kSearchBox;
   search_box_text.role = ax::mojom::Role::kStaticText;
   new_line.role = ax::mojom::Role::kLineBreak;
+  search_box.SetName("Search for:");
+  search_box_text.SetName("Search box text");
+  new_line.SetName("\n");
   search_box.AddBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot, true);
   search_box.AddState(ax::mojom::State::kEditable);
   search_box.AddState(ax::mojom::State::kRichlyEditable);
@@ -1170,18 +1179,18 @@ TEST_F(BrowserAccessibilityWinTest, TestValueAttributeInTextControls) {
   ui::AXNodeData link, link_text;
   link.id = 8;
   link_text.id = 9;
-  link_text.SetName("Link text");
   link.role = ax::mojom::Role::kLink;
   link_text.role = ax::mojom::Role::kStaticText;
+  link_text.SetName("Link text");
   link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData slider, slider_text;
   slider.id = 10;
   slider_text.id = 11;
-  slider.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 5.0F);
-  slider_text.SetName("Slider text");
   slider.role = ax::mojom::Role::kSlider;
   slider_text.role = ax::mojom::Role::kStaticText;
+  slider.AddFloatAttribute(ax::mojom::FloatAttribute::kValueForRange, 5.0F);
+  slider_text.SetName("Slider text");
   slider.child_ids.push_back(slider_text.id);
 
   root.child_ids.push_back(2);   // Combo box.
@@ -2227,11 +2236,11 @@ TEST_F(BrowserAccessibilityWinTest, TestIAccessibleHyperlink) {
   link.AddState(ax::mojom::State::kFocusable);
   link.AddState(ax::mojom::State::kLinked);
   link.SetName("here");
+  link.SetNameFrom(ax::mojom::NameFrom::kContents);
   link.AddStringAttribute(ax::mojom::StringAttribute::kUrl, "example.com");
 
-  root.child_ids.push_back(2);
-  div.child_ids.push_back(3);
-  div.child_ids.push_back(4);
+  root.child_ids.push_back(div.id);
+  div.child_ids = {text.id, link.id};
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(

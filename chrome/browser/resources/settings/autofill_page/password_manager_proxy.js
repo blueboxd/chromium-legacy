@@ -265,11 +265,6 @@ PasswordManagerProxy.UrlCollection;
 /** @typedef {chrome.passwordsPrivate.ExceptionEntry} */
 PasswordManagerProxy.ExceptionEntry;
 
-/**
- * @typedef {{ entry: !PasswordManagerProxy.PasswordUiEntry, password: string }}
- */
-PasswordManagerProxy.UiEntryWithPassword;
-
 /** @typedef {chrome.passwordsPrivate.PasswordExportProgress} */
 PasswordManagerProxy.PasswordExportProgress;
 

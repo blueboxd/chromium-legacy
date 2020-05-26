@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">शॉर्टकट आप चुनते हैं</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> फ़िंगरप्रिंट को सेट अप किया गया</translation>
 <translation id="1213254615020057352">इस्तेमाल और गड़बड़ी की जानकारी से जुड़ा डेटा भेजें. Google को गड़बड़ी, डिवाइस, और ऐप्लिकेशन के इस्तेमाल से जुड़ा डेटा अपने-आप भेजकर, अपने बच्चे के Android अनुभव को बेहतर बनाने में मदद करें. इसका इस्तेमाल आपके बच्चे की पहचान करने के लिए नहीं किया जाएगा. यह सिस्टम और ऐप्लिकेशन की स्थिरता बढ़ाने और दूसरे सुधार करने में मदद करेगा. इकट्ठा किया गया कुछ डेटा, Google ऐप्लिकेशन और पार्टनर की भी मदद करेगा. जैसे, Android डेवलपर. यह सेटिंग, डिवाइस के मालिक ने लागू की है. डिवाइस का मालिक, गड़बड़ी और इस डिवाइस के इस्तेमाल से जुड़ा डेटा Google को भेजने का विकल्प चुन सकता है. अगर आपके बच्चे के लिए 'अन्य वेब और ऐप्लिकेशन गतिविधि' सेटिंग चालू है, तो यह डेटा उसके Google खाते में सेव किया जा सकता है.</translation>
+<translation id="121384500095351701">यह फ़ाइल सुरक्षित तरीके से डाउनलोड नहीं की जा सकती</translation>
 <translation id="1215411991991485844">नया बैकग्राउंड ऐप्लिकेशन जोड़ा गया</translation>
 <translation id="1216542092748365687">फ़िंगरप्रिंट हटाएं</translation>
 <translation id="1217483152325416304">आपका स्थानीय डेटा जल्द ही मिटा दिया जाएगा</translation>
@@ -1064,6 +1065,7 @@
 <translation id="2336228925368920074">सभी टैब बुकमार्क करें...</translation>
 <translation id="2336376423977300504">विंडो बंद करने के बाद हमेशा कुकी मिटाएं</translation>
 <translation id="2336381494582898602">पॉवरवॉश</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> सुरक्षित तरीके से डाउनलोड नहीं की जा सकती</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> युग्मित करना चाहता है</translation>
 <translation id="2342740338116612727">बुकमार्क जोड़े गए</translation>
 <translation id="2343747224442182863">इस टैब पर फ़ोकस करें</translation>
@@ -2041,7 +2043,7 @@
 <translation id="3578594933904494462">इस टैब की सामग्री को शेयर किया जा रहा है.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; आपके स्‍वामित्‍व वाले समूह: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt; से &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; प्रिंटर शेयर करना चाहता है. अगर आप स्‍वीकार करते हैं, तो समूह के सभी सदस्‍य प्रिंटर से प्रिंट कर पाएंगे.</translation>
 <translation id="357889014807611375">सीमित डेटा वाला वाई-फ़ाई</translation>
-<translation id="3581605050355435601">आईपी पता अपने-आप कॉन्फ़िगर हो</translation>
+<translation id="3581605050355435601">आईपी पता अपने-आप कॉन्फ़िगर होने की सुविधा/विकल्प</translation>
 <translation id="3582057310199111521">यह पासवर्ड धोखाधड़ी वाली साइट पर डाला गया था और यह हैक हो चुका है</translation>
 <translation id="3584169441612580296">अपने कंप्यूटर से फ़ोटो, संगीत और अन्य मीडिया ऐक्सेस करें और उन्हें बदलें</translation>
 <translation id="3586806079541226322">यह फ़ाइल नहीं खुल सकती</translation>
@@ -3253,6 +3255,7 @@
 <translation id="5154702632169343078">विषय</translation>
 <translation id="5157635116769074044">इस पेज को प्रारंभ स्क्रीन में पिन करें...</translation>
 <translation id="5158983316805876233">सभी प्रोटोकॉल के लिए एक ही प्रॉक्सी का उपयोग करें</translation>
+<translation id="5159419673777902220">आपके पैरंट ने एक्सटेंशन की अनुमतियां बंद कर दी हैं</translation>
 <translation id="5160857336552977725">अपने <ph name="DEVICE_TYPE" /> में साइन इन करें</translation>
 <translation id="5166596762332123936">पुराना होने के कारण <ph name="PLUGIN_NAME" /> को रोक दिया गया था</translation>
 <translation id="5170568018924773124">फ़ोल्डर में दिखाएं</translation>
@@ -4929,7 +4932,7 @@
 <translation id="7346909386216857016">ठीक है, समझ लिया</translation>
 <translation id="7347452120014970266">इससे वे सभी डेटा और कुकी मिट जाएंगे जिन्हें <ph name="ORIGIN_NAME" /> और इंस्टॉल किए गए ऐप्लिकेशन ने सेव किया है</translation>
 <translation id="7347751611463936647">इस एक्सटेंशन का इस्तेमाल करने के लिए, "<ph name="EXTENSION_KEYWORD" />" टाइप करें, फिर TAB टाइप करें, फिर आदेश या खोज टाइप करें.</translation>
-<translation id="7347943691222276892"><ph name="SUBPAGE_TITLE" /> से दूर जाने के लिए क्लिक करें.</translation>
+<translation id="7347943691222276892"><ph name="SUBPAGE_TITLE" /> से विज़िट किए गए पिछले पेज पर जाने के लिए क्लिक करें.</translation>
 <translation id="7348093485538360975">ऑन-स्‍क्रीन कीबोर्ड</translation>
 <translation id="7352651011704765696">कुछ गलत हुआ</translation>
 <translation id="735361434055555355">Linux इंस्टॉल किया जा रहा है...</translation>
@@ -5393,6 +5396,7 @@
 <translation id="7925247922861151263">AAA जाँच पूरा नहीं हो सका</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> की प्रतीक्षा कर रहा है...</translation>
 <translation id="7926423016278357561">यह मैं नहीं था/थी.</translation>
+<translation id="7926975587469166629">कार्ड का प्रचलित नाम</translation>
 <translation id="7928175190925744466">क्या आपने पहले ही यह पासवर्ड बदल दिया है?</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> प्रबंधित करता है</translation>
 <translation id="7930294771522048157">सेव किए गए भुगतान के तरीके यहां दिखाई देंगे</translation>

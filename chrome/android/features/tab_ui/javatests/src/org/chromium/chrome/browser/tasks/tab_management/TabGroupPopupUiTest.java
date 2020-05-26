@@ -179,7 +179,7 @@ public class TabGroupPopupUiTest {
 
         // Re-verify that tab strip never shows in single tab.
         clickFirstCardFromTabSwitcher(cta);
-        closeFirstTabInDialog(cta);
+        closeFirstTabInDialog();
         clickFirstTabInDialog(cta);
         CriteriaHelper.pollInstrumentationThread(() -> isTabStripHidden(cta));
         triggerTabStripAndVerify(cta, 0);

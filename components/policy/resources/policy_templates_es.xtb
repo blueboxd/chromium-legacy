@@ -689,6 +689,11 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si se asigna una ruta de archivo a esta política, el archivo se usa como
       ejecutable.</translation>
 <translation id="2113068765175018713">Limitar tiempo de actividad de dispositivo mediante reinicio automático</translation>
+<translation id="2124881675920287921">Esta política está obsoleta en la versión M82 y se eliminará en la versión M85. Utiliza <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> en su lugar. Inhabilitar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> equivale a inhabilitar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Habilitar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> o no configurar este ajuste equivale a no configurar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
+
+      Si se asigna el valor false a esta política, los usuarios no podrán elegir si enviar o no parte de la información del sistema y del contenido de las páginas a los servidores de Google. Si se le asigna el valor true o no se configura, los usuarios podrán enviar parte de la información del sistema y del contenido de las páginas a la función Navegación Segura para que detecte aplicaciones y sitios web peligrosos.
+
+      Consulta la página https://developers.google.com/safe-browsing para obtener más información acerca de Navegación Segura.</translation>
 <translation id="2127599828444728326">Permitir notificaciones en estos sitios</translation>
 <translation id="2131902621292742709">Retraso de atenuado de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="2134437727173969994">Permitir que se bloquee la pantalla</translation>
@@ -2422,7 +2427,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Independientemente de que habilites o inhabilites esta opción, los usuarios no podrán modificarla ni anularla en <ph name="PRODUCT_NAME" />.
 
       Si no se establece esta política, esta opción estará habilitada, pero el usuario podrá modificarla.</translation>
-<translation id="4529868888205510667">Si se asigna el valor "true" a esta política o no se le asigna ninguno, se permite a los usuarios usar ARC, a menos que ARC se haya desactivado de otra forma. Si se le asigna el valor "false", no se permite usar ARC a los usuarios no afiliados.
+<translation id="4529868888205510667">Si se asigna el valor "true" a esta política o no se le asigna ninguno, se permite a los usuarios utilizar ARC, a menos que ARC se haya desactivado de otra forma. Si se le asigna el valor "false", no se permite usar ARC a los usuarios no afiliados.
 
       Los cambios de esta política solo se podrán aplicar si ARC no se está ejecutando (por ejemplo, cuando se esté iniciando Chrome OS).</translation>
 <translation id="453031441196755904">Esta política está obsoleta.</translation>
@@ -2922,7 +2927,6 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="5307432759655324440">Disponibilidad del modo de incógnito</translation>
 <translation id="5311275381462687162">Configuración antigua de comportamiento de cookies de <ph name="ATTRIBUTE_SAMESITE_NAME" /> predeterminada</translation>
 <translation id="5318185076587284965">Habilita el uso de servidores de retransmisión por parte del host de acceso remoto</translation>
-<translation id="5321755462836179869">Permite las notificaciones nativas</translation>
 <translation id="5323128137188992869">Permite enviar contenido al dispositivo con <ph name="PRODUCT_NAME" />.
 
           Si se asigna el valor "False" a esta política, los usuarios no podrán enviar contenido a su dispositivo. Si se le asigna el valor "True", los usuarios podrán enviar contenido. Si no se establece esta política, los usuarios no podrán enviar contenido a los dispositivos Chrome OS registrados, pero sí lo podrán hacer a dispositivos no registrados.</translation>
@@ -3722,7 +3726,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 
           Si decides usar un script del proxy .pac, se proporcionará la URL del script a las aplicaciones de Android.</translation>
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
-<translation id="6438972408080276697">Si se asigna el valor "true" a esta política, se enviarán a Google informes de eventos de instalación de aplicaciones de Android activados por la política. Si se le asigna el valor "false", no se enviará información de ninguno de estos eventos.</translation>
+<translation id="6438972408080276697">Si se asigna el valor "true" a esta política, se enviarán a Google informes de los principales eventos de instalación de aplicaciones de Android activados por la política. Si se le asigna el valor "false", no se enviará información de ninguno de estos eventos.</translation>
 <translation id="6440051664870270040">Permitir que los sitios web abran ventanas emergentes y naveguen de forma simultánea</translation>
 <translation id="6447948611083700881">La función de copia de seguridad y restauración está inhabilitada</translation>
 <translation id="6449476513004303784">No permitir que los usuarios gestionen certificados</translation>
@@ -4350,7 +4354,7 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
       Si esta política no se establece, la limpieza automática utilizará la estrategia integrada predeterminada. Actualmente, se trata de la estrategia RemoveLRUIfDormant.</translation>
 <translation id="7336785017449297672">Controla los ajustes del reloj y de la zona horaria.</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la duración de la sesión</translation>
-<translation id="7338217396351647423">Si se asigna un valor a esta política, especifica el conjunto de políticas que se enviará al entorno de ejecución ARC. Los administradores pueden usarla para seleccionar las aplicaciones de Android que se instalarán automáticamente. Escribe un valor en formato JSON.
+<translation id="7338217396351647423">Si se asigna un valor a esta política, se especifica el conjunto de políticas que se enviará al entorno de ejecución ARC. Los administradores pueden usarla para seleccionar las aplicaciones de Android que se instalarán automáticamente. Escribe un valor en formato JSON.
 
       Para fijar aplicaciones en el menú, consulta la política PinnedLauncherApps.</translation>
 <translation id="7339315111520512972">Forzar que el código de red se ejecute en el proceso del navegador</translation>

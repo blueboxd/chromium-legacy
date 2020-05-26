@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ImportantFileWriterAndroid;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 
@@ -31,6 +32,7 @@ import java.io.IOException;
  * testing that the Java code is calling the native code correctly.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class ImportantFileWriterAndroidTest {
     @Rule
     public NativeLibraryTestRule mActivityTestRule = new NativeLibraryTestRule();

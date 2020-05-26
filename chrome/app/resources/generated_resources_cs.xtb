@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Zkratky vybíráte vy sami</translation>
 <translation id="1213037489357051291">Nastavení otisků prstu: celkem <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Odesílat údaje o využití a diagnostice. Pomozte prostředí Android svého dítěte zlepšit tím, že necháte do Googlu automaticky odesílat diagnostické údaje a údaje o využití zařízení a aplikací. Tyto údaje nebudou používány ke zjištění totožnosti dítěte a pomohou nám se zvyšováním stability systému a aplikací a dalšími vylepšeními. Některá souhrnná data budou moci využít také naši partneři, např. vývojáři aplikací pro Android. Toto nastavení je vyžadováno vlastníkem. Vlastník může zvolit, že se diagnostické údaje a údaje o využití z tohoto zařízení mají odesílat do Googlu. Pokud má dítě zapnuté dodatečné nastavení Aktivita na webu a v aplikacích, mohou se tato data ukládat do jeho účtu Google.</translation>
+<translation id="121384500095351701">Tento soubor nelze bezpečně stáhnout</translation>
 <translation id="1215411991991485844">Byla přidána nová aplikace na pozadí</translation>
 <translation id="1216542092748365687">Odstranit otisk prstu</translation>
 <translation id="1217483152325416304">Vaše místní data budou brzy smazána</translation>
@@ -1064,6 +1065,7 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2336228925368920074">Přidat do záložek všechny karty...</translation>
 <translation id="2336376423977300504">Vždy smazat soubory cookie při zavření oken</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Soubor <ph name="FILE_NAME" /> nelze bezpečně stáhnout</translation>
 <translation id="2340263603246777781">Web <ph name="ORIGIN" /> žádá o spárování</translation>
 <translation id="2342740338116612727">Byly přidány záložky</translation>
 <translation id="2343747224442182863">Vybrat tuto kartu</translation>
@@ -3252,6 +3254,7 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="5154702632169343078">Předmět</translation>
 <translation id="5157635116769074044">Připnout tuto stránku na úvodní obrazovku...</translation>
 <translation id="5158983316805876233">Pro všechny protokoly použít stejný proxy server</translation>
+<translation id="5159419673777902220">Oprávnění pro rozšíření zakázal rodič</translation>
 <translation id="5160857336552977725">Přihlaste se do zařízení <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Plugin <ph name="PLUGIN_NAME" /> byl zablokován, protože je zastaralý</translation>
 <translation id="5170568018924773124">Zobrazit ve složce</translation>
@@ -5393,6 +5396,7 @@ V zařízení se systémem Chrome OS můžete aktivovat funkce ladění, abyste
 <translation id="7925247922861151263">Selhala bezpečnostní kontrola AAA</translation>
 <translation id="7925285046818567682">Čekání na <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To jsem nebyl(a) já.</translation>
+<translation id="7926975587469166629">Přezdívka karty</translation>
 <translation id="7928175190925744466">Už jste toto heslo změnili?</translation>
 <translation id="7928836894214140642">Spravováno doménou <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Zde se budou zobrazovat uložené platební metody</translation>

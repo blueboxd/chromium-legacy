@@ -73,11 +73,8 @@ gfx::Image ContentFaviconDriver::GetFavicon() const {
   // Like GetTitle(), we also want to use the favicon for the last committed
   // entry rather than a pending navigation entry.
   content::NavigationController& controller = web_contents()->GetController();
-  content::NavigationEntry* entry = controller.GetTransientEntry();
-  if (entry)
-    return entry->GetFavicon().image;
 
-  entry = controller.GetLastCommittedEntry();
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
   if (entry)
     return entry->GetFavicon().image;
   return gfx::Image();
@@ -85,11 +82,8 @@ gfx::Image ContentFaviconDriver::GetFavicon() const {
 
 bool ContentFaviconDriver::FaviconIsValid() const {
   content::NavigationController& controller = web_contents()->GetController();
-  content::NavigationEntry* entry = controller.GetTransientEntry();
-  if (entry)
-    return entry->GetFavicon().valid;
 
-  entry = controller.GetLastCommittedEntry();
+  content::NavigationEntry* entry = controller.GetLastCommittedEntry();
   if (entry)
     return entry->GetFavicon().valid;
 

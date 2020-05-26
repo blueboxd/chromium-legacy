@@ -1430,14 +1430,6 @@ void FrameLoader::DidDropNavigation() {
   }
 }
 
-void FrameLoader::MarkAsLoading() {
-  // This should only be called for initial history navigation in child frame.
-  DCHECK(!client_navigation_);
-  DCHECK(frame_->GetDocument()->IsLoadCompleted());
-  DCHECK(frame_->GetDocument()->HasFinishedParsing());
-  progress_tracker_->ProgressStarted();
-}
-
 bool FrameLoader::ShouldReuseDefaultView(
     const scoped_refptr<const SecurityOrigin>& origin,
     const ContentSecurityPolicy* csp) {

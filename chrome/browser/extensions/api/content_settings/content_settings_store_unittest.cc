@@ -15,6 +15,7 @@
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/permissions/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -372,6 +373,40 @@ TEST_F(ContentSettingsStoreTest, RemoveEmbedded) {
 
   Mock::VerifyAndClear(&observer);
   store()->RemoveObserver(&observer);
+}
+
+TEST_F(ContentSettingsStoreTest, DisallowWildcardsInFlash) {
+  // Enabling the feature which disallows wildcard matching for Plugin content
+  // settings.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      content_settings::kDisallowWildcardsInPluginContentSettings);
+
+  // Register extension.
+  std::string ext_id("my_extension");
+  RegisterExtension(ext_id);
+  ContentSettingsPattern primary_pattern =
+      ContentSettingsPattern::FromString("https://[*.]google.com");
+  ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();
+  store()->SetExtensionContentSetting(
+      ext_id, primary_pattern, secondary_pattern, ContentSettingsType::PLUGINS,
+      std::string(), CONTENT_SETTING_ALLOW, kExtensionPrefsScopeRegular);
+  store()->SetExtensionContentSetting(
+      ext_id, primary_pattern, secondary_pattern, ContentSettingsType::COOKIES,
+      std::string(), CONTENT_SETTING_ALLOW, kExtensionPrefsScopeRegular);
+
+  std::vector<content_settings::Rule> rules;
+  rules = GetSettingsForOneTypeFromStore(store(), ContentSettingsType::PLUGINS,
+                                         std::string(), false);
+  // Number of rules will be zero because we tried to add a pattern with
+  // wildcards.
+  ASSERT_EQ(rules.size(), 0u);
+
+  rules = GetSettingsForOneTypeFromStore(store(), ContentSettingsType::COOKIES,
+                                         std::string(), false);
+  // Here we will have one rule because wildcard patterns are allowed for
+  // ContentSettingsType::COOKIES.
+  ASSERT_EQ(rules.size(), 1u);
 }
 
 }  // namespace extensions

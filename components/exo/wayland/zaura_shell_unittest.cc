@@ -11,6 +11,7 @@
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/window_util.h"
 #include "base/time/time.h"
+#include "components/exo/buffer.h"
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window_occlusion_tracker.h"
@@ -67,7 +68,13 @@ class ZAuraSurfaceTest : public test::ExoTestBase,
   void SetUp() override {
     test::ExoTestBase::SetUp();
 
+    gfx::Size buffer_size(10, 10);
+    std::unique_ptr<Buffer> buffer(
+        new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+
     surface_.reset(new Surface);
+    surface_->Attach(buffer.get());
+
     aura_surface_.reset(new TestAuraSurface(surface_.get()));
 
     gfx::Transform transform;
@@ -128,8 +135,25 @@ class ZAuraSurfaceTest : public test::ExoTestBase,
   DISALLOW_COPY_AND_ASSIGN(ZAuraSurfaceTest);
 };
 
+TEST_F(ZAuraSurfaceTest, OcclusionTrackingStartsAfterCommit) {
+  surface().OnWindowOcclusionChanged();
+
+  EXPECT_EQ(-1.0f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(0, aura_surface().num_occlusion_updates());
+  EXPECT_FALSE(surface().IsTrackingOcclusion());
+
+  auto widget = CreateOpaqueWidget(gfx::Rect(0, 0, 10, 10));
+  widget->Show();
+  surface().Commit();
+
+  EXPECT_EQ(0.2f, aura_surface().last_sent_occlusion_fraction());
+  EXPECT_EQ(1, aura_surface().num_occlusion_updates());
+  EXPECT_TRUE(surface().IsTrackingOcclusion());
+}
+
 TEST_F(ZAuraSurfaceTest,
        LosingActivationWithNoAnimatingWindowsSendsCorrectOcclusionFraction) {
+  surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
@@ -146,6 +170,7 @@ TEST_F(ZAuraSurfaceTest,
 
 TEST_F(ZAuraSurfaceTest,
        LosingActivationWithAnimatingWindowsSendsTargetOcclusionFraction) {
+  surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
@@ -194,6 +219,7 @@ TEST_F(ZAuraSurfaceTest,
 
 TEST_F(ZAuraSurfaceTest,
        LosingActivationByTriggeringTheLockScreenDoesNotSendOccludedFraction) {
+  surface().Commit();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
   EXPECT_EQ(1, aura_surface().num_occlusion_updates());
   ::wm::ActivateWindow(parent_widget().GetNativeWindow());
@@ -227,9 +253,16 @@ TEST_F(ZAuraSurfaceTest,
 
 TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {
   UpdateDisplay("150x150");
+
+  gfx::Size buffer_size(80, 100);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
   // This is scaled by 1.5 - set the bounds to (-60, 75, 120, 150) in screen
   // coordinates so 75% of it is outside of the 100x100 screen.
   surface().window()->SetBounds(gfx::Rect(-40, 50, 80, 100));
+  surface().Attach(buffer.get());
+  surface().Commit();
+
   surface().OnWindowOcclusionChanged();
 
   EXPECT_EQ(0.75f, aura_surface().last_sent_occlusion_fraction());
@@ -238,6 +271,7 @@ TEST_F(ZAuraSurfaceTest, OcclusionIncludesOffScreenArea) {
 TEST_F(ZAuraSurfaceTest, ZeroSizeWindowSendsZeroOcclusionFraction) {
   // Zero sized window should not be occluded.
   surface().window()->SetBounds(gfx::Rect(0, 0, 0, 0));
+  surface().Commit();
   surface().OnWindowOcclusionChanged();
   EXPECT_EQ(0.0f, aura_surface().last_sent_occlusion_fraction());
 }

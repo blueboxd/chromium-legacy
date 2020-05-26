@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">ユーザーが選択したショートカットが表示されます</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> 個の指紋を登録済み</translation>
 <translation id="1213254615020057352">使用状況データや診断データを送信します。診断データやデバイスとアプリの使用状況データを Google に自動送信して、お子様向けの Android 機能の向上にご協力ください。この情報を使ってお子様個人が特定されることはありません。この情報は、システムとアプリの安定性の向上やその他の機能の改善に役立てられます。また、Google のアプリやパートナー（Android デベロッパーなど）も、集計データとしてこの情報を活用します。この設定は所有者によって管理されています。このデバイスの診断データや使用状況データを Google に送信するよう所有者が設定している可能性があります。お子様の [その他のウェブとアプリのアクティビティ] の設定がオンになっている場合、このデータはお子様の Google アカウントに保存されます。</translation>
+<translation id="121384500095351701">このファイルは安全にダウンロードできません</translation>
 <translation id="1215411991991485844">新しいバックグラウンド アプリが追加されました</translation>
 <translation id="1216542092748365687">指紋の削除</translation>
 <translation id="1217483152325416304">ローカルデータはまもなく削除されます</translation>
@@ -1064,6 +1065,7 @@
 <translation id="2336228925368920074">すべてのタブをブックマークに追加...</translation>
 <translation id="2336376423977300504">ウィンドウを閉じるときに常に Cookie を削除</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> は安全にダウンロードできません</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> がペア設定を要求しています</translation>
 <translation id="2342740338116612727">ブックマークを追加しました</translation>
 <translation id="2343747224442182863">このタブをフォーカス</translation>
@@ -2955,7 +2957,7 @@
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4759238208242260848">ダウンロード</translation>
 <translation id="4761104368405085019">マイクを使用する</translation>
-<translation id="4762055672525936226">ダウンロード済みコンテンツの削除</translation>
+<translation id="4762055672525936226">ダウンロード済みコンテンツを削除する</translation>
 <translation id="4762718786438001384">デバイスのディスク空き領域が非常に少なくなっています</translation>
 <translation id="4763408175235639573">このページを表示したときに以下の Cookie が設定されました</translation>
 <translation id="4765582662863429759">スマートフォンから Chromebook へのテキストの伝達を Android メッセージに許可します</translation>
@@ -3254,6 +3256,7 @@
 <translation id="5154702632169343078">件名</translation>
 <translation id="5157635116769074044">このページを起動画面に固定...</translation>
 <translation id="5158983316805876233">すべてのプロトコルで同じプロキシを使用する</translation>
+<translation id="5159419673777902220">保護者が拡張機能の許可設定を無効にしました</translation>
 <translation id="5160857336552977725"><ph name="DEVICE_TYPE" /> にログインしてください</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> はバージョンが古いためブロックされました</translation>
 <translation id="5170568018924773124">フォルダを開く</translation>
@@ -5395,6 +5398,7 @@
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> を待機しています...</translation>
 <translation id="7926423016278357561">これは私ではありません。</translation>
+<translation id="7926975587469166629">カードのニックネーム</translation>
 <translation id="7928175190925744466">このパスワードを変更しましたか？</translation>
 <translation id="7928836894214140642"><ph name="ENROLLMENT_DOMAIN" /> で管理</translation>
 <translation id="7930294771522048157">保存したお支払い方法がここに表示されます</translation>
@@ -6041,7 +6045,7 @@
 
           &lt;p&gt;コマンドラインからの設定は可能です。フラグや環境変数について詳しくは、&lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; を実行してご確認ください。&lt;/p&gt;</translation>
 <translation id="8755376271068075440">拡大(&amp;L)</translation>
-<translation id="8756143264090841047">DLC の削除</translation>
+<translation id="8756143264090841047">DLC を削除</translation>
 <translation id="8756969031206844760">パスワードを更新しますか？</translation>
 <translation id="8757090071857742562">デスクトップをキャストできません。画面共有の開始を確認するメッセージで同意したかどうかを確認してください。</translation>
 <translation id="8757803915342932642">Google クラウド デバイス上のデバイス</translation>

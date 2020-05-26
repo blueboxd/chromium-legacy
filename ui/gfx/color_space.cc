@@ -1021,9 +1021,9 @@ void ColorSpace::GetTransferMatrix(SkMatrix44* matrix) const {
 
     case ColorSpace::MatrixID::YCOCG: {
       float data[16] = {
-           0.25f, 0.5f,  0.25f, 0.5f,  // Y
+           0.25f, 0.5f,  0.25f, 0.0f,  // Y
           -0.25f, 0.5f, -0.25f, 0.5f,  // Cg
-            0.5f, 0.0f,  -0.5f, 0.0f,  // Co
+            0.5f, 0.0f,  -0.5f, 0.5f,  // Co
             0.0f, 0.0f,   0.0f, 1.0f
       };
       matrix->setRowMajorf(data);

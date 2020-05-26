@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Les raccourcis affichés sont ceux que vous avez vous-même définis</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> empreintes digitales configurées</translation>
 <translation id="1213254615020057352">Envoyer des données d'utilisation et de diagnostic. Contribuez à l'amélioration de l'expérience de votre enfant sur Android en envoyant automatiquement à Google des données liées à l'utilisation de l'appareil et des applications, ainsi que des données de diagnostic. Ces informations ne seront pas utilisées pour identifier votre enfant, mais elles nous aideront à améliorer, entre autres, la stabilité du système et des applications. Certaines données globales seront également utiles aux développeurs des applications Google et à nos partenaires tels que les développeurs Android. Ce paramètre est appliqué par le propriétaire. Le propriétaire peut choisir d'envoyer à Google des données de diagnostic et d'utilisation concernant cet appareil. Si vous avez activé le paramètre "Activité supplémentaire sur le Web et les applications" pour votre enfant, ces données peuvent être enregistrées dans son compte Google.</translation>
+<translation id="121384500095351701">Impossible de télécharger ce fichier de manière sécurisée</translation>
 <translation id="1215411991991485844">Nouvelle application en arrière-plan ajoutée</translation>
 <translation id="1216542092748365687">Supprimer une empreinte</translation>
 <translation id="1217483152325416304">Vos données locales seront bientôt supprimées</translation>
@@ -1064,6 +1065,7 @@ Vous pouvez gérer les paramètres de ce compte en installant l'application Fami
 <translation id="2336228925368920074">Ajouter tous les onglets aux favoris...</translation>
 <translation id="2336376423977300504">Toujours effacer les cookies à la fermeture du navigateur</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Impossible de télécharger <ph name="FILE_NAME" /> de manière sécurisée</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> tente de s'associer</translation>
 <translation id="2342740338116612727">Favoris ajoutés</translation>
 <translation id="2343747224442182863">Sélectionner cet onglet</translation>
@@ -3254,6 +3256,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="5154702632169343078">Objet</translation>
 <translation id="5157635116769074044">Épingler cette page à l'écran de démarrage…</translation>
 <translation id="5158983316805876233">Utiliser le même proxy pour tous les protocoles</translation>
+<translation id="5159419673777902220">Tes parents ont bloqué les autorisations liées aux extensions</translation>
 <translation id="5160857336552977725">Connectez-vous à votre <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5166596762332123936">Le plug-in <ph name="PLUGIN_NAME" /> a été bloqué, car il est obsolète</translation>
 <translation id="5170568018924773124">Afficher le dossier</translation>
@@ -5396,6 +5399,7 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="7925247922861151263">Échec de la vérification AAA</translation>
 <translation id="7925285046818567682">En attente de <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Ce n'était pas moi</translation>
+<translation id="7926975587469166629">Pseudo associé à la carte</translation>
 <translation id="7928175190925744466">Vous avez déjà modifié ce mot de passe ?</translation>
 <translation id="7928836894214140642">Géré par <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Les modes de paiement enregistrés s'afficheront ici</translation>

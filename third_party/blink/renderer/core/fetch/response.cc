@@ -391,13 +391,14 @@ FetchResponseData* Response::CreateUnfilteredFetchResponseDataWithoutBody(
   for (const auto& header : fetch_api_response.headers)
     response->HeaderList()->Append(header.key, header.value);
 
-  // TODO(wanderview): This sets the mime type of the Response based on the
-  // current headers.  This should be correct for most cases, but technically
-  // the mime type should really be frozen at the initial Response
-  // construction.  We should plumb the value through the cache_storage
-  // persistence layer and include the explicit mime type in FetchAPIResponse
-  // to set here. See: crbug.com/938939
-  response->SetMimeType(response->HeaderList()->ExtractMIMEType());
+  // Use the |mime_type| provided by the FetchAPIResponse if its set.
+  // Otherwise fall back to extracting the mime type from the headers.  This
+  // can happen when the response is loaded from an older cache_storage
+  // instance that did not yet store the mime_type value.
+  if (!fetch_api_response.mime_type.IsNull())
+    response->SetMimeType(fetch_api_response.mime_type);
+  else
+    response->SetMimeType(response->HeaderList()->ExtractMIMEType());
 
   return response;
 }

@@ -21,6 +21,7 @@ import androidx.core.widget.TextViewCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.widget.ChromeImageView;
 
 /**
@@ -83,8 +84,9 @@ public class TabGroupUiToolbarView extends FrameLayout {
         mTitleTextView.clearFocus();
     }
 
-    void setTitleOnTouchListener(View.OnTouchListener listener) {
-        mTitleTextView.setOnTouchListener(listener);
+    void hideKeyboard() {
+        KeyboardVisibilityDelegate delegate = KeyboardVisibilityDelegate.getInstance();
+        delegate.hideKeyboard(this);
     }
 
     ViewGroup getViewContainer() {

@@ -5,11 +5,16 @@
 #include "weblayer/browser/browser_controls_navigation_state_handler.h"
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "components/security_state/content/content_utils.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "weblayer/browser/browser_controls_navigation_state_handler_delegate.h"
@@ -24,7 +29,6 @@ namespace {
 base::TimeDelta GetBrowserControlsAllowHideDelay() {
   if (base::FeatureList::IsEnabled(kImmediatelyHideBrowserControlsForTest))
     return base::TimeDelta();
-
   return base::TimeDelta::FromSeconds(3);
 }
 
@@ -38,8 +42,15 @@ BrowserControlsNavigationStateHandler::BrowserControlsNavigationStateHandler(
 BrowserControlsNavigationStateHandler::
     ~BrowserControlsNavigationStateHandler() = default;
 
+bool BrowserControlsNavigationStateHandler::IsRendererControllingOffsets() {
+  if (IsRendererHungOrCrashed())
+    return false;
+  return !web_contents()->GetMainFrame()->GetProcess()->IsBlocked();
+}
+
 void BrowserControlsNavigationStateHandler::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  is_crashed_ = false;
   if (navigation_handle->IsInMainFrame() &&
       !navigation_handle->IsSameDocument()) {
     forced_show_during_load_timer_.Stop();
@@ -82,16 +93,21 @@ void BrowserControlsNavigationStateHandler::DidChangeVisibleSecurityState() {
 
 void BrowserControlsNavigationStateHandler::RenderProcessGone(
     base::TerminationStatus status) {
+  is_crashed_ = true;
   UpdateState();
-  // TODO: this likely needs to force visibility (because we won't get anything
-  // from the renderer).
+  delegate_->OnForceBrowserControlsShown();
 }
 
 void BrowserControlsNavigationStateHandler::OnRendererUnresponsive(
     content::RenderProcessHost* render_process_host) {
   UpdateState();
-  // TODO: this likely needs to force visibility (because we won't get anything
-  // from the renderer).
+  if (IsRendererHungOrCrashed())
+    delegate_->OnForceBrowserControlsShown();
+}
+
+void BrowserControlsNavigationStateHandler::OnRendererResponsive(
+    content::RenderProcessHost* render_process_host) {
+  UpdateState();
 }
 
 void BrowserControlsNavigationStateHandler::SetForceShowDuringLoad(bool value) {
@@ -120,9 +136,12 @@ void BrowserControlsNavigationStateHandler::UpdateState() {
 
 content::BrowserControlsState
 BrowserControlsNavigationStateHandler::CalculateCurrentState() {
-  // TODO(sky): handle checks for unresponsive/responsive.
   // TODO(sky): this needs to force SHOWN if a11y enabled, see
   // AccessibilityUtil.isAccessibilityEnabled().
+
+  if (!IsRendererControllingOffsets())
+    return content::BROWSER_CONTROLS_STATE_SHOWN;
+
   if (force_show_during_load_ || web_contents()->IsFullscreen() ||
       web_contents()->IsFocusedElementEditable() ||
       web_contents()->IsBeingDestroyed() || web_contents()->IsCrashed()) {
@@ -154,6 +173,21 @@ BrowserControlsNavigationStateHandler::CalculateCurrentState() {
   }
 
   return content::BROWSER_CONTROLS_STATE_BOTH;
+}
+
+bool BrowserControlsNavigationStateHandler::IsRendererHungOrCrashed() {
+  if (is_crashed_)
+    return true;
+
+  content::RenderWidgetHostView* view =
+      web_contents()->GetRenderWidgetHostView();
+  if (view && view->GetRenderWidgetHost() &&
+      view->GetRenderWidgetHost()->IsCurrentlyUnresponsive()) {
+    // Renderer is hung.
+    return true;
+  }
+
+  return web_contents()->IsCrashed();
 }
 
 }  // namespace weblayer

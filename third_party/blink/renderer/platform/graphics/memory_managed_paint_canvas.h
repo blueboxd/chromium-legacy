@@ -9,6 +9,7 @@
 
 #include "cc/paint/record_paint_canvas.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
@@ -38,7 +39,8 @@ class PLATFORM_EXPORT MemoryManagedPaintCanvas final
  private:
   void UpdateMemoryUsage(const cc::PaintImage& image);
 
-  base::flat_set<int> cached_image_ids_;
+  HashSet<int, DefaultHash<int>::Hash, WTF::UnsignedWithZeroKeyHashTraits<int>>
+      cached_image_ids_;
   uint64_t total_stored_image_memory_ = 0;
 
   base::RepeatingClosure set_needs_flush_callback_;

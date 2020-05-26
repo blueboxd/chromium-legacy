@@ -106,60 +106,17 @@ void BrowserAccessibility::Init(BrowserAccessibilityManager* manager,
 }
 
 bool BrowserAccessibility::PlatformIsLeaf() const {
-  if (InternalChildCount() == 0)
-    return true;
-
-  return PlatformIsLeafIncludingIgnored();
+  // TODO(nektar): Remove in favor of IsLeaf.
+  return IsLeaf();
 }
 
 bool BrowserAccessibility::PlatformIsLeafIncludingIgnored() const {
-  if (node()->children().size() == 0)
-    return true;
-
-  // These types of objects may have children that we use as internal
-  // implementation details, but we want to expose them as leaves to platform
-  // accessibility APIs because screen readers might be confused if they find
-  // any children.
-  if (IsPlainTextField() || IsTextOnlyObject())
-    return true;
-
-  // Roles whose children are only presentational according to the ARIA and
-  // HTML5 Specs should be hidden from screen readers.
-  switch (GetRole()) {
-    // According to the ARIA and Core-AAM specs:
-    // https://w3c.github.io/aria/#button,
-    // https://www.w3.org/TR/core-aam-1.1/#exclude_elements
-    // button's children are presentational only and should be hidden from
-    // screen readers. However, we cannot enforce the leafiness of buttons
-    // because they may contain many rich, interactive descendants such as a day
-    // in a calendar, and screen readers will need to interact with these
-    // contents. See https://crbug.com/689204.
-    // So we decided to not enforce the leafiness of buttons and expose all
-    // children. The only exception to enforce leafiness is when the button has
-    // a single text child and to prevent screen readers from double speak.
-    case ax::mojom::Role::kButton: {
-      if (InternalChildCount() == 1 &&
-          InternalGetFirstChild()->IsTextOnlyObject())
-        return true;
-      return false;
-    }
-    case ax::mojom::Role::kDocCover:
-    case ax::mojom::Role::kGraphicsSymbol:
-    case ax::mojom::Role::kImage:
-    case ax::mojom::Role::kMeter:
-    case ax::mojom::Role::kScrollBar:
-    case ax::mojom::Role::kSlider:
-    case ax::mojom::Role::kSplitter:
-    case ax::mojom::Role::kProgressIndicator:
-      return true;
-    default:
-      return false;
-  }
+  return node()->IsLeafIncludingIgnored();
 }
 
 bool BrowserAccessibility::CanFireEvents() const {
   // Allow events unless this object would be trimmed away.
-  return !PlatformIsChildOfLeafIncludingIgnored();
+  return !IsChildOfLeaf();
 }
 
 ui::AXPlatformNode* BrowserAccessibility::GetAXPlatformNode() const {
@@ -249,11 +206,11 @@ bool BrowserAccessibility::IsIgnored() const {
 }
 
 bool BrowserAccessibility::IsTextOnlyObject() const {
-  return node_ && node_->IsText();
+  return node()->IsText();
 }
 
 bool BrowserAccessibility::IsLineBreakObject() const {
-  return node_ && node_->IsLineBreak();
+  return node()->IsLineBreak();
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
@@ -272,18 +229,6 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
   }
 
   return result;
-}
-
-bool BrowserAccessibility::PlatformIsChildOfLeafIncludingIgnored() const {
-  BrowserAccessibility* ancestor = InternalGetParent();
-
-  while (ancestor) {
-    if (ancestor->PlatformIsLeafIncludingIgnored())
-      return true;
-    ancestor = ancestor->InternalGetParent();
-  }
-
-  return false;
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetClosestPlatformObject()
@@ -1077,11 +1022,11 @@ bool BrowserAccessibility::IsClickable() const {
 }
 
 bool BrowserAccessibility::IsTextField() const {
-  return IsPlainTextField() || IsRichTextField();
+  return GetData().IsTextField();
 }
 
 bool BrowserAccessibility::IsPasswordField() const {
-  return IsTextField() && HasState(ax::mojom::State::kProtected);
+  return GetData().IsPasswordField();
 }
 
 bool BrowserAccessibility::IsPlainTextField() const {
@@ -1198,18 +1143,7 @@ base::string16 BrowserAccessibility::GetHypertext() const {
 }
 
 base::string16 BrowserAccessibility::GetInnerText() const {
-  if (!InternalChildCount()) {
-    if (IsTextField())
-      return GetString16Attribute(ax::mojom::StringAttribute::kValue);
-    return GetString16Attribute(ax::mojom::StringAttribute::kName);
-  }
-
-  base::string16 text;
-  for (InternalChildIterator it = InternalChildrenBegin();
-       it != InternalChildrenEnd(); ++it) {
-    text += (*it).GetInnerText();
-  }
-  return text;
+  return base::UTF8ToUTF16(node()->GetInnerText());
 }
 
 gfx::Rect BrowserAccessibility::RelativeToAbsoluteBounds(
@@ -1564,15 +1498,26 @@ gfx::NativeViewAccessible BrowserAccessibility::GetPreviousSibling() {
 }
 
 bool BrowserAccessibility::IsChildOfLeaf() const {
-  BrowserAccessibility* ancestor = InternalGetParent();
+  return node()->IsChildOfLeaf();
+}
 
-  while (ancestor) {
-    if (ancestor->PlatformIsLeaf())
-      return true;
-    ancestor = ancestor->InternalGetParent();
+bool BrowserAccessibility::IsLeaf() const {
+  // According to the ARIA and Core-AAM specs:
+  // https://w3c.github.io/aria/#button,
+  // https://www.w3.org/TR/core-aam-1.1/#exclude_elements
+  // button's children are presentational only and should be hidden from
+  // screen readers. However, we cannot enforce the leafiness of buttons
+  // because they may contain many rich, interactive descendants such as a day
+  // in a calendar, and screen readers will need to interact with these
+  // contents. See https://crbug.com/689204.
+  // So we decided to not enforce the leafiness of buttons and expose all
+  // children. The only exception to enforce leafiness is when the button has
+  // a single text child and to prevent screen readers from double speak.
+  if (GetRole() == ax::mojom::Role::kButton) {
+    return InternalChildCount() == 1 &&
+           InternalGetFirstChild()->IsTextOnlyObject();
   }
-
-  return false;
+  return node()->IsLeaf();
 }
 
 bool BrowserAccessibility::IsChildOfPlainTextField() const {

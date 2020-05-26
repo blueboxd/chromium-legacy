@@ -19,9 +19,7 @@ SaveUnsyncedCredentialsLocallyBubbleController::
           std::move(delegate),
           /*display_disposition=*/metrics_util::
               AUTOMATIC_SAVE_UNSYNCED_CREDENTIALS_LOCALLY),
-      unsynced_credentials_(delegate_->GetUnsyncedCredentials()),
       dismissal_reason_(metrics_util::NO_DIRECT_INTERACTION) {
-  DCHECK(!unsynced_credentials_.empty());
 }
 
 SaveUnsyncedCredentialsLocallyBubbleController::
@@ -31,13 +29,16 @@ SaveUnsyncedCredentialsLocallyBubbleController::
 }
 
 void SaveUnsyncedCredentialsLocallyBubbleController::OnSaveClicked() {
-  NOTIMPLEMENTED();
+  delegate_->SaveUnsyncedCredentialsInProfileStore();
 }
 
 void SaveUnsyncedCredentialsLocallyBubbleController::OnCancelClicked() {
-  // TODO(crbug.com/1060132): This method should clear the unsynced credentials
-  // wherever they are being stored.
-  NOTIMPLEMENTED();
+  delegate_->DiscardUnsyncedCredentials();
+}
+
+const std::vector<autofill::PasswordForm>&
+SaveUnsyncedCredentialsLocallyBubbleController::GetUnsyncedCredentials() const {
+  return delegate_->GetUnsyncedCredentials();
 }
 
 void SaveUnsyncedCredentialsLocallyBubbleController::ReportInteractions() {

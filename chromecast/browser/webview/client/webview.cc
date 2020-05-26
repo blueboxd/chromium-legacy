@@ -329,7 +329,7 @@ void WebviewClient::Paint() {
     return;
 
   if (gr_context_) {
-    gr_context_->flush();
+    gr_context_->flushAndSubmit();
     glFinish();
   }
 

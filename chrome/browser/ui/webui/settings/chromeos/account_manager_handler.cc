@@ -343,7 +343,8 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
 
 void AccountManagerUIHandler::HandleAddAccount(const base::ListValue* args) {
   AllowJavascript();
-  InlineLoginHandlerDialogChromeOS::Show();
+  InlineLoginHandlerDialogChromeOS::Show(
+      InlineLoginHandlerDialogChromeOS::Source::kSettingsAddAccountButton);
 }
 
 void AccountManagerUIHandler::HandleReauthenticateAccount(
@@ -353,7 +354,9 @@ void AccountManagerUIHandler::HandleReauthenticateAccount(
   CHECK(!args->GetList().empty());
   const std::string& account_email = args->GetList()[0].GetString();
 
-  InlineLoginHandlerDialogChromeOS::Show(account_email);
+  InlineLoginHandlerDialogChromeOS::Show(
+      account_email,
+      InlineLoginHandlerDialogChromeOS::Source::kSettingsReauthAccountButton);
 }
 
 void AccountManagerUIHandler::HandleMigrateAccount(

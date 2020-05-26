@@ -10,6 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/base/completion_event.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -1057,6 +1058,116 @@ class LayerTreeHostScrollTestImplOnlyScroll : public LayerTreeHostScrollTest {
 
 // This tests scrolling on the impl side which is only possible with a thread.
 MULTI_THREAD_TEST_F(LayerTreeHostScrollTestImplOnlyScroll);
+
+// TODO(crbug.com/574283): Mac currently doesn't support smooth scrolling wheel
+// events.
+#if !defined(OS_MACOSX)
+// This test simulates scrolling on the impl thread such that it starts a scroll
+// animation. It ensures that RequestScrollAnimationEndNotification() correctly
+// notifies the callback after the animation ends.
+class SmoothScrollAnimationEndNotification : public LayerTreeHostScrollTest {
+ public:
+  SmoothScrollAnimationEndNotification() = default;
+
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    LayerTreeHostScrollTest::InitializeSettings(settings);
+    settings->enable_smooth_scroll = true;
+  }
+
+  void SetupTree() override {
+    LayerTreeHostScrollTest::SetupTree();
+
+    Layer* root_layer = layer_tree_host()->root_layer();
+    Layer* root_scroll_layer =
+        layer_tree_host()->OuterViewportScrollLayerForTesting();
+
+    child_layer_ = Layer::Create();
+    child_layer_->SetElementId(
+        LayerIdToElementIdForTesting(child_layer_->id()));
+    child_layer_->SetBounds(gfx::Size(110, 110));
+
+    child_layer_->SetIsDrawable(true);
+    child_layer_->SetHitTestable(true);
+    child_layer_->SetElementId(
+        LayerIdToElementIdForTesting(child_layer_->id()));
+    child_layer_->SetBounds(root_scroll_layer->bounds());
+    root_layer->AddChild(child_layer_);
+
+    CopyProperties(root_scroll_layer, child_layer_.get());
+    CreateTransformNode(child_layer_.get());
+    CreateScrollNode(child_layer_.get(), root_layer->bounds());
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void WillCommit() override {
+    // Keep the test committing (otherwise the early out for no update
+    // will stall the test).
+    if (layer_tree_host()->SourceFrameNumber() < 2) {
+      layer_tree_host()->SetNeedsCommit();
+    }
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    if (host_impl->active_tree()->source_frame_number() < 0)
+      return;
+
+    if (host_impl->active_tree()->source_frame_number() == 0) {
+      const gfx::Point scroll_point(10, 10);
+      const gfx::Vector2dF scroll_amount(350, -350);
+      auto scroll_state = BeginState(scroll_point);
+      scroll_state->data()->delta_granularity =
+          ui::ScrollGranularity::kScrollByPixel;
+      InputHandler::ScrollStatus status = host_impl->ScrollBegin(
+          scroll_state.get(), ui::ScrollInputType::kWheel);
+      EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
+      scroll_state = UpdateState(scroll_point, scroll_amount);
+      scroll_state->data()->delta_granularity =
+          ui::ScrollGranularity::kScrollByPixel;
+      host_impl->ScrollUpdate(scroll_state.get());
+
+      EXPECT_TRUE(
+          !!host_impl->mutator_host()->ImplOnlyScrollAnimatingElement());
+    } else if (!scroll_end_requested_) {
+      host_impl->ScrollEnd(false);
+      scroll_end_requested_ = true;
+    }
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void UpdateLayerTreeHost() override {
+    if (scroll_animation_started_)
+      return;
+
+    if (layer_tree_host()->HasCompositorDrivenScrollAnimationForTesting()) {
+      scroll_animation_started_ = true;
+      layer_tree_host()->RequestScrollAnimationEndNotification(
+          base::BindOnce(&SmoothScrollAnimationEndNotification::OnScrollEnd,
+                         base::Unretained(this)));
+    }
+  }
+
+  void AfterTest() override {
+    EXPECT_TRUE(scroll_end_requested_);
+    EXPECT_TRUE(scroll_animation_started_);
+    EXPECT_TRUE(scroll_animation_ended_);
+  }
+
+ private:
+  void OnScrollEnd() {
+    scroll_animation_ended_ = true;
+    EndTest();
+  }
+
+  scoped_refptr<Layer> child_layer_;
+
+  bool scroll_end_requested_ = false;
+  bool scroll_animation_started_ = false;
+  bool scroll_animation_ended_ = false;
+};
+
+MULTI_THREAD_TEST_F(SmoothScrollAnimationEndNotification);
+#endif  // !defined(OS_MACOSX)
 
 void DoGestureScroll(LayerTreeHostImpl* host_impl,
                      const scoped_refptr<Layer>& scroller,

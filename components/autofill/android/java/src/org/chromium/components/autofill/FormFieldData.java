@@ -22,13 +22,17 @@ import java.lang.annotation.RetentionPolicy;
 public class FormFieldData {
     /**
      * Define the control types supported by android.view.autofill.AutofillValue.
+     *
+     * Android doesn't have DATALIST control, it is sent to the Autofill service as
+     * View.AUTOFILL_TYPE_TEXT with AutofillOptions.
      */
-    @IntDef({ControlType.TEXT, ControlType.TOGGLE, ControlType.LIST})
+    @IntDef({ControlType.TEXT, ControlType.TOGGLE, ControlType.LIST, ControlType.DATALIST})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ControlType {
         int TEXT = 0;
         int TOGGLE = 1;
         int LIST = 2;
+        int DATALIST = 3;
     }
 
     public final String mLabel;
@@ -43,6 +47,9 @@ public class FormFieldData {
     public final @ControlType int mControlType;
     public final int mMaxLength;
     public final String mHeuristicType;
+    public final String[] mDatalistValues;
+    public final String[] mDatalistLabels;
+
     // The bounds in the viewport's coordinates
     private final RectF mBounds;
     // The bounds in the container view's coordinates.
@@ -58,7 +65,8 @@ public class FormFieldData {
     private FormFieldData(String name, String label, String value, String autocompleteAttr,
             boolean shouldAutocomplete, String placeholder, String type, String id,
             String[] optionValues, String[] optionContents, boolean isCheckField, boolean isChecked,
-            int maxLength, String heuristicType, float left, float top, float right, float bottom) {
+            int maxLength, String heuristicType, float left, float top, float right, float bottom,
+            String[] datalistValues, String[] datalistLabels) {
         mName = name;
         mLabel = label;
         mValue = value;
@@ -70,8 +78,12 @@ public class FormFieldData {
         mOptionValues = optionValues;
         mOptionContents = optionContents;
         mIsChecked = isChecked;
+        mDatalistLabels = datalistLabels;
+        mDatalistValues = datalistValues;
         if (mOptionValues != null && mOptionValues.length != 0) {
             mControlType = ControlType.LIST;
+        } else if (mDatalistValues != null && mDatalistValues.length != 0) {
+            mControlType = ControlType.DATALIST;
         } else if (isCheckField) {
             mControlType = ControlType.TOGGLE;
         } else {
@@ -142,9 +154,9 @@ public class FormFieldData {
             String autocompleteAttr, boolean shouldAutocomplete, String placeholder, String type,
             String id, String[] optionValues, String[] optionContents, boolean isCheckField,
             boolean isChecked, int maxLength, String heuristicType, float left, float top,
-            float right, float bottom) {
+            float right, float bottom, String[] datalistValues, String[] datalistLabels) {
         return new FormFieldData(name, label, value, autocompleteAttr, shouldAutocomplete,
                 placeholder, type, id, optionValues, optionContents, isCheckField, isChecked,
-                maxLength, heuristicType, left, top, right, bottom);
+                maxLength, heuristicType, left, top, right, bottom, datalistValues, datalistLabels);
     }
 }

@@ -581,7 +581,7 @@ gfx::Rect BubbleFrameView::GetAvailableScreenBounds(
 }
 
 gfx::Rect BubbleFrameView::GetAvailableAnchorWindowBounds() const {
-  views::BubbleDialogDelegateView* bubble_delegate_view =
+  views::BubbleDialogDelegate* bubble_delegate_view =
       GetWidget()->widget_delegate()->AsBubbleDialogDelegate();
   if (bubble_delegate_view) {
     views::View* const anchor_view = bubble_delegate_view->GetAnchorView();

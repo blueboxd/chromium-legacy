@@ -32,11 +32,11 @@ class TooltipAuraTestApi;
 // Implementation of Tooltip that shows the tooltip using a Widget and Label.
 class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
  public:
-  TooltipAura();
+  TooltipAura() = default;
   ~TooltipAura() override;
 
  private:
-  class TooltipView;
+  class TooltipWidget;
 
   friend class test::TooltipAuraTestApi;
   gfx::RenderText* GetRenderTextForTest();
@@ -46,6 +46,9 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   // and returns the adjusted bounds.
   gfx::Rect GetTooltipBounds(const gfx::Point& mouse_pos,
                              const gfx::Size& tooltip_size);
+
+  // Sets |widget_| to a new instance of TooltipWidget.
+  void CreateTooltipWidget();
 
   // Destroys |widget_|.
   void DestroyWidget();
@@ -62,11 +65,8 @@ class VIEWS_EXPORT TooltipAura : public Tooltip, public WidgetObserver {
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override;
 
-  // The view showing the tooltip.
-  std::unique_ptr<TooltipView> tooltip_view_;
-
   // The widget containing the tooltip. May be NULL.
-  Widget* widget_ = nullptr;
+  TooltipWidget* widget_ = nullptr;
 
   // The window we're showing the tooltip for. Never NULL and valid while
   // showing.

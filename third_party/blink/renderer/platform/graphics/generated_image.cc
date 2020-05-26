@@ -50,7 +50,7 @@ void GeneratedImage::DrawPattern(
   FloatRect tile_rect = src_rect;
   tile_rect.Expand(repeat_spacing);
 
-  SkMatrix pattern_matrix = SkMatrix::MakeTrans(phase.X(), phase.Y());
+  SkMatrix pattern_matrix = SkMatrix::Translate(phase.X(), phase.Y());
   pattern_matrix.preScale(scale.Width(), scale.Height());
   pattern_matrix.preTranslate(tile_rect.X(), tile_rect.Y());
 

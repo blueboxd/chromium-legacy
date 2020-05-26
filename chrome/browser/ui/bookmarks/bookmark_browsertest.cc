@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragSingleBookmark) {
         GURL url;
         base::string16 title;
         EXPECT_TRUE(drag_data->provider().GetURLAndTitle(
-            ui::DO_NOT_CONVERT_FILENAMES, &url, &title));
+            ui::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES, &url, &title));
         EXPECT_EQ(page_url, url);
         EXPECT_EQ(page_title, title);
 #if !defined(OS_WIN)
@@ -288,7 +288,7 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, DragMultipleBookmarks) {
         // On Mac 10.11 and 10.12, this returns true, even though we set no url.
         // See https://crbug.com/893432.
         EXPECT_FALSE(drag_data->provider().GetURLAndTitle(
-            ui::DO_NOT_CONVERT_FILENAMES, &url, &title));
+            ui::FilenameToURLPolicy::DO_NOT_CONVERT_FILENAMES, &url, &title));
 #endif
 #if !defined(OS_WIN)
         // On Windows, GetDragImage() is a NOTREACHED() as the Windows
@@ -348,40 +348,6 @@ IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, EmitUmaForDuplicates) {
   EXPECT_THAT(histogram_tester()->GetAllSamples(
                   "Bookmarks.Count.OnProfileLoad.DuplicateUrl"),
               testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
-}
-
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, PRE_EmitUmaForEmptyTitles) {
-  BookmarkModel* bookmark_model = WaitForBookmarkModel(browser()->profile());
-  const BookmarkNode* parent = bookmarks::GetParentForNewNodes(bookmark_model);
-  // Add two bookmarks with a non-empty title and three with an empty one.
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title1"), GURL("http://a.com"));
-  bookmark_model->AddURL(parent, parent->children().size(),
-                         base::ASCIIToUTF16("title2"), GURL("http://b.com"));
-  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
-                         GURL("http://c.com"));
-  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
-                         GURL("http://d.com"));
-  bookmark_model->AddURL(parent, parent->children().size(), base::string16(),
-                         GURL("http://e.com"));
-}
-
-// TODO(crbug.com/1017731): Flaky on Windows
-#if defined(OS_WIN)
-#define MAYBE_EmitUmaForEmptyTitles DISABLED_EmitUmaForEmptyTitles
-#else
-#define MAYBE_EmitUmaForEmptyTitles EmitUmaForEmptyTitles
-#endif
-
-IN_PROC_BROWSER_TEST_F(BookmarkBrowsertest, MAYBE_EmitUmaForEmptyTitles) {
-  WaitForBookmarkModel(browser()->profile());
-
-  ASSERT_THAT(
-      histogram_tester()->GetAllSamples("Bookmarks.Count.OnProfileLoad"),
-      testing::ElementsAre(base::Bucket(/*min=*/5, /*count=*/1)));
-  EXPECT_THAT(histogram_tester()->GetAllSamples(
-                  "Bookmarks.Count.OnProfileLoad.EmptyTitle"),
-              testing::ElementsAre(base::Bucket(/*min=*/3, /*count=*/1)));
 }
 
 #endif  // !defined(OS_CHROMEOS)

@@ -359,31 +359,31 @@ AXTreeUpdate AXPlatformNodeTest::BuildListBox(
     const std::vector<ax::mojom::State>& additional_state) {
   AXNodeData listbox;
   listbox.id = 1;
-  listbox.SetName("ListBox");
   listbox.role = ax::mojom::Role::kListBox;
+  listbox.SetName("ListBox");
   for (auto state : additional_state)
     listbox.AddState(state);
 
   AXNodeData option_1;
   option_1.id = 2;
-  option_1.SetName("Option1");
   option_1.role = ax::mojom::Role::kListBoxOption;
+  option_1.SetName("Option1");
   if (option_1_is_selected)
     option_1.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   listbox.child_ids.push_back(option_1.id);
 
   AXNodeData option_2;
   option_2.id = 3;
-  option_2.SetName("Option2");
   option_2.role = ax::mojom::Role::kListBoxOption;
+  option_2.SetName("Option2");
   if (option_2_is_selected)
     option_2.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   listbox.child_ids.push_back(option_2.id);
 
   AXNodeData option_3;
   option_3.id = 4;
-  option_3.SetName("Option3");
   option_3.role = ax::mojom::Role::kListBoxOption;
+  option_3.SetName("Option3");
   if (option_3_is_selected)
     option_3.AddBoolAttribute(ax::mojom::BoolAttribute::kSelected, true);
   listbox.child_ids.push_back(option_3.id);

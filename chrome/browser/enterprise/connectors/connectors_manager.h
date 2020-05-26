@@ -28,6 +28,12 @@ namespace enterprise_connectors {
 // is disabled.
 extern const base::Feature kEnterpriseConnectorsEnabled;
 
+// For the moment, service provider configurations are static and only support
+// google endpoints.  Therefore the configurtion is placed here directly.
+// Once the configuation becomes more dynamic this static string will be
+// removed and replaced with a service to keep it up to date.
+extern const char kServiceProviderConfig[];
+
 // Manages access to Connector policies. This class is responsible for caching
 // the Connector policies, validate them against approved service providers and
 // provide a simple interface to them.
@@ -70,6 +76,7 @@ class ConnectorsManager {
   // singleton that would otherwise persist its state.
   void SetUpForTesting();
   void TearDownForTesting();
+  void ClearCacheForTesting();
 
  private:
   friend struct base::DefaultSingletonTraits<ConnectorsManager>;

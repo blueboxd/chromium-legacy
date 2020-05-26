@@ -168,6 +168,13 @@ struct WebBluetoothRemoteGATTDescriptor {
   bluetooth.mojom.UUID uuid;
 };
 
+// Parameter for WebBluetoothService.RemoteCharacteristicWriteValue
+enum WebBluetoothWriteType {
+  kWriteDefaultDeprecated,
+  kWriteWithResponse,
+  kWriteWithoutResponse,
+};
+
 // Web Bluetooth Interface that Blink can use to perform
 // Bluetooth GATT Operations on Bluetooth Devices.
 interface WebBluetoothService {
@@ -243,7 +250,8 @@ interface WebBluetoothService {
   // written.
   RemoteCharacteristicWriteValue(
     string characteristic_instance_id,
-    array<uint8> value) => (WebBluetoothResult result);
+    array<uint8> value,
+    WebBluetoothWriteType write_type) => (WebBluetoothResult result);
 
   // Starts notifications for the characteristic identified by
   // |characteristic_instance_id|.

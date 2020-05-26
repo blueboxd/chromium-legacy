@@ -19,6 +19,8 @@
 
 #if defined(OS_ANDROID)
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #endif
 
 namespace weblayer {
@@ -85,6 +87,15 @@ class StubInstalledAppProvider : public blink::mojom::InstalledAppProvider {
                                 std::move(receiver));
   }
 };
+
+template <typename Interface>
+void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
+                              mojo::PendingReceiver<Interface> receiver) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+  if (contents)
+    contents->GetJavaInterfaces()->GetInterface(std::move(receiver));
+}
 #endif
 
 }  // namespace
@@ -102,6 +113,8 @@ void PopulateWebLayerFrameBinders(
   // TODO(https://crbug.com/1037884): Remove this.
   map->Add<blink::mojom::InstalledAppProvider>(
       base::BindRepeating(&StubInstalledAppProvider::Create));
+  map->Add<blink::mojom::ShareService>(base::BindRepeating(
+      &ForwardToJavaWebContents<blink::mojom::ShareService>));
 #endif
 }
 

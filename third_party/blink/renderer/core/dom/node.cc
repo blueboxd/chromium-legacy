@@ -2614,9 +2614,7 @@ const AtomicString& Node::InterfaceName() const {
 }
 
 ExecutionContext* Node::GetExecutionContext() const {
-  if (auto* document = GetDocument().ContextDocument())
-    return document->domWindow();
-  return nullptr;
+  return GetDocument().GetExecutionContext();
 }
 
 void Node::WillMoveToNewDocument(Document& old_document,

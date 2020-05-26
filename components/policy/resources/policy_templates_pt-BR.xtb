@@ -666,6 +666,11 @@ Quando esta política for definida como <ph name="INTERNET_EXPLORER_VALUE_PLACEH
 
 Quando esta política for definida como um caminho de arquivo, esse arquivo será usado como um executável.</translation>
 <translation id="2113068765175018713">Limitar tempo de execução do dispositivo reiniciando automaticamente</translation>
+<translation id="2124881675920287921">Esta política está obsoleta na versão M82 e ausente na M85. Em vez dela, use a <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Desativar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> equivale a desativar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Ativar <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> ou não definir essa configuração equivale a não definir <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
+
+      A configuração desta política como falsa impede que os usuários optem por enviar informações do sistema e conteúdo de páginas aos servidores do Google. Se a configuração for definida como verdadeira ou não for configurada, os usuários terão permissão para enviar informações do sistema e conteúdo de páginas ao "Navegação segura" para ajudar a detectar apps e sites perigosos.
+
+      Consulte https://developers.google.com/safe-browsing (em inglês) para ver mais informações sobre o "Navegação segura".</translation>
 <translation id="2127599828444728326">Permitir notificações nesses sites</translation>
 <translation id="2131902621292742709">Intervalo de escurecimento de tela no funcionamento com energia da bateria</translation>
 <translation id="2134437727173969994">Autorizar bloqueio da tela</translation>
@@ -2820,7 +2825,6 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5307432759655324440">Disponibilidade do modo de navegação anônima</translation>
 <translation id="5311275381462687162">Configuração padrão do comportamento de cookie <ph name="ATTRIBUTE_SAMESITE_NAME" /> legado.</translation>
 <translation id="5318185076587284965">Ativar o uso de servidores relay pelo host de acesso remoto</translation>
-<translation id="5321755462836179869">Permitir notificações nativas</translation>
 <translation id="5323128137188992869">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
 
           Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
@@ -3598,7 +3602,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 
           Se você optar por usar um script de proxy .pac, o URL do script será fornecido aos apps Android.</translation>
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
-<translation id="6438972408080276697">Se a política for definida como verdadeira, informações sobre eventos importantes e acionados pela política para instalação de apps para Android serão enviadas ao Google. Se a política for definida como falsa, nenhum evento será capturado.</translation>
+<translation id="6438972408080276697">Se a política for definida como verdadeira, o Google receberá informações sobre eventos importantes e acionados por políticas relacionados à instalação de apps para Android. Se a política for definida como falsa, nenhum evento será capturado.</translation>
 <translation id="6440051664870270040">Permitir que sites naveguem e abram pop-ups simultaneamente</translation>
 <translation id="6447948611083700881">Backup e restauração desativados</translation>
 <translation id="6449476513004303784">Não permitir que os usuários gerenciem certificados</translation>

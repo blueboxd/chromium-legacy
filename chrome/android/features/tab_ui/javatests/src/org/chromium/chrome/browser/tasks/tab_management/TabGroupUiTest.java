@@ -6,6 +6,8 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
+import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 
@@ -150,7 +152,8 @@ public class TabGroupUiTest {
             // Disable animation to reduce flakiness.
             stripRecyclerView.setItemAnimator(null);
         });
-        onView(allOf(withId(R.id.toolbar_right_button), withParent(withId(R.id.main_content))))
+        onView(allOf(withId(R.id.toolbar_right_button), withParent(withId(R.id.main_content)),
+                       withEffectiveVisibility(VISIBLE)))
                 .perform(click());
         mRenderTestRule.render(recyclerViewReference.get(), "11th_tab_selected");
     }

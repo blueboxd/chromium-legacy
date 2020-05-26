@@ -167,9 +167,14 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 #if BUILDFLAG(ENABLE_SPELLCHECK)
     features.EnableIfNotSet(spellcheck::kAndroidSpellCheckerNonLowEnd);
 #endif  // ENABLE_SPELLCHECK
-
-    features.EnableIfNotSet(
-        autofill::features::kAutofillSkipComparingInferredLabels);
+    if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+        base::android::SDK_VERSION_OREO) {
+      features.EnableIfNotSet(autofill::features::kAutofillExtractAllDatalists);
+      features.EnableIfNotSet(
+          autofill::features::kAutofillSkipComparingInferredLabels);
+      features.DisableIfNotSet(
+          autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
+    }
 
     if (cl->HasSwitch(switches::kWebViewLogJsConsoleMessages)) {
       features.EnableIfNotSet(::features::kLogJsConsoleMessages);
@@ -200,9 +205,6 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
 
     // WebView does not support Picture-in-Picture yet.
     features.DisableIfNotSet(media::kPictureInPictureAPI);
-
-    features.DisableIfNotSet(
-        autofill::features::kAutofillRestrictUnownedFieldsToFormlessCheckout);
 
     features.DisableIfNotSet(::features::kBackgroundFetch);
 

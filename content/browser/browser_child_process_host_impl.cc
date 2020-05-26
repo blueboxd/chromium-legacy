@@ -644,6 +644,9 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   tracing_registration_ = TracingServiceController::Get().RegisterClient(
       process.Pid(), base::BindRepeating(&BindTracedProcessFromUIThread,
                                          weak_factory_.GetWeakPtr()));
+  BackgroundTracingManagerImpl::ActivateForProcess(
+      GetData().id,
+      static_cast<ChildProcessHostImpl*>(GetHost())->child_process());
 }
 
 void BrowserChildProcessHostImpl::RegisterCoordinatorClient(

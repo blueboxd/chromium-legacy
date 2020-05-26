@@ -48,7 +48,7 @@ ChromeBrowserMainExtraPartsViewsLinux::
 }
 
 void ChromeBrowserMainExtraPartsViewsLinux::ToolkitInitialized() {
-#if defined(USE_X11)
+#if defined(USE_X11) && BUILDFLAG(USE_GTK)
   // In Aura/X11, Gtk-based LinuxUI implementation is used, so we instantiate
   // and inject the GtkUiDelegate before ChromeBrowserMainExtraPartsViewsLinux,
   // so it can properly initialize GtkUi on its |ToolkitInitialized| override.

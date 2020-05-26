@@ -41,8 +41,8 @@
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileWithContextMenu
 
 # crbug/1036552
--org.chromium.chrome.browser.tasks.tab_management.TabGridDialogParentTest.testDialog_ZoomInFadeOut
--org.chromium.chrome.browser.tasks.tab_management.TabGridDialogParentTest.testDialog_ZoomInZoomOut
+-org.chromium.chrome.browser.tasks.tab_management.TabGridDialogViewTest.testDialog_ZoomInFadeOut
+-org.chromium.chrome.browser.tasks.tab_management.TabGridDialogViewTest.testDialog_ZoomInZoomOut
 
 # crbug/1036553
 -org.chromium.chrome.browser.translate.TranslateCompactInfoBarTest.testTabMenuDismissedOnOrientationChange

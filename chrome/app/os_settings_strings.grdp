@@ -23,12 +23,6 @@
   <message name="IDS_OS_SEARCH_RESULT_ROW_A11Y_RESULT_SELECTED" desc="ChromeVox alert to indicate the position number of a selected result in a list of search results and the selected result text itself, and that the user can press enter to navigate to section described by the search result.">
     Search result <ph name="LIST_POSITION">$1<ex>1</ex></ph> of <ph name="LIST_SIZE">$2<ex>2</ex></ph>: <ph name="SEARCH_RESULT_TEXT">$3<ex>Network Settings</ex></ph>. Press Enter to navigate to section.
   </message>
-  <message name="IDS_OS_SEARCH_BOX_A11Y_ONE_RESULT" desc="ChromeVox alert to indicate the that one search result has been found.">
-    Displaying 1 search result for <ph name="QUERY">$1<ex>Wi-Fi</ex>.</ph>
-  </message>
-  <message name="IDS_OS_SEARCH_BOX_A11Y_RESULT_COUNT" desc="ChromeVox alert to indicate the number of settings search results found.">
-    Displaying <ph name="NUMBER">$1<ex>1</ex></ph> search results for <ph name="QUERY">$2<ex>Wi-Fi</ex>.</ph>
-  </message>
 
   <!-- About (OS Settings) -->
   <message name="IDS_OS_SETTINGS_ABOUT_PAGE_BUILD_DETAILS" desc="Label of the row button that clicks into Build details">

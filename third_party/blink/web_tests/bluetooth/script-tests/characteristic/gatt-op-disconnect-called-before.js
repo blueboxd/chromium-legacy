@@ -20,6 +20,8 @@ bluetooth_test(() => getMeasurementIntervalCharacteristic()
         characteristic.CALLS([
           readValue()|
           writeValue(value)|
+          writeValueWithResponse(value)|
+          writeValueWithoutResponse(value)|
           startNotifications()|
           stopNotifications()
         ]),

@@ -22,6 +22,76 @@ namespace enterprise_connectors {
 const base::Feature kEnterpriseConnectorsEnabled{
     "EnterpriseConnectorsEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const char kServiceProviderConfig[] = R"({
+  "version": "1",
+  "service_providers" : [
+    {
+      "name": "google",
+      "display_name": "Google Cloud",
+      "version": {
+        "1": {
+          "analysis": {
+            "url": "https://safebrowsing.google.com/safebrowsing/uploads/scan",
+            "supported_tags": [
+              {
+                "name": "malware",
+                "display_name": "Threat protection",
+                "mime_types": [
+                  "application/vnd.microsoft.portable-executable",
+                  "application/vnd.rar",
+                  "application/x-msdos-program",
+                  "application/zip"
+                ],
+                "max_file_size": 52428800
+              },
+              {
+                "name": "dlp",
+                "display_name": "Sensitive data protection",
+                "mime_types": [
+                  "application/gzip",
+                  "application/msword",
+                  "application/pdf",
+                  "application/postscript",
+                  "application/rtf",
+                  "application/vnd.google-apps.document.internal",
+                  "application/vnd.google-apps.spreadsheet.internal",
+                  "application/vnd.ms-cab-compressed",
+                  "application/vnd.ms-excel",
+                  "application/vnd.ms-powerpoint",
+                  "application/vnd.ms-xpsdocument",
+                  "application/vnd.oasis.opendocument.text",
+                  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.template",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+                  "application/vnd.ms-excel.sheet.macroenabled.12",
+                  "application/vnd.ms-excel.template.macroenabled.12",
+                  "application/vnd.ms-word.document.macroenabled.12",
+                  "application/vnd.ms-word.template.macroenabled.12",
+                  "application/vnd.rar",
+                  "application/vnd.wordperfect",
+                  "application/x-7z-compressed",
+                  "application/x-bzip",
+                  "application/x-bzip2",
+                  "application/x-tar",
+                  "application/zip",
+                  "text/csv",
+                  "text/plain"
+                ],
+                "max_file_size": 52428800
+              }
+            ]
+          },
+          "reporting": {
+            "url": "https://chromereporting-pa.googleapis.com/v1/events"
+          }
+        }
+      }
+    }
+  ]
+})";
+
 namespace {
 
 base::ListValue AllPatterns() {
@@ -373,6 +443,10 @@ void ConnectorsManager::SetUpForTesting() {
 
 void ConnectorsManager::TearDownForTesting() {
   pref_change_registrar_.RemoveAll();
+  ClearCacheForTesting();
+}
+
+void ConnectorsManager::ClearCacheForTesting() {
   analysis_connector_settings_.clear();
   reporting_connector_settings_.clear();
 }

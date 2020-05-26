@@ -236,7 +236,7 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             mUnGroupTabIndex = TabModel.INVALID_TAB_INDEX;
             if (mTabGridDialogHandler != null) {
                 mTabGridDialogHandler.updateUngroupBarStatus(
-                        TabGridDialogParent.UngroupBarStatus.HIDE);
+                        TabGridDialogView.UngroupBarStatus.HIDE);
             }
         }
     }
@@ -317,10 +317,10 @@ public class TabGridItemTouchHelperCallback extends ItemTouchHelper.SimpleCallba
             mUnGroupTabIndex = isHoveredOnUngroupBar ? viewHolder.getAdapterPosition()
                                                      : TabModel.INVALID_TAB_INDEX;
             mTabGridDialogHandler.updateUngroupBarStatus(isHoveredOnUngroupBar
-                            ? TabGridDialogParent.UngroupBarStatus.HOVERED
+                            ? TabGridDialogView.UngroupBarStatus.HOVERED
                             : (mSelectedTabIndex == TabModel.INVALID_TAB_INDEX
-                                            ? TabGridDialogParent.UngroupBarStatus.HIDE
-                                            : TabGridDialogParent.UngroupBarStatus.SHOW));
+                                            ? TabGridDialogView.UngroupBarStatus.HIDE
+                                            : TabGridDialogView.UngroupBarStatus.SHOW));
         }
     }
 

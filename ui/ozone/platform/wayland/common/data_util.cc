@@ -26,7 +26,8 @@ namespace {
 using ui::OSExchangeData;
 using ui::PlatformClipboard;
 
-constexpr ui::FilenameToURLPolicy kFilenameToURLPolicy = ui::CONVERT_FILENAMES;
+constexpr ui::FilenameToURLPolicy kFilenameToURLPolicy =
+    ui::FilenameToURLPolicy::CONVERT_FILENAMES;
 
 // Converts mime type string to OSExchangeData::Format, if supported, otherwise
 // 0 is returned.

@@ -25,6 +25,7 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/mock_password_form_manager_for_ui.h"
+#include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -60,6 +61,15 @@ using ::testing::SaveArg;
 
 namespace {
 
+MATCHER_P3(MatchesLoginAndOrigin,
+           username,
+           password,
+           origin,
+           "matches username, password and origin") {
+  return arg.username_value == username && arg.password_value == password &&
+         arg.origin == origin;
+}
+
 // A random URL.
 constexpr char kExampleUrl[] = "http://example.com";
 
@@ -89,13 +99,26 @@ class TestManagePasswordsIconView : public ManagePasswordsIconView {
   password_manager::ui::State state_;
 };
 
-class MockPasswordManagerClient
+class TestPasswordManagerClient
     : public password_manager::StubPasswordManagerClient {
  public:
+  TestPasswordManagerClient()
+      : mock_profile_store_(new password_manager::MockPasswordStore()) {}
+  ~TestPasswordManagerClient() override {
+    mock_profile_store_->ShutdownOnUIThread();
+  }
+
   MOCK_METHOD(void,
               TriggerReauthForPrimaryAccount,
               (base::OnceCallback<void(ReauthSucceeded)>),
               (override));
+
+  password_manager::PasswordStore* GetProfilePasswordStore() const override {
+    return mock_profile_store_.get();
+  }
+
+ private:
+  scoped_refptr<password_manager::MockPasswordStore> mock_profile_store_;
 };
 
 // This subclass is used to disable some code paths which are not essential for
@@ -166,13 +189,24 @@ void TestManagePasswordsUIController::HidePasswordBubble() {
   }
 }
 
+autofill::PasswordForm BuildFormFromLoginAndOrigin(const std::string& username,
+                                                   const std::string& password,
+                                                   const std::string& origin) {
+  autofill::PasswordForm form;
+  form.username_value = base::ASCIIToUTF16(username);
+  form.password_value = base::ASCIIToUTF16(password);
+  form.origin = GURL(origin);
+  form.signon_realm = form.origin.GetOrigin().spec();
+  return form;
+}
+
 }  // namespace
 
 class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override;
 
-  MockPasswordManagerClient& client() { return client_; }
+  TestPasswordManagerClient& client() { return client_; }
   PasswordForm& test_local_form() { return test_local_form_; }
   PasswordForm& test_federated_form() { return test_federated_form_; }
   PasswordForm& submitted_form() { return submitted_form_; }
@@ -197,7 +231,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
   void TestNotChangingStateOnAutofill(password_manager::ui::State state);
 
  private:
-  MockPasswordManagerClient client_;
+  TestPasswordManagerClient client_;
 
   PasswordForm test_local_form_;
   PasswordForm test_federated_form_;
@@ -1334,14 +1368,70 @@ TEST_F(ManagePasswordsUIControllerTest, UpdateBubbleAfterLeakCheck) {
 TEST_F(ManagePasswordsUIControllerTest,
        NotifyUnsyncedCredentialsWillBeDeleted) {
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
-  std::vector<autofill::PasswordForm> credentials(1);
-  credentials[0].username_value = base::ASCIIToUTF16("unsynced_login");
-  credentials[0].password_value = base::ASCIIToUTF16("unsynced_password");
+  std::vector<autofill::PasswordForm> credentials(2);
+  credentials[0] =
+      BuildFormFromLoginAndOrigin("user1", "password1", "http://a.com");
+  credentials[1] =
+      BuildFormFromLoginAndOrigin("user2", "password2", "http://b.com");
+
   controller()->NotifyUnsyncedCredentialsWillBeDeleted(credentials);
+
   EXPECT_EQ(controller()->GetUnsyncedCredentials(), credentials);
   EXPECT_TRUE(controller()->opened_bubble());
   ExpectIconAndControllerStateIs(
       password_manager::ui::WILL_DELETE_UNSYNCED_ACCOUNT_PASSWORDS_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, SaveUnsyncedCredentialsInProfileStore) {
+  // Setup state with unsynced credentials.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  std::vector<autofill::PasswordForm> credentials = {
+      BuildFormFromLoginAndOrigin("user1", "password1", "http://a.com"),
+      BuildFormFromLoginAndOrigin("user2", "password2", "http://b.com")};
+  controller()->NotifyUnsyncedCredentialsWillBeDeleted(credentials);
+
+  // Set expectations on the store.
+  auto* profile_store = static_cast<password_manager::MockPasswordStore*>(
+      client().GetProfilePasswordStore());
+  EXPECT_CALL(*profile_store,
+              AddLogin(MatchesLoginAndOrigin(credentials[0].username_value,
+                                             credentials[0].password_value,
+                                             credentials[0].origin)));
+  EXPECT_CALL(*profile_store,
+              AddLogin(MatchesLoginAndOrigin(credentials[1].username_value,
+                                             credentials[1].password_value,
+                                             credentials[1].origin)));
+
+  // Save.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->SaveUnsyncedCredentialsInProfileStore();
+
+  // Check the credentials are gone and the bubble is closed.
+  EXPECT_TRUE(controller()->GetUnsyncedCredentials().empty());
+  EXPECT_FALSE(controller()->opened_bubble());
+  ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
+}
+
+TEST_F(ManagePasswordsUIControllerTest, DiscardUnsyncedCredentials) {
+  // Setup state with unsynced credentials.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  std::vector<autofill::PasswordForm> credentials = {
+      BuildFormFromLoginAndOrigin("user", "password", "http://a.com")};
+  controller()->NotifyUnsyncedCredentialsWillBeDeleted(credentials);
+
+  // No save should happen on the profile store.
+  auto* profile_store = static_cast<password_manager::MockPasswordStore*>(
+      client().GetProfilePasswordStore());
+  EXPECT_CALL(*profile_store, AddLogin).Times(0);
+
+  // Discard.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->DiscardUnsyncedCredentials();
+
+  // Check the credentials are gone and the bubble is closed.
+  EXPECT_TRUE(controller()->GetUnsyncedCredentials().empty());
+  EXPECT_FALSE(controller()->opened_bubble());
+  ExpectIconAndControllerStateIs(password_manager::ui::INACTIVE_STATE);
 }
 
 TEST_F(ManagePasswordsUIControllerTest, OpenBubbleForMovableForm) {

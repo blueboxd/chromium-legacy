@@ -43,12 +43,6 @@ enum class OverrideLanguageModel {
   GEO,
 };
 
-// Options for the translate desktop UI experiment.
-enum class TranslateUIBubbleModel {
-  DEFAULT,
-  TAB,
-};
-
 // Returns which language model to use depending on the state of all Language
 // experiments.
 OverrideLanguageModel GetOverrideLanguageModel();
@@ -68,10 +62,6 @@ bool ShouldPreventRankerEnforcementInIndia(int force_trigger_count);
 // because of kOverrideTranslateTriggerInIndia often enough that the experiment
 // should stop being taken into account.
 bool IsForceTriggerBackoffThresholdReached(int force_trigger_count);
-
-// Returns which translate bubble UI to use depending on selection in
-// kTranslateUIBubbleKey.
-TranslateUIBubbleModel GetTranslateUiBubbleModel();
 }  // namespace language
 
 #endif  // COMPONENTS_LANGUAGE_CORE_COMMON_LANGUAGE_EXPERIMENTS_H_

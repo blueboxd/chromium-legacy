@@ -138,7 +138,7 @@ void ApplyAnimationSettings(
 }
 
 // Returns BubbleDialogDelegateView if |transient_window| is a bubble dialog.
-views::BubbleDialogDelegateView* AsBubbleDialogDelegate(
+views::BubbleDialogDelegate* AsBubbleDialogDelegate(
     aura::Window* transient_window) {
   views::Widget* widget =
       views::Widget::GetWidgetForNativeWindow(transient_window);
@@ -173,7 +173,7 @@ void WindowTransformAnimationObserver::OnImplicitAnimationsCompleted() {
        ::wm::TransientWindowManager::GetOrCreate(window_)
            ->transient_children()) {
     // For now we only care about bubble dialog type transient children.
-    views::BubbleDialogDelegateView* bubble_delegate_view =
+    views::BubbleDialogDelegate* bubble_delegate_view =
         AsBubbleDialogDelegate(transient_window);
     if (bubble_delegate_view)
       bubble_delegate_view->OnAnchorBoundsChanged();

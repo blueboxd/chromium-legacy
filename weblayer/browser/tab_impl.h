@@ -166,6 +166,7 @@ class TabImpl : public Tab,
   jboolean SetData(JNIEnv* env,
                    const base::android::JavaParamRef<jobjectArray>& data);
   base::android::ScopedJavaLocalRef<jobjectArray> GetData(JNIEnv* env);
+  jboolean IsRendererControllingBrowserControlsOffsets(JNIEnv* env);
 #endif
 
   ErrorPageDelegate* error_page_delegate() { return error_page_delegate_; }
@@ -286,6 +287,7 @@ class TabImpl : public Tab,
       content::BrowserControlsState state) override;
   void OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
       bool did_commit) override;
+  void OnForceBrowserControlsShown() override;
 #endif
 
   // Called from closure supplied to delegate to exit fullscreen.

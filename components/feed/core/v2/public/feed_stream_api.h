@@ -69,10 +69,18 @@ class FeedStreamApi {
   // nothing if the model is not yet loaded.
   virtual EphemeralChangeId CreateEphemeralChange(
       std::vector<feedstore::DataOperation> operations) = 0;
+  // Same as |CreateEphemeralChange()|, but data is a serialized
+  // |feedpacking::DismissData| message.
+  virtual EphemeralChangeId CreateEphemeralChangeFromPackedData(
+      base::StringPiece data) = 0;
   // Commits a change. Returns false if the change does not exist.
   virtual bool CommitEphemeralChange(EphemeralChangeId id) = 0;
   // Rejects a change. Returns false if the change does not exist.
   virtual bool RejectEphemeralChange(EphemeralChangeId id) = 0;
+
+  // Sends 'ThereAndBackAgainData' back to the server. |data| is a serialized
+  // |feedwire::ThereAndBackAgainData| message.
+  virtual void ProcessThereAndBackAgain(base::StringPiece data) = 0;
 
   // User interaction reporting. These should have no side-effects other than
   // reporting metrics.

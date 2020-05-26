@@ -15,7 +15,6 @@
 #include "content/renderer/render_view_impl.h"
 #include "content/shell/renderer/web_test/accessibility_controller.h"
 #include "content/shell/renderer/web_test/blink_test_runner.h"
-#include "content/shell/renderer/web_test/test_runner_for_specific_view.h"
 #include "content/shell/renderer/web_test/text_input_controller.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -39,7 +38,6 @@ class AccessibilityController;
 class BlinkTestRunner;
 class TestInterfaces;
 class TestRunner;
-class TestRunnerForSpecificView;
 class TextInputController;
 
 // WebViewTestProxy is used to run web tests. This class is a partial fake
@@ -83,7 +81,6 @@ class WebViewTestProxy : public RenderViewImpl {
   AccessibilityController* accessibility_controller() {
     return &accessibility_controller_;
   }
-  TestRunnerForSpecificView* view_test_runner() { return &view_test_runner_; }
 
   void Reset();
   void Install(blink::WebLocalFrame* frame);
@@ -100,7 +97,6 @@ class WebViewTestProxy : public RenderViewImpl {
 
   AccessibilityController accessibility_controller_{this};
   TextInputController text_input_controller_{this};
-  TestRunnerForSpecificView view_test_runner_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTestProxy);
 };

@@ -97,6 +97,10 @@ struct CC_EXPORT ScrollAndScaleSet {
   // ended.
   bool scroll_gesture_did_end;
 
+  // Tracks whether there is an ongoing compositor-driven animation for a
+  // scroll.
+  bool ongoing_scroll_animation = false;
+
   // Tracks different methods of scrolling (e.g. wheel, touch, precision
   // touchpad, etc.).
   ManipulationInfo manipulation_info;

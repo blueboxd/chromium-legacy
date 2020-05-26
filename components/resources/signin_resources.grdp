@@ -2,9 +2,9 @@
 <grit-part>
   <include name="IDR_SIGNIN_INTERNALS_INDEX_HTML"
     file="../signin/core/browser/resources/signin_index.html"
-    flattenhtml="true" allowexternalscript="true" compress="gzip"
+    flattenhtml="true" allowexternalscript="true"
     type="BINDATA" />
   <include name="IDR_SIGNIN_INTERNALS_INDEX_JS"
     file="../signin/core/browser/resources/signin_internals.js"
-    compress="gzip" type="BINDATA" />
+    type="BINDATA" />
 </grit-part>

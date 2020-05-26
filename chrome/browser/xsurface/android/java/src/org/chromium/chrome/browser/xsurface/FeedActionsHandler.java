@@ -24,8 +24,9 @@ public interface FeedActionsHandler {
     /**
      * Requests to dismiss a card. A change ID will be returned and it can be used to commit or
      * discard the change.
+     * @param data A serialized feedpacking.DismissData message.
      */
-    default int requestDismissal() {
+    default int requestDismissal(byte[] data) {
         return 0;
     }
 

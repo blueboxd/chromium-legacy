@@ -118,12 +118,6 @@ class NET_EXPORT WebSocketChannel {
   ChannelState StartClosingHandshake(uint16_t code, const std::string& reason)
       WARN_UNUSED_RESULT;
 
-  // Returns the current send quota. This value is unsafe to use outside of the
-  // browser IO thread because it changes asynchronously.  The value is only
-  // valid for the execution of the current Task or until SendFrame() is called,
-  // whichever happens sooner.
-  int current_send_quota() const { return current_send_quota_; }
-
   // Starts the connection process, using a specified creator callback rather
   // than the default. This is exposed for testing.
   void SendAddChannelRequestForTesting(
@@ -358,13 +352,6 @@ class NET_EXPORT WebSocketChannel {
   // Handle to an in-progress WebSocketStream creation request. Only non-NULL
   // during the connection process.
   std::unique_ptr<WebSocketStreamRequest> stream_request_;
-
-  // The level the quota is refreshed to when it reaches the low_water_mark
-  // (quota units).
-  int send_quota_high_water_mark_;
-  // The current amount of quota that the renderer has available for sending
-  // on this logical channel (quota units).
-  int current_send_quota_;
 
   // Timer for the closing handshake.
   base::OneShotTimer close_timer_;

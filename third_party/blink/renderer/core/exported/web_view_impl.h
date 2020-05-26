@@ -473,10 +473,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void MouseCaptureLost();
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const;
-  void DidAcquirePointerLock();
-  void DidNotAcquirePointerLock();
-  void DidLosePointerLock();
-  void ShowContextMenu(WebMenuSourceType);
   WebURL GetURLForDebugTrace();
 
   void SetPageScaleFactorAndLocation(float scale,

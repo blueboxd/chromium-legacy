@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Tú gestionas los accesos directos</translation>
 <translation id="1213037489357051291">Número de huellas digitales configuradas: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Envía datos de uso y diagnóstico. Contribuye a mejorar la experiencia de Android de tu hijo enviando automáticamente a Google datos de diagnóstico, del dispositivo y del uso de las aplicaciones. Los datos no se usarán para identificar a tu hijo, sino para aumentar la estabilidad de las aplicaciones y del sistema, y realizar otras mejoras. Parte de los datos agregados también ayudarán a las aplicaciones y los partners de Google, como los desarrolladores de Android. El propietario ha aplicado este ajuste. El propietario puede elegir si se envían a Google datos de uso y diagnóstico de este dispositivo. Si la opción Actividad en la Web y en Aplicaciones Adicional está activada, es posible que estos datos se guarden en la cuenta de Google de tu hijo.</translation>
+<translation id="121384500095351701">Este archivo no se puede descargar de forma segura</translation>
 <translation id="1215411991991485844">Nueva aplicación en segundo plano añadida</translation>
 <translation id="1216542092748365687">Quitar huella digital</translation>
 <translation id="1217483152325416304">Tus datos locales se eliminarán pronto</translation>
@@ -1064,6 +1065,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2336228925368920074">Añadir todas las pestañas a marcadores...</translation>
 <translation id="2336376423977300504">Borrar cookies siempre al cerrar las ventanas</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> no se puede descargar de forma segura</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> quiere vincularse</translation>
 <translation id="2342740338116612727">Se han añadido marcadores</translation>
 <translation id="2343747224442182863">Destacar esta pestaña</translation>
@@ -3253,6 +3255,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5154702632169343078">Asunto</translation>
 <translation id="5157635116769074044">Fijar esta página a la pantalla de inicio...</translation>
 <translation id="5158983316805876233">Utilizar el mismo proxy para todos los protocolos</translation>
+<translation id="5159419673777902220">Tu padre o madre ha inhabilitado los permisos de extensiones</translation>
 <translation id="5160857336552977725">Inicia sesión en tu <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> se ha bloqueado porque no está actualizado</translation>
 <translation id="5170568018924773124">Mostrar en carpeta</translation>
@@ -4564,7 +4567,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6880587130513028875">Se han bloqueado las imágenes en esta página.</translation>
 <translation id="6882836635272038266">Protección estándar frente a descargas, extensiones y sitios web que son peligrosos.</translation>
 <translation id="6883319974225028188">¡Vaya! El sistema no ha podido guardar la configuración del dispositivo.</translation>
-<translation id="6885064901301703683">Guárdalas una vez y úsalas desde donde quieras</translation>
+<translation id="6885064901301703683">Guárdalas una vez y úsalas donde quieras</translation>
 <translation id="6885771755599377173">Vista previa de información del sistema</translation>
 <translation id="6886476658664859389">Llave de seguridad NFC</translation>
 <translation id="6886871292305414135">Abrir enlace en una pes&amp;taña nueva</translation>
@@ -5394,6 +5397,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7925247922861151263">Error de comprobación de AAA</translation>
 <translation id="7925285046818567682">Esperando a <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">No es mi perfil</translation>
+<translation id="7926975587469166629">Apodo de la tarjeta</translation>
 <translation id="7928175190925744466">¿Has cambiado esta contraseña?</translation>
 <translation id="7928836894214140642">Gestionado por <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Los métodos de pago guardados aparecerán aquí</translation>

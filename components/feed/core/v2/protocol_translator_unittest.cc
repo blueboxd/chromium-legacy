@@ -6,6 +6,7 @@
 
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "base/base_paths.h"
 #include "base/files/file_path.h"
@@ -598,6 +599,42 @@ stream_structure: {
 max_structure_sequence_number: 0
 )";
   EXPECT_EQ(want, ss.str());
+}
+
+TEST(TranslateDismissData, Success) {
+  feedpacking::DismissData input;
+  *input.add_data_operations() =
+      MakeDataOperation(feedwire::DataOperation::CLEAR_ALL);
+  *input.add_data_operations() =
+      MakeDataOperationWithContent(feedwire::DataOperation::UPDATE_OR_APPEND);
+  std::vector<feedstore::DataOperation> result =
+      TranslateDismissData(kCurrentTime, input);
+
+  ASSERT_EQ(2UL, result.size());
+  EXPECT_EQ(R"({
+  structure {
+    operation: 1
+  }
+}
+)",
+            ToTextProto(result[0]));
+  EXPECT_EQ(R"({
+  structure {
+    operation: 2
+    content_id {
+      id: 42
+    }
+    type: 3
+  }
+  content {
+    content_id {
+      id: 42
+    }
+    frame: "content"
+  }
+}
+)",
+            ToTextProto(result[1]));
 }
 
 }  // namespace feed

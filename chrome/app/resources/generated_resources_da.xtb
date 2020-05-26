@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Genveje udvælges af dig</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> fingeraftryk er registreret</translation>
 <translation id="1213254615020057352">Send brugs- og diagnosticeringsdata. Hjælp med at forbedre dit barns Android-oplevelse ved automatisk at sende diagnosticerings- og enhedsdata samt data om brug af apps til Google. Disse data bruges ikke til at identificere dit barn. De bruges kun til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Denne indstilling håndhæves af ejeren. Ejeren kan vælge at sende diagnosticerings- og brugsdata for denne enhed til Google. Hvis indstillingen for yderligere web- og appaktivitet er aktiveret for dit barn, gemmes disse data muligvis på barnets Google-konto.</translation>
+<translation id="121384500095351701">Denne fil kan ikke downloades sikkert</translation>
 <translation id="1215411991991485844">Der er tilføjet en ny baggrunds-app</translation>
 <translation id="1216542092748365687">Fjern fingeraftryk</translation>
 <translation id="1217483152325416304">Dine lokale data slettes snart</translation>
@@ -718,7 +719,7 @@
 <translation id="1884013283844450420">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, opret forbindelse</translation>
 <translation id="1884705339276589024">Juster størrelsen på Linux-disken</translation>
 <translation id="1885106732301550621">Diskplads</translation>
-<translation id="1885190042244431215">Hvis du tilføjer en skolekonti, kan du nemt logge ind på websites og i udvidelser som elev, mens du stadig er underlagt forældreindstillinger.</translation>
+<translation id="1885190042244431215">Hvis du tilføjer en skolekonto, kan du nemt logge ind på websites og i udvidelser som elev, mens du stadig er underlagt forældreindstillinger.</translation>
 <translation id="1886996562706621347">Tillad, at websites må bede om at håndtere protokoller som standard (anbefales)</translation>
 <translation id="1887442540531652736">Loginfejl</translation>
 <translation id="1887597546629269384">Sig "Hey Google" igen</translation>
@@ -1064,6 +1065,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2336228925368920074">Tilføj alle faner som bogmærker...</translation>
 <translation id="2336376423977300504">Ryd altid cookies, når vinduer lukkes</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> kan ikke downloades sikkert</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> vil gerne parre</translation>
 <translation id="2342740338116612727">Bogmærkerne blev tilføjet</translation>
 <translation id="2343747224442182863">Sæt denne fane i fokus</translation>
@@ -1657,7 +1659,7 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3075874217500066906">Enheden skal genstartes for at begynde Powerwash-processen. Efter genstart vil du blive bedt om at bekræfte, at du vil fortsætte.</translation>
 <translation id="3076909148546628648"><ph name="DOWNLOAD_RECEIVED" />/<ph name="DOWNLOAD_TOTAL" /></translation>
 <translation id="3076977359333237641">Dine logindata blev slettet</translation>
-<translation id="3080933187214341848">Dette netværk er ikke synkroniseret med din konto. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
+<translation id="3080933187214341848">Dette netværk synkroniseres ikke med din konto. <ph name="LINK_BEGIN" />Få flere oplysninger<ph name="LINK_END" /></translation>
 <translation id="3082374807674020857"><ph name="PAGE_TITLE" /> - <ph name="PAGE_URL" /></translation>
 <translation id="308268297242056490">URI</translation>
 <translation id="3082780749197361769">Denne fane anvender dit kamera eller din mikrofon.</translation>
@@ -3254,6 +3256,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5154702632169343078">Emne</translation>
 <translation id="5157635116769074044">Fastgør denne side til startskærmen...</translation>
 <translation id="5158983316805876233">Brug samme proxy for alle protokoller</translation>
+<translation id="5159419673777902220">Din forælder har deaktiveret tilladelserne for udvidelser</translation>
 <translation id="5160857336552977725">Log ind på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> blev blokeret, da det er forældet</translation>
 <translation id="5170568018924773124">Vis i mappe</translation>
@@ -4828,7 +4831,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Forlad side}one{Forlad side}other{Forlad sider}}</translation>
 <translation id="7207457272187520234">Send brugs- og diagnosticeringsdata. Denne enhed sender i øjeblikket automatisk diagnosticerings- og enhedsdata samt data om brug af apps til Google. Dataene bruges til forbedring af bl.a. systemets og appens stabilitet. Visse samlede data hjælper også Google-apps og -partnere, f.eks. Android-udviklere. Denne indstilling håndhæves af ejeren. Hvis indstillingen for yderligere web- og appaktivitet er aktiveret, gemmes disse data muligvis på din Google-konto.</translation>
 <translation id="7207631048330366454">Søg efter apps</translation>
-<translation id="7210171324714276060">Udvidelsen <ph name="EXTENSION_NAME" /> ændrede søgemaskine til <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
+<translation id="7210171324714276060">Udvidelsen <ph name="EXTENSION_NAME" /> ændrede søgemaskinen til <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Udvidelsesprintere</translation>
 <translation id="7212097698621322584">Angiv din aktuelle pinkode for at ændre den. Hvis du ikke kender din pinkode, skal du nulstille sikkerhedsnøglen og derefter oprette en ny pinkode.</translation>
 <translation id="7216409898977639127">Mobilselskab</translation>
@@ -5395,6 +5398,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
 <translation id="7925285046818567682">Venter på <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Det var ikke mig.</translation>
+<translation id="7926975587469166629">Kortets kaldenavn</translation>
 <translation id="7928175190925744466">Har du allerede ændret denne adgangskode?</translation>
 <translation id="7928836894214140642">Administreret af <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Her kan du se dine gemte betalingsmetoder</translation>

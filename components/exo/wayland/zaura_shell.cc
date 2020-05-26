@@ -224,7 +224,7 @@ void AuraSurface::OnSurfaceDestroying(Surface* surface) {
 }
 
 void AuraSurface::OnWindowOcclusionChanged(Surface* surface) {
-  if (!surface_ || !surface_->is_tracking_occlusion())
+  if (!surface_ || !surface_->IsTrackingOcclusion())
     return;
   auto* window = surface_->window();
   ComputeAndSendOcclusionFraction(window->occlusion_state(),
@@ -241,7 +241,7 @@ void AuraSurface::OnWindowActivating(ActivationReason reason,
   // Check if this surface is a child of a window that is losing focus.
   auto* widget = views::Widget::GetTopLevelWidgetForNativeView(window);
   if (!widget || losing_active != widget->GetNativeWindow() ||
-      !surface_->is_tracking_occlusion())
+      !surface_->IsTrackingOcclusion())
     return;
 
   // Result may be changed by animated windows, so compute it explicitly.

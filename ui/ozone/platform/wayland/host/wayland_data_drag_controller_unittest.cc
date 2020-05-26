@@ -39,7 +39,8 @@ namespace ui {
 
 namespace {
 
-constexpr FilenameToURLPolicy kFilenameToURLPolicy = CONVERT_FILENAMES;
+constexpr FilenameToURLPolicy kFilenameToURLPolicy =
+    FilenameToURLPolicy::CONVERT_FILENAMES;
 
 template <typename StringType>
 PlatformClipboard::Data ToClipboardData(const StringType& data_string) {

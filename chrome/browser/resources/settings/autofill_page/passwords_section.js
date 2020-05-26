@@ -8,8 +8,6 @@
  * save any passwords.
  */
 
-/** @typedef {!{model: !{item: !PasswordManagerProxy.UiEntryWithPassword}}} */
-let PasswordUiEntryEvent;
 
 /** @typedef {!{model: !{item: !chrome.passwordsPrivate.ExceptionEntry}}} */
 let ExceptionEntryEntryEvent;
@@ -17,7 +15,7 @@ let ExceptionEntryEntryEvent;
 import {afterNextRender, html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.m.js';
-import {MultiStorePasswordUiEntry, MultiStorePasswordUiEntryWithPassword} from './multi_store_password_ui_entry.js';
+import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/cr_link_row/cr_link_row.m.js';
@@ -102,7 +100,7 @@ Polymer({
 
     /**
      * An array of passwords with all the stored versions.
-     * @type {!Array<!PasswordManagerProxy.UiEntryWithPassword>}
+     * @type {!Array<!PasswordManagerProxy.PasswordUiEntry>}
      */
     savedPasswords: {
       type: Array,
@@ -112,7 +110,7 @@ Polymer({
     /**
      * Saved passwords after deduplicating versions that are repeated in the
      * account and on the device.
-     * @type {!Array<!MultiStorePasswordUiEntryWithPassword>}
+     * @type {!Array<!MultiStorePasswordUiEntry>}
      */
     multiStoreSavedPasswords: {
       type: Array,
@@ -190,8 +188,8 @@ Polymer({
     shouldShowStorageDetailsInEditDialog_: {
       type: Boolean,
       value: false,
-      computed: 'computeShouldShowStorageDetailsInEditDialog_('+
-      'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
+      computed: 'computeShouldShowStorageDetailsInEditDialog_(' +
+          'eligibleForAccountStorage_, isOptedInForAccountStorage_)',
     },
 
     /** @private */
@@ -247,7 +245,7 @@ Polymer({
       value: '',
     },
 
-    /** @private {!MultiStorePasswordUiEntryWithPassword} */
+    /** @private {!MultiStorePasswordUiEntry} */
     lastFocused_: Object,
 
     /** @private */
@@ -314,11 +312,12 @@ Polymer({
     };
 
     const setSavedPasswordsListener = list => {
-      const newList = list.map(entry => ({entry: entry, password: ''}));
-      // Because the backend guarantees that item.entry.id uniquely identifies a
+      // Because the backend guarantees that entry.id uniquely identifies a
       // given entry and is stable with regard to mutations to the list, it is
-      // sufficient to just use this id to create a item uid.
-      this.updateList('savedPasswords', item => item.entry.id, newList);
+      // sufficient to just use this id to create an entry uid.
+      // TODO(crbug.com/1049141): Get rid of the savedPasswords property by
+      // finding a nice id to use here, such as [account_id]_[device_id].
+      this.updateList('savedPasswords', entry => entry.id, list);
       this.hasStoredPasswords_ = list.length > 0;
     };
 
@@ -457,10 +456,6 @@ Polymer({
   onPasswordEditDialogClosed_() {
     this.showPasswordEditDialog_ = false;
     focusWithoutInk(assert(this.activeDialogAnchorStack_.pop()));
-
-    // Trigger a re-evaluation of the activePassword as the visibility state of
-    // the password might have changed.
-    this.activePassword.notifyPath('item.password');
   },
 
   /**
@@ -474,15 +469,12 @@ Polymer({
   },
 
   /**
-   * @return {!Array<!MultiStorePasswordUiEntryWithPassword>}
+   * @return {!Array<!MultiStorePasswordUiEntry>}
    * @private
    */
   computeMultiStoreSavedPasswords_() {
     return this.savedPasswords.map(
-        item => ({
-          entry: new MultiStorePasswordUiEntry(item.entry),
-          password: item.password
-        }));
+        entry => new MultiStorePasswordUiEntry(entry));
   },
 
   /**
@@ -524,7 +516,7 @@ Polymer({
 
   /**
    * @param {string} filter
-   * @return {!Array<!MultiStorePasswordUiEntryWithPassword>}
+   * @return {!Array<!MultiStorePasswordUiEntry>}
    * @private
    */
   getFilteredMultiStorePasswords_(filter) {
@@ -533,7 +525,7 @@ Polymer({
     }
 
     return this.multiStoreSavedPasswords.filter(
-        p => [p.entry.urls.shown, p.entry.username].some(
+        p => [p.urls.shown, p.username].some(
             term => term.toLowerCase().includes(filter.toLowerCase())));
   },
 
@@ -583,7 +575,7 @@ Polymer({
     // result back to javascript.
     this.passwordManager_
         .requestPlaintextPassword(
-            this.activePassword.item.entry.getAnyId(),
+            this.activePassword.entry.getAnyId(),
             chrome.passwordsPrivate.PlaintextReason.COPY)
         .catch(error => {
           // <if expr="chromeos">
@@ -689,7 +681,7 @@ Polymer({
   },
 
   /**
-   * Returns true if the list exists and has items.
+   * Returns true if the list exists and is not empty.
    * @param {Array<Object>} list
    * @return {boolean}
    * @private

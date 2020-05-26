@@ -94,6 +94,9 @@ LayerTreeHost::InitParams::InitParams(InitParams&&) = default;
 LayerTreeHost::InitParams& LayerTreeHost::InitParams::operator=(InitParams&&) =
     default;
 
+LayerTreeHost::ScrollAnimationState::ScrollAnimationState() = default;
+LayerTreeHost::ScrollAnimationState::~ScrollAnimationState() = default;
+
 std::unique_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner,
     InitParams params) {
@@ -846,6 +849,24 @@ void LayerTreeHost::ApplyViewportChanges(const ScrollAndScaleSet& info) {
   if (info.inner_viewport_scroll.element_id)
     inner_viewport_scroll_delta = info.inner_viewport_scroll.scroll_delta;
 
+  // When a new scroll-animation starts, it is necessary to check
+  // |info.manipulation_info| to make sure the scroll-animation was started by
+  // an input event.
+  // If there is already an ongoing scroll-animation, then it is necessary to
+  // only look at |info.ongoing_scroll_animation| (since it is possible for the
+  // scroll-animation to continue even if no event was handled).
+  bool new_ongoing_scroll =
+      scroll_animation_.in_progress
+          ? info.ongoing_scroll_animation
+          : (info.ongoing_scroll_animation && info.manipulation_info);
+  if (scroll_animation_.in_progress && !new_ongoing_scroll) {
+    scroll_animation_.in_progress = false;
+    if (!scroll_animation_.end_notification.is_null())
+      std::move(scroll_animation_.end_notification).Run();
+  } else {
+    scroll_animation_.in_progress = new_ongoing_scroll;
+  }
+
   if (inner_viewport_scroll_delta.IsZero() && info.page_scale_delta == 1.f &&
       info.elastic_overscroll_delta.IsZero() && !info.top_controls_delta &&
       !info.bottom_controls_delta &&
@@ -1063,6 +1084,15 @@ bool LayerTreeHost::IsThreaded() const {
 void LayerTreeHost::RequestPresentationTimeForNextFrame(
     PresentationTimeCallback callback) {
   pending_presentation_time_callbacks_.push_back(std::move(callback));
+}
+
+void LayerTreeHost::RequestScrollAnimationEndNotification(
+    base::OnceClosure callback) {
+  DCHECK(scroll_animation_.end_notification.is_null());
+  if (scroll_animation_.in_progress)
+    scroll_animation_.end_notification = std::move(callback);
+  else
+    std::move(callback).Run();
 }
 
 void LayerTreeHost::SetRootLayer(scoped_refptr<Layer> root_layer) {

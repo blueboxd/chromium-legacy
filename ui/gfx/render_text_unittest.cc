@@ -6056,8 +6056,8 @@ TEST_F(RenderTextTest, EmojiFlagGlyphCount) {
 
   const internal::TextRunList* run_list = GetHarfBuzzRunList();
   ASSERT_EQ(1U, run_list->runs().size());
-#if defined(OS_MACOSX)
-  // On Mac, the flags should be found, so two glyphs result.
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+  // On Linux and macOS, the flags should be found, so two glyphs result.
   EXPECT_EQ(2u, run_list->runs()[0]->shape.glyph_count);
 #elif defined(OS_ANDROID)
   // It seems that some versions of android support the flags. Older versions

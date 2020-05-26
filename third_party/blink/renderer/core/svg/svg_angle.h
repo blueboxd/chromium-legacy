@@ -41,30 +41,6 @@ enum SVGMarkerOrientType {
 };
 DECLARE_SVG_ENUM_MAP(SVGMarkerOrientType);
 
-class SVGMarkerOrientEnumeration final
-    : public SVGEnumeration<SVGMarkerOrientType> {
- public:
-  SVGMarkerOrientEnumeration(SVGAngle*);
-  ~SVGMarkerOrientEnumeration() override;
-
-  void Add(SVGPropertyBase*, SVGElement*) override;
-  void CalculateAnimatedValue(const SVGAnimateElement&,
-                              float,
-                              unsigned,
-                              SVGPropertyBase*,
-                              SVGPropertyBase*,
-                              SVGPropertyBase*,
-                              SVGElement*) override;
-  float CalculateDistance(SVGPropertyBase*, SVGElement*) override;
-
-  void Trace(Visitor*) const override;
-
- private:
-  void NotifyChange() override;
-
-  Member<SVGAngle> angle_;
-};
-
 class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
  public:
   typedef SVGAngleTearOff TearOffType;
@@ -103,12 +79,8 @@ class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
                               float value_in_specified_units);
   void ConvertToSpecifiedUnits(SVGAngleType unit_type);
 
-  SVGEnumeration<SVGMarkerOrientType>* OrientType() {
-    return orient_type_.Get();
-  }
-  const SVGEnumeration<SVGMarkerOrientType>* OrientType() const {
-    return orient_type_.Get();
-  }
+  SVGEnumeration* OrientType() { return orient_type_.Get(); }
+  SVGMarkerOrientType OrientTypeValue() const;
   bool IsNumeric() const;
   void OrientTypeChanged();
 
@@ -139,7 +111,7 @@ class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
 
   SVGAngleType unit_type_;
   float value_in_specified_units_;
-  Member<SVGMarkerOrientEnumeration> orient_type_;
+  Member<SVGEnumeration> orient_type_;
 };
 
 template <>

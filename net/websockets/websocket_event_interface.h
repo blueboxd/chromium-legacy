@@ -48,8 +48,7 @@ class NET_EXPORT WebSocketEventInterface {
   virtual void OnAddChannelResponse(
       std::unique_ptr<WebSocketHandshakeResponseInfo> response,
       const std::string& selected_subprotocol,
-      const std::string& extensions,
-      int64_t send_flow_control_quota) = 0;
+      const std::string& extensions) = 0;
 
   // Called when a data frame has been received from the remote host and needs
   // to be forwarded to the renderer process.

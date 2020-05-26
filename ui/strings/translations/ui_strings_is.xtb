@@ -137,7 +137,7 @@
 <translation id="5463830097259460683">Emoji og tákn</translation>
 <translation id="5476505524087279545">ekki velja</translation>
 <translation id="547979256943495781">Hilla til hægri</translation>
-<translation id="5528053674512161860">Ekki tókst að hlaða síðu vegna þess að notendaviðmót forritara (dev_ui) er ekki uppsett</translation>
+<translation id="5528053674512161860">Ekki tókst að hlaða síðu þar sem notendaviðmót forritara (dev_ui) er ekki uppsett</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> stýrikerfi</translation>
 <translation id="5583640892426849032">Bakklykill</translation>
 <translation id="5613020302032141669">Ör til vinstri</translation>

@@ -33,9 +33,9 @@ Document* DOMParser::parseFromString(const String& str, const String& type) {
       DocumentInit::Create()
           .WithURL(GetDocument()->Url())
           .WithTypeFrom(type)
-          .WithContextDocument(GetDocument())
+          .WithExecutionContext(window_)
           .WithOwnerDocument(GetDocument())
-          .WithContentSecurityPolicyFromContextDoc());
+          .WithContentSecurityPolicyFromExecutionContext());
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
   return doc;

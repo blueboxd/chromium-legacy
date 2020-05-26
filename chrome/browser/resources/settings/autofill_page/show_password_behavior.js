@@ -5,7 +5,7 @@
 // <if expr="chromeos">
 import {BlockingRequestManager} from './blocking_request_manager.js';
 // </if>
-import {MultiStorePasswordUiEntryWithPassword} from './multi_store_password_ui_entry.js';
+import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {PasswordManagerImpl} from './password_manager_proxy.js';
 
 /**
@@ -18,10 +18,18 @@ export const ShowPasswordBehavior = {
 
   properties: {
     /**
-     * The password that is being displayed.
-     * @type {!MultiStorePasswordUiEntryWithPassword}
+     * @type {!MultiStorePasswordUiEntry}
      */
-    item: Object,
+    entry: Object,
+
+    /** The password that is being displayed. */
+    password: {
+      type: String,
+      value: '',
+      // If the password is initialized by the parent component, changes in
+      // visibility should be reflected there too.
+      notify: true
+    },
 
     // <if expr="chromeos">
     /** @type BlockingRequestManager */
@@ -35,8 +43,7 @@ export const ShowPasswordBehavior = {
    * @private
    */
   getPasswordInputType_() {
-    return this.item.password || this.item.entry.federationText ? 'text' :
-                                                                  'password';
+    return this.password || this.entry.federationText ? 'text' : 'password';
   },
 
   /**
@@ -56,7 +63,7 @@ export const ShowPasswordBehavior = {
    * @private
    */
   getIconClass_() {
-    return this.item.password ? 'icon-visibility-off' : 'icon-visibility';
+    return this.password ? 'icon-visibility-off' : 'icon-visibility';
   },
 
   /**
@@ -66,12 +73,12 @@ export const ShowPasswordBehavior = {
    * @private
    */
   getPassword_() {
-    if (!this.item) {
+    if (!this.entry) {
       return '';
     }
 
     const NUM_PLACEHOLDERS = 10;
-    return this.item.entry.federationText || this.item.password ||
+    return this.entry.federationText || this.password ||
         ' '.repeat(NUM_PLACEHOLDERS);
   },
 
@@ -80,17 +87,16 @@ export const ShowPasswordBehavior = {
    * @private
    */
   onShowPasswordButtonTap_() {
-    if (this.item.password) {
-      this.set('item.password', '');
+    if (this.password) {
+      this.password = '';
       return;
     }
     PasswordManagerImpl.getInstance()
         .requestPlaintextPassword(
-            this.item.entry.getAnyId(),
-            chrome.passwordsPrivate.PlaintextReason.VIEW)
+            this.entry.getAnyId(), chrome.passwordsPrivate.PlaintextReason.VIEW)
         .then(
             password => {
-              this.set('item.password', password);
+              this.password = password;
             },
             error => {
               // <if expr="chromeos">

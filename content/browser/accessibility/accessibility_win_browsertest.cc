@@ -3263,7 +3263,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // "Before".
   //
   // The embedded object character representing the image is at offset 6.
-  for (LONG i = 0; i <= 6; ++i) {
+  for (LONG i = 0; i < 6; ++i) {
     CheckTextAtOffset(contenteditable_text, i, IA2_TEXT_BOUNDARY_CHAR, i,
                       (i + 1), std::wstring(1, expected_hypertext[i]));
   }

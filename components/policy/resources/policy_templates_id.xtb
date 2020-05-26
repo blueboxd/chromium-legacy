@@ -676,6 +676,11 @@ Jika Anda menonaktifkan kebijakan ini, scroll halaman web ke fragmen teks terten
       Jika kebijakan ini ditetapkan ke jalur file, file tersebut akan digunakan sebagai file
       executable.</translation>
 <translation id="2113068765175018713">Membatasi waktu operasi perangkat dengan melakukan booting ulang secara otomatis</translation>
+<translation id="2124881675920287921">Kebijakan ini sudah tidak digunakan lagi di M82 dan dihapus di M85, gunakan <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> sebagai gantinya. Menonaktifkan <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> sama dengan menonaktifkan <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />. Mengaktifkan <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> atau tidak menetapkan setelan ini sama dengan tidak menetapkan <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />.
+
+      Jika kebijakan ini ditetapkan ke salah (false), pengguna tidak akan dapat mengirim beberapa informasi sistem dan konten halaman ke server Google. Jika ditetapkan ke benar (true) atau tidak dikonfigurasi, pengguna akan diizinkan mengirim beberapa informasi sistem dan konten halaman ke Safe Browsing untuk membantu mendeteksi situs dan aplikasi berbahaya.
+
+      Lihat https://developers.google.com/safe-browsing untuk mengetahui info selengkapnya tentang Safe Browsing.</translation>
 <translation id="2127599828444728326">Izinkan pemberitahuan di situs ini</translation>
 <translation id="2131902621292742709">Penundaan peredupan layar saat menggunakan daya baterai</translation>
 <translation id="2134437727173969994">Mengizinkan penguncian layar</translation>
@@ -2111,7 +2116,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
 
           Jika kebijakan ini tidak disetel, 'AllowCookies' akan digunakan dan pengguna dapat mengubahnya.</translation>
 <translation id="4093716537292423758">Jangan memblokir jenis file yang tidak didukung</translation>
-<translation id="4097556069183835428">Jika kebijakan ditetapkan ke Tidak ada, kaca pembesar layar akan dinonaktifkan.
+<translation id="4097556069183835428">Jika kebijakan ditetapkan ke Tidak ada (None), kaca pembesar layar akan dinonaktifkan.
 
       Jika kebijakan ditetapkan, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan, kaca pembesar layar mula-mula akan dinonaktifkan, tetapi pengguna dapat mengaktifkannya kapan saja.</translation>
 <translation id="410068710490553233">Mengizinkan Login ke Akun Google Tambahan</translation>
@@ -2372,7 +2377,7 @@ Jika kebijakan ini tidak disetel, setelan default-nya tidak diizinkan bagi pengg
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak akan dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini dibiarkan tidak disetel, kebijakan ini akan diaktifkan namun pengguna akan dapat mengubahnya.</translation>
-<translation id="4529868888205510667">Jika kebijakan ditetapkan ke Benar atau tidak ditetapkan, pengguna akan dapat menggunakan ARC, kecuali ARC dinonaktifkan dengan cara lain. Jika kebijakan ditetapkan ke Salah, pengguna yang tidak terafiliasi tidak boleh menggunakan ARC.
+<translation id="4529868888205510667">Jika kebijakan ditetapkan ke Benar (True) atau tidak ditetapkan, pengguna akan dapat menggunakan ARC, kecuali ARC dinonaktifkan dengan cara lain. Jika kebijakan ditetapkan ke Salah (False), pengguna yang tidak terafiliasi tidak boleh menggunakan ARC.
 
       Perubahan kebijakan hanya berlaku saat ARC tidak berjalan, misalnya saat memulai Chrome OS.</translation>
 <translation id="453031441196755904">Kebijakan ini tidak digunakan lagi.</translation>
@@ -2851,7 +2856,6 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 <translation id="5307432759655324440">Ketersediaan mode samaran</translation>
 <translation id="5311275381462687162">Setelan default perilaku cookie <ph name="ATTRIBUTE_SAMESITE_NAME" /> lama</translation>
 <translation id="5318185076587284965">Aktifkan penggunaan server relay oleh hosting akses jarak jauh</translation>
-<translation id="5321755462836179869">Mengizinkan notifikasi native</translation>
 <translation id="5323128137188992869">Izinkan konten untuk ditransmisikan ke perangkat menggunakan <ph name="PRODUCT_NAME" />.
 
           Jika kebijakan ini disetel ke False, pengguna tidak akan dapat mentransmisikan konten ke perangkat mereka. Jika kebijakan ini disetel ke True, pengguna diizinkan untuk mentransmisikan konten. Jika kebijakan ini tidak disetel, pengguna tidak diizinkan untuk mentransmisikan konten ke perangkat Chrome OS yang terdaftar, namun dapat mentransmisikan ke perangkat yang tidak terdaftar.</translation>
@@ -3095,7 +3099,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
         Jika kebijakan disetel ke false, pengguna tidak dapat mengirim masukan ke Google.
 
         Jika kebijakan tidak disetel atau disetel ke true, pengguna dapat mengirim masukan ke Google melalui Menu-&gt;Bantuan-&gt;Laporkan Masalah atau kombinasi kunci.</translation>
-<translation id="5579179012798142131">Menetapkan ArcEnabled ke Benar akan mengaktifkan ARC untuk pengguna, kecuali mode Singkat atau login multipel aktif saat sesi pengguna. Jika kebijakan ditetapkan ke Salah atau tidak ditetapkan, pengguna versi bisnis tidak dapat menggunakan ARC.</translation>
+<translation id="5579179012798142131">Menetapkan ArcEnabled ke Benar (True) akan mengaktifkan ARC untuk pengguna, kecuali mode Singkat atau login multipel aktif saat sesi pengguna. Jika kebijakan ditetapkan ke Salah (False) atau tidak ditetapkan, pengguna versi bisnis tidak dapat menggunakan ARC.</translation>
 <translation id="5583806683960333345">Jika setelan ini diaktifkan, pengguna akan diizinkan menggunakan Tethering Instan, yang membuat ponsel Google mereka dapat membagikan kuota internetnya dengan perangkat mereka.
 
       Jika setelan ini dinonaktifkan, pengguna tidak akan diizinkan untuk menggunakan Tethering Instan.
@@ -3235,8 +3239,8 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
       Kebijakan ini akan dihapus setelah Chrome 84.</translation>
 <translation id="5756680608782814094">Melaporkan informasi VPD perangkat.
 
-      Jika kebijakan ditetapkan ke salah atau tidak ditetapkan, informasi tidak akan dilaporkan.
-      Jika ditetapkan ke benar, informasi VPD perangkat akan dilaporkan.
+      Jika kebijakan ditetapkan ke salah (false) atau tidak ditetapkan, informasi tidak akan dilaporkan.
+      Jika ditetapkan ke benar (true), informasi VPD perangkat akan dilaporkan.
       Data Produk Vital (VPD) adalah kumpulan data konfigurasi dan informatif (seperti nomor suku cadang dan nomor seri) yang terkait dengan perangkat.</translation>
 <translation id="5765780083710877561">Deskripsi:</translation>
 <translation id="5770738360657678870">Saluran pengembang (mungkin tidak stabil)</translation>
@@ -3621,7 +3625,7 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
           Jika Anda memilih untuk menggunakan skrip proxy .pac, URL skrip akan diberikan pada aplikasi Android.</translation>
 <translation id="6430366557948788869">Ekstensi Pelaporan Chrome</translation>
-<translation id="6438972408080276697">Jika kebijakan ditetapkan ke Benar, laporan peristiwa tombol saat penginstalan aplikasi Android yang dipicu kebijakan akan dikirimkan ke Google. Jika kebijakan ditetapkan ke Salah, tidak ada peristiwa yang direkam.</translation>
+<translation id="6438972408080276697">Jika kebijakan ditetapkan ke Benar (True), laporan peristiwa tombol saat penginstalan aplikasi Android yang dipicu kebijakan akan dikirimkan ke Google. Jika kebijakan ditetapkan ke Salah (False), tidak ada peristiwa yang direkam.</translation>
 <translation id="6440051664870270040">Izinkan situs menavigasi dan membuka (jendela) pop-up sekaligus</translation>
 <translation id="6447948611083700881">Opsi pencadangan dan pemulihan dinonaktifkan</translation>
 <translation id="6449476513004303784">Jangan izinkan pengguna mengelola sertifikat</translation>
@@ -3787,9 +3791,9 @@ Jika kebijakan ini dinonaktifkan atau tidak disetel, situs tidak akan dapat mena
 
       Jika kebijakan ini tidak disetel atau daftar kosong, semua skema akan dapat diakses di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="6652197835259177259">Setelan pengguna yang dikelola secara lokal</translation>
-<translation id="6658129069061688328">Jika kebijakan ditetapkan ke Benar, rekomendasi aplikasi dapat muncul dalam penelusuran dengan status kosong. Jika kebijakan ditetapkan ke Salah, rekomendasi tersebut tidak akan muncul.
+<translation id="6658129069061688328">Jika kebijakan ditetapkan ke Benar (True), rekomendasi aplikasi dapat muncul dalam penelusuran dengan status kosong. Jika kebijakan ditetapkan ke Salah (False), rekomendasi tersebut tidak akan muncul.
 
-      Jika Anda menetapkan kebijakan tersebut, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan, perangkat terkelola secara default akan disetel ke Salah.</translation>
+      Jika Anda menetapkan kebijakan tersebut, pengguna tidak dapat mengubahnya. Jika tidak ditetapkan, perangkat terkelola secara default akan disetel ke Salah (False).</translation>
 <translation id="6658245400435704251">Menentukan jumlah waktu (dalam detik) sebuah perangkat dapat menunda download pembaruannya secara acak dari saat pembaruan tersebut pertama kali didorong ke server. Perangkat dapat menunggu dengan sebagian dari waktu ini dari segi prediksi waktu penyelesaian tugas dan sisa waktunya dari segi jumlah pemeriksaan pembaruan. Dalam keadaan apa pun, penyebaran dibatasi dengan jumlah waktu yang konstan sehingga perangkat tidak akan terus menunggu download pembaruan selamanya.</translation>
 <translation id="6665670272107384733">Setel seberapa sering pengguna harus memasukkan sandi untuk menggunakan buka kunci cepat.</translation>
 <translation id="6667586534922258705">Memperlihatkan tombol tampilkan sandi pada layar login dan layar kunci</translation>
@@ -4005,8 +4009,8 @@ Kebijakan ini hanya berlaku jika dukungan aplikasi Linux diaktifkan.</translatio
 <translation id="7086720321892395256">Mengontrol kebijakan pengguna dan perangkat untuk fitur layar privasi.</translation>
 <translation id="7093294902558672021">Melaporkan informasi kipas perangkat.
 
-      Jika kebijakan ditetapkan ke salah atau tidak ditetapkan, informasi tidak akan dilaporkan.
-      Jika ditetapkan ke benar, informasi kipas perangkat akan dilaporkan.</translation>
+      Jika kebijakan ditetapkan ke salah (false) atau tidak ditetapkan, informasi tidak akan dilaporkan.
+      Jika ditetapkan ke benar (true), informasi kipas perangkat akan dilaporkan.</translation>
 <translation id="710003290625031750">Deskripsi skema yang diluaskan:</translation>
 <translation id="7106631983877564505">Mengaktifkan kunci jika perangkat <ph name="PRODUCT_OS_NAME" /> menganggur atau ditangguhkan.
 
@@ -5110,8 +5114,8 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8698286761337647563">Berapa hari sebelum habis masa berlaku sandi pengguna SAML akan menerima peringatan</translation>
 <translation id="8699392919012430269">Melaporkan informasi Bluetooth perangkat.
 
-      Jika kebijakan ditetapkan ke salah atau tidak ditetapkan, informasi tidak akan dilaporkan.
-      Jika ditetapkan ke benar, informasi Bluetooth perangkat akan dilaporkan.</translation>
+      Jika kebijakan ditetapkan ke salah (false) atau tidak ditetapkan, informasi tidak akan dilaporkan.
+      Jika ditetapkan ke benar (true), informasi Bluetooth perangkat akan dilaporkan.</translation>
 <translation id="8701288965900240388">Memungkinkan Anda menentukan apakah situs diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> secara otomatis. Menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> secara otomatis dapat diizinkan untuk semua situs atau ditolak untuk semua situs.
 
           Fitur klik untuk putar akan mengizinkan plugin <ph name="FLASH_PLUGIN_NAME" /> berjalan, tetapi pengguna harus mengklik placeholder untuk memulai eksekusi.
@@ -5452,7 +5456,7 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="981346395360763138">Layanan lokasi Google dinonaktifkan</translation>
 <translation id="982497069985795632">Aktifkan fitur pemeriksa ejaan</translation>
 <translation id="991560005425213776">Kirim nama pengguna dan nama file ke printer native</translation>
-<translation id="99202634486128833">Jika kebijakan ditetapkan ke CopyCaCerts, semua sertifikat CA yang memasang ONC dengan <ph name="WEB_TRUSTED_BIT" /> akan tersedia untuk aplikasi ARC.
+<translation id="99202634486128833">Jika kebijakan ditetapkan ke CopyCaCerts, semua sertifikat CA yang diinstal ONC dengan <ph name="WEB_TRUSTED_BIT" /> akan tersedia untuk aplikasi ARC.
 
        Jika kebijakan ditetapkan ke Tidak ada atau tidak ditetapkan, sertifikat <ph name="PRODUCT_OS_NAME" /> tidak akan tersedia untuk aplikasi ARC.</translation>
 <translation id="99232017131102456">Kebijakan ini akan mengonfigurasi satu cache global per profil dengan kredensial autentikasi server HTTP.

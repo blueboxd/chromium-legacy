@@ -162,9 +162,10 @@ void BluetoothRemoteGATTCharacteristic::WriteValueCallback(
   }
 }
 
-ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
+ScriptPromise BluetoothRemoteGATTCharacteristic::WriteCharacteristicValue(
     ScriptState* script_state,
     const DOMArrayPiece& value,
+    mojom::blink::WebBluetoothWriteType write_type,
     ExceptionState& exception_state) {
   if (!GetGatt()->connected()) {
     exception_state.ThrowDOMException(
@@ -213,11 +214,40 @@ ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
   mojom::blink::WebBluetoothService* service =
       device_->GetBluetooth()->Service();
   service->RemoteCharacteristicWriteValue(
-      characteristic_->instance_id, value_vector,
+      characteristic_->instance_id, value_vector, write_type,
       WTF::Bind(&BluetoothRemoteGATTCharacteristic::WriteValueCallback,
                 WrapPersistent(this), WrapPersistent(resolver), value_vector));
 
   return promise;
+}
+
+ScriptPromise BluetoothRemoteGATTCharacteristic::writeValue(
+    ScriptState* script_state,
+    const DOMArrayPiece& value,
+    ExceptionState& exception_state) {
+  return WriteCharacteristicValue(
+      script_state, value,
+      mojom::blink::WebBluetoothWriteType::kWriteDefaultDeprecated,
+      exception_state);
+}
+
+ScriptPromise BluetoothRemoteGATTCharacteristic::writeValueWithResponse(
+    ScriptState* script_state,
+    const DOMArrayPiece& value,
+    ExceptionState& exception_state) {
+  return WriteCharacteristicValue(
+      script_state, value,
+      mojom::blink::WebBluetoothWriteType::kWriteWithResponse, exception_state);
+}
+
+ScriptPromise BluetoothRemoteGATTCharacteristic::writeValueWithoutResponse(
+    ScriptState* script_state,
+    const DOMArrayPiece& value,
+    ExceptionState& exception_state) {
+  return WriteCharacteristicValue(
+      script_state, value,
+      mojom::blink::WebBluetoothWriteType::kWriteWithoutResponse,
+      exception_state);
 }
 
 void BluetoothRemoteGATTCharacteristic::NotificationsCallback(

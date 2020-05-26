@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.content_public.browser.test.NativeLibraryTestRule;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -24,6 +25,7 @@ import org.chromium.ui.test.util.DummyUiActivityTestCase;
  * Clipboard tests for Android platform that depend on access to the ClipboardManager.
  */
 @RunWith(BaseJUnit4ClassRunner.class)
+@Batch(Batch.UNIT_TESTS)
 public class ClipboardAndroidTest extends DummyUiActivityTestCase {
     @Rule
     public NativeLibraryTestRule mNativeLibraryTestRule = new NativeLibraryTestRule();

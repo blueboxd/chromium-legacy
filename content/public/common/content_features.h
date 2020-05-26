@@ -112,6 +112,7 @@ CONTENT_EXPORT extern const base::Feature kReloadHiddenTabsWithCrashedSubframes;
 CONTENT_EXPORT extern const base::Feature kRenderDocument;
 CONTENT_EXPORT extern const base::Feature kRequestUnbufferedDispatch;
 CONTENT_EXPORT extern const base::Feature kResamplingInputEvents;
+CONTENT_EXPORT extern const base::Feature kRespectMacLCDTextSetting;
 CONTENT_EXPORT extern const base::Feature
     kRunVideoCaptureServiceInBrowserProcess;
 CONTENT_EXPORT extern const base::Feature kSavePageAsWebBundle;

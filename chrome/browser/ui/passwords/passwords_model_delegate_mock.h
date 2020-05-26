@@ -47,6 +47,8 @@ class PasswordsModelDelegateMock
   MOCK_METHOD0(OnPasswordsRevealed, void());
   MOCK_METHOD2(SavePassword,
                void(const base::string16&, const base::string16&));
+  MOCK_METHOD0(SaveUnsyncedCredentialsInProfileStore, void());
+  MOCK_METHOD0(DiscardUnsyncedCredentials, void());
   MOCK_METHOD0(MovePasswordToAccountStore, void());
   MOCK_METHOD2(ChooseCredential,
                void(const autofill::PasswordForm&,

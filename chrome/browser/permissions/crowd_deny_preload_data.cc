@@ -95,3 +95,36 @@ void CrowdDenyPreloadData::LoadFromDisk(const base::FilePath& proto_path) {
       base::BindOnce(&CrowdDenyPreloadData::set_site_reputations,
                      base::Unretained(this)));
 }
+
+CrowdDenyPreloadData::DomainToReputationMap
+CrowdDenyPreloadData::TakeSiteReputations() {
+  return std::move(domain_to_reputation_map_);
+}
+
+// ScopedCrowdDenyPreloadDataOverride -----------------------------------
+
+namespace testing {
+
+ScopedCrowdDenyPreloadDataOverride::ScopedCrowdDenyPreloadDataOverride() {
+  old_map_ = CrowdDenyPreloadData::GetInstance()->TakeSiteReputations();
+}
+
+ScopedCrowdDenyPreloadDataOverride::~ScopedCrowdDenyPreloadDataOverride() {
+  CrowdDenyPreloadData::GetInstance()->set_site_reputations(
+      std::move(old_map_));
+}
+
+void ScopedCrowdDenyPreloadDataOverride::SetOriginReputation(
+    const url::Origin& origin,
+    SiteReputation site_reputation) {
+  auto* instance = CrowdDenyPreloadData::GetInstance();
+  DomainToReputationMap testing_map = instance->TakeSiteReputations();
+  testing_map[origin.host()] = std::move(site_reputation);
+  instance->set_site_reputations(std::move(testing_map));
+}
+
+void ScopedCrowdDenyPreloadDataOverride::ClearAllReputations() {
+  CrowdDenyPreloadData::GetInstance()->TakeSiteReputations();
+}
+
+}  // namespace testing

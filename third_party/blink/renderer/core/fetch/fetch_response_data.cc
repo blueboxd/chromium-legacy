@@ -261,6 +261,7 @@ mojom::blink::FetchAPIResponsePtr FetchResponseData::PopulateFetchAPIResponse(
   response->status_text = status_message_;
   response->response_type = type_;
   response->response_source = response_source_;
+  response->mime_type = mime_type_;
   response->response_time = response_time_;
   response->cache_storage_cache_name = cache_storage_cache_name_;
   response->cors_exposed_header_names =

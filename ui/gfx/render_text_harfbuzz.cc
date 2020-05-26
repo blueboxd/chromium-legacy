@@ -1698,7 +1698,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
 }
 
 void RenderTextHarfBuzz::DrawVisualText(internal::SkiaTextRenderer* renderer,
-                                        const std::vector<Range> selections) {
+                                        const std::vector<Range>& selections) {
   DCHECK(!update_layout_run_list_);
   DCHECK(!update_display_run_list_);
   DCHECK(!update_display_text_);

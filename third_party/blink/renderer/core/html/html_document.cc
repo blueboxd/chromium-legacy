@@ -77,7 +77,7 @@ HTMLDocument::~HTMLDocument() = default;
 Document* HTMLDocument::CloneDocumentWithoutChildren() const {
   return MakeGarbageCollected<HTMLDocument>(
       DocumentInit::Create()
-          .WithContextDocument(ContextDocument())
+          .WithExecutionContext(GetExecutionContext())
           .WithOwnerDocument(const_cast<HTMLDocument*>(this))
           .WithURL(Url())
           .WithRegistrationContext(RegistrationContext()));

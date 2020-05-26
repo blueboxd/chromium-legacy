@@ -737,7 +737,7 @@ class GFX_EXPORT RenderText {
 
   // Draw all text and make the given ranges appear selected.
   virtual void DrawVisualText(internal::SkiaTextRenderer* renderer,
-                              const std::vector<Range> selections) = 0;
+                              const std::vector<Range>& selections) = 0;
 
   // Update the display text.
   void UpdateDisplayText(float text_width);
@@ -828,7 +828,7 @@ class GFX_EXPORT RenderText {
   void UpdateCachedBoundsAndOffset();
 
   // Draws the specified ranges of text with a selected appearance.
-  void DrawSelections(Canvas* canvas, const std::vector<Range> selections);
+  void DrawSelections(Canvas* canvas, const std::vector<Range>& selections);
 
   // Returns a grapheme iterator that contains the codepoint at |index|.
   internal::GraphemeIterator GetGraphemeIteratorAtIndex(

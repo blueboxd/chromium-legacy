@@ -135,13 +135,7 @@ TEST_F(SQLDatabaseTest, ExecuteWithErrorCode) {
                               "INSERT INTO foo(a, b) VALUES (1, 2, 3, 4)"));
 }
 
-// Flaky on Windows ASAN. https://crbug.com/1027481
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_CachedStatement DISABLED_CachedStatement
-#else
-#define MAYBE_CachedStatement CachedStatement
-#endif
-TEST_F(SQLDatabaseTest, MAYBE_CachedStatement) {
+TEST_F(SQLDatabaseTest, CachedStatement) {
   sql::StatementID id1 = SQL_FROM_HERE;
   sql::StatementID id2 = SQL_FROM_HERE;
   static const char kId1Sql[] = "SELECT a FROM foo";
@@ -685,13 +679,7 @@ TEST_F(SQLDatabaseTest, RazeAndClose) {
 
 // Test that various operations fail without crashing after
 // RazeAndClose().
-// Flaky on Windows ASAN. https://crbug.com/1027481
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_RazeAndCloseDiagnostics DISABLED_RazeAndCloseDiagnostics
-#else
-#define MAYBE_RazeAndCloseDiagnostics RazeAndCloseDiagnostics
-#endif
-TEST_F(SQLDatabaseTest, MAYBE_RazeAndCloseDiagnostics) {
+TEST_F(SQLDatabaseTest, RazeAndCloseDiagnostics) {
   const char* kCreateSql = "CREATE TABLE foo (id INTEGER PRIMARY KEY, value)";
   const char* kPopulateSql = "INSERT INTO foo (value) VALUES (12)";
   const char* kSimpleSql = "SELECT 1";
@@ -1235,13 +1223,7 @@ TEST_F(SQLDatabaseTest, GetAppropriateMmapSizeAltStatus) {
 // To prevent invalid SQL from accidentally shipping to production, prepared
 // statements which fail to compile with SQLITE_ERROR call DLOG(DCHECK).  This
 // case cannot be suppressed with an error callback.
-// Flaky on Windows ASAN. https://crbug.com/1027481
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_CompileError DISABLED_CompileError
-#else
-#define MAYBE_CompileError CompileError
-#endif
-TEST_F(SQLDatabaseTest, MAYBE_CompileError) {
+TEST_F(SQLDatabaseTest, CompileError) {
 // DEATH tests not supported on Android, iOS, or Fuchsia.
 #if !defined(OS_ANDROID) && !defined(OS_IOS) && !defined(OS_FUCHSIA)
   if (DLOG_IS_ON(FATAL)) {

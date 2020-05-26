@@ -1642,10 +1642,9 @@ void StyleEngine::ApplyRuleSetChanges(
     if (tree_scope.RootNode().IsDocumentNode()) {
       PropertyRegistration::RemoveDeclaredProperties(GetDocument());
 
-      for (auto* it = new_style_sheets.begin(); it != new_style_sheets.end();
-           it++) {
-        DCHECK(it->second);
-        AddPropertyRules(*it->second);
+      for (const ActiveStyleSheet& active_sheet : new_style_sheets) {
+        if (RuleSet* rule_set = active_sheet.second)
+          AddPropertyRules(*rule_set);
       }
     }
   }

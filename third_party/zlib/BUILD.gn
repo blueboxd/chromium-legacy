@@ -407,5 +407,11 @@ if (build_with_chromium) {
       "//testing/gtest",
       "//testing/gtest:gtest_main",
     ]
+
+    include_dirs = [
+      "//third_party/googletest/src/googletest/include/gtest",
+      ".",
+      "google",
+    ]
   }
 }

@@ -17,7 +17,7 @@ export const RemovePasswordBehavior = {
      * The password that will be removed.
      * @type {!MultiStorePasswordUiEntry}
      */
-    entryToRemove: Object,
+    entry: Object,
   },
 
   /**
@@ -35,13 +35,13 @@ export const RemovePasswordBehavior = {
 
     /** @type {!Array<number>} */
     const idsToRemove = [];
-    if (this.entryToRemove.isPresentInAccount()) {
+    if (this.entry.isPresentInAccount()) {
       result.removedFromAccount = true;
-      idsToRemove.push(this.entryToRemove.accountId);
+      idsToRemove.push(this.entry.accountId);
     }
-    if (this.entryToRemove.isPresentOnDevice()) {
+    if (this.entry.isPresentOnDevice()) {
       result.removedFromDevice = true;
-      idsToRemove.push(this.entryToRemove.deviceId);
+      idsToRemove.push(this.entry.deviceId);
     }
 
     if (idsToRemove.length) {

@@ -1277,14 +1277,6 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     }
 
     /**
-     * Gets the Toolbar view.
-     */
-    @Nullable
-    public View getToolbarView() {
-        return mControlContainer.findViewById(R.id.toolbar);
-    }
-
-    /**
      * We use getTopControlOffset to position the top controls. However, the toolbar's height may
      * be less than the total top controls height. If that's the case, this method will return the
      * extra offset needed to align the toolbar at the bottom of the top controls.

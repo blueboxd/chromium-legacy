@@ -54,6 +54,7 @@ message CacheResponse {
   optional int32 connection_info = 10;
   optional string alpn_negotiated_protocol = 11;
   optional bool was_fetched_via_spdy = 12;
+  optional string mime_type = 13;
 }
 
 message CacheMetadata {

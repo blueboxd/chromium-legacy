@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Vi određujete prečice</translation>
 <translation id="1213037489357051291">Otisci prstiju (<ph name="NUM_FINGERPRINTS" />) su podešeni</translation>
 <translation id="1213254615020057352">Šaljite podatke o korišćenju i dijagnostičke podatke. Pomozite nam da poboljšamo Android doživljaj za dete tako što ćete automatski slati Google-u podatke o dijagnostici i korišćenju uređaja i aplikacija. Te informacije se neće koristiti za identifikaciju deteta i pomoći će u održavanju stabilnosti sistema i aplikacije i drugim podešavanjima. Neki objedinjeni podaci će takođe pomoći Google aplikacijama i partnerima, poput Android programera. To podešavanje primenjuje vlasnik. Vlasnik može da izabere da se podaci o dijagnostici i korišćenju za ovaj uređaj šalju Google-u. Ako za dete uključite podešavanje dodatne aktivnosti na vebu i u aplikacijama, ti podaci će se možda čuvati na Google nalogu deteta.</translation>
+<translation id="121384500095351701">Ne možete bezbedno da preuzmete ovu datoteku</translation>
 <translation id="1215411991991485844">Nova aplikacija u pozadini je dodata</translation>
 <translation id="1216542092748365687">Uklonite otisak prsta</translation>
 <translation id="1217483152325416304">Lokalni podaci se uskoro brišu</translation>
@@ -715,7 +716,7 @@
 <translation id="1884013283844450420"><ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, poveži</translation>
 <translation id="1884705339276589024">Promenite veličinu Linux diska</translation>
 <translation id="1885106732301550621">Prostor na disku</translation>
-<translation id="1885190042244431215">Dodavanje školskog naloga omogućava lako prijavljivanje na veb-sajtove i u dodatke za učenike uz istovremeni roditeljski nadzor.</translation>
+<translation id="1885190042244431215">Dodavanje školskog naloga omogućava da se dete lako prijavljuje na veb-sajtove i u dodatke kao učenik, a da i dalje radi pod roditeljskim nadzorom.</translation>
 <translation id="1886996562706621347">Dozvoli sajtovima da zahtevaju da postanu podrazumevani obrađivači za protokole (preporučeno)</translation>
 <translation id="1887442540531652736">Greška pri prijavljivanju</translation>
 <translation id="1887597546629269384">Recite „Hej Google“ ponovo</translation>
@@ -1061,6 +1062,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="2336228925368920074">Obeleži sve kartice...</translation>
 <translation id="2336376423977300504">Sajtovi za koje se kolačići uvek brišu kada se prozori zatvore</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> ne može bezbedno da se preuzme</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> želi da se upari</translation>
 <translation id="2342740338116612727">Obeleživači su dodati</translation>
 <translation id="2343747224442182863">Stavi ovu karticu u fokus</translation>
@@ -3251,6 +3253,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5154702632169343078">Tema</translation>
 <translation id="5157635116769074044">Zakači ovu stranicu na početni ekran...</translation>
 <translation id="5158983316805876233">Koristi isti proksi za sve protokole</translation>
+<translation id="5159419673777902220">Tvoj roditelj je onemogućio dozvole za dodatke</translation>
 <translation id="5160857336552977725">Prijavite se na <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Dodatna komponenta <ph name="PLUGIN_NAME" /> je blokirana zato što je zastarela</translation>
 <translation id="5170568018924773124">Prikaži u direktorijumu</translation>
@@ -3497,7 +3500,7 @@ Možete da upravljate podešavanjima ovog naloga ako instalirate aplikaciju Fami
 <translation id="5488468185303821006">Omogući u režimu bez arhiviranja</translation>
 <translation id="5489435190927933437">Sačuvane lozinke za <ph name="DOMAIN" /></translation>
 <translation id="5490721031479690399">Prekinite vezu sa Bluetooth uređajem</translation>
-<translation id="5490798133083738649">Dozvolite Linux-u da pristupa mikrofonu</translation>
+<translation id="5490798133083738649">Dozvoli Linux-u da pristupa mikrofonu</translation>
 <translation id="549211519852037402">Bež i bela</translation>
 <translation id="5493792505296048976">ekran je uključen</translation>
 <translation id="5494362494988149300">Otvori kada bude &amp;dovršeno</translation>
@@ -4825,7 +4828,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Zatvori stranicu}one{Zatvori stranice}few{Zatvori stranice}other{Zatvori stranice}}</translation>
 <translation id="7207457272187520234">Šaljite podatke o korišćenju i dijagnostičke podatke. Ovaj uređaj trenutno automatski šalje podatke o dijagnostici, uređaju i korišćenju aplikacija Google-u. To doprinosi održavanju stabilnosti sistema i aplikacije i drugim podešavanjima. Neki objedinjeni podaci će takođe pomoći Google aplikacijama i partnerima, poput Android programera. To podešavanje primenjuje vlasnik. Ako uključite podešavanje dodatne aktivnosti na vebu i u aplikacijama, ti podaci će se možda čuvati na Google nalogu.</translation>
 <translation id="7207631048330366454">Pretražite aplikacije</translation>
-<translation id="7210171324714276060">Dodatak <ph name="EXTENSION_NAME" /> je promenio pretragu radi korišćenja domena <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
+<translation id="7210171324714276060">Dodatak <ph name="EXTENSION_NAME" /> je promenio dobavljača pretrage, pa se sad koristi <ph name="SEARCH_PROVIDER_DOMAIN" /></translation>
 <translation id="7210499381659830293">Štampači dodaci</translation>
 <translation id="7212097698621322584">Unesite aktuelni PIN da biste ga promenili. Ako ne znate PIN, morate da resetujete bezbednosni ključ, pa da napravite novi PIN.</translation>
 <translation id="7216409898977639127">Mobilni operater</translation>
@@ -5393,6 +5396,7 @@ Vodite računa da ne otkrijete nikakve osetljive informacije.</translation>
 <translation id="7925247922861151263">Provera potvrde identiteta, ovlašćenja i pristupa nije uspela</translation>
 <translation id="7925285046818567682">Čeka se <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To nisam ja.</translation>
+<translation id="7926975587469166629">Nadimak kartice</translation>
 <translation id="7928175190925744466">Već ste promenili ovu lozinku?</translation>
 <translation id="7928836894214140642">Upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Sačuvani načini plaćanja će se prikazivati ovde</translation>
@@ -5564,7 +5568,7 @@ Datoteka ključa: <ph name="KEY_FILE" />
 <translation id="8136269678443988272">Uneti PIN-ovi se ne podudaraju</translation>
 <translation id="8137559199583651773">Upravljaj dodacima</translation>
 <translation id="8138082791834443598">Opcionalno – unesite nove ili ažurirajte postojeće informacije koje će biti povezane sa ovim uređajem.</translation>
-<translation id="8138217203226449454">Da li ste želeli da promenite dobavljača pretrage?</translation>
+<translation id="8138217203226449454">Da li ste namerno promenili dobavljača pretrage?</translation>
 <translation id="813913629614996137">Pokreće se…</translation>
 <translation id="8140778357236808512">Uvezi postojećeg korisnika pod nadzorom</translation>
 <translation id="8141584439523427891">Sada se otvara u alternativnom pregledaču</translation>

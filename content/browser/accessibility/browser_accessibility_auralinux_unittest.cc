@@ -179,33 +179,31 @@ TEST_F(BrowserAccessibilityAuraLinuxTest, TestComplexHypertext) {
   check_box.role = ax::mojom::Role::kCheckBox;
   check_box.SetCheckedState(ax::mojom::CheckedState::kTrue);
   check_box.SetName(check_box_name);
+  // ARIA checkbox where the name is derived from its inner text.
+  check_box.SetNameFrom(ax::mojom::NameFrom::kContents);
   check_box.SetValue(check_box_value);
 
   ui::AXNodeData radio_button, radio_button_text;
   radio_button.id = 15;
   radio_button_text.id = 17;
-  radio_button_text.SetName(radio_button_text_name);
   radio_button.role = ax::mojom::Role::kRadioButton;
   radio_button_text.role = ax::mojom::Role::kStaticText;
+  radio_button_text.SetName(radio_button_text_name);
   radio_button.child_ids.push_back(radio_button_text.id);
 
   ui::AXNodeData link, link_text;
   link.id = 16;
   link_text.id = 18;
-  link_text.SetName(link_text_name);
   link.role = ax::mojom::Role::kLink;
   link_text.role = ax::mojom::Role::kStaticText;
+  link_text.SetName(link_text_name);
   link.child_ids.push_back(link_text.id);
 
   ui::AXNodeData root;
   root.id = 1;
   root.role = ax::mojom::Role::kRootWebArea;
-  root.child_ids.push_back(text1.id);
-  root.child_ids.push_back(combo_box.id);
-  root.child_ids.push_back(text2.id);
-  root.child_ids.push_back(check_box.id);
-  root.child_ids.push_back(radio_button.id);
-  root.child_ids.push_back(link.id);
+  root.child_ids = {text1.id,     combo_box.id,    text2.id,
+                    check_box.id, radio_button.id, link.id};
 
   std::unique_ptr<BrowserAccessibilityManager> manager(
       BrowserAccessibilityManager::Create(
@@ -355,6 +353,7 @@ TEST_F(BrowserAccessibilityAuraLinuxTest,
   link.AddState(ax::mojom::State::kFocusable);
   link.AddState(ax::mojom::State::kLinked);
   link.SetName("lnk");
+  link.SetNameFrom(ax::mojom::NameFrom::kContents);
   link.AddTextStyle(ax::mojom::TextStyle::kUnderline);
 
   ui::AXNodeData link_text;

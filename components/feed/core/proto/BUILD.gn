@@ -19,6 +19,7 @@ proto_library("proto") {
 proto_library("proto_v2") {
   proto_in_dir = "../../../../"
   sources = [
+    "v2/packing.proto",
     "v2/store.proto",
     "v2/ui.proto",
     "v2/wire/action_payload.proto",

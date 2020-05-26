@@ -37,9 +37,8 @@
 
 namespace blink {
 
-class SVGAnimatedEnumerationBase
-    : public ScriptWrappable,
-      public SVGAnimatedProperty<SVGEnumerationBase> {
+class SVGAnimatedEnumerationBase : public ScriptWrappable,
+                                   public SVGAnimatedProperty<SVGEnumeration> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedEnumerationBase);
 
@@ -49,20 +48,20 @@ class SVGAnimatedEnumerationBase
   void setBaseVal(uint16_t, ExceptionState&);
 
   void Trace(Visitor* visitor) const override {
-    SVGAnimatedProperty<SVGEnumerationBase>::Trace(visitor);
+    SVGAnimatedProperty<SVGEnumeration>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }
 
  protected:
   SVGAnimatedEnumerationBase(SVGElement* context_element,
                              const QualifiedName& attribute_name,
-                             SVGEnumerationBase* initial_value,
+                             SVGEnumeration* initial_value,
                              unsigned initial_enum_value)
-      : SVGAnimatedProperty<SVGEnumerationBase>(context_element,
-                                                attribute_name,
-                                                initial_value,
-                                                CSSPropertyID::kInvalid,
-                                                initial_enum_value) {}
+      : SVGAnimatedProperty<SVGEnumeration>(context_element,
+                                            attribute_name,
+                                            initial_value,
+                                            CSSPropertyID::kInvalid,
+                                            initial_enum_value) {}
 };
 
 }  // namespace blink

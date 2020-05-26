@@ -277,7 +277,7 @@ const ui::AXNodeData& ViewAXPlatformNodeDelegate::GetData() const {
 }
 
 int ViewAXPlatformNodeDelegate::GetChildCount() const {
-  if (IsLeaf())
+  if (ViewAccessibility::IsLeaf())
     return 0;
 
   if (!virtual_children().empty()) {
@@ -370,6 +370,10 @@ gfx::NativeViewAccessible ViewAXPlatformNodeDelegate::GetParent() {
   }
 
   return nullptr;
+}
+
+bool ViewAXPlatformNodeDelegate::IsLeaf() const {
+  return ViewAccessibility::IsLeaf() || AXPlatformNodeDelegateBase::IsLeaf();
 }
 
 gfx::Rect ViewAXPlatformNodeDelegate::GetBoundsRect(

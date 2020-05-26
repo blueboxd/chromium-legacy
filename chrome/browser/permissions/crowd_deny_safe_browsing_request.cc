@@ -71,7 +71,7 @@ class CrowdDenySafeBrowsingRequest::SafeBrowsingClient
       const safe_browsing::ThreatMetadata& metadata) {
     return metadata.api_permissions.count(
                kSafeBrowsingNotificationPermissionName)
-               ? Verdict::kKnownToShowUnsolicitedNotificationPermissionRequests
+               ? Verdict::kUnacceptable
                : Verdict::kAcceptable;
   }
 

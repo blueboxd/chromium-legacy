@@ -48,7 +48,7 @@ void SVGExternalDocumentCache::Entry::AddClient(Client* client) {
     clients_.insert(client);
     return;
   }
-  context_document_->GetTaskRunner(TaskType::kInternalLoading)
+  context_->GetTaskRunner(TaskType::kInternalLoading)
       ->PostTask(
           FROM_HERE,
           WTF::Bind(&SVGExternalDocumentCache::Client::NotifyFinished,
@@ -70,7 +70,7 @@ Document* SVGExternalDocumentCache::Entry::GetDocument() {
     document_ = XMLDocument::CreateSVG(
         DocumentInit::Create()
             .WithURL(resource->GetResponse().CurrentRequestUrl())
-            .WithContextDocument(context_document_));
+            .WithExecutionContext(context_.Get()));
     document_->SetContent(resource->DecodedText());
   }
   return document_.Get();
@@ -79,7 +79,7 @@ Document* SVGExternalDocumentCache::Entry::GetDocument() {
 void SVGExternalDocumentCache::Entry::Trace(Visitor* visitor) const {
   ResourceClient::Trace(visitor);
   visitor->Trace(document_);
-  visitor->Trace(context_document_);
+  visitor->Trace(context_);
   visitor->Trace(clients_);
 }
 
@@ -114,7 +114,8 @@ SVGExternalDocumentCache::Entry* SVGExternalDocumentCache::Get(
   params.SetRequestDestination(network::mojom::RequestDestination::kImage);
 
   Document* context_document = GetSupplementable();
-  Entry* entry = MakeGarbageCollected<Entry>(context_document);
+  Entry* entry =
+      MakeGarbageCollected<Entry>(context_document->GetExecutionContext());
   Resource* resource = TextResource::FetchSVGDocument(
       params, context_document->Fetcher(), entry);
   // TODO(fs): Handle revalidations that return a new/different resource without

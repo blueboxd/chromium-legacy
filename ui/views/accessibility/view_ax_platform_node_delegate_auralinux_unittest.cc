@@ -24,7 +24,8 @@ class ViewAXPlatformNodeDelegateAuraLinuxTest : public ViewsTestBase {
   }
 };
 
-TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest, TextfieldAccessibility) {
+TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest,
+       DISABLED_TextfieldAccessibility) {
   Widget widget;
   Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
@@ -34,7 +35,6 @@ TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest, TextfieldAccessibility) {
 
   Textfield* textfield = new Textfield;
   textfield->SetAccessibleName(base::UTF8ToUTF16("Name"));
-  textfield->SetText(base::UTF8ToUTF16("Value"));
   content->AddChildView(textfield);
 
   AtkText* atk_text = ATK_TEXT(textfield->GetNativeViewAccessible());
@@ -56,49 +56,44 @@ TEST_F(ViewAXPlatformNodeDelegateAuraLinuxTest, TextfieldAccessibility) {
   g_signal_connect(atk_text, "text-insert", callback, &text_insert_events);
   g_signal_connect(atk_text, "text-remove", callback, &text_remove_events);
 
-  textfield->NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+  textfield->SetText(base::UTF8ToUTF16("Value"));
   ASSERT_EQ(text_remove_events.size(), 0ul);
   ASSERT_EQ(text_insert_events.size(), 1ul);
-  ASSERT_EQ(text_insert_events[0].position, 0);
-  ASSERT_EQ(text_insert_events[0].length, 5);
-  ASSERT_EQ(text_insert_events[0].text, "Value");
+  EXPECT_EQ(text_insert_events[0].position, 0);
+  EXPECT_EQ(text_insert_events[0].length, 5);
+  EXPECT_EQ(text_insert_events[0].text, "Value");
   text_insert_events.clear();
 
   textfield->SetText(base::UTF8ToUTF16("Value A"));
-  textfield->NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
-
   ASSERT_EQ(text_remove_events.size(), 0ul);
   ASSERT_EQ(text_insert_events.size(), 1ul);
-  ASSERT_EQ(text_insert_events[0].position, 5);
-  ASSERT_EQ(text_insert_events[0].length, 2);
-  ASSERT_EQ(text_insert_events[0].text, " A");
+  EXPECT_EQ(text_insert_events[0].position, 5);
+  EXPECT_EQ(text_insert_events[0].length, 2);
+  EXPECT_EQ(text_insert_events[0].text, " A");
   text_insert_events.clear();
 
   textfield->SetText(base::UTF8ToUTF16("Value"));
-  textfield->NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
   ASSERT_EQ(text_remove_events.size(), 1ul);
   ASSERT_EQ(text_insert_events.size(), 0ul);
-  ASSERT_EQ(text_remove_events[0].position, 5);
-  ASSERT_EQ(text_remove_events[0].length, 2);
-  ASSERT_EQ(text_remove_events[0].text, " A");
+  EXPECT_EQ(text_remove_events[0].position, 5);
+  EXPECT_EQ(text_remove_events[0].length, 2);
+  EXPECT_EQ(text_remove_events[0].text, " A");
   text_remove_events.clear();
 
   textfield->SetText(base::UTF8ToUTF16("Prefix Value"));
-  textfield->NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
   ASSERT_EQ(text_remove_events.size(), 0ul);
   ASSERT_EQ(text_insert_events.size(), 1ul);
-  ASSERT_EQ(text_insert_events[0].position, 0);
-  ASSERT_EQ(text_insert_events[0].length, 7);
-  ASSERT_EQ(text_insert_events[0].text, "Prefix ");
+  EXPECT_EQ(text_insert_events[0].position, 0);
+  EXPECT_EQ(text_insert_events[0].length, 7);
+  EXPECT_EQ(text_insert_events[0].text, "Prefix ");
   text_insert_events.clear();
 
   textfield->SetText(base::UTF8ToUTF16("Value"));
-  textfield->NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
   ASSERT_EQ(text_remove_events.size(), 1ul);
   ASSERT_EQ(text_insert_events.size(), 0ul);
-  ASSERT_EQ(text_remove_events[0].position, 0);
-  ASSERT_EQ(text_remove_events[0].length, 7);
-  ASSERT_EQ(text_remove_events[0].text, "Prefix ");
+  EXPECT_EQ(text_remove_events[0].position, 0);
+  EXPECT_EQ(text_remove_events[0].length, 7);
+  EXPECT_EQ(text_remove_events[0].text, "Prefix ");
   text_insert_events.clear();
 }
 

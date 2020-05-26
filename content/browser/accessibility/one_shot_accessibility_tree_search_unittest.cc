@@ -23,7 +23,7 @@ namespace {
 class TestBrowserAccessibilityManager
     : public BrowserAccessibilityManagerAndroid {
  public:
-  TestBrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree)
+  explicit TestBrowserAccessibilityManager(const ui::AXTreeUpdate& initial_tree)
       : BrowserAccessibilityManagerAndroid(initial_tree, nullptr, nullptr) {}
 };
 #else
@@ -55,15 +55,15 @@ class OneShotAccessibilityTreeSearchTest : public testing::TestWithParam<bool> {
 void OneShotAccessibilityTreeSearchTest::SetUp() {
   ui::AXNodeData root;
   root.id = 1;
-  root.SetName("Document");
   root.role = ax::mojom::Role::kRootWebArea;
+  root.SetName("Document");
   root.relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
   root.AddBoolAttribute(ax::mojom::BoolAttribute::kClipsChildren, true);
 
   ui::AXNodeData heading;
   heading.id = 2;
-  heading.SetName("Heading");
   heading.role = ax::mojom::Role::kHeading;
+  heading.SetName("Heading");
   heading.relative_bounds.bounds = gfx::RectF(0, 0, 800, 50);
 
   ui::AXNodeData table;
@@ -102,20 +102,20 @@ void OneShotAccessibilityTreeSearchTest::SetUp() {
 
   ui::AXNodeData list_item_1;
   list_item_1.id = 8;
-  list_item_1.SetName("Autobots");
   list_item_1.role = ax::mojom::Role::kListItem;
+  list_item_1.SetName("Autobots");
   list_item_1.relative_bounds.bounds = gfx::RectF(10, 10, 200, 30);
 
   ui::AXNodeData list_item_2;
   list_item_2.id = 9;
-  list_item_2.SetName("Decepticons");
   list_item_2.role = ax::mojom::Role::kListItem;
+  list_item_2.SetName("Decepticons");
   list_item_2.relative_bounds.bounds = gfx::RectF(10, 40, 200, 60);
 
   ui::AXNodeData footer;
   footer.id = 10;
-  footer.SetName("Footer");
   footer.role = ax::mojom::Role::kFooter;
+  footer.SetName("Footer");
   footer.relative_bounds.bounds = gfx::RectF(0, 650, 100, 800);
 
   table_row.child_ids = {table_column_header_1.id, table_column_header_2.id};

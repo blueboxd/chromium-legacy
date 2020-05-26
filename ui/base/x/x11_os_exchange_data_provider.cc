@@ -248,7 +248,8 @@ bool XOSExchangeDataProvider::GetURLAndTitle(FilenameToURLPolicy policy,
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (const std::string& token : tokens) {
         GURL test_url(token);
-        if (!test_url.SchemeIsFile() || policy == CONVERT_FILENAMES) {
+        if (!test_url.SchemeIsFile() ||
+            policy == FilenameToURLPolicy::CONVERT_FILENAMES) {
           *url = test_url;
           *title = base::string16();
           return true;
@@ -334,7 +335,8 @@ bool XOSExchangeDataProvider::HasURL(FilenameToURLPolicy policy) const {
     } else if (data.GetType() == gfx::GetAtom(ui::kMimeTypeURIList)) {
       std::vector<std::string> tokens = ui::ParseURIList(data);
       for (const std::string& token : tokens) {
-        if (!GURL(token).SchemeIsFile() || policy == CONVERT_FILENAMES)
+        if (!GURL(token).SchemeIsFile() ||
+            policy == FilenameToURLPolicy::CONVERT_FILENAMES)
           return true;
       }
 

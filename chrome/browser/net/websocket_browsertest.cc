@@ -409,8 +409,6 @@ class ExpectInvalidUtf8Client : public network::mojom::WebSocketClient {
     NOTREACHED();
   }
 
-  void AddSendFlowControlQuota(int64_t quota) override {}
-
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const std::string& reason) override {

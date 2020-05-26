@@ -741,7 +741,7 @@ void PaintOpWriter::Write(const RecordPaintFilter& filter) {
   SkMatrix mat = options_.canvas->getTotalMatrix();
   SkSize scale;
   if (!mat.isScaleTranslate() && mat.decomposeScale(&scale))
-    mat = SkMatrix::MakeScale(scale.width(), scale.height());
+    mat = SkMatrix::Scale(scale.width(), scale.height());
   Write(filter.record().get(), gfx::Rect(), gfx::SizeF(1.f, 1.f), mat);
 }
 

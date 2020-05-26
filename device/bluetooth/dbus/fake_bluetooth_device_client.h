@@ -140,7 +140,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothDeviceClient
   // Creates and returns a list of std::unique_ptr<base::DictionaryValue>
   // objects, which contain all the data from the constants for devices with
   // predefined behavior.
-  std::unique_ptr<base::ListValue> GetBluetoothDevicesAsDictionaries() const;
+  base::Value GetBluetoothDevicesAsDictionaries() const;
 
   SimulatedPairingOptions* GetPairingOptions(
       const dbus::ObjectPath& object_path);

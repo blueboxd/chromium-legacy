@@ -622,7 +622,10 @@ void PredictionManager::UpdatePredictionModels(
     if (ProcessAndStorePredictionModel(model)) {
       prediction_model_update_data->CopyPredictionModelIntoUpdateData(model);
       models_to_store = true;
-      base::UmaHistogramSparse(
+      // Sparse histograms do not play nice with ChromeDriver integration tests
+      // since they do not convert to JSON that can be read by those tests.
+      // TODO(crbug/990131): Move this to a sparse histogram when bug is fixed.
+      base::UmaHistogramCounts100(
           "OptimizationGuide.PredictionModelUpdateVersion." +
               GetStringNameForOptimizationTarget(
                   model.model_info().optimization_target()),

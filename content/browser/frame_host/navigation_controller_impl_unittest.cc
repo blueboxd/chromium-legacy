@@ -2573,269 +2573,6 @@ TEST_F(NavigationControllerTest, RemoveEntryWithPending) {
   EXPECT_FALSE(controller.GetPendingEntry());
 }
 
-// Tests the transient entry, making sure it goes away with all navigations.
-TEST_F(NavigationControllerTest, TransientEntry) {
-  NavigationControllerImpl& controller = controller_impl();
-
-  const GURL url0("http://foo/0");
-  const GURL url1("http://foo/1");
-  const GURL url2("http://foo/2");
-  const GURL url3("http://foo/3");
-  const GURL url3_ref("http://foo/3#bar");
-  const GURL url4("http://foo/4");
-  const GURL transient_url("http://foo/transient");
-
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url0);
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
-
-  navigation_entry_changed_counter_ = 0;
-  navigation_list_pruned_counter_ = 0;
-
-  // Adding a transient with no pending entry.
-  std::unique_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-
-  // We should not have received any notifications.
-  EXPECT_EQ(0U, navigation_entry_changed_counter_);
-  EXPECT_EQ(0U, navigation_list_pruned_counter_);
-
-  // Check our state.
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 3);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller.GetLastCommittedEntry());
-  EXPECT_FALSE(controller.GetPendingEntry());
-  EXPECT_TRUE(controller.CanGoBack());
-  EXPECT_FALSE(controller.CanGoForward());
-
-  // Navigate.
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url2);
-
-  // We should have navigated, transient entry should be gone.
-  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 3);
-
-  // Add a transient again, then navigate with no pending entry this time.
-  transient_entry.reset(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  NavigationSimulator::NavigateAndCommitFromDocument(url3, main_test_rfh());
-  // Transient entry should be gone.
-  EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 4);
-
-  // Initiate a navigation, add a transient then commit navigation.
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(url4, contents());
-  navigation->Start();
-  transient_entry.reset(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  navigation->Commit();
-  EXPECT_EQ(url4, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 5);
-
-  // Add a transient and go back.  This should simply remove the transient.
-  transient_entry.reset(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  EXPECT_TRUE(controller.CanGoBack());
-  EXPECT_FALSE(controller.CanGoForward());
-  controller.GoBack();
-  // Transient entry should be gone.
-  EXPECT_EQ(url4, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 5);
-
-  // Suppose the page requested a history navigation backward.
-  NavigationSimulator::GoBack(contents());
-
-  // Add a transient and go to an entry before the current one.
-  transient_entry.reset(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  controller.GoToIndex(1);
-  auto history_navigation1 = NavigationSimulator::CreateFromPending(contents());
-  // The navigation should have been initiated, transient entry should be gone.
-  EXPECT_FALSE(controller.GetTransientEntry());
-  EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
-  // Visible entry does not update for history navigations until commit.
-  EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
-  history_navigation1->Commit();
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
-
-  // Add a transient and go to an entry after the current one.
-  transient_entry.reset(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  controller.GoToIndex(3);
-  auto history_navigation2 = NavigationSimulator::CreateFromPending(contents());
-  // The navigation should have been initiated, transient entry should be gone.
-  // Because of the transient entry that is removed, going to index 3 makes us
-  // land on url2 (which is visible after the commit).
-  EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
-  history_navigation2->Commit();
-  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
-
-  // Add a transient and go forward.
-  transient_entry.reset(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  EXPECT_TRUE(controller.CanGoForward());
-  auto forward_navigation =
-      NavigationSimulator::CreateHistoryNavigation(1, contents());
-  forward_navigation->Start();
-  // We should have navigated, transient entry should be gone.
-  EXPECT_FALSE(controller.GetTransientEntry());
-  EXPECT_EQ(url3, controller.GetPendingEntry()->GetURL());
-  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
-  forward_navigation->Commit();
-  EXPECT_EQ(url3, controller.GetVisibleEntry()->GetURL());
-
-  // Add a transient and do an in-page navigation, replacing the current entry.
-  transient_entry.reset(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-
-  main_test_rfh()->SendNavigate(0, false, url3_ref);
-  // Transient entry should be gone.
-  EXPECT_FALSE(controller.GetTransientEntry());
-  EXPECT_EQ(url3_ref, controller.GetVisibleEntry()->GetURL());
-
-  // Ensure the URLs are correct.
-  EXPECT_EQ(controller.GetEntryCount(), 5);
-  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url0);
-  EXPECT_EQ(controller.GetEntryAtIndex(1)->GetURL(), url1);
-  EXPECT_EQ(controller.GetEntryAtIndex(2)->GetURL(), url2);
-  EXPECT_EQ(controller.GetEntryAtIndex(3)->GetURL(), url3_ref);
-  EXPECT_EQ(controller.GetEntryAtIndex(4)->GetURL(), url4);
-}
-
-// Test that RemoveEntryAtIndex can handle an index that refers to a transient
-// entry.
-TEST_F(NavigationControllerTest, RemoveTransientByIndex) {
-  NavigationControllerImpl& controller = controller_impl();
-  const GURL url0("http://foo/0");
-  const GURL transient_url("http://foo/transient");
-
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url0);
-
-  std::unique_ptr<NavigationEntry> transient_entry =
-      std::make_unique<NavigationEntryImpl>();
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 2);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
-  EXPECT_TRUE(controller.GetTransientEntry());
-  EXPECT_EQ(controller.GetTransientEntry(), controller.GetEntryAtIndex(1));
-
-  EXPECT_TRUE(controller.RemoveEntryAtIndex(1));
-
-  EXPECT_EQ(controller.GetEntryCount(), 1);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 0);
-  EXPECT_FALSE(controller.GetTransientEntry());
-}
-
-// Test that Reload initiates a new navigation to a transient entry's URL.
-TEST_F(NavigationControllerTest, ReloadTransient) {
-  NavigationControllerImpl& controller = controller_impl();
-  const GURL url0("http://foo/0");
-  const GURL url1("http://foo/1");
-  const GURL transient_url("http://foo/transient");
-
-  // Load |url0|, and start a pending navigation to |url1|.
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url0);
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(url1, contents());
-  navigation->Start();
-
-  // A transient entry is added, interrupting the navigation.
-  std::unique_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-  EXPECT_TRUE(controller.GetTransientEntry());
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-
-  // The page is reloaded, which should remove the pending entry for |url1| and
-  // the transient entry for |transient_url|, and start a navigation to
-  // |transient_url|.
-  controller.Reload(ReloadType::NORMAL, true);
-  EXPECT_FALSE(controller.GetTransientEntry());
-  EXPECT_TRUE(controller.GetPendingEntry());
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  ASSERT_EQ(controller.GetEntryCount(), 1);
-  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url0);
-
-  // Load of |transient_url| completes.
-  auto reload = NavigationSimulator::CreateFromPending(contents());
-  reload->Commit();
-  ASSERT_EQ(controller.GetEntryCount(), 2);
-  EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url0);
-  EXPECT_EQ(controller.GetEntryAtIndex(1)->GetURL(), transient_url);
-}
-
-// Ensure that adding a transient entry works when history is full.
-TEST_F(NavigationControllerTest, TransientEntryWithFullHistory) {
-  NavigationControllerImpl& controller = controller_impl();
-
-  const GURL url0("http://foo/0");
-  const GURL url1("http://foo/1");
-  const GURL url2("http://foo/2");
-  const GURL transient_url("http://foo/transient");
-
-  // Maximum count should be at least 2 or we will not be able to perform
-  // another navigation, since it would need to prune the last committed entry
-  // which is not safe.
-  controller.set_max_entry_count_for_testing(2);
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url0);
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url1);
-
-  // Add a transient entry beyond entry count limit.
-  auto transient_entry = std::make_unique<NavigationEntryImpl>();
-  transient_entry->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(transient_entry));
-
-  // Check our state.
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 3);
-  EXPECT_EQ(controller.GetLastCommittedEntryIndex(), 1);
-  EXPECT_EQ(controller.GetPendingEntryIndex(), -1);
-  EXPECT_TRUE(controller.GetLastCommittedEntry());
-  EXPECT_FALSE(controller.GetPendingEntry());
-  EXPECT_TRUE(controller.CanGoBack());
-  EXPECT_FALSE(controller.CanGoForward());
-
-  // Go back, removing the transient entry.
-  controller.GoBack();
-  EXPECT_EQ(url1, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 2);
-
-  // Initiate a navigation, then add a transient entry with the pending entry
-  // present.
-  auto navigation =
-      NavigationSimulator::CreateBrowserInitiated(url2, contents());
-  navigation->Start();
-  auto another_transient = std::make_unique<NavigationEntryImpl>();
-  another_transient->SetURL(transient_url);
-  controller.SetTransientEntry(std::move(another_transient));
-  EXPECT_EQ(transient_url, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 3);
-  navigation->Commit();
-  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
-  EXPECT_EQ(controller.GetEntryCount(), 2);
-}
-
 // Ensure that renderer initiated pending entries get replaced, so that we
 // don't show a stale virtual URL when a navigation commits.
 // See http://crbug.com/266922.
@@ -3348,25 +3085,6 @@ TEST_F(NavigationControllerTest, CloneAndReload) {
 
   clone->GetController().Reload(ReloadType::NORMAL, true);
   EXPECT_EQ(1, clone->GetController().GetPendingEntryIndex());
-}
-
-// Make sure that cloning a WebContentsImpl doesn't copy interstitials.
-TEST_F(NavigationControllerTest, CloneOmitsInterstitials) {
-  NavigationControllerImpl& controller = controller_impl();
-  const GURL url1("http://foo1");
-  const GURL url2("http://foo2");
-
-  NavigateAndCommit(url1);
-  NavigateAndCommit(url2);
-
-  // Add an interstitial entry.  Should be deleted with controller.
-  NavigationEntryImpl* interstitial_entry = new NavigationEntryImpl();
-  interstitial_entry->set_page_type(PAGE_TYPE_INTERSTITIAL);
-  controller.SetTransientEntry(base::WrapUnique(interstitial_entry));
-
-  std::unique_ptr<WebContents> clone(controller.GetWebContents()->Clone());
-
-  ASSERT_EQ(2, clone->GetController().GetEntryCount());
 }
 
 // Test requesting and triggering a lazy reload.
@@ -4521,84 +4239,6 @@ TEST_F(NavigationControllerTest, StaleNavigationsResurrected) {
   EXPECT_EQ(url_b, controller.GetEntryAtIndex(2)->GetURL());
 }
 
-// Test to ensure that the pending entry index is updated when a transient entry
-// is inserted or removed.
-TEST_F(NavigationControllerTest, PendingEntryIndexUpdatedWithTransient) {
-  NavigationControllerImpl& controller = controller_impl();
-  const GURL url_0("http://foo/0");
-  const GURL url_1("http://foo/1");
-  const GURL url_transient_1("http://foo/transient_1");
-  const GURL url_transient_2("http://foo/transient_2");
-
-  NavigateAndCommit(url_0);
-  NavigateAndCommit(url_1);
-  controller.GoBack();
-  contents()->CommitPendingNavigation();
-  controller.GoForward();
-
-  // Check the state before the insertion of the transient entry.
-  // entries[0] = url_0  <- last committed entry.
-  // entries[1] = url_1  <- pending entry.
-  ASSERT_EQ(2, controller.GetEntryCount());
-  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(1, controller.GetPendingEntryIndex());
-  EXPECT_EQ(controller.GetEntryAtIndex(1), controller.GetPendingEntry());
-  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url_1, controller.GetEntryAtIndex(1)->GetURL());
-
-  // Insert a transient entry before the pending one. It should increase the
-  // pending entry index by one (1 -> 2).
-  std::unique_ptr<NavigationEntry> transient_entry_1(new NavigationEntryImpl);
-  transient_entry_1->SetURL(url_transient_1);
-  controller.SetTransientEntry(std::move(transient_entry_1));
-
-  // Check the state after the insertion of the transient entry.
-  // entries[0] = url_0           <- last committed entry
-  // entries[1] = url_transient_1 <- transient entry
-  // entries[2] = url_1           <- pending entry
-  ASSERT_EQ(3, controller.GetEntryCount());
-  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, controller.GetPendingEntryIndex());
-  EXPECT_EQ(controller.GetEntryAtIndex(1), controller.GetTransientEntry());
-  EXPECT_EQ(controller.GetEntryAtIndex(2), controller.GetPendingEntry());
-  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url_transient_1, controller.GetEntryAtIndex(1)->GetURL());
-  EXPECT_EQ(url_1, controller.GetEntryAtIndex(2)->GetURL());
-
-  // Insert another transient entry. It should replace the previous one and this
-  // time the pending entry index should retain its value (i.e. 2).
-  std::unique_ptr<NavigationEntry> transient_entry_2(new NavigationEntryImpl);
-  transient_entry_2->SetURL(url_transient_2);
-  controller.SetTransientEntry(std::move(transient_entry_2));
-
-  // Check the state after the second insertion of a transient entry.
-  // entries[0] = url_0           <- last committed entry
-  // entries[1] = url_transient_2 <- transient entry
-  // entries[2] = url_1           <- pending entry
-  ASSERT_EQ(3, controller.GetEntryCount());
-  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, controller.GetPendingEntryIndex());
-  EXPECT_EQ(controller.GetEntryAtIndex(1), controller.GetTransientEntry());
-  EXPECT_EQ(controller.GetEntryAtIndex(2), controller.GetPendingEntry());
-  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url_transient_2, controller.GetEntryAtIndex(1)->GetURL());
-  EXPECT_EQ(url_1, controller.GetEntryAtIndex(2)->GetURL());
-
-  // Commit the pending entry.
-  contents()->CommitPendingNavigation();
-
-  // Check the final state.
-  // entries[0] = url_0
-  // entries[1] = url_1  <- last committed entry
-  ASSERT_EQ(2, controller.GetEntryCount());
-  EXPECT_EQ(1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
-  EXPECT_EQ(nullptr, controller.GetPendingEntry());
-  EXPECT_EQ(nullptr, controller.GetTransientEntry());
-  EXPECT_EQ(url_0, controller.GetEntryAtIndex(0)->GetURL());
-  EXPECT_EQ(url_1, controller.GetEntryAtIndex(1)->GetURL());
-}
-
 // Tests that NavigationUIData has been passed to the NavigationHandle.
 TEST_F(NavigationControllerTest, MainFrameNavigationUIData) {
   LoadCommittedDetailsObserver observer(contents());
@@ -4757,7 +4397,6 @@ TEST_F(NavigationControllerTest, PruneForwardEntries) {
   const GURL url_1("http://foo/1");
   const GURL url_2("http://foo/2");
   const GURL url_3("http://foo/3");
-  const GURL url_transient("http://foo/transient");
 
   NavigateAndCommit(url_0);
   NavigateAndCommit(url_1);
@@ -4797,10 +4436,6 @@ TEST_F(NavigationControllerTest, PruneForwardEntries) {
 
   EXPECT_EQ(1, controller.GetPendingEntryIndex());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  // Insert a transient entry before the pending one.
-  std::unique_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
-  transient_entry->SetURL(url_transient);
-  controller.SetTransientEntry(std::move(transient_entry));
 
   state_change_count = delegate->navigation_state_change_count();
   controller.PruneForwardEntries();
@@ -4812,7 +4447,6 @@ TEST_F(NavigationControllerTest, PruneForwardEntries) {
   EXPECT_EQ(0, controller.GetCurrentEntryIndex());
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(nullptr, controller.GetPendingEntry());
-  EXPECT_EQ(nullptr, controller.GetTransientEntry());
   EXPECT_EQ(url_0, controller.GetVisibleEntry()->GetURL());
   EXPECT_EQ(1U, navigation_list_pruned_counter_);
   EXPECT_EQ(1, last_navigation_entry_pruned_details_.index);

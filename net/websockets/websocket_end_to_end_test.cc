@@ -100,8 +100,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
   void OnAddChannelResponse(
       std::unique_ptr<WebSocketHandshakeResponseInfo> response,
       const std::string& selected_subprotocol,
-      const std::string& extensions,
-      int64_t send_flow_control_quota) override;
+      const std::string& extensions) override;
 
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
@@ -170,8 +169,7 @@ std::string ConnectTestingEventInterface::extensions() const {
 void ConnectTestingEventInterface::OnAddChannelResponse(
     std::unique_ptr<WebSocketHandshakeResponseInfo> response,
     const std::string& selected_subprotocol,
-    const std::string& extensions,
-    int64_t send_flow_control_quota) {
+    const std::string& extensions) {
   selected_subprotocol_ = selected_subprotocol;
   extensions_ = extensions;
   QuitNestedEventLoop();

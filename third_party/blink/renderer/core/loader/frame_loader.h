@@ -229,7 +229,6 @@ class CORE_EXPORT FrameLoader final {
   void Trace(Visitor*) const;
 
   void DidDropNavigation();
-  void MarkAsLoading();
 
   bool ShouldReuseDefaultView(const scoped_refptr<const SecurityOrigin>&,
                               const ContentSecurityPolicy*);

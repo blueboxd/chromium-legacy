@@ -362,10 +362,10 @@ TEST_F(AXTreeSourceArcTest, ReorderChildrenByLayout) {
       "id=100 window FOCUSABLE (0, 0)-(0, 0) modal=true child_ids=10\n"
       "  id=10 genericContainer INVISIBLE (0, 0)-(0, 0) restriction=disabled "
       "child_ids=1,2\n"
-      "    id=1 button FOCUSABLE (100, 100)-(100, 100) restriction=disabled "
-      "class_name=android.widget.Button name=button1\n"
-      "    id=2 button FOCUSABLE (100, 100)-(10, 100) restriction=disabled "
-      "class_name=android.widget.Button name=button2\n");
+      "    id=1 button FOCUSABLE (100, 100)-(100, 100) name_from=attribute "
+      "restriction=disabled class_name=android.widget.Button name=button1\n"
+      "    id=2 button FOCUSABLE (100, 100)-(10, 100) name_from=attribute "
+      "restriction=disabled class_name=android.widget.Button name=button2\n");
 }
 
 TEST_F(AXTreeSourceArcTest, AccessibleNameComputation) {
@@ -1371,7 +1371,7 @@ TEST_F(AXTreeSourceArcTest, SerializeAndUnserialize) {
       "      id=2 genericContainer IGNORED INVISIBLE (0, 0)-(0, 0) "
       "restriction=disabled child_ids=3\n"
       "        id=3 genericContainer INVISIBLE (0, 0)-(0, 0) "
-      "restriction=disabled name=some text\n");
+      "name_from=attribute restriction=disabled name=some text\n");
   EXPECT_EQ(1U, tree()->GetFromId(10)->GetUnignoredChildCount());
 }
 

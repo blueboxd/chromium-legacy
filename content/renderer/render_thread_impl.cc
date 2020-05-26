@@ -681,6 +681,11 @@ void RenderThreadImpl::Init() {
   } else {
 #if defined(OS_ANDROID)
     is_lcd_text_enabled_ = false;
+#elif defined(OS_MACOSX)
+    if (base::FeatureList::IsEnabled(features::kRespectMacLCDTextSetting))
+      is_lcd_text_enabled_ = IsSubpixelAntialiasingAvailable();
+    else
+      is_lcd_text_enabled_ = true;
 #else
     is_lcd_text_enabled_ = true;
 #endif

@@ -64,4 +64,9 @@ void SetPinPosition(Profile* profile,
                     const ash::ShelfID& shelf_id_before,
                     const std::vector<ash::ShelfID>& shelf_ids_after);
 
+// Makes GetPinnedAppsFromSync() return an empty list. Avoids test failures with
+// SplitSettingsSync due to an untitled Play Store icon in the shelf.
+// https://crbug.com/1085597
+void SkipPinnedAppsFromSyncForTest();
+
 #endif  // CHROME_BROWSER_UI_ASH_CHROME_LAUNCHER_PREFS_H_

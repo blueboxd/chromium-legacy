@@ -136,8 +136,6 @@ static_library("web_test_renderer") {
     "renderer/web_test/test_preferences.h",
     "renderer/web_test/test_runner.cc",
     "renderer/web_test/test_runner.h",
-    "renderer/web_test/test_runner_for_specific_view.cc",
-    "renderer/web_test/test_runner_for_specific_view.h",
     "renderer/web_test/test_websocket_handshake_throttle_provider.cc",
     "renderer/web_test/test_websocket_handshake_throttle_provider.h",
     "renderer/web_test/text_input_controller.cc",

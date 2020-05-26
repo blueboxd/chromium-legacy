@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Prečice birate sami</translation>
 <translation id="1213037489357051291">Postavljeno otisaka: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Šaljite podatke o korištenju i dijagnostici. Poboljšajte iskustvo koje vaše dijete ima s Androidom automatskim slanjem podataka o dijagnostici, uređaju i korištenju aplikacija Googleu. Ovo se neće koristiti za identifikaciju vašeg djeteta i pomoći će stabilnosti sistema i aplikacije, kao i drugim unapređenjima. Neki zbirni podaci će također pomoći Googleovim aplikacijama i partnerima, kao što su Android programeri. Ovu postavku je nametnuo vlasnik. Vlasnik može odabrati da se podaci o dijagnostici i korištenju ovog uređaja šalju Googleu. Ako je za vaše dijete uključena postavka za dodatnu Aktivnost na webu i u aplikacijama, ovi podaci mogu biti sačuvani na Google računu djeteta.</translation>
+<translation id="121384500095351701">Nije moguće sigurno preuzeti fajl</translation>
 <translation id="1215411991991485844">Dodana je nova aplikacija u pozadini</translation>
 <translation id="1216542092748365687">Ukloni otisak prsta</translation>
 <translation id="1217483152325416304">Vaši lokalni podaci će se uskoro izbrisati</translation>
@@ -817,7 +818,7 @@ da li    proksi server funkcionira. Ako smatrate da ne trebate koristiti
 <translation id="2025632980034333559">Došlo je do pada aplikacije <ph name="APP_NAME" />. Kliknite ovaj balončić da ponovo učitate ekstenziju.</translation>
 <translation id="2025891858974379949">Nesiguran sadržaj</translation>
 <translation id="202918510990975568">Unesite lozinku da konfigurirate sigurnost i prijavu</translation>
-<translation id="2030455719695904263">Dodirna podloga</translation>
+<translation id="2030455719695904263">Dodirna tabla</translation>
 <translation id="2034346955588403444">Dodajte novu WiFi mrežu</translation>
 <translation id="203574396658008164">Omogući bilješke sa zaključanog ekrana</translation>
 <translation id="2037445849770872822">Nadzor je postavljen za ovaj Google račun. Da postavite još opcija roditeljskog nadzora, odaberite Nastavi.
@@ -1064,6 +1065,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="2336228925368920074">Označite sve kartice...</translation>
 <translation id="2336376423977300504">Uvijek briši kolačiće kada se prozori zatvore</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Nije moguće sigurno preuzeti fajl <ph name="FILE_NAME" /></translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> se želi upariti</translation>
 <translation id="2342740338116612727">Dodana je oznaka</translation>
 <translation id="2343747224442182863">Fokusiraj ovu stranicu</translation>
@@ -1877,7 +1879,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="3371140690572404006">USB-C uređaj (prednji priključak na desnoj strani)</translation>
 <translation id="337286756654493126">Čitanje foldera koje otvorite u aplikaciji</translation>
 <translation id="3378572629723696641">Ovo proširenje možda je oštećeno.</translation>
-<translation id="3379169026479470857">Uklonite DLC</translation>
+<translation id="3379169026479470857">Uklonite preuzeti sadržaj</translation>
 <translation id="337920581046691015">Instalirat će se aplikacija <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3380365263193509176">Nepoznata greška</translation>
 <translation id="3382073616108123819">Ups!  Sistem nije uspio odrediti identifikatore uređaja za ovaj uređaj.</translation>
@@ -3254,6 +3256,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="5154702632169343078">Naslov</translation>
 <translation id="5157635116769074044">Zakači ovu stranicu za Početni ekran...</translation>
 <translation id="5158983316805876233">Koristi isti proksi server za sve protokole</translation>
+<translation id="5159419673777902220">Tvoj roditelj je onemogućio odobrenja za ekstenzije</translation>
 <translation id="5160857336552977725">Prijavite se na uređaj <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Dodatak <ph name="PLUGIN_NAME" /> je blokiran zato što je zastario</translation>
 <translation id="5170568018924773124">Pokaži u mapi</translation>
@@ -4565,7 +4568,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="6880587130513028875">Slike su blokirane na ovoj stranici.</translation>
 <translation id="6882836635272038266">Standardna zaštita od web lokacija, preuzimanja i ekstenzija za koje se zna da su opasne.</translation>
 <translation id="6883319974225028188">Ups!  Sistem nije uspio sačuvati konfiguraciju uređaja.</translation>
-<translation id="6885064901301703683">Sačuvajte jednom, koristite svuda</translation>
+<translation id="6885064901301703683">Sačuvajte jednom, koristite svugdje</translation>
 <translation id="6885771755599377173">Pregled informacija o sustavu</translation>
 <translation id="6886476658664859389">NFC sigurnosni ključ</translation>
 <translation id="6886871292305414135">Otvori link u novoj &amp;kartici</translation>
@@ -5395,6 +5398,7 @@ Postavkama ovog računa možete upravljati instaliranjem aplikacije Family Link 
 <translation id="7925247922861151263">AAA provjera nije uspjela</translation>
 <translation id="7925285046818567682">Čeka se <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To nisam bio/la ja</translation>
+<translation id="7926975587469166629">Nadimak kartice</translation>
 <translation id="7928175190925744466">Već ste promijenili ovu lozinku?</translation>
 <translation id="7928836894214140642">Upravlja <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Ovdje će se prikazati vaši sačuvani načini plaćanja</translation>
@@ -6041,7 +6045,7 @@ Fajl ključa: <ph name="KEY_FILE" />
 
           &lt;p&gt;Konfiguraciju i dalje možete izvršiti putem komandne linije.  Više informacija o oznakama i varijablama okruženja potražite u &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt;.&lt;/p&gt;</translation>
 <translation id="8755376271068075440">&amp;Veće</translation>
-<translation id="8756143264090841047">Izbrišite DLC</translation>
+<translation id="8756143264090841047">Izbrišite preuzeti sadržaj</translation>
 <translation id="8756969031206844760">Ažurirati lozinku?</translation>
 <translation id="8757090071857742562">Nije moguće emitirati radnu površinu.  Provjerite jeste li potvrdili upit za pokretanje dijeljenja ekrana.</translation>
 <translation id="8757803915342932642">Uređaj na Google oblak uređajima</translation>

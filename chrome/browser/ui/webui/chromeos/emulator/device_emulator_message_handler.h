@@ -16,7 +16,6 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }  // namespace base
 
@@ -118,8 +117,7 @@ class DeviceEmulatorMessageHandler :
 
   // Builds a dictionary with each key representing a property of the device
   // with path |object_path|.
-  std::unique_ptr<base::DictionaryValue> GetDeviceInfo(
-      const dbus::ObjectPath& object_path);
+  base::Value GetDeviceInfo(const dbus::ObjectPath& object_path);
 
   void ConnectToBluetoothDevice(const std::string& address);
 

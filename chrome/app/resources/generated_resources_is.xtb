@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Þú hefur umsjón með flýtileiðum</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> fingraför sett upp</translation>
 <translation id="1213254615020057352">Senda notkunar- og greiningargögn. Hjálpaðu okkur að bæta Android fyrir barnið þitt með því að senda sjálfkrafa greiningargögn, tækisgögn og upplýsingar um forritanotkun til Google. Þetta verður ekki notað til að bera kennsl á barnið þitt og mun stuðla að stöðugleika kerfa og forrita og öðrum endurbótum. Sum uppsöfnuð gögn munu einnig gagnast forritum og samstarfsaðilum Google, til dæmis þróunaraðilum Android. Eigandi valdi þessa stillingu. Eigandi getur kosið að senda greiningar- og notkunargögn þessa tækis til Google. Ef kveikt er á ítarlegri vef- og forritavirkni fyrir barnið geta þessi gögn verið vistuð á Google reikningi barnsins.</translation>
+<translation id="121384500095351701">Ekki er hægt að sækja þessa skrá á öruggan hátt</translation>
 <translation id="1215411991991485844">Nýju bakgrunnsforriti bætt við</translation>
 <translation id="1216542092748365687">Fjarlægja fingrafar</translation>
 <translation id="1217483152325416304">Staðbundnu gögnunum þínum verður brátt eytt</translation>
@@ -718,7 +719,7 @@
 <translation id="1884013283844450420">Netkerfi <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, tengjast</translation>
 <translation id="1884705339276589024">Breyta diskstærð fyrir Linux</translation>
 <translation id="1885106732301550621">Diskpláss</translation>
-<translation id="1885190042244431215">Ef skólareikningi er bætt við geta notendur á auðveldan hátt skráð sig inn á vefsvæði og viðbætur sem nemendur þar sem slík innskráning er enn undir stjórn foreldra.</translation>
+<translation id="1885190042244431215">Ef skólareikningi er bætt við geta notendur skráð sig auðveldlega inn á vefsvæði og viðbætur sem nemendur þó þeir séu enn undir stjórn foreldra.</translation>
 <translation id="1886996562706621347">Leyfa vefsvæðum að óska eftir að verða sjálfgefin hjálparforrit fyrir samskiptareglur (ráðlagt)</translation>
 <translation id="1887442540531652736">Innskráningarvilla</translation>
 <translation id="1887597546629269384">Segðu „Hey Google“ aftur</translation>
@@ -1064,6 +1065,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="2336228925368920074">Setja alla flipa í bókamerki...</translation>
 <translation id="2336376423977300504">Hreinsa alltaf fótspor þegar gluggum er lokað</translation>
 <translation id="2336381494582898602">Djúphreinsun</translation>
+<translation id="2340239562261172947">Ekki er hægt að sækja <ph name="FILE_NAME" /> á öruggan hátt</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> vill parast</translation>
 <translation id="2342740338116612727">Bókamerkjum bætt við</translation>
 <translation id="2343747224442182863">Setja þennan flipa í fókus</translation>
@@ -1877,7 +1879,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="3371140690572404006">USB-C tæki (tengi hægra megin að framan)</translation>
 <translation id="337286756654493126">Lesa möppur sem þú opnar í forritinu</translation>
 <translation id="3378572629723696641">Þessi viðbót kann að vera skemmd.</translation>
-<translation id="3379169026479470857">Fjarlægja SÓTT</translation>
+<translation id="3379169026479470857">Fjarlægja sótt efni</translation>
 <translation id="337920581046691015"><ph name="PRODUCT_NAME" /> verður sett upp.</translation>
 <translation id="3380365263193509176">Óþekkt villa</translation>
 <translation id="3382073616108123819">Úbbs! Kerfið gat ekki ákvarðað tækisauðkenni fyrir þetta tæki.</translation>
@@ -3254,6 +3256,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5154702632169343078">Viðfang</translation>
 <translation id="5157635116769074044">Festa þessa síðu á upphafsskjánum...</translation>
 <translation id="5158983316805876233">Notaðu sama proxy-þjón fyrir allar samskiptareglur</translation>
+<translation id="5159419673777902220">Foreldri þitt hefur gert heimildir fyrir viðbót óvirkar</translation>
 <translation id="5160857336552977725">Skráðu þig inn í <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Lokað var á viðbótina <ph name="PLUGIN_NAME" /> vegna þess að hún er úrelt</translation>
 <translation id="5170568018924773124">Sýna í möppu</translation>
@@ -5395,6 +5398,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="7925247922861151263">AAA-prófun mistókst</translation>
 <translation id="7925285046818567682">Bíður eftir <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Þetta var ekki ég.</translation>
+<translation id="7926975587469166629">Gælunafn spjalds</translation>
 <translation id="7928175190925744466">Hefurðu þegar breytt þessu aðgangsorði?</translation>
 <translation id="7928836894214140642">Stýrt af <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Vistaðir greiðslumátar birtast hér</translation>
@@ -6040,7 +6044,7 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 
           &lt;p&gt;Þú getur samt sem áður grunnstillt með skipanalínunni. Skoðaðu &lt;code&gt;man <ph name="PRODUCT_BINARY_NAME" />&lt;/code&gt; til að fá frekari upplýsingar um flögg og umhverfisbreytur.&lt;/p&gt;</translation>
 <translation id="8755376271068075440">Stærri</translation>
-<translation id="8756143264090841047">Eyða SÓTT</translation>
+<translation id="8756143264090841047">Eyða sóttu efni</translation>
 <translation id="8756969031206844760">Uppfæra aðgangsorð?</translation>
 <translation id="8757090071857742562">Ekki er hægt að senda út skjáborð. Athugaðu hvort þú hefur samþykkt tilkynninguna um að byrja að deila skjánum þínum.</translation>
 <translation id="8757803915342932642">Tæki í Google skýjatækjum</translation>

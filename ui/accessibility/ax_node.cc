@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_language_detection.h"
 #include "ui/accessibility/ax_role_properties.h"
@@ -36,6 +37,7 @@ AXNode::AXNode(AXNode::OwnerTree* tree,
 AXNode::~AXNode() = default;
 
 size_t AXNode::GetUnignoredChildCount() const {
+  // TODO(nektar): Should DCHECK if the node is not ignored.
   DCHECK(!tree_->GetTreeUpdateInProgressState());
   return unignored_child_count_;
 }
@@ -320,7 +322,7 @@ AXNode::UnignoredChildIterator AXNode::UnignoredChildrenEnd() const {
 
 // The first (direct) child, ignored or unignored.
 AXNode* AXNode::GetFirstChild() const {
-  if (children().size() == 0)
+  if (children().empty())
     return nullptr;
   return children()[0];
 }
@@ -354,9 +356,7 @@ AXNode* AXNode::GetNextSibling() const {
 }
 
 bool AXNode::IsText() const {
-  return data().role == ax::mojom::Role::kStaticText ||
-         data().role == ax::mojom::Role::kLineBreak ||
-         data().role == ax::mojom::Role::kInlineTextBox;
+  return ui::IsText(data().role);
 }
 
 bool AXNode::IsLineBreak() const {
@@ -475,6 +475,61 @@ void AXNode::SetLanguageInfo(std::unique_ptr<AXLanguageInfo> lang_info) {
 
 void AXNode::ClearLanguageInfo() {
   language_info_.reset();
+}
+
+std::string AXNode::GetInnerText() const {
+  // If a text field has no descendants, then we compute its inner text from its
+  // value or its placeholder. Otherwise we prefer to look at its descendant
+  // text nodes because Blink doesn't always add all trailing white space to the
+  // value attribute.
+  if (data().IsTextField() && children().empty()) {
+    std::string value =
+        data().GetStringAttribute(ax::mojom::StringAttribute::kValue);
+    // If the value is empty, then there might be some placeholder text in the
+    // text field, or any other name that is derived from visible contents, even
+    // if the text field has no children.
+    if (!value.empty())
+      return value;
+  }
+
+  // Ordinarily, plain text fields are leaves. We need to exclude them from the
+  // set of leaf nodes when they expose any descendants if we want to compute
+  // their inner text from their descendant text nodes.
+  if (IsLeaf() && !(data().IsTextField() && !children().empty())) {
+    switch (data().GetNameFrom()) {
+      case ax::mojom::NameFrom::kNone:
+      case ax::mojom::NameFrom::kUninitialized:
+      // The accessible name is not displayed on screen, e.g. aria-label, or is
+      // not displayed directly inside the node, e.g. an associated label
+      // element.
+      case ax::mojom::NameFrom::kAttribute:
+      // The node's accessible name is explicitly empty.
+      case ax::mojom::NameFrom::kAttributeExplicitlyEmpty:
+      // The accessible name does not represent the entirety of the node's inner
+      // text, e.g. a table's caption or a figure's figcaption.
+      case ax::mojom::NameFrom::kCaption:
+      case ax::mojom::NameFrom::kRelatedElement:
+      // The accessible name is not displayed directly inside the node but is
+      // visible via e.g. a tooltip.
+      case ax::mojom::NameFrom::kTitle:
+        return std::string();
+
+      case ax::mojom::NameFrom::kContents:
+      // The placeholder text is initially displayed inside the text field and
+      // takes the place of its value.
+      case ax::mojom::NameFrom::kPlaceholder:
+      // The value attribute takes the place of the node's inner text, e.g. the
+      // value of a submit button is displayed inside the button itself.
+      case ax::mojom::NameFrom::kValue:
+        return data().GetStringAttribute(ax::mojom::StringAttribute::kName);
+    }
+  }
+
+  std::string inner_text;
+  for (auto it = UnignoredChildrenBegin(); it != UnignoredChildrenEnd(); ++it) {
+    inner_text += it->GetInnerText();
+  }
+  return inner_text;
 }
 
 std::string AXNode::GetLanguage() const {
@@ -1071,6 +1126,70 @@ AXNode* AXNode::ComputeFirstUnignoredChildRecursive() const {
 
 bool AXNode::IsIgnored() const {
   return data().IsIgnored();
+}
+
+bool AXNode::IsChildOfLeaf() const {
+  const AXNode* ancestor = GetUnignoredParent();
+  while (ancestor) {
+    if (ancestor->IsLeaf())
+      return true;
+    ancestor = ancestor->GetUnignoredParent();
+  }
+  return false;
+}
+
+bool AXNode::IsLeaf() const {
+  return !GetUnignoredChildCount() || IsLeafIncludingIgnored();
+}
+
+bool AXNode::IsLeafIncludingIgnored() const {
+  if (children().empty())
+    return true;
+
+#if defined(OS_WIN)
+  // On Windows, we want to hide the subtree of a collapsed <select> element.
+  // Otherwise, ATs are always going to announce its options whether it's
+  // collapsed or expanded. In the AXTree, this element corresponds to a node
+  // with role ax::mojom::Role::kPopUpButton that is the parent of a node with
+  // role ax::mojom::Role::kMenuListPopup.
+  if (IsCollapsedMenuListPopUpButton())
+    return true;
+#endif  // defined(OS_WIN)
+
+  // These types of objects may have children that we use as internal
+  // implementation details, but we want to expose them as leaves to platform
+  // accessibility APIs because screen readers might be confused if they find
+  // any children.
+  if (data().IsPlainTextField() || IsText())
+    return true;
+
+  // Roles whose children are only presentational according to the ARIA and
+  // HTML5 Specs should be hidden from screen readers.
+  switch (data().role) {
+    // According to the ARIA and Core-AAM specs:
+    // https://w3c.github.io/aria/#button,
+    // https://www.w3.org/TR/core-aam-1.1/#exclude_elements
+    // buttons' children are presentational only and should be hidden from
+    // screen readers. However, we cannot enforce the leafiness of buttons
+    // because they may contain many rich, interactive descendants such as a day
+    // in a calendar, and screen readers will need to interact with these
+    // contents. See https://crbug.com/689204.
+    // So we decided to not enforce the leafiness of buttons and expose all
+    // children.
+    case ax::mojom::Role::kButton:
+      return false;
+    case ax::mojom::Role::kDocCover:
+    case ax::mojom::Role::kGraphicsSymbol:
+    case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kMeter:
+    case ax::mojom::Role::kScrollBar:
+    case ax::mojom::Role::kSlider:
+    case ax::mojom::Role::kSplitter:
+    case ax::mojom::Role::kProgressIndicator:
+      return true;
+    default:
+      return false;
+  }
 }
 
 bool AXNode::IsInListMarker() const {

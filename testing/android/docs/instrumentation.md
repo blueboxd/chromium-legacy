@@ -74,7 +74,7 @@ others are pulled in from outside. They include:
 
 #### Test Batching
 
-The [`@Batch("group_name")`](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/UnitTest.java)
+The [`@Batch("group_name")`](https://chromium.googlesource.com/chromium/src/+/master/base/test/android/javatests/src/org/chromium/base/test/util/Batch.java)
 annotation is used to run all tests with the same batch group name in the same
 instrumentation invocation. In other words, the browser process is not
 restarted between these tests, and so any changes to global state, like

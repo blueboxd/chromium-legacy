@@ -33,6 +33,9 @@ class AutoclickRingHandler : public gfx::LinearAnimation {
  private:
   class AutoclickRingView;
 
+  // The default values of the autoclick ring widget size.
+  const int kAutoclickRingInnerRadius = 20;
+
   enum class AnimationType {
     NONE,
     GROW_ANIMATION,
@@ -45,14 +48,14 @@ class AutoclickRingHandler : public gfx::LinearAnimation {
   void AnimateToState(double state) override;
   void AnimationStopped() override;
 
-  std::unique_ptr<AutoclickRingView> view_;
-  views::Widget* ring_widget_;
+  AutoclickRingView* view_ = nullptr;
+  views::Widget* ring_widget_ = nullptr;
   // Location of the simulated mouse event from auto click in screen
   // coordinates.
   gfx::Point tap_down_location_;
-  AnimationType current_animation_type_;
+  AnimationType current_animation_type_ = AnimationType::NONE;
   base::TimeDelta animation_duration_;
-  int radius_;
+  int radius_ = kAutoclickRingInnerRadius;
 
   DISALLOW_COPY_AND_ASSIGN(AutoclickRingHandler);
 };

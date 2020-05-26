@@ -4,11 +4,13 @@
 
 #include "chrome/browser/android/feed/v2/feed_stream_surface.h"
 
+#include <string>
 #include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/strings/string_piece.h"
 #include "chrome/android/chrome_jni_headers/FeedStreamSurface_jni.h"
 #include "chrome/browser/android/feed/v2/feed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -61,27 +63,40 @@ void FeedStreamSurface::StreamUpdate(
 }
 
 void FeedStreamSurface::LoadMore(JNIEnv* env,
-                                 const JavaParamRef<jobject>& obj) {}
+                                 const JavaParamRef<jobject>& obj) {
+  feed_stream_api_->LoadMore(GetSurfaceId(), base::DoNothing());
+}
 
 void FeedStreamSurface::ProcessThereAndBackAgain(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jbyteArray>& data) {}
+    const JavaParamRef<jbyteArray>& data) {
+  std::string data_string;
+  base::android::JavaByteArrayToString(env, data, &data_string);
+  feed_stream_api_->ProcessThereAndBackAgain(data_string);
+}
 
 int FeedStreamSurface::ExecuteEphemeralChange(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jobject>& data) {
-  return 0;
+    const JavaParamRef<jbyteArray>& data) {
+  std::string data_string;
+  base::android::JavaByteArrayToString(env, data, &data_string);
+  return feed_stream_api_->CreateEphemeralChangeFromPackedData(data_string)
+      .GetUnsafeValue();
 }
 
 void FeedStreamSurface::CommitEphemeralChange(JNIEnv* env,
                                               const JavaParamRef<jobject>& obj,
-                                              int change_id) {}
+                                              int change_id) {
+  feed_stream_api_->CommitEphemeralChange(EphemeralChangeId(change_id));
+}
 
 void FeedStreamSurface::DiscardEphemeralChange(JNIEnv* env,
                                                const JavaParamRef<jobject>& obj,
-                                               int change_id) {}
+                                               int change_id) {
+  feed_stream_api_->RejectEphemeralChange(EphemeralChangeId(change_id));
+}
 
 void FeedStreamSurface::SurfaceOpened(JNIEnv* env,
                                       const JavaParamRef<jobject>& obj) {

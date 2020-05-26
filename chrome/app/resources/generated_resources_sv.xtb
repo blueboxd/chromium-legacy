@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Du väljer ut genvägarna</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> fingeravtryck har konfigurerats</translation>
 <translation id="1213254615020057352">Skicka diagnostik- och användningsdata. Hjälp till att göra Android bättre för ditt barn genom att skicka diagnostikdata, enhetsdata och data om appanvändning till Google automatiskt. Denna data används till att förbättra systemets och apparnas stabilitet med mera och inte till att identifiera ditt barn. Viss samlad data används även till att förbättra appar från Google och Googles partner, till exempel Android-utvecklare. Ägaren har gjort denna inställning obligatorisk. Ägaren kan ange att diagnostik- och användningsdata om den här enheten ska skickas till Google. Om ytterligare webb- och appaktivitet har aktiverats för ditt barn kan denna data sparas i Google-kontot.</translation>
+<translation id="121384500095351701">Det går inte att ladda ned den här filen på ett säkert sätt</translation>
 <translation id="1215411991991485844">En ny bakgrundsapp har lagts till</translation>
 <translation id="1216542092748365687">Ta bort fingeravtryck</translation>
 <translation id="1217483152325416304">Din lokala data raderas inom kort</translation>
@@ -482,7 +483,7 @@
 <translation id="1608626060424371292">Ta bort denna användare</translation>
 <translation id="1608668830839595724">Fler åtgärder för valda objekt</translation>
 <translation id="161042844686301425">Cyanblå</translation>
-<translation id="1611432201750675208">Enheten är låst.</translation>
+<translation id="1611432201750675208">Enheten är låst</translation>
 <translation id="1611584202130317952">Administrationsflödet avbröts. Försök igen eller kontakta enhetens ägare eller administratör.</translation>
 <translation id="1614511179807650956">Du kan ha använt din tillåtna mängd mobildata. Besök aktiveringsportalen <ph name="NAME" /> om du vill köpa mer data</translation>
 <translation id="161460670679785907">Mobilen hittades inte</translation>
@@ -1064,6 +1065,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2336228925368920074">Skapa bokmärken för alla flikar ...</translation>
 <translation id="2336376423977300504">Rensa alltid cookies när fönster stängs</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Det går inte att ladda ned <ph name="FILE_NAME" /> på ett säkert sätt</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> vill kopplas</translation>
 <translation id="2342740338116612727">Bokmärkena har lagts till</translation>
 <translation id="2343747224442182863">Fokusera på den här fliken</translation>
@@ -3254,6 +3256,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5154702632169343078">Ämne</translation>
 <translation id="5157635116769074044">Fäst den här sidan på startskärmen ...</translation>
 <translation id="5158983316805876233">Använd samma proxy för alla protokoll</translation>
+<translation id="5159419673777902220">Din förälder har inaktiverat behörigheter för tillägg</translation>
 <translation id="5160857336552977725">Logga in på din <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> har blockerats eftersom det är inaktuellt</translation>
 <translation id="5170568018924773124">Visa i mapp</translation>
@@ -5395,6 +5398,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7925247922861151263">Kontroll med AAA misslyckades</translation>
 <translation id="7925285046818567682">Väntar på <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Det var inte jag.</translation>
+<translation id="7926975587469166629">Smeknamn på kortet</translation>
 <translation id="7928175190925744466">Har du redan ändrat det här lösenordet?</translation>
 <translation id="7928836894214140642">Hanteras av <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Sparade betalningsmetoder visas här</translation>

@@ -93,8 +93,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void DiscardNonCommittedEntries() override;
   NavigationEntryImpl* GetPendingEntry() override;
   int GetPendingEntryIndex() override;
-  NavigationEntryImpl* GetTransientEntry() override;
-  void SetTransientEntry(std::unique_ptr<NavigationEntry> entry) override;
   void LoadURL(const GURL& url,
                const Referrer& referrer,
                ui::PageTransition type,
@@ -507,9 +505,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
 
-  // Discards only the transient entry.
-  void DiscardTransientEntry();
-
   // If we have the maximum number of entries, remove the oldest entry that is
   // marked to be skipped on back/forward button, in preparation to add another.
   // If no entry is skippable, then the oldest entry will be pruned.
@@ -524,8 +519,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
 
   // Inserts up to |max_index| entries from |source| into this. This does NOT
   // adjust any of the members that reference entries_
-  // (last_committed_entry_index_, pending_entry_index_ or
-  // transient_entry_index_).
+  // (last_committed_entry_index_ or pending_entry_index_)
   void InsertEntriesFrom(NavigationControllerImpl* source, int max_index);
 
   // Returns the navigation index that differs from the current entry by the
@@ -602,13 +596,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // The index of the pending entry if it is in entries_, or -1 if
   // pending_entry_ is a new entry (created by LoadURL).
   int pending_entry_index_ = -1;
-
-  // The index for the entry that is shown until a navigation occurs.  This is
-  // used for interstitial pages. -1 if there are no such entry.
-  // Note that this entry really appears in the list of entries, but only
-  // temporarily (until the next navigation).  Any index pointing to an entry
-  // after the transient entry will become invalid if you navigate forward.
-  int transient_entry_index_ = -1;
 
   // The delegate associated with the controller. Possibly NULL during
   // setup.

@@ -320,6 +320,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
 
+  // Registers a callback that is run when any ongoing scroll-animation ends. If
+  // there are no ongoing animations, then the callback is run immediately.
+  void RequestScrollAnimationEndNotification(base::OnceClosure callback);
+
   // Layer tree accessors and modifiers ------------------------
 
   // Sets or gets the root of the Layer tree. Children of the root Layer are
@@ -459,6 +463,10 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void SetRasterColorSpace(const gfx::ColorSpace& raster_color_space);
   const gfx::ColorSpace& raster_color_space() const {
     return raster_color_space_;
+  }
+
+  bool HasCompositorDrivenScrollAnimationForTesting() const {
+    return scroll_animation_.in_progress;
   }
 
   // This layer tree may be embedded in a hierarchy that has page scale
@@ -897,6 +905,17 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Presentation time callbacks requested for the next frame are initially
   // added here.
   std::vector<PresentationTimeCallback> pending_presentation_time_callbacks_;
+
+  struct ScrollAnimationState {
+    ScrollAnimationState();
+    ~ScrollAnimationState();
+
+    // Tracks whether there is an ongoing compositor-driven scroll animation.
+    bool in_progress = false;
+
+    // Callback to run when the scroll-animation ends.
+    base::OnceClosure end_notification;
+  } scroll_animation_;
 
   // Latency information for work done in ProxyMain::BeginMainFrame. The
   // unique_ptr is allocated in RequestMainFrameUpdate, and passed to Blink's

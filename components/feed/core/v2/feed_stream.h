@@ -119,8 +119,11 @@ class FeedStream : public FeedStreamApi,
       std::vector<feedstore::DataOperation> operations) override;
   EphemeralChangeId CreateEphemeralChange(
       std::vector<feedstore::DataOperation> operations) override;
+  EphemeralChangeId CreateEphemeralChangeFromPackedData(
+      base::StringPiece data) override;
   bool CommitEphemeralChange(EphemeralChangeId id) override;
   bool RejectEphemeralChange(EphemeralChangeId id) override;
+  void ProcessThereAndBackAgain(base::StringPiece data) override;
   DebugStreamData GetDebugStreamData() override;
   void ForceRefreshForDebugging() override;
   std::string DumpStateForDebugging() override;

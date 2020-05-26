@@ -105,7 +105,7 @@ void PaintPreviewTracker::CustomDataToSkPictureCallback(SkCanvas* canvas,
   DCHECK(it != subframe_pics_.end());
 
   SkRect rect = it->second->cullRect();
-  SkMatrix matrix = SkMatrix::MakeTrans(rect.x(), rect.y());
+  SkMatrix matrix = SkMatrix::Translate(rect.x(), rect.y());
   canvas->drawPicture(it->second, &matrix, nullptr);
 }
 

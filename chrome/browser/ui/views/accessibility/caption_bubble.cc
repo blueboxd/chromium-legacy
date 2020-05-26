@@ -446,7 +446,7 @@ void CaptionBubble::AddedToWidget() {
       anchor_widget()->GetFocusTraversable());
   GetWidget()->SetFocusTraversableParentView(GetAnchorView());
   GetAnchorView()->SetProperty(views::kAnchoredDialogKey,
-                               static_cast<BubbleDialogDelegateView*>(this));
+                               static_cast<BubbleDialogDelegate*>(this));
 }
 
 void CaptionBubble::ButtonPressed(views::Button* sender,

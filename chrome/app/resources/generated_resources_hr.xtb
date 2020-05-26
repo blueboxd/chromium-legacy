@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Vi birate prečace</translation>
 <translation id="1213037489357051291">Postavljeno otisaka: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Slanje podataka o upotrebi i dijagnostici. Pomognite poboljšati djetetov doživljaj Androida automatskim slanjem dijagnostičkih podataka i podataka o upotrebi uređaja i aplikacija Googleu. Ti se podaci neće upotrebljavati za identifikaciju vašeg djeteta, a pomoći će poboljšati sustav, stabilnost aplikacija i drugo. Neki skupni podaci pomoći će i Googleovim aplikacijama i partnerima, na primjer razvojnim programerima za Android. Tu postavku zadao je vlasnik. Vlasnik može Googleu slati dijagnostiku i podatke o upotrebi za ovaj uređaj. Ako je za vaše dijete uključena dodatna aktivnost na webu i u aplikacijama, ti se podaci mogu spremati na djetetov Google račun.</translation>
+<translation id="121384500095351701">Ta se datoteka ne može sigurno preuzeti</translation>
 <translation id="1215411991991485844">Dodana je nova pozadinska aplikacija</translation>
 <translation id="1216542092748365687">Uklanjanje otiska prsta</translation>
 <translation id="1217483152325416304">Vaši lokalni podaci uskoro će se izbrisati</translation>
@@ -1064,6 +1065,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2336228925368920074">Označi sve kartice...</translation>
 <translation id="2336376423977300504">Uvijek izbriši kolačiće nakon što se svi prozori zatvore</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Datoteka <ph name="FILE_NAME" /> ne može se sigurno preuzeti</translation>
 <translation id="2340263603246777781">Web-lokacija <ph name="ORIGIN" /> želi se upariti</translation>
 <translation id="2342740338116612727">Oznake su dodane</translation>
 <translation id="2343747224442182863">Fokusiraj tu karticu</translation>
@@ -3254,6 +3256,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="5154702632169343078">Naslov</translation>
 <translation id="5157635116769074044">Prikvači ovu stranicu na početni zaslon...</translation>
 <translation id="5158983316805876233">Koristi isti proxy za sve protokole</translation>
+<translation id="5159419673777902220">Tvoj je roditelj onemogućio dopuštenja proširenja</translation>
 <translation id="5160857336552977725">Prijavite se na uređaj <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Dodatak <ph name="PLUGIN_NAME" /> blokiran je jer je zastario</translation>
 <translation id="5170568018924773124">Pokaži u mapi</translation>
@@ -5395,6 +5398,7 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7925247922861151263">Provjera AAA nije uspjela</translation>
 <translation id="7925285046818567682">Čekanje <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">To nisam bio ja.</translation>
+<translation id="7926975587469166629">Nadimak kartice</translation>
 <translation id="7928175190925744466">Već ste promijenili ovu zaporku?</translation>
 <translation id="7928836894214140642">Upravlja: <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Ovdje će se prikazivati spremljeni načini plaćanja</translation>

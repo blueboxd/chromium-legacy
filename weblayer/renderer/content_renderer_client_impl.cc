@@ -25,6 +25,7 @@
 #include "components/spellcheck/renderer/spellcheck_provider.h"  // nogncheck
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
+#include "third_party/blink/public/platform/web_runtime_features.h"
 #include "weblayer/renderer/url_loader_throttle_provider.h"
 #endif
 
@@ -157,6 +158,16 @@ void ContentRendererClientImpl::AddSupportedKeySystems(
 #if defined(OS_ANDROID)
   cdm::AddAndroidWidevine(key_systems);
   cdm::AddAndroidPlatformKeySystems(key_systems);
+#endif
+}
+
+void ContentRendererClientImpl::
+    SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {
+#if defined(OS_ANDROID)
+  // Web Share is experimental by default, and explicitly enabled on Android
+  // (for both Chrome and WebLayer).
+  blink::WebRuntimeFeatures::EnableWebShare(true);
+  blink::WebRuntimeFeatures::EnableWebShareV2(true);
 #endif
 }
 

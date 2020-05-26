@@ -46,6 +46,8 @@ interface BluetoothRemoteGATTCharacteristic : EventTarget
     method startNotifications
     method stopNotifications
     method writeValue
+    method writeValueWithResponse
+    method writeValueWithoutResponse
     setter oncharacteristicvaluechanged
 interface BluetoothRemoteGATTDescriptor
     attribute @@toStringTag

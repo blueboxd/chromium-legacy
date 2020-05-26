@@ -47,6 +47,7 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
@@ -80,6 +81,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeLinkHeader = kItemTypeEnumZero,
   ItemTypeHeader,
   ItemTypeSavePasswordsSwitch,
+  ItemTypeManagedSavePasswords,
   ItemTypeSavedPassword,  // This is a repeated item type.
   ItemTypeBlocked,        // This is a repeated item type.
   ItemTypeExportPasswordsButton,
@@ -169,6 +171,8 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   TableViewLinkHeaderFooterItem* _manageAccountLinkItem;
   // The item related to the switch for the password manager setting.
   SettingsSwitchItem* _savePasswordsItem;
+  // The item related to the enterprise managed save password setting.
+  TableViewDetailIconItem* _managedSavePasswordItem;
   // The item related to the button for exporting passwords.
   TableViewTextItem* _exportPasswordsItem;
   // The interface for getting and manipulating a user's saved passwords.
@@ -349,9 +353,21 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   // when the searchController is not active.
   if (!self.navigationItem.searchController.active) {
     [model addSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
-    _savePasswordsItem = [self savePasswordsItem];
-    [model addItem:_savePasswordsItem
-        toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+
+    if (base::FeatureList::IsEnabled(kEnableIOSManagedSettingsUI) &&
+        _browserState->GetPrefs()->IsManagedPreference(
+            password_manager::prefs::kCredentialsEnableService)) {
+      // TODO(crbug.com/1082827): observe the managing status of the pref.
+      // Show managed settings UI when the pref is managed by the policy.
+      _managedSavePasswordItem = [self managedSavePasswordItem];
+      [model addItem:_managedSavePasswordItem
+          toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    } else {
+      _savePasswordsItem = [self savePasswordsItem];
+      [model addItem:_savePasswordsItem
+          toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+    }
+
     _manageAccountLinkItem = [self manageAccountLinkItem];
     [model setHeader:_manageAccountLinkItem
         forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
@@ -444,6 +460,22 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
   return savePasswordsItem;
 }
 
+- (TableViewDetailIconItem*)managedSavePasswordItem {
+  TableViewDetailIconItem* managedSavePasswordItem =
+      [[TableViewDetailIconItem alloc]
+          initWithType:ItemTypeManagedSavePasswords];
+
+  managedSavePasswordItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
+  NSString* passwordsDetail = [_passwordManagerEnabled value]
+                                  ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+                                  : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
+  managedSavePasswordItem.detailText = passwordsDetail;
+  managedSavePasswordItem.accessoryType = UITableViewCellAccessoryDetailButton;
+  managedSavePasswordItem.accessibilityIdentifier =
+      @"savePasswordsItem_managed";
+  return managedSavePasswordItem;
+}
+
 - (TableViewTextItem*)exportPasswordsItem {
   TableViewTextItem* exportPasswordsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
@@ -483,14 +515,21 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
 
 - (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
   if (observableBoolean == _passwordManagerEnabled) {
-    // Update the item.
-    _savePasswordsItem.on = [_passwordManagerEnabled value];
+    if (_savePasswordsItem) {
+      // Update the item.
+      _savePasswordsItem.on = [_passwordManagerEnabled value];
 
-    // Update the cell if it's not removed by presenting search controller.
-    if ([self.tableViewModel
-            hasItemForItemType:ItemTypeSavePasswordsSwitch
-             sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
-      [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+      // Update the cell if it's not removed by presenting search controller.
+      if ([self.tableViewModel
+              hasItemForItemType:ItemTypeSavePasswordsSwitch
+               sectionIdentifier:SectionIdentifierSavePasswordsSwitch]) {
+        [self reconfigureCellsForItems:@[ _savePasswordsItem ]];
+      }
+    } else {
+      _managedSavePasswordItem.detailText =
+          [_passwordManagerEnabled value]
+              ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
+              : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
     }
   } else {
     NOTREACHED();
@@ -595,8 +634,14 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
             forSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
         [self.tableView insertSections:[NSIndexSet indexSetWithIndex:0]
                       withRowAnimation:UITableViewRowAnimationTop];
-        [model addItem:_savePasswordsItem
-            toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        if (_savePasswordsItem) {
+          [model addItem:_savePasswordsItem
+              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        } else {
+          [model addItem:_managedSavePasswordItem
+              toSectionWithIdentifier:SectionIdentifierSavePasswordsSwitch];
+        }
+
         [self.tableView
             insertRowsAtIndexPaths:@[ [NSIndexPath indexPathForRow:0
                                                          inSection:0] ]
@@ -929,6 +974,7 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
     case ItemTypeLinkHeader:
     case ItemTypeHeader:
     case ItemTypeSavePasswordsSwitch:
+    case ItemTypeManagedSavePasswords:
       break;
     case ItemTypeSavedPassword: {
       DCHECK_EQ(SectionIdentifierSavedPasswords,
@@ -959,6 +1005,17 @@ std::vector<std::unique_ptr<autofill::PasswordForm>> CopyOf(
       NOTREACHED();
   }
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  return [self.tableViewModel sectionIdentifierForSection:indexPath.section] !=
+         SectionIdentifierSavePasswordsSwitch;
+}
+
+- (void)tableView:(UITableView*)tableView
+    accessoryButtonTappedForRowWithIndexPath:(NSIndexPath*)indexPath {
+  // TODO(crbug.com/1085202): show the text bubble.
 }
 
 - (UIView*)tableView:(UITableView*)tableView

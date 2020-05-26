@@ -145,13 +145,13 @@ public class ShareHelper {
         @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
         public static void sendChooserIntent(WindowAndroid window, Intent sharingIntent,
                 @Nullable TargetChosenCallback callback) {
-            final String packageName = ContextUtils.getApplicationContext().getPackageName();
+            final Context context = ContextUtils.getApplicationContext();
+            final String packageName = context.getPackageName();
             synchronized (LOCK) {
                 if (sTargetChosenReceiveAction == null) {
                     sTargetChosenReceiveAction =
                             packageName + "/" + TargetChosenReceiver.class.getName() + "_ACTION";
                 }
-                Context context = ContextUtils.getApplicationContext();
                 if (sLastRegisteredReceiver != null) {
                     context.unregisterReceiver(sLastRegisteredReceiver);
                     // Must cancel the callback (to satisfy guarantee that exactly one method of
@@ -170,7 +170,7 @@ public class ShareHelper {
             final PendingIntent pendingIntent = PendingIntent.getBroadcast(activity, 0, intent,
                     PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_ONE_SHOT);
             Intent chooserIntent = Intent.createChooser(sharingIntent,
-                    activity.getString(R.string.share_link_chooser_title),
+                    context.getString(R.string.share_link_chooser_title),
                     pendingIntent.getIntentSender());
             if (sFakeIntentReceiverForTesting != null) {
                 sFakeIntentReceiverForTesting.setIntentToSendBack(intent);
@@ -217,23 +217,24 @@ public class ShareHelper {
      *
      * @param params The container holding the share parameters.
      */
-    public static void showCompatShareDialog(final ShareParams params) {
-        Activity activity = params.getWindow().getActivity().get();
-        final TargetChosenCallback callback = params.getCallback();
+    static void showCompatShareDialog(final ShareParams params) {
         Intent intent = getShareLinkAppCompatibilityIntent();
-        PackageManager manager = activity.getPackageManager();
         List<ResolveInfo> resolveInfoList = PackageManagerUtils.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
         if (resolveInfoList.size() == 0) return;
+
+        final Context context = params.getWindow().getContext().get();
+        final PackageManager manager = context.getPackageManager();
         Collections.sort(resolveInfoList, new ResolveInfo.DisplayNameComparator(manager));
 
         final ShareDialogAdapter adapter =
-                new ShareDialogAdapter(activity, manager, resolveInfoList);
+                new ShareDialogAdapter(context, manager, resolveInfoList);
         AlertDialog.Builder builder = new UiUtils.CompatibleAlertDialogBuilder(
-                activity, R.style.Theme_Chromium_AlertDialog);
-        builder.setTitle(activity.getString(R.string.share_link_chooser_title));
+                context, R.style.Theme_Chromium_AlertDialog);
+        builder.setTitle(context.getString(R.string.share_link_chooser_title));
         builder.setAdapter(adapter, null);
 
+        final TargetChosenCallback callback = params.getCallback();
         // Need a mutable object to record whether the callback has been fired.
         final boolean[] callbackCalled = new boolean[1];
 
@@ -275,10 +276,25 @@ public class ShareHelper {
      * Shares the params using the system share sheet, or skipping the sheet and sharing directl if
      * the target component is specified.
      */
-    public static void shareWithSystemSheet(ShareParams params) {
+    static void shareWithSystemSheet(ShareParams params) {
         assert TargetChosenReceiver.isSupported();
         TargetChosenReceiver.sendChooserIntent(
                 params.getWindow(), getShareLinkIntent(params), params.getCallback());
+    }
+
+    /**
+     * Shows a picker and allows the user to choose a share target.
+     *
+     * @param params The container holding the share parameters.
+     */
+    public static void shareWithUi(ShareParams params) {
+        if (TargetChosenReceiver.isSupported()) {
+            // On L+ open system share sheet.
+            shareWithSystemSheet(params);
+        } else {
+            // On K and below open custom share dialog.
+            showCompatShareDialog(params);
+        }
     }
 
     /**

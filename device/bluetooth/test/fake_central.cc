@@ -413,12 +413,13 @@ void FakeCentral::GetLastWrittenCharacteristicValue(
       GetFakeRemoteGattCharacteristic(peripheral_address, service_id,
                                       characteristic_id);
   if (fake_remote_gatt_characteristic == nullptr) {
-    std::move(callback).Run(false, base::nullopt);
+    std::move(callback).Run(false, base::nullopt, mojom::WriteType::kNone);
     return;
   }
 
-  std::move(callback).Run(
-      true, fake_remote_gatt_characteristic->last_written_value());
+  std::move(callback).Run(true,
+                          fake_remote_gatt_characteristic->last_written_value(),
+                          fake_remote_gatt_characteristic->last_write_type());
 }
 
 void FakeCentral::SetNextReadDescriptorResponse(

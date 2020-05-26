@@ -22,6 +22,11 @@ class BrowserControlsNavigationStateHandlerDelegate {
   virtual void OnUpdateBrowserControlsStateBecauseOfProcessSwitch(
       bool did_commit) = 0;
 
+  // Called if the browser controls need to be shown and the renderer is in a
+  // hung/crashed state. This needs to be handled specially as the renderer
+  // normally drives the offsets, but in this situation it won't.
+  virtual void OnForceBrowserControlsShown() = 0;
+
  protected:
   virtual ~BrowserControlsNavigationStateHandlerDelegate() = default;
 };

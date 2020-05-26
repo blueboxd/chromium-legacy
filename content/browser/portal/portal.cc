@@ -350,7 +350,6 @@ void Portal::Activate(blink::TransferableMessage data,
   // restriction.
   DCHECK_EQ(PAGE_TYPE_NORMAL,
             predecessor_controller.GetLastCommittedEntry()->GetPageType());
-  DCHECK(!predecessor_controller.GetTransientEntry());
 
   // If the portal is showing an error page, reject activation.
   if (portal_controller.GetLastCommittedEntry()->GetPageType() !=
@@ -359,7 +358,6 @@ void Portal::Activate(blink::TransferableMessage data,
         blink::mojom::PortalActivateResult::kRejectedDueToErrorInPortal);
     return;
   }
-  DCHECK(!portal_controller.GetTransientEntry());
 
   // If a navigation in the main frame is occurring, stop it if possible and
   // reject the activation if it's too late or if an ongoing navigation takes

@@ -984,14 +984,14 @@ enum SortDirection {
 enum NameFrom {
   kNone,
   kUninitialized,
-  kAttribute,
+  kAttribute,  // E.g. aria-label.
   kAttributeExplicitlyEmpty,
-  kCaption,
+  kCaption,  // E.g. in the case of a table, from a caption element.
   kContents,
-  kPlaceholder,
-  kRelatedElement,
-  kTitle,
-  kValue,
+  kPlaceholder,  // E.g. from an HTML placeholder attribute on a text field.
+  kRelatedElement, // E.g. from a figcaption Element in a figure.
+  kTitle,  // E.g. <input type="text" title="title">.
+  kValue,  // E.g. <input type="button" value="Button's name">.
 };
 
 enum DescriptionFrom {

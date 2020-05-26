@@ -432,7 +432,7 @@ void MetafileSkia::CustomDataToSkPictureCallback(SkCanvas* canvas,
   // Found the picture, draw it on canvas.
   sk_sp<SkPicture> pic = it->second;
   SkRect rect = pic->cullRect();
-  SkMatrix matrix = SkMatrix::MakeTrans(rect.x(), rect.y());
+  SkMatrix matrix = SkMatrix::Translate(rect.x(), rect.y());
   canvas->drawPicture(it->second, &matrix, nullptr);
 }
 

@@ -17,14 +17,14 @@
     todo = [
         function () {
             shouldBe("document.pointerLockElement", "null");
-            testRunner.setPointerLockWillRespondAsynchronously();
+            eventSender.setPointerLockWillRespondAsynchronously();
             expectOnlyChangeEvent("Lock.");
             targetDiv1.requestPointerLock();
             doNextStep();
         },
         function () {
             shouldBe("document.pointerLockElement", "null");
-            testRunner.didAcquirePointerLock();
+            eventSender.didAcquirePointerLock();
             // doNextStep called from event handler set with expect...
         },
         function () {

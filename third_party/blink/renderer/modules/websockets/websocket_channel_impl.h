@@ -127,7 +127,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
   void OnDataFrame(bool fin,
                    network::mojom::blink::WebSocketMessageType,
                    uint64_t data_length) override;
-  void AddSendFlowControlQuota(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const String& reason) override;
@@ -189,10 +188,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
   };
   State GetState() const;
 
-  void SendAndAdjustQuota(bool final,
-                          network::mojom::blink::WebSocketMessageType,
-                          base::span<const char>,
-                          uint64_t* consumed_buffered_amount);
   bool MaybeSendSynchronously(network::mojom::blink::WebSocketMessageType,
                               base::span<const char>* data);
   void ProcessSendQueue();
@@ -247,7 +242,6 @@ class MODULES_EXPORT WebSocketChannelImpl final
   bool received_text_is_all_ascii_ = true;
   bool throttle_passed_ = false;
   bool has_initiated_opening_handshake_ = false;
-  uint64_t sending_quota_ = 0;
   size_t sent_size_of_top_message_ = 0;
   FrameScheduler::SchedulingAffectingFeatureHandle
       feature_handle_for_scheduler_;

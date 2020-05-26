@@ -561,6 +561,11 @@ class CONTENT_EXPORT RenderWidget
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   virtual void RequestPresentation(PresentationTimeCallback callback);
 
+  // Forces a redraw after any ongoing scroll-animation ends, and invokes the
+  // callback once the frame is displayed to the user.
+  void RequestPresentationAfterScrollAnimationEnd(
+      PresentationTimeCallback callback);
+
   base::WeakPtr<RenderWidget> AsWeakPtr();
 
  protected:

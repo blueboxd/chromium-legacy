@@ -654,6 +654,11 @@
 
       如果將這項政策設為檔案路徑，系統會將該檔案做為執行檔使用。</translation>
 <translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
+<translation id="2124881675920287921">這項政策自 M82 版起遭到淘汰，並在 M85 版中移除，請改用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 等同於停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。啟用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 或未設定這項政策等同於未設定 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。
+
+      如果將這項政策設為 False，使用者無法選擇將部分系統資訊和網頁內容傳送到 Google 伺服器。如果設為 True 或未設定，使用者可以將部分系統資訊和網頁內容傳送給「安全瀏覽」服務，以協助我們偵測不安全的應用程式和網站。
+
+      如要進一步瞭解「安全瀏覽」服務，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
 <translation id="2131902621292742709">在電池供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="2134437727173969994">允許鎖定畫面</translation>
@@ -1180,7 +1185,7 @@
 
       如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="2696077732471707315">
-      這項政策已在 M77 版中遭到移除。
+      這項政策已在 M77 版中移除。
       這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值，如果兩者的值不相符，進入使用者工作階段時，系統可能會因為套用使用者政策指定的值而發生延遲。
       </translation>
 <translation id="2706708761587205154">只在 PIN 碼啟用時允許列印</translation>
@@ -2807,7 +2812,6 @@
 <translation id="5307432759655324440">無痕模式適用性</translation>
 <translation id="5311275381462687162">預設的舊版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> Cookie 行為設定</translation>
 <translation id="5318185076587284965">啟用遠端存取主機所使用的轉送伺服器</translation>
-<translation id="5321755462836179869">允許原生通知</translation>
 <translation id="5323128137188992869">允許透過「<ph name="PRODUCT_NAME" />」將內容投放至裝置。
 
           如果這項政策設為 False，使用者就無法將內容投放至自己的裝置。如果這項政策設為 True，則使用者可投放內容。如果未設定這項政策，使用者就無法將內容投放至已註冊的 Chrome 作業系統裝置，但可投放至未註冊的裝置。</translation>
@@ -3304,7 +3308,7 @@
       如果設為 true，系統則會根據提供的上傳和下載速率 (KB/秒) 啟用節流功能。</translation>
 <translation id="5907283448020542268">除非 <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 政策設為 <ph name="BLOCK_GEOLOCATION_SETTING" />，否則在初始設定期間設定 <ph name="GLS_ENABLED" /> 將會啟用 Google 定位服務。如果將這項政策設為 <ph name="GLS_DISABLED" /> 或不設定，系統會在設定期間將定位服務保持停用。
 
-      如果將這項政策設為 <ph name="BR_UNDER_USER_CONTROL" />，系統會顯示提示，詢問使用者是否要使用 Google 定位服務。如果使用者選擇啟用，Android 應用程式會使用定位服務搜尋裝置位置，並將去識別化的位置資料傳送給 Google。
+      如果將這項政策設為 <ph name="BR_UNDER_USER_CONTROL" />，系統會出現提示，詢問使用者是否要使用 Google 定位服務。如果使用者選擇啟用，Android 應用程式會使用定位服務搜尋裝置位置，並將去識別化的位置資料傳送給 Google。
 
       完成初始設定後，使用者可啟用或停用 Google 定位服務。</translation>
 <translation id="591088232153082363">根據電池用量模式自動調整充電方式。</translation>
@@ -3879,7 +3883,7 @@
 
       必須啟用 Linux 應用程式支援功能才可套用這項政策。</translation>
 <translation id="6946652757373377924">
-      這項政策已在 M77 版中遭到移除。
+      這項政策已在 M77 版中移除。
       這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。
       如果啟用這項政策，系統會以獨立程序分別執行逗號分隔清單中指定的每個來源。這也會讓系統隔離以子網域命名的來源，例如指定 https://example.com/ 也會導致 https://foo.example.com/ 遭到隔離，因為後者屬於 https://example.com/ 網站的一部分。
       如果不設定或停用這項政策，系統會將平台預設的網站隔離設定套用至登入畫面。
@@ -3894,7 +3898,7 @@
 如果你將這項政策設為 True 或不予設定，系統會啟用智慧型調光模式並允許延長使用時間，直到螢幕變暗為止。如果將這項政策設為 False，智慧型調光模式便無法管理螢幕的調光設定。</translation>
 <translation id="6972540544240464302">選取工作排程器設定</translation>
 <translation id="6979158407327259162">Google 雲端硬碟</translation>
-<translation id="6979739838208297344">如果將這項政策設為 <ph name="BR_ENABLED" />，Android 備份與還原功能預設為啟用。如果將這項政策設為 <ph name="BR_DISABLED" /> 或不設定，系統會在設定期間將備份與還原功能保持停用。
+<translation id="6979739838208297344">如果將這項政策設為 <ph name="BR_ENABLED" />，Android 備份與還原功能的初始狀態是設為啟用。如果將這項政策設為 <ph name="BR_DISABLED" /> 或不設定，系統會在設定期間將備份與還原功能保持停用。
 
       如果將這項政策設為 <ph name="BR_UNDER_USER_CONTROL" />，系統會提示使用者使用備份與還原功能。如果使用者啟用這項功能，系統會將 Android 應用程式資料上傳至 Android 備份伺服器，並在使用者重新安裝相容的應用程式時還原資料。
 
@@ -4189,7 +4193,7 @@
       如果未設定這項政策，自動清理作業將會採用目前的預設內建策略：「RemoveLRUIfDormant」。</translation>
 <translation id="7336785017449297672">控管時鐘和時區設定。</translation>
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
-<translation id="7338217396351647423">設定這項政策會指定要傳送給 ARC 執行階段的一組政策。管理員可以使用這組政策來選取要自動安裝的 Android 應用程式。請以有效的 JSON 格式輸入設定值。
+<translation id="7338217396351647423">設定這項政策會指定要傳送給 ARC 執行階段的一組政策。管理員可以使用這組政策來選取要自動安裝的 Android 應用程式。輸入的值必須採用有效的 JSON 格式。
 
       如要將應用程式固定在啟動器中，請參閱 PinnedLauncherApps。</translation>
 <translation id="7339315111520512972">強制網路程式碼在瀏覽器程序中執行</translation>

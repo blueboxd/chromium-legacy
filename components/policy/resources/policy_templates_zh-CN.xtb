@@ -643,6 +643,11 @@
 
       如果此政策设为文件路径，系统会将相应文件用作可执行文件。</translation>
 <translation id="2113068765175018713">通过自动重启限制设备的正常运行时间</translation>
+<translation id="2124881675920287921">我们在 M82 中停用了此政策，并在 M85 中移除了它。请改用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 等同于停用 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。启用或不设置 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> 等同于不设置 <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" />。
+
+      如果此政策设为 false，用户将无法选择向 Google 服务器发送一些系统信息和网页内容。如果此设置设为 true 或未配置，用户将能够向“安全浏览”功能发送一些系统信息和网页内容，以帮助检测危险应用和网站。
+
+      如需详细了解“安全浏览”功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="2127599828444728326">允许在这些网站上显示通知</translation>
 <translation id="2131902621292742709">使用电源供电时的屏幕变暗延迟时间</translation>
 <translation id="2134437727173969994">允许锁定屏幕</translation>
@@ -2317,7 +2322,7 @@
       如果您启用或停用了此设置，用户就无法在 <ph name="PRODUCT_NAME" /> 中更改或替换此设置。
 
       如果未设置此政策，系统就会启用此设置，不过用户也可以更改此设置。</translation>
-<translation id="4529868888205510667">将此政策设为 True 或不设置会允许用户使用 ARC，除非已通过其他方式关闭 ARC。将此政策设为 False 意味着禁止独立用户使用 ARC。
+<translation id="4529868888205510667">除非已通过其他方式关闭 ARC，否则将此政策设为 True 或不设置时，用户可使用 ARC。将此政策设为 False 意味着禁止独立用户使用 ARC。
 
       仅当 ARC 未运行时（例如 Chrome 操作系统启动时），对此政策做出的更改才会生效。</translation>
 <translation id="453031441196755904">此政策已被弃用。</translation>
@@ -2789,7 +2794,6 @@
 <translation id="5307432759655324440">隐身模式的可用性</translation>
 <translation id="5311275381462687162">默认旧版 <ph name="ATTRIBUTE_SAMESITE_NAME" /> Cookie 行为设置</translation>
 <translation id="5318185076587284965">允许远程访问主机使用中继服务器</translation>
-<translation id="5321755462836179869">允许使用原生通知</translation>
 <translation id="5323128137188992869">允许使用 <ph name="PRODUCT_NAME" /> 向设备投射内容。
 
           如果此政策设为 False，用户将无法向其设备投射内容。如果此政策设为 True，用户将能够投射内容。如果此政策未设置，用户将被禁止向已注册的 Chrome 操作系统设备投射内容，但可将内容投射到未注册的设备。</translation>
@@ -3032,7 +3036,7 @@
         如果此政策设为 false，用户无法向 Google 发送反馈。
 
         如果未设置此政策或将其设为 true，用户可以通过依次点按“菜单”-&gt;“帮助”-&gt;“报告问题”或按下组合键来向 Google 发送反馈。</translation>
-<translation id="5579179012798142131">将 ArcEnabled 设为 True 会为用户开启 ARC，除非暂存模式或多帐号登录在用户会话期间保持开启状态。将此政策设为 False 或不设置意味着企业用户无法使用 ARC。</translation>
+<translation id="5579179012798142131">除非暂存模式或多帐号登录在用户会话期间保持开启状态，否则将 ArcEnabled 设为 True 会为用户开启 ARC。将此政策设为 False 或不设置意味着企业用户无法使用 ARC。</translation>
 <translation id="5583806683960333345">如果启用了此设置，用户将能够通过即时网络共享功能让其他设备共享 Google 手机的移动数据。
 
       如果停用了此设置，用户将无法使用即时网络共享功能。
@@ -3278,7 +3282,7 @@
 
       如果设为 false，系统将不会启用节流功能。
       如果设为 true，系统则会启用节流功能，以实现所提供的上传速率和下载速率（以 kb/s 为单位）。</translation>
-<translation id="5907283448020542268">将此政策设为 <ph name="GLS_ENABLED" /> 会在初始设置期间开启 Google 位置信息服务，除非 <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 政策已设为 <ph name="BLOCK_GEOLOCATION_SETTING" />。将此政策设为 <ph name="GLS_DISABLED" /> 或不设置会使位置信息服务在设置期间保持关闭状态。
+<translation id="5907283448020542268">除非 <ph name="DEFAULT_GEOLOCATION_SETTING_POLICY_NAME" /> 政策已设为 <ph name="BLOCK_GEOLOCATION_SETTING" />，否则将此政策设为 <ph name="GLS_ENABLED" /> 会在初始设置期间开启 Google 位置信息服务。将此政策设为 <ph name="GLS_DISABLED" /> 或不设置，位置信息服务会在设置期间保持关闭状态。
 
       如果您将此政策设为 <ph name="BR_UNDER_USER_CONTROL" />，系统会提示用户是否要使用 Google 位置信息服务。如果用户开启了该服务，Android 应用会利用该服务搜索设备位置信息，并向 Google 发送匿名位置数据。
 
@@ -3553,7 +3557,7 @@
 
           如果您选择使用 .pac 代理脚本，则系统会向 Android 应用提供相应的脚本网址。</translation>
 <translation id="6430366557948788869">Chrome Reporting Extension</translation>
-<translation id="6438972408080276697">如果您将此政策设为 True，系统便会向 Google 报告由政策触发的主要 Android 应用安装事件。将此政策设为 False 意味着系统不会捕获任何事件。</translation>
+<translation id="6438972408080276697">如果您将此政策设为 True，系统便会向 Google 报告由政策触发的主要 Android 应用安装事件。将此政策设为 False 意味着系统不会记录任何事件。</translation>
 <translation id="6440051664870270040">允许网站在导航的同时打开弹出式窗口</translation>
 <translation id="6447948611083700881">已停用备份和恢复服务</translation>
 <translation id="6449476513004303784">禁止用户管理证书</translation>
@@ -3719,7 +3723,7 @@
 
       如果未设置此政策或此列表为空，则可在 <ph name="PRODUCT_NAME" /> 中使用所有架构。</translation>
 <translation id="6652197835259177259">本地托管用户设置</translation>
-<translation id="6658129069061688328">将此政策设为 True 会使系统在搜索框处于零状态时显示推荐的应用。将此政策设为 False 意味着系统不会显示推荐的应用。
+<translation id="6658129069061688328">将此政策设为 True，系统会在搜索框内未输入任何内容时显示推荐应用。将此政策设为 False，系统将不会显示推荐应用。
 
       如果您设置了此政策，用户便无法更改它。如果您未设置此政策，受管理设备会默认使用 False 设置。</translation>
 <translation id="6658245400435704251">指定一个时间（以秒为单位），即从更新首次推送到服务器起设备随机延迟更新下载的最大时间。设备的这一等待时间一部分会按照实际时间计算，而剩下的部分则取决于更新检查的次数。在任何情况下，分配的时间上限都是固定的，因此设备绝不会一直等待下载某个更新。</translation>
@@ -3870,7 +3874,7 @@
       如果此政策设为 True 或未设置，则系统将启用智能调暗模式，并允许其最大限度地推迟屏幕变暗时间。如果此政策设为 False，则智能调暗模式将不会影响屏幕变暗时间。</translation>
 <translation id="6972540544240464302">选择任务调度程序配置</translation>
 <translation id="6979158407327259162">Google 云端硬盘</translation>
-<translation id="6979739838208297344">将此政策设为 <ph name="BR_ENABLED" /> 意味着 Android 备份和恢复服务最初会处于开启状态。将此政策设为 <ph name="BR_DISABLED" /> 或不设置会使备份和恢复服务在设置过程中保持关闭状态。
+<translation id="6979739838208297344">将此政策设为 <ph name="BR_ENABLED" /> 意味着 Android 备份和恢复服务最初会处于开启状态。将此政策设为 <ph name="BR_DISABLED" /> 或不设置，备份和恢复服务会在设置过程中保持关闭状态。
 
       将此政策设为 <ph name="BR_UNDER_USER_CONTROL" /> 意味着系统会提示用户使用备份和恢复服务。如果用户开启了该服务，系统就会将 Android 应用数据上传到 Android 备份服务器，并会在用户重新安装兼容的应用期间恢复这些数据。
 
@@ -4168,7 +4172,7 @@
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
 <translation id="7338217396351647423">设置此政策可指定要传递给 ARC 运行时的一组政策。管理员可以使用此政策选择要自动安装的 Android 应用。请以有效的 JSON 格式输入所需值。
 
-      若要将应用固定到启动器中，请参阅 PinnedLauncherApps。</translation>
+      如需将应用固定到启动器中，请参阅 PinnedLauncherApps。</translation>
 <translation id="7339315111520512972">强制网络代码在浏览器进程中运行</translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
 <translation id="7343497214039883642">设备的企业打印机配置文件</translation>
@@ -5374,7 +5378,7 @@
 <translation id="991560005425213776">向原生打印机发送用户名和文件名</translation>
 <translation id="99202634486128833">如果您将此政策设为 CopyCaCerts，ARC 应用便能使用所有已安装 ONC 且带有 <ph name="WEB_TRUSTED_BIT" /> 的 CA 证书。
 
-       将此政策设为 None 或不设置会导致 ARC 应用无法使用 <ph name="PRODUCT_OS_NAME" />证书。</translation>
+       将此政策设为 None 或不设置，ARC 应用将无法使用 <ph name="PRODUCT_OS_NAME" />证书。</translation>
 <translation id="99232017131102456">通过此政策，您可以使用 HTTP 服务器身份验证凭据为每份个人资料配置一个全局性的缓存文件。
 
       如果此政策未设置或已停用，浏览器将会使用跨网站身份验证机制的默认行为（自版本 80 起，该行为将是按顶级网站界定 HTTP 服务器身份验证凭据的适用范围），因此如果两个网站使用的资源是来自同一个要求进行身份验证的网域，则需在这两个网站中分别提供凭据。系统会跨网站重复使用缓存的代理凭据。

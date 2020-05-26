@@ -149,6 +149,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // unresponsive.
   virtual void OnRendererUnresponsive(RenderProcessHost* render_process_host) {}
 
+  // See WebContentsDelegate::RendererResponsive().
+  virtual void OnRendererResponsive(RenderProcessHost* render_process_host) {}
+
   // Navigation ----------------------------------------------------------------
 
   // Called when a navigation started in the WebContents. |navigation_handle|

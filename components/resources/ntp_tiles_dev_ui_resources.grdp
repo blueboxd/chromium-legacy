@@ -5,14 +5,11 @@
            file="../ntp_tiles/webui/resources/ntp_tiles_internals.html"
            flattenhtml="true"
            allowexternalscript="true"
-           type="BINDATA"
-           compress="gzip" />
+           type="BINDATA" />
   <include name="IDR_NTP_TILES_INTERNALS_JS"
            file="../ntp_tiles/webui/resources/ntp_tiles_internals.js"
-           type="BINDATA"
-           compress="gzip" />
+           type="BINDATA" />
   <include name="IDR_NTP_TILES_INTERNALS_CSS"
            file="../ntp_tiles/webui/resources/ntp_tiles_internals.css"
-           type="BINDATA"
-           compress="gzip" />
+           type="BINDATA" />
 </grit-part>

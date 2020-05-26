@@ -626,8 +626,8 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
                 .set_paint_image_generator(
                     CreatePaintImageGenerator(gfx::Size(500, 500)))
                 .TakePaintImage();
-        SkMatrix scale = SkMatrix::MakeScale(std::max(x * 0.5f, kMinScale),
-                                             std::max(y * 0.5f, kMinScale));
+        SkMatrix scale = SkMatrix::Scale(std::max(x * 0.5f, kMinScale),
+                                         std::max(y * 0.5f, kMinScale));
         PaintFlags flags;
         flags.setShader(PaintShader::MakeImage(discardable_image[y][x],
                                                SkTileMode::kClamp,

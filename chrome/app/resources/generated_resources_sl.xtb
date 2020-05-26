@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Bližnjice izberete vi</translation>
 <translation id="1213037489357051291">Št. nastavljenih prstnih odtisov: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Pošiljanje podatkov o uporabi in diagnostičnih podatkov. Pomagajte izboljšati otrokovo izkušnjo z Androidom s samodejnim pošiljanjem diagnostičnih podatkov ter podatkov o uporabi naprave in aplikacij Googlu. Teh podatkov ne bomo uporabljali, da bi prepoznali vašega otroka, temveč za izboljšanje stabilnosti sistema in izvajanja aplikacij ter drugega. Nekateri združeni podatki bodo pomagali tudi Googlovim aplikacijam in partnerjem, na primer razvijalcem za Android. To nastavitev je uveljavil lastnik naprave. Lastnik bo morda izbral, da se za to napravo pošiljajo diagnostični podatki in podatki o uporabi Googlu. Če ste za otroka vklopili dodatno beleženje dejavnosti v spletu in aplikacijah, bodo ti podatki morda shranjeni v njegovem računu Google.</translation>
+<translation id="121384500095351701">Te datoteke ni mogoče varno prenesti</translation>
 <translation id="1215411991991485844">Dodan je nov program, ki se izvaja v ozadju</translation>
 <translation id="1216542092748365687">Odstranitev prstnega odtisa</translation>
 <translation id="1217483152325416304">Lokalni podatki bodo kmalu izbrisani</translation>
@@ -1064,6 +1065,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="2336228925368920074">Dodaj vse zavihke med zaznamke ...</translation>
 <translation id="2336376423977300504">Vedno izbriši piškotke, ko se zaprejo okna</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Datoteke <ph name="FILE_NAME" /> ni mogoče varno prenesti</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> želi izvesti seznanitev</translation>
 <translation id="2342740338116612727">Dodani zaznamki</translation>
 <translation id="2343747224442182863">Izberi ta zavihek</translation>
@@ -3254,6 +3256,7 @@ Nastavitve tega računa je mogoče upravljati z namestitvijo aplikacije Family L
 <translation id="5154702632169343078">Zadeva</translation>
 <translation id="5157635116769074044">Pripni to stran na začetni zaslon ...</translation>
 <translation id="5158983316805876233">Uporabi isti proxy za vse protokole</translation>
+<translation id="5159419673777902220">Tvoj starš je onemogočil dovoljenja za razširitve</translation>
 <translation id="5160857336552977725">Prijavite se v napravo <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166596762332123936">Vtičnik <ph name="PLUGIN_NAME" /> je bil blokiran, ker je zastarel</translation>
 <translation id="5170568018924773124">Prikaži v mapi</translation>
@@ -5397,6 +5400,7 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="7925247922861151263">Preverjanje AAA ni uspelo</translation>
 <translation id="7925285046818567682">Čakam <ph name="HOST_NAME" /> ...</translation>
 <translation id="7926423016278357561">To nisem bil(-a) jaz.</translation>
+<translation id="7926975587469166629">Vzdevek za kartico</translation>
 <translation id="7928175190925744466">Ali ste že spremenili to geslo?</translation>
 <translation id="7928836894214140642">Upravlja domena <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Shranjena plačilna sredstva bodo prikazana tu</translation>

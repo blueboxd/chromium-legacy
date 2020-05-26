@@ -15,6 +15,7 @@
 #include "components/feed/core/common/pref_names.h"
 #include "components/feed/core/proto/v2/store.pb.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
+#include "components/feed/core/proto/v2/wire/there_and_back_again_data.pb.h"
 #include "components/feed/core/shared_prefs/pref_names.h"
 #include "components/feed/core/v2/enums.h"
 #include "components/feed/core/v2/feed_network.h"
@@ -224,6 +225,13 @@ EphemeralChangeId FeedStream::CreateEphemeralChange(
   return model_->CreateEphemeralChange(std::move(operations));
 }
 
+EphemeralChangeId FeedStream::CreateEphemeralChangeFromPackedData(
+    base::StringPiece data) {
+  feedpacking::DismissData msg;
+  msg.ParseFromArray(data.data(), data.size());
+  return CreateEphemeralChange(TranslateDismissData(clock_->Now(), msg));
+}
+
 bool FeedStream::CommitEphemeralChange(EphemeralChangeId id) {
   if (!model_)
     return false;
@@ -234,6 +242,16 @@ bool FeedStream::RejectEphemeralChange(EphemeralChangeId id) {
   if (!model_)
     return false;
   return model_->RejectEphemeralChange(id);
+}
+
+void FeedStream::ProcessThereAndBackAgain(base::StringPiece data) {
+  feedwire::ThereAndBackAgainData msg;
+  msg.ParseFromArray(data.data(), data.size());
+  if (msg.has_action_payload()) {
+    feedwire::FeedAction action_msg;
+    *action_msg.mutable_action_payload() = std::move(msg.action_payload());
+    UploadAction(std::move(action_msg), /*upload_now=*/true, base::DoNothing());
+  }
 }
 
 DebugStreamData FeedStream::GetDebugStreamData() {

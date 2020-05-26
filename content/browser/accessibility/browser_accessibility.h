@@ -116,20 +116,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   bool IsLineBreakObject() const;
 
-  // Returns true if this is a leaf node on this platform, meaning any
-  // children should not be exposed to this platform's native accessibility
-  // layer.
-  // The definition of a leaf may vary depending on the platform,
-  // but a leaf node should never have children that are focusable or
-  // that might send notifications.
+  // See AXNode::IsLeaf().
   bool PlatformIsLeaf() const;
 
-  // Returns true if this is a leaf node on this platform, including
-  // ignored nodes, meaning any children should not be exposed to this
-  // platform's native accessibility layer, but a node shouldn't be
-  // considered a leaf node solely because it has only ignored children.
-  // Each platform subclass should implement this itself.
-  virtual bool PlatformIsLeafIncludingIgnored() const;
+  // See AXNode::IsLeafIncludingIgnored().
+  bool PlatformIsLeafIncludingIgnored() const;
 
   // Returns true if this object can fire events.
   virtual bool CanFireEvents() const;
@@ -143,7 +134,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   virtual uint32_t PlatformChildCount() const;
 
   // Return a pointer to the child at the given index, or NULL for an
-  // invalid index. Returns NULL if PlatformIsLeaf() returns true.
+  // invalid index. Returns nullptr if PlatformIsLeaf() returns true.
   virtual BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
 
   BrowserAccessibility* PlatformGetParent() const;
@@ -388,30 +379,19 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   virtual bool IsClickable() const;
 
-  // A text field is any widget in which the user should be able to enter and
-  // edit text.
-  //
-  // Examples include <input type="text">, <input type="password">, <textarea>,
-  // <div contenteditable="true">, <div role="textbox">, <div role="searchbox">
-  // and <div role="combobox">. Note that when an ARIA role that indicates that
-  // the widget is editable is used, such as "role=textbox", the element doesn't
-  // need to be contenteditable for this method to return true, as in theory
-  // JavaScript could be used to implement editing functionality. In practice,
-  // this situation should be rare.
+  // See AXNodeData::IsTextField().
   bool IsTextField() const;
 
-  // A text field that is used for entering passwords.
+  // See AXNodeData::IsPasswordField().
   bool IsPasswordField() const;
 
-  // A text field that doesn't accept rich text content, such as text with
-  // special formatting or styling.
+  // See AXNodeData::IsPlainTextField().
   bool IsPlainTextField() const;
 
-  // A text field that accepts rich text content, such as text with special
-  // formatting or styling.
+  // See AXNodeData::IsRichTextField().
   bool IsRichTextField() const;
 
-  // Return true if the accessible name was explicitly set to "" by the author
+  // Returns true if the accessible name was explicitly set to "" by the author
   bool HasExplicitlyEmptyName() const;
 
   // TODO(nektar): Remove this method and replace with GetInnerText.
@@ -472,6 +452,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   bool IsChildOfLeaf() const override;
   bool IsChildOfPlainTextField() const override;
+  bool IsLeaf() const override;
   gfx::NativeViewAccessible GetClosestPlatformObject() const override;
 
   std::unique_ptr<ChildIterator> ChildrenBegin() override;

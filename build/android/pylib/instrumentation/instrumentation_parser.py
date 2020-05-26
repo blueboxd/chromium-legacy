@@ -20,6 +20,8 @@ STATUS_CODE_SKIP = -3
 # http://junit.org/junit4/javadoc/4.12/org/junit/AssumptionViolatedException.html
 STATUS_CODE_ASSUMPTION_FAILURE = -4
 
+STATUS_CODE_TEST_DURATION = 1337
+
 # http://developer.android.com/reference/android/app/Activity.html
 RESULT_CODE_OK = -1
 RESULT_CODE_CANCELED = 0
@@ -77,6 +79,10 @@ class InstrumentationParser(object):
           key, value = value.split('=', 1)
           bundle[header][key] = [value]
         elif header == 'STATUS_CODE':
+          # To make parsing easier treat this as part of the next status by
+          # skipping it.
+          if int(value) == STATUS_CODE_TEST_DURATION:
+            continue
           yield int(value), join_bundle_values(bundle['STATUS'])
           bundle['STATUS'] = {}
         elif header == 'CODE':

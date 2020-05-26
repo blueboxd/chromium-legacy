@@ -239,6 +239,7 @@ void ManagePasswordsState::ClearData() {
   form_manager_.reset();
   local_credentials_forms_.clear();
   credentials_callback_.Reset();
+  unsynced_credentials_.clear();
 }
 
 bool ManagePasswordsState::AddForm(const PasswordForm& form) {

@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Sie können die Verknüpfungen personalisieren</translation>
 <translation id="1213037489357051291"><ph name="NUM_FINGERPRINTS" /> Fingerabdrücke eingerichtet</translation>
 <translation id="1213254615020057352">Sie haben die Möglichkeit, Nutzungs- und Diagnosedaten zu senden. Sie können uns helfen, Android für Ihr Kind zu verbessern, indem Sie zulassen, dass Diagnose- und Gerätedaten sowie App-Nutzungsdaten automatisch an Google gesendet werden. Ihr Kind wird mithilfe dieser Daten nicht identifiziert, sie helfen jedoch beispielsweise dabei, die Stabilität des Systems und der Apps zu verbessern. Einige aggregierte Daten sind auch für Apps und Partner von Google, beispielsweise Android-Entwickler, nützlich. Diese Einstellung wird vom Inhaber erzwungen. Der Inhaber kann festlegen, ob Diagnose- und Nutzungsdaten von diesem Gerät an Google gesendet werden. Wenn die Einstellung "Zusätzliche Web- &amp; App-Aktivitäten" für Ihr Kind aktiviert ist, werden diese Daten möglicherweise in seinem Google-Konto gespeichert.</translation>
+<translation id="121384500095351701">Diese Datei kann nicht sicher heruntergeladen werden</translation>
 <translation id="1215411991991485844">Neue Hintergrund-App hinzugefügt</translation>
 <translation id="1216542092748365687">Fingerabdruck entfernen</translation>
 <translation id="1217483152325416304">Ihre lokalen Daten werden bald gelöscht</translation>
@@ -1061,6 +1062,7 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2336228925368920074">Alle Tabs als Lesezeichen speichern...</translation>
 <translation id="2336376423977300504">Cookies immer löschen, wenn Fenster geschlossen werden</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947"><ph name="FILE_NAME" /> kann nicht sicher heruntergeladen werden</translation>
 <translation id="2340263603246777781"><ph name="ORIGIN" /> möchte eine Kopplung durchführen</translation>
 <translation id="2342740338116612727">Lesezeichen hinzugefügt</translation>
 <translation id="2343747224442182863">Diesen Tab fokussieren</translation>
@@ -3250,6 +3252,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5154702632169343078">Betreff</translation>
 <translation id="5157635116769074044">Diese Seite am Startbildschirm anpinnen...</translation>
 <translation id="5158983316805876233">Denselben Proxy für alle Protokolle verwenden</translation>
+<translation id="5159419673777902220">Deine Eltern haben die Berechtigungen für Erweiterungen deaktiviert</translation>
 <translation id="5160857336552977725">Auf Ihrem <ph name="DEVICE_TYPE" /> anmelden</translation>
 <translation id="5166596762332123936"><ph name="PLUGIN_NAME" /> ist veraltet und wurde blockiert</translation>
 <translation id="5170568018924773124">In Ordner zeigen</translation>
@@ -5391,6 +5394,7 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="7925247922861151263">AAA-Prüfung fehlgeschlagen</translation>
 <translation id="7925285046818567682">Warten auf <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Das war nicht ich.</translation>
+<translation id="7926975587469166629">Kartenalias</translation>
 <translation id="7928175190925744466">Haben Sie dieses Passwort schon geändert?</translation>
 <translation id="7928836894214140642">Verwaltet von <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Gespeicherte Zahlungsmethoden werden hier angezeigt</translation>

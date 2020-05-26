@@ -99,7 +99,7 @@ bool OSExchangeData::HasAnyFormat(
     const std::set<ClipboardFormatType>& format_types) const {
   if ((formats & STRING) != 0 && HasString())
     return true;
-  if ((formats & URL) != 0 && HasURL(CONVERT_FILENAMES))
+  if ((formats & URL) != 0 && HasURL(FilenameToURLPolicy::CONVERT_FILENAMES))
     return true;
 #if defined(OS_WIN)
   if ((formats & FILE_CONTENTS) != 0 && provider_->HasFileContents())

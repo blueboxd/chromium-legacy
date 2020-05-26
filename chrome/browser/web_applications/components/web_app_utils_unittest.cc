@@ -30,30 +30,31 @@ TEST_F(WebAppUtilsTest, AreWebAppsEnabled) {
 
   EXPECT_FALSE(AreWebAppsEnabled(nullptr));
   EXPECT_TRUE(AreWebAppsEnabled(regular_profile));
-  EXPECT_TRUE(AreWebAppsEnabled(regular_profile->GetOffTheRecordProfile()));
+  EXPECT_TRUE(AreWebAppsEnabled(regular_profile->GetPrimaryOTRProfile()));
+  EXPECT_TRUE(AreWebAppsEnabled(regular_profile->GetOffTheRecordProfile(
+      Profile::OTRProfileID("Test::WebAppUtils"))));
 
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager.SetUp());
 
   Profile* guest_profile = profile_manager.CreateGuestProfile();
   EXPECT_TRUE(AreWebAppsEnabled(guest_profile));
-  EXPECT_TRUE(AreWebAppsEnabled(guest_profile->GetOffTheRecordProfile()));
+  EXPECT_TRUE(AreWebAppsEnabled(guest_profile->GetPrimaryOTRProfile()));
 
   Profile* system_profile = profile_manager.CreateSystemProfile();
   EXPECT_FALSE(AreWebAppsEnabled(system_profile));
-  EXPECT_FALSE(AreWebAppsEnabled(system_profile->GetOffTheRecordProfile()));
+  EXPECT_FALSE(AreWebAppsEnabled(system_profile->GetPrimaryOTRProfile()));
 
 #if defined(OS_CHROMEOS)
   Profile* signin_profile =
       profile_manager.CreateTestingProfile(chrome::kInitialProfile);
   EXPECT_FALSE(AreWebAppsEnabled(signin_profile));
-  EXPECT_FALSE(AreWebAppsEnabled(signin_profile->GetOffTheRecordProfile()));
+  EXPECT_FALSE(AreWebAppsEnabled(signin_profile->GetPrimaryOTRProfile()));
 
   Profile* lock_screen_profile = profile_manager.CreateTestingProfile(
       chromeos::ProfileHelper::GetLockScreenAppProfileName());
   EXPECT_FALSE(AreWebAppsEnabled(lock_screen_profile));
-  EXPECT_FALSE(
-      AreWebAppsEnabled(lock_screen_profile->GetOffTheRecordProfile()));
+  EXPECT_FALSE(AreWebAppsEnabled(lock_screen_profile->GetPrimaryOTRProfile()));
 
   using MockUserManager = testing::NiceMock<chromeos::MockUserManager>;
   {
@@ -84,7 +85,10 @@ TEST_F(WebAppUtilsTest, AreWebAppsUserInstallable) {
   EXPECT_FALSE(AreWebAppsEnabled(nullptr));
   EXPECT_TRUE(AreWebAppsUserInstallable(regular_profile));
   EXPECT_FALSE(
-      AreWebAppsUserInstallable(regular_profile->GetOffTheRecordProfile()));
+      AreWebAppsUserInstallable(regular_profile->GetPrimaryOTRProfile()));
+  EXPECT_FALSE(
+      AreWebAppsUserInstallable(regular_profile->GetOffTheRecordProfile(
+          Profile::OTRProfileID("Test::WebAppUtils"))));
 
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager.SetUp());
@@ -92,25 +96,25 @@ TEST_F(WebAppUtilsTest, AreWebAppsUserInstallable) {
   Profile* guest_profile = profile_manager.CreateGuestProfile();
   EXPECT_FALSE(AreWebAppsUserInstallable(guest_profile));
   EXPECT_FALSE(
-      AreWebAppsUserInstallable(guest_profile->GetOffTheRecordProfile()));
+      AreWebAppsUserInstallable(guest_profile->GetPrimaryOTRProfile()));
 
   Profile* system_profile = profile_manager.CreateSystemProfile();
   EXPECT_FALSE(AreWebAppsUserInstallable(system_profile));
   EXPECT_FALSE(
-      AreWebAppsUserInstallable(system_profile->GetOffTheRecordProfile()));
+      AreWebAppsUserInstallable(system_profile->GetPrimaryOTRProfile()));
 
 #if defined(OS_CHROMEOS)
   Profile* signin_profile =
       profile_manager.CreateTestingProfile(chrome::kInitialProfile);
   EXPECT_FALSE(AreWebAppsUserInstallable(signin_profile));
   EXPECT_FALSE(
-      AreWebAppsUserInstallable(signin_profile->GetOffTheRecordProfile()));
+      AreWebAppsUserInstallable(signin_profile->GetPrimaryOTRProfile()));
 
   Profile* lock_screen_profile = profile_manager.CreateTestingProfile(
       chromeos::ProfileHelper::GetLockScreenAppProfileName());
   EXPECT_FALSE(AreWebAppsUserInstallable(lock_screen_profile));
   EXPECT_FALSE(
-      AreWebAppsUserInstallable(lock_screen_profile->GetOffTheRecordProfile()));
+      AreWebAppsUserInstallable(lock_screen_profile->GetPrimaryOTRProfile()));
 #endif
 }
 
@@ -119,20 +123,23 @@ TEST_F(WebAppUtilsTest, GetBrowserContextForWebApps) {
 
   EXPECT_EQ(regular_profile, GetBrowserContextForWebApps(regular_profile));
   EXPECT_EQ(regular_profile, GetBrowserContextForWebApps(
-                                 regular_profile->GetOffTheRecordProfile()));
+                                 regular_profile->GetPrimaryOTRProfile()));
+  EXPECT_EQ(regular_profile,
+            GetBrowserContextForWebApps(regular_profile->GetOffTheRecordProfile(
+                Profile::OTRProfileID("Test::WebAppUtils"))));
 
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager.SetUp());
 
   Profile* guest_profile = profile_manager.CreateGuestProfile();
   EXPECT_EQ(guest_profile, GetBrowserContextForWebApps(guest_profile));
-  EXPECT_EQ(guest_profile, GetBrowserContextForWebApps(
-                               guest_profile->GetOffTheRecordProfile()));
+  EXPECT_EQ(guest_profile,
+            GetBrowserContextForWebApps(guest_profile->GetPrimaryOTRProfile()));
 
   Profile* system_profile = profile_manager.CreateSystemProfile();
   EXPECT_EQ(nullptr, GetBrowserContextForWebApps(system_profile));
   EXPECT_EQ(nullptr, GetBrowserContextForWebApps(
-                         system_profile->GetOffTheRecordProfile()));
+                         system_profile->GetPrimaryOTRProfile()));
 }
 
 TEST_F(WebAppUtilsTest, GetBrowserContextForWebAppMetrics) {
@@ -141,7 +148,11 @@ TEST_F(WebAppUtilsTest, GetBrowserContextForWebAppMetrics) {
   EXPECT_EQ(regular_profile,
             GetBrowserContextForWebAppMetrics(regular_profile));
   EXPECT_EQ(regular_profile, GetBrowserContextForWebAppMetrics(
-                                 regular_profile->GetOffTheRecordProfile()));
+                                 regular_profile->GetPrimaryOTRProfile()));
+  EXPECT_EQ(
+      regular_profile,
+      GetBrowserContextForWebAppMetrics(regular_profile->GetOffTheRecordProfile(
+          Profile::OTRProfileID("Test::WebAppUtils"))));
 
   TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
   ASSERT_TRUE(profile_manager.SetUp());
@@ -149,12 +160,12 @@ TEST_F(WebAppUtilsTest, GetBrowserContextForWebAppMetrics) {
   Profile* guest_profile = profile_manager.CreateGuestProfile();
   EXPECT_EQ(nullptr, GetBrowserContextForWebAppMetrics(guest_profile));
   EXPECT_EQ(nullptr, GetBrowserContextForWebAppMetrics(
-                         guest_profile->GetOffTheRecordProfile()));
+                         guest_profile->GetPrimaryOTRProfile()));
 
   Profile* system_profile = profile_manager.CreateSystemProfile();
   EXPECT_EQ(nullptr, GetBrowserContextForWebAppMetrics(system_profile));
   EXPECT_EQ(nullptr, GetBrowserContextForWebAppMetrics(
-                         system_profile->GetOffTheRecordProfile()));
+                         system_profile->GetPrimaryOTRProfile()));
 }
 
 }  // namespace web_app

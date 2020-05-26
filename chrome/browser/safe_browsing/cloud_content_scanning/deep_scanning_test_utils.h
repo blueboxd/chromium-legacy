@@ -126,8 +126,11 @@ void AddUrlsToCheckForMalwareOfUploadsForConnectors(
     const std::vector<std::string>& urls);
 void AddUrlsToNotCheckForMalwareOfDownloadsForConnectors(
     const std::vector<std::string>& urls);
-void ClearUrlsToCheckComplianceOfDownloadsForConnectors();
+void AddUrlToListForConnectors(const char* pref_name, const std::string& url);
+void ClearUrlsToCheckComplianceOfUploadsForConnectors();
 void ClearUrlsToCheckForMalwareOfUploadsForConnectors();
+void ClearUrlsToCheckComplianceOfDownloadsForConnectors();
+void ClearUrlsToCheckForMalwareOfDownloadsForConnectors();
 
 }  // namespace safe_browsing
 

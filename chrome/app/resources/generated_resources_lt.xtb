@@ -169,6 +169,7 @@
 <translation id="1211769675100312947">Sparčiuosius klavišus kuruojate jūs</translation>
 <translation id="1213037489357051291">Nustatyta kontrolinių kodų: <ph name="NUM_FINGERPRINTS" /></translation>
 <translation id="1213254615020057352">Siųskite naudojimo ir diagnostikos duomenis. Padėkite tobulinti vaiko „Android“ funkcijas automatiškai siųsdami „Google“ diagnostikos, įrenginio ir programų naudojimo duomenis. Tai nebus naudojama siekiant nustatyti jūsų vaiko tapatybę ir padės pagerinti sistemos bei programos stabilumą ir teikti kitus patobulinimus. Kai kurie sukaupti duomenys taip pat bus naudingi „Google“ programoms ir partneriams, pvz., „Android“ kūrėjams. Šį nustatymą taiko savininkas. Savininkas gali pasirinkti siųsti šio įrenginio diagnostikos ir naudojimo duomenis „Google“. Jei papildomas Žiniatinklio ir programų veiklos nustatymas įjungtas vaiko įrenginyje, šie duomenys gali būti išsaugoti vaiko „Google“ paskyroje.</translation>
+<translation id="121384500095351701">Negalima saugiai atsisiųsti šio failo</translation>
 <translation id="1215411991991485844">Pridėta nauja foninė programa</translation>
 <translation id="1216542092748365687">Kontrolinio kodo pašalinimas</translation>
 <translation id="1217483152325416304">Jūsų vietiniai duomenys netrukus bus ištrinti</translation>
@@ -1064,6 +1065,7 @@ Jei nenorite, dabar atsijunkite, kad šios paskyros pakeitimai būtų matomi ši
 <translation id="2336228925368920074">Žymėti visus skirtukus...</translation>
 <translation id="2336376423977300504">Visada išvalyti slapukus uždarius langus</translation>
 <translation id="2336381494582898602">Powerwash</translation>
+<translation id="2340239562261172947">Negalima saugiai atsisiųsti failo „<ph name="FILE_NAME" />“</translation>
 <translation id="2340263603246777781">Svetainė <ph name="ORIGIN" /> nori būti susieta su</translation>
 <translation id="2342740338116612727">Žymės pridėtos</translation>
 <translation id="2343747224442182863">Šio skirtuko paryškinimas</translation>
@@ -3254,6 +3256,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="5154702632169343078">Tema</translation>
 <translation id="5157635116769074044">Prisegti šį puslapį pradžios ekrane...</translation>
 <translation id="5158983316805876233">Naudoti tą patį visų protokolų tarpinį serverį</translation>
+<translation id="5159419673777902220">Vienas iš tėvų išjungė plėtinio leidimus</translation>
 <translation id="5160857336552977725">Prisijunkite prie „<ph name="DEVICE_TYPE" />“</translation>
 <translation id="5166596762332123936">Papildinys „<ph name="PLUGIN_NAME" />“ užblokuotas, nes yra pasenęs</translation>
 <translation id="5170568018924773124">Rodyti aplanke</translation>
@@ -5396,6 +5399,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7925247922861151263">AAA patikra nepavyko</translation>
 <translation id="7925285046818567682">Laukiama <ph name="HOST_NAME" />...</translation>
 <translation id="7926423016278357561">Tai buvau ne aš.</translation>
+<translation id="7926975587469166629">Kortelės slapyvardis</translation>
 <translation id="7928175190925744466">Jau pakeitėte šį slaptažodį?</translation>
 <translation id="7928836894214140642">Tvarko <ph name="ENROLLMENT_DOMAIN" /></translation>
 <translation id="7930294771522048157">Čia bus rodomi išsaugoti mokėjimo metodai</translation>

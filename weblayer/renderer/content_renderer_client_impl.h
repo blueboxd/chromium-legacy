@@ -41,6 +41,7 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
   void AddSupportedKeySystems(
       std::vector<std::unique_ptr<::media::KeySystemProperties>>* key_systems)
       override;
+  void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
 
  private:
 #if defined(OS_ANDROID)

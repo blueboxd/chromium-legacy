@@ -18,7 +18,7 @@ namespace {
 
 // Returns the BubbleDialogDelegateView corresponding to |maybe_bubble| if
 // |maybe_bubble| is a bubble.
-views::BubbleDialogDelegateView* AsBubbleDialogDelegate(
+views::BubbleDialogDelegate* AsBubbleDialogDelegate(
     aura::Window* maybe_bubble) {
   if (!maybe_bubble)
     return nullptr;
@@ -29,7 +29,7 @@ views::BubbleDialogDelegateView* AsBubbleDialogDelegate(
 }
 
 views::View* GetAnchorView(aura::Window* maybe_bubble) {
-  views::BubbleDialogDelegateView* bubble_dialog =
+  views::BubbleDialogDelegate* bubble_dialog =
       AsBubbleDialogDelegate(maybe_bubble);
   return bubble_dialog ? bubble_dialog->GetAnchorView() : nullptr;
 }

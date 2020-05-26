@@ -177,7 +177,6 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/switches.h"
 #include "media/media_buildflags.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "net/dns/mock_host_resolver.h"
@@ -187,7 +186,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -1535,8 +1533,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
                        DISABLED_WaitForInitialUserActivityUnsatisfied) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
-  registrar.Add(&observer,
-                chrome::NOTIFICATION_APP_TERMINATING,
+  registrar.Add(&observer, chrome::NOTIFICATION_APP_TERMINATING,
                 content::NotificationService::AllSources());
 
   // Require initial user activity.
@@ -1559,24 +1556,20 @@ IN_PROC_BROWSER_TEST_F(PolicyTest,
   Mock::VerifyAndClearExpectations(&observer);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       PRE_WaitForInitialUserActivitySatisfied) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, PRE_WaitForInitialUserActivitySatisfied) {
   // Indicate that initial user activity in this session occurred 2 hours ago.
   g_browser_process->local_state()->SetInt64(
       prefs::kSessionStartTime,
       (base::TimeTicks::Now() - base::TimeDelta::FromHours(2))
           .ToInternalValue());
-  g_browser_process->local_state()->SetBoolean(
-      prefs::kSessionUserActivitySeen,
-      true);
+  g_browser_process->local_state()->SetBoolean(prefs::kSessionUserActivitySeen,
+                                               true);
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest,
-                       WaitForInitialUserActivitySatisfied) {
+IN_PROC_BROWSER_TEST_F(PolicyTest, WaitForInitialUserActivitySatisfied) {
   content::MockNotificationObserver observer;
   content::NotificationRegistrar registrar;
-  registrar.Add(&observer,
-                chrome::NOTIFICATION_APP_TERMINATING,
+  registrar.Add(&observer, chrome::NOTIFICATION_APP_TERMINATING,
                 content::NotificationService::AllSources());
 
   // Require initial user activity and set the session length limit to 3 hours.
@@ -2537,38 +2530,6 @@ INSTANTIATE_TEST_SUITE_P(All,
                                            BooleanPolicy::kFalse,
                                            BooleanPolicy::kTrue));
 #endif  // !defined(OS_ANDROID)
-
-class HSTSPolicyTest : public PolicyTest {
-  void SetUpInProcessBrowserTestFixture() override {
-    PolicyTest::SetUpInProcessBrowserTestFixture();
-    PolicyMap policies;
-    std::vector<base::Value> bypass_list;
-    bypass_list.push_back(base::Value("example"));
-    SetPolicy(&policies, key::kHSTSPolicyBypassList,
-              std::make_unique<base::ListValue>(bypass_list));
-    provider_.UpdateChromePolicy(policies);
-  }
-};
-
-IN_PROC_BROWSER_TEST_F(HSTSPolicyTest, HSTSPolicyBypassList) {
-  mojo::Remote<network::mojom::NetworkServiceTest> network_service_test;
-  content::GetNetworkService()->BindTestInterface(
-      network_service_test.BindNewPipeAndPassReceiver());
-  mojo::ScopedAllowSyncCallForTesting allow_sync_call;
-  // The port number 1234 here doesn't matter - it just needs to be a non-zero
-  // value so that we use the unittest_default preload list.
-  network_service_test->SetTransportSecurityStateSource(1234);
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url("http://example/");
-  ui_test_utils::NavigateToURL(browser(), url);
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  // If the policy didn't take effect, the request to http://example would be
-  // upgraded to https://example. This checks that the HSTS upgrade to https
-  // didn't happen.
-  EXPECT_EQ(url, contents->GetURL());
-}
 
 class PolicyTestSyncXHR : public PolicyTest {
   void SetUpInProcessBrowserTestFixture() override {

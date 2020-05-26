@@ -559,12 +559,6 @@ void WebSocketChannelImpl::OnDataFrame(
   ConsumePendingDataFrames();
 }
 
-void WebSocketChannelImpl::AddSendFlowControlQuota(int64_t quota) {
-  // TODO(suzukikeita): This method will be removed once we are ready to remove
-  // the quota system completely.
-  NOTREACHED();
-}
-
 void WebSocketChannelImpl::OnDropChannel(bool was_clean,
                                          uint16_t code,
                                          const String& reason) {
@@ -647,19 +641,6 @@ WebSocketChannelImpl::State WebSocketChannelImpl::GetState() const {
     return State::kConnecting;
   }
   return State::kDisconnected;
-}
-
-void WebSocketChannelImpl::SendAndAdjustQuota(
-    bool fin,
-    network::mojom::blink::WebSocketMessageType type,
-    base::span<const char> data,
-    uint64_t* consumed_buffered_amount) {
-  base::span<const uint8_t> data_to_pass(
-      reinterpret_cast<const uint8_t*>(data.data()), data.size());
-  websocket_->SendFrame(fin, type, data_to_pass);
-
-  sending_quota_ -= data.size();
-  *consumed_buffered_amount += data.size();
 }
 
 bool WebSocketChannelImpl::MaybeSendSynchronously(

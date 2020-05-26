@@ -154,7 +154,7 @@
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
       verilen minimum sıklık ise 60 saniyedir.</translation>
 <translation id="1204263402976895730">Etkinleştirilmiş kurumsal yazıcılar</translation>
-<translation id="120937472976628837">Pervane bilgilerini raporlar</translation>
+<translation id="120937472976628837">Pervane bilgilerini raporla</translation>
 <translation id="1216919699175573511">İmzalı HTTP Değişimi (SXG) desteğini etkinleştir</translation>
 <translation id="1219695476179627719">Bu cihazın sonraki bir sürümü çalıştırıyor olması halinde, <ph name="DEVICE_TARGET_VERSION_PREFIX_POLICY_NAME" /> tarafından ayarlanan sürüme geri döndürülüp döndürülmeyeceğini belirler.
 
@@ -1213,7 +1213,7 @@ Bu politika ayarlanmazsa <ph name="PRODUCT_NAME" /> varsayılan 10.000 milisaniy
 
       Güvenli Tarama ile ilgili daha fazla bilgi edinmek için https://developers.google.com/safe-browsing sayfasına bakın.</translation>
 <translation id="2696077732471707315">
-      Bu politika M77'den kaldırıldı.
+      Bu politika M77'de kaldırıldı.
       Bu politika, oturum açma ekranı için geçerlidir. Lütfen kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerlerin eşleşmemesi durumunda, kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme yaşanabilir.
       </translation>
 <translation id="2706708761587205154">Yalnızca PIN ile yazdırmaya izin ver</translation>
@@ -2398,7 +2398,7 @@ politikayı geçersiz kılamaz.
       Bu ayarı etkinleştirir veya devre dışı bırakırsanız, kullanıcılar <ph name="PRODUCT_NAME" /> uygulamasında bu ayarı değiştiremez veya geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, bu özellik etkinleştirilir ancak kullanıcı tarafından da değiştirilebilir.</translation>
-<translation id="4529868888205510667">ARC diğer yollarla kapatılmadığı sürece, politika True (Doğru) değerine ayarlıdır. Politikanın ayarlanmadan bırakılması, kullanıcıların ARC'yi kullanmasına izin verir. Politikanın False (Yanlış) değerine ayarlanması, bağlı olmayan kullanıcıların ARC'yi kullanamayacağı anlamına gelir.
+<translation id="4529868888205510667">ARC diğer yollarla kapatılmadığı sürece, politikanın True (Doğru) değerine ayarlanması veya ayarlanmadan bırakılması, kullanıcıların ARC'yi kullanmasına izin verir. Politikanın False (Yanlış) değerine ayarlanması, bağlı olmayan kullanıcıların ARC'yi kullanamayacağı anlamına gelir.
 
       Politikada yapılacak değişiklikler yalnızca ARC çalışmıyorken (ör. Chrome OS başlatılırken) uygulanır.</translation>
 <translation id="453031441196755904">Bu politika kullanımdan kaldırılmıştır.</translation>
@@ -2888,7 +2888,6 @@ politikayı geçersiz kılamaz.
 <translation id="5307432759655324440">Gizli modun kullanılabilirliği</translation>
 <translation id="5311275381462687162">Varsayılan eski <ph name="ATTRIBUTE_SAMESITE_NAME" /> çerez davranışı ayarı</translation>
 <translation id="5318185076587284965">Uzaktan erişen ana makine tarafından geçiş sunucuları kullanılmasını etkinleştir</translation>
-<translation id="5321755462836179869">Yerel bildirimlere izin verir</translation>
 <translation id="5323128137188992869"><ph name="PRODUCT_NAME" /> kullanarak içeriğin cihaza yayınlanmasına izin verin.
 
           Bu politika False (Yanlış) değerine ayarlanırsa kullanıcılar içeriği cihazlarına yayınlayamaz. Bu politika True (Doğru) değerine ayarlanırsa kullanıcıların içerik yayınlamasına izin verilir. Bu politika ayarlanmazsa kullanıcıların kayıtlı Chrome OS cihazlarına içerik yayınlamasına izin verilmez, ancak kayıtlı olmayan cihazlara içerik yayınlamasına izin verilir.</translation>
@@ -3981,7 +3980,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 
       Bu politika, yalnızca Linux uygulama desteği etkin olduğunda geçerlidir.</translation>
 <translation id="6946652757373377924">
-      Bu politika M77'den kaldırıldı.
+      Bu politika M77'de kaldırıldı.
       Bu politika, oturum açma ekranı için geçerlidir. Lütfen kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın.
       Bu politika etkinleştirilirse virgülle ayrılmış listede adı belirtilen her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; ör. https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ adresinin de izole edilmesine neden olur.
       Bu politika yapılandırılmaz veya devre dışı bırakılırsa oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
@@ -4282,7 +4281,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="7311458740754205918">Bunun için doğru (true) değeri ayarlanır veya herhangi bir değer belirtilmezse Yeni Sekme sayfasında kullanıcının tarama geçmişi, ilgi alanları veya konumuna dayalı içerik önerileri gösterilebilir.
 
 Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otomatik oluşturulan içerik önerileri gösterilmez.</translation>
-<translation id="731208205557053914">VPD bilgilerini raporlar</translation>
+<translation id="731208205557053914">VPD bilgilerini raporla</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME" /> için ek komut satırı parametreleri</translation>
 <translation id="7326394567531622570">Wipe (2 değeri) seçeneğine benzer, ancak kullanıcının tekrar oturum açmak zorunda kalmaması için giriş jetonlarını saklar.</translation>
 <translation id="7329968046053403405"><ph name="HTTP_NEGOTIATE" /> kimlik doğrulamasını (örneğin, Kerberos kimlik doğrulaması) destekleyen Android kimlik doğrulama uygulamasının sağladığı hesapların türünü belirtir. Bu bilgiler Kimlik Doğrulama uygulamasının tedarikçisinden edinilebilir. Daha fazla bilgi için https://goo.gl/hajyfN adresine bakın.
@@ -5526,7 +5525,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 
       Politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa AppCache, Chrome'un varsayılan ayarlarını izler.</translation>
 <translation id="930930237275114205"><ph name="PRODUCT_FRAME_NAME" /> kullanıcı verileri dizinini ayarla</translation>
-<translation id="935779984563655842">Bluetooth bilgilerini raporlar</translation>
+<translation id="935779984563655842">Bluetooth bilgilerini raporla</translation>
 <translation id="940706688964479124">İndirildiğinde otomatik olarak açılması gereken dosya türleri listesi</translation>
 <translation id="943865157632139008"><ph name="PRODUCT_FRAME_NAME" /> yüklendiğinde varsayılan HTML oluşturucusunu yapılandırmanıza olanak verir. Varsayılan ayar, oluşturmayı ana makinenin tarayıcısının yapmasına izin vermektir, ancak isteğe bağlı olarak bunu geçersiz kılabilir ve HTML sayfalarının varsayılan olarak <ph name="PRODUCT_FRAME_NAME" /> tarafından oluşturulmasını sağlayabilirsiniz.</translation>
 <translation id="944817693306670849">Disk önbellek boyutunu ayarla</translation>
@@ -5539,7 +5538,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="981346395360763138">Google konum hizmetleri devre dışı</translation>
 <translation id="982497069985795632">Yazım denetimini etkinleştir</translation>
 <translation id="991560005425213776">Kullanıcı adını ve dosya adını yerel yazıcılara gönderme</translation>
-<translation id="99202634486128833">Politikanın CopyCaCerts seçeneğine ayarlanması, ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikaları ARC uygulamaları için kullanılabilir hale getirir.
+<translation id="99202634486128833">Politikanın CopyCaCerts seçeneğine ayarlanması, ONC tarafından yüklenen ve <ph name="WEB_TRUSTED_BIT" /> içeren tüm CA sertifikalarını ARC uygulamaları için kullanılabilir hale getirir.
 
        Politikanın None (Yok) değerine ayarlanması veya ayarlanmadan bırakılması, <ph name="PRODUCT_OS_NAME" /> sertifikalarını ARC uygulamaları için kullanılamaz hale getirir.</translation>
 <translation id="99232017131102456">Bu politika, HTTP sunucusu kimlik doğrulama bilgileri ile tek bir genel profil başına önbellek yapılandırır.

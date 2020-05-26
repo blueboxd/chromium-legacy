@@ -617,7 +617,7 @@ bool FocusManager::RedirectAcceleratorToBubbleAnchorWidget(
 }
 
 Widget* FocusManager::GetBubbleAnchorWidget() {
-  BubbleDialogDelegateView* widget_delegate =
+  BubbleDialogDelegate* widget_delegate =
       widget_->widget_delegate()->AsBubbleDialogDelegate();
   return widget_delegate ? widget_delegate->anchor_widget() : nullptr;
 }

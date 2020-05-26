@@ -171,9 +171,8 @@ public class TabSwitcherCoordinator
         if (TabUiFeatureUtilities.isTabGroupsAndroidEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
                     tabContentManager, tabCreatorManager,
-                    ((ChromeTabbedActivity) context).getCompositorViewHolder(), this, mMediator,
-                    this::getTabGridDialogAnimationSourceView, shareDelegateSupplier);
-
+                    ((ChromeTabbedActivity) context).findViewById(R.id.coordinator), this,
+                    mMediator, this::getTabGridDialogAnimationSourceView, shareDelegateSupplier);
             mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
         } else {
             mTabGridDialogCoordinator = null;
@@ -381,7 +380,7 @@ public class TabSwitcherCoordinator
     @Override
     @VisibleForTesting
     public void setSourceRectCallbackForTesting(Callback<RectF> callback) {
-        TabGridDialogParent.setSourceRectCallbackForTesting(callback);
+        TabGridDialogView.setSourceRectCallbackForTesting(callback);
     }
 
     // ResetHandler implementation.

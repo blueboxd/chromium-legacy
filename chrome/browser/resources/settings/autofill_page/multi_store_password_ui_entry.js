@@ -124,8 +124,3 @@ export class MultiStorePasswordUiEntry {
  * }}
  */
 MultiStorePasswordUiEntry.Contents;
-
-/**
- * @typedef {{ entry: !MultiStorePasswordUiEntry, password: string }}
- */
-export let MultiStorePasswordUiEntryWithPassword;

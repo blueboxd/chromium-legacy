@@ -176,29 +176,6 @@ Polymer({
     settings.recordSearch();
   },
 
-  /**
-   * Causes ChromeVox to announce number of search results.
-   * @private
-   */
-  makeA11ySearchResultAnnouncement_() {
-    let a11yAlertText;
-    switch (this.searchResults_.length) {
-      case 0:
-        a11yAlertText = this.i18n('searchNoResults');
-        break;
-      case 1:
-        a11yAlertText = this.i18n('searchResultsOne', this.getCurrentQuery_());
-        break;
-      default:
-        a11yAlertText = this.i18n(
-            'searchResultsNumber', this.searchResults_.length,
-            this.getCurrentQuery_());
-        break;
-    }
-
-    this.fire('iron-announce', {text: a11yAlertText});
-  },
-
   /** @private */
   onNavigatedToResultRowRoute_() {
     // Settings has navigated to another page; close search results dropdown.
@@ -273,9 +250,8 @@ Polymer({
       return;
     }
 
-    this.makeA11ySearchResultAnnouncement_();
-
     if (!this.searchResultsExist_) {
+      this.fire('iron-announce', {text: this.i18n('searchNoResults')});
       return;
     }
 

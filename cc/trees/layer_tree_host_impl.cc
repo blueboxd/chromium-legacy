@@ -5280,6 +5280,9 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
   scroll_info->overscroll_delta = overscroll_delta_for_main_thread_;
   overscroll_delta_for_main_thread_ = gfx::Vector2dF();
 
+  scroll_info->ongoing_scroll_animation =
+      !!mutator_host_->ImplOnlyScrollAnimatingElement();
+
   // Use the |last_latched_scroller_| rather than the |CurrentlyScrollingNode|
   // since the latter may be cleared by a GSE before we've committed these
   // values to the main thread.

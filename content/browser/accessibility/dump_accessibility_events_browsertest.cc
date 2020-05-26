@@ -774,8 +774,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("tabindex-removed-on-plain-div.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       AccessibilityEventsTabindexRemovedOnAriaHidden) {
+IN_PROC_BROWSER_TEST_P(
+    DumpAccessibilityEventsTest,
+    DISABLED_AccessibilityEventsTabindexRemovedOnAriaHidden) {
   RunEventTest(FILE_PATH_LITERAL("tabindex-removed-on-aria-hidden.html"));
 }
 

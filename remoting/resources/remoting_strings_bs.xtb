@@ -16,7 +16,7 @@
 <translation id="2009755455353575666">Veza nije uspjela</translation>
 <translation id="2038229918502634450">Host računar se ponovo pokreće zbog izmjene pravila.</translation>
 <translation id="2078880767960296260">Obrada host računara</translation>
-<translation id="20876857123010370">Način rada dodirne podloge</translation>
+<translation id="20876857123010370">Način rada dodirne table</translation>
 <translation id="2198363917176605566">Da koristite <ph name="PRODUCT_NAME" />, morate dati odobrenje za "Snimanje ekrana" kako bi se sadržaj ekrana na ovom Mac računaru mogao slati na udaljeni računar.
 
 Za davanje odobrenja, kliknite '<ph name="BUTTON_NAME" />' ispod da otvorite okno s postavkama za "Snimanje ekrana" i zatim označite polje pored skripte "<ph name="SERVICE_SCRIPT_NAME" />".
@@ -102,7 +102,7 @@ Ako je skripta "<ph name="SERVICE_SCRIPT_NAME" />" već označena, uklonite ozna
 <translation id="5708869785009007625">Trenutno dijelite svoju radnu površinu s korisnikom <ph name="USER" />.</translation>
 <translation id="5750083143895808682">Prijavljeni ste s računom <ph name="EMAIL_ADDRESS" />.</translation>
 <translation id="579702532610384533">Poveži ponovo</translation>
-<translation id="5810269635982033450">Ekran služi kao dodirna podloga</translation>
+<translation id="5810269635982033450">Ekran služi kao dodirna tabla</translation>
 <translation id="5823658491130719298">Na računaru kojem želite daljinski pristupiti, otvorite Chrome i posjetite <ph name="INSTALLATION_LINK" /></translation>
 <translation id="5841343754884244200">Opcije prikaza</translation>
 <translation id="6033507038939587647">Opcije tastature</translation>

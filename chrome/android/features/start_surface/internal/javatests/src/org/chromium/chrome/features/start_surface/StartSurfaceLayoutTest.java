@@ -12,6 +12,7 @@ import static android.support.test.espresso.assertion.ViewAssertions.doesNotExis
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.contrib.RecyclerViewActions.actionOnItemAtPosition;
 import static android.support.test.espresso.matcher.ViewMatchers.Visibility.GONE;
+import static android.support.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withEffectiveVisibility;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
@@ -1364,7 +1365,8 @@ public class StartSurfaceLayoutTest {
         prepareTabs(1, 0, null);
         enterGTSWithThumbnailChecking();
 
-        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.content_view))))
+        onView(allOf(withId(R.id.action_button), withParent(withId(R.id.content_view)),
+                       withEffectiveVisibility(VISIBLE)))
                 .perform(click());
     }
 

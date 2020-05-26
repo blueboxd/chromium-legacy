@@ -2275,7 +2275,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3830654885961023588">{NUM_EXTENSIONS,plural, =1{Yöneticiniz zararlı olabilecek 1 uzantıyı tekrar açtı}other{Yöneticiniz zararlı olabilecek {NUM_EXTENSIONS} uzantıyı tekrar açtı}}</translation>
 <translation id="3831436149286513437">Google Drive arama önerileri</translation>
 <translation id="383161972796689579">Bu cihazın sahibi yeni kullanıcıların eklenmesini devre dışı bıraktı</translation>
-<translation id="3834728400518755610">Mikrofon ayarlarında yapılan değişiklik, Linux'un kapatılmasını gerektirir. Devam etmek için Linux'un kapatın.</translation>
+<translation id="3834728400518755610">Mikrofon ayarlarında yapılan değişiklik, Linux'un kapatılmasını gerektirir. Devam etmek için Linux'u kapatın.</translation>
 <translation id="3834775135533257713">"<ph name="TO_INSTALL_APP_NAME" />" uygulaması, zaten yüklenmiş olan "<ph name="INSTALLED_APP_NAME" />" uygulamasıyla çakıştığından eklenemedi.</translation>
 <translation id="3835522725882634757">Hata! Bu sunucu, verileri <ph name="PRODUCT_NAME" /> tarafından anlaşılamayacak şekilde gönderiyor. Lütfen <ph name="BEGIN_LINK" />bir hata bildiriminde bulunun<ph name="END_LINK" /> ve <ph name="BEGIN2_LINK" />işlenmemiş girişi<ph name="END2_LINK" /> bildirime ekleyin.</translation>
 <translation id="383669374481694771">Buradaki bilgiler (ör. pil seviyesi, sistem ve uygulama etkinliği, hatalar), bu cihazla ve cihazın nasıl kullanıldığıyla ilgili genel bilgilerdir. Bu veriler Android'i iyileştirmek için kullanılır. Toplu hale getirilen bazı bilgiler, Google uygulamalarının ve Android geliştiricileri gibi iş ortaklarına ait uygulama ve ürünlerin iyileştirilmesine de yardımcı olur.</translation>

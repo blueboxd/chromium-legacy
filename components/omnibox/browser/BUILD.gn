@@ -536,4 +536,5 @@ fuzzer_test("search_suggestion_parser_fuzzer") {
     "//third_party/icu:icui18n",
     "//third_party/metrics_proto:metrics_proto",
   ]
+  seed_corpus = "fuzz_corpus_suggest"
 }

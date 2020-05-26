@@ -1102,11 +1102,11 @@ TEST_P(SurfaceTest, UpdatesOcclusionOnDestroyingSubsurface) {
   auto sub_surface =
       std::make_unique<SubSurface>(child_surface.get(), surface.get());
   child_surface->Attach(child_buffer.get());
+  // Turn on occlusion tracking.
+  child_surface->SetOcclusionTracking(true);
   child_surface->Commit();
   surface->Commit();
 
-  // Turn on occlusion tracking.
-  child_surface->SetOcclusionTracking(true);
   SurfaceObserverForTest observer;
   ScopedSurface scoped_child_surface(child_surface.get(), &observer);
 

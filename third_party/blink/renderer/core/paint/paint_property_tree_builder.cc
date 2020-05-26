@@ -2515,7 +2515,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateForObjectLocationAndSize(
     fragment_data_.InvalidateClipPathCache();
 
     if (object_.IsBox()) {
-      // See PaintLayerScrollableArea::PixelSnappedBorderBoxRect() for the
+      // See PaintLayerScrollableArea::PixelSnappedBorderBoxSize() for the
       // reason of this.
       if (auto* scrollable_area = ToLayoutBox(object_).GetScrollableArea())
         scrollable_area->PositionOverflowControls();

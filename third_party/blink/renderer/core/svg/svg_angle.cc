@@ -41,46 +41,28 @@ const SVGEnumerationMap& GetEnumerationMap<SVGMarkerOrientType>() {
   return entries;
 }
 
-SVGMarkerOrientEnumeration::SVGMarkerOrientEnumeration(SVGAngle* angle)
-    : SVGEnumeration<SVGMarkerOrientType>(kSVGMarkerOrientAngle),
-      angle_(angle) {}
+namespace {
 
-SVGMarkerOrientEnumeration::~SVGMarkerOrientEnumeration() = default;
+class SVGMarkerOrientEnumeration final : public SVGEnumeration {
+ public:
+  explicit SVGMarkerOrientEnumeration(SVGAngle* angle)
+      : SVGEnumeration(kSVGMarkerOrientAngle), angle_(angle) {}
 
-void SVGMarkerOrientEnumeration::Trace(Visitor* visitor) const {
-  visitor->Trace(angle_);
-  SVGEnumeration<SVGMarkerOrientType>::Trace(visitor);
-}
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(angle_);
+    SVGEnumeration::Trace(visitor);
+  }
 
-void SVGMarkerOrientEnumeration::NotifyChange() {
-  DCHECK(angle_);
-  angle_->OrientTypeChanged();
-}
+ private:
+  void NotifyChange() override {
+    DCHECK(angle_);
+    angle_->OrientTypeChanged();
+  }
 
-void SVGMarkerOrientEnumeration::Add(SVGPropertyBase*, SVGElement*) {
-  // SVGMarkerOrientEnumeration is only animated via SVGAngle
-  NOTREACHED();
-}
+  Member<SVGAngle> angle_;
+};
 
-void SVGMarkerOrientEnumeration::CalculateAnimatedValue(
-    const SVGAnimateElement&,
-    float percentage,
-    unsigned repeat_count,
-    SVGPropertyBase* from,
-    SVGPropertyBase* to,
-    SVGPropertyBase* to_at_end_of_duration_value,
-    SVGElement* context_element) {
-  // SVGMarkerOrientEnumeration is only animated via SVGAngle
-  NOTREACHED();
-}
-
-float SVGMarkerOrientEnumeration::CalculateDistance(
-    SVGPropertyBase* to,
-    SVGElement* context_element) {
-  // SVGMarkerOrientEnumeration is only animated via SVGAngle
-  NOTREACHED();
-  return -1.0;
-}
+}  // namespace
 
 SVGAngle::SVGAngle()
     : unit_type_(kSvgAngletypeUnspecified),
@@ -105,7 +87,7 @@ void SVGAngle::Trace(Visitor* visitor) const {
 
 SVGAngle* SVGAngle::Clone() const {
   return MakeGarbageCollected<SVGAngle>(unit_type_, value_in_specified_units_,
-                                        orient_type_->EnumValue());
+                                        OrientTypeValue());
 }
 
 float SVGAngle::Value() const {
@@ -378,7 +360,7 @@ void SVGAngle::Assign(const SVGAngle& other) {
     return;
   }
   value_in_specified_units_ = 0;
-  orient_type_->SetEnumValue(other.OrientType()->EnumValue());
+  orient_type_->SetEnumValue(other.OrientTypeValue());
 }
 
 void SVGAngle::CalculateAnimatedValue(
@@ -418,8 +400,12 @@ void SVGAngle::OrientTypeChanged() {
   value_in_specified_units_ = 0;
 }
 
+SVGMarkerOrientType SVGAngle::OrientTypeValue() const {
+  return orient_type_->EnumValue<SVGMarkerOrientType>();
+}
+
 bool SVGAngle::IsNumeric() const {
-  return orient_type_->EnumValue() == kSVGMarkerOrientAngle;
+  return OrientTypeValue() == kSVGMarkerOrientAngle;
 }
 
 }  // namespace blink

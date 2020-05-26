@@ -682,6 +682,11 @@
 
       このポリシーをファイルパスに設定した場合、そのファイルは実行可能なファイルとして使用されます。</translation>
 <translation id="2113068765175018713">自動再起動を行ってデバイスの稼働時間を制限する</translation>
+<translation id="2124881675920287921">このポリシーは、M82 でサポートが終了し、M85 で削除されました。代わりに <ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> を使用してください。<ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> を無効にした場合は、<ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> を無効にした場合と同じになります。<ph name="SAFE_BROWSING_EXTENDED_REPORTING_OPT_IN_ALLOWED_POLICY_NAME" /> を有効にした場合や未設定のままにした場合は、<ph name="SAFE_BROWSING_EXTENDED_REPORTING_ENABLED_POLICY_NAME" /> が未設定の場合と同じになります。
+
+      このポリシーを false に設定した場合、ユーザーは Google サーバーに一部のシステム情報やページのコンテンツを送信するよう指定できなくなります。このポリシーを true に設定するか未設定のままにした場合、ユーザーは危険なアプリやサイトの検出に役立てるため、一部のシステム情報やページのコンテンツをセーフ ブラウジングに送信できます。
+
+      セーフ ブラウジングについて詳しくは、https://developers.google.com/safe-browsing をご覧ください。</translation>
 <translation id="2127599828444728326">これらのサイトの通知を許可する</translation>
 <translation id="2131902621292742709">画面が暗くなるまでの時間（バッテリー電源での実行時）</translation>
 <translation id="2134437727173969994">画面のロックを許可</translation>
@@ -2834,7 +2839,6 @@ False に設定した場合、<ph name="PRODUCT_NAME" /> はネイティブ通�
 <translation id="5307432759655324440">シークレット モードが利用可能かどうかを設定する</translation>
 <translation id="5311275381462687162">Cookie に関する以前の <ph name="ATTRIBUTE_SAMESITE_NAME" /> 動作のデフォルト設定</translation>
 <translation id="5318185076587284965">リモート アクセス ホストで中継サーバーを使用できるようにする</translation>
-<translation id="5321755462836179869">ネイティブ通知を許可する</translation>
 <translation id="5323128137188992869"><ph name="PRODUCT_NAME" /> を使用してデバイスにコンテンツをキャストすることを許可します。
 
           このポリシーが false に設定されている場合、ユーザーはデバイスにコンテンツをキャストできません。このポリシーが true に設定されている場合、ユーザーはコンテンツをキャストできます。このポリシーが未設定の場合、ユーザーは登録済みの Chrome OS デバイスにはコンテンツをキャストできませんが、それ以外のデバイスであればキャストできます。</translation>

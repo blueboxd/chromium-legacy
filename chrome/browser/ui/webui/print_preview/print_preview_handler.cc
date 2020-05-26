@@ -802,7 +802,9 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
     // account management flows will go through native UIs and not through a
     // tabbed browser window.
     if (add_account) {
-      chromeos::InlineLoginHandlerDialogChromeOS::Show();
+      chromeos::InlineLoginHandlerDialogChromeOS::Show(
+          chromeos::InlineLoginHandlerDialogChromeOS::Source::
+              kPrintPreviewDialog);
     } else {
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
           profile, chromeos::settings::mojom::kMyAccountsSubpagePath);

@@ -516,6 +516,11 @@ const base::Feature kRequestUnbufferedDispatch{
 const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Respect the MacOS system setting for subpixel text anti-aliasing.
+// https://crbug.com/1079418.
+const base::Feature kRespectMacLCDTextSetting{
+    "RespectMacLCDTextSetting", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 const base::Feature kRunVideoCaptureServiceInBrowserProcess{

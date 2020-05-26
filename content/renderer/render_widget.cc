@@ -1038,6 +1038,13 @@ void RenderWidget::RequestPresentation(PresentationTimeCallback callback) {
   layer_tree_host_->SetNeedsCommitWithForcedRedraw();
 }
 
+void RenderWidget::RequestPresentationAfterScrollAnimationEnd(
+    PresentationTimeCallback callback) {
+  layer_tree_host_->RequestScrollAnimationEndNotification(
+      base::BindOnce(&RenderWidget::RequestPresentation,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void RenderWidget::DidPresentForceDrawFrame(
     int snapshot_id,
     const gfx::PresentationFeedback& feedback) {

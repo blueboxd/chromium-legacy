@@ -101,7 +101,7 @@ class AX_EXPORT AXNode final {
 
   // Accessors.
   OwnerTree* tree() const { return tree_; }
-  int32_t id() const { return data_.id; }
+  AXID id() const { return data_.id; }
   AXNode* parent() const { return parent_; }
   const AXNodeData& data() const { return data_; }
   const std::vector<AXNode*>& children() const { return children_; }
@@ -296,6 +296,14 @@ class AX_EXPORT AXNode final {
   base::string16 GetInheritedString16Attribute(
       ax::mojom::StringAttribute attribute) const;
 
+  // Returns the text of this node and all descendant nodes; including text
+  // found in embedded objects.
+  //
+  // Only text displayed on screen is included. Text from ARIA and HTML
+  // attributes that is either not displayed on screen, or outside this node, is
+  // not returned.
+  std::string GetInnerText() const;
+
   // Return a string representing the language code.
   //
   // This will consider the language declared in the DOM, and may eventually
@@ -399,7 +407,32 @@ class AX_EXPORT AXNode final {
   // Returns true if node has ignored state or ignored role.
   bool IsIgnored() const;
 
-  // Returns true if this current node is a list marker or if it's a descendant
+  // Returns true if an ancestor of this node (not including itself) is a
+  // leaf node, meaning that this node is not actually exposed to any
+  // platform's accessibility layer.
+  bool IsChildOfLeaf() const;
+
+  // Returns true if this is a leaf node, meaning all its
+  // children should not be exposed to any platform's native accessibility
+  // layer.
+  //
+  // The definition of a leaf includes nodes with children that are exclusively
+  // an internal renderer implementation, such as the children of an HTML native
+  // text field, as well as nodes with presentational children according to the
+  // ARIA and HTML5 Specs.
+  //
+  // A leaf node should never have children that are focusable or
+  // that might send notifications.
+  bool IsLeaf() const;
+
+  // Returns true if this is a leaf node, (see "IsLeaf"), or if all of the
+  // node's children are ignored.
+  //
+  // TODO(nektar): There are no performance advantages in keeping this method
+  // since unignored child count is cached. Please remove.
+  bool IsLeafIncludingIgnored() const;
+
+  // Returns true if this node is a list marker or if it's a descendant
   // of a list marker node. Returns false otherwise.
   bool IsInListMarker() const;
 
@@ -439,6 +472,7 @@ class AX_EXPORT AXNode final {
   std::vector<AXNode*> children_;
   AXNodeData data_;
 
+  // Stores the detected language computed from the node's text.
   std::unique_ptr<AXLanguageInfo> language_info_;
 };
 

@@ -525,27 +525,25 @@ void NGFlexLayoutAlgorithm::ConstructAndAppendFlexItems() {
       // https://drafts.csswg.org/css-flexbox/#algo-main-item
       const Length& cross_axis_length =
           is_horizontal_flow_ ? child.Style().Height() : child.Style().Width();
-      if (child.HasAspectRatio() &&
-          (IsItemCrossAxisLengthDefinite(child, cross_axis_length))) {
+      // This check should use HasAspectRatio() instead of Style().
+      // AspectRatio(), but to avoid introducing a behavior change we only
+      // do this for the aspect-ratio property for now until FlexNG ships.
+      bool use_cross_axis_for_aspect_ratio =
+          child.Style().AspectRatio() &&
+          WillChildCrossSizeBeContainerCrossSize(child);
+      if (use_cross_axis_for_aspect_ratio ||
+          (child.HasAspectRatio() &&
+           (IsItemCrossAxisLengthDefinite(child, cross_axis_length)))) {
         // This is Part B of 9.2.3
         // https://drafts.csswg.org/css-flexbox/#algo-main-item It requires that
         // the item has a definite cross size.
-        //
-        // But for determining the flex-basis of aspect ratio items, both legacy
-        // and FF both ignore part of the flex spec that has a more lenient
-        // definition of definite.
-        // https://drafts.csswg.org/css-flexbox/#definite says "If a single-line
-        // flex container has a definite cross size, the outer cross size of any
-        // stretched flex items is the flex container's inner cross size
-        // (clamped to the flex item's min and max cross size) and is considered
-        // definite". But when this happens, neither legacy nor firefox use the
-        // container's cross size to calculate the item's main size, they just
-        // fall to block E. E.g. Legacy and FF show a 16x100 green square
-        // instead of a 100x100 green square for
-        // https://jsfiddle.net/dgrogan/djh5wu0x/1/. I think it should be
-        // 100x100.
         LayoutUnit cross_size;
-        if (MainAxisIsInlineAxis(child)) {
+        if (use_cross_axis_for_aspect_ratio) {
+          NGBoxStrut margins = physical_child_margins.ConvertToLogical(
+              ConstraintSpace().GetWritingMode(), Style().Direction());
+          cross_size = CalculateFixedCrossSize(
+              min_max_sizes_in_cross_axis_direction, margins);
+        } else if (MainAxisIsInlineAxis(child)) {
           cross_size = ResolveMainBlockLength(
               flex_basis_space, child_style,
               border_padding_in_child_writing_mode, cross_axis_length,

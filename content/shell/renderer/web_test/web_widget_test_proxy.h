@@ -26,7 +26,6 @@ class RenderViewImpl;
 namespace content {
 
 class TestRunner;
-class TestRunnerForSpecificView;
 class EventSender;
 class WebViewTestProxy;
 
@@ -67,6 +66,10 @@ class WebWidgetTestProxy : public RenderWidget {
   bool RequestPointerLock(blink::WebLocalFrame* requester_frame,
                           blink::WebWidgetClient::PointerLockCallback callback,
                           bool request_unajusted_movement) override;
+  bool RequestPointerLockChange(
+      blink::WebLocalFrame* requester_frame,
+      blink::WebWidgetClient::PointerLockCallback callback,
+      bool request_unadjusted_movement) override;
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void StartDragging(network::mojom::ReferrerPolicy policy,
@@ -97,7 +100,6 @@ class WebWidgetTestProxy : public RenderWidget {
   void SynchronouslyCompositeAfterTest();
 
  private:
-  TestRunnerForSpecificView* GetViewTestRunner();
   TestRunner* GetTestRunner();
 
   void ScheduleAnimationInternal(bool do_raster);

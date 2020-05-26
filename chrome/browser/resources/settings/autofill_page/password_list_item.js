@@ -18,7 +18,7 @@ import {html, Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bun
 
 import {loadTimeData} from '../i18n_setup.js';
 
-import {MultiStorePasswordUiEntryWithPassword} from './multi_store_password_ui_entry.js';
+import {MultiStorePasswordUiEntry} from './multi_store_password_ui_entry.js';
 import {RemovePasswordBehavior} from './remove_password_behavior.js';
 import {ShowPasswordBehavior} from './show_password_behavior.js';
 
@@ -38,7 +38,7 @@ Polymer({
    * @private
    */
   onReadonlyInputTap_() {
-    if (this.item.password) {
+    if (this.password) {
       this.$$('#password').select();
     }
   },
@@ -54,16 +54,15 @@ Polymer({
 
   /**
    * Get the aria label for the More Actions button on this row.
-   * @param {!MultiStorePasswordUiEntryWithPassword} item This row's item.
    * @private
    */
-  getMoreActionsLabel_(item) {
+  getMoreActionsLabel_() {
     // Avoid using I18nBehavior.i18n, because it will filter sequences, which
     // are otherwise not illegal for usernames. Polymer still protects against
     // XSS injection.
     return loadTimeData.getStringF(
-        (item.entry.federationText) ? 'passwordRowFederatedMoreActionsButton' :
+        (this.entry.federationText) ? 'passwordRowFederatedMoreActionsButton' :
                                       'passwordRowMoreActionsButton',
-        item.entry.username, item.entry.urls.shown);
+        this.entry.username, this.entry.urls.shown);
   },
 });

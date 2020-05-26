@@ -284,30 +284,6 @@ TEST_F(SearchTest, InstantNTPExtendedEnabled) {
   }
 }
 
-TEST_F(SearchTest, InstantNTPCustomNavigationEntry) {
-  AddTab(browser(), GURL("chrome://blank"));
-  for (const SearchTestCase& test : kInstantNTPTestCases) {
-    NavigateAndCommitActiveTab(GURL(test.url));
-    content::WebContents* contents =
-        browser()->tab_strip_model()->GetWebContentsAt(0);
-    content::NavigationController& controller = contents->GetController();
-    controller.SetTransientEntry(
-        content::NavigationController::CreateNavigationEntry(
-            GURL("chrome://blank"), content::Referrer(), base::nullopt,
-            ui::PAGE_TRANSITION_LINK, false, std::string(),
-            contents->GetBrowserContext(),
-            nullptr /* blob_url_loader_factory */));
-    // The visible entry is now chrome://blank, but this is still an NTP.
-    EXPECT_FALSE(NavEntryIsInstantNTP(contents, controller.GetVisibleEntry()));
-    EXPECT_EQ(test.expected_result,
-              NavEntryIsInstantNTP(contents,
-                                   controller.GetLastCommittedEntry()))
-        << test.url << " " << test.comment;
-    EXPECT_EQ(test.expected_result, IsInstantNTP(contents))
-        << test.url << " " << test.comment;
-  }
-}
-
 TEST_F(SearchTest, InstantCacheableNTPNavigationEntry) {
   AddTab(browser(), GURL("chrome://blank"));
   content::WebContents* contents =

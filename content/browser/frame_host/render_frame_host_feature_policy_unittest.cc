@@ -65,10 +65,10 @@ class RenderFrameHostFeaturePolicyTest
                           RenderFrameHost* child,
                           blink::mojom::FeaturePolicyFeature feature,
                           const std::vector<std::string>& origins) {
-    static_cast<TestRenderFrameHost*>(parent)->OnDidChangeFramePolicy(
-        child->GetRoutingID(), {network::mojom::WebSandboxFlags::kNone,
-                                CreateFPHeader(feature, origins),
-                                {} /* required_document_policy */});
+    static_cast<TestRenderFrameHost*>(parent)->DidChangeFramePolicy(
+        child->GetFrameToken(), {network::mojom::WebSandboxFlags::kNone,
+                                 CreateFPHeader(feature, origins),
+                                 {} /* required_document_policy */});
   }
 
   void SimulateNavigation(RenderFrameHost** rfh, const GURL& url) {

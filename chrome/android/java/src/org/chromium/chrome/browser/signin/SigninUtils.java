@@ -67,6 +67,12 @@ public class SigninUtils {
         AccountManagementFragment.openAccountManagementScreen(gaiaServiceType);
     }
 
+    @CalledByNative
+    private static void openAccountPickerBottomSheet() {
+        // TODO(http://crbug.com/1063362):
+        // Opens the account picker bottom sheet here
+    }
+
     /**
      * Launches the {@link SigninActivity} if signin is allowed.
      * @param accessPoint {@link SigninAccessPoint} for starting sign-in flow.

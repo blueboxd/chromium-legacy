@@ -38,6 +38,9 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   float WordSpacing() const { return has_spacing_ ? word_spacing_ : .0f; }
   bool HasSpacing() const { return has_spacing_; }
   bool HasExpansion() const { return expansion_opportunity_count_; }
+  unsigned ExpansionOppotunityCount() const {
+    return expansion_opportunity_count_;
+  }
 
   // Set letter-spacing and word-spacing.
   bool SetSpacing(const FontDescription&);

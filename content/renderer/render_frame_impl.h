@@ -677,8 +677,6 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebFrame* FindFrame(const blink::WebString& name) override;
   void FrameDetached(DetachType type) override;
   void DidChangeName(const blink::WebString& name) override;
-  void DidChangeFramePolicy(blink::WebFrame* child_frame,
-                            const blink::FramePolicy& frame_policy) override;
   void DidSetFramePolicyHeaders(
       network::mojom::WebSandboxFlags flags,
       const blink::ParsedFeaturePolicy& fp_header,

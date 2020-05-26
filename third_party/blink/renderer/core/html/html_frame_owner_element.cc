@@ -284,8 +284,8 @@ void HTMLFrameOwnerElement::SetSandboxFlags(
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
-                                                             frame_policy_);
+    GetDocument().GetFrame()->GetLocalFrameHostRemote().DidChangeFramePolicy(
+        ContentFrame()->GetFrameToken(), frame_policy_);
   }
 }
 
@@ -294,8 +294,8 @@ void HTMLFrameOwnerElement::SetDisallowDocumentAccesss(bool disallowed) {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
-                                                             frame_policy_);
+    GetDocument().GetFrame()->GetLocalFrameHostRemote().DidChangeFramePolicy(
+        ContentFrame()->GetFrameToken(), frame_policy_);
   }
 }
 
@@ -316,13 +316,13 @@ void HTMLFrameOwnerElement::UpdateContainerPolicy(Vector<String>* messages) {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
-    GetDocument().GetFrame()->Client()->DidChangeFramePolicy(ContentFrame(),
-                                                             frame_policy_);
+    GetDocument().GetFrame()->GetLocalFrameHostRemote().DidChangeFramePolicy(
+        ContentFrame()->GetFrameToken(), frame_policy_);
   }
 }
 
 void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
-  const auto* frame = GetDocument().GetFrame();
+  auto* frame = GetDocument().GetFrame();
   DocumentPolicy::FeatureState new_required_policy =
       frame
           ? DocumentPolicy::MergeFeatureState(
@@ -340,7 +340,8 @@ void HTMLFrameOwnerElement::UpdateRequiredPolicy() {
   }
 
   if (ContentFrame()) {
-    frame->Client()->DidChangeFramePolicy(ContentFrame(), frame_policy_);
+    frame->GetLocalFrameHostRemote().DidChangeFramePolicy(
+        ContentFrame()->GetFrameToken(), frame_policy_);
   }
 }
 

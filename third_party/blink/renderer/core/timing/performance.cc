@@ -503,7 +503,7 @@ void Performance::GenerateAndAddResourceTiming(
   AddResourceTiming(
       GenerateResourceTiming(*security_origin, info, *context),
       !initiator_type.IsNull() ? initiator_type : info.InitiatorType(),
-      info.TakeWorkerTimingReceiver());
+      info.TakeWorkerTimingReceiver(), context);
 }
 
 mojom::blink::ResourceTimingInfoPtr Performance::GenerateResourceTiming(
@@ -592,9 +592,11 @@ void Performance::AddResourceTiming(
     mojom::blink::ResourceTimingInfoPtr info,
     const AtomicString& initiator_type,
     mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
-        worker_timing_receiver) {
+        worker_timing_receiver,
+    ExecutionContext* context) {
   auto* entry = MakeGarbageCollected<PerformanceResourceTiming>(
-      *info, time_origin_, initiator_type, std::move(worker_timing_receiver));
+      *info, time_origin_, initiator_type, std::move(worker_timing_receiver),
+      context);
   NotifyObserversOfEntry(*entry);
   // https://w3c.github.io/resource-timing/#dfn-add-a-performanceresourcetiming-entry
   if (CanAddResourceTimingEntry() &&

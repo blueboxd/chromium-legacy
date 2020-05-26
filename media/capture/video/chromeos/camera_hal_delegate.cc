@@ -364,6 +364,11 @@ cros::mojom::CameraInfoPtr CameraHalDelegate::GetCameraInfoFromDeviceId(
   return it->second.Clone();
 }
 
+const VendorTagInfo* CameraHalDelegate::GetVendorTagInfoByName(
+    const std::string& full_name) {
+  return vendor_tag_ops_delegate_.GetInfoByName(full_name);
+}
+
 void CameraHalDelegate::OpenDevice(
     int32_t camera_id,
     mojo::PendingReceiver<cros::mojom::Camera3DeviceOps> device_ops_receiver,

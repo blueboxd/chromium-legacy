@@ -317,7 +317,8 @@ bool IsCompleteCreditCard(
     return true;
   }
 
-  if (!credit_card || !billing_profile) {
+  if (!credit_card || !billing_profile ||
+      credit_card->billing_address_id().empty()) {
     return false;
   }
 
@@ -334,8 +335,7 @@ bool IsCompleteCreditCard(
     return false;
   }
 
-  if (!credit_card->HasValidExpirationDate() ||
-      credit_card->billing_address_id().empty()) {
+  if (!credit_card->HasValidExpirationDate()) {
     return false;
   }
 
@@ -349,6 +349,7 @@ bool IsCompleteCreditCard(
           collect_user_data_options.supported_basic_card_networks.end()) {
     return false;
   }
+
   return true;
 }
 

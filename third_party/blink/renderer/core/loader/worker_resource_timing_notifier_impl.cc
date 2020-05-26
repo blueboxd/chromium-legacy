@@ -70,7 +70,8 @@ void WorkerResourceTimingNotifierImpl::AddResourceTiming(
     DCHECK(inside_execution_context_->IsContextThread());
     GetPerformance(*inside_execution_context_)
         ->AddResourceTiming(std::move(info), initiator_type,
-                            std::move(worker_timing_receiver));
+                            std::move(worker_timing_receiver),
+                            inside_execution_context_);
   } else {
     PostCrossThreadTask(
         *task_runner_, FROM_HERE,
@@ -93,7 +94,8 @@ void WorkerResourceTimingNotifierImpl::AddCrossThreadResourceTiming(
   DCHECK(outside_execution_context_->IsContextThread());
   GetPerformance(*outside_execution_context_)
       ->AddResourceTiming(std::move(info), AtomicString(initiator_type),
-                          std::move(worker_timing_receiver));
+                          std::move(worker_timing_receiver),
+                          outside_execution_context_);
 }
 
 void WorkerResourceTimingNotifierImpl::Trace(Visitor* visitor) const {

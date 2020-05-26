@@ -810,6 +810,37 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAdditionalSearchTermsTest,
       });
 }
 
+// Tests that SWA are correctly uninstalled across restarts.
+class SystemWebAppManagerUninstallBrowserTest
+    : public SystemWebAppManagerBrowserTest {
+ public:
+  SystemWebAppManagerUninstallBrowserTest()
+      : SystemWebAppManagerBrowserTest(/*install_mock=*/false) {
+    if (content::IsPreTest()) {
+      // Use an app with FileHandling enabled since it will perform extra setup
+      // steps.
+      maybe_installation_ =
+          TestSystemWebAppInstallation::SetUpAppWithEnabledOriginTrials(
+              OriginTrialsMap(
+                  {{url::Origin::Create(GURL("chrome://test-system-app/")),
+                    {"NativeFileSystem2", "FileHandling"}}}));
+    } else {
+      maybe_installation_ = TestSystemWebAppInstallation::SetUpWithoutApps();
+    }
+  }
+  ~SystemWebAppManagerUninstallBrowserTest() override = default;
+};
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, PRE_Uninstall) {
+  WaitForTestSystemAppInstall();
+  EXPECT_TRUE(GetManager().GetAppIdForSystemApp(GetMockAppType()).has_value());
+}
+
+IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, Uninstall) {
+  WaitForTestSystemAppInstall();
+  EXPECT_TRUE(GetManager().GetAppIds().empty());
+}
+
 // Tests that SWA-specific data is correctly migrated to Web Apps without
 // Extensions.
 class SystemWebAppManagerMigrationTest
@@ -1239,6 +1270,12 @@ INSTANTIATE_TEST_SUITE_P(All,
 
 INSTANTIATE_TEST_SUITE_P(All,
                          SystemWebAppManagerFileHandlingOriginTrialsBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         SystemWebAppManagerUninstallBrowserTest,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
                          ProviderTypeParamToString);

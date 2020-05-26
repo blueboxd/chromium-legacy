@@ -100,3 +100,20 @@ hence at different addresses. One page can contain only similar-sized objects.
 * Partial pointer overwrite of freelist pointer should fault.
 
 * Large allocations have guard pages at the beginning and end.
+
+## Alignment
+
+PartitionAlloc doesn't have explicit support for a `posix_memalign()` type call,
+however it provides some guarantees on the alignment of returned pointers.
+
+All pointers are aligned on the smallest allocation granularity, namely
+`sizeof(void*)`. Additionally, for power-of-two sized allocations, the behavior
+depends on the compilation flags:
+
+* With `DCHECK_IS_ON()`, returned pointers are never guaranteed to be aligned on
+  more than 16 bytes.
+
+* Otherwise, the returned pointer is guaranteed to be aligned on
+  `min(allocation_size, system page size)`.
+
+See the tests in `partition_alloc_unittest.cc` for more details.

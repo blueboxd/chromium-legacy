@@ -22,6 +22,9 @@ class SigninUtils {
                                           signin::GAIAServiceType service_type,
                                           const std::string& email);
 
+  // Opens the account picker bottomsheet
+  static void OpenAccountPickerBottomSheet();
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SigninUtils);
 };

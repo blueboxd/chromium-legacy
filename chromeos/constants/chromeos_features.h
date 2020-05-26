@@ -86,6 +86,8 @@ extern const base::Feature kEduCoexistenceConsentLog;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kExoPointerLock;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesNG;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kFilesTransferDetails;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kFilesZipNoNaCl;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kMojoDBusRelay;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)

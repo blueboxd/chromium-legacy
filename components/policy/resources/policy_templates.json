@@ -21102,7 +21102,7 @@ If this policy is left unset, privacy screen is disabled initially but can be co
       },
       'example_value': True,
       'id': 678,
-      'caption': '''Allows native notifcations''',
+      'caption': '''Allows native notifications''',
       'tags': [],
       'desc': '''Configures whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on Linux will use native notifications.
 

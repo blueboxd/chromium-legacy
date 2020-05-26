@@ -39,6 +39,8 @@ class NET_EXPORT_PRIVATE QuicClientSessionCache : public quic::SessionCache {
       const quic::QuicServerId& server_id,
       const SSL_CTX* ctx) override;
 
+  void ClearEarlyData(const quic::QuicServerId& server_id) override;
+
   void SetClockForTesting(base::Clock* clock) { clock_ = clock; }
 
   size_t size() const { return cache_.size(); }

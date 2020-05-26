@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -724,6 +725,7 @@ TEST_P(AppSearchProviderCrostiniTest, CrostiniTerminal) {
   EXPECT_EQ("", RunQuery("linux"));
 
   // This both allows Crostini UI and enables Crostini.
+  web_app::TestWebAppProvider::Get(testing_profile())->Start();
   crostini::CrostiniTestHelper crostini_test_helper(testing_profile());
   crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
@@ -751,6 +753,7 @@ TEST_P(AppSearchProviderCrostiniTest, CrostiniTerminal) {
 
 TEST_P(AppSearchProviderCrostiniTest, CrostiniApp) {
   // This both allows Crostini UI and enables Crostini.
+  web_app::TestWebAppProvider::Get(testing_profile())->Start();
   crostini::CrostiniTestHelper crostini_test_helper(testing_profile());
   crostini_test_helper.ReInitializeAppServiceIntegration();
   CreateSearch();
@@ -1055,10 +1058,10 @@ INSTANTIATE_TEST_SUITE_P(
     ::testing::ValuesIn({TestArcAppInstallType::CONTROLLED_BY_POLICY,
                          TestArcAppInstallType::INSTALLED_BY_DEFAULT}));
 
-// TODO(crbug.com/1082884): Test with BMO enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          AppSearchProviderCrostiniTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 }  // namespace test

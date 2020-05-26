@@ -28,6 +28,8 @@ class WebAppUiManager {
  public:
   static std::unique_ptr<WebAppUiManager> Create(Profile* profile);
 
+  static bool ShouldHideAppFromUser(const AppId& app_id);
+
   virtual ~WebAppUiManager() = default;
 
   virtual void Start() = 0;

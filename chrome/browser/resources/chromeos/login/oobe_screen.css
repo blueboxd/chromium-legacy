@@ -12,6 +12,7 @@
 .step {
   box-sizing: border-box;
   position: absolute;
+  user-select: none;
 }
 
 .step.animated:not(.faded) {

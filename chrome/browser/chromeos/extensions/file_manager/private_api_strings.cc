@@ -50,6 +50,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean(
       "UNIFIED_MEDIA_VIEW_ENABLED",
       base::FeatureList::IsEnabled(chromeos::features::kUnifiedMediaView));
+  dict->SetBoolean(
+      "FILES_TRANSFER_DETAILS_ENABLED",
+      base::FeatureList::IsEnabled(chromeos::features::kFilesTransferDetails));
   dict->SetBoolean("ZIP_NO_NACL", base::FeatureList::IsEnabled(
                                       chromeos::features::kFilesZipNoNaCl));
 

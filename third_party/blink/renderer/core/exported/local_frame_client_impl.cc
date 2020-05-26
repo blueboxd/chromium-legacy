@@ -933,15 +933,6 @@ void LocalFrameClientImpl::DidChangeName(const String& name) {
   web_frame_->Client()->DidChangeName(name);
 }
 
-void LocalFrameClientImpl::DidChangeFramePolicy(
-    Frame* child_frame,
-    const FramePolicy& frame_policy) {
-  if (!web_frame_->Client())
-    return;
-  web_frame_->Client()->DidChangeFramePolicy(WebFrame::FromFrame(child_frame),
-                                             frame_policy);
-}
-
 void LocalFrameClientImpl::DidSetFramePolicyHeaders(
     network::mojom::blink::WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& feature_policy_header,

@@ -3640,6 +3640,10 @@ const char kFilesNGName[] = "Enable Files App. NG.";
 const char kFilesNGDescription[] =
     "Enable the next generation UI style of the file manager.";
 
+const char kFilesTransferDetailsName[] = "Enable Files Transfer Details.";
+const char kFilesTransferDetailsDescription[] =
+    "Enable transfer details like remaining time in the progress center panel.";
+
 const char kFilesZipNoNaClName[] = "New ZIP handling in Files App";
 const char kFilesZipNoNaClDescription[] =
     "Enable new ZIP archive handling in Files App which does not rely on NaCl.";

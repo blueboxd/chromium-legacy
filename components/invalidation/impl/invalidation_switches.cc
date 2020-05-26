@@ -4,14 +4,16 @@
 
 #include "components/invalidation/impl/invalidation_switches.h"
 
+#include "build/build_config.h"
+
 namespace invalidation {
 namespace switches {
 
 namespace {
 
 // Default TTL (if the SyncInstanceIDTokenTTL/PolicyInstanceIDTokenTTL feature
-// is enabled) is 4 weeks. Exposed for testing.
-const int kDefaultInstanceIDTokenTTLSeconds = 28 * 24 * 60 * 60;
+// is enabled) is 2 weeks. Exposed for testing.
+const int kDefaultInstanceIDTokenTTLSeconds = 14 * 24 * 60 * 60;
 
 }  // namespace
 
@@ -32,8 +34,15 @@ const base::Feature kTiclInvalidationsStartInvalidatorOnActiveHandler = {
     "TiclInvalidationsStartInvalidatorOnActiveHandler",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kSyncInstanceIDTokenTTL{"SyncInstanceIDTokenTTL",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kSyncInstanceIDTokenTTL {
+  "SyncInstanceIDTokenTTL",
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 const base::FeatureParam<int> kSyncInstanceIDTokenTTLSeconds{
     &kSyncInstanceIDTokenTTL, "time_to_live_seconds",

@@ -118,6 +118,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       mojom::blink::FrameOwnerPropertiesPtr frame_owner_properties) override;
   void DidChangeOpener(
       const base::Optional<base::UnguessableToken>& opener_frame) override;
+  void DidChangeFramePolicy(const base::UnguessableToken& child_frame_token,
+                            const FramePolicy& frame_policy) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

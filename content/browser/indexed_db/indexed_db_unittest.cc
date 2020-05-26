@@ -85,22 +85,21 @@ class IndexedDBTest : public testing::Test {
   IndexedDBTest()
       : kNormalOrigin(url::Origin::Create(GURL("http://normal/"))),
         kSessionOnlyOrigin(url::Origin::Create(GURL("http://session-only/"))),
+        special_storage_policy_(
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
         quota_manager_proxy_(
             base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
                                                                  nullptr)),
         context_(base::MakeRefCounted<IndexedDBContextImpl>(
             CreateAndReturnTempDir(&temp_dir_),
+            /*special_storage_policy=*/special_storage_policy_.get(),
             quota_manager_proxy_.get(),
             base::DefaultClock::GetInstance(),
             /*blob_storage_context=*/mojo::NullRemote(),
             /*native_file_system_context=*/mojo::NullRemote(),
             base::SequencedTaskRunnerHandle::Get(),
             base::SequencedTaskRunnerHandle::Get())) {
-    std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr> policy_updates;
-    bool should_purge_on_shutdown = true;
-    policy_updates.push_back(storage::mojom::IndexedDBStoragePolicyUpdate::New(
-        kSessionOnlyOrigin, should_purge_on_shutdown));
-    context_->ApplyPolicyUpdates(std::move(policy_updates));
+    special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin.GetURL());
   }
   ~IndexedDBTest() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
@@ -153,6 +152,7 @@ class IndexedDBTest : public testing::Test {
 
  protected:
   IndexedDBContextImpl* context() const { return context_.get(); }
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:

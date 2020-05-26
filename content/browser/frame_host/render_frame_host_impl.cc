@@ -1136,16 +1136,20 @@ int RenderFrameHostImpl::GetRoutingID() {
   return routing_id_;
 }
 
+const base::UnguessableToken& RenderFrameHostImpl::GetFrameToken() {
+  return frame_token_;
+}
+
 ui::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
   return ax_tree_id();
 }
 
-const base::UnguessableToken& RenderFrameHostImpl::GetTopFrameToken() const {
-  const RenderFrameHostImpl* frame = this;
+const base::UnguessableToken& RenderFrameHostImpl::GetTopFrameToken() {
+  RenderFrameHostImpl* frame = this;
   while (frame->parent_) {
     frame = frame->parent_;
   }
-  return frame->frame_token();
+  return frame->GetFrameToken();
 }
 
 void RenderFrameHostImpl::AudioContextPlaybackStarted(int audio_context_id) {
@@ -1690,8 +1694,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_Unload_ACK, OnUnloadACK)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ContextMenu, OnContextMenu)
     IPC_MESSAGE_HANDLER(FrameHostMsg_VisualStateResponse, OnVisualStateResponse)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFramePolicy,
-                        OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
@@ -3765,30 +3767,6 @@ RenderFrameHostImpl* RenderFrameHostImpl::FindAndVerifyChildInternal(
              : child_frame_or_proxy.frame;
 }
 
-void RenderFrameHostImpl::OnDidChangeFramePolicy(
-    int32_t frame_routing_id,
-    const blink::FramePolicy& frame_policy) {
-  // Ensure that a frame can only update sandbox flags or feature policy for its
-  // immediate children.  If this is not the case, the renderer is considered
-  // malicious and is killed.
-  RenderFrameHostImpl* child = FindAndVerifyChild(
-      // TODO(iclelland): Rename this message
-      frame_routing_id, bad_message::RFH_SANDBOX_FLAGS);
-  if (!child)
-    return;
-
-  child->frame_tree_node()->SetPendingFramePolicy(frame_policy);
-
-  // Notify the RenderFrame if it lives in a different process from its parent.
-  // The frame's proxies in other processes also need to learn about the updated
-  // flags and policy, but these notifications are sent later in
-  // RenderFrameHostManager::CommitPendingFramePolicy(), when the frame
-  // navigates and the new policies take effect.
-  if (child->GetSiteInstance() != GetSiteInstance()) {
-    child->GetAssociatedLocalFrame()->DidUpdateFramePolicy(frame_policy);
-  }
-}
-
 void RenderFrameHostImpl::UpdateTitle(
     const base::Optional<::base::string16>& title,
     base::i18n::TextDirection title_direction) {
@@ -4531,6 +4509,30 @@ void RenderFrameHostImpl::DidChangeOpener(
     const base::Optional<base::UnguessableToken>& opener_frame_token) {
   frame_tree_node_->render_manager()->DidChangeOpener(
       opener_frame_token.value_or(base::UnguessableToken()), GetSiteInstance());
+}
+
+void RenderFrameHostImpl::DidChangeFramePolicy(
+    const base::UnguessableToken& child_frame_token,
+    const blink::FramePolicy& frame_policy) {
+  // Ensure that a frame can only update sandbox flags or feature policy for its
+  // immediate children.  If this is not the case, the renderer is considered
+  // malicious and is killed.
+  RenderFrameHostImpl* child = FindAndVerifyChild(
+      // TODO(iclelland): Rename this message
+      child_frame_token, bad_message::RFH_SANDBOX_FLAGS);
+  if (!child)
+    return;
+
+  child->frame_tree_node()->SetPendingFramePolicy(frame_policy);
+
+  // Notify the RenderFrame if it lives in a different process from its parent.
+  // The frame's proxies in other processes also need to learn about the updated
+  // flags and policy, but these notifications are sent later in
+  // RenderFrameHostManager::CommitPendingFramePolicy(), when the frame
+  // navigates and the new policies take effect.
+  if (child->GetSiteInstance() != GetSiteInstance()) {
+    child->GetAssociatedLocalFrame()->DidUpdateFramePolicy(frame_policy);
+  }
 }
 
 void RenderFrameHostImpl::BindInterfaceProviderReceiver(

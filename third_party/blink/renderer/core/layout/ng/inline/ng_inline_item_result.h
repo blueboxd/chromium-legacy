@@ -253,6 +253,7 @@ class CORE_EXPORT NGLineInfo {
   bool NeedsAccurateEndPosition() const { return needs_accurate_end_position_; }
 
  private:
+  ETextAlign GetTextAlign(bool is_last_line = false) const;
   bool ComputeNeedsAccurateEndPosition() const;
 
   // The width of preserved trailing spaces.
@@ -283,6 +284,8 @@ class CORE_EXPORT NGLineInfo {
   bool has_overflow_ = false;
   bool has_trailing_spaces_ = false;
   bool needs_accurate_end_position_ = false;
+  bool is_ruby_base_ = false;
+  bool is_ruby_text_ = false;
 };
 
 }  // namespace blink

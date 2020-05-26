@@ -726,22 +726,6 @@ class SitePerProcessFeaturePolicyBrowserTest
   }
 };
 
-// SitePerProcessFeaturePolicyJavaScriptBrowserTest
-
-class SitePerProcessFeaturePolicyJavaScriptBrowserTest
-    : public SitePerProcessBrowserTest {
- public:
-  SitePerProcessFeaturePolicyJavaScriptBrowserTest() = default;
-
-  // Enable the feature policy JavaScript interface
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kEnableBlinkFeatures,
-        "FeaturePolicyJavaScriptInterface,ExperimentalProductivityFeatures");
-  }
-};
-
 // SitePerProcessAutoplayBrowserTest
 
 class SitePerProcessAutoplayBrowserTest : public SitePerProcessBrowserTest {
@@ -8892,7 +8876,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
 
 // Test that the replicated feature policy header is correct in remote proxies
 // after the local frame has navigated.
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
                        TestFeaturePolicyReplicationToProxyOnNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/frame_tree/page_with_two_frames.html"));
@@ -8954,7 +8938,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
 // policy will be incorrect.
 //
 // This is a regression test for https://crbug.com/690520
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
                        TestAllowAttributeInSandboxedFrame) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com",
@@ -9017,7 +9001,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
 // policy will be incorrect.
 //
 // This is a regression test for https://crbug.com/690520
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
                        TestAllowAttributeInOpaqueOriginAfterNavigation) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/page_with_data_iframe_and_allow.html"));
@@ -9309,7 +9293,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 // Test that creating a new remote frame at the same origin as its parent
 // results in the correct feature policy in the RemoteSecurityContext.
 // https://crbug.com/852102
-IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyJavaScriptBrowserTest,
+IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
                        FeaturePolicyConstructionInExistingProxy) {
   WebContentsImpl* contents = web_contents();
   FrameTreeNode* root = contents->GetFrameTree()->root();
@@ -15166,11 +15150,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 }
 
 class SitePerProcessFeaturePolicySandboxTest
-    : public SitePerProcessFeaturePolicyJavaScriptBrowserTest {
+    : public SitePerProcessFeaturePolicyBrowserTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    SitePerProcessFeaturePolicyJavaScriptBrowserTest::SetUpCommandLine(
-        command_line);
+    SitePerProcessFeaturePolicyBrowserTest::SetUpCommandLine(command_line);
     feature_list_.InitAndEnableFeature(features::kFeaturePolicyForSandbox);
   }
 

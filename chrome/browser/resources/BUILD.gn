@@ -292,8 +292,10 @@ if (is_chromeos) {
       deps += [ "//chrome/browser/resources/settings/chromeos:build" ]
     } else {
       source = "settings/os_settings_resources.grd"
-      deps +=
-          [ "//chrome/browser/resources/settings/chromeos:polymer3_elements" ]
+      deps += [
+        "//chrome/browser/resources/settings/chromeos:polymer3_elements",
+        "//chrome/browser/ui/webui/settings/chromeos/search:mojo_bindings_js",
+      ]
     }
 
     defines = chrome_grit_defines

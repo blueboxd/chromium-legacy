@@ -11,8 +11,11 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "chrome/browser/web_applications/components/web_app_chromeos_data.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_ui_manager.h"
+#include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
@@ -206,6 +209,15 @@ std::unique_ptr<WebApp> WebAppMigrationManager::MigrateBookmarkApp(
   web_app->SetIconInfos(bookmark_app_registrar_.GetAppIconInfos(app_id));
   web_app->SetDownloadedIconSizes(
       bookmark_app_registrar_.GetAppDownloadedIconSizes(app_id));
+
+  if (IsChromeOs()) {
+    auto chromeos_data = base::make_optional<WebAppChromeOsData>();
+    const bool should_show = !WebAppUiManager::ShouldHideAppFromUser(app_id);
+    chromeos_data->show_in_launcher = should_show;
+    chromeos_data->show_in_search = should_show;
+    chromeos_data->show_in_management = should_show;
+    web_app->SetWebAppChromeOsData(std::move(chromeos_data));
+  }
 
   WebApp::SyncData sync_data;
   sync_data.name = bookmark_app_registrar_.GetAppShortName(app_id);

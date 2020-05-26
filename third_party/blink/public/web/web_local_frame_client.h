@@ -241,11 +241,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // This frame's name has changed.
   virtual void DidChangeName(const WebString& name) {}
 
-  // The sandbox flags or container policy have changed for a child frame of
-  // this frame.
-  virtual void DidChangeFramePolicy(WebFrame* child_frame, const FramePolicy&) {
-  }
-
   // Called when a Feature-Policy or Document-Policy or Content-Security-Policy
   // HTTP header (for sandbox flags) is encountered while loading the frame's
   // document.

@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <algorithm>
 #include <limits>
 #include <memory>
 #include <vector>
@@ -2303,6 +2304,40 @@ TEST_F(PartitionAllocTest, OverrideHooks) {
 
   PartitionAllocHooks::SetOverrideHooks(nullptr, nullptr, nullptr);
   free(overridden_allocation);
+}
+
+TEST_F(PartitionAllocTest, Alignment) {
+  std::vector<void*> allocated_ptrs;
+
+  for (size_t size = 1; size <= base::kSystemPageSize; size <<= 1) {
+    // All allocations which are not direct-mapped occupy contiguous slots of a
+    // span, starting on a page boundary. This means that allocations are first
+    // rounded up to the nearest bucket size, then have an address of the form:
+    //
+    // (page-aligned address) + i * bucket_size.
+#if DCHECK_IS_ON()
+    // When DCHECK_IS_ON(), a kCookieSize (16) cookie is added on both sides
+    // before rounding up the allocation size. The returned pointer points after
+    // the cookie.
+    //
+    // All in all, a power-of-two allocation is aligned on
+    // min(16, requested_size).
+    size_t expected_alignment = std::min(size, static_cast<size_t>(16));
+#else
+    // All powers of two are bucket sizes, meaning that all power of two
+    // allocations smaller than a page will be aligned on the allocation size.
+    size_t expected_alignment = size;
+#endif
+    for (int index = 0; index < 3; index++) {
+      void* ptr = generic_allocator.root()->Alloc(size, "");
+      allocated_ptrs.push_back(ptr);
+      EXPECT_EQ(0u, reinterpret_cast<uintptr_t>(ptr) % expected_alignment)
+          << index << "-th allocation of size = " << size;
+    }
+  }
+
+  for (void* ptr : allocated_ptrs)
+    generic_allocator.root()->Free(ptr);
 }
 
 }  // namespace internal

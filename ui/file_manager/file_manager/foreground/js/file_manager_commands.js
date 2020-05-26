@@ -1930,7 +1930,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = new class extends Command {
       fileManager.crostini.registerSharedPath(
           constants.DEFAULT_CROSTINI_VM, dir);
       fileManager.ui.toast.show(str('FOLDER_SHARED_WITH_CROSTINI'), {
-        text: str('MANAGE_LINUX_SHARING_BUTTON_LABEL'),
+        text: str('MANAGE_TOAST_BUTTON_LABEL'),
         callback: () => {
           chrome.fileManagerPrivate.openSettingsSubpage('crostini/sharedPaths');
           CommandHandler.recordMenuItemSelected(
@@ -2006,7 +2006,7 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] = new class extends Command {
       // immediately, since the container may take 10s or more to start.
       fileManager.crostini.registerSharedPath(constants.PLUGIN_VM, dir);
       fileManager.ui.toast.show(str('FOLDER_SHARED_WITH_PLUGIN_VM'), {
-        text: str('MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL'),
+        text: str('MANAGE_TOAST_BUTTON_LABEL'),
         callback: () => {
           chrome.fileManagerPrivate.openSettingsSubpage('pluginVm/sharedPaths');
           CommandHandler.recordMenuItemSelected(

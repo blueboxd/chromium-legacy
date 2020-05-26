@@ -282,7 +282,8 @@ void RemoteFrame::AddResourceTimingFromChild(
   // WorkerTimingContainer for navigation from the calling function.
   DOMWindowPerformance::performance(*owner_element->GetDocument().domWindow())
       ->AddResourceTiming(std::move(timing), owner_element->localName(),
-                          /*worker_timing_receiver=*/mojo::NullReceiver());
+                          /*worker_timing_receiver=*/mojo::NullReceiver(),
+                          owner_element->GetDocument().GetExecutionContext());
 }
 
 void RemoteFrame::DidStartLoading() {

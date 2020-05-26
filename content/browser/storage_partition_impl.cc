@@ -1250,13 +1250,15 @@ void StoragePartitionImpl::Initialize() {
   native_file_system_manager_->BindInternalsReceiver(
       native_file_system_context.InitWithNewPipeAndPassReceiver());
   base::FilePath path = is_in_memory_ ? base::FilePath() : partition_path_;
-  indexed_db_control_wrapper_ = std::make_unique<IndexedDBControlWrapper>(
+  auto indexed_db_context = base::MakeRefCounted<IndexedDBContextImpl>(
       path, browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy,
       base::DefaultClock::GetInstance(),
       ChromeBlobStorageContext::GetRemoteFor(browser_context_),
       std::move(native_file_system_context),
       base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
       /*task_runner=*/nullptr);
+  indexed_db_control_wrapper_ =
+      std::make_unique<IndexedDBControlWrapper>(std::move(indexed_db_context));
 
   cache_storage_context_ = new CacheStorageContextImpl();
   cache_storage_context_->Init(

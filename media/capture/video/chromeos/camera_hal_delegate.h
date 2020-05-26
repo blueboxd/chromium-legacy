@@ -85,6 +85,8 @@ class CAPTURE_EXPORT CameraHalDelegate final
   cros::mojom::CameraInfoPtr GetCameraInfoFromDeviceId(
       const std::string& device_id);
 
+  const VendorTagInfo* GetVendorTagInfoByName(const std::string& full_name);
+
  private:
   friend class base::RefCountedThreadSafe<CameraHalDelegate>;
 

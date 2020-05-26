@@ -107,6 +107,7 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
 
 IndexedDBContextImpl::IndexedDBContextImpl(
     const base::FilePath& data_path,
+    scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy,
     scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy,
     base::Clock* clock,
     mojo::PendingRemote<storage::mojom::BlobStorageContext>
@@ -125,6 +126,7 @@ IndexedDBContextImpl::IndexedDBContextImpl(
                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN}))),
       indexed_db_factory_(this),
       force_keep_session_state_(false),
+      special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
       io_task_runner_(io_task_runner),
       clock_(clock) {
@@ -421,17 +423,6 @@ void IndexedDBContextImpl::GetAllOriginsDetails(
 
 void IndexedDBContextImpl::SetForceKeepSessionState() {
   force_keep_session_state_ = true;
-}
-
-void IndexedDBContextImpl::ApplyPolicyUpdates(
-    std::vector<storage::mojom::IndexedDBStoragePolicyUpdatePtr>
-        policy_updates) {
-  for (const auto& update : policy_updates) {
-    if (!update->purge_on_shutdown)
-      origins_to_purge_on_shutdown_.erase(update->origin);
-    else
-      origins_to_purge_on_shutdown_.insert(std::move(update->origin));
-  }
 }
 
 void IndexedDBContextImpl::BindTestInterface(
@@ -803,32 +794,37 @@ void IndexedDBContextImpl::Shutdown() {
     return;
 
   // Clear session-only databases.
-  if (origins_to_purge_on_shutdown_.empty())
-    return;
-
-  IDBTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](scoped_refptr<IndexedDBContextImpl> context) {
-            std::vector<Origin> origins;
-            std::vector<base::FilePath> file_paths;
-            // This function only needs the factory, and not the context, but
-            // the context is used because passing that is thread-safe.
-            IndexedDBFactoryImpl* factory = context->GetIDBFactory();
-            GetAllOriginsAndPaths(context->data_path_, &origins, &file_paths);
-            DCHECK_EQ(origins.size(), file_paths.size());
-
-            auto file_path = file_paths.cbegin();
-            auto origin = origins.cbegin();
-            for (; origin != origins.cend(); ++origin, ++file_path) {
-              if (context->origins_to_purge_on_shutdown_.find(*origin) ==
-                  context->origins_to_purge_on_shutdown_.end())
-                continue;
-              factory->ForceClose(*origin, false);
-              base::DeleteFileRecursively(*file_path);
-            }
-          },
-          base::WrapRefCounted(this)));
+  if (special_storage_policy_ &&
+      special_storage_policy_->HasSessionOnlyOrigins()) {
+    IDBTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](const base::FilePath& indexeddb_path,
+               scoped_refptr<IndexedDBContextImpl> context,
+               scoped_refptr<storage::SpecialStoragePolicy>
+                   special_storage_policy) {
+              std::vector<Origin> origins;
+              std::vector<base::FilePath> file_paths;
+              // This function only needs the factory, and not the context, but
+              // the context is used because passing that is thread-safe.
+              IndexedDBFactoryImpl* factory = context->GetIDBFactory();
+              GetAllOriginsAndPaths(indexeddb_path, &origins, &file_paths);
+              DCHECK_EQ(origins.size(), file_paths.size());
+              auto file_path = file_paths.cbegin();
+              auto origin = origins.cbegin();
+              for (; origin != origins.cend(); ++origin, ++file_path) {
+                const GURL origin_url = GURL(origin->Serialize());
+                if (!special_storage_policy->IsStorageSessionOnly(origin_url))
+                  continue;
+                if (special_storage_policy->IsStorageProtected(origin_url))
+                  continue;
+                if (factory)
+                  factory->ForceClose(*origin, false);
+                base::DeleteFileRecursively(*file_path);
+              }
+            },
+            data_path_, base::WrapRefCounted(this), special_storage_policy_));
+  }
 }
 
 base::FilePath IndexedDBContextImpl::GetBlobStorePath(

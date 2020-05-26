@@ -1215,15 +1215,15 @@ class FileManager extends cr.EventTarget {
 
     toast(
         crostiniShareCount, 'FOLDER_SHARED_WITH_CROSTINI',
-        'FOLDER_SHARED_WITH_CROSTINI_PLURAL',
-        'MANAGE_LINUX_SHARING_BUTTON_LABEL', 'crostini/sharedPaths',
+        'FOLDER_SHARED_WITH_CROSTINI_PLURAL', 'MANAGE_TOAST_BUTTON_LABEL',
+        'crostini/sharedPaths',
         CommandHandler.MenuCommandsForUMA.MANAGE_LINUX_SHARING_TOAST_STARTUP);
     // TODO(crbug.com/949356): UX to provide guidance for what to do
     // when we have shared paths with both Linux and Plugin VM.
     toast(
         pluginVmShareCount, 'FOLDER_SHARED_WITH_PLUGIN_VM',
-        'FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL',
-        'MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL', 'pluginVm/sharedPaths',
+        'FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL', 'MANAGE_TOAST_BUTTON_LABEL',
+        'pluginVm/sharedPaths',
         CommandHandler.MenuCommandsForUMA
             .MANAGE_PLUGIN_VM_SHARING_TOAST_STARTUP);
   }

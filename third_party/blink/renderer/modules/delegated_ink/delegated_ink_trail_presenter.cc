@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/delegated_ink/delegated_ink_trail_presenter.h"
 
 #include "components/viz/common/delegated_ink_metadata.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ink_trail_style.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
@@ -14,7 +15,6 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/modules/delegated_ink/ink_trail_style.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {

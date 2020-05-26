@@ -441,3 +441,6 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_update_ack_alarm_in_send_all_pending_acks,
     true)
+
+// If true, enable QUIC version h3-28.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_28, false)

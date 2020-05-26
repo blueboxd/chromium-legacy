@@ -6,13 +6,13 @@
 
 #include "components/viz/common/delegated_ink_metadata.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_pointer_event_init.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_ink_trail_style.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
-#include "third_party/blink/renderer/modules/delegated_ink/ink_trail_style.h"
 
 namespace blink {
 namespace {

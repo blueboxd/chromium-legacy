@@ -28,6 +28,11 @@ void SigninUtils::OpenAccountManagementScreen(
                     : base::android::ConvertUTF8ToJavaString(env, email));
 }
 
+void SigninUtils::OpenAccountPickerBottomSheet() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_SigninUtils_openAccountPickerBottomSheet(env);
+}
+
 static void JNI_SigninUtils_LogEvent(JNIEnv* env,
                                      jint metric,
                                      jint gaiaServiceType) {

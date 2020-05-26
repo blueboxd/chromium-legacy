@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
+#include "media/capture/video/chromeos/capture_metadata_dispatcher.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
 #include "media/capture/video/video_capture_device.h"
@@ -33,6 +34,20 @@ enum class StreamType : uint64_t {
   kYUVInput = 2,
   kYUVOutput = 3,
   kUnknown,
+};
+
+// The metadata might be large so clone a whole metadata might be relatively
+// expensive. We only keep the needed data by this structure.
+struct ResultMetadata {
+  ResultMetadata();
+  ~ResultMetadata();
+
+  base::Optional<int32_t> brightness;
+  base::Optional<int32_t> contrast;
+  base::Optional<int32_t> pan;
+  base::Optional<int32_t> saturation;
+  base::Optional<int32_t> sharpness;
+  base::Optional<int32_t> tilt;
 };
 
 // Returns true if the given stream type is an input stream.
@@ -71,7 +86,8 @@ class CAPTURE_EXPORT StreamCaptureInterface {
 // AllocateAndStart of VideoCaptureDeviceArcChromeOS runs on.  All the methods
 // in CameraDeviceDelegate run on |ipc_task_runner_| and hence all the
 // access to member variables is sequenced.
-class CAPTURE_EXPORT CameraDeviceDelegate final {
+class CAPTURE_EXPORT CameraDeviceDelegate final
+    : public CaptureMetadataDispatcher::ResultMetadataObserver {
  public:
   CameraDeviceDelegate(
       VideoCaptureDeviceDescriptor device_descriptor,
@@ -79,7 +95,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
       scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
       CameraAppDeviceImpl* camera_app_device);
 
-  ~CameraDeviceDelegate();
+  ~CameraDeviceDelegate() final;
 
   // Delegation methods for the VideoCaptureDevice interface.
   void AllocateAndStart(const VideoCaptureParams& params,
@@ -175,6 +191,18 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   bool SetPointsOfInterest(
       const std::vector<mojom::Point2DPtr>& points_of_interest);
 
+  // This function gets the TYPE_INT32[3] array of [max, min, step] from static
+  // metadata by |range_name| and current value of |current|.
+  mojom::RangePtr GetControlRangeByVendorTagName(
+      const std::string& range_name,
+      const base::Optional<int32_t>& current);
+
+  // CaptureMetadataDispatcher::ResultMetadataObserver implementation.
+  void OnResultMetadataAvailable(
+      const cros::mojom::CameraMetadataPtr& result_metadata) final;
+
+  void DoGetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
+
   const VideoCaptureDeviceDescriptor device_descriptor_;
 
   // Current configured resolution of BLOB stream.
@@ -207,6 +235,11 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   VideoCaptureDevice::SetPhotoOptionsCallback set_photo_option_callback_;
 
   CameraAppDeviceImpl* camera_app_device_;  // Weak.
+
+  // GetPhotoState requests waiting for |got_result_metadata_| to be served.
+  std::vector<base::OnceClosure> get_photo_state_queue_;
+  bool got_result_metadata_;
+  ResultMetadata result_metadata_;
 
   base::WeakPtrFactory<CameraDeviceDelegate> weak_ptr_factory_{this};
 

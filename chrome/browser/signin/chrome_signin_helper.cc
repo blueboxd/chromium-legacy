@@ -293,6 +293,11 @@ void ProcessMirrorHeader(
   return;
 
 #else   // !defined(OS_CHROMEOS)
+  if (manage_accounts_params.show_consistency_promo &&
+      base::FeatureList::IsEnabled(kMobileIdentityConsistency)) {
+    SigninUtils::OpenAccountPickerBottomSheet();
+    return;
+  }
   if (service_type == signin::GAIA_SERVICE_TYPE_INCOGNITO) {
     GURL url(manage_accounts_params.continue_url.empty()
                  ? chrome::kChromeUINativeNewTabURL

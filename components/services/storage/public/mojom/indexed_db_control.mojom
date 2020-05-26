@@ -35,15 +35,6 @@ struct IndexedDBStorageUsageInfo {
   mojo_base.mojom.Time last_modified_time;
 };
 
-// Indicates a policy update for a specific origin.
-struct IndexedDBStoragePolicyUpdate {
-  // The origin to which this policy applies.
-  url.mojom.Origin origin;
-
-  // Indicates whether data for this origin should be purged on shutdown.
-  bool purge_on_shutdown;
-};
-
 // Communicates with IndexedDB clients about changes in IndexedDB.
 interface IndexedDBObserver {
   // This function is called when the size of the usage for a particular origin
@@ -100,10 +91,6 @@ interface IndexedDBControl {
 
   // Adds an observer to be notified about modifications to IndexedDB.
   AddObserver(pending_remote<IndexedDBObserver> observer);
-
-  // Applies changes to data retention policy which are relevant at shutdown.
-  // See IndexedDBStoragePolicyUpdate.
-  ApplyPolicyUpdates(array<IndexedDBStoragePolicyUpdate> policy_updates);
 
   // Binds the testing interface for extra functionality only available in
   // tests.

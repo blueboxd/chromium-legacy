@@ -540,13 +540,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateState, content::PageState /* state */)
 // Requests that the given URL be opened in the specified manner.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 
-// Notifies the browser that sandbox flags or container policy have changed for
-// a subframe of this frame.
-IPC_MESSAGE_ROUTED2(
-    FrameHostMsg_DidChangeFramePolicy,
-    int32_t /* subframe_routing_id */,
-    blink::FramePolicy /* updated sandbox flags and container policy */)
-
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Notification sent from a renderer to the browser that a Pepper plugin
 // instance is created in the DOM.

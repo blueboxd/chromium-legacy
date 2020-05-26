@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
+// #import 'chrome://os-settings/chromeos/os_settings.js';
+
 suite('localized_link', function() {
   let localizedStringWithLink;
 

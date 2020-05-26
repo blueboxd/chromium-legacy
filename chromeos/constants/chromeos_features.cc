@@ -177,6 +177,10 @@ const base::Feature kExoPointerLock{"ExoPointerLock",
 // Enables the next generation file manager.
 const base::Feature kFilesNG{"FilesNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enable file transfer details in progress center.
+const base::Feature kFilesTransferDetails{"FilesTransferDetails",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables new ZIP archive handling in Files App.
 // https://crbug.com/912236
 const base::Feature kFilesZipNoNaCl{"FilesZipNoNaCl",

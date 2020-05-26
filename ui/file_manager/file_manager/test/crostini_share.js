@@ -7,14 +7,14 @@ const shareBase = {
   vmNameTermina: 'termina',
   vmNameSelectorLinux: 'linux',
   toastSharedTextLinux: '1 folder shared with Linux',
-  toastActionTextLinux: 'Manage Linux sharing',
+  toastActionTextLinux: 'Manage',
   enumUmaShareWithLinux: 12,
   enumUmaManageLinuxSharing: 13,
   // Params for 'Share with Plugin VM'.
   vmNamePluginVm: 'PvmDefault',
   vmNameSelectorPluginVm: 'plugin-vm',
   toastSharedTextPluginVm: '1 folder shared with Plugin VM',
-  toastActionTextPluginVm: 'Manage Plugin VM sharing',
+  toastActionTextPluginVm: 'Manage',
   enumUmaShareWithPluginVm: 16,
   enumUmaManagePluginVmSharing: 17,
 };

@@ -10,9 +10,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
+import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -146,5 +148,18 @@ public class ChromeActivityCommonsModule {
     @Provides
     public NotificationManagerProxy provideNotificationManagerProxy() {
         return new NotificationManagerProxyImpl(mActivity.getApplicationContext());
+    }
+
+    @Provides
+    public Supplier<EphemeralTabCoordinator> provideEphemeralTabCoordinatorSupplier() {
+        return () -> {
+            // |isSupported| uses feature flag facility which is not ready at the point
+            // of injection. Delay the decision till the coordinator is actually used.
+            if (!EphemeralTabCoordinator.isSupported()) return null;
+            return new EphemeralTabCoordinator(mActivity, mActivity.getWindowAndroid(),
+                    mActivity.getWindow().getDecorView(), mActivity.getActivityTabProvider(),
+                    mActivity::getCurrentTabCreator, mActivity::getBottomSheetController,
+                    () -> !mActivity.isCustomTab());
+        };
     }
 }

@@ -192,7 +192,7 @@ typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
     [CallWith=ScriptState, NewObject, RuntimeEnabled=StorageAccessAPI] Promise<void> requestStorageAccess();
 
     // https://w3c.github.io/webappsec-feature-policy/#the-policy-object
-    [RuntimeEnabled=FeaturePolicyJavaScriptInterface] readonly attribute FeaturePolicy featurePolicy;
+    readonly attribute FeaturePolicy featurePolicy;
 
     // Deprecated prefixed page visibility API.
     // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting

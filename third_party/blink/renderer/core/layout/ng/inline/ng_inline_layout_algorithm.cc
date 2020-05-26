@@ -702,22 +702,23 @@ void NGInlineLayoutAlgorithm::PlaceListMarker(const NGInlineItem& item,
 
 // Justify the line. This changes the size of items by adding spacing.
 // Returns false if justification failed and should fall back to start-aligned.
-bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
-                                           NGLineInfo* line_info) {
+base::Optional<LayoutUnit> NGInlineLayoutAlgorithm::ApplyJustify(
+    LayoutUnit space,
+    NGLineInfo* line_info) {
   // Empty lines should align to start.
   if (line_info->IsEmptyLine())
-    return false;
+    return base::nullopt;
 
   // Justify the end of visible text, ignoring preserved trailing spaces.
   unsigned end_offset = line_info->EndOffsetForJustify();
 
   // If this line overflows, fallback to 'text-align: start'.
   if (space <= 0)
-    return false;
+    return base::nullopt;
 
   // Can't justify an empty string.
   if (end_offset == line_info->StartOffset())
-    return false;
+    return base::nullopt;
 
   // Construct the line text to compute spacing for.
   StringBuilder line_text_builder;
@@ -740,8 +741,24 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
   ShapeResultSpacing<String> spacing(line_text);
   spacing.SetExpansion(space, line_info->BaseDirection(),
                        line_info->LineStyle().GetTextJustify());
-  if (!spacing.HasExpansion())
-    return false;  // no expansion opportunities exist.
+  const LayoutObject* box = Node().GetLayoutBox();
+  if (!spacing.HasExpansion()) {
+    // See AdjustInlineDirectionLineBounds() of LayoutRubyBase and
+    // LayoutRubyText.
+    if (box && (box->IsRubyText() || box->IsRubyBase()))
+      return space / 2;
+    return base::nullopt;
+  }
+
+  LayoutUnit inset;
+  // See AdjustInlineDirectionLineBounds() of LayoutRubyBase and
+  // LayoutRubyText.
+  if (box && (box->IsRubyText() || box->IsRubyBase())) {
+    inset = space / (spacing.ExpansionOppotunityCount() + 1);
+    inset = std::min(LayoutUnit(2 * line_info->LineStyle().FontSize()), inset);
+    spacing.SetExpansion(space - inset, line_info->BaseDirection(),
+                         line_info->LineStyle().GetTextJustify());
+  }
 
   for (NGInlineItemResult& item_result : *line_info->MutableResults()) {
     if (item_result.has_only_trailing_spaces)
@@ -771,7 +788,7 @@ bool NGInlineLayoutAlgorithm::ApplyJustify(LayoutUnit space,
       DCHECK_EQ(offset, 0.f);
     }
   }
-  return true;
+  return inset / 2;
 }
 
 // Apply the 'text-align' property to |line_info|. Returns the amount to move
@@ -785,10 +802,9 @@ LayoutUnit NGInlineLayoutAlgorithm::ApplyTextAlign(NGLineInfo* line_info) {
 
   ETextAlign text_align = line_info->TextAlign();
   if (text_align == ETextAlign::kJustify) {
-    // If justification succeeds, no offset is needed. Expansions are set to
-    // each |NGInlineItemResult| in |line_info|.
-    if (ApplyJustify(space, line_info))
-      return LayoutUnit();
+    base::Optional<LayoutUnit> offset = ApplyJustify(space, line_info);
+    if (offset)
+      return *offset;
 
     // If justification fails, fallback to 'text-align: start'.
     text_align = ETextAlign::kStart;

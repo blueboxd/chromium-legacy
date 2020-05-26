@@ -2128,6 +2128,9 @@ extern const char kExperimentalAccessibilitySwitchAccessTextDescription[];
 extern const char kFilesNGName[];
 extern const char kFilesNGDescription[];
 
+extern const char kFilesTransferDetailsName[];
+extern const char kFilesTransferDetailsDescription[];
+
 extern const char kFilesZipNoNaClName[];
 extern const char kFilesZipNoNaClDescription[];
 

@@ -200,7 +200,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   bool AllowContentInitiatedDataUrlNavigations(const KURL&) override;
 
   void DidChangeName(const String&) override;
-  void DidChangeFramePolicy(Frame* child_frame, const FramePolicy&) override;
   void DidSetFramePolicyHeaders(
       network::mojom::blink::WebSandboxFlags,
       const ParsedFeaturePolicy& fp_header,

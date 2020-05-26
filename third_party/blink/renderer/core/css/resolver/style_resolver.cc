@@ -1270,8 +1270,6 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
         state, result.AllRules(), false, inherited_only, needs_apply_pass);
   }
 
-  state.LoadPendingResources();
-
   // Now return the style.
   return state.TakeStyle();
 }

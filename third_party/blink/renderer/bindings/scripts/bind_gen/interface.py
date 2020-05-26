@@ -6598,6 +6598,8 @@ def generate_install_properties_per_feature(web_idl_database,
         EmptyNode(),
         TextNode("#include \"{}\"".format(header_path)),
         EmptyNode(),
+        TextNode("#include <algorithm>"),
+        EmptyNode(),
         make_header_include_directives(source_node.accumulator),
         EmptyNode(),
         source_blink_ns,
@@ -6686,27 +6688,63 @@ using InstallFuncType =
             path_manager.api_path(ext="h"))
 
     # The helper function
+    globals = filter(lambda x: "Global" in x.extended_attributes,
+                     set_of_interfaces)
+    entries = [
+        TextNode("{}::GetWrapperTypeInfo(), ".format(
+            v8_bridge_class_name(interface)))
+        for interface in sorted(globals, key=lambda x: x.identifier)
+    ]
+    has_globals = bool(entries)
+    if has_globals:
+        # TODO(yukishiino): Make WrapperTypeInfo have a bit flag to indicate
+        # whether an interface is a global interface or not.  Then, we can
+        # simplify this implementation.
+        helper_func_def.body.extend([
+            ListNode([
+                TextNode("static constexpr const WrapperTypeInfo* "
+                         "globals_body[] = {"),
+                ListNode(entries),
+                TextNode("};"),
+            ]),
+            TextNode("const auto& globals = base::make_span(globals_body);"),
+            EmptyNode(),
+        ])
     helper_func_def.body.append(
         TextNode("""\
 V8PerContextData* per_context_data = script_state->PerContextData();
 v8::Isolate* isolate = script_state->GetIsolate();
 v8::Local<v8::Context> context = script_state->GetContext();
 const DOMWrapperWorld& world = script_state->World();
-v8::Local<v8::Object> instance_object;
-v8::Local<v8::Object> prototype_object;
-v8::Local<v8::Function> interface_object;
-v8::Local<v8::FunctionTemplate> interface_template;
 V8InterfaceBridgeBase::FeatureSelector feature_selector(feature);
 
 for (const auto& pair : wrapper_type_info_list) {
   const WrapperTypeInfo* wrapper_type_info = pair.first;
   InstallFuncType install_func = pair.second;
-  if (per_context_data->GetExistingConstructorAndPrototypeForType(
+
+  v8::Local<v8::Object> instance_object;
+  v8::Local<v8::Object> prototype_object;
+  v8::Local<v8::Function> interface_object;
+  v8::Local<v8::FunctionTemplate> interface_template;
+
+  if (!per_context_data->GetExistingConstructorAndPrototypeForType(
           wrapper_type_info, &prototype_object, &interface_object)) {
-    interface_template = wrapper_type_info->DomTemplate(isolate, world);
-    install_func(context, world, instance_object, prototype_object,
-                 interface_object, interface_template, feature_selector);
+    continue;
   }
+"""))
+    if has_globals:
+        helper_func_def.body.append(
+            TextNode("""\
+  if (std::find(globals.begin(), globals.end(), wrapper_type_info)
+      != globals.end()) {
+    instance_object = context->Global()->GetPrototype().As<v8::Object>();
+  }
+"""))
+    helper_func_def.body.append(
+        TextNode("""\
+  interface_template = wrapper_type_info->DomTemplate(isolate, world);
+  install_func(context, world, instance_object, prototype_object,
+               interface_object, interface_template, feature_selector);
 }\
 """))
 

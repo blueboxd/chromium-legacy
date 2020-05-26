@@ -306,6 +306,9 @@ message AutoUpdateSettingsProto {
 
   // This token is forwarded to omaha by update_engine. If it is set, omaha may
   // serve a quick fix build identified by the token.
+  //
+  // This field is primarily used for quick fixes, but it is also used by the
+  // Hotrod team to subdivide the Stable channel into cohorts.
   optional string device_quick_fix_build_token = 15;
 }
 
@@ -428,6 +431,7 @@ message DeviceLocalAccountInfoProto {
   // configured accounts on a device must have unique identifiers.
   optional string account_id = 2;
 
+  // LINT.IfChange
   // Indicates the type of device-local account.
   enum AccountType {
     // A login-less, policy-configured browsing session.
@@ -443,6 +447,9 @@ message DeviceLocalAccountInfoProto {
     // Web App.
     ACCOUNT_TYPE_WEB_KIOSK_APP = 4;
   }
+  // Should keep ChromeServletUtil.toDimensionAccountType logic in sync with
+  // AccountType enum.
+  // LINT.ThenChange(//depot/google3/java/com/google/chrome/cros/dmserver/chrome/ChromeServletUtil.java)
 
   // The account type.
   optional AccountType type = 3;

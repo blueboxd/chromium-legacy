@@ -180,7 +180,8 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
       mojom::blink::ResourceTimingInfoPtr,
       const AtomicString& initiator_type,
       mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
-          worker_timing_receiver);
+          worker_timing_receiver,
+      ExecutionContext* context);
 
   void NotifyNavigationTimingToObservers();
 

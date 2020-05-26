@@ -62,6 +62,7 @@ cr-checkbox {
   color: rgb(66, 133, 244);
   font-size: 24px;
   margin-top: 82px;
+  user-select: text;
 }
 
 .installation-settings-spinner {

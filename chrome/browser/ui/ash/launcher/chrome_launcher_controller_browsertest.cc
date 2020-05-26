@@ -2488,18 +2488,6 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
       chromeos::AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
   chromeos::AccessibilityManager::Get()->EnableSpokenFeedback(true);
 
-  ash::RootWindowController* controller =
-      ash::Shell::GetRootWindowControllerWithDisplayId(
-          display::Screen::GetScreen()->GetPrimaryDisplay().id());
-  views::View* home_button = ash::ShelfTestApi().GetHomeButton();
-  ui::test::EventGenerator event_generator(controller->GetRootWindow());
-  auto* generator_ptr = &event_generator;
-
-  // There is a mouse move event being dispatched at the beginning of test
-  // that confuses ChromeVox. This brings back ChromeVox state so that
-  // GestureTapAt at home button could successfully change ChromeVox focus.
-  event_generator.MoveMouseTo(home_button->GetBoundsInScreen().CenterPoint());
-
   // AccessibilityManager sends an empty warmup utterance first.
   speech_monitor.ExpectSpeech("");
 
@@ -2514,27 +2502,40 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, EnableChromeVox) {
                 extension_misc::kChromeVoxExtensionId);
     content::ExecuteScriptAsync(host->host_contents(), script);
   });
-  speech_monitor.Call([generator_ptr, home_button]() {
-    // Gesture tap at the home button.
-    generator_ptr->GestureTapAt(home_button->GetBoundsInScreen().CenterPoint());
+
+  views::View* home_button = ash::ShelfTestApi().GetHomeButton();
+  speech_monitor.Call([home_button]() {
+    // Send hover accessibility event - ChromeVox needs this event to properly
+    // recognize the home button as the node with accessibility focus during
+    // touch exploration. The event is generally sent on tap, but with a delay,
+    // so relying on tap event only may introduce test flakiness.
+    home_button->NotifyAccessibilityEvent(ax::mojom::Event::kHover, true);
   });
+
   speech_monitor.ExpectSpeech("Launcher");
   speech_monitor.ExpectSpeech("Button");
   speech_monitor.ExpectSpeech("Shelf");
   speech_monitor.ExpectSpeech("Tool bar");
   speech_monitor.ExpectSpeech(", window");
 
+  ash::RootWindowController* controller =
+      ash::Shell::GetRootWindowControllerWithDisplayId(
+          display::Screen::GetScreen()->GetPrimaryDisplay().id());
   speech_monitor.Call([controller]() {
     // Hotseat is expected to be extended if spoken feedback is enabled.
     ASSERT_EQ(ash::HotseatState::kExtended,
               controller->shelf()->shelf_layout_manager()->hotseat_state());
   });
-  
+
+  ui::test::EventGenerator event_generator(controller->GetRootWindow());
+  auto* generator_ptr = &event_generator;
+
   speech_monitor.Call([generator_ptr]() {
     // Press the search + right. Expects that the browser icon receives the
     // accessibility focus and the hotseat remains in kExtended state.
     generator_ptr->PressKey(ui::VKEY_RIGHT, ui::EF_COMMAND_DOWN);
   });
+
   const int browser_index =
       ash::ShelfModel::Get()->GetItemIndexForType(ash::TYPE_BROWSER_SHORTCUT);
   speech_monitor.ExpectSpeech(

@@ -326,7 +326,7 @@ TEST_F(NotificationPermissionContextTest, SecureOriginRequirement) {
 // Tests auto-denial after a time delay in incognito.
 TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
   TestNotificationPermissionContext permission_context(
-      profile()->GetOffTheRecordProfile());
+      profile()->GetPrimaryOTRProfile());
   GURL url("https://www.example.com");
   NavigateAndCommit(url);
 
@@ -392,7 +392,7 @@ TEST_F(NotificationPermissionContextTest, TestDenyInIncognitoAfterDelay) {
 // Tests how multiple parallel permission requests get auto-denied in incognito.
 TEST_F(NotificationPermissionContextTest, TestParallelDenyInIncognito) {
   TestNotificationPermissionContext permission_context(
-      profile()->GetOffTheRecordProfile());
+      profile()->GetPrimaryOTRProfile());
   GURL url("https://www.example.com");
   NavigateAndCommit(url);
   web_contents()->WasShown();

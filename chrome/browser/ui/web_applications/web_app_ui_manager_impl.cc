@@ -24,6 +24,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
+#include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #endif
 
@@ -32,6 +33,15 @@ namespace web_app {
 // static
 std::unique_ptr<WebAppUiManager> WebAppUiManager::Create(Profile* profile) {
   return std::make_unique<WebAppUiManagerImpl>(profile);
+}
+
+// static
+bool WebAppUiManager::ShouldHideAppFromUser(const AppId& app_id) {
+#if defined(OS_CHROMEOS)
+  return app_list::HideInLauncherById(app_id);
+#else
+  return false;
+#endif
 }
 
 // static

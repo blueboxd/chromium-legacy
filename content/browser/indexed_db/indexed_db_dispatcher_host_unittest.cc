@@ -179,6 +179,7 @@ class IndexedDBDispatcherHostTest : public testing::Test {
             special_storage_policy_)),
         context_impl_(base::MakeRefCounted<IndexedDBContextImpl>(
             temp_dir_.GetPath(),
+            special_storage_policy_,
             quota_manager_->proxy(),
             base::DefaultClock::GetInstance(),
             mojo::NullRemote(),

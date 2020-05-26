@@ -5855,3 +5855,7 @@ crbug.com/1080609 virtual/threaded/external/wpt/scroll-animations/element-based-
 crbug.com/1085832 [ Fuchsia ] images/size-failure.html [ Timeout ]
 
 crbug.com/971031 [ Mac ] fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
+
+crbug.com/1071189 [ Debug ] editing/selection/programmatic-selection-on-mac-is-directionless.html [ Timeout Pass ]
+
+crbug.com/1086353 [ Win ] http/tests/websocket/close-in-order.html [ Pass Failure ]

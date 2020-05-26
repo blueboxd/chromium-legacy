@@ -123,9 +123,9 @@ class WebSocket::WebSocketEventHandler final
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
                    base::span<const char> payload) override;
+  void OnSendDataFrameDone() override;
   bool HasPendingDataFrames() override;
   void OnClosingHandshake() override;
-  void OnSendFlowControlQuotaAdded(int64_t quota) override;
   void OnDropChannel(bool was_clean,
                      uint16_t code,
                      const std::string& reason) override;
@@ -242,8 +242,6 @@ void WebSocket::WebSocketEventHandler::OnAddChannelResponse(
   impl_->header_client_.reset();
   impl_->client_.set_disconnect_handler(base::BindOnce(
       &WebSocket::OnConnectionError, base::Unretained(impl_), FROM_HERE));
-
-  impl_->client_->AddSendFlowControlQuota(send_flow_control_quota);
 }
 
 void WebSocket::WebSocketEventHandler::OnDataFrame(
@@ -260,6 +258,11 @@ void WebSocket::WebSocketEventHandler::OnDataFrame(
   impl_->SendPendingDataFrames();
 }
 
+void WebSocket::WebSocketEventHandler::OnSendDataFrameDone() {
+  impl_->ResumeDataPipeReading();
+  return;
+}
+
 bool WebSocket::WebSocketEventHandler::HasPendingDataFrames() {
   return !impl_->pending_data_frames_.empty();
 }
@@ -269,14 +272,6 @@ void WebSocket::WebSocketEventHandler::OnClosingHandshake() {
            << reinterpret_cast<void*>(this);
 
   impl_->client_->OnClosingHandshake();
-}
-
-void WebSocket::WebSocketEventHandler::OnSendFlowControlQuotaAdded(
-    int64_t quota) {
-  DVLOG(3) << "WebSocketEventHandler::OnSendFlowControlQuotaAdded @"
-           << reinterpret_cast<void*>(this) << " quota=" << quota;
-
-  impl_->client_->AddSendFlowControlQuota(quota);
 }
 
 void WebSocket::WebSocketEventHandler::OnDropChannel(
@@ -496,7 +491,8 @@ void WebSocket::SendMessage(mojom::WebSocketMessageType type,
 
   // Safe if ReadAndSendFromDataPipe() deletes |this| because this method is
   // only called from mojo.
-  ReadAndSendFromDataPipe();
+  if (!blocked_on_websocket_channel_)
+    ReadAndSendFromDataPipe();
 }
 
 void WebSocket::StartReceiving() {
@@ -631,6 +627,7 @@ void WebSocket::SendPendingDataFrames() {
            << reinterpret_cast<void*>(this)
            << ", pending_data_frames_.size=" << pending_data_frames_.size()
            << ", wait_for_writable_?" << wait_for_writable_;
+
   if (wait_for_writable_) {
     return;
   }
@@ -717,7 +714,9 @@ void WebSocket::ReadAndSendFromDataPipe() {
         &buffer, &readable_size, MOJO_READ_DATA_FLAG_NONE);
     if (begin_result == MOJO_RESULT_SHOULD_WAIT) {
       wait_for_readable_ = true;
-      readable_watcher_.ArmOrNotify();
+      if (!blocked_on_websocket_channel_) {
+        readable_watcher_.ArmOrNotify();
+      }
       return;
     }
     if (begin_result == MOJO_RESULT_FAILED_PRECONDITION) {
@@ -730,13 +729,13 @@ void WebSocket::ReadAndSendFromDataPipe() {
     auto data_to_pass = base::MakeRefCounted<net::IOBuffer>(size_to_send);
     const bool is_final = (size_to_send == data_frame.data_length);
     memcpy(data_to_pass->data(), buffer, size_to_send);
+    blocked_on_websocket_channel_ = true;
     if (channel_->SendFrame(is_final, MessageTypeToOpCode(data_frame.type),
                             std::move(data_to_pass), size_to_send) ==
         net::WebSocketChannel::CHANNEL_DELETED) {
       // |this| has been deleted.
       return;
     }
-
     const MojoResult end_result = readable_->EndReadData(size_to_send);
     DCHECK_EQ(end_result, MOJO_RESULT_OK);
 
@@ -750,6 +749,11 @@ void WebSocket::ReadAndSendFromDataPipe() {
     data_frame.data_length -= size_to_send;
   }
   return;
+}
+
+void WebSocket::ResumeDataPipeReading() {
+  blocked_on_websocket_channel_ = false;
+  readable_watcher_.ArmOrNotify();
 }
 
 void WebSocket::OnSSLCertificateErrorResponse(

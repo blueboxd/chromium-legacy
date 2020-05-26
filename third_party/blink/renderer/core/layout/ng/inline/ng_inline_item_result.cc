@@ -33,16 +33,31 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               bool use_first_line_style) {
   use_first_line_style_ = use_first_line_style;
   items_data_ = &items_data;
-  line_style_ = node.GetLayoutBox()->Style(use_first_line_style_);
+  const LayoutBox* box = node.GetLayoutBox();
+  line_style_ = box->Style(use_first_line_style_);
   needs_accurate_end_position_ = ComputeNeedsAccurateEndPosition();
+  is_ruby_base_ = box->IsRubyBase();
+  is_ruby_text_ = box->IsRubyText();
+}
+
+ETextAlign NGLineInfo::GetTextAlign(bool is_last_line) const {
+  // See LayoutRubyBase::TextAlignmentForLine().
+  if (is_ruby_base_)
+    return ETextAlign::kJustify;
+
+  // See LayoutRubyText::TextAlignmentForLine().
+  if (is_ruby_text_ && LineStyle().GetTextAlign() ==
+                           ComputedStyleInitialValues::InitialTextAlign())
+    return ETextAlign::kJustify;
+
+  return LineStyle().GetTextAlign(is_last_line);
 }
 
 bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
   // Some 'text-align' values need accurate end position. At this point, we
   // don't know if this is the last line or not, and thus we don't know whether
   // 'text-align' is used or 'text-align-last' is used.
-  const ComputedStyle& line_style = LineStyle();
-  switch (line_style.GetTextAlign()) {
+  switch (GetTextAlign()) {
     case ETextAlign::kStart:
       break;
     case ETextAlign::kEnd:
@@ -61,7 +76,16 @@ bool NGLineInfo::ComputeNeedsAccurateEndPosition() const {
         return true;
       break;
   }
-  switch (line_style.TextAlignLast()) {
+  ETextAlignLast align_last = LineStyle().TextAlignLast();
+  if (is_ruby_base_) {
+    // See LayoutRubyBase::TextAlignmentForLine().
+    align_last = ETextAlignLast::kJustify;
+  } else if (is_ruby_text_ &&
+             align_last == ComputedStyleInitialValues::InitialTextAlignLast()) {
+    // See LayoutRubyText::TextAlignmentForLine().
+    align_last = ETextAlignLast::kJustify;
+  }
+  switch (align_last) {
     case ETextAlignLast::kStart:
     case ETextAlignLast::kAuto:
       return false;
@@ -133,7 +157,7 @@ bool NGLineInfo::ShouldHangTrailingSpaces() const {
 }
 
 void NGLineInfo::UpdateTextAlign() {
-  text_align_ = line_style_->GetTextAlign(IsLastLine());
+  text_align_ = GetTextAlign(IsLastLine());
 
   if (HasTrailingSpaces() && ShouldHangTrailingSpaces()) {
     hang_width_ = ComputeTrailingSpaceWidth(&end_offset_for_justify_);

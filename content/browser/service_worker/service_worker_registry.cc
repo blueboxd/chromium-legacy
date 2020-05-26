@@ -468,8 +468,7 @@ void ServiceWorkerRegistry::UpdateLastUpdateCheckTime(
     base::Time last_update_check_time,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  BindRemoteStorageControlIfNeeded();
-  remote_storage_control_->UpdateLastUpdateCheckTime(
+  storage()->UpdateLastUpdateCheckTime(
       registration_id, origin, last_update_check_time,
       CreateDatabaseStatusCallback(std::move(callback)));
 }
@@ -1381,17 +1380,6 @@ bool ServiceWorkerRegistry::ShouldPurgeOnShutdown(const url::Origin& origin) {
     return false;
   return special_storage_policy_->IsStorageSessionOnly(origin.GetURL()) &&
          !special_storage_policy_->IsStorageProtected(origin.GetURL());
-}
-
-void ServiceWorkerRegistry::BindRemoteStorageControlIfNeeded() {
-  DCHECK(!(remote_storage_control_.is_bound() &&
-           !remote_storage_control_.is_connected()))
-      << "Rebinding is not supported yet.";
-
-  if (remote_storage_control_.is_bound())
-    return;
-
-  storage_control_->Bind(remote_storage_control_.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace content

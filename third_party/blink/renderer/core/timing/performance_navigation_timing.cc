@@ -57,7 +57,8 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
                : g_empty_atom,
           time_origin,
           SecurityOrigin::IsSecure(frame->GetDocument()->Url()),
-          std::move(server_timing)),
+          std::move(server_timing),
+          frame->DomWindow()),
       ExecutionContextClient(frame),
       resource_timing_info_(info) {
   DCHECK(frame);
@@ -317,4 +318,4 @@ void PerformanceNavigationTiming::BuildJSONValue(
   builder.AddString("type", type());
   builder.AddNumber("redirectCount", redirectCount());
 }
-}
+}  // namespace blink

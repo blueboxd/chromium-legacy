@@ -39064,6 +39064,7 @@ from previous Chrome versions.
   <int value="-1357778876" label="ExplicitLanguageAsk:enabled"/>
   <int value="-1357655121" label="enable-iframe-based-signin"/>
   <int value="-1357008397" label="ContextualSuggestionsCarousel:disabled"/>
+  <int value="-1353714232" label="FilesTransferDetails:enabled"/>
   <int value="-1353195918" label="UseSkiaRenderer:enabled"/>
   <int value="-1351968795" label="SingleProcessMash:enabled"/>
   <int value="-1351328710"
@@ -39596,6 +39597,7 @@ from previous Chrome versions.
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-778098896" label="EnableAggregatedMlSearchRanking:disabled"/>
   <int value="-778047974" label="CrostiniUseBusterImage:disabled"/>
+  <int value="-777568290" label="FilesTransferDetails:disabled"/>
   <int value="-777126951" label="FontSrcLocalMatching:enabled"/>
   <int value="-776686417" label="SiteExplorationUi:disabled"/>
   <int value="-775321548" label="UseNewDoodleApi:disabled"/>

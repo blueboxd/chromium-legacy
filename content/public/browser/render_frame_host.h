@@ -123,6 +123,9 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // Returns the route id for this frame.
   virtual int GetRoutingID() = 0;
 
+  // Returns the frame token for this frame.
+  virtual const base::UnguessableToken& GetFrameToken() = 0;
+
   // Returns the accessibility tree ID for this RenderFrameHost.
   virtual ui::AXTreeID GetAXTreeID() = 0;
 

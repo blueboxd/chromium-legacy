@@ -189,17 +189,14 @@ class MODULES_EXPORT WebSocketChannelImpl final
   };
   State GetState() const;
 
-  void SendInternal(network::mojom::blink::WebSocketMessageType,
-                    const char* data,
-                    size_t total_size,
-                    uint64_t* consumed_buffered_amount);
   void SendAndAdjustQuota(bool final,
                           network::mojom::blink::WebSocketMessageType,
                           base::span<const char>,
                           uint64_t* consumed_buffered_amount);
   bool MaybeSendSynchronously(network::mojom::blink::WebSocketMessageType,
-                              base::span<const char>);
+                              base::span<const char>* data);
   void ProcessSendQueue();
+  bool SendMessageData(base::span<const char>* data);
   void FailAsError(const String& reason) {
     Fail(reason, mojom::ConsoleMessageLevel::kError,
          location_at_construction_->Clone());
@@ -226,6 +223,10 @@ class MODULES_EXPORT WebSocketChannelImpl final
                         network::mojom::blink::WebSocketMessageType type,
                         const char* data,
                         size_t data_size);
+  // Called when |writable_| becomes writable.
+  void OnWritable(MojoResult result, const mojo::HandleSignalsState& state);
+  MojoResult ProduceData(base::span<const char>* data,
+                         uint64_t* consumed_buffered_amount);
   String GetTextMessage(const Vector<base::span<const char>>& chunks,
                         wtf_size_t size);
   void OnConnectionError(const base::Location& set_from,
@@ -275,6 +276,8 @@ class MODULES_EXPORT WebSocketChannelImpl final
   WTF::Deque<DataFrame> pending_data_frames_;
 
   mojo::ScopedDataPipeProducerHandle writable_;
+  mojo::SimpleWatcher writable_watcher_;
+  bool wait_for_writable_ = false;
 
   const scoped_refptr<base::SingleThreadTaskRunner> file_reading_task_runner_;
 };

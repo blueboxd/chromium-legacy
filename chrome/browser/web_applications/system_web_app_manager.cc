@@ -543,8 +543,9 @@ const std::string& SystemWebAppManager::CurrentLocale() const {
 void SystemWebAppManager::RecordSystemWebAppInstallMetrics(
     const std::map<GURL, InstallResultCode>& install_results,
     const base::TimeDelta& install_duration) const {
-  // Install duration should be positive.
-  DCHECK_GT(install_duration.InMicroseconds(), 0);
+  // Install duration should be non-negative. A low resolution clock could
+  // result in a |install_duration| of 0.
+  DCHECK_GE(install_duration.InMilliseconds(), 0);
 
   // Record the time spent to install system web apps.
   if (!shutting_down_) {

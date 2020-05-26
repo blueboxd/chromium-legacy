@@ -103,6 +103,9 @@ std::unique_ptr<quic::QuicResumptionState> QuicClientSessionCache::Lookup(
   return state;
 }
 
+void QuicClientSessionCache::ClearEarlyData(
+    const quic::QuicServerId& /*server_id*/) {}
+
 void QuicClientSessionCache::FlushInvalidEntries() {
   time_t now = clock_->Now().ToTimeT();
   auto iter = cache_.begin();

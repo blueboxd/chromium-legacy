@@ -24,6 +24,9 @@ class TestSystemWebAppInstallation {
  public:
   enum IncludeLaunchDirectory { kYes, kNo };
 
+  // Used for tests that don't want to install any System Web Apps.
+  static std::unique_ptr<TestSystemWebAppInstallation> SetUpWithoutApps();
+
   static std::unique_ptr<TestSystemWebAppInstallation>
   SetUpTabbedMultiWindowApp();
 
@@ -68,18 +71,22 @@ class TestSystemWebAppInstallation {
 
  private:
   TestSystemWebAppInstallation(SystemAppType type, SystemAppInfo info);
+  TestSystemWebAppInstallation();
 
-  Profile* profile_;
   std::unique_ptr<KeyedService> CreateWebAppProvider(SystemAppInfo info,
                                                      Profile* profile);
+  std::unique_ptr<KeyedService> CreateWebAppProviderWithNoSystemWebApps(
+      Profile* profile);
 
   // Must be called in SetUp*App() methods, before WebAppProvider is created.
   void RegisterAutoGrantedPermissions(ContentSettingsType permission);
 
+  Profile* profile_;
   SystemWebAppManager::UpdatePolicy update_policy_ =
       SystemWebAppManager::UpdatePolicy::kAlwaysUpdate;
   std::unique_ptr<TestWebAppProviderCreator> test_web_app_provider_creator_;
-  const SystemAppType type_;
+  // nullopt if SetUpWithoutApps() was used.
+  const base::Optional<SystemAppType> type_;
   std::unique_ptr<TestSystemWebAppWebUIControllerFactory>
       web_ui_controller_factory_;
   std::set<ContentSettingsType> auto_granted_permissions_;

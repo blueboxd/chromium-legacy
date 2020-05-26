@@ -277,6 +277,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // RenderFrameHost
   int GetRoutingID() override;
+  const base::UnguessableToken& GetFrameToken() override;
   ui::AXTreeID GetAXTreeID() override;
   SiteInstanceImpl* GetSiteInstance() override;
   RenderProcessHost* GetProcess() override;
@@ -990,8 +991,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // or speculative RenderFrameHost (that has not committed) should be avoided.
   void SetVisibilityForChildViews(bool visible);
 
+  // TODO(tonikitoo): Convert callers to GetFrameToken() and remove it.
   const base::UnguessableToken& frame_token() const { return frame_token_; }
-  const base::UnguessableToken& GetTopFrameToken() const;
+  const base::UnguessableToken& GetTopFrameToken();
 
   // Returns an unguessable token for this RFHI.  This provides a temporary way
   // to identify a RenderFrameHost that's compatible with IPC.  Else, one needs
@@ -1564,6 +1566,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::FrameOwnerPropertiesPtr frame_owner_properties) override;
   void DidChangeOpener(
       const base::Optional<base::UnguessableToken>& opener_frame) override;
+  void DidChangeFramePolicy(const base::UnguessableToken& child_frame_token,
+                            const blink::FramePolicy& frame_policy) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -1813,8 +1817,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnContextMenu(const UntrustworthyContextMenuParams& params);
   void OnVisualStateResponse(uint64_t id);
 
-  void OnDidChangeFramePolicy(int32_t frame_routing_id,
-                              const blink::FramePolicy& frame_policy);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnDidStopLoading();

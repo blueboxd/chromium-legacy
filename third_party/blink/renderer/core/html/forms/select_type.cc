@@ -365,7 +365,7 @@ void MenuListSelectType::DidSelectOption(
   if (PopupIsVisible() && should_update_popup)
     popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
 
-  SelectType::DidSelectOption(element, flags, should_update_popup);
+  select_->SetNeedsValidityCheck();
 
   if (should_dispatch_events) {
     select_->DispatchInputEvent();
@@ -933,7 +933,8 @@ void ListBoxSelectType::DidSelectOption(
       select_->SetActiveSelectionEnd(element);
   }
 
-  SelectType::DidSelectOption(element, flags, should_update_popup);
+  ScrollToSelection();
+  select_->SetNeedsValidityCheck();
 }
 
 void ListBoxSelectType::OptionRemoved(HTMLOptionElement& option) {
@@ -1242,13 +1243,6 @@ void SelectType::WillBeDestroyed() {
 
 void SelectType::Trace(Visitor* visitor) const {
   visitor->Trace(select_);
-}
-
-void SelectType::DidSelectOption(HTMLOptionElement*,
-                                 HTMLSelectElement::SelectOptionFlags,
-                                 bool) {
-  ScrollToSelection();
-  select_->SetNeedsValidityCheck();
 }
 
 void SelectType::OptionRemoved(HTMLOptionElement& option) {}

@@ -359,10 +359,6 @@ class NET_EXPORT WebSocketChannel {
   // during the connection process.
   std::unique_ptr<WebSocketStreamRequest> stream_request_;
 
-  // If the renderer's send quota reaches this level, it is sent a quota
-  // refresh. "quota units" are currently bytes. TODO(ricea): Update the
-  // definition of quota units when necessary.
-  int send_quota_low_water_mark_;
   // The level the quota is refreshed to when it reaches the low_water_mark
   // (quota units).
   int send_quota_high_water_mark_;

@@ -100,11 +100,29 @@ TestSystemWebAppInstallation::TestSystemWebAppInstallation(SystemAppType type,
                      base::Unretained(this), info));
 }
 
+TestSystemWebAppInstallation::TestSystemWebAppInstallation() {
+  test_web_app_provider_creator_ = std::make_unique<
+      TestWebAppProviderCreator>(base::BindOnce(
+      &TestSystemWebAppInstallation::CreateWebAppProviderWithNoSystemWebApps,
+      // base::Unretained is safe here. This callback is called
+      // at TestingProfile::Init, which is at test startup.
+      // TestSystemWebAppInstallation is intended to have the
+      // same lifecycle as the test, it won't be destroyed before
+      // the test finishes.
+      base::Unretained(this)));
+}
+
 TestSystemWebAppInstallation::~TestSystemWebAppInstallation() {
   if (web_ui_controller_factory_.get()) {
     content::WebUIControllerFactory::UnregisterFactoryForTesting(
         web_ui_controller_factory_.get());
   }
+}
+
+// static
+std::unique_ptr<TestSystemWebAppInstallation>
+TestSystemWebAppInstallation::SetUpWithoutApps() {
+  return base::WrapUnique(new TestSystemWebAppInstallation());
 }
 
 // static
@@ -206,7 +224,7 @@ TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
 
   auto provider = std::make_unique<TestWebAppProvider>(profile);
   auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
-  system_web_app_manager->SetSystemAppsForTesting({{type_, info}});
+  system_web_app_manager->SetSystemAppsForTesting({{type_.value(), info}});
   system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
   provider->SetSystemWebAppManager(std::move(system_web_app_manager));
   provider->Start();
@@ -216,6 +234,19 @@ TestSystemWebAppInstallation::CreateWebAppProvider(SystemAppInfo info,
   for (const auto& permission : auto_granted_permissions_)
     allowlist->RegisterAutoGrantedPermission(app_origin, permission);
 
+  return provider;
+}
+
+std::unique_ptr<KeyedService>
+TestSystemWebAppInstallation::CreateWebAppProviderWithNoSystemWebApps(
+    Profile* profile) {
+  profile_ = profile;
+  auto provider = std::make_unique<TestWebAppProvider>(profile);
+  auto system_web_app_manager = std::make_unique<SystemWebAppManager>(profile);
+  system_web_app_manager->SetSystemAppsForTesting({});
+  system_web_app_manager->SetUpdatePolicyForTesting(update_policy_);
+  provider->SetSystemWebAppManager(std::move(system_web_app_manager));
+  provider->Start();
   return provider;
 }
 
@@ -236,7 +267,7 @@ void TestSystemWebAppInstallation::WaitForAppInstall() {
 AppId TestSystemWebAppInstallation::GetAppId() {
   return WebAppProvider::Get(profile_)
       ->system_web_app_manager()
-      .GetAppIdForSystemApp(type_)
+      .GetAppIdForSystemApp(type_.value())
       .value();
 }
 
@@ -245,7 +276,7 @@ const GURL& TestSystemWebAppInstallation::GetAppUrl() {
 }
 
 SystemAppType TestSystemWebAppInstallation::GetType() {
-  return type_;
+  return type_.value();
 }
 
 void TestSystemWebAppInstallation::SetManifest(std::string manifest) {

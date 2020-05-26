@@ -326,7 +326,7 @@ const CSSImageValue& GetBackgroundImageValue(Element* element) {
 
 TEST_F(StyleResolverTest, BackgroundImageFetch) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
-    <style id="sheet">
+    <style>
       #none {
         display: none;
         background-image: url(img-none.png);
@@ -387,6 +387,30 @@ TEST_F(StyleResolverTest, BackgroundImageFetch) {
       << "No fetch for display:contents";
   EXPECT_TRUE(GetBackgroundImageValue(non_slotted).IsCachePending())
       << "No fetch for element outside the flat tree";
+}
+
+TEST_F(StyleResolverTest, NoFetchForAtPage) {
+  // Strictly, we should drop descriptors from @page rules which are not valid
+  // descriptors, but as long as we apply them to ComputedStyle we should at
+  // least not trigger fetches. The display:contents is here to make sure we
+  // don't hit a DCHECK in StylePendingImage::ComputedCSSValue().
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @page {
+        display: contents;
+        background-image: url(bg-img.png);
+      }
+    </style>
+  )HTML");
+
+  scoped_refptr<const ComputedStyle> page_style =
+      GetDocument().EnsureStyleResolver().StyleForPage(0, "");
+  ASSERT_TRUE(page_style);
+  const CSSValue* computed_value = ComputedStyleUtils::ComputedPropertyValue(
+      GetCSSPropertyBackgroundImage(), *page_style);
+
+  const CSSValueList* bg_img_list = To<CSSValueList>(computed_value);
+  EXPECT_TRUE(To<CSSImageValue>(bg_img_list->Item(0)).IsCachePending());
 }
 
 }  // namespace blink

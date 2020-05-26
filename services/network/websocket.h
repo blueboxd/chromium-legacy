@@ -167,6 +167,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   // ReadAndSendFromDataPipe() may indirectly delete |this|.
   void ReadAndSendFromDataPipe();
+  void ResumeDataPipeReading();
 
   // |factory_| owns |this|.
   WebSocketFactory* const factory_;
@@ -212,6 +213,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   mojo::SimpleWatcher readable_watcher_;
   base::queue<DataFrame> pending_send_data_frames_;
   bool wait_for_readable_ = false;
+  bool blocked_on_websocket_channel_ = false;
 
   DataPipeUseTracker data_pipe_use_tracker_;
 

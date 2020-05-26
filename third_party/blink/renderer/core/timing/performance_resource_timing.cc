@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
+#include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 
 namespace blink {
 
@@ -51,7 +52,8 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     base::TimeTicks time_origin,
     const AtomicString& initiator_type,
     mojo::PendingReceiver<mojom::blink::WorkerTimingContainer>
-        worker_timing_receiver)
+        worker_timing_receiver,
+    ExecutionContext* context)
     : PerformanceEntry(AtomicString(info.name),
                        Performance::MonotonicTimeToDOMHighResTimeStamp(
                            time_origin,
@@ -83,7 +85,12 @@ PerformanceResourceTiming::PerformanceResourceTiming(
       is_secure_context_(info.is_secure_context),
       server_timing_(
           PerformanceServerTiming::FromParsedServerTiming(info.server_timing)),
-      worker_timing_receiver_(this, std::move(worker_timing_receiver)) {}
+      worker_timing_receiver_(this, context) {
+  DCHECK(context);
+  worker_timing_receiver_.Bind(
+      std::move(worker_timing_receiver),
+      context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+}
 
 // This constructor is for PerformanceNavigationTiming.
 // TODO(https://crbug.com/900700): Set a Mojo pending receiver for
@@ -93,14 +100,19 @@ PerformanceResourceTiming::PerformanceResourceTiming(
     const AtomicString& name,
     base::TimeTicks time_origin,
     bool is_secure_context,
-    HeapVector<Member<PerformanceServerTiming>> server_timing)
+    HeapVector<Member<PerformanceServerTiming>> server_timing,
+    ExecutionContext* context)
     : PerformanceEntry(name, 0.0, 0.0),
       time_origin_(time_origin),
       context_type_(mojom::RequestContextType::HYPERLINK),
       request_destination_(network::mojom::RequestDestination::kDocument),
       is_secure_context_(is_secure_context),
       server_timing_(std::move(server_timing)),
-      worker_timing_receiver_(this, mojo::NullReceiver()) {}
+      worker_timing_receiver_(this, context) {
+  DCHECK(context);
+  worker_timing_receiver_.Bind(
+      mojo::NullReceiver(), context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() = default;
 
@@ -442,6 +454,7 @@ void PerformanceResourceTiming::AddPerformanceEntry(
 void PerformanceResourceTiming::Trace(Visitor* visitor) const {
   visitor->Trace(server_timing_);
   visitor->Trace(worker_timing_);
+  visitor->Trace(worker_timing_receiver_);
   PerformanceEntry::Trace(visitor);
 }
 

@@ -17,6 +17,7 @@
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "media/capture/video/chromeos/camera_app_device_impl.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
+#include "media/capture/video/chromeos/capture_metadata_dispatcher.h"
 #include "media/capture/video/chromeos/mojom/camera3.mojom.h"
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "media/capture/video/chromeos/request_builder.h"
@@ -44,32 +45,6 @@ constexpr int32_t kMinConfiguredStreams = 1;
 // Maximum configured streams could contain two optional YUV streams.
 constexpr int32_t kMaxConfiguredStreams = 4;
 
-// Interface that provides API to let Camera3AController to update the metadata
-// that will be sent with capture request.
-class CAPTURE_EXPORT CaptureMetadataDispatcher {
- public:
-  class ResultMetadataObserver {
-   public:
-    virtual ~ResultMetadataObserver() {}
-    virtual void OnResultMetadataAvailable(
-        const cros::mojom::CameraMetadataPtr&) = 0;
-  };
-
-  virtual ~CaptureMetadataDispatcher() {}
-  virtual void AddResultMetadataObserver(ResultMetadataObserver* observer) = 0;
-  virtual void RemoveResultMetadataObserver(
-      ResultMetadataObserver* observer) = 0;
-  virtual void SetCaptureMetadata(cros::mojom::CameraMetadataTag tag,
-                                  cros::mojom::EntryType type,
-                                  size_t count,
-                                  std::vector<uint8_t> value) = 0;
-  virtual void SetRepeatingCaptureMetadata(cros::mojom::CameraMetadataTag tag,
-                                           cros::mojom::EntryType type,
-                                           size_t count,
-                                           std::vector<uint8_t> value) = 0;
-  virtual void UnsetRepeatingCaptureMetadata(
-      cros::mojom::CameraMetadataTag tag) = 0;
-};
 
 // RequestManager is responsible for managing the flow for sending capture
 // requests and receiving capture results. Having RequestBuilder to build

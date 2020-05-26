@@ -377,10 +377,16 @@ interface LocalFrameHost {
     mojo_base.mojom.UnguessableToken child_frame_token,
     blink.mojom.FrameOwnerProperties frame_owner_properties);
 
-  // Sent when a remote renderer frame either updates its opener to another
+  // Sent when a local renderer frame either updates its opener to another
   // frame identified by |opener_frame|, or, if |opener_frame| // is "empty",
   // the frame disowns its opener for the lifetime of the window.
   DidChangeOpener(mojo_base.mojom.UnguessableToken? opener_frame);
+
+  // Notifies the browser that sandbox flags or container policy have changed
+  // for a subframe of this frame.
+  DidChangeFramePolicy(
+      mojo_base.mojom.UnguessableToken child_frame_token,
+      blink.mojom.FramePolicy frame_policy);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will
@@ -598,7 +604,7 @@ interface RemoteFrameHost {
   // https://html.spec.whatwg.org/multipage/interaction.html#inert
   SetIsInert(bool inert);
 
-  // Sent when a renderer local frame either updates its opener to another
+  // Sent when a renderer remote frame either updates its opener to another
   // frame identified by |opener_frame|, or, if |opener_frame| is "empty",
   // the frame disowns its opener for the lifetime of the window.
   DidChangeOpener(mojo_base.mojom.UnguessableToken? opener_frame);

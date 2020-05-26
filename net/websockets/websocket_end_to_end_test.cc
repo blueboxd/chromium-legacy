@@ -109,7 +109,7 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
 
   bool HasPendingDataFrames() override { return false; }
 
-  void OnSendFlowControlQuotaAdded(int64_t quota) override;
+  void OnSendDataFrameDone() override;
 
   void OnClosingHandshake() override;
 
@@ -182,7 +182,7 @@ void ConnectTestingEventInterface::OnDataFrame(bool fin,
                                                base::span<const char> payload) {
 }
 
-void ConnectTestingEventInterface::OnSendFlowControlQuotaAdded(int64_t quota) {}
+void ConnectTestingEventInterface::OnSendDataFrameDone() {}
 
 void ConnectTestingEventInterface::OnClosingHandshake() {}
 

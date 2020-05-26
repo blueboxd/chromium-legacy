@@ -44,7 +44,6 @@ namespace {
 
 using base::StreamingUtf8Validator;
 
-const int kDefaultSendQuotaLowWaterMark = 1 << 16;
 const int kDefaultSendQuotaHighWaterMark = 1 << 17;
 const size_t kWebSocketCloseCodeLength = 2;
 // Timeout for waiting for the server to acknowledge a closing handshake.
@@ -286,7 +285,6 @@ WebSocketChannel::WebSocketChannel(
     URLRequestContext* url_request_context)
     : event_interface_(std::move(event_interface)),
       url_request_context_(url_request_context),
-      send_quota_low_water_mark_(kDefaultSendQuotaLowWaterMark),
       send_quota_high_water_mark_(kDefaultSendQuotaHighWaterMark),
       current_send_quota_(0),
       closing_handshake_timeout_(
@@ -354,12 +352,6 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
   }
 
   DCHECK_EQ(state_, CONNECTED);
-  if (buffer_size > base::checked_cast<size_t>(current_send_quota_)) {
-    // TODO(ricea): Kill renderer.
-    FailChannel("Send quota exceeded", kWebSocketErrorGoingAway, "");
-    return CHANNEL_DELETED;
-    // |this| has been deleted.
-  }
 
   DCHECK(WebSocketFrameHeader::IsKnownDataOpCode(op_code))
       << "Got SendFrame with bogus op_code " << op_code << " fin=" << fin
@@ -381,7 +373,6 @@ WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
     sending_text_message_ = !fin;
     DCHECK(!fin || state == StreamingUtf8Validator::VALID_ENDPOINT);
   }
-  current_send_quota_ -= buffer_size;
   // TODO(ricea): If current_send_quota_ has dropped below
   // send_quota_low_water_mark_, it might be good to increase the "low
   // water mark" and "high water mark", but only if the link to the WebSocket
@@ -599,21 +590,7 @@ ChannelState WebSocketChannel::OnWriteDone(bool synchronous, int result) {
           return WriteFrames();
       } else {
         data_being_sent_.reset();
-        if (current_send_quota_ < send_quota_low_water_mark_) {
-          // TODO(ricea): Increase low_water_mark and high_water_mark if
-          // throughput is high, reduce them if throughput is low.  Low water
-          // mark needs to be >= the bandwidth delay product *of the IPC
-          // channel*. Because factors like context-switch time, thread wake-up
-          // time, and bus speed come into play it is complex and probably needs
-          // to be determined empirically.
-          DCHECK_LE(send_quota_low_water_mark_, send_quota_high_water_mark_);
-          // TODO(ricea): Truncate quota by the quota specified by the remote
-          // server, if the protocol in use supports quota.
-          int fresh_quota = send_quota_high_water_mark_ - current_send_quota_;
-          current_send_quota_ += fresh_quota;
-          event_interface_->OnSendFlowControlQuotaAdded(fresh_quota);
-          return CHANNEL_ALIVE;
-        }
+        event_interface_->OnSendDataFrameDone();
       }
       return CHANNEL_ALIVE;
 

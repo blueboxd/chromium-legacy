@@ -33,7 +33,7 @@ TEST(UserDataUtilTest, SortsCompleteContactsAlphabetically) {
   autofill::test::SetProfileInfo(profile_unicode.get(),
                                  "\xC3\x85"
                                  "dam",
-                                 "", "West", "aedam.west@gmail.com", "", "", "",
+                                 "", "West", "adam.west@gmail.com", "", "", "",
                                  "", "", "", "", "");
 
   // Specify profiles in reverse order to force sorting.
@@ -375,13 +375,13 @@ TEST(UserDataUtilTest, GetDefaultSelectionForCompletePaymentInstruments) {
 }
 
 TEST(UserDataUtilTest, CompareContactDetailsMatch) {
-  auto profile_a = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_a.get(), "Adam", "", "West",
+  autofill::AutofillProfile profile_a;
+  autofill::test::SetProfileInfo(&profile_a, "Adam", "", "West",
                                  "adam.west@gmail.com", "", "", "", "", "", "",
                                  "", "+41");
 
-  auto profile_b = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_b.get(), "Adam", "", "West",
+  autofill::AutofillProfile profile_b;
+  autofill::test::SetProfileInfo(&profile_b, "Adam", "", "West",
                                  "adam.west@gmail.com", "", "", "", "", "", "",
                                  "", "+41");
 
@@ -390,84 +390,79 @@ TEST(UserDataUtilTest, CompareContactDetailsMatch) {
   options.request_payer_email = true;
   options.request_payer_phone = true;
 
-  EXPECT_TRUE(CompareContactDetails(options, profile_a.get(), profile_b.get()));
+  EXPECT_TRUE(CompareContactDetails(options, &profile_a, &profile_b));
 }
 
 TEST(UserDataUtilTest, CompareContactDetailsMismatchForNoChecks) {
-  auto profile_a = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_a.get(), "Adam", "", "West",
+  autofill::AutofillProfile profile_a;
+  autofill::test::SetProfileInfo(&profile_a, "Adam", "", "West",
                                  "adam.west@gmail.com", "", "", "", "", "", "",
                                  "", "+41");
 
-  auto profile_b = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_b.get(), "Adam", "", "West",
+  autofill::AutofillProfile profile_b;
+  autofill::test::SetProfileInfo(&profile_b, "Adam", "", "West",
                                  "adam.west@gmail.com", "", "", "", "", "", "",
                                  "", "+41");
 
   CollectUserDataOptions options;
 
-  EXPECT_FALSE(
-      CompareContactDetails(options, profile_a.get(), profile_b.get()));
+  EXPECT_FALSE(CompareContactDetails(options, &profile_a, &profile_b));
 }
 
 TEST(UserDataUtilTest, CompareContactDetailsMismatches) {
-  auto profile_truth = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_truth.get(), "Adam", "", "West",
+  autofill::AutofillProfile profile_truth;
+  autofill::test::SetProfileInfo(&profile_truth, "Adam", "", "West",
                                  "adam.west@gmail.com", "", "", "", "", "", "",
                                  "", "+41");
 
-  auto profile_mismatching_name = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_mismatching_name.get(), "Berta", "",
-                                 "West", "adam.west@gmail.com", "", "", "", "",
-                                 "", "", "", "+41");
+  autofill::AutofillProfile profile_mismatching_name;
+  autofill::test::SetProfileInfo(&profile_mismatching_name, "Berta", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+41");
 
-  auto profile_mismatching_email =
-      std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_mismatching_email.get(), "Adam", "",
-                                 "West", "berta.west@gmail.com", "", "", "", "",
-                                 "", "", "", "+41");
+  autofill::AutofillProfile profile_mismatching_email;
+  autofill::test::SetProfileInfo(&profile_mismatching_email, "Adam", "", "West",
+                                 "berta.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+41");
 
-  auto profile_mismatching_phone =
-      std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_mismatching_name.get(), "Adam", "",
-                                 "West", "adam.west@gmail.com", "", "", "", "",
-                                 "", "", "", "+44");
+  autofill::AutofillProfile profile_mismatching_phone;
+  autofill::test::SetProfileInfo(&profile_mismatching_name, "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+44");
 
   CollectUserDataOptions options;
   options.request_payer_name = true;
   options.request_payer_email = true;
   options.request_payer_phone = true;
 
-  EXPECT_FALSE(CompareContactDetails(options, profile_truth.get(),
-                                     profile_mismatching_name.get()));
-  EXPECT_FALSE(CompareContactDetails(options, profile_truth.get(),
-                                     profile_mismatching_email.get()));
-  EXPECT_FALSE(CompareContactDetails(options, profile_truth.get(),
-                                     profile_mismatching_phone.get()));
+  EXPECT_FALSE(CompareContactDetails(options, &profile_truth,
+                                     &profile_mismatching_name));
+  EXPECT_FALSE(CompareContactDetails(options, &profile_truth,
+                                     &profile_mismatching_email));
+  EXPECT_FALSE(CompareContactDetails(options, &profile_truth,
+                                     &profile_mismatching_phone));
 }
 
 TEST(UserDataUtilTest, CompareContactDetailsMatchesForUnqueriedFields) {
-  auto profile_truth = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_truth.get(), "Adam", "", "West",
+  autofill::AutofillProfile profile_truth;
+  autofill::test::SetProfileInfo(&profile_truth, "Adam", "", "West",
                                  "adam.west@gmail.com", "", "", "", "", "", "",
                                  "", "+41");
 
-  auto profile_mismatching_name = std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_mismatching_name.get(), "Berta", "",
-                                 "West", "adam.west@gmail.com", "", "", "", "",
-                                 "", "", "", "+41");
+  autofill::AutofillProfile profile_mismatching_name;
+  autofill::test::SetProfileInfo(&profile_mismatching_name, "Berta", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+41");
 
-  auto profile_mismatching_email =
-      std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_mismatching_email.get(), "Adam", "",
-                                 "West", "berta.west@gmail.com", "", "", "", "",
-                                 "", "", "", "+41");
+  autofill::AutofillProfile profile_mismatching_email;
+  autofill::test::SetProfileInfo(&profile_mismatching_email, "Adam", "", "West",
+                                 "berta.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+41");
 
-  auto profile_mismatching_phone =
-      std::make_unique<autofill::AutofillProfile>();
-  autofill::test::SetProfileInfo(profile_mismatching_phone.get(), "Adam", "",
-                                 "West", "adam.west@gmail.com", "", "", "", "",
-                                 "", "", "", "+44");
+  autofill::AutofillProfile profile_mismatching_phone;
+  autofill::test::SetProfileInfo(&profile_mismatching_phone, "Adam", "", "West",
+                                 "adam.west@gmail.com", "", "", "", "", "", "",
+                                 "", "+44");
 
   CollectUserDataOptions options_no_check_name;
   options_no_check_name.request_payer_email = true;
@@ -481,12 +476,199 @@ TEST(UserDataUtilTest, CompareContactDetailsMatchesForUnqueriedFields) {
   options_no_check_phone.request_payer_name = true;
   options_no_check_phone.request_payer_email = true;
 
-  EXPECT_TRUE(CompareContactDetails(options_no_check_name, profile_truth.get(),
-                                    profile_mismatching_name.get()));
-  EXPECT_TRUE(CompareContactDetails(options_no_check_email, profile_truth.get(),
-                                    profile_mismatching_email.get()));
-  EXPECT_TRUE(CompareContactDetails(options_no_check_phone, profile_truth.get(),
-                                    profile_mismatching_phone.get()));
+  EXPECT_TRUE(CompareContactDetails(options_no_check_name, &profile_truth,
+                                    &profile_mismatching_name));
+  EXPECT_TRUE(CompareContactDetails(options_no_check_email, &profile_truth,
+                                    &profile_mismatching_email));
+  EXPECT_TRUE(CompareContactDetails(options_no_check_phone, &profile_truth,
+                                    &profile_mismatching_phone));
+}
+
+TEST(UserDataUtilTest, ContactCompletenessNotRequired) {
+  CollectUserDataOptions not_required_options;
+  not_required_options.request_payer_name = false;
+  not_required_options.request_payer_email = false;
+  not_required_options.request_payer_phone = false;
+
+  EXPECT_TRUE(IsCompleteContact(nullptr, not_required_options));
+}
+
+TEST(UserDataUtilTest, ContactCompletenessRequireName) {
+  autofill::AutofillProfile contact;
+  CollectUserDataOptions require_name_options;
+  require_name_options.request_payer_name = true;
+
+  EXPECT_FALSE(IsCompleteContact(nullptr, require_name_options));
+  autofill::test::SetProfileInfo(&contact, /* first_name= */ "",
+                                 /* middle_name= */ "",
+                                 /* last_name= */ "", "adam.west@gmail.com", "",
+                                 "", "", "", "", "", "", "+41");
+  EXPECT_FALSE(IsCompleteContact(&contact, require_name_options));
+  autofill::test::SetProfileInfo(&contact, "John", /* middle_name= */ "", "Doe",
+                                 "", "", "", "", "", "", "", "", "");
+  EXPECT_TRUE(IsCompleteContact(&contact, require_name_options));
+}
+
+TEST(UserDataUtilTest, ContactCompletenessRequireEmail) {
+  autofill::AutofillProfile contact;
+  CollectUserDataOptions require_email_options;
+  require_email_options.request_payer_email = true;
+
+  EXPECT_FALSE(IsCompleteContact(nullptr, require_email_options));
+  autofill::test::SetProfileInfo(&contact, "John", "", "Doe",
+                                 /* email= */ "", "", "", "", "", "", "", "",
+                                 "+41");
+  EXPECT_FALSE(IsCompleteContact(&contact, require_email_options));
+  autofill::test::SetProfileInfo(&contact, "John", "", "Doe",
+                                 "john.doe@gmail.com", "", "", "", "", "", "",
+                                 "", "+41");
+  EXPECT_TRUE(IsCompleteContact(&contact, require_email_options));
+}
+
+TEST(UserDataUtilTest, ContactCompletenessRequirePhone) {
+  autofill::AutofillProfile contact;
+  CollectUserDataOptions require_phone_options;
+  require_phone_options.request_payer_phone = true;
+
+  EXPECT_FALSE(IsCompleteContact(nullptr, require_phone_options));
+  autofill::test::SetProfileInfo(&contact, "John", "", "Doe",
+                                 "john.doe@gmail.com", "", "", "", "", "", "",
+                                 "",
+                                 /* phone= */ "");
+  EXPECT_FALSE(IsCompleteContact(&contact, require_phone_options));
+  autofill::test::SetProfileInfo(&contact, "", "", "", "", "", "", "", "", "",
+                                 "", "", "+41");
+  EXPECT_TRUE(IsCompleteContact(&contact, require_phone_options));
+}
+
+TEST(UserDataUtilTest, CompleteShippingAddressNotRequired) {
+  CollectUserDataOptions not_required_options;
+  not_required_options.request_shipping = false;
+
+  EXPECT_TRUE(IsCompleteShippingAddress(nullptr, not_required_options));
+}
+
+TEST(UserDataUtilTest, CompleteShippingAddressRequired) {
+  autofill::AutofillProfile address;
+  CollectUserDataOptions require_shipping_options;
+  require_shipping_options.request_shipping = true;
+
+  autofill::test::SetProfileInfo(&address, "John", "", "Doe",
+                                 "john.doe@gmail.com", "", /* address1= */ "",
+                                 /* address2= */ "", /* city= */ "",
+                                 /* state=  */ "", /* zip_code=  */ "",
+                                 /* country= */ "", "+41");
+  EXPECT_FALSE(IsCompleteShippingAddress(&address, require_shipping_options));
+  autofill::test::SetProfileInfo(&address, "John", "", "Doe",
+                                 /* email= */ "", "", "Brandschenkestrasse 110",
+                                 "", "Zurich", "Zurich", "8002", "CH",
+                                 /* phone= */ "");
+  EXPECT_TRUE(IsCompleteShippingAddress(&address, require_shipping_options));
+}
+
+TEST(UserDataUtilTest, CompleteCreditCardNotRequired) {
+  CollectUserDataOptions not_required_options;
+  not_required_options.request_payment_method = false;
+
+  EXPECT_TRUE(IsCompleteCreditCard(nullptr, nullptr, not_required_options));
+}
+
+TEST(UserDataUtilTest, CompleteCreditCardZipNotRequired) {
+  CollectUserDataOptions payment_options;
+  payment_options.request_payment_method = true;
+  payment_options.require_billing_postal_code = false;
+
+  autofill::AutofillProfile address;
+  autofill::CreditCard card;
+  autofill::test::SetCreditCardInfo(&card, "Adam West", "4111111111111111", "1",
+                                    "2050",
+                                    /* billing_address_id= */ "id");
+
+  EXPECT_FALSE(IsCompleteCreditCard(nullptr, nullptr, payment_options));
+  EXPECT_FALSE(IsCompleteCreditCard(&card, nullptr, payment_options));
+  EXPECT_FALSE(IsCompleteCreditCard(&card, &address, payment_options));
+  // UK addresses do not require a zip code, they are complete without it.
+  autofill::test::SetProfileInfo(&address, "John", "", "Doe",
+                                 /* email= */ "", "", "Baker Street 221b", "",
+                                 "London", /* state= */ "",
+                                 /* zipcode= */ "", "UK", /* phone= */ "");
+  EXPECT_TRUE(IsCompleteCreditCard(&card, &address, payment_options));
+  // CH addresses require a zip code to be complete. This check outranks the
+  // |require_billing_postal_code| flag.
+  autofill::test::SetProfileInfo(&address, "John", "", "Doe",
+                                 /* email= */ "", "", "Brandschenkestrasse 110",
+                                 "", "Zurich", "Zurich",
+                                 /* zipcode= */ "", "CH", /* phone= */ "");
+  EXPECT_FALSE(IsCompleteCreditCard(&card, &address, payment_options));
+}
+
+TEST(UserDataUtilTest, CompleteCreditCardZipRequired) {
+  CollectUserDataOptions payment_options;
+  payment_options.request_payment_method = true;
+  payment_options.require_billing_postal_code = true;
+
+  autofill::AutofillProfile address;
+  autofill::CreditCard card;
+  autofill::test::SetCreditCardInfo(&card, "Adam West", "4111111111111111", "1",
+                                    "2050",
+                                    /* billing_address_id= */ "id");
+
+  EXPECT_FALSE(IsCompleteCreditCard(nullptr, nullptr, payment_options));
+  EXPECT_FALSE(IsCompleteCreditCard(&card, nullptr, payment_options));
+  EXPECT_FALSE(IsCompleteCreditCard(&card, &address, payment_options));
+  autofill::test::SetProfileInfo(&address, "John", "", "Doe",
+                                 /* email= */ "", "", "Baker Street 221b", "",
+                                 "London", /* state= */ "",
+                                 /* zipcode= */ "", "UK", /* phone= */ "");
+  EXPECT_FALSE(IsCompleteCreditCard(&card, &address, payment_options));
+  autofill::test::SetProfileInfo(&address, "John", "", "Doe",
+                                 /* email= */ "", "", "Baker Street 221b", "",
+                                 "London", /* state=  */ "", "WC2N 5DU", "UK",
+                                 /* phone= */ "");
+  EXPECT_TRUE(IsCompleteCreditCard(&card, &address, payment_options));
+}
+
+TEST(UserDataUtilTest, CompleteExpiredCreditCard) {
+  CollectUserDataOptions payment_options;
+  payment_options.request_payment_method = true;
+
+  autofill::AutofillProfile address;
+  autofill::test::SetProfileInfo(
+      &address, "John", "", "Doe", "john.doe@gmail.com", "",
+      "Brandschenkestrasse 110", "", "Zurich", "Zurich", "8002", "CH", "+41");
+  autofill::CreditCard card;
+
+  autofill::test::SetCreditCardInfo(&card, "Adam West", "4111111111111111", "1",
+                                    "2000",
+                                    /* billing_address_id= */ "id");
+  EXPECT_FALSE(IsCompleteCreditCard(&card, &address, payment_options));
+  autofill::test::SetCreditCardInfo(&card, "Adam West", "4111111111111111", "1",
+                                    "2050",
+                                    /* billing_address_id= */ "id");
+  EXPECT_TRUE(IsCompleteCreditCard(&card, &address, payment_options));
+}
+
+TEST(UserDataUtilTest, CompleteCreditCardWithBadNetwork) {
+  autofill::AutofillProfile address;
+  autofill::test::SetProfileInfo(
+      &address, "John", "", "Doe", "john.doe@gmail.com", "",
+      "Brandschenkestrasse 110", "", "Zurich", "Zurich", "8002", "CH", "+41");
+  autofill::CreditCard card;
+  autofill::test::SetCreditCardInfo(&card, "Adam West", "4111111111111111", "1",
+                                    "2050",
+                                    /* billing_address_id= */ "id");
+
+  CollectUserDataOptions payment_options_mastercard;
+  payment_options_mastercard.request_payment_method = true;
+  payment_options_mastercard.supported_basic_card_networks.emplace_back(
+      "mastercard");
+  EXPECT_FALSE(
+      IsCompleteCreditCard(&card, &address, payment_options_mastercard));
+
+  CollectUserDataOptions payment_options_visa;
+  payment_options_visa.request_payment_method = true;
+  payment_options_visa.supported_basic_card_networks.emplace_back("visa");
+  EXPECT_TRUE(IsCompleteCreditCard(&card, &address, payment_options_visa));
 }
 
 }  // namespace

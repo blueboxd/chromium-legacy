@@ -101,12 +101,6 @@ class Profile : public content::BrowserContext {
     EXIT_CRASHED,
   };
 
-  enum ProfileType {
-    REGULAR_PROFILE,  // Login user's normal profile
-    INCOGNITO_PROFILE,  // Login user's off-the-record profile
-    GUEST_PROFILE,  // Guest session's profile
-  };
-
   class OTRProfileID {
    public:
     // Creates an OTR profile ID from |profile_id|.
@@ -327,8 +321,7 @@ class Profile : public content::BrowserContext {
 
   // Returns whether two profiles are the same and of the same type.
   bool IsSameProfileAndType(Profile* profile) {
-    return IsSameProfile(profile) &&
-           GetProfileType() == profile->GetProfileType();
+    return profile == static_cast<Profile*>(this);
   }
 
   // Returns the time the profile was started. This is not the time the profile
@@ -507,9 +500,6 @@ class Profile : public content::BrowserContext {
   virtual void SetCreationTimeForTesting(base::Time creation_time) = 0;
 
  protected:
-  // Returns the profile type.
-  virtual ProfileType GetProfileType() const = 0;
-
   void set_is_guest_profile(bool is_guest_profile) {
     is_guest_profile_ = is_guest_profile;
   }

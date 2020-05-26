@@ -62,7 +62,6 @@ class TestPasswordManagerDriver : public StubPasswordManagerDriver {
     ON_CALL(*this, GetLastCommittedURL())
         .WillByDefault(testing::ReturnRef(empty_url_));
   }
-  ~TestPasswordManagerDriver() override {}
 
   // PasswordManagerDriver implementation.
   PasswordGenerationFrameHelper* GetPasswordGenerationHelper() override {
@@ -169,7 +168,7 @@ class PasswordGenerationFrameHelperTest : public testing::Test {
         new TestingPrefServiceSimple());
     prefs->registry()->RegisterBooleanPref(prefs::kCredentialsEnableService,
                                            true);
-    client_.reset(new MockPasswordManagerClient(std::move(prefs)));
+    client_ = std::make_unique<MockPasswordManagerClient>(std::move(prefs));
   }
 
   void TearDown() override { client_.reset(); }

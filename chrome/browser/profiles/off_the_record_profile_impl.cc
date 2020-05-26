@@ -251,16 +251,6 @@ std::string OffTheRecordProfileImpl::GetProfileUserName() const {
   return std::string();
 }
 
-Profile::ProfileType OffTheRecordProfileImpl::GetProfileType() const {
-#if !defined(OS_CHROMEOS)
-  return profile_->IsGuestSession() ? GUEST_PROFILE : INCOGNITO_PROFILE;
-#else
-  // GuestSessionProfile is used for guest sessions on ChromeOS.
-  DCHECK(!profile_->IsGuestSession());
-  return INCOGNITO_PROFILE;
-#endif
-}
-
 base::FilePath OffTheRecordProfileImpl::GetPath() {
   return profile_->GetPath();
 }
@@ -605,8 +595,6 @@ class GuestSessionProfile : public OffTheRecordProfileImpl {
       : OffTheRecordProfileImpl(real_profile, OTRProfileID::PrimaryID()) {
     set_is_guest_profile(true);
   }
-
-  ProfileType GetProfileType() const override { return GUEST_PROFILE; }
 
   void InitChromeOSPreferences() override {
     chromeos_preferences_.reset(new chromeos::Preferences());

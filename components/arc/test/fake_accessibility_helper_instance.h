@@ -8,6 +8,7 @@
 #include <string>
 
 #include "components/arc/mojom/accessibility_helper.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace arc {
 
@@ -17,7 +18,7 @@ class FakeAccessibilityHelperInstance
   FakeAccessibilityHelperInstance();
   ~FakeAccessibilityHelperInstance() override;
 
-  void Init(mojom::AccessibilityHelperHostPtr host_ptr,
+  void Init(mojo::PendingRemote<mojom::AccessibilityHelperHost> host_remote,
             InitCallback callback) override;
   void SetFilter(mojom::AccessibilityFilterType filter_type) override;
   void PerformAction(mojom::AccessibilityActionDataPtr action_data_ptr,

@@ -46,10 +46,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 // application has been woken up by the system for background work.
 @property(nonatomic, readonly) BOOL userInteracted;
 
-// Current foreground active for the application, if any. Some scene's window
-// otherwise. For legacy use cases only, use scene windows instead.
-@property(nonatomic, readonly) UIWindow* window;
-
 // When multiwindow is unavailable, this is the only scene state. It is created
 // by the app delegate.
 @property(nonatomic, strong) SceneState* mainSceneState;

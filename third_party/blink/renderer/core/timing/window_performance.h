@@ -76,6 +76,8 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                            bool cancelable,
                            Node*);
 
+  void OnPaintFinished();
+
   void AddElementTiming(const AtomicString& name,
                         const String& url,
                         const FloatRect& rect,
@@ -115,14 +117,32 @@ class CORE_EXPORT WindowPerformance final : public Performance,
 
   // Method called once swap promise is resolved. It will add all event timings
   // that have not been added since the last swap promise.
-  void ReportEventTimings(WebSwapResult result, base::TimeTicks timestamp);
+  void ReportEventTimings(uint64_t frame_index,
+                          WebSwapResult result,
+                          base::TimeTicks timestamp);
 
   void DispatchFirstInputTiming(PerformanceEventTiming* entry);
 
-  // PerformanceEventTiming entries that have not been added yet: the event
-  // dispatch has been completed but the swap promise used to determine
-  // |duration| has not been resolved.
-  HeapVector<Member<PerformanceEventTiming>> event_timings_;
+  // Counter of the current frame index, based on calls to OnPaintFinished().
+  uint64_t frame_index_ = 1;
+  // Monotonically increasing value with the last frame index on which a swap
+  // promise was queued;
+  uint64_t last_registered_frame_index_ = 0;
+  // Number of pending swap promises.
+  uint16_t pending_swap_promise_count_ = 0;
+  // PerformanceEventTiming entries that have not been sent to observers yet:
+  // the event dispatch has been completed but the swap promise used to
+  // determine |duration| has not yet been resolved. It is handled as a queue:
+  // FIFO.
+  HeapDeque<Member<PerformanceEventTiming>> event_timings_;
+  // Entries corresponding to frame indices in which the entries in
+  // |event_timings_| were added. This could be combined with |event_timings_|
+  // into a single deque, but PerformanceEventTiming is GarbageCollected so it
+  // would need to be a HeapDeque. HeapDeque does not allow std::pair as its
+  // type, so we would have to add a new wrapper GarbageCollected class that
+  // contains the PerformanceEventTiming object as well as the frame index. This
+  // is more work than having two separate deques.
+  Deque<uint64_t> event_frames_;
   Member<PerformanceEventTiming> first_pointer_down_event_timing_;
   Member<EventCounts> event_counts_;
   mutable Member<PerformanceNavigation> navigation_;

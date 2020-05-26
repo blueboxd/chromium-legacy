@@ -9,6 +9,11 @@ specific_include_rules = {
     # expose it to any other files except through the public mojo interface.
     "+chrome/services/app_service/app_service_impl.h",
   ],
+  "notifications_browsertest\.cc": [
+    "+ash/system/message_center/arc/arc_notification_manager.h",
+    "+ash/system/message_center/arc/arc_notification_manager_delegate.h",
+    "+ui/message_center/message_center.h",
+  ],
   ".*unittest\.cc": [
     "+cc/test",
   ],

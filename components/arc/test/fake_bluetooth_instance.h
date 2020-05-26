@@ -10,6 +10,8 @@
 
 #include "base/macros.h"
 #include "components/arc/mojom/bluetooth.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace device {
 class BluetoothUUID;
@@ -106,8 +108,10 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
   ~FakeBluetoothInstance() override;
 
   // mojom::BluetoothInstance overrides:
-  void InitDeprecated(mojom::BluetoothHostPtr host_ptr) override;
-  void Init(mojom::BluetoothHostPtr host_ptr, InitCallback callback) override;
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::BluetoothHost> host_remote) override;
+  void Init(mojo::PendingRemote<mojom::BluetoothHost> host_remote,
+            InitCallback callback) override;
   void OnAdapterProperties(
       mojom::BluetoothStatus status,
       std::vector<mojom::BluetoothPropertyPtr> properties) override;
@@ -216,7 +220,7 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
 
   // Keeps the binding alive so that calls to this class can be correctly
   // routed.
-  mojom::BluetoothHostPtr host_;
+  mojo::Remote<mojom::BluetoothHost> host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothInstance);
 };

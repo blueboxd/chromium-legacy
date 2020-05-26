@@ -61,7 +61,7 @@ interface ScreenCaptureSession {
 // Implemented by Android.
 interface ScreenCaptureInstance {
   // Establishes full-duplex communication with the host.
-  Init@0(ScreenCaptureHost host_ptr) => ();
+  Init@0(pending_remote<ScreenCaptureHost> host_remote) => ();
 };
 
 // Implemented by Android as a callback mechanism.

@@ -21,19 +21,15 @@
 // src="../../../../../ui/login/account_picker/chromeos_user_pod_row.js">
 // <include src="cr_ui.js">
 // <include src="oobe_screen_autolaunch.js">
-// <include src="oobe_screen_supervision_transition.js">
 // <include src="oobe_screen_assistant_optin_flow.js">
 // <include src="oobe_select.js">
 
 // <include src="screen_app_launch_splash.js">
 // <include src="screen_arc_terms_of_service.js">
 // <include src="screen_error_message.js">
-// <include src="screen_password_changed.js">
 // <include src="screen_wrong_hwid.js">
 // <include src="screen_confirm_password.js">
 // <include src="screen_fatal_error.js">
-// <include src="screen_active_directory_password_change.js">
-// <include src="screen_encryption_migration.js">
 // <include src="screen_sync_consent.js">
 // <include src="screen_fingerprint_setup.js">
 // <include src="screen_app_downloading.js">
@@ -70,7 +66,6 @@ cr.define('cr.ui.Oobe', function() {
       login.AccountPickerScreen.register();
       login.OAuthEnrollmentScreen.register();
       login.ErrorMessageScreen.register();
-      login.PasswordChangedScreen.register();
       login.SyncConsentScreen.register();
       login.FingerprintSetupScreen.register();
       login.ArcTermsOfServiceScreen.register();
@@ -78,8 +73,6 @@ cr.define('cr.ui.Oobe', function() {
       login.AppLaunchSplashScreen.register();
       login.ConfirmPasswordScreen.register();
       login.FatalErrorScreen.register();
-      login.ActiveDirectoryPasswordChangeScreen.register(/* lazyInit= */ true);
-      login.SupervisionTransitionScreen.register();
       login.DemoSetupScreen.register();
       login.DemoPreferencesScreen.register();
       login.DiscoverScreen.register();

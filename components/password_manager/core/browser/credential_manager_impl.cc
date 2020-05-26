@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 #include "components/password_manager/core/browser/credential_manager_impl.h"
 
+#include <memory>
+
 #include <string>
 
 #include "base/bind.h"
@@ -29,7 +31,7 @@ CredentialManagerImpl::CredentialManagerImpl(PasswordManagerClient* client)
                             client_->GetPrefs());
 }
 
-CredentialManagerImpl::~CredentialManagerImpl() {}
+CredentialManagerImpl::~CredentialManagerImpl() = default;
 
 void CredentialManagerImpl::Store(const CredentialInfo& credential,
                                   StoreCallback callback) {
@@ -82,8 +84,8 @@ void CredentialManagerImpl::PreventSilentAccess(
     return;
 
   if (!pending_require_user_mediation_) {
-    pending_require_user_mediation_.reset(
-        new CredentialManagerPendingPreventSilentAccessTask(this));
+    pending_require_user_mediation_ =
+        std::make_unique<CredentialManagerPendingPreventSilentAccessTask>(this);
   }
   pending_require_user_mediation_->AddOrigin(GetSynthesizedFormForOrigin());
 }
@@ -136,9 +138,9 @@ void CredentialManagerImpl::Get(CredentialMediationRequirement mediation,
     return;
   }
 
-  pending_request_.reset(new CredentialManagerPendingRequestTask(
+  pending_request_ = std::make_unique<CredentialManagerPendingRequestTask>(
       this, base::BindOnce(&RunGetCallback, std::move(callback)), mediation,
-      include_passwords, federations));
+      include_passwords, federations);
   // This will result in a callback to
   // PendingRequestTask::OnGetPasswordStoreResults().
   GetPasswordStore()->GetLogins(GetSynthesizedFormForOrigin(),

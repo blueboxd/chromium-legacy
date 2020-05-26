@@ -65,7 +65,7 @@ std::string GetHashPrefix(const GURL& origin, size_t prefix_length) {
   base::MD5Digest digest;
   base::MD5Sum(domain_and_registry.data(), domain_and_registry.size(), &digest);
 
-  for (size_t i = 0; i < base::size(digest.a); ++i) {
+  for (auto& byte : digest.a) {
     if (prefix_length >= 8) {
       prefix_length -= 8;
       continue;
@@ -73,7 +73,7 @@ std::string GetHashPrefix(const GURL& origin, size_t prefix_length) {
       // Determine the |prefix_length| most significant bits by calculating
       // the 8 - |prefix_length| least significant bits and inverting the
       // result.
-      digest.a[i] &= ~((1 << (8 - prefix_length)) - 1);
+      byte &= ~((1 << (8 - prefix_length)) - 1);
       prefix_length = 0;
     }
   }
@@ -137,15 +137,14 @@ void PasswordRequirementsSpecFetcherImpl::Fetch(GURL origin,
   // If a lookup is happening already, just register another callback.
   auto iter = lookups_in_flight_.find(hash_prefix);
   if (iter != lookups_in_flight_.end()) {
-    iter->second->callbacks.push_back(
-        std::make_pair(origin, std::move(callback)));
+    iter->second->callbacks.emplace_back(origin, std::move(callback));
     VLOG(1) << "Lookup already in flight";
     return;
   }
 
   // Start another lookup otherwise.
   auto lookup = std::make_unique<LookupInFlight>();
-  lookup->callbacks.push_back(std::make_pair(origin, std::move(callback)));
+  lookup->callbacks.emplace_back(origin, std::move(callback));
   lookup->start_of_request = base::TimeTicks::Now();
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

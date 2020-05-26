@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <map>
+#include <memory>
+
 #include <string>
 #include <tuple>
 
@@ -191,14 +193,14 @@ GURL HttpURLFromHttps(const GURL& https_url) {
 
 class CredentialManagerImplTest : public testing::Test {
  public:
-  CredentialManagerImplTest() {}
+  CredentialManagerImplTest() = default;
 
   void SetUp() override {
     store_ = new TestPasswordStore;
     store_->Init(nullptr);
-    client_.reset(
-        new testing::NiceMock<MockPasswordManagerClient>(store_.get()));
-    cm_service_impl_.reset(new CredentialManagerImpl(client_.get()));
+    client_ = std::make_unique<testing::NiceMock<MockPasswordManagerClient>>(
+        store_.get());
+    cm_service_impl_ = std::make_unique<CredentialManagerImpl>(client_.get());
     ON_CALL(*client_, IsSavingAndFillingEnabled(_))
         .WillByDefault(testing::Return(true));
     ON_CALL(*client_, IsFillingEnabled(_)).WillByDefault(testing::Return(true));
@@ -932,7 +934,7 @@ TEST_F(CredentialManagerImplTest,
   CredentialManagerError error;
   base::Optional<CredentialInfo> credential;
   std::vector<GURL> federations;
-  federations.push_back(GURL("https://google.com/"));
+  federations.emplace_back("https://google.com/");
   CallGet(CredentialMediationRequirement::kOptional, true, federations,
           base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
 
@@ -1022,7 +1024,7 @@ TEST_F(CredentialManagerImplTest,
   client_->set_first_run_seen(true);
 
   std::vector<GURL> federations;
-  federations.push_back(GURL("https://example.com/"));
+  federations.emplace_back("https://example.com/");
 
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
 
@@ -1039,7 +1041,7 @@ TEST_F(CredentialManagerImplTest,
   client_->set_first_run_seen(true);
 
   std::vector<GURL> federations;
-  federations.push_back(GURL("https://not-example.com/"));
+  federations.emplace_back("https://not-example.com/");
 
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
 
@@ -1099,7 +1101,7 @@ TEST_F(CredentialManagerImplTest,
       std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
-  federations.push_back(GURL("https://example.com/"));
+  federations.emplace_back("https://example.com/");
 
   std::vector<std::string> affiliated_realms;
   affiliated_realms.push_back(kTestAndroidRealm1);
@@ -1123,7 +1125,7 @@ TEST_F(CredentialManagerImplTest,
       std::make_unique<MockAffiliatedMatchHelper>());
 
   std::vector<GURL> federations;
-  federations.push_back(GURL("https://not-example.com/"));
+  federations.emplace_back("https://not-example.com/");
 
   std::vector<std::string> affiliated_realms;
   affiliated_realms.push_back(kTestAndroidRealm1);
@@ -1635,7 +1637,7 @@ TEST_F(CredentialManagerImplTest,
   CredentialManagerError error;
   base::Optional<CredentialInfo> credential;
   std::vector<GURL> federations;
-  federations.push_back(GURL("https://google.com/"));
+  federations.emplace_back("https://google.com/");
 
   CallGet(CredentialMediationRequirement::kSilent, true, federations,
           base::BindOnce(&GetCredentialCallback, &called, &error, &credential));

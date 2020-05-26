@@ -2282,7 +2282,7 @@ INSTANTIATE_TEST_SUITE_P(MigrationToVCurrent,
 
 class LoginDatabaseUndecryptableLoginsTest : public testing::Test {
  protected:
-  LoginDatabaseUndecryptableLoginsTest() {}
+  LoginDatabaseUndecryptableLoginsTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/statistics_table.h"
 #include <functional>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -45,8 +46,8 @@ class StatisticsTableTest : public testing::Test {
 
   void ReloadDatabase() {
     base::FilePath file = temp_dir_.GetPath().AppendASCII("TestDatabase");
-    db_.reset(new StatisticsTable);
-    connection_.reset(new sql::Database);
+    db_ = std::make_unique<StatisticsTable>();
+    connection_ = std::make_unique<sql::Database>();
     connection_->set_exclusive_locking();
     ASSERT_TRUE(connection_->Open(file));
     db_->Init(connection_.get());

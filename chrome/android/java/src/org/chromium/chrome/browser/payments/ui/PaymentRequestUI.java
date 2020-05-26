@@ -405,7 +405,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
 
         mRequestView =
                 (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.payment_request, null);
-        prepareRequestView(mContext, title, origin, securityLevel, canAddCards);
+        prepareRequestView(mContext, title, origin, securityLevel, canAddCards, profile);
 
         mEditorDialog = new EditorDialog(activity, /*deleteRunnable =*/null, profile);
         DimmingDialog.setVisibleStatusBarIconColor(mEditorDialog.getWindow());
@@ -478,9 +478,10 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
      * @param origin        The RFC6454 origin of the page.
      * @param securityLevel The security level of the page that invoked PaymentRequest.
      * @param canAddCards   Whether new cards can be added.
+     * @param profile       The current profile to pass PaymentRequestHeader.
      */
-    private void prepareRequestView(
-            Context context, String title, String origin, int securityLevel, boolean canAddCards) {
+    private void prepareRequestView(Context context, String title, String origin, int securityLevel,
+            boolean canAddCards, Profile profile) {
         mSpinnyLayout = mRequestView.findViewById(R.id.payment_request_spinny);
         assert mSpinnyLayout.getVisibility() == View.VISIBLE;
         mIsShowingSpinner = true;
@@ -490,7 +491,7 @@ public class PaymentRequestUI implements DimmingDialog.OnDismissListener, View.O
         messageView.setText(R.string.payments_loading_message);
 
         ((PaymentRequestHeader) mRequestView.findViewById(R.id.header))
-                .setTitleAndOrigin(title, origin, securityLevel);
+                .setTitleAndOrigin(title, origin, securityLevel, profile);
 
         // Set up the buttons.
         mCloseButton = mRequestView.findViewById(R.id.close_button);

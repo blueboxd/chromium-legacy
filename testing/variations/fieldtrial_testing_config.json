@@ -71,7 +71,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_20200323",
+                    "name": "EnabledLaunch",
                     "enable_features": [
                         "IntentBlockExternalFormRedirectsNoGesture"
                     ]
@@ -86,7 +86,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnabledLaunch",
                     "enable_features": [
                         "AndroidBlockIntentNonSafelistedHeaders"
                     ]
@@ -5595,9 +5595,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "Enabled_With_WebRTC_2020-05-21",
                     "enable_features": [
-                        "SharedClipboardUI"
+                        "SharedClipboardUI",
+                        "SharingPeerConnectionReceiver"
                     ]
                 }
             ]
@@ -5622,24 +5623,6 @@
                     },
                     "enable_features": [
                         "SharingMatchPulseInterval"
-                    ]
-                }
-            ]
-        }
-    ],
-    "SharingWebRTC": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SharingPeerConnectionReceiver"
                     ]
                 }
             ]

@@ -469,6 +469,7 @@ void ExtensionAppsChromeOs::OnExtensionUninstalled(
     return;
   }
 
+  app_notifications_.RemoveNotificationsForApp(extension->id());
   paused_apps_.MaybeRemoveApp(extension->id());
 
   ExtensionAppsBase::OnExtensionUninstalled(browser_context, extension, reason);
@@ -514,14 +515,18 @@ void ExtensionAppsChromeOs::OnNotificationDisplayed(
 
 void ExtensionAppsChromeOs::OnNotificationClosed(
     const std::string& notification_id) {
-  const std::string& app_id =
-      app_notifications_.GetAppIdForNotification(notification_id);
-  if (app_id.empty() || MaybeGetExtension(app_id) == nullptr) {
+  const auto app_ids =
+      app_notifications_.GetAppIdsForNotification(notification_id);
+  if (app_ids.empty()) {
     return;
   }
+
   app_notifications_.RemoveNotification(notification_id);
-  Publish(app_notifications_.GetAppWithHasBadgeStatus(app_type(), app_id),
-          subscribers());
+
+  for (const auto& app_id : app_ids) {
+    Publish(app_notifications_.GetAppWithHasBadgeStatus(app_type(), app_id),
+            subscribers());
+  }
 }
 
 void ExtensionAppsChromeOs::OnNotificationDisplayServiceDestroyed(

@@ -81,6 +81,11 @@ class PLATFORM_EXPORT DiskDataAllocator : public mojom::blink::DiskAllocator {
     return file_tail_;
   }
 
+  size_t free_chunks_size() {
+    MutexLocker locker(mutex_);
+    return free_chunks_size_;
+  }
+
  protected:
   // Protected methods for testing.
   DiskDataAllocator();

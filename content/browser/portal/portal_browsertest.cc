@@ -1677,7 +1677,7 @@ IN_PROC_BROWSER_TEST_F(PortalBrowserTest, AdvanceFocusIntoPortal) {
   RenderProcessHostBadIpcMessageWaiter rph_kill_waiter(
       main_frame->GetProcess());
   outer_delegate_proxy->AdvanceFocus(blink::mojom::FocusType::kNone,
-                                     main_frame->frame_token());
+                                     main_frame->GetFrameToken());
   base::Optional<bad_message::BadMessageReason> result = rph_kill_waiter.Wait();
   EXPECT_TRUE(result.has_value());
   EXPECT_EQ(result.value(), bad_message::RFPH_ADVANCE_FOCUS_INTO_PORTAL);

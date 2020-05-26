@@ -74,7 +74,7 @@ PasswordManagerExporter::PasswordManagerExporter(
       task_runner_(g_task_runner.Get()) {
 }
 
-PasswordManagerExporter::~PasswordManagerExporter() {}
+PasswordManagerExporter::~PasswordManagerExporter() = default;
 
 void PasswordManagerExporter::PreparePasswordsForExport() {
   DCHECK_EQ(GetProgressStatus(), ExportProgressStatus::NOT_STARTED);

@@ -338,7 +338,7 @@ class PasswordManagerTest : public testing::Test {
         .WillByDefault(Return(store_.get()));
     EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
 
-    manager_.reset(new PasswordManager(&client_));
+    manager_ = std::make_unique<PasswordManager>(&client_);
     password_autofill_manager_ =
         std::make_unique<PasswordAutofillManager>(&driver_, nullptr, &client_);
 
@@ -358,7 +358,7 @@ class PasswordManagerTest : public testing::Test {
     ON_CALL(client_, ShowManualFallbackForSavingPtr(_, _, _))
         .WillByDefault(WithArg<0>(DeletePtr()));
 
-    prefs_.reset(new TestingPrefServiceSimple());
+    prefs_ = std::make_unique<TestingPrefServiceSimple>();
     prefs_->registry()->RegisterIntegerPref(
         prefs::kPasswordManagerOnboardingState,
         static_cast<int>(OnboardingState::kDoNotShow));

@@ -28,7 +28,7 @@ enum LoginTableColumns {
 std::vector<InteractionsStats> StatementToInteractionsStats(sql::Statement* s) {
   std::vector<InteractionsStats> results;
   while (s->Step()) {
-    results.push_back(InteractionsStats());
+    results.emplace_back();
     results.back().origin_domain = GURL(s->ColumnString(COLUMN_ORIGIN_DOMAIN));
     results.back().username_value = s->ColumnString16(COLUMN_USERNAME);
     results.back().dismissal_count = s->ColumnInt(COLUMN_DISMISSALS);

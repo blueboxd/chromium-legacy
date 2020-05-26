@@ -82,6 +82,8 @@ source_set("util") {
   sources = [
     "error_test_util.h",
     "error_test_util.mm",
+    "js_test_storage_util.h",
+    "js_test_storage_util.mm",
     "js_test_util.h",
     "js_test_util.mm",
     "navigation_test_util.h",

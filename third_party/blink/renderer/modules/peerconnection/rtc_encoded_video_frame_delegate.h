@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/webrtc/api/frame_transformer_interface.h"
+#include "third_party/webrtc/api/video/video_frame_metadata.h"
 
 namespace blink {
 
@@ -35,6 +36,7 @@ class RTCEncodedVideoFrameDelegate
   void SetData(const DOMArrayBuffer* data);
   DOMArrayBuffer* CreateAdditionalDataBuffer() const;
   uint32_t Ssrc() const;
+  const webrtc::VideoFrameMetadata* GetMetadata() const;
   std::unique_ptr<webrtc::TransformableVideoFrameInterface> PassWebRtcFrame();
 
  private:

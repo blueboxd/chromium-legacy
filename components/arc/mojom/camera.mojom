@@ -106,5 +106,5 @@ interface CameraHost {
 // Next method ID: 1
 interface CameraInstance {
   // Establishes full-duplex communication with the host.
-  Init@0(CameraHost host_ptr) => ();
+  Init@0(pending_remote<CameraHost> host_remote) => ();
 };

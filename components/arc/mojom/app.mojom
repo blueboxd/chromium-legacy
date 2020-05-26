@@ -364,10 +364,10 @@ interface AppHost {
 // Deprecated method IDs: 2, 3, 13
 interface AppInstance {
   // DEPRECATED: Please use Init@21 instead.
-  InitDeprecated@0(AppHost host_ptr);
+  InitDeprecated@0(pending_remote<AppHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=26] Init@21(AppHost host_ptr) => ();
+  [MinVersion=26] Init@21(pending_remote<AppHost> host_remote) => ();
 
   [MinVersion=1] CanHandleResolutionDeprecated@4(
       string package_name, string activity, Rect dimension) =>

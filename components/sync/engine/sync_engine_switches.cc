@@ -20,11 +20,4 @@ const base::Feature kSyncUseScryptForNewCustomPassphrases{
 const base::Feature kSyncSupportTrustedVaultPassphrase{
     "SyncSupportTrustedVaultPassphrase", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// If enabled sync cycle ends by collecting contributions from all datatypes
-// and having less than max_commit_batch_size() entries to commit. If disabled
-// it ends when attempt to collect contributions returned no entries to commit.
-// TODO(crbug.com/1022293): Remove this flag after M82 or so.
-const base::Feature kSyncPreventCommitsBypassingNudgeDelay{
-    "SyncPreventCommitsBypassingNudgeDelay", base::FEATURE_ENABLED_BY_DEFAULT};
-
 }  // namespace switches

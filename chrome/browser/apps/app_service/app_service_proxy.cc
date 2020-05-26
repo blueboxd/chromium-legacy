@@ -323,6 +323,13 @@ void AppServiceProxy::Uninstall(const std::string& app_id,
 #endif
 }
 
+void AppServiceProxy::UninstallSilently(const std::string& app_id) {
+  if (app_service_.is_connected()) {
+    app_service_->Uninstall(cache_.GetAppType(app_id), app_id,
+                            /*clear_site_data=*/false, /*report_abuse=*/false);
+  }
+}
+
 #if defined(OS_CHROMEOS)
 void AppServiceProxy::PauseApps(
     const std::map<std::string, PauseData>& pause_data) {
@@ -441,6 +448,7 @@ void AppServiceProxy::UninstallForTesting(const std::string& app_id,
                                           base::OnceClosure callback) {
   UninstallImpl(app_id, parent_window, std::move(callback));
 }
+
 #endif
 
 std::vector<std::string> AppServiceProxy::GetAppIdsForUrl(const GURL& url) {

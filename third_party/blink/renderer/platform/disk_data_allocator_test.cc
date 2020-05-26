@@ -44,6 +44,14 @@ class DiskDataAllocatorTest : public ::testing::Test {
   }
 
  protected:
+  void SetUp() override {
+    // On some platforms, initialization takes time, though it happens when
+    // base::ThreadTicks is used. To prevent flakiness depending on test
+    // execution ordering, force initialization.
+    if (base::ThreadTicks::IsSupported())
+      base::ThreadTicks::WaitUntilInitialized();
+  }
+
   base::test::TaskEnvironment task_environment_;
 };
 
@@ -178,6 +186,8 @@ TEST_F(DiskDataAllocatorTest, FreeChunksMerging) {
 
   auto allocator = std::make_unique<InMemoryDataAllocator>();
   auto chunks = Allocate(allocator.get(), kSize, 4);
+  EXPECT_EQ(static_cast<int64_t>(4 * kSize), allocator->disk_footprint());
+  EXPECT_EQ(0u, allocator->free_chunks_size());
 
   // Layout is (indices in |chunks|):
   // | 0 | 1 | 2 | 3 |
@@ -192,9 +202,11 @@ TEST_F(DiskDataAllocatorTest, FreeChunksMerging) {
   allocator->Discard(std::move(chunks[2]));
   EXPECT_EQ(1u, allocator->FreeChunks().size());
   EXPECT_EQ(3 * kSize, allocator->FreeChunks().begin()->second);
+  EXPECT_EQ(3 * kSize, allocator->free_chunks_size());
   allocator->Discard(std::move(chunks[3]));
   EXPECT_EQ(1u, allocator->FreeChunks().size());
   EXPECT_EQ(4 * kSize, allocator->FreeChunks().begin()->second);
+  EXPECT_EQ(static_cast<int64_t>(4 * kSize), allocator->disk_footprint());
 
   allocator = std::make_unique<InMemoryDataAllocator>();
   chunks = Allocate(allocator.get(), kSize, 4);
@@ -207,6 +219,7 @@ TEST_F(DiskDataAllocatorTest, FreeChunksMerging) {
   EXPECT_EQ(2 * kSize, allocator->FreeChunks().begin()->second);
   allocator->Discard(std::move(chunks[0]));
   EXPECT_EQ(2u, allocator->FreeChunks().size());
+  EXPECT_EQ(3 * kSize, allocator->free_chunks_size());
   // Multiple merges: left, then right.
   allocator->Discard(std::move(chunks[1]));
   EXPECT_EQ(1u, allocator->FreeChunks().size());

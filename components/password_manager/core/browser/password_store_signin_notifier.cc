@@ -9,9 +9,9 @@
 
 namespace password_manager {
 
-PasswordStoreSigninNotifier::PasswordStoreSigninNotifier() {}
+PasswordStoreSigninNotifier::PasswordStoreSigninNotifier() = default;
 
-PasswordStoreSigninNotifier::~PasswordStoreSigninNotifier() {}
+PasswordStoreSigninNotifier::~PasswordStoreSigninNotifier() = default;
 
 void PasswordStoreSigninNotifier::NotifySignedOut(const std::string& username,
                                                   bool primary_account) {

@@ -14,6 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "media/capture/mojom/image_capture_types.h"
 #include "media/capture/video/android/capture_jni_headers/VideoCapture_jni.h"
 #include "media/capture/video/android/photo_capabilities.h"

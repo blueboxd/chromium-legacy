@@ -135,7 +135,7 @@ interface InputMethodManagerHost {
 // Next method ID: 7
 interface InputMethodManagerInstance {
   // Establishes full-duplex communication with the host.
-  Init@0(InputMethodManagerHost host_ptr) => ();
+  Init@0(pending_remote<InputMethodManagerHost> host_remote) => ();
 
   // Enables/Disables an IME in Android. Calling this method will add/remove
   // the specified IME to/from ENABLED_INPUT_METHODS settings.

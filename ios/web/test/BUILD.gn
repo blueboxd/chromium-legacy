@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//ios/web/js_compile.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
@@ -50,6 +51,7 @@ source_set("test_support") {
   public_deps = [ "//testing/gtest" ]
 
   deps = [
+    ":all_frames_web_test_bundle",
     ":test_constants",
     "//base",
     "//base/test:test_support",
@@ -85,5 +87,15 @@ source_set("test_constants") {
   sources = [
     "test_url_constants.cc",
     "test_url_constants.h",
+  ]
+}
+
+js_compile_bundle("all_frames_web_test_bundle") {
+  testonly = true
+  closure_entry_point = "__crWeb.allFramesWebTestBundle"
+
+  sources = [
+    "resources/all_frames_web_test_bundle.js",
+    "resources/cookie_test.js",
   ]
 }

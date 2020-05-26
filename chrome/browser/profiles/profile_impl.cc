@@ -835,10 +835,6 @@ std::string ProfileImpl::GetProfileUserName() const {
   return std::string();
 }
 
-Profile::ProfileType ProfileImpl::GetProfileType() const {
-  return REGULAR_PROFILE;
-}
-
 #if !defined(OS_ANDROID)
 std::unique_ptr<content::ZoomLevelDelegate>
 ProfileImpl::CreateZoomLevelDelegate(const base::FilePath& partition_path) {
@@ -1345,7 +1341,7 @@ ProfileImpl::GetNativeFileSystemPermissionContext() {
 }
 
 bool ProfileImpl::IsSameProfile(Profile* profile) {
-  if (profile == static_cast<Profile*>(this))
+  if (IsSameProfileAndType(profile))
     return true;
 
   return profile && profile->GetOriginalProfile() == this;

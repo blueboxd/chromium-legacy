@@ -21,8 +21,6 @@
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_auralinux.h"
 #include "content/browser/accessibility/browser_accessibility_auralinux.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
-#include "ui/base/x/x11_util.h"
-#include "ui/gfx/x/x11.h"
 
 namespace content {
 

@@ -186,29 +186,29 @@ std::vector<autofill::Suggestion> CreateTestSuggestions(
     bool has_opt_in_and_generate,
     bool has_re_signin) {
   std::vector<Suggestion> suggestions;
-  suggestions.push_back(
-      Suggestion(/*value=*/"User1", /*label=*/"PW1", /*icon=*/"",
-                 /*fronend_id=*/autofill::POPUP_ITEM_ID_PASSWORD_ENTRY));
-  suggestions.push_back(Suggestion(
+  suggestions.emplace_back(
+      /*value=*/"User1", /*label=*/"PW1", /*icon=*/"",
+      /*frontend_id=*/autofill::POPUP_ITEM_ID_PASSWORD_ENTRY);
+  suggestions.emplace_back(
       /*value=*/"Show all pwds", /*label=*/"", /*icon=*/"",
-      /*fronend_id=*/autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY));
+      /*frontend_id=*/autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
   if (has_opt_in_and_fill) {
-    suggestions.push_back(Suggestion(
+    suggestions.emplace_back(
         /*value=*/"Unlock passwords and fill", /*label=*/"", /*icon=*/"",
-        /*fronend_id=*/
-        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN));
+        /*frontend_id=*/
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN);
   }
   if (has_opt_in_and_generate) {
-    suggestions.push_back(Suggestion(
+    suggestions.emplace_back(
         /*value=*/"Unlock passwords and generate", /*label=*/"", /*icon=*/"",
-        /*fronend_id=*/
-        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE));
+        /*frontend_id=*/
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPT_IN_AND_GENERATE);
   }
   if (has_re_signin) {
-    suggestions.push_back(Suggestion(
+    suggestions.emplace_back(
         /*value=*/"Sign in to access passwords", /*label=*/"", /*icon=*/"",
-        /*fronend_id=*/
-        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN));
+        /*frontend_id=*/
+        autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_RE_SIGNIN);
   }
   return suggestions;
 }

@@ -382,10 +382,10 @@ interface FileSystemInstance {
                                       (Document? document);
 
   // DEPRECATED: Please use Init@10 instead.
-  [MinVersion=3] InitDeprecated@5(FileSystemHost host_ptr);
+  [MinVersion=3] InitDeprecated@5(pending_remote<FileSystemHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=7] Init@10(FileSystemHost host_ptr) => ();
+  [MinVersion=7] Init@10(pending_remote<FileSystemHost> host_remote) => ();
 
   // Asks the ContentResolver to get a FD to read the file specified by the
   // URL.

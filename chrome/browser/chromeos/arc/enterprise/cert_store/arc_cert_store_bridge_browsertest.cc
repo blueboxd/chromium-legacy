@@ -66,12 +66,15 @@ namespace arc {
 class FakeArcCertStoreInstance : public mojom::CertStoreInstance {
  public:
   // mojom::CertStoreInstance:
-  void InitDeprecated(mojom::CertStoreHostPtr host) override {
-    Init(std::move(host), base::DoNothing());
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::CertStoreHost> host_remote) override {
+    Init(std::move(host_remote), base::DoNothing());
   }
 
-  void Init(mojom::CertStoreHostPtr host, InitCallback callback) override {
-    host_ = std::move(host);
+  void Init(mojo::PendingRemote<mojom::CertStoreHost> host_remote,
+            InitCallback callback) override {
+    host_remote_.reset();
+    host_remote_.Bind(std::move(host_remote));
     std::move(callback).Run();
   }
 
@@ -89,7 +92,7 @@ class FakeArcCertStoreInstance : public mojom::CertStoreInstance {
   void clear_on_certs_changed() { is_on_certs_changed_called_ = false; }
 
  private:
-  mojom::CertStoreHostPtr host_;
+  mojo::Remote<mojom::CertStoreHost> host_remote_;
   std::vector<std::string> permissions_;
   bool is_on_certs_changed_called_ = false;
 };

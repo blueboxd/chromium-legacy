@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 
+#include <memory>
+
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/browser/field_types.h"
@@ -87,8 +89,8 @@ bool PasswordGenerationFrameHelper::IsGenerationEnabled(
     bool log_debug_data) const {
   std::unique_ptr<Logger> logger;
   if (log_debug_data && password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
   }
 
   GURL url = driver_->GetLastCommittedURL();

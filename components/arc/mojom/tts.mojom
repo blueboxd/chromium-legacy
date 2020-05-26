@@ -33,10 +33,10 @@ interface TtsHost {
 // Next Method ID: 4
 interface TtsInstance {
   // DEPRECATED: Please use Init@3 instead.
-  InitDeprecated@0(TtsHost host_ptr);
+  InitDeprecated@0(pending_remote<TtsHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=1] Init@3(TtsHost host_ptr) => ();
+  [MinVersion=1] Init@3(pending_remote<TtsHost> host_remote) => ();
 
   // Sends an utterance to Android for synthesis.
   Speak@1(TtsUtterance utterance);

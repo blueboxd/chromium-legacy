@@ -37,8 +37,7 @@ AffiliationBackend::AffiliationBackend(
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
-AffiliationBackend::~AffiliationBackend() {
-}
+AffiliationBackend::~AffiliationBackend() = default;
 
 void AffiliationBackend::Initialize(
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
@@ -47,14 +46,14 @@ void AffiliationBackend::Initialize(
     const base::FilePath& db_path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!throttler_);
-  throttler_.reset(new AffiliationFetchThrottler(
-      this, task_runner_, network_connection_tracker, tick_clock_));
+  throttler_ = std::make_unique<AffiliationFetchThrottler>(
+      this, task_runner_, network_connection_tracker, tick_clock_);
 
   // TODO(engedy): Currently, when Init() returns false, it always poisons the
   // DB, so subsequent operations will silently fail. Consider either fully
   // committing to this approach and making Init() a void, or handling the
   // return value here. See: https://crbug.com/478831.
-  cache_.reset(new AffiliationDatabase());
+  cache_ = std::make_unique<AffiliationDatabase>();
   cache_->Init(db_path);
   DCHECK(pending_url_loader_factory);
   DCHECK(!url_loader_factory_);

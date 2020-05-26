@@ -7,12 +7,12 @@
 
 [Serializable]
 dictionary RTCEncodedVideoFrameMetadata {
-    long long frame_id;
+    long long frameId;
     sequence<long long> dependencies;
     unsigned short width;
     unsigned short height;
-    long spatial_index;
-    long temporal_index;
+    long spatialIndex;
+    long temporalIndex;
     unsigned long synchronizationSource;
     sequence<unsigned long> contributingSources;
 };

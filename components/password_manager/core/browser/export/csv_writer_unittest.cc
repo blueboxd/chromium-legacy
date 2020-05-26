@@ -18,7 +18,7 @@ namespace password_manager {
 
 class CSVWriterTest : public testing::Test {
  public:
-  CSVWriterTest() {}
+  CSVWriterTest() = default;
 
   void SetUp() override {
     column_names_.push_back("foo");

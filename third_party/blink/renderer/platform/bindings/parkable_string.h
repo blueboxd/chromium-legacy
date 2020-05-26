@@ -207,9 +207,11 @@ class PLATFORM_EXPORT ParkableStringImpl final
   // Called on the main thread after writing is done.
   // |params| is the same as the one passed to PostBackgroundWritingTask()|,
   // |metadata| is the on-disk metadata, nullptr if writing failed.
+  // |writing_time| is the elapsed background thread time used by disk writing.
   void OnWritingCompleteOnMainThread(
       std::unique_ptr<BackgroundTaskParams> params,
-      std::unique_ptr<DiskDataAllocator::Metadata> metadata);
+      std::unique_ptr<DiskDataAllocator::Metadata> metadata,
+      base::TimeDelta writing_time);
 
   void DiscardUncompressedData();
   void DiscardCompressedData();

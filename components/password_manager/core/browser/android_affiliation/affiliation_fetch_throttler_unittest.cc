@@ -13,6 +13,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/numerics/safe_math.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -63,13 +64,7 @@ class MockAffiliationFetchThrottlerDelegate
 
 class AffiliationFetchThrottlerTest : public testing::Test {
  public:
-  AffiliationFetchThrottlerTest()
-      : task_runner_(new base::TestMockTimeTaskRunner),
-        mock_delegate_(task_runner_->GetMockTickClock()) {
-    SimulateHasNetworkConnectivity(true);
-  }
-
-  ~AffiliationFetchThrottlerTest() override {}
+  AffiliationFetchThrottlerTest() { SimulateHasNetworkConnectivity(true); }
 
   std::unique_ptr<AffiliationFetchThrottler> CreateThrottler() {
     return std::make_unique<AffiliationFetchThrottler>(
@@ -128,8 +123,10 @@ class AffiliationFetchThrottlerTest : public testing::Test {
   // Needed because NetworkConnectionTracker uses base::ObserverList, which
   // notifies observers on the sequence from which they have registered.
   base::test::TaskEnvironment task_environment_;
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  MockAffiliationFetchThrottlerDelegate mock_delegate_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  MockAffiliationFetchThrottlerDelegate mock_delegate_{
+      task_runner_->GetMockTickClock()};
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationFetchThrottlerTest);
 };

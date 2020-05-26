@@ -166,10 +166,11 @@ const SiteSettingsBehaviorImpl = {
 
     return {
       category: this.category,
-      origin: origin,
-      displayName: exception.displayName,
       embeddingOrigin: embeddingOrigin,
       incognito: exception.incognito,
+      isEmbargoed: exception.isEmbargoed,
+      origin: origin,
+      displayName: exception.displayName,
       setting: exception.setting,
       enforcement: enforcement,
       controlledBy: controlledBy,

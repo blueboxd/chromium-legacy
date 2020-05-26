@@ -53,7 +53,7 @@ const base::FilePath::CharType kNullFileName[] = FILE_PATH_LITERAL("/dev/null");
 class FakeCredentialProvider
     : public password_manager::CredentialProviderInterface {
  public:
-  FakeCredentialProvider() {}
+  FakeCredentialProvider() = default;
 
   void SetPasswordList(
       const std::vector<std::unique_ptr<autofill::PasswordForm>>&

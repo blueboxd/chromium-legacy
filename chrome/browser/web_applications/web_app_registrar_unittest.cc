@@ -12,6 +12,7 @@
 #include "base/bind_helpers.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
@@ -703,6 +704,36 @@ TEST_F(WebAppRegistrarTest, CountUserInstalledApps) {
   }
 
   EXPECT_EQ(2, registrar().CountUserInstalledApps());
+}
+
+TEST_F(WebAppRegistrarTest, AppsInSyncInstallExcludedFromGetAppIds) {
+  InitRegistrarWithApps("https://example.com/path/", 100);
+
+  EXPECT_EQ(100u, registrar().GetAppIds().size());
+
+  std::unique_ptr<WebApp> web_app_in_sync_install =
+      CreateWebApp("https://example.org/");
+  web_app_in_sync_install->SetIsInSyncInstall(true);
+
+  const AppId web_app_in_sync_install_id = web_app_in_sync_install->app_id();
+  RegisterApp(std::move(web_app_in_sync_install));
+
+  // Tests that GetAppIds() excludes web app in sync install:
+  std::vector<AppId> ids = registrar().GetAppIds();
+  EXPECT_EQ(100u, ids.size());
+  for (const AppId& app_id : ids)
+    EXPECT_NE(app_id, web_app_in_sync_install_id);
+
+  // Tests that AllApps() returns a web app which is either in GetAppIds() set
+  // or it is the web app in sync install:
+  bool web_app_in_sync_install_found = false;
+  for (const WebApp& web_app : registrar().AllApps()) {
+    if (web_app.app_id() == web_app_in_sync_install_id)
+      web_app_in_sync_install_found = true;
+    else
+      EXPECT_TRUE(base::Contains(ids, web_app.app_id()));
+  }
+  EXPECT_TRUE(web_app_in_sync_install_found);
 }
 
 }  // namespace web_app

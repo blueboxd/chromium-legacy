@@ -61,13 +61,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 class FakePasswordAutofillAgent
     : public autofill::mojom::PasswordAutofillAgent {
  public:
-  FakePasswordAutofillAgent()
-      : called_set_logging_state_(false),
-        logging_state_active_(false),
-        receiver_(this) {}
-
-  ~FakePasswordAutofillAgent() override {}
-
   void BindPendingReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
     receiver_.Bind(
         mojo::PendingAssociatedReceiver<autofill::mojom::PasswordAutofillAgent>(
@@ -99,11 +92,12 @@ class FakePasswordAutofillAgent
   }
 
   // Records whether SetLoggingState() gets called.
-  bool called_set_logging_state_;
+  bool called_set_logging_state_ = false;
   // Records data received via SetLoggingState() call.
-  bool logging_state_active_;
+  bool logging_state_active_ = false;
 
-  mojo::AssociatedReceiver<autofill::mojom::PasswordAutofillAgent> receiver_;
+  mojo::AssociatedReceiver<autofill::mojom::PasswordAutofillAgent> receiver_{
+      this};
 };
 
 PasswordFormFillData GetTestPasswordFormFillData() {

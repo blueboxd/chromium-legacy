@@ -16,7 +16,7 @@ namespace password_manager {
 MockAffiliatedMatchHelper::MockAffiliatedMatchHelper()
     : AffiliatedMatchHelper(nullptr, nullptr) {}
 
-MockAffiliatedMatchHelper::~MockAffiliatedMatchHelper() {}
+MockAffiliatedMatchHelper::~MockAffiliatedMatchHelper() = default;
 
 void MockAffiliatedMatchHelper::ExpectCallToGetAffiliatedAndroidRealms(
     const PasswordStore::FormDigest& expected_observed_form,

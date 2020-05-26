@@ -53,7 +53,6 @@ class MockPasswordStoreConsumer : public PasswordStoreConsumer {
 class BadLoginDatabase : public LoginDatabase {
  public:
   BadLoginDatabase() : LoginDatabase(base::FilePath(), IsAccountStore(false)) {}
-  ~BadLoginDatabase() override {}
 
   // LoginDatabase:
   bool Init() override { return false; }
@@ -173,8 +172,8 @@ TEST(PasswordStoreDefaultTest, NonASCIIData) {
 
   // Build the expected forms vector and add the forms to the store.
   std::vector<std::unique_ptr<PasswordForm>> expected_forms;
-  for (unsigned int i = 0; i < base::size(form_data); ++i) {
-    expected_forms.push_back(FillPasswordFormWithData(form_data[i]));
+  for (const auto& data : form_data) {
+    expected_forms.push_back(FillPasswordFormWithData(data));
     store->AddLogin(*expected_forms.back());
   }
 

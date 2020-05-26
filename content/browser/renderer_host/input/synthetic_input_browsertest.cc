@@ -157,9 +157,15 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SmoothScrollWheel) {
                         "document.scrollingElement.scrollTop"));
 }
 
+// Wheel events lose precision on android (crbug.com/934649)
+#if defined(OS_ANDROID)
+#define MAYBE_SlowSmoothScrollWheel DISABLED_SlowSmoothScrollWheel
+#else
+#define MAYBE_SlowSmoothScrollWheel SlowSmoothScrollWheel
+#endif
 // This test ensures that slow synthetic wheel scrolling does not lose precision
 // over time.
-IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SlowSmoothScrollWheel) {
+IN_PROC_BROWSER_TEST_F(SyntheticInputTest, MAYBE_SlowSmoothScrollWheel) {
   LoadURL(R"HTML(
     data:text/html;charset=utf-8,
     <!DOCTYPE html>
@@ -193,18 +199,14 @@ IN_PROC_BROWSER_TEST_F(SyntheticInputTest, SlowSmoothScrollWheel) {
 
   runner_ = std::make_unique<base::RunLoop>();
 
-  auto* web_contents = shell()->web_contents();
-  RenderFrameSubmissionObserver scroll_offset_wait(web_contents);
+  RenderFrameSubmissionObserver scroll_offset_wait(shell()->web_contents());
   std::unique_ptr<SyntheticSmoothScrollGesture> gesture(
       new SyntheticSmoothScrollGesture(params));
   GetRenderWidgetHost()->QueueSyntheticGesture(
       std::move(gesture),
       base::BindOnce(&SyntheticInputTest::OnSyntheticGestureCompleted,
                      base::Unretained(this)));
-  float device_scale_factor =
-      web_contents->GetRenderWidgetHostView()->GetDeviceScaleFactor();
-  scroll_offset_wait.WaitForScrollOffset(
-      gfx::Vector2dF(0.f, 1024.f * device_scale_factor));
+  scroll_offset_wait.WaitForScrollOffset(gfx::Vector2dF(0.f, 1024.f));
 
   EXPECT_EQ(1024, EvalJs(shell()->web_contents(),
                          "document.scrollingElement.scrollTop"));

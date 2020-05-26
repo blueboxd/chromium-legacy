@@ -17,6 +17,8 @@
 // This class manages a content setting state per tab for a given
 // |ContentSettingsType|, and provides information and presentation data about
 // the content setting usage.
+// TODO(crbug.com/1086363): Move this class into the `content_settings`
+// namespace.
 class ContentSettingsUsagesState {
  public:
   ContentSettingsUsagesState(

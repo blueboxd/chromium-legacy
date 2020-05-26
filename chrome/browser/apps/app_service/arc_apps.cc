@@ -733,6 +733,7 @@ void ArcApps::OnAppStatesChanged(const std::string& app_id,
 }
 
 void ArcApps::OnAppRemoved(const std::string& app_id) {
+  app_notifications_.RemoveNotificationsForApp(app_id);
   paused_apps_.MaybeRemoveApp(app_id);
 
   if (base::Contains(app_id_to_task_ids_, app_id)) {
@@ -970,16 +971,19 @@ void ArcApps::OnNotificationUpdated(const std::string& notification_id,
 }
 
 void ArcApps::OnNotificationRemoved(const std::string& notification_id) {
-  const std::string& app_id =
-      app_notifications_.GetAppIdForNotification(notification_id);
-  if (app_id.empty()) {
+  const auto app_ids =
+      app_notifications_.GetAppIdsForNotification(notification_id);
+  if (app_ids.empty()) {
     return;
   }
 
   app_notifications_.RemoveNotification(notification_id);
-  Publish(app_notifications_.GetAppWithHasBadgeStatus(
-              apps::mojom::AppType::kArc, app_id),
-          subscribers_);
+
+  for (const auto& app_id : app_ids) {
+    Publish(app_notifications_.GetAppWithHasBadgeStatus(
+                apps::mojom::AppType::kArc, app_id),
+            subscribers_);
+  }
 }
 
 void ArcApps::OnArcNotificationManagerDestroyed(
@@ -1064,6 +1068,9 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->show_in_search = show;
   app->show_in_management = show;
 
+  app->has_badge = app_notifications_.HasNotification(app_id)
+                       ? apps::mojom::OptionalBool::kTrue
+                       : apps::mojom::OptionalBool::kFalse;
   app->paused = paused;
 
   std::unique_ptr<ArcAppListPrefs::PackageInfo> package =

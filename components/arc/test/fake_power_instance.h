@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "components/arc/mojom/power.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -25,8 +27,10 @@ class FakePowerInstance : public mojom::PowerInstance {
   SuspendCallback GetSuspendCallback();
 
   // mojom::PowerInstance overrides:
-  void InitDeprecated(mojom::PowerHostPtr host_ptr) override;
-  void Init(mojom::PowerHostPtr host_ptr, InitCallback callback) override;
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::PowerHost> host_remote) override;
+  void Init(mojo::PendingRemote<mojom::PowerHost> host_remote,
+            InitCallback callback) override;
   void SetInteractive(bool enabled) override;
   void Suspend(SuspendCallback callback) override;
   void Resume() override;
@@ -34,7 +38,7 @@ class FakePowerInstance : public mojom::PowerInstance {
   void PowerSupplyInfoChanged() override;
 
  private:
-  mojom::PowerHostPtr host_ptr_;
+  mojo::Remote<mojom::PowerHost> host_remote_;
 
   // Last state passed to SetInteractive().
   bool interactive_ = true;

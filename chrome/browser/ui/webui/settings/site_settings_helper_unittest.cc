@@ -75,6 +75,47 @@ class SiteSettingsHelperTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
 };
 
+TEST_F(SiteSettingsHelperTest, ExceptionListWithEmbargoedAndBlockedOrigins) {
+  TestingProfile profile;
+
+  constexpr char kOriginToEmbargo[] = "https://embargoed.co.uk:443";
+  auto* auto_blocker =
+      PermissionDecisionAutoBlockerFactory::GetForProfile(&profile);
+  for (size_t i = 0; i < 3; ++i) {
+    auto_blocker->RecordDismissAndEmbargo(GURL(kOriginToEmbargo),
+                                          kContentTypeNotifications, false);
+  }
+
+  constexpr char kOriginToBlock[] = "https://www.blocked.com:443";
+  auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+  map->SetContentSettingDefaultScope(GURL(kOriginToBlock), GURL(kOriginToBlock),
+                                     kContentTypeNotifications, std::string(),
+                                     CONTENT_SETTING_BLOCK);
+
+  base::ListValue exceptions;
+  site_settings::GetExceptionsForContentType(kContentTypeNotifications,
+                                             &profile,
+                                             /*extension_registry=*/nullptr,
+                                             /*web_ui=*/nullptr,
+                                             /*incognito=*/false, &exceptions);
+
+  // |exceptions| size should be 2. One blocked and one embargoed origins.
+  ASSERT_EQ(2U, exceptions.GetSize());
+  base::Value* value = nullptr;
+  // Get last added origin.
+  exceptions.Get(0, &value);
+  base::Value* is_embargoed = value->FindKey(site_settings::kIsEmbargoed);
+  ASSERT_NE(nullptr, is_embargoed);
+  // Last added origin is blocked, |embargo| key should be false.
+  EXPECT_FALSE(is_embargoed->GetBool());
+
+  // Get embargoed origin.
+  exceptions.Get(1, &value);
+  is_embargoed = value->FindKey(site_settings::kIsEmbargoed);
+  ASSERT_NE(nullptr, is_embargoed);
+  EXPECT_TRUE(is_embargoed->GetBool());
+}
+
 TEST_F(SiteSettingsHelperTest, ExceptionListShowsIncognitoEmbargoed) {
   TestingProfile profile;
   constexpr char kOriginToBlock[] = "https://www.blocked.com:443";

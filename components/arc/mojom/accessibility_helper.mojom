@@ -472,7 +472,8 @@ interface AccessibilityHelperHost {
 // Next method ID: 12
 interface AccessibilityHelperInstance {
   // Establishes full-duplex communication with the host.
-  [MinVersion=9] Init@7(AccessibilityHelperHost host) => ();
+  [MinVersion=9] Init@7(
+      pending_remote<AccessibilityHelperHost> host_remote) => ();
 
   // Set a filter on the event types received.
   SetFilter@2(AccessibilityFilterType filter_type);

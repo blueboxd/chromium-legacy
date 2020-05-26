@@ -62,7 +62,8 @@ class WindowPerformanceTest : public testing::Test {
   }
 
   void SimulateSwapPromise(base::TimeTicks timestamp) {
-    performance_->ReportEventTimings(WebSwapResult::kDidSwap, timestamp);
+    performance_->ReportEventTimings(frame_counter++, WebSwapResult::kDidSwap,
+                                     timestamp);
   }
 
   LocalFrame* GetFrame() const { return &page_holder_->GetFrame(); }
@@ -93,6 +94,7 @@ class WindowPerformanceTest : public testing::Test {
     return ToScriptStateForMainWorld(page_holder_->GetDocument().GetFrame());
   }
 
+  uint64_t frame_counter = 1;
   Persistent<WindowPerformance> performance_;
   std::unique_ptr<DummyPageHolder> page_holder_;
   scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner_;
@@ -316,7 +318,9 @@ TEST_F(WindowPerformanceTest, EventTimingDuration) {
   EXPECT_EQ(2u, performance_->getBufferedEntriesByType("event").size());
 }
 
-TEST_F(WindowPerformanceTest, MultipleEventsSameSwap) {
+// Test the case where multiple events are registered and then their swap
+// promise is resolved.
+TEST_F(WindowPerformanceTest, MultipleEventsThenSwap) {
   ScopedEventTimingForTest event_timing(true);
 
   size_t num_events = 10;
@@ -360,7 +364,7 @@ TEST_F(WindowPerformanceTest, FirstInput) {
   }
 }
 
-// Test that the 'firstInput' is populated after some irrelevant events are
+// Test that the 'first-input' is populated after some irrelevant events are
 // ignored.
 TEST_F(WindowPerformanceTest, FirstInputAfterIgnored) {
   AtomicString several_events[] = {"mouseover", "mousedown", "pointerup"};
@@ -369,8 +373,8 @@ TEST_F(WindowPerformanceTest, FirstInputAfterIgnored) {
         event, GetTimeOrigin(),
         GetTimeOrigin() + base::TimeDelta::FromMilliseconds(1),
         GetTimeOrigin() + base::TimeDelta::FromMilliseconds(2), false, nullptr);
+    SimulateSwapPromise(GetTimeOrigin() + base::TimeDelta::FromMilliseconds(3));
   }
-  SimulateSwapPromise(GetTimeOrigin() + base::TimeDelta::FromMilliseconds(3));
   ASSERT_EQ(1u, performance_->getEntriesByType("first-input").size());
   EXPECT_EQ("mousedown",
             performance_->getEntriesByType("first-input")[0]->name());

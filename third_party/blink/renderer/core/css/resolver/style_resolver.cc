@@ -910,6 +910,8 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
   if (state.Style()->HasGlyphRelativeUnits())
     UseCounter::Count(GetDocument(), WebFeature::kHasGlyphRelativeUnits);
 
+  state.LoadPendingResources();
+
   // Now return the style.
   return state.TakeStyle();
 }
@@ -1212,8 +1214,10 @@ scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   }
 
   if (PseudoElement* pseudo_element =
-          element->GetPseudoElement(pseudo_style_request.pseudo_id))
+          element->GetPseudoElement(pseudo_style_request.pseudo_id)) {
     SetAnimationUpdateIfNeeded(state, *pseudo_element);
+    state.LoadPendingResources();
+  }
 
   // Now return the style.
   return state.TakeStyle();

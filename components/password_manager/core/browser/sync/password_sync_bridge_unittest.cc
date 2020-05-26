@@ -175,9 +175,6 @@ class FakeDatabase {
 
 class MockSyncMetadataStore : public PasswordStoreSync::MetadataStore {
  public:
-  MockSyncMetadataStore() = default;
-  ~MockSyncMetadataStore() = default;
-
   MOCK_METHOD0(GetAllSyncMetadata, std::unique_ptr<syncer::MetadataBatch>());
   MOCK_METHOD0(DeleteAllSyncMetadata, void());
   MOCK_METHOD3(UpdateSyncMetadata,
@@ -192,9 +189,6 @@ class MockSyncMetadataStore : public PasswordStoreSync::MetadataStore {
 
 class MockPasswordStoreSync : public PasswordStoreSync {
  public:
-  MockPasswordStoreSync() = default;
-  ~MockPasswordStoreSync() = default;
-
   MOCK_METHOD1(FillAutofillableLogins,
                bool(std::vector<std::unique_ptr<autofill::PasswordForm>>*));
   MOCK_METHOD1(FillBlacklistLogins,
@@ -272,8 +266,6 @@ class PasswordSyncBridgeTest : public testing::Test {
         syncer::PASSWORDS, bridge()->GetClientTag(data));
     return data;
   }
-
-  ~PasswordSyncBridgeTest() override {}
 
   base::Optional<sync_pb::PasswordSpecifics> GetDataFromBridge(
       const std::string& storage_key) {

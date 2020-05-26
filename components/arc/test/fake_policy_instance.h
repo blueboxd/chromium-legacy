@@ -8,6 +8,8 @@
 #include <string>
 
 #include "components/arc/mojom/policy.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -17,8 +19,10 @@ class FakePolicyInstance : public mojom::PolicyInstance {
   ~FakePolicyInstance() override;
 
   // mojom::PolicyInstance
-  void InitDeprecated(mojom::PolicyHostPtr host_ptr) override;
-  void Init(mojom::PolicyHostPtr host_ptr, InitCallback callback) override;
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::PolicyHost> host_remote) override;
+  void Init(mojo::PendingRemote<mojom::PolicyHost> host_remote,
+            InitCallback callback) override;
   void OnPolicyUpdated() override;
   void OnCommandReceived(const std::string& command,
                          OnCommandReceivedCallback callback) override;
@@ -28,7 +32,7 @@ class FakePolicyInstance : public mojom::PolicyInstance {
   const std::string& command_payload() { return command_payload_; }
 
  private:
-  mojom::PolicyHostPtr host_ptr_;
+  mojo::Remote<mojom::PolicyHost> host_remote_;
 
   std::string command_payload_;
 

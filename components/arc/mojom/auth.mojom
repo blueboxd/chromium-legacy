@@ -352,10 +352,10 @@ interface AuthHost {
 // Next Method ID: 6
 interface AuthInstance {
   // DEPRECATED: Please use Init@2 instead.
-  InitDeprecated@0(AuthHost host_ptr);
+  InitDeprecated@0(pending_remote<AuthHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=12] Init@2(AuthHost host_ptr) => ();
+  [MinVersion=12] Init@2(pending_remote<AuthHost> host_remote) => ();
 
   // Callback from RequestAccountInfo. This cannot be a normal callback since
   // the result can sometimes take a few minutes in some cases (Kiosk mode),

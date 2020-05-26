@@ -4822,7 +4822,7 @@ void RenderFrameHostImpl::CreateNewWindow(
       devtools_instrumentation::ShouldWaitForDebuggerInWindowOpen();
   mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
       main_frame->GetRenderViewHost()->GetRoutingID(),
-      main_frame->GetRoutingID(), main_frame->frame_token(),
+      main_frame->GetRoutingID(), main_frame->GetFrameToken(),
       main_frame->GetLocalRenderWidgetHost()->GetRoutingID(), visual_properties,
       std::move(blink_frame_widget_host),
       std::move(blink_frame_widget_receiver), std::move(blink_widget_host),

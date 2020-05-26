@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/user_metrics.h"
 #include "base/observer_list_threadsafe.h"
+#include "base/trace_event/trace_event.h"
 
 namespace base {
 namespace android {

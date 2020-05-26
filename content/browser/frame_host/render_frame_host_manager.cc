@@ -2386,7 +2386,7 @@ bool RenderFrameHostManager::InitRenderView(
       proxy
           ? proxy->GetFrameToken()
           : static_cast<RenderFrameHostImpl*>(render_view_host->GetMainFrame())
-                ->frame_token(),
+                ->GetFrameToken(),
       frame_tree_node_->devtools_frame_token(),
       frame_tree_node_->current_replication_state());
 
@@ -2622,7 +2622,7 @@ base::Optional<base::UnguessableToken>
 RenderFrameHostManager::GetFrameTokenForSiteInstance(
     SiteInstance* site_instance) {
   if (render_frame_host_->GetSiteInstance() == site_instance)
-    return render_frame_host_->frame_token();
+    return render_frame_host_->GetFrameToken();
 
   RenderFrameProxyHost* proxy = GetRenderFrameProxyHost(site_instance);
   if (proxy)

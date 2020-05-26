@@ -100,12 +100,16 @@ class FakeAuthInstance : public mojom::AuthInstance {
   ~FakeAuthInstance() override = default;
 
   // mojom::AuthInstance:
-  void InitDeprecated(mojom::AuthHostPtr host) override {
-    Init(std::move(host), base::DoNothing());
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::AuthHost> host_remote) override {
+    Init(std::move(host_remote), base::DoNothing());
   }
 
-  void Init(mojom::AuthHostPtr host, InitCallback callback) override {
-    host_ = std::move(host);
+  void Init(mojo::PendingRemote<mojom::AuthHost> host_remote,
+            InitCallback callback) override {
+    // For every change in a connection bind latest remote.
+    host_remote_.reset();
+    host_remote_.Bind(std::move(host_remote));
     std::move(callback).Run();
   }
 
@@ -131,18 +135,18 @@ class FakeAuthInstance : public mojom::AuthInstance {
 
   void RequestAccountInfoDeprecated(base::OnceClosure done_closure) {
     done_closure_ = std::move(done_closure);
-    host_->RequestAccountInfoDeprecated(true /* initial_signin */);
+    host_remote_->RequestAccountInfoDeprecated(true /* initial_signin */);
   }
 
   void RequestPrimaryAccountInfo(base::OnceClosure done_closure) {
-    host_->RequestPrimaryAccountInfo(base::BindOnce(
+    host_remote_->RequestPrimaryAccountInfo(base::BindOnce(
         &FakeAuthInstance::OnPrimaryAccountInfoResponse,
         weak_ptr_factory_.GetWeakPtr(), std::move(done_closure)));
   }
 
   void RequestAccountInfo(const std::string& account_name,
                           base::OnceClosure done_closure) {
-    host_->RequestAccountInfo(
+    host_remote_->RequestAccountInfo(
         account_name, base::BindOnce(&FakeAuthInstance::OnAccountInfoResponse,
                                      weak_ptr_factory_.GetWeakPtr(),
                                      std::move(done_closure)));
@@ -194,7 +198,7 @@ class FakeAuthInstance : public mojom::AuthInstance {
     std::move(done_closure).Run();
   }
 
-  mojom::AuthHostPtr host_;
+  mojo::Remote<mojom::AuthHost> host_remote_;
   mojom::ArcSignInStatus status_;
   bool persistent_error_;
   mojom::AccountInfoPtr account_info_;

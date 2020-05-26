@@ -80,6 +80,12 @@ uint32_t RTCEncodedVideoFrameDelegate::Ssrc() const {
   return webrtc_frame_ ? webrtc_frame_->GetSsrc() : 0;
 }
 
+const webrtc::VideoFrameMetadata* RTCEncodedVideoFrameDelegate::GetMetadata()
+    const {
+  MutexLocker lock(mutex_);
+  return webrtc_frame_ ? &webrtc_frame_->GetMetadata() : nullptr;
+}
+
 std::unique_ptr<webrtc::TransformableVideoFrameInterface>
 RTCEncodedVideoFrameDelegate::PassWebRtcFrame() {
   MutexLocker lock(mutex_);

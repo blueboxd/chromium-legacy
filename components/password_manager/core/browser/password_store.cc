@@ -14,6 +14,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -90,7 +91,7 @@ PasswordStore::CheckReuseRequest::CheckReuseRequest(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("passwords", "CheckReuseRequest", this);
 }
 
-PasswordStore::CheckReuseRequest::~CheckReuseRequest() {}
+PasswordStore::CheckReuseRequest::~CheckReuseRequest() = default;
 
 void PasswordStore::CheckReuseRequest::OnReuseFound(
     size_t password_length,
@@ -667,7 +668,7 @@ PasswordStore::CreateBackgroundTaskRunner() const {
 
 bool PasswordStore::InitOnBackgroundSequence() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
-  sync_bridge_.reset(new PasswordSyncBridge(
+  sync_bridge_ = base::WrapUnique(new PasswordSyncBridge(
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::PASSWORDS, base::DoNothing()),
       /*password_store_sync=*/this, sync_enabled_or_disabled_cb_));

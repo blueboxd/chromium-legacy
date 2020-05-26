@@ -127,7 +127,7 @@ PasswordStoreFactory::PasswordStoreFactory()
 #endif
 }
 
-PasswordStoreFactory::~PasswordStoreFactory() {}
+PasswordStoreFactory::~PasswordStoreFactory() = default;
 
 scoped_refptr<RefcountedKeyedService>
 PasswordStoreFactory::BuildServiceInstanceFor(

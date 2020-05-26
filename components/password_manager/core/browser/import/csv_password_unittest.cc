@@ -54,7 +54,9 @@ struct TestCase {
 
 class TestCaseBuilder {
  public:
-  TestCaseBuilder(std::string name) { test_case_.name = std::move(name); }
+  explicit TestCaseBuilder(std::string name) {
+    test_case_.name = std::move(name);
+  }
 
   ~TestCaseBuilder() = default;
 

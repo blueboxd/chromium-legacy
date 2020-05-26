@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
+
 #include "components/password_manager/core/browser/compromised_credentials_table.h"
 
 #include "base/bind.h"
@@ -42,8 +44,8 @@ class CompromisedCredentialsTableTest : public testing::Test {
 
   void ReloadDatabase() {
     base::FilePath file = temp_dir_.GetPath().AppendASCII("TestDatabase");
-    db_.reset(new CompromisedCredentialsTable);
-    connection_.reset(new sql::Database);
+    db_ = std::make_unique<CompromisedCredentialsTable>();
+    connection_ = std::make_unique<sql::Database>();
     connection_->set_exclusive_locking();
     ASSERT_TRUE(connection_->Open(file));
     db_->Init(connection_.get());

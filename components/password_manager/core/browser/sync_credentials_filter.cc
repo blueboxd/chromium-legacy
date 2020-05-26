@@ -28,7 +28,7 @@ SyncCredentialsFilter::SyncCredentialsFilter(
       sync_service_factory_function_(std::move(sync_service_factory_function)) {
 }
 
-SyncCredentialsFilter::~SyncCredentialsFilter() {}
+SyncCredentialsFilter::~SyncCredentialsFilter() = default;
 
 bool SyncCredentialsFilter::ShouldSave(
     const autofill::PasswordForm& form) const {

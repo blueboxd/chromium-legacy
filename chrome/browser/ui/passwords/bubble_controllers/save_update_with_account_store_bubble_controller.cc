@@ -8,6 +8,8 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -21,9 +23,12 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/sync/driver/sync_service.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/models/image_model.h"
+#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -236,6 +241,46 @@ void SaveUpdateWithAccountStoreBubbleController::OnToggleAccountStore(
 bool SaveUpdateWithAccountStoreBubbleController::IsUsingAccountStore() {
   return delegate_->GetPasswordFeatureManager()->GetDefaultPasswordStore() ==
          Store::kAccountStore;
+}
+
+std::string
+SaveUpdateWithAccountStoreBubbleController::GetPrimaryAccountEmail() {
+  Profile* profile = GetProfile();
+  if (!profile)
+    return std::string();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager)
+    return std::string();
+  return identity_manager
+      ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)
+      .email;
+}
+
+ui::ImageModel
+SaveUpdateWithAccountStoreBubbleController::GetPrimaryAccountAvatar(
+    int icon_size_dip) {
+  Profile* profile = GetProfile();
+  if (!profile)
+    return ui::ImageModel();
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile);
+  if (!identity_manager)
+    return ui::ImageModel();
+  base::Optional<AccountInfo> primary_account_info =
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
+          identity_manager->GetPrimaryAccountInfo(
+              signin::ConsentLevel::kNotRequired));
+  DCHECK(primary_account_info.has_value());
+  gfx::Image account_icon = primary_account_info->account_image;
+  if (account_icon.IsEmpty()) {
+    account_icon = ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        profiles::GetPlaceholderAvatarIconResourceID());
+  }
+  return ui::ImageModel::FromImage(
+      profiles::GetSizedAvatarIcon(account_icon,
+                                   /*is_rectangle=*/true, icon_size_dip,
+                                   icon_size_dip, profiles::SHAPE_CIRCLE));
 }
 
 void SaveUpdateWithAccountStoreBubbleController::ReportInteractions() {

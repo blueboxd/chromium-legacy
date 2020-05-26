@@ -309,8 +309,8 @@ void PasswordManager::SetGenerationElementAndReasonForForm(
 void PasswordManager::DidNavigateMainFrame(bool form_may_be_submitted) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogBoolean(Logger::STRING_DID_NAVIGATE_MAIN_FRAME,
                        form_may_be_submitted);
   }
@@ -494,8 +494,8 @@ void PasswordManager::CreatePendingLoginManagers(
     const std::vector<FormData>& forms_data) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogMessage(Logger::STRING_CREATE_LOGIN_MANAGERS_METHOD);
   }
 
@@ -576,8 +576,8 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
     bool is_manual_fallback) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogMessage(Logger::STRING_PROVISIONALLY_SAVE_FORM_METHOD);
   }
   if (!client_->IsSavingAndFillingEnabled(submitted_form.url)) {
@@ -709,8 +709,8 @@ void PasswordManager::OnPasswordNoLongerGenerated(
 bool PasswordManager::IsAutomaticSavePromptAvailable() {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogMessage(Logger::STRING_CAN_PROVISIONAL_MANAGER_SAVE_METHOD);
   }
 
@@ -750,8 +750,8 @@ void PasswordManager::OnPasswordFormsRendered(
   CreatePendingLoginManagers(driver, visible_forms_data);
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogMessage(Logger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD);
   }
 
@@ -841,8 +841,8 @@ void PasswordManager::OnLoginSuccessful() {
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogMessage(Logger::STRING_ON_ASK_USER_OR_SAVE_PASSWORD);
   }
 
@@ -991,8 +991,8 @@ void PasswordManager::ProcessAutofillPredictions(
     const std::vector<FormStructure*>& forms) {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
   }
 
   for (const FormStructure* form : forms) {

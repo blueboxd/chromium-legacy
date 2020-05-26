@@ -58,19 +58,17 @@ public class PaymentRequestHeader extends FrameLayout {
      * @param title         The title to display on the header.
      * @param origin        The origin to display on the header.
      * @param securityLevel The security level of the page that invoked PaymentRequest.
+     * @param profile       The current profile to initialize ChromeAutocompleteSchemeClassifier.
      */
-    public void setTitleAndOrigin(String title, String origin, int securityLevel) {
+    public void setTitleAndOrigin(String title, String origin, int securityLevel, Profile profile) {
         ((TextView) findViewById(R.id.page_title)).setText(title);
 
         TextView hostName = (TextView) findViewById(R.id.hostname);
         Spannable url = new SpannableStringBuilder(origin);
         final boolean useDarkColors =
                 !ColorUtils.shouldUseLightForegroundOnBackground(mBackgroundColor);
-        // TODO(https://crbug.com/1041781): Use the current profile (i.e., regular profile or
-        // incognito profile) instead of always using regular profile. It is wrong and need to be
-        // fixed not to cause data leakage from incognito to regular profile.
         ChromeAutocompleteSchemeClassifier chromeAutocompleteSchemeClassifier =
-                new ChromeAutocompleteSchemeClassifier(Profile.getLastUsedRegularProfile());
+                new ChromeAutocompleteSchemeClassifier(profile);
         OmniboxUrlEmphasizer.emphasizeUrl(url, mContext.getResources(),
                 chromeAutocompleteSchemeClassifier, securityLevel, false /* isInternalPage */,
                 useDarkColors, true /* emphasizeHttpsScheme */);

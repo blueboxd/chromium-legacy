@@ -351,11 +351,12 @@ std::string Profile::GetDebugName() {
 }
 
 bool Profile::IsRegularProfile() const {
-  return GetProfileType() == REGULAR_PROFILE;
+  return !IsOffTheRecord();
 }
 
 bool Profile::IsIncognitoProfile() const {
-  return GetProfileType() == INCOGNITO_PROFILE;
+  // TODO(https://crbug.com/1033903): Update to exclude non-primary OTRs.
+  return IsOffTheRecord() && !IsGuestSession();
 }
 
 bool Profile::IsGuestSession() const {

@@ -235,6 +235,7 @@ void WebAppsChromeOs::OnWebAppUninstalled(const web_app::AppId& app_id) {
     return;
   }
 
+  app_notifications_.RemoveNotificationsForApp(app_id);
   paused_apps_.MaybeRemoveApp(app_id);
 
   WebAppsBase::OnWebAppUninstalled(app_id);
@@ -294,21 +295,18 @@ void WebAppsChromeOs::OnNotificationDisplayed(
 }
 
 void WebAppsChromeOs::OnNotificationClosed(const std::string& notification_id) {
-  const std::string& app_id =
-      app_notifications_.GetAppIdForNotification(notification_id);
-  if (app_id.empty()) {
-    return;
-  }
-
-  const web_app::WebApp* web_app = GetWebApp(app_id);
-  if (!web_app || !Accepts(app_id)) {
+  auto app_ids = app_notifications_.GetAppIdsForNotification(notification_id);
+  if (app_ids.empty()) {
     return;
   }
 
   app_notifications_.RemoveNotification(notification_id);
-  Publish(app_notifications_.GetAppWithHasBadgeStatus(
-              apps::mojom::AppType::kWeb, app_id),
-          subscribers());
+
+  for (const auto& app_id : app_ids) {
+    Publish(app_notifications_.GetAppWithHasBadgeStatus(
+                apps::mojom::AppType::kWeb, app_id),
+            subscribers());
+  }
 }
 
 void WebAppsChromeOs::OnNotificationDisplayServiceDestroyed(
@@ -373,6 +371,9 @@ apps::mojom::AppPtr WebAppsChromeOs::Convert(const web_app::WebApp* web_app,
   app->icon_key = icon_key_factory().MakeIconKey(
       GetIconEffects(web_app, paused, is_disabled));
 
+  app->has_badge = app_notifications_.HasNotification(web_app->app_id())
+                       ? apps::mojom::OptionalBool::kTrue
+                       : apps::mojom::OptionalBool::kFalse;
   app->paused = paused ? apps::mojom::OptionalBool::kTrue
                        : apps::mojom::OptionalBool::kFalse;
   return app;

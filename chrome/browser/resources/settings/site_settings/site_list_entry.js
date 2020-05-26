@@ -177,7 +177,12 @@ Polymer({
   computeSiteDescription_() {
     let description = '';
 
-    if (this.model.embeddingOrigin) {
+    if (this.model.isEmbargoed) {
+      assert(
+          !this.model.embeddingOrigin,
+          'Embedding origin should be empty for embargoed origin.');
+      description = loadTimeData.getString('siteSettingsSourceEmbargo');
+    } else if (this.model.embeddingOrigin) {
       if (this.model.category === ContentSettingsTypes.COOKIES &&
           this.model.origin.trim() == SITE_EXCEPTION_WILDCARD) {
         description = loadTimeData.getString(

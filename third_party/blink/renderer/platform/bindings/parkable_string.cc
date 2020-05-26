@@ -531,18 +531,20 @@ String ParkableStringImpl::UnparkInternal() {
   // variable protected by it.
 
   base::ElapsedTimer timer;
+  auto& manager = ParkableStringManager::Instance();
 
   if (is_on_disk()) {
     base::ElapsedTimer disk_read_timer;
     DCHECK(has_on_disk_data());
     metadata_->compressed_ = std::make_unique<Vector<uint8_t>>();
     metadata_->compressed_->Grow(metadata_->on_disk_metadata_->size());
-    auto& manager = ParkableStringManager::Instance();
     manager.data_allocator().Read(*metadata_->on_disk_metadata_,
                                   metadata_->compressed_->data());
-    RecordStatistics(metadata_->on_disk_metadata_->size(),
-                     disk_read_timer.Elapsed(), ParkingAction::kRead);
+    base::TimeDelta elapsed = disk_read_timer.Elapsed();
+    RecordStatistics(metadata_->on_disk_metadata_->size(), elapsed,
+                     ParkingAction::kRead);
     manager.OnReadFromDisk(this);
+    manager.RecordDiskReadTime(elapsed);
   }
 
   base::StringPiece compressed_string_piece(
@@ -579,7 +581,7 @@ String ParkableStringImpl::UnparkInternal() {
                                     uncompressed_string_piece));
 
   base::TimeDelta elapsed = timer.Elapsed();
-  ParkableStringManager::Instance().RecordUnparkingTime(elapsed);
+  manager.RecordUnparkingTime(elapsed);
   RecordStatistics(CharactersSizeInBytes(), elapsed, ParkingAction::kUnparked);
 
   return uncompressed;
@@ -737,24 +739,27 @@ void ParkableStringImpl::WriteToDiskInBackground(
   auto& allocator = ParkableStringManager::Instance().data_allocator();
   base::ElapsedTimer timer;
   auto metadata = allocator.Write(params->data, params->size);
-  RecordStatistics(params->size, timer.Elapsed(), ParkingAction::kWritten);
+  base::TimeDelta elapsed = timer.Elapsed();
+  RecordStatistics(params->size, elapsed, ParkingAction::kWritten);
 
   auto* task_runner = params->callback_task_runner.get();
   PostCrossThreadTask(
       *task_runner, FROM_HERE,
       CrossThreadBindOnce(
           [](std::unique_ptr<BackgroundTaskParams> params,
-             std::unique_ptr<DiskDataAllocator::Metadata> metadata) {
+             std::unique_ptr<DiskDataAllocator::Metadata> metadata,
+             base::TimeDelta elapsed) {
             auto* string = params->string.get();
             string->OnWritingCompleteOnMainThread(std::move(params),
-                                                  std::move(metadata));
+                                                  std::move(metadata), elapsed);
           },
-          std::move(params), std::move(metadata)));
+          std::move(params), std::move(metadata), elapsed));
 }
 
 void ParkableStringImpl::OnWritingCompleteOnMainThread(
     std::unique_ptr<BackgroundTaskParams> params,
-    std::unique_ptr<DiskDataAllocator::Metadata> on_disk_metadata) {
+    std::unique_ptr<DiskDataAllocator::Metadata> on_disk_metadata,
+    base::TimeDelta writing_time) {
   DCHECK(metadata_->background_task_in_progress_);
   DCHECK(!metadata_->on_disk_metadata_);
 
@@ -774,6 +779,10 @@ void ParkableStringImpl::OnWritingCompleteOnMainThread(
     DiscardCompressedData();
     metadata_->state_ = State::kOnDisk;
   }
+
+  // Record the time no matter whether the string was discarded or not, as the
+  // writing cost was paid.
+  ParkableStringManager::Instance().RecordDiskWriteTime(writing_time);
 }
 
 ParkableString::ParkableString(scoped_refptr<StringImpl>&& impl) {

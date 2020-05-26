@@ -598,8 +598,8 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
     result->parser_.set_predictions(*parser_.predictions());
 
   if (parsed_submitted_form_) {
-    result->parsed_submitted_form_.reset(
-        new PasswordForm(*parsed_submitted_form_));
+    result->parsed_submitted_form_ =
+        std::make_unique<PasswordForm>(*parsed_submitted_form_);
   }
   result->is_submitted_ = is_submitted_;
   result->password_save_manager_->Init(result->client_, result->form_fetcher_,
@@ -725,7 +725,7 @@ bool PasswordFormManager::ProvisionallySaveHttpAuthForm(
         PasswordStore::FormDigest(submitted_form)))
     return false;
 
-  parsed_submitted_form_.reset(new PasswordForm(submitted_form));
+  parsed_submitted_form_ = std::make_unique<PasswordForm>(submitted_form);
   is_submitted_ = true;
   CreatePendingCredentials();
   return true;
@@ -846,7 +846,7 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
       ParseFormAndMakeLogging(form_data, FormDataParser::Mode::kSaving);
   if (!parsed_form) {
     // Create a password form with a minimum data.
-    parsed_form.reset(new PasswordForm);
+    parsed_form = std::make_unique<PasswordForm>();
     parsed_form->origin = form_data.url;
     parsed_form->signon_realm = GetSignonRealm(form_data.url);
   }
@@ -937,7 +937,7 @@ void PasswordFormManager::PresaveGeneratedPasswordInternal(
 
   if (!parsed_form) {
     // Create a password form with a minimum data.
-    parsed_form.reset(new PasswordForm());
+    parsed_form = std::make_unique<PasswordForm>();
     parsed_form->origin = form.url;
     parsed_form->signon_realm = GetSignonRealm(form.url);
   }

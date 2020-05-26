@@ -19,7 +19,7 @@ PasswordManagerClientHelper::PasswordManagerClientHelper(
   DCHECK(delegate_);
 }
 
-PasswordManagerClientHelper::~PasswordManagerClientHelper() {}
+PasswordManagerClientHelper::~PasswordManagerClientHelper() = default;
 
 void PasswordManagerClientHelper::NotifyUserCouldBeAutoSignedIn(
     std::unique_ptr<autofill::PasswordForm> form) {

@@ -118,7 +118,6 @@ class MockChromePasswordManagerClient : public ChromePasswordManagerClient {
         std::make_unique<safe_browsing::MockPasswordProtectionService>();
 #endif
   }
-  ~MockChromePasswordManagerClient() override {}
 
 #if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
@@ -152,11 +151,6 @@ class DummyLogReceiver : public autofill::LogReceiver {
 class FakePasswordAutofillAgent
     : public autofill::mojom::PasswordAutofillAgent {
  public:
-  FakePasswordAutofillAgent()
-      : called_set_logging_state_(false), logging_state_active_(false) {}
-
-  ~FakePasswordAutofillAgent() override = default;
-
   void BindReceiver(mojo::ScopedInterfaceEndpointHandle handle) {
     receiver_.Bind(
         mojo::PendingAssociatedReceiver<autofill::mojom::PasswordAutofillAgent>(
@@ -191,9 +185,9 @@ class FakePasswordAutofillAgent
   void TouchToFillClosed(bool show_virtual_keyboard) override {}
 
   // Records whether SetLoggingState() gets called.
-  bool called_set_logging_state_;
+  bool called_set_logging_state_ = false;
   // Records data received via SetLoggingState() call.
-  bool logging_state_active_;
+  bool logging_state_active_ = false;
 
   mojo::AssociatedReceiver<autofill::mojom::PasswordAutofillAgent> receiver_{
       this};
@@ -208,7 +202,6 @@ std::unique_ptr<KeyedService> CreateTestSyncService(
 
 class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
  public:
-  ChromePasswordManagerClientTest() : metrics_enabled_(false) {}
   void SetUp() override;
   void TearDown() override;
 
@@ -244,7 +237,7 @@ class ChromePasswordManagerClientTest : public ChromeRenderViewHostTestHarness {
   FakePasswordAutofillAgent fake_agent_;
 
   TestingPrefServiceSimple prefs_;
-  bool metrics_enabled_;
+  bool metrics_enabled_ = false;
 };
 
 void ChromePasswordManagerClientTest::SetUp() {

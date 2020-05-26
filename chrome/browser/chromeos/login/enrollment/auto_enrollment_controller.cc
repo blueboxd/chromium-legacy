@@ -66,9 +66,11 @@ const int kMaxRequestStateKeysTries = 10;
 constexpr base::TimeDelta kSafeguardTimeout = base::TimeDelta::FromSeconds(90);
 
 // Maximum time to wait for time sync before forcing a decision on whether
-// Initial Enrollment should be performed.
+// Initial Enrollment should be performed. This corresponds to at least seven
+// TCP retransmissions attempts to the remote server used to update the system
+// clock.
 constexpr base::TimeDelta kSystemClockSyncWaitTimeout =
-    base::TimeDelta::FromSeconds(15);
+    base::TimeDelta::FromSeconds(45);
 
 // A callback that will be invoked when the system clock has been synchronized,
 // or if system clock synchronization has failed.

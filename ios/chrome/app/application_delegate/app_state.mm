@@ -183,18 +183,6 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
   _safeModeCoordinator = safeModeCoordinator;
 }
 
-- (UIWindow*)window {
-  return self.foregroundActiveScene ? self.foregroundActiveScene.window
-                                    : self.connectedScenes.firstObject.window;
-}
-
-- (void)setsceneShowingBlockingUI:(SceneState*)sceneState {
-  _sceneShowingBlockingUI = sceneState;
-  for (SceneState* state in self.connectedScenes) {
-    state.presentingModalOverlay = (state != sceneState) && (sceneState != nil);
-  }
-}
-
 #pragma mark - Public methods.
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
@@ -560,14 +548,14 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
 
 - (void)startSafeMode {
   DCHECK(self.foregroundActiveScene);
-  SafeModeCoordinator* safeModeCoordinator =
-      [[SafeModeCoordinator alloc] initWithWindow:self.window];
+  SafeModeCoordinator* safeModeCoordinator = [[SafeModeCoordinator alloc]
+      initWithWindow:self.foregroundActiveScene.window];
 
   self.safeModeCoordinator = safeModeCoordinator;
   [self.safeModeCoordinator setDelegate:self];
 
   // Activate the main window, which will prompt the views to load.
-  [self.window makeKeyAndVisible];
+  [self.foregroundActiveScene.window makeKeyAndVisible];
 
   [self.safeModeCoordinator start];
 }

@@ -12,6 +12,8 @@
 
 #include "base/macros.h"
 #include "components/arc/mojom/app.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -85,8 +87,9 @@ class FakeAppInstance : public mojom::AppInstance {
   ~FakeAppInstance() override;
 
   // mojom::AppInstance overrides:
-  void InitDeprecated(mojom::AppHostPtr host_ptr) override;
-  void Init(mojom::AppHostPtr host_ptr, InitCallback callback) override;
+  void InitDeprecated(mojo::PendingRemote<mojom::AppHost> host_remote) override;
+  void Init(mojo::PendingRemote<mojom::AppHost> host_remote,
+            InitCallback callback) override;
   void LaunchAppDeprecated(const std::string& package_name,
                            const std::string& activity,
                            const base::Optional<gfx::Rect>& dimension) override;
@@ -289,7 +292,7 @@ class FakeAppInstance : public mojom::AppInstance {
 
   // Keeps the binding alive so that calls to this class can be correctly
   // routed.
-  mojom::AppHostPtr host_;
+  mojo::Remote<mojom::AppHost> host_remote_;
 
   bool GetFakeIcon(mojom::ScaleFactor scale_factor,
                    std::string* png_data_as_string);

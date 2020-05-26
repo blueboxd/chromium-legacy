@@ -50,10 +50,11 @@ struct VoiceInteractionStatus {
 // Deprecated method ID: 4
 interface VoiceInteractionFrameworkInstance {
   // DEPRECATED: Please use Init@11 instead.
-  InitDeprecated@0(VoiceInteractionFrameworkHost host_ptr);
+  InitDeprecated@0(pending_remote<VoiceInteractionFrameworkHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=13] Init@11(VoiceInteractionFrameworkHost host_ptr) => ();
+  [MinVersion=13] Init@11(
+      pending_remote<VoiceInteractionFrameworkHost> host_remote) => ();
 
   // Starts the voice interaction session in container.
   // |homescreen_is_active| is true if the session was invoked when homescreen is active.

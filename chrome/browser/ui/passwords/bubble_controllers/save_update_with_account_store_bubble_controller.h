@@ -16,6 +16,10 @@ namespace base {
 class Clock;
 }
 
+namespace ui {
+class ImageModel;
+}
+
 // This controller provides data and actions for the
 // PasswordSaveUpdateWithAccountStoreView.
 class SaveUpdateWithAccountStoreBubbleController
@@ -67,6 +71,14 @@ class SaveUpdateWithAccountStoreBubbleController
 
   // Returns true iff the password account store is used.
   bool IsUsingAccountStore();
+
+  // Returns the email of current primary account. Returns empty string if no
+  // account is signed in.
+  std::string GetPrimaryAccountEmail();
+
+  // Returns the avatar of the primary account. Returns an empty image if no
+  // account is signed in.
+  ui::ImageModel GetPrimaryAccountAvatar(int icon_size_dip);
 
   password_manager::ui::State state() const { return state_; }
 

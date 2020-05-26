@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.RuleChain;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
@@ -35,7 +36,7 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.signin.SigninActivityLauncher;
 import org.chromium.chrome.browser.sync.SyncTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
-import org.chromium.chrome.test.util.BookmarkTestUtil;
+import org.chromium.chrome.test.util.BookmarkTestRule;
 import org.chromium.chrome.test.util.browser.signin.SigninTestUtil;
 import org.chromium.components.signin.metrics.SigninAccessPoint;
 
@@ -45,8 +46,15 @@ import org.chromium.components.signin.metrics.SigninAccessPoint;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class BookmarkPersonalizedSigninPromoTest {
+    private final SyncTestRule mSyncTestRule = new SyncTestRule();
+
+    private final BookmarkTestRule mBookmarkTestRule = new BookmarkTestRule();
+
+    // As bookmarks need the fake AccountManagerFacade in SyncTestRule,
+    // BookmarkTestRule should be initialized after and destroyed before the
+    // SyncTestRule.
     @Rule
-    public final SyncTestRule mSyncTestRule = new SyncTestRule();
+    public final RuleChain chain = RuleChain.outerRule(mSyncTestRule).around(mBookmarkTestRule);
 
     private final SigninActivityLauncher mMockSigninActivityLauncher =
             mock(SigninActivityLauncher.class);
@@ -107,7 +115,7 @@ public class BookmarkPersonalizedSigninPromoTest {
     }
 
     private void showBookmarkManagerAndCheckSigninPromoIsDisplayed() {
-        BookmarkTestUtil.showBookmarkManager(mSyncTestRule.getActivity());
+        mBookmarkTestRule.showBookmarkManager(mSyncTestRule.getActivity());
         onView(withId(R.id.signin_promo_view_container)).check(matches(isDisplayed()));
     }
 }

@@ -29,7 +29,7 @@ PasswordReuseDetectionManager::PasswordReuseDetectionManager(
   DCHECK(client_);
 }
 
-PasswordReuseDetectionManager::~PasswordReuseDetectionManager() {}
+PasswordReuseDetectionManager::~PasswordReuseDetectionManager() = default;
 
 void PasswordReuseDetectionManager::DidNavigateMainFrame(
     const GURL& main_frame_url) {

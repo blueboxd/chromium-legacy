@@ -46,12 +46,16 @@ FakeAppInstance::FakeAppInstance(mojom::AppHost* app_host)
     : app_host_(app_host) {}
 FakeAppInstance::~FakeAppInstance() {}
 
-void FakeAppInstance::InitDeprecated(mojom::AppHostPtr host_ptr) {
-  Init(std::move(host_ptr), base::DoNothing());
+void FakeAppInstance::InitDeprecated(
+    mojo::PendingRemote<mojom::AppHost> host_remote) {
+  Init(std::move(host_remote), base::DoNothing());
 }
 
-void FakeAppInstance::Init(mojom::AppHostPtr host_ptr, InitCallback callback) {
-  host_ = std::move(host_ptr);
+void FakeAppInstance::Init(mojo::PendingRemote<mojom::AppHost> host_remote,
+                           InitCallback callback) {
+  // For every change in a connection bind latest remote.
+  host_remote_.reset();
+  host_remote_.Bind(std::move(host_remote));
   std::move(callback).Run();
 }
 

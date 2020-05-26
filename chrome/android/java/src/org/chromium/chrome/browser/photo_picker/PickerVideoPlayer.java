@@ -246,7 +246,7 @@ public class PickerVideoPlayer
         videoPos += (x > midX) ? SKIP_LENGTH_IN_MS : -SKIP_LENGTH_IN_MS;
         MathUtils.clamp(videoPos, 0, duration);
 
-        mMediaPlayer.seekTo(videoPos, MediaPlayer.SEEK_CLOSEST);
+        videoSeekTo(videoPos);
         return true;
     }
 
@@ -304,13 +304,8 @@ public class PickerVideoPlayer
             });
 
             float percentage = progress / 100f;
-            int seekTo = Math.round(percentage * mVideoView.getDuration());
-            if (Build.VERSION.SDK_INT >= 26) {
-                mMediaPlayer.seekTo(seekTo, MediaPlayer.SEEK_CLOSEST);
-            } else {
-                // On older versions, sync to nearest previous key frame.
-                mVideoView.seekTo(seekTo);
-            }
+            int position = Math.round(percentage * mVideoView.getDuration());
+            videoSeekTo(position);
             updateProgress();
         }
     }
@@ -327,6 +322,15 @@ public class PickerVideoPlayer
         fadeAwayVideoControls();
         mFastForwardMessage.setVisibility(View.GONE);
         mLargePlayButton.setVisibility(View.VISIBLE);
+    }
+
+    private void videoSeekTo(int position) {
+        if (Build.VERSION.SDK_INT >= 26) {
+            mMediaPlayer.seekTo(position, MediaPlayer.SEEK_CLOSEST);
+        } else {
+            // On older versions, sync to nearest previous key frame.
+            mVideoView.seekTo(position);
+        }
     }
 
     private void showOverlayControls(boolean animateAway) {

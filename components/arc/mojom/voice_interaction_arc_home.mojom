@@ -63,8 +63,9 @@ interface VoiceInteractionArcHomeHost {
 // Next method ID: 2
 interface VoiceInteractionArcHomeInstance {
   // DEPRECATED: Please use Init@1 instead.
-  InitDeprecated@0(VoiceInteractionArcHomeHost host_ptr);
+  InitDeprecated@0(pending_remote<VoiceInteractionArcHomeHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=3] Init@1(VoiceInteractionArcHomeHost host_ptr) => ();
+  [MinVersion=3] Init@1(
+      pending_remote<VoiceInteractionArcHomeHost> host_remote) => ();
 };

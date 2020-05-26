@@ -264,9 +264,10 @@ cr.define('cr.ui.login', function() {
      * @return {boolean}
      */
     get hasUserPods() {
-      var userCount =
-          this.showingViewsLogin ? this.userCount_ : $('pod-row').pods.length;
-      return !!userCount;
+      if (this.showingViewsLogin)
+        return this.userCount_ > 0;
+      return this.displayType_ == DISPLAY_TYPE.USER_ADDING &&
+          $('pod-row').pods.length > 0;
     },
 
     /**

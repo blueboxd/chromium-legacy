@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "components/arc/mojom/timer.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -17,12 +19,13 @@ class FakeTimerInstance : public mojom::TimerInstance {
   ~FakeTimerInstance() override;
 
   // mojom::TimerInstance overrides:
-  void Init(mojom::TimerHostPtr host_ptr, InitCallback callback) override;
+  void Init(mojo::PendingRemote<mojom::TimerHost> host_remote,
+            InitCallback callback) override;
 
   mojom::TimerHost* GetTimerHost() const;
 
  private:
-  mojom::TimerHostPtr host_ptr_;
+  mojo::Remote<mojom::TimerHost> host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeTimerInstance);
 };

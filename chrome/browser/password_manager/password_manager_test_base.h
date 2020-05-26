@@ -53,7 +53,7 @@ class NavigationObserver : public content::WebContentsObserver {
  private:
   std::string wait_for_path_;
   content::RenderFrameHost* render_frame_host_;
-  bool quit_on_entry_committed_;
+  bool quit_on_entry_committed_ = false;
   base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);

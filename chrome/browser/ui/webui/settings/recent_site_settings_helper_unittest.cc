@@ -20,10 +20,8 @@ namespace {
 ContentSetting kBlocked = ContentSetting::CONTENT_SETTING_BLOCK;
 ContentSetting kAllowed = ContentSetting::CONTENT_SETTING_ALLOW;
 ContentSetting kDefault = ContentSetting::CONTENT_SETTING_DEFAULT;
-site_settings::SiteSettingSource kEmbargo =
-    site_settings::SiteSettingSource::kEmbargo;
-site_settings::SiteSettingSource kPreference =
-    site_settings::SiteSettingSource::kPreference;
+SiteSettingSource kEmbargo = site_settings::SiteSettingSource::kEmbargo;
+SiteSettingSource kPreference = site_settings::SiteSettingSource::kPreference;
 ContentSettingsType kNotifications = ContentSettingsType::NOTIFICATIONS;
 ContentSettingsType kPlugins = ContentSettingsType::PLUGINS;
 ContentSettingsType kPopups = ContentSettingsType::POPUPS;

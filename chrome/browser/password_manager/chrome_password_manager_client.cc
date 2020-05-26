@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 
+#include <memory>
+
 #include <string>
 #include <utility>
 
@@ -613,8 +615,9 @@ bool ChromePasswordManagerClient::WasLastNavigationHTTPError() const {
 
   std::unique_ptr<password_manager::BrowserSavePasswordProgressLogger> logger;
   if (log_manager_->IsLoggingActive()) {
-    logger.reset(new password_manager::BrowserSavePasswordProgressLogger(
-        log_manager_.get()));
+    logger =
+        std::make_unique<password_manager::BrowserSavePasswordProgressLogger>(
+            log_manager_.get());
     logger->LogMessage(Logger::STRING_WAS_LAST_NAVIGATION_HTTP_ERROR_METHOD);
   }
 

@@ -991,8 +991,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // or speculative RenderFrameHost (that has not committed) should be avoided.
   void SetVisibilityForChildViews(bool visible);
 
-  // TODO(tonikitoo): Convert callers to GetFrameToken() and remove it.
-  const base::UnguessableToken& frame_token() const { return frame_token_; }
   const base::UnguessableToken& GetTopFrameToken();
 
   // Returns an unguessable token for this RFHI.  This provides a temporary way

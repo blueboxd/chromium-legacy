@@ -64,7 +64,8 @@ class EventLatencyBrowserTest : public ContentBrowserTest {
 
 // Tests that if a key-press on a page causes a visual update, appropriate event
 // latency metrics are reported.
-IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, KeyPressOnButton) {
+// TODO(crbug.com/1085046): flaky test.
+IN_PROC_BROWSER_TEST_F(EventLatencyBrowserTest, DISABLED_KeyPressOnButton) {
   base::HistogramTester histogram_tester;
 
   ASSERT_NO_FATAL_FAILURE(LoadTestPage());

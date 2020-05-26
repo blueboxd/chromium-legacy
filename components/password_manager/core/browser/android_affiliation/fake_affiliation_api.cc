@@ -12,8 +12,7 @@
 
 namespace password_manager {
 
-ScopedFakeAffiliationAPI::ScopedFakeAffiliationAPI() {
-}
+ScopedFakeAffiliationAPI::ScopedFakeAffiliationAPI() = default;
 
 ScopedFakeAffiliationAPI::~ScopedFakeAffiliationAPI() {
   // Note that trying to provide details of dangling fetchers would be unwise,

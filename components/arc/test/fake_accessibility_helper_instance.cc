@@ -15,7 +15,7 @@ FakeAccessibilityHelperInstance::FakeAccessibilityHelperInstance() = default;
 FakeAccessibilityHelperInstance::~FakeAccessibilityHelperInstance() = default;
 
 void FakeAccessibilityHelperInstance::Init(
-    mojom::AccessibilityHelperHostPtr host_ptr,
+    mojo::PendingRemote<mojom::AccessibilityHelperHost> host_remote,
     InitCallback callback) {
   std::move(callback).Run();
 }

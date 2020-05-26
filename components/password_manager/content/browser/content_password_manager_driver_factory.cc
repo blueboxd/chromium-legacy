@@ -56,7 +56,8 @@ ContentPasswordManagerDriverFactory::ContentPasswordManagerDriverFactory(
       password_client_(password_client),
       autofill_client_(autofill_client) {}
 
-ContentPasswordManagerDriverFactory::~ContentPasswordManagerDriverFactory() {}
+ContentPasswordManagerDriverFactory::~ContentPasswordManagerDriverFactory() =
+    default;
 
 // static
 ContentPasswordManagerDriverFactory*

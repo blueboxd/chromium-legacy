@@ -110,10 +110,13 @@ std::vector<SquareSizePx> WebAppRegistrar::GetAppDownloadedIconSizes(
 
 std::vector<AppId> WebAppRegistrar::GetAppIds() const {
   std::vector<AppId> app_ids;
-  app_ids.reserve(registry_.size());
 
-  for (const WebApp& app : AllApps())
-    app_ids.push_back(app.app_id());
+  for (const WebApp& app : AllApps()) {
+    // Apps in sync install are being installed and should be hidden for
+    // most subsystems. OnWebAppInstalled() notification will be send out later.
+    if (!app.is_in_sync_install())
+      app_ids.push_back(app.app_id());
+  }
 
   return app_ids;
 }

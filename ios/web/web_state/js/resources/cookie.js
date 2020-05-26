@@ -36,21 +36,43 @@ if (cookiesAllowed(state)) {
   return;
 }
 
-var originalCookie =
-    Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
-// It should always be possible to override this descriptor unless WebKit
-// changes its behavior, but if it isn't, track that.
-if (!originalCookie || !originalCookie.configurable) {
-  // TODO(crbug.com/1082151): Track this occurrence.
-  return;
+function addOverride(object, descriptorObject, propertyName, getter, setter) {
+  var original =
+      Object.getOwnPropertyDescriptor(descriptorObject, propertyName);
+  if (original && original.configurable) {
+    var propertyDescriptor = {
+      get: getter,
+      configurable: false,
+    };
+    if (setter) {
+      propertyDescriptor.set = setter;
+    }
+    Object.defineProperty(object, propertyName, propertyDescriptor);
+  } else {
+    // TODO(crbug.com/1082151): Track this occurrence.
+  }
 }
 
-Object.defineProperty(document, 'cookie', {
-  get: function() {
-    return ''
-  },
-  set: function(val) {
-    // No-op.
-  }
-});
+addOverride(
+    document, Document.prototype, 'cookie',
+    function() {
+      return '';
+    },
+    function(value) {
+      // no-op;
+    });
+
+addOverride(window, window, 'localStorage', function() {
+  throw new DOMException(
+      'Failed to read the \'localStorage\' property from \'window\': ' +
+          'Access is denied for this document',
+      'SecurityError');
+}, null);
+
+addOverride(window, window, 'sessionStorage', function() {
+  throw new DOMException(
+      'Failed to read the \'sessionStorage\' property from \'window\': ' +
+          'Access is denied for this document',
+      'SecurityError');
+}, null);
 }());

@@ -30,26 +30,31 @@ class AppNotifications {
   // Removes the notification for the given |notification_id|.
   void RemoveNotification(const std::string& notification_id);
 
+  // Removes notifications for the given |app_id|.
+  void RemoveNotificationsForApp(const std::string& app_id);
+
   // Returns true, if the app has notifications. Otherwise, returns false.
   bool HasNotification(const std::string& app_id);
 
-  // Returns the app id for the given |notification_id|, if |notification_id|
-  // exists in |notification_id_to_app_id_|. Otherwise, return an empty string.
-  const std::string GetAppIdForNotification(const std::string& notification_id);
+  // Returns the set of app ids for the given |notification_id|, if
+  // |notification_id| exists in |notification_id_to_app_id_|. Otherwise, return
+  // an empty set.
+  std::set<std::string> GetAppIdsForNotification(
+      const std::string& notification_id);
 
   apps::mojom::AppPtr GetAppWithHasBadgeStatus(apps::mojom::AppType app_type,
                                                const std::string& app_id);
 
  private:
   // Maps one app id to a set of all matching notification ids.
-  std::map<std::string, std::set<std::string>> app_id_to_notification_id_;
+  std::map<std::string, std::set<std::string>> app_id_to_notification_ids_;
 
-  // Maps one notification id to one app id. When the notification has been
-  // delivered, the MessageCenter has already deleted the notification, so we
-  // can't fetch the corresponding app id when the notification is removed. So
-  // we need a record of this notification, and erase it from both
+  // Maps one notification id to a set of app ids. When the notification has
+  // been delivered, the MessageCenter has already deleted the notification, so
+  // we can't fetch the corresponding app id when the notification is removed.
+  // So we need a record of this notification, and erase it from both
   // |app_id_to_notification_id_| and |notification_id_to_app_id_|.
-  std::map<std::string, std::string> notification_id_to_app_id_;
+  std::map<std::string, std::set<std::string>> notification_id_to_app_ids_;
 };
 
 }  // namespace apps

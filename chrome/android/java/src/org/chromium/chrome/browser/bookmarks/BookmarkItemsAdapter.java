@@ -43,14 +43,15 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
      * Specifies the view types that the bookmark delegate screen can contain.
      */
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({ViewType.PERSONALIZED_SIGNIN_PROMO, ViewType.SYNC_PROMO, ViewType.FOLDER,
-            ViewType.BOOKMARK})
+    @IntDef({ViewType.PERSONALIZED_SIGNIN_PROMO, ViewType.PERSONALIZED_SYNC_PROMO,
+            ViewType.SYNC_PROMO, ViewType.FOLDER, ViewType.BOOKMARK})
     private @interface ViewType {
         int INVALID_PROMO = -1;
         int PERSONALIZED_SIGNIN_PROMO = 0;
-        int SYNC_PROMO = 1;
-        int FOLDER = 2;
-        int BOOKMARK = 3;
+        int PERSONALIZED_SYNC_PROMO = 1;
+        int SYNC_PROMO = 2;
+        int FOLDER = 3;
+        int BOOKMARK = 4;
     }
 
     private static final int MAXIMUM_NUMBER_OF_SEARCH_RESULTS = 500;
@@ -187,7 +188,9 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
 
         switch (viewType) {
             case ViewType.PERSONALIZED_SIGNIN_PROMO:
-                return mPromoHeaderManager.createPersonalizedSigninPromoHolder(parent);
+                // fall through
+            case ViewType.PERSONALIZED_SYNC_PROMO:
+                return mPromoHeaderManager.createPersonalizedSigninAndSyncPromoHolder(parent);
             case ViewType.SYNC_PROMO:
                 return mPromoHeaderManager.createSyncPromoHolder(parent);
             case ViewType.FOLDER:
@@ -205,6 +208,9 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
         if (holder.getItemViewType() == ViewType.PERSONALIZED_SIGNIN_PROMO) {
             PersonalizedSigninPromoView view = (PersonalizedSigninPromoView) holder.itemView;
             mPromoHeaderManager.setupPersonalizedSigninPromo(view);
+        } else if (holder.getItemViewType() == ViewType.PERSONALIZED_SYNC_PROMO) {
+            PersonalizedSigninPromoView view = (PersonalizedSigninPromoView) holder.itemView;
+            mPromoHeaderManager.setupPersonalizedSyncPromo(view);
         } else if (!(holder.getItemViewType() == ViewType.SYNC_PROMO)) {
             BookmarkRow row = ((BookmarkRow) holder.itemView);
             BookmarkId id = getIdByPosition(position);
@@ -231,6 +237,8 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
     public void onViewRecycled(ViewHolder holder) {
         switch (holder.getItemViewType()) {
             case ViewType.PERSONALIZED_SIGNIN_PROMO:
+                // fall through
+            case ViewType.PERSONALIZED_SYNC_PROMO:
                 mPromoHeaderManager.detachPersonalizePromoView();
                 break;
             default:
@@ -406,6 +414,9 @@ class BookmarkItemsAdapter extends DragReorderableListAdapter<BookmarkItem>
                     break;
                 case BookmarkPromoHeader.PromoState.PROMO_SIGNIN_PERSONALIZED:
                     mPromoHeaderType = ViewType.PERSONALIZED_SIGNIN_PROMO;
+                    break;
+                case BookmarkPromoHeader.PromoState.PROMO_SYNC_PERSONALIZED:
+                    mPromoHeaderType = ViewType.PERSONALIZED_SYNC_PROMO;
                     break;
                 case BookmarkPromoHeader.PromoState.PROMO_SYNC:
                     mPromoHeaderType = ViewType.SYNC_PROMO;

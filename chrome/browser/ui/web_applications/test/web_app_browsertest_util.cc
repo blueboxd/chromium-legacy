@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
+#include "chrome/browser/web_applications/components/install_finalizer.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
@@ -202,6 +203,14 @@ bool IsBrowserOpen(const Browser* test_browser) {
       return true;
   }
   return false;
+}
+
+void UninstallWebApp(Profile* profile, const AppId& app_id) {
+  auto* provider = WebAppProviderBase::GetProviderBase(profile);
+  DCHECK(provider);
+  DCHECK(provider->install_finalizer().CanUserUninstallExternalApp(app_id));
+  provider->install_finalizer().UninstallExternalAppByUser(app_id,
+                                                           base::DoNothing());
 }
 
 }  // namespace web_app

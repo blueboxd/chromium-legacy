@@ -1338,7 +1338,8 @@ TEST_F('ChromeVoxBackgroundTest', 'NodeVsSubnode', function() {
       });
 });
 
-TEST_F('ChromeVoxBackgroundTest', 'NativeFind', function() {
+// TODO(crbug.com/1085666): Test is flaky.
+TEST_F('ChromeVoxBackgroundTest', 'DISABLED_NativeFind', function() {
   const mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(
       `

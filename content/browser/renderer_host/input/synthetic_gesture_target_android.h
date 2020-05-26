@@ -47,8 +47,8 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
   float GetMinScalingSpanInDips() const override;
 
  private:
-  void TouchSetPointer(int index, float x, float y, int id);
-  void TouchSetScrollDeltas(float x, float y, float dx, float dy);
+  void TouchSetPointer(int index, int x, int y, int id);
+  void TouchSetScrollDeltas(int x, int y, int dx, int dy);
   void TouchInject(MotionEventAction action,
                    int pointer_count,
                    base::TimeTicks time);

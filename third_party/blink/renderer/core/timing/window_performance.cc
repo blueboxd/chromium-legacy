@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/timing/largest_contentful_paint.h"
@@ -48,6 +49,7 @@
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -346,25 +348,55 @@ void WindowPerformance::RegisterEventTiming(const AtomicString& event_type,
       event_type, MonotonicTimeToDOMHighResTimeStamp(start_time),
       MonotonicTimeToDOMHighResTimeStamp(processing_start),
       MonotonicTimeToDOMHighResTimeStamp(processing_end), cancelable, target);
+  // Add |entry| to the end of the queue along with the frame index at which is
+  // is being queued to know when to queue a swap promise for it.
   event_timings_.push_back(entry);
-  // Only queue a swap promise when |event_timings_| was empty. All of the
-  // elements in |event_timings_| will be processed in a single call of
-  // ReportEventTimings() when the promise suceeds or fails. This method also
-  // clears the vector, so a promise has already been queued when the vector was
-  // not previously empty.
-  if (event_timings_.size() == 1) {
+  event_frames_.push_back(frame_index_);
+  bool should_queue_swap_promise = false;
+  // If there are no pending swap promises, we should queue one. This ensures
+  // that |event_timings_| are processed even if the Blink lifecycle does not
+  // occur due to no DOM updates.
+  if (pending_swap_promise_count_ == 0u) {
+    should_queue_swap_promise = true;
+  } else {
+    // There are pending swap promises, so only queue one if the event
+    // corresponds to a later frame than the one of the latest queued swap
+    // promise.
+    should_queue_swap_promise = frame_index_ > last_registered_frame_index_;
+  }
+  if (should_queue_swap_promise) {
     GetFrame()->GetChromeClient().NotifySwapTime(
-        *GetFrame(), CrossThreadBindOnce(&WindowPerformance::ReportEventTimings,
-                                         WrapCrossThreadWeakPersistent(this)));
+        *GetFrame(),
+        CrossThreadBindOnce(&WindowPerformance::ReportEventTimings,
+                            WrapCrossThreadWeakPersistent(this), frame_index_));
+    last_registered_frame_index_ = frame_index_;
+    ++pending_swap_promise_count_;
   }
 }
 
-void WindowPerformance::ReportEventTimings(WebSwapResult result,
+void WindowPerformance::ReportEventTimings(uint64_t frame_index,
+                                           WebSwapResult result,
                                            base::TimeTicks timestamp) {
-  DOMHighResTimeStamp end_time = MonotonicTimeToDOMHighResTimeStamp(timestamp);
+  DCHECK(pending_swap_promise_count_);
+  --pending_swap_promise_count_;
+  // |event_timings_| and |event_frames_| should always have the same size.
+  DCHECK(event_timings_.size() == event_frames_.size());
   bool event_timing_enabled =
       RuntimeEnabledFeatures::EventTimingEnabled(GetExecutionContext());
-  for (const auto& entry : event_timings_) {
+  while (!event_timings_.IsEmpty()) {
+    PerformanceEventTiming* entry = event_timings_.front();
+    uint64_t entry_frame_index = event_frames_.front();
+    // If the entry was queued at a frame index that is larger than
+    // |frame_index|, then we've reached the end of the entries that we can
+    // process during this callback.
+    if (entry_frame_index > frame_index)
+      break;
+
+    event_timings_.pop_front();
+    event_frames_.pop_front();
+    DOMHighResTimeStamp end_time =
+        MonotonicTimeToDOMHighResTimeStamp(timestamp);
+
     int duration_in_ms = std::round((end_time - entry->startTime()) / 8) * 8;
     entry->SetDuration(duration_in_ms);
     if (!first_input_timing_) {
@@ -396,7 +428,6 @@ void WindowPerformance::ReportEventTimings(WebSwapResult result,
       AddEventTimingBuffer(*entry);
     }
   }
-  event_timings_.clear();
 }
 
 void WindowPerformance::AddElementTiming(const AtomicString& name,
@@ -465,6 +496,10 @@ void WindowPerformance::OnLargestContentfulPaintUpdated(
   if (HasObserverFor(PerformanceEntry::kLargestContentfulPaint))
     NotifyObserversOfEntry(*entry);
   AddLargestContentfulPaint(entry);
+}
+
+void WindowPerformance::OnPaintFinished() {
+  ++frame_index_;
 }
 
 }  // namespace blink

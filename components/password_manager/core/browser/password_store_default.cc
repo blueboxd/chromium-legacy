@@ -22,8 +22,7 @@ PasswordStoreDefault::PasswordStoreDefault(
     std::unique_ptr<LoginDatabase> login_db)
     : login_db_(std::move(login_db)) {}
 
-PasswordStoreDefault::~PasswordStoreDefault() {
-}
+PasswordStoreDefault::~PasswordStoreDefault() = default;
 
 void PasswordStoreDefault::ShutdownOnUIThread() {
   PasswordStore::ShutdownOnUIThread();

@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/debug/crash_logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "content/browser/service_worker/service_worker_cache_writer.h"
 #include "content/browser/service_worker/service_worker_consts.h"

@@ -44,7 +44,6 @@ class OffTheRecordProfileImpl : public Profile {
 
   // Profile implementation.
   std::string GetProfileUserName() const override;
-  ProfileType GetProfileType() const override;
   // TODO(https://crbug.com/1033903): Remove the default value.
   Profile* GetOffTheRecordProfile(
       const OTRProfileID& otr_profile_id = OTRProfileID::PrimaryID()) override;

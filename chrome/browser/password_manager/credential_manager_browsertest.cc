@@ -34,7 +34,7 @@ using password_manager::MatchesFormExceptStore;
 
 class CredentialManagerBrowserTest : public PasswordManagerBrowserTestBase {
  public:
-  CredentialManagerBrowserTest() {}
+  CredentialManagerBrowserTest() = default;
 
   void SetUpOnMainThread() override {
     PasswordManagerBrowserTestBase::SetUpOnMainThread();

@@ -15,7 +15,7 @@ namespace password_manager {
 StubPasswordManagerClient::StubPasswordManagerClient()
     : ukm_source_id_(ukm::UkmRecorder::GetNewSourceID()) {}
 
-StubPasswordManagerClient::~StubPasswordManagerClient() {}
+StubPasswordManagerClient::~StubPasswordManagerClient() = default;
 
 bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<PasswordFormManagerForUI> form_to_save,

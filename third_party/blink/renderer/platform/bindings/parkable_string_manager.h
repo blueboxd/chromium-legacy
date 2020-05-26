@@ -96,10 +96,20 @@ class PLATFORM_EXPORT ParkableStringManager {
   void RecordStatisticsAfter5Minutes() const;
   void AgeStringsAndPark();
   void ScheduleAgingTaskIfNeeded();
-  void RecordUnparkingTime(base::TimeDelta);
+
+  void RecordUnparkingTime(base::TimeDelta unparking_time) {
+    total_unparking_time_ += unparking_time;
+  }
   void RecordParkingThreadTime(base::TimeDelta parking_thread_time) {
     total_parking_thread_time_ += parking_thread_time;
   }
+  void RecordDiskWriteTime(base::TimeDelta write_time) {
+    total_disk_write_time_ += write_time;
+  }
+  void RecordDiskReadTime(base::TimeDelta read_time) {
+    total_disk_read_time_ += read_time;
+  }
+
   Statistics ComputeStatistics() const;
 
   DiskDataAllocator& data_allocator() const {
@@ -123,6 +133,8 @@ class PLATFORM_EXPORT ParkableStringManager {
   bool did_register_memory_pressure_listener_;
   base::TimeDelta total_unparking_time_;
   base::TimeDelta total_parking_thread_time_;
+  base::TimeDelta total_disk_read_time_;
+  base::TimeDelta total_disk_write_time_;
 
   StringMap unparked_strings_;
   StringMap parked_strings_;

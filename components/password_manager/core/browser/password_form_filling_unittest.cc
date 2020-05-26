@@ -52,10 +52,6 @@ constexpr char kSyncedPassword[] = "password";
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
-  MockPasswordManagerDriver() {}
-
-  ~MockPasswordManagerDriver() override = default;
-
   MOCK_METHOD(int, GetId, (), (const, override));
   MOCK_METHOD(void,
               FillPasswordForm,

@@ -44,9 +44,9 @@ PageTimingMetricsSender::PageTimingMetricsSender(
       new_deferred_resource_data_(mojom::DeferredResourceCounts::New()),
       buffer_timer_delay_ms_(kBufferTimerDelayMillis),
       metadata_recorder_(initial_monotonic_timing) {
+  const auto resource_id = initial_request->resource_id();
   page_resource_data_use_.emplace(
-      std::piecewise_construct,
-      std::forward_as_tuple(initial_request->resource_id()),
+      std::piecewise_construct, std::forward_as_tuple(resource_id),
       std::forward_as_tuple(std::move(initial_request)));
   buffer_timer_delay_ms_ = base::GetFieldTrialParamByFeatureAsInt(
       kPageLoadMetricsTimerDelayFeature, "BufferTimerDelayMillis",

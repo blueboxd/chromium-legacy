@@ -18,5 +18,6 @@ interface DiskQuotaHost {
 
 // Next Method ID: 1
 interface DiskQuotaInstance {
-  Init@0(DiskQuotaHost host_ptr) => ();
+  // Establishes full-duplex communication with the host.
+  Init@0(pending_remote<DiskQuotaHost> host_remote) => ();
 };

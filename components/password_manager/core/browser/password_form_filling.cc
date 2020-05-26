@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_form_filling.h"
 
+#include <memory>
+
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
@@ -94,8 +96,8 @@ void Autofill(PasswordManagerClient* client,
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client->GetLogManager());
     logger->LogMessage(Logger::STRING_PASSWORDMANAGER_AUTOFILL);
   }
 

@@ -55,7 +55,7 @@ interface VolumeMounterHost {
 // Next Method ID: 2
 interface VolumeMounterInstance {
   // Establishes full-duplex communication with the host.
-  [MinVersion=1] Init@0(VolumeMounterHost host_ptr) => ();
+  [MinVersion=1] Init@0(pending_remote<VolumeMounterHost> host_remote) => ();
 
   // Triggers a mount event in Android.
   OnMountEvent@1(MountPointInfo mount_point_info);

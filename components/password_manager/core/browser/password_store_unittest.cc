@@ -209,8 +209,8 @@ TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
 
   // Build the forms vector and add the forms to the store.
   std::vector<std::unique_ptr<PasswordForm>> all_forms;
-  for (size_t i = 0; i < base::size(form_data); ++i) {
-    all_forms.push_back(FillPasswordFormWithData(form_data[i]));
+  for (const auto& data : form_data) {
+    all_forms.push_back(FillPasswordFormWithData(data));
     store->AddLogin(*all_forms.back());
   }
 
@@ -601,8 +601,8 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
   store->Init(nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-  for (size_t i = 0; i < base::size(kTestCredentials); ++i) {
-    all_credentials.push_back(FillPasswordFormWithData(kTestCredentials[i]));
+  for (const auto& credential : kTestCredentials) {
+    all_credentials.push_back(FillPasswordFormWithData(credential));
     store->AddLogin(*all_credentials.back());
   }
 
@@ -869,8 +869,8 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
 
     // Set up the initial test data set.
     std::vector<std::unique_ptr<PasswordForm>> all_credentials;
-    for (size_t i = 0; i < base::size(kTestCredentials); ++i) {
-      all_credentials.push_back(FillPasswordFormWithData(kTestCredentials[i]));
+    for (const auto& credential : kTestCredentials) {
+      all_credentials.push_back(FillPasswordFormWithData(credential));
       all_credentials.back()->date_synced =
           all_credentials.back()->date_created;
       store->AddLogin(*all_credentials.back());

@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/metrics/histogram_macros.h"
-#include "components/sync/engine/sync_engine_switches.h"
 #include "components/sync/engine_impl/commit_contribution.h"
 #include "components/sync/engine_impl/commit_contributor.h"
 #include "components/sync/protocol/sync.pb.h"
@@ -33,9 +32,7 @@ Commit::ContributionMap CommitProcessor::GatherCommitContributions(
     size_t max_entries,
     bool cookie_jar_mismatch,
     bool cookie_jar_empty) {
-  if (gathered_all_contributions_ &&
-      base::FeatureList::IsEnabled(
-          switches::kSyncPreventCommitsBypassingNudgeDelay)) {
+  if (gathered_all_contributions_) {
     return Commit::ContributionMap();
   }
 

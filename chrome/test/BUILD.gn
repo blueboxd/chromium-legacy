@@ -929,7 +929,6 @@ if (!is_android) {
       "../browser/media/webrtc/webrtc_internals_integration_browsertest.cc",
       "../browser/media/webrtc/webrtc_internals_perf_browsertest.cc",
       "../browser/media/webrtc/webrtc_pan_tilt_zoom_browsertest.cc",
-      "../browser/media/webrtc/webrtc_simulcast_browsertest.cc",
       "../browser/media/webrtc/webrtc_stats_perf_browsertest.cc",
       "../browser/media/webrtc/webrtc_video_display_perf_browsertest.cc",
       "../browser/media/webrtc/webrtc_video_high_bitrate_browsertest.cc",
@@ -1043,6 +1042,7 @@ if (!is_android) {
       "../browser/policy/cloud/device_management_service_browsertest.cc",
       "../browser/policy/component_updater_policy_browsertest.cc",
       "../browser/policy/content_settings_policy_browsertest.cc",
+      "../browser/policy/cors_policy_browsertest.cc",
       "../browser/policy/media_stream_policy_browsertest.cc",
       "../browser/policy/policy_browsertest.cc",
       "../browser/policy/policy_initialization_browsertest.cc",
@@ -1053,6 +1053,7 @@ if (!is_android) {
       "../browser/policy/policy_test_utils.h",
       "../browser/policy/restore_on_startup_policy_browsertest.cc",
       "../browser/policy/safe_browsing_policy_browsertest.cc",
+      "../browser/policy/signed_exchange_browsertest.cc",
       "../browser/policy/site_isolation_policy_browsertest.cc",
       "../browser/policy/url_blacklist_policy_browsertest.cc",
       "../browser/portal/portal_browsertest.cc",
@@ -1478,6 +1479,7 @@ if (!is_android) {
       ]
 
       sources += [
+        "../browser/apps/app_service/notifications_browsertest.cc",
         "../browser/policy/accessibility_policy_browsertest.cc",
         "../browser/policy/arc_policy_browsertest.cc",
         "../browser/policy/assistant_policy_browsertest.cc",

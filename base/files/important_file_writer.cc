@@ -30,6 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner.h"
 #include "base/task_runner_util.h"
+#include "base/threading/platform_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
@@ -258,20 +259,32 @@ bool ImportantFileWriter::WriteFileAtomicallyImpl(const FilePath& path,
 
   // The file must be closed for ReplaceFile to do its job, which opens up a
   // race with other software that may open the temp file (e.g., an A/V scanner
-  // doing its job without oplocks). Close as late as possible to improve the
-  // chances that the other software will lose the race.
+  // doing its job without oplocks). Boost a background thread's priority on
+  // Windows and close as late as possible to improve the chances that the other
+  // software will lose the race.
+#if defined(OS_WIN)
+  const auto previous_priority = PlatformThread::GetCurrentThreadPriority();
+  const bool reset_priority = previous_priority <= ThreadPriority::NORMAL;
+  if (reset_priority)
+    PlatformThread::SetCurrentThreadPriority(ThreadPriority::DISPLAY);
+#endif  // defined(OS_WIN)
   tmp_file.Close();
-  if (!ReplaceFile(tmp_file_path, path, &replace_file_error)) {
+  const bool result = ReplaceFile(tmp_file_path, path, &replace_file_error);
+#if defined(OS_WIN)
+  if (reset_priority)
+    PlatformThread::SetCurrentThreadPriority(previous_priority);
+#endif  // defined(OS_WIN)
+
+  if (!result) {
     UmaHistogramExactLinearWithSuffix("ImportantFile.FileRenameError",
                                       histogram_suffix, -replace_file_error,
                                       -File::FILE_ERROR_MAX);
     LogFailure(path, histogram_suffix, FAILED_RENAMING,
                "could not rename temporary file");
     DeleteTmpFileWithRetry(File(), tmp_file_path, histogram_suffix);
-    return false;
   }
 
-  return true;
+  return result;
 }
 
 ImportantFileWriter::ImportantFileWriter(

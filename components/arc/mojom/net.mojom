@@ -399,10 +399,10 @@ interface NetHost {
 // ID 2 is missing as it belonged to deprecated method.
 interface NetInstance {
   // DEPRECATED: Please use Init@6 instead.
-  InitDeprecated@0(NetHost host_ptr);
+  InitDeprecated@0(pending_remote<NetHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=8] Init@6(NetHost host_ptr) => ();
+  [MinVersion=8] Init@6(pending_remote<NetHost> host_remote) => ();
 
   // Notifies the instance of a WiFI AP scan being completed.
   [MinVersion=1] ScanCompleted@1();

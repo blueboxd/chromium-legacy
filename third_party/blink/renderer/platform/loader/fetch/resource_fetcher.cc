@@ -314,7 +314,10 @@ void PopulateAndAddResourceTimingInfo(Resource* resource,
                                       scoped_refptr<ResourceTimingInfo> info,
                                       base::TimeTicks response_end,
                                       int64_t encoded_data_length) {
-  info->SetInitialURL(resource->Url());
+  info->SetInitialURL(
+      resource->GetResourceRequest().GetRedirectChain().IsEmpty()
+          ? resource->GetResourceRequest().Url()
+          : resource->GetResourceRequest().GetRedirectChain().front());
   info->SetFinalResponse(resource->GetResponse());
   info->SetLoadResponseEnd(response_end);
   // encodedDataLength == -1 means "not available".
@@ -644,9 +647,12 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
     scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
         resource->Options().initiator_info.name, base::TimeTicks::Now(),
         request.GetRequestContext(), request.GetRequestDestination());
-    // TODO(yoav): GetOriginalURLBeforeRedirects() is only needed until
-    // Out-of-Blink CORS lands: https://crbug.com/736308
-    info->SetInitialURL(resource->Url());
+    // TODO(yoav): Getting the original URL before redirects here is only needed
+    // until Out-of-Blink CORS lands: https://crbug.com/736308
+    info->SetInitialURL(
+        resource->GetResourceRequest().GetRedirectChain().IsEmpty()
+            ? resource->GetResourceRequest().Url()
+            : resource->GetResourceRequest().GetRedirectChain().front());
     ResourceResponse final_response = resource->GetResponse();
     final_response.SetResourceLoadTiming(nullptr);
     info->SetFinalResponse(final_response);

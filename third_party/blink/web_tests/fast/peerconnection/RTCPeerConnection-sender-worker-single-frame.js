@@ -2,7 +2,6 @@ onmessage = async (event) => {
   const readableStream = event.data.readableStream;
   const reader = readableStream.getReader();
   const result = await reader.read();
-  console.log('WORKER metadata = ', result.value.getMetadata().synchronizationSource);
 
   // Post an object with individual fields so that the test side has
   // values to verify the serialization of the RTCEncodedVideoFrame.

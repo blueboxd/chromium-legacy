@@ -13,36 +13,85 @@ function areArrayBuffersEqual(buffer1, buffer2)
   return true;
 }
 
-function areMetadataEqual(metadata1, metadata2) {
-  return metadata1.synchronizationSource === metadata2.synchronizationSource;
+function areArraysEqual(a1, a2) {
+  if (a1 === a1)
+    return true;
+  if (a1.length != a2.length)
+    return false;
+  for (let i = 0; i < a1.length; i++) {
+    if (a1[i] != a2[i])
+      return false;
+  }
+  return true;
+}
+
+function areMetadataEqual(metadata1, metadata2, type) {
+  return metadata1.synchronizationSource === metadata2.synchronizationSource &&
+         areArraysEqual(metadata1.contributingSources, metadata2.contributingSources) &&
+         metadata1.frameId === metadata2.frameId &&
+         areArraysEqual(metadata1.dependencies, metadata2.dependencies) &&
+         metadata1.spatialIndex === metadata2.spatialIndex &&
+         metadata1.temporalIndex === metadata2.temporalIndex &&
+         // Width and height are reported only for key frames on the receiver side.
+         type == "key"
+           ? metadata1.width === metadata2.width && metadata1.height === metadata2.height
+           : true;
 }
 
 function areFrameInfosEqual(frame1, frame2) {
   return frame1.timestamp === frame2.timestamp &&
-         areMetadataEqual(frame1.getMetadata(), frame2.getMetadata()) &&
+         frame1.type === frame2.type &&
+         areMetadataEqual(frame1.getMetadata(), frame2.getMetadata(), frame1.type) &&
          areArrayBuffersEqual(frame1.data, frame2.data);
 }
 
-async function exchangeOfferAnswer(pc1, pc2) {
-  const offer = await pc2.createOffer({offerToReceiveAudio: true, offerToReceiveVideo: true});
-  // TODO(crbug.com/1066819): remove this hack when we do not receive duplicates from RTX
-  //   anymore.
-  // Munge the SDP to disable bandwidth probing via RTX.
-  const sdp = offer.sdp.replace(new RegExp('rtx', 'g'), 'invalid');
-  await pc2.setLocalDescription(offer);
-  await pc1.setRemoteDescription({type: 'offer', sdp});
+function containsVideoMetadata(metadata) {
+  return metadata.synchronizationSource !== undefined &&
+         metadata.width !== undefined &&
+         metadata.height !== undefined &&
+         metadata.spatialIndex !== undefined &&
+         metadata.temporalIndex !== undefined &&
+         metadata.dependencies !== undefined;
+}
 
-  const answer = await pc1.createAnswer();
-  await pc1.setLocalDescription(answer);
-  await pc2.setRemoteDescription(answer);
+function enableGFD(sdp) {
+  const FRAME_MARKER_EXTENSION =
+      'http://tools.ietf.org/html/draft-ietf-avtext-framemarking-07';
+  const GFD_V00_EXTENSION =
+      'http://www.webrtc.org/experiments/rtp-hdrext/generic-frame-descriptor-00';
+  if (sdp.indexOf(GFD_V00_EXTENSION) !== -1)
+    return sdp;
+
+  // Replace the frame marker extension, which is unused with the GFD extension.
+  return sdp.split(FRAME_MARKER_EXTENSION).join(GFD_V00_EXTENSION);
+}
+
+async function exchangeOfferAnswer(pc1, pc2) {
+  const offer = await pc1.createOffer();
+  // Munge the SDP to enable the GFD extension in order to get correct metadata.
+  const sdpGFD = enableGFD(offer.sdp);
+  await pc1.setLocalDescription({type: offer.type, sdp: sdpGFD});
+  // Munge the SDP to disable bandwidth probing via RTX.
+  // TODO(crbug.com/1066819): remove this hack when we do not receive duplicates from RTX
+  // anymore.
+  const sdpRTX = sdpGFD.replace(new RegExp('rtx', 'g'), 'invalid');
+  await pc2.setRemoteDescription({type: 'offer', sdp: sdpRTX});
+
+  const answer = await pc2.createAnswer();
+  await pc2.setLocalDescription(answer);
+  await pc1.setRemoteDescription(answer);
 }
 
 async function exchangeOfferAnswerReverse(pc1, pc2) {
   const offer = await pc2.createOffer({offerToReceiveAudio: true, offerToReceiveVideo: true});
+  // Munge the SDP to enable the GFD extension in order to get correct metadata.
+  const sdpGFD = enableGFD(offer.sdp);
   // Munge the SDP to disable bandwidth probing via RTX.
-  const sdp = offer.sdp.replace(new RegExp('rtx', 'g'), 'invalid');
-  await pc1.setRemoteDescription({type: 'offer', sdp});
-  await pc2.setLocalDescription(offer);
+  // TODO(crbug.com/1066819): remove this hack when we do not receive duplicates from RTX
+  // anymore.
+  const sdpRTX = sdpGFD.replace(new RegExp('rtx', 'g'), 'invalid');
+  await pc1.setRemoteDescription({type: 'offer', sdp: sdpRTX});
+  await pc2.setLocalDescription({type: 'offer', sdp: sdpGFD});
 
   const answer = await pc1.createAnswer();
   await pc2.setRemoteDescription(answer);

@@ -814,6 +814,10 @@ TEST_F(ParkableStringTest, ReportMemoryDump) {
       MemoryAllocatorDump::Entry("on_disk_footprint", "bytes", kCompressedSize);
   EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(on_disk_footprint))));
 
+  MemoryAllocatorDump::Entry on_disk_free_chunks =
+      MemoryAllocatorDump::Entry("on_disk_free_chunks", "bytes", 0);
+  EXPECT_THAT(dump->entries(), Contains(Eq(ByRef(on_disk_free_chunks))));
+
   // |parkable1| is compressed.
   compressed =
       MemoryAllocatorDump::Entry("compressed_size", "bytes", kCompressedSize);
@@ -1002,27 +1006,15 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
   // compression metrics.
   DisableOnDiskWriting();
 
-  // On some platforms, initialization takes time, though it happens when
-  // base::ThreadTicks is used. To prevent flakiness depending on test execution
-  // ordering, force initialization.
-  if (base::ThreadTicks::IsSupported())
-    base::ThreadTicks::WaitUntilInitialized();
-
-  // Need to make the string really large, otherwise unparking takes less than
-  // 1ms, and the 0 bucket is populated.
-  const size_t original_size = 5 * 1000 * 1000;
-  Vector<char> data(original_size, 'a');
-  ParkableString parkable(String(data.data(), data.size()).ReleaseImpl());
-
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
   ParkAndWait(parkable);
+
   const int kNumIterations = 10;
-  size_t compressed_size;
   for (int i = 0; i < kNumIterations; ++i) {
     parkable.ToString();
     ASSERT_FALSE(parkable.Impl()->is_parked());
     WaitForDelayedParking();
     ASSERT_TRUE(parkable.Impl()->is_parked());
-    compressed_size = parkable.Impl()->compressed_size();
     WaitForDiskWriting();
     WaitForAging();
     CheckOnlyCpuCostTaskRemains();
@@ -1047,16 +1039,61 @@ TEST_F(ParkableStringTest, ReportTotalUnparkingTime) {
   }
 
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb.5min",
-                                      original_size / 1000, 1);
+                                      kSizeKb, 1);
   histogram_tester.ExpectUniqueSample(
-      "Memory.ParkableString.CompressedSizeKb.5min", compressed_size / 1000, 1);
+      "Memory.ParkableString.CompressedSizeKb.5min", kCompressedSize / 1000, 1);
 
-  size_t expected_savings = original_size - compressed_size;
+  size_t expected_savings = kSizeKb * 1000 - kCompressedSize;
   histogram_tester.ExpectUniqueSample("Memory.ParkableString.SavingsKb.5min",
                                       expected_savings / 1000, 1);
   histogram_tester.ExpectUniqueSample(
       "Memory.ParkableString.CompressionRatio.5min",
-      100 * compressed_size / original_size, 1);
+      (100 * kCompressedSize) / (kSizeKb * 1000), 1);
+}
+
+TEST_F(ParkableStringTest, ReportTotalDiskTime) {
+  base::ScopedMockElapsedTimersForTest mock_elapsed_timers;
+  base::HistogramTester histogram_tester;
+
+  ParkableString parkable(MakeLargeString().ReleaseImpl());
+  ParkAndWait(parkable);
+
+  const int kNumIterations = 10;
+  for (int i = 0; i < kNumIterations; ++i) {
+    parkable.ToString();
+    ASSERT_FALSE(parkable.Impl()->is_parked());
+    WaitForDelayedParking();
+    ASSERT_TRUE(parkable.Impl()->is_parked());
+    WaitForDiskWriting();
+    WaitForAging();
+    CheckOnlyCpuCostTaskRemains();
+  }
+
+  task_environment_.FastForwardUntilNoTasksRemain();
+  int64_t mock_elapsed_time_ms =
+      base::ScopedMockElapsedTimersForTest::kMockElapsedTime.InMilliseconds();
+  // The string is read kNumIterations times.
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.DiskReadTime.5min",
+                                      mock_elapsed_time_ms * kNumIterations, 1);
+
+  // The string is only written once despite the multiple parking/unparking
+  // calls.
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.DiskWriteTime.5min", mock_elapsed_time_ms, 1);
+
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.TotalSizeKb.5min",
+                                      kSizeKb, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.CompressedSizeKb.5min", 0, 1);
+
+  size_t expected_savings = kSizeKb * 1000 - kCompressedSize;
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.MemorySavingsKb.5min", expected_savings / 1000, 1);
+  histogram_tester.ExpectUniqueSample("Memory.ParkableString.OnDiskSizeKb.5min",
+                                      kCompressedSize / 1000, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Memory.ParkableString.OnDiskFootprintKb.5min", kCompressedSize / 1000,
+      1);
 }
 
 class ParkableStringTestWithQueuedThreadPool : public ParkableStringTest {

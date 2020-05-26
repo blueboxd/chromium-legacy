@@ -455,7 +455,8 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const std::string& display_name,
     const ContentSetting& setting,
     const std::string& provider_name,
-    bool incognito) {
+    bool incognito,
+    bool is_embargoed) {
   auto exception = std::make_unique<base::DictionaryValue>();
   exception->SetString(kOrigin, pattern.ToString());
   exception->SetString(kDisplayName, display_name);
@@ -471,6 +472,7 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   exception->SetString(kSetting, setting_string);
   exception->SetString(kSource, provider_name);
   exception->SetBoolean(kIncognito, incognito);
+  exception->SetBoolean(kIsEmbargoed, is_embargoed);
   return exception;
 }
 
@@ -569,6 +571,8 @@ void GetExceptionsForContentType(
       permissions::PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
           profile);
 
+  std::set<ContentSettingsPattern> origins_under_embargo;
+
   for (const auto& setting : embargo_settings) {
     // Off-the-record HostContentSettingsMap contains incognito content
     // settings as well as normal content settings. Here, we use the
@@ -582,6 +586,7 @@ void GetExceptionsForContentType(
     if (auto_blocker
             ->GetEmbargoResult(GURL(setting.primary_pattern.ToString()), type)
             .content_setting == CONTENT_SETTING_BLOCK) {
+      origins_under_embargo.insert(setting.primary_pattern);
       all_patterns_settings[std::make_pair(
           setting.primary_pattern, setting.source)][setting.secondary_pattern] =
           CONTENT_SETTING_BLOCK;
@@ -620,9 +625,10 @@ void GetExceptionsForContentType(
         parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
     const ContentSettingsPattern& secondary_pattern =
         parent == one_settings.end() ? primary_pattern : parent->first;
-    this_provider_exceptions.push_back(
-        GetExceptionForPage(primary_pattern, secondary_pattern, display_name,
-                            parent_setting, source, incognito));
+    this_provider_exceptions.push_back(GetExceptionForPage(
+        primary_pattern, secondary_pattern, display_name, parent_setting,
+        source, incognito,
+        base::Contains(origins_under_embargo, primary_pattern)));
 
     // Add the "children" for any embedded settings.
     for (auto j = one_settings.begin(); j != one_settings.end(); ++j) {
@@ -631,9 +637,9 @@ void GetExceptionsForContentType(
         continue;
 
       ContentSetting content_setting = j->second;
-      this_provider_exceptions.push_back(
-          GetExceptionForPage(primary_pattern, j->first, display_name,
-                              content_setting, source, incognito));
+      this_provider_exceptions.push_back(GetExceptionForPage(
+          primary_pattern, j->first, display_name, content_setting, source,
+          incognito, base::Contains(origins_under_embargo, primary_pattern)));
     }
   }
 

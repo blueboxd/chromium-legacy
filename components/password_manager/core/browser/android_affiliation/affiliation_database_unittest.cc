@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
@@ -80,8 +82,7 @@ AffiliatedFacetsWithUpdateTime TestEquivalenceClass3() {
 
 class AffiliationDatabaseTest : public testing::Test {
  public:
-  AffiliationDatabaseTest() {}
-  ~AffiliationDatabaseTest() override {}
+  AffiliationDatabaseTest() = default;
 
   void SetUp() override {
     ASSERT_TRUE(temp_directory_.CreateUniqueTempDir());
@@ -89,7 +90,7 @@ class AffiliationDatabaseTest : public testing::Test {
   }
 
   void OpenDatabase() {
-    db_.reset(new AffiliationDatabase);
+    db_ = std::make_unique<AffiliationDatabase>();
     ASSERT_TRUE(db_->Init(db_path()));
   }
 

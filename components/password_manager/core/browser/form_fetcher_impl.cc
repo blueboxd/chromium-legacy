@@ -92,8 +92,8 @@ void FormFetcherImpl::RemoveConsumer(FormFetcher::Consumer* consumer) {
 void FormFetcherImpl::Fetch() {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogMessage(Logger::STRING_FETCH_METHOD);
     logger->LogNumber(Logger::STRING_FORM_FETCHER_STATE,
                       static_cast<int>(state_));
@@ -249,8 +249,8 @@ void FormFetcherImpl::OnGetPasswordStoreResults(
 
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {
-    logger.reset(
-        new BrowserSavePasswordProgressLogger(client_->GetLogManager()));
+    logger = std::make_unique<BrowserSavePasswordProgressLogger>(
+        client_->GetLogManager());
     logger->LogMessage(Logger::STRING_ON_GET_STORE_RESULTS_METHOD);
     logger->LogNumber(Logger::STRING_NUMBER_RESULTS, results.size());
   }

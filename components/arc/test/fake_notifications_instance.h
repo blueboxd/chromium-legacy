@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "components/arc/mojom/notifications.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace arc {
 
@@ -19,8 +20,9 @@ class FakeNotificationsInstance : public mojom::NotificationsInstance {
   ~FakeNotificationsInstance() override;
 
   // mojom::NotificationsInstance overrides:
-  void InitDeprecated(mojom::NotificationsHostPtr host_ptr) override;
-  void Init(mojom::NotificationsHostPtr host_ptr,
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::NotificationsHost> host_remote) override;
+  void Init(mojo::PendingRemote<mojom::NotificationsHost> host_remote,
             InitCallback callback) override;
 
   void SendNotificationEventToAndroid(

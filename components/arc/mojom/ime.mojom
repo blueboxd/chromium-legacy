@@ -97,10 +97,10 @@ interface ImeHost {
 // Next method ID: 8
 interface ImeInstance {
   // DEPRECATED: Please use Init@6 instead.
-  InitDeprecated@0(ImeHost host_ptr);
+  InitDeprecated@0(pending_remote<ImeHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=6] Init@6(ImeHost host_ptr) => ();
+  [MinVersion=6] Init@6(pending_remote<ImeHost> host_remote) => ();
 
   // Sets composition text and attributes requested by the host IME.
   SetCompositionText@1(string text, array<CompositionSegment> segments);

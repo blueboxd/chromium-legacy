@@ -52,11 +52,6 @@ public class UkmTest {
                 () -> UmaSessionStats.unSetMetricsAndCrashReportingForTesting());
     }
 
-    // TODO(rkaplow): Swap these methods with the JNI methods in UkmUtilsForTest.
-    /*
-     * These helper method should stay in sync with
-     * chrome/browser/metrics/UkmTest.java.
-     */
     public String getElementContent(Tab normalTab, String elementId) throws Exception {
         mSyncTestRule.loadUrlInTab(
                 DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);
@@ -77,7 +72,9 @@ public class UkmTest {
 
     @Test
     @SmallTest
-    public void testMetricConsent() throws Exception {
+    // TODO(crbug/1049736): Enable the corrersponding C++ test and delete this
+    // test.
+    public void testMetricsConsent() throws Exception {
         // Keep in sync with UkmBrowserTest.MetricsConsentCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
         // Make sure that UKM is disabled when metrics consent is revoked.
@@ -112,6 +109,8 @@ public class UkmTest {
 
     @Test
     @SmallTest
+    // TODO(crbug/1049736): Enable the corrersponding C++ test and delete this
+    // test.
     public void consentAddedButNoSyncCheck() throws Exception {
         // Keep in sync with UkmBrowserTest.ConsentAddedButNoSyncCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
@@ -134,6 +133,8 @@ public class UkmTest {
 
     @Test
     @SmallTest
+    // TODO(crbug/1049736): Enable the corrersponding C++ test and delete this
+    // test.
     public void singleSyncSignoutCheck() throws Exception {
         // Keep in sync with UkmBrowserTest.SingleSyncSignoutCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.
@@ -160,6 +161,8 @@ public class UkmTest {
 
     @Test
     @SmallTest
+    // TODO(crbug/1049736): Enable the corrersponding C++ test and delete this
+    // test.
     public void singleDisableHistorySyncCheck() throws Exception {
         // Keep in sync with UkmBrowserTest.SingleDisableHistorySyncCheck in
         // chrome/browser/metrics/ukm_browsertest.cc.

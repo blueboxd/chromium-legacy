@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -160,11 +161,7 @@ base::TimeDelta Epsilon() {
 
 class AffiliationBackendTest : public testing::Test {
  public:
-  AffiliationBackendTest()
-      : backend_task_runner_(new base::TestMockTimeTaskRunner),
-        consumer_task_runner_(new base::TestSimpleTaskRunner),
-        mock_fetch_throttler_(nullptr) {}
-  ~AffiliationBackendTest() override {}
+  AffiliationBackendTest() = default;
 
  protected:
   void GetAffiliationsAndBranding(MockAffiliationConsumer* consumer,
@@ -341,9 +338,9 @@ class AffiliationBackendTest : public testing::Test {
   // testing::Test:
   void SetUp() override {
     ASSERT_TRUE(CreateTemporaryFile(&db_path_));
-    backend_.reset(new AffiliationBackend(
+    backend_ = std::make_unique<AffiliationBackend>(
         backend_task_runner_, backend_task_runner_->GetMockClock(),
-        backend_task_runner_->GetMockTickClock()));
+        backend_task_runner_->GetMockTickClock());
     auto test_shared_loader_factory =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_);
@@ -364,15 +361,18 @@ class AffiliationBackendTest : public testing::Test {
   }
 
   base::test::TaskEnvironment task_environment_;
-  scoped_refptr<base::TestMockTimeTaskRunner> backend_task_runner_;
-  scoped_refptr<base::TestSimpleTaskRunner> consumer_task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> backend_task_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+  scoped_refptr<base::TestSimpleTaskRunner> consumer_task_runner_ =
+      base::MakeRefCounted<base::TestSimpleTaskRunner>();
 
   base::FilePath db_path_;
   ScopedFakeAffiliationAPI fake_affiliation_api_;
   MockAffiliationConsumer mock_consumer_;
   std::unique_ptr<AffiliationBackend> backend_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  MockAffiliationFetchThrottler* mock_fetch_throttler_;  // Owned by |backend_|.
+  // Owned by |backend_|.
+  MockAffiliationFetchThrottler* mock_fetch_throttler_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliationBackendTest);
 };

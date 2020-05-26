@@ -88,7 +88,6 @@ typedef std::unique_ptr<TestTabModel> PlatformBrowser;
 #endif  // !defined(OS_ANDROID)
 
 // Clears the specified data using BrowsingDataRemover.
-#if !defined(OS_ANDROID)
 void ClearBrowsingData(Profile* profile) {
   content::BrowsingDataRemover* remover =
       content::BrowserContext::GetBrowsingDataRemover(profile);
@@ -101,7 +100,6 @@ void ClearBrowsingData(Profile* profile) {
   // Make sure HistoryServiceObservers have a chance to be notified.
   content::RunAllTasksUntilIdle();
 }
-#endif  // !defined(OS_ANDROID)
 
 ukm::UkmService* GetUkmService() {
   return g_browser_process->GetMetricsServicesManager()->GetUkmService();
@@ -1121,11 +1119,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
 #endif  // !defined(OS_ANDROID)
 
 // Make sure that pending data is deleted when user deletes history.
-// Keep in sync with testHistoryDeleteCheck in chrome/android/javatests/src/org/
-// chromium/chrome/browser/metrics/UkmTest.java and testHistoryDelete in
-// ios/chrome/browser/metrics/ukm_egtest.mm.
-// TODO(crbug/1049736): Enable this on Android.
-#if !defined(OS_ANDROID)
+// Keep in sync with testHistoryDelete in ios/chrome/browser/metrics/
+// ukm_egtest.mm.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   ukm::UkmTestHelper ukm_test_helper(GetUkmService());
   MetricsConsentOverride metrics_consent(true);
@@ -1134,7 +1129,7 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   std::unique_ptr<ProfileSyncServiceHarness> harness =
       EnableSyncForProfile(profile);
 
-  Browser* sync_browser = CreateBrowser(profile);
+  PlatformBrowser browser = CreatePlatformBrowser(profile);
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
   uint64_t original_client_id = ukm_test_helper.GetClientId();
   EXPECT_NE(0U, original_client_id);
@@ -1152,9 +1147,8 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {
   EXPECT_TRUE(ukm_test_helper.IsRecordingEnabled());
 
   harness->service()->GetUserSettings()->SetSyncRequested(false);
-  CloseBrowserSynchronously(sync_browser);
+  ClosePlatformBrowser(browser);
 }
-#endif  // !defined(OS_ANDROID)
 
 // On ChromeOS, the test profile starts with a primary account already set, so
 // this test doesn't apply.

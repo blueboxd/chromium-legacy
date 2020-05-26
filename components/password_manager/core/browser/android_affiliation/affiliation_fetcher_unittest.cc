@@ -35,8 +35,7 @@ const char kExampleWebFacet2URI[] = "https://www.example.org";
 class MockAffiliationFetcherDelegate
     : public testing::StrictMock<AffiliationFetcherDelegate> {
  public:
-  MockAffiliationFetcherDelegate() {}
-  ~MockAffiliationFetcherDelegate() {}
+  MockAffiliationFetcherDelegate() = default;
 
   MOCK_METHOD0(OnFetchSucceededProxy, void());
   MOCK_METHOD0(OnFetchFailed, void());
@@ -59,18 +58,13 @@ class MockAffiliationFetcherDelegate
 
 class AffiliationFetcherTest : public testing::Test {
  public:
-  AffiliationFetcherTest()
-      : test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {
+  AffiliationFetcherTest() {
     test_url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
         [&](const network::ResourceRequest& request) {
           intercepted_body_ = network::GetUploadData(request);
           intercepted_headers_ = request.headers;
         }));
   }
-
-  ~AffiliationFetcherTest() override {}
 
  protected:
   void VerifyRequestPayload(const std::vector<FacetURI>& expected_facet_uris) {
@@ -121,7 +115,9 @@ class AffiliationFetcherTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_);
   std::string intercepted_body_;
   net::HttpRequestHeaders intercepted_headers_;
 

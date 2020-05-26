@@ -11,6 +11,8 @@
 
 #include "base/callback.h"
 #include "components/arc/mojom/intent_helper.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -87,9 +89,10 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
                                mojom::ActivityNamePtr activity,
                                mojom::ActionType action) override;
 
-  void InitDeprecated(mojom::IntentHelperHostPtr host_ptr) override;
+  void InitDeprecated(
+      mojo::PendingRemote<mojom::IntentHelperHost> host_remote) override;
 
-  void Init(mojom::IntentHelperHostPtr host_ptr,
+  void Init(mojo::PendingRemote<mojom::IntentHelperHost> host_remote,
             InitCallback callback) override;
 
   void OpenFileToReadDeprecated(
@@ -144,7 +147,7 @@ class FakeIntentHelperInstance : public mojom::IntentHelperInstance {
 
   // Keeps the binding alive so that calls to this class can be correctly
   // routed.
-  mojom::IntentHelperHostPtr host_;
+  mojo::Remote<mojom::IntentHelperHost> host_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeIntentHelperInstance);
 };

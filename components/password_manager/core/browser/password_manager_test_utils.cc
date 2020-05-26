@@ -119,14 +119,16 @@ bool ContainsEqualPasswordFormsUnordered(
   return !had_mismatched_actual_form && remaining_expectations.empty();
 }
 
-MockPasswordStoreObserver::MockPasswordStoreObserver() {}
+MockPasswordStoreObserver::MockPasswordStoreObserver() = default;
 
-MockPasswordStoreObserver::~MockPasswordStoreObserver() {}
+MockPasswordStoreObserver::~MockPasswordStoreObserver() = default;
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-MockPasswordReuseDetectorConsumer::MockPasswordReuseDetectorConsumer() {}
+MockPasswordReuseDetectorConsumer::MockPasswordReuseDetectorConsumer() =
+    default;
 
-MockPasswordReuseDetectorConsumer::~MockPasswordReuseDetectorConsumer() {}
+MockPasswordReuseDetectorConsumer::~MockPasswordReuseDetectorConsumer() =
+    default;
 
 PasswordHashDataMatcher::PasswordHashDataMatcher(
     base::Optional<PasswordHashData> expected)

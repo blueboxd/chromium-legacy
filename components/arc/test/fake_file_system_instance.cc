@@ -142,7 +142,7 @@ FakeFileSystemInstance::~FakeFileSystemInstance() {
 }
 
 bool FakeFileSystemInstance::InitCalled() {
-  return host_.is_bound();
+  return host_remote_.is_bound();
 }
 
 void FakeFileSystemInstance::AddFile(const File& file) {
@@ -198,7 +198,7 @@ void FakeFileSystemInstance::TriggerWatchers(
     const std::string& document_id,
     storage::WatcherManager::ChangeType type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!host_) {
+  if (!host_remote_) {
     LOG(ERROR) << "FileSystemHost is not available.";
     return;
   }
@@ -206,7 +206,7 @@ void FakeFileSystemInstance::TriggerWatchers(
   if (iter == document_to_watchers_.end())
     return;
   for (int64_t watcher_id : iter->second) {
-    host_->OnDocumentChanged(watcher_id, type);
+    host_remote_->OnDocumentChanged(watcher_id, type);
   }
 }
 
@@ -546,16 +546,18 @@ void FakeFileSystemInstance::MoveDocument(
       base::BindOnce(std::move(callback), MakeDocument(iter->second)));
 }
 
-void FakeFileSystemInstance::InitDeprecated(mojom::FileSystemHostPtr host) {
-  Init(std::move(host), base::DoNothing());
+void FakeFileSystemInstance::InitDeprecated(
+    mojo::PendingRemote<mojom::FileSystemHost> host_remote) {
+  Init(std::move(host_remote), base::DoNothing());
 }
 
-void FakeFileSystemInstance::Init(mojom::FileSystemHostPtr host,
-                                  InitCallback callback) {
+void FakeFileSystemInstance::Init(
+    mojo::PendingRemote<mojom::FileSystemHost> host_remote,
+    InitCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(host);
-  DCHECK(!host_);
-  host_ = std::move(host);
+  DCHECK(host_remote);
+  DCHECK(!host_remote_);
+  host_remote_.Bind(std::move(host_remote));
   std::move(callback).Run();
 }
 

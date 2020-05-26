@@ -170,9 +170,15 @@ IN_PROC_BROWSER_TEST_F(MockContentBrowserTest, DISABLED_CrashTest) {
   IMMEDIATE_CRASH();
 }
 
+// This is disabled due to flakiness: https://crbug.com/1086372
+#if defined(OS_WIN)
+#define MAYBE_RunMockTests DISABLED_RunMockTests
+#else
+#define MAYBE_RunMockTests RunMockTests
+#endif
 // Using TestLauncher to launch 3 simple browser tests
 // and validate the resulting json file.
-IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RunMockTests) {
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MAYBE_RunMockTests) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
 

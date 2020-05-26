@@ -744,12 +744,6 @@ std::string TestingProfile::GetProfileUserName() const {
   return profile_name_;
 }
 
-Profile::ProfileType TestingProfile::GetProfileType() const {
-  if (original_profile_)
-    return guest_session_ ? GUEST_PROFILE : INCOGNITO_PROFILE;
-  return REGULAR_PROFILE;
-}
-
 bool TestingProfile::IsOffTheRecord() {
   return original_profile_;
 }

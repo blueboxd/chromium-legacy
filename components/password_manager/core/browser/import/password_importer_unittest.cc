@@ -26,10 +26,7 @@ const char kTestFileName[] = "test_only.csv";
 
 class PasswordImporterTest : public testing::Test {
  public:
-  PasswordImporterTest()
-      : callback_called_(false), result_(PasswordImporter::NUM_IMPORT_RESULTS) {
-    CHECK(temp_directory_.CreateUniqueTempDir());
-  }
+  PasswordImporterTest() { CHECK(temp_directory_.CreateUniqueTempDir()); }
 
  protected:
   void StartImportAndWaitForCompletion(const base::FilePath& input_file) {
@@ -65,8 +62,8 @@ class PasswordImporterTest : public testing::Test {
  private:
   base::test::TaskEnvironment task_environment_;
 
-  bool callback_called_;
-  PasswordImporter::Result result_;
+  bool callback_called_ = false;
+  PasswordImporter::Result result_ = PasswordImporter::NUM_IMPORT_RESULTS;
   std::vector<autofill::PasswordForm> imported_passwords_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordImporterTest);

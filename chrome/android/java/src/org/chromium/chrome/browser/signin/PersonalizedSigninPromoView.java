@@ -21,6 +21,7 @@ import org.chromium.ui.widget.ButtonCompat;
 public class PersonalizedSigninPromoView extends LinearLayout {
     private ImageView mImage;
     private ImageButton mDismissButton;
+    private TextView mStatus;
     private TextView mDescription;
     private ButtonCompat mSigninButton;
     private Button mChooseAccountButton;
@@ -35,6 +36,7 @@ public class PersonalizedSigninPromoView extends LinearLayout {
 
         mImage = findViewById(R.id.signin_promo_image);
         mDismissButton = findViewById(R.id.signin_promo_close_button);
+        mStatus = findViewById(R.id.signin_promo_status_message);
         mDescription = findViewById(R.id.signin_promo_description);
         mSigninButton = findViewById(R.id.signin_promo_signin_button);
         mChooseAccountButton = findViewById(R.id.signin_promo_choose_account_button);
@@ -52,6 +54,13 @@ public class PersonalizedSigninPromoView extends LinearLayout {
      */
     public ImageButton getDismissButton() {
         return mDismissButton;
+    }
+
+    /**
+     * @return A reference to the title of the sync promo.
+     */
+    public TextView getStatusMessage() {
+        return mStatus;
     }
 
     /**

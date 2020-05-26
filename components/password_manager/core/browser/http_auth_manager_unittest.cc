@@ -49,8 +49,6 @@ namespace {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MockPasswordManagerClient() {}
-
   MOCK_CONST_METHOD1(IsSavingAndFillingEnabled, bool(const GURL&));
   MOCK_CONST_METHOD1(IsFillingEnabled, bool(const GURL&));
   MOCK_METHOD2(AutofillHttpAuth,
@@ -71,7 +69,6 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
 class MockHttpAuthObserver : public HttpAuthObserver {
  public:
   MockHttpAuthObserver() = default;
-  ~MockHttpAuthObserver() override = default;
 
   MOCK_METHOD0(OnLoginModelDestroying, void());
   MOCK_METHOD2(OnAutofillDataAvailable,
@@ -106,7 +103,7 @@ class HttpAuthManagerTest : public testing::Test {
         .WillByDefault(Return(store_.get()));
     EXPECT_CALL(*store_, GetSiteStatsImpl(_)).Times(AnyNumber());
 
-    httpauth_manager_.reset(new HttpAuthManagerImpl(&client_));
+    httpauth_manager_ = std::make_unique<HttpAuthManagerImpl>(&client_);
 
     EXPECT_CALL(*store_, IsAbleToSavePasswords()).WillRepeatedly(Return(true));
 

@@ -354,10 +354,10 @@ interface IntentHelperInstance {
                                            ActionType action_type);
 
   // DEPRECATED: Please use Init@13 instead.
-  InitDeprecated@0(IntentHelperHost host_ptr);
+  InitDeprecated@0(pending_remote<IntentHelperHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=19] Init@13(IntentHelperHost host_ptr) => ();
+  [MinVersion=19] Init@13(pending_remote<IntentHelperHost> host_remote) => ();
 
   // DEPRECATED. Use FileSystemInstance.OpenFileToRead() instead.
   [MinVersion=15] OpenFileToReadDeprecated@12(string url) => (handle? fd);

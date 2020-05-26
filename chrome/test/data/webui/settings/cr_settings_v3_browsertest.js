@@ -284,6 +284,12 @@ TEST_F('CrSettingsSiteListV3Test', 'DISABLED_SiteList', function() {
   runMochaSuite('SiteList');
 });
 
+// TODO(crbug.com/929455): When the bug is fixed, merge
+// SiteListEmbargoedOrigin into SiteList
+TEST_F('CrSettingsSiteListV3Test', 'SiteListEmbargoedOrigin', function() {
+  runMochaSuite('SiteListEmbargoedOrigin');
+});
+
 TEST_F('CrSettingsSiteListV3Test', 'EditExceptionDialog', function() {
   runMochaSuite('EditExceptionDialog');
 });

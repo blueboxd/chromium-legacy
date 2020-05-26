@@ -5,10 +5,6 @@
 // This inclusion is types-only. No actual code to execute.
 // <include src="components/oobe_types.js">
 
-// This inclusion should go before other non-trivial includes, as
-// <{controller,host}-paring-screen> depend of it.
-// <include src="oobe-screen.js">
-
 // <include src="components/oobe_i18n_behavior.js">
 // <include src="components/oobe_dialog_host_behavior.js">
 // <include src="components/login_screen_behavior.js">
@@ -22,7 +18,6 @@
 // <include src="gaia_header.js">
 // <include src="gaia_input_form.js">
 // <include src="gaia_input.js">
-// <include src="gaia_password_changed.js">
 // <include src="screen_gaia_signin.js">
 // <include src="network_select_login.js">
 // <include src="notification_card.js">
@@ -42,9 +37,7 @@
 // <include src="oobe_welcome.js">
 // <include src="oobe_network.js">
 // <include src="offline_ad_login.js">
-// <include src="active_directory_password_change.js">
 // <include src="arc_terms_of_service.js">
-// <include src="oobe_supervision_transition.js">
 // <include src="enterprise_enrollment.js">
 // <include src="sync_consent.js">
 // <include src="fingerprint_setup.js">

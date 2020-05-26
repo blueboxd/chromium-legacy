@@ -7,6 +7,8 @@
 
 #include "base/macros.h"
 #include "components/arc/mojom/pip.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace arc {
 
@@ -19,12 +21,13 @@ class FakePipInstance : public mojom::PipInstance {
   base::Optional<bool> suppressed() const { return suppressed_; }
 
   // mojom::PipInstance overrides:
-  void Init(mojom::PipHostPtr host_ptr, InitCallback callback) override;
+  void Init(mojo::PendingRemote<mojom::PipHost> host_remote,
+            InitCallback callback) override;
   void ClosePip() override;
   void SetPipSuppressionStatus(bool suppressed) override;
 
  private:
-  mojom::PipHostPtr host_ptr_;
+  mojo::Remote<mojom::PipHost> host_remote_;
   int num_closed_ = 0;
   base::Optional<bool> suppressed_;
 

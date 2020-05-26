@@ -36,7 +36,8 @@ PasswordRequirementsServiceFactory::PasswordRequirementsServiceFactory()
           "PasswordRequirementsServiceFactory",
           BrowserContextDependencyManager::GetInstance()) {}
 
-PasswordRequirementsServiceFactory::~PasswordRequirementsServiceFactory() {}
+PasswordRequirementsServiceFactory::~PasswordRequirementsServiceFactory() =
+    default;
 
 KeyedService* PasswordRequirementsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {

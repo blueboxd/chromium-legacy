@@ -59,6 +59,7 @@
 -MergeSessionTimeoutTest.*
 -OAuth2Test.*
 -OobeBaseTest.*
+-OobeCompletedUnownedTest.*
 -OobeConfigurationEnrollmentTest.*
 -OobeConfigurationTest.*
 -OobeConfigurationTestNoHID.*

@@ -149,7 +149,7 @@ AccountPasswordStoreFactory::AccountPasswordStoreFactory()
   DependsOn(WebDataServiceFactory::GetInstance());
 }
 
-AccountPasswordStoreFactory::~AccountPasswordStoreFactory() {}
+AccountPasswordStoreFactory::~AccountPasswordStoreFactory() = default;
 
 scoped_refptr<RefcountedKeyedService>
 AccountPasswordStoreFactory::BuildServiceInstanceFor(

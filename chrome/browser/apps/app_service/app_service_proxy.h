@@ -157,6 +157,10 @@ class AppServiceProxy : public KeyedService,
   // |parent_window|. Otherwise, the browser window will be used as the anchor.
   void Uninstall(const std::string& app_id, gfx::NativeWindow parent_window);
 
+  // Uninstalls an app for the given |app_id| without prompting the user to
+  // confirm.
+  void UninstallSilently(const std::string& app_id);
+
 #if defined(OS_CHROMEOS)
   // Pauses apps. |pause_data|'s key is the app_id. |pause_data|'s PauseData
   // is the time limit setting for the app, which is shown in the pause app

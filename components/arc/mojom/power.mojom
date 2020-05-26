@@ -36,10 +36,10 @@ interface PowerHost {
 // Next method ID: 7
 interface PowerInstance {
   // DEPRECATED: Please use Init@5 instead.
-  InitDeprecated@0(PowerHost host_ptr);
+  InitDeprecated@0(pending_remote<PowerHost> host_remote);
 
   // Establishes full-duplex communication with the host.
-  [MinVersion=4] Init@5(PowerHost host_ptr) => ();
+  [MinVersion=4] Init@5(pending_remote<PowerHost> host_remote) => ();
 
   // Alerts the instance to a change in interactive state.
   [MinVersion=1] SetInteractive@1(bool enabled);

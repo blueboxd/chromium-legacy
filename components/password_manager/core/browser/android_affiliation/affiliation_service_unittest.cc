@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_simple_task_runner.h"
@@ -49,12 +50,7 @@ AffiliatedFacets GetTestEquivalenceClassAlpha() {
 
 class AffiliationServiceTest : public testing::Test {
  public:
-  AffiliationServiceTest()
-      : background_task_runner_(new base::TestMockTimeTaskRunner()),
-        test_shared_loader_factory_(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_)) {}
-  ~AffiliationServiceTest() override {}
+  AffiliationServiceTest() = default;
 
  protected:
   void DestroyService() { service_.reset(); }
@@ -81,7 +77,7 @@ class AffiliationServiceTest : public testing::Test {
         network::TestNetworkConnectionTracker::GetInstance();
     network_connection_tracker->SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_ETHERNET);
-    service_.reset(new AffiliationService(background_task_runner()));
+    service_ = std::make_unique<AffiliationService>(background_task_runner());
     service_->Initialize(test_shared_loader_factory_,
                          network_connection_tracker, database_path);
     // Note: the background task runner is purposely not pumped here, so that
@@ -98,9 +94,12 @@ class AffiliationServiceTest : public testing::Test {
     background_task_runner_->RunUntilIdle();
   }
 
-  scoped_refptr<base::TestMockTimeTaskRunner> background_task_runner_;
+  scoped_refptr<base::TestMockTimeTaskRunner> background_task_runner_ =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
   network::TestURLLoaderFactory test_url_loader_factory_;
-  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_ =
+      base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+          &test_url_loader_factory_);
 
   ScopedFakeAffiliationAPI fake_affiliation_api_;
   MockAffiliationConsumer mock_consumer_;

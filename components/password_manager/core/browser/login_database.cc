@@ -66,9 +66,9 @@ const int kCompatibleVersionNumber = 19;
 base::Pickle SerializeValueElementPairs(
     const autofill::ValueElementVector& vec) {
   base::Pickle p;
-  for (size_t i = 0; i < vec.size(); ++i) {
-    p.WriteString16(vec[i].first);
-    p.WriteString16(vec[i].second);
+  for (const auto& pair : vec) {
+    p.WriteString16(pair.first);
+    p.WriteString16(pair.second);
   }
   return p;
 }

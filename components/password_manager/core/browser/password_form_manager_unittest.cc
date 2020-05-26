@@ -4,6 +4,8 @@
 
 #include "components/password_manager/core/browser/password_form_manager.h"
 
+#include <memory>
+
 #include <string>
 #include <type_traits>
 #include <utility>
@@ -103,10 +105,6 @@ MATCHER_P(FormDataEqualTo, form_data, "") {
 
 class MockPasswordManagerDriver : public StubPasswordManagerDriver {
  public:
-  MockPasswordManagerDriver() {}
-
-  ~MockPasswordManagerDriver() override {}
-
   MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
   MOCK_METHOD1(FormEligibleForGenerationFound,
@@ -139,9 +137,6 @@ class MockAutofillDownloadManager : public autofill::AutofillDownloadManager {
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
-  MockPasswordManagerClient() = default;
-  ~MockPasswordManagerClient() override = default;
-
   MOCK_METHOD(bool, IsIncognito, (), (const, override));
   MOCK_METHOD(autofill::AutofillDownloadManager*,
               GetAutofillDownloadManager,
@@ -399,7 +394,7 @@ class PasswordFormManagerTest : public testing::Test,
     ON_CALL(*client_.GetPasswordFeatureManager(), GetDefaultPasswordStore)
         .WillByDefault(Return(PasswordForm::Store::kProfileStore));
 
-    fetcher_.reset(new FakeFormFetcher());
+    fetcher_ = std::make_unique<FakeFormFetcher>();
     fetcher_->Fetch();
   }
 
@@ -439,9 +434,9 @@ class PasswordFormManagerTest : public testing::Test,
                    : std::make_unique<PasswordSaveManagerImpl>(
                          std::make_unique<NiceMock<MockFormSaver>>());
 
-    form_manager_.reset(new PasswordFormManager(
+    form_manager_ = std::make_unique<PasswordFormManager>(
         &client_, driver_.AsWeakPtr(), observed_form, fetcher_.get(),
-        std::move(password_save_manager), nullptr));
+        std::move(password_save_manager), nullptr);
   }
 
   // Creates PasswordFormManager and sets it to |form_manager_| for
@@ -458,9 +453,9 @@ class PasswordFormManagerTest : public testing::Test,
                          std::make_unique<NiceMock<MockFormSaver>>());
     fetcher_->set_scheme(
         PasswordStore::FormDigest(base_auth_observed_form).scheme);
-    form_manager_.reset(new PasswordFormManager(
+    form_manager_ = std::make_unique<PasswordFormManager>(
         &client_, PasswordStore::FormDigest(base_auth_observed_form),
-        fetcher_.get(), std::move(password_save_manager)));
+        fetcher_.get(), std::move(password_save_manager));
   }
 
   void SetNonFederatedAndNotifyFetchCompleted(
@@ -491,7 +486,7 @@ TEST_P(PasswordFormManagerTest, DoesManageNoFormTag) {
 
   FormData another_form = observed_form_;
   // Simulate that new input was added by JavaScript.
-  another_form.fields.push_back(FormFieldData());
+  another_form.fields.emplace_back();
   EXPECT_TRUE(form_manager_->DoesManage(another_form, &driver_));
   // Forms on other drivers are not considered managed.
   EXPECT_FALSE(form_manager_->DoesManage(another_form, nullptr));
@@ -2375,9 +2370,9 @@ class PasswordFormManagerTestWithMockedSaver : public PasswordFormManagerTest {
         std::make_unique<NiceMock<MockPasswordSaveManager>>();
     mock_password_save_manager_ = mock_password_save_manager.get();
     EXPECT_CALL(*mock_password_save_manager_, Init(_, _, _, _));
-    form_manager_.reset(new PasswordFormManager(
+    form_manager_ = std::make_unique<PasswordFormManager>(
         &client_, driver_.AsWeakPtr(), observed_form, fetcher_.get(),
-        std::move(mock_password_save_manager), nullptr));
+        std::move(mock_password_save_manager), nullptr);
   }
 
   // Creates PasswordFormManager and sets it to |form_manager_| for
@@ -2390,9 +2385,9 @@ class PasswordFormManagerTestWithMockedSaver : public PasswordFormManagerTest {
         std::make_unique<NiceMock<MockPasswordSaveManager>>();
     mock_password_save_manager_ = mock_password_save_manager.get();
     EXPECT_CALL(*mock_password_save_manager_, Init(_, _, _, _));
-    form_manager_.reset(new PasswordFormManager(
+    form_manager_ = std::make_unique<PasswordFormManager>(
         &client_, PasswordStore::FormDigest(base_auth_observed_form),
-        fetcher_.get(), std::move(mock_password_save_manager)));
+        fetcher_.get(), std::move(mock_password_save_manager));
   }
 
  private:

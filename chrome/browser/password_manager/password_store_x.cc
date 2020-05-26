@@ -134,7 +134,7 @@ PasswordStoreX::PasswordStoreX(
       StepForMetrics(migration_to_login_db_step_));
 }
 
-PasswordStoreX::~PasswordStoreX() {}
+PasswordStoreX::~PasswordStoreX() = default;
 
 scoped_refptr<base::SequencedTaskRunner>
 PasswordStoreX::CreateBackgroundTaskRunner() const {

@@ -6164,7 +6164,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   int frame_routing_id =
       node->render_manager()->speculative_frame_host()->GetRoutingID();
   base::UnguessableToken frame_token =
-      node->render_manager()->speculative_frame_host()->frame_token();
+      node->render_manager()->speculative_frame_host()->GetFrameToken();
   int previous_routing_id =
       node->render_manager()->GetProxyToParent()->GetRoutingID();
 
@@ -6228,7 +6228,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
       process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
   int frame_routing_id = node->current_frame_host()->GetRoutingID();
   base::UnguessableToken frame_token =
-      node->current_frame_host()->frame_token();
+      node->current_frame_host()->GetFrameToken();
   int widget_routing_id =
       node->current_frame_host()->GetRenderWidgetHost()->GetRoutingID();
   int parent_routing_id =

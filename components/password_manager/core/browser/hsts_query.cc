@@ -18,7 +18,7 @@ namespace {
 // Helper since a once-callback may need to be called from two paths.
 class HSTSCallbackHelper : public base::RefCounted<HSTSCallbackHelper> {
  public:
-  HSTSCallbackHelper(HSTSCallback user_callback)
+  explicit HSTSCallbackHelper(HSTSCallback user_callback)
       : user_callback_(std::move(user_callback)) {}
 
   void ReportResult(bool result) {

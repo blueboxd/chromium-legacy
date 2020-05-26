@@ -11,12 +11,15 @@
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/enrollment_ui_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/test/chromeos_test_utils.h"
@@ -199,6 +202,20 @@ IN_PROC_BROWSER_TEST_F(ProvisionedEnrollmentScreenTest, TestBackButton) {
   enrollment_screen()->OnCancel();
   EnrollmentScreen::Result screen_result = enrollment_ui_.WaitForScreenExit();
   EXPECT_EQ(EnrollmentScreen::Result::BACK, screen_result);
+}
+
+class OobeCompletedUnownedTest : public OobeBaseTest {
+  DeviceStateMixin device_state{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_UNOWNED};
+};
+
+// Tests that enrollment screen could be triggered after OOBE completed and
+// Chrome restarted (or device rebooted).
+IN_PROC_BROWSER_TEST_F(OobeCompletedUnownedTest, TriggerEnrollment) {
+  OobeScreenWaiter(GaiaView::kScreenId).Wait();
+  LoginDisplayHost::default_host()->StartWizard(
+      EnrollmentScreenView::kScreenId);
+  OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 }
 
 }  // namespace chromeos

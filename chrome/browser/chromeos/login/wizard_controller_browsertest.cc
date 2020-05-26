@@ -1818,9 +1818,9 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
   EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::kNone,
             auto_enrollment_controller()->auto_enrollment_check_type());
 
-  // The timeout is 15 seconds, see |auto_enrollment_controller.cc|.
+  // The timeout is 45 seconds, see |auto_enrollment_controller.cc|.
   // Fast-forward by a bit more than that.
-  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(15 + 1));
+  task_runner->FastForwardBy(base::TimeDelta::FromSeconds(45 + 1));
 
   EXPECT_EQ(AutoEnrollmentController::AutoEnrollmentCheckType::kNone,
             auto_enrollment_controller()->auto_enrollment_check_type());

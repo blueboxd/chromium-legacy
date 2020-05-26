@@ -15,8 +15,7 @@ password_manager::FakeAffiliationFetcher::FakeAffiliationFetcher(
     AffiliationFetcherDelegate* delegate)
     : AffiliationFetcher(std::move(url_loader_factory), facet_ids, delegate) {}
 
-password_manager::FakeAffiliationFetcher::~FakeAffiliationFetcher() {
-}
+password_manager::FakeAffiliationFetcher::~FakeAffiliationFetcher() = default;
 
 void password_manager::FakeAffiliationFetcher::SimulateSuccess(
     std::unique_ptr<AffiliationFetcherDelegate::Result> fake_result) {

@@ -61,6 +61,9 @@ AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser);
 
 bool IsBrowserOpen(const Browser* test_browser);
 
+// Launches the app for |app| in |profile|.
+void UninstallWebApp(Profile* profile, const AppId& app_id);
+
 }  // namespace web_app
 
 #endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_BROWSERTEST_UTIL_H_

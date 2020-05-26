@@ -97,6 +97,10 @@ void PaintTimingDetector::NotifyPaintFinished() {
   }
   if (callback_manager_->CountCallbacks() > 0)
     callback_manager_->RegisterPaintTimeCallbackForCombinedCallbacks();
+  LocalDOMWindow* window = frame_view_->GetFrame().DomWindow();
+  if (window) {
+    DOMWindowPerformance::performance(*window)->OnPaintFinished();
+  }
 }
 
 // static

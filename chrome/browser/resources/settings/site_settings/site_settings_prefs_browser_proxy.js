@@ -90,6 +90,7 @@ export let SiteGroup;
  * See also: SiteException.
  * @typedef {{embeddingOrigin: string,
  *            incognito: boolean,
+ *            isEmbargoed: boolean,
  *            origin: string,
  *            displayName: string,
  *            type: string,
@@ -104,6 +105,7 @@ export let RawSiteException;
  * @typedef {{category: !ContentSettingsTypes,
  *            embeddingOrigin: string,
  *            incognito: boolean,
+ *            isEmbargoed: boolean,
  *            origin: string,
  *            displayName: string,
  *            setting: !ContentSetting,

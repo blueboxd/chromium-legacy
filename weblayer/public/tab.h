@@ -6,6 +6,7 @@
 #define WEBLAYER_PUBLIC_TAB_H_
 
 #include <algorithm>
+#include <map>
 #include <string>
 
 #include "base/callback_forward.h"

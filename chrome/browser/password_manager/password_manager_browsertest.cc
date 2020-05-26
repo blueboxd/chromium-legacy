@@ -171,8 +171,6 @@ class ObservingAutofillClient
     : public autofill::TestAutofillClient,
       public content::WebContentsUserData<ObservingAutofillClient> {
  public:
-  ~ObservingAutofillClient() override {}
-
   // Wait until the autofill popup is shown.
   void WaitForAutofillPopup() {
     base::RunLoop run_loop;
@@ -197,12 +195,11 @@ class ObservingAutofillClient
   }
 
  private:
-  explicit ObservingAutofillClient(content::WebContents* web_contents)
-      : run_loop_(nullptr), popup_shown_(false) {}
+  explicit ObservingAutofillClient(content::WebContents* web_contents) {}
   friend class content::WebContentsUserData<ObservingAutofillClient>;
 
-  base::RunLoop* run_loop_;
-  bool popup_shown_;
+  base::RunLoop* run_loop_ = nullptr;
+  bool popup_shown_ = false;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

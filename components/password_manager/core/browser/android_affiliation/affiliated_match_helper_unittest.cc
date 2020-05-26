@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_mock_time_message_loop_task_runner.h"
@@ -33,8 +34,6 @@ class MockAffiliationService : public testing::StrictMock<AffiliationService> {
   MockAffiliationService() : testing::StrictMock<AffiliationService>(nullptr) {
     testing::DefaultValue<AffiliatedFacets>::Set(AffiliatedFacets());
   }
-
-  ~MockAffiliationService() override {}
 
   MOCK_METHOD2(OnGetAffiliationsAndBrandingCalled,
                AffiliatedFacets(const FacetURI&, StrategyOnCacheMiss));
@@ -173,9 +172,7 @@ PasswordStore::FormDigest GetTestObservedWebForm(const char* signon_realm,
 
 class AffiliatedMatchHelperTest : public testing::Test {
  public:
-  AffiliatedMatchHelperTest()
-      : expecting_result_callback_(false), mock_affiliation_service_(nullptr) {}
-  ~AffiliatedMatchHelperTest() override {}
+  AffiliatedMatchHelperTest() = default;
 
  protected:
   void RunDeferredInitialization() {
@@ -329,15 +326,13 @@ class AffiliatedMatchHelperTest : public testing::Test {
 
   // testing::Test:
   void SetUp() override {
-    std::unique_ptr<MockAffiliationService> service(
-        new MockAffiliationService());
+    auto service = std::make_unique<MockAffiliationService>();
     mock_affiliation_service_ = service.get();
 
-    password_store_ = new TestPasswordStore;
     password_store_->Init(nullptr);
 
-    match_helper_.reset(
-        new AffiliatedMatchHelper(password_store_.get(), std::move(service)));
+    match_helper_ = std::make_unique<AffiliatedMatchHelper>(
+        password_store_.get(), std::move(service));
   }
 
   void TearDown() override {
@@ -353,13 +348,14 @@ class AffiliatedMatchHelperTest : public testing::Test {
 
   std::vector<std::string> last_result_realms_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> last_result_forms_;
-  bool expecting_result_callback_;
+  bool expecting_result_callback_ = false;
 
-  scoped_refptr<TestPasswordStore> password_store_;
+  scoped_refptr<TestPasswordStore> password_store_ =
+      base::MakeRefCounted<TestPasswordStore>();
   std::unique_ptr<AffiliatedMatchHelper> match_helper_;
 
   // Owned by |match_helper_|.
-  MockAffiliationService* mock_affiliation_service_;
+  MockAffiliationService* mock_affiliation_service_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AffiliatedMatchHelperTest);
 };

@@ -170,12 +170,12 @@ PasswordStoreChangeList TestPasswordStore::UpdateLoginImpl(
   PasswordStoreChangeList changes;
   std::vector<autofill::PasswordForm>& forms =
       stored_passwords_[form.signon_realm];
-  for (auto it = forms.begin(); it != forms.end(); ++it) {
-    if (ArePasswordFormUniqueKeysEqual(form, *it)) {
-      *it = form;
-      it->in_store = is_account_store_
-                         ? autofill::PasswordForm::Store::kAccountStore
-                         : autofill::PasswordForm::Store::kProfileStore;
+  for (auto& stored_form : forms) {
+    if (ArePasswordFormUniqueKeysEqual(form, stored_form)) {
+      stored_form = form;
+      stored_form.in_store = is_account_store_
+                                 ? autofill::PasswordForm::Store::kAccountStore
+                                 : autofill::PasswordForm::Store::kProfileStore;
       changes.push_back(PasswordStoreChange(PasswordStoreChange::UPDATE, form));
     }
   }

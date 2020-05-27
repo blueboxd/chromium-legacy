@@ -518,6 +518,10 @@ extern const char kRichAutocompletionTwoLineOmniboxParam[];
 extern const char kRichAutocompletionShowTitlesParam[];
 extern const char kRichAutocompletionAutocompleteNonPrefix[];
 
+// Parameter names used by image search experiment that shows thumbnail in front
+// of the Omnibox clipboard image search suggestion.
+extern const char kImageSearchSuggestionThumbnail[];
+
 namespace internal {
 // The bundled omnibox experiment comes with a set of parameters
 // (key-value pairs).  Each key indicates a certain rule that applies in

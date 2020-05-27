@@ -111,6 +111,11 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                                 const NGExclusionSpace&,
                                 LayoutUnit line_height);
 
+  NGLineHeightMetrics ComputeAnnotationOverflow(
+      const NGLineHeightMetrics& line_box_metrics,
+      LayoutUnit line_block_start,
+      const ComputedStyle& line_style);
+
   NGLogicalLineItems line_box_;
   NGInlineLayoutStateStack* box_states_;
   NGInlineChildLayoutContext* context_;

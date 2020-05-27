@@ -4099,14 +4099,14 @@ bool LayoutBlockFlow::HitTestFloats(HitTestResult& result,
   return false;
 }
 
-PhysicalOffset LayoutBlockFlow::AccumulateInFlowPositionOffsets() const {
+PhysicalOffset LayoutBlockFlow::AccumulateRelativePositionOffsets() const {
   if (!IsAnonymousBlock() || !IsInFlowPositioned())
     return PhysicalOffset();
   PhysicalOffset offset;
   for (const LayoutObject* p = InlineElementContinuation();
        p && p->IsLayoutInline(); p = p->Parent()) {
     if (p->IsInFlowPositioned())
-      offset += ToLayoutInline(p)->OffsetForInFlowPosition();
+      offset += ToLayoutInline(p)->RelativePositionOffset();
   }
   return offset;
 }

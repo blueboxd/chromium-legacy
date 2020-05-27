@@ -100,7 +100,6 @@ void InputMethodWinTSF::OnTextInputTypeChanged(const TextInputClient* client) {
   }
   ui::TSFBridge::GetInstance()->CancelComposition();
   ui::TSFBridge::GetInstance()->OnTextInputTypeChanged(client);
-  InputMethodWinBase::UpdateEngineFocusAndInputContext();
 }
 
 void InputMethodWinTSF::OnCaretBoundsChanged(const TextInputClient* client) {

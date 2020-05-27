@@ -43,13 +43,11 @@ class CrostiniPortForwarder : public KeyedService {
   struct PortRuleKey {
     uint16_t port_number;
     Protocol protocol_type;
-    std::string input_ifname;
     ContainerId container_id;
 
     bool operator==(const PortRuleKey& other) const {
       return port_number == other.port_number &&
-             protocol_type == other.protocol_type &&
-             input_ifname == other.input_ifname;
+             protocol_type == other.protocol_type;
     }
   };
 
@@ -58,8 +56,7 @@ class CrostiniPortForwarder : public KeyedService {
     std::size_t operator()(const PortRuleKey& k) const {
       return ((std::hash<uint16_t>()(k.port_number) ^
                (std::hash<Protocol>()(k.protocol_type) << 1)) >>
-              1) ^
-             (std::hash<std::string>()(k.input_ifname) << 1);
+              1);
     }
   };
 

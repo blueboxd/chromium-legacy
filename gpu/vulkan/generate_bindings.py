@@ -22,8 +22,6 @@ from reg import Registry
 registry = Registry()
 registry.loadFile(open(path.join(vulkan_reg_path, "vk.xml")))
 
-VULKAN_REQUIRED_API_VERSION = 'VK_API_VERSION_1_1'
-
 VULKAN_UNASSOCIATED_FUNCTIONS = [
   {
     'functions': [
@@ -410,8 +408,6 @@ namespace gpu {
 
 struct VulkanFunctionPointers;
 
-constexpr uint32_t kVulkanRequiredApiVersion = %s;
-
 COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers* GetVulkanFunctionPointers();
 
 struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
@@ -466,7 +462,7 @@ struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
   // Unassociated functions
   VulkanFunction<PFN_vkGetInstanceProcAddr> vkGetInstanceProcAddr;
 
-""" % VULKAN_REQUIRED_API_VERSION)
+""")
 
   WriteFunctionDeclarations(file, VULKAN_UNASSOCIATED_FUNCTIONS)
 
@@ -589,7 +585,6 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     VkInstance vk_instance,
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
-  DCHECK_GE(api_version, kVulkanRequiredApiVersion);
 """)
 
   WriteInstanceFunctionPointerInitialization(file, VULKAN_INSTANCE_FUNCTIONS);
@@ -603,7 +598,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     VkDevice vk_device,
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
-  DCHECK_GE(api_version, kVulkanRequiredApiVersion);
   // Device functions
 """)
   WriteDeviceFunctionPointerInitialization(file, VULKAN_DEVICE_FUNCTIONS)

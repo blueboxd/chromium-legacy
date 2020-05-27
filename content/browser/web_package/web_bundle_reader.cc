@@ -188,7 +188,7 @@ void WebBundleReader::ReadResponse(
 
   auto it = entries_.find(net::SimplifyUrlForRequest(resource_request.url));
   if (it == entries_.end() || it->second->response_locations.empty()) {
-    PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
         base::BindOnce(
             std::move(callback), nullptr,
@@ -206,7 +206,7 @@ void WebBundleReader::ReadResponse(
                                             accept_langs);
     auto found = matcher.FindBestMatchingIndex(entry->variants_value);
     if (!found || *found >= entry->response_locations.size()) {
-      PostTask(
+      base::ThreadPool::PostTask(
           FROM_HERE,
           base::BindOnce(
               std::move(callback), nullptr,
@@ -279,7 +279,7 @@ void WebBundleReader::DidReconnect(base::Optional<std::string> error) {
 
   if (error) {
     for (auto& pair : read_tasks) {
-      PostTask(
+      base::ThreadPool::PostTask(
           FROM_HERE,
           base::BindOnce(std::move(pair.second), nullptr,
                          data_decoder::mojom::BundleResponseParseError::New(

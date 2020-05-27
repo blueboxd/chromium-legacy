@@ -1321,6 +1321,7 @@ if (!is_android) {
       "../browser/ui/web_applications/web_app_link_capturing_browsertest.cc",
       "../browser/ui/web_applications/web_app_metrics_browsertest.cc",
       "../browser/ui/web_applications/web_app_navigate_browsertest.cc",
+      "../browser/ui/web_applications/web_app_profile_deletion_browsertest.cc",
       "../browser/ui/web_applications/web_app_ui_manager_impl_browsertest.cc",
       "../browser/ui/web_applications/web_app_uninstall_browsertest.cc",
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",

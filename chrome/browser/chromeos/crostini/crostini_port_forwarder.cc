@@ -21,11 +21,9 @@
 namespace crostini {
 
 // Currently, we are not supporting ethernet/mlan/usb port forwarding.
-const char kDefaultInterfaceToForward[] = "all";
-const char kWlanInterface[] = "wlan0";
+const char kDefaultInterfaceToForward[] = "wlan0";
 const char kPortNumberKey[] = "port_number";
 const char kPortProtocolKey[] = "protocol_type";
-const char kPortInterfaceKey[] = "input_ifname";
 const char kPortLabelKey[] = "label";
 const char kPortVmNameKey[] = "vm_name";
 const char kPortContainerNameKey[] = "container_name";
@@ -66,7 +64,7 @@ CrostiniPortForwarder* CrostiniPortForwarder::GetForProfile(Profile* profile) {
 
 CrostiniPortForwarder::CrostiniPortForwarder(Profile* profile)
     : profile_(profile) {
-  current_interface_ = kWlanInterface;
+  current_interface_ = kDefaultInterfaceToForward;
 }
 
 CrostiniPortForwarder::~CrostiniPortForwarder() = default;
@@ -81,13 +79,11 @@ bool CrostiniPortForwarder::MatchPortRuleDict(const base::Value& dict,
                                               const PortRuleKey& key) {
   base::Optional<int> port_number = dict.FindIntKey(kPortNumberKey);
   base::Optional<int> protocol_type = dict.FindIntKey(kPortProtocolKey);
-  const std::string* input_ifname = dict.FindStringKey(kPortInterfaceKey);
   const std::string* vm_name = dict.FindStringKey(kPortVmNameKey);
   const std::string* container_name = dict.FindStringKey(kPortContainerNameKey);
   return (port_number && port_number.value() == key.port_number) &&
          (protocol_type &&
           protocol_type.value() == static_cast<int>(key.protocol_type)) &&
-         (input_ifname && *input_ifname == key.input_ifname) &&
          (vm_name && *vm_name == key.container_id.vm_name) &&
          (container_name && *container_name == key.container_id.container_name);
 }
@@ -110,7 +106,6 @@ void CrostiniPortForwarder::AddNewPortPreference(const PortRuleKey& key,
   new_port_metadata.SetIntKey(kPortNumberKey, key.port_number);
   new_port_metadata.SetIntKey(kPortProtocolKey,
                               static_cast<int>(key.protocol_type));
-  new_port_metadata.SetStringKey(kPortInterfaceKey, kDefaultInterfaceToForward);
   new_port_metadata.SetStringKey(kPortLabelKey, label);
   new_port_metadata.SetStringKey(kPortVmNameKey, key.container_id.vm_name);
   new_port_metadata.SetStringKey(kPortContainerNameKey,
@@ -257,7 +252,6 @@ void CrostiniPortForwarder::AddPort(const ContainerId& container_id,
   PortRuleKey new_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
-      .input_ifname = kDefaultInterfaceToForward,
       .container_id = container_id,
   };
 
@@ -278,7 +272,6 @@ void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
-      .input_ifname = kDefaultInterfaceToForward,
       .container_id = container_id,
   };
 
@@ -309,7 +302,6 @@ void CrostiniPortForwarder::DeactivatePort(const ContainerId& container_id,
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
-      .input_ifname = kDefaultInterfaceToForward,
       .container_id = container_id,
   };
 
@@ -334,7 +326,6 @@ void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
   PortRuleKey existing_port_key = {
       .port_number = port_number,
       .protocol_type = protocol_type,
-      .input_ifname = kDefaultInterfaceToForward,
       .container_id = container_id,
   };
 
@@ -399,6 +390,8 @@ base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreferenceForTesting(
 
 void CrostiniPortForwarder::UpdateActivePortInterfaces() {
   for (auto& port : forwarded_ports_) {
+    // Note that this process erases the current lifeline attached to the port
+    // rule and implicitly causes the current port rule to be revoked.
     TryActivatePort(port.first, port.first.container_id, base::DoNothing());
   }
 }

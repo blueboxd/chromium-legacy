@@ -10,8 +10,8 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 
 namespace extensions {

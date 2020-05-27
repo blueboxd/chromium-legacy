@@ -16,6 +16,7 @@ enum class ButtonId {
 };
 
 enum class AssistiveWindowType {
+  kNone,
   kUndoWindow,
 };
 

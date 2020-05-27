@@ -352,6 +352,7 @@ public abstract class ChromeFeatureList {
     public static final String PRIORITIZE_BOOTSTRAP_TASKS = "PrioritizeBootstrapTasks";
     public static final String PROBABILISTIC_CRYPTID_RENDERER = "ProbabilisticCryptidRenderer";
     public static final String QUERY_TILES = "QueryTiles";
+    public static final String QUERY_TILES_IN_OMNIBOX = "QueryTilesInOmnibox";
     public static final String QUERY_TILES_ENABLE_QUERY_EDITING = "QueryTilesEnableQueryEditing";
     public static final String QUERY_IN_OMNIBOX = "QueryInOmnibox";
     public static final String QUIET_NOTIFICATION_PROMPTS = "QuietNotificationPrompts";
@@ -362,6 +363,7 @@ public abstract class ChromeFeatureList {
     public static final String RELATED_SEARCHES = "RelatedSearches";
     public static final String REPORT_FEED_USER_ACTIONS = "ReportFeedUserActions";
     public static final String REVAMPED_CONTEXT_MENU = "RevampedContextMenu";
+    public static final String SAFETY_CHECK_ANDROID = "SafetyCheckAndroid";
     public static final String SAME_SITE_BY_DEFAULT_COOKIES = "SameSiteByDefaultCookies";
     public static final String SEND_TAB_TO_SELF = "SyncSendTabToSelf";
     public static final String SERVICE_MANAGER_FOR_DOWNLOAD = "ServiceManagerForDownload";

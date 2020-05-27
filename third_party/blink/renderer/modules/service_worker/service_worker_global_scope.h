@@ -36,9 +36,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "mojo/public/cpp/bindings/receiver_set.h"
-#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/network_context.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom-blink.h"
@@ -46,16 +43,22 @@
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/service_worker/cross_origin_resource_policy_checker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_event_queue.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
+#include "third_party/blink/renderer/platform/heap/disallow_new_wrapper.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_associated_remote.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver_set.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
 namespace blink {
 
-class CrossOriginResourcePolicyChecker;
 class ExceptionState;
 class FetchEvent;
 class PendingURLLoaderFactoryBundle;
@@ -596,9 +599,14 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   // Bound by the first Mojo call received on the service worker thread
   // mojom::blink::ServiceWorker::InitializeGlobalScope().
-  mojo::AssociatedRemote<mojom::blink::ServiceWorkerHost> service_worker_host_;
+  HeapMojoAssociatedRemote<mojom::blink::ServiceWorkerHost,
+                           HeapMojoWrapperMode::kWithoutContextObserver>
+      service_worker_host_{this};
 
-  mojo::Receiver<mojom::blink::ServiceWorker> receiver_{this};
+  HeapMojoReceiver<mojom::blink::ServiceWorker,
+                   ServiceWorkerGlobalScope,
+                   HeapMojoWrapperMode::kWithoutContextObserver>
+      receiver_{this, this};
 
   // Maps for inflight event callbacks.
   // These are mapped from an event id issued from ServiceWorkerEventQueue to
@@ -616,8 +624,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   HashMap<int, DispatchSyncEventCallback> sync_event_callbacks_;
   HashMap<int, DispatchPeriodicSyncEventCallback>
       periodic_sync_event_callbacks_;
-  HashMap<int,
-          mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>>
+  HeapHashMap<int,
+              Member<DisallowNewWrapper<HeapMojoRemote<
+                  payments::mojom::blink::PaymentHandlerResponseCallback,
+                  HeapMojoWrapperMode::kWithoutContextObserver>>>>
       abort_payment_result_callbacks_;
   HashMap<int, DispatchCanMakePaymentEventCallback>
       abort_payment_event_callbacks_;
@@ -641,13 +651,20 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // Maps for response callbacks.
   // These are mapped from an event id to the Mojo interface pointer which is
   // passed from the relevant DispatchSomeEvent() method.
-  HashMap<int,
-          mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>>
+  HeapHashMap<int,
+              Member<DisallowNewWrapper<HeapMojoRemote<
+                  payments::mojom::blink::PaymentHandlerResponseCallback,
+                  HeapMojoWrapperMode::kWithoutContextObserver>>>>
       can_make_payment_result_callbacks_;
-  HashMap<int,
-          mojo::Remote<payments::mojom::blink::PaymentHandlerResponseCallback>>
+  HeapHashMap<int,
+              Member<DisallowNewWrapper<HeapMojoRemote<
+                  payments::mojom::blink::PaymentHandlerResponseCallback,
+                  HeapMojoWrapperMode::kWithoutContextObserver>>>>
       payment_response_callbacks_;
-  HashMap<int, mojo::Remote<mojom::blink::ServiceWorkerFetchResponseCallback>>
+  HeapHashMap<int,
+              Member<DisallowNewWrapper<HeapMojoRemote<
+                  mojom::blink::ServiceWorkerFetchResponseCallback,
+                  HeapMojoWrapperMode::kWithoutContextObserver>>>>
       fetch_response_callbacks_;
 
   HeapHashMap<int, Member<FetchEvent>> pending_preload_fetch_events_;
@@ -678,9 +695,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   // mojo::ReceiverSet is the policy for the client which dispatches FetchEvents
   // to the ControllerServiceWorker. It should be referred to before sending the
   // response back to the client.
-  mojo::ReceiverSet<mojom::blink::ControllerServiceWorker,
-                    std::unique_ptr<CrossOriginResourcePolicyChecker>>
-      controller_receivers_;
+  HeapMojoReceiverSet<mojom::blink::ControllerServiceWorker,
+                      ServiceWorkerGlobalScope,
+                      HeapMojoWrapperMode::kWithoutContextObserver,
+                      std::unique_ptr<CrossOriginResourcePolicyChecker>>
+      controller_receivers_{this, this};
 };
 
 template <>

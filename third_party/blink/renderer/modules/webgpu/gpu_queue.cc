@@ -218,7 +218,8 @@ void GPUQueue::copyImageBitmapToTexture(
   }
   // CPU path is the fallback path and should always work.
   if (!CopyContentFromCPU(image.get(), color_params, origin_in_image_bitmap,
-                          dawn_copy_size, dawn_destination)) {
+                          dawn_copy_size, dawn_destination,
+                          destination->texture()->Format())) {
     exception_state.ThrowTypeError("Failed to copy content from imageBitmap.");
     return;
   }
@@ -228,12 +229,14 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
                                   const CanvasColorParams& color_params,
                                   const WGPUOrigin3D& origin,
                                   const WGPUExtent3D& copy_size,
-                                  const WGPUTextureCopyView& destination) {
+                                  const WGPUTextureCopyView& destination,
+                                  const WGPUTextureFormat dest_texture_format) {
   // Prepare for uploading CPU data.
   IntRect image_data_rect(origin.x, origin.y, copy_size.width,
                           copy_size.height);
-  WebGPUImageUploadSizeInfo info =
-      ComputeImageBitmapWebGPUUploadSizeInfo(image_data_rect, color_params);
+
+  WebGPUImageUploadSizeInfo info = ComputeImageBitmapWebGPUUploadSizeInfo(
+      image_data_rect, dest_texture_format);
 
   // Create a mapped buffer to receive image bitmap contents
   WGPUBufferDescriptor buffer_desc;
@@ -249,7 +252,7 @@ bool GPUQueue::CopyContentFromCPU(StaticBitmapImage* image,
           image,
           base::span<uint8_t>(reinterpret_cast<uint8_t*>(result.data),
                               static_cast<size_t>(result.dataLength)),
-          image_data_rect, color_params)) {
+          image_data_rect, color_params, dest_texture_format)) {
     // Release the buffer.
     GetProcs().bufferRelease(result.buffer);
     return false;

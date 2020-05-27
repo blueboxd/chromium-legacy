@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
@@ -198,10 +199,8 @@ void RegisterShortcutsMenuWithOs(
     const AppId& app_id,
     const base::FilePath& profile_path,
     const std::vector<WebApplicationShortcutInfo>& shortcuts) {
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&RegisterShortcutsMenuWithOsTask, shortcut_data_dir,
                      app_id, profile_path, shortcuts));
 }

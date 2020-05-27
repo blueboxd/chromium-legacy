@@ -7,43 +7,56 @@
 
 #include <memory>
 
-#include "base/macros.h"
+#include "base/location.h"
+#include "base/time/time.h"
+#include "base/timer/timer.h"
+#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
-#include "ui/gfx/geometry/point.h"
-#include "ui/views/widget/widget.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace gfx {
+class Point;
+}  // namespace gfx
+
+namespace views {
+class Widget;
+}  // namespace views
 
 namespace ash {
-
-class AutoclickScrollPositionView;
 
 // AutoclickScrollPositionHandler displays the position at which the next scroll
 // event will occur, giving users a sense of which part of the screen will
 // receive scroll events. It will display at full opacity for a short time, then
 // partially fade out to keep from blocking content.
-class AutoclickScrollPositionHandler : public gfx::LinearAnimation {
+class AutoclickScrollPositionHandler : public gfx::AnimationDelegate {
  public:
-  AutoclickScrollPositionHandler(const gfx::Point& center_point_in_screen,
-                                 views::Widget* widget);
+  explicit AutoclickScrollPositionHandler(
+      std::unique_ptr<views::Widget> widget);
+  AutoclickScrollPositionHandler(const AutoclickScrollPositionHandler&) =
+      delete;
+  AutoclickScrollPositionHandler& operator=(
+      const AutoclickScrollPositionHandler&) = delete;
   ~AutoclickScrollPositionHandler() override;
 
-  void SetCenter(const gfx::Point& center_point_in_screen,
-                 views::Widget* widget);
+  gfx::NativeView GetNativeView();
+
+  void SetScrollPointCenterInScreen(const gfx::Point& scroll_point_center);
 
  private:
-  enum AnimationState {
-    kWait,
-    kFade,
-    kDone,
-  };
+  static constexpr auto kOpaqueTime = base::TimeDelta::FromMilliseconds(500);
+  static constexpr auto kFadeTime = base::TimeDelta::FromMilliseconds(500);
 
-  // Overridden from gfx::LinearAnimation.
-  void AnimateToState(double state) override;
-  void AnimationStopped() override;
+  // gfx::AnimationDelegate:
+  void AnimationProgressed(const gfx::Animation* animation) override;
 
-  std::unique_ptr<AutoclickScrollPositionView> view_;
-  AnimationState animation_state_ = kDone;
+  std::unique_ptr<views::Widget> widget_;
 
-  DISALLOW_COPY_AND_ASSIGN(AutoclickScrollPositionHandler);
+  // Animation that fades the scroll indicator from full to partial opacity.
+  gfx::LinearAnimation animation_{
+      kFadeTime, gfx::LinearAnimation::kDefaultFrameRate, this};
+
+  // Timer that keeps the indicator at full opacity briefly after updating.
+  base::DelayTimer timer_;
 };
 
 }  // namespace ash

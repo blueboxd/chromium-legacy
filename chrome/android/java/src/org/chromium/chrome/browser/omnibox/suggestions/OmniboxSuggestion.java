@@ -75,13 +75,15 @@ public class OmniboxSuggestion {
     private final byte[] mPostData;
     private final int mGroupId;
     private final List<QueryTile> mQueryTiles;
+    private final byte[] mClipboardImageData;
 
     public OmniboxSuggestion(int nativeType, boolean isSearchType, int relevance, int transition,
             String displayText, List<MatchClassification> displayTextClassifications,
             String description, List<MatchClassification> descriptionClassifications,
             SuggestionAnswer answer, String fillIntoEdit, GURL url, GURL imageUrl,
             String imageDominantColor, boolean isStarred, boolean isDeletable,
-            String postContentType, byte[] postData, int groupId, List<QueryTile> queryTiles) {
+            String postContentType, byte[] postData, int groupId, List<QueryTile> queryTiles,
+            byte[] clipboardImageData) {
         mType = nativeType;
         mIsSearchType = isSearchType;
         mRelevance = relevance;
@@ -103,6 +105,7 @@ public class OmniboxSuggestion {
         mPostData = postData;
         mGroupId = groupId;
         mQueryTiles = queryTiles;
+        mClipboardImageData = clipboardImageData;
     }
 
     public int getType() {
@@ -182,6 +185,15 @@ public class OmniboxSuggestion {
 
     public byte[] getPostData() {
         return mPostData;
+    }
+
+    /**
+     * @return The image data for the image clipbaord suggestion. This data has already been
+     *         validated in C++ and is safe to use in the browser process.
+     */
+    @Nullable
+    public byte[] getClipboardImageData() {
+        return mClipboardImageData;
     }
 
     /**

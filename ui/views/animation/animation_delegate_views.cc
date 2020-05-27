@@ -41,7 +41,7 @@ void AnimationDelegateViews::OnViewAddedToWidget(View* observed_view) {
 }
 
 void AnimationDelegateViews::OnViewRemovedFromWidget(View* observed_view) {
-  UpdateAnimationRunner();
+  ClearAnimationRunner();
 }
 
 void AnimationDelegateViews::OnViewIsDeleting(View* observed_view) {
@@ -53,7 +53,7 @@ void AnimationDelegateViews::OnViewIsDeleting(View* observed_view) {
 void AnimationDelegateViews::AnimationContainerShuttingDown(
     gfx::AnimationContainer* container) {
   container_ = nullptr;
-  compositor_animation_runner_ = nullptr;
+  ClearAnimationRunner();
 }
 
 base::TimeDelta AnimationDelegateViews::GetAnimationDurationForReporting()
@@ -76,18 +76,12 @@ void AnimationDelegateViews::SetAnimationMetricsReporter(
 }
 
 void AnimationDelegateViews::UpdateAnimationRunner() {
-  if (!container_)
-    return;
-
   if (!view_ || !view_->GetWidget() || !view_->GetWidget()->GetCompositor()) {
-    // TODO(https://crbug.com/960621): make sure the container has a correct
-    // compositor-assisted runner.
-    container_->SetAnimationRunner(nullptr);
-    compositor_animation_runner_ = nullptr;
+    ClearAnimationRunner();
     return;
   }
 
-  if (container_->has_custom_animation_runner())
+  if (!container_ || container_->has_custom_animation_runner())
     return;
 
   auto compositor_animation_runner =
@@ -96,6 +90,14 @@ void AnimationDelegateViews::UpdateAnimationRunner() {
   compositor_animation_runner_->SetAnimationMetricsReporter(
       animation_metrics_reporter_, GetAnimationDurationForReporting());
   container_->SetAnimationRunner(std::move(compositor_animation_runner));
+}
+
+void AnimationDelegateViews::ClearAnimationRunner() {
+  // TODO(https://crbug.com/960621): make sure the container has a correct
+  // compositor-assisted runner.
+  if (container_)
+    container_->SetAnimationRunner(nullptr);
+  compositor_animation_runner_ = nullptr;
 }
 
 }  // namespace views

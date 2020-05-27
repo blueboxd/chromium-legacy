@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/extension_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/internal_app_shelf_context_menu.h"
+#include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_ash_test_base.h"
@@ -92,6 +93,7 @@ class ShelfContextMenuTest
   ~ShelfContextMenuTest() override = default;
 
   void SetUp() override {
+    web_app::TestWebAppProvider::Get(&profile_)->Start();
     app_service_test_.SetUp(&profile_);
     arc_test_.SetUp(&profile_);
     session_manager_ = std::make_unique<session_manager::SessionManager>();
@@ -662,10 +664,10 @@ TEST_P(ShelfContextMenuTest, CrostiniUnregisteredApps) {
   EXPECT_FALSE(IsItemEnabledInMenu(menu.get(), ash::MENU_NEW_WINDOW));
 }
 
-// TODO(crbug.com/1082887): Test with BMO enabled.
 INSTANTIATE_TEST_SUITE_P(All,
                          ShelfContextMenuTest,
-                         ::testing::Values(ProviderType::kBookmarkApps),
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
                          web_app::ProviderTypeParamToString);
 
 }  // namespace

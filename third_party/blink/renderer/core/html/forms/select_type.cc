@@ -647,6 +647,8 @@ class ListBoxSelectType final : public SelectType {
   void UpdateSelectedState(HTMLOptionElement* clicked_option,
                            SelectionMode mode);
   void UpdateListBoxSelection(bool deselect_other_options, bool scroll = true);
+  void SetActiveSelectionAnchor(HTMLOptionElement*);
+  void SetActiveSelectionEnd(HTMLOptionElement*);
   void ScrollToOptionTask();
 
   Vector<bool> cached_state_for_active_selection_;
@@ -742,11 +744,11 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
           if (!select_->active_selection_anchor_)
             return false;
 
-          select_->SetActiveSelectionEnd(option);
+          SetActiveSelectionEnd(option);
           UpdateListBoxSelection(false);
         } else {
-          select_->SetActiveSelectionAnchor(option);
-          select_->SetActiveSelectionEnd(option);
+          SetActiveSelectionAnchor(option);
+          SetActiveSelectionEnd(option);
           UpdateListBoxSelection(true);
         }
       }
@@ -851,7 +853,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       // selection.
       SaveLastSelection();
 
-      select_->SetActiveSelectionEnd(end_option);
+      SetActiveSelectionEnd(end_option);
 
       is_in_non_contiguous_selection_ = select_->is_multiple_ && is_control_key;
       bool select_new_item =
@@ -867,7 +869,7 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       if (!select_->active_selection_anchor_ || deselect_others) {
         if (deselect_others)
           select_->DeselectItemsWithoutValidation();
-        select_->SetActiveSelectionAnchor(select_->active_selection_end_.Get());
+        SetActiveSelectionAnchor(select_->active_selection_end_.Get());
       }
 
       ScrollToOption(end_option);
@@ -928,9 +930,9 @@ void ListBoxSelectType::DidSelectOption(
     // SetActiveSelectionAnchor is O(N).
     if (!select_->active_selection_anchor_ || is_single ||
         deselect_other_options)
-      select_->SetActiveSelectionAnchor(element);
+      SetActiveSelectionAnchor(element);
     if (!select_->active_selection_end_ || is_single || deselect_other_options)
-      select_->SetActiveSelectionEnd(element);
+      SetActiveSelectionEnd(element);
   }
 
   ScrollToSelection();
@@ -980,6 +982,15 @@ HTMLOptionElement* ListBoxSelectType::SpatialNavigationFocusedOption() {
   if (HTMLOptionElement* option = ActiveSelectionEnd())
     return option;
   return FirstSelectableOption();
+}
+
+void ListBoxSelectType::SetActiveSelectionAnchor(HTMLOptionElement* option) {
+  select_->active_selection_anchor_ = option;
+  SaveListboxActiveSelection();
+}
+
+void ListBoxSelectType::SetActiveSelectionEnd(HTMLOptionElement* option) {
+  select_->active_selection_end_ = option;
 }
 
 HTMLOptionElement* ListBoxSelectType::ActiveSelectionEnd() const {
@@ -1047,8 +1058,8 @@ void ListBoxSelectType::SelectAll() {
   SaveLastSelection();
 
   active_selection_state_ = true;
-  select_->SetActiveSelectionAnchor(NextSelectableOption(nullptr));
-  select_->SetActiveSelectionEnd(PreviousSelectableOption(nullptr));
+  SetActiveSelectionAnchor(NextSelectableOption(nullptr));
+  SetActiveSelectionEnd(PreviousSelectableOption(nullptr));
 
   UpdateListBoxSelection(false, false);
   ListBoxOnChange();
@@ -1112,7 +1123,7 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
   // then initialize the anchor to the first selected OPTION.
   if (!select_->active_selection_anchor_ &&
       mode != SelectionMode::kNotChangeOthers)
-    select_->SetActiveSelectionAnchor(select_->SelectedOption());
+    SetActiveSelectionAnchor(select_->SelectedOption());
 
   // Set the selection state of the clicked OPTION.
   if (!clicked_option->IsDisabledFormControl()) {
@@ -1124,9 +1135,9 @@ void ListBoxSelectType::UpdateSelectedState(HTMLOptionElement* clicked_option,
   // we're doing kDeselectOthers, or kNotChangeOthers (using cmd or ctrl),
   // then initialize the anchor OPTION to the clicked OPTION.
   if (!select_->active_selection_anchor_ || mode != SelectionMode::kRange)
-    select_->SetActiveSelectionAnchor(clicked_option);
+    SetActiveSelectionAnchor(clicked_option);
 
-  select_->SetActiveSelectionEnd(clicked_option);
+  SetActiveSelectionEnd(clicked_option);
   UpdateListBoxSelection(mode != SelectionMode::kNotChangeOthers);
 }
 

@@ -769,3 +769,25 @@ TEST_F(CrosUsbDetectorTest, SharedDevicesGetAttachedOnStartup) {
   EXPECT_EQ(0, usb_device_observer_.notify_count());
   EXPECT_TRUE(IsSharedWithCrostini(GetSingleDeviceInfo()));
 }
+
+TEST_F(CrosUsbDetectorTest, DeviceAllowedInterfacesMaskSetCorrectly) {
+  ConnectToDeviceManager();
+  base::RunLoop().RunUntilIdle();
+
+  const int kAdbClass = 0xff;
+  const int kAdbSubclass = 0x42;
+  const int kAdbProtocol = 0x1;
+
+  // Adb interface as well as a forbidden interface and allowed interface.
+  scoped_refptr<device::FakeUsbDeviceInfo> device = CreateTestDeviceFromCodes(
+      /* USB_CLASS_HID */ 0x03,
+      {InterfaceCodes(0x03, 0xff, 0xff),
+       InterfaceCodes(kAdbClass, kAdbSubclass, kAdbProtocol),
+       InterfaceCodes(/*USB_CLASS_AUDIO*/ 0x01, 0xff, 0xff)});
+
+  device_manager_.AddDevice(device);
+  base::RunLoop().RunUntilIdle();
+  auto device_info = GetSingleDeviceInfo();
+
+  EXPECT_EQ(0x00000006U, device_info.allowed_interfaces_mask);
+}

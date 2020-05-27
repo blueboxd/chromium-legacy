@@ -28,6 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -3060,9 +3061,10 @@ ArcBluetoothBridge::RfcommCreateConnectSocket(mojom::BluetoothAddressPtr addr,
   if (ret == 0) {
     // connect() returns success immediately.
     sock_wrapper->file = std::move(sock);
-    PostTask(FROM_HERE,
-             base::BindOnce(&ArcBluetoothBridge::OnRfcommConnectingSocketReady,
-                            weak_factory_.GetWeakPtr(), sock_wrapper.get()));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        base::BindOnce(&ArcBluetoothBridge::OnRfcommConnectingSocketReady,
+                       weak_factory_.GetWeakPtr(), sock_wrapper.get()));
     return sock_wrapper;
   }
   if (errno != EINPROGRESS) {

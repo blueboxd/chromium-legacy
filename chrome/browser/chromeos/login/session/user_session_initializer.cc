@@ -141,9 +141,9 @@ void UserSessionInitializer::InitRlz(Profile* profile) {
         &UserSessionInitializer::InitRlz, weak_factory_.GetWeakPtr(), profile));
     return;
   }
-  base::PostTaskAndReplyWithResult(
+  base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&CollectRlzParams),
       base::BindOnce(&UserSessionInitializer::InitRlzImpl,

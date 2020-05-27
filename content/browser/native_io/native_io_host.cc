@@ -56,10 +56,9 @@ base::FilePath GetNativeIOFilePath(const base::FilePath& root_path,
 scoped_refptr<base::TaskRunner> CreateFileTaskRunner() {
   // We use a SequencedTaskRunner so that there is a global ordering to an
   // origin's directory operations.
-  return base::CreateSequencedTaskRunner({
+  return base::ThreadPool::CreateSequencedTaskRunner({
       // Needed for file I/O.
       base::MayBlock(),
-      base::ThreadPool(),
 
       // Reasonable compromise, given that a few database operations are
       // blocking, while most operations are not. We should be able to do better

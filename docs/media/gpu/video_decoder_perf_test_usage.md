@@ -92,6 +92,10 @@ Multiple command line arguments can be given to the command:
                          will be stored in the current working directory.
     --use_vd             use the new VD-based video decoders, instead of
                          the default VDA-based video decoders.
+    --use_vd_vda         use the new VD-based video decoders with a wrapper
+                         that translates to the VDA interface, used to test
+                         interaction with older components expecting the VDA
+                         interface.
     --gtest_help         display the gtest help and exit.
     --help               display this help and exit.
 

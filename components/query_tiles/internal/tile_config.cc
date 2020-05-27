@@ -58,7 +58,8 @@ constexpr int kDefaultScheduleInterval = 12 * 3600 * 1000;  // 12 hours.
 // Default length of random window added to the interval.
 constexpr int kDefaultRandomWindow = 4 * 3600 * 1000;  // 4 hours.
 
-// Default length of random window added to the interval.
+// Default delta value from start window time to end window time in one-off
+// background task.
 constexpr int kDefaultOneoffTaskWindow = 2 * 3600 * 1000;  // 2 hours.
 
 // Default initial delay in backoff policy.

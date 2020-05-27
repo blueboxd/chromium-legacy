@@ -110,8 +110,8 @@ DownloadProtectionService::DownloadProtectionService(
       download_request_timeout_ms_(kDownloadRequestTimeoutMs),
       feedback_service_(new DownloadFeedbackService(
           sb_service_ ? sb_service_->GetURLLoaderFactory() : nullptr,
-          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                           base::TaskPriority::BEST_EFFORT})
+          base::ThreadPool::CreateSequencedTaskRunner(
+              {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
               .get())),
       whitelist_sample_rate_(kWhitelistDownloadSampleRate),
       weak_ptr_factory_(this) {

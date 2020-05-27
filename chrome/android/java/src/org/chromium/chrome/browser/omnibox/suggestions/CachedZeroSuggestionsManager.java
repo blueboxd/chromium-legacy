@@ -164,7 +164,7 @@ public class CachedZeroSuggestionsManager {
             OmniboxSuggestion suggestion = new OmniboxSuggestion(nativeType, isSearchType, 0, 0,
                     displayText, classifications, description, classifications, null, null, url,
                     GURL.emptyGURL(), null, isStarred, isDeletable, postContentType, postData,
-                    groupId, null);
+                    groupId, null, null);
             suggestions.add(suggestion);
         }
 

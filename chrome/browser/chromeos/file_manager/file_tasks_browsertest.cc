@@ -4,9 +4,14 @@
 
 #include "base/bind.h"
 #include "base/path_service.h"
+#include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/file_manager_test_util.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/profiles/profile.h"
@@ -19,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/browser/api/file_handlers/mime_util.h"
 #include "extensions/browser/entry_info.h"
 #include "extensions/browser/notification_types.h"
 #include "net/base/mime_util.h"
@@ -29,6 +35,8 @@ using chromeos::default_web_apps::kMediaAppId;
 namespace file_manager {
 namespace file_tasks {
 namespace {
+
+constexpr char kImageProviderFilesystemId[] = "test-image-provider-fs";
 
 // A list of file extensions (`/` delimited) representing a selection of files
 // and the app expected to be the default to open these files.
@@ -84,9 +92,19 @@ void VerifyTasks(int* remaining,
       << expectation.file_extensions;
 }
 
-// Installs a chrome app that handles .tiff.
-scoped_refptr<const extensions::Extension> InstallTiffHandlerChromeApp(
-    Profile* profile) {
+// Helper to quit a run loop after invoking VerifyTasks().
+void VerifyAsyncTask(int* remaining,
+                     Expectation expectation,
+                     const base::Closure& quit_closure,
+                     std::unique_ptr<std::vector<FullTaskDescriptor>> result) {
+  VerifyTasks(remaining, expectation, std::move(result));
+  quit_closure.Run();
+}
+
+// Installs a chrome app used for testing.
+scoped_refptr<const extensions::Extension> InstallTestingChromeApp(
+    Profile* profile,
+    const char* test_path_ascii) {
   base::ScopedAllowBlockingForTesting allow_io;
   content::WindowedNotificationObserver handler_ready(
       extensions::NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
@@ -95,11 +113,49 @@ scoped_refptr<const extensions::Extension> InstallTiffHandlerChromeApp(
 
   base::FilePath path;
   EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &path));
-  path = path.AppendASCII("extensions/api_test/file_browser/app_file_handler");
+  path = path.AppendASCII(test_path_ascii);
 
   auto extension = loader.LoadExtension(path);
   EXPECT_TRUE(extension);
   handler_ready.Wait();
+  return extension;
+}
+
+// Installs a chrome app that handles .tiff.
+scoped_refptr<const extensions::Extension> InstallTiffHandlerChromeApp(
+    Profile* profile) {
+  return InstallTestingChromeApp(
+      profile, "extensions/api_test/file_browser/app_file_handler");
+}
+
+// Helper to exit a RunLoop the next time OnVolumeMounted() is invoked.
+class VolumeWaiter : public VolumeManagerObserver {
+ public:
+  VolumeWaiter(Profile* profile, const base::Closure& on_mount)
+      : profile_(profile), on_mount_(on_mount) {
+    VolumeManager::Get(profile_)->AddObserver(this);
+  }
+  ~VolumeWaiter() override {
+    VolumeManager::Get(profile_)->RemoveObserver(this);
+  }
+  void OnVolumeMounted(chromeos::MountError error_code,
+                       const Volume& volume) override {
+    on_mount_.Run();
+  }
+
+ private:
+  Profile* profile_;
+  base::Closure on_mount_;
+};
+
+// Installs a chrome app that provides a file system containing an image file.
+scoped_refptr<const extensions::Extension> InstallFileProviderChromeApp(
+    Profile* profile) {
+  base::RunLoop run_loop;
+  VolumeWaiter waiter(profile, run_loop.QuitClosure());
+  auto extension = InstallTestingChromeApp(
+      profile, "extensions/api_test/file_browser/image_provider");
+  run_loop.Run();
   return extension;
 }
 
@@ -370,6 +426,64 @@ IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
   UpdateDefaultTask(profile->GetPrefs(), extension->id() + "|app|tiffAction",
                     {"tiff"}, {"image/tiff"});
   TestExpectationsAgainstDefaultTasks({{"tiff", extension->id().c_str()}});
+}
+
+// Test expectations for files coming from provided file systems.
+IN_PROC_BROWSER_TEST_F(FileTasksBrowserTestWithMediaApp,
+                       ProvidedFileSystemFileSource) {
+  // The current test expectation: a GIF file in the provided file system called
+  // "pixel.gif" should open with Gallery.
+  // TODO(crbug/1079065): Open with MediaApp when the NativeFileSystem API has
+  // good support for ChromeOS special filesystems.
+  const char kTestFile[] = "pixel.gif";
+  Expectation test = {"gif", kGalleryAppId};
+  int remaining_expectations = 1;
+
+  Profile* profile = browser()->profile();
+  auto extension = InstallFileProviderChromeApp(profile);
+
+  VolumeManager* volume_manager = VolumeManager::Get(profile);
+  ASSERT_TRUE(volume_manager);
+  base::WeakPtr<Volume> volume;
+  for (auto& v : volume_manager->GetVolumeList()) {
+    if (v->file_system_id() == kImageProviderFilesystemId) {
+      volume = v;
+    }
+  }
+  ASSERT_TRUE(volume);
+
+  GURL url;
+  ASSERT_TRUE(util::ConvertAbsoluteFilePathToFileSystemUrl(
+      profile, volume->mount_path().AppendASCII(kTestFile), kFileManagerAppId,
+      &url));
+
+  // Note |url| differs slightly to the result of ToGURL() below. The colons
+  // either side of `:test-image-provider-fs:` become escaped as `%3A`.
+
+  storage::FileSystemURL filesystem_url =
+      util::GetFileSystemContextForExtensionId(profile, kFileManagerAppId)
+          ->CrackURL(url);
+
+  std::vector<GURL> urls = {filesystem_url.ToGURL()};
+  std::vector<extensions::EntryInfo> entries;
+
+  // We could add the mime type here, but since a "real" file is provided, we
+  // can get additional coverage of the mime determination. For non-native files
+  // this uses metadata only (not sniffing).
+  entries.emplace_back(filesystem_url.path(), "", false);
+
+  base::RunLoop run_loop;
+  auto verifier = base::BindOnce(&VerifyAsyncTask, &remaining_expectations,
+                                 test, run_loop.QuitClosure());
+  extensions::app_file_handler_util::GetMimeTypeForLocalPath(
+      profile, entries[0].path,
+      base::BindLambdaForTesting([&](const std::string& mime_type) {
+        entries[0].mime_type = mime_type;
+        EXPECT_EQ(entries[0].mime_type, "image/gif");
+        FindAllTypesOfTasks(profile, entries, urls, std::move(verifier));
+      }));
+  run_loop.Run();
+  EXPECT_EQ(remaining_expectations, 0);
 }
 
 }  // namespace file_tasks

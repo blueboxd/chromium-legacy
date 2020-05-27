@@ -190,6 +190,69 @@ TEST_P(SurfaceTest, Damage) {
   }
 }
 
+TEST_P(SurfaceTest, SubsurfaceDamageAggregation) {
+  gfx::Size buffer_size(256, 512);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+  surface->Attach(buffer.get());
+
+  gfx::Size child_buffer_size(64, 128);
+  auto child_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(child_buffer_size));
+  auto child_surface = std::make_unique<Surface>();
+  auto sub_surface =
+      std::make_unique<SubSurface>(child_surface.get(), surface.get());
+  child_surface->Attach(child_buffer.get());
+  child_surface->Commit();
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+
+  {
+    // Initial frame has full damage.
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    const gfx::Rect scaled_damage = gfx::ToNearestRect(gfx::ScaleRect(
+        gfx::RectF(gfx::Rect(buffer_size)), device_scale_factor()));
+    EXPECT_EQ(scaled_damage, frame.render_pass_list.back()->damage_rect);
+  }
+
+  const gfx::RectF surface_damage(16, 16);
+  const gfx::RectF subsurface_damage(32, 32, 16, 16);
+  int margin = ceil(device_scale_factor());
+
+  child_surface->Damage(gfx::ToNearestRect(subsurface_damage));
+  child_surface->Commit();
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+
+  {
+    // Subsurface damage should be propagated.
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    const gfx::Rect scaled_damage = gfx::ToNearestRect(
+        gfx::ScaleRect(subsurface_damage, device_scale_factor()));
+    EXPECT_TRUE(scaled_damage.ApproximatelyEqual(
+        frame.render_pass_list.back()->damage_rect, margin));
+  }
+
+  surface->Damage(gfx::ToNearestRect(surface_damage));
+  surface->Commit();
+  base::RunLoop().RunUntilIdle();
+
+  {
+    // When commit is called on the root with no call on the child, the damage
+    // from the previous frame shouldn't persist.
+    const viz::CompositorFrame& frame =
+        GetFrameFromSurface(shell_surface.get());
+    const gfx::Rect scaled_damage = gfx::ToNearestRect(
+        gfx::ScaleRect(surface_damage, device_scale_factor()));
+    EXPECT_TRUE(scaled_damage.ApproximatelyEqual(
+        frame.render_pass_list.back()->damage_rect, margin));
+  }
+}
+
 void SetFrameTime(base::TimeTicks* result, base::TimeTicks frame_time) {
   *result = frame_time;
 }

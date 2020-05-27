@@ -123,6 +123,7 @@ void DeviceManagerImpl::CheckAccess(const std::string& guid,
 
 void DeviceManagerImpl::OpenFileDescriptor(
     const std::string& guid,
+    uint32_t drop_privileges_mask,
     OpenFileDescriptorCallback callback) {
   scoped_refptr<UsbDevice> device = usb_service_->GetDevice(guid);
   if (!device) {
@@ -133,8 +134,8 @@ void DeviceManagerImpl::OpenFileDescriptor(
         base::AdaptCallbackForRepeating(std::move(callback));
     auto devpath =
         static_cast<device::UsbDeviceLinux*>(device.get())->device_path();
-    chromeos::PermissionBrokerClient::Get()->OpenPath(
-        devpath,
+    chromeos::PermissionBrokerClient::Get()->OpenPathWithDroppedPrivileges(
+        devpath, drop_privileges_mask,
         base::BindOnce(&DeviceManagerImpl::OnOpenFileDescriptor,
                        weak_factory_.GetWeakPtr(), copyable_callback),
         base::BindOnce(&DeviceManagerImpl::OnOpenFileDescriptorError,

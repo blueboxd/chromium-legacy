@@ -473,7 +473,7 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   // See continuation above for more details.
   void SetContinuation(LayoutBoxModelObject*);
 
-  virtual PhysicalOffset AccumulateInFlowPositionOffsets() const {
+  virtual PhysicalOffset AccumulateRelativePositionOffsets() const {
     return PhysicalOffset();
   }
 

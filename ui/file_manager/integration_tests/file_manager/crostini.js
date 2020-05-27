@@ -114,6 +114,9 @@ testcase.pluginVmErrorDialog = async () => {
     `#default-tasks-list [tabindex]:nth-of-type(${
         appOptions.map(el => el.text).indexOf('Open with Plugin VM App') + 1})`
   ]);
+  await remoteCall.waitUntilTaskExecutes(
+      appId, 'plugin-vm-app-id|pluginvm|open-with',
+      ['failed_plugin_vm_task_directory_not_shared']);
   await remoteCall.waitForElement(appId, '.files-alert-dialog:not([hidden])');
 
   // Validate error messages.

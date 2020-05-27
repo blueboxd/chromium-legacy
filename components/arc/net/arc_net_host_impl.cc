@@ -133,90 +133,6 @@ arc::mojom::TetheringClientState GetWifiTetheringClientState(
   return TranslateTetheringState(tethering_state);
 }
 
-arc::mojom::IPConfigurationPtr TranslateONCIPConfig(
-    const base::Value* ip_dict) {
-  DCHECK(ip_dict->is_dict());
-
-  arc::mojom::IPConfigurationPtr configuration =
-      arc::mojom::IPConfiguration::New();
-
-  const base::Value* ip_address = ip_dict->FindKeyOfType(
-      onc::ipconfig::kIPAddress, base::Value::Type::STRING);
-  if (ip_address && !ip_address->GetString().empty()) {
-    configuration->ip_address = ip_address->GetString();
-    const base::Value* routing_prefix = ip_dict->FindKeyOfType(
-        onc::ipconfig::kRoutingPrefix, base::Value::Type::INTEGER);
-    if (routing_prefix)
-      configuration->routing_prefix = routing_prefix->GetInt();
-    else
-      LOG(WARNING) << "RoutingPrefix property not found.";
-    configuration->gateway = GetString(ip_dict, onc::ipconfig::kGateway);
-    if (configuration->gateway.empty())
-      LOG(WARNING) << "Gateway address property not found";
-  }
-
-  const base::Value* name_servers = ip_dict->FindKeyOfType(
-      onc::ipconfig::kNameServers, base::Value::Type::LIST);
-  if (name_servers) {
-    for (const auto& entry : name_servers->GetList())
-      configuration->name_servers.push_back(entry.GetString());
-  }
-
-  const base::Value* type =
-      ip_dict->FindKeyOfType(onc::ipconfig::kType, base::Value::Type::STRING);
-  configuration->type = type && type->GetString() == onc::ipconfig::kIPv6
-                            ? arc::mojom::IPAddressType::IPV6
-                            : arc::mojom::IPAddressType::IPV4;
-
-  configuration->web_proxy_auto_discovery_url =
-      GetString(ip_dict, onc::ipconfig::kWebProxyAutoDiscoveryUrl);
-
-  return configuration;
-}
-
-// Returns true if the IP configuration is valid enough for ARC. Empty IP
-// config objects can be generated when IPv4 DHCP or IPv6 autoconf has not
-// completed yet.
-bool IsValidIPConfiguration(const arc::mojom::IPConfiguration& ip_config) {
-  return !ip_config.ip_address.empty() && !ip_config.gateway.empty();
-}
-
-// Returns an IPConfiguration vector from the IPConfigs ONC property, which may
-// include multiple IP configurations (e.g. IPv4 and IPv6).
-std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCIPConfigs(
-    const base::Value* dict) {
-  const base::Value* ip_config_list =
-      dict->FindKey(onc::network_config::kIPConfigs);
-  if (!ip_config_list || !ip_config_list->is_list())
-    return {};
-
-  std::vector<arc::mojom::IPConfigurationPtr> result;
-  for (const auto& entry : ip_config_list->GetList()) {
-    auto config = TranslateONCIPConfig(&entry);
-    if (config && IsValidIPConfiguration(*config))
-      result.push_back(std::move(config));
-  }
-  return result;
-}
-
-// Returns an IPConfiguration vector from ONC property |property|, which will
-// include a single IP configuration.
-std::vector<arc::mojom::IPConfigurationPtr> IPConfigurationsFromONCProperty(
-    const base::Value* dict,
-    const char* property_key) {
-  const base::Value* ip_dict = dict->FindKey(property_key);
-  if (!ip_dict)
-    return {};
-
-  auto config = TranslateONCIPConfig(ip_dict);
-  if (!config || !IsValidIPConfiguration(*config))
-    return {};
-
-  std::vector<arc::mojom::IPConfigurationPtr> result;
-  result.push_back(std::move(config));
-  return result;
-}
-
 arc::mojom::ConnectionStateType TranslateONCConnectionState(
     const base::DictionaryValue* dict) {
   std::string connection_state =
@@ -293,7 +209,8 @@ void TranslateONCNetworkTypeDetails(const base::DictionaryValue* dict,
 }
 
 // Parse a shill IPConfig dictionary and appends the resulting mojo
-// IPConfiguration object to the given |ip_configs| vector.
+// IPConfiguration object to the given |ip_configs| vector, only if the
+// IPConfig dictionary contains an address and a gateway property.
 void AddIpConfiguration(std::vector<arc::mojom::IPConfigurationPtr>& ip_configs,
                         const base::Value* shill_ipconfig) {
   if (!shill_ipconfig || !shill_ipconfig->is_dict())
@@ -301,12 +218,20 @@ void AddIpConfiguration(std::vector<arc::mojom::IPConfigurationPtr>& ip_configs,
 
   auto ip_config = arc::mojom::IPConfiguration::New();
   if (const auto* address_property =
-          shill_ipconfig->FindStringPath(shill::kAddressProperty))
+          shill_ipconfig->FindStringPath(shill::kAddressProperty)) {
     ip_config->ip_address = *address_property;
+  }
+
+  if (ip_config->ip_address.empty())
+    return;
 
   if (const auto* gateway_property =
-          shill_ipconfig->FindStringPath(shill::kGatewayProperty))
+          shill_ipconfig->FindStringPath(shill::kGatewayProperty)) {
     ip_config->gateway = *gateway_property;
+  }
+
+  if (ip_config->gateway.empty())
+    return;
 
   ip_config->routing_prefix =
       shill_ipconfig->FindIntPath(shill::kPrefixlenProperty).value_or(0);
@@ -331,8 +256,7 @@ void AddIpConfiguration(std::vector<arc::mojom::IPConfigurationPtr>& ip_configs,
     }
   }
 
-  if (IsValidIPConfiguration(*ip_config))
-    ip_configs.push_back(std::move(ip_config));
+  ip_configs.push_back(std::move(ip_config));
 }
 
 // Add shill's Device properties to the given mojo NetworkConfiguration objects.
@@ -367,21 +291,14 @@ arc::mojom::NetworkConfigurationPtr TranslateONCConfiguration(
   if (mojo->guid.empty())
     LOG(ERROR) << "Missing GUID property for network " << network_state->path();
 
-  // crbug.com/761708 - VPNs do not currently have an IPConfigs array,
-  // so in order to fetch the parameters (particularly the DNS server list),
-  // fall back to StaticIPConfig or SavedIPConfig.
-  // TODO(b/145960788) Remove IP configuration retrieval from ONC properties.
-  std::vector<arc::mojom::IPConfigurationPtr> ip_configs =
-      IPConfigurationsFromONCIPConfigs(onc_dict);
-  if (ip_configs.empty()) {
-    ip_configs = IPConfigurationsFromONCProperty(
-        onc_dict, onc::network_config::kStaticIPConfig);
-  }
-  if (ip_configs.empty()) {
-    ip_configs = IPConfigurationsFromONCProperty(
-        onc_dict, onc::network_config::kSavedIPConfig);
-  }
-  // b/155129178 Also use cached shill properties if available.
+  // IP configuration data is added from the properties of the underlying shill
+  // Device and shill Service attached to the Device. Device properties are
+  // preferred because Service properties cannot have both IPv4 and IPv6
+  // configurations at the same time for dual stack networks. It is necessary to
+  // fallback on Service properties for networks without a shill Device exposed
+  // over DBus (builtin OpenVPN, builtin L2TP client, Chrome extension VPNs),
+  // particularly to obtain the DNS server list (b/155129178).
+  std::vector<arc::mojom::IPConfigurationPtr> ip_configs;
   if (shill_dict) {
     for (const auto* property :
          {shill::kIPConfigProperty, shill::kStaticIPConfigProperty,

@@ -823,7 +823,6 @@ bool TransportSecurityState::GetStaticExpectCTState(
   if (!enable_static_expect_ct_ || !result.expect_ct)
     return false;
 
-  expect_ct_state->domain = host.substr(result.hostname_offset);
   expect_ct_state->report_uri = GURL(
       g_hsts_source->expect_ct_report_uris[result.expect_ct_report_uri_id]);
   return true;

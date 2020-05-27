@@ -12,8 +12,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
-#include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
 #include "ui/display/win/screen_win.h"
@@ -348,8 +346,6 @@ void InputMethodWinImm32::UpdateIMEState() {
   imm32_manager_.SetTextInputMode(window_handle, text_input_mode);
   tsf_inputscope::SetInputScopeForTsfUnawareWindow(
       window_handle, text_input_type, text_input_mode);
-
-  InputMethodWinBase::UpdateEngineFocusAndInputContext();
 }
 
 }  // namespace ui

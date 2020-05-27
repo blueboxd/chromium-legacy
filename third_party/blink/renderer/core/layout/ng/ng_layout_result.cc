@@ -176,6 +176,8 @@ NGLayoutResult::NGLayoutResult(
 
   if (builder->end_margin_strut_ != NGMarginStrut())
     EnsureRareData()->end_margin_strut = builder->end_margin_strut_;
+  if (builder->annotation_overflow_ > LayoutUnit())
+    EnsureRareData()->annotation_overflow = builder->annotation_overflow_;
   if (builder->unpositioned_list_marker_) {
     EnsureRareData()->unpositioned_list_marker =
         builder->unpositioned_list_marker_;

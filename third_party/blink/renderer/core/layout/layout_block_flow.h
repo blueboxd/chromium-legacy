@@ -538,7 +538,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                        const PhysicalOffset& accumulated_offset,
                        HitTestAction) override;
 
-  PhysicalOffset AccumulateInFlowPositionOffsets() const override;
+  PhysicalOffset AccumulateRelativePositionOffsets() const override;
 
  private:
   void ResetLayout();

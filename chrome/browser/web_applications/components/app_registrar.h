@@ -36,6 +36,9 @@ class AppRegistrar {
   explicit AppRegistrar(Profile* profile);
   virtual ~AppRegistrar();
 
+  virtual void Start() {}
+  virtual void Shutdown() {}
+
   // Returns whether the app with |app_id| is currently listed in the registry.
   // ie. we have data for web app manifest and icons, and this |app_id| can be
   // used in other registrar methods.

@@ -126,8 +126,6 @@ class CORE_EXPORT HTMLSelectElement final
   void SelectAll();
   int ActiveSelectionEndListIndex() const;
   HTMLOptionElement* ActiveSelectionEnd() const;
-  void SetActiveSelectionAnchor(HTMLOptionElement*);
-  void SetActiveSelectionEnd(HTMLOptionElement*);
 
   // For use in the implementation of HTMLOptionElement.
   void OptionSelectionStateChanged(HTMLOptionElement*, bool option_is_selected);

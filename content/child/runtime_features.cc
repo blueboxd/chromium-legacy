@@ -353,7 +353,7 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
            blink::features::kIgnoreCrossOriginWindowWhenNamedAccessOnWindow,
            kEnableOnly},
           {"LayoutNG", blink::features::kLayoutNG, kUseFeatureState},
-          {"LayoutNGFlexBox", blink::features::kFlexNG, kEnableOnly},
+          {"LayoutNGFlexBox", blink::features::kFlexNG, kUseFeatureState},
           {"LegacyWindowsDWriteFontFallback",
            features::kLegacyWindowsDWriteFontFallback, kUseFeatureState},
           {"OriginPolicy", features::kOriginPolicy, kUseFeatureState},

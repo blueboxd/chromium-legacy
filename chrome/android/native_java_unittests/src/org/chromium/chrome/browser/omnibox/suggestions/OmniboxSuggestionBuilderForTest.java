@@ -38,6 +38,7 @@ public class OmniboxSuggestionBuilderForTest {
     private byte[] mPostData;
     private int mGroupId;
     private List<QueryTile> mQueryTiles;
+    private byte[] mClipboardImageData;
 
     /**
      * Create a suggestion builder for a search suggestion.
@@ -80,7 +81,7 @@ public class OmniboxSuggestionBuilderForTest {
         return new OmniboxSuggestion(mType, mIsSearchType, mRelevance, mTransition, mDisplayText,
                 mDisplayTextClassifications, mDescription, mDescriptionClassifications, mAnswer,
                 mFillIntoEdit, mUrl, mImageUrl, mImageDominantColor, mIsStarred, mIsDeletable,
-                mPostContentType, mPostData, mGroupId, mQueryTiles);
+                mPostContentType, mPostData, mGroupId, mQueryTiles, mClipboardImageData);
     }
 
     /**
@@ -170,6 +171,24 @@ public class OmniboxSuggestionBuilderForTest {
      */
     public OmniboxSuggestionBuilderForTest setIsStarred(boolean isStarred) {
         mIsStarred = isStarred;
+        return this;
+    }
+
+    /**
+     * @param answer The answer in the Omnibox suggestion.
+     * @return Omnibox suggestion builder.
+     */
+    public OmniboxSuggestionBuilderForTest setAnswer(SuggestionAnswer answer) {
+        mAnswer = answer;
+        return this;
+    }
+
+    /**
+     * @param clipboardImageData Image data to set for this suggestion.
+     * @return Omnibox suggestion builder.
+     */
+    public OmniboxSuggestionBuilderForTest setClipboardImageData(byte[] clipboardImageData) {
+        mClipboardImageData = clipboardImageData;
         return this;
     }
 }

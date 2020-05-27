@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
 
 #include "base/bind_helpers.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/test/base/testing_profile.h"
@@ -17,11 +18,13 @@
 using testing::Mock;
 using testing::Return;
 
-void TestingCallback(bool* out, bool in) {
+void TestingCallback(bool* out, base::Closure closure, bool in) {
   *out = in;
+  closure.Run();
 }
 
 namespace crostini {
+using Protocol = CrostiniPortForwarder::Protocol;
 
 class CrostiniPortForwarderTest : public testing::Test {
  public:
@@ -69,67 +72,31 @@ class CrostiniPortForwarderTest : public testing::Test {
 
   Profile* profile() { return profile_.get(); }
 
-  void SetupActiveContainer(const ContainerId& container_id) {
-    CrostiniManager::GetForProfile(profile())->AddRunningVmForTesting(
-        container_id.vm_name);
-    CrostiniManager::GetForProfile(profile())->AddRunningContainerForTesting(
-        container_id.vm_name,
-        ContainerInfo(container_id.container_name, kCrostiniDefaultUsername,
-                      "home/testuser1", "CONTAINER_IP_ADDRESS"));
-  }
-
-  CrostiniPortForwarder::PortRuleKey GetDefaultActiveTcpPortKey() {
+  CrostiniPortForwarder::PortRuleKey GetPortKey(int port_number,
+                                                Protocol protocol_type,
+                                                ContainerId container_id) {
     return {
-        .port_number = 5000,
-        .protocol_type = CrostiniPortForwarder::Protocol::TCP,
-        .input_ifname = crostini::kDefaultInterfaceToForward,
-        .container_id = default_container_id_,
+        .port_number = port_number,
+        .protocol_type = protocol_type,
+        .container_id = container_id,
     };
   }
 
-  CrostiniPortForwarder::PortRuleKey GetDefaultActiveUdpPortKey() {
-    return {
-        .port_number = 5000,
-        .protocol_type = CrostiniPortForwarder::Protocol::UDP,
-        .input_ifname = crostini::kDefaultInterfaceToForward,
-        .container_id = default_container_id_,
-    };
-  }
-
-  CrostiniPortForwarder::PortRuleKey GetDefaultInactiveTcpPortKey() {
-    return {
-        .port_number = 5000,
-        .protocol_type = CrostiniPortForwarder::Protocol::TCP,
-        .input_ifname = crostini::kDefaultInterfaceToForward,
-        .container_id = inactive_container_id_,
-    };
-  }
-
-  CrostiniPortForwarder::PortRuleKey GetDefaultInactiveUdpPortKey() {
-    return {
-        .port_number = 5000,
-        .protocol_type = CrostiniPortForwarder::Protocol::UDP,
-        .input_ifname = crostini::kDefaultInterfaceToForward,
-        .container_id = inactive_container_id_,
-    };
-  }
-
-  void MakePermissionBrokerPortForwardingExpectation(
-      int port_number,
-      CrostiniPortForwarder::Protocol protocol,
-      bool exists) {
-    // TODO(matterchen): Expectations on all forwarded interfaces.
+  void MakePermissionBrokerPortForwardingExpectation(int port_number,
+                                                     Protocol protocol,
+                                                     bool exists,
+                                                     const char* interface) {
     switch (protocol) {
-      case CrostiniPortForwarder::Protocol::TCP:
+      case Protocol::TCP:
         EXPECT_EQ(
             chromeos::FakePermissionBrokerClient::Get()->HasTcpPortForward(
-                port_number, crostini::kWlanInterface),
+                port_number, interface),
             exists);
         break;
-      case CrostiniPortForwarder::Protocol::UDP:
+      case Protocol::UDP:
         EXPECT_EQ(
             chromeos::FakePermissionBrokerClient::Get()->HasUdpPortForward(
-                port_number, crostini::kWlanInterface),
+                port_number, interface),
             exists);
         break;
     }
@@ -148,14 +115,67 @@ class CrostiniPortForwarderTest : public testing::Test {
               pref.value().FindIntKey(crostini::kPortNumberKey).value());
     EXPECT_EQ(static_cast<int>(key.protocol_type),
               pref.value().FindIntKey(crostini::kPortProtocolKey).value());
-
-    EXPECT_EQ(key.input_ifname,
-              *pref.value().FindStringKey(crostini::kPortInterfaceKey));
     EXPECT_EQ(key.container_id.vm_name,
               *pref.value().FindStringKey(crostini::kPortVmNameKey));
     EXPECT_EQ(key.container_id.container_name,
               *pref.value().FindStringKey(crostini::kPortContainerNameKey));
     EXPECT_EQ(label, *pref.value().FindStringKey(crostini::kPortLabelKey));
+  }
+
+  void MakePortExistenceExpectation(CrostiniPortForwarder::PortRuleKey port,
+                                    std::string label,
+                                    bool expected_pref,
+                                    bool expected_permission) {
+    MakePortPreferenceExpectation(port, /*exists=*/expected_pref,
+                                  /*label=*/label);
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/expected_permission,
+        /*interface=*/crostini::kDefaultInterfaceToForward);
+  }
+
+  bool AddPortFromKey(CrostiniPortForwarder::PortRuleKey port) {
+    bool success = false;
+    base::RunLoop run_loop;
+    crostini_port_forwarder_->AddPort(
+        port.container_id, port.port_number, port.protocol_type, "",
+        base::BindOnce(&TestingCallback, base::Unretained(&success),
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
+  }
+
+  bool ActivatePortFromKey(CrostiniPortForwarder::PortRuleKey port) {
+    bool success = false;
+    base::RunLoop run_loop;
+    crostini_port_forwarder_->ActivatePort(
+        port.container_id, port.port_number, port.protocol_type,
+        base::BindOnce(&TestingCallback, base::Unretained(&success),
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
+  }
+
+  bool RemovePortFromKey(CrostiniPortForwarder::PortRuleKey port) {
+    bool success = false;
+    base::RunLoop run_loop;
+    crostini_port_forwarder_->RemovePort(
+        port.container_id, port.port_number, port.protocol_type,
+        base::BindOnce(&TestingCallback, base::Unretained(&success),
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
+  }
+
+  bool DeactivatePortFromKey(CrostiniPortForwarder::PortRuleKey port) {
+    bool success = false;
+    base::RunLoop run_loop;
+    crostini_port_forwarder_->DeactivatePort(
+        port.container_id, port.port_number, port.protocol_type,
+        base::BindOnce(&TestingCallback, base::Unretained(&success),
+                       run_loop.QuitClosure()));
+    run_loop.Run();
+    return success;
   }
 
   ContainerId default_container_id_;
@@ -173,695 +193,453 @@ class CrostiniPortForwarderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(CrostiniPortForwarderTest);
 };
 
-TEST_F(CrostiniPortForwarderTest, InactiveContainerInfoFail) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(4);
+TEST_F(CrostiniPortForwarderTest, AddPort) {
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5000, Protocol::UDP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(ports_to_add.size());
 
-  bool success = false;
-  crostini_port_forwarder_->AddPort(
-      inactive_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      "tcp-label", base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
 
-  crostini_port_forwarder_->DeactivatePort(
-      inactive_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-
-  success = false;
-  crostini_port_forwarder_->ActivatePort(
-      inactive_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-
-  success = false;
-  crostini_port_forwarder_->RemovePort(
-      inactive_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
+  // Adding ports fails as they already exist.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", true, true);
+    EXPECT_FALSE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
 }
 
-TEST_F(CrostiniPortForwarderTest, AddPortTcpSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(1);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
+TEST_F(CrostiniPortForwarderTest, RemovePort) {
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5000, Protocol::UDP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_remove = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> missing_ports_to_remove = {
+      GetPortKey(5005, Protocol::TCP, default_container_id_),
+      GetPortKey(5006, Protocol::UDP, default_container_id_)};
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged)
+      .Times(ports_to_add.size() + ports_to_remove.size());
 
-  bool success = false;
-  crostini_port_forwarder_->AddPort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      "tcp-port", base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/true);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
-}
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
 
-TEST_F(CrostiniPortForwarderTest, AddPortUdpSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(1);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
-
-  bool success = false;
-  crostini_port_forwarder_->AddPort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::UDP,
-      "udp-port", base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/true);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-}
-
-TEST_F(CrostiniPortForwarderTest, AddPortDuplicateFail) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(1);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
-
-  bool success = false;
-  crostini_port_forwarder_->AddPort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::UDP,
-      "udp-port", base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/true);
+  // Remove ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_remove) {
+    MakePortExistenceExpectation(port, "", true, true);
+    EXPECT_TRUE(RemovePortFromKey(port));
+    MakePortExistenceExpectation(port, "", false, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             1U);
 
-  // Leave success as == true.
-  crostini_port_forwarder_->AddPort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::UDP,
-      "udp-port-duplicate", base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/true);
+  // Removing ports fails due to them not existing in prefs.
+  for (CrostiniPortForwarder::PortRuleKey& port : missing_ports_to_remove) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_FALSE(RemovePortFromKey(port));
+    MakePortExistenceExpectation(port, "", false, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             1U);
 }
 
-TEST_F(CrostiniPortForwarderTest, AddPortUdpAndTcpSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(2);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
+TEST_F(CrostiniPortForwarderTest, DeactivatePort) {
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5000, Protocol::UDP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_deactivate = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> missing_ports_to_deactivate =
+      {GetPortKey(5005, Protocol::TCP, default_container_id_),
+       GetPortKey(5006, Protocol::UDP, default_container_id_)};
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged)
+      .Times(ports_to_add.size() + ports_to_deactivate.size() * 2);
 
-  bool success = false;
-  crostini_port_forwarder_->AddPort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::UDP,
-      "udp-port", base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
 
-  success = false;
-  crostini_port_forwarder_->AddPort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      "tcp-port", base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
+  // Deactivate ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_deactivate) {
+    MakePortExistenceExpectation(port, "", true, true);
+    EXPECT_TRUE(DeactivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, false);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
+
+  // Deactivating ports fail due to the ports already being deactivated.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_deactivate) {
+    MakePortExistenceExpectation(port, "", true, false);
+    EXPECT_FALSE(DeactivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, false);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
+
+  // Deactivating ports fails due to the ports not existing in the prefs.
+  for (CrostiniPortForwarder::PortRuleKey& port : missing_ports_to_deactivate) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_FALSE(DeactivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", false, false);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            1U);
+}
+
+TEST_F(CrostiniPortForwarderTest, ActivatePort) {
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5000, Protocol::UDP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_deactivate = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5000, Protocol::UDP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_activate = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> missing_ports_to_activate = {
+      GetPortKey(5005, Protocol::TCP, default_container_id_),
+      GetPortKey(5006, Protocol::TCP, default_container_id_),
+      GetPortKey(5007, Protocol::TCP, default_container_id_)};
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged)
+      .Times(ports_to_add.size() + ports_to_deactivate.size() +
+             ports_to_activate.size());
+
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
+
+  // Deactivate ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_deactivate) {
+    MakePortExistenceExpectation(port, "", true, true);
+    EXPECT_TRUE(DeactivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, false);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+
+  // Activate ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_activate) {
+    MakePortExistenceExpectation(port, "", true, false);
+    EXPECT_TRUE(ActivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            2U);
+
+  // Activating ports fails due to ports already being active.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_activate) {
+    MakePortExistenceExpectation(port, "", true, true);
+    EXPECT_FALSE(ActivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            2U);
+
+  // Activating ports fails due to missing prefs.
+  for (CrostiniPortForwarder::PortRuleKey& port : missing_ports_to_activate) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_FALSE(ActivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", false, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             2U);
 }
 
-TEST_F(CrostiniPortForwarderTest, AddPortMultipleSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(3);
+TEST_F(CrostiniPortForwarderTest, InactiveContainerHandling) {
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_for_inactive_container =
+      {GetPortKey(5000, Protocol::TCP, inactive_container_id_),
+       GetPortKey(5000, Protocol::UDP, inactive_container_id_),
+       GetPortKey(5001, Protocol::UDP, inactive_container_id_)};
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged)
+      .Times(ports_for_inactive_container.size() * 4);
+
+  // Add ports, fails due to an inactive container.
+  for (CrostiniPortForwarder::PortRuleKey& port :
+       ports_for_inactive_container) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_FALSE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             0U);
-  crostini_port_forwarder_->AddPort(default_container_id_, 5000,
-                                    CrostiniPortForwarder::Protocol::UDP,
-                                    "udp-port", base::DoNothing());
-  crostini_port_forwarder_->AddPort(default_container_id_, 5001,
-                                    CrostiniPortForwarder::Protocol::TCP,
-                                    "tcp-port", base::DoNothing());
-  crostini_port_forwarder_->AddPort(default_container_id_, 5002,
-                                    CrostiniPortForwarder::Protocol::UDP,
-                                    "udp-port-other", base::DoNothing());
+
+  // Activate ports, fails due to an inactive container.
+  for (CrostiniPortForwarder::PortRuleKey& port :
+       ports_for_inactive_container) {
+    MakePortExistenceExpectation(port, "", true, false);
+    EXPECT_FALSE(ActivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            3U);
-}
+            0U);
 
-TEST_F(CrostiniPortForwarderTest, TryActivatePortPermissionBrokerClientFail) {
-  CrostiniPortForwarder::PortRuleKey tcp_key_second = {
-      .port_number = 5001,
-      .protocol_type = CrostiniPortForwarder::Protocol::TCP,
-      .input_ifname = crostini::kDefaultInterfaceToForward,
-      .container_id = default_container_id_,
-  };
-
-  bool success = false;
-  crostini_port_forwarder_->TryActivatePort(
-      GetDefaultActiveTcpPortKey(), default_container_id_,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
+  // Deactivate ports, fails due to an inactive container.
+  for (CrostiniPortForwarder::PortRuleKey& port :
+       ports_for_inactive_container) {
+    MakePortExistenceExpectation(port, "", true, false);
+    EXPECT_FALSE(DeactivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            1U);
-  chromeos::PermissionBrokerClient::Shutdown();
+            0U);
 
-  // Leave success as == true.
-  crostini_port_forwarder_->TryActivatePort(
-      tcp_key_second, default_container_id_,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            1U);
-  // Re-initialize otherwise Shutdown in TearDown phase will break.
-  chromeos::PermissionBrokerClient::InitializeFake();
-}
-
-TEST_F(CrostiniPortForwarderTest, DeactivatePortTcpSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(2);
-  crostini_port_forwarder_->AddPort(default_container_id_, 5000,
-                                    CrostiniPortForwarder::Protocol::TCP,
-                                    "tcp-port", base::DoNothing());
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/true);
-
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
+  // Remove ports, fails due to an inactive container.
+  for (CrostiniPortForwarder::PortRuleKey& port :
+       ports_for_inactive_container) {
+    MakePortExistenceExpectation(port, "", true, false);
+    EXPECT_FALSE(RemovePortFromKey(port));
+    MakePortExistenceExpectation(port, "", false, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             0U);
 }
 
-TEST_F(CrostiniPortForwarderTest, DeactivatePortUdpSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(2);
-  crostini_port_forwarder_->AddPort(default_container_id_, 5000,
-                                    CrostiniPortForwarder::Protocol::UDP,
-                                    "udp-port", base::DoNothing());
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/true);
+TEST_F(CrostiniPortForwarderTest, DeactivateAllPorts) {
+  ContainerId container_id = default_container_id_;
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, container_id),
+      GetPortKey(5000, Protocol::UDP, container_id),
+      GetPortKey(5001, Protocol::UDP, container_id)};
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged)
+      .Times(ports_to_add.size() + 2);
 
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::UDP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
+  crostini_port_forwarder_->DeactivateAllActivePorts(container_id);
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             0U);
-}
 
-TEST_F(CrostiniPortForwarderTest, DeactivateNonExistentPortFail) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(0);
-  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            0U);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
-
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-
-  crostini_port_forwarder_->DeactivatePort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::UDP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            0U);
-}
-
-TEST_F(CrostiniPortForwarderTest, DeactivateWrongProtocolFail) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(1);
-  crostini_port_forwarder_->AddPort(default_container_id_, 5000,
-                                    CrostiniPortForwarder::Protocol::UDP,
-                                    "udp-port", base::DoNothing());
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/true);
-
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/true);
-  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            1U);
-}
-
-TEST_F(CrostiniPortForwarderTest, DeactivateMultiplePortsSameProtocolSuccess) {
-  crostini_port_forwarder_->AddPort(default_container_id_, 5000,
-                                    CrostiniPortForwarder::Protocol::TCP,
-                                    "tcp-port", base::DoNothing());
-  crostini_port_forwarder_->AddPort(default_container_id_, 5000,
-                                    CrostiniPortForwarder::Protocol::UDP,
-                                    "udp-port", base::DoNothing());
-  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            2U);
-
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::TCP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-
-  success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      default_container_id_, 5000, CrostiniPortForwarder::Protocol::UDP,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            0U);
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsAddTcpPortActiveContainerSuccess) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsAddUdpPortActiveContainerSuccess) {
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsAddPortInactiveContainerFail) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultInactiveTcpPortKey();
-  bool success = false;
-  crostini_port_forwarder_->AddPort(
-      tcp_key.container_id, tcp_key.port_number, tcp_key.protocol_type,
-      "tcp-port-label-inactive", base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label-inactive");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsAddTcpAndUdpPortSuccess) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsAddDuplicatePortInactiveContainerFail) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  crostini_port_forwarder_->AddPort(
-      tcp_key.container_id, tcp_key.port_number, tcp_key.protocol_type,
-      "tcp-port-label-original", base::DoNothing());
-
-  bool success = false;
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label-dup",
-                                    base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label-original");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsAddUniquePortsSuccess) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  CrostiniPortForwarder::PortRuleKey tcp_key_second = {
-      .port_number = tcp_key.port_number + 1,
-      .protocol_type = tcp_key.protocol_type,
-      .input_ifname = tcp_key.input_ifname,
-      .container_id = tcp_key.container_id,
-  };
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-1",
-                                    base::DoNothing());
-
-  crostini_port_forwarder_->AddPort(
-      tcp_key_second.container_id, tcp_key_second.port_number,
-      tcp_key_second.protocol_type, "tcp-port-2", base::DoNothing());
-
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-1");
-  MakePortPreferenceExpectation(tcp_key_second, /*exists=*/true,
-
-                                /*label=*/"tcp-port-2");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsRemoveActiveTcpPortSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(2);
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-
-  bool success = false;
-  crostini_port_forwarder_->RemovePort(
-      tcp_key.container_id, tcp_key.port_number, tcp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/false,
-                                /*label=*/"");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsRemoveActiveUdpPortSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(2);
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-
-  bool success = false;
-  crostini_port_forwarder_->RemovePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/false,
-                                /*label=*/"");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsRemoveActivePortInactiveContainerFail) {
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultInactiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-
-  bool success = false;
-  crostini_port_forwarder_->RemovePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/false,
-                                /*label=*/"");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsRemoveOnePortSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(3);
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  bool success = false;
-  crostini_port_forwarder_->RemovePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/false,
-                                /*label=*/"");
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsDeactivateAndActivateTcpPortSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(3);
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      tcp_key.container_id, tcp_key.port_number, tcp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-
-  success = false;
-  crostini_port_forwarder_->ActivatePort(
-      tcp_key.container_id, tcp_key.port_number, tcp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsDeactivateAndActivateUdpPortSuccess) {
-  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(3);
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-
-  success = false;
-  crostini_port_forwarder_->ActivatePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsDeactivateNonExistentPortFail) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      tcp_key.container_id, tcp_key.port_number, tcp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/false,
-                                /*label=*/"");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsDeactivateInactiveContainerFail) {
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultInactiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest,
-       PrefsDeactivateAndActivateOneOfMultipleProtocolSuccess) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  bool success = false;
-  crostini_port_forwarder_->DeactivatePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-  success = false;
-  crostini_port_forwarder_->ActivatePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_TRUE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsActivateNonExistentPortFail) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  bool success = false;
-  crostini_port_forwarder_->ActivatePort(
-      tcp_key.container_id, tcp_key.port_number, tcp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/false,
-                                /*label=*/"");
-}
-
-TEST_F(CrostiniPortForwarderTest, PrefsActivateInactiveContainerFail) {
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultInactiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->DeactivatePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::DoNothing());
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-  bool success = false;
-  crostini_port_forwarder_->ActivatePort(
-      udp_key.container_id, udp_key.port_number, udp_key.protocol_type,
-      base::BindOnce(&TestingCallback, &success));
-  EXPECT_FALSE(success);
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-}
-
-TEST_F(CrostiniPortForwarderTest, DeactivateAllActiveContainerPortsSuccess) {
-  // Test behaviour of 3 port rules:
-  // Port 1: Belonging to other container.
-  // Port 2&3: Added and activated.
-  // Result should be: port 1 is unaffected, ports 2&3 are now deactivated.
-  SetupActiveContainer(other_container_id_);
-  CrostiniPortForwarder::PortRuleKey other_key = {
-      .port_number = 5001,
-      .protocol_type = CrostiniPortForwarder::Protocol::TCP,
-      .input_ifname = crostini::kDefaultInterfaceToForward,
-      .container_id = other_container_id_,
-  };
-
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(
-      other_key.container_id, other_key.port_number, other_key.protocol_type,
-      "other-port-label", base::DoNothing());
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-  MakePortPreferenceExpectation(other_key, /*exists=*/true,
-                                /*label=*/"other-port-label");
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             3U);
 
-  crostini_port_forwarder_->DeactivateAllActivePorts(tcp_key.container_id);
+  // Deactivate all ports.
+  crostini_port_forwarder_->DeactivateAllActivePorts(container_id);
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", true, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            1U);  // The other container's ports are still active.
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5001, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/true);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/true,
-                                /*label=*/"tcp-port-label");
-  MakePortPreferenceExpectation(udp_key, /*exists=*/true,
-                                /*label=*/"udp-port-label");
-  MakePortPreferenceExpectation(other_key, /*exists=*/true,
-                                /*label=*/"other-port-label");
+            0U);
 }
 
-TEST_F(CrostiniPortForwarderTest, RemoveAllActiveContainerPortsSuccess) {
-  // Test behaviour of 3 port rules:
-  // Port 1: Belonging to other container.
-  // Port 2&3: Added and activated.
-  // Result should be: port 1 is unaffected, ports 2&3 are now deactivated and
-  // removed.
-  SetupActiveContainer(other_container_id_);
-  CrostiniPortForwarder::PortRuleKey other_key = {
-      .port_number = 5001,
-      .protocol_type = CrostiniPortForwarder::Protocol::TCP,
-      .input_ifname = crostini::kDefaultInterfaceToForward,
-      .container_id = other_container_id_,
-  };
+TEST_F(CrostiniPortForwarderTest, RemoveAllPorts) {
+  ContainerId container_id = default_container_id_;
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, container_id),
+      GetPortKey(5000, Protocol::UDP, container_id),
+      GetPortKey(5001, Protocol::UDP, container_id)};
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged)
+      .Times(ports_to_add.size() + 2);
 
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(
-      other_key.container_id, other_key.port_number, other_key.protocol_type,
-      "other-port-label", base::DoNothing());
+  // Remove all ports (ensuring that things don't break when there are
+  // no ports to remove).
+  crostini_port_forwarder_->RemoveAllPorts(container_id);
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
             3U);
 
-  crostini_port_forwarder_->RemoveAllPorts(tcp_key.container_id);
+  // Remove all ports.
+  crostini_port_forwarder_->RemoveAllPorts(container_id);
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            1U);  // The other container's ports are still active.
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5000, /*protocol=*/CrostiniPortForwarder::Protocol::UDP,
-      /*exists=*/false);
-  MakePermissionBrokerPortForwardingExpectation(
-      /*port_number=*/5001, /*protocol=*/CrostiniPortForwarder::Protocol::TCP,
-      /*exists=*/true);
-  MakePortPreferenceExpectation(tcp_key, /*exists=*/false,
-                                /*label=*/"tcp-port-label");
-  MakePortPreferenceExpectation(udp_key, /*exists=*/false,
-                                /*label=*/"udp-port-label");
-  MakePortPreferenceExpectation(other_key, /*exists=*/true,
-                                /*label=*/"other-port-label");
+            0U);
 }
 
-TEST_F(CrostiniPortForwarderTest, GetActivePortsForUI) {
-  CrostiniPortForwarder::PortRuleKey tcp_key = GetDefaultActiveTcpPortKey();
-  CrostiniPortForwarder::PortRuleKey udp_key = GetDefaultActiveUdpPortKey();
-  crostini_port_forwarder_->AddPort(tcp_key.container_id, tcp_key.port_number,
-                                    tcp_key.protocol_type, "tcp-port-label",
-                                    base::DoNothing());
-  crostini_port_forwarder_->AddPort(udp_key.container_id, udp_key.port_number,
-                                    udp_key.protocol_type, "udp-port-label",
-                                    base::DoNothing());
-  base::ListValue activePorts = crostini_port_forwarder_->GetActivePorts();
+TEST_F(CrostiniPortForwarderTest, GetActivePorts) {
+  ContainerId container_id = default_container_id_;
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, container_id),
+      GetPortKey(5000, Protocol::UDP, container_id),
+      GetPortKey(5001, Protocol::UDP, container_id)};
+
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
   EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
-            activePorts.GetSize());
-  for (const auto& port : activePorts) {
-    crostini::CrostiniPortForwarder::PortRuleKey key = {
-        .port_number = port.FindIntKey(kPortNumberKey).value(),
-        .protocol_type = static_cast<crostini::CrostiniPortForwarder::Protocol>(
-            port.FindIntKey(kPortProtocolKey).value()),
-        .input_ifname = "all",
-        .container_id = tcp_key.container_id,
-    };
-    EXPECT_FALSE(crostini_port_forwarder_->forwarded_ports_.find(key) ==
-                 crostini_port_forwarder_->forwarded_ports_.end());
+            3U);
+
+  // Get active ports.
+  base::ListValue forwarded_ports = crostini_port_forwarder_->GetActivePorts();
+  EXPECT_EQ(forwarded_ports.GetList().size(), ports_to_add.size());
+  for (unsigned int i = 0; i < ports_to_add.size(); i++) {
+    unsigned int reverse_index = ports_to_add.size() - i - 1;
+    EXPECT_EQ(*(forwarded_ports.GetList()[i].FindPath("port_number")),
+              base::Value(ports_to_add.at(reverse_index).port_number));
+    EXPECT_EQ(*(forwarded_ports.GetList()[i].FindPath("protocol_type")),
+              base::Value(static_cast<int>(
+                  ports_to_add.at(reverse_index).protocol_type)));
   }
 }
 
+TEST_F(CrostiniPortForwarderTest, ActiveNetworksChanged) {
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5000, Protocol::UDP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  const char eth_interface[] = "eth0";
+  EXPECT_CALL(mock_observer_, OnActivePortsChanged).Times(ports_to_add.size());
+
+  // Add ports
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortPreferenceExpectation(port, /*exists=*/true,
+                                  /*label=*/"");
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/true, /*interface=*/crostini::kDefaultInterfaceToForward);
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/false, /*interface=*/eth_interface);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
+
+  // Request to update interface to kDefaultInterfaceToForward, no change
+  // required as ports are already being forwarded on kDefaultInterfaceToForward
+  // by default.
+  crostini_port_forwarder_->ActiveNetworksChanged(
+      crostini::kDefaultInterfaceToForward);
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortPreferenceExpectation(port, /*exists=*/true,
+                                  /*label=*/"");
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/true, /*interface=*/crostini::kDefaultInterfaceToForward);
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/false, /*interface=*/eth_interface);
+  }
+
+  // Request to update interface to "", invalid request, no change required.
+  crostini_port_forwarder_->ActiveNetworksChanged("");
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortPreferenceExpectation(port, /*exists=*/true,
+                                  /*label=*/"");
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/true, /*interface=*/crostini::kDefaultInterfaceToForward);
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/false, /*interface=*/eth_interface);
+  }
+
+  // Request to update interface to eth_interface, ports are updated to use
+  // the eth_interface and no longer use what they were using before
+  // (kDefaultInterfaceToForward).
+  crostini_port_forwarder_->ActiveNetworksChanged(eth_interface);
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortPreferenceExpectation(port, /*exists=*/true,
+                                  /*label=*/"");
+    // Deactivating forwarding on the previous interface is handled in Chromeos
+    // and by the lifelines used to track port rules. Until the port is released
+    // in Chromeos, both interfaces will be used.
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/true, /*interface=*/crostini::kDefaultInterfaceToForward);
+    MakePermissionBrokerPortForwardingExpectation(
+        /*port_number=*/port.port_number, /*protocol=*/port.protocol_type,
+        /*exists=*/true, /*interface=*/eth_interface);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
+}
+
+TEST_F(CrostiniPortForwarderTest, HandlingOfflinePermissionBroker) {
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_add = {
+      GetPortKey(5000, Protocol::TCP, default_container_id_),
+      GetPortKey(5000, Protocol::UDP, default_container_id_),
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  std::vector<CrostiniPortForwarder::PortRuleKey> ports_to_deactivate = {
+      GetPortKey(5001, Protocol::UDP, default_container_id_)};
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+
+  // Add ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    MakePortExistenceExpectation(port, "", false, false);
+    EXPECT_TRUE(AddPortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, true);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            3U);
+
+  // Deactivate ports.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_deactivate) {
+    MakePortExistenceExpectation(port, "", true, true);
+    EXPECT_TRUE(DeactivatePortFromKey(port));
+    MakePortExistenceExpectation(port, "", true, false);
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            2U);
+
+  // Shut PermissionBrokerClient down.
+  chromeos::PermissionBrokerClient::Shutdown();
+
+  // Activating ports fails, due to permission broker being inaccessible.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    EXPECT_FALSE(ActivatePortFromKey(port));
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            2U);
+
+  // Deactivating ports fails, due to permission broker being inaccessible.
+  for (CrostiniPortForwarder::PortRuleKey& port : ports_to_add) {
+    EXPECT_FALSE(DeactivatePortFromKey(port));
+  }
+  EXPECT_EQ(crostini_port_forwarder_->GetNumberOfForwardedPortsForTesting(),
+            0U);
+
+  // Re-initialize otherwise Shutdown in TearDown phase will break.
+  chromeos::PermissionBrokerClient::InitializeFake();
+}
 }  // namespace crostini

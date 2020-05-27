@@ -270,9 +270,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // subresources).
   bool OnRequestTermination();
 
-  // Skips waiting and forces this version to become activated.
-  void SkipWaitingFromDevTools();
-
   // Schedules an update to be run 'soon'.
   void ScheduleUpdate();
 

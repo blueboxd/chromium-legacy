@@ -65,6 +65,10 @@ Multiple command line arguments can be given to the command:
     --disable_validator  disable frame validation.
     --use_vd             use the new VD-based video decoders, instead of
                          the default VDA-based video decoders.
+    --use_vd_vda         use the new VD-based video decoders with a wrapper
+                         that translates to the VDA interface, used to test
+                         interaction with older components expecting the VDA
+                         interface.
 
     --output_frames      write the selected video frames to disk, possible
                          values are "all|corrupt".

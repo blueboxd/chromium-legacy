@@ -928,7 +928,6 @@
       // provides a convenient way for testing legacy layout code path in blink
       // unit tests.
       name: "LayoutNG",
-      // Keep this list in sync with the one in LayoutNGFlexBox below.
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "stable",
     },
@@ -940,8 +939,7 @@
     },
     {
       name: "LayoutNGFlexBox",
-      implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFragmentItem", "LayoutNGGrid", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "LayoutNGForControls",

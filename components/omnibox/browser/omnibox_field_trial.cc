@@ -908,6 +908,9 @@ const char OmniboxFieldTrial::kRichAutocompletionShowTitlesParam[] =
 const char OmniboxFieldTrial::kRichAutocompletionAutocompleteNonPrefix[] =
     "RichAutocompletionAutocompleteNonPrefix";
 
+const char OmniboxFieldTrial::kImageSearchSuggestionThumbnail[] =
+    "ImageSearchSuggestionThumbnail";
+
 std::string OmniboxFieldTrial::internal::GetValueForRuleInContext(
     const std::string& rule,
     OmniboxEventProto::PageClassification page_classification) {

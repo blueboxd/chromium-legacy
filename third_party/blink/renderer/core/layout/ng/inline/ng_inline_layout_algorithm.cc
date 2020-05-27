@@ -380,6 +380,13 @@ void NGInlineLayoutAlgorithm::CreateLine(
                          exclusion_space);
   }
 
+  NGLineHeightMetrics annotation_metrics = NGLineHeightMetrics::Zero();
+  if (box_states_->LineBoxState().has_annotation_overflow &&
+      !RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    annotation_metrics = ComputeAnnotationOverflow(
+        line_box_metrics, -line_box_metrics.ascent, line_info->LineStyle());
+  }
+
   // Create box fragments if needed. After this point forward, |line_box_| is a
   // tree structure.
   // The individual children don't move position within the |line_box_|, rather
@@ -413,12 +420,67 @@ void NGInlineLayoutAlgorithm::CreateLine(
   // the line box to the line top.
   line_box_.MoveInBlockDirection(line_box_metrics.ascent);
 
+  if (box_states_->LineBoxState().has_annotation_overflow &&
+      RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    annotation_metrics = ComputeAnnotationOverflow(
+        line_box_metrics, LayoutUnit(), line_info->LineStyle());
+  }
+
   if (line_info->UseFirstLineStyle())
     container_builder_.SetStyleVariant(NGStyleVariant::kFirstLine);
   container_builder_.SetBaseDirection(line_info->BaseDirection());
   container_builder_.SetInlineSize(inline_size);
   container_builder_.SetMetrics(line_box_metrics);
-  container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset);
+  container_builder_.SetBfcBlockOffset(line_info->BfcOffset().block_offset +
+                                       annotation_metrics.ascent);
+  if (annotation_metrics.descent > LayoutUnit())
+    container_builder_.SetAnnotationOverflow(annotation_metrics.descent);
+}
+
+NGLineHeightMetrics NGInlineLayoutAlgorithm::ComputeAnnotationOverflow(
+    const NGLineHeightMetrics& line_box_metrics,
+    LayoutUnit line_block_start,
+    const ComputedStyle& line_style) {
+  DCHECK(box_states_->LineBoxState().has_annotation_overflow);
+  DCHECK(RuntimeEnabledFeatures::LayoutNGRubyEnabled());
+  LayoutUnit annotatin_block_start = line_block_start;
+  const LayoutUnit line_block_end =
+      line_block_start + line_box_metrics.LineHeight();
+  LayoutUnit annotation_block_end = line_block_end;
+  for (const auto& item : line_box_) {
+    if (!item.HasInFlowFragment())
+      continue;
+    if (!item.layout_result)
+      continue;
+    const auto* fragment = item.PhysicalFragment();
+    const scoped_refptr<NGFragmentItem> fragment_item = item.fragment_item;
+    LayoutUnit block_end;
+    if (fragment) {
+      block_end = item.rect.offset.block_offset +
+                  fragment->Size()
+                      .ConvertToLogical(line_style.GetWritingMode())
+                      .block_size;
+    } else if (fragment_item) {
+      block_end = item.rect.offset.block_offset +
+                  fragment_item->Size()
+                      .ConvertToLogical(line_style.GetWritingMode())
+                      .block_size;
+    } else {
+      continue;
+    }
+
+    LayoutUnit overflow = item.layout_result->AnnotationOverflow();
+    if (overflow < LayoutUnit()) {
+      annotatin_block_start = std::min(
+          annotatin_block_start, item.rect.offset.block_offset + overflow);
+    } else if (overflow > LayoutUnit()) {
+      annotation_block_end =
+          std::max(annotation_block_end, block_end + overflow);
+    }
+  }
+  return NGLineHeightMetrics(
+      std::max(line_block_start - annotatin_block_start, LayoutUnit()),
+      std::max(annotation_block_end - line_block_end, LayoutUnit()));
 }
 
 void NGInlineLayoutAlgorithm::PlaceControlItem(const NGInlineItem& item,
@@ -520,8 +582,12 @@ void NGInlineLayoutAlgorithm::PlaceLayoutResult(NGInlineItemResult* item_result,
                     To<NGPhysicalBoxFragment>(
                         item_result->layout_result->PhysicalFragment()))
           .BaselineMetrics(item_result->margins, baseline_type_);
-  if (box)
+  if (box) {
     box->metrics.Unite(metrics);
+    box->has_annotation_overflow =
+        box->has_annotation_overflow ||
+        item_result->layout_result->AnnotationOverflow() != LayoutUnit();
+  }
 
   LayoutUnit line_top = item_result->margins.line_over - metrics.ascent;
   line_box_.AddChild(std::move(item_result->layout_result),

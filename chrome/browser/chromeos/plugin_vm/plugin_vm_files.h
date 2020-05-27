@@ -26,8 +26,15 @@ base::Optional<std::string> ConvertFileSystemURLToPathInsidePluginVmSharedDir(
     Profile* profile,
     const storage::FileSystemURL& file_system_url);
 
+enum class LaunchPluginVmAppResult {
+  SUCCESS,
+  FAILED,
+  FAILED_DIRECTORY_NOT_SHARED,
+};
+
 using LaunchPluginVmAppCallback =
-    base::OnceCallback<void(bool success, const std::string& failure_reason)>;
+    base::OnceCallback<void(LaunchPluginVmAppResult result,
+                            const std::string& failure_reason)>;
 
 // Launch a Plugin VM App with a given set of files, given as cracked urls in
 // the VM. Will start Plugin VM if it is not already running.

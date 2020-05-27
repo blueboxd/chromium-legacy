@@ -118,6 +118,9 @@ void AssistiveWindowController::SetAssistiveWindowProperties(
       if (!undo_window_)
         InitUndoWindow();
       window.visible ? undo_window_->Show() : undo_window_->Hide();
+      break;
+    case ui::ime::AssistiveWindowType::kNone:
+      break;
   }
 }
 
@@ -128,6 +131,11 @@ void AssistiveWindowController::AssistiveWindowClicked(
 ui::ime::SuggestionWindowView*
 AssistiveWindowController::GetSuggestionWindowViewForTesting() {
   return suggestion_window_view_;
+}
+
+ui::ime::UndoWindow* AssistiveWindowController::GetUndoWindowForTesting()
+    const {
+  return undo_window_;
 }
 
 }  // namespace input_method

@@ -124,6 +124,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
         box.metrics = box.text_metrics;
       else
         box.ResetTextMetrics();
+      box.has_annotation_overflow = false;
       if (box.has_start_edge) {
         // Existing box states are wrapped before they were closed, and hence
         // they do not have start edges, unless 'box-decoration-break: clone'.
@@ -235,6 +236,8 @@ void NGInlineLayoutStateStack::EndBoxState(NGInlineBoxState* box,
   NGInlineBoxState& parent_box = *std::prev(box);
 
   // Propagate necessary data back to the parent box.
+  parent_box.has_annotation_overflow =
+      parent_box.has_annotation_overflow || box->has_annotation_overflow;
 
   // Unite the metrics to the parent box.
   if (position_pending == kPositionNotPending)
@@ -895,6 +898,7 @@ void NGInlineBoxState::CheckSame(const NGInlineBoxState& other) const {
 
   DCHECK_EQ(metrics, other.metrics);
   DCHECK_EQ(text_metrics, other.text_metrics);
+  DCHECK_EQ(has_annotation_overflow, other.has_annotation_overflow);
   DCHECK_EQ(text_top, other.text_top);
   DCHECK_EQ(text_height, other.text_height);
   if (!text_metrics.IsEmpty()) {

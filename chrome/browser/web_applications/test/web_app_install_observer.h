@@ -33,9 +33,15 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
       base::RepeatingCallback<void(const AppId& app_id)>;
   void SetWebAppUninstalledDelegate(WebAppUninstalledDelegate delegate);
 
+  using WebAppProfileWillBeDeletedDelegate =
+      base::RepeatingCallback<void(const AppId& app_id)>;
+  void SetWebAppProfileWillBeDeletedDelegate(
+      WebAppProfileWillBeDeletedDelegate delegate);
+
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
   void OnWebAppUninstalled(const AppId& app_id) override;
+  void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
 
  private:
   base::RunLoop run_loop_;
@@ -43,6 +49,7 @@ class WebAppInstallObserver final : public AppRegistrarObserver {
 
   WebAppInstalledDelegate app_installed_delegate_;
   WebAppUninstalledDelegate app_uninstalled_delegate_;
+  WebAppProfileWillBeDeletedDelegate app_profile_will_be_deleted_delegate_;
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> observer_{this};
 

@@ -62,7 +62,13 @@ Polymer({
     passwordManagerSubLabel_: {
       type: String,
       computed: 'computePasswordManagerSubLabel_(compromisedPasswordsCount)',
-    }
+    },
+
+    /** @private */
+    enablePasswordCheck_: {
+      type: Boolean,
+      value: () => loadTimeData.getBoolean('enablePasswordCheck'),
+    },
   },
 
   /**
@@ -97,11 +103,11 @@ Polymer({
 
   /**
    * @return {string} The sub-title message indicating the result of password
-   * check.
+   *     check.
    * @private
    */
   computePasswordManagerSubLabel_() {
-    if (!loadTimeData.getBoolean('enablePasswordCheck')) {
+    if (!this.enablePasswordCheck_) {
       return '';
     }
 

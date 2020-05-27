@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_WEBGPU_IMAGE_BITMAP_HANDLER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_GPU_WEBGPU_IMAGE_BITMAP_HANDLER_H_
 
+#include <dawn/webgpu.h>
+
 #include "base/containers/span.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/dawn_control_client_holder.h"
@@ -23,13 +25,18 @@ class IntRect;
 class StaticBitmapImage;
 
 WebGPUImageUploadSizeInfo PLATFORM_EXPORT
-ComputeImageBitmapWebGPUUploadSizeInfo(const IntRect& rect,
-                                       const CanvasColorParams& color_params);
+ComputeImageBitmapWebGPUUploadSizeInfo(
+    const IntRect& rect,
+    const WGPUTextureFormat& destination_format);
 bool PLATFORM_EXPORT
 CopyBytesFromImageBitmapForWebGPU(scoped_refptr<StaticBitmapImage> image,
                                   base::span<uint8_t> dst,
                                   const IntRect& rect,
-                                  const CanvasColorParams& color_params);
+                                  const CanvasColorParams& color_params,
+                                  const WGPUTextureFormat destination_format);
+
+uint64_t PLATFORM_EXPORT
+DawnTextureFormatBytesPerPixel(const WGPUTextureFormat color_type);
 
 class PLATFORM_EXPORT DawnTextureFromImageBitmap
     : public RefCounted<DawnTextureFromImageBitmap> {

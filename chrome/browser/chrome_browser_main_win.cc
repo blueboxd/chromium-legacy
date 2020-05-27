@@ -479,9 +479,9 @@ void UpdatePwaLaunchersForProfile(const base::FilePath& profile_dir) {
     }
   }
 
-  base::PostTask(
+  base::ThreadPool::PostTask(
       FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
+      {base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
       base::BindOnce(&web_app::UpdatePwaLaunchers,
                      std::move(pwa_launcher_paths)));
@@ -686,9 +686,8 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   // Write current executable path to the User Data directory to inform
   // Progressive Web App launchers, which run from within the User Data
   // directory, which chrome.exe to launch from.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&web_app::WriteChromePathToLastBrowserFile,
                      user_data_dir()));
 
@@ -703,9 +702,8 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   }
 
   // Record the result of the latest Progressive Web App launcher launch.
-  base::PostTask(
-      FROM_HERE,
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+  base::ThreadPool::PostTask(
+      FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
       base::BindOnce(&web_app::RecordPwaLauncherResult));
 
   base::ImportantFileWriterCleaner::GetInstance().Start();

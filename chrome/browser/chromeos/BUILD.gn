@@ -1294,6 +1294,8 @@ source_set("chromeos") {
     "input_method/input_method_delegate_impl.h",
     "input_method/input_method_engine.cc",
     "input_method/input_method_engine.h",
+    "input_method/input_method_engine_base.cc",
+    "input_method/input_method_engine_base.h",
     "input_method/input_method_manager_impl.cc",
     "input_method/input_method_manager_impl.h",
     "input_method/input_method_persistence.cc",

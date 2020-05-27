@@ -23075,6 +23075,7 @@ Called by update_extension_histograms.py.-->
   <int value="1476" label="PASSWORDSPRIVATE_REMOVESAVEDPASSWORDS"/>
   <int value="1477" label="PASSWORDSPRIVATE_REMOVEPASSWORDEXCEPTIONS"/>
   <int value="1478" label="AUTOTESTPRIVATE_WAITFORAMBIENTPHOTOANIMATION"/>
+  <int value="1479" label="INPUT_IME_SETASSISTIVEWINDOWPROPERTIES"/>
 </enum>
 
 <enum name="ExtensionIconState">

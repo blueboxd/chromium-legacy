@@ -65,4 +65,28 @@ TEST_F(AssistiveSuggesterTest,
   EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureEnabled());
 }
 
+TEST_F(
+    AssistiveSuggesterTest,
+    AssistPersonalInfoEnabledPrefFalseFeatureFlagTrue_AssitiveFeatureEnabledFalse) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kAssistPersonalInfo},
+      /*disabled_features=*/{chromeos::features::kEmojiSuggestAddition});
+  profile_->GetPrefs()->SetBoolean(prefs::kAssistPersonalInfoEnabled, false);
+
+  EXPECT_FALSE(assistive_suggester_->IsAssistiveFeatureEnabled());
+}
+
+TEST_F(
+    AssistiveSuggesterTest,
+    AssistPersonalInfoEnabledTrueFeatureFlagTrue_AssitiveFeatureEnabledTrue) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      /*enabled_features=*/{chromeos::features::kAssistPersonalInfo},
+      /*disabled_features=*/{chromeos::features::kEmojiSuggestAddition});
+  profile_->GetPrefs()->SetBoolean(prefs::kAssistPersonalInfoEnabled, true);
+
+  EXPECT_TRUE(assistive_suggester_->IsAssistiveFeatureEnabled());
+}
+
 }  // namespace chromeos

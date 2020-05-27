@@ -21,13 +21,36 @@ uint64_t AlignWebGPUBytesPerRow(uint64_t bytesPerRow) {
          << kDawnBytesPerRowAlignmentBits;
 }
 
+SkColorType DawnColorTypeToSkColorType(WGPUTextureFormat dawn_format) {
+  switch (dawn_format) {
+    case WGPUTextureFormat_RGBA8Unorm:
+      return SkColorType::kRGBA_8888_SkColorType;
+    case WGPUTextureFormat_BGRA8Unorm:
+      return SkColorType::kBGRA_8888_SkColorType;
+    case WGPUTextureFormat_RGB10A2Unorm:
+      return SkColorType::kRGBA_1010102_SkColorType;
+    case WGPUTextureFormat_RGBA16Float:
+      return SkColorType::kRGBA_F16_SkColorType;
+    case WGPUTextureFormat_RGBA32Float:
+      return SkColorType::kRGBA_F32_SkColorType;
+    case WGPUTextureFormat_RG8Unorm:
+      return SkColorType::kR8G8_unorm_SkColorType;
+    case WGPUTextureFormat_RG16Float:
+      return SkColorType::kR16G16_float_SkColorType;
+    default:
+      return SkColorType::kUnknown_SkColorType;
+  }
+}
+
 }  // anonymous namespace
 
 WebGPUImageUploadSizeInfo ComputeImageBitmapWebGPUUploadSizeInfo(
     const IntRect& rect,
-    const CanvasColorParams& color_params) {
+    const WGPUTextureFormat& destination_format) {
   WebGPUImageUploadSizeInfo info;
-  uint64_t bytes_per_pixel = color_params.BytesPerPixel();
+
+  uint64_t bytes_per_pixel = DawnTextureFormatBytesPerPixel(destination_format);
+  DCHECK_NE(bytes_per_pixel, 0u);
 
   uint64_t bytes_per_row =
       AlignWebGPUBytesPerRow(rect.Width() * bytes_per_pixel);
@@ -42,31 +65,32 @@ WebGPUImageUploadSizeInfo ComputeImageBitmapWebGPUUploadSizeInfo(
   return info;
 }
 
-bool CopyBytesFromImageBitmapForWebGPU(scoped_refptr<StaticBitmapImage> image,
-                                       base::span<uint8_t> dst,
-                                       const IntRect& rect,
-                                       const CanvasColorParams& color_params) {
+bool CopyBytesFromImageBitmapForWebGPU(
+    scoped_refptr<StaticBitmapImage> image,
+    base::span<uint8_t> dst,
+    const IntRect& rect,
+    const CanvasColorParams& color_params,
+    const WGPUTextureFormat destination_format) {
   DCHECK(image);
   DCHECK_GT(dst.size(), static_cast<size_t>(0));
   DCHECK(image->width() - rect.X() >= rect.Width());
   DCHECK(image->height() - rect.Y() >= rect.Height());
 
   WebGPUImageUploadSizeInfo wgpu_info =
-      ComputeImageBitmapWebGPUUploadSizeInfo(rect, color_params);
+      ComputeImageBitmapWebGPUUploadSizeInfo(rect, destination_format);
   DCHECK_EQ(static_cast<uint64_t>(dst.size()), wgpu_info.size_in_bytes);
 
   // Prepare extract data from SkImage.
-  // TODO(shaobo.yan@intel.com): Make sure the data is in the correct format for
-  // copying to WebGPU
-  SkColorType color_type =
-      (color_params.GetSkColorType() == kRGBA_F16_SkColorType)
-          ? kRGBA_F16_SkColorType
-          : kRGBA_8888_SkColorType;
+  SkColorType sk_color_type = DawnColorTypeToSkColorType(destination_format);
+  if (sk_color_type == kUnknown_SkColorType) {
+    return false;
+  }
 
   // Read pixel request dst info.
-  // TODO(shaobo.yan@intel.com): Use Skia to do transform and color conversion.
+  // Keep premulalpha config and color space from imageBitmap and using dest
+  // texture color type. This can help do conversions in ReadPixels.
   SkImageInfo info = SkImageInfo::Make(
-      rect.Width(), rect.Height(), color_type,
+      rect.Width(), rect.Height(), sk_color_type,
       image->IsPremultiplied() ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
       color_params.GetSkColorSpaceForSkSurfaces());
 
@@ -83,6 +107,25 @@ bool CopyBytesFromImageBitmapForWebGPU(scoped_refptr<StaticBitmapImage> image,
   }
 
   return true;
+}
+
+uint64_t DawnTextureFormatBytesPerPixel(const WGPUTextureFormat color_type) {
+  switch (color_type) {
+    case WGPUTextureFormat_RG8Unorm:
+      return 2;
+    case WGPUTextureFormat_RGBA8Unorm:
+    case WGPUTextureFormat_BGRA8Unorm:
+    case WGPUTextureFormat_RGB10A2Unorm:
+    case WGPUTextureFormat_RG16Float:
+      return 4;
+    case WGPUTextureFormat_RGBA16Float:
+      return 8;
+    case WGPUTextureFormat_RGBA32Float:
+      return 16;
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 DawnTextureFromImageBitmap::DawnTextureFromImageBitmap(

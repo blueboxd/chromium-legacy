@@ -27,6 +27,7 @@ import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
@@ -38,7 +39,7 @@ import org.chromium.chrome.browser.ui.favicon.LargeIconBridge.LargeIconCallback;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
-import java.util.ArrayList;
+import java.io.ByteArrayOutputStream;
 
 /**
  * Tests for {@link ClipboardSuggestionProcessor}.
@@ -69,7 +70,7 @@ public class ClipboardSuggestionProcessorTest {
     @CalledByNative
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-        mBitmap = Bitmap.createBitmap(1, 1, Config.ALPHA_8);
+        mBitmap = Bitmap.createBitmap(10, 5, Config.ARGB_8888);
         mProcessor = new ClipboardSuggestionProcessor(
                 ContextUtils.getApplicationContext(), mSuggestionHost, () -> mIconBridge);
         mRootView = new LinearLayout(ContextUtils.getApplicationContext());
@@ -86,18 +87,18 @@ public class ClipboardSuggestionProcessorTest {
         mRootView.addView(mTitleTextView);
         mRootView.addView(mContentTextView);
     }
-
     /** Create clipboard suggestion for test. */
     private void createClipboardSuggestion(int type, GURL url) {
-        mSuggestion = new OmniboxSuggestion(type,
-                /* isSearchType */ type != OmniboxSuggestionType.CLIPBOARD_URL, /* relevance */ 0,
-                /* transition */ 0, "test title",
-                /* displayTextClassifications */ new ArrayList<>(), "test description",
-                /* descriptionClassifications */ new ArrayList<>(),
-                /* suggestionAnswer */ null, /* fillIntoEdit */ null, url,
-                /* imageUrl */ GURL.emptyGURL(), /* imageDominantColor */ "", false,
-                /* isDeletable */ false, /* postContentType */ null, /* postData */ null,
-                OmniboxSuggestion.INVALID_GROUP, null);
+        createClipboardSuggestion(type, url, null);
+    }
+
+    /** Create clipboard suggestion for test. */
+    private void createClipboardSuggestion(int type, GURL url, byte[] clipboardImageData) {
+        mSuggestion = OmniboxSuggestionBuilderForTest.searchWithType(type)
+                              .setIsSearch(type != OmniboxSuggestionType.CLIPBOARD_URL)
+                              .setUrl(url)
+                              .setClipboardImageData(clipboardImageData)
+                              .build();
         mModel = mProcessor.createModel();
         mProcessor.populateModel(mSuggestion, mModel, 0);
         SuggestionViewViewBinder.bind(mModel, mRootView, SuggestionViewProperties.TEXT_LINE_1_TEXT);
@@ -177,5 +178,23 @@ public class ClipboardSuggestionProcessorTest {
         // Text
         createClipboardSuggestion(OmniboxSuggestionType.CLIPBOARD_TEXT, GURL.emptyGURL());
         Assert.assertEquals(TextView.TEXT_DIRECTION_INHERIT, mLastSetTextDirection);
+    }
+
+    @CalledByNativeJavaTest
+    public void clipboardSuggestion_showsThumbnailWhenAvailable() {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Assert.assertTrue(mBitmap.compress(Bitmap.CompressFormat.PNG, 100, baos));
+        byte[] bitmapData = baos.toByteArray();
+        createClipboardSuggestion(
+                OmniboxSuggestionType.CLIPBOARD_IMAGE, GURL.emptyGURL(), bitmapData);
+        SuggestionDrawableState icon = mModel.get(BaseSuggestionViewProperties.ICON);
+        Assert.assertNotNull(icon);
+
+        // Since |icon| is Bitmap -> PNG -> Bitmap, the image changed, we just check the size to
+        // make sure they are same.
+        Assert.assertEquals(
+                mBitmap.getWidth(), ((BitmapDrawable) icon.drawable).getBitmap().getWidth());
+        Assert.assertEquals(
+                mBitmap.getHeight(), ((BitmapDrawable) icon.drawable).getBitmap().getHeight());
     }
 }

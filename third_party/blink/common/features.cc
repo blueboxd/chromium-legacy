@@ -490,7 +490,7 @@ const base::FeatureParam<int> kFontPreloadingDelaysRenderingParam{
     &kFontPreloadingDelaysRendering, "delay-in-ms", 100};
 
 const base::Feature kFlexGaps{"FlexGaps", base::FEATURE_DISABLED_BY_DEFAULT};
-const base::Feature kFlexNG{"FlexNG", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kFlexNG{"FlexNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kKeepScriptResourceAlive{"KeepScriptResourceAlive",
                                              base::FEATURE_DISABLED_BY_DEFAULT};

@@ -9,7 +9,6 @@
 #include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_keyboard_controller_stub.h"
 #include "ui/base/ime/input_method_observer.h"
@@ -30,9 +29,6 @@ InputMethodBase::InputMethodBase(
 InputMethodBase::~InputMethodBase() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnInputMethodDestroyed(this);
-  if (ui::IMEBridge::Get() &&
-      ui::IMEBridge::Get()->GetInputContextHandler() == this)
-    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
 
 void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
@@ -40,17 +36,9 @@ void InputMethodBase::SetDelegate(internal::InputMethodDelegate* delegate) {
 }
 
 void InputMethodBase::OnFocus() {
-  ui::IMEBridge* bridge = ui::IMEBridge::Get();
-  if (bridge) {
-    bridge->SetInputContextHandler(this);
-    bridge->MaybeSwitchEngine();
-  }
 }
 
 void InputMethodBase::OnBlur() {
-  if (ui::IMEBridge::Get() &&
-      ui::IMEBridge::Get()->GetInputContextHandler() == this)
-    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
 }
 
 #if defined(OS_WIN)

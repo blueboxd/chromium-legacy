@@ -277,6 +277,8 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterStringPref(::prefs::kLanguageEnabledImes, "");
   registry->RegisterDictionaryPref(
       chromeos::prefs::kAssistiveInputFeatureSettings);
+  registry->RegisterBooleanPref(chromeos::prefs::kAssistPersonalInfoEnabled,
+                                true);
   registry->RegisterDictionaryPref(
       ::prefs::kLanguageInputMethodSpecificSettings);
 

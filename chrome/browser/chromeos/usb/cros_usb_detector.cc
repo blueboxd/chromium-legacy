@@ -33,6 +33,8 @@ namespace chromeos {
 
 namespace {
 
+constexpr uint32_t kAllInterfacesMask = ~0U;
+
 // Not owned locally.
 static CrosUsbDetector* g_cros_usb_detector = nullptr;
 
@@ -56,6 +58,68 @@ base::string16 ProductLabelFromDevice(
                                    device_info->manufacturer_name.value());
   }
   return product_label;
+}
+
+uint32_t ClearMatchingInterfaces(
+    uint32_t in_mask,
+    const device::mojom::UsbDeviceFilter& filter,
+    const device::mojom::UsbDeviceInfo& device_info) {
+  uint32_t mask = in_mask;
+
+  for (auto& config : device_info.configurations) {
+    for (auto& iface : config->interfaces) {
+      for (auto& alternate_info : iface->alternates) {
+        if (filter.has_class_code &&
+            alternate_info->class_code != filter.class_code) {
+          continue;
+        }
+        if (filter.has_subclass_code &&
+            alternate_info->subclass_code != filter.subclass_code) {
+          continue;
+        }
+        if (filter.has_protocol_code &&
+            alternate_info->protocol_code != filter.protocol_code) {
+          continue;
+        }
+        if (iface->interface_number >= 32) {
+          LOG(ERROR) << "Interface number too high in USB descriptor";
+          continue;
+        }
+        mask &= ~(1U << iface->interface_number);
+      }
+    }
+  }
+
+  return mask;
+}
+
+uint32_t GetUsbInterfaceBaseMask(
+    const device::mojom::UsbDeviceInfo& device_info) {
+  if (device_info.configurations.empty()) {
+    // No specific interfaces to clear.
+    return kAllInterfacesMask;
+  }
+  uint32_t mask = 0;
+  for (auto& config : device_info.configurations) {
+    for (auto& iface : config->interfaces) {
+      if (iface->interface_number >= 32) {
+        LOG(ERROR) << "Interface number too high in USB descriptor.";
+        continue;
+      }
+      mask |= (1U << iface->interface_number);
+    }
+  }
+  return mask;
+}
+
+uint32_t GetFilteredInterfacesMask(
+    const std::vector<device::mojom::UsbDeviceFilterPtr>& filters,
+    const device::mojom::UsbDeviceInfo& device_info) {
+  uint32_t mask = GetUsbInterfaceBaseMask(device_info);
+  for (const auto& filter : filters) {
+    mask = ClearMatchingInterfaces(mask, *filter, device_info);
+  }
+  return mask;
 }
 
 Profile* profile() {
@@ -301,10 +365,15 @@ bool CrosUsbDetector::ShouldShowNotification(
   }
   if (device::UsbDeviceFilterMatches(*adb_device_filter_, device_info) ||
       device::UsbDeviceFilterMatches(*fastboot_device_filter_, device_info)) {
+    VLOG(1) << "Adb or fastboot device found";
     return true;
   }
-  return !device::UsbDeviceFilterMatchesAny(guest_os_classes_without_notif_,
-                                            device_info);
+  if (!device::UsbDeviceFilterMatchesAny(guest_os_classes_without_notif_,
+                                         device_info)) {
+    VLOG(1) << "Only notifiable interfaces found for device";
+    return true;
+  }
+  return false;
 }
 
 void CrosUsbDetector::OnDeviceChecked(
@@ -324,11 +393,13 @@ void CrosUsbDetector::OnDeviceChecked(
   const bool has_supported_interface =
       device::UsbDeviceFilterMatches(*adb_device_filter_, *device_info) ||
       device::UsbDeviceFilterMatches(*fastboot_device_filter_, *device_info);
-  const bool has_blocked_interface = device::UsbDeviceFilterMatchesAny(
-      guest_os_classes_blocked_, *device_info);
+
+  new_device.allowed_interfaces_mask =
+      GetFilteredInterfacesMask(guest_os_classes_blocked_, *device_info);
+
   new_device.sharable_with_crostini =
       has_supported_interface ||
-      (!has_blocked_interface &&
+      (new_device.allowed_interfaces_mask != 0 &&
        base::FeatureList::IsEnabled(features::kCrostiniUsbAllowUnsupported));
 
   usb_devices_.push_back(new_device);
@@ -338,6 +409,7 @@ void CrosUsbDetector::OnDeviceChecked(
   // Some devices should not trigger the notification.
   if (!new_device.sharable_with_crostini || hide_notification ||
       !ShouldShowNotification(*device_info)) {
+    VLOG(1) << "Not showing USB notification for " << new_device.label;
     return;
   }
   ShowNotificationForDevice(std::move(device_info));
@@ -401,6 +473,7 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
     const std::string& vm_name,
     const std::string& guid,
     base::OnceCallback<void(bool success)> callback) {
+  uint32_t allowed_interfaces_mask = 0;
   for (auto& device : usb_devices_) {
     if (device.guid == guid) {
       // Mark the USB device shared so that we know to reattach it on VM
@@ -408,6 +481,7 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
       // Setting this flag early also allows the UI not to flicker because of
       // the notification resulting from the default VM detach below.
       device.vm_sharing_info[vm_name].shared = true;
+      allowed_interfaces_mask = device.allowed_interfaces_mask;
       // The guest port will be set on completion.
       break;
     }
@@ -421,11 +495,15 @@ void CrosUsbDetector::AttachUsbDeviceToVm(
   // Close any associated notifications (the user isn't using them).
   SystemNotificationHelper::GetInstance()->Close(
       CrosUsbDetector::MakeNotificationId(guid));
+
+  VLOG(1) << "Opening " << std::hex << guid << " with mask "
+          << allowed_interfaces_mask;
   // Open a file descriptor to pass to CrostiniManager & Concierge.
   device_manager_->OpenFileDescriptor(
-      guid, base::BindOnce(&CrosUsbDetector::OnAttachUsbDeviceOpened,
-                           weak_ptr_factory_.GetWeakPtr(), vm_name,
-                           device_info.Clone(), std::move(callback)));
+      guid, allowed_interfaces_mask,
+      base::BindOnce(&CrosUsbDetector::OnAttachUsbDeviceOpened,
+                     weak_ptr_factory_.GetWeakPtr(), vm_name,
+                     device_info.Clone(), std::move(callback)));
 }
 
 void CrosUsbDetector::DetachUsbDeviceFromVm(

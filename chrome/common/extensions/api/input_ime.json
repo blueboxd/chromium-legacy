@@ -102,6 +102,28 @@
         "type": "string",
         "description": "Which mouse buttons was clicked.",
         "enum": ["left", "middle", "right"]
+      },
+      {
+        "id": "AssistiveWindowType",
+        "type": "string",
+        "description": "Type of assistive window.",
+        "enum": [
+          "undo"
+        ]
+      },
+      {
+        "id": "AssistiveWindowProperties",
+        "type": "object",
+        "description": "Properties of the assistive window.",
+        "properties": {
+          "type": {
+            "$ref": "AssistiveWindowType"
+          },
+          "visible": {
+            "type": "boolean",
+            "description": "Sets true to show AssistiveWindow, sets false to hide."
+          }
+        }
       }
     ],
     "functions": [
@@ -436,6 +458,40 @@
             "name": "callback",
             "optional": true,
             "description": "Called when the operation completes",
+            "parameters": [
+              {
+                "name": "success",
+                "type": "boolean"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "setAssistiveWindowProperties",
+        "type": "function",
+        "description": "Shows/Hides an assistive window with the given properties.",
+        "platforms": ["chromeos"],
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "properties": {
+              "contextID": {
+                "description": "ID of the context owning the assistive window.",
+                "type": "integer"
+              },
+              "properties": {
+                "$ref": "AssistiveWindowProperties",
+                "description": "Properties of the assistive window."
+              }
+            }
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
             "parameters": [
               {
                 "name": "success",

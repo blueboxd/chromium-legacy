@@ -509,15 +509,6 @@ void HTMLSelectElement::SelectAll() {
   select_type_->SelectAll();
 }
 
-void HTMLSelectElement::SetActiveSelectionAnchor(HTMLOptionElement* option) {
-  active_selection_anchor_ = option;
-  select_type_->SaveListboxActiveSelection();
-}
-
-void HTMLSelectElement::SetActiveSelectionEnd(HTMLOptionElement* option) {
-  active_selection_end_ = option;
-}
-
 const HTMLSelectElement::ListItems& HTMLSelectElement::GetListItems() const {
   if (should_recalc_list_items_) {
     RecalcListItems();

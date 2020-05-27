@@ -33,13 +33,19 @@ extern const char kIsUnmeteredNetworkRequiredKey[];
 extern const char kImagePrefetchModeKey[];
 
 // Finch parameter key for the minimum interval to next schedule.
-extern const char kNextScheduleMinIntervalKey[];
+extern const char kScheduleIntervalKey[];
 
 // Finch parameter key for random window.
 extern const char kMaxRandomWindowKey[];
 
 // Finch parameter key for one off task window.
 extern const char kOneoffTaskWindowKey[];
+
+// Finch parameter key for Backoff policy initial delay in ms.
+extern const char kBackoffInitDelayInMsKey[];
+
+// Finch parameter key for Backoff policy maximum delay in ms.
+extern const char kBackoffMaxDelayInMsKey[];
 
 class TileConfig {
  public:

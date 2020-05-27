@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/lazy_instance.h"
 #include "components/query_tiles/internal/stats.h"
 #include "net/base/url_util.h"
 #include "net/http/http_request_headers.h"
@@ -17,6 +18,9 @@
 
 namespace query_tiles {
 namespace {
+
+// An override server URL for testing.
+base::LazyInstance<GURL>::Leaky g_override_url_for_testing;
 
 const char kRequestContentType[] = "application/x-protobuf";
 
@@ -94,6 +98,10 @@ class TileFetcherImpl : public TileFetcher {
       request->headers.SetHeader(net::HttpRequestHeaders::kAcceptLanguage,
                                  accept_languages_);
     }
+
+    if (!g_override_url_for_testing.Get().is_empty())
+      request->url = g_override_url_for_testing.Get();
+
     return request;
   }
 
@@ -173,6 +181,11 @@ std::unique_ptr<TileFetcher> TileFetcher::Create(
   return std::make_unique<TileFetcherImpl>(url, country_code, accept_languages,
                                            api_key, experiment_tag,
                                            client_version, url_loader_factory);
+}
+
+// static
+void TileFetcher::SetOverrideURLForTesting(const GURL& url) {
+  g_override_url_for_testing.Get() = url;
 }
 
 TileFetcher::TileFetcher() = default;

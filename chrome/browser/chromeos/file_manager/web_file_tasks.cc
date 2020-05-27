@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/chromeos/file_manager/file_tasks.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
@@ -36,6 +37,12 @@ void FindWebTasks(Profile* profile,
                   std::vector<FullTaskDescriptor>* result_list) {
   DCHECK(!entries.empty());
   DCHECK(result_list);
+
+  // WebApps only support files backed by inodes. See https://crbug.com/1079065.
+  for (const auto& entry : entries) {
+    if (util::IsUnderNonNativeLocalPath(profile, entry.path))
+      return;
+  }
 
   web_app::WebAppProviderBase* provider =
       web_app::WebAppProviderBase::GetProviderBase(profile);

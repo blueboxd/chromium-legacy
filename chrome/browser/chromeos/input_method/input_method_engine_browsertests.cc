@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_controller.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -649,6 +650,56 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     const ui::CompositionText& composition_text =
         mock_input_context->last_update_composition_arg().composition_text;
     EXPECT_TRUE(composition_text.text.empty());
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowProperties:window_undo visibility_true test");
+
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: true
+        }
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    ASSERT_TRUE(undo_window);
+
+    views::Widget* undo_window_widget = undo_window->GetWidget();
+    ASSERT_TRUE(undo_window_widget);
+    EXPECT_TRUE(undo_window_widget->IsVisible());
+  }
+  {
+    SCOPED_TRACE(
+        "setAssistiveWindowProperties:window_undo visibility_false test");
+
+    const char set_assistive_window_test_script[] = R"(
+      chrome.input.ime.setAssistiveWindowProperties({
+        contextID: engineBridge.getFocusedContextID().contextID,
+        properties: {
+          type: 'undo',
+          visible: false
+        }
+      });
+    )";
+    ASSERT_TRUE(content::ExecuteScript(host->host_contents(),
+                                       set_assistive_window_test_script));
+    auto* assistive_window_controller =
+        static_cast<chromeos::input_method::AssistiveWindowController*>(
+            ui::IMEBridge::Get()->GetAssistiveWindowHandler());
+
+    ui::ime::UndoWindow* undo_window =
+        assistive_window_controller->GetUndoWindowForTesting();
+    EXPECT_FALSE(undo_window);
   }
   {
     SCOPED_TRACE("setCandidateWindowProperties:visibility test");

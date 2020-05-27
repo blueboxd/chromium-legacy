@@ -408,12 +408,21 @@ void ClipboardProvider::ConstructImageMatchCallback(
   // navigation.
   match.fill_into_edit = match.description;
 
-  TemplateURLRef::SearchTermsArgs search_args(base::ASCIIToUTF16(""));
-  search_args.image_thumbnail_content.assign(image_bytes->front_as<char>(),
-                                             image_bytes->size());
+  match.search_terms_args =
+      std::make_unique<TemplateURLRef::SearchTermsArgs>(base::ASCIIToUTF16(""));
+  match.search_terms_args->image_thumbnail_content.assign(
+      image_bytes->front_as<char>(), image_bytes->size());
   TemplateURLRef::PostContent post_content;
   GURL result(default_url->image_url_ref().ReplaceSearchTerms(
-      search_args, url_service->search_terms_data(), &post_content));
+      *match.search_terms_args.get(), url_service->search_terms_data(),
+      &post_content));
+
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          omnibox::kEnableClipboardProviderImageSuggestions,
+          OmniboxFieldTrial::kImageSearchSuggestionThumbnail, false)) {
+    // If Omnibox image suggestion do not need thumbnail, release memory.
+    match.search_terms_args.reset();
+  }
   match.destination_url = result;
   match.post_content =
       std::make_unique<TemplateURLRef::PostContent>(post_content);

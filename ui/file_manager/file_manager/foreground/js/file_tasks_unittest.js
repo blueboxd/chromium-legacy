@@ -85,6 +85,10 @@ function setUp() {
       Verb: {
         SHARE_WITH: 'share_with',
       },
+      TaskResult: {
+        MESSAGE_SENT: 'test_ms_task',
+        FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED: 'test_fpvtdns_task',
+      },
       getFileTasks: function(entries, callback) {
         setTimeout(callback.bind(null, [mockTask]), 0);
       },

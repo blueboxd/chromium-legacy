@@ -611,17 +611,17 @@ void WebSocketStream::Connect(ScriptState* script_state,
   // Don't read all of a huge initial message before read() has been called.
   channel_->ApplyBackpressure();
 
-  auto* signal = options->signal();
-  if (signal && signal->aborted()) {
-    auto exception = V8ThrowDOMException::CreateOrEmpty(
-        script_state->GetIsolate(), DOMExceptionCode::kAbortError,
-        "WebSocket handshake was aborted");
-    connection_resolver_->Reject(exception);
-    closed_resolver_->Reject(exception);
-    return;
-  }
+  if (options->hasSignal()) {
+    auto* signal = options->signal();
+    if (signal->aborted()) {
+      auto exception = V8ThrowDOMException::CreateOrEmpty(
+          script_state->GetIsolate(), DOMExceptionCode::kAbortError,
+          "WebSocket handshake was aborted");
+      connection_resolver_->Reject(exception);
+      closed_resolver_->Reject(exception);
+      return;
+    }
 
-  if (signal) {
     signal->AddAlgorithm(
         WTF::Bind(&WebSocketStream::OnAbort, WrapWeakPersistent(this)));
   }

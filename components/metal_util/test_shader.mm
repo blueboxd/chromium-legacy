@@ -8,6 +8,7 @@
 #import <Metal/Metal.h>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/mac/scoped_dispatch_object.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
@@ -17,7 +18,9 @@
 #include "base/synchronization/lock.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
+#include "components/crash/core/common/crash_key.h"
 #include "components/metal_util/device.h"
+#include "components/metal_util/switches.h"
 
 namespace metal {
 
@@ -650,6 +653,11 @@ const size_t kTestLibHashOffset = 0x104;
 const size_t kTestLibBitcodeOffset = 0xd16;
 const size_t kTestLibBitcodeSize = 0xa50;
 
+crash_reporter::CrashKeyString<32>& GetLinkIndexCrashKey() {
+  static crash_reporter::CrashKeyString<32> crash_key("metal-link-index");
+  return crash_key;
+}
+
 std::vector<uint8_t> GetAlteredLibraryData() {
   // Make a copy of the shader's data.
   std::vector<uint8_t> data(kTestLibData, kTestLibData + kTestLibSize);
@@ -662,6 +670,10 @@ std::vector<uint8_t> GetAlteredLibraryData() {
   // Compute the hash of the altered bitcode and and place it in the data.
   CC_SHA256(&data[kTestLibBitcodeOffset], kTestLibBitcodeSize,
             &data[kTestLibHashOffset]);
+
+  // Shader link crashes have been observed on bots. Record what index caused
+  // them if they appear in the wild.
+  GetLinkIndexCrashKey().Set(base::StringPrintf("%llu", index));
   return data;
 }
 
@@ -752,8 +764,14 @@ class API_AVAILABLE(macos(10.11)) TestShaderState
       closure = base::BindOnce(std::move(callback_), component_, result_,
                                compile_time);
     }
-    if (closure)
+    if (closure) {
+      // If this is a link that has completed, then we set the crash key when
+      // constructing the shader binary. Clear it now, because Metal didn't
+      // crash while linking the shader.
+      if (component_ == TestShaderComponent::kLink)
+        GetLinkIndexCrashKey().Clear();
       std::move(closure).Run();
+    }
   }
 
   base::Lock lock_;
@@ -846,6 +864,13 @@ void TestShaderNow(base::scoped_nsprotocol<id<MTLDevice>> device,
 void TestShader(TestShaderCallback callback,
                 const base::TimeDelta& delay,
                 const base::TimeDelta& timeout) {
+  bool disabled_at_command_line =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableMetalTestShaders);
+  if (disabled_at_command_line)
+    return;
+
+  // Select a component to test at random.
   TestShaderComponent component = base::RandInt(0, 1)
                                       ? TestShaderComponent::kLink
                                       : TestShaderComponent::kCompile;

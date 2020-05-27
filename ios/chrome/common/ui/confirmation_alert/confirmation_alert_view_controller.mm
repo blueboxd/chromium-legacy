@@ -265,11 +265,17 @@ constexpr CGFloat kSafeAreaMultiplier = 0.8;
   if (isVerticalCompact) {
     oldBottomConstraint = self.regularHeightScrollViewBottomVerticalConstraint;
     newBottomConstraint = self.compactHeightScrollViewBottomVerticalConstraint;
-    self.topToolbar.items = self.compactHeightToolbarItems;
+
+    // Use setItems:animated method instead of setting the items property, as
+    // that causes issues with the Done button. See crbug.com/1082723
+    [self.topToolbar setItems:self.compactHeightToolbarItems animated:YES];
   } else {
     oldBottomConstraint = self.compactHeightScrollViewBottomVerticalConstraint;
     newBottomConstraint = self.regularHeightScrollViewBottomVerticalConstraint;
-    self.topToolbar.items = self.regularHeightToolbarItems;
+
+    // Use setItems:animated method instead of setting the items property, as
+    // that causes issues with the Done button. See crbug.com/1082723
+    [self.topToolbar setItems:self.regularHeightToolbarItems animated:YES];
   }
 
   newBottomConstraint.constant = -marginValue;

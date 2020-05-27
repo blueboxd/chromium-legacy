@@ -185,13 +185,11 @@ profile_metrics::BrowserProfileType ProfileMetrics::GetBrowserProfileType(
   if (profile->IsRegularProfile())
     return profile_metrics::BrowserProfileType::kRegular;
 
-  // TODO(https://crrev.com/1033903): To be updated after updating
-  // |IsIncognitoProfile| to return false for non-primary OTR profiles.
-  if (profile->IsIncognitoProfile()) {
-    return profile->IsPrimaryOTRProfile()
-               ? profile_metrics::BrowserProfileType::kIncognito
-               : profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile;
-  }
+  if (profile->IsIncognitoProfile())
+    return profile_metrics::BrowserProfileType::kIncognito;
+
+  if (profile->IsOffTheRecord() && !profile->IsPrimaryOTRProfile())
+    return profile_metrics::BrowserProfileType::kOtherOffTheRecordProfile;
 
   NOTREACHED();
   return profile_metrics::BrowserProfileType::kMaxValue;

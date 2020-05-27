@@ -38,10 +38,6 @@ void RecordAssistiveSuccess(AssistiveType type) {
   base::UmaHistogramEnumeration("InputMethod.Assistive.Success", type);
 }
 
-bool IsAssistPersonalInfoEnabled() {
-  return base::FeatureList::IsEnabled(chromeos::features::kAssistPersonalInfo);
-}
-
 }  // namespace
 
 AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
@@ -52,6 +48,12 @@ AssistiveSuggester::AssistiveSuggester(InputMethodEngine* engine,
 
 bool AssistiveSuggester::IsAssistiveFeatureEnabled() {
   return IsAssistPersonalInfoEnabled() || IsEmojiSuggestAdditionEnabled();
+}
+
+bool AssistiveSuggester::IsAssistPersonalInfoEnabled() {
+  return base::FeatureList::IsEnabled(
+             chromeos::features::kAssistPersonalInfo) &&
+         profile_->GetPrefs()->GetBoolean(prefs::kAssistPersonalInfoEnabled);
 }
 
 bool AssistiveSuggester::IsEmojiSuggestAdditionEnabled() {

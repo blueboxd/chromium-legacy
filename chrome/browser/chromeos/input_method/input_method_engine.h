@@ -12,8 +12,8 @@
 #include <string>
 #include <vector>
 
+#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/suggestion_handler_interface.h"
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "ui/base/ime/candidate_window.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"

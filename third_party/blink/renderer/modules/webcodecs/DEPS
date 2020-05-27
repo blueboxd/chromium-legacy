@@ -1,10 +1,19 @@
 include_rules = [
-    "+base",
+    "+base/threading/thread_task_runner_handle.h",
+
     "+media/base",
     "+media/filters",
     "+media/media_buildflags.h",
     "+media/video",
+
     "+third_party/libyuv",
+
     "+ui/gfx/geometry/rect.h",
     "+ui/gfx/geometry/size.h",
 ]
+
+specific_include_rules = {
+  "video_track_reader_writer_test\.cc": [
+    "+base/run_loop.h",
+  ],
+}

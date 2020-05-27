@@ -289,6 +289,20 @@ InputMethodChromeOS::GetInputMethodKeyboardController() {
   return InputMethodBase::GetInputMethodKeyboardController();
 }
 
+void InputMethodChromeOS::OnFocus() {
+  ui::IMEBridge* bridge = ui::IMEBridge::Get();
+  if (bridge) {
+    bridge->SetInputContextHandler(this);
+    bridge->MaybeSwitchEngine();
+  }
+}
+
+void InputMethodChromeOS::OnBlur() {
+  if (ui::IMEBridge::Get() &&
+      ui::IMEBridge::Get()->GetInputContextHandler() == this)
+    ui::IMEBridge::Get()->SetInputContextHandler(nullptr);
+}
+
 void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {

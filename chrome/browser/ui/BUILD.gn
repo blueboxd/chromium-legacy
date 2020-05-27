@@ -2396,13 +2396,6 @@ static_library("ui") {
     ]
   }
 
-  if (is_chromeos) {
-    sources += [
-      "input_method/input_method_engine_base.cc",
-      "input_method/input_method_engine_base.h",
-    ]
-  }
-
   if (is_mac) {
     sources += [
       "browser_commands_mac.h",

@@ -44,12 +44,12 @@ import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
 import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog;
 import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog.DefaultSearchEnginePromoDialogObserver;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
+import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
 import org.chromium.chrome.browser.omnibox.suggestions.CachedZeroSuggestionsManager;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
-import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion.MatchClassification;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
@@ -364,16 +364,18 @@ public class SearchActivityTest {
         });
 
         // Cache some mock results to show.
-        List<MatchClassification> classifications = new ArrayList<>();
-        classifications.add(new MatchClassification(0, MatchClassificationStyle.NONE));
-        OmniboxSuggestion mockSuggestion = new OmniboxSuggestion(0, true, 0, 0,
-                "https://google.com", classifications, "https://google.com", classifications, null,
-                "", new GURL("https://google.com"), GURL.emptyGURL(), null, false, false, null,
-                null, OmniboxSuggestion.INVALID_GROUP, null);
-        OmniboxSuggestion mockSuggestion2 = new OmniboxSuggestion(0, true, 0, 0,
-                "https://android.com", classifications, "https://android.com", classifications,
-                null, "", new GURL("https://android.com"), GURL.emptyGURL(), null, false, false,
-                null, null, OmniboxSuggestion.INVALID_GROUP, null);
+        OmniboxSuggestion mockSuggestion =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("https://google.com")
+                        .setDescription("https://google.com")
+                        .setUrl(new GURL("https://google.com"))
+                        .build();
+        OmniboxSuggestion mockSuggestion2 =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.SEARCH_SUGGEST)
+                        .setDisplayText("https://android.com")
+                        .setDescription("https://android.com")
+                        .setUrl(new GURL("https://android.com"))
+                        .build();
         List<OmniboxSuggestion> list = new ArrayList<>();
         list.add(mockSuggestion);
         list.add(mockSuggestion2);

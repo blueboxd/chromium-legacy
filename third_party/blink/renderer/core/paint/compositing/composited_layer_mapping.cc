@@ -167,7 +167,7 @@ static FloatPoint StickyPositionOffsetForLayer(PaintLayer& layer) {
 
 static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
                                         const LayoutObject& layout_object) {
-  int min_border_width = std::min(
+  const int min_border_width = std::min(
       layout_object.StyleRef().BorderTopWidth(),
       std::min(layout_object.StyleRef().BorderLeftWidth(),
                std::min(layout_object.StyleRef().BorderRightWidth(),
@@ -178,8 +178,20 @@ static bool NeedsDecorationOutlineLayer(const PaintLayer& paint_layer,
        paint_layer.GetScrollableArea()->UsesCompositedScrolling()) ||
       layout_object.IsCanvas() || IsA<LayoutVideo>(layout_object);
 
+  // Unlike normal outlines (whole width is outside of the offset), focus
+  // rings can be drawn with the center of the path aligned with the offset, so
+  // only 2/3 of the width is outside of the offset.
+  const int outline_drawn_inside =
+      layout_object.StyleRef().OutlineStyleIsAuto()
+          ? std::ceil(
+                layout_object.StyleRef().GetOutlineStrokeWidthForFocusRing() /
+                3.f) +
+                1
+          : 0;
+
   return could_obscure_decorations && layout_object.StyleRef().HasOutline() &&
-         layout_object.StyleRef().OutlineOffsetInt() < -min_border_width;
+         (layout_object.StyleRef().OutlineOffsetInt() - outline_drawn_inside) <
+             -min_border_width;
 }
 
 CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)

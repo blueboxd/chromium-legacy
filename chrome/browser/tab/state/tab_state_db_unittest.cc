@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/task/thread_pool.h"
 #include "base/test/task_environment.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,8 +41,8 @@ class TabStateDBTest : public testing::Test {
     content_db_ = storage_db.get();
     tab_state_db_ = base::WrapUnique(new TabStateDB(
         std::move(storage_db),
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
-                                         base::TaskPriority::USER_VISIBLE})));
+        base::ThreadPool::CreateSequencedTaskRunner(
+            {base::MayBlock(), base::TaskPriority::USER_VISIBLE})));
   }
 
   // Wait for all tasks to be cleared off the queue

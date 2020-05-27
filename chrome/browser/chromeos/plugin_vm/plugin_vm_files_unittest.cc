@@ -162,7 +162,7 @@ TEST_F(PluginVmFilesTest, LaunchPluginVmApp) {
   vm_tools::cicerone::LaunchContainerApplicationResponse response;
   response.set_success(true);
   EXPECT_CALL(mock_window, Activate());
-  EXPECT_CALL(app_launched_callback, Run(true, ""));
+  EXPECT_CALL(app_launched_callback, Run(LaunchPluginVmAppResult::SUCCESS, ""));
   std::move(cicerone_response_callback).Run(std::move(response));
 }
 

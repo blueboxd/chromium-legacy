@@ -84,6 +84,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kPrioritizeBootstrapTasks,
     &features::kQuietNotificationPrompts,
+    &features::kSafetyCheckAndroid,
     &features::kShowTrustedPublisherURL,
     &features::kWebAuth,
     &features::kWebNfc,

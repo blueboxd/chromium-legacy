@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
-#define CHROME_BROWSER_UI_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
+#define CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
 
 #include <map>
 #include <memory>
@@ -11,13 +11,10 @@
 #include <vector>
 
 #include "base/time/time.h"
+#include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "url/gurl.h"
-
-#if defined(OS_CHROMEOS)
-#include "ui/base/ime/chromeos/input_method_descriptor.h"
-#endif  // defined(OS_CHROMEOS)
 
 class Profile;
 
@@ -316,4 +313,4 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
 }  // namespace input_method
 
-#endif  // CHROME_BROWSER_UI_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_

@@ -82,7 +82,8 @@ void LaunchPluginVmAppImpl(Profile* profile,
                            LaunchPluginVmAppCallback callback,
                            bool plugin_vm_is_running) {
   if (!plugin_vm_is_running) {
-    return std::move(callback).Run(false, "Plugin VM could not be started");
+    return std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
+                                   "Plugin VM could not be started");
   }
 
   auto* registry_service =
@@ -90,7 +91,8 @@ void LaunchPluginVmAppImpl(Profile* profile,
   auto registration = registry_service->GetRegistration(app_id);
   if (!registration) {
     return std::move(callback).Run(
-        false, "LaunchPluginVmApp called with an unknown app_id: " + app_id);
+        LaunchPluginVmAppResult::FAILED,
+        "LaunchPluginVmApp called with an unknown app_id: " + app_id);
   }
 
   vm_tools::cicerone::LaunchContainerApplicationRequest request;
@@ -117,14 +119,14 @@ void LaunchPluginVmAppImpl(Profile* profile,
                   LOG(ERROR) << "Failed to launch application. "
                              << (response ? response->failure_reason()
                                           : "Empty response.");
-                  std::move(callback).Run(/*success=*/false,
+                  std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
                                           "Failed to launch " + app_id);
                   return;
                 }
 
                 FocusAllPluginVmWindows();
 
-                std::move(callback).Run(/*success=*/true, "");
+                std::move(callback).Run(LaunchPluginVmAppResult::SUCCESS, "");
               },
               std::move(app_id), std::move(callback)));
 }
@@ -174,14 +176,15 @@ void LaunchPluginVmApp(Profile* profile,
                        const std::vector<storage::FileSystemURL>& files,
                        LaunchPluginVmAppCallback callback) {
   if (!plugin_vm::IsPluginVmEnabled(profile)) {
-    return std::move(callback).Run(false,
+    return std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
                                    "Plugin VM is not enabled for this profile");
   }
 
   auto* manager = PluginVmManagerFactory::GetForProfile(profile);
 
   if (!manager) {
-    return std::move(callback).Run(false, "Could not get PluginVmManager");
+    return std::move(callback).Run(LaunchPluginVmAppResult::FAILED,
+                                   "Could not get PluginVmManager");
   }
 
   std::vector<std::string> file_paths;
@@ -191,8 +194,9 @@ void LaunchPluginVmApp(Profile* profile,
         ConvertFileSystemURLToPathInsidePluginVmSharedDir(profile, file);
     if (!file_path) {
       return std::move(callback).Run(
-          false, "Only files in the shared dir are supported. Got: " +
-                     file.DebugString());
+          LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED,
+          "Only files in the shared dir are supported. Got: " +
+              file.DebugString());
     }
     file_paths.push_back(std::move(*file_path));
   }

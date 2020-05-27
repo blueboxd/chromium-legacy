@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
@@ -550,6 +552,7 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
   ScopedJavaLocalRef<jstring> image_dominant_color;
   ScopedJavaLocalRef<jstring> post_content_type;
   std::string post_content;
+  std::string clipboard_image_data;
 
   if (!match.image_dominant_color.empty()) {
     image_dominant_color =
@@ -564,6 +567,10 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
     if (!match.post_content.get()->second.empty()) {
       post_content = match.post_content.get()->second;
     }
+  }
+
+  if (match.search_terms_args.get()) {
+    clipboard_image_data = match.search_terms_args->image_thumbnail_content;
   }
 
   ScopedJavaLocalRef<jobject> j_query_tiles =
@@ -585,7 +592,7 @@ AutocompleteControllerAndroid::BuildOmniboxSuggestion(
       ToJavaByteArray(env, post_content),
       match.suggestion_group_id.value_or(
           SearchSuggestionParser::kNoSuggestionGroupId),
-      j_query_tiles);
+      j_query_tiles, ToJavaByteArray(env, clipboard_image_data));
 }
 
 void AutocompleteControllerAndroid::PopulateOmniboxGroupHeaders(

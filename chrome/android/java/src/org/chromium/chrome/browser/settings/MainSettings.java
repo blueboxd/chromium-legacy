@@ -54,6 +54,7 @@ public class MainSettings extends PreferenceFragmentCompat
     public static final String PREF_PASSWORDS = "passwords";
     public static final String PREF_HOMEPAGE = "homepage";
     public static final String PREF_UI_THEME = "ui_theme";
+    public static final String PREF_SAFETY_CHECK = "safety_check";
     public static final String PREF_DATA_REDUCTION = "data_reduction";
     public static final String PREF_NOTIFICATIONS = "notifications";
     public static final String PREF_DOWNLOADS = "downloads";
@@ -163,6 +164,11 @@ public class MainSettings extends PreferenceFragmentCompat
         // This checks whether the flag for Downloads Preferences is enabled.
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE)) {
             getPreferenceScreen().removePreference(findPreference(PREF_DOWNLOADS));
+        }
+
+        // Only display the Safety check section if a corresponding flag is enabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SAFETY_CHECK_ANDROID)) {
+            getPreferenceScreen().removePreference(findPreference(PREF_SAFETY_CHECK));
         }
     }
 

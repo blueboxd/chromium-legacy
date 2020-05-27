@@ -1464,9 +1464,6 @@ bool StyleResolver::ApplyAnimatedStandardProperties(
                                                           standard_transitions);
   }
 
-  // Start loading resources used by animations.
-  state.LoadPendingResources();
-
   DCHECK(!state.GetFontBuilder().FontDirty());
 
   return true;
@@ -1900,6 +1897,7 @@ void StyleResolver::MaybeAddToMatchedPropertiesCache(
       MatchedPropertiesCache::IsCacheable(state)) {
     INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),
                                   matched_property_cache_added, 1);
+    state.LoadPendingResources();
     matched_properties_cache_.Add(cache_success.key, *state.Style(),
                                   *state.ParentStyle(), state.Dependencies());
   }
@@ -2077,7 +2075,6 @@ void StyleResolver::ApplyMatchedLowPriorityProperties(
         state, match_result, apply_inherited_only, needs_apply_pass);
   }
 
-  state.LoadPendingResources();
   MaybeAddToMatchedPropertiesCache(state, cache_success, match_result);
 
   DCHECK(!state.GetFontBuilder().FontDirty());
@@ -2177,7 +2174,6 @@ void StyleResolver::CascadeAndApplyMatchedProperties(StyleResolverState& state,
     cascade.Apply();
   }
 
-  state.LoadPendingResources();
   MaybeAddToMatchedPropertiesCache(state, cache_success, result);
 
   DCHECK(!state.GetFontBuilder().FontDirty());

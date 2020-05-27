@@ -11,6 +11,8 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/strings/string_util.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_applications/web_app.h"
 
 namespace web_app {
@@ -22,6 +24,17 @@ WebAppRegistrar::~WebAppRegistrar() = default;
 const WebApp* WebAppRegistrar::GetAppById(const AppId& app_id) const {
   auto it = registry_.find(app_id);
   return it == registry_.end() ? nullptr : it->second.get();
+}
+
+void WebAppRegistrar::Start() {
+  // Profile manager can be null in unit tests.
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->AddObserver(this);
+}
+
+void WebAppRegistrar::Shutdown() {
+  if (g_browser_process->profile_manager())
+    g_browser_process->profile_manager()->RemoveObserver(this);
 }
 
 bool WebAppRegistrar::IsInstalled(const AppId& app_id) const {
@@ -123,6 +136,15 @@ std::vector<AppId> WebAppRegistrar::GetAppIds() const {
 
 WebAppRegistrar* WebAppRegistrar::AsWebAppRegistrar() {
   return this;
+}
+
+void WebAppRegistrar::OnProfileMarkedForPermanentDeletion(
+    Profile* profile_to_be_deleted) {
+  if (profile() != profile_to_be_deleted)
+    return;
+
+  for (const auto& app : AllApps())
+    NotifyWebAppProfileWillBeDeleted(app.app_id());
 }
 
 WebAppRegistrar::AppSet::AppSet(const WebAppRegistrar* registrar)

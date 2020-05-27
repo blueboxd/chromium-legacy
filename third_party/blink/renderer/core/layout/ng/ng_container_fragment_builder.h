@@ -173,6 +173,11 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     is_fragmentation_context_root_ = true;
   }
 
+  // See NGLayoutResult::AnnotationOverflow().
+  void SetAnnotationOverflow(LayoutUnit overflow) {
+    annotation_overflow_ = overflow;
+  }
+
   const NGConstraintSpace* ConstraintSpace() const { return space_; }
 
 #if DCHECK_IS_ON()
@@ -224,6 +229,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   scoped_refptr<const NGEarlyBreak> early_break_;
   NGBreakAppeal break_appeal_ = kBreakAppealLastResort;
+
+  // See NGLayoutResult::AnnotationOverflow().
+  LayoutUnit annotation_overflow_;
 
   NGAdjoiningObjectTypes adjoining_object_types_ = kAdjoiningNone;
   bool has_adjoining_object_descendants_ = false;

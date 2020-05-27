@@ -13,6 +13,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/input_method/assistive_window_properties.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chrome/browser/chromeos/input_method/native_input_method_engine.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
@@ -43,6 +44,8 @@ namespace SetCursorPosition = extensions::api::input_ime::SetCursorPosition;
 namespace SetCandidates = extensions::api::input_ime::SetCandidates;
 namespace SetCandidateWindowProperties =
     extensions::api::input_ime::SetCandidateWindowProperties;
+namespace SetAssistiveWindowProperties =
+    extensions::api::input_ime::SetAssistiveWindowProperties;
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
 namespace OnCompositionBoundsChanged =
     extensions::api::input_method_private::OnCompositionBoundsChanged;
@@ -97,6 +100,16 @@ void SetMenuItemToMenu(
 
 keyboard::KeyboardConfig GetKeyboardConfig() {
   return ChromeKeyboardControllerClient::Get()->GetKeyboardConfig();
+}
+
+ui::ime::AssistiveWindowType ConvertAssistiveWindowType(
+    input_ime::AssistiveWindowType type) {
+  switch (type) {
+    case input_ime::ASSISTIVE_WINDOW_TYPE_NONE:
+      return ui::ime::AssistiveWindowType::kNone;
+    case input_ime::ASSISTIVE_WINDOW_TYPE_UNDO:
+      return ui::ime::AssistiveWindowType::kUndoWindow;
+  }
 }
 
 class ImeObserverChromeOS : public ui::ImeObserver {
@@ -585,6 +598,31 @@ ExtensionFunction::ResponseAction InputImeHideInputViewFunction::Run() {
     return RespondNow(Error(InformativeError(error, function_name())));
   engine->HideInputView();
   return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+InputImeSetAssistiveWindowPropertiesFunction::Run() {
+  std::string error;
+  InputMethodEngine* engine = GetEngineIfActive(
+      Profile::FromBrowserContext(browser_context()), extension_id(), &error);
+  if (!engine) {
+    return RespondNow(Error(InformativeError(error, function_name())));
+  }
+  std::unique_ptr<SetAssistiveWindowProperties::Params> parent_params(
+      SetAssistiveWindowProperties::Params::Create(*args_));
+  const SetAssistiveWindowProperties::Params::Parameters& params =
+      parent_params->parameters;
+  const input_ime::AssistiveWindowProperties& window = params.properties;
+  chromeos::AssistiveWindowProperties assistive_window;
+
+  assistive_window.visible = window.visible;
+  assistive_window.type = ConvertAssistiveWindowType(window.type);
+
+  engine->SetAssistiveWindowProperties(params.context_id, assistive_window,
+                                       &error);
+  if (!error.empty())
+    return RespondNow(Error(InformativeError(error, function_name())));
+  return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
 }
 
 ExtensionFunction::ResponseAction

@@ -44,7 +44,6 @@ import org.chromium.components.omnibox.SuggestionAnswer.TextField;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModel.WritableIntPropertyKey;
 import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
-import org.chromium.url.GURL;
 
 import java.util.Arrays;
 
@@ -147,15 +146,10 @@ public class AnswerSuggestionProcessorUnitTest {
         SuggestionAnswer answer =
                 new SuggestionAnswer(type, createAnswerImageLine(line1Text, line1Size, null),
                         createAnswerImageLine(line2Text, line2Size, url));
-        OmniboxSuggestion suggestion = new OmniboxSuggestion(
-                /* nativeType */ 0,
-                /* isSearchType */ true, /* relevance */ 0, /* transition */ 0,
-                /* displayText */ null, /* displayTextClassifications */ null,
-                /* description */ null, /* descriptionClassifications */ null, answer,
-                /* fillIntoEdit */ "", /* url */ GURL.emptyGURL(), /* imageUrl */ GURL.emptyGURL(),
-                /* imageDominantColor */ "",
-                /* isStarred */ false, /* isDeletable */ false, /* postContentType */ null,
-                /* postData */ null, OmniboxSuggestion.INVALID_GROUP, null);
+        OmniboxSuggestion suggestion =
+                OmniboxSuggestionBuilderForTest.searchWithType(OmniboxSuggestionType.CALCULATOR)
+                        .setAnswer(answer)
+                        .build();
         PropertyModel model = mProcessor.createModel();
         return new SuggestionTestHelper(suggestion, answer, model, null);
     }

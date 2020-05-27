@@ -325,7 +325,8 @@ public class AutocompleteController {
             int[] descriptionClassificationOffsets, int[] descriptionClassificationStyles,
             SuggestionAnswer answer, String fillIntoEdit, GURL url, GURL imageUrl,
             String imageDominantColor, boolean isStarred, boolean isDeletable,
-            String postContentType, byte[] postData, int groupId, List<QueryTile> tiles) {
+            String postContentType, byte[] postData, int groupId, List<QueryTile> tiles,
+            byte[] clipboardImageData) {
         assert contentClassificationOffsets.length == contentClassificationStyles.length;
         List<MatchClassification> contentClassifications = new ArrayList<>();
         for (int i = 0; i < contentClassificationOffsets.length; i++) {
@@ -343,7 +344,7 @@ public class AutocompleteController {
         return new OmniboxSuggestion(nativeType, isSearchType, relevance, transition, contents,
                 contentClassifications, description, descriptionClassifications, answer,
                 fillIntoEdit, url, imageUrl, imageDominantColor, isStarred, isDeletable,
-                postContentType, postData, groupId, tiles);
+                postContentType, postData, groupId, tiles, clipboardImageData);
     }
 
     /**

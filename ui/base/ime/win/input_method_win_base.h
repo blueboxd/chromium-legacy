@@ -62,10 +62,6 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) InputMethodWinBase
       ui::KeyEvent* event,
       const std::vector<MSG>* char_msgs);
 
-  // Update focus state for Chromium IME extension and update input context in
-  // ui::IMEBridge.
-  void UpdateEngineFocusAndInputContext();
-
   // The toplevel window handle.
   const HWND toplevel_window_handle_;
 

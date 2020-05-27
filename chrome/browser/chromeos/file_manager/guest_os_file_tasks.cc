@@ -105,18 +105,6 @@ void OnAppIconsLoaded(
   std::move(completion_closure).Run();
 }
 
-void OnTaskComplete(FileTaskFinishedCallback done,
-                    bool success,
-                    const std::string& failure_reason) {
-  if (!success) {
-    LOG(ERROR) << "Crostini task error: " << failure_reason;
-  }
-  std::move(done).Run(
-      success ? extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT
-              : extensions::api::file_manager_private::TASK_RESULT_FAILED,
-      failure_reason);
-}
-
 bool HasSupportedMimeType(
     const std::set<std::string>& supported_mime_types,
     const std::string& vm_name,
@@ -194,6 +182,19 @@ bool AppSupportsAllEntries(
     default:
       LOG(ERROR) << "Unsupported VmType: " << static_cast<int>(vm_type);
       return false;
+  }
+}
+
+auto ConvertLaunchPluginVmAppResultToTaskResult(
+    plugin_vm::LaunchPluginVmAppResult result) {
+  namespace fmp = extensions::api::file_manager_private;
+  switch (result) {
+    case plugin_vm::LaunchPluginVmAppResult::SUCCESS:
+      return fmp::TASK_RESULT_MESSAGE_SENT;
+    case plugin_vm::LaunchPluginVmAppResult::FAILED_DIRECTORY_NOT_SHARED:
+      return fmp::TASK_RESULT_FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED;
+    case plugin_vm::LaunchPluginVmAppResult::FAILED:
+      return fmp::TASK_RESULT_FAILED;
   }
 }
 
@@ -276,14 +277,38 @@ void ExecuteGuestOsTask(
       DCHECK(crostini::CrostiniFeatures::Get()->IsUIAllowed(profile));
       crostini::LaunchCrostiniApp(
           profile, task.app_id, display::kInvalidDisplayId, file_system_urls,
-          base::BindOnce(OnTaskComplete, std::move(done)));
+          base::BindOnce(
+              [](FileTaskFinishedCallback done, bool success,
+                 const std::string& failure_reason) {
+                if (!success) {
+                  LOG(ERROR) << "Crostini task error: " << failure_reason;
+                }
+                std::move(done).Run(
+                    success ? extensions::api::file_manager_private::
+                                  TASK_RESULT_MESSAGE_SENT
+                            : extensions::api::file_manager_private::
+                                  TASK_RESULT_FAILED,
+                    failure_reason);
+              },
+              std::move(done)));
       return;
     case guest_os::GuestOsRegistryService::VmType::
         ApplicationList_VmType_PLUGIN_VM:
       DCHECK(plugin_vm::IsPluginVmEnabled(profile));
       plugin_vm::LaunchPluginVmApp(
           profile, task.app_id, file_system_urls,
-          base::BindOnce(OnTaskComplete, std::move(done)));
+          base::BindOnce(
+              [](FileTaskFinishedCallback done,
+                 plugin_vm::LaunchPluginVmAppResult result,
+                 const std::string& failure_reason) {
+                if (result != plugin_vm::LaunchPluginVmAppResult::SUCCESS) {
+                  LOG(ERROR) << "Plugin VM task error: " << failure_reason;
+                }
+                std::move(done).Run(
+                    ConvertLaunchPluginVmAppResultToTaskResult(result),
+                    failure_reason);
+              },
+              std::move(done)));
       return;
     default:
       std::move(done).Run(

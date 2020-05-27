@@ -44,8 +44,6 @@ namespace gpu {
 
 struct VulkanFunctionPointers;
 
-constexpr uint32_t kVulkanRequiredApiVersion = VK_API_VERSION_1_1;
-
 COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers* GetVulkanFunctionPointers();
 
 struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {

@@ -13,7 +13,9 @@
 
 namespace ui {
 
+#if defined(OS_CHROMEOS)
 static IMEBridge* g_ime_bridge = nullptr;
+#endif
 
 // An implementation of IMEBridge.
 class IMEBridgeImpl : public IMEBridge {
@@ -126,6 +128,7 @@ IMEBridge::IMEBridge() {}
 
 IMEBridge::~IMEBridge() {}
 
+#if defined(OS_CHROMEOS)
 // static.
 void IMEBridge::Initialize() {
   if (!g_ime_bridge)
@@ -142,5 +145,6 @@ void IMEBridge::Shutdown() {
 IMEBridge* IMEBridge::Get() {
   return g_ime_bridge;
 }
+#endif
 
 }  // namespace ui

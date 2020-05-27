@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 
 #include <algorithm>
 #include <map>
@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/ime/chromeos/ime_keymap.h"
 #include "ui/base/ime/composition_text.h"
 #include "ui/base/ime/constants.h"
 #include "ui/base/ime/ime_bridge.h"
@@ -27,14 +28,6 @@
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
-#if defined(OS_CHROMEOS)
-#include "ui/base/ime/chromeos/ime_keymap.h"
-#elif defined(OS_WIN)
-#include "ui/events/keycodes/keyboard_codes_win.h"
-#elif defined(OS_LINUX)
-#include "ui/events/keycodes/keyboard_codes_posix.h"
-#endif
-
 namespace input_method {
 
 namespace {
@@ -43,7 +36,6 @@ const char kErrorNotActive[] = "IME is not active.";
 const char kErrorWrongContext[] = "Context is not active.";
 const char kErrorInvalidValue[] = "Argument '%s' with value '%d' is not valid.";
 
-#if defined(OS_CHROMEOS)
 std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   const std::string code = event.GetCodeString();
   if (base::StartsWith(code, "Control", base::CompareCase::SENSITIVE))
@@ -105,7 +97,6 @@ std::string GetKeyFromEvent(const ui::KeyEvent& event) {
   }
   return base::UTF16ToUTF8(base::string16(1, ch));
 }
-#endif  // defined(OS_CHROMEOS)
 
 void GetExtensionKeyboardEventFromKeyEvent(
     const ui::KeyEvent& event,
@@ -116,13 +107,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
   ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
 
   if (event.code() == ui::DomCode::NONE) {
-// TODO(azurewei): Use KeycodeConverter::DomCodeToCodeString on all platforms
-#if defined(OS_CHROMEOS)
     ext_event->code = ui::KeyboardCodeToDomKeycode(event.key_code());
-#else
-    ext_event->code =
-        std::string(ui::KeycodeConverter::DomCodeToCodeString(event.code()));
-#endif
   } else {
     ext_event->code = event.GetCodeString();
   }
@@ -132,11 +117,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
   ext_event->ctrl_key = event.IsControlDown();
   ext_event->shift_key = event.IsShiftDown();
   ext_event->caps_lock = event.IsCapsLockOn();
-#if defined(OS_CHROMEOS)
   ext_event->key = GetKeyFromEvent(event);
-#else
-  ext_event->key = ui::KeycodeConverter::DomKeyToKeyString(event.GetDomKey());
-#endif  // defined(OS_CHROMEOS)
 }
 
 bool IsUint32Value(int i) {

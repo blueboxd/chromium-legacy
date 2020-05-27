@@ -1006,6 +1006,7 @@ void Surface::AppendContentsToFrame(const gfx::Point& origin,
     render_pass->damage_rect.Union(
         gfx::ConvertRectToPixel(device_scale_factor, damage_rect));
   }
+  damage_.Clear();
 
   gfx::PointF scale(content_size_.width(), content_size_.height());
 

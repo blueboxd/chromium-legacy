@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/download_worker.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
@@ -130,9 +131,8 @@ void SmartDimComponentInstallerPolicy::ComponentReady(
   DVLOG(1) << "Component ready, version " << version.GetString() << " in "
            << install_dir.value();
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(
           &ReadComponentFiles, install_dir.Append(kSmartDimMetaJsonFileName),
           install_dir.Append(kSmartDimFeaturePreprocessorConfigFileName),

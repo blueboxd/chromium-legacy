@@ -366,25 +366,6 @@ class FileTasks {
   }
 
   /**
-   * @param {string} taskId Task identifier.
-   * @return {boolean} True if the task ID is for Plugin VM.
-   * @private
-   */
-  static isPluginVmTask_(taskId) {
-    return taskId.split('|')[1] === 'pluginvm';
-  }
-
-
-  /**
-   *  @param {!Entry} entry
-   *  @return {boolean} True if entry is in the Plugin VM shared folder.
-   *  @private
-   */
-  static entryInPluginVmSharedFolder_(entry) {
-    return entry.fullPath.startsWith('/PvmDefault/');
-  }
-
-  /**
    * Annotates tasks returned from the API.
    *
    * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks Input tasks from
@@ -686,19 +667,6 @@ class FileTasks {
       this.ui_.speakA11yMessage(msg);
       if (FileTasks.isInternalTask_(task.taskId)) {
         this.executeInternalTask_(task.taskId);
-      } else if (
-          // TODO(crbug.com/1077160): Remove this logic from the front end and
-          // instead show the dialog based on the response of
-          // fileManagerPrivate.executeTask.
-          FileTasks.isPluginVmTask_(task.taskId) &&
-          !this.entries_.every(FileTasks.entryInPluginVmSharedFolder_)) {
-        this.ui_.alertDialog.showHtml(
-            strf(
-                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE',
-                strf('PLUGIN_VM_APP_NAME')),
-            strf(
-                'UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE',
-                strf('PLUGIN_VM_APP_NAME'), strf('PLUGIN_VM_DIRECTORY_LABEL')));
       } else {
         FileTasks.recordZipHandlerUMA_(task.taskId);
         chrome.fileManagerPrivate.executeTask(
@@ -709,14 +677,26 @@ class FileTasks {
                     chrome.runtime.lastError.message);
                 return;
               }
-              if (result !== 'message_sent') {
-                return;
+              switch (result) {
+                case chrome.fileManagerPrivate.TaskResult.MESSAGE_SENT:
+                  util.isTeleported(window).then((teleported) => {
+                    if (teleported) {
+                      this.ui_.showOpenInOtherDesktopAlert(this.entries_);
+                    }
+                  });
+                  break;
+                case chrome.fileManagerPrivate.TaskResult
+                    .FAILED_PLUGIN_VM_TASK_DIRECTORY_NOT_SHARED:
+                  this.ui_.alertDialog.showHtml(
+                      strf(
+                          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_TITLE',
+                          strf('PLUGIN_VM_APP_NAME')),
+                      strf(
+                          'UNABLE_TO_OPEN_WITH_PLUGIN_VM_MESSAGE',
+                          strf('PLUGIN_VM_APP_NAME'),
+                          strf('PLUGIN_VM_DIRECTORY_LABEL')));
+                  break;
               }
-              util.isTeleported(window).then((teleported) => {
-                if (teleported) {
-                  this.ui_.showOpenInOtherDesktopAlert(this.entries_);
-                }
-              });
             });
       }
     });

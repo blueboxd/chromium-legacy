@@ -50,6 +50,9 @@ struct NGInlineBoxState {
   // by the 'line-height' property.
   NGLineHeightMetrics text_metrics;
 
+  // True if any boxes in the current line have non-zero annotation overflow.
+  bool has_annotation_overflow = false;
+
   // The distance between the text-top and the baseline for this box. The
   // text-top does not include leadings.
   LayoutUnit text_top;

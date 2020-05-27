@@ -6860,6 +6860,9 @@ void SetOriginTrialFreezePolicy(
 }  // namespace
 
 void Document::RecordAsyncScriptCount() {
+  UMA_HISTOGRAM_COUNTS_100("Blink.Script.AsyncScriptCount",
+                           async_script_count_);
+
   // Only record async script count for mainframe documents, as per UKM policy.
   if (!IsInMainFrame())
     return;

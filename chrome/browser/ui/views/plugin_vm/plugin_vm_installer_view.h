@@ -34,14 +34,12 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
 
   // plugin_vm::PluginVmImageDownload::Observer implementation.
+  void OnStateUpdated(
+      plugin_vm::PluginVmInstaller::InstallingState new_state) override;
   void OnProgressUpdated(double fraction_complete) override;
-  void OnLicenseChecked() override;
-  void OnCheckedDiskSpace(bool low_disk_space) override;
-  void OnDlcDownloadCompleted() override;
-  void OnExistingVmCheckCompleted(bool has_vm) override;
   void OnDownloadProgressUpdated(uint64_t bytes_downloaded,
                                  int64_t content_length) override;
-  void OnDownloadCompleted() override;
+  void OnVmExists() override;
   void OnCreated() override;
   void OnImported() override;
   void OnError(plugin_vm::PluginVmInstaller::FailureReason reason) override;
@@ -55,20 +53,15 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
       base::OnceCallback<void(bool success)> callback);
 
  private:
-  // TODO(crbug.com/1063748): Re-use PluginVmInstaller::InstallingState.
   enum class State {
-    CONFIRM_INSTALL,      // Waiting for user to start installation.
-    CHECKING_LICENSE,     // Ensuring the user license is valid.
-    CHECKING_DISK_SPACE,  // Checking there is available free disk space.
-    LOW_DISK_SPACE,   // Prompt user to continue or abort due to low disk space.
-    DOWNLOADING_DLC,  // PluginVm DLC downloading and installing in progress.
-    CHECKING_VMS,     // Checking for existing VMs.
-    DOWNLOADING,      // Image download (ISO or VM) is in progress.
-    IMPORTING,        // Downloaded image is being imported.
-    CREATED,          // A brand new VM has been created using ISO image.
-    IMPORTED,         // Downloaded VM image has been imported successfully.
-    ERROR,            // Something unexpected happened.
+    kConfirmInstall,  // Waiting for user to start installation.
+    kInstalling,      // Installation in progress.
+    kCreated,         // A brand new VM has been created using ISO image.
+    kImported,        // Downloaded VM image has been imported successfully.
+    kError,           // Something unexpected happened.
   };
+
+  using InstallingState = plugin_vm::PluginVmInstaller::InstallingState;
 
   ~PluginVmInstallerView() override;
 
@@ -97,7 +90,8 @@ class PluginVmInstallerView : public views::BubbleDialogDelegateView,
   views::ImageView* big_image_ = nullptr;
   base::TimeTicks setup_start_tick_;
 
-  State state_ = State::CONFIRM_INSTALL;
+  State state_ = State::kConfirmInstall;
+  InstallingState installing_state_ = InstallingState::kInactive;
   base::Optional<plugin_vm::PluginVmInstaller::FailureReason> reason_;
 
   base::OnceCallback<void(bool success)> finished_callback_for_testing_;

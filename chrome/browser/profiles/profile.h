@@ -401,21 +401,18 @@ class Profile : public content::BrowserContext {
   // IsRegularProfile() and IsIncognitoProfile() are mutually exclusive.
   // IsSystemProfile() implies that IsRegularProfile() is true.
   // IsOffTheRecord() is true for the off the record profile of incognito mode
-  // and guest sessions.
+  // and guest sessions, and also non-primary OffTheRecord profiles.
 
   // Returns whether it's a regular profile.
   bool IsRegularProfile() const;
 
   // Returns whether it is an Incognito profile. An Incognito profile is an
-  // off-the-record profile that is not a guest profile.
-  //
-  // TODO(https://crbug.com/1033903): Update to return false for non-primary
-  // OTRs and update documentation above.
+  // off-the-record profile that is used for incognito mode.
   bool IsIncognitoProfile() const;
 
   // Returns true if this is a primary OffTheRecord profile, which covers the
   // OffTheRecord profile used for incognito mode and guest sessions.
-  virtual bool IsPrimaryOTRProfile();
+  bool IsPrimaryOTRProfile() const;
 
   // Returns whether it is a guest session. This covers both the guest profile
   // and its parent.

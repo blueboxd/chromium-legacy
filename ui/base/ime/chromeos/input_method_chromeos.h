@@ -44,6 +44,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_CHROMEOS) InputMethodChromeOS
   InputMethodKeyboardController* GetInputMethodKeyboardController() override;
 
   // Overridden from InputMethodBase:
+  void OnFocus() override;
+  void OnBlur() override;
   void OnWillChangeFocusedClient(TextInputClient* focused_before,
                                  TextInputClient* focused) override;
   void OnDidChangeFocusedClient(TextInputClient* focused_before,

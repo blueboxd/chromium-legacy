@@ -99,6 +99,7 @@ void PluginVmInstaller::Start() {
     return;
   }
 
+  progress_ = 0;
   CheckLicense();
 }
 
@@ -145,7 +146,7 @@ void PluginVmInstaller::Cancel() {
 
 void PluginVmInstaller::CheckLicense() {
   state_ = State::kInstalling;
-  installing_state_ = InstallingState::kCheckingLicense;
+  UpdateInstallingState(InstallingState::kCheckingLicense);
 
   // If the server has provided a license key, responsibility of validating is
   // passed to the Plugin VM application.
@@ -171,14 +172,12 @@ void PluginVmInstaller::OnLicenseChecked(bool license_is_valid) {
     return;
   }
 
-  if (observer_)
-    observer_->OnLicenseChecked();
   CheckDiskSpace();
 }
 
 void PluginVmInstaller::CheckDiskSpace() {
-  installing_state_ = InstallingState::kCheckingDiskSpace;
-  progress_ = 0;
+  DCHECK_EQ(installing_state_, InstallingState::kCheckingLicense);
+  UpdateInstallingState(InstallingState::kCheckingDiskSpace);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
@@ -212,14 +211,22 @@ void PluginVmInstaller::OnAvailableDiskSpace(int64_t bytes) {
       InstallFinished();
       return;
     }
-    observer_->OnCheckedDiskSpace(/*low_disk_space=*/true);
-    installing_state_ = InstallingState::kPausedLowDiskSpace;
+    UpdateInstallingState(InstallingState::kPausedLowDiskSpace);
     return;
   }
 
-  if (observer_)
-    observer_->OnCheckedDiskSpace(/*low_disk_space=*/false);
   StartDlcDownload();
+}
+
+void PluginVmInstaller::CheckForExistingVm() {
+  DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
+  UpdateInstallingState(InstallingState::kCheckingForExistingVm);
+
+  PluginVmManagerFactory::GetForProfile(profile_)->UpdateVmState(
+      base::BindOnce(&PluginVmInstaller::OnUpdateVmState,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PluginVmInstaller::OnUpdateVmStateFailed,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
@@ -230,15 +237,13 @@ void PluginVmInstaller::OnUpdateVmState(bool default_vm_exists) {
 
   if (default_vm_exists) {
     if (observer_)
-      observer_->OnExistingVmCheckCompleted(/*has_vm=*/true);
+      observer_->OnVmExists();
     profile_->GetPrefs()->SetBoolean(plugin_vm::prefs::kPluginVmImageExists,
                                      true);
     InstallFinished();
     return;
   }
 
-  if (observer_)
-    observer_->OnExistingVmCheckCompleted(/*has_vm=*/false);
   StartDownload();
 }
 
@@ -249,7 +254,9 @@ void PluginVmInstaller::OnUpdateVmStateFailed() {
 }
 
 void PluginVmInstaller::StartDlcDownload() {
-  installing_state_ = InstallingState::kDownloadingDlc;
+  DCHECK(installing_state_ == InstallingState::kCheckingDiskSpace ||
+         installing_state_ == InstallingState::kPausedLowDiskSpace);
+  UpdateInstallingState(InstallingState::kDownloadingDlc);
 
   if (!GetPluginVmImageDownloadUrl().is_valid()) {
     InstallFailed(FailureReason::INVALID_IMAGE_URL);
@@ -265,8 +272,8 @@ void PluginVmInstaller::StartDlcDownload() {
 }
 
 void PluginVmInstaller::StartDownload() {
-  DCHECK_EQ(installing_state_, InstallingState::kDownloadingDlc);
-  installing_state_ = InstallingState::kDownloadingImage;
+  DCHECK_EQ(installing_state_, InstallingState::kCheckingForExistingVm);
+  UpdateInstallingState(InstallingState::kDownloadingImage);
   UpdateProgress(/*state_progress=*/0);
 
   GURL url = GetPluginVmImageDownloadUrl();
@@ -322,14 +329,7 @@ void PluginVmInstaller::OnDlcDownloadCompleted(
   // If success, continue to the next state.
   if (install_result.error == dlcservice::kErrorNone) {
     RecordPluginVmDlcUseResultHistogram(PluginVmDlcUseResult::kDlcSuccess);
-    if (observer_)
-      observer_->OnDlcDownloadCompleted();
-
-    PluginVmManagerFactory::GetForProfile(profile_)->UpdateVmState(
-        base::BindOnce(&PluginVmInstaller::OnUpdateVmState,
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&PluginVmInstaller::OnUpdateVmStateFailed,
-                       weak_ptr_factory_.GetWeakPtr()));
+    CheckForExistingVm();
     return;
   }
 
@@ -385,6 +385,9 @@ void PluginVmInstaller::OnDownloadCompleted(
   downloaded_image_size_ = info.bytes_downloaded;
   current_download_guid_.clear();
 
+  if (downloaded_image_for_testing_)
+    downloaded_image_ = downloaded_image_for_testing_.value();
+
   if (!VerifyDownload(info.hash256)) {
     LOG(ERROR) << "Downloaded PluginVm image archive hash doesn't match "
                << "hash specified by the PluginVmImage policy";
@@ -392,8 +395,6 @@ void PluginVmInstaller::OnDownloadCompleted(
     return;
   }
 
-  if (observer_)
-    observer_->OnDownloadCompleted();
   RecordPluginVmImageDownloadedSizeHistogram(info.bytes_downloaded);
   StartImport();
 }
@@ -426,7 +427,7 @@ void PluginVmInstaller::OnDownloadFailed(FailureReason reason) {
 
 void PluginVmInstaller::StartImport() {
   DCHECK_EQ(installing_state_, InstallingState::kDownloadingImage);
-  installing_state_ = InstallingState::kImporting;
+  UpdateInstallingState(InstallingState::kImporting);
   UpdateProgress(/*state_progress=*/0);
 
   base::ThreadPool::PostTaskAndReply(
@@ -478,6 +479,13 @@ void PluginVmInstaller::UpdateProgress(double state_progress) {
   progress_ = new_progress;
   if (observer_)
     observer_->OnProgressUpdated(new_progress);
+}
+
+void PluginVmInstaller::UpdateInstallingState(
+    InstallingState installing_state) {
+  DCHECK_NE(installing_state, InstallingState::kInactive);
+  installing_state_ = installing_state;
+  observer_->OnStateUpdated(installing_state_);
 }
 
 void PluginVmInstaller::DetectImageType() {
@@ -742,7 +750,7 @@ void PluginVmInstaller::SetDownloadServiceForTesting(
 
 void PluginVmInstaller::SetDownloadedImageForTesting(
     const base::FilePath& downloaded_image) {
-  downloaded_image_ = downloaded_image;
+  downloaded_image_for_testing_ = downloaded_image;
 }
 
 std::string PluginVmInstaller::GetCurrentDownloadGuidForTesting() {

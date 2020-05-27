@@ -822,6 +822,11 @@ Your Google account may have other forms of browsing history like searches and a
         <ph name="NUMBER_OF_ITEMS">%1$s<ex>3</ex></ph> items deleted
       </message>
 
+      <!-- Safety check -->
+      <message name="IDS_PREFS_SAFETY_CHECK" desc="Title of the Safety check element in settings, allowing the user to check multiple areas of browser safety. [CHAR-LIMIT=32]">
+        Safety check
+      </message>
+
       <!-- Accessibility preferences -->
       <message name="IDS_PREFS_ACCESSIBILITY" desc="Title of Accessibility settings, which allows the user to change webpage font sizes. [CHAR-LIMIT=32]">
         Accessibility

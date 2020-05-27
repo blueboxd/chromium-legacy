@@ -8,8 +8,6 @@
 #include "base/bind.h"
 #include "base/environment.h"
 #include "ui/base/ime/constants.h"
-#include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/linux/linux_input_method_context_factory.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
@@ -215,14 +213,6 @@ void InputMethodAuraLinux::UpdateContextFocusState() {
     context_simple_->Focus();
   else
     context_simple_->Blur();
-
-  if (!ui::IMEBridge::Get())  // IMEBridge could be null for tests.
-    return;
-
-  ui::IMEEngineHandlerInterface::InputContext context(
-      GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-      ui::TextInputClient::FOCUS_REASON_OTHER, GetClientShouldDoLearning());
-  ui::IMEBridge::Get()->SetCurrentInputContext(context);
 }
 
 void InputMethodAuraLinux::OnTextInputTypeChanged(

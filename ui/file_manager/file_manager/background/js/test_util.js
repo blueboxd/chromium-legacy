@@ -399,8 +399,8 @@ test.util.sync.overrideTasks = (contentWindow, taskList) => {
     }, 0);
   };
 
-  const executeTask = (taskId, entry) => {
-    test.util.executedTasks_.push(taskId);
+  const executeTask = (taskId, entries, callback) => {
+    test.util.executedTasks_.push({taskId, entries, callback});
   };
 
   const setDefaultTask = taskId => {
@@ -426,7 +426,26 @@ test.util.sync.getExecutedTasks = contentWindow => {
     console.error('Please call overrideTasks() first.');
     return null;
   }
-  return test.util.executedTasks_;
+  return test.util.executedTasks_.map(task => task.taskId);
+};
+
+/**
+ * Invokes an executed task with |responseArgs|.
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} taskId the task to be replied to.
+ * @param {Array<Object>} responseArgs the arguments to inoke the callback with.
+ */
+test.util.sync.replyExecutedTask = (contentWindow, taskId, responseArgs) => {
+  if (!test.util.executedTasks_) {
+    console.error('Please call overrideTasks() first.');
+    return null;
+  }
+  const found = test.util.executedTasks_.find(task => task.taskId === taskId);
+  if (!found) {
+    console.error(`No task with id ${taskId}`);
+    return null;
+  }
+  found.callback(...responseArgs);
 };
 
 /**

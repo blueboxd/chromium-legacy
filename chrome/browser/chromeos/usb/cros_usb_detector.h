@@ -66,8 +66,10 @@ struct CrosUsbDeviceInfo {
   base::flat_map<std::string, VmSharingInfo> vm_sharing_info;
   std::string guid;
   base::string16 label;
-  // Whether the device can be shared with Crostini.
+  // Whether the device can be shared with guest OSes.
   bool sharable_with_crostini = false;
+  // Interfaces shareable with guest OSes
+  uint32_t allowed_interfaces_mask = 0;
   // TODO(nverne): Add current state and errors etc.
 };
 

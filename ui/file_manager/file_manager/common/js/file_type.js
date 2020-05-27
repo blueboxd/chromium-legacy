@@ -225,7 +225,7 @@ FileType.types = [
     type: 'audio',
     name: 'AUDIO_FILE_TYPE',
     subtype: 'OGG',
-    pattern: /\.og(a|g)$/i,
+    pattern: /\.o(g(a|g)|pus)$/i,
     mimePattern: /audio\/ogg/i
   },
   {

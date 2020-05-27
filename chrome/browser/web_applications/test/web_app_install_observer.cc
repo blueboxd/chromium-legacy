@@ -33,6 +33,11 @@ void WebAppInstallObserver::SetWebAppUninstalledDelegate(
   app_uninstalled_delegate_ = delegate;
 }
 
+void WebAppInstallObserver::SetWebAppProfileWillBeDeletedDelegate(
+    WebAppProfileWillBeDeletedDelegate delegate) {
+  app_profile_will_be_deleted_delegate_ = delegate;
+}
+
 void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
   if (app_installed_delegate_)
     app_installed_delegate_.Run(app_id);
@@ -44,6 +49,11 @@ void WebAppInstallObserver::OnWebAppInstalled(const AppId& app_id) {
 void WebAppInstallObserver::OnWebAppUninstalled(const AppId& app_id) {
   if (app_uninstalled_delegate_)
     app_uninstalled_delegate_.Run(app_id);
+}
+
+void WebAppInstallObserver::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
+  if (app_profile_will_be_deleted_delegate_)
+    app_profile_will_be_deleted_delegate_.Run(app_id);
 }
 
 }  // namespace web_app

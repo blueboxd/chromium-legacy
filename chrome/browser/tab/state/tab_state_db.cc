@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 
@@ -107,9 +108,8 @@ TabStateDB::TabStateDB(
           proto_database_provider->GetDB<tab_state_db::TabStateContentProto>(
               leveldb_proto::ProtoDbType::TAB_STATE_DATABASE,
               profile_directory.AppendASCII(kTabStateDBFolder),
-              base::CreateSequencedTaskRunner(
-                  {base::ThreadPool(), base::MayBlock(),
-                   base::TaskPriority::USER_VISIBLE}))) {
+              base::ThreadPool::CreateSequencedTaskRunner(
+                  {base::MayBlock(), base::TaskPriority::USER_VISIBLE}))) {
   storage_database_->Init(base::BindOnce(&TabStateDB::OnDatabaseInitialized,
                                          weak_ptr_factory_.GetWeakPtr()));
 }

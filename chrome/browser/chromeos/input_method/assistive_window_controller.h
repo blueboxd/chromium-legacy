@@ -32,6 +32,7 @@ class AssistiveWindowController : public views::WidgetObserver,
   ~AssistiveWindowController() override;
 
   ui::ime::SuggestionWindowView* GetSuggestionWindowViewForTesting();
+  ui::ime::UndoWindow* GetUndoWindowForTesting() const;
 
  private:
   // IMEAssistiveWindowHandlerInterface implementation.

@@ -14,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/win/windows_version.h"
 #include "ui/base/ime/ime_bridge.h"
-#include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/win/on_screen_keyboard_display_manager_input_pane.h"
 #include "ui/base/ime/win/on_screen_keyboard_display_manager_tab_tip.h"
@@ -489,16 +488,6 @@ ui::EventDispatchDetails InputMethodWinBase::ProcessUnhandledKeyEvent(
       return DispatcherDestroyedDetails();
   }
   return details;
-}
-
-void InputMethodWinBase::UpdateEngineFocusAndInputContext() {
-  if (!ui::IMEBridge::Get())  // IMEBridge could be null for tests.
-    return;
-
-  ui::IMEEngineHandlerInterface::InputContext context(
-      GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-      ui::TextInputClient::FOCUS_REASON_OTHER, GetClientShouldDoLearning());
-  ui::IMEBridge::Get()->SetCurrentInputContext(context);
 }
 
 }  // namespace ui

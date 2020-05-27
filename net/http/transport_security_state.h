@@ -232,8 +232,6 @@ class NET_EXPORT TransportSecurityState {
     ExpectCTState();
     ~ExpectCTState();
 
-    // The domain which matched during a search for this DomainState entry.
-    std::string domain;
     // The URI to which reports should be sent if valid CT info is not
     // provided.
     GURL report_uri;

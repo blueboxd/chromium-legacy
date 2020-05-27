@@ -355,8 +355,7 @@ bool Profile::IsRegularProfile() const {
 }
 
 bool Profile::IsIncognitoProfile() const {
-  // TODO(https://crbug.com/1033903): Update to exclude non-primary OTRs.
-  return IsOffTheRecord() && !IsGuestSession();
+  return IsPrimaryOTRProfile() && !IsGuestSession();
 }
 
 bool Profile::IsGuestSession() const {
@@ -374,7 +373,7 @@ bool Profile::IsSystemProfile() const {
   return is_system_profile_;
 }
 
-bool Profile::IsPrimaryOTRProfile() {
+bool Profile::IsPrimaryOTRProfile() const {
   return IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::PrimaryID();
 }
 

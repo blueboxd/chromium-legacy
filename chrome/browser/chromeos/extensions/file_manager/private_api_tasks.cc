@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
+#include "chrome/browser/chromeos/file_manager/filesystem_api_util.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
@@ -92,10 +93,14 @@ void MaybeAdjustTaskForGalleryAppRemoval(
   // is known to register as a handler. Although from a product perspective, the
   // Gallery should be entirely hidden, we still direct RAW images to Gallery
   // until chrome://media-app supports them.
-  if (std::find_if(urls.begin(), urls.end(), [](const auto& url) {
-        return file_manager::file_tasks::IsRawImage(url.path());
-      }) != urls.end()) {
-    return;
+  // Also filter out requests to open files on non-native files since
+  // TASK_TYPE_WEB_APP currently does not support these.
+  // See https://crbug.com/1079065.
+  for (const auto& url : urls) {
+    if (file_manager::file_tasks::IsRawImage(url.path()) ||
+        file_manager::util::IsNonNativeFileSystemType(url.type())) {
+      return;
+    }
   }
 
   auto* provider = web_app::WebAppProvider::Get(profile);

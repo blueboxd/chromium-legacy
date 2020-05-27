@@ -2048,7 +2048,11 @@ NGPreviousInflowPosition NGBlockLayoutAlgorithm::ComputeInflowPosition(
     if (!container_builder_.BfcBlockOffset())
       DCHECK_EQ(logical_block_offset, LayoutUnit());
   } else {
-    logical_block_offset = logical_offset.block_offset + fragment.BlockSize();
+    // TODO(crbug.com/1069817): We should not add AnnotationOverflow
+    // unconditionally here. Instead, we should pass it to the next child
+    // layout.
+    logical_block_offset = logical_offset.block_offset + fragment.BlockSize() +
+                           layout_result.AnnotationOverflow();
   }
 
   NGMarginStrut margin_strut = layout_result.EndMarginStrut();

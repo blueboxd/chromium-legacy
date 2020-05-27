@@ -39,7 +39,6 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    "//base",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/renderer/modules",

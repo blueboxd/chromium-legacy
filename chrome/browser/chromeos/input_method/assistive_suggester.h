@@ -9,10 +9,10 @@
 
 #include "chrome/browser/chromeos/input_method/emoji_suggester.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
+#include "chrome/browser/chromeos/input_method/input_method_engine_base.h"
 #include "chrome/browser/chromeos/input_method/personal_info_suggester.h"
 #include "chrome/browser/chromeos/input_method/suggester.h"
 #include "chrome/browser/chromeos/input_method/suggestion_enums.h"
-#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
 namespace chromeos {
 
@@ -60,6 +60,8 @@ class AssistiveSuggester {
 
   // Check if suggestion is being shown.
   bool IsSuggestionShown();
+
+  bool IsAssistPersonalInfoEnabled();
 
   bool IsEmojiSuggestAdditionEnabled();
 

@@ -68,6 +68,18 @@ class InputImeSetCursorPositionFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class InputImeSetAssistiveWindowPropertiesFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.setAssistiveWindowProperties",
+                             INPUT_IME_SETASSISTIVEWINDOWPROPERTIES)
+
+ protected:
+  ~InputImeSetAssistiveWindowPropertiesFunction() override = default;
+
+  // ExtensionFunction:
+  ResponseAction Run() override;
+};
+
 class InputImeSetMenuItemsFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("input.ime.setMenuItems", INPUT_IME_SETMENUITEMS)

@@ -37,9 +37,11 @@ interface UsbDeviceManager {
   CheckAccess(string guid) => (bool success);
 
   // Attempt to open a USB device using permission_broker and return
-  // a file descriptor.
+  // a file descriptor. Allow access only to interfaces specified in
+  // |allowed_interfaces_mask|.
   [EnableIf=is_chromeos]
-  OpenFileDescriptor(string guid) => (mojo_base.mojom.File? fd);
+  OpenFileDescriptor(string guid, uint32 allowed_interfaces_mask)
+      => (mojo_base.mojom.File? fd);
 
   // Sets the client for this DeviceManager service. The service will notify its
   // client of device events such as connection and disconnection.

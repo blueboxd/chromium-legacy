@@ -940,7 +940,6 @@ TEST_F(TransportSecurityStateTest, PreloadedExpectCT) {
   TransportSecurityState::ExpectCTState expect_ct_state;
   EXPECT_TRUE(
       GetExpectCTState(&state, kExpectCTStaticHostname, &expect_ct_state));
-  EXPECT_EQ(kExpectCTStaticHostname, expect_ct_state.domain);
   EXPECT_EQ(GURL(kExpectCTStaticReportURI), expect_ct_state.report_uri);
   EXPECT_FALSE(
       GetExpectCTState(&state, "hsts-preloaded.test", &expect_ct_state));

@@ -74,7 +74,6 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     VkInstance vk_instance,
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
-  DCHECK_GE(api_version, kVulkanRequiredApiVersion);
   vkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(
       vkGetInstanceProcAddr(vk_instance, "vkCreateDevice"));
   if (!vkCreateDevice) {
@@ -357,7 +356,6 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     VkDevice vk_device,
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
-  DCHECK_GE(api_version, kVulkanRequiredApiVersion);
   // Device functions
   vkAllocateCommandBuffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
       vkGetDeviceProcAddr(vk_device, "vkAllocateCommandBuffers"));

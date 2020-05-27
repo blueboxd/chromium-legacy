@@ -274,8 +274,8 @@ void CrOSActionRecorder::Init(Profile* profile) {
   model_dir_ =
       profile->GetPath().AppendASCII(CrOSActionRecorder::kActionHistoryDir);
 
-  task_runner_ = base::CreateSequencedTaskRunner(
-      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
+      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   // Delete all cros action log if it's disabled.

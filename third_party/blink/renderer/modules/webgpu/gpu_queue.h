@@ -43,7 +43,8 @@ class GPUQueue : public DawnObject<WGPUQueue> {
                           const CanvasColorParams& color_params,
                           const WGPUOrigin3D& origin,
                           const WGPUExtent3D& copy_size,
-                          const WGPUTextureCopyView& destination);
+                          const WGPUTextureCopyView& destination,
+                          const WGPUTextureFormat dest_texture_format);
   bool CopyContentFromGPU(StaticBitmapImage* image,
                           const WGPUOrigin3D& origin,
                           const WGPUExtent3D& copy_size,

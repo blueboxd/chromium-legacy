@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/child_accounts/time_limits/app_types.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
 namespace chromeos {

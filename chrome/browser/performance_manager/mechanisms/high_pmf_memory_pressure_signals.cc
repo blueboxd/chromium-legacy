@@ -6,7 +6,6 @@
 #include <memory>
 #include "base/bind.h"
 #include "base/memory/memory_pressure_monitor.h"
-#include "base/task/post_task.h"
 #include "base/util/memory_pressure/memory_pressure_voter.h"
 #include "base/util/memory_pressure/multi_source_memory_pressure_monitor.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -46,22 +45,22 @@ class MemoryPressureVoterOnUIThread {
 
 HighPMFMemoryPressureSignals::HighPMFMemoryPressureSignals() {
   ui_thread_voter_ = std::make_unique<MemoryPressureVoterOnUIThread>();
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&MemoryPressureVoterOnUIThread::InitOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MemoryPressureVoterOnUIThread::InitOnUIThread,
                                 base::Unretained(ui_thread_voter_.get())));
 }
 
 HighPMFMemoryPressureSignals::~HighPMFMemoryPressureSignals() {
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(ui_thread_voter_));
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 std::move(ui_thread_voter_));
 }
 
 void HighPMFMemoryPressureSignals::SetPressureLevel(MemoryPressureLevel level) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   bool notify = level == MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MemoryPressureVoterOnUIThread::SetVote,
                      base::Unretained(ui_thread_voter_.get()), level, notify));
   pressure_level_ = level;

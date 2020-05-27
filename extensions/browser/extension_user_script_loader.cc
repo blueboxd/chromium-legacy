@@ -19,7 +19,6 @@
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/one_shot_event.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -77,8 +76,8 @@ void VerifyContent(const VerifyContentInfo& info) {
 
 void ForwardVerifyContentToIO(const VerifyContentInfo& info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&VerifyContent, info));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&VerifyContent, info));
 }
 
 // Loads user scripts from the extension who owns these scripts.
@@ -115,14 +114,14 @@ bool LoadScriptContent(const HostID& host_id,
       // Call VerifyContent() after yielding on UI thread so it is ensured that
       // ContentVerifierIOData is populated at the time we call VerifyContent().
       // Priority set explicitly to avoid unwanted task priority inheritance.
-      base::PostTask(
-          FROM_HERE,
-          {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
-          base::BindOnce(
-              &ForwardVerifyContentToIO,
-              VerifyContentInfo(verifier, host_id.id(),
-                                script_file->extension_root(),
-                                script_file->relative_path(), content)));
+      content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+          ->PostTask(
+              FROM_HERE,
+              base::BindOnce(
+                  &ForwardVerifyContentToIO,
+                  VerifyContentInfo(verifier, host_id.id(),
+                                    script_file->extension_root(),
+                                    script_file->relative_path(), content)));
     }
   }
 
@@ -196,11 +195,10 @@ void LoadScriptsOnFileTaskRunner(
   base::ReadOnlySharedMemoryRegion memory =
       UserScriptLoader::Serialize(*user_scripts);
   // Explicit priority to prevent unwanted task priority inheritance.
-  base::PostTask(
-      FROM_HERE,
-      {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(std::move(callback), std::move(user_scripts),
-                     std::move(memory)));
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(std::move(callback), std::move(user_scripts),
+                                std::move(memory)));
 }
 
 }  // namespace

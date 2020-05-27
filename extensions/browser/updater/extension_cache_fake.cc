@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -17,11 +16,11 @@ ExtensionCacheFake::ExtensionCacheFake() = default;
 ExtensionCacheFake::~ExtensionCacheFake() = default;
 
 void ExtensionCacheFake::Start(const base::Closure& callback) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback);
 }
 
 void ExtensionCacheFake::Shutdown(const base::Closure& callback) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback);
 }
 
 void ExtensionCacheFake::AllowCaching(const std::string& id) {
@@ -52,8 +51,8 @@ void ExtensionCacheFake::PutExtension(const std::string& id,
   if (base::Contains(allowed_extensions_, id)) {
     cache_[id].first = version;
     cache_[id].second = file_path;
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(callback, file_path, false));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(callback, file_path, false));
   } else {
     callback.Run(file_path, true);
   }

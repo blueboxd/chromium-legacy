@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_state.mojom.h"
@@ -48,8 +47,8 @@ void PageDiscarder::DiscardPageNode(
     const PageNode* page_node,
     base::OnceCallback<void(bool)> post_discard_cb) {
   DCHECK(page_node);
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&DiscardPageOnUIThread, page_node->GetContentsProxy()),
       std::move(post_discard_cb));
 }

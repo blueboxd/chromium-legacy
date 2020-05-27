@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/files/file.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
 #include "chrome/browser/chromeos/smb_client/smbfs_share.h"
@@ -111,8 +110,8 @@ void SmbFsAsyncFileUtil::ReadDirectory(
     const storage::FileSystemURL& url,
     ReadDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&AllowCredentialsRequestOnUIThread, profile_, url.path()),
       base::BindOnce(&SmbFsAsyncFileUtil::RealReadDirectory,
                      weak_factory_.GetWeakPtr(), std::move(context), url,
@@ -132,8 +131,8 @@ void SmbFsAsyncFileUtil::DeleteRecursively(
     const storage::FileSystemURL& url,
     StatusCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&DeleteRecursivelyOperation::Start,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DeleteRecursivelyOperation::Start,
                                 base::Unretained(new DeleteRecursivelyOperation(
                                     profile_, url.path(), std::move(callback),
                                     base::SequencedTaskRunnerHandle::Get()))));

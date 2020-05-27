@@ -33,6 +33,7 @@ export function createPasswordEntry(url, username, id) {
     },
     username: username,
     id: id,
+    frontendId: id,
     fromAccountStore: false,
   };
 }
@@ -53,6 +54,7 @@ export function createExceptionEntry(url, id) {
       link: 'http://' + url + '/login',
     },
     id: id,
+    frontendId: id,
     fromAccountStore: false,
   };
 }

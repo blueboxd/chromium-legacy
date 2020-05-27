@@ -11,7 +11,6 @@
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager.h"
 #include "chrome/browser/printing/print_job.h"
@@ -33,8 +32,8 @@ using PrinterQueryCallback =
 // Send initialized PrinterQuery to UI thread.
 void OnSettingsSetOnIOThread(std::unique_ptr<printing::PrinterQuery> query,
                              PrinterQueryCallback callback) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), std::move(query)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(query)));
 }
 
 void CreateQueryOnIOThread(std::unique_ptr<printing::PrintSettings> settings,
@@ -145,8 +144,8 @@ void PrintJobControllerImpl::StartPrintJob(
     StartPrintJobCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &CreateQueryOnIOThread, std::move(settings),
           base::BindOnce(&PrintJobControllerImpl::StartPrinting,

@@ -20,7 +20,7 @@
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "components/signin/public/identity_manager/access_token_fetcher.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "components/signin/public/identity_manager/consent_level.h"

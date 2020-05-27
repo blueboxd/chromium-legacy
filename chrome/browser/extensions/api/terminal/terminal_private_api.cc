@@ -17,7 +17,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
@@ -93,8 +92,8 @@ void NotifyProcessOutput(content::BrowserContext* browser_context,
                          const std::string& output_type,
                          const std::string& output) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&NotifyProcessOutput, browser_context, tab_id,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&NotifyProcessOutput, browser_context, tab_id,
                                   terminal_id, output_type, output));
     return;
   }
@@ -331,8 +330,8 @@ void TerminalPrivateOpenTerminalProcessFunction::OpenOnRegistryTaskRunner(
   bool success = registry->OpenProcess(cmdline, user_id_hash, output_callback,
                                        &terminal_id);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback, success, terminal_id));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, success, terminal_id));
 }
 
 TerminalPrivateOpenVmshellProcessFunction::
@@ -379,8 +378,8 @@ void TerminalPrivateSendInputFunction::SendInputOnRegistryTaskRunner(
   bool success =
       chromeos::ProcessProxyRegistry::Get()->SendInput(terminal_id, text);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&TerminalPrivateSendInputFunction::RespondOnUIThread, this,
                      success));
 }
@@ -412,8 +411,8 @@ void TerminalPrivateCloseTerminalProcessFunction::CloseOnRegistryTaskRunner(
   bool success =
       chromeos::ProcessProxyRegistry::Get()->CloseProcess(terminal_id);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &TerminalPrivateCloseTerminalProcessFunction::RespondOnUIThread, this,
           success));
@@ -450,8 +449,8 @@ void TerminalPrivateOnTerminalResizeFunction::OnResizeOnRegistryTaskRunner(
   bool success = chromeos::ProcessProxyRegistry::Get()->OnTerminalResize(
       terminal_id, width, height);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &TerminalPrivateOnTerminalResizeFunction::RespondOnUIThread, this,
           success));
@@ -537,8 +536,8 @@ void TerminalPrivateGetCroshSettingsFunction::AsyncRunWithStorage(
   ExtensionFunction::ResponseValue response =
       result.status().ok() ? OneArgument(result.PassSettings())
                            : Error(result.status().message);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&TerminalPrivateGetCroshSettingsFunction::Respond, this,
                      std::move(response)));
 }

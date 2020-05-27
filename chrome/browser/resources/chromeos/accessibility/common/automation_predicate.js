@@ -123,7 +123,8 @@ AutomationPredicate = class {
    */
   static editText(node) {
     return node.role == Role.TEXT_FIELD ||
-        (node.state.editable && node.parent && !node.parent.state.editable);
+        (node.state[State.EDITABLE] && !!node.parent &&
+         !node.parent.state[State.EDITABLE]);
   }
 
   /**
@@ -147,7 +148,7 @@ AutomationPredicate = class {
    * @return {boolean}
    */
   static focused(node) {
-    return node.state.focused;
+    return node.state[State.FOCUSED];
   }
 
   /**
@@ -232,14 +233,14 @@ AutomationPredicate = class {
     // Editable nodes are within a text-like field and don't make sense when
     // performing object navigation. Users should use line, word, or character
     // navigation. Only navigate to the top level node.
-    if (node.parent && node.parent.state.editable &&
+    if (node.parent && node.parent.state[State.EDITABLE] &&
         !node.parent.state[State.RICHLY_EDITABLE]) {
       return false;
     }
 
     // Given no other information, ChromeVox wants to visit focusable
     // (e.g. tabindex=0) nodes only when it has a name or is a control.
-    if (node.state.focusable &&
+    if (node.state[State.FOCUSABLE] &&
         (node.name || node.state[State.EDITABLE] ||
          AutomationPredicate.formField(node))) {
       return true;
@@ -319,7 +320,8 @@ AutomationPredicate = class {
     // Sometimes a focusable node will have a static text child with the same
     // name. During object navigation, the child will receive focus, resulting
     // in the name being read out twice.
-    if (node.state.focusable && nodeNameContainedInStaticTextChildren(node)) {
+    if (node.state[State.FOCUSABLE] &&
+        nodeNameContainedInStaticTextChildren(node)) {
       return false;
     }
 
@@ -337,8 +339,8 @@ AutomationPredicate = class {
         },
         function(node) {
           return (
-              node.state.editable && node.parent &&
-              !node.parent.state.editable);
+              node.state[State.EDITABLE] && node.parent &&
+              !node.parent.state[State.EDITABLE]);
         }
       ]
     })(node);
@@ -394,7 +396,7 @@ AutomationPredicate = class {
    */
   static rootOrEditableRoot(node) {
     return AutomationPredicate.root(node) ||
-        (node.state.richlyEditable && node.state.focused &&
+        (node.state[State.RICHLY_EDITABLE] && node.state[State.FOCUSED] &&
          node.children.length > 0);
   }
 
@@ -406,7 +408,7 @@ AutomationPredicate = class {
    */
   static shouldIgnoreNode(node) {
     // Ignore invisible nodes.
-    if (node.state.invisible ||
+    if (node.state[State.INVISIBLE] ||
         (node.location.height == 0 && node.location.width == 0)) {
       return true;
     }

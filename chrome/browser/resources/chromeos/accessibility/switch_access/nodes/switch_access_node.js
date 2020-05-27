@@ -97,6 +97,14 @@ class SAChildNode {
    */
   asRootNode() {}
 
+  /** Performs the node's default action. */
+  doDefaultAction() {
+    if (!this.isFocused_) {
+      return;
+    }
+    this.performAction(SwitchAccessMenuAction.SELECT);
+  }
+
   /**
    * @param {SAChildNode} other
    * @return {boolean}

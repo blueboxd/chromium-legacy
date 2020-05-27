@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -31,8 +32,9 @@ AppCacheNavigationHandle::AppCacheNavigationHandle(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   precreated_host_ = std::make_unique<AppCacheHost>(
-      appcache_host_id_, process_id, MSG_ROUTING_NONE, mojo::NullRemote(),
-      static_cast<AppCacheServiceImpl*>(appcache_service));
+      appcache_host_id_, process_id, MSG_ROUTING_NONE,
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(process_id),
+      mojo::NullRemote(), static_cast<AppCacheServiceImpl*>(appcache_service));
 
   DCHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==
          g_appcache_handle_map.Get().end());

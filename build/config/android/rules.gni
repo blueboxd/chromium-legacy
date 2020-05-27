@@ -1335,9 +1335,9 @@ if (enable_java_templates) {
     _build_config_target_name = "$target_name$build_config_target_suffix"
     _deps = [
       "//testing/android/junit:junit_test_support",
+      "//third_party/android_deps:robolectric_all_java",
       "//third_party/junit",
       "//third_party/mockito:mockito_java",
-      "//third_party/robolectric:robolectric_all_java",
     ]
     if (defined(invoker.deps)) {
       _deps += invoker.deps

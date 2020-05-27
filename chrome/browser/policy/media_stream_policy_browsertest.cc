@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/task/post_task.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -164,8 +163,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kAudioCaptureAllowed, nullptr, nullptr);
   UpdateProviderPolicy(policies);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -200,8 +199,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kAudioCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestAudioCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -228,8 +227,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   ConfigurePolicyMap(&policies, key::kVideoCaptureAllowed, nullptr, nullptr);
   UpdateProviderPolicy(policies);
 
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(
           &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
           base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),
@@ -264,8 +263,8 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        key::kVideoCaptureAllowedUrls, allow_pattern[i]);
     UpdateProviderPolicy(policies);
 
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &MediaCaptureDevicesDispatcher::SetTestVideoCaptureDevices,
             base::Unretained(MediaCaptureDevicesDispatcher::GetInstance()),

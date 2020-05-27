@@ -18,10 +18,10 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/services/app_service/public/cpp/instance.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/app_service/public/cpp/instance.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
@@ -45,7 +45,7 @@ namespace apps {
 //
 // In the future, desktop PWAs will be migrated to a new system.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class ExtensionAppsChromeOs : public ExtensionAppsBase,
                               public extensions::AppWindowRegistry::Observer,
                               public ArcAppListPrefs::Observer,

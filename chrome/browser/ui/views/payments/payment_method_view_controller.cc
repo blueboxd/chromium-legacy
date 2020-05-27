@@ -101,7 +101,7 @@ class PaymentMethodListItem : public PaymentRequestItemList::Item {
   // PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateExtraView() override {
     std::unique_ptr<views::ImageView> icon_view = CreateAppIconView(
-        app_->icon_resource_id(), app_->icon_image_skia(), app_->GetLabel());
+        app_->icon_resource_id(), app_->icon_bitmap(), app_->GetLabel());
     return icon_view;
   }
 

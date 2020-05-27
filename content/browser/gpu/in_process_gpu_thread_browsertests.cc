@@ -5,7 +5,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/gpu/in_process_gpu_thread.h"
@@ -34,9 +33,8 @@ void CreateGpuProcessHost() {
 
 void WaitUntilGpuProcessHostIsCreated() {
   base::RunLoop run_loop;
-  base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
-                         base::BindOnce(&CreateGpuProcessHost),
-                         run_loop.QuitClosure());
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE, base::BindOnce(&CreateGpuProcessHost), run_loop.QuitClosure());
   run_loop.Run();
 }
 

@@ -2187,7 +2187,10 @@ void NavigationRequest::OnResponseStarted(
           frame_entry->committed_origin(), frame_entry->referrer(),
           frame_entry->initiator_origin(), frame_entry->redirect_chain(),
           frame_entry->page_state(), frame_entry->method(),
-          frame_entry->post_id(), frame_entry->blob_url_loader_factory());
+          frame_entry->post_id(), frame_entry->blob_url_loader_factory(),
+          frame_entry->web_bundle_navigation_info()
+              ? frame_entry->web_bundle_navigation_info()->Clone()
+              : nullptr);
     }
   }
 
@@ -2898,9 +2901,20 @@ void NavigationRequest::CommitNavigation() {
         std::move(reporter_remote), &service_worker_container_info);
   }
 
-  if (web_bundle_handle_ && web_bundle_handle_->navigation_info()) {
-    web_bundle_navigation_info_ =
-        web_bundle_handle_->navigation_info()->Clone();
+  if (web_bundle_handle_) {
+    // Check whether the page was served from a web bundle.
+    if (web_bundle_handle_->navigation_info()) {
+      // If the page was served from a web bundle, sets
+      // |web_bundle_navigation_info_| which will be passed to
+      // the FrameNavigationEntry of the navigation, and will be used for
+      // history navigations.
+      web_bundle_navigation_info_ =
+          web_bundle_handle_->navigation_info()->Clone();
+    } else {
+      // If the page was not served from a web bundle, clears
+      // |web_bundle_handle_| not to pass it to |render_frame_host_|.
+      web_bundle_handle_.reset();
+    }
   }
 
   auto common_params = common_params_->Clone();

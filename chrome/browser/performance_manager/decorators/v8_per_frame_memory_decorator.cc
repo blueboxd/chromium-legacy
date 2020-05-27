@@ -8,7 +8,6 @@
 #include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/task/post_task.h"
 #include "base/timer/timer.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/node_attached_data.h"
@@ -17,6 +16,7 @@
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/public/render_process_host_proxy.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 
 namespace performance_manager {
@@ -227,14 +227,28 @@ uint64_t V8PerFrameMemoryDecorator::GetUnassociatedBytesForTesting(
   return process_data->unassociated_v8_bytes_used();
 }
 
+uint64_t V8PerFrameMemoryDecorator::GetAssociatedBytesForTesting(
+    const FrameNode* frame_node) {
+  FrameData* frame_data = FrameData::Get(frame_node);
+  if (!frame_data)
+    return 0u;
+
+  return frame_data->v8_bytes_used();
+}
+
+bool V8PerFrameMemoryDecorator::HasAssociatedBytesForTesting(
+    const FrameNode* frame_node) {
+  return FrameData::Get(frame_node);
+}
+
 void V8PerFrameMemoryDecorator::BindReceiverWithProxyHost(
     mojo::PendingReceiver<performance_manager::mojom::V8PerFrameMemoryReporter>
         pending_receiver,
     RenderProcessHostProxy proxy) const {
   // Forward the pending receiver to the RenderProcessHost and bind it on the
   // UI thread.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](RenderProcessHostProxy proxy,
              mojo::PendingReceiver<

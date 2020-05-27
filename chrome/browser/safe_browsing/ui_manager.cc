@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
@@ -122,8 +121,8 @@ void SafeBrowsingUIManager::StartDisplayingBlockingPage(
       prerender_contents->Destroy(prerender::FINAL_STATUS_SAFE_BROWSING);
     }
     // Tab is gone or it's being prerendered.
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(resource.callback, false /*proceed*/,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(resource.callback, false /*proceed*/,
                                   false /*showed_interstitial*/));
     return;
   }

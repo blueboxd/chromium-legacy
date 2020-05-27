@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -84,8 +83,8 @@ void ComponentUpdaterServiceProvider::Start(
 
 void ComponentUpdaterServiceProvider::EmitInstalledSignal(
     const std::string& component) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ComponentUpdaterServiceProvider::EmitInstalledSignalInternal,
           weak_ptr_factory_.GetWeakPtr(), component));

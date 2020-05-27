@@ -23,7 +23,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/time/time.h"
@@ -641,8 +640,8 @@ void ServicesCustomizationDocument::OnSimpleLoaderComplete(
   } else {
     if (num_retries_ < kMaxFetchRetries) {
       num_retries_++;
-      base::PostDelayedTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
           base::BindOnce(&ServicesCustomizationDocument::StartFileFetch,
                          weak_ptr_factory_.GetWeakPtr()),
           base::TimeDelta::FromSeconds(kRetriesDelayInSec));

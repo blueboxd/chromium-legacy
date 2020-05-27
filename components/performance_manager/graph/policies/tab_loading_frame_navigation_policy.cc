@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/public/features.h"
@@ -168,13 +167,12 @@ void TabLoadingFrameNavigationPolicy::OnFirstContentfulPaint(
 
 void TabLoadingFrameNavigationPolicy::OnPassedToGraph(Graph* graph) {
   DCHECK(NothingRegistered(graph));
-  base::PostTask(FROM_HERE,
-                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-                 base::BindOnce(
-                     [](MechanismDelegate* mechanism) {
-                       mechanism->SetThrottlingEnabled(true);
-                     },
-                     base::Unretained(mechanism_)));
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE, base::BindOnce(
+                                [](MechanismDelegate* mechanism) {
+                                  mechanism->SetThrottlingEnabled(true);
+                                },
+                                base::Unretained(mechanism_)));
   graph->AddFrameNodeObserver(this);
   graph->AddPageNodeObserver(this);
   graph->RegisterObject(this);
@@ -182,13 +180,12 @@ void TabLoadingFrameNavigationPolicy::OnPassedToGraph(Graph* graph) {
 
 void TabLoadingFrameNavigationPolicy::OnTakenFromGraph(Graph* graph) {
   DCHECK(IsRegistered(graph));
-  base::PostTask(FROM_HERE,
-                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-                 base::BindOnce(
-                     [](MechanismDelegate* mechanism) {
-                       mechanism->SetThrottlingEnabled(false);
-                     },
-                     base::Unretained(mechanism_)));
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostTask(FROM_HERE, base::BindOnce(
+                                [](MechanismDelegate* mechanism) {
+                                  mechanism->SetThrottlingEnabled(false);
+                                },
+                                base::Unretained(mechanism_)));
   graph->UnregisterObject(this);
   graph->RemovePageNodeObserver(this);
   graph->RemoveFrameNodeObserver(this);
@@ -341,16 +338,17 @@ void TabLoadingFrameNavigationPolicy::StopThrottlingExpiredPages() {
     // the contents. Note that |mechanism_| is expected to effectively live
     // forever (it is only a testing seam, in production it is a static
     // singleton), so passing base::Unretained is safe.
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-        base::BindOnce(
-            [](MechanismDelegate* mechanism, const WebContentsProxy& proxy) {
-              auto* contents = proxy.Get();
-              if (contents)
-                mechanism->StopThrottling(contents, proxy.LastNavigationId());
-            },
-            base::Unretained(mechanism_), page_node->GetContentsProxy()));
+    content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+        ->PostTask(FROM_HERE, base::BindOnce(
+                                  [](MechanismDelegate* mechanism,
+                                     const WebContentsProxy& proxy) {
+                                    auto* contents = proxy.Get();
+                                    if (contents)
+                                      mechanism->StopThrottling(
+                                          contents, proxy.LastNavigationId());
+                                  },
+                                  base::Unretained(mechanism_),
+                                  page_node->GetContentsProxy()));
   }
 }
 

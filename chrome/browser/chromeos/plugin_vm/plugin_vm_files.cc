@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -51,8 +50,8 @@ void EnsureDirExists(
     LOG(ERROR) << "Failed to create PluginVm shared dir " << dir.value() << ": "
                << base::File::ErrorToString(error);
   }
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DirExistsResult, dir, result, std::move(callback)));
 }
 

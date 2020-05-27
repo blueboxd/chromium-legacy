@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/login/login_tab_helper.h"
 
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/common/chrome_features.h"
 #include "content/public/browser/browser_context.h"
@@ -239,8 +238,8 @@ void LoginTabHelper::HandleCredentials(
     // the case when the prompt has been cancelled due to the tab
     // closing. Reloading synchronously while a tab is closing causes a DCHECK
     // failure.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&LoginTabHelper::Reload,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&LoginTabHelper::Reload,
                                   weak_ptr_factory_.GetWeakPtr()));
   }
 }

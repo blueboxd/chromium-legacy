@@ -15,6 +15,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
 #include "chrome/browser/ui/tab_dialogs.h"
+#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -167,7 +168,10 @@ class CapturedSitesPasswordManagerBrowserTest
         std::make_unique<ServerUrlLoader>(std::make_unique<ServerCacheReplayer>(
             GetParam().capture_file_path,
             ServerCacheReplayer::kOptionFailOnInvalidJsonRecord |
-                ServerCacheReplayer::kOptionSplitRequestsByForm)));
+                ServerCacheReplayer::kOptionSplitRequestsByForm,
+            base::FeatureList::IsEnabled(autofill::features::kAutofillUseApi)
+                ? autofill::test::AutofillServerType::kApi
+                : autofill::test::AutofillServerType::kLegacy)));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

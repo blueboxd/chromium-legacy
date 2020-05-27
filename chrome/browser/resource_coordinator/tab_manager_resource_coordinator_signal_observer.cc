@@ -4,7 +4,6 @@
 
 #include "chrome/browser/resource_coordinator/tab_manager_resource_coordinator_signal_observer.h"
 
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_parts.h"
@@ -40,8 +39,8 @@ void TabManager::ResourceCoordinatorSignalObserver::OnIsLoadingChanged(
     const PageNode* page_node) {
   // Forward the notification over to the UI thread when the page stops loading.
   if (!page_node->IsLoading()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&OnPageStoppedLoadingOnUi,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&OnPageStoppedLoadingOnUi,
                                   page_node->GetContentsProxy()));
   }
 }
@@ -57,8 +56,8 @@ void TabManager::ResourceCoordinatorSignalObserver::
           process_node);
   for (auto* page_node : associated_page_nodes) {
     // Forward the notification over to the UI thread.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&OnExpectedTaskQueueingDurationSampleOnUi,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&OnExpectedTaskQueueingDurationSampleOnUi,
                                   tab_manager_, page_node->GetContentsProxy(),
                                   page_node->GetNavigationID(), duration));
   }

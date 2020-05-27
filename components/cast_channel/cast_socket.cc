@@ -21,7 +21,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/cast_channel/cast_auth_util.h"
@@ -68,8 +67,8 @@ void OnConnected(
     mojo::ScopedDataPipeConsumerHandle receive_stream,
     mojo::ScopedDataPipeProducerHandle send_stream) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), result, local_addr, peer_addr,
                      std::move(receive_stream), std::move(send_stream)));
 }
@@ -380,8 +379,8 @@ int CastSocketImpl::DoTcpConnect() {
   VLOG_WITH_CONNECTION(1) << "DoTcpConnect";
   SetConnectState(ConnectionState::TCP_CONNECT_COMPLETE);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(ConnectOnUIThread, network_context_getter_,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(ConnectOnUIThread, network_context_getter_,
                                 net::AddressList(open_params_.ip_endpoint),
                                 tcp_socket_.BindNewPipeAndPassReceiver(),
                                 base::BindOnce(&CastSocketImpl::OnConnect,

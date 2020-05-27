@@ -547,6 +547,9 @@ struct ManagedWiFiProperties {
   string? tethering_state;
   // Indicates whether the network is eligible to be included in Chrome Sync.
   bool is_syncable;
+  // True for unshared networks and for shared networks configured by the
+  // active user.  Updated whenever the passphrase is modified.
+  bool is_configured_by_active_user;
 };
 
 union NetworkTypeManagedProperties {
@@ -571,6 +574,7 @@ struct ManagedProperties {
   string guid;
   ManagedString? ip_address_config_type;
   array<IPConfigProperties>? ip_configs;
+  ManagedBoolean? metered;
   ManagedString? name;
   ManagedString? name_servers_config_type;
   ManagedInt32? priority;
@@ -593,6 +597,11 @@ struct ManagedProperties {
 
 // Wrapper to allow optional auto_connect configuration.
 struct AutoConnectConfig {
+  bool value;
+};
+
+// Wrapper to allow optional metered configuration.
+struct MeteredConfig {
   bool value;
 };
 
@@ -722,6 +731,7 @@ struct ConfigProperties {
   // preserve the existing guid.
   string? guid;
   string? ip_address_config_type;
+  MeteredConfig? metered;
   // Name is only required for new configurations.
   string? name;
   string? name_servers_config_type;

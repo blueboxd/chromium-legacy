@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -131,10 +130,11 @@ void MultipartUploadRequest::RetryOrFinish(
     std::move(callback_).Run(/*success=*/true, *response_body.get());
   } else {
     if (retry_count_ < kMaxRetryAttempts) {
-      base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                            base::BindOnce(&MultipartUploadRequest::SendRequest,
-                                           weak_factory_.GetWeakPtr()),
-                            current_backoff_);
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&MultipartUploadRequest::SendRequest,
+                         weak_factory_.GetWeakPtr()),
+          current_backoff_);
       current_backoff_ *= kBackoffFactor;
       retry_count_++;
     } else {

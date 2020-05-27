@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/download/simple_download_manager_coordinator_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -236,8 +235,8 @@ void AndroidTelemetryService::MaybeSendApkDownloadReport(
   }
   sb_service_->ping_manager()->ReportThreatDetails(serialized);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&WebUIInfoSingleton::AddToCSBRRsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(report)));

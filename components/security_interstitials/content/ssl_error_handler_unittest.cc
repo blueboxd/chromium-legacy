@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
@@ -126,7 +125,7 @@ const char kCertWithoutOrganizationOrCommonName[] =
 std::unique_ptr<net::test_server::HttpResponse> WaitForRequest(
     const base::Closure& quit_closure,
     const net::test_server::HttpRequest& request) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_closure);
   return std::make_unique<net::test_server::HungResponse>();
 }
 
@@ -645,8 +644,8 @@ class SSLErrorHandlerDateInvalidTest
     base::RunLoop run_loop;
     std::unique_ptr<network::PendingSharedURLLoaderFactory>
         pending_url_loader_factory;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(CreateURLLoaderFactory, &pending_url_loader_factory),
         run_loop.QuitClosure());
     run_loop.Run();

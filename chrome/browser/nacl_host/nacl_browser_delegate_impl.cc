@@ -12,7 +12,6 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl_component_installer.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -66,8 +65,8 @@ NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
 
 void NaClBrowserDelegateImpl::ShowMissingArchInfobar(int render_process_id,
                                                      int render_view_id) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&CreateInfoBarOnUiThread, render_process_id,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CreateInfoBarOnUiThread, render_process_id,
                                 render_view_id));
 }
 

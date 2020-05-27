@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
@@ -138,10 +137,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
         std::make_unique<MediaFileSystemBackend>(base));
     file_system_context_ =
         storage::CreateFileSystemContextWithAdditionalProvidersForTesting(
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-                .get(),
-            file_system_runner_.get(), nullptr, std::move(additional_providers),
-            base);
+            content::GetIOThreadTaskRunner({}).get(), file_system_runner_.get(),
+            nullptr, std::move(additional_providers), base);
 
     move_src_ = file_system_context_->CreateCrackedFileSystemURL(
         url::Origin::Create(GURL(kOrigin)), storage::kFileSystemTypeTest,
@@ -166,8 +163,8 @@ class MediaFileValidatorTest : public InProcessBrowserTest {
     move_dest_ = file_system_context_->CrackURL(GURL(
           dest_root_fs_url + "move_dest" + extension));
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MediaFileValidatorTest::CheckFiles,
                        base::Unretained(this), true,
                        base::Bind(&MediaFileValidatorTest::OnTestFilesReady,

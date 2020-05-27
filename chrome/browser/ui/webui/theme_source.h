@@ -34,6 +34,7 @@ class ThemeSource : public content::URLDataSource {
                             int render_process_id) override;
   std::string GetAccessControlAllowOriginForOrigin(
       const std::string& origin) override;
+  std::string GetContentSecurityPolicyDefaultSrc() override;
 
  private:
   // Fetches and sends the theme bitmap.

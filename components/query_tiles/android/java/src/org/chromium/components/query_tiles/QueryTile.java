@@ -4,6 +4,10 @@
 
 package org.chromium.components.query_tiles;
 
+import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+
 import org.chromium.components.browser_ui.widget.image_tiles.ImageTile;
 
 import java.util.ArrayList;
@@ -37,5 +41,23 @@ public class QueryTile extends ImageTile {
                 (searchParams == null) ? new ArrayList<>() : Arrays.asList(searchParams);
         this.children =
                 Collections.unmodifiableList(children == null ? new ArrayList<>() : children);
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (!super.equals(obj)) return false;
+        if (!(obj instanceof QueryTile)) return false;
+
+        QueryTile other = (QueryTile) obj;
+
+        if (!TextUtils.equals(queryText, other.queryText)) return false;
+
+        if (children != null && !children.equals(other.children)) return false;
+        if (children == null && other.children != null) return false;
+
+        if (urls != null && !urls.equals(other.urls)) return false;
+        if (urls == null && other.urls != null) return false;
+
+        return true;
     }
 }

@@ -18,9 +18,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/payments/content/android/byte_buffer_helper.h"
+#include "components/payments/content/android/payment_request_spec.h"
 #include "components/payments/content/payment_app_service.h"
 #include "components/payments/content/payment_app_service_factory.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
+#include "components/payments/content/payment_request_spec.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -153,7 +155,7 @@ void JNI_PaymentAppServiceBridge_Create(
     JNIEnv* env,
     const JavaParamRef<jobject>& jrender_frame_host,
     const JavaParamRef<jstring>& jtop_origin,
-    const JavaParamRef<jobjectArray>& jmethod_data,
+    const JavaParamRef<jobject>& jpayment_request_spec,
     jboolean jmay_crawl_for_installable_payment_apps,
     const JavaParamRef<jobject>& jcallback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -161,11 +163,6 @@ void JNI_PaymentAppServiceBridge_Create(
   auto* render_frame_host =
       content::RenderFrameHost::FromJavaRenderFrameHost(jrender_frame_host);
   std::string top_origin = ConvertJavaStringToUTF8(jtop_origin);
-
-  std::vector<PaymentMethodDataPtr> method_data;
-  bool success =
-      DeserializeFromJavaByteBufferArray(env, jmethod_data, &method_data);
-  DCHECK(success);
 
   scoped_refptr<payments::PaymentManifestWebDataService> web_data_service =
       WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
@@ -178,8 +175,9 @@ void JNI_PaymentAppServiceBridge_Create(
       GetPaymentAppService(render_frame_host);
   auto* bridge = payments::PaymentAppServiceBridge::Create(
       service->GetNumberOfFactories(), render_frame_host, GURL(top_origin),
-      std::move(method_data), web_data_service,
-      jmay_crawl_for_installable_payment_apps,
+      payments::android::PaymentRequestSpec::FromJavaPaymentRequestSpec(
+          env, jpayment_request_spec),
+      web_data_service, jmay_crawl_for_installable_payment_apps,
       base::BindRepeating(&OnPaymentAppsCreated,
                           ScopedJavaGlobalRef<jobject>(env, jcallback)),
       base::BindRepeating(&OnPaymentAppCreationError,
@@ -229,16 +227,15 @@ PaymentAppServiceBridge* PaymentAppServiceBridge::Create(
     size_t number_of_factories,
     content::RenderFrameHost* render_frame_host,
     const GURL& top_origin,
-    std::vector<mojom::PaymentMethodDataPtr> request_method_data,
+    PaymentRequestSpec* spec,
     scoped_refptr<PaymentManifestWebDataService> web_data_service,
     bool may_crawl_for_installable_payment_apps,
     PaymentAppsCreatedCallback payment_apps_created_callback,
     PaymentAppCreationErrorCallback payment_app_creation_error_callback,
     base::OnceClosure done_creating_payment_apps_callback) {
   std::unique_ptr<PaymentAppServiceBridge> bridge(new PaymentAppServiceBridge(
-      number_of_factories, render_frame_host, top_origin,
-      std::move(request_method_data), std::move(web_data_service),
-      may_crawl_for_installable_payment_apps,
+      number_of_factories, render_frame_host, top_origin, spec,
+      std::move(web_data_service), may_crawl_for_installable_payment_apps,
       std::move(payment_apps_created_callback),
       std::move(payment_app_creation_error_callback),
       std::move(done_creating_payment_apps_callback)));
@@ -249,7 +246,7 @@ PaymentAppServiceBridge::PaymentAppServiceBridge(
     size_t number_of_factories,
     content::RenderFrameHost* render_frame_host,
     const GURL& top_origin,
-    std::vector<mojom::PaymentMethodDataPtr> request_method_data,
+    PaymentRequestSpec* spec,
     scoped_refptr<PaymentManifestWebDataService> web_data_service,
     bool may_crawl_for_installable_payment_apps,
     PaymentAppsCreatedCallback payment_apps_created_callback,
@@ -263,7 +260,7 @@ PaymentAppServiceBridge::PaymentAppServiceBridge(
       frame_origin_(url_formatter::FormatUrlForSecurityDisplay(
           render_frame_host->GetLastCommittedURL())),
       frame_security_origin_(render_frame_host->GetLastCommittedOrigin()),
-      request_method_data_(std::move(request_method_data)),
+      spec_(spec),
       payment_manifest_web_data_service_(web_data_service),
       may_crawl_for_installable_payment_apps_(
           may_crawl_for_installable_payment_apps),
@@ -301,7 +298,7 @@ content::RenderFrameHost* PaymentAppServiceBridge::GetInitiatorRenderFrameHost()
 
 const std::vector<mojom::PaymentMethodDataPtr>&
 PaymentAppServiceBridge::GetMethodData() const {
-  return request_method_data_;
+  return spec_->method_data();
 }
 
 scoped_refptr<PaymentManifestWebDataService>
@@ -332,8 +329,7 @@ PaymentAppServiceBridge::GetPaymentRequestDelegate() const {
 }
 
 PaymentRequestSpec* PaymentAppServiceBridge::GetSpec() const {
-  NOTREACHED();
-  return nullptr;
+  return spec_;
 }
 
 void PaymentAppServiceBridge::OnPaymentAppCreated(

@@ -63,8 +63,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
             url, frame_tree_node_id_, -1 /* render_process_id */,
             -1 /* render_frame_id */, originated_from_service_worker);
     if (skip_checks_) {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&BrowserURLLoaderThrottle::SkipChecks, throttle_));
       return;
     }
@@ -81,8 +81,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   void CheckUrl(const GURL& url, const std::string& method) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     if (skip_checks_) {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&BrowserURLLoaderThrottle::SkipChecks, throttle_));
       return;
     }
@@ -108,8 +108,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
       return;
     }
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&BrowserURLLoaderThrottle::NotifySlowCheck, throttle_));
 
     // In this case |proceed| and |showed_interstitial| should be ignored. The
@@ -124,8 +124,8 @@ class BrowserURLLoaderThrottle::CheckerOnIO
   void OnCompleteCheck(bool slow_check,
                        bool proceed,
                        bool showed_interstitial) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&BrowserURLLoaderThrottle::OnCompleteCheck, throttle_,
                        slow_check, proceed, showed_interstitial));
   }
@@ -193,8 +193,8 @@ void BrowserURLLoaderThrottle::WillStartRequest(
 
   original_url_ = request->url;
   pending_checks_++;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &BrowserURLLoaderThrottle::CheckerOnIO::Start,
           io_checker_->AsWeakPtr(), request->headers, request->load_flags,
@@ -223,8 +223,8 @@ void BrowserURLLoaderThrottle::WillRedirectRequest(
     return;
 
   pending_checks_++;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&BrowserURLLoaderThrottle::CheckerOnIO::CheckUrl,
                      io_checker_->AsWeakPtr(), redirect_info->new_url,
                      redirect_info->new_method));
@@ -324,8 +324,8 @@ void BrowserURLLoaderThrottle::NotifySlowCheck() {
 }
 
 void BrowserURLLoaderThrottle::DeleteCheckerOnIO() {
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
-                   std::move(io_checker_));
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 std::move(io_checker_));
 }
 
 }  // namespace safe_browsing

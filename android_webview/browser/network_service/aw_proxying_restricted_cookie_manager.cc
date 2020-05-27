@@ -11,7 +11,6 @@
 
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -58,8 +57,8 @@ void AwProxyingRestrictedCookieManager::CreateAndBind(
     mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &AwProxyingRestrictedCookieManager::CreateAndBindOnIoThread,
           std::move(underlying_rcm), is_service_worker, process_id, frame_id,

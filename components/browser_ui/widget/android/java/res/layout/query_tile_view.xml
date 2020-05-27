@@ -36,5 +36,6 @@
         android:paddingBottom="6dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
-        android:textAppearance="@style/TextAppearance.TextMedium.Primary.Light"/>
+        android:breakStrategy="balanced"
+        android:textAppearance="@style/TextAppearance.TextSmall.Primary.Light"/>
 </RelativeLayout>

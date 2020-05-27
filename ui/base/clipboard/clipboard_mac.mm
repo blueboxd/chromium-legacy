@@ -85,6 +85,20 @@ bool ClipboardMac::IsFormatAvailable(const ClipboardFormatType& format,
   return [types containsObject:format.ToNSString()];
 }
 
+bool ClipboardMac::IsMarkedByOriginatorAsConfidential() const {
+  // It is the common convention on the Mac that password managers tag
+  // confidential data with the flavor "org.nspasteboard.ConcealedType". Obey
+  // this convention. See http://nspasteboard.org/ for more info.
+  NSPasteboard* pb = GetPasteboard();
+  NSPasteboardType type =
+      [pb availableTypeFromArray:@[ @"org.nspasteboard.ConcealedType" ]];
+
+  if (type)
+    return true;
+
+  return false;
+}
+
 void ClipboardMac::Clear(ClipboardBuffer buffer) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(buffer, ClipboardBuffer::kCopyPaste);

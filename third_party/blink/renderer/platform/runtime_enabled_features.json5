@@ -900,10 +900,6 @@
       status: "stable",
     },
     {
-      name: "IntersectionObserverV2",
-      status: "stable",
-    },
-    {
       // Launched by default. TODO(mythria): cleanup virtual tests and
       // other hooks in blink.
       name: "IsolatedCodeCache",
@@ -1080,10 +1076,6 @@
     },
     {
       name: "MediaSessionPosition",
-      status: "stable",
-    },
-    {
-      name: "MediaSessionSeeking",
       status: "stable",
     },
     {
@@ -1440,6 +1432,14 @@
     },
     {
       name: "PreciseMemoryInfo",
+    },
+    // Prefer not using composited scrolling. Composited scrolling will still
+    // be used if there are other reasons forcing compositing. For consistency,
+    // any code calling Settings::GetPreferCompositingToLCDTextEnabled() should
+    // ensure that this flag overrides the setting.
+    {
+      name: "PreferNonCompositedScrolling",
+      settable_from_internals: true,
     },
     // This feature is deprecated and we are evangelizing affected sites.
     // See https://crbug.com/346236 for current status.

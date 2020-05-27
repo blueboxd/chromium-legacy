@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/task/post_task.h"
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -49,8 +48,8 @@ void chromeos::DelayNetworkCall(base::TimeDelta retry,
     }
   }
   if (delay_network_call) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&chromeos::DelayNetworkCall, retry, std::move(callback)),
         retry);
   } else {

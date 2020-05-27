@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/power/ml/smart_dim/download_worker.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/metrics.h"
@@ -98,10 +97,11 @@ void DownloadWorker::OnJsonParsed(
     DVLOG(1) << "Failed to parse meta info from metadata_json.";
     return;
   }
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&DownloadWorker::LoadModelAndCreateGraphExecutor,
-                     base::Unretained(this), std::move(model_flatbuffer)));
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&DownloadWorker::LoadModelAndCreateGraphExecutor,
+                         base::Unretained(this), std::move(model_flatbuffer)));
 }
 
 void DownloadWorker::LoadModelAndCreateGraphExecutor(

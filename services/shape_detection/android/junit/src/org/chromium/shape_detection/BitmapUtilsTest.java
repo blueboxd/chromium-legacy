@@ -24,7 +24,7 @@ import org.chromium.skia.mojom.ImageInfo;
  * Test suite for conversion-to-Frame utils.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(sdk = 21, manifest = Config.NONE)
 public class BitmapUtilsTest {
     private static final int VALID_WIDTH = 1;
     private static final int VALID_HEIGHT = 1;

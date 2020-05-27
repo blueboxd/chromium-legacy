@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
@@ -80,11 +79,12 @@ void WebAppPolicyManager::SetSubsystems(
 }
 
 void WebAppPolicyManager::Start() {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&WebAppPolicyManager::
-                         InitChangeRegistrarAndRefreshPolicyInstalledApps,
-                     weak_ptr_factory_.GetWeakPtr()));
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&WebAppPolicyManager::
+                             InitChangeRegistrarAndRefreshPolicyInstalledApps,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppPolicyManager::ReinstallPlaceholderAppIfNecessary(const GURL& url) {

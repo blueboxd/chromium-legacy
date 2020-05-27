@@ -46,6 +46,7 @@ const char kIPConfigs[] = "IPConfigs";
 const char kIPConfigTypeDHCP[] = "DHCP";
 const char kIPConfigTypeStatic[] = "Static";
 const char kMacAddress[] = "MacAddress";
+const char kMetered[] = "Metered";
 const char kNameServersConfigType[] = "NameServersConfigType";
 const char kName[] = "Name";
 const char kPriority[] = "Priority";

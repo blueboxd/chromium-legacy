@@ -46,7 +46,9 @@ class CC_EXPORT VideoPlaybackRoughnessReporter {
   void FrameSubmitted(TokenType token,
                       const media::VideoFrame& frame,
                       base::TimeDelta render_interval);
-  void FramePresented(TokenType token, base::TimeTicks timestamp);
+  void FramePresented(TokenType token,
+                      base::TimeTicks timestamp,
+                      bool reliable_timestamp);
   void ProcessFrameWindow();
   void Reset();
 

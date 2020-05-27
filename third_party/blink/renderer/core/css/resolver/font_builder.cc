@@ -254,18 +254,18 @@ float FontBuilder::GetComputedSizeFromSpecifiedSize(
 }
 
 void FontBuilder::CheckForGenericFamilyChange(
-    const FontDescription& old_description,
+    const FontDescription& parent_description,
     FontDescription& new_description) {
   DCHECK(document_);
   if (new_description.IsAbsoluteSize())
     return;
 
-  if (new_description.IsMonospace() == old_description.IsMonospace())
+  if (new_description.IsMonospace() == parent_description.IsMonospace())
     return;
 
   // For now, lump all families but monospace together.
   if (new_description.GenericFamily() != FontDescription::kMonospaceFamily &&
-      old_description.GenericFamily() != FontDescription::kMonospaceFamily)
+      parent_description.GenericFamily() != FontDescription::kMonospaceFamily)
     return;
 
   // We know the parent is monospace or the child is monospace, and that font
@@ -284,7 +284,7 @@ void FontBuilder::CheckForGenericFamilyChange(
             ? static_cast<float>(settings->GetDefaultFixedFontSize()) /
                   settings->GetDefaultFontSize()
             : 1;
-    size = old_description.IsMonospace()
+    size = parent_description.IsMonospace()
                ? new_description.SpecifiedSize() / fixed_scale_factor
                : new_description.SpecifiedSize() * fixed_scale_factor;
   }
@@ -293,7 +293,8 @@ void FontBuilder::CheckForGenericFamilyChange(
 }
 
 void FontBuilder::UpdateSpecifiedSize(FontDescription& font_description,
-                                      const ComputedStyle& style) {
+                                      const ComputedStyle& style,
+                                      const ComputedStyle* parent_style) {
   float specified_size = font_description.SpecifiedSize();
 
   if (!specified_size && font_description.KeywordSize())
@@ -302,7 +303,12 @@ void FontBuilder::UpdateSpecifiedSize(FontDescription& font_description,
 
   font_description.SetSpecifiedSize(specified_size);
 
-  CheckForGenericFamilyChange(style.GetFontDescription(), font_description);
+  // TODO(crbug.com/1086680): Avoid nullptr parent style.
+  const FontDescription& parent_description =
+      parent_style ? parent_style->GetFontDescription()
+                   : style.GetFontDescription();
+
+  CheckForGenericFamilyChange(parent_description, font_description);
 }
 
 void FontBuilder::UpdateAdjustedSize(FontDescription& font_description,
@@ -404,7 +410,8 @@ void FontBuilder::UpdateFontDescription(FontDescription& description,
     description.SetAdjustedSize(size);
 }
 
-void FontBuilder::CreateFont(ComputedStyle& style) {
+void FontBuilder::CreateFont(ComputedStyle& style,
+                             const ComputedStyle* parent_style) {
   DCHECK(document_);
 
   if (!flags_)
@@ -413,8 +420,7 @@ void FontBuilder::CreateFont(ComputedStyle& style) {
   FontDescription description = style.GetFontDescription();
 
   UpdateFontDescription(description, style.ComputeFontOrientation());
-
-  UpdateSpecifiedSize(description, style);
+  UpdateSpecifiedSize(description, style, parent_style);
   UpdateComputedSize(description, style);
 
   FontSelector* font_selector = document_->GetStyleEngine().GetFontSelector();
@@ -434,7 +440,7 @@ void FontBuilder::CreateFontForDocument(ComputedStyle& document_style) {
   SetSize(font_description,
           FontDescription::Size(FontSizeFunctions::InitialKeywordSize(), 0.0f,
                                 false));
-  UpdateSpecifiedSize(font_description, document_style);
+  UpdateSpecifiedSize(font_description, document_style, &document_style);
   UpdateComputedSize(font_description, document_style);
 
   font_description.SetOrientation(document_style.ComputeFontOrientation());

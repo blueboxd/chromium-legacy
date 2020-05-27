@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -102,8 +101,8 @@ void DumpPluginProcessOnIOThread(const std::set<int>& child_ids) {
 
   // Wait a bit to let dump finish (if requested) before rebooting the device.
   const int kDumpWaitSeconds = 10;
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI}, base::BindOnce(&RebootDevice),
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&RebootDevice),
       base::TimeDelta::FromSeconds(dump_requested ? kDumpWaitSeconds : 0));
 }
 
@@ -355,8 +354,8 @@ void AppSession::OnPluginHung(const std::set<int>& hung_plugins) {
   is_shutting_down_ = true;
 
   LOG(ERROR) << "Plugin hung detected. Dump and reboot.";
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&DumpPluginProcessOnIOThread, hung_plugins));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DumpPluginProcessOnIOThread, hung_plugins));
 }
 
 }  // namespace chromeos

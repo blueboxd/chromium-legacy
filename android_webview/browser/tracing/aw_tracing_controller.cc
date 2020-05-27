@@ -9,7 +9,6 @@
 #include "base/android/jni_string.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 
 #include "content/public/browser/browser_thread.h"
@@ -42,13 +41,13 @@ class AwTraceDataEndpoint
   }
 
   void ReceivedTraceFinalContents() override {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(completed_callback_));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, std::move(completed_callback_));
   }
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(received_chunk_callback_, std::move(chunk)));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(received_chunk_callback_, std::move(chunk)));
   }
 
   explicit AwTraceDataEndpoint(ReceivedChunkCallback received_chunk_callback,

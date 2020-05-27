@@ -25,7 +25,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -271,8 +270,8 @@ class ChannelDestructionWatcher {
 
    private:
     ~DestructionMessageFilter() override {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&ChannelDestructionWatcher::OnChannelDestroyed,
                          base::Unretained(watcher_)));
     }

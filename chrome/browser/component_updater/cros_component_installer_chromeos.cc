@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -142,8 +141,8 @@ CrOSComponentInstallerPolicy::OnCustomInstall(
 void CrOSComponentInstallerPolicy::OnCustomUninstall() {
   cros_component_installer_->UnregisterCompatiblePath(name_);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&FinishCustomUninstallOnUIThread, name_));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FinishCustomUninstallOnUIThread, name_));
 }
 
 void CrOSComponentInstallerPolicy::ComponentReady(

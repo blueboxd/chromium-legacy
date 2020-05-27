@@ -118,12 +118,6 @@ bool IsGoogleAssociatedDomainUrl(const GURL& url);
 // unregistering themselves.
 const std::vector<std::string>& GetGoogleRegistrableDomains();
 
-// When called, this will ignore the PortPermission passed in the above methods
-// and ignore the port numbers. This makes it easier to run tests for features
-// that use these methods (directly or indirectly) with the EmbeddedTestServer,
-// which is more representative of production.
-void IgnorePortNumbersForGoogleURLChecksForTesting();
-
 }  // namespace google_util
 
 #endif  // COMPONENTS_GOOGLE_CORE_COMMON_GOOGLE_UTIL_H_

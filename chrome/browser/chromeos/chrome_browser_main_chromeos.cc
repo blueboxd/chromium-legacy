@@ -27,7 +27,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
@@ -535,7 +534,7 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   // Set the crypto thread after the IO thread has been created/started.
   TPMTokenLoader::Get()->SetCryptoTaskRunner(
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
+      content::GetIOThreadTaskRunner({}));
 
   // Initialize NSS database for system token.
   system_token_certdb_initializer_ =

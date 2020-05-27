@@ -13,7 +13,6 @@
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "base/posix/unix_domain_socket.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_config.h"
@@ -121,16 +120,16 @@ class ArcTracingDataSource
       const perfetto::DataSourceConfig& data_source_config) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
     // |producer| is a singleton that is never destroyed.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ArcTracingDataSource::StartTracingOnUI,
                        base::Unretained(this), producer, data_source_config));
   }
 
   void StopTracing(base::OnceClosure stop_complete_callback) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ArcTracingDataSource::StopTracingOnUI,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ArcTracingDataSource::StopTracingOnUI,
                                   base::Unretained(this),
                                   std::move(stop_complete_callback)));
   }
@@ -304,8 +303,7 @@ ArcTracingBridge::~ArcTracingBridge() {
   arc_bridge_service_->tracing()->RemoveObserver(this);
 
   // Delete the reader on the IO thread.
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->DeleteSoon(FROM_HERE, reader_.release());
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE, reader_.release());
 }
 
 void ArcTracingBridge::GetCategories(std::set<std::string>* category_set) {
@@ -380,8 +378,8 @@ void ArcTracingBridge::StartTracing(const std::string& config,
 
   // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
   // unretained pointer.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ArcTracingReader::StartTracing,
                      base::Unretained(reader_.get()), std::move(read_fd)));
 }
@@ -425,8 +423,8 @@ void ArcTracingBridge::OnArcTracingStopped(
   }
   // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
   // unretained pointer.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&ArcTracingReader::StopTracing,
                      base::Unretained(reader_.get())),
       base::BindOnce(&ArcTracingBridge::OnTracingReaderStopped,

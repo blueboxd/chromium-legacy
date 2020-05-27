@@ -232,6 +232,11 @@ bool NetworkMetadataStore::GetIsConfiguredBySync(
 }
 
 bool NetworkMetadataStore::GetIsCreatedByUser(const std::string& network_guid) {
+  const NetworkState* network =
+      network_state_handler_->GetNetworkStateFromGuid(network_guid);
+  if (network && network->IsPrivate())
+    return true;
+
   const base::Value* owner = GetPref(network_guid, kOwner);
   if (!owner) {
     return false;

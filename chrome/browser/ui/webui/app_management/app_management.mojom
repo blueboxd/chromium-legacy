@@ -4,7 +4,7 @@
 
 module app_management.mojom;
 
-import "chrome/services/app_service/public/mojom/types.mojom";
+import "components/services/app_service/public/mojom/types.mojom";
 
 struct App {
   string id;

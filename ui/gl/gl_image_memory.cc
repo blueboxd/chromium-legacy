@@ -14,6 +14,7 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/buffer_format_utils.h"
@@ -192,8 +193,8 @@ void MemcpyTask(const void* src,
   auto checked_bytes = base::CheckedNumeric<size_t>(bytes);
   size_t start = (checked_bytes * task_index / n_tasks).ValueOrDie();
   size_t end = (checked_bytes * (task_index + 1) / n_tasks).ValueOrDie();
-  CHECK_LE(start, bytes);
-  CHECK_LE(end, bytes);
+  DCHECK_LE(start, bytes);
+  DCHECK_LE(end, bytes);
   memcpy(static_cast<char*>(dst) + start, static_cast<const char*>(src) + start,
          end - start);
   done->Run();
@@ -256,8 +257,12 @@ bool GLImageMemory::Initialize(const unsigned char* memory,
   format_ = format;
   stride_ = stride;
 
+  bool tex_image_from_pbo_is_slow = false;
+#if defined(OS_WIN)
+  tex_image_from_pbo_is_slow = true;
+#endif  // OS_WIN
   GLContext* context = GLContext::GetCurrent();
-  if (SupportsPBO(context) &&
+  if (!tex_image_from_pbo_is_slow && SupportsPBO(context) &&
       (SupportsMapBuffer(context) || SupportsMapBufferRange(context))) {
     constexpr size_t kTaskBytes = 1024 * 1024;
     buffer_bytes_ = stride * size_.height();

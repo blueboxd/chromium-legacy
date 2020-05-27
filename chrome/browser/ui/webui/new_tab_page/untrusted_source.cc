@@ -90,6 +90,11 @@ std::string UntrustedSource::GetContentSecurityPolicyChildSrc() {
   return "child-src https:;";
 }
 
+std::string UntrustedSource::GetContentSecurityPolicyDefaultSrc() {
+  // TODO(https://crbug.com/1085325): Audit and tighten CSP.
+  return std::string();
+}
+
 std::string UntrustedSource::GetSource() {
   return chrome::kChromeUIUntrustedNewTabPageUrl;
 }

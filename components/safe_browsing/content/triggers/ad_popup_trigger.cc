@@ -14,7 +14,6 @@
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/content/triggers/trigger_util.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/triggers/trigger_manager.h"
@@ -68,8 +67,7 @@ AdPopupTrigger::AdPopupTrigger(
       prefs_(prefs),
       url_loader_factory_(url_loader_factory),
       history_service_(history_service),
-      task_runner_(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {}
+      task_runner_(content::GetUIThreadTaskRunner({})) {}
 
 AdPopupTrigger::~AdPopupTrigger() {}
 

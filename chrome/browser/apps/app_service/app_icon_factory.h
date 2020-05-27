@@ -10,8 +10,8 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace content {

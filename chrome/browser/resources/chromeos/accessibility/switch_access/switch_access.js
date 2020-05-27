@@ -12,17 +12,20 @@ class SwitchAccess {
     window.switchAccess = new SwitchAccess();
 
     chrome.automation.getDesktop((desktop) => {
+      // These two must be initialized before the others.
       AutoScanManager.initialize();
       NavigationManager.initialize(desktop);
 
       Commands.initialize();
-      KeyboardRootNode.startWatchingVisibility();
       MenuManager.initialize();
       SwitchAccessPreferences.initialize();
       TextNavigationManager.initialize();
+
+      KeyboardRootNode.startWatchingVisibility();
     });
   }
 
+  // TODO(anastasi): Remove once new menu is being used.
   static get instance() {
     return window.switchAccess;
   }
@@ -50,20 +53,53 @@ class SwitchAccess {
     return this.enableImprovedTextInput_;
   }
 
-  /**
-   * Sets up the connection between the menuPanel and menuManager.
-   * @param {!PanelInterface} menuPanel
-   */
-  connectMenuPanel(menuPanel) {
-    // Because this may be called before init_(), check if navigationManager_
-    // is initialized.
+  /** TODO(anastasi): Remove this once menu migration is complete. */
+  connectMenuPanel() {}
 
-    if (NavigationManager.instance) {
-      NavigationManager.instance.connectMenuPanel(menuPanel);
-      MenuManager.instance.connectMenuPanel(menuPanel);
-    } else {
-      window.menuPanel = menuPanel;
+  /**
+   * Helper function to robustly find a node fitting a given predicate, even if
+   * that node has not yet been created.
+   * Used to find the menu and back button.
+   * @param {!function(!AutomationNode): boolean} predicate
+   * @param {!function(!AutomationNode): void} foundCallback
+   */
+  static findNodeMatchingPredicate(predicate, foundCallback) {
+    const desktop = NavigationManager.desktopNode;
+    // First, check if the node is currently in the tree.
+    const treeWalker = new AutomationTreeWalker(
+        desktop, constants.Dir.FORWARD, {visit: predicate});
+    treeWalker.next();
+    if (treeWalker.node) {
+      foundCallback(treeWalker.node);
+      return;
     }
+    // If it's not currently in the tree, listen for changes to the desktop
+    // tree.
+    const onDesktopChildrenChanged = (event) => {
+      if (predicate(event.target)) {
+        // If the event target is the node we're looking for, we've found it.
+        desktop.removeEventListener(
+            chrome.automation.EventType.CHILDREN_CHANGED,
+            onDesktopChildrenChanged, false);
+        foundCallback(event.target);
+      } else if (event.target.children.length > 0) {
+        // Otherwise, see if one of its children is the node we're looking for.
+        const treeWalker = new AutomationTreeWalker(
+            event.target, constants.Dir.FORWARD,
+            {visit: predicate, root: (node) => node == event.target});
+        treeWalker.next();
+        if (treeWalker.node) {
+          desktop.removeEventListener(
+              chrome.automation.EventType.CHILDREN_CHANGED,
+              onDesktopChildrenChanged, false);
+          foundCallback(treeWalker.node);
+        }
+      }
+    };
+
+    desktop.addEventListener(
+        chrome.automation.EventType.CHILDREN_CHANGED, onDesktopChildrenChanged,
+        false);
   }
 
   /*

@@ -3,11 +3,14 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js'
+    '//chrome/browser/resources/chromeos/accessibility/common/testing/' +
+        'assert_additions.js'
 ]);
 GEN_INCLUDE([
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/common.js',
-  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/callback_helper.js'
+  '//chrome/browser/resources/chromeos/accessibility/chromevox/testing/' +
+      'common.js',
+  '//chrome/browser/resources/chromeos/accessibility/common/testing/' +
+      'callback_helper.js'
 ]);
 
 /**

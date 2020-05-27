@@ -37,8 +37,8 @@
         --cr-icon-button-size: 36px;
         background-color: rgb(242, 242, 242);
         border-radius: 50%;
+        box-shadow: var(--cr-elevation-1);
         overflow: visible;
-        @apply --shadow-elevation-2dp;
       }
 
       cr-icon-button([disabled]) {
@@ -65,11 +65,11 @@
       }
 
       :host([keyboard-navigation-active]) cr-icon-button:focus {
-        @apply --shadow-elevation-6dp;
+        box-shadow: var(--cr-elevation-4);
       }
 
       cr-icon-button:active {
-        @apply --shadow-elevation-8dp;
+        box-shadow: var(--cr-elevation-5);
       }
     </style>
     <div id="wrapper">

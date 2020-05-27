@@ -11,7 +11,6 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/feedback/feedback_util_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
@@ -74,8 +73,8 @@ void KioskDiagnosisRunner::Start(const std::string& app_id) {
   app_id_ = app_id;
 
   // Schedules system logs to be collected after 1 minute.
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&KioskDiagnosisRunner::StartSystemLogCollection,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromMinutes(1));

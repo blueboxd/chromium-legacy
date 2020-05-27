@@ -45,8 +45,6 @@ namespace {
 
 bool gUseMockLinkDoctorBaseURLForTesting = false;
 
-bool g_ignore_port_numbers = false;
-
 bool IsPathHomePageBase(base::StringPiece path) {
   return (path == "/") || (path == "/webhp");
 }
@@ -104,6 +102,9 @@ bool IsValidHostName(base::StringPiece host,
 // is DISALLOW_NON_STANDARD_PORTS, this also requires |url| to use the standard
 // port for its scheme (80 for HTTP, 443 for HTTPS).
 bool IsValidURL(const GURL& url, PortPermission port_permission) {
+  static bool g_ignore_port_numbers =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIgnoreGooglePortNumbers);
   return url.is_valid() && url.SchemeIsHTTPOrHTTPS() &&
          (url.port().empty() || g_ignore_port_numbers ||
           (port_permission == ALLOW_NON_STANDARD_PORTS));
@@ -362,10 +363,6 @@ const std::vector<std::string>& GetGoogleRegistrableDomains() {
       }());
 
   return *kGoogleRegisterableDomains;
-}
-
-void IgnorePortNumbersForGoogleURLChecksForTesting() {
-  g_ignore_port_numbers = true;
 }
 
 }  // namespace google_util

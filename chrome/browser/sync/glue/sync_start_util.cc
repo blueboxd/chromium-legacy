@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -42,8 +41,8 @@ void StartSyncOnUIThread(const base::FilePath& profile,
 
 void StartSyncProxy(const base::FilePath& profile,
                     syncer::ModelType type) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&StartSyncOnUIThread, profile, type));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&StartSyncOnUIThread, profile, type));
 }
 
 }  // namespace

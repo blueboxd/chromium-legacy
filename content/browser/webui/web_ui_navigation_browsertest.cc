@@ -241,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(WebUINavigationBrowserTest,
                        WebFrameInChromeUntrustedSchemeAllowedByCSP) {
   // Add a DataSource with no iframe restrictions.
   TestUntrustedDataSourceCSP csp;
-  csp.child_src = "";
+  csp.child_src = "child-src * data:;";
   AddUntrustedDataSource(shell()->web_contents()->GetBrowserContext(),
                          "test-host", csp);
   GURL main_frame_url(GetChromeUntrustedUIURL("test-host/title1.html"));

@@ -6,7 +6,6 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_function_details.h"
@@ -116,7 +115,7 @@ EnterprisePlatformKeysPrivateChallengeMachineKeyFunction::Run() {
       chromeos::attestation::KEY_DEVICE, scoped_refptr<ExtensionFunction>(this),
       std::move(callback), challenge,
       /*register_key=*/false);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(task));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   return RespondLater();
 }
 
@@ -161,7 +160,7 @@ EnterprisePlatformKeysPrivateChallengeUserKeyFunction::Run() {
       &EPKPChallengeKey::Run, base::Unretained(&impl_),
       chromeos::attestation::KEY_USER, scoped_refptr<ExtensionFunction>(this),
       std::move(callback), challenge, params->register_key);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(task));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   return RespondLater();
 }
 

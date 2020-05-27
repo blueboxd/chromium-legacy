@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind_helpers.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/win/conflicts/module_database.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -22,11 +21,11 @@ ModuleListComponentUpdater::UniquePtr ModuleListComponentUpdater::Create(
     const std::string& module_list_component_id,
     const base::RepeatingClosure&
         on_module_list_component_not_updated_callback) {
-  return UniquePtr(new ModuleListComponentUpdater(
-                       module_list_component_id,
-                       on_module_list_component_not_updated_callback),
-                   base::OnTaskRunnerDeleter(base::CreateSequencedTaskRunner(
-                       {content::BrowserThread::UI})));
+  return UniquePtr(
+      new ModuleListComponentUpdater(
+          module_list_component_id,
+          on_module_list_component_not_updated_callback),
+      base::OnTaskRunnerDeleter(content::GetUIThreadTaskRunner({})));
 }
 
 ModuleListComponentUpdater::ModuleListComponentUpdater(
@@ -36,8 +35,8 @@ ModuleListComponentUpdater::ModuleListComponentUpdater(
       on_module_list_component_not_updated_callback_(
           on_module_list_component_not_updated_callback),
       observer_(this) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ModuleListComponentUpdater::InitializeOnUIThread,
                      base::Unretained(this)));
 }

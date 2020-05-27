@@ -18,7 +18,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -404,8 +403,8 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan(Profile* profile) {
   if (cached_reporter_invocations_) {
     SwReporterInvocationSequence copied_sequence(*cached_reporter_invocations_);
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &safe_browsing::MaybeStartSwReporter, invocation_type,
             // The invocations will be modified by the |ReporterRunner|.

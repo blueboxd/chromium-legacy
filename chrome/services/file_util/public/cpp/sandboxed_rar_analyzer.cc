@@ -10,7 +10,6 @@
 #include "base/files/file_util.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
@@ -91,14 +90,14 @@ void SandboxedRarAnalyzer::PrepareFileToAnalyze() {
     return;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFile, this,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SandboxedRarAnalyzer::AnalyzeFile, this,
                                 std::move(file), std::move(temp_file)));
 }
 
 void SandboxedRarAnalyzer::ReportFileFailure() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback_),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_),
                                 safe_browsing::ArchiveAnalyzerResults()));
 }
 

@@ -200,6 +200,11 @@ void SafeBrowsingUserInteractionObserver::OnBubbleAdded() {
   // DO NOT add code past this point. |this| is destroyed.
 }
 
+void SafeBrowsingUserInteractionObserver::OnJavaScriptDialog() {
+  ShowInterstitial(DelayedWarningEvent::kWarningShownOnJavaScriptDialog);
+  // DO NOT add code past this point. |this| is destroyed.
+}
+
 bool SafeBrowsingUserInteractionObserver::HandleKeyPress(
     const content::NativeWebKeyboardEvent& event) {
   ShowInterstitial(DelayedWarningEvent::kWarningShownOnKeypress);

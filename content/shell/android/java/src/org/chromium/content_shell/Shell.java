@@ -294,7 +294,8 @@ public class Shell extends LinearLayout {
     @CalledByNative
     private void initFromNativeTabContents(WebContents webContents) {
         Context context = getContext();
-        ContentView cv = ContentView.createContentView(context, webContents);
+        ContentView cv =
+                ContentView.createContentView(context, null /* eventOffsetHandler */, webContents);
         mViewAndroidDelegate = new ShellViewAndroidDelegate(cv);
         assert (mWebContents != webContents);
         if (mWebContents != null) mWebContents.clearNativeReference();

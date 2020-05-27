@@ -19,22 +19,18 @@ namespace content {
 class RenderFrame;
 }  // namespace content
 
-// Provides rewriting rules for network requests. UrlRequestRulesReceiver
-// objects are owned by their respective WebEngineContentRendererClient and they
-// will be destroyed on RenderFrame destruction. This is guaranteed to outlive
-// any WebEngineURLLoaderThrottle that uses it as the RenderFrame destruction
-// will have triggered the destruction of all pending
-// WebEngineURLLoaderThrottles.
+// Provides rewriting rules for network requests. Owned by
+// WebEngineRenderFrameObserver, this object will be destroyed on RenderFrame
+// destruction. This is guaranteed to outlive any WebEngineURLLoaderThrottle
+// that uses it as the RenderFrame destruction will have triggered the
+// destruction of all pending WebEngineURLLoaderThrottles.
 // This class should only be used on the IO thread, with the exception of the
 // GetCachedRules() implementation, which can be called from any sequence.
 class UrlRequestRulesReceiver
     : public mojom::UrlRequestRulesReceiver,
-      public WebEngineURLLoaderThrottle::CachedRulesProvider,
-      public content::RenderFrameObserver {
+      public WebEngineURLLoaderThrottle::CachedRulesProvider {
  public:
-  UrlRequestRulesReceiver(
-      content::RenderFrame* render_frame,
-      base::OnceCallback<void(int)> on_render_frame_deleted_callback);
+  UrlRequestRulesReceiver(content::RenderFrame* render_frame);
   ~UrlRequestRulesReceiver() override;
 
  private:
@@ -48,9 +44,6 @@ class UrlRequestRulesReceiver
   scoped_refptr<WebEngineURLLoaderThrottle::UrlRequestRewriteRules>
   GetCachedRules() override;
 
-  // content::RenderFrameObserver implementation.
-  void OnDestruct() override;
-
   base::Lock lock_;
 
   // This is accessed by WebEngineURLLoaderThrottles, which can be off-sequence
@@ -61,7 +54,6 @@ class UrlRequestRulesReceiver
   mojo::AssociatedReceiver<mojom::UrlRequestRulesReceiver>
       url_request_rules_receiver_{this};
 
-  base::OnceCallback<void(int)> on_render_frame_deleted_callback_;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(UrlRequestRulesReceiver);

@@ -122,11 +122,12 @@ std::string ReadCorruptionInfo(const base::FilePath& path_base,
   if (file.IsValid()) {
     std::string input_js(file_size, '\0');
     if (file_size == file.Read(0, base::data(input_js), file_size)) {
-      base::JSONReader reader;
-      std::unique_ptr<base::DictionaryValue> val(
-          base::DictionaryValue::From(reader.ReadToValueDeprecated(input_js)));
-      if (val)
-        val->GetString("message", &message);
+      base::Optional<base::Value> val = base::JSONReader::Read(input_js);
+      if (val && val->is_dict()) {
+        std::string* s = val->FindStringKey("message");
+        if (s)
+          message = *s;
+      }
     }
     file.Close();
   }

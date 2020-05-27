@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/app_update.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using AddSupervisionHandlerUtilsTest = testing::Test;

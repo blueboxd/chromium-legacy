@@ -711,6 +711,7 @@ namespace networkingPrivate {
     IPConfigType? IPAddressConfigType;
     IPConfigProperties[]? IPConfigs;
     DOMString? MacAddress;
+    boolean? Metered;
     DOMString? Name;
     IPConfigType? NameServersConfigType;
     long? Priority;
@@ -739,6 +740,7 @@ namespace networkingPrivate {
     ManagedIPConfigType? IPAddressConfigType;
     IPConfigProperties[]? IPConfigs;
     DOMString? MacAddress;
+    ManagedBoolean? Metered;
     ManagedDOMString? Name;
     ManagedIPConfigType? NameServersConfigType;
     ManagedLong? Priority;

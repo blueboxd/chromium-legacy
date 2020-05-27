@@ -52,10 +52,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, DynamicRules) {
   ASSERT_TRUE(RunExtensionTest("dynamic_rules")) << message_;
 }
 
-// TODO(crbug.com/1029233) Restore this test. This is disabled due to
-// flakiness.
-IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest,
-                       DISABLED_OnRulesMatchedDebug) {
+IN_PROC_BROWSER_TEST_F(DeclarativeNetRequestAPItest, OnRulesMatchedDebug) {
   ASSERT_TRUE(RunExtensionTest("on_rules_matched_debug")) << message_;
 }
 

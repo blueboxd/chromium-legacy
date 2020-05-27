@@ -3874,7 +3874,6 @@
                         "rounded_edges": "true"
                     },
                     "enable_features": [
-                        "OmniboxDisableInstantExtendedLimit",
                         "OmniboxHistoryQuickProviderAllowButDoNotScoreMidwordTerms",
                         "OmniboxHistoryQuickProviderAllowMidwordContinuations",
                         "OmniboxOnFocusSuggestions"

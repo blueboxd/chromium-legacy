@@ -26,11 +26,11 @@
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcuts_request.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/publisher_base.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -43,7 +43,7 @@ class AppServiceProxy;
 
 // An app publisher (in the App Service sense) of ARC++ apps,
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class ArcApps : public KeyedService,
                 public apps::PublisherBase,
                 public ArcAppListPrefs::Observer,

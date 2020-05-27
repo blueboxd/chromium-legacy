@@ -262,7 +262,9 @@ class LayerTreeHostImplTest : public testing::Test,
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
-
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
+    first_scroll_observed++;
+  }
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;
   }
@@ -825,6 +827,7 @@ class LayerTreeHostImplTest : public testing::Test,
   scoped_refptr<AnimationTimeline> timeline_;
   std::unique_ptr<base::Thread> image_worker_;
   int next_layer_id_ = 2;
+  int first_scroll_observed = 0;
 };
 
 class CommitToPendingTreeLayerTreeHostImplTest : public LayerTreeHostImplTest {
@@ -12218,6 +12221,115 @@ TEST_F(LayerTreeHostImplTest, MacWheelIsNonAnimated) {
   host_impl_->ScrollEnd();
 }
 #endif
+
+TEST_F(LayerTreeHostImplTest, OneScrollForFirstScrollDelay) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.commit_to_active_tree = false;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
+                                      gfx::Size(10, 10));
+  UpdateDrawProperties(host_impl_->active_tree());
+  EXPECT_EQ(first_scroll_observed, 0);
+
+  // LatencyInfo for the first scroll.
+  ui::LatencyInfo latency_info;
+  latency_info.set_trace_id(5);
+  latency_info.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
+  std::unique_ptr<SwapPromise> swap_promise(
+      new LatencyInfoSwapPromise(latency_info));
+  host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
+
+  host_impl_->SetFullViewportDamage();
+  host_impl_->SetNeedsRedraw();
+  DrawFrame();
+
+  constexpr uint32_t frame_token_1 = 1;
+  viz::FrameTimingDetails mock_details;
+  mock_details.presentation_feedback = ExampleFeedback();
+  // When the LayerTreeHostImpl receives presentation feedback, the callback
+  // will be fired.
+  host_impl_->DidPresentCompositorFrame(frame_token_1, mock_details);
+
+  EXPECT_EQ(first_scroll_observed, 1);
+}
+
+TEST_F(LayerTreeHostImplTest, OtherInputsForFirstScrollDelay) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.commit_to_active_tree = false;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
+                                      gfx::Size(10, 10));
+  UpdateDrawProperties(host_impl_->active_tree());
+  EXPECT_EQ(first_scroll_observed, 0);
+
+  // LatencyInfo for the first input, which is not scroll.
+  ui::LatencyInfo latency_info;
+  latency_info.set_trace_id(5);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
+  std::unique_ptr<SwapPromise> swap_promise(
+      new LatencyInfoSwapPromise(latency_info));
+  host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
+
+  host_impl_->SetFullViewportDamage();
+  host_impl_->SetNeedsRedraw();
+  DrawFrame();
+
+  constexpr uint32_t frame_token_1 = 1;
+  viz::FrameTimingDetails mock_details;
+  mock_details.presentation_feedback = ExampleFeedback();
+  // When the LayerTreeHostImpl receives presentation feedback, the callback
+  // will be fired.
+  host_impl_->DidPresentCompositorFrame(frame_token_1, mock_details);
+
+  EXPECT_EQ(first_scroll_observed, 0);
+}
+
+TEST_F(LayerTreeHostImplTest, MultipleScrollsForFirstScrollDelay) {
+  LayerTreeSettings settings = DefaultSettings();
+  settings.commit_to_active_tree = false;
+  CreateHostImpl(settings, CreateLayerTreeFrameSink());
+  SetupRootLayer<SolidColorLayerImpl>(host_impl_->active_tree(),
+                                      gfx::Size(10, 10));
+  UpdateDrawProperties(host_impl_->active_tree());
+  EXPECT_EQ(first_scroll_observed, 0);
+
+  // LatencyInfo for the first scroll.
+  ui::LatencyInfo latency_info;
+  latency_info.set_trace_id(5);
+  latency_info.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
+  std::unique_ptr<SwapPromise> swap_promise(
+      new LatencyInfoSwapPromise(latency_info));
+  host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise));
+  DrawFrame();
+  constexpr uint32_t frame_token_1 = 1;
+  viz::FrameTimingDetails mock_details;
+  mock_details.presentation_feedback = ExampleFeedback();
+  // When the LayerTreeHostImpl receives presentation feedback, the callback
+  // will be fired.
+  host_impl_->DidPresentCompositorFrame(frame_token_1, mock_details);
+  EXPECT_EQ(first_scroll_observed, 1);
+
+  // LatencyInfo for the second scroll.
+  ui::LatencyInfo latency_info2;
+  latency_info2.set_trace_id(6);
+  latency_info2.AddLatencyNumber(
+      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT);
+  std::unique_ptr<SwapPromise> swap_promise2(
+      new LatencyInfoSwapPromise(latency_info2));
+  host_impl_->active_tree()->QueuePinnedSwapPromise(std::move(swap_promise2));
+  host_impl_->SetFullViewportDamage();
+  host_impl_->SetNeedsRedraw();
+  DrawFrame();
+  constexpr uint32_t frame_token_2 = 2;
+  viz::FrameTimingDetails mock_details2;
+  mock_details2.presentation_feedback = ExampleFeedback();
+  // When the LayerTreeHostImpl receives presentation feedback, the callback
+  // will be fired.
+  host_impl_->DidPresentCompositorFrame(frame_token_2, mock_details2);
+  EXPECT_EQ(first_scroll_observed, 1);
+}
 
 TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   const gfx::Size content_size(1000, 1000);

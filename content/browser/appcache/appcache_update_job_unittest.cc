@@ -778,9 +778,13 @@ class AppCacheUpdateJobTest : public testing::Test,
     group_->update_job_ = update;
 
     MockFrontend mock_frontend;
-    AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                      /*process_id=*/1, /*render_frame_id=*/1,
-                      mojo::NullRemote(), service_.get());
+    const int kMockProcessId1 = 1;
+    AppCacheHost host(
+        /*host_id=*/base::UnguessableToken::Create(), kMockProcessId1,
+        /*render_frame_id=*/1,
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            kMockProcessId1),
+        mojo::NullRemote(), service_.get());
     host.set_frontend_for_testing(&mock_frontend);
 
     update->StartUpdate(&host, GURL());
@@ -819,27 +823,43 @@ class AppCacheUpdateJobTest : public testing::Test,
       MockFrontend mock_frontend3;
       MockFrontend mock_frontend4;
 
-      AppCacheHost host1(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/1, /*render_frame_id=*/1,
-                         mojo::NullRemote(), service_.get());
+      const int kMockProcessId1 = 1;
+      const int kMockProcessId2 = 2;
+      const int kMockProcessId3 = 3;
+      const int kMockProcessId4 = 4;
+      AppCacheHost host1(
+          /*host_id=*/base::UnguessableToken::Create(), kMockProcessId1,
+          /*render_frame_id=*/1,
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              kMockProcessId1),
+          mojo::NullRemote(), service_.get());
       host1.set_frontend_for_testing(&mock_frontend1);
       host1.AssociateCompleteCache(cache1);
 
-      AppCacheHost host2(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/2, /*render_frame_id=*/2,
-                         mojo::NullRemote(), service_.get());
+      AppCacheHost host2(
+          /*host_id=*/base::UnguessableToken::Create(), kMockProcessId2,
+          /*render_frame_id=*/2,
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              kMockProcessId2),
+          mojo::NullRemote(), service_.get());
       host2.set_frontend_for_testing(&mock_frontend2);
       host2.AssociateCompleteCache(cache2);
 
-      AppCacheHost host3(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/3, /*render_frame_id=*/3,
-                         mojo::NullRemote(), service_.get());
+      AppCacheHost host3(
+          /*host_id=*/base::UnguessableToken::Create(), kMockProcessId3,
+          /*render_frame_id=*/3,
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              kMockProcessId3),
+          mojo::NullRemote(), service_.get());
       host3.set_frontend_for_testing(&mock_frontend3);
       host3.AssociateCompleteCache(cache1);
 
-      AppCacheHost host4(/*host_id=*/base::UnguessableToken::Create(),
-                         /*process_id=*/4, /*render_frame_id=*/4,
-                         mojo::NullRemote(), service_.get());
+      AppCacheHost host4(
+          /*host_id=*/base::UnguessableToken::Create(), kMockProcessId4,
+          /*render_frame_id=*/4,
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              kMockProcessId4),
+          mojo::NullRemote(), service_.get());
       host4.set_frontend_for_testing(&mock_frontend4);
 
       AppCacheUpdateJob* update =
@@ -3306,9 +3326,13 @@ class AppCacheUpdateJobTest : public testing::Test,
         group_->manifest_url(), std::make_unique<HttpHeadersRequestTestJob>(
                                     std::string(), std::string()));
     MockFrontend mock_frontend;
-    AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                      /*process_id=*/1, /*render_frame_id=*/1,
-                      mojo::NullRemote(), service_.get());
+    const int kMockProcessId1 = 1;
+    AppCacheHost host(
+        /*host_id=*/base::UnguessableToken::Create(), kMockProcessId1,
+        /*render_frame_id=*/1,
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            kMockProcessId1),
+        mojo::NullRemote(), service_.get());
     host.set_frontend_for_testing(&mock_frontend);
     update->StartUpdate(&host, GURL());
 
@@ -4225,6 +4249,8 @@ class AppCacheUpdateJobTest : public testing::Test,
     constexpr int kRenderFrameIdForTests = 456;
     hosts_.push_back(std::make_unique<AppCacheHost>(
         base::UnguessableToken::Create(), process_id_, kRenderFrameIdForTests,
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            process_id_),
         mojo::NullRemote(), service_.get()));
     hosts_.back()->set_frontend_for_testing(frontend);
     return hosts_.back().get();
@@ -5065,9 +5091,12 @@ TEST_F(AppCacheUpdateJobTest, AlreadyChecking) {
   EXPECT_EQ(AppCacheGroup::CHECKING, group->update_status());
 
   MockFrontend mock_frontend;
+  const int kMockProcessId1 = 1;
   AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                    /*process_id=*/1, /*render_frame_id=*/1, mojo::NullRemote(),
-                    &service);
+                    kMockProcessId1, /*render_frame_id=*/1,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kMockProcessId1),
+                    mojo::NullRemote(), &service);
   host.set_frontend_for_testing(&mock_frontend);
   update.StartUpdate(&host, GURL());
 
@@ -5093,9 +5122,12 @@ TEST_F(AppCacheUpdateJobTest, AlreadyDownloading) {
   EXPECT_EQ(AppCacheGroup::DOWNLOADING, group->update_status());
 
   MockFrontend mock_frontend;
+  const int kMockProcessId1 = 1;
   AppCacheHost host(/*host_id=*/base::UnguessableToken::Create(),
-                    /*process_id=*/1, /*render_frame_id=*/1, mojo::NullRemote(),
-                    &service);
+                    kMockProcessId1, /*render_frame_id=*/1,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kMockProcessId1),
+                    mojo::NullRemote(), &service);
   host.set_frontend_for_testing(&mock_frontend);
   update.StartUpdate(&host, GURL());
 

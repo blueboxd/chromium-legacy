@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
@@ -678,8 +677,8 @@ void AvailabilityProber::RecordProbeResult(bool success) {
 
   // The callback may delete |this| so run it in a post task.
   if (on_complete_callback_) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&AvailabilityProber::RunCallback,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&AvailabilityProber::RunCallback,
                                   weak_factory_.GetWeakPtr(), success));
   }
 }

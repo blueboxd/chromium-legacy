@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/files/file_path.h"
 #include "base/memory/singleton.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -80,10 +79,10 @@ void OnProfileCreated(PrefetchServiceImpl* prefetch_service, Profile* profile) {
     // https://crbug.com/944952
     // Update is not a priority so make sure it happens after the critical
     // startup path.
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&GetGCMToken, profile, kPrefetchingOfflinePagesAppId,
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       &GetGCMToken, profile, kPrefetchingOfflinePagesAppId,
                        base::BindOnce(&PrefetchServiceImpl::GCMTokenReceived,
                                       prefetch_service->GetWeakPtr())));
   }

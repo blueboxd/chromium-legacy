@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/platform_thread.h"
@@ -1048,8 +1047,8 @@ class WebviewClientCertsTokenLoadingLoginTest
   void PrepareSystemSlot() {
     bool out_system_slot_prepared_successfully = false;
     base::RunLoop loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &WebviewClientCertsTokenLoadingLoginTest::PrepareSystemSlotOnIO,
             base::Unretained(this), &out_system_slot_prepared_successfully),
@@ -1084,8 +1083,8 @@ class WebviewClientCertsTokenLoadingLoginTest
 
   void TearDownTestSystemSlot() {
     base::RunLoop loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&WebviewClientCertsTokenLoadingLoginTest::
                            TearDownTestSystemSlotOnIO,
                        base::Unretained(this)),
@@ -1109,8 +1108,8 @@ namespace {
 bool IsTpmTokenReady() {
   base::RunLoop run_loop;
   bool is_ready = false;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&crypto::IsTPMTokenReady,
                      /*callback=*/base::OnceClosure()),
       base::BindOnce(

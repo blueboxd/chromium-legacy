@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/chrome_extension_cookies.h"
 
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -70,8 +69,8 @@ void ChromeExtensionCookies::CreateRestrictedCookieManager(
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&IOData::CreateRestrictedCookieManager,
                      base::Unretained(io_data_.get()), origin, site_for_cookies,
                      top_frame_origin, std::move(receiver)));
@@ -83,8 +82,8 @@ void ChromeExtensionCookies::ClearCookies(const GURL& origin) {
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&IOData::ClearCookies,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&IOData::ClearCookies,
                                 base::Unretained(io_data_.get()), origin));
 }
 
@@ -181,8 +180,8 @@ void ChromeExtensionCookies::OnContentSettingChanged(
       ContentSettingsType::COOKIES, std::string(), &settings);
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&IOData::OnContentSettingChanged,
                      base::Unretained(io_data_.get()), std::move(settings)));
 }
@@ -194,8 +193,8 @@ void ChromeExtensionCookies::OnThirdPartyCookieBlockingChanged(
     return;
 
   // Safe since |io_data_| is non-null so no IOData deletion is queued.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&IOData::OnThirdPartyCookieBlockingChanged,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&IOData::OnThirdPartyCookieBlockingChanged,
                                 base::Unretained(io_data_.get()),
                                 block_third_party_cookies));
 }
@@ -208,8 +207,8 @@ void ChromeExtensionCookies::Shutdown() {
   // Note: during tests this may be called with IO thread == UI thread. If this
   // were to use unique_ptr<.., DeleteOnIOThread> that case would result in
   // unwanted synchronous deletion; hence DeleteSoon is used by hand.
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
-                   std::move(io_data_));
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 std::move(io_data_));
   profile_ = nullptr;
 }
 

@@ -39,6 +39,9 @@ class MediaFeedsService : public KeyedService {
  public:
   static const char kSafeSearchResultHistogramName[];
 
+  using FetchMediaFeedCallback =
+      base::OnceCallback<void(const std::string& logs)>;
+
   explicit MediaFeedsService(Profile* profile);
   ~MediaFeedsService() override;
   MediaFeedsService(const MediaFeedsService& t) = delete;
@@ -67,8 +70,7 @@ class MediaFeedsService : public KeyedService {
   // Fetches a media feed with the given ID and then store it in the
   // feeds table in media history. Runs the given callback after storing. The
   // fetch will be skipped if another fetch is currently ongoing.
-  void FetchMediaFeed(int64_t feed_id,
-                      base::OnceClosure callback);
+  void FetchMediaFeed(int64_t feed_id, FetchMediaFeedCallback callback);
 
   // Stores a callback to be called once we have completed all inflight checks.
   void SetCookieChangeCallbackForTest(base::OnceClosure callback);
@@ -103,7 +105,9 @@ class MediaFeedsService : public KeyedService {
       base::Optional<base::UnguessableToken> reset_token,
       media_history::MediaHistoryKeyedService::MediaFeedFetchResult result);
 
-  void OnCompleteFetch(const int64_t feed_id, const bool has_items);
+  void OnCompleteFetch(const int64_t feed_id,
+                       const bool has_items,
+                       const std::string& error_logs);
 
   void OnSafeSearchPrefChanged();
 
@@ -121,13 +125,13 @@ class MediaFeedsService : public KeyedService {
 
   struct InflightFeedFetch {
     InflightFeedFetch(std::unique_ptr<MediaFeedsFetcher> fetcher,
-                      base::OnceClosure callback);
+                      FetchMediaFeedCallback callback);
     ~InflightFeedFetch();
     InflightFeedFetch(InflightFeedFetch&& t);
     InflightFeedFetch(const InflightFeedFetch&) = delete;
     InflightFeedFetch& operator=(const InflightFeedFetch&) = delete;
 
-    std::vector<base::OnceClosure> callbacks;
+    std::vector<FetchMediaFeedCallback> callbacks;
 
     std::unique_ptr<MediaFeedsFetcher> fetcher;
   };

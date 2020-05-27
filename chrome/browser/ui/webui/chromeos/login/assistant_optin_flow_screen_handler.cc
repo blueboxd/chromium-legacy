@@ -517,7 +517,8 @@ void AssistantOptInFlowScreenHandler::HandleVoiceMatchScreenUserAction(
       // No need to disable hotword for retrain flow since user has a model.
       prefs->SetBoolean(assistant::prefs::kAssistantHotwordEnabled, false);
     }
-    StopSpeakerIdEnrollment();
+    if (voice_match_enrollment_started_)
+      StopSpeakerIdEnrollment();
     ShowNextScreen();
   } else if (action == kRecordPressed) {
     if (!prefs->GetBoolean(assistant::prefs::kAssistantHotwordEnabled)) {

@@ -231,13 +231,16 @@ void PopulateSheetHeaderView(bool show_back_arrow,
 
 std::unique_ptr<views::ImageView> CreateAppIconView(
     int icon_resource_id,
-    gfx::ImageSkia img,
+    const SkBitmap* icon_bitmap,
     const base::string16& tooltip_text,
     float opacity) {
   std::unique_ptr<views::ImageView> icon_view =
       std::make_unique<views::ImageView>();
   icon_view->set_can_process_events_within_subtree(false);
-  if (!img.isNull() || !icon_resource_id) {
+  if (icon_bitmap || !icon_resource_id) {
+    gfx::ImageSkia img = gfx::ImageSkia::CreateFrom1xBitmap(
+                             (icon_bitmap ? *icon_bitmap : SkBitmap()))
+                             .DeepCopy();
     icon_view->SetImage(img);
     float width = base::checked_cast<float>(img.width());
     float height = base::checked_cast<float>(img.height());
@@ -277,9 +280,12 @@ std::unique_ptr<views::View> CreateProductLogoFooterView() {
   std::unique_ptr<views::ImageView> chrome_logo =
       std::make_unique<views::ImageView>();
   chrome_logo->set_can_process_events_within_subtree(false);
-  chrome_logo->SetImage(ui::ResourceBundle::GetSharedInstance()
-                            .GetImageNamed(IDR_PRODUCT_LOGO_NAME_22)
-                            .AsImageSkia());
+  chrome_logo->SetImage(
+      ui::ResourceBundle::GetSharedInstance()
+          .GetImageNamed(content_view->GetNativeTheme()->ShouldUseDarkColors()
+                             ? IDR_PRODUCT_LOGO_NAME_22_WHITE
+                             : IDR_PRODUCT_LOGO_NAME_22)
+          .AsImageSkia());
   chrome_logo->set_tooltip_text(l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   content_view->AddChildView(std::move(chrome_logo));
 

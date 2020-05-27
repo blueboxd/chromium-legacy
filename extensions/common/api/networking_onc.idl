@@ -706,6 +706,8 @@ namespace networking.onc {
     IPConfigProperties[]? IPConfigs;
     // The network's MAC address.
     DOMString? MacAddress;
+    // Whether the network is metered.
+    boolean? Metered;
     // A user friendly network name.
     DOMString? Name;
     // The IP configuration type for the name servers used by the network.
@@ -762,6 +764,8 @@ namespace networking.onc {
     IPConfigProperties[]? IPConfigs;
     // See $(ref:NetworkProperties.MacAddress).
     DOMString? MacAddress;
+    // See $(ref:NetworkProperties.Metered).
+    ManagedBoolean? Metered;
     // See $(ref:NetworkProperties.Name).
     ManagedDOMString? Name;
     // See $(ref:NetworkProperties.NameServersConfigType).

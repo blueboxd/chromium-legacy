@@ -53,6 +53,7 @@ class TileListView {
         mLayoutManager = new LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false);
         mView.setLayoutManager(mLayoutManager);
         mView.addItemDecoration(new ItemDecorationImpl(context));
+        mView.setItemAnimator(null);
         mView.setLayoutAnimation(
                 AnimationUtils.loadLayoutAnimation(context, R.anim.image_grid_enter));
 

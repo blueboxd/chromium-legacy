@@ -211,7 +211,7 @@ suite('OSSettingsSearchBox', () => {
   test('Keydown Enter on search box can cause route change', async () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
-    await simulateSearch('query');
+    await simulateSearch('fake query');
     await waitForListUpdate();
 
     const enterEvent = new KeyboardEvent(
@@ -223,6 +223,7 @@ suite('OSSettingsSearchBox', () => {
     Polymer.dom.flush();
     assertFalse(dropDown.opened);
     const router = settings.Router.getInstance();
+    assertEquals(router.getQueryParameters().get('search'), 'fake query');
     assertEquals(router.getCurrentRoute().path, '/networks');
     assertEquals(router.getQueryParameters().get('type'), 'WiFi');
   });
@@ -230,7 +231,7 @@ suite('OSSettingsSearchBox', () => {
   test('Keypress Enter on row causes route change', async () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
-    await simulateSearch('query');
+    await simulateSearch('fake query');
     await waitForListUpdate();
 
     const selectedOsRow = searchBox.getSelectedOsSearchResultRow_();
@@ -243,6 +244,7 @@ suite('OSSettingsSearchBox', () => {
     selectedOsRow.$.searchResultContainer.dispatchEvent(enterEvent);
     assertFalse(dropDown.opened);
     const router = settings.Router.getInstance();
+    assertEquals(router.getQueryParameters().get('search'), 'fake query');
     assertEquals(router.getCurrentRoute().path, '/networks');
     assertEquals(router.getQueryParameters().get('type'), 'WiFi');
   });
@@ -250,7 +252,7 @@ suite('OSSettingsSearchBox', () => {
   test('Route change when result row is clicked', async () => {
     settingsSearchHandler.setFakeResults(
         [fakeResult('WiFi Settings', 'networks?type=WiFi')]);
-    await simulateSearch('query');
+    await simulateSearch('fake query');
     await waitForListUpdate();
 
     const searchResultRow = searchBox.getSelectedOsSearchResultRow_();
@@ -261,6 +263,7 @@ suite('OSSettingsSearchBox', () => {
 
     assertFalse(dropDown.opened);
     const router = settings.Router.getInstance();
+    assertEquals(router.getQueryParameters().get('search'), 'fake query');
     assertEquals(router.getCurrentRoute().path, '/networks');
     assertEquals(router.getQueryParameters().get('type'), 'WiFi');
   });

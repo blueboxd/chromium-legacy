@@ -178,8 +178,7 @@ HeadlessRequestContextManager::CreateSystemContext(
       cert_verifier_creation_params =
           ::network::mojom::CertVerifierCreationParams::New();
   manager->ConfigureNetworkContextParamsInternal(
-      /* is_system = */ true, network_context_params.get(),
-      cert_verifier_creation_params.get());
+      network_context_params.get(), cert_verifier_creation_params.get());
   network_context_params->cert_verifier_creation_params =
       std::move(cert_verifier_creation_params);
   network_service->CreateNetworkContext(
@@ -233,19 +232,16 @@ void HeadlessRequestContextManager::ConfigureNetworkContextParams(
     ::network::mojom::NetworkContextParams* network_context_params,
     ::network::mojom::CertVerifierCreationParams*
         cert_verifier_creation_params) {
-  ConfigureNetworkContextParamsInternal(
-      /*is_system=*/false, network_context_params,
-      cert_verifier_creation_params);
+  ConfigureNetworkContextParamsInternal(network_context_params,
+                                        cert_verifier_creation_params);
 }
 
 void HeadlessRequestContextManager::ConfigureNetworkContextParamsInternal(
-    bool is_system,
     ::network::mojom::NetworkContextParams* context_params,
     ::network::mojom::CertVerifierCreationParams*
         cert_verifier_creation_params) {
   context_params->user_agent = user_agent_;
   context_params->accept_language = accept_language_;
-  context_params->primary_network_context = is_system;
 
   // TODO(https://crbug.com/458508): Allow
   // context_params->http_auth_static_network_context_params->allow_default_credentials

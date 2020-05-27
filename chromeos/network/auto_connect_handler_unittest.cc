@@ -223,28 +223,25 @@ class AutoConnectHandlerTest : public testing::Test {
   void SetupPolicy(const std::string& network_configs_json,
                    const base::DictionaryValue& global_config,
                    bool user_policy) {
-    std::unique_ptr<base::ListValue> network_configs(new base::ListValue);
+    base::ListValue network_configs;
     if (!network_configs_json.empty()) {
-      std::string error;
-      std::unique_ptr<base::Value> network_configs_value =
-          base::JSONReader::ReadAndReturnErrorDeprecated(
-              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr,
-              &error);
-      ASSERT_TRUE(network_configs_value) << error;
+      base::JSONReader::ValueWithError parsed_json =
+          base::JSONReader::ReadAndReturnValueWithError(
+              network_configs_json, base::JSON_ALLOW_TRAILING_COMMAS);
+      ASSERT_TRUE(parsed_json.value) << parsed_json.error_message;
       base::ListValue* network_configs_list = nullptr;
-      ASSERT_TRUE(network_configs_value->GetAsList(&network_configs_list));
-      ignore_result(network_configs_value.release());
-      network_configs.reset(network_configs_list);
+      ASSERT_TRUE(parsed_json.value->GetAsList(&network_configs_list));
+      network_configs = std::move(*network_configs_list);
     }
 
     if (user_policy) {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_USER_POLICY,
-                                         helper_.UserHash(), *network_configs,
+                                         helper_.UserHash(), network_configs,
                                          global_config);
     } else {
       managed_config_handler_->SetPolicy(::onc::ONC_SOURCE_DEVICE_POLICY,
                                          std::string(),  // no username hash
-                                         *network_configs, global_config);
+                                         network_configs, global_config);
     }
     task_environment_.RunUntilIdle();
   }

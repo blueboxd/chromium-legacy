@@ -146,6 +146,8 @@ class CONTENT_EXPORT CompositorImpl
       override;
   void NotifyThroughputTrackerResults(
       cc::CustomTrackerResults results) override {}
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
+  }
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

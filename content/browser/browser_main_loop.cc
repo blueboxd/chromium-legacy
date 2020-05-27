@@ -1553,13 +1553,11 @@ void BrowserMainLoop::InitializeAudio() {
 
   if (base::FeatureList::IsEnabled(features::kAudioServiceLaunchOnStartup)) {
     // Schedule the audio service startup on the main thread.
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce([]() {
-          TRACE_EVENT0("audio", "Starting audio service");
-          GetAudioService();
-        }));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(FROM_HERE, base::BindOnce([]() {
+                     TRACE_EVENT0("audio", "Starting audio service");
+                     GetAudioService();
+                   }));
   }
 
   audio_system_ = CreateAudioSystemForAudioService();

@@ -19,7 +19,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -214,8 +213,8 @@ class CrostiniManager::CrostiniRestarter
         // observer, and since is_running_ is false, we are waiting for this
         // shutdown to actually kick off the process.
         VLOG(1) << "resume restart on vm shutdown";
-        base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                       base::BindOnce(&CrostiniRestarter::ContinueRestart,
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(&CrostiniRestarter::ContinueRestart,
                                       weak_ptr_factory_.GetWeakPtr()));
       }
     }
@@ -285,8 +284,8 @@ class CrostiniManager::CrostiniRestarter
     is_running_ = true;
     // Skip to the end immediately if testing.
     if (crostini_manager_->skip_restart_for_testing()) {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&CrostiniRestarter::StartLxdContainerFinished,
                          weak_ptr_factory_.GetWeakPtr(),
                          CrostiniResult::SUCCESS));
@@ -1035,8 +1034,8 @@ void CrostiniManager::InstallTerminaComponent(CrostiniResultCallback callback) {
       g_browser_process->platform_part()->cros_component_manager();
   if (!component_manager) {
     // Running in a unit test. We still PostTask to prevent races.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&CrostiniManager::OnInstallTerminaComponent,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                        true, component_manager_load_error_for_testing_,
@@ -1133,8 +1132,8 @@ void CrostiniManager::OnInstallTerminaComponent(
       // Something else triggered an update that we have to wait on. We don't
       // know what, or when they will be finished, so just retry every 5 seconds
       // until we get a different result.
-      base::PostDelayedTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE,
           base::BindOnce(&CrostiniManager::InstallTerminaComponent,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
           base::TimeDelta::FromSeconds(5));
@@ -3216,8 +3215,8 @@ void CrostiniManager::RemoveCrostini(std::string vm_name,
       restarters_by_id_.size(),
       base::BindOnce(
           [](scoped_refptr<CrostiniRemover> remover) {
-            base::PostTask(
-                FROM_HERE, {content::BrowserThread::UI},
+            content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE,
                 base::BindOnce(&CrostiniRemover::RemoveCrostini, remover));
           },
           crostini_remover));

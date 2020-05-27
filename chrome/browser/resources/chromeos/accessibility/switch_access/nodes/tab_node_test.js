@@ -47,9 +47,12 @@ TEST_F('SwitchAccessTabNodeTest', 'Construction', function() {
         chrome.automation.RoleType.TAB, tab.role, 'Tab node is not a tab');
     assertTrue(tab.isGroup(), 'Tab node should be a group');
     assertEquals(
-        0, tab.actions.length, 'Tab as a group should not have actions');
+        1, tab.actions.length, 'Tab as a group should have 1 action (select)');
+    assertEquals(
+        chrome.accessibilityPrivate.SwitchAccessMenuAction.SELECT,
+        tab.actions[0], 'Tab as a group should have the action SELECT');
 
-    NavigationManager.instance.selectCurrentNode();
+    NavigationManager.instance.node_.doDefaultAction();
 
     const tabAsRoot = NavigationManager.instance.group_;
     assertTrue(

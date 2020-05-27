@@ -9,7 +9,6 @@
 
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -76,8 +75,7 @@ void ChromeSubresourceFilterClient::MaybeAppendNavigationThrottles(
     throttles->push_back(
         std::make_unique<subresource_filter::
                              SubresourceFilterSafeBrowsingActivationThrottle>(
-            navigation_handle, this,
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+            navigation_handle, this, content::GetIOThreadTaskRunner({}),
             safe_browsing_service->database_manager()));
   }
 

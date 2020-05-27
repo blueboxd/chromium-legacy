@@ -48,7 +48,6 @@ class HeadlessRequestContextManager {
 
  private:
   void ConfigureNetworkContextParamsInternal(
-      bool is_system,
       ::network::mojom::NetworkContextParams* network_context_params,
       ::network::mojom::CertVerifierCreationParams*
           cert_verifier_creation_params);

@@ -83,15 +83,11 @@ class PolicyTest : public InProcessBrowserTest {
                               bool expect_safe_search,
                               const std::string& url = "http://google.com/");
 
-  static void CheckYouTubeRestricted(
-      int youtube_restrict_mode,
-      const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
-      const GURL& url);
+  static void CheckYouTubeRestricted(int youtube_restrict_mode,
+                                     const net::HttpRequestHeaders& headers);
 
-  static void CheckAllowedDomainsHeader(
-      const std::string& allowed_domain,
-      const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
-      const GURL& url);
+  static void CheckAllowedDomainsHeader(const std::string& allowed_domain,
+                                        const net::HttpRequestHeaders& headers);
 
   static bool FetchSubresource(content::WebContents* web_contents,
                                const GURL& url);

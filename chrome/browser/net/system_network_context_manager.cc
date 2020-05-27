@@ -472,8 +472,6 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   if (max_connections_per_proxy != -1)
     network_service->SetMaxConnectionsPerProxy(max_connections_per_proxy);
 
-  // The system NetworkContext must be created first, since it sets
-  // |primary_network_context| to true.
   network_service_network_context_.reset();
   network_service->CreateNetworkContext(
       network_service_network_context_.BindNewPipeAndPassReceiver(),
@@ -707,8 +705,6 @@ SystemNetworkContextManager::CreateNetworkContextParams() {
   network_context_params->enable_ftp_url_support =
       base::FeatureList::IsEnabled(features::kFtpProtocol);
 #endif
-
-  network_context_params->primary_network_context = true;
 
   proxy_config_monitor_.AddToNetworkContextParams(network_context_params.get());
 

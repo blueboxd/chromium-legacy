@@ -12,7 +12,6 @@
 #include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/background_fetch/background_fetch_download_client.h"
@@ -154,7 +153,7 @@ std::unique_ptr<KeyedService> DownloadServiceFactory::BuildServiceInstanceFor(
     auto blob_context_getter_factory =
         std::make_unique<DownloadBlobContextGetterFactory>(key);
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+        content::GetIOThreadTaskRunner({});
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
         SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
 

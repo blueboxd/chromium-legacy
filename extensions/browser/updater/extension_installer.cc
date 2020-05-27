@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -45,8 +44,7 @@ void ExtensionInstaller::Install(
     std::unique_ptr<InstallParams> /*install_params*/,
     ProgressCallback /*progress_callback*/,
     UpdateClientCallback update_client_callback) {
-  auto ui_thread =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+  auto ui_thread = content::GetUIThreadTaskRunner({});
   DCHECK(ui_thread);
   DCHECK(!extension_installer_callback_.is_null());
   if (base::PathExists(unpack_path)) {

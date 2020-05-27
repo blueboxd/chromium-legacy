@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/app_shortcuts/arc_app_shortcut_item.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 class AppContextMenuDelegate;
 class AppListControllerDelegate;

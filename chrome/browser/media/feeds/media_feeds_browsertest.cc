@@ -263,8 +263,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetch) {
   EXPECT_EQ(1u, discovered_feeds.size());
 
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(discovered_feeds[0]->id,
-                                         run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      discovered_feeds[0]->id,
+      base::BindLambdaForTesting(
+          [&](const std::string& ignored) { run_loop.Quit(); }));
   run_loop.Run();
   WaitForDB();
 
@@ -663,8 +665,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, DiscoverAndFetchMinimal) {
   EXPECT_EQ(1u, discovered_feeds.size());
 
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(discovered_feeds[0]->id,
-                                         run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      discovered_feeds[0]->id,
+      base::BindLambdaForTesting(
+          [&](const std::string& ignored) { run_loop.Quit(); }));
   run_loop.Run();
   WaitForDB();
 
@@ -809,8 +813,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest, ResetMediaFeed_OnNavigation) {
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
-                                           run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        feeds[0]->id,
+        base::BindLambdaForTesting(
+            [&](const std::string& ignored) { run_loop.Quit(); }));
     run_loop.Run();
     WaitForDB();
   }
@@ -868,8 +874,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
-                                           run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        feeds[0]->id,
+        base::BindLambdaForTesting(
+            [&](const std::string& ignored) { run_loop.Quit(); }));
     run_loop.Run();
     WaitForDB();
   }
@@ -899,8 +907,10 @@ IN_PROC_BROWSER_TEST_F(MediaFeedsBrowserTest,
 
     // Fetch the feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(feeds[0]->id,
-                                           run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        feeds[0]->id,
+        base::BindLambdaForTesting(
+            [&](const std::string& ignored) { run_loop.Quit(); }));
     run_loop.Run();
     WaitForDB();
   }

@@ -73,6 +73,7 @@ chrome.passwordsPrivate.UrlCollection;
  *   username: string,
  *   federationText: (string|undefined),
  *   id: number,
+ *   frontendId: number,
  *   fromAccountStore: boolean
  * }}
  */
@@ -82,6 +83,7 @@ chrome.passwordsPrivate.PasswordUiEntry;
  * @typedef {{
  *   urls: !chrome.passwordsPrivate.UrlCollection,
  *   id: number,
+ *   frontendId: number,
  *   fromAccountStore: boolean
  * }}
  */

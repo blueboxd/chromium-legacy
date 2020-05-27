@@ -542,7 +542,8 @@ bool PasswordProtectionService::IsSupportedPasswordTypeForPinging(
     PasswordType password_type) const {
   switch (password_type) {
     case PasswordType::SAVED_PASSWORD:
-      return true;
+      return base::FeatureList::IsEnabled(
+          safe_browsing::kPasswordProtectionForSavedPasswords);
     case PasswordType::PRIMARY_ACCOUNT_PASSWORD:
       return true;
     case PasswordType::ENTERPRISE_PASSWORD:

@@ -650,10 +650,9 @@ class DeclarativeNetRequestBrowserTest
     tester.ExpectTotalCount(
         "Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime",
         expected_enabled_rulesets_count);
-    tester.ExpectUniqueSample(
-        "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-        RulesetMatcher::kLoadSuccess /*sample*/,
-        expected_enabled_rulesets_count);
+    tester.ExpectUniqueSample(kLoadRulesetResultHistogram,
+                              LoadRulesetResult::kSuccess /*sample*/,
+                              expected_enabled_rulesets_count);
 
     EXPECT_TRUE(AreAllIndexedStaticRulesetsValid(*extension, profile()));
 
@@ -2091,8 +2090,6 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
     EXPECT_FALSE(IsNavigationBlocked(unblocked_url));
   };
 
-  const char* kLoadRulesetResultHistogram =
-      "Extensions.DeclarativeNetRequest.LoadRulesetResult";
   const char* kReindexHistogram =
       "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful";
 
@@ -2104,19 +2101,13 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
     base::HistogramTester tester;
     test_extension_works_after_reload();
 
-    // Loading the ruleset would have failed initially due to checksum mismatch
-    // and later succeeded.
-    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
-                             RulesetMatcher::LoadRulesetResult::
-                                 kLoadErrorChecksumMismatch /* sample */,
-                             1 /* count */);
-    // Count of 2 because we load both static and dynamic rulesets.
-    tester.ExpectBucketCount(
-        kLoadRulesetResultHistogram,
-        RulesetMatcher::LoadRulesetResult::kLoadSuccess /* sample */,
-        2 /* count */);
-    // Verify that reindexing of the static ruleset succeeded.
+    // Loading the static ruleset would fail initially due to checksum mismatch
+    // but will succeed on re-indexing.
     tester.ExpectBucketCount(kReindexHistogram, true /*sample*/, 1 /*count*/);
+    // Count of 2 because we load both static and dynamic rulesets.
+    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
+                             LoadRulesetResult::kSuccess /* sample */,
+                             2 /* count */);
   }
 
   // Test dynamic ruleset re-indexing.
@@ -2127,19 +2118,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
     base::HistogramTester tester;
     test_extension_works_after_reload();
 
-    // Loading the ruleset would have failed initially due to checksum mismatch
-    // and later succeeded.
-    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
-                             RulesetMatcher::LoadRulesetResult::
-                                 kLoadErrorChecksumMismatch /* sample */,
-                             1 /* count */);
-    // Count of 2 because we load both static and dynamic rulesets.
-    tester.ExpectBucketCount(
-        kLoadRulesetResultHistogram,
-        RulesetMatcher::LoadRulesetResult::kLoadSuccess /* sample */,
-        2 /* count */);
-    // Verify that reindexing of the dynamic ruleset succeeded.
+    // Loading the dynamic ruleset would have failed initially due to checksum
+    // mismatch and later succeeded on re-indexing.
     tester.ExpectBucketCount(kReindexHistogram, true /*sample*/, 1 /*count*/);
+
+    // Count of 2 because we load both static and dynamic rulesets.
+    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
+                             LoadRulesetResult::kSuccess /* sample */,
+                             2 /* count */);
   }
 
   // Go crazy and corrupt both static and dynamic rulesets.
@@ -2153,17 +2139,11 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
 
     // Loading the ruleset would have failed initially due to checksum mismatch
     // and later succeeded.
-    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
-                             RulesetMatcher::LoadRulesetResult::
-                                 kLoadErrorChecksumMismatch /* sample */,
-                             2 /* count */);
-    // Count of 2 because we load both static and dynamic rulesets.
-    tester.ExpectBucketCount(
-        kLoadRulesetResultHistogram,
-        RulesetMatcher::LoadRulesetResult::kLoadSuccess /* sample */,
-        2 /* count */);
-    // Verify that reindexing of both the rulesets succeeded.
     tester.ExpectBucketCount(kReindexHistogram, true /*sample*/, 2 /*count*/);
+    // Count of 2 because we load both static and dynamic rulesets.
+    tester.ExpectBucketCount(kLoadRulesetResultHistogram,
+                             LoadRulesetResult::kSuccess /* sample */,
+                             2 /* count */);
   }
 }
 
@@ -2228,17 +2208,15 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
 
   // Verify that loading the corrupted rulesets failed due to checksum mismatch.
   // The non-corrupted rulesets should load fine.
-  tester.ExpectTotalCount("Extensions.DeclarativeNetRequest.LoadRulesetResult",
-                          rulesets.size());
+  tester.ExpectTotalCount(kLoadRulesetResultHistogram, rulesets.size());
   EXPECT_EQ(corrupted_ruleset_indices.size(),
             static_cast<size_t>(tester.GetBucketCount(
-                "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-                RulesetMatcher::LoadRulesetResult::
-                    kLoadErrorChecksumMismatch /*sample*/)));
+                kLoadRulesetResultHistogram,
+                LoadRulesetResult::kErrorChecksumMismatch /*sample*/)));
   EXPECT_EQ(non_corrupted_ruleset_indices.size(),
-            static_cast<size_t>(tester.GetBucketCount(
-                "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-                RulesetMatcher::LoadRulesetResult::kLoadSuccess /*sample*/)));
+            static_cast<size_t>(
+                tester.GetBucketCount(kLoadRulesetResultHistogram,
+                                      LoadRulesetResult::kSuccess /*sample*/)));
 
   // Verify that re-indexing the corrupted rulesets failed.
   tester.ExpectUniqueSample(
@@ -2305,22 +2283,14 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   // We add 1 to include the dynamic ruleset.
   const int kNumRulesets = kNumStaticRulesets + 1;
 
-  // Verify that loading the static and dynamic rulesets would have failed
-  // initially due to version header mismatch and later succeeded.
-  EXPECT_EQ(kNumRulesets,
-            tester.GetBucketCount(
-                "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-                RulesetMatcher::LoadRulesetResult::
-                    kLoadErrorVersionMismatch /*sample*/));
-  EXPECT_EQ(kNumRulesets,
-            tester.GetBucketCount(
-                "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-                RulesetMatcher::LoadRulesetResult::kLoadSuccess /*sample*/));
-
-  // Verify that reindexing succeeded.
+  // Verify that loading the static and dynamic rulesets would cause reindexing
+  // due to version header mismatch and later succeeded.
   tester.ExpectUniqueSample(
       "Extensions.DeclarativeNetRequest.RulesetReindexSuccessful",
       true /*sample*/, kNumRulesets /*count*/);
+  EXPECT_EQ(kNumRulesets,
+            tester.GetBucketCount(kLoadRulesetResultHistogram,
+                                  LoadRulesetResult::kSuccess /*sample*/));
 
   // Ensure that the new checksum was correctly persisted in prefs.
   const ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());

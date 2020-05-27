@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/task/post_task.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/site_instance_impl.h"
@@ -202,6 +201,6 @@ namespace std {
 // thread.
 void default_delete<content::ServiceWorkerProcessManager>::operator()(
     content::ServiceWorkerProcessManager* ptr) const {
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI}, ptr);
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE, ptr);
 }
 }  // namespace std

@@ -64,8 +64,7 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
   bool should_compute_occlusion =
       needs_occlusion_tracking &&
       occlusion_state == FrameOcclusionState::kGuaranteedNotOccluded &&
-      parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean &&
-      RuntimeEnabledFeatures::IntersectionObserverV2Enabled();
+      parent_lifecycle_state >= DocumentLifecycle::kPrePaintClean;
 
   LayoutEmbeddedContent* owner_layout_object =
       owner_element->GetLayoutEmbeddedContent();

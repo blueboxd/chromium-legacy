@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
@@ -120,10 +119,10 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
                     done_callback) {
     receive_count_ += 1;
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(std::move(done_callback), true));
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   wait_for_upload_->QuitClosure());
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(done_callback), true));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, wait_for_upload_->QuitClosure());
   }
 
   void OnStartedFinalizing(bool success) {
@@ -131,8 +130,8 @@ class ChromeTracingDelegateBrowserTest : public InProcessBrowserTest {
     last_on_started_finalizing_success_ = success;
 
     if (!on_started_finalization_callback_.is_null()) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     on_started_finalization_callback_);
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, on_started_finalization_callback_);
     }
   }
 

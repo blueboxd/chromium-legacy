@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/cast_messages.h"
@@ -398,8 +397,8 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
     return wake_lock_.get();
 
   mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&BindWakeLockProviderOnUIThread,
                      wake_lock_provider.BindNewPipeAndPassReceiver()));
   wake_lock_provider->GetWakeLockWithoutContext(

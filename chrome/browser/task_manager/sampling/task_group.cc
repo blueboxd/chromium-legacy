@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/task_manager/sampling/shared_sampler.h"
 #include "chrome/browser/task_manager/task_manager_observer.h"
@@ -285,8 +284,8 @@ void TaskGroup::RefreshWindowsHandles() {
 
 #if BUILDFLAG(ENABLE_NACL)
 void TaskGroup::RefreshNaClDebugStubPort(int child_process_unique_id) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetNaClDebugStubPortOnIoThread, child_process_unique_id),
       base::BindOnce(&TaskGroup::OnRefreshNaClDebugStubPortDone,
                      weak_ptr_factory_.GetWeakPtr()));

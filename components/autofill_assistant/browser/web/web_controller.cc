@@ -17,7 +17,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
@@ -1189,8 +1188,8 @@ void WebController::DispatchKeyboardTextDownEvent(
   }
 
   if (delay && delay_in_millisecond > 0) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(
             &WebController::DispatchKeyboardTextDownEvent,
             weak_ptr_factory_.GetWeakPtr(), node_frame_id, codepoints, index,
@@ -1642,8 +1641,8 @@ void WebController::OnWaitForDocumentToBecomeInteractive(
     return;
   }
 
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&WebController::WaitForDocumentToBecomeInteractive,
                      weak_ptr_factory_.GetWeakPtr(), --remaining_rounds,
                      object_id, node_frame_id, std::move(callback)),

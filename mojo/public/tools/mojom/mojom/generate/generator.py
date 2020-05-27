@@ -163,14 +163,6 @@ def AddComputedData(module):
     struct.versions = pack.GetVersionInfo(struct.packed)
     struct.exported = exported
 
-  def _AddUnionComputedData(union):
-    ordinal = 0
-    for field in union.fields:
-      if field.ordinal is not None:
-        ordinal = field.ordinal
-      field.ordinal = ordinal
-      ordinal += 1
-
   def _AddInterfaceComputedData(interface):
     next_ordinal = 0
     interface.version = 0
@@ -226,8 +218,6 @@ def AddComputedData(module):
 
   for struct in module.structs:
     _AddStructComputedData(True, struct)
-  for union in module.unions:
-    _AddUnionComputedData(union)
   for interface in module.interfaces:
     _AddInterfaceComputedData(interface)
 

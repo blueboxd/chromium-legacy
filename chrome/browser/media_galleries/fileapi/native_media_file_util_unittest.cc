@@ -17,7 +17,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
@@ -135,7 +134,7 @@ class NativeMediaFileUtilTest : public testing::Test {
         std::make_unique<MediaFileSystemBackend>(data_dir_.GetPath()));
 
     file_system_context_ = base::MakeRefCounted<storage::FileSystemContext>(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}).get(),
+        content::GetIOThreadTaskRunner({}).get(),
         base::SequencedTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         storage_policy.get(), nullptr, std::move(additional_providers),

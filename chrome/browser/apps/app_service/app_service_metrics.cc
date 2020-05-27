@@ -10,8 +10,8 @@
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/web_applications/default_web_app_ids.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "extensions/common/constants.h"
 
 #if defined(OS_CHROMEOS)

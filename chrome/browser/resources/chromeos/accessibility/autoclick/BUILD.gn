@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import(
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/run_jsbundler.gni")
+    "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
 import("//chrome/test/base/js2gtest.gni")
 import("//testing/test.gni")
 import("//third_party/closure_compiler/compile_js.gni")
@@ -85,7 +85,7 @@ source_set("browser_tests") {
 
     # The test uses data from the original location, not the copied one.
     "//chrome/browser/resources/chromeos/accessibility/autoclick/",
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/",
+    "//chrome/browser/resources/chromeos/accessibility/common/",
     "//ui/webui/resources/js/cr.js",
   ]
   data += js2gtest_js_libraries
@@ -95,7 +95,7 @@ js2gtest("autoclick_extjs_tests") {
   test_type = "extension"
   sources = [ "autoclick_test.js" ]
   gen_include_files = [
-    "../chromevox/testing/callback_helper.js",
+    "../common/testing/callback_helper.js",
     "mock_accessibility_private.js",
   ]
 

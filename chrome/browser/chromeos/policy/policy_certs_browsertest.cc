@@ -11,7 +11,6 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -409,8 +408,8 @@ bool IsCertInNSSDatabase(Profile* profile,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
   bool cert_found = false;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(IsCertInNSSDatabaseOnIOThread,
                      profile->GetResourceContext(), subject_common_name,
                      &cert_found, run_loop.QuitClosure()));

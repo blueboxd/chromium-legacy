@@ -3,12 +3,6 @@
 // found in the LICENSE file.
 
 /**
- * Boolean flag used to toggle native control
- * @type {boolean}
- */
-let useNativeControls = false;
-
-/**
  * @param {!HTMLElement} playerContainer Main container.
  * @param {!HTMLElement} videoContainer Container for the video element.
  * @param {!HTMLElement} controlsContainer Container for video controls.
@@ -320,17 +314,7 @@ function unload() {
   // Releases keep awake just in case (should be released on unloading video).
   chrome.power.releaseKeepAwake();
 
-  if (useNativeControls) {
-    nativePlayer.savePosition(true);
-    return;
-  }
-
-  if (!player.controls || !player.controls.getMedia()) {
-    return;
-  }
-
-  player.controls.savePosition(true /* exiting */);
-  player.controls.cleanup();
+  nativePlayer.savePosition(true);
 }
 
 /**
@@ -872,8 +856,6 @@ const nativePlayer = new NativeControlsVideoPlayer();
 function initStrings(callback) {
   chrome.fileManagerPrivate.getStrings(function(strings) {
     loadTimeData.data = strings;
-    useNativeControls =
-        loadTimeData.getBoolean('VIDEO_PLAYER_NATIVE_CONTROLS_ENABLED');
     callback();
   }.wrap(null));
 }
@@ -918,14 +900,8 @@ initPromise
           metrics.recordOpenVideoPlayerAction();
           metrics.recordNumberOfOpenedFiles(entries.length);
 
-          if (!useNativeControls) {
-            player.prepare(entries);
-            // TODO(lucmult): |player| and |fulfill| are not used.
-            player.playFirstVideo(/*player, fulfill*/);
-          } else {
-            nativePlayer.prepare(entries);
-            nativePlayer.playFirstVideo();
-          }
+          nativePlayer.prepare(entries);
+          nativePlayer.playFirstVideo();
         }.wrap());
       }.wrap());
     }.wrap());

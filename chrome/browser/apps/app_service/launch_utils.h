@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "chrome/browser/apps/app_service/app_launch_params.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/window_open_disposition.h"
 

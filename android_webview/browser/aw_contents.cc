@@ -552,8 +552,8 @@ void ShowGeolocationPromptHelper(const JavaObjectWeakGlobalRef& java_ref,
                                  const GURL& origin) {
   JNIEnv* env = AttachCurrentThread();
   if (java_ref.get(env).obj()) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ShowGeolocationPromptHelperTask, java_ref, origin));
   }
 }

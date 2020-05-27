@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/extension.h"
@@ -44,8 +43,8 @@ void KioskExternalUpdateValidator::OnUnpackFailure(
     const extensions::CrxInstallError& error) {
   LOG(ERROR) << "Failed to unpack external kiosk crx file: "
              << crx_file_.extension_id << " " << error.message();
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &KioskExternalUpdateValidatorDelegate::OnExternalUpdateUnpackFailure,
           delegate_, crx_file_.extension_id));
@@ -69,8 +68,8 @@ void KioskExternalUpdateValidator::OnUnpackSuccess(
     minimum_browser_version.clear();
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &KioskExternalUpdateValidatorDelegate::OnExternalUpdateUnpackSuccess,
           delegate_, crx_file_.extension_id, extension->VersionString(),

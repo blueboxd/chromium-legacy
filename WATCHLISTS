@@ -119,7 +119,6 @@
       'filepath': 'chrome/browser/apps/app_service/'\
                   '|chrome/browser/ui/app_list/app_service/'\
                   '|chrome/browser/ui/ash/launcher/app_service/'\
-                  '|chrome/services/app_service/'\
                   '|components/services/app_service/',
     },
     'app_shortcuts': {
@@ -2273,7 +2272,7 @@
     'blink_scheduling_api': ['web-scheduling-api-reviews@chromium.org'],
     'blink_screen_orientation': ['mlamouri+watch-blink@chromium.org'],
     'blink_script': ['kouhei+script@chromium.org',
-                     'hiroshige+script@chromium.org'],
+                     'hiroshige+script@chromium.org', 'dom+watch@chromium.org'],
     'blink_scroll': ['bokan@chromium.org'],
     'blink_service_worker': ['horo+watch@chromium.org',
                              'jsbell+serviceworker@chromium.org',

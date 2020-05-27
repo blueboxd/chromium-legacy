@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/triggers/trigger_manager.h"
@@ -68,8 +67,7 @@ SuspiciousSiteTrigger::SuspiciousSiteTrigger(
       prefs_(prefs),
       url_loader_factory_(url_loader_factory),
       history_service_(history_service),
-      task_runner_(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {}
+      task_runner_(content::GetUIThreadTaskRunner({})) {}
 
 SuspiciousSiteTrigger::~SuspiciousSiteTrigger() {}
 

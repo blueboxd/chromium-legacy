@@ -369,20 +369,10 @@ class CorbAndCorsExtensionBrowserTest
                      return base::UTF16ToUTF8(console_message.message);
                    });
 
-    if (IsOutOfBlinkCorsEnabled()) {
-      // Expect exactly 1 CORS error message.
-      EXPECT_THAT(messages, testing::ElementsAre(testing::HasSubstr(
-                                "has been blocked by CORS policy")));
-    } else {
-      // We allow more than 1 error message, because in some test cases there
-      // might be 2 error messages (one from InBlink CORS and one from
-      // FileURLLoaderFactory).  This doesn't seem worth fixing in product code
-      // (because InBlink CORS support will go away soon).
-      EXPECT_FALSE(messages.empty());
-      EXPECT_THAT(
-          messages,
-          testing::Each(testing::HasSubstr("has been blocked by CORS policy")));
-    }
+    // We allow more than 1 console message, because the test might flakily see
+    // extra console messages - see https://crbug.com/1085629.
+    EXPECT_THAT(messages, testing::Contains(testing::HasSubstr(
+                              "has been blocked by CORS policy")));
   }
 
   void VerifyFetchFromContentScriptWasBlockedByCorb(

@@ -49,21 +49,15 @@ const base::Feature kMalwareScanEnabled{"SafeBrowsingMalwareScanEnabled",
 
 const base::Feature kPasswordProtectionForSavedPasswords{
     "SafeBrowsingPasswordProtectionForSavedPasswords",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kPasswordProtectionShowDomainsForSavedPasswords{
     "SafeBrowsingPasswordProtectionShowDomainsForSavedPasswords",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(FULL_SAFE_BROWSING)
-const base::Feature kPasswordProtectionForSignedInUsers{
-    "SafeBrowsingPasswordProtectionForSignedInUsers",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-#else
 const base::Feature kPasswordProtectionForSignedInUsers{
     "SafeBrowsingPasswordProtectionForSignedInUsers",
     base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 const base::Feature kPromptAppForDeepScanning{
     "SafeBrowsingPromptAppForDeepScanning", base::FEATURE_DISABLED_BY_DEFAULT};

@@ -31,11 +31,11 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_WIDGET_H_
 
+#include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/mojom/page/widget.mojom-shared.h"
 #include "third_party/blink/public/platform/cross_variant_mojo_util.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
 #include "third_party/blink/public/web/web_swap_result.h"
 #include "third_party/blink/public/web/web_widget.h"

@@ -673,9 +673,8 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
       !LayoutParentStyleForcesZIndexToCreateStackingContext(
           layout_parent_style)) {
     style.SetIsStackingContext(false);
-    // TODO(alancutter): Avoid altering z-index here.
     if (!style.HasAutoZIndex())
-      style.SetZIndex(0);
+      style.SetEffectiveZIndexZero(true);
   } else if (!style.HasAutoZIndex()) {
     style.SetIsStackingContext(true);
   }

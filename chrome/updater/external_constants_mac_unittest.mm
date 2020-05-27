@@ -20,11 +20,10 @@ namespace {
 
 void ClearUserDefaults() {
   @autoreleasepool {
-    base::scoped_nsobject<NSUserDefaults> user_defaults([[NSUserDefaults alloc]
-        initWithSuiteName:@MAC_BUNDLE_IDENTIFIER_STRING]);
-    [user_defaults
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults
         removeObjectForKey:[NSString stringWithUTF8String:kDevOverrideKeyUrl]];
-    [user_defaults
+    [userDefaults
         removeObjectForKey:[NSString
                                stringWithUTF8String:kDevOverrideKeyUseCUP]];
   }
@@ -44,11 +43,10 @@ TEST_F(DevOverrideTest, TestDevOverrides) {
   std::unique_ptr<ExternalConstants> consts = CreateExternalConstants();
 
   @autoreleasepool {
-    base::scoped_nsobject<NSUserDefaults> user_defaults([[NSUserDefaults alloc]
-        initWithSuiteName:@MAC_BUNDLE_IDENTIFIER_STRING]);
-    [user_defaults setURL:[NSURL URLWithString:@"http://localhost:8080"]
-                   forKey:[NSString stringWithUTF8String:kDevOverrideKeyUrl]];
-    [user_defaults
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    [userDefaults setURL:[NSURL URLWithString:@"http://localhost:8080"]
+                  forKey:[NSString stringWithUTF8String:kDevOverrideKeyUrl]];
+    [userDefaults
         setBool:NO
          forKey:[NSString stringWithUTF8String:kDevOverrideKeyUseCUP]];
   }

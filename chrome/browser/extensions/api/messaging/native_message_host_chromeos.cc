@@ -15,7 +15,6 @@
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -99,8 +98,7 @@ struct BuiltInHost {
 std::unique_ptr<NativeMessageHost> CreateIt2MeHost(
     content::BrowserContext* browser_context) {
   return remoting::CreateIt2MeNativeMessagingHostForChromeOS(
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
+      content::GetIOThreadTaskRunner({}), content::GetUIThreadTaskRunner({}),
       g_browser_process->policy_service());
 }
 

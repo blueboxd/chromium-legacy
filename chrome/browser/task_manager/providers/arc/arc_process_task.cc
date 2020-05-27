@@ -10,7 +10,6 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -158,8 +157,8 @@ void ArcProcessTask::OnConnectionReady() {
   // Instead of calling into StartIconLoading() directly, return to the main
   // loop first to make sure other ArcBridgeService observers are notified.
   // Otherwise, arc::ArcIntentHelperBridge::GetActivityIcon() may fail again.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ArcProcessTask::StartIconLoading,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ArcProcessTask::StartIconLoading,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 

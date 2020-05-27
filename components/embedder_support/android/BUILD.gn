@@ -242,7 +242,7 @@ android_library("junit_test_support") {
   sources = [ "junit/src/org/chromium/components/embedder_support/util/ShadowUrlUtilities.java" ]
   deps = [
     ":util_java",
-    "//third_party/robolectric:robolectric_all_java",
+    "//third_party/android_deps:robolectric_all_java",
   ]
 }
 

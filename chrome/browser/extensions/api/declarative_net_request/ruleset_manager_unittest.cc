@@ -96,7 +96,7 @@ class RulesetManagerTest : public DNRTestBase {
                                                   &expected_checksum));
 
     std::vector<std::unique_ptr<RulesetMatcher>> matchers(1);
-    EXPECT_EQ(RulesetMatcher::kLoadSuccess,
+    EXPECT_EQ(LoadRulesetResult::kSuccess,
               RulesetMatcher::CreateVerifiedMatcher(
                   std::move(sources[0]), expected_checksum, &matchers[0]));
 

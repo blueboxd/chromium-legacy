@@ -17,11 +17,11 @@
 #include "base/one_shot_event.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -256,8 +256,7 @@ ProcessManager::ProcessManager(BrowserContext* context,
     : extension_registry_(extension_registry),
       site_instance_(content::SiteInstance::Create(context)),
       browser_context_(context),
-      worker_task_runner_(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
+      worker_task_runner_(content::GetIOThreadTaskRunner({})),
       startup_background_hosts_created_(false),
       last_background_close_sequence_id_(0) {
   // ExtensionRegistry is shared between incognito and regular contexts.

@@ -12,7 +12,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_mode_manager.h"
@@ -98,8 +97,8 @@ class RepeatedNotificationObserver : public content::NotificationObserver {
                const content::NotificationDetails& details) override {
     ASSERT_GT(num_outstanding_, 0);
     if (!--num_outstanding_ && running_) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     run_loop_.QuitClosure());
+      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                   run_loop_.QuitClosure());
     }
   }
 

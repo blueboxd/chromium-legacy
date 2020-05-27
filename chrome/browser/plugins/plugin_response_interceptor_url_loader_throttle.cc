@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/guid.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
 #include "chrome/browser/plugins/plugin_utils.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -126,8 +125,8 @@ void PluginResponseInterceptorURLLoaderThrottle::WillProcessResponse(
 
   bool embedded = resource_type_ !=
                   static_cast<int>(blink::mojom::ResourceType::kMainFrame);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &extensions::StreamsPrivateAPI::SendExecuteMimeTypeHandlerEvent,
           extension_id, view_id, embedded, frame_tree_node_id_,

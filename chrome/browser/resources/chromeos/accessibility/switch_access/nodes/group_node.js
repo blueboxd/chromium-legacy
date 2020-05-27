@@ -25,7 +25,7 @@ class GroupNode extends SAChildNode {
 
   /** @override */
   get actions() {
-    return [];
+    return [SwitchAccessMenuAction.SELECT];
   }
 
   /** @override */

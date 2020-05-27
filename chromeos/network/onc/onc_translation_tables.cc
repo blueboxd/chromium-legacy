@@ -213,6 +213,7 @@ const FieldTranslationEntry cellular_fields[] = {
 const FieldTranslationEntry network_fields[] = {
     {::onc::network_config::kGUID, shill::kGuidProperty},
     {::onc::network_config::kConnectable, shill::kConnectableProperty},
+    {::onc::network_config::kMetered, shill::kMeteredProperty},
     {::onc::network_config::kPriority, shill::kPriorityProperty},
 
     // Shill doesn't allow setting the name for non-VPN networks.

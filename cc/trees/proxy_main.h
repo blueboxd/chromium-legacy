@@ -58,6 +58,7 @@ class CC_EXPORT ProxyMain : public Proxy {
       std::vector<LayerTreeHost::PresentationTimeCallback> callbacks,
       const gfx::PresentationFeedback& feedback);
   void NotifyThroughputTrackerResults(CustomTrackerResults results);
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay);
 
   CommitPipelineStage max_requested_pipeline_stage() const {
     return max_requested_pipeline_stage_;

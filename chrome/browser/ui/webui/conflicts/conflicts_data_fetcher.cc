@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/win/conflicts/module_database.h"
@@ -483,15 +482,15 @@ void ConflictsDataFetcher::OnModuleDatabaseIdle() {
 
 #if defined(GOOGLE_CHROME_BUILD)
   // The state of third-party features must be determined on the UI thread.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           OnModuleDataFetched, std::move(on_conflicts_data_fetched_callback_),
           std::move(results), std::move(third_party_conflicts_manager_state_)));
 #else
   // The third-party features are always disabled on Chromium builds.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(OnConflictsDataFetched,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(OnConflictsDataFetched,
                                 std::move(on_conflicts_data_fetched_callback_),
                                 std::move(results), kNonGoogleChromeBuild));
 #endif

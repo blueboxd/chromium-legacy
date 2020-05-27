@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/appcache/appcache_quota_client.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
@@ -169,6 +170,7 @@ class CONTENT_EXPORT AppCacheServiceImpl : public AppCacheService {
       const base::UnguessableToken& host_id,
       int32_t render_frame_id,
       int process_id,
+      ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
       mojo::ReportBadMessageCallback bad_message_callback);
 
  protected:

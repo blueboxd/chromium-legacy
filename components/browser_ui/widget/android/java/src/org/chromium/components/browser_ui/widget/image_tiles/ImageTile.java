@@ -4,6 +4,10 @@
 
 package org.chromium.components.browser_ui.widget.image_tiles;
 
+import android.text.TextUtils;
+
+import androidx.annotation.Nullable;
+
 /**
  * Class encapsulating data needed to render a image tile. An {@link ImageTile} is a tile meant to
  * show an image with some text.
@@ -23,5 +27,13 @@ public class ImageTile {
         this.id = id;
         this.displayTitle = displayTitle;
         this.accessibilityText = accessibilityText;
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        if (!(obj instanceof ImageTile)) return false;
+        ImageTile other = (ImageTile) obj;
+        return TextUtils.equals(id, other.id) && TextUtils.equals(displayTitle, other.displayTitle)
+                && TextUtils.equals(accessibilityText, other.accessibilityText);
     }
 }

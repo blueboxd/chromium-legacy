@@ -7,8 +7,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 LauncherAppServiceAppUpdater::LauncherAppServiceAppUpdater(
     Delegate* delegate,

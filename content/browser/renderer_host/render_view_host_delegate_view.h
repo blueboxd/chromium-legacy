@@ -12,9 +12,9 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
+#include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/mojom/choosers/popup_menu.mojom.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
 
 namespace blink {
 class WebGestureEvent;

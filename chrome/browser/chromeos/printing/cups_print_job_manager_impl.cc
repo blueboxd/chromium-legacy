@@ -15,7 +15,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -193,8 +192,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       : CupsPrintJobManager(profile),
         cups_wrapper_(CupsWrapper::Create()),
         weak_ptr_factory_(this) {
-    timer_.SetTaskRunner(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+    timer_.SetTaskRunner(content::GetUIThreadTaskRunner({}));
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::NotificationService::AllSources());
   }
@@ -302,9 +300,8 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     NotifyJobUpdated(job->GetWeakPtr());
 
     // Run a query now.
-    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CupsPrintJobManagerImpl::PostQuery,
                                   weak_ptr_factory_.GetWeakPtr()));
     // Start the timer for ongoing queries.
     ScheduleQuery();

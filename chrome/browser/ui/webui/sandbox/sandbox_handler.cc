@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -136,9 +135,8 @@ void SandboxHandler::HandleRequestSandboxDiagnostics(
 
   AllowJavascript();
 
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&FetchBrowserChildProcesses),
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE, base::BindOnce(&FetchBrowserChildProcesses),
       base::BindOnce(&SandboxHandler::FetchBrowserChildProcessesCompleted,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -157,8 +155,8 @@ void SandboxHandler::FetchBrowserChildProcessesCompleted(
 void SandboxHandler::FetchSandboxDiagnosticsCompleted(
     base::Value sandbox_policies) {
   sandbox_policies_ = std::move(sandbox_policies);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&SandboxHandler::GetRendererProcessesAndFinish,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SandboxHandler::GetRendererProcessesAndFinish,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 

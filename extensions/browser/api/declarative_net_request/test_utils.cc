@@ -269,6 +269,30 @@ std::ostream& operator<<(std::ostream& output, const ParseResult& result) {
   return output;
 }
 
+std::ostream& operator<<(std::ostream& output, LoadRulesetResult result) {
+  switch (result) {
+    case LoadRulesetResult::kSuccess:
+      output << "kSuccess";
+      break;
+    case LoadRulesetResult::kErrorInvalidPath:
+      output << "kErrorInvalidPath";
+      break;
+    case LoadRulesetResult::kErrorCannotReadFile:
+      output << "kErrorCannotReadFile";
+      break;
+    case LoadRulesetResult::kErrorChecksumMismatch:
+      output << "kErrorChecksumMismatch";
+      break;
+    case LoadRulesetResult::kErrorVersionMismatch:
+      output << "kErrorVersionMismatch";
+      break;
+    case LoadRulesetResult::kErrorChecksumNotFound:
+      output << "kErrorChecksumNotFound";
+      break;
+  }
+  return output;
+}
+
 bool AreAllIndexedStaticRulesetsValid(
     const Extension& extension,
     content::BrowserContext* browser_context) {
@@ -285,7 +309,7 @@ bool AreAllIndexedStaticRulesetsValid(
     std::unique_ptr<RulesetMatcher> matcher;
     if (RulesetMatcher::CreateVerifiedMatcher(std::move(source),
                                               expected_checksum, &matcher) !=
-        RulesetMatcher::kLoadSuccess) {
+        LoadRulesetResult::kSuccess) {
       return false;
     }
   }
@@ -318,10 +342,9 @@ bool CreateVerifiedMatcher(const std::vector<TestRule>& rules,
     *expected_checksum = result.ruleset_checksum;
 
   // Create verified matcher.
-  RulesetMatcher::LoadRulesetResult load_result =
-      RulesetMatcher::CreateVerifiedMatcher(source, result.ruleset_checksum,
-                                            matcher);
-  return load_result == RulesetMatcher::kLoadSuccess;
+  LoadRulesetResult load_result = RulesetMatcher::CreateVerifiedMatcher(
+      source, result.ruleset_checksum, matcher);
+  return load_result == LoadRulesetResult::kSuccess;
 }
 
 RulesetSource CreateTemporarySource(RulesetID id,

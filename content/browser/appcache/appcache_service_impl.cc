@@ -522,6 +522,7 @@ void AppCacheServiceImpl::RegisterHost(
     const base::UnguessableToken& host_id,
     int32_t render_frame_id,
     int process_id,
+    ChildProcessSecurityPolicyImpl::Handle security_policy_handle,
     mojo::ReportBadMessageCallback bad_message_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (GetHost(host_id)) {
@@ -539,6 +540,7 @@ void AppCacheServiceImpl::RegisterHost(
     host->set_frontend(std::move(frontend_remote), render_frame_id);
   } else {
     host = std::make_unique<AppCacheHost>(host_id, process_id, render_frame_id,
+                                          std::move(security_policy_handle),
                                           std::move(frontend_remote), this);
   }
 

@@ -10,7 +10,7 @@
 
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace chromeos {
 namespace app_time {

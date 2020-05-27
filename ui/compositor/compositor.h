@@ -346,6 +346,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
       override;
   void NotifyThroughputTrackerResults(
       cc::CustomTrackerResults results) override;
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
+  }
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

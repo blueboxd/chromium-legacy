@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE([
-  '../chromevox/testing/callback_helper.js',
-  '../chromevox/testing/assert_additions.js'
+  '../common/testing/callback_helper.js',
+  '../common/testing/assert_additions.js'
 ]);
 
 /**

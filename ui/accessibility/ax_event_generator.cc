@@ -549,7 +549,7 @@ void AXEventGenerator::FireLiveRegionEvents(AXNode* node) {
              .GetStringAttribute(ax::mojom::StringAttribute::kName)
              .empty())
       AddEvent(node, Event::LIVE_REGION_NODE_CHANGED);
-    // Fire LIVE_REGION_CHANGED on the root of the live region.
+    // Fire LIVE_REGION_NODE_CHANGED on the root of the live region.
     AddEvent(live_root, Event::LIVE_REGION_CHANGED);
   }
 }

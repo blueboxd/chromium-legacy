@@ -6,13 +6,13 @@ source_set("browsertests") {
   testonly = true
 
   sources = [
+    "abort_payment_handler_browsertest.cc",
     "colocated_payment_manifests_browsertest.cc",
     "empty_parameters_browsertest.cc",
     "has_enrolled_instrument_browsertest.cc",
     "has_enrolled_instrument_query_quota_browsertest.cc",
     "iframe_csp_browsertest.cc",
     "ignore_payment_method_browsertest.cc",
-    "abort_payment_handler_browsertest.cc",
     "journey_logger_browsertest.cc",
     "payment_handler_change_shipping_address_option_browsertest.cc",
     "payment_handler_enable_delegations_browsertest.cc",
@@ -83,6 +83,7 @@ source_set("unittests") {
 
     deps += [
       "//chrome/android:native_j_unittests_jni_headers",
+      "//components/payments/content",
       "//components/payments/content:utils",
     ]
   }

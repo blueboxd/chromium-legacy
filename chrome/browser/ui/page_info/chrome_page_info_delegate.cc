@@ -33,6 +33,8 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/hid/hid_chooser_context.h"
+#include "chrome/browser/hid/hid_chooser_context_factory.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -65,6 +67,13 @@ permissions::ChooserContextBase* ChromePageInfoDelegate::GetChooserContext(
     case ContentSettingsType::SERIAL_CHOOSER_DATA:
 #if !defined(OS_ANDROID)
       return SerialChooserContextFactory::GetForProfile(GetProfile());
+#else
+      NOTREACHED();
+      return nullptr;
+#endif
+    case ContentSettingsType::HID_CHOOSER_DATA:
+#if !defined(OS_ANDROID)
+      return HidChooserContextFactory::GetForProfile(GetProfile());
 #else
       NOTREACHED();
       return nullptr;

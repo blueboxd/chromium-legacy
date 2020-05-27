@@ -5,11 +5,11 @@
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 
 #include "base/command_line.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/native_file_system_dialogs.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/switches.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -101,8 +101,8 @@ void NativeFileSystemPermissionRequestManager::ScheduleShowRequest() {
   if (!CanShowRequest())
     return;
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &NativeFileSystemPermissionRequestManager::DequeueAndShowRequest,
           weak_factory_.GetWeakPtr()));

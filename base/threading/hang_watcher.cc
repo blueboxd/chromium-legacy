@@ -118,7 +118,6 @@ HangWatcher::HangWatcher()
 
   DCHECK(!g_instance);
   g_instance = this;
-  Start();
 }
 
 HangWatcher::~HangWatcher() {
@@ -147,22 +146,21 @@ void HangWatcher::Wait() {
   while (true) {
     // Amount by which the actual time spent sleeping can deviate from
     // the target time and still be considered timely.
-    constexpr base::TimeDelta wait_drift_tolerance =
+    constexpr base::TimeDelta kWaitDriftTolerance =
         base::TimeDelta::FromMilliseconds(100);
 
-    base::TimeTicks time_before_wait = tick_clock_->NowTicks();
+    const base::TimeTicks time_before_wait = tick_clock_->NowTicks();
 
     // Sleep until next scheduled monitoring or until signaled.
-    bool was_signaled = should_monitor_.TimedWait(monitor_period_);
+    const bool was_signaled = should_monitor_.TimedWait(monitor_period_);
 
-    if (after_wait_callback_) {
+    if (after_wait_callback_)
       after_wait_callback_.Run(time_before_wait);
-    }
 
-    base::TimeTicks time_after_wait = tick_clock_->NowTicks();
-    base::TimeDelta wait_time = time_after_wait - time_before_wait;
-    bool wait_was_normal =
-        wait_time <= (monitor_period_ + wait_drift_tolerance);
+    const base::TimeTicks time_after_wait = tick_clock_->NowTicks();
+    const base::TimeDelta wait_time = time_after_wait - time_before_wait;
+    const bool wait_was_normal =
+        wait_time <= (monitor_period_ + kWaitDriftTolerance);
 
     if (!wait_was_normal) {
       // If the time spent waiting was too high it might indicate the machine is
@@ -190,9 +188,8 @@ void HangWatcher::Wait() {
     }
 
     // Stop waiting.
-    if (wait_was_normal || was_signaled) {
+    if (wait_was_normal || was_signaled)
       return;
-    }
   }
 }
 
@@ -202,19 +199,14 @@ void HangWatcher::Run() {
   DCHECK_CALLED_ON_VALID_THREAD(hang_watcher_thread_checker_);
 
   while (keep_monitoring_.load(std::memory_order_relaxed)) {
-    // If there is nothing to watch sleep until there is.
-    if (IsWatchListEmpty()) {
-      should_monitor_.Wait();
-    } else {
-      Monitor();
+    Wait();
 
+    if (!IsWatchListEmpty() &&
+        keep_monitoring_.load(std::memory_order_relaxed)) {
+      Monitor();
       if (after_monitor_closure_for_testing_) {
         after_monitor_closure_for_testing_.Run();
       }
-    }
-
-    if (keep_monitoring_.load(std::memory_order_relaxed)) {
-      Wait();
     }
   }
 }
@@ -237,11 +229,6 @@ ScopedClosureRunner HangWatcher::RegisterThread() {
 
   watch_states_.push_back(
       internal::HangWatchState::CreateHangWatchStateForCurrentThread());
-
-  // Now that there is a thread to monitor we wake the HangWatcher thread.
-  if (watch_states_.size() == 1) {
-    should_monitor_.Signal();
-  }
 
   return ScopedClosureRunner(BindOnce(&HangWatcher::UnregisterThread,
                                       Unretained(HangWatcher::GetInstance())));

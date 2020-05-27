@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
@@ -108,8 +107,8 @@ bool IsSystemSlotAvailable(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::RunLoop run_loop;
   bool system_slot_available = false;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(CheckIsSystemSlotAvailableOnIOThread,
                      profile->GetResourceContext(), &system_slot_available,
                      run_loop.QuitClosure()));
@@ -222,8 +221,8 @@ class UserAffiliationBrowserTest
   void SetUpTestSystemSlot() {
     bool system_slot_constructed_successfully = false;
     base::RunLoop loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&UserAffiliationBrowserTest::SetUpTestSystemSlotOnIO,
                        base::Unretained(this),
                        &system_slot_constructed_successfully),
@@ -259,8 +258,8 @@ class UserAffiliationBrowserTest
       return;
 
     base::RunLoop loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&UserAffiliationBrowserTest::TearDownTestSystemSlotOnIO,
                        base::Unretained(this)),
         loop.QuitClosure());

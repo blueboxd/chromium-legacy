@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/test/login_manager_mixin.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
@@ -39,8 +38,8 @@ class DBTester {
   // Returns true if the database was retrieved successfully.
   bool DoGetDBTests() {
     base::RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DBTester::GetDBAndDoTestsOnIOThread,
                        base::Unretained(this), profile_->GetResourceContext(),
                        run_loop.QuitClosure()));
@@ -51,8 +50,8 @@ class DBTester {
   // Test retrieving the database again, should be called after DoGetDBTests.
   void DoGetDBAgainTests() {
     base::RunLoop run_loop;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DBTester::DoGetDBAgainTestsOnIOThread,
                        base::Unretained(this), profile_->GetResourceContext(),
                        run_loop.QuitClosure()));
@@ -92,7 +91,7 @@ class DBTester {
       EXPECT_EQ(db->GetPublicSlot().get(), db->GetPrivateSlot().get());
     }
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, done_callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, done_callback);
   }
 
   void DoGetDBAgainTestsOnIOThread(content::ResourceContext* context,
@@ -104,7 +103,7 @@ class DBTester {
     // Should return the same db as before.
     EXPECT_EQ(db_, db);
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, done_callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, done_callback);
   }
 
   Profile* profile_;

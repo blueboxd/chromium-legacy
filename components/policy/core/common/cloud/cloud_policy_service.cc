@@ -38,12 +38,16 @@ CloudPolicyService::CloudPolicyService(const std::string& policy_type,
 }
 
 CloudPolicyService::~CloudPolicyService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   client_->RemovePolicyTypeToFetch(policy_type_, settings_entity_id_);
   client_->RemoveObserver(this);
   store_->RemoveObserver(this);
 }
 
 void CloudPolicyService::RefreshPolicy(RefreshPolicyCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // If the client is not registered or is unregistering, bail out.
   if (!client_->is_registered() || unregister_state_ != UNREGISTER_NONE) {
     std::move(callback).Run(false);
@@ -57,6 +61,8 @@ void CloudPolicyService::RefreshPolicy(RefreshPolicyCallback callback) {
 }
 
 void CloudPolicyService::Unregister(UnregisterCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Abort all pending refresh requests.
   if (refresh_state_ != REFRESH_NONE)
     RefreshCompleted(false);
@@ -71,6 +77,8 @@ void CloudPolicyService::Unregister(UnregisterCallback callback) {
 }
 
 void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (client_->status() != DM_STATUS_SUCCESS) {
     RefreshCompleted(false);
     return;
@@ -89,11 +97,15 @@ void CloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
 }
 
 void CloudPolicyService::OnRegistrationStateChanged(CloudPolicyClient* client) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (unregister_state_ == UNREGISTER_PENDING)
     UnregisterCompleted(true);
 }
 
 void CloudPolicyService::OnClientError(CloudPolicyClient* client) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (refresh_state_ == REFRESH_POLICY_FETCH)
     RefreshCompleted(false);
   if (unregister_state_ == UNREGISTER_PENDING)
@@ -101,6 +113,8 @@ void CloudPolicyService::OnClientError(CloudPolicyClient* client) {
 }
 
 void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   // Update the client with state from the store.
   const em::PolicyData* policy(store_->policy());
 
@@ -155,6 +169,8 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
 }
 
 void CloudPolicyService::OnStoreError(CloudPolicyStore* store) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (refresh_state_ == REFRESH_POLICY_STORE)
     RefreshCompleted(false);
   CheckInitializationCompleted();
@@ -162,6 +178,8 @@ void CloudPolicyService::OnStoreError(CloudPolicyStore* store) {
 }
 
 void CloudPolicyService::ReportValidationResult(CloudPolicyStore* store) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   const CloudPolicyValidatorBase::ValidationResult* validation_result =
       store->validation_result();
   if (!validation_result)
@@ -241,10 +259,14 @@ void CloudPolicyService::UnregisterCompleted(bool success) {
 }
 
 void CloudPolicyService::AddObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observers_.AddObserver(observer);
 }
 
 void CloudPolicyService::RemoveObserver(Observer* observer) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   observers_.RemoveObserver(observer);
 }
 

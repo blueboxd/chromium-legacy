@@ -19,6 +19,7 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.components.payments.MethodStrings;
 import org.chromium.components.payments.PaymentFeatureList;
+import org.chromium.components.payments.PaymentRequestSpec;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -26,7 +27,6 @@ import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentMethodData;
 import org.chromium.url.GURL;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,14 +66,8 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
 
         PaymentAppServiceCallback callback = new PaymentAppServiceCallback(delegate);
 
-        ByteBuffer[] serializedMethodData =
-                new ByteBuffer[delegate.getParams().getMethodData().values().size()];
-        int i = 0;
-        for (PaymentMethodData methodData : delegate.getParams().getMethodData().values()) {
-            serializedMethodData[i++] = methodData.serialize();
-        }
         PaymentAppServiceBridgeJni.get().create(delegate.getParams().getRenderFrameHost(),
-                delegate.getParams().getTopLevelOrigin(), serializedMethodData,
+                delegate.getParams().getTopLevelOrigin(), delegate.getParams().getSpec(),
                 delegate.getParams().getMayCrawl(), callback);
     }
 
@@ -276,7 +270,7 @@ public class PaymentAppServiceBridge implements PaymentAppFactoryInterface {
     @NativeMethods
     /* package */ interface Natives {
         void create(RenderFrameHost initiatorRenderFrameHost, String topOrigin,
-                ByteBuffer[] methodData, boolean mayCrawlForInstallablePaymentApps,
+                PaymentRequestSpec spec, boolean mayCrawlForInstallablePaymentApps,
                 PaymentAppServiceCallback callback);
     }
 }

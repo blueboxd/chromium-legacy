@@ -5,7 +5,6 @@
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "components/performance_manager/public/graph/graph.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/performance_manager.h"
@@ -68,8 +67,8 @@ void FormInteractionTabHelper::GraphObserver::DispatchOnHadFormInteraction(
 void FormInteractionTabHelper::GraphObserver::OnHadFormInteractionChanged(
     const performance_manager::PageNode* page_node) {
   // Forward the notification over to the UI thread.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&GraphObserver::DispatchOnHadFormInteraction,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&GraphObserver::DispatchOnHadFormInteraction,
                                 page_node->GetContentsProxy(),
                                 page_node->HadFormInteraction()));
 }

@@ -222,8 +222,14 @@ Field **NetworkConfigurations** is an array of
         * *DHCP*
         * *Static*
     * Determines whether the IP Address configuration is statically configured,
-      see **StaticIPConfig**, or automatically configured
-      using DHCP.
+      see **StaticIPConfig**, or automatically configured using DHCP.
+
+* **Metered**
+    * (optional, defaults to "false") - **boolean**
+    * Whether the network should be considered metered. This may affect auto
+      update frequency, and may be used as a hint for apps to conserve data.
+      When not specified, the system will set this to the detected value.
+      See also **WiFi.TetheringState**.
 
 * **NameServersConfigType**
     * (optional if **Remove** is *false*, otherwise ignored. Defaults to *DHCP*
@@ -232,8 +238,7 @@ Field **NetworkConfigurations** is an array of
         * *DHCP*
         * *Static*
     * Determines whether the NameServers configuration is statically configured,
-      see **StaticIPConfig**, or automatically configured
-      using DHCP.
+      see **StaticIPConfig**, or automatically configured using DHCP.
 
 * **IPConfigs**
     * (optional for connected networks, read-only) -
@@ -520,8 +525,7 @@ field **WiFi** must be set to an object of type [WiFi](#WiFi-type).
     * (optional, read-only, defaults to "NotDetected") - **string**
     * The tethering state of the WiFi connection. If the connection is
       tethered the value is "Confirmed". If the connection is suspected to be
-      tethered the value is "Suspected". In all other cases it's
-      "NotDetected".
+      tethered the value is "Suspected". In all other cases it's "NotDetected".
 
 ---
   * At least one of the fields **HexSSID** or **SSID** must be present.

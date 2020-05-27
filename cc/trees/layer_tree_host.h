@@ -396,8 +396,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetViewportVisibleRect(const gfx::Rect& visible_rect);
 
-  gfx::Rect viewport_visible_rect() const { return viewport_visible_rect_; }
-
   gfx::Rect device_viewport_rect() const { return device_viewport_rect_; }
 
   void SetBrowserControlsParams(const BrowserControlsParams& params);
@@ -515,7 +513,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // These are internal methods, called from the Layer itself when changing a
   // property or completing a PushPropertiesTo.
   void AddLayerShouldPushProperties(Layer* layer);
-  void RemoveLayerShouldPushProperties(Layer* layer);
   void ClearLayersThatShouldPushProperties();
   // The current set of all Layers attached to the LayerTreeHost's tree that
   // have been marked as needing PushPropertiesTo in the next commit.
@@ -712,6 +709,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   viz::DelegatedInkMetadata* DelegatedInkMetadataForTesting() {
     return delegated_ink_metadata_.get();
   }
+
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay);
 
  protected:
   LayerTreeHost(InitParams params, CompositorMode mode);

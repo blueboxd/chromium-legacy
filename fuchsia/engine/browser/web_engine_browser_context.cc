@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "components/keyed_service/core/simple_key_map.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -67,8 +66,8 @@ WebEngineBrowserContext::~WebEngineBrowserContext() {
   NotifyWillBeDestroyed(this);
 
   if (resource_context_) {
-    base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
-                     std::move(resource_context_));
+    content::GetIOThreadTaskRunner({})->DeleteSoon(
+        FROM_HERE, std::move(resource_context_));
   }
 
   ShutdownStoragePartitions();

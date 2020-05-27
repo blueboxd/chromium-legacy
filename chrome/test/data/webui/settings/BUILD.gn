@@ -7,15 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 import("//ui/webui/resources/tools/js_modulizer.gni")
 import("../namespace_rewrites.gni")
 
-group("modulize") {
-  public_deps = [ ":modulize_local" ]
-
-  if (is_chromeos) {
-    deps = [ "./chromeos:modulize" ]
-  }
-}
-
-js_modulizer("modulize_local") {
+js_modulizer("modulize") {
   input_files = [
     "fake_input_method_private.js",
     "fake_language_settings_private.js",
@@ -357,7 +349,7 @@ js_library("test_about_page_browser_proxy") {
     "//chrome/browser/resources/settings:settings",
     "//ui/webui/resources/js:cr.m",
   ]
-  extra_deps = [ ":modulize_local" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("test_hats_browser_proxy") {
@@ -373,7 +365,7 @@ js_library("test_lifetime_browser_proxy.m") {
     "..:test_browser_proxy.m",
     "//chrome/browser/resources/settings:settings",
   ]
-  extra_deps = [ ":modulize_local" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("test_local_data_browser_proxy") {
@@ -389,7 +381,7 @@ js_library("test_search_engines_browser_proxy.m") {
     "..:test_browser_proxy.m",
     "//chrome/browser/resources/settings:settings",
   ]
-  extra_deps = [ ":modulize_local" ]
+  extra_deps = [ ":modulize" ]
 }
 
 js_library("test_site_settings_prefs_browser_proxy") {

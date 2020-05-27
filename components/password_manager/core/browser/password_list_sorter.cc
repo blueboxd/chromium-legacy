@@ -27,7 +27,8 @@ constexpr char kSortKeyNoFederationSymbol = '-';
 
 }  // namespace
 
-std::string CreateSortKey(const autofill::PasswordForm& form) {
+std::string CreateSortKey(const autofill::PasswordForm& form,
+                          IgnoreStore ignore_store) {
   std::string shown_origin;
   GURL link_url;
   std::tie(shown_origin, link_url) = GetShownOriginAndLinkUrl(form);
@@ -74,7 +75,8 @@ std::string CreateSortKey(const autofill::PasswordForm& form) {
   // To separate HTTP/HTTPS credentials, add the scheme to the key.
   key += kSortKeyPartsSeparator + link_url.scheme();
 
-  if (form.in_store == autofill::PasswordForm::Store::kAccountStore) {
+  if (!ignore_store &&
+      form.in_store == autofill::PasswordForm::Store::kAccountStore) {
     key += kSortKeyPartsSeparator + std::string("account");
   }
 

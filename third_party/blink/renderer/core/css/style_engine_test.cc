@@ -2667,7 +2667,12 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       :root { color-scheme: dark }
-      body { color: green; }
+      @media (prefers-color-scheme: light) {
+        body { color: green; }
+      }
+      @media (prefers-color-scheme: no-preference) {
+        body { color: orange; }
+      }
       @media (prefers-color-scheme: dark) {
         body { color: red; }
       }
@@ -2700,6 +2705,30 @@ TEST_F(StyleEngineTest, PrintNoDarkColorScheme) {
             root->GetComputedStyle()->UsedColorSchemeForInitialColors());
   EXPECT_EQ(MakeRGB(255, 0, 0), body->GetComputedStyle()->VisitedDependentColor(
                                     GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest, AtPropertyUseCount) {
+  ScopedCSSVariables2AtPropertyForTest scoped_feature(true);
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      body { --x: No @property rule here; }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_FALSE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleProperty));
+
+  GetDocument().body()->setInnerHTML(R"HTML(
+    <style>
+      @property --x {
+        syntax: "<length>";
+        inherits: false;
+        initial-value: 0px;
+      }
+    </style>
+  )HTML");
+  UpdateAllLifecyclePhases();
+  EXPECT_TRUE(GetDocument().IsUseCounted(WebFeature::kCSSAtRuleProperty));
 }
 
 class ParameterizedStyleEngineTest

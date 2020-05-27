@@ -5,7 +5,6 @@
 #include "chrome/browser/lifetime/termination_notification.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -73,8 +72,8 @@ void NotifyAndTerminate(bool fast_path, RebootPolicy reboot_policy) {
     if (chrome::IsAttemptingShutdown()) {
       // If running the Chrome OS build, but we're not on the device, act
       // as if we received signal from SessionManager.
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
     }
   }
 #endif

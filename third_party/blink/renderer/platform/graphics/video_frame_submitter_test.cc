@@ -981,6 +981,8 @@ TEST_F(VideoFrameSubmitterTest, ProcessTimingDetails) {
         gfx::mojom::blink::PresentationFeedback::New();
     details->presentation_feedback->timestamp =
         base::TimeTicks() + frame_duration * token;
+    details->presentation_feedback->flags =
+        gfx::PresentationFeedback::kHWCompletion;
     timing_details.clear();
     timing_details.Set(token, std::move(details));
   };

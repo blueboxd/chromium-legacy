@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chrome/browser/safe_browsing/user_interaction_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -35,6 +36,16 @@ JavaScriptTabModalDialogManagerDelegateDesktop::
 
 void JavaScriptTabModalDialogManagerDelegateDesktop::WillRunDialog() {
   BrowserList::AddObserver(this);
+  // SafeBrowsing Delayed Warnings experiment can delay some SafeBrowsing
+  // warnings until user interaction. If the current page has a delayed warning,
+  // it'll have a user interaction observer attached. Show the warning
+  // immediately in that case.
+  safe_browsing::SafeBrowsingUserInteractionObserver* observer =
+      safe_browsing::SafeBrowsingUserInteractionObserver::FromWebContents(
+          web_contents_);
+  if (observer) {
+    observer->OnJavaScriptDialog();
+  }
 }
 
 void JavaScriptTabModalDialogManagerDelegateDesktop::DidCloseDialog() {

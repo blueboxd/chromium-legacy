@@ -5,13 +5,13 @@
 #include "weblayer/browser/download_manager_delegate_impl.h"
 
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_item.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/download_manager.h"
 #include "net/base/filename_util.h"
@@ -42,8 +42,8 @@ void GenerateFilename(
     base::CreateDirectory(suggested_directory);
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), suggested_path));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), suggested_path));
 }
 
 }  // namespace

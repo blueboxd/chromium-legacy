@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chrome/browser/chromeos/attestation/attestation_key_payload.pb.h"
@@ -346,10 +345,11 @@ void MachineCertificateUploaderImpl::HandleGetCertificateFailure(
 
 void MachineCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                          base::BindOnce(&MachineCertificateUploaderImpl::Start,
-                                         weak_factory_.GetWeakPtr()),
-                          base::TimeDelta::FromSeconds(retry_delay_));
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&MachineCertificateUploaderImpl::Start,
+                       weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(retry_delay_));
   } else {
     LOG(WARNING) << "MachineCertificateUploaderImpl: Retry limit exceeded.";
     std::move(callback_).Run(false);

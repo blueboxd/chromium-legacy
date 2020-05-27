@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -255,8 +254,8 @@ void WebTestClientImpl::ClearAllDatabases() {
 }
 
 void WebTestClientImpl::SetDatabaseQuota(int32_t quota) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&SetDatabaseQuotaOnIOThread, quota_manager_, quota));
 }
 

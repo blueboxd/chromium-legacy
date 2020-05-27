@@ -697,13 +697,13 @@ void WebContentsAccessibilityAndroid::UpdateAccessibilityNodeInfoBoundsRect(
   gfx::Rect absolute_rect = gfx::ScaleToEnclosingRect(
       node->GetUnclippedRootFrameBoundsRect(), dip_scale, dip_scale);
   gfx::Rect parent_relative_rect = absolute_rect;
-  if (node->PlatformGetParent()) {
+  bool is_root = node->PlatformGetParent() == nullptr;
+  if (!is_root) {
     gfx::Rect parent_rect = gfx::ScaleToEnclosingRect(
         node->PlatformGetParent()->GetUnclippedRootFrameBoundsRect(), dip_scale,
         dip_scale);
     parent_relative_rect.Offset(-parent_rect.OffsetFromOrigin());
   }
-  bool is_root = node->PlatformGetParent() == NULL;
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLocation(
       env, obj, info, unique_id, absolute_rect.x(), absolute_rect.y(),
       parent_relative_rect.x(), parent_relative_rect.y(), absolute_rect.width(),
@@ -734,7 +734,8 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   if (!node)
     return false;
 
-  if (node->PlatformGetParent()) {
+  bool is_root = node->PlatformGetParent() == nullptr;
+  if (!is_root) {
     auto* android_node =
         static_cast<BrowserAccessibilityAndroid*>(node->PlatformGetParent());
     Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoParent(
@@ -749,9 +750,10 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
   }
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoBooleanAttributes(
       env, obj, info, unique_id, node->IsCheckable(), node->IsChecked(),
-      node->IsClickable(), node->IsEnabled(), node->IsFocusable(),
-      node->IsFocused(), node->IsPasswordField(), node->IsScrollable(),
-      node->IsSelected(), node->IsVisibleToUser());
+      node->IsClickable(), node->IsContentInvalid(), node->IsEnabled(),
+      node->IsFocusable(), node->IsFocused(), node->HasImage(),
+      node->IsPasswordField(), node->IsScrollable(), node->IsSelected(),
+      node->IsVisibleToUser());
   Java_WebContentsAccessibilityImpl_addAccessibilityNodeInfoActions(
       env, obj, info, unique_id, node->CanScrollForward(),
       node->CanScrollBackward(), node->CanScrollUp(), node->CanScrollDown(),
@@ -760,9 +762,14 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       node->IsFocused(), node->IsCollapsed(), node->IsExpanded(),
       node->HasNonEmptyValue(), !node->GetInnerText().empty(),
       node->IsRangeType(), node->IsFormDescendant());
-  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoClassName(
-      env, obj, info,
-      base::android::ConvertUTF8ToJavaString(env, node->GetClassName()));
+
+  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoBaseAttributes(
+      env, obj, info, is_root,
+      base::android::ConvertUTF8ToJavaString(env, node->GetClassName()),
+      base::android::ConvertUTF8ToJavaString(env, node->GetRoleString()),
+      base::android::ConvertUTF16ToJavaString(env, node->GetRoleDescription()),
+      base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
+      base::android::ConvertUTF16ToJavaString(env, node->GetTargetUrl()));
 
   ScopedJavaLocalRef<jintArray> suggestion_starts_java;
   ScopedJavaLocalRef<jintArray> suggestion_ends_java;
@@ -801,18 +808,6 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
 
   UpdateAccessibilityNodeInfoBoundsRect(env, obj, info, unique_id, node);
 
-  bool is_root = node->PlatformGetParent() == NULL;
-
-  Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoKitKatAttributes(
-      env, obj, info, is_root, node->IsTextField(),
-      base::android::ConvertUTF8ToJavaString(env, node->GetRoleString()),
-      base::android::ConvertUTF16ToJavaString(env, node->GetRoleDescription()),
-      base::android::ConvertUTF16ToJavaString(env, node->GetHint()),
-      node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart),
-      node->GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd),
-      node->HasImage(), node->IsContentInvalid(),
-      base::android::ConvertUTF16ToJavaString(env, node->GetTargetUrl()));
-
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoLollipopAttributes(
       env, obj, info, node->CanOpenPopup(), node->IsContentInvalid(),
       node->IsDismissable(), node->IsMultiLine(), node->AndroidInputType(),
@@ -820,9 +815,9 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
       base::android::ConvertUTF16ToJavaString(
           env, node->GetContentInvalidErrorMessage()));
 
-  bool has_character_locations = node->HasCharacterLocations();
   Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoOAttributes(
-      env, obj, info, has_character_locations);
+      env, obj, info, node->HasCharacterLocations(),
+      base::android::ConvertUTF16ToJavaString(env, node->GetHint()));
 
   if (node->IsCollection()) {
     Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoCollectionInfo(
@@ -844,6 +839,11 @@ jboolean WebContentsAccessibilityAndroid::PopulateAccessibilityNodeInfo(
     Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoPaneTitle(
         env, obj, info,
         base::android::ConvertUTF16ToJavaString(env, node->GetInnerText()));
+  }
+
+  if (node->IsTextField()) {
+    Java_WebContentsAccessibilityImpl_setAccessibilityNodeInfoSelectionAttrs(
+        env, obj, info, node->GetSelectionStart(), node->GetSelectionEnd());
   }
 
   return true;

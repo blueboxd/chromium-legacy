@@ -86,15 +86,17 @@ void VideoPlaybackRoughnessReporter::FrameSubmitted(
 }
 
 void VideoPlaybackRoughnessReporter::FramePresented(TokenType token,
-                                                    base::TimeTicks timestamp) {
+                                                    base::TimeTicks timestamp,
+                                                    bool reliable_timestamp) {
   for (auto it = frames_.rbegin(); it != frames_.rend(); it++) {
     FrameInfo& info = *it;
     if (token == it->token) {
-      info.presentation_time = timestamp;
       if (info.decode_time.has_value()) {
         auto time_since_decode = timestamp - info.decode_time.value();
         UMA_HISTOGRAM_TIMES("Media.VideoFrameSubmitter", time_since_decode);
       }
+      if (reliable_timestamp)
+        info.presentation_time = timestamp;
       break;
     }
     if (viz::FrameTokenGT(token, it->token))

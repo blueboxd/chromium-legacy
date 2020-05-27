@@ -272,7 +272,7 @@
 - (void)notifyConsumerOfChangedLocation {
   [self.consumer updateLocationText:[self currentLocationString]
                            clipTail:[self locationShouldClipTail]];
-  GURL URL = self.webState->GetVisibleURL();
+  GURL URL = self.webState ? self.webState->GetVisibleURL() : GURL::EmptyGURL();
   BOOL isNTP = IsURLNewTabPage(URL);
   if (isNTP) {
     [self.consumer updateAfterNavigatingToNTP];

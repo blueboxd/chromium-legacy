@@ -360,12 +360,12 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
     //     <div style="position:absolute;"></div>
     //   </div>
     // </div>
-    if (info.escape_clip_to_for_absolute && style.ZIndex() < 0 &&
+    if (info.escape_clip_to_for_absolute && style.EffectiveZIndex() < 0 &&
         !info.escape_clip_to_for_absolute->GetLayoutObject()
              .StyleRef()
              .IsStackingContext())
       info.escape_clip_to_for_absolute = nullptr;
-    if (info.escape_clip_to_for_fixed && style.ZIndex() < 0 &&
+    if (info.escape_clip_to_for_fixed && style.EffectiveZIndex() < 0 &&
         !info.escape_clip_to_for_fixed->GetLayoutObject()
              .StyleRef()
              .IsStackingContext())

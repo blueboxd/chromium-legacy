@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/process/kill.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/messaging/native_messaging_host_manifest.h"
@@ -72,8 +71,7 @@ NativeMessageProcessHost::NativeMessageProcessHost(
       write_pending_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  task_runner_ =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+  task_runner_ = content::GetIOThreadTaskRunner({});
 }
 
 NativeMessageProcessHost::~NativeMessageProcessHost() {

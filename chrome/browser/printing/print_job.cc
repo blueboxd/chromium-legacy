@@ -230,8 +230,8 @@ bool PrintJob::FlushJob(base::TimeDelta timeout) {
 
   base::RunLoop loop(base::RunLoop::Type::kNestableTasksAllowed);
   quit_closure_ = loop.QuitClosure();
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        loop.QuitClosure(), timeout);
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, loop.QuitClosure(), timeout);
 
   loop.Run();
 
@@ -488,8 +488,8 @@ void PrintJob::OnNotifyPrintJobEvent(const JobEventDetails& event_details) {
     }
     case JobEventDetails::DOC_DONE: {
       // This will call Stop() and broadcast a JOB_DONE message.
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&PrintJob::OnDocumentDone, this));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&PrintJob::OnDocumentDone, this));
       break;
     }
 #if defined(OS_WIN)
@@ -546,9 +546,8 @@ void PrintJob::ControlledWorkerShutdown() {
   // Delay shutdown until the worker terminates.  We want this code path
   // to wait on the thread to quit before continuing.
   if (worker_->IsRunning()) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&PrintJob::ControlledWorkerShutdown, this),
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE, base::BindOnce(&PrintJob::ControlledWorkerShutdown, this),
         base::TimeDelta::FromMilliseconds(100));
     return;
   }

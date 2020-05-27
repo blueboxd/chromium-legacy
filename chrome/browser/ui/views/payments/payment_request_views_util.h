@@ -78,12 +78,13 @@ void PopulateSheetHeaderView(bool show_back_arrow,
                              views::View* container,
                              std::unique_ptr<views::Background> background);
 
-// Returns an instrument image view for the given |img| or |icon_resource_id|
-// and wanted |opacity|. Includes a rounded rect border. Callers need to set the
-// size of the resulting ImageView. Callers should set a |tooltip_text|.
+// Returns an instrument image view for the given |icon_bitmap| or
+// |icon_resource_id| and wanted |opacity|. Includes a rounded rect border.
+// Callers need to set the size of the resulting ImageView. Callers should set a
+// |tooltip_text|.
 std::unique_ptr<views::ImageView> CreateAppIconView(
     int icon_resource_id,
-    gfx::ImageSkia img,
+    const SkBitmap* icon_bitmap,
     const base::string16& tooltip_text,
     float opacity = 1.0f);
 

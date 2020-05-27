@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/sharing/features.h"
 #include "chrome/browser/sharing/sharing_constants.h"
@@ -24,6 +23,7 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_device_info/device_info.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -246,12 +246,11 @@ void SharingService::OnDeviceRegistered(
       backoff_entry_.InformOfRequest(false);
       // Transient error - try again after a delay.
       LOG(ERROR) << "Device registration failed with transient error";
-      base::PostDelayedTask(
-          FROM_HERE,
-          {base::TaskPriority::BEST_EFFORT, content::BrowserThread::UI},
-          base::BindOnce(&SharingService::RegisterDevice,
-                         weak_ptr_factory_.GetWeakPtr()),
-          backoff_entry_.GetTimeUntilRelease());
+      content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+          ->PostDelayedTask(FROM_HERE,
+                            base::BindOnce(&SharingService::RegisterDevice,
+                                           weak_ptr_factory_.GetWeakPtr()),
+                            backoff_entry_.GetTimeUntilRelease());
       break;
     case SharingDeviceRegistrationResult::kEncryptionError:
     case SharingDeviceRegistrationResult::kFcmFatalError:

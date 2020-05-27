@@ -45,7 +45,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
       size_t number_of_factories,
       content::RenderFrameHost* render_frame_host,
       const GURL& top_origin,
-      std::vector<mojom::PaymentMethodDataPtr> request_method_data,
+      PaymentRequestSpec* spec,
       scoped_refptr<PaymentManifestWebDataService> web_data_service,
       bool may_crawl_for_installable_payment_apps,
       PaymentAppsCreatedCallback payment_apps_created_callback,
@@ -90,7 +90,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
       size_t number_of_factories,
       content::RenderFrameHost* render_frame_host,
       const GURL& top_origin,
-      std::vector<mojom::PaymentMethodDataPtr> request_method_data,
+      PaymentRequestSpec* spec,
       scoped_refptr<PaymentManifestWebDataService> web_data_service,
       bool may_crawl_for_installable_payment_apps,
       PaymentAppsCreatedCallback payment_apps_created_callback,
@@ -103,7 +103,7 @@ class PaymentAppServiceBridge : public PaymentAppFactory::Delegate {
   const GURL top_origin_;
   const GURL frame_origin_;
   const url::Origin frame_security_origin_;
-  std::vector<mojom::PaymentMethodDataPtr> request_method_data_;
+  PaymentRequestSpec* spec_;
   scoped_refptr<PaymentManifestWebDataService>
       payment_manifest_web_data_service_;
   bool may_crawl_for_installable_payment_apps_;

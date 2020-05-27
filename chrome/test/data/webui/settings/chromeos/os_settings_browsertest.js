@@ -1329,7 +1329,6 @@ var OSSettingsResetPageTest = class extends OSSettingsBrowserTest {
       BROWSER_SETTINGS_PATH + '../test_util.js',
       'test_os_reset_browser_proxy.js',
       'os_reset_page_test.js',
-      'test_os_lifetime_browser_proxy.js',
     ]);
   }
 };

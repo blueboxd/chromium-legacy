@@ -92,7 +92,10 @@ class AppCacheRequestHandlerTest : public ::testing::Test {
     ignore_result(frontend_remote.InitWithNewPipeAndPassReceiver());
     mock_service_->RegisterHost(
         host_remote_.BindNewPipeAndPassReceiver(), std::move(frontend_remote),
-        kHostId, kRenderFrameId, kMockProcessId, GetBadMessageCallback());
+        kHostId, kRenderFrameId, kMockProcessId,
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            kMockProcessId),
+        GetBadMessageCallback());
     host_ = mock_service_->GetHost(kHostId);
   }
 

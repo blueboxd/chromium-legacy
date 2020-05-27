@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_model_builder.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 
 class AppListControllerDelegate;
 

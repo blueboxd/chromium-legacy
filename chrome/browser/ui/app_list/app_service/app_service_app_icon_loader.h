@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_icon_loader.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_update.h"
 #include "ui/gfx/image/image_skia.h"
 
 class Profile;

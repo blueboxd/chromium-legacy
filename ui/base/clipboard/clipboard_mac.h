@@ -33,6 +33,7 @@ class COMPONENT_EXPORT(UI_BASE_CLIPBOARD) ClipboardMac : public Clipboard {
   uint64_t GetSequenceNumber(ClipboardBuffer buffer) const override;
   bool IsFormatAvailable(const ClipboardFormatType& format,
                          ClipboardBuffer buffer) const override;
+  bool IsMarkedByOriginatorAsConfidential() const override;
   void Clear(ClipboardBuffer buffer) override;
   void ReadAvailableTypes(ClipboardBuffer buffer,
                           std::vector<base::string16>* types) const override;

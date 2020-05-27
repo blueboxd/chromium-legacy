@@ -558,8 +558,10 @@ class Generator(generator.Generator):
       for cpp_template_path in self.extra_cpp_template_paths:
         path_to_template, filename = os.path.split(cpp_template_path)
         filename_without_tmpl_suffix = filename.rstrip(".tmpl")
-        self.WriteWithComment(self._GenerateModuleFromImportedTemplate(path_to_template, filename),
-                              "%s%s-%s" % (self.module.path, suffix, filename_without_tmpl_suffix))
+        self.WriteWithComment(
+            self._GenerateModuleFromImportedTemplate(path_to_template,
+                                                     filename), "%s%s-%s" %
+            (self.module.path, suffix, filename_without_tmpl_suffix))
 
   def _ConstantValue(self, constant):
     return self._ExpressionToText(constant.value, kind=constant.kind)
@@ -937,8 +939,7 @@ class Generator(generator.Generator):
       if param_counts[-1] != version.num_fields:
         param_counts.append(version.num_fields)
 
-    ordinal_fields = sorted(
-        struct.fields, key=lambda field: field.ordinal or "")
+    ordinal_fields = sorted(struct.fields, key=lambda field: field.ordinal)
     return (StructConstructor(struct.fields, ordinal_fields[:param_count])
             for param_count in param_counts)
 

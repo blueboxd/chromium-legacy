@@ -12,7 +12,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
-#include "base/task/post_task.h"
 #include "components/metrics/metrics_service.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -116,8 +115,8 @@ void SubprocessMetricsProvider::BrowserChildProcessHostConnected(
   // managing the child in order to extract the metrics memory from it.
   // Unfortunately, the required lookup can only be performed on the IO
   // thread so do the necessary dance.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(
           &SubprocessMetricsProvider::GetSubprocessHistogramAllocatorOnIOThread,
           data.id),

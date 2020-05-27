@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/feature_list.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/site_isolation/chrome_site_per_process_test.h"
@@ -65,8 +64,7 @@ class MockSpellCheckHost : spellcheck::mojom::SpellCheckHost {
     if (text_received_)
       return;
 
-    auto ui_task_runner =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+    auto ui_task_runner = content::GetUIThreadTaskRunner({});
     ui_task_runner->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&MockSpellCheckHost::Timeout, base::Unretained(this)),
@@ -187,8 +185,7 @@ class SpellCheckBrowserTestHelper {
     if (!spell_check_hosts_.empty())
       return;
 
-    auto ui_task_runner =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+    auto ui_task_runner = content::GetUIThreadTaskRunner({});
     ui_task_runner->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&SpellCheckBrowserTestHelper::Timeout,

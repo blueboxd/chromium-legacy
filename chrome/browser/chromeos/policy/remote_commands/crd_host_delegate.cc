@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
@@ -214,8 +213,7 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
 
   // TODO(antrim): set up watchdog timer (reasonable cutoff).
   host_ = remoting::CreateIt2MeNativeMessagingHostForChromeOS(
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
+      content::GetIOThreadTaskRunner({}), content::GetUIThreadTaskRunner({}),
       g_browser_process->policy_service());
   host_->Start(this);
 

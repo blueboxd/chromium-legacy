@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 
 namespace apps {
 class AppUpdate;

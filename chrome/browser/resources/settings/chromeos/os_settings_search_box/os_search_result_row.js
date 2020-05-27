@@ -334,10 +334,10 @@ cr.define('settings', function() {
           settings.Router.getInstance().getRouteForPath(
               '/' + pathAndOptParams[0]),
           'Supplied path does not map to an existing route.');
-      const params = pathAndOptParams.length == 2 ?
-          new URLSearchParams(pathAndOptParams[1]) :
-          undefined;
 
+      const paramsString = `search=${encodeURIComponent(this.searchQuery)}` +
+          (pathAndOptParams.length == 2 ? `&${pathAndOptParams[1]}` : ``);
+      const params = new URLSearchParams(paramsString);
       settings.Router.getInstance().navigateTo(route, params);
       this.fire('navigated-to-result-route');
     },

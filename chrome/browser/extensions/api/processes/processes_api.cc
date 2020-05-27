@@ -17,7 +17,6 @@
 #include "base/process/process.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -512,8 +511,8 @@ ExtensionFunction::ResponseAction ProcessesTerminateFunction::Run() {
   // This could be a non-renderer child process like a plugin or a nacl
   // process. Try to get its handle from the BrowserChildProcessHost on the
   // IO thread.
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&ProcessesTerminateFunction::GetProcessHandleOnIO, this,
                      child_process_host_id_),
       base::BindOnce(&ProcessesTerminateFunction::OnProcessHandleOnUI, this));

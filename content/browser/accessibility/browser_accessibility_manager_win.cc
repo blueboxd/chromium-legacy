@@ -264,17 +264,6 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       FireUiaAccessibilityEvent(UIA_LiveRegionChangedEventId, node);
       break;
     case ui::AXEventGenerator::Event::LIVE_REGION_CHANGED:
-      // This will force ATs that synchronously call get_newText (e.g., NVDA) to
-      // read the entire live region hypertext.
-      ToBrowserAccessibilityWin(node)->GetCOM()->ForceNewHypertext();
-      // TODO(accessibility) Technically this should only be fired if the new
-      // text is non-empty. Also, IA2_EVENT_TEXT_REMOVED should be fired if
-      // there was non-empty old text. However, this does not known to affect
-      // any current screen reader behavior either way. It could affect
-      // the aria-relevant="removals" case, but that in general is poorly
-      // supported markup across browser-AT combinations, and not recommended.
-      FireWinAccessibilityEvent(IA2_EVENT_TEXT_INSERTED, node);
-
       // This event is redundant with the IA2_EVENT_TEXT_INSERTED events;
       // however, JAWS 2018 and earlier do not process the text inserted
       // events when "virtual cursor mode" is turned off (Insert+Z).
@@ -310,11 +299,9 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       break;
     case ui::AXEventGenerator::Event::NAME_CHANGED:
       FireUiaPropertyChangedEvent(UIA_NamePropertyId, node);
-      // Only fire name changes when the name comes from an attribute, and is
-      // not contained within an active live-region; otherwise name changes are
-      // redundant with text removed/inserted events.
-      if (node->GetData().GetNameFrom() != ax::mojom::NameFrom::kContents &&
-          !node->GetData().IsContainedInActiveLiveRegion())
+      // Only fire name changes when the name comes from an attribute, otherwise
+      // name changes are redundant with text removed/inserted events.
+      if (node->GetData().GetNameFrom() != ax::mojom::NameFrom::kContents)
         FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
       break;
     case ui::AXEventGenerator::Event::PLACEHOLDER_CHANGED:

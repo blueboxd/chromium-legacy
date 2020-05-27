@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-FAIL Duplicate stylesheets have the right cascade position in the Document assert_equals: duplicate stylesheet should take right position in the cascade expected "1" but got "auto"
-FAIL Appending duplicate stylesheets yields the correct cascade position in the Document assert_equals: backmost stylesheet should take precedence expected "0" but got "auto"
-FAIL Duplicate stylesheets have the right cascade position in the ShadowRoot assert_equals: duplicate stylesheet should take right position in the cascade expected "1" but got "auto"
-FAIL Appending duplicate stylesheets yields the correct cascade position in the ShadowRoot assert_equals: backmost stylesheet should take precedence expected "0" but got "auto"
-Harness: the test ran to completion.
-

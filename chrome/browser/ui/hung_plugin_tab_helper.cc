@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/process/process.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/hang_monitor/hang_crash_dump.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -167,8 +166,8 @@ void HungPluginTabHelper::OnManagerShuttingDown(
 }
 
 void HungPluginTabHelper::KillPlugin(int child_id) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&KillPluginOnIOThread, child_id));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&KillPluginOnIOThread, child_id));
 }
 
 HungPluginTabHelper::HungPluginTabHelper(content::WebContents* contents)

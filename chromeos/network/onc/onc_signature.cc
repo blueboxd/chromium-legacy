@@ -327,6 +327,7 @@ const OncFieldSignature network_configuration_fields[] = {
     {::onc::network_config::kEthernet, &kEthernetSignature},
     {::onc::network_config::kGUID, &kStringSignature},
     {::onc::network_config::kIPAddressConfigType, &kStringSignature},
+    {::onc::network_config::kMetered, &kBoolSignature},
     {::onc::network_config::kName, &kStringSignature},
     {::onc::network_config::kNameServersConfigType, &kStringSignature},
     {::onc::network_config::kPriority, &kIntegerSignature},

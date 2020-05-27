@@ -31,7 +31,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -419,14 +418,14 @@ void RegisterSwReporterComponent(ComponentUpdateService* cus) {
   // Once the component is ready and browser startup is complete, run
   // |safe_browsing::OnSwReporterReady|.
   auto lambda = [](safe_browsing::SwReporterInvocationSequence&& invocations) {
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(
-            &safe_browsing::ChromeCleanerController::OnSwReporterReady,
-            base::Unretained(
-                safe_browsing::ChromeCleanerController::GetInstance()),
-            std::move(invocations)));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                &safe_browsing::ChromeCleanerController::OnSwReporterReady,
+                base::Unretained(
+                    safe_browsing::ChromeCleanerController::GetInstance()),
+                std::move(invocations)));
   };
 
   // Install the component.

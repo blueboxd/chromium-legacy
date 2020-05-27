@@ -336,6 +336,11 @@ void LayerTreeView::NotifyThroughputTrackerResults(
   NOTREACHED();
 }
 
+void LayerTreeView::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay) {
+  delegate_->DidObserveFirstScrollDelay(first_scroll_delay);
+}
+
 void LayerTreeView::DidScheduleBeginMainFrame() {
   if (!delegate_ || !web_main_thread_scheduler_)
     return;

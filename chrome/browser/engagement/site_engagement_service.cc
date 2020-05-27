@@ -13,7 +13,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -202,8 +201,8 @@ SiteEngagementService::GetAllDetailsInBackground(
 
 SiteEngagementService::SiteEngagementService(Profile* profile)
     : SiteEngagementService(profile, base::DefaultClock::GetInstance()) {
-  base::PostTask(FROM_HERE,
-                 {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
                  base::BindOnce(&SiteEngagementService::AfterStartupTask,
                                 weak_factory_.GetWeakPtr()));
 

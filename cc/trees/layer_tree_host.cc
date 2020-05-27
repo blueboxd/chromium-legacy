@@ -785,6 +785,11 @@ bool LayerTreeHost::CaptureContent(std::vector<NodeId>* content) {
   return true;
 }
 
+void LayerTreeHost::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay) {
+  client_->DidObserveFirstScrollDelay(first_scroll_delay);
+}
+
 bool LayerTreeHost::DoUpdateLayers() {
   TRACE_EVENT1("cc,benchmark", "LayerTreeHost::DoUpdateLayers",
                "source_frame_number", SourceFrameNumber());
@@ -1464,10 +1469,6 @@ base::flat_set<viz::SurfaceRange> LayerTreeHost::SurfaceRanges() const {
 
 void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
   layers_that_should_push_properties_.insert(layer);
-}
-
-void LayerTreeHost::RemoveLayerShouldPushProperties(Layer* layer) {
-  layers_that_should_push_properties_.erase(layer);
 }
 
 void LayerTreeHost::ClearLayersThatShouldPushProperties() {

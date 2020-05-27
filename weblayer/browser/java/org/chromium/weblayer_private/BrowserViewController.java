@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -73,7 +74,7 @@ public final class BrowserViewController
         mBottomControlsContainerView =
                 new BrowserControlsContainerView(context, mContentViewRenderView, this, false);
         mBottomControlsContainerView.setId(View.generateViewId());
-        mContentView = ContentView.createContentView(
+        mContentView = ContentViewWithAutofill.createContentView(
                 context, mTopControlsContainerView.getEventOffsetHandler());
         mContentViewRenderView.addView(mContentView,
                 new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -147,7 +148,7 @@ public final class BrowserViewController
             mGestureStateTracker =
                     new WebContentsGestureStateTracker(mContentView, webContents, this);
         }
-        mContentView.setTab(mTab);
+        mContentView.setWebContents(webContents);
 
         mContentViewRenderView.setWebContents(webContents);
         mTopControlsContainerView.setWebContents(webContents);

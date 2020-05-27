@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/fileapi/external_file_resolver.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
@@ -46,8 +45,8 @@ class URLHelper {
       : callback_(std::move(callback)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     Lifetime lifetime(this);
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&URLHelper::RunOnUIThread, base::Unretained(this),
                        std::move(lifetime), profile_id, url));
   }
@@ -108,8 +107,8 @@ class URLHelper {
   void ReplyResult(net::Error error) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback_), error,
                        std::move(file_system_context_),
                        std::move(isolated_file_system_), mime_type_));

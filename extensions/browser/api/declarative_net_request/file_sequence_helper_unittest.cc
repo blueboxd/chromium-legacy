@@ -44,18 +44,17 @@ api::declarative_net_request::Rule GetAPIRule(const TestRule& rule) {
   return result;
 }
 
-struct LoadRulesetResult {
+struct TestLoadRulesetInfo {
   bool has_new_checksum = false;
   base::Optional<bool> reindexing_successful;
-  RulesetMatcher::LoadRulesetResult load_result =
-      RulesetMatcher::kLoadResultMax;
+  base::Optional<LoadRulesetResult> load_result;
 };
 
 struct TestCase {
   explicit TestCase(RulesetSource source) : source(std::move(source)) {}
   int checksum;
   RulesetSource source;
-  LoadRulesetResult expected_result;
+  TestLoadRulesetInfo expected_result;
 };
 
 ExtensionId GenerateDummyExtensionID() {
@@ -135,16 +134,17 @@ class FileSequenceHelperTest : public ExtensionsTest {
           for (size_t i = 0; i < data.rulesets.size(); i++) {
             SCOPED_TRACE(base::StringPrintf("Testing ruleset %" PRIuS, i));
             const RulesetInfo& ruleset = data.rulesets[i];
-            const LoadRulesetResult& expected_result =
+            const TestLoadRulesetInfo& expected_result =
                 test_cases[i].expected_result;
 
             EXPECT_EQ(expected_result.has_new_checksum,
                       ruleset.new_checksum().has_value());
             EXPECT_EQ(expected_result.reindexing_successful,
                       ruleset.reindexing_successful());
+            ASSERT_TRUE(ruleset.load_ruleset_result());
             EXPECT_EQ(expected_result.load_result,
                       ruleset.load_ruleset_result())
-                << ruleset.load_ruleset_result();
+                << *ruleset.load_ruleset_result();
           }
 
           run_loop->Quit();
@@ -192,7 +192,7 @@ class FileSequenceHelperTest : public ExtensionsTest {
                                         &matcher, &test_case.checksum));
 
       // Initially loading all the rulesets should succeed.
-      test_case.expected_result.load_result = RulesetMatcher::kLoadSuccess;
+      test_case.expected_result.load_result = LoadRulesetResult::kSuccess;
     }
     return test_cases;
   }
@@ -241,9 +241,9 @@ TEST_F(FileSequenceHelperTest, ChecksumMismatch) {
   test_cases[1].checksum--;
   test_cases[2].checksum--;
   test_cases[1].expected_result.load_result =
-      RulesetMatcher::kLoadErrorChecksumMismatch;
+      LoadRulesetResult::kErrorChecksumMismatch;
   test_cases[2].expected_result.load_result =
-      RulesetMatcher::kLoadErrorChecksumMismatch;
+      LoadRulesetResult::kErrorChecksumMismatch;
   test_cases[1].expected_result.reindexing_successful = false;
   test_cases[2].expected_result.reindexing_successful = false;
 
@@ -264,7 +264,7 @@ TEST_F(FileSequenceHelperTest, RulesetFormatVersionMismatch) {
   for (auto& test_case : test_cases) {
     test_case.expected_result.reindexing_successful = true;
     test_case.expected_result.has_new_checksum = true;
-    test_case.expected_result.load_result = RulesetMatcher::kLoadSuccess;
+    test_case.expected_result.load_result = LoadRulesetResult::kSuccess;
   }
 
   TestLoadRulesets(test_cases);
@@ -286,10 +286,10 @@ TEST_F(FileSequenceHelperTest, JSONAndIndexedRulesetDeleted) {
   test_cases[1].expected_result.reindexing_successful = false;
 
   test_cases[0].expected_result.load_result =
-      RulesetMatcher::kLoadErrorInvalidPath;
+      LoadRulesetResult::kErrorInvalidPath;
   test_cases[1].expected_result.load_result =
-      RulesetMatcher::kLoadErrorInvalidPath;
-  test_cases[2].expected_result.load_result = RulesetMatcher::kLoadSuccess;
+      LoadRulesetResult::kErrorInvalidPath;
+  test_cases[2].expected_result.load_result = LoadRulesetResult::kSuccess;
 
   TestLoadRulesets(test_cases);
 }

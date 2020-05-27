@@ -142,7 +142,7 @@ bool FrameSerializerDelegateImpl::ShouldIgnorePopupOverlayElement(
     return false;
 
   // The z-index should be greater than the threshold.
-  if (box->Style()->ZIndex() < kPopupOverlayZIndexThreshold)
+  if (box->Style()->EffectiveZIndex() < kPopupOverlayZIndexThreshold)
     return false;
 
   popup_overlays_skipped_ = true;

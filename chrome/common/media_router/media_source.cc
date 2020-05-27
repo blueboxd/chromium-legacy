@@ -21,6 +21,7 @@ namespace {
 
 // Prefixes used to format and detect various protocols' media source URNs.
 // See: https://www.ietf.org/rfc/rfc3406.txt
+constexpr char kAnyTabMediaUrn[] = "urn:x-org.chromium.media:source:tab:*";
 constexpr char kTabMediaUrnFormat[] = "urn:x-org.chromium.media:source:tab:%d";
 constexpr base::StringPiece kDesktopMediaUrnPrefix =
     "urn:x-org.chromium.media:source:desktop:";
@@ -68,6 +69,11 @@ MediaSource::MediaSource(const GURL& presentation_url)
 MediaSource::~MediaSource() = default;
 
 // static
+MediaSource MediaSource::ForAnyTab() {
+  return MediaSource(std::string(kAnyTabMediaUrn));
+}
+
+// static
 MediaSource MediaSource::ForTab(int tab_id) {
   return MediaSource(base::StringPrintf(kTabMediaUrnFormat, tab_id));
 }
@@ -87,16 +93,17 @@ MediaSource MediaSource::ForPresentationUrl(const GURL& presentation_url) {
   return MediaSource(presentation_url);
 }
 
+bool MediaSource::IsTabMirroringSource() const {
+  int tab_id;
+  return id() == kAnyTabMediaUrn ||
+         (std::sscanf(id().c_str(), kTabMediaUrnFormat, &tab_id) == 1 &&
+          tab_id > 0);
+}
+
 bool MediaSource::IsDesktopMirroringSource() const {
   return id() == kUnknownDesktopMediaUrn ||
          base::StartsWith(id(), kDesktopMediaUrnPrefix,
                           base::CompareCase::SENSITIVE);
-}
-
-bool MediaSource::IsTabMirroringSource() const {
-  int tab_id;
-  return std::sscanf(id_.c_str(), kTabMediaUrnFormat, &tab_id) == 1 &&
-         tab_id > 0;
 }
 
 bool MediaSource::IsMirroringSource() const {
@@ -125,7 +132,7 @@ base::Optional<std::string> MediaSource::DesktopStreamId() const {
 }
 
 bool MediaSource::IsValid() const {
-  return TabId() > 0 || IsDesktopMirroringSource() ||
+  return IsTabMirroringSource() || IsDesktopMirroringSource() ||
          IsValidPresentationUrl(GURL(id_));
 }
 

@@ -346,7 +346,7 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
             @Override
             public void onLoadUrl(Tab tab, LoadUrlParams params, int loadType) {
-                mNewTabPageLayout.onLoadUrl();
+                mNewTabPageLayout.onLoadUrl(isNTPUrl(tab.getUrl()));
             }
         };
         mTab.addObserver(mTabObserver);

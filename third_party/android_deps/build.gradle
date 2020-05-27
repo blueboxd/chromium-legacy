@@ -171,6 +171,7 @@ dependencies {
     testCompile "org.robolectric:robolectric:${robolectricVersion}"
     testCompile "org.robolectric:shadows-multidex:${robolectricVersion}"
     testCompile "org.robolectric:shadows-playservices:${robolectricVersion}"
+    testCompile "org.robolectric:utils:${robolectricVersion}"
 }
 
 task setUpRepository(type: BuildConfigGenerator) {

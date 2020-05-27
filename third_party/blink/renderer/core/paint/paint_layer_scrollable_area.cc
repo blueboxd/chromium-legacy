@@ -2528,7 +2528,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrollingInternal(
   }
 
   if (!force_prefer_compositing_to_lcd_text &&
-      !LayerNodeMayNeedCompositedScrolling(layer_)) {
+      (RuntimeEnabledFeatures::PreferNonCompositedScrollingEnabled() ||
+       !LayerNodeMayNeedCompositedScrolling(layer_))) {
     return false;
   }
 

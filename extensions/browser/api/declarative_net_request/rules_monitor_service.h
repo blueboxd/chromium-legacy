@@ -183,8 +183,9 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // RulesetManager had an extra headers matcher before the update.
   void AdjustExtraHeaderListenerCountIfNeeded(bool had_extra_headers_matcher);
 
-  // Updates ruleset checksum in preferences from |load_data|.
-  void UpdateRulesetChecksumsIfNeeded(const LoadRequestData& load_data);
+  // Logs metrics related to the result of loading rulesets and updates ruleset
+  // checksum in preferences from |load_data|.
+  void LogMetricsAndUpdateChecksumsIfNeeded(const LoadRequestData& load_data);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
       registry_observer_{this};

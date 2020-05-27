@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +24,7 @@
 #include "components/sync_preferences/pref_model_associator.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -78,8 +78,8 @@ class TestExternalPrefLoader : public ExternalPrefLoader {
         load_callback_(std::move(load_callback)) {}
 
   void LoadOnFileThread() override {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(load_callback_));
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(load_callback_));
   }
 
  private:

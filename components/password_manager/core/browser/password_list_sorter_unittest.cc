@@ -189,4 +189,18 @@ TEST(PasswordListSorterTest, Sorting_SpecialCharacters) {
   SortAndCheckPositions(test_cases);
 }
 
+TEST(PasswordListSorterTest, EntriesDifferingByStoreShouldMapToSameKey) {
+  autofill::PasswordForm account_form;
+  account_form.signon_realm = "https://g.com/";
+  account_form.origin = GURL(account_form.signon_realm);
+  account_form.blacklisted_by_user = false;
+  account_form.in_store = autofill::PasswordForm::Store::kAccountStore;
+
+  autofill::PasswordForm profile_form(account_form);
+  profile_form.in_store = autofill::PasswordForm::Store::kProfileStore;
+
+  EXPECT_EQ(CreateSortKey(account_form, IgnoreStore(true)),
+            CreateSortKey(profile_form, IgnoreStore(true)));
+}
+
 }  // namespace password_manager

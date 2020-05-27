@@ -6,7 +6,6 @@
 
 #include "base/guid.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_fcm_sender.h"
@@ -15,6 +14,7 @@
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 SharingMessageSender::SharingMessageSender(
     syncer::LocalDeviceInfoProvider* local_device_info_provider)
@@ -75,13 +75,14 @@ void SharingMessageSender::SendMessageToDevice(
     return;
   }
 
-  base::PostDelayedTask(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, content::BrowserThread::UI},
-      base::BindOnce(&SharingMessageSender::InvokeSendMessageCallback,
-                     weak_ptr_factory_.GetWeakPtr(), message_guid,
-                     SharingSendMessageResult::kAckTimeout,
-                     /*response=*/nullptr),
-      response_timeout);
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+      ->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(&SharingMessageSender::InvokeSendMessageCallback,
+                         weak_ptr_factory_.GetWeakPtr(), message_guid,
+                         SharingSendMessageResult::kAckTimeout,
+                         /*response=*/nullptr),
+          response_timeout);
 
   LogSharingDeviceLastUpdatedAge(message_type, last_updated_age);
   LogSharingVersionComparison(message_type, device.chrome_version());

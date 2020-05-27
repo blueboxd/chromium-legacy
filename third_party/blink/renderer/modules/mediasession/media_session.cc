@@ -181,13 +181,6 @@ void MediaSession::setActionHandler(const String& action,
     }
 
     UseCounter::Count(GetExecutionContext(), WebFeature::kMediaSessionSkipAd);
-  } else if (action == "seekto" &&
-             !RuntimeEnabledFeatures::MediaSessionSeekingEnabled(
-                 GetExecutionContext())) {
-    exception_state.ThrowTypeError(
-        "The provided value 'seekto' is not a valid enum "
-        "value of type MediaSessionAction.");
-    return;
   }
 
   if (handler) {

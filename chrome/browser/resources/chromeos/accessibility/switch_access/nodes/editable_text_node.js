@@ -30,13 +30,22 @@ class EditableTextNode extends NodeWrapper {
     actions.push(SwitchAccessMenuAction.KEYBOARD);
     actions.push(SwitchAccessMenuAction.DICTATION);
 
-    if (SwitchAccess.instance.improvedTextInputEnabled() &&
-        this.automationNode.state[StateType.FOCUSED]) {
+    if (SwitchAccess.instance.improvedTextInputEnabled()) {
       actions.push(SwitchAccessMenuAction.MOVE_CURSOR);
+      actions.push(SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT);
+      actions.push(SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT);
+      actions.push(SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT);
+      actions.push(SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT);
+      actions.push(SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT);
+      actions.push(SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT);
+      actions.push(SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT);
+      actions.push(SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT);
+
       actions.push(SwitchAccessMenuAction.START_TEXT_SELECTION);
       if (TextNavigationManager.currentlySelecting()) {
         actions.push(SwitchAccessMenuAction.END_TEXT_SELECTION);
       }
+
       if (TextNavigationManager.selectionExists) {
         actions.push(SwitchAccessMenuAction.CUT);
         actions.push(SwitchAccessMenuAction.COPY);
@@ -45,11 +54,15 @@ class EditableTextNode extends NodeWrapper {
         actions.push(SwitchAccessMenuAction.PASTE);
       }
     }
-
     return actions;
   }
 
   // ================= General methods =================
+
+  /** @override */
+  doDefaultAction() {
+    this.performAction(SwitchAccessMenuAction.KEYBOARD);
+  }
 
   /** @override */
   performAction(action) {
@@ -60,6 +73,9 @@ class EditableTextNode extends NodeWrapper {
       case SwitchAccessMenuAction.DICTATION:
         chrome.accessibilityPrivate.toggleDictation();
         return SAConstants.ActionResponse.CLOSE_MENU;
+      case SwitchAccessMenuAction.MOVE_CURSOR:
+        return SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU;
+
       case SwitchAccessMenuAction.CUT:
         EventHelper.simulateKeyPress(EventHelper.KeyCode.X, {ctrl: true});
         return SAConstants.ActionResponse.REMAIN_OPEN;
@@ -68,6 +84,38 @@ class EditableTextNode extends NodeWrapper {
         return SAConstants.ActionResponse.REMAIN_OPEN;
       case SwitchAccessMenuAction.PASTE:
         EventHelper.simulateKeyPress(EventHelper.KeyCode.V, {ctrl: true});
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+
+      case SwitchAccessMenuAction.START_TEXT_SELECTION:
+        TextNavigationManager.saveSelectStart();
+        return SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU;
+      case SwitchAccessMenuAction.END_TEXT_SELECTION:
+        TextNavigationManager.saveSelectEnd();
+        return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
+
+      case SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT:
+        TextNavigationManager.jumpToBeginning();
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT:
+        TextNavigationManager.jumpToEnd();
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
+        TextNavigationManager.moveBackwardOneChar();
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
+        TextNavigationManager.moveBackwardOneWord();
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
+        TextNavigationManager.moveDownOneLine();
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
+        TextNavigationManager.moveForwardOneChar();
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
+        TextNavigationManager.moveUpOneLine();
+        return SAConstants.ActionResponse.REMAIN_OPEN;
+      case SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
+        TextNavigationManager.moveForwardOneWord();
         return SAConstants.ActionResponse.REMAIN_OPEN;
     }
     return super.performAction(action);

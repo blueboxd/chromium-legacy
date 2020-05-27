@@ -525,8 +525,8 @@ void OfflinePageRequestHandler::StartAsync() {
                        delegate_->GetTabIdGetter(),
                        weak_ptr_factory_.GetWeakPtr());
   } else {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&GetPagesToServeURL, url_, offline_header_,
                        network_state_, delegate_->GetWebContentsGetter(),
                        delegate_->GetTabIdGetter(),
@@ -633,8 +633,8 @@ void OfflinePageRequestHandler::VisitTrustedOfflinePage() {
 
   delegate_->SetOfflinePageNavigationUIData(true /*is_offline_page*/);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&VisitTrustedOfflinePageOnUI, offline_header_,
                      network_state_, delegate_->GetWebContentsGetter(),
                      GetCurrentOfflinePage(),
@@ -995,8 +995,8 @@ void OfflinePageRequestHandler::DidComputeActualDigestForServing(
     // be called before the response is being received. Furthermore, there is
     // no need to clear the offline bit since the error code should already
     // indicate that the offline page is not loaded.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ClearOfflinePageData,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ClearOfflinePageData,
                                   delegate_->GetWebContentsGetter()));
     result = net::ERR_FAILED;
   }

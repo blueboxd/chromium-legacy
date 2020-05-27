@@ -15,7 +15,6 @@
 #include "base/metrics/user_metrics_action.h"
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/permissions/features.h"
@@ -343,8 +342,8 @@ PermissionRequestManager::PermissionRequestManager(
 
 void PermissionRequestManager::ScheduleShowBubble() {
   base::RecordAction(base::UserMetricsAction("PermissionBubbleRequest"));
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&PermissionRequestManager::ShowBubble,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PermissionRequestManager::ShowBubble,
                                 weak_factory_.GetWeakPtr()));
 }
 

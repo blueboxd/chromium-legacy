@@ -176,6 +176,9 @@ class LayerTreeHostImplClient {
 
   virtual void NotifyThroughputTrackerResults(CustomTrackerResults results) = 0;
 
+  virtual void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay) = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() = default;
 };
@@ -333,6 +336,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   float CurrentTopControlsShownRatio() const override;
   float CurrentBottomControlsShownRatio() const override;
   void DidChangeBrowserControlsPosition() override;
+  void DidObserveScrollDelay(base::TimeDelta scroll_delay);
   bool HaveRootScrollNode() const override;
   void SetNeedsCommit() override;
 
@@ -1401,6 +1405,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<LCDTextMetricsReporter> lcd_text_metrics_reporter_;
 
   FrameRateEstimator frame_rate_estimator_;
+  bool has_observed_first_scroll_delay_ = false;
 
   // Must be the last member to ensure this is destroyed first in the
   // destruction order and invalidates all weak pointers.

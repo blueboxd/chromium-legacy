@@ -13,7 +13,6 @@
 #include "base/callback_forward.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -30,8 +29,7 @@ DevtoolsClient::DevtoolsClient(
       renderer_crashed_(false),
       next_message_id_(0),
       frame_tracker_(this) {
-  browser_main_thread_ =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+  browser_main_thread_ = content::GetUIThreadTaskRunner({});
   agent_host_->AttachClient(this);
   frame_tracker_.Start();
 }

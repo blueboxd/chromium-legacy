@@ -21,7 +21,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/grit/components_resources.h"
@@ -219,8 +218,8 @@ void WebUIInfoSingleton::LogMessage(const std::string& message) {
   base::Time timestamp = base::Time::Now();
   log_messages_.push_back(std::make_pair(timestamp, message));
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&WebUIInfoSingleton::NotifyLogMessageListeners,
                                 timestamp, message));
 }
 

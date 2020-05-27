@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/history/core/browser/domain_mixing_metrics.h"
 #include "components/history/core/browser/history_backend.h"
@@ -55,8 +54,7 @@ GoogleSearchDomainMixingMetricsEmitter::GoogleSearchDomainMixingMetricsEmitter(
     history::HistoryService* history_service)
     : prefs_(prefs),
       history_service_(history_service),
-      ui_thread_task_runner_(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
+      ui_thread_task_runner_(content::GetUIThreadTaskRunner({})) {
   DCHECK(history_service_);
 }
 

@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
 #include "build/branding_buildflags.h"
 #include "build/buildflag.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -41,8 +40,8 @@ void GotSystemSlotOnUIThread(
 void GotSystemSlotOnIOThread(
     base::OnceCallback<void(crypto::ScopedPK11Slot)> callback_ui_thread,
     crypto::ScopedPK11Slot system_slot) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GotSystemSlotOnUIThread, std::move(callback_ui_thread),
                      std::move(system_slot)));
 }
@@ -184,8 +183,8 @@ void SystemTokenCertDBInitializer::MaybeStartInitializingDatabase() {
   base::RepeatingCallback<void(crypto::ScopedPK11Slot)> callback =
       base::BindRepeating(&SystemTokenCertDBInitializer::InitializeDatabase,
                           weak_ptr_factory_.GetWeakPtr());
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&GetSystemSlotOnIOThread, callback));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&GetSystemSlotOnIOThread, callback));
 }
 
 void SystemTokenCertDBInitializer::

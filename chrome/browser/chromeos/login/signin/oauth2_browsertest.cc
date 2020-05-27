@@ -16,7 +16,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -216,8 +215,8 @@ class RequestDeferrer {
 
   void InterceptRequest(const HttpRequest& request) {
     start_event_.Signal();
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&RequestDeferrer::QuitRunnerOnUIThread,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&RequestDeferrer::QuitRunnerOnUIThread,
                                   base::Unretained(this)));
     blocking_event_.Wait();
   }
@@ -778,8 +777,8 @@ class FakeGoogle {
     std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     if (request_path == kHelloPagePath) {  // Serving "google" page.
       start_event_.Signal();
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&FakeGoogle::QuitRunnerOnUIThread,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&FakeGoogle::QuitRunnerOnUIThread,
                                     base::Unretained(this)));
 
       http_response->set_code(net::HTTP_OK);
@@ -791,8 +790,8 @@ class FakeGoogle {
       http_response->set_content(kRandomPageContent);
     } else if (hang_merge_session_ && request_path == kMergeSessionPath) {
       merge_session_event_.Signal();
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&FakeGoogle::QuitMergeRunnerOnUIThread,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&FakeGoogle::QuitMergeRunnerOnUIThread,
                                     base::Unretained(this)));
       return std::make_unique<HungResponse>();
     } else {

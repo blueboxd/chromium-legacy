@@ -18,7 +18,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -71,8 +70,8 @@ void OnPreferencesInit(
     base::OnceCallback<void(base::File::Error result)> callback) {
   content::WebContents* contents = web_contents_getter.Run();
   if (!contents) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
     return;
   }
@@ -120,8 +119,8 @@ void AttemptAutoMountOnUIThread(
     }
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
 }
 
@@ -207,8 +206,8 @@ bool MediaFileSystemBackend::AttemptAutoMountForURLRequest(
   content::WebContents::Getter web_contents_getter = base::BindRepeating(
       &GetWebContentsFromFrameTreeNodeID, request_info.content_id);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&AttemptAutoMountOnUIThread, web_contents_getter,
                      request_info.storage_domain, mount_point,
                      std::move(callback)));

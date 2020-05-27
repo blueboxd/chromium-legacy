@@ -530,7 +530,7 @@ void WorkspaceWindowResizer::Drag(const gfx::PointF& location_in_parent,
 
   if (bounds != GetTarget()->bounds()) {
     if (!did_move_or_resize_) {
-      if (!details().restore_bounds.IsEmpty()) {
+      if (!details().restore_bounds_in_parent.IsEmpty()) {
         window_state()->ClearRestoreBounds();
         if (window_state()->IsMaximized() &&
             details().window_component == HTCAPTION) {
@@ -610,11 +610,10 @@ void WorkspaceWindowResizer::CompleteDrag() {
   // Update window state if the window has been snapped.
   if (snap_type_ != SnapType::kNone) {
     if (!window_state()->HasRestoreBounds()) {
-      gfx::Rect initial_bounds = details().initial_bounds_in_parent;
-      ::wm::ConvertRectToScreen(GetTarget()->parent(), &initial_bounds);
-      window_state()->SetRestoreBoundsInScreen(
-          details().restore_bounds.IsEmpty() ? initial_bounds
-                                             : details().restore_bounds);
+      gfx::Rect bounds = details().restore_bounds_in_parent.IsEmpty()
+                             ? details().initial_bounds_in_parent
+                             : details().restore_bounds_in_parent;
+      window_state()->SetRestoreBoundsInParent(bounds);
     }
 
     // TODO(oshima): Add event source type to WMEvent and move
@@ -704,8 +703,10 @@ void WorkspaceWindowResizer::RevertDrag() {
 
   ResetFrameRestoreLookKey(window_state());
   GetTarget()->SetBounds(details().initial_bounds_in_parent);
-  if (!details().restore_bounds.IsEmpty())
-    window_state()->SetRestoreBoundsInScreen(details().restore_bounds);
+  if (!details().restore_bounds_in_parent.IsEmpty()) {
+    window_state()->SetRestoreBoundsInParent(
+        details().restore_bounds_in_parent);
+  }
 
   if (details().window_component == HTRIGHT) {
     int last_x = details().initial_bounds_in_parent.right();

@@ -9,7 +9,7 @@
 #include "chrome/browser/apps/app_service/extension_apps_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/native_window_tracker.h"
-#include "chrome/services/app_service/public/cpp/icon_loader.h"
+#include "components/services/app_service/public/cpp/icon_loader.h"
 #include "extensions/browser/uninstall_reason.h"
 
 namespace {

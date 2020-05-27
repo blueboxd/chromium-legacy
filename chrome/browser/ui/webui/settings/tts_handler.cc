@@ -28,7 +28,7 @@ namespace settings {
 TtsHandler::TtsHandler() {}
 
 TtsHandler::~TtsHandler() {
-  content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+  RemoveTtsControllerDelegates();
 }
 
 void TtsHandler::HandleGetAllTtsVoiceData(const base::ListValue* args) {
@@ -176,8 +176,7 @@ void TtsHandler::OnJavascriptAllowed() {
 }
 
 void TtsHandler::OnJavascriptDisallowed() {
-  content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
-  content::TtsController::GetInstance()->RemoveUtteranceEventDelegate(this);
+  RemoveTtsControllerDelegates();
 }
 
 int TtsHandler::GetVoiceLangMatchScore(const content::VoiceData* voice,
@@ -203,6 +202,11 @@ void TtsHandler::WakeTtsEngine(const base::ListValue* args) {
 
 void TtsHandler::OnTtsEngineAwake(bool success) {
   OnVoicesChanged();
+}
+
+void TtsHandler::RemoveTtsControllerDelegates() {
+  content::TtsController::GetInstance()->RemoveVoicesChangedDelegate(this);
+  content::TtsController::GetInstance()->RemoveUtteranceEventDelegate(this);
 }
 
 }  // namespace settings

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/extensions/api/image_writer_private/error_messages.h"
 #include "chrome/browser/extensions/api/image_writer_private/test_utils.h"
 #include "chrome/test/base/testing_profile.h"
@@ -231,10 +230,8 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
     // soon.
     operation->VerifyDownload(base::Bind(
         [](base::OnceClosure quit_closure) {
-          base::PostTask(
-              FROM_HERE,
-              {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-              std::move(quit_closure));
+          content::GetUIThreadTaskRunner({base::TaskPriority::USER_VISIBLE})
+              ->PostTask(FROM_HERE, std::move(quit_closure));
         },
         run_loop.QuitClosure()));
 

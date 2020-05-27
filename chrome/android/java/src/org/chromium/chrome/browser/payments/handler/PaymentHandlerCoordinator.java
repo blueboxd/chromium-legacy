@@ -80,7 +80,8 @@ public class PaymentHandlerCoordinator {
         assert mHider == null : "Already showing payment-handler UI";
 
         mWebContents = WebContentsFactory.createWebContents(isIncognito, /*initiallyHidden=*/false);
-        ContentView webContentView = ContentView.createContentView(activity, mWebContents);
+        ContentView webContentView = ContentView.createContentView(
+                activity, null /* eventOffsetHandler */, mWebContents);
         initializeWebContents(activity, webContentView, webContentsObserver, url);
 
         mToolbarCoordinator = new PaymentHandlerToolbarCoordinator(activity, mWebContents, url);

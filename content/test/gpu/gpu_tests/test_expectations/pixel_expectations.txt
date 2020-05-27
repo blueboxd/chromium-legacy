@@ -4,6 +4,7 @@
 # tags: [ use-gl no-use-gl ]
 # tags: [ use-vulkan no-use-vulkan ]
 # tags: [ use-skia-dawn no-use-skia-dawn ]
+# tags: [ chromeos-board-kevin ]
 # tags: [ amd amd-0x6613 amd-0x679e amd-0x6821 intel intel-0xa2e intel-0x5912
 #         intel-0xd26 intel-0x3e92 nvidia qualcomm-adreno-(tm)-330
 #         qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420
@@ -14,8 +15,8 @@
 # Seems to be flaky on the new AMD R7 240 drivers.
 crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFailure ]
 
-# Software compositing is not supported on Android: we skip the tests that
-# disable GPU compositing (--disable-gpu-compositing).
+# Software compositing is not supported on Android/ChromeOS: we skip the tests
+# that disable GPU compositing (--disable-gpu-compositing).
 [ android ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
 [ android ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
 [ android ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
@@ -28,6 +29,18 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 [ android ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 [ android ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 [ android ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositing [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Skip ]
+[ chromeos ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Skip ]
+[ chromeos ] Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing [ Skip ]
+[ chromeos ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
+[ chromeos ] Pixel_CanvasUnacceleratedLowLatency2D [ Skip ]
+[ chromeos ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
+[ chromeos ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
+[ chromeos ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Skip ]
 
 # Skip tab switching tests on Android webview since it doesn't have tabs
 [ android android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
@@ -312,3 +325,9 @@ crbug.com/1021566 [ use-skia-dawn ] Pixel_WebGLTransparentGreenTriangle_NoAlpha_
 
 # 3D box is shaded incorrectly using SkiaRenderer Dawn on Windows.
 crbug.com/1082769 [ win use-skia-dawn ] Pixel_CSS3DBlueBox [ Failure ]
+
+# Flakes on gpu-fyi-try-chromeos-kevin, produces notably different image.
+crbug.com/1086687 [ chromeos chromeos-board-kevin ] Pixel_PrecisionRoundedCorner [ RetryOnFailure ]
+
+# Produces blank images on gpu-fyi-try-chromeos-kevin, gpu-fyi-try-chromeos-amd64-generic.
+crbug.com/1086690 [ chromeos ] Pixel_WebGLSadCanvas [ Skip ]

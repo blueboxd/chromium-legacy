@@ -217,9 +217,22 @@ TEST_F(ClipboardRecentContentIOSTest, PasteboardURLObsolescence) {
   VerifyClipboardTextDoesNotExist();
 }
 
+// Checks that if the pasteboard is marked as having confidential data, it is
+// not returned.
+TEST_F(ClipboardRecentContentIOSTest, ConfidentialPasteboardText) {
+  [[UIPasteboard generalPasteboard]
+      setItems:@[ @{
+        @"public.plain-text" : @"hunter2",
+        @"org.nspasteboard.ConcealedType" : @"hunter2"
+      } ]
+       options:@{}];
+
+  VerifyClipboardTextDoesNotExist();
+}
+
 // Checks that if the user suppresses content, no text will be returned,
 // and if the text changes, the new text will be returned again.
-TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboardText) {
+TEST_F(ClipboardRecentContentIOSTest, SuppressedPasteboardText) {
   SetPasteboardContent(kRecognizedURL);
 
   // Test that recent pasteboard data is provided.
@@ -248,7 +261,7 @@ TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboardText) {
   VerifyClipboardTextDoesNotExist();
 
   // Check that if the pasteboard changes, the new content is not
-  // supressed anymore.
+  // suppressed anymore.
   SetPasteboardContent(kRecognizedURL2);
   VerifyClipboardURLExists(kRecognizedURL2);
   VerifyClipboardTextExists(kRecognizedURL2);
@@ -256,7 +269,7 @@ TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboardText) {
 
 // Checks that if the user suppresses content, no image will be returned,
 // and if the image changes, the new image will be returned again.
-TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboardImage) {
+TEST_F(ClipboardRecentContentIOSTest, SuppressedPasteboardImage) {
   SetPasteboardImage(TestUIImage());
 
   // Test that recent pasteboard data is provided.
@@ -281,7 +294,7 @@ TEST_F(ClipboardRecentContentIOSTest, SupressedPasteboardImage) {
   VerifyIfClipboardImageExists(false);
 
   // Check that if the pasteboard changes, the new content is not
-  // supressed anymore.
+  // suppressed anymore.
   SetPasteboardImage(TestUIImage([UIColor greenColor]));
   VerifyIfClipboardImageExists(true);
 }

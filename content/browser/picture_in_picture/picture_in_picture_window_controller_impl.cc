@@ -5,6 +5,7 @@
 #include "content/browser/picture_in_picture/picture_in_picture_window_controller_impl.h"
 
 #include <set>
+#include <utility>
 
 #include "components/viz/common/surfaces/surface_id.h"
 #include "content/browser/media/media_web_contents_observer.h"
@@ -15,6 +16,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/overlay_window.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_delegate.h"  // for PictureInPictureResult
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_client.h"
 
@@ -207,15 +209,44 @@ void PictureInPictureWindowControllerImpl::UpdateMediaPlayerId() {
   UpdatePlaybackState(IsPlayerActive(), !media_player_id_.has_value());
 }
 
-void PictureInPictureWindowControllerImpl::SetActiveSession(
-    PictureInPictureSession* session) {
-  if (active_session_ == session)
-    return;
+PictureInPictureResult PictureInPictureWindowControllerImpl::StartSession(
+    PictureInPictureServiceImpl* service,
+    const MediaPlayerId& player_id,
+    const viz::SurfaceId& surface_id,
+    const gfx::Size& natural_size,
+    bool show_play_pause_button,
+    mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
+    mojo::PendingRemote<blink::mojom::PictureInPictureSession>* session_remote,
+    gfx::Size* window_size) {
+  auto result = initiator_->EnterPictureInPicture(surface_id, natural_size);
+
+  // Picture-in-Picture may not be supported by all embedders, so we should only
+  // create the session if the EnterPictureInPicture request was successful.
+  if (result != PictureInPictureResult::kSuccess)
+    return result;
 
   if (active_session_)
-    active_session_->Shutdown();
+    active_session_->Disconnect();
 
-  active_session_ = session;
+  active_session_ = std::make_unique<PictureInPictureSession>(
+      service, player_id, session_remote->InitWithNewPipeAndPassReceiver(),
+      std::move(observer));
+
+  EmbedSurface(surface_id, natural_size);
+  SetAlwaysHidePlayPauseButton(show_play_pause_button);
+  Show();
+
+  *window_size = GetSize();
+  return result;
+}
+
+void PictureInPictureWindowControllerImpl::OnServiceDeleted(
+    PictureInPictureServiceImpl* service) {
+  if (!active_session_ || active_session_->service() != service)
+    return;
+
+  active_session_->Shutdown();
+  active_session_ = nullptr;
 }
 
 void PictureInPictureWindowControllerImpl::SetAlwaysHidePlayPauseButton(
@@ -314,10 +345,11 @@ void PictureInPictureWindowControllerImpl::OnLeavingPictureInPicture(
   }
 
   if (media_player_id_.has_value()) {
-    if (active_session_)
+    if (active_session_) {
       active_session_->Shutdown();
+      active_session_ = nullptr;
+    }
 
-    active_session_ = nullptr;
     media_player_id_.reset();
   }
 }

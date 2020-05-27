@@ -84,7 +84,6 @@
 #include "base/android/jni_string.h"
 #include "base/android/path_utils.h"
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/cdm/browser/media_drm_storage_impl.h"  // nogncheck
 #include "components/crash/content/browser/crash_handler_host_linux.h"
@@ -546,9 +545,8 @@ void ContentBrowserClientImpl::ExposeInterfacesToRenderer(
         mojo::MakeSelfOwnedReceiver(std::make_unique<SpellCheckHostImpl>(),
                                     std::move(receiver));
       };
-  registry->AddInterface(
-      base::BindRepeating(create_spellcheck_host),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+  registry->AddInterface(base::BindRepeating(create_spellcheck_host),
+                         content::GetUIThreadTaskRunner({}));
 
   if (base::FeatureList::IsEnabled(features::kWebLayerSafeBrowsing) &&
       IsSafebrowsingSupported()) {

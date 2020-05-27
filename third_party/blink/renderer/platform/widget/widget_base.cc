@@ -149,6 +149,11 @@ void WidgetBase::DidCommitAndDrawCompositorFrame() {
   client_->DidCommitAndDrawCompositorFrame();
 }
 
+void WidgetBase::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay) {
+  client_->DidObserveFirstScrollDelay(first_scroll_delay);
+}
+
 void WidgetBase::WillCommitCompositorFrame() {
   client_->BeginCommitCompositorFrame();
 }

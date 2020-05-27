@@ -58,8 +58,8 @@ void PrinterQuery::PostSettingsDoneToIO(
     std::unique_ptr<PrintSettings> new_settings,
     PrintingContext::Result result) {
   // |this| is owned by |callback|, so |base::Unretained()| is safe.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PrinterQuery::GetSettingsDone, base::Unretained(this),
                      std::move(callback), std::move(new_settings), result));
 }

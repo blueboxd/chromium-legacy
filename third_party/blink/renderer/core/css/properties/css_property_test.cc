@@ -148,15 +148,24 @@ namespace {
 
 // Examples must produce unique computed values. For example, it's not
 // allowed to list both 2px and calc(1px + 1px).
+const char* align_content_examples[] = {"normal", "first baseline", "stretch",
+                                        "safe end", nullptr};
 const char* border_style_examples[] = {"none", "solid", "dashed", nullptr};
 const char* color_examples[] = {"red", "green", "#fef", "#faf", nullptr};
 const char* direction_examples[] = {"ltr", "rtl", nullptr};
+const char* flex_direction_examples[] = {"row", "column", nullptr};
+const char* flex_wrap_examples[] = {"nowrap", "wrap", nullptr};
+const char* float_examples[] = {"1", "2.5", nullptr};
+const char* justify_content_examples[] = {"normal", "stretch", "safe end",
+                                          "left", nullptr};
 const char* length_or_auto_examples[] = {"auto", "1px", "2px", "5%", nullptr};
 const char* length_or_none_examples[] = {"none", "1px", "2px", "5%", nullptr};
 const char* length_size_examples[] = {"4px", "1px 2px", "3%", "calc(1% + 1px)",
                                       nullptr};
 const char* line_width_examples[] = {"medium", "thin", "100px", nullptr};
 const char* none_auto_examples[] = {"none", "auto", nullptr};
+const char* self_align_examples[] = {"flex-start", "flex-end", "first baseline",
+                                     "safe end", nullptr};
 const char* text_decoration_line_examples[] = {"none", "underline", nullptr};
 const char* text_decoration_style_examples[] = {"solid", "dashed", nullptr};
 const char* vertical_align_examples[] = {"sub", "super", "1px", "3%", nullptr};
@@ -167,6 +176,9 @@ struct ComputedValuesEqualData {
   const char** examples;
 } computed_values_equal_data[] = {
     {"-webkit-writing-mode", writing_mode_examples},
+    {"align-content", align_content_examples},
+    {"align-items", self_align_examples},
+    {"align-self", self_align_examples},
     {"border-bottom-color", color_examples},
     {"border-bottom-left-radius", length_size_examples},
     {"border-bottom-right-radius", length_size_examples},
@@ -185,7 +197,15 @@ struct ComputedValuesEqualData {
     {"border-top-width", line_width_examples},
     {"bottom", length_or_auto_examples},
     {"direction", direction_examples},
+    {"flex-basis", length_or_auto_examples},
+    {"flex-direction", flex_direction_examples},
+    {"flex-grow", float_examples},
+    {"flex-shrink", float_examples},
+    {"flex-wrap", flex_wrap_examples},
     {"height", length_or_auto_examples},
+    {"justify-content", justify_content_examples},
+    {"justify-items", self_align_examples},
+    {"justify-self", self_align_examples},
     {"left", length_or_auto_examples},
     {"max-height", length_or_none_examples},
     {"max-width", length_or_none_examples},

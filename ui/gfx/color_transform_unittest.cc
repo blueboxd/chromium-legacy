@@ -388,6 +388,12 @@ TEST(SimpleColorSpace, ToUndefined) {
       ColorTransform::NewColorTransform(
           video, null, ColorTransform::Intent::INTENT_PERCEPTUAL));
   EXPECT_EQ(video_to_null->NumberOfStepsForTesting(), 1u);
+  // Without optimization, video should have 2 steps: limited range to full
+  // range, and YUV to RGB.
+  std::unique_ptr<ColorTransform> video_to_null_no_opt(
+      ColorTransform::NewColorTransform(video, null,
+                                        ColorTransform::Intent::TEST_NO_OPT));
+  EXPECT_EQ(video_to_null_no_opt->NumberOfStepsForTesting(), 2u);
 
   // Test with an ICC profile that can't be represented as matrix+transfer.
   ColorSpace luttrcicc = ICCProfileForTestingNoAnalyticTrFn().GetColorSpace();
@@ -412,15 +418,15 @@ TEST(SimpleColorSpace, ToUndefined) {
   EXPECT_GT(adobeicc_to_nonnull->NumberOfStepsForTesting(), 0u);
 
   // And with something analytic.
-  ColorSpace srgb = gfx::ColorSpace::CreateXYZD50();
-  std::unique_ptr<ColorTransform> srgb_to_null(
+  ColorSpace xyzd50 = gfx::ColorSpace::CreateXYZD50();
+  std::unique_ptr<ColorTransform> xyzd50_to_null(
       ColorTransform::NewColorTransform(
-          srgb, null, ColorTransform::Intent::INTENT_PERCEPTUAL));
-  EXPECT_EQ(srgb_to_null->NumberOfStepsForTesting(), 0u);
-  std::unique_ptr<ColorTransform> srgb_to_nonnull(
+          xyzd50, null, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_EQ(xyzd50_to_null->NumberOfStepsForTesting(), 0u);
+  std::unique_ptr<ColorTransform> xyzd50_to_nonnull(
       ColorTransform::NewColorTransform(
-          srgb, nonnull, ColorTransform::Intent::INTENT_PERCEPTUAL));
-  EXPECT_GT(srgb_to_nonnull->NumberOfStepsForTesting(), 0u);
+          xyzd50, nonnull, ColorTransform::Intent::INTENT_PERCEPTUAL));
+  EXPECT_GT(xyzd50_to_nonnull->NumberOfStepsForTesting(), 0u);
 }
 
 TEST(SimpleColorSpace, DefaultToSRGB) {

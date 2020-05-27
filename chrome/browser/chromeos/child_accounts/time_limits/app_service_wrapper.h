@@ -12,8 +12,8 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/time/time.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
 
 class Profile;
 

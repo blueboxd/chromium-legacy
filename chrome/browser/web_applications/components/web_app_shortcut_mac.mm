@@ -39,7 +39,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -103,8 +102,8 @@
   if (newValue) {
     base::scoped_nsobject<TerminationObserver> scoped_self(
         self, base::scoped_policy::RETAIN);
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(
                        [](base::scoped_nsobject<TerminationObserver> observer) {
                          [observer onTerminated];
                        },
@@ -459,16 +458,16 @@ void LaunchShimOnFileThread(LaunchShimUpdateBehavior update_behavior,
             NSWorkspaceLaunchDefault | NSWorkspaceLaunchWithoutActivation),
         base::scoped_policy::RETAIN);
     if (app) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&RunAppLaunchCallbacks, app,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&RunAppLaunchCallbacks, app,
                                     std::move(launched_callback),
                                     std::move(terminated_callback)));
       return;
     }
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(launched_callback), base::Process()));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(launched_callback), base::Process()));
 }
 
 base::FilePath GetLocalizableAppShortcutsSubdirName() {
@@ -640,8 +639,8 @@ bool UpdateAppShortcutsSubdirLocalizedName(
       base::mac::FilePathToNSString(localized.Append(locale + ".strings"));
   [strings_dict writeToFile:strings_path atomically:YES];
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&GetImageResourcesOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&GetImageResourcesOnUIThread,
                                 base::BindOnce(&SetWorkspaceIconOnWorkerThread,
                                                apps_directory)));
   return true;
@@ -1271,7 +1270,7 @@ void WebAppShortcutCreator::RevealAppShimInFinder(
   // Perform the call to NSWorkSpace on the UI thread. Calling it on the IO
   // thread appears to cause crashes.
   // https://crbug.com/1067367
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(closure));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(closure));
 }
 
 void LaunchShim(LaunchShimUpdateBehavior update_behavior,
@@ -1279,8 +1278,8 @@ void LaunchShim(LaunchShimUpdateBehavior update_behavior,
                 ShimTerminatedCallback terminated_callback,
                 std::unique_ptr<ShortcutInfo> shortcut_info) {
   if (AppShimLaunchDisabled()) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(launched_callback), base::Process()));
     return;
   }

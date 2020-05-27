@@ -5,7 +5,6 @@
 #include "weblayer/browser/safe_browsing/url_checker_delegate_impl.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/security_interstitials/core/unsafe_resource.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -36,8 +35,8 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const net::HttpRequestHeaders& headers,
     bool is_main_frame,
     bool has_user_gesture) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
           base::Unretained(this), resource));
@@ -59,8 +58,8 @@ void UrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
   }
 
   // Report back that it is not ok to proceed with loading the URL.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false /* proceed */,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(resource.callback, false /* proceed */,
                                 false /* showed_interstitial */));
 }
 

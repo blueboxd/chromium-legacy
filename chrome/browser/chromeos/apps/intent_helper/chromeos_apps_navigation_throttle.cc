@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/chromeos/apps/metrics/intent_handling_metrics.h"
@@ -211,8 +210,8 @@ void ChromeOsAppsNavigationThrottle::CancelNavigation() {
   content::WebContents* web_contents = navigation_handle()->GetWebContents();
   if (web_contents && web_contents->GetController().IsInitialNavigation()) {
     // Workaround for b/79167225, closing |web_contents| here may be dangerous.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ChromeOsAppsNavigationThrottle::CloseTab,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ChromeOsAppsNavigationThrottle::CloseTab,
                                   weak_factory_.GetWeakPtr()));
   } else {
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);

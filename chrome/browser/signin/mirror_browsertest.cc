@@ -26,7 +26,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/google/core/common/google_util.h"
+#include "components/google/core/common/google_switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/dice_header_helper.h"
@@ -123,16 +123,16 @@ class MirrorBrowserTest : public InProcessBrowserTest {
     // The test makes requests to google.com and other domains which we want to
     // redirect to the test server.
     host_resolver()->AddRule("*", "127.0.0.1");
-
-    // The production code only allows known ports (80 for http and 443 for
-    // https), but the test server runs on a random port.
-    google_util::IgnorePortNumbersForGoogleURLChecksForTesting();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "www.google.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+
+    // The production code only allows known ports (80 for http and 443 for
+    // https), but the test server runs on a random port.
+    command_line->AppendSwitch(switches::kIgnoreGooglePortNumbers);
   }
 };
 

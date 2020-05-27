@@ -167,6 +167,11 @@ public final class TabImpl extends ITab.Stub {
         }
     }
 
+    public static TabImpl fromWebContents(WebContents webContents) {
+        if (webContents == null || webContents.isDestroyed()) return null;
+        return TabImplJni.get().fromWebContents(webContents);
+    }
+
     public static TabImpl getTabById(int tabId) {
         return sTabMap.get(tabId);
     }
@@ -784,6 +789,7 @@ public final class TabImpl extends ITab.Stub {
 
     @NativeMethods
     interface Natives {
+        TabImpl fromWebContents(WebContents webContents);
         long createTab(long profile, TabImpl caller);
         void setJavaImpl(long nativeTabImpl, TabImpl impl);
         void onAutofillProviderChanged(long nativeTabImpl, AutofillProvider autofillProvider);

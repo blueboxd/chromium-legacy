@@ -8,7 +8,6 @@
 
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -287,8 +286,8 @@ void RenderViewHostTestHarness::TearDown() {
   // queue. This is preferable to immediate deletion because it will behave
   // properly if the |rph_factory_| reset above enqueued any tasks which
   // depend on |browser_context_|.
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
-                   browser_context_.release());
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 browser_context_.release());
 
   // Although this isn't required by many, some subclasses members require that
   // the task environment is gone by the time that they are destroyed (akin to

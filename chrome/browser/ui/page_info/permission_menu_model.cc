@@ -90,6 +90,7 @@ bool PermissionMenuModel::ShouldShowAllow(const GURL& url) {
     case ContentSettingsType::SERIAL_GUARD:
     case ContentSettingsType::USB_GUARD:
     case ContentSettingsType::BLUETOOTH_GUARD:
+    case ContentSettingsType::HID_GUARD:
     // Bluetooth scanning does not support CONTENT_SETTING_ALLOW.
     case ContentSettingsType::BLUETOOTH_SCANNING:
     // Native file system write does not support CONTENT_SETTING_ALLOW.
@@ -107,6 +108,7 @@ bool PermissionMenuModel::ShouldShowAsk(const GURL& url) {
     case ContentSettingsType::BLUETOOTH_GUARD:
     case ContentSettingsType::BLUETOOTH_SCANNING:
     case ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD:
+    case ContentSettingsType::HID_GUARD:
       return true;
     default:
       return false;

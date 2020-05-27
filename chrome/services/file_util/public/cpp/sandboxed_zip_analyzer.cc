@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/services/file_util/public/mojom/safe_archive_analyzer.mojom.h"
@@ -66,14 +65,14 @@ void SandboxedZipAnalyzer::PrepareFileToAnalyze() {
     return;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&SandboxedZipAnalyzer::AnalyzeFile, this,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SandboxedZipAnalyzer::AnalyzeFile, this,
                                 std::move(file), std::move(temp_file)));
 }
 
 void SandboxedZipAnalyzer::ReportFileFailure() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback_),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_),
                                 safe_browsing::ArchiveAnalyzerResults()));
 }
 

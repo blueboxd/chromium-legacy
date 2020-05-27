@@ -54,6 +54,7 @@ class UntrustedSource : public content::URLDataSource,
   // content::URLDataSource:
   std::string GetContentSecurityPolicyScriptSrc() override;
   std::string GetContentSecurityPolicyChildSrc() override;
+  std::string GetContentSecurityPolicyDefaultSrc() override;
   std::string GetSource() override;
   void StartDataRequest(
       const GURL& url,

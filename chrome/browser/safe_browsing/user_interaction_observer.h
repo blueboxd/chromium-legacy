@@ -43,7 +43,10 @@ enum class DelayedWarningEvent {
   // The page triggered a permission request. It was denied and the warning was
   // shown.
   kWarningShownOnPermissionRequest = 7,
-  kMaxValue = kWarningShownOnPermissionRequest,
+  // The page tried to display a JavaScript dialog (alert/confirm/prompt). It
+  // was blocked and the warning was shown.
+  kWarningShownOnJavaScriptDialog = 8,
+  kMaxValue = kWarningShownOnJavaScriptDialog,
 };
 
 // Name of the histogram.
@@ -90,6 +93,11 @@ class SafeBrowsingUserInteractionObserver
 
   // permissions::PermissionRequestManager::Observer methods:
   void OnBubbleAdded() override;
+
+  // Called by the JavaScript dialog manager when the current page is about to
+  // show a JavaScript dialog (alert, confirm or prompt). Shows the
+  // delayed interstitial immediately.
+  void OnJavaScriptDialog();
 
  private:
   bool HandleKeyPress(const content::NativeWebKeyboardEvent& event);

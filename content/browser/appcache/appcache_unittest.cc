@@ -35,15 +35,23 @@ TEST_F(AppCacheTest, CleanupUnusedCache) {
 
   mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend1;
   ignore_result(frontend1.InitWithNewPipeAndPassReceiver());
-  AppCacheHost host1(/*host_id=*/base::UnguessableToken::Create(),
-                     /*process_id=*/1, /*render_frame_id=*/1,
-                     std::move(frontend1), &service);
+  const int kMockProcessId1 = 1;
+  const int kMockProcessId2 = 2;
+  AppCacheHost host1(
+      /*host_id=*/base::UnguessableToken::Create(), kMockProcessId1,
+      /*render_frame_id=*/1,
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+          kMockProcessId1),
+      std::move(frontend1), &service);
 
   mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend2;
   ignore_result(frontend2.InitWithNewPipeAndPassReceiver());
-  AppCacheHost host2(/*host_id=*/base::UnguessableToken::Create(),
-                     /*process_id=*/2, /*render_frame_id=*/2,
-                     std::move(frontend2), &service);
+  AppCacheHost host2(
+      /*host_id=*/base::UnguessableToken::Create(), kMockProcessId2,
+      /*render_frame_id=*/2,
+      ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+          kMockProcessId2),
+      std::move(frontend2), &service);
 
   host1.AssociateCompleteCache(cache.get());
   host2.AssociateCompleteCache(cache.get());

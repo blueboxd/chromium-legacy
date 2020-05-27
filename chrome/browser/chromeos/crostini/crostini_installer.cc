@@ -12,7 +12,6 @@
 #include "base/numerics/ranges.h"
 #include "base/strings/string16.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service_factory.h"
@@ -285,8 +284,8 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
 
   if (require_cleanup_) {
     // Remove anything that got installed
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&crostini::CrostiniManager::RemoveCrostini,
                        base::Unretained(
                            crostini::CrostiniManager::GetForProfile(profile_)),
@@ -295,8 +294,8 @@ void CrostiniInstaller::Cancel(base::OnceClosure callback) {
                                       weak_ptr_factory_.GetWeakPtr())));
     UpdateState(State::CANCEL_CLEANUP);
   } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(cancel_callback_));
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(cancel_callback_));
     UpdateState(State::IDLE);
   }
 }

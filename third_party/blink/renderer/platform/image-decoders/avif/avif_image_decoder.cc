@@ -36,26 +36,49 @@
 
 namespace {
 
+// Builds a gfx::ColorSpace from the ITU-T H.273 (CICP) color description in the
+// image. This color space is used to create the gfx::ColorTransform for the
+// YUV-to-RGB conversion. If the image does not have an ICC profile, this color
+// space is also used to create the embedded color profile.
 gfx::ColorSpace GetColorSpace(const avifImage* image) {
-  if (image->icc.size) {
-    auto iccp = gfx::ICCProfile::FromData(image->icc.data, image->icc.size);
-    if (iccp.IsValid())
-      return iccp.GetColorSpace();
-
-    // TODO(dalecurtis): Do we need to reparse this per frame when dealing
-    // with animated AVIF files? Or is it only for still picture?
-
-    // TODO(wtc): We need to set the color profile using
-    // SetEmbeddedColorProfile() rather than handling all the color space
-    // conversion during decode.
-  }
-  media::VideoColorSpace color_space(
-      image->colorPrimaries, image->transferCharacteristics,
-      image->matrixCoefficients,
-      image->yuvRange == AVIF_RANGE_FULL ? gfx::ColorSpace::RangeID::FULL
-                                         : gfx::ColorSpace::RangeID::LIMITED);
+  // MIAF Section 7.3.6.4 says:
+  //   If a coded image has no associated colour property, the default property
+  //   is defined as having colour_type equal to 'nclx' with properties as
+  //   follows:
+  //   – For YCbCr encoding, sYCC should be assumed as indicated by
+  //   colour_primaries equal to 1, transfer_characteristics equal to 13,
+  //   matrix_coefficients equal to 1, and full_range_flag equal to 1.
+  //   ...
+  // Note that this only specifies the default color property when the color
+  // property is absent. It does not really specify the default values for
+  // colour_primaries, transfer_characteristics, and matrix_coefficients when
+  // they are equal to 2 (unspecified). But we will interpret it as specifying
+  // the default values for these variables because we must choose some defaults
+  // and these are the most reasonable defaults to choose. We also advocate that
+  // all AVIF decoders choose these defaults:
+  // https://github.com/AOMediaCodec/av1-avif/issues/84
+  const auto primaries =
+      image->colorPrimaries == AVIF_COLOR_PRIMARIES_UNSPECIFIED
+          ? AVIF_COLOR_PRIMARIES_BT709
+          : image->colorPrimaries;
+  const auto transfer = image->transferCharacteristics ==
+                                AVIF_TRANSFER_CHARACTERISTICS_UNSPECIFIED
+                            ? AVIF_TRANSFER_CHARACTERISTICS_SRGB
+                            : image->transferCharacteristics;
+  const auto matrix =
+      image->matrixCoefficients == AVIF_MATRIX_COEFFICIENTS_UNSPECIFIED
+          ? AVIF_MATRIX_COEFFICIENTS_BT709
+          : image->matrixCoefficients;
+  const auto range = image->yuvRange == AVIF_RANGE_FULL
+                         ? gfx::ColorSpace::RangeID::FULL
+                         : gfx::ColorSpace::RangeID::LIMITED;
+  media::VideoColorSpace color_space(primaries, transfer, matrix, range);
   if (color_space.IsSpecified())
     return color_space.ToGfxColorSpace();
+  // media::VideoColorSpace and gfx::ColorSpace do not support CICP
+  // MatrixCoefficients 12, 13, 14.
+  DCHECK_GE(matrix, 12);
+  DCHECK_LE(matrix, 14);
   if (image->yuvRange == AVIF_RANGE_FULL)
     return gfx::ColorSpace::CreateJpeg();
   return gfx::ColorSpace::CreateREC709();
@@ -258,7 +281,7 @@ void AVIFImageDecoder::DecodeSize() {
 }
 
 size_t AVIFImageDecoder::DecodeFrameCount() {
-  return decoded_frame_count_;
+  return Failed() ? frame_buffer_cache_.size() : decoded_frame_count_;
 }
 
 void AVIFImageDecoder::InitializeNewFrame(size_t index) {
@@ -301,6 +324,7 @@ void AVIFImageDecoder::Decode(size_t index) {
   const auto* image = decoder_->image;
   // All frames must be the same size.
   if (Size() != IntSize(image->width, image->height)) {
+    DVLOG(1) << "All frames must be the same size";
     SetFailed();
     return;
   }
@@ -310,27 +334,18 @@ void AVIFImageDecoder::Decode(size_t index) {
   if (decode_to_half_float_)
     buffer.SetPixelFormat(ImageFrame::PixelFormat::kRGBA_F16);
 
-  // Set color space information on the frame if appropriate.
-  gfx::ColorSpace frame_cs;
-  if (!IgnoresColorSpace())
-    frame_cs = GetColorSpace(image);
-  if (CanSetColorSpace()) {
-    last_color_space_ = frame_cs.GetAsFullRangeRGB();
-  } else {
-    // Just use whatever color space Skia wants us to use.
-  }
-
-  // TODO(wtc): This should use the value of |last_color_space_|. Implement it.
   if (!InitFrameBuffer(index)) {
     DVLOG(1) << "Failed to create frame buffer...";
     SetFailed();
     return;
   }
 
-  if (!RenderImage(image, frame_cs, &buffer)) {
+  if (!RenderImage(image, &buffer)) {
     SetFailed();
     return;
   }
+
+  ColorCorrectImage(&buffer);
 
   buffer.SetPixelsChanged(true);
   buffer.SetHasAlpha(!!image->alphaPlane);
@@ -376,13 +391,64 @@ bool AVIFImageDecoder::MaybeCreateDemuxer() {
       is_high_bit_depth_ &&
       high_bit_depth_decoding_option_ == kHighBitDepthToHalfFloat;
 
-  // Try to get the size from the container if possible instead of decoding.
-  if (decoder_->containerWidth && decoder_->containerHeight)
-    return SetSize(decoder_->containerWidth, decoder_->containerHeight);
+  // SetEmbeddedColorProfile() must be called before IsSizeAvailable() becomes
+  // true. So call SetEmbeddedColorProfile() before calling SetSize(). The color
+  // profile is either an ICC profile or the CICP color description. The CICP
+  // color description may come from either the nclx colr box in the container
+  // or the AV1 sequence header for the frames. Decode the first frame to ensure
+  // the CICP color description is available.
+  if (!DecodeImage(0))
+    return false;
 
-  // We need to SetSize() to proceed, so decode the first frame.
-  return DecodeImage(0) &&
-         SetSize(decoder_->image->width, decoder_->image->height);
+  const auto* image = decoder_->image;
+
+  if (!IgnoresColorSpace()) {
+    // The CICP color description is always present because we can always get it
+    // from the AV1 sequence header for the frames. If an ICC profile is
+    // present, use it instead of the CICP color description.
+    if (image->icc.size) {
+      std::unique_ptr<ColorProfile> profile =
+          ColorProfile::Create(image->icc.data, image->icc.size);
+      if (!profile) {
+        DVLOG(1) << "Failed to parse image ICC profile";
+        return false;
+      }
+      uint32_t data_color_space = profile->GetProfile()->data_color_space;
+      if (!image->yuvPlanes[AVIF_CHAN_U]) {
+        // Monochrome (grayscale) image.
+        if (data_color_space != skcms_Signature_Gray &&
+            data_color_space != skcms_Signature_RGB)
+          profile = nullptr;
+      } else {
+        if (data_color_space != skcms_Signature_RGB)
+          profile = nullptr;
+      }
+      if (!profile) {
+        DVLOG(1)
+            << "Image contains ICC profile that does not match its color space";
+        return false;
+      }
+      SetEmbeddedColorProfile(std::move(profile));
+    } else {
+      gfx::ColorSpace frame_cs = GetColorSpace(image);
+      sk_sp<SkColorSpace> sk_color_space =
+          frame_cs.GetAsFullRangeRGB().ToSkColorSpace();
+      skcms_ICCProfile profile;
+      sk_color_space->toProfile(&profile);
+      SetEmbeddedColorProfile(std::make_unique<ColorProfile>(profile));
+    }
+  }
+
+  // The size from the container, if present, must be the same as the first
+  // frame's size.
+  if (decoder_->containerWidth && decoder_->containerHeight &&
+      (decoder_->containerWidth != image->width ||
+       decoder_->containerHeight != image->height)) {
+    DVLOG(1) << "Container size and image size disagree";
+    return false;
+  }
+
+  return SetSize(image->width, image->height);
 }
 
 bool AVIFImageDecoder::DecodeImage(size_t index) {
@@ -403,26 +469,17 @@ bool AVIFImageDecoder::DecodeImage(size_t index) {
   return true;
 }
 
-bool AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& src_cs,
-                                            const gfx::ColorSpace& dest_cs) {
-  DCHECK_EQ(src_cs.GetRangeID(), gfx::ColorSpace::RangeID::FULL);
-  if (color_transform_ && color_transform_->GetSrcColorSpace() == src_cs)
-    return true;
+void AVIFImageDecoder::UpdateColorTransform(const gfx::ColorSpace& frame_cs) {
+  DCHECK_EQ(frame_cs.GetRangeID(), gfx::ColorSpace::RangeID::FULL);
+  if (color_transform_ && color_transform_->GetSrcColorSpace() == frame_cs)
+    return;
   color_transform_ = gfx::ColorTransform::NewColorTransform(
-      src_cs, dest_cs, gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
-  return !!color_transform_;
+      frame_cs, frame_cs.GetAsFullRangeRGB(),
+      gfx::ColorTransform::Intent::INTENT_PERCEPTUAL);
 }
 
-// TODO(wtc): We must be able to set the color space accurately. Find a solution
-// that lets us set the color space for all images and not just the half float
-// and animated cases.
-bool AVIFImageDecoder::CanSetColorSpace() const {
-  return decode_to_half_float_ || decoded_frame_count_ > 1;
-}
-
-bool AVIFImageDecoder::RenderImage(const avifImage* image,
-                                   const gfx::ColorSpace& frame_cs,
-                                   ImageFrame* buffer) {
+bool AVIFImageDecoder::RenderImage(const avifImage* image, ImageFrame* buffer) {
+  const gfx::ColorSpace frame_cs = GetColorSpace(image);
   // Although gfx::ColorTransform can perform range adjustment (from limited
   // range to full range), it uses the 8-bit equations for all bit depths, which
   // are not very accurate for high bit depths. So YUVAToRGBA() performs range
@@ -431,7 +488,6 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
   // be full range.
   const gfx::ColorSpace frame_cs_full_range = frame_cs.GetWithMatrixAndRange(
       frame_cs.GetMatrixID(), gfx::ColorSpace::RangeID::FULL);
-  const gfx::ColorSpace dest_rgb_cs(*buffer->Bitmap().colorSpace());
 
   const bool is_mono = !image->yuvPlanes[AVIF_CHAN_U];
   const bool premultiply_alpha = buffer->PremultiplyAlpha();
@@ -439,10 +495,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
   // TODO(dalecurtis): We should decode to YUV when possible. Currently the
   // YUV path seems to only support still-image YUV8.
   if (decode_to_half_float_) {
-    if (!UpdateColorTransform(frame_cs_full_range, dest_rgb_cs)) {
-      DVLOG(1) << "Failed to update color transform...";
-      return false;
-    }
+    UpdateColorTransform(frame_cs_full_range);
 
     uint64_t* rgba_hhhh = buffer->GetAddrF16(0, 0);
 
@@ -463,8 +516,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
   // reports monochrome 4:0:0 as AVIF_PIXEL_FORMAT_YUV420 with null U and V
   // planes, so we need to check for genuine YUV 4:2:0, not monochrome 4:0:0.
   bool is_i420 = image->depth == 8 &&
-                 image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 &&
-                 image->yuvPlanes[1] && image->yuvPlanes[2];
+                 image->yuvFormat == AVIF_PIXEL_FORMAT_YUV420 && !is_mono;
   // Call media::PaintCanvasVideoRenderer if the color space is supported by
   // libyuv. Since media::PaintCanvasVideoRenderer calls
   // libyuv::I420AlphaToARGB() with attenuate=1 to enable RGB premultiplication
@@ -512,10 +564,7 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
     return true;
   }
 
-  if (!UpdateColorTransform(frame_cs_full_range, dest_rgb_cs)) {
-    DVLOG(1) << "Failed to update color transform...";
-    return false;
-  }
+  UpdateColorTransform(frame_cs_full_range);
   if (ImageIsHighBitDepth()) {
     if (is_mono) {
       YUVAToRGBA<ColorType::kMono, uint16_t>(image, color_transform_.get(),
@@ -534,6 +583,35 @@ bool AVIFImageDecoder::RenderImage(const avifImage* image,
     }
   }
   return true;
+}
+
+void AVIFImageDecoder::ColorCorrectImage(ImageFrame* buffer) {
+  // Postprocess the image data according to the profile.
+  const ColorProfileTransform* const transform = ColorTransform();
+  if (!transform)
+    return;
+  const auto alpha_format = (buffer->HasAlpha() && buffer->PremultiplyAlpha())
+                                ? skcms_AlphaFormat_PremulAsEncoded
+                                : skcms_AlphaFormat_Unpremul;
+  if (decode_to_half_float_) {
+    const skcms_PixelFormat color_format = skcms_PixelFormat_RGBA_hhhh;
+    for (int y = 0; y < Size().Height(); ++y) {
+      ImageFrame::PixelDataF16* const row = buffer->GetAddrF16(0, y);
+      const bool success = skcms_Transform(
+          row, color_format, alpha_format, transform->SrcProfile(), row,
+          color_format, alpha_format, transform->DstProfile(), Size().Width());
+      DCHECK(success);
+    }
+  } else {
+    const skcms_PixelFormat color_format = XformColorFormat();
+    for (int y = 0; y < Size().Height(); ++y) {
+      ImageFrame::PixelData* const row = buffer->GetAddr(0, y);
+      const bool success = skcms_Transform(
+          row, color_format, alpha_format, transform->SrcProfile(), row,
+          color_format, alpha_format, transform->DstProfile(), Size().Width());
+      DCHECK(success);
+    }
+  }
 }
 
 }  // namespace blink

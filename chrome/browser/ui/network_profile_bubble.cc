@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
@@ -139,8 +138,8 @@ void NetworkProfileBubble::CheckNetworkProfile(
     }
     if (profile_on_network) {
       RecordUmaEvent(METRIC_PROFILE_ON_NETWORK);
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&NotifyNetworkProfileDetected));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&NotifyNetworkProfileDetected));
     } else {
       RecordUmaEvent(METRIC_PROFILE_NOT_ON_NETWORK);
     }

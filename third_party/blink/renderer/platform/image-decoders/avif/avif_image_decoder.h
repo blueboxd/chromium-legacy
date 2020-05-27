@@ -53,22 +53,19 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   bool MaybeCreateDemuxer();
 
   // Decodes the frame at index |index|. The decoded frame is available in
-  // decoder_->image. Returns true on success, false on failure.
+  // decoder_->image. Returns whether decoding completed successfully.
   bool DecodeImage(size_t index);
 
-  // Updates or creates |color_transform_|. Returns true on success, false on
-  // failure.
-  bool UpdateColorTransform(const gfx::ColorSpace& src_cs,
-                            const gfx::ColorSpace& dest_cs);
+  // Updates or creates |color_transform_| for YUV-to-RGB conversion.
+  void UpdateColorTransform(const gfx::ColorSpace& frame_cs);
 
-  // Returns true if we can set the color space on the image.
-  bool CanSetColorSpace() const;
+  // Renders |image| in |buffer|. Returns whether |image| was rendered
+  // successfully.
+  bool RenderImage(const avifImage* image, ImageFrame* buffer);
 
-  // Renders |image| in |buffer|. |frame_cs| is the color space of |image|.
-  // Returns true on success, false on failure.
-  bool RenderImage(const avifImage* image,
-                   const gfx::ColorSpace& frame_cs,
-                   ImageFrame* buffer);
+  // Applies color profile correction to the pixel data for |buffer|, if
+  // desired.
+  void ColorCorrectImage(ImageFrame* buffer);
 
   bool is_high_bit_depth_ = false;
   bool decode_to_half_float_ = false;
@@ -78,9 +75,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
 
   std::unique_ptr<gfx::ColorTransform> color_transform_;
 
-  gfx::ColorSpace last_color_space_;
   sk_sp<SkData> image_data_;
-  SkBitmap temp_bitmap_;
 };
 
 }  // namespace blink

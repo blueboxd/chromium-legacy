@@ -10,7 +10,6 @@
 #include "base/bits.h"
 #include "base/memory/weak_ptr.h"
 #include "base/process/process_metrics.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/performance_manager/policies/policy_features.h"
 #include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
@@ -100,8 +99,8 @@ DynamicTcmallocPolicy::EnsureTcmallocTunablesForProcess(
     const RenderProcessHostProxy& proxy =
         process_node->GetRenderProcessHostProxy();
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&BindTcmallocTunablesReceiverOnUIThread, proxy,
                        data->tcmalloc_tunables.BindNewPipeAndPassReceiver()));
   }

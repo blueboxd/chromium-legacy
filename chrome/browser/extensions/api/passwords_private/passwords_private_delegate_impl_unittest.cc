@@ -52,6 +52,7 @@ using password_manager::TestPasswordStore;
 using ::testing::Eq;
 using ::testing::Ne;
 using ::testing::Return;
+using ::testing::SizeIs;
 using ::testing::StrictMock;
 namespace extensions {
 
@@ -247,6 +248,34 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetSavedPasswordsList) {
   delegate.GetSavedPasswordsList(callback.Get());
 }
 
+TEST_F(PasswordsPrivateDelegateImplTest,
+       PasswordsDuplicatedInStoresHaveSameFrontendId) {
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  auto account_password = std::make_unique<autofill::PasswordForm>();
+  account_password->in_store = autofill::PasswordForm::Store::kAccountStore;
+  auto profile_password = std::make_unique<autofill::PasswordForm>();
+  profile_password->in_store = autofill::PasswordForm::Store::kProfileStore;
+
+  PasswordFormList list;
+  list.push_back(std::move(account_password));
+  list.push_back(std::move(profile_password));
+
+  delegate.SetPasswordList(list);
+
+  base::MockCallback<PasswordsPrivateDelegate::UiEntriesCallback> callback;
+  int first_frontend_id, second_frontend_id;
+  EXPECT_CALL(callback, Run(SizeIs(2)))
+      .WillOnce([&](const PasswordsPrivateDelegate::UiEntries& passwords) {
+        first_frontend_id = passwords[0].frontend_id;
+        second_frontend_id = passwords[1].frontend_id;
+      });
+
+  delegate.GetSavedPasswordsList(callback.Get());
+
+  EXPECT_EQ(first_frontend_id, second_frontend_id);
+}
+
 TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
   PasswordsPrivateDelegateImpl delegate(&profile_);
 
@@ -263,6 +292,38 @@ TEST_F(PasswordsPrivateDelegateImplTest, GetPasswordExceptionsList) {
 
   EXPECT_CALL(callback, Run);
   delegate.GetPasswordExceptionsList(callback.Get());
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest,
+       ExceptionsDuplicatedInStoresHaveSameFrontendId) {
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+
+  auto account_exception = std::make_unique<autofill::PasswordForm>();
+  account_exception->blacklisted_by_user = true;
+  account_exception->in_store = autofill::PasswordForm::Store::kAccountStore;
+  auto profile_exception = std::make_unique<autofill::PasswordForm>();
+  profile_exception->blacklisted_by_user = true;
+  profile_exception->in_store = autofill::PasswordForm::Store::kProfileStore;
+
+  PasswordFormList list;
+  list.push_back(std::move(account_exception));
+  list.push_back(std::move(profile_exception));
+
+  delegate.SetPasswordExceptionList(list);
+
+  base::MockCallback<PasswordsPrivateDelegate::ExceptionEntriesCallback>
+      callback;
+  int first_frontend_id, second_frontend_id;
+  EXPECT_CALL(callback, Run(SizeIs(2)))
+      .WillOnce(
+          [&](const PasswordsPrivateDelegate::ExceptionEntries& exceptions) {
+            first_frontend_id = exceptions[0].frontend_id;
+            second_frontend_id = exceptions[1].frontend_id;
+          });
+
+  delegate.GetPasswordExceptionsList(callback.Get());
+
+  EXPECT_EQ(first_frontend_id, second_frontend_id);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {

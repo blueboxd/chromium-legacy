@@ -5,7 +5,6 @@
 #include "components/performance_manager/public/graph/policies/tab_loading_frame_navigation_policy.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
@@ -142,8 +141,8 @@ class TabLoadingFrameNavigationPolicyTest
 
           // Post back to the UI thread with the answer, where it will be
           // validated and the run loop exited.
-          base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                         base::BindOnce(on_ui_thread, throttled_page_count,
+          content::GetUIThreadTaskRunner({})->PostTask(
+              FROM_HERE, base::BindOnce(on_ui_thread, throttled_page_count,
                                         timer_running));
         }));
 

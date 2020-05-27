@@ -1026,21 +1026,6 @@ bool AXNodeData::SupportsExpandCollapse() const {
   return ui::SupportsExpandCollapse(role);
 }
 
-bool AXNodeData::IsContainedInActiveLiveRegion() const {
-  if (!HasStringAttribute(ax::mojom::StringAttribute::kContainerLiveStatus))
-    return false;
-
-  if (base::CompareCaseInsensitiveASCII(
-          GetStringAttribute(ax::mojom::StringAttribute::kContainerLiveStatus),
-          "off") == 0)
-    return false;
-
-  if (GetBoolAttribute(ax::mojom::BoolAttribute::kContainerLiveBusy))
-    return false;
-
-  return true;
-}
-
 std::string AXNodeData::ToString() const {
   std::string result;
 

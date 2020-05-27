@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -49,6 +48,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/network_service_instance.h"
@@ -462,8 +462,8 @@ class IsolatedPrerenderBrowserTest
     if (request.GetURL().spec().find("favicon") != std::string::npos)
       return nullptr;
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&IsolatedPrerenderBrowserTest::
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&IsolatedPrerenderBrowserTest::
                                       MonitorOriginResourceRequestOnUIThread,
                                   base::Unretained(this), request));
 
@@ -555,8 +555,8 @@ class IsolatedPrerenderBrowserTest
 
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&IsolatedPrerenderBrowserTest::
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&IsolatedPrerenderBrowserTest::
                                       MonitorProxyResourceRequestOnUIThread,
                                   base::Unretained(this), request));
 

@@ -7,12 +7,12 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "components/performance_manager/public/graph/page_node.h"
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -59,8 +59,8 @@ TEST_F(PerformanceManagerTest, GetPageNodeForWebContents) {
 
   auto call_on_graph_cb = base::BindLambdaForTesting([&]() {
     EXPECT_TRUE(page_node.get());
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(std::move(check_wc_on_main_thread),
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(check_wc_on_main_thread),
                                   page_node->GetContentsProxy()));
   });
 

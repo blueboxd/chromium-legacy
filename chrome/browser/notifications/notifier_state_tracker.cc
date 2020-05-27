@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
@@ -193,8 +192,8 @@ void NotifierStateTracker::FirePermissionLevelChangedEvent(
   // has changed.
   extensions::InfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile_)->info_map();
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&extensions::InfoMap::SetNotificationsDisabled,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&extensions::InfoMap::SetNotificationsDisabled,
                                 extension_info_map, notifier_id.id, !enabled));
 }
 #endif

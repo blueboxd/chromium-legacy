@@ -11,7 +11,6 @@
 #include "base/i18n/rtl.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/process_resource_usage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -136,8 +135,8 @@ void ConnectResourceReporterOnIOThread(
 ProcessResourceUsage* CreateProcessResourcesSampler(
     int unique_child_process_id) {
   mojo::PendingRemote<content::mojom::ResourceUsageReporter> usage_reporter;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ConnectResourceReporterOnIOThread,
                      unique_child_process_id,
                      usage_reporter.InitWithNewPipeAndPassReceiver()));

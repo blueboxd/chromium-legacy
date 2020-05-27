@@ -83,10 +83,12 @@ AppCacheHost::AppCacheHost(
     const base::UnguessableToken& host_id,
     int process_id,
     int render_frame_id,
+    SecurityPolicyHandle security_policy_handle,
     mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     AppCacheServiceImpl* service)
     : host_id_(host_id),
       process_id_(process_id),
+      security_policy_handle_(std::move(security_policy_handle)),
       pending_main_resource_cache_id_(blink::mojom::kAppCacheNoCacheId),
       pending_selected_cache_id_(blink::mojom::kAppCacheNoCacheId),
       was_select_cache_called_(false),
@@ -100,12 +102,9 @@ AppCacheHost::AppCacheHost(
       main_resource_blocked_(false),
       associated_cache_info_pending_(false) {
   service_->AddObserver(this);
-  if (process_id_ != ChildProcessHost::kInvalidUniqueID) {
-    security_policy_handle_ =
-        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
-            process_id_);
-    if (!security_policy_handle_.is_valid())
-      base::debug::DumpWithoutCrashing();
+  if (process_id_ != ChildProcessHost::kInvalidUniqueID &&
+      !security_policy_handle_.is_valid()) {
+    base::debug::DumpWithoutCrashing();
   }
   is_origin_trial_required_ =
       service_->appcache_policy()->IsOriginTrialRequiredForAppCache();

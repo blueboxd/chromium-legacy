@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_dock_tile.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -112,8 +111,8 @@ Response BrowserHandler::GetWindowBounds(
 }
 
 Response BrowserHandler::Close() {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI}, base::BindOnce([]() {
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce([]() {
         if (ChromeDevToolsManagerDelegate::GetInstance())
           ChromeDevToolsManagerDelegate::GetInstance()->BrowserCloseRequested();
         chrome::ExitIgnoreUnloadHandlers();

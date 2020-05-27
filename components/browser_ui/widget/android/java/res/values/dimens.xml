@@ -90,7 +90,7 @@
     <dimen name="default_list_row_padding">16dp</dimen>
 
   <!-- Query tile dimensions -->
-  <dimen name="tile_ideal_width">86dp</dimen>
+  <dimen name="tile_ideal_width">92dp</dimen>
 
   <!-- Query tile container dimensions -->
   <dimen name="tile_grid_inter_tile_padding">12dp</dimen>

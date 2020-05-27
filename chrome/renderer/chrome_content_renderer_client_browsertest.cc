@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -136,8 +135,8 @@ class ChromeContentRendererClientBrowserTest :
 
     EXPECT_EQ(request.relative_url, GetParam().expected_url)
         << "URL is wrong for test " << GetParam().name;
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   message_runner_->QuitClosure());
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, message_runner_->QuitClosure());
   }
 
   void WaitForYouTubeRequest() {

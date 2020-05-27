@@ -297,7 +297,7 @@ AXPlatformNode* AXPlatformNode::FromNativeViewAccessible(
 // AXPlatformNodeWin
 //
 
-AXPlatformNodeWin::AXPlatformNodeWin() : force_new_hypertext_(false) {}
+AXPlatformNodeWin::AXPlatformNodeWin() {}
 
 AXPlatformNodeWin::~AXPlatformNodeWin() {
   ClearOwnRelations();
@@ -305,17 +305,12 @@ AXPlatformNodeWin::~AXPlatformNodeWin() {
 
 void AXPlatformNodeWin::Init(AXPlatformNodeDelegate* delegate) {
   AXPlatformNodeBase::Init(delegate);
-  force_new_hypertext_ = false;
 }
 
 void AXPlatformNodeWin::ClearOwnRelations() {
   for (size_t i = 0; i < relations_.size(); ++i)
     relations_[i]->Invalidate();
   relations_.clear();
-}
-
-void AXPlatformNodeWin::ForceNewHypertext() {
-  force_new_hypertext_ = true;
 }
 
 // Static

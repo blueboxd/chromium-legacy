@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
-#include "chrome/services/app_service/public/mojom/types.mojom-forward.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

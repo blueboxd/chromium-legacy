@@ -19,11 +19,11 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace chromeos {
 namespace app_time {

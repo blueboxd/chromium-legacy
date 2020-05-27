@@ -24,6 +24,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -61,7 +62,7 @@ class ReadOnlyOriginView : public views::View {
  public:
   ReadOnlyOriginView(const base::string16& page_title,
                      const GURL& origin,
-                     gfx::ImageSkia icon_image_skia,
+                     const SkBitmap* icon_bitmap,
                      SkColor background_color,
                      views::ButtonListener* site_settings_listener) {
     auto title_origin_container = std::make_unique<views::View>();
@@ -114,13 +115,13 @@ class ReadOnlyOriginView : public views::View {
     top_level_columns->AddColumn(
         views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
         views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-    const bool has_icon = icon_image_skia.width() && icon_image_skia.height();
-    float adjusted_width = base::checked_cast<float>(icon_image_skia.width());
+    const bool has_icon = icon_bitmap && !icon_bitmap->drawsNothing();
+    float adjusted_width = base::checked_cast<float>(icon_bitmap->width());
     if (has_icon) {
       adjusted_width =
           adjusted_width *
           IconSizeCalculator::kPaymentAppDeviceIndependentIdealIconHeight /
-          icon_image_skia.height();
+          icon_bitmap->height();
       // A column for the app icon.
       top_level_columns->AddColumn(
           views::GridLayout::LEADING, views::GridLayout::FILL,
@@ -134,7 +135,7 @@ class ReadOnlyOriginView : public views::View {
     top_level_layout->AddView(std::move(title_origin_container));
     if (has_icon) {
       views::ImageView* app_icon_view = top_level_layout->AddView(
-          CreateAppIconView(/*icon_id=*/0, icon_image_skia,
+          CreateAppIconView(/*icon_id=*/0, icon_bitmap,
                             /*label=*/page_title));
       // We should set image size in density independent pixels here, since
       // views::ImageView objects are rastered at the device scale factor.
@@ -237,8 +238,7 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView(
       GetHeaderBackground(header_view);
   return std::make_unique<ReadOnlyOriginView>(
       GetPaymentHandlerDialogTitle(web_contents()), origin,
-      state()->selected_app()->icon_image_skia(), background->get_color(),
-      this);
+      state()->selected_app()->icon_bitmap(), background->get_color(), this);
 }
 
 std::unique_ptr<views::Background>

@@ -47,8 +47,8 @@ PaymentApp::PaymentApp(int icon_resource_id, Type type)
 
 PaymentApp::~PaymentApp() {}
 
-gfx::ImageSkia PaymentApp::icon_image_skia() const {
-  return gfx::ImageSkia();
+const SkBitmap* PaymentApp::icon_bitmap() const {
+  return nullptr;
 }
 
 void PaymentApp::IsValidForPaymentMethodIdentifier(

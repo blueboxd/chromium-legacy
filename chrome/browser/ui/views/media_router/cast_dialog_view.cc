@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
@@ -184,8 +183,8 @@ void CastDialogView::ButtonPressed(views::Button* sender,
     // SinkPressed() invokes a refresh of the sink list, which deletes the
     // sink button. So we must call this after the button is done handling the
     // press event.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&CastDialogView::SinkPressed,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CastDialogView::SinkPressed,
                                   weak_factory_.GetWeakPtr(), sender->tag()));
   }
 }
@@ -467,10 +466,11 @@ void CastDialogView::DisableUnsupportedSinks() {
 void CastDialogView::RecordSinkCountWithDelay() {
   // Record the number of sinks after three seconds. This is consistent with the
   // WebUI dialog.
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&CastDialogView::RecordSinkCount,
-                                       weak_factory_.GetWeakPtr()),
-                        base::TimeDelta::FromSeconds(3));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&CastDialogView::RecordSinkCount,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(3));
 }
 
 void CastDialogView::RecordSinkCount() {

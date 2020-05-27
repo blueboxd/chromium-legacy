@@ -11,7 +11,6 @@
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -307,8 +306,8 @@ void StorageMonitorMac::EjectDevice(
   options->bsd_name = bsd_name;
   options->callback = std::move(callback);
   options->disk = std::move(disk);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(EjectDisk, options));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(EjectDisk, options));
 }
 
 // static

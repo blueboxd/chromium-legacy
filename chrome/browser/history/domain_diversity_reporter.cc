@@ -5,7 +5,6 @@
 #include "chrome/browser/history/domain_diversity_reporter.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -34,10 +33,11 @@ DomainDiversityReporter::DomainDiversityReporter(
   DCHECK_NE(prefs_, nullptr);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&DomainDiversityReporter::MaybeComputeDomainMetrics,
-                     weak_ptr_factory_.GetWeakPtr()));
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&DomainDiversityReporter::MaybeComputeDomainMetrics,
+                         weak_ptr_factory_.GetWeakPtr()));
 }
 
 DomainDiversityReporter::~DomainDiversityReporter() = default;

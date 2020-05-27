@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -118,8 +117,8 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
     entries_builder.AddFileEntry(path);
 
   // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -141,8 +140,8 @@ WebLaunchFilesHelper::WebLaunchFilesHelper(
     entries_builder.AddFileEntry(path);
 
   // Asynchronously call MaybeSendLaunchEntries, since it may destroy |this|.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&WebLaunchFilesHelper::MaybeSendLaunchEntries,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 

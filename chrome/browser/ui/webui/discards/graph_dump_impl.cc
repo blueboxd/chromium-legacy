@@ -12,7 +12,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -265,8 +264,8 @@ void DiscardsGraphDumpImpl::OnTakenFromGraph(
 
   // The favicon helper must be deleted on the UI thread.
   if (favicon_request_helper_) {
-    base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
-                     std::move(favicon_request_helper_));
+    content::GetUIThreadTaskRunner({})->DeleteSoon(
+        FROM_HERE, std::move(favicon_request_helper_));
   }
 
   graph_ = nullptr;
@@ -416,8 +415,8 @@ void DiscardsGraphDumpImpl::StartPageFaviconRequest(
   if (!page_node->GetMainFrameUrl().is_valid())
     return;
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FaviconRequestHelper::RequestFavicon,
                      base::Unretained(EnsureFaviconRequestHelper()),
                      page_node->GetMainFrameUrl(),
@@ -429,8 +428,8 @@ void DiscardsGraphDumpImpl::StartFrameFaviconRequest(
   if (!frame_node->GetURL().is_valid())
     return;
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&FaviconRequestHelper::RequestFavicon,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FaviconRequestHelper::RequestFavicon,
                                 base::Unretained(EnsureFaviconRequestHelper()),
                                 frame_node->GetURL(),
                                 frame_node->GetPageNode()->GetContentsProxy(),

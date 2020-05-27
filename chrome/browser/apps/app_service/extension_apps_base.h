@@ -18,11 +18,11 @@
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/services/app_service/public/cpp/publisher_base.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_prefs_observer.h"
 #include "extensions/browser/extension_registry.h"
@@ -50,7 +50,7 @@ class ExtensionAppsEnableFlow;
 //
 // In the future, desktop PWAs will be migrated to a new system.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class ExtensionAppsBase : public apps::PublisherBase,
                           public extensions::ExtensionPrefsObserver,
                           public extensions::ExtensionRegistryObserver,

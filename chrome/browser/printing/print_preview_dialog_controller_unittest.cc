@@ -199,7 +199,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
   // Two similar URLs (same webpage, different URL fragment/query)
   // Gmail navigates from fragment to query when opening an email to print.
   GURL tiger("https://www.google.com/#q=tiger");
-  GURL tiger_barb("https://www.google.com/?q=tiger+barb");
+  GURL tiger_barb("https://www.google.com/#?q=tiger+barb");
 
   // Set up by opening a new tab and getting web contents
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
@@ -275,12 +275,13 @@ TEST_F(PrintPreviewDialogControllerUnitTest, CloseDialogOnNavigation) {
   // Try to simulate Gmail navigation: Navigate to an existing page (via
   // Forward) but modify the navigation type while pending to look like an
   // address bar + typed transition (like Gmail auto navigation)
-  content::NavigationController& nav_controller = web_contents->GetController();
-  nav_controller.GoForward();
-  nav_controller.GetPendingEntry()->SetTransitionType(ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
-  CommitPendingLoad(&nav_controller);
-
+  std::unique_ptr<content::NavigationSimulator> forward_nav =
+      content::NavigationSimulator::CreateHistoryNavigation(1, web_contents);
+  forward_nav->Start();
+  web_contents->GetController().GetPendingEntry()->SetTransitionType(
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
+  forward_nav->Commit();
   // Navigation successful
   EXPECT_EQ(tiger_barb, web_contents->GetLastCommittedURL());
 

@@ -17,9 +17,8 @@ namespace updater {
 
 std::vector<GURL> DevOverrideProvider::UpdateURL() const {
   @autoreleasepool {
-    base::scoped_nsobject<NSUserDefaults> user_defaults([[NSUserDefaults alloc]
-        initWithSuiteName:@MAC_BUNDLE_IDENTIFIER_STRING]);
-    NSURL* url = [user_defaults
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    NSURL* url = [userDefaults
         URLForKey:[NSString stringWithUTF8String:kDevOverrideKeyUrl]];
     if (url == nil)
       return next_provider_->UpdateURL();
@@ -29,9 +28,8 @@ std::vector<GURL> DevOverrideProvider::UpdateURL() const {
 
 bool DevOverrideProvider::UseCUP() const {
   @autoreleasepool {
-    base::scoped_nsobject<NSUserDefaults> user_defaults([[NSUserDefaults alloc]
-        initWithSuiteName:@MAC_BUNDLE_IDENTIFIER_STRING]);
-    id use_cup = [user_defaults
+    NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+    id use_cup = [userDefaults
         objectForKey:[NSString stringWithUTF8String:kDevOverrideKeyUseCUP]];
     if (use_cup)
       return [use_cup boolValue];

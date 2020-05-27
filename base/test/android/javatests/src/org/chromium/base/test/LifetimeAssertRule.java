@@ -4,8 +4,6 @@
 
 package org.chromium.base.test;
 
-import android.os.Build;
-
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -31,10 +29,9 @@ public class LifetimeAssertRule implements TestRule {
 
     private void maybeAssertLifetime() {
         // There is a bug on L and below that DestroyActivitiesRule does not cause onStop and
-        // onDestroy. Ignore lifetime asserts if that is the case.
-        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1
-                && ApplicationStatus.isInitialized()
-                && !ApplicationStatus.isEveryActivityDestroyed()) {
+        // onDestroy. On other versions, DestroyActivitiesRule may still fail flakily. Ignore
+        // lifetime asserts if that is the case.
+        if (ApplicationStatus.isInitialized() && !ApplicationStatus.isEveryActivityDestroyed()) {
             return;
         }
         LifetimeAssert.assertAllInstancesDestroyedForTesting();

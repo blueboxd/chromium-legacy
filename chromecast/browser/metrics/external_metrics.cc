@@ -17,7 +17,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -104,8 +103,8 @@ void ExternalMetrics::ProcessExternalEvents(base::OnceClosure cb) {
 }
 
 void ExternalMetrics::RecordCrash(const std::string& crash_kind) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&CastStabilityMetricsProvider::LogExternalCrash,
                      base::Unretained(stability_provider_), crash_kind));
 }

@@ -10,7 +10,6 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -86,8 +85,7 @@ void HeadlessDevToolsClientImpl::AttachToExternalHost(
 }
 
 void HeadlessDevToolsClientImpl::InitBrowserMainThread() {
-  browser_main_thread_ =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+  browser_main_thread_ = content::GetUIThreadTaskRunner({});
 }
 
 void HeadlessDevToolsClientImpl::ChannelClosed() {

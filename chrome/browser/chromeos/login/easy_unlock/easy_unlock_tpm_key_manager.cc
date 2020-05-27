@@ -15,7 +15,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -237,8 +236,8 @@ bool EasyUnlockTpmKeyManager::PrepareTpmKey(bool check_private_key,
         base::Bind(&EasyUnlockTpmKeyManager::OnUserTPMInitialized,
                    get_tpm_slot_weak_ptr_factory_.GetWeakPtr(), key);
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&EnsureUserTPMInitializedOnIOThread, username_hash_,
                        base::ThreadTaskRunnerHandle::Get(), on_user_tpm_ready));
   }
@@ -287,8 +286,8 @@ void EasyUnlockTpmKeyManager::SignUsingTpmKey(
       base::Bind(&EasyUnlockTpmKeyManager::SignDataWithSystemSlot,
                  weak_ptr_factory_.GetWeakPtr(), key, data, callback);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&GetSystemSlotOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&GetSystemSlotOnIOThread,
                                 base::ThreadTaskRunnerHandle::Get(),
                                 sign_with_system_slot));
 }
@@ -318,8 +317,8 @@ void EasyUnlockTpmKeyManager::OnUserTPMInitialized(
       base::Bind(&EasyUnlockTpmKeyManager::CreateKeyInSystemSlot,
                  get_tpm_slot_weak_ptr_factory_.GetWeakPtr(), public_key);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&GetSystemSlotOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&GetSystemSlotOnIOThread,
                                 base::ThreadTaskRunnerHandle::Get(),
                                 create_key_with_system_slot));
 }

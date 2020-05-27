@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/values_test_util.h"
@@ -31,6 +30,7 @@
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -132,8 +132,7 @@ class CastActivityManagerTest : public testing::Test,
                                 public ActivityRecordFactoryForTest {
  public:
   CastActivityManagerTest()
-      : socket_service_(
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
+      : socket_service_(content::GetUIThreadTaskRunner({})),
         message_handler_(&socket_service_) {
     media_sink_service_.AddOrUpdateSink(sink_);
     socket_.set_id(kChannelId);

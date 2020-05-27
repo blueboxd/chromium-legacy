@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "content/public/browser/android/compositor.h"
@@ -238,8 +237,8 @@ void MailboxToSurfaceBridge::CreateAndBindContextProvider(
       base::BindOnce(&MailboxToSurfaceBridge::OnContextAvailableOnUiThread,
                      weak_ptr_factory_.GetWeakPtr());
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(
                      [](int surface_handle,
                         content::Compositor::ContextProviderCallback callback) {
                        // Our attributes must be compatible with the shared

@@ -92,8 +92,6 @@ SystemNetworkContextManager::GetSystemNetworkContext() {
 
 void SystemNetworkContextManager::OnNetworkServiceCreated(
     network::mojom::NetworkService* network_service) {
-  // The system NetworkContext must be created first, since it sets
-  // |primary_network_context| to true.
   system_network_context_.reset();
   network_service->CreateNetworkContext(
       system_network_context_.BindNewPipeAndPassReceiver(),
@@ -106,7 +104,6 @@ SystemNetworkContextManager::CreateSystemNetworkContextManagerParams() {
       CreateDefaultNetworkContextParams(user_agent_);
 
   network_context_params->context_name = std::string("system");
-  network_context_params->primary_network_context = true;
 
   return network_context_params;
 }

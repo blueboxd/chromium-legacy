@@ -20,7 +20,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/safe_browsing/content/base_ui_manager.h"
 #include "components/safe_browsing/content/browser/threat_details_cache.h"
@@ -849,8 +848,8 @@ void ThreatDetails::OnCacheCollectionReady() {
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&WebUIInfoSingleton::AddToCSBRRsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(report_)));
@@ -877,8 +876,8 @@ void ThreatDetails::MaybeFillReferrerChain() {
 
 void ThreatDetails::AllDone() {
   is_all_done_ = true;
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(done_callback_),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(done_callback_),
                                 base::Unretained(web_contents())));
 }
 

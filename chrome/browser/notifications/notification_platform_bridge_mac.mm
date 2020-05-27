@@ -24,7 +24,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_impl.h"
@@ -394,8 +393,8 @@ void NotificationPlatformBridgeMac::ProcessNotificationResponse(
     action_index = button_index.intValue;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(DoProcessNotificationResponse,
                      static_cast<NotificationCommon::Operation>(
                          operation.unsignedIntValue),
@@ -586,8 +585,8 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
     for (NSString* alert in alerts)
       displayedNotifications.insert(base::SysNSStringToUTF8(alert));
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(copyable_callback, std::move(displayedNotifications),
                        true /* supports_synchronization */));
   };

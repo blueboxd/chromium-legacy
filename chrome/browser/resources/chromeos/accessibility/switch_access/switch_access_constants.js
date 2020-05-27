@@ -50,8 +50,10 @@ const SAConstants = {
    */
   ActionResponse: {
     NO_ACTION_TAKEN: -1,
-    CLOSE_MENU: 0,
-    REMAIN_OPEN: 1,
+    REMAIN_OPEN: 0,
+    CLOSE_MENU: 1,
+    RELOAD_MAIN_MENU: 2,
+    OPEN_TEXT_NAVIGATION_MENU: 3,
   },
 
   /**

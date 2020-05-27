@@ -5,6 +5,7 @@
 #include "chrome/browser/autofill/automated_tests/cache_replayer.h"
 
 #include <memory>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -32,8 +33,12 @@ namespace {
 using base::JSONWriter;
 using base::Value;
 
-using RequestResponsePair =
+// Request Response Pair for the legacy server
+using LegacyRequestResponsePair =
     std::pair<AutofillQueryContents, AutofillQueryResponseContents>;
+// Request Response Pair for the API server
+using ApiRequestResponsePair =
+    std::pair<AutofillPageQueryRequest, AutofillQueryResponse>;
 
 constexpr char kTestHTTPResponseHeader[] = "Fake HTTP Response Header";
 constexpr char kHTTPBodySep[] = "\r\n\r\n";
@@ -48,7 +53,66 @@ struct LightForm {
   std::vector<LightField> fields;
 };
 
-RequestResponsePair MakeQueryRequestResponsePair(
+class LegacyTestEnv {
+ public:
+  using Env = LegacyEnv;
+  using RequestResponsePair = std::pair<Env::Query, Env::Response>;
+
+  static std::string CreateQueryUrl(const std::string& base64_encoded_query) {
+    constexpr char base_url[] = "https://clients1.google.com/tbproxy/af/query";
+    if (base64_encoded_query.empty())
+      return base_url;
+    return base::StrCat({base_url, "?q=", base64_encoded_query});
+  }
+
+  // Returns the host name of the autofill server.
+  static std::string hostname() { return "clients1.google.com"; }
+
+  static bool GetServerResponseForQuery(
+      const ServerCacheReplayer& cache_replayer,
+      const typename Env::Query& query,
+      std::string* http_text) {
+    return cache_replayer.GetLegacyServerResponseForQuery(query, http_text);
+  }
+
+  static AutofillServerType server_type() {
+    return AutofillServerType::kLegacy;
+  }
+};
+
+class ApiTestEnv {
+ public:
+  using Env = ApiEnv;
+  using RequestResponsePair = std::pair<Env::Query, Env::Response>;
+
+  static std::string CreateQueryUrl(const std::string& base64_encoded_query) {
+    constexpr char base_url[] =
+        "https://content-autofill.googleapis.com/v1/pages:get";
+    if (base64_encoded_query.empty())
+      return base_url;
+    return base::StrCat({base_url, "/", base64_encoded_query});
+  }
+
+  // Returns the host name of the autofill server.
+  static std::string hostname() { return "content-autofill.googleapis.com"; }
+
+  static bool GetServerResponseForQuery(
+      const ServerCacheReplayer& cache_replayer,
+      const typename Env::Query& query,
+      std::string* http_text) {
+    return cache_replayer.GetApiServerResponseForQuery(query, http_text);
+  }
+
+  static AutofillServerType server_type() { return AutofillServerType::kApi; }
+};
+
+template <typename TestEnv>
+typename TestEnv::RequestResponsePair MakeQueryRequestResponsePair(
+    const std::vector<LightForm>& forms);
+
+template <>
+typename LegacyTestEnv::RequestResponsePair
+MakeQueryRequestResponsePair<LegacyTestEnv>(
     const std::vector<LightForm>& forms) {
   AutofillQueryContents query;
   query.set_client_version("Chrome Test");
@@ -58,32 +122,53 @@ RequestResponsePair MakeQueryRequestResponsePair(
     added_form->set_signature(form.signature);
     for (const auto& field : form.fields) {
       added_form->add_field()->set_signature(field.signature);
-      query_response.add_field()->set_overall_type_prediction(field.prediction);
+      auto* new_field = query_response.add_field();
+      new_field->set_overall_type_prediction(field.prediction);
+      new_field->add_predictions()->set_type(field.prediction);
     }
   }
-  return RequestResponsePair({std::move(query), std::move(query_response)});
+  return LegacyRequestResponsePair(
+      {std::move(query), std::move(query_response)});
 }
 
-// Makes Query request canonical URL. Will set "q" query parameter if |query| is
-// not empty.
-bool MakeQueryRequestURL(const base::Optional<AutofillQueryContents>& query,
-                         std::string* request_url) {
-  constexpr base::StringPiece base_url =
-      "https://clients1.google.com/tbproxy/af/query";
-  // Add Query proto content to "q" parameter if non-empty.
-  if (query.has_value()) {
-    std::string encoded_query;
-    std::string serialized_query;
-    if (!(*query).SerializeToString(&serialized_query)) {
-      VLOG(1) << "could not serialize Query proto";
-      return false;
+template <>
+typename ApiTestEnv::RequestResponsePair
+MakeQueryRequestResponsePair<ApiTestEnv>(const std::vector<LightForm>& forms) {
+  AutofillPageQueryRequest query;
+  AutofillQueryResponse response;
+  for (const auto& form : forms) {
+    auto* query_form = query.add_forms();
+    query_form->set_signature(form.signature);
+    auto* response_form = response.add_form_suggestions();
+    for (const auto& field : form.fields) {
+      query_form->add_fields()->set_signature(field.signature);
+      auto* response_field = response_form->add_field_suggestions();
+      response_field->set_field_signature(field.signature);
+      response_field->set_primary_type_prediction(field.prediction);
+      response_field->add_predictions()->set_type(field.prediction);
     }
-    base::Base64Encode(serialized_query, &encoded_query);
-    *request_url = base::StrCat({base_url, "?q=", encoded_query});
+  }
+  return ApiRequestResponsePair({std::move(query), std::move(response)});
+}
+
+// Returns a query request URL. If |query| is not empty, the corresponding
+// query is encoded into the URL.
+template <typename TestEnv>
+bool MakeQueryRequestURL(
+    const base::Optional<typename TestEnv::Env::Query>& query,
+    std::string* request_url) {
+  if (!query.has_value()) {
+    *request_url = TestEnv::CreateQueryUrl("");
     return true;
   }
-
-  *request_url = base_url.as_string();
+  std::string encoded_query;
+  std::string serialized_query;
+  if (!(*query).SerializeToString(&serialized_query)) {
+    VLOG(1) << "could not serialize Query proto";
+    return false;
+  }
+  base::Base64Encode(serialized_query, &encoded_query);
+  *request_url = TestEnv::CreateQueryUrl(encoded_query);
   return true;
 }
 
@@ -94,14 +179,15 @@ inline std::string MakeRequestHeader(base::StringPiece url) {
 
 // Makes string value for "SerializedRequest" json node that contains HTTP
 // request content.
-bool MakeSerializedRequest(const AutofillQueryContents& query,
+template <typename TestEnv>
+bool MakeSerializedRequest(const typename TestEnv::Env::Query& query,
                            RequestType type,
                            std::string* serialized_request,
                            std::string* request_url) {
   // Make body and query content for URL depending on the |type|.
   std::string body;
-  base::Optional<AutofillQueryContents> query_for_url;
-  if (type == RequestType::kLegacyQueryProtoGET) {
+  base::Optional<typename TestEnv::Env::Query> query_for_url;
+  if (type == RequestType::kQueryProtoGET) {
     query_for_url = std::move(query);
   } else {
     query.SerializeToString(&body);
@@ -110,7 +196,7 @@ bool MakeSerializedRequest(const AutofillQueryContents& query,
 
   // Make header according to query content for URL.
   std::string url;
-  if (!MakeQueryRequestURL(query_for_url, &url))
+  if (!MakeQueryRequestURL<TestEnv>(query_for_url, &url))
     return false;
   *request_url = url;
   std::string header = MakeRequestHeader(url);
@@ -122,12 +208,19 @@ bool MakeSerializedRequest(const AutofillQueryContents& query,
   return true;
 }
 
-std::string MakeSerializedResponse(
-    const AutofillQueryResponseContents& query_response) {
-  std::string serialized_query;
-  query_response.SerializeToString(&serialized_query);
+// T should either be a AutofillQueryResponseContents or AutofillQueryResponse.
+template <typename TestEnv, typename T>
+std::string MakeSerializedResponse(const T& query_response) {
+  std::string serialized_response;
+  query_response.SerializeToString(&serialized_response);
+  if (std::is_same<TestEnv, ApiTestEnv>::value) {
+    // The Api Environment expects the response body to be base64 encoded.
+    std::string tmp;
+    base::Base64Encode(serialized_response, &tmp);
+    serialized_response = tmp;
+  }
   std::string compressed_query;
-  compression::GzipCompress(serialized_query, &compressed_query);
+  compression::GzipCompress(serialized_response, &compressed_query);
   // TODO(vincb): Put a real header here.
   std::string http_text = base::JoinString(
       std::vector<std::string>{kTestHTTPResponseHeader, compressed_query},
@@ -157,24 +250,27 @@ bool WriteJSONNode(const base::FilePath& file_path, const base::Value& node) {
 }
 
 // Write cache to file in json text format.
+template <typename TestEnv>
 bool WriteJSON(const base::FilePath& file_path,
-               const std::vector<RequestResponsePair>& request_response_pairs,
-               RequestType request_type = RequestType::kLegacyQueryProtoPOST) {
+               const std::vector<typename TestEnv::RequestResponsePair>&
+                   request_response_pairs,
+               RequestType request_type = RequestType::kQueryProtoPOST) {
   // Make json list node that contains all query requests.
   base::Value::DictStorage urls_dict;
   for (const auto& request_response_pair : request_response_pairs) {
     Value::DictStorage request_response_node;
     std::string serialized_request;
     std::string url;
-    if (!MakeSerializedRequest(request_response_pair.first, request_type,
-                               &serialized_request, &url)) {
+    if (!MakeSerializedRequest<TestEnv>(request_response_pair.first,
+                                        request_type, &serialized_request,
+                                        &url)) {
       return false;
     }
 
     request_response_node["SerializedRequest"] =
         std::make_unique<Value>(std::move(serialized_request));
     request_response_node["SerializedResponse"] = std::make_unique<Value>(
-        MakeSerializedResponse(request_response_pair.second));
+        MakeSerializedResponse<TestEnv>(request_response_pair.second));
     // Populate json dict node that contains Autofill Server requests per URL.
     if (urls_dict.find(url) == urls_dict.end())
       urls_dict[url] = std::make_unique<Value>(Value::ListStorage());
@@ -183,7 +279,7 @@ bool WriteJSON(const base::FilePath& file_path,
 
   // Make json dict node that contains requests per domain.
   base::Value::DictStorage domains_dict;
-  domains_dict["clients1.google.com"] =
+  domains_dict[TestEnv::hostname()] =
       std::make_unique<Value>(std::move(urls_dict));
 
   // Make json root dict.
@@ -194,7 +290,6 @@ bool WriteJSON(const base::FilePath& file_path,
   return WriteJSONNode(file_path, Value(std::move(root_dict)));
 }
 
-// TODO(vincb): Add extra death tests.
 TEST(AutofillCacheReplayerDeathTest,
      ServerCacheReplayerConstructor_CrashesWhenNoDomainNode) {
   // Make death test threadsafe.
@@ -232,10 +327,10 @@ TEST(AutofillCacheReplayerDeathTest,
       temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
 
   // Make empty request/response pairs to write in cache.
-  std::vector<RequestResponsePair> request_response_pairs;
+  std::vector<LegacyRequestResponsePair> request_response_pairs;
 
   // Write cache to json and create replayer.
-  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
+  ASSERT_TRUE(WriteJSON<LegacyTestEnv>(file_path, request_response_pairs));
 
   // Crash since there are no Query nodes and set to fail on empty.
   ASSERT_DEATH_IF_SUPPORTED(
@@ -249,10 +344,10 @@ TEST(AutofillCacheReplayerDeathTest,
 class AutofillCacheReplayerGETQueryDeathTest
     : public testing::TestWithParam<std::string> {};
 
-TEST_P(AutofillCacheReplayerGETQueryDeathTest,
-       ServerCacheReplayerConstructor_CrashesWhenInvalidRequestURLForGETQuery) {
+template <typename TestEnv>
+void CrashesWhenInvalidRequestURLForGETQuery(const std::string& parameter) {
   // Parameterized death test for populating cache when keys that are obtained
-  // from the URL's "q" query parameter are invalid.
+  // from the URL's query parameter are invalid.
 
   // Make death test threadsafe.
   testing::FLAGS_gtest_death_test_style = "threadsafe";
@@ -271,15 +366,15 @@ TEST_P(AutofillCacheReplayerGETQueryDeathTest,
   // the Query content will be parsed from the URL that corresponds to the
   // dictionary key.
   request_response_node["SerializedRequest"] = std::make_unique<Value>(
-      "GET https://clients1.google.com/tbproxy/af/query?q=1234 "
-      "HTTP/1.1\r\n\r\n");
+      base::StrCat({"GET ", TestEnv::CreateQueryUrl("1234").c_str(),
+                    " HTTP/1.1\r\n\r\n"}));
   request_response_node["SerializedResponse"] = std::make_unique<Value>(
-      MakeSerializedResponse(AutofillQueryResponseContents()));
+      MakeSerializedResponse<TestEnv>(AutofillQueryResponseContents()));
   // Populate json dict node that contains Autofill Server requests per URL.
   base::Value::DictStorage urls_dict;
-  // The "q" parameter in the URL cannot be parsed to a proto because paraneter
-  // value is in invalid format.
-  std::string invalid_request_url = GetParam();
+  // The query parameter in the URL cannot be parsed to a proto because
+  // parameter value is in invalid format.
+  std::string invalid_request_url = TestEnv::CreateQueryUrl(parameter);
   urls_dict[invalid_request_url] =
       std::make_unique<Value>(Value::ListStorage());
   urls_dict[invalid_request_url]->Append(
@@ -287,7 +382,7 @@ TEST_P(AutofillCacheReplayerGETQueryDeathTest,
 
   // Make json dict node that contains requests per domain.
   base::Value::DictStorage domains_dict;
-  domains_dict["clients1.google.com"] =
+  domains_dict[TestEnv::hostname()] =
       std::make_unique<Value>(std::move(urls_dict));
   // Make json root dict.
   base::Value::DictStorage root_dict;
@@ -304,16 +399,28 @@ TEST_P(AutofillCacheReplayerGETQueryDeathTest,
       ".*");
 }
 
+TEST_P(
+    AutofillCacheReplayerGETQueryDeathTest,
+    LegacyServerCacheReplayerConstructor_CrashesWhenInvalidRequestURLForGETQuery) {
+  CrashesWhenInvalidRequestURLForGETQuery<LegacyTestEnv>(GetParam());
+}
+
+TEST_P(
+    AutofillCacheReplayerGETQueryDeathTest,
+    ApiServerCacheReplayerConstructor_CrashesWhenInvalidRequestURLForGETQuery) {
+  CrashesWhenInvalidRequestURLForGETQuery<ApiTestEnv>(GetParam());
+}
+
 INSTANTIATE_TEST_SUITE_P(
     GetQueryParameterizedDeathTest,
     AutofillCacheReplayerGETQueryDeathTest,
     testing::Values(  // Can be base-64 decoded, but not parsed to proto.
-        "https://clients1.google.com/tbproxy/af/query?q=1234",
+        "1234",
         // Cannot be base-64 decoded.
-        "https://clients1.google.com/tbproxy/af/query?q=^^^"));
+        "^^^"));
 
-TEST(AutofillCacheReplayerTest,
-     CanUseReplayerWhenNoCacheContentWithNotFailOnEmpty) {
+template <typename TestEnv>
+void CanUseReplayerWhenNoCacheContentWithNotFailOnEmpty() {
   // Make death test threadsafe.
   testing::FLAGS_gtest_death_test_style = "threadsafe";
 
@@ -324,22 +431,34 @@ TEST(AutofillCacheReplayerTest,
       temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
 
   // Make empty request/response pairs to write in cache.
-  std::vector<RequestResponsePair> request_response_pairs;
+  std::vector<typename TestEnv::RequestResponsePair> request_response_pairs;
 
   // Write cache to json and create replayer.
-  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
+  ASSERT_TRUE(WriteJSON<TestEnv>(file_path, request_response_pairs));
 
   // Should not crash even if no cache because kOptionFailOnEmpty is not
   // flipped.
   ServerCacheReplayer cache_replayer(
-      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
-                     (ServerCacheReplayer::kOptionFailOnEmpty & 0));
+      file_path,
+      ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+          (ServerCacheReplayer::kOptionFailOnEmpty & 0),
+      TestEnv::server_type());
 
   // Should be able to read cache, which will give nothing.
   std::string http_text;
-  AutofillQueryContents query_with_no_match;
-  EXPECT_FALSE(
-      cache_replayer.GetResponseForQuery(query_with_no_match, &http_text));
+  typename TestEnv::Env::Query query_with_no_match;
+  EXPECT_FALSE(TestEnv::GetServerResponseForQuery(
+      cache_replayer, query_with_no_match, &http_text));
+}
+
+TEST(AutofillCacheReplayerTest,
+     Legacy_CanUseReplayerWhenNoCacheContentWithNotFailOnEmpty) {
+  CanUseReplayerWhenNoCacheContentWithNotFailOnEmpty<LegacyTestEnv>();
+}
+
+TEST(AutofillCacheReplayerTest,
+     Api_CanUseReplayerWhenNoCacheContentWithNotFailOnEmpty) {
+  CanUseReplayerWhenNoCacheContentWithNotFailOnEmpty<ApiTestEnv>();
 }
 
 template <typename U, typename V>
@@ -495,8 +614,8 @@ TEST(AutofillCacheReplayerTest, ProtobufConversion) {
 class AutofillCacheReplayerGetResponseForQueryTest
     : public testing::TestWithParam<RequestType> {};
 
-TEST_P(AutofillCacheReplayerGetResponseForQueryTest,
-       FillsResponseWhenNoErrors) {
+template <typename TestEnv>
+void FillResponseWhenNoErrors(RequestType request_type) {
   // Make writable file path.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -504,47 +623,70 @@ TEST_P(AutofillCacheReplayerGetResponseForQueryTest,
       temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
 
   // Make request/response pairs to write in cache.
-  std::vector<RequestResponsePair> request_response_pairs;
+  std::vector<typename TestEnv::RequestResponsePair> request_response_pairs;
   {
     LightForm form_to_add;
     form_to_add.signature = 1234;
     form_to_add.fields = {LightField{1234, 1}};
     request_response_pairs.push_back(
-        MakeQueryRequestResponsePair({form_to_add}));
+        MakeQueryRequestResponsePair<TestEnv>({form_to_add}));
   }
 
   // Write cache to json.
-  RequestType request_type = GetParam();
-  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs, request_type));
+  ASSERT_TRUE(
+      WriteJSON<TestEnv>(file_path, request_response_pairs, request_type));
 
   ServerCacheReplayer cache_replayer(
-      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
-                     ServerCacheReplayer::kOptionFailOnEmpty);
+      file_path,
+      ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+          ServerCacheReplayer::kOptionFailOnEmpty,
+      TestEnv::server_type());
 
   // Verify if we can get cached response.
   std::string http_text_response;
-  ASSERT_TRUE(cache_replayer.GetResponseForQuery(
-      request_response_pairs[0].first, &http_text_response));
+  ASSERT_TRUE(TestEnv::GetServerResponseForQuery(
+      cache_replayer, request_response_pairs[0].first, &http_text_response));
   AutofillQueryResponseContents response_from_cache;
   ASSERT_TRUE(response_from_cache.ParseFromString(
       SplitHTTP(http_text_response).second));
+}
+
+TEST_P(AutofillCacheReplayerGetResponseForQueryTest,
+       Legacy_FillsResponseWhenNoErrors) {
+  FillResponseWhenNoErrors<LegacyTestEnv>(GetParam());
+}
+
+TEST_P(AutofillCacheReplayerGetResponseForQueryTest,
+       Api_FillsResponseWhenNoErrors) {
+  FillResponseWhenNoErrors<LegacyTestEnv>(GetParam());
 }
 
 INSTANTIATE_TEST_SUITE_P(GetResponseForQueryParameterizeTest,
                          AutofillCacheReplayerGetResponseForQueryTest,
                          testing::Values(
                              // Read Query content from URL "q" param.
-                             RequestType::kLegacyQueryProtoGET,
+                             RequestType::kQueryProtoGET,
                              // Read Query content from HTTP body.
-                             RequestType::kLegacyQueryProtoPOST));
+                             RequestType::kQueryProtoPOST));
 
-TEST(AutofillCacheReplayerTest, GetResponseForQueryGivesFalseWhenNullptr) {
+template <typename TestEnv>
+void GetResponseForQueryGivesFalseWhenNullptr() {
   ServerCacheReplayer cache_replayer(ServerCache{{}});
-  EXPECT_FALSE(
-      cache_replayer.GetResponseForQuery(AutofillQueryContents(), nullptr));
+  EXPECT_FALSE(TestEnv::GetServerResponseForQuery(
+      cache_replayer, typename TestEnv::Env::Query(), nullptr));
 }
 
-TEST(AutofillCacheReplayerTest, GetResponseForQueryGivesFalseWhenNoKeyMatch) {
+TEST(AutofillCacheReplayerTest,
+     Legacy_GetResponseForQueryGivesFalseWhenNullptr) {
+  GetResponseForQueryGivesFalseWhenNullptr<LegacyTestEnv>();
+}
+
+TEST(AutofillCacheReplayerTest, Api_GetResponseForQueryGivesFalseWhenNullptr) {
+  GetResponseForQueryGivesFalseWhenNullptr<ApiTestEnv>();
+}
+
+template <typename TestEnv>
+void GetResponseForQueryGivesFalseWhenNoKeyMatch() {
   // Make writable file path.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -552,158 +694,310 @@ TEST(AutofillCacheReplayerTest, GetResponseForQueryGivesFalseWhenNoKeyMatch) {
       temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
 
   // Make request/response pairs to write in cache.
-  std::vector<RequestResponsePair> request_response_pairs;
+  std::vector<typename TestEnv::RequestResponsePair> request_response_pairs;
   {
     LightForm form_to_add;
     form_to_add.signature = 1234;
     form_to_add.fields = {LightField{1234, 1}};
     request_response_pairs.push_back(
-        MakeQueryRequestResponsePair({form_to_add}));
+        MakeQueryRequestResponsePair<TestEnv>({form_to_add}));
   }
 
   // Write cache to json and create replayer.
-  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
+  ASSERT_TRUE(WriteJSON<TestEnv>(file_path, request_response_pairs));
   ServerCacheReplayer cache_replayer(
-      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
-                     ServerCacheReplayer::kOptionFailOnEmpty);
+      file_path,
+      ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+          ServerCacheReplayer::kOptionFailOnEmpty,
+      TestEnv::server_type());
 
   // Verify if we get false when there is no cache for the query.
   std::string http_text;
-  AutofillQueryContents query_with_no_match;
-  EXPECT_FALSE(
-      cache_replayer.GetResponseForQuery(query_with_no_match, &http_text));
+  typename TestEnv::Env::Query query_with_no_match;
+  EXPECT_FALSE(TestEnv::GetServerResponseForQuery(
+      cache_replayer, query_with_no_match, &http_text));
 }
 
 TEST(AutofillCacheReplayerTest,
-     GetResponseForQueryGivesFalseWhenDecompressFailsBecauseInvalidHTTP) {
+     Legacy_GetResponseForQueryGivesFalseWhenNoKeyMatch) {
+  GetResponseForQueryGivesFalseWhenNoKeyMatch<LegacyTestEnv>();
+}
+
+TEST(AutofillCacheReplayerTest,
+     Api_GetResponseForQueryGivesFalseWhenNoKeyMatch) {
+  GetResponseForQueryGivesFalseWhenNoKeyMatch<ApiTestEnv>();
+}
+
+template <typename TestEnv>
+void GetResponseForQueryGivesFalseWhenDecompressFailsBecauseInvalidHTTP() {
   // Make query request and key.
   LightForm form_to_add;
   form_to_add.signature = 1234;
   form_to_add.fields = {LightField{1234, 1}};
-  const AutofillQueryContents query_request_for_key =
-      MakeQueryRequestResponsePair({form_to_add}).first;
-  const std::string key = GetKeyFromQueryRequest(query_request_for_key);
+  const typename TestEnv::Env::Query query_request_for_key =
+      MakeQueryRequestResponsePair<TestEnv>({form_to_add}).first;
+  const std::string key =
+      GetKeyFromQuery<typename TestEnv::Env>(query_request_for_key);
 
   const char invalid_http[] = "Dumb Nonsense That Doesn't Have a HTTP Header";
   ServerCacheReplayer cache_replayer(ServerCache{{key, invalid_http}});
 
   // Verify if we get false when invalid HTTP response to decompress.
   std::string response_http_text;
-  EXPECT_FALSE(cache_replayer.GetResponseForQuery(query_request_for_key,
-                                                  &response_http_text));
+  EXPECT_FALSE(TestEnv::GetServerResponseForQuery(
+      cache_replayer, query_request_for_key, &response_http_text));
+}
+
+TEST(
+    AutofillCacheReplayerTest,
+    Legacy_GetResponseForQueryGivesFalseWhenDecompressFailsBecauseInvalidHTTP) {
+  GetResponseForQueryGivesFalseWhenDecompressFailsBecauseInvalidHTTP<
+      LegacyTestEnv>();
 }
 
 TEST(AutofillCacheReplayerTest,
-     GetResponseForQueryGivesTrueWhenDecompressSucceededBecauseEmptyBody) {
+     Api_GetResponseForQueryGivesFalseWhenDecompressFailsBecauseInvalidHTTP) {
+  GetResponseForQueryGivesFalseWhenDecompressFailsBecauseInvalidHTTP<
+      ApiTestEnv>();
+}
+
+template <typename TestEnv>
+void GetResponseForQueryGivesTrueWhenDecompressSucceededBecauseEmptyBody() {
   // Make query request and key.
   LightForm form_to_add;
   form_to_add.signature = 1234;
   form_to_add.fields = {LightField{1234, 1}};
-  const AutofillQueryContents query_request_for_key =
-      MakeQueryRequestResponsePair({form_to_add}).first;
-  const std::string key = GetKeyFromQueryRequest(query_request_for_key);
+  const typename TestEnv::Env::Query query_request_for_key =
+      MakeQueryRequestResponsePair<TestEnv>({form_to_add}).first;
+  const std::string key =
+      GetKeyFromQuery<typename TestEnv::Env>(query_request_for_key);
 
   const char http_without_body[] = "Test HTTP Header\r\n\r\n";
   ServerCacheReplayer cache_replayer(ServerCache{{key, http_without_body}});
 
   // Verify if we get true when no HTTP body.
   std::string response_http_text;
-  EXPECT_TRUE(cache_replayer.GetResponseForQuery(query_request_for_key,
-                                                 &response_http_text));
+  EXPECT_TRUE(TestEnv::GetServerResponseForQuery(
+      cache_replayer, query_request_for_key, &response_http_text));
 }
 
-TEST(AutofillCacheReplayerTest, GetResponseForQueryGivesFalseForLargeKey) {
+TEST(
+    AutofillCacheReplayerTest,
+    Legacy_GetResponseForQueryGivesTrueWhenDecompressSucceededBecauseEmptyBody) {
+  GetResponseForQueryGivesTrueWhenDecompressSucceededBecauseEmptyBody<
+      LegacyTestEnv>();
+}
+
+TEST(AutofillCacheReplayerTest,
+     API_GetResponseForQueryGivesTrueWhenDecompressSucceededBecauseEmptyBody) {
+  GetResponseForQueryGivesTrueWhenDecompressSucceededBecauseEmptyBody<
+      ApiTestEnv>();
+}
+
+// Returns whether the forms in |response| and |forms| match. If both contain
+// the same number of forms, a boolean is appended to the output for each form
+// indicating whether the expectation and actual form matched. In case of
+// gross mismatch, the function may return an empty vector.
+template <typename TestEnv>
+std::vector<bool> DoFormsMatch(const typename TestEnv::Env::Response& response,
+                               const std::vector<LightForm>& forms);
+
+template <>
+std::vector<bool> DoFormsMatch<LegacyTestEnv>(
+    const typename LegacyTestEnv::Env::Response& response,
+    const std::vector<LightForm>& forms) {
+  std::vector<bool> found;
+  int field_idx = 0;
+  for (const auto& form : forms) {
+    bool all_fields_matching = true;
+    for (const auto& field : form.fields) {
+      if (field_idx > response.field_size()) {
+        found.push_back(false);
+        return found;
+      }
+      if (field.prediction !=
+          response.field(field_idx).overall_type_prediction()) {
+        all_fields_matching = false;
+      }
+      ++field_idx;
+    }
+    found.push_back(all_fields_matching);
+  }
+  return found;
+}
+
+template <>
+std::vector<bool> DoFormsMatch<ApiTestEnv>(
+    const typename ApiTestEnv::Env::Response& response,
+    const std::vector<LightForm>& forms) {
+  std::vector<bool> found;
+  for (int i = 0; i < std::min(static_cast<int>(forms.size()),
+                               response.form_suggestions_size());
+       ++i) {
+    const auto& expected_form = forms[i];
+    const auto& response_form = response.form_suggestions(i);
+    if (static_cast<int>(expected_form.fields.size()) !=
+        response_form.field_suggestions_size()) {
+      LOG(ERROR) << "Expected form " << i << " to have suggestions for "
+                 << expected_form.fields.size() << " fields but got "
+                 << response_form.field_suggestions_size();
+      found.push_back(false);
+      continue;
+    }
+    bool found_all_fields = true;
+    for (size_t j = 0; j < expected_form.fields.size(); ++j) {
+      const auto& expected_field = expected_form.fields[j];
+      if (expected_field.signature !=
+          response_form.field_suggestions(j).field_signature()) {
+        LOG(ERROR) << "Expected field " << j << " of form " << i
+                   << " to have signature " << expected_field.signature
+                   << " but got "
+                   << response_form.field_suggestions(j).field_signature();
+        found_all_fields = false;
+      }
+      if (expected_field.prediction !=
+          static_cast<unsigned int>(
+              response_form.field_suggestions(j).primary_type_prediction())) {
+        LOG(ERROR)
+            << "Expected field " << j << " of form " << i
+            << " to have primary type prediction " << expected_field.prediction
+            << " but got "
+            << response_form.field_suggestions(j).primary_type_prediction();
+        found_all_fields = false;
+      }
+    }
+    found.push_back(found_all_fields);
+  }
+  return found;
+}
+
+template <typename TestEnv>
+std::vector<bool> CheckFormsInCache(const ServerCacheReplayer& cache_replayer,
+                                    const std::vector<LightForm>& forms) {
+  typename TestEnv::RequestResponsePair request_response_pair =
+      MakeQueryRequestResponsePair<TestEnv>(forms);
+  std::string http_text;
+  if (!TestEnv::GetServerResponseForQuery(
+          cache_replayer, request_response_pair.first, &http_text)) {
+    VLOG(1) << "Server did not respond to the query.";
+    return std::vector<bool>();
+  }
+  std::string body = SplitHTTP(http_text).second;
+  if (std::is_same<TestEnv, ApiTestEnv>::value) {
+    // The Api Environment expects the response to be base64 encoded.
+    std::string tmp;
+    if (!base::Base64Decode(body, &tmp)) {
+      LOG(ERROR) << "Unable to base64 decode contents" << body;
+      return std::vector<bool>();
+    }
+    body = tmp;
+  }
+  typename TestEnv::Env::Response response;
+  CHECK(response.ParseFromString(body)) << body;
+  return DoFormsMatch<TestEnv>(response, forms);
+}
+
+// StorageTestEnv describes the format in which captured data is persisted on
+// disk. ServerTestEnv describes the way the server responds to queries
+template <typename StorageTestEnv, typename ServerTestEnv>
+void CrossEnvironmentIntegrationTest() {
   // Make writable file path.
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath file_path =
       temp_dir.GetPath().AppendASCII("test_wpr_capture.json");
 
+  LightForm form1;
+  form1.signature = 1111;
+  form1.fields = {LightField{1111, 1}, LightField{1112, 31},
+                  LightField{1113, 33}};
+  LightForm form2;
+  form2.signature = 2222;
+  form2.fields = {LightField{2221, 2}};
+  LightForm form3;
+  form3.signature = 3333;
+  form3.fields = {LightField{3331, 3}};
+  LightForm form4;
+  form4.signature = 4444;
+  form4.fields = {LightField{4441, 4}};
+  LightForm form5;
+  form5.signature = 5555;
+  form5.fields = {LightField{5551, 42}};
+
   // Make request/response pairs to write in cache.
-  std::vector<RequestResponsePair> request_response_pairs;
-  std::vector<RequestResponsePair> unmatched_existing_keys;
-  std::vector<RequestResponsePair> unmatched_different_keys;
-  {
-    LightForm form_to_add1;
-    form_to_add1.signature = 1111;
-    form_to_add1.fields = {LightField{1111, 1}, LightField{1112, 31},
-                           LightField{1113, 33}};
-    LightForm form_to_add2;
-    form_to_add2.signature = 2222;
-    form_to_add2.fields = {LightField{2221, 2}};
-    request_response_pairs.push_back(
-        MakeQueryRequestResponsePair({form_to_add1, form_to_add2}));
-
-    LightForm form_to_add3;
-    form_to_add3.signature = 3333;
-    form_to_add3.fields = {LightField{3331, 3}};
-    LightForm form_to_add4;
-    form_to_add4.signature = 4444;
-    form_to_add4.fields = {LightField{4441, 4}};
-    request_response_pairs.push_back(
-        MakeQueryRequestResponsePair({form_to_add3, form_to_add4}));
-
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add1}));
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add2}));
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add3}));
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add4}));
-
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add1, form_to_add3}));
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add2, form_to_add4}));
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add3, form_to_add2}));
-    unmatched_existing_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add4, form_to_add1}));
-
-    LightForm form_to_add5;
-    form_to_add5.signature = 5555;
-    form_to_add5.fields = {LightField{5551, 42}};
-    unmatched_different_keys.push_back(
-        MakeQueryRequestResponsePair({form_to_add5}));
-  }
+  std::vector<typename StorageTestEnv::RequestResponsePair>
+      request_response_pairs;
+  request_response_pairs.push_back(
+      MakeQueryRequestResponsePair<StorageTestEnv>({form1, form2}));
+  request_response_pairs.push_back(
+      MakeQueryRequestResponsePair<StorageTestEnv>({form3, form4}));
 
   // Write cache to json and create replayer.
-  ASSERT_TRUE(WriteJSON(file_path, request_response_pairs));
+  ASSERT_TRUE(WriteJSON<StorageTestEnv>(file_path, request_response_pairs));
   ServerCacheReplayer cache_replayer(
-      file_path, ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
-                     ServerCacheReplayer::kOptionFailOnEmpty);
+      file_path,
+      ServerCacheReplayer::kOptionFailOnInvalidJsonRecord &
+          ServerCacheReplayer::kOptionFailOnEmpty,
+      ServerTestEnv::server_type());
 
   std::string http_text;
 
   // First, check the exact same key combos we sent properly respond
-  EXPECT_TRUE(cache_replayer.GetResponseForQuery(
-      request_response_pairs[0].first, &http_text));
-  EXPECT_TRUE(cache_replayer.GetResponseForQuery(
-      request_response_pairs[1].first, &http_text));
-  // And, inexistent combos - verify they don't
-  for (auto query_key : unmatched_existing_keys) {
-    EXPECT_FALSE(
-        cache_replayer.GetResponseForQuery(query_key.first, &http_text));
-  }
-  EXPECT_FALSE(cache_replayer.GetResponseForQuery(
-      unmatched_different_keys[0].first, &http_text));
+  EXPECT_EQ(std::vector<bool>({true, true}),
+            CheckFormsInCache<ServerTestEnv>(cache_replayer, {form1, form2}));
+  EXPECT_EQ(std::vector<bool>({true, true}),
+            CheckFormsInCache<ServerTestEnv>(cache_replayer, {form3, form4}));
+
+  // Existing keys that were requested in a different combination are not
+  // processed.
+  EXPECT_EQ(std::vector<bool>(),
+            CheckFormsInCache<ServerTestEnv>(cache_replayer, {form1, form3}));
+  EXPECT_EQ(std::vector<bool>(),
+            CheckFormsInCache<ServerTestEnv>(cache_replayer, {form1}));
+
+  // Not in the cache.
+  EXPECT_EQ(std::vector<bool>(),
+            CheckFormsInCache<ServerTestEnv>(cache_replayer, {form5}));
 
   // Now, load the same thing into the cache replayer with
   // ServerCacheReplayer::kOptionSplitRequestsByForm set and expect matches
   // for all combos
   ServerCacheReplayer form_split_cache_replayer(
-      file_path, ServerCacheReplayer::kOptionSplitRequestsByForm);
-  EXPECT_TRUE(form_split_cache_replayer.GetResponseForQuery(
-      request_response_pairs[0].first, &http_text));
-  EXPECT_TRUE(form_split_cache_replayer.GetResponseForQuery(
-      request_response_pairs[1].first, &http_text));
-  for (auto query_key : unmatched_existing_keys) {
-    EXPECT_TRUE(form_split_cache_replayer.GetResponseForQuery(query_key.first,
-                                                              &http_text));
-  }
-  EXPECT_FALSE(form_split_cache_replayer.GetResponseForQuery(
-      unmatched_different_keys[0].first, &http_text));
+      file_path, ServerCacheReplayer::kOptionSplitRequestsByForm,
+      ServerTestEnv::server_type());
+
+  // First, check the exact same key combos we sent properly respond
+  EXPECT_EQ(std::vector<bool>({true, true}),
+            CheckFormsInCache<ServerTestEnv>(form_split_cache_replayer,
+                                             {form1, form2}));
+  EXPECT_EQ(std::vector<bool>({true, true}),
+            CheckFormsInCache<ServerTestEnv>(form_split_cache_replayer,
+                                             {form3, form4}));
+
+  // Existing keys that were requested in a different combination are not
+  // processed.
+  EXPECT_EQ(std::vector<bool>({true, true}),
+            CheckFormsInCache<ServerTestEnv>(form_split_cache_replayer,
+                                             {form1, form3}));
+  EXPECT_EQ(std::vector<bool>({true}), CheckFormsInCache<ServerTestEnv>(
+                                           form_split_cache_replayer, {form1}));
+
+  // Not in the cache.
+  EXPECT_EQ(std::vector<bool>(), CheckFormsInCache<ServerTestEnv>(
+                                     form_split_cache_replayer, {form5}));
+}
+
+TEST(AutofillCacheReplayerTest, Legacy_Legacy_CrossEnvironmentIntegrationTest) {
+  CrossEnvironmentIntegrationTest<LegacyTestEnv, LegacyTestEnv>();
+}
+TEST(AutofillCacheReplayerTest, Legacy_Api_CrossEnvironmentIntegrationTest) {
+  CrossEnvironmentIntegrationTest<LegacyTestEnv, ApiTestEnv>();
+}
+TEST(AutofillCacheReplayerTest, Api_Legacy_CrossEnvironmentIntegrationTest) {
+  CrossEnvironmentIntegrationTest<ApiTestEnv, LegacyTestEnv>();
+}
+TEST(AutofillCacheReplayerTest, Api_Api_CrossEnvironmentIntegrationTest) {
+  CrossEnvironmentIntegrationTest<ApiTestEnv, ApiTestEnv>();
 }
 #endif  // if defined(OS_LINUX)
 

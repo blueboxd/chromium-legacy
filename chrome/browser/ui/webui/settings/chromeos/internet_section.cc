@@ -548,6 +548,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"networkSectionProxyExpandA11yLabel",
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY_ACCESSIBILITY_LABEL},
       {"networkShared", IDS_SETTINGS_INTERNET_NETWORK_SHARED},
+      {"networkSharedOwner", IDS_SETTINGS_INTERNET_NETWORK_SHARED_OWNER},
+      {"networkSharedNotOwner", IDS_SETTINGS_INTERNET_NETWORK_SHARED_NOT_OWNER},
       {"networkVpnBuiltin", IDS_NETWORK_TYPE_VPN_BUILTIN},
       {"networkOutOfRange", IDS_SETTINGS_INTERNET_WIFI_NETWORK_OUT_OF_RANGE},
       {"cellularContactSpecificCarrier",
@@ -611,14 +613,19 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                          chrome::kGoogleNameserversLearnMoreURL);
 
   html_source->AddString(
-      "networkSyncedShared",
+      "networkNotSynced",
       l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_INTERNET_NETWORK_SYNCED_SHARED,
+          IDS_SETTINGS_INTERNET_NETWORK_NOT_SYNCED,
           GetHelpUrlWithBoard(chrome::kWifiSyncLearnMoreURL)));
   html_source->AddString(
       "networkSyncedUser",
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_INTERNET_NETWORK_SYNCED_USER,
+          GetHelpUrlWithBoard(chrome::kWifiSyncLearnMoreURL)));
+  html_source->AddString(
+      "networkSyncedDevice",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_INTERNET_NETWORK_SYNCED_DEVICE,
           GetHelpUrlWithBoard(chrome::kWifiSyncLearnMoreURL)));
   html_source->AddString(
       "internetNoNetworksMobileData",

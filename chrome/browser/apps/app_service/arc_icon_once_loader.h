@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_descriptor.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 class ArcAppIcon;
 class Profile;

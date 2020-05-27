@@ -52,6 +52,8 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
+  }
 
   void reset_did_request_impl_side_invalidation() {
     did_request_impl_side_invalidation_ = false;

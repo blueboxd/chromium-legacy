@@ -7,7 +7,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/badging/badge_manager.h"
 #include "chrome/browser/browser_process.h"
@@ -31,6 +30,7 @@
 #include "components/safe_browsing/content/browser/mojo_safe_browsing_impl.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_context.h"
 #include "media/mojo/buildflags.h"
@@ -88,14 +88,13 @@ void MaybeCreateSafeBrowsingForRenderer(
   bool safe_browsing_enabled = safe_browsing::IsSafeBrowsingEnabled(
       *Profile::FromBrowserContext(render_process_host->GetBrowserContext())
            ->GetPrefs());
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(
-              &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, process_id,
-              resource_context,
-              base::BindRepeating(get_checker_delegate, safe_browsing_enabled),
-              std::move(receiver)));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, process_id,
+          resource_context,
+          base::BindRepeating(get_checker_delegate, safe_browsing_enabled),
+          std::move(receiver)));
 }
 
 }  // namespace
@@ -113,7 +112,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
       base::Bind(&CacheStatsRecorder::Create, render_process_host->GetID()));
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+      content::GetUIThreadTaskRunner({});
   registry->AddInterface(
       base::BindRepeating(&metrics::CallStackProfileCollector::Create));
 
@@ -172,7 +171,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   registry->AddInterface(
       base::BindRepeating(&android::AvailableOfflineContentProvider::Create,
                           profile),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+      content::GetUIThreadTaskRunner({}));
 #endif
 
   for (auto* ep : extra_parts_) {

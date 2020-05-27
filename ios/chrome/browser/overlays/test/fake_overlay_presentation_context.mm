@@ -21,23 +21,26 @@ FakeOverlayPresentationContext::GetPresentationState(OverlayRequest* request) {
   return states_[request].presentation_state;
 }
 
+void FakeOverlayPresentationContext::SetDismissalCallbacksEnabled(
+    bool enabled) {
+  if (dismissal_callbacks_enabled_ == enabled)
+    return;
+  dismissal_callbacks_enabled_ = enabled;
+  if (dismissal_callbacks_enabled_)
+    RunPresentedRequestDismissalCallback();
+}
+
+bool FakeOverlayPresentationContext::AreDismissalCallbacksEnabled() const {
+  return dismissal_callbacks_enabled_;
+}
+
 void FakeOverlayPresentationContext::SimulateDismissalForRequest(
     OverlayRequest* request,
     OverlayDismissalReason reason) {
+  DCHECK_EQ(presented_request_, request);
   FakeUIState& state = states_[request];
-  DCHECK_EQ(PresentationState::kPresented, state.presentation_state);
-  switch (reason) {
-    case OverlayDismissalReason::kUserInteraction:
-      state.presentation_state = PresentationState::kUserDismissed;
-      break;
-    case OverlayDismissalReason::kHiding:
-      state.presentation_state = PresentationState::kHidden;
-      break;
-    case OverlayDismissalReason::kCancellation:
-      state.presentation_state = PresentationState::kCancelled;
-      break;
-  }
-  std::move(state.dismissal_callback).Run(reason);
+  state.dismissal_reason = reason;
+  RunPresentedRequestDismissalCallback();
 }
 
 void FakeOverlayPresentationContext::SetPresentationCapabilities(
@@ -83,13 +86,7 @@ bool FakeOverlayPresentationContext::CanShowUIForRequest(
 }
 
 bool FakeOverlayPresentationContext::IsShowingOverlayUI() const {
-  for (auto& request_ui_state_pair : states_) {
-    if (request_ui_state_pair.second.presentation_state ==
-        PresentationState::kPresented) {
-      return true;
-    }
-  }
-  return false;
+  return presented_request_;
 }
 
 void FakeOverlayPresentationContext::PrepareToShowOverlayUI(
@@ -99,6 +96,8 @@ void FakeOverlayPresentationContext::ShowOverlayUI(
     OverlayRequest* request,
     OverlayPresentationCallback presentation_callback,
     OverlayDismissalCallback dismissal_callback) {
+  DCHECK(!presented_request_);
+  presented_request_ = request;
   FakeUIState& state = states_[request];
   state.presentation_state = PresentationState::kPresented;
   state.dismissal_callback = std::move(dismissal_callback);
@@ -116,6 +115,26 @@ void FakeOverlayPresentationContext::CancelOverlayUI(OverlayRequest* request) {
   } else {
     state.presentation_state = PresentationState::kCancelled;
   }
+}
+
+void FakeOverlayPresentationContext::RunPresentedRequestDismissalCallback() {
+  if (!dismissal_callbacks_enabled_ || !presented_request_)
+    return;
+  FakeUIState& state = states_[presented_request_];
+  OverlayDismissalReason reason = state.dismissal_reason;
+  switch (reason) {
+    case OverlayDismissalReason::kUserInteraction:
+      state.presentation_state = PresentationState::kUserDismissed;
+      break;
+    case OverlayDismissalReason::kHiding:
+      state.presentation_state = PresentationState::kHidden;
+      break;
+    case OverlayDismissalReason::kCancellation:
+      state.presentation_state = PresentationState::kCancelled;
+      break;
+  }
+  presented_request_ = nullptr;
+  std::move(state.dismissal_callback).Run(reason);
 }
 
 FakeOverlayPresentationContext::FakeUIState::FakeUIState() = default;

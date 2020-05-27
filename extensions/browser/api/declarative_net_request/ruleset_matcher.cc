@@ -23,7 +23,7 @@ namespace extensions {
 namespace declarative_net_request {
 
 // static
-RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
+LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
     const RulesetSource& source,
     int expected_ruleset_checksum,
     std::unique_ptr<RulesetMatcher>* matcher) {
@@ -33,21 +33,21 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
   base::ElapsedTimer timer;
 
   if (!base::PathExists(source.indexed_path()))
-    return kLoadErrorInvalidPath;
+    return LoadRulesetResult::kErrorInvalidPath;
 
   std::string ruleset_data;
   if (!base::ReadFileToString(source.indexed_path(), &ruleset_data))
-    return kLoadErrorFileRead;
+    return LoadRulesetResult::kErrorCannotReadFile;
 
   if (!StripVersionHeaderAndParseVersion(&ruleset_data))
-    return kLoadErrorVersionMismatch;
+    return LoadRulesetResult::kErrorVersionMismatch;
 
   // This guarantees that no memory access will end up outside the buffer.
   if (!IsValidRulesetData(
           base::make_span(reinterpret_cast<const uint8_t*>(ruleset_data.data()),
                           ruleset_data.size()),
           expected_ruleset_checksum)) {
-    return kLoadErrorChecksumMismatch;
+    return LoadRulesetResult::kErrorChecksumMismatch;
   }
 
   UMA_HISTOGRAM_TIMES(
@@ -58,7 +58,7 @@ RulesetMatcher::LoadRulesetResult RulesetMatcher::CreateVerifiedMatcher(
   // constructor.
   *matcher = base::WrapUnique(new RulesetMatcher(
       std::move(ruleset_data), source.id(), source.extension_id()));
-  return kLoadSuccess;
+  return LoadRulesetResult::kSuccess;
 }
 
 RulesetMatcher::~RulesetMatcher() = default;

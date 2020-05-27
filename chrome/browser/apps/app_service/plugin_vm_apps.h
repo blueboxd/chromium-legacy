@@ -9,9 +9,9 @@
 #include <string>
 
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/app_service/public/cpp/publisher_base.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -23,7 +23,7 @@ namespace apps {
 
 // An app publisher (in the App Service sense) of Plugin VM apps.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class PluginVmApps : public apps::PublisherBase {
  public:
   PluginVmApps(const mojo::Remote<apps::mojom::AppService>& app_service,

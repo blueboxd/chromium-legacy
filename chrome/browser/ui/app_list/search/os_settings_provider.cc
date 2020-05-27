@@ -50,6 +50,33 @@ void LogError(Error error) {
   UMA_HISTOGRAM_ENUMERATION("Apps.AppList.OsSettingsProvider.Error", error);
 }
 
+std::vector<SearchResultPtr> DeduplicateResults(
+    const std::vector<SearchResultPtr>& results) {
+  base::flat_map<std::string, SearchResultPtr> url_to_result;
+  for (const SearchResultPtr& result : results) {
+    const std::string url = result->url_path_with_parameters;
+    const auto it = url_to_result.find(url);
+
+    // Update a result in three cases:
+    // 1. This is the first result for its URL.
+    // 2. This has higher score than the existing result for its URL.
+    // 3. The scores are tied, but this result has more general search result
+    // type. Result types are ordered general-to-specific.
+    if (it == url_to_result.end() ||
+        result->relevance_score > it->second->relevance_score ||
+        (it->second->relevance_score == result->relevance_score &&
+         result->type < it->second->type)) {
+      url_to_result[url] = result->Clone();
+    }
+  }
+
+  std::vector<SearchResultPtr> clean_results;
+  for (const auto& pair : url_to_result) {
+    clean_results.push_back(pair.second.Clone());
+  }
+  return clean_results;
+}
+
 }  // namespace
 
 OsSettingsResult::OsSettingsResult(
@@ -136,7 +163,8 @@ void OsSettingsProvider::Start(const base::string16& query) {
 
 void OsSettingsProvider::OnSearchReturned(
     std::vector<chromeos::settings::mojom::SearchResultPtr> results) {
-  std::sort(results.begin(), results.end(),
+  std::vector<SearchResultPtr> clean_results = DeduplicateResults(results);
+  std::sort(clean_results.begin(), clean_results.end(),
             [](const SearchResultPtr& a, const SearchResultPtr& b) {
               return a->relevance_score > b->relevance_score;
             });
@@ -146,9 +174,9 @@ void OsSettingsProvider::OnSearchReturned(
   // ranking these with other results in the next version of the feature.
   SearchProvider::Results search_results;
   const int num_results =
-      std::min(static_cast<int>(results.size()), kMaxResults);
+      std::min(static_cast<int>(clean_results.size()), kMaxResults);
   for (int i = 0; i < num_results; ++i) {
-    const auto& result = results[i];
+    const auto& result = clean_results[i];
     const float score = 1.0f - i * kScoreEps;
     search_results.emplace_back(
         std::make_unique<OsSettingsResult>(profile_, result, score, icon_));

@@ -194,7 +194,8 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         // Creates an initially hidden WebContents which gets shown when the panel is opened.
         mWebContents = WebContentsFactory.createWebContents(incognito, true);
 
-        mContentView = ContentView.createContentView(mContext, mWebContents);
+        mContentView = ContentView.createContentView(
+                mContext, null /* eventOffsetHandler */, mWebContents);
 
         mWebContents.initialize(ChromeVersionInfo.getProductVersion(),
                 ViewAndroidDelegate.createBasicDelegate(mContentView), mContentView, mWindow,

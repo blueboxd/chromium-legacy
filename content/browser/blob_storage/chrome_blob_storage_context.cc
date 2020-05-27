@@ -170,9 +170,10 @@ void ChromeBlobStorageContext::InitializeOnIOThread(
                                         std::move(file_task_runner)));
   // Signal the BlobMemoryController when it's appropriate to calculate its
   // storage limits.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO, base::TaskPriority::BEST_EFFORT},
-      base::BindOnce(&storage::BlobMemoryController::CalculateBlobStorageLimits,
+  content::GetIOThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(
+                     &storage::BlobMemoryController::CalculateBlobStorageLimits,
                      context_->mutable_memory_controller()->GetWeakPtr()));
 }
 

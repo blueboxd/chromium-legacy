@@ -44,9 +44,15 @@ class GFX_EXPORT ColorTransform {
 
   virtual size_t NumberOfStepsForTesting() const = 0;
 
+  // Two special cases:
+  // 1. If no source color space is specified (i.e., src.IsValid() is false), do
+  // no transformation.
+  // 2. If the target color space is not defined (i.e., dst.IsValid() is false),
+  // just apply the range adjust and inverse transfer matrices. This can be used
+  // for YUV to RGB color conversion.
   static std::unique_ptr<ColorTransform> NewColorTransform(
-      const ColorSpace& from,
-      const ColorSpace& to,
+      const ColorSpace& src,
+      const ColorSpace& dst,
       Intent intent);
 
  private:

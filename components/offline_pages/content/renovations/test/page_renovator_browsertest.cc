@@ -13,7 +13,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "components/offline_pages/content/renovations/render_frame_script_injector.h"
@@ -193,8 +192,8 @@ void PageRenovatorBrowserTest::InitializeWithRealRenovations(
 }
 
 void PageRenovatorBrowserTest::QuitRunLoop() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 content::GetDeferredQuitTaskForRunLoop(run_loop_.get()));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, content::GetDeferredQuitTaskForRunLoop(run_loop_.get()));
 }
 
 #if defined(OS_WIN)

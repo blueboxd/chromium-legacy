@@ -5838,10 +5838,6 @@ crbug.com/1068681 fast/peerconnection/RTCPeerConnection-insertable-streams.html 
 crbug.com/952717 [ Debug ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Pass Failure ]
 crbug.com/984467 [ Mac Debug ] virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
-# [ScrollTimeline] Composited animations - play-pause-play sequence fails
-crbug.com/1081543 virtual/threaded/external/wpt/scroll-animations/play-animation.html [ Pass Timeout ]
-crbug.com/1081543 virtual/threaded/external/wpt/scroll-animations/reverse-animation.html [ Pass Timeout ]
-
 # Sheriff 2020-05-06
 crbug.com/1078863 [ Mac ] fast/speech/scripted/speechrecognition-restart-onend.html [ Pass Timeout ]
 crbug.com/1071915 fast/hidpi/image-srcset-png-canvas.html [ Pass Failure ]

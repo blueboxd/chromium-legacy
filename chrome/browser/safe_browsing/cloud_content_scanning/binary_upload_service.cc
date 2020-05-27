@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -144,8 +143,8 @@ void BinaryUploadService::UploadForDeepScanning(
   raw_request->set_request_token(token);
 
   if (!binary_fcm_service_) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&BinaryUploadService::FinishRequest,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BinaryUploadService::FinishRequest,
                                   weakptr_factory_.GetWeakPtr(), raw_request,
                                   Result::FAILED_TO_GET_TOKEN,
                                   DeepScanningClientResponse()));

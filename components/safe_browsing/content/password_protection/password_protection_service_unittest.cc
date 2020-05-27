@@ -1166,9 +1166,13 @@ TEST_P(PasswordProtectionServiceTest, VerifyShouldShowModalWarning) {
 
   reused_password_account_type.set_account_type(
       ReusedPasswordAccountType::SAVED_PASSWORD);
-  EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
+  EXPECT_FALSE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
-      reused_password_account_type, LoginReputationClientResponse::PHISHING));
+      reused_password_account_type,
+      LoginReputationClientResponse::LOW_REPUTATION));
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      safe_browsing::kPasswordProtectionForSavedPasswords);
   EXPECT_TRUE(password_protection_service_->ShouldShowModalWarning(
       LoginReputationClientRequest::PASSWORD_REUSE_EVENT,
       reused_password_account_type,
@@ -1330,38 +1334,26 @@ TEST_P(PasswordProtectionServiceTest, VerifyIsSupportedPasswordTypeForPinging) {
       .WillRepeatedly(Return(account_info));
 
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-      PasswordType::SAVED_PASSWORD));
-  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::PRIMARY_ACCOUNT_PASSWORD));
-// kPasswordProtectionForSignedInUsers is disabled by default on Android.
-#if defined(OS_ANDROID)
   EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-#else
-  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-#endif
       PasswordType::OTHER_GAIA_PASSWORD));
   EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::ENTERPRISE_PASSWORD));
-
-  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+  EXPECT_FALSE(password_protection_service_->IsSupportedPasswordTypeForPinging(
       PasswordType::SAVED_PASSWORD));
-  EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
-      PasswordType::ENTERPRISE_PASSWORD));
-  {
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndDisableFeature(
-        safe_browsing::kPasswordProtectionForSignedInUsers);
-    // Only ping for signed in, non-syncing users if the experiment is on.
-    EXPECT_FALSE(
-        password_protection_service_->IsSupportedPasswordTypeForPinging(
-            PasswordType::OTHER_GAIA_PASSWORD));
-  }
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(
         safe_browsing::kPasswordProtectionForSignedInUsers);
     EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
         PasswordType::OTHER_GAIA_PASSWORD));
+  }
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSavedPasswords);
+    EXPECT_TRUE(password_protection_service_->IsSupportedPasswordTypeForPinging(
+        PasswordType::SAVED_PASSWORD));
   }
 }
 

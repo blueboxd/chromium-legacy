@@ -446,10 +446,10 @@ void ShowCloseBrowserFirstMessageBox() {
 
 void MaybePostSettingsResetPrompt() {
   if (base::FeatureList::IsEnabled(safe_browsing::kSettingsResetPrompt)) {
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(safe_browsing::MaybeShowSettingsResetPromptWithDelay));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(
+                       safe_browsing::MaybeShowSettingsResetPromptWithDelay));
   }
 }
 
@@ -669,9 +669,9 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   }
   // Record UMA data about whether the fault-tolerant heap is enabled.
   // Use a delayed task to minimize the impact on startup time.
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&DetectFaultTolerantHeap),
-                        base::TimeDelta::FromMinutes(1));
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&DetectFaultTolerantHeap),
+      base::TimeDelta::FromMinutes(1));
 
   // Record Processor Metrics. This is a very low priority, hence posting to
   // start after Chrome startup has completed. This metric is only available

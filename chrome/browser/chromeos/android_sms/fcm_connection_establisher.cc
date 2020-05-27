@@ -8,7 +8,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -62,8 +61,8 @@ void FcmConnectionEstablisher::EstablishConnection(
     const GURL& url,
     ConnectionMode connection_mode,
     content::ServiceWorkerContext* service_worker_context) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &FcmConnectionEstablisher::SendMessageToServiceWorkerWithRetries,
           weak_ptr_factory_.GetWeakPtr(), url,
@@ -74,8 +73,8 @@ void FcmConnectionEstablisher::EstablishConnection(
 void FcmConnectionEstablisher::TearDownConnection(
     const GURL& url,
     content::ServiceWorkerContext* service_worker_context) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &FcmConnectionEstablisher::SendMessageToServiceWorkerWithRetries,
           weak_ptr_factory_.GetWeakPtr(), url, MessageType::kStop,

@@ -169,20 +169,18 @@ IntersectionObserver* IntersectionObserver::Create(
 
   DOMHighResTimeStamp delay = 0;
   bool track_visibility = false;
-  if (RuntimeEnabledFeatures::IntersectionObserverV2Enabled()) {
-    delay = observer_init->delay();
-    track_visibility = observer_init->trackVisibility();
-    if (track_visibility && delay < 100) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kNotSupportedError,
-          "To enable the 'trackVisibility' option, you must also use a "
-          "'delay' option with a value of at least 100. Visibility is more "
-          "expensive to compute than the basic intersection; enabling this "
-          "option may negatively affect your page's performance. Please make "
-          "sure you *really* need visibility tracking before enabling the "
-          "'trackVisibility' option.");
-      return nullptr;
-    }
+  delay = observer_init->delay();
+  track_visibility = observer_init->trackVisibility();
+  if (track_visibility && delay < 100) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "To enable the 'trackVisibility' option, you must also use a "
+        "'delay' option with a value of at least 100. Visibility is more "
+        "expensive to compute than the basic intersection; enabling this "
+        "option may negatively affect your page's performance. Please make "
+        "sure you *really* need visibility tracking before enabling the "
+        "'trackVisibility' option.");
+    return nullptr;
   }
 
   Vector<Length> root_margin;

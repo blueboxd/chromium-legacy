@@ -16,7 +16,6 @@
 #include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/android/chrome_jni_headers/NotificationSettingsBridge_jni.h"
@@ -288,10 +287,9 @@ NotificationChannelsProviderAndroid::UpdateCachedChannels() const {
     // underlying state of NotificationChannelsProviderAndroid, and allows us to
     // notify observers as soon as we detect changes to channels.
     auto* provider = const_cast<NotificationChannelsProviderAndroid*>(this);
-    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(
-                       &NotificationChannelsProviderAndroid::NotifyObservers,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&NotificationChannelsProviderAndroid::NotifyObservers,
                        provider->weak_factory_.GetWeakPtr(),
                        ContentSettingsPattern(), ContentSettingsPattern(),
                        ContentSettingsType::NOTIFICATIONS, std::string()));

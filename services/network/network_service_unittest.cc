@@ -616,31 +616,6 @@ TEST_F(NetworkServiceTest, DisableDohUpgradeProviders) {
 
 TEST_F(NetworkServiceTest, DohProbe) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
-  mojo::Remote<mojom::NetworkContext> network_context;
-  service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
-                                  std::move(context_params));
-
-  net::DnsConfig config;
-  config.nameservers.push_back(net::IPEndPoint());
-  config.dns_over_https_servers.emplace_back("example.com",
-                                             true /* use_post */);
-  auto dns_client = std::make_unique<net::MockDnsClient>(
-      std::move(config), net::MockDnsClientRuleList());
-  dns_client->set_ignore_system_config_changes(true);
-  net::MockDnsClient* dns_client_ptr = dns_client.get();
-  service()->host_resolver_manager()->SetDnsClientForTesting(
-      std::move(dns_client));
-
-  EXPECT_FALSE(dns_client_ptr->factory()->doh_probes_running());
-
-  task_environment()->FastForwardBy(NetworkService::kInitialDohProbeTimeout);
-  EXPECT_TRUE(dns_client_ptr->factory()->doh_probes_running());
-}
-
-TEST_F(NetworkServiceTest, DohProbe_NoPrimaryContext) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = false;
   mojo::Remote<mojom::NetworkContext> network_context;
   service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
                                   std::move(context_params));
@@ -665,7 +640,6 @@ TEST_F(NetworkServiceTest, DohProbe_NoPrimaryContext) {
 TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
   service()->StopMetricsTimerForTesting();
   mojom::NetworkContextParamsPtr context_params1 = CreateContextParams();
-  context_params1->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context1;
   service()->CreateNetworkContext(network_context1.BindNewPipeAndPassReceiver(),
                                   std::move(context_params1));
@@ -685,7 +659,6 @@ TEST_F(NetworkServiceTest, DohProbe_MultipleContexts) {
   ASSERT_TRUE(dns_client_ptr->factory()->doh_probes_running());
 
   mojom::NetworkContextParamsPtr context_params2 = CreateContextParams();
-  context_params2->primary_network_context = false;
   mojo::Remote<mojom::NetworkContext> network_context2;
   service()->CreateNetworkContext(network_context2.BindNewPipeAndPassReceiver(),
                                   std::move(context_params2));
@@ -715,7 +688,6 @@ TEST_F(NetworkServiceTest, DohProbe_ContextAddedBeforeTimeout) {
   EXPECT_FALSE(dns_client_ptr->factory()->doh_probes_running());
 
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context;
   service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
                                   std::move(context_params));
@@ -745,7 +717,6 @@ TEST_F(NetworkServiceTest, DohProbe_ContextAddedAfterTimeout) {
   EXPECT_FALSE(dns_client_ptr->factory()->doh_probes_running());
 
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context;
   service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
                                   std::move(context_params));
@@ -756,7 +727,6 @@ TEST_F(NetworkServiceTest, DohProbe_ContextAddedAfterTimeout) {
 TEST_F(NetworkServiceTest, DohProbe_ContextRemovedBeforeTimeout) {
   service()->StopMetricsTimerForTesting();
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context;
   service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
                                   std::move(context_params));
@@ -785,7 +755,6 @@ TEST_F(NetworkServiceTest, DohProbe_ContextRemovedBeforeTimeout) {
 TEST_F(NetworkServiceTest, DohProbe_ContextRemovedAfterTimeout) {
   service()->StopMetricsTimerForTesting();
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
   mojo::Remote<mojom::NetworkContext> network_context;
   service()->CreateNetworkContext(network_context.BindNewPipeAndPassReceiver(),
                                   std::move(context_params));
@@ -1489,11 +1458,8 @@ TEST_F(NetworkServiceTestWithService, CRLSetDoesNotDowngrade) {
 #else
 #define MAYBE_AIAFetching AIAFetching
 #endif
-// Test |primary_network_context|, which is required by AIA fetching, among
-// other things.
 TEST_F(NetworkServiceTestWithService, MAYBE_AIAFetching) {
   mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
 
   network_service_->CreateNetworkContext(
       network_context_.BindNewPipeAndPassReceiver(), std::move(context_params));
@@ -1517,34 +1483,6 @@ TEST_F(NetworkServiceTestWithService, MAYBE_AIAFetching) {
   ASSERT_TRUE(client()->ssl_info()->unverified_cert);
   EXPECT_EQ(
       0u, client()->ssl_info()->unverified_cert->intermediate_buffers().size());
-}
-
-// Check that destroying a NetworkContext with |primary_network_context| set
-// destroys all other NetworkContexts.
-TEST_F(NetworkServiceTestWithService,
-       DestroyingPrimaryNetworkContextDestroysOtherContexts) {
-  mojom::NetworkContextParamsPtr context_params = CreateContextParams();
-  context_params->primary_network_context = true;
-  mojo::Remote<mojom::NetworkContext> cert_validating_network_context;
-  network_service_->CreateNetworkContext(
-      cert_validating_network_context.BindNewPipeAndPassReceiver(),
-      std::move(context_params));
-
-  base::RunLoop run_loop;
-  mojo::Remote<mojom::NetworkContext> network_context;
-  network_service_->CreateNetworkContext(
-      network_context.BindNewPipeAndPassReceiver(), CreateContextParams());
-  network_context.set_disconnect_handler(run_loop.QuitClosure());
-
-  // Wait until the new NetworkContext has been created, so it's not created
-  // after the primary NetworkContext is destroyed.
-  network_service_.FlushForTesting();
-
-  // Destroying |cert_validating_network_context| should result in destroying
-  // |network_context| as well.
-  cert_validating_network_context.reset();
-  run_loop.Run();
-  EXPECT_FALSE(network_context.is_connected());
 }
 
 TEST_F(NetworkServiceTestWithService, GetDnsConfigChangeManager) {

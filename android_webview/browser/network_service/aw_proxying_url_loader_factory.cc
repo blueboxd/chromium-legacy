@@ -25,7 +25,6 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/core/common/safebrowsing_constants.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -513,8 +512,8 @@ void InterceptedRequest::OnReceiveResponse(
     std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> error_info =
         AwContentsClientBridge::ExtractHttpErrorInfo(head->headers.get());
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&OnReceivedHttpErrorOnUiThread, process_id_,
                        request_.render_frame_id, AwWebResourceRequest(request_),
                        std::move(error_info)));
@@ -530,8 +529,8 @@ void InterceptedRequest::OnReceiveResponse(
       if (ParseHeader(header_string, ALLOW_ANY_REALM, &header_data)) {
         // TODO(timvolodine): consider simplifying this and above callback
         // code, crbug.com/897149.
-        base::PostTask(
-            FROM_HERE, {content::BrowserThread::UI},
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE,
             base::BindOnce(&OnNewLoginRequestOnUiThread, process_id_,
                            request_.render_frame_id, header_data.realm,
                            header_data.account, header_data.args));
@@ -709,8 +708,8 @@ void InterceptedRequest::SendErrorCallback(int error_code,
     return;
 
   sent_error_callback_ = true;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&OnReceivedErrorOnUiThread, process_id_,
                      request_.render_frame_id, AwWebResourceRequest(request_),
                      error_code, safebrowsing_hit));

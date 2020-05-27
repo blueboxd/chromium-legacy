@@ -10,7 +10,7 @@
 #include <set>
 
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
-#include "chrome/services/app_service/public/cpp/instance.h"
+#include "components/services/app_service/public/cpp/instance.h"
 
 namespace apps {
 class AppServiceProxy;

@@ -12,7 +12,6 @@
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -159,15 +158,15 @@ ExtensionFunction::ResponseAction IdentityGetAuthTokenFunction::Run() {
   if (gaia_id.empty() || IsPrimaryAccountOnly()) {
     // Try the primary account.
     // TODO(https://crbug.com/932400): collapse the asynchronicity
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &IdentityGetAuthTokenFunction::GetAuthTokenForPrimaryAccount,
             weak_ptr_factory_.GetWeakPtr(), gaia_id));
   } else {
     // Get the AccountInfo for the account that the extension wishes to use.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&IdentityGetAuthTokenFunction::FetchExtensionAccountInfo,
                        weak_ptr_factory_.GetWeakPtr(), gaia_id));
   }

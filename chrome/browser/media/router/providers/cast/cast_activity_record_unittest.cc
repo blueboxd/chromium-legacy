@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/values_test_util.h"
@@ -26,6 +25,7 @@
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -181,7 +181,7 @@ class CastActivityRecordTest : public testing::Test,
   content::BrowserTaskEnvironment task_environment_;
   MediaSinkInternal sink_ = CreateCastSink(kChannelId);
   cast_channel::MockCastSocketService socket_service_{
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})};
+      content::GetUIThreadTaskRunner({})};
   cast_channel::MockCastMessageHandler message_handler_{&socket_service_};
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   TestMediaSinkService media_sink_service_;

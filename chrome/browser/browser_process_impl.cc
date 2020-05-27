@@ -1317,7 +1317,7 @@ void BrowserProcessImpl::CreateOptimizationGuideService() {
 
   optimization_guide_service_ =
       std::make_unique<optimization_guide::OptimizationGuideService>(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+          content::GetUIThreadTaskRunner({}));
 }
 
 void BrowserProcessImpl::CreateGCMDriver() {
@@ -1344,8 +1344,7 @@ void BrowserProcessImpl::CreateGCMDriver() {
       system_network_context_manager()->GetSharedURLLoaderFactory(),
       content::GetNetworkConnectionTracker(), chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(local_state()),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+      content::GetUIThreadTaskRunner({}), content::GetIOThreadTaskRunner({}),
       blocking_task_runner);
 #endif  // defined(OS_ANDROID)
 }

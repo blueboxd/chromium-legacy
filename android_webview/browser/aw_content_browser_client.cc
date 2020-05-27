@@ -839,8 +839,8 @@ bool AwContentBrowserClient::HandleExternalProtocol(
         0 /* process_id */, std::move(receiver), mojo::NullRemote(),
         true /* intercept_only */);
   } else {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             [](mojo::PendingReceiver<network::mojom::URLLoaderFactory>
                    receiver) {
@@ -936,8 +936,8 @@ bool AwContentBrowserClient::WillCreateURLLoaderFactory(
       type == URLLoaderFactoryType::kNavigation ? 0 : render_process_id;
 
   // Android WebView has one non off-the-record browser context.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&AwProxyingURLLoaderFactory::CreateProxy,
                                 process_id, std::move(proxied_receiver),
                                 std::move(target_factory_remote)));
   return true;

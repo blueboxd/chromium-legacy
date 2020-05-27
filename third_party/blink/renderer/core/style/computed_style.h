@@ -907,6 +907,13 @@ class ComputedStyle : public ComputedStyleBase,
     SetHasAutoZIndexInternal(true);
     SetZIndexInternal(0);
   }
+  // This returns the z-index if it applies (i.e. positioned element or grid or
+  // flex children), and 0 otherwise. Note that for most situations,
+  // `EffectiveZIndex()` is what the code should use to determine how to stack
+  // the element. `ZIndex()` is still available and returns the value as
+  // specified in style (used for e.g. style comparisons and computed style
+  // reporting)
+  int EffectiveZIndex() const { return EffectiveZIndexZero() ? 0 : ZIndex(); }
 
   CORE_EXPORT bool SetEffectiveZoom(float);
 

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "content/browser/appcache/appcache_host.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -38,6 +39,7 @@ class CONTENT_EXPORT AppCacheBackendImpl
   AppCacheServiceImpl* service_;
   const int process_id_;
   const int routing_id_;
+  ChildProcessSecurityPolicyImpl::Handle security_policy_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheBackendImpl);
 };

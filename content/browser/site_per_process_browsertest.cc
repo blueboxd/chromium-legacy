@@ -38,7 +38,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/test_timeouts.h"
@@ -621,15 +620,15 @@ class UpdateViewportIntersectionMessageFilter
     // OnUpdateViewportIntersection returns. This additional post on the IO
     // thread guarantees that by the time OnUpdateViewportIntersectionOnUI runs,
     // the message has been handled on the UI thread.
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                                       OnUpdateViewportIntersectionPostOnIO,
                                   this, intersection_state));
   }
   void OnUpdateViewportIntersectionPostOnIO(
       const blink::ViewportIntersectionState& intersection_state) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&UpdateViewportIntersectionMessageFilter::
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&UpdateViewportIntersectionMessageFilter::
                                       OnUpdateViewportIntersectionOnUI,
                                   this, intersection_state));
   }
@@ -7968,15 +7967,15 @@ class PendingWidgetMessageFilter : public BrowserMessageFilter {
                            WindowOpenDisposition disposition,
                            const gfx::Rect& initial_rect,
                            bool user_gesture) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI,
                        this, pending_widget_routing_id));
   }
 
   void OnShowWidget(int routing_id, const gfx::Rect& initial_rect) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PendingWidgetMessageFilter::OnReceivedRoutingIDOnUI,
                        this, routing_id));
   }

@@ -36,6 +36,8 @@
 
 namespace content {
 
+class WebBundleNavigationInfo;
+
 class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
  public:
   // Represents a tree of FrameNavigationEntries that make up this joint session
@@ -231,7 +233,8 @@ class CONTENT_EXPORT NavigationEntryImpl : public NavigationEntry {
       const PageState& page_state,
       const std::string& method,
       int64_t post_id,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
 
   // Returns the FrameNavigationEntry corresponding to |frame_tree_node|, if
   // there is one in this NavigationEntry.

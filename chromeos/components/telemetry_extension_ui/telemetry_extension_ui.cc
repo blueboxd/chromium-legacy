@@ -23,6 +23,10 @@ content::WebUIDataSource* CreateUntrustedTelemetryExtensionDataSource() {
   untrusted_source->AddResourcePath("untrusted.js",
                                     IDR_TELEMETRY_EXTENSION_UNTRUSTED_JS);
   untrusted_source->AddFrameAncestor(GURL(kChromeUITelemetryExtensionURL));
+
+  // TODO(https://crbug.com/1085330): tighten CSP.
+  untrusted_source->OverrideContentSecurityPolicyDefaultSrc(std::string());
+
   return untrusted_source;
 }
 }  // namespace

@@ -33,7 +33,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
@@ -584,8 +583,8 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       bool send_cors_header) {
     request.url = net::FilePathToFileURL(*read_file_path);
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &StartVerifyJob, std::move(request), std::move(loader),
             std::move(client), std::move(content_verifier), resource,

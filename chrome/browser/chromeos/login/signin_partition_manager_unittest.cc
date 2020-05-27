@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -256,8 +255,8 @@ TEST_F(SigninPartitionManagerTest, TestSubsequentAttempts) {
 
 TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
   base::RunLoop loop_prepare;
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(AddEntryToHttpAuthCache,
                      base::Unretained(GetSystemNetworkContextImpl())),
       loop_prepare.QuitClosure());
@@ -267,8 +266,8 @@ TEST_F(SigninPartitionManagerTest, HttpAuthCacheTransferred) {
 
   bool entry_found = false;
   base::RunLoop loop_check;
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(IsEntryInHttpAuthCache,
                      base::Unretained(GetSigninNetworkContextImpl()),
                      &entry_found),

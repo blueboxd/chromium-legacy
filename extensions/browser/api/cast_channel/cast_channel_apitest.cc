@@ -8,7 +8,6 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/mock_timer.h"
 #include "build/build_config.h"
@@ -204,8 +203,8 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
 
  protected:
   void CallOnMessage(const std::string& message) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&CastChannelAPITest::DoCallOnMessage,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CastChannelAPITest::DoCallOnMessage,
                                   base::Unretained(this), GetApi(),
                                   mock_cast_socket_, message));
   }
@@ -220,8 +219,8 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
 
   // Fires a timer on the IO thread.
   void FireTimeout() {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&CastChannelAPITest::DoFireTimeout,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&CastChannelAPITest::DoFireTimeout,
                                   base::Unretained(this), mock_cast_socket_));
   }
 
@@ -255,8 +254,8 @@ class CastChannelAPITest : public extensions::ExtensionApiTest {
 };
 
 ACTION_P2(InvokeObserverOnError, api_test, cast_socket_service) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&CastChannelAPITest::DoCallOnError,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CastChannelAPITest::DoCallOnError,
                                 base::Unretained(api_test),
                                 base::Unretained(cast_socket_service)));
 }

@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/platform_apps/audio_focus_web_contents_observer.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -354,8 +353,8 @@ void ChromeAppDelegate::OnHide() {
 
   // Hold on to the keep alive for some time to give the app a chance to show
   // the window.
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&ChromeAppDelegate::RelinquishKeepAliveAfterTimeout,
                      weak_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kAppWindowFirstShowTimeoutSeconds));

@@ -591,6 +591,7 @@ var availableTests = [
           },
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: kCellularGuid,
+          Metered: true,
           Name: 'cellular1',
           Source: 'User',
           Type: NetworkType.CELLULAR,

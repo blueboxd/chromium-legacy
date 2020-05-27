@@ -17,7 +17,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_checker.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
@@ -236,8 +235,8 @@ class SocketTunnel {
         adb_thread_runner_(base::ThreadTaskRunnerHandle::Get()) {
     ResolveHostCallback resolve_host_callback = base::BindOnce(
         &SocketTunnel::OnResolveHostComplete, base::Unretained(this));
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ResolveHost, profile, host, port,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ResolveHost, profile, host, port,
                                   std::move(resolve_host_callback)));
   }
 

@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/native_library.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -252,11 +251,10 @@ void WidevineCdmComponentInstallerPolicy::UpdateCdmPath(
   if (!UpdateWidevineCdmHintFile(cdm_install_dir))
     PLOG(WARNING) << "Failed to update Widevine CDM hint path.";
 #else
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&RegisterWidevineCdmWithChrome, cdm_version,
-                         absolute_cdm_install_dir, base::Passed(&manifest)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&RegisterWidevineCdmWithChrome, cdm_version,
+                     absolute_cdm_install_dir, base::Passed(&manifest)));
 #endif
 }
 

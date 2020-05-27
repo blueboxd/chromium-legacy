@@ -5,7 +5,6 @@
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
@@ -46,8 +45,8 @@ void IsolatedPrerenderService::OnAboutToNoStatePrefetch(
   // response not to be used (like the user navigating away inside of a narrow
   // window between the response being copied here and taken) doesn't cause a
   // memory leak.
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&IsolatedPrerenderService::CleanupNoStatePrefetchResponse,
                      weak_factory_.GetWeakPtr(), url),
       // 30s is ample time since the mainframe can always be anonymously

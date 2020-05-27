@@ -24,7 +24,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/version.h"
 #include "build/branding_buildflags.h"
@@ -293,9 +292,9 @@ FlashComponentInstallerPolicy::OnCustomInstall(
   }
 
 #if defined(OS_CHROMEOS)
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(FROM_HERE, base::BindOnce(&ImageLoaderRegistration, version,
-                                           install_dir));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ImageLoaderRegistration, version, install_dir));
 #elif defined(OS_LINUX)
   const base::FilePath flash_path =
       install_dir.Append(chrome::kPepperFlashPluginFilename);

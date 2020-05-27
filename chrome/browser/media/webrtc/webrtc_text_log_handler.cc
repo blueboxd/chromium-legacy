@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/media/webrtc_logging.mojom.h"
@@ -249,8 +248,8 @@ bool WebRtcTextLogHandler::StopLogging(const GenericDoneCallback& callback) {
   stop_callback_ = callback;
   logging_state_ = STOPPING;
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
                                 render_process_id_));
   return true;
 }
@@ -281,8 +280,8 @@ void WebRtcTextLogHandler::StopDone() {
 void WebRtcTextLogHandler::ChannelClosing() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (logging_state_ == STARTING || logging_state_ == STARTED) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&content::WebRtcLog::ClearLogMessageCallback,
                                   render_process_id_));
   }
   channel_is_closing_ = true;
@@ -528,8 +527,8 @@ void WebRtcTextLogHandler::OnGetNetworkInterfaceList(
       &ForwardMessageViaTaskRunner, base::SequencedTaskRunnerHandle::Get(),
       base::Bind(&WebRtcTextLogHandler::LogMessage,
                  weak_factory_.GetWeakPtr()));
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&content::WebRtcLog::SetLogMessageCallback,
                      render_process_id_, std::move(log_message_callback)));
 }

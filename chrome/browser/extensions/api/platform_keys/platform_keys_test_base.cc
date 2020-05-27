@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/policy/affiliation_test_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/ui/browser.h"
@@ -155,8 +154,8 @@ void PlatformKeysTestBase::SetUpOnMainThread() {
 
   if (system_token_status() == SystemTokenStatus::EXISTS) {
     base::RunLoop loop;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PlatformKeysTestBase::SetUpTestSystemSlotOnIO,
                        base::Unretained(this), loop.QuitClosure()));
     loop.Run();
@@ -170,8 +169,8 @@ void PlatformKeysTestBase::TearDownOnMainThread() {
 
   if (system_token_status() == SystemTokenStatus::EXISTS) {
     base::RunLoop loop;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PlatformKeysTestBase::TearDownTestSystemSlotOnIO,
                        base::Unretained(this), loop.QuitClosure()));
     loop.Run();
@@ -211,14 +210,14 @@ void PlatformKeysTestBase::SetUpTestSystemSlotOnIO(
 
   PrepareTestSystemSlotOnIO(test_system_slot_.get());
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 std::move(done_callback));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                               std::move(done_callback));
 }
 
 void PlatformKeysTestBase::TearDownTestSystemSlotOnIO(
     base::OnceClosure done_callback) {
   test_system_slot_.reset();
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 std::move(done_callback));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                               std::move(done_callback));
 }

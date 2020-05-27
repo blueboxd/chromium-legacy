@@ -54,7 +54,8 @@ class CONTENT_EXPORT FrameNavigationEntry
       const PageState& page_state,
       const std::string& method,
       int64_t post_id,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
 
   // Creates a copy of this FrameNavigationEntry that can be modified
   // independently from the original.
@@ -75,7 +76,8 @@ class CONTENT_EXPORT FrameNavigationEntry
       const PageState& page_state,
       const std::string& method,
       int64_t post_id,
-      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+      std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info);
 
   // The unique name of the frame this entry is for.  This is a stable name for
   // the frame based on its position in the tree and relation to other named

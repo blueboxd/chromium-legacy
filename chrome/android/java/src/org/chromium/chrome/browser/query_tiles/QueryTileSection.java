@@ -200,6 +200,6 @@ public class QueryTileSection {
         return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(ChromeFeatureList.QUERY_TILES,
                 isSmallScreen ? MOST_VISITED_MAX_ROWS_SMALL_SCREEN
                               : MOST_VISITED_MAX_ROWS_NORMAL_SCREEN,
-                2);
+                1);
     }
 }

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/web_app_file_handler_registration.h"
@@ -54,12 +53,12 @@ void FileHandlerManager::Start() {
 
   if (!FileHandlerManager::
           disable_automatic_file_handler_cleanup_for_testing_) {
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(
-            base::IgnoreResult(&FileHandlerManager::CleanupAfterOriginTrials),
-            weak_ptr_factory_.GetWeakPtr()));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(base::IgnoreResult(
+                               &FileHandlerManager::CleanupAfterOriginTrials),
+                           weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

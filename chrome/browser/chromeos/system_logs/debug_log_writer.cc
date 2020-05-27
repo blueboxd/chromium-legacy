@@ -17,7 +17,6 @@
 #include "base/process/launch.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/common/logging_chrome.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -116,16 +115,16 @@ void OnCompressArchiveCompleted(const base::FilePath& tar_file_path,
                                 bool compression_command_success) {
   if (!compression_command_success) {
     LOG(ERROR) << "Failed compressing " << compressed_output_path.value();
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), base::FilePath(), false));
     base::DeleteFile(tar_file_path, false);
     base::DeleteFile(compressed_output_path, false);
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), compressed_output_path, true));
 }
 
@@ -136,8 +135,8 @@ void CompressArchive(const base::FilePath& tar_file_path,
                      bool add_user_logs_command_success) {
   if (!add_user_logs_command_success) {
     LOG(ERROR) << "Failed adding user logs to " << tar_file_path.value();
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), base::FilePath(), false));
     base::DeleteFile(tar_file_path, false);
     return;

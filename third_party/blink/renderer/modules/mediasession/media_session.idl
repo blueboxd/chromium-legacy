@@ -24,7 +24,7 @@ enum MediaSessionAction {
   "seekto"
 };
 
-callback MediaSessionActionHandler = void ([RuntimeEnabled=MediaSessionSeeking] MediaSessionActionDetails details);
+callback MediaSessionActionHandler = void (MediaSessionActionDetails details);
 
 [
     Exposed=Window,

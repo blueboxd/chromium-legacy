@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resources_util.h"
@@ -222,8 +221,8 @@ void ThemeSource::SendThemeImage(
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     // Fetching image data in ResourceBundle should happen on the UI thread. See
     // crbug.com/449277
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&ProcessResourceOnUiThread, resource_id, scale, data),
         base::BindOnce(std::move(callback), data));
   }
@@ -239,4 +238,13 @@ std::string ThemeSource::GetAccessControlAllowOriginForOrigin(
   }
 
   return content::URLDataSource::GetAccessControlAllowOriginForOrigin(origin);
+}
+
+std::string ThemeSource::GetContentSecurityPolicyDefaultSrc() {
+  if (serve_untrusted_) {
+    // TODO(https://crbug.com/1085327): Audit and tighten CSP.
+    return std::string();
+  }
+
+  return content::URLDataSource::GetContentSecurityPolicyDefaultSrc();
 }

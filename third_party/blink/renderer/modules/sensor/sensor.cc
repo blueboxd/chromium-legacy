@@ -109,7 +109,7 @@ bool Sensor::activated() const {
 }
 
 bool Sensor::hasReading() const {
-  if (!IsActivated())
+  if (!activated())
     return false;
   DCHECK(sensor_proxy_);
   return sensor_proxy_->GetReading().timestamp() != 0.0;

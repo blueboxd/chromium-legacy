@@ -101,6 +101,8 @@ class LayerTreeHostClient {
   virtual void WillUpdateLayers() = 0;
   virtual void DidUpdateLayers() = 0;
 
+  virtual void DidObserveFirstScrollDelay(
+      base::TimeDelta first_scroll_delay) = 0;
   // Notification that the proxy started or stopped deferring main frame updates
   virtual void OnDeferMainFrameUpdatesChanged(bool) = 0;
 

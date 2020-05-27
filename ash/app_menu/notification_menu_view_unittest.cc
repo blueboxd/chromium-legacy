@@ -84,20 +84,19 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
     mock_notification_menu_controller_ =
         std::make_unique<MockNotificationMenuController>();
 
-    notification_menu_view_ = std::make_unique<NotificationMenuView>(
+    auto notification_menu_view = std::make_unique<NotificationMenuView>(
         mock_notification_menu_controller_.get(),
         mock_notification_menu_controller_.get(), kTestAppId);
-    notification_menu_view_->set_owned_by_client();
 
     // Set the NotificationMenuView so |mock_notification_menu_controller_|
     // can get the slide out layer. In production NotificationMenuController is
     // the NotificationItemViewDelegate, and it gets a reference to
     // NotificationMenuView when it is created.
     mock_notification_menu_controller_->set_notification_menu_view(
-        notification_menu_view());
+        notification_menu_view.get());
 
     test_api_ = std::make_unique<NotificationMenuViewTestAPI>(
-        notification_menu_view_.get());
+        notification_menu_view.get());
 
     widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams init_params(
@@ -106,7 +105,8 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
     widget_->Init(std::move(init_params));
-    widget_->SetContentsView(notification_menu_view_.get());
+    notification_menu_view_ =
+        widget_->SetContentsView(std::move(notification_menu_view));
     widget_->SetSize(notification_menu_view_->GetPreferredSize());
     widget_->Show();
     widget_->Activate();
@@ -191,7 +191,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
   }
 
   NotificationMenuView* notification_menu_view() {
-    return notification_menu_view_.get();
+    return notification_menu_view_;
   }
 
   NotificationMenuViewTestAPI* test_api() { return test_api_.get(); }
@@ -203,7 +203,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
  private:
   std::unique_ptr<MockNotificationMenuController>
       mock_notification_menu_controller_;
-  std::unique_ptr<NotificationMenuView> notification_menu_view_;
+  NotificationMenuView* notification_menu_view_;
   std::unique_ptr<NotificationMenuViewTestAPI> test_api_;
   std::unique_ptr<views::Widget> widget_;
   std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_scope_;

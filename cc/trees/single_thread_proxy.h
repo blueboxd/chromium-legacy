@@ -140,6 +140,12 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
 
   void RequestNewLayerTreeFrameSink();
 
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override {
+    // Single-threaded mode is only for browser compositing and for renderers in
+    // layout tests. This will still get called in the latter case, but we don't
+    // need to record UKM in that case.
+  }
+
   // Called by the legacy path where RenderWidget does the scheduling.
   // Rasterization of tiles is only performed when |raster| is true.
   void CompositeImmediately(base::TimeTicks frame_begin_time, bool raster);

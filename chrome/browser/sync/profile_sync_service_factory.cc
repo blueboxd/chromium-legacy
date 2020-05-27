@@ -11,7 +11,6 @@
 #include "base/feature_list.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -100,8 +99,8 @@ void UpdateNetworkTimeOnUIThread(base::Time network_time,
 void UpdateNetworkTime(const base::Time& network_time,
                        const base::TimeDelta& resolution,
                        const base::TimeDelta& latency) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&UpdateNetworkTimeOnUIThread, network_time,
                                 resolution, latency, base::TimeTicks::Now()));
 }
 

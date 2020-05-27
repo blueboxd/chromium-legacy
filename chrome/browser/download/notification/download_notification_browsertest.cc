@@ -14,7 +14,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
@@ -283,8 +282,8 @@ class DownloadNotificationTestBase : public InProcessBrowserTest {
     if (!content::IsInProcessNetworkService()) {
       interceptor_ = std::make_unique<SlowDownloadInterceptor>();
     } else {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::IO},
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&net::URLRequestSlowDownloadJob::AddUrlHandler));
     }
   }

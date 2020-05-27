@@ -50,6 +50,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
@@ -139,6 +140,11 @@ OmniboxState::~OmniboxState() {
 enum OmniboxMenuCommands {
   kShowUrl = views::Textfield::MenuCommands::kLastCommandId + 1,
 };
+
+bool IsClipboardDataMarkedAsConfidential() {
+  return ui::Clipboard::GetForCurrentThread()
+      ->IsMarkedByOriginatorAsConfidential();
+}
 
 }  // namespace
 
@@ -1063,8 +1069,14 @@ bool OmniboxViewViews::IsItemForCommandIdDynamic(int command_id) const {
 base::string16 OmniboxViewViews::GetLabelForCommandId(int command_id) const {
   DCHECK_EQ(IDC_PASTE_AND_GO, command_id);
 
+  // Don't paste-and-go data that was marked by its originator as confidential.
   constexpr size_t kMaxSelectionTextLength = 50;
-  const base::string16 clipboard_text = GetClipboardText();
+  const base::string16 clipboard_text = IsClipboardDataMarkedAsConfidential()
+                                            ? base::string16()
+                                            : GetClipboardText();
+
+  if (clipboard_text.empty())
+    return l10n_util::GetStringUTF16(IDS_PASTE_AND_GO_EMPTY);
 
   base::string16 selection_text = gfx::TruncateString(
       clipboard_text, kMaxSelectionTextLength, gfx::WORD_BREAK);
@@ -1462,8 +1474,10 @@ void OmniboxViewViews::OnBlur() {
 bool OmniboxViewViews::IsCommandIdEnabled(int command_id) const {
   if (command_id == Textfield::kPaste)
     return !GetReadOnly() && !GetClipboardText().empty();
-  if (command_id == IDC_PASTE_AND_GO)
-    return !GetReadOnly() && model()->CanPasteAndGo(GetClipboardText());
+  if (command_id == IDC_PASTE_AND_GO) {
+    return !GetReadOnly() && !IsClipboardDataMarkedAsConfidential() &&
+           model()->CanPasteAndGo(GetClipboardText());
+  }
 
   // Menu item is only shown when it is valid.
   if (command_id == kShowUrl)

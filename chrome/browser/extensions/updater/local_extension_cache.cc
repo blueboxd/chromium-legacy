@@ -12,7 +12,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/version.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -279,8 +278,8 @@ void LocalExtensionCache::BackendCheckCacheStatus(
     }
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&LocalExtensionCache::OnCacheStatusChecked,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&LocalExtensionCache::OnCacheStatusChecked,
                                 local_cache, exists, callback));
 }
 
@@ -294,8 +293,8 @@ void LocalExtensionCache::OnCacheStatusChecked(bool ready,
   if (ready) {
     CheckCacheContents(callback);
   } else {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&LocalExtensionCache::CheckCacheStatus,
                        weak_ptr_factory_.GetWeakPtr(), callback),
         cache_status_polling_delay_);
@@ -317,8 +316,8 @@ void LocalExtensionCache::BackendCheckCacheContents(
     const base::Closure& callback) {
   std::unique_ptr<CacheMap> cache_content(new CacheMap);
   BackendCheckCacheContentsInternal(cache_dir, cache_content.get());
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&LocalExtensionCache::OnCacheContentsChecked, local_cache,
                      std::move(cache_content), callback));
 }
@@ -529,8 +528,8 @@ void LocalExtensionCache::BackendInstallCacheEntry(
     }
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&LocalExtensionCache::OnCacheEntryInstalled, local_cache,
                      id,
                      CacheItemInfo(version, expected_hash, info.last_modified,

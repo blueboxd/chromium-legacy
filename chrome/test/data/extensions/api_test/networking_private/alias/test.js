@@ -52,6 +52,7 @@ chrome.test.runTests([
               },
               ConnectionState: 'NotConnected',
               GUID: 'stub_cellular1_guid',
+              Metered: true,
               Name: 'cellular1',
               Source: 'User',
               Type: 'Cellular',

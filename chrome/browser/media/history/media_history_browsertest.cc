@@ -29,6 +29,7 @@
 #include "components/history/core/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/context_menu_params.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browsing_data_remover_test_util.h"
@@ -1251,6 +1252,57 @@ IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
                        [MediaHistoryFeedAssociatedOriginsTable::kTableName]);
     }
   }
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest,
+                       DoNotRecordWatchtime_Background) {
+  auto* browser = CreateBrowserFromParam();
+  auto* service = GetMediaHistoryService(browser);
+
+  // Setup the test page.
+  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+
+  // Hide the web contents.
+  web_contents->WasHidden();
+
+  // Wait for significant playback in the background tab.
+  WaitForSignificantPlayback(browser);
+
+  // Close all the tabs to trigger any saving.
+  browser->tab_strip_model()->CloseAllTabs();
+
+  // Wait until the session has finished saving.
+  WaitForDB(service);
+
+  // No playbacks should have been saved since we were in the background.
+  auto playbacks = GetPlaybacksSync(service);
+  EXPECT_TRUE(playbacks.empty());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaHistoryBrowserTest, DoNotRecordWatchtime_Muted) {
+  auto* browser = CreateBrowserFromParam();
+  auto* service = GetMediaHistoryService(browser);
+
+  // Setup the test page.
+  auto* web_contents = browser->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(SetupPageAndStartPlaying(browser, GetTestURL()));
+
+  // Mute the video.
+  ASSERT_TRUE(content::ExecuteScript(web_contents, "mute();"));
+
+  // Wait for significant playback in the muted tab.
+  WaitForSignificantPlayback(browser);
+
+  // Close all the tabs to trigger any saving.
+  browser->tab_strip_model()->CloseAllTabs();
+
+  // Wait until the session has finished saving.
+  WaitForDB(service);
+
+  // No playbacks should have been saved since we were muted.
+  auto playbacks = GetPlaybacksSync(service);
+  EXPECT_TRUE(playbacks.empty());
 }
 
 }  // namespace media_history

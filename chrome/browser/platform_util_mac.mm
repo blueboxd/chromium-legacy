@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/mac/mac_logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/platform_util_internal.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -57,8 +56,8 @@ namespace internal {
 void PlatformOpenVerifiedItem(const base::FilePath& path, OpenItemType type) {
   switch (type) {
     case OPEN_FILE:
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&OpenFileOnMainThread, path));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&OpenFileOnMainThread, path));
       return;
     case OPEN_FOLDER:
       NSString* path_string = base::SysUTF8ToNSString(path.value());

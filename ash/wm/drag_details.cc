@@ -55,7 +55,7 @@ gfx::Rect GetWindowInitialBoundsInParent(aura::Window* window) {
   return window->bounds();
 }
 
-gfx::Rect GetRestoreBounds(aura::Window* window, int window_component) {
+gfx::Rect GetRestoreBoundsInParent(aura::Window* window, int window_component) {
   if (window_component != HTCAPTION)
     return gfx::Rect();
 
@@ -65,14 +65,16 @@ gfx::Rect GetRestoreBounds(aura::Window* window, int window_component) {
   WindowState* window_state = WindowState::Get(window);
   if (Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     gfx::Rect* override_bounds = window->GetProperty(kRestoreBoundsOverrideKey);
-    if (override_bounds && !override_bounds->IsEmpty())
+    if (override_bounds && !override_bounds->IsEmpty()) {
       restore_bounds = *override_bounds;
+      ::wm::ConvertRectFromScreen(window->parent(), &restore_bounds);
+    }
   } else if (window_state->IsSnapped() || window_state->IsMaximized()) {
     DCHECK(window_state->HasRestoreBounds());
-    restore_bounds = window_state->GetRestoreBoundsInScreen();
+    restore_bounds = window_state->GetRestoreBoundsInParent();
   } else if (window_state->IsNormalStateType() &&
              window_state->HasRestoreBounds()) {
-    restore_bounds = window_state->GetRestoreBoundsInScreen();
+    restore_bounds = window_state->GetRestoreBoundsInParent();
   }
   return restore_bounds;
 }
@@ -85,7 +87,8 @@ DragDetails::DragDetails(aura::Window* window,
                          ::wm::WindowMoveSource source)
     : initial_state_type(WindowState::Get(window)->GetStateType()),
       initial_bounds_in_parent(GetWindowInitialBoundsInParent(window)),
-      restore_bounds(GetRestoreBounds(window, window_component)),
+      restore_bounds_in_parent(
+          GetRestoreBoundsInParent(window, window_component)),
       initial_location_in_parent(location),
       window_component(window_component),
       bounds_change(

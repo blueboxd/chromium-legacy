@@ -27,12 +27,12 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 
 #if !defined(OS_ANDROID)
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/ui/browser.h"
@@ -113,8 +113,8 @@ void SyncEnabledOrDisabled(Profile* profile) {
 #if defined(OS_ANDROID)
   NOTREACHED();
 #else
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&UpdateAllFormManagers, profile));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&UpdateAllFormManagers, profile));
 #endif  // defined(OS_ANDROID)
 }
 

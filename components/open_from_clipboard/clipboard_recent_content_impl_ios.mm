@@ -99,6 +99,9 @@ NSData* WeakMD5FromPasteboardData(NSString* string,
 // Returns the uptime.
 - (NSTimeInterval)uptime;
 
+// Returns whether the value of the clipboard should be returned.
+- (BOOL)shouldReturnValueOfClipboard;
+
 @end
 
 @implementation ClipboardRecentContentImplIOS
@@ -207,30 +210,49 @@ NSData* WeakMD5FromPasteboardData(NSString* string,
 
 - (NSURL*)recentURLFromClipboard {
   [self updateIfNeeded];
-  if ([self clipboardContentAge] > self.maximumAgeOfClipboard) {
+
+  if (![self shouldReturnValueOfClipboard])
     return nil;
-  }
+
   return [self URLFromPasteboard];
 }
 
 - (NSString*)recentTextFromClipboard {
   [self updateIfNeeded];
-  if ([self clipboardContentAge] > self.maximumAgeOfClipboard) {
+
+  if (![self shouldReturnValueOfClipboard])
     return nil;
-  }
+
   return [UIPasteboard generalPasteboard].string;
 }
 
 - (UIImage*)recentImageFromClipboard {
   [self updateIfNeeded];
-  if ([self clipboardContentAge] > self.maximumAgeOfClipboard) {
+
+  if (![self shouldReturnValueOfClipboard])
     return nil;
-  }
+
   return [UIPasteboard generalPasteboard].image;
 }
 
 - (NSTimeInterval)clipboardContentAge {
   return -[self.lastPasteboardChangeDate timeIntervalSinceNow];
+}
+
+- (BOOL)shouldReturnValueOfClipboard {
+  if ([self clipboardContentAge] > self.maximumAgeOfClipboard)
+    return NO;
+
+  // It is the common convention on iOS that password managers tag confidential
+  // data with the flavor "org.nspasteboard.ConcealedType". Obey this
+  // convention; the user doesn't want for their confidential data to be
+  // suggested as a search, anyway. See http://nspasteboard.org/ for more info.
+  NSArray<NSString*>* types =
+      [[UIPasteboard generalPasteboard] pasteboardTypes];
+  if ([types containsObject:@"org.nspasteboard.ConcealedType"])
+    return NO;
+
+  return YES;
 }
 
 - (void)suppressClipboardContent {

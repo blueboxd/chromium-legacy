@@ -104,7 +104,7 @@ class PLATFORM_EXPORT LayerTreeView
       override;
   void NotifyThroughputTrackerResults(
       cc::CustomTrackerResults results) override;
-
+  void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override;
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;
   void DidLoseLayerTreeFrameSink() override;

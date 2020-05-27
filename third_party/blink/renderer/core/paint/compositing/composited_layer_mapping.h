@@ -396,16 +396,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const Vector<GraphicsLayerPaintInfo>& layers,
       GraphicsLayerPaintInfo&);
 
-  // Clear the groupedMapping entry on the layer at the given index, only if
-  // that layer does not appear earlier in the set of layers for this object.
-  bool InvalidateSquashedLayerIfNoPrecedingEntry(
-      Vector<GraphicsLayerPaintInfo>& squashed_layers,
-      wtf_size_t layer_to_clear);
-
-  void FinishAccumulatingSquashingLayersInternal(
-      Vector<GraphicsLayerPaintInfo>& squashed_layers,
-      wtf_size_t new_squashed_layer_count,
-      Vector<PaintLayer*>& layers_needing_paint_invalidation);
   bool UpdateSquashingLayerAssignmentInternal(
       Vector<GraphicsLayerPaintInfo>& squashed_layers,
       PaintLayer& squashed_layer,

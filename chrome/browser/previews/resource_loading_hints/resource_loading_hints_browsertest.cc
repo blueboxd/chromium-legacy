@@ -10,7 +10,6 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -36,6 +35,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -322,8 +322,8 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
                                       MonitorResourceRequestOnUIThread,
                                   base::Unretained(this), request.GetURL()));
   }

@@ -5,7 +5,6 @@
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/router/discovery/dial/dial_media_sink_service_impl.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -46,7 +45,7 @@ DialMediaSinkService::CreateImpl(
   // Note: The SequencedTaskRunner needs to be IO thread because DialRegistry
   // runs on IO thread.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+      content::GetIOThreadTaskRunner({});
   return std::unique_ptr<DialMediaSinkServiceImpl, base::OnTaskRunnerDeleter>(
       new DialMediaSinkServiceImpl(sink_discovery_cb, task_runner),
       base::OnTaskRunnerDeleter(task_runner));

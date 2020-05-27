@@ -209,7 +209,7 @@
 #include "components/error_page/common/error_page_switches.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/feature_engagement/public/feature_list.h"
-#include "components/google/core/common/google_util.h"
+#include "components/google/core/common/google_switches.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/client_info.h"
 #include "components/net_log/chrome_net_log.h"
@@ -2292,6 +2292,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kForcePNaClSubzero,
 #endif
       switches::kForceUIDirection,
+      switches::kIgnoreGooglePortNumbers,
       switches::kJavaScriptHarmony,
       switches::kEnableExperimentalWebAssemblyFeatures,
       embedder_support::kOriginTrialDisabledFeatures,

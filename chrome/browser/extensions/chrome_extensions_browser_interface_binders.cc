@@ -9,6 +9,7 @@
 #include "chrome/browser/media/router/media_router_feature.h"       // nogncheck
 #include "chrome/browser/media/router/mojo/media_router_desktop.h"  // nogncheck
 #include "chrome/common/media_router/mojom/media_router.mojom.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/common/extension.h"
@@ -16,7 +17,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/task/post_task.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chromeos/services/media_perception/public/mojom/media_perception.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -70,8 +70,8 @@ void TranslateVideoDeviceId(
             std::move(origin), source_id, std::move(callback));
       },
       salt, std::move(origin), source_id, std::move(callback));
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 std::move(callback_on_io_thread));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, std::move(callback_on_io_thread));
 }
 
 void HandleCameraResult(

@@ -407,24 +407,6 @@ struct NetworkContextParams {
   // decide. This should only be used by tests.
   bool skip_reporting_send_permission_check = false;
 
-  // Sets whether the NetworkContext should be used for globally scoped tasks
-  // that need to make network requests. Currently this includes DNS over HTTPS
-  // requests and certain cert validation requests (OCSP, AIA, etc) on some
-  // platforms. May only be set to true the first NetworkContext created using
-  // the NetworkService.  Destroying a NetworkContext created with this set to
-  // true will destroy all other NetworkContexts.
-  //
-  // A failure to mark a NetworkContext as being used by certificate
-  // verification may result in incorrect certificate validation behaviors,
-  // such as the inability to verify EV certificates, to build paths when
-  // intermediates are missing, and to enforce revocation checking when it was
-  // requested via policy.
-  //
-  // TODO(mmenke): Once NSS is not used on any platform for certificate
-  // verification, we should consider using each URLRequestContext to do its own
-  // validation.
-  bool primary_network_context = false;
-
   // Specifies the initial set of allowed and blocked origins for the
   // URLLoaderFactory consumers to access beyond the same-origin-policy.
   array<CorsOriginAccessPatterns> cors_origin_access_list;

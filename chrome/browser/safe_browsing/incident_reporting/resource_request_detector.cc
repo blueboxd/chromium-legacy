@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_receiver.h"
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_incident.h"
@@ -73,8 +72,8 @@ class ResourceRequestDetectorClient
       OnResultCallback callback) {
     auto client = base::WrapRefCounted(new ResourceRequestDetectorClient(
         std::move(database_manager), std::move(callback)));
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&ResourceRequestDetectorClient::StartCheck,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ResourceRequestDetectorClient::StartCheck,
                                   client, resource_url));
   }
 
@@ -112,8 +111,8 @@ class ResourceRequestDetectorClient
           new ResourceRequestIncidentMessage());
       incident_data->set_type(ResourceRequestIncidentMessage::TYPE_PATTERN);
       incident_data->set_digest(threat_hash);
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(std::move(callback_), std::move(incident_data)));
     }
     Release();  // Balanced in StartCheck.

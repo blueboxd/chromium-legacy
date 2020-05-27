@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/desktop_media_list.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
@@ -478,8 +477,8 @@ void DesktopMediaPickerViews::NotifyDialogResult(DesktopMediaID source) {
 
   // Notify the |callback_| asynchronously because it may need to destroy
   // DesktopMediaPicker.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback_), source));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_), source));
 }
 
 // static

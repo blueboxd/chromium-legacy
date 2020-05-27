@@ -43,6 +43,8 @@ class V8PerFrameMemoryDecorator : public GraphOwned,
   }
 
   uint64_t GetUnassociatedBytesForTesting(const ProcessNode* process_node);
+  uint64_t GetAssociatedBytesForTesting(const FrameNode* frame_node);
+  bool HasAssociatedBytesForTesting(const FrameNode* frame_node);
 
  private:
   class ProcessData;

@@ -453,10 +453,8 @@ void SpellcheckCustomDictionary::OnLoaded(
     fix_invalid_file_.Reset(
         base::BindOnce(&SpellcheckCustomDictionary::FixInvalidFile,
                        weak_ptr_factory_.GetWeakPtr(), std::move(result)));
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        fix_invalid_file_.callback());
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(FROM_HERE, fix_invalid_file_.callback());
   }
 }
 

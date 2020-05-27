@@ -74,9 +74,9 @@ namespace blink {
 
 namespace {
 
-bool CheckForUnoptimizedImagePolicy(Document& document,
+bool CheckForUnoptimizedImagePolicy(ExecutionContext* context,
                                     ImageResourceContent* new_image) {
-  if (!new_image)
+  if (!context || !new_image)
     return false;
 
   // Render the image as a placeholder image if the image is not sufficiently
@@ -85,9 +85,8 @@ bool CheckForUnoptimizedImagePolicy(Document& document,
   // Note: UnoptimizedImagePolicies is currently part of DocumentPolicy.
   // The original runtime feature UnoptimizedImagePolicies is no longer used,
   // and are planned to be removed.
-  if (RuntimeEnabledFeatures::DocumentPolicyEnabled(&document) &&
-      !new_image->IsAcceptableCompressionRatio(
-          *document.GetExecutionContext())) {
+  if (RuntimeEnabledFeatures::DocumentPolicyEnabled(context) &&
+      !new_image->IsAcceptableCompressionRatio(*context)) {
     return true;
   }
 
@@ -816,7 +815,8 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   // HTMLImageElement.
   // crbug.com/930281
   auto* html_image_element = DynamicTo<HTMLImageElement>(element_.Get());
-  if (CheckForUnoptimizedImagePolicy(element_->GetDocument(), image_content_) &&
+  if (CheckForUnoptimizedImagePolicy(element_->GetExecutionContext(),
+                                     image_content_) &&
       html_image_element)
     html_image_element->SetImagePolicyViolated();
 

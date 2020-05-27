@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -85,8 +84,8 @@ class HatsSurveyStatusCheckerBrowserTestBase : public InProcessBrowserTest {
         substr_index + strlen(HatsSurveyStatusChecker::kHatsSurveyDataPath));
     if (site_id.compare(kNonReachableSiteId) == 0) {
       // Directly post a call to timeout callback function.
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     std::move(timeout_callback_));
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, std::move(timeout_callback_));
       return std::unique_ptr<net::test_server::HttpResponse>();
     }
 

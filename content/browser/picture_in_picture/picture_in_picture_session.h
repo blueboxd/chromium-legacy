@@ -20,9 +20,10 @@ class WebContentsImpl;
 
 // The PicutreInPictureSession communicates with the
 // PictureInPictureWindowController and the WebContents. It is created by the
-// PictureInPictureService but deletes itself. When created, the session will
-// enter Picture-in-Picture and when deleted, it will automatically exit
-// Picture-in-Picture unless another session became active.
+// PictureInPictureWindowControllerImpl which also deletes it. When created, the
+// session will be expected to be active (in Picture-in-Picture) and when
+// deleted, it will automatically exit Picture-in-Picture unless another session
+// became active.
 // The session MUST be stopped before its dtor runs to avoid unexpected
 // deletion.
 class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
@@ -30,13 +31,9 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   PictureInPictureSession(
       PictureInPictureServiceImpl* service,
       const MediaPlayerId& player_id,
-      const base::Optional<viz::SurfaceId>& surface_id,
-      const gfx::Size& natural_size,
-      bool show_play_pause_button,
       mojo::PendingReceiver<blink::mojom::PictureInPictureSession> receiver,
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>
-          observer,
-      gfx::Size* window_size);
+          observer);
   ~PictureInPictureSession() override;
 
   // blink::mojom::PictureInPictureSession interface.
@@ -52,9 +49,18 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   // if there are none.
   const base::Optional<MediaPlayerId>& player_id() const { return player_id_; }
 
+  // Stops the session without closing the window. It will prevent the session
+  // to later trying to shutdown when the PictureInPictureWindowController is
+  // notified.
+  void Disconnect();
+
   // Shuts down the session. Called by the window controller when the window is
   // closed.
   void Shutdown();
+
+  // Returns the PictureInPictureServiceImpl instance associated with this
+  // session. It cannot be null.
+  PictureInPictureServiceImpl* service() { return service_; }
 
  private:
   PictureInPictureSession() = delete;
@@ -74,7 +80,9 @@ class PictureInPictureSession : public blink::mojom::PictureInPictureSession {
   // session.
   PictureInPictureWindowControllerImpl& GetController();
 
-  // Owns |this|.
+  // Will notified The PictureInPictureWindowControllerImpl who owns |this| when
+  // it gets destroyed in order for |this| to be destroyed too. Indirectly owns
+  // |this|.
   PictureInPictureServiceImpl* service_;
 
   mojo::Receiver<blink::mojom::PictureInPictureSession> receiver_;

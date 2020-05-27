@@ -21,8 +21,8 @@
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

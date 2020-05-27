@@ -4,7 +4,6 @@
 
 #include "components/autofill_assistant/browser/web/element_position_getter.h"
 
-#include "base/task/post_task.h"
 #include "components/autofill_assistant/browser/devtools/devtools_client.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/web/web_controller_util.h"
@@ -134,8 +133,8 @@ void ElementPositionGetter::OnGetBoxModelForStableCheck(
   }
 
   --remaining_rounds_;
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&ElementPositionGetter::GetAndWaitBoxModelStable,
                      weak_ptr_factory_.GetWeakPtr()),
       check_interval_);
@@ -153,8 +152,8 @@ void ElementPositionGetter::OnScrollIntoView(
   }
 
   --remaining_rounds_;
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&ElementPositionGetter::GetAndWaitBoxModelStable,
                      weak_ptr_factory_.GetWeakPtr()),
       check_interval_);

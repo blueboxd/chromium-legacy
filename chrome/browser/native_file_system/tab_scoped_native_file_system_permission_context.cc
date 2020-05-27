@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -234,8 +233,8 @@ void TabScopedNativeFileSystemPermissionContext::WritePermissionGrantImpl::
       break;
     // Ask the user for permission.
     case CONTENT_SETTING_ASK:
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &ShowWritePermissionPromptOnUIThread, process_id, frame_id,
               origin_, path(), is_directory_,

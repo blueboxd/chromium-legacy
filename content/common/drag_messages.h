@@ -12,7 +12,7 @@
 #include "content/common/drag_event_source_info.h"
 #include "content/public/common/drop_data.h"
 #include "ipc/ipc_message_macros.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d.h"

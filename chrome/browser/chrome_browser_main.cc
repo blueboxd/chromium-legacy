@@ -1117,11 +1117,10 @@ void ChromeBrowserMainParts::PostBrowserStart() {
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebUsb)) {
     web_usb_detector_.reset(new WebUsbDetector());
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&WebUsbDetector::Initialize,
-                       base::Unretained(web_usb_detector_.get())));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(&WebUsbDetector::Initialize,
+                                  base::Unretained(web_usb_detector_.get())));
   }
   if (base::FeatureList::IsEnabled(features::kTabMetricsLogging)) {
     // Initialize the TabActivityWatcher to begin logging tab activity events.

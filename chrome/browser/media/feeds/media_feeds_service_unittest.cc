@@ -341,7 +341,9 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_Success) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
   run_loop.Run();
@@ -366,7 +368,9 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_SuccessFromCache) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetch(feed_url, true));
   run_loop.Run();
@@ -391,7 +395,9 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_BackendError) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetchWithStatus(
       feed_url, net::HTTP_INTERNAL_SERVER_ERROR));
@@ -416,7 +422,9 @@ TEST_F(MediaFeedsServiceTest, FetchFeed_NotFoundError) {
 
   // Fetch the Media Feed.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
   ASSERT_TRUE(RespondToPendingFeedFetchWithStatus(feed_url, net::HTTP_OK));
   run_loop.Run();
@@ -941,7 +949,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldTriggerSafeSearch) {
   {
     // Fetch the Media Feed.
     base::RunLoop run_loop;
-    GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+    GetMediaFeedsService()->FetchMediaFeed(
+        1, base::BindLambdaForTesting(
+               [&](const std::string& ignored) { run_loop.Quit(); }));
     WaitForDB();
     ASSERT_TRUE(RespondToPendingFeedFetch(feed_url));
     run_loop.Run();
@@ -1039,11 +1049,15 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldSupportMultipleFetchesForSameFeed) {
 
   // Fetch the same feed twice.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
 
   base::RunLoop run_loop_alt;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop_alt.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop_alt.Quit(); }));
   WaitForDB();
 
   // Respond and make sure both run loop quit closures were called.
@@ -1081,7 +1095,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
 
   // Start fetching the feed but do not resolve the request.
   base::RunLoop run_loop;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop.Quit(); }));
   WaitForDB();
 
   // The last request was successful so we can hit the cache.
@@ -1124,7 +1140,9 @@ TEST_F(MediaFeedsServiceTest, FetcherShouldHandleReset) {
 
   // Start fetching the feed but do not resolve the request.
   base::RunLoop run_loop_alt;
-  GetMediaFeedsService()->FetchMediaFeed(1, run_loop_alt.QuitClosure());
+  GetMediaFeedsService()->FetchMediaFeed(
+      1, base::BindLambdaForTesting(
+             [&](const std::string& ignored) { run_loop_alt.Quit(); }));
   WaitForDB();
 
   // The last request failed so we should not hit the cache.

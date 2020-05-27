@@ -68,6 +68,7 @@ ONC_EXPORT extern const char kIPConfigTypeStatic[];
 ONC_EXPORT extern const char kSavedIPConfig[];
 ONC_EXPORT extern const char kStaticIPConfig[];
 ONC_EXPORT extern const char kMacAddress[];
+ONC_EXPORT extern const char kMetered[];
 ONC_EXPORT extern const char kNameServersConfigType[];
 ONC_EXPORT extern const char kName[];
 ONC_EXPORT extern const char kPriority[];

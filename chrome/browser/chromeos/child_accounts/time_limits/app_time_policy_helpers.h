@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/optional.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace base {
 class TimeDelta;

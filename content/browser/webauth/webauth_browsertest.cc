@@ -1136,8 +1136,8 @@ base::Optional<std::string> ExecuteScriptAndExtractPrefixedString(
       return base::nullopt;
     }
 
-    base::JSONReader reader(base::JSON_ALLOW_TRAILING_COMMAS);
-    std::unique_ptr<base::Value> result = reader.ReadToValueDeprecated(json);
+    base::Optional<base::Value> result =
+        base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
     if (!result) {
       return base::nullopt;
     }

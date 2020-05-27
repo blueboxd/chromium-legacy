@@ -249,6 +249,41 @@ void PopulateMetadataContentColorUsage(
   }
 }
 
+// Registers callbacks, as needed, to track First Scroll Latency.
+void ApplyFirstScrollTracking(const ui::LatencyInfo* latency,
+                              uint32_t frame_token,
+                              LayerTreeHostImpl* impl) {
+  base::TimeTicks creation_timestamp;
+  // If |latency| isn't tracking a scroll, we don't need to do extra
+  // first-scroll tracking.
+  auto scroll_update_started =
+      ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT;
+  auto scroll_update_continued =
+      ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
+  if (!latency->FindLatency(scroll_update_started, &creation_timestamp) &&
+      !latency->FindLatency(scroll_update_continued, &creation_timestamp)) {
+    return;
+  }
+
+  // Construct a callback that, given presentation feedback, will report the
+  // time span between the scroll input-event creation and the
+  // presentation timestamp.
+  LayerTreeHost::PresentationTimeCallback presentation_callback =
+      base::BindOnce(
+          [](base::TimeTicks event_creation,
+             LayerTreeHostImpl* layer_tree_host_impl,
+             const gfx::PresentationFeedback& feedback) {
+            layer_tree_host_impl->DidObserveScrollDelay(feedback.timestamp -
+                                                        event_creation);
+          },
+          creation_timestamp, impl);
+
+  // Tell the |LayerTreeHostImpl| to run our callback with the presentation
+  // feedback corresponding to the given |frame_token|.
+  impl->RegisterCompositorPresentationTimeCallback(
+      frame_token, std::move(presentation_callback));
+}
+
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SourceIdConsistency : int {
@@ -2478,6 +2513,8 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     base::TimeTicks draw_time = base::TimeTicks::Now();
 
     ukm::SourceId exemplar = metadata.latency_info.front().ukm_source_id();
+    ApplyFirstScrollTracking(&metadata.latency_info.front(),
+                             metadata.frame_token, this);
     bool all_valid = true;
     bool all_unique = true;
     for (auto& latency : metadata.latency_info) {
@@ -3652,6 +3689,14 @@ void LayerTreeHostImpl::DidChangeBrowserControlsPosition() {
   SetNeedsRedraw();
   SetNeedsOneBeginImplFrame();
   SetFullViewportDamage();
+}
+
+void LayerTreeHostImpl::DidObserveScrollDelay(base::TimeDelta scroll_delay) {
+  // Record First Scroll Delay.
+  if (!has_observed_first_scroll_delay_) {
+    client_->DidObserveFirstScrollDelay(scroll_delay);
+    has_observed_first_scroll_delay_ = true;
+  }
 }
 
 float LayerTreeHostImpl::TopControlsHeight() const {
@@ -6271,7 +6316,7 @@ void LayerTreeHostImpl::InitializeUkm(
 
 void LayerTreeHostImpl::SetActiveURL(const GURL& url, ukm::SourceId source_id) {
   tile_manager_.set_active_url(url);
-
+  has_observed_first_scroll_delay_ = false;
   // The active tree might still be from content for the previous page when the
   // recorder is updated here, since new content will be pushed with the next
   // main frame. But we should only get a few impl frames wrong here in that

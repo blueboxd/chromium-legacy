@@ -11,8 +11,8 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/chromeos/lacros/lacros_loader.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/constants.h"
 
 namespace apps {

@@ -7,7 +7,6 @@
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -17,6 +16,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/network_service_util.h"
@@ -122,7 +122,7 @@ class NetworkQualityTrackerBrowserTest : public InProcessBrowserTest {
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
     if (!content::IsOutOfProcessNetworkService()) {
       scoped_refptr<base::SequencedTaskRunner> task_runner =
-          base::CreateSequencedTaskRunner({content::BrowserThread::IO});
+          content::GetIOThreadTaskRunner({});
       if (content::IsInProcessNetworkService())
         task_runner = content::GetNetworkTaskRunner();
       task_runner->PostTask(

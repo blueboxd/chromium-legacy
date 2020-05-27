@@ -22,7 +22,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -548,7 +547,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       std::make_unique<CastBrowserContext>());
 
   cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+      content::GetIOThreadTaskRunner({}),
       content::BrowserContext::GetDefaultStoragePartition(
           cast_browser_process_->browser_context())
           ->GetURLLoaderFactoryForBrowserProcessIOThread(),

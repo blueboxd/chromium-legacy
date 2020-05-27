@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 import(
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/run_jsbundler.gni")
+    "//chrome/browser/resources/chromeos/accessibility/common/run_jsbundler.gni")
 import(
     "//chrome/browser/resources/chromeos/accessibility/strings/accessibility_strings.gni")
 import("//chrome/common/features.gni")
@@ -586,8 +586,8 @@ js2gtest("chromevox_unitjs_tests") {
     "walkers/word_walker_test.unitjs",
   ]
   gen_include_files = [
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/testing/assert_additions.js",
-    "//chrome/browser/resources/chromeos/accessibility/chromevox/testing/callback_helper.js",
+    "//chrome/browser/resources/chromeos/accessibility/common/testing/assert_additions.js",
+    "//chrome/browser/resources/chromeos/accessibility/common/testing/callback_helper.js",
     "//ui/accessibility/extensions/chromevoxclassic/testing/chromevox_unittest_base.js",
   ]
 

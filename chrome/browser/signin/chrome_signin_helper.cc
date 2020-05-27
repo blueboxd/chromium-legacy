@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -108,8 +107,8 @@ class AccountReconcilorLockWrapper
   }
 
   void DestroyAfterDelay() {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(base::DoNothing::Once<
                            scoped_refptr<AccountReconcilorLockWrapper>>(),
                        base::RetainedRef(this)),
@@ -425,8 +424,8 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
 
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(ProcessMirrorHeader, params,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(ProcessMirrorHeader, params,
                                 response->GetWebContentsGetter()));
 }
 
@@ -462,8 +461,8 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
 
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(ProcessDiceHeader, std::move(params),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(ProcessDiceHeader, std::move(params),
                                 response->GetWebContentsGetter()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)

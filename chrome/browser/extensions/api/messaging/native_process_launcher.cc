@@ -23,7 +23,6 @@
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -313,8 +312,8 @@ void NativeProcessLauncherImpl::Core::CallCallbackOnIOThread(
 void NativeProcessLauncherImpl::Core::PostErrorResult(
     const LaunchedCallback& callback,
     LaunchResult error) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
                      this, callback, error, base::Process(), base::File(),
                      base::File()));
@@ -325,8 +324,8 @@ void NativeProcessLauncherImpl::Core::PostResult(
     base::Process process,
     base::File read_file,
     base::File write_file) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NativeProcessLauncherImpl::Core::CallCallbackOnIOThread,
                      this, callback, RESULT_SUCCESS, std::move(process),
                      std::move(read_file), std::move(write_file)));

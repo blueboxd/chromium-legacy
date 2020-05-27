@@ -786,7 +786,7 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
     layout->AddView(std::move(selected_app_sublabel));
 
     std::unique_ptr<views::ImageView> icon_view = CreateAppIconView(
-        selected_app->icon_resource_id(), selected_app->icon_image_skia(),
+        selected_app->icon_resource_id(), selected_app->icon_bitmap(),
         selected_app->GetLabel());
 
     return builder.AccessibleContent(selected_app->GetLabel())

@@ -20,14 +20,6 @@ public interface ProcessScope {
     default void resetAccount() {}
 
     /**
-     * Deprecated - Will remove once the other overload is in use.
-     **/
-    @Nullable
-    default SurfaceScope obtainSurfaceScope() {
-        return null;
-    }
-
-    /**
      * Returns a SurfaceScope which should be one per Surface. That Surface can have multiple
      * HybridListRenderers and SurfaceRenderers within its UI.
      *
@@ -35,6 +27,6 @@ public interface ProcessScope {
      **/
     @Nullable
     default SurfaceScope obtainSurfaceScope(Context activityContext) {
-        return obtainSurfaceScope();
+        return null;
     }
 }

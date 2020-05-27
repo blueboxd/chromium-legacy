@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/ui/views/apps/app_dialog/app_dialog_view.h"
-#include "chrome/services/app_service/public/mojom/types.mojom-forward.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/styled_label_listener.h"
 

@@ -110,16 +110,16 @@ WebEngineContentRendererClient::WebEngineContentRendererClient() = default;
 
 WebEngineContentRendererClient::~WebEngineContentRendererClient() = default;
 
-UrlRequestRulesReceiver*
-WebEngineContentRendererClient::GetUrlRequestRulesReceiverForRenderFrameId(
+WebEngineRenderFrameObserver*
+WebEngineContentRendererClient::GetWebEngineRenderFrameObserverForRenderFrameId(
     int render_frame_id) const {
-  auto iter = url_request_receivers_by_id_.find(render_frame_id);
-  DCHECK(iter != url_request_receivers_by_id_.end());
+  auto iter = render_frame_id_to_observer_map_.find(render_frame_id);
+  DCHECK(iter != render_frame_id_to_observer_map_.end());
   return iter->second.get();
 }
 
 void WebEngineContentRendererClient::OnRenderFrameDeleted(int render_frame_id) {
-  size_t count = url_request_receivers_by_id_.erase(render_frame_id);
+  size_t count = render_frame_id_to_observer_map_.erase(render_frame_id);
   DCHECK_EQ(count, 1u);
 }
 
@@ -130,13 +130,14 @@ void WebEngineContentRendererClient::RenderFrameCreated(
   new OnLoadScriptInjector(render_frame);
 
   int render_frame_id = render_frame->GetRoutingID();
-  auto rules_receiver = std::make_unique<UrlRequestRulesReceiver>(
-      content::RenderFrame::FromRoutingID(render_frame_id),
+
+  auto render_frame_observer = std::make_unique<WebEngineRenderFrameObserver>(
+      render_frame,
       base::BindOnce(&WebEngineContentRendererClient::OnRenderFrameDeleted,
                      base::Unretained(this)));
-  auto iter = url_request_receivers_by_id_.emplace(render_frame_id,
-                                                   std::move(rules_receiver));
-  DCHECK(iter.second);
+  auto render_frame_observer_iter = render_frame_id_to_observer_map_.emplace(
+      render_frame_id, std::move(render_frame_observer));
+  DCHECK(render_frame_observer_iter.second);
 
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
   new media_control::MediaPlaybackOptions(render_frame);

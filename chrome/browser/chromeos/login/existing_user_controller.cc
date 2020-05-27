@@ -22,7 +22,6 @@
 #include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
@@ -181,8 +180,8 @@ void OnTranferredHttpAuthCaches() {
   VLOG(1) << "Main request context populated with authentication data.";
   // Last but not least tell the policy subsystem to refresh now as it might
   // have been stuck until now too.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&RefreshPoliciesOnUIThread));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&RefreshPoliciesOnUIThread));
 }
 
 void TransferHttpAuthCacheToSystemNetworkContext(
@@ -1016,8 +1015,8 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     // Using Untretained here is safe because SessionTerminationManager is
     // destroyed after the task runner, in
     // ChromeBrowserMainParts::PostDestroyThreads().
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&SessionTerminationManager::StopSession,
                        base::Unretained(SessionTerminationManager::Get()),
                        login_manager::SessionStopReason::OWNER_REQUIRED),

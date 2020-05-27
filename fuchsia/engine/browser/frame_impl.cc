@@ -15,7 +15,6 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -478,8 +477,8 @@ void FrameImpl::DestroyWindowTreeHost() {
 
   // Allows posted focus events to process before the FocusController is torn
   // down.
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(focus_controller_));
+  content::GetUIThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 std::move(focus_controller_));
 }
 
 void FrameImpl::CloseAndDestroyFrame(zx_status_t error) {

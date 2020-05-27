@@ -22,7 +22,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -95,8 +94,8 @@ void RequestProxyResolvingSocketFactory(
     base::WeakPtr<gcm::GCMProfileService> service,
     mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
         receiver) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
                                 profile, service, std::move(receiver)));
 }
 
@@ -125,8 +124,8 @@ class Waiter {
 
   // Runs until IO loop becomes idle.
   void PumpIOLoop() {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Waiter::OnIOLoopPump, base::Unretained(this)));
 
     WaitUntilCompleted();
@@ -142,16 +141,16 @@ class Waiter {
   void OnIOLoopPump() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Waiter::OnIOLoopPumpCompleted, base::Unretained(this)));
   }
 
   void OnIOLoopPumpCompleted() {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&Waiter::PumpIOLoopCompleted, base::Unretained(this)));
   }
 
@@ -225,9 +224,9 @@ class ExtensionGCMAppHandlerTest : public testing::Test {
       content::BrowserContext* context) {
     Profile* profile = Profile::FromBrowserContext(context);
     scoped_refptr<base::SequencedTaskRunner> ui_thread =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+        content::GetUIThreadTaskRunner({});
     scoped_refptr<base::SequencedTaskRunner> io_thread =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+        content::GetIOThreadTaskRunner({});
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
         base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));

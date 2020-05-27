@@ -183,19 +183,25 @@ void WebAppSyncBridge::SetAppIsDisabled(const AppId& app_id, bool is_disabled) {
   if (!IsChromeOs())
     return;
 
-  ScopedRegistryUpdate update(this);
-  WebApp* web_app = update->UpdateApp(app_id);
-  if (!web_app)
-    return;
+  bool notify = false;
+  {
+    ScopedRegistryUpdate update(this);
+    WebApp* web_app = update->UpdateApp(app_id);
+    if (!web_app)
+      return;
 
-  auto cros_data = web_app->chromeos_data();
-  DCHECK(cros_data.has_value());
+    base::Optional<WebAppChromeOsData> cros_data = web_app->chromeos_data();
+    DCHECK(cros_data.has_value());
 
-  if (cros_data->is_disabled != is_disabled) {
-    cros_data->is_disabled = is_disabled;
-    web_app->SetWebAppChromeOsData(cros_data);
-    registrar_->NotifyWebAppDisabledStateChanged(app_id, is_disabled);
+    if (cros_data->is_disabled != is_disabled) {
+      cros_data->is_disabled = is_disabled;
+      web_app->SetWebAppChromeOsData(std::move(cros_data));
+      notify = true;
+    }
   }
+
+  if (notify)
+    registrar_->NotifyWebAppDisabledStateChanged(app_id, is_disabled);
 }
 
 void WebAppSyncBridge::SetAppIsLocallyInstalled(const AppId& app_id,

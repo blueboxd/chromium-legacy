@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
+#include "components/payments/content/payment_request_spec.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
@@ -64,13 +65,16 @@ TEST_F(PaymentAppServiceBridgeUnitTest, Smoke) {
   std::vector<mojom::PaymentMethodDataPtr> method_data;
   method_data.push_back(MakePaymentMethodData("basic-card"));
   method_data.push_back(MakePaymentMethodData("https://ph.example"));
+  PaymentRequestSpec spec(mojom::PaymentOptions::New(),
+                          mojom::PaymentDetails::New(), std::move(method_data),
+                          /*observer=*/nullptr, /*app_locale=*/"en-US");
 
   MockCallback mock_callback;
   base::WeakPtr<PaymentAppServiceBridge> bridge =
       PaymentAppServiceBridge::Create(
-          /* number_of_factories= */ 3, web_contents_->GetMainFrame(),
-          top_origin_, std::move(method_data), web_data_service_,
-          /* may_crawl_for_installable_payment_apps= */ true,
+          /*number_of_factories=*/3, web_contents_->GetMainFrame(), top_origin_,
+          &spec, web_data_service_,
+          /*may_crawl_for_installable_payment_apps=*/true,
           base::BindRepeating(&MockCallback::NotifyPaymentAppsCreated,
                               base::Unretained(&mock_callback)),
           base::BindRepeating(&MockCallback::NotifyPaymentAppCreationError,

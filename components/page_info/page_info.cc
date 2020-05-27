@@ -113,6 +113,7 @@ ContentSettingsType kPermissionType[] = {
 #endif
     ContentSettingsType::USB_GUARD,
 #if !defined(OS_ANDROID)
+    ContentSettingsType::HID_GUARD,
     ContentSettingsType::SERIAL_GUARD,
     ContentSettingsType::NATIVE_FILE_SYSTEM_WRITE_GUARD,
 #endif
@@ -296,6 +297,10 @@ const PageInfo::ChooserUIInfo kChooserUIInfo[] = {
      IDS_PAGE_INFO_USB_DEVICE_ALLOWED_BY_POLICY_LABEL,
      IDS_PAGE_INFO_DELETE_USB_DEVICE},
 #if !defined(OS_ANDROID)
+    {ContentSettingsType::HID_CHOOSER_DATA,
+     IDS_PAGE_INFO_HID_DEVICE_SECONDARY_LABEL,
+     /*allowed_by_policy_description_string_id=*/-1,
+     IDS_PAGE_INFO_DELETE_HID_DEVICE},
     {ContentSettingsType::SERIAL_CHOOSER_DATA,
      IDS_PAGE_INFO_SERIAL_PORT_SECONDARY_LABEL,
      /*allowed_by_policy_description_string_id=*/-1,

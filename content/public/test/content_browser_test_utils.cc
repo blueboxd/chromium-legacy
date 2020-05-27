@@ -12,7 +12,6 @@
 #include "base/guid.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -145,8 +144,8 @@ void LookupAndLogNameAndIdOfFirstCamera() {
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
   base::RunLoop run_loop;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](MediaStreamManager* media_stream_manager,
              base::OnceClosure quit_closure) {

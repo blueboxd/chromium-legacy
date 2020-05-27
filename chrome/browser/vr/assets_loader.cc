@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -245,8 +244,7 @@ void AssetsLoader::LoadAssetsTask(
 }
 
 AssetsLoader::AssetsLoader()
-    : main_thread_task_runner_(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
+    : main_thread_task_runner_(content::GetUIThreadTaskRunner({})) {
   DCHECK(main_thread_task_runner_.get());
 }
 

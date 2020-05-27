@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['../chromevox/testing/callback_helper.js']);
+GEN_INCLUDE(['../common/testing/callback_helper.js']);
 
 /**
  * Base class for browser tests for select-to-speak.

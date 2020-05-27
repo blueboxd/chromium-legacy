@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/policy/policy_export.h"
@@ -78,12 +79,16 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
 
   void ReportValidationResult(CloudPolicyStore* store);
 
-  bool IsInitializationComplete() const { return initialization_complete_; }
+  bool IsInitializationComplete() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return initialization_complete_;
+  }
 
   // If initial policy refresh was completed returns its result.
   // This allows ChildPolicyObserver to know whether policy was fetched before
   // profile creation.
   base::Optional<bool> initial_policy_refresh_result() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return initial_policy_refresh_result_;
   }
 
@@ -99,6 +104,9 @@ class POLICY_EXPORT CloudPolicyService : public CloudPolicyClient::Observer,
   // Invokes the unregister callback and clears unregister state. The |success|
   // flag is passed through to the unregister callback.
   void UnregisterCompleted(bool success);
+
+  // Assert non-concurrent usage in debug builds.
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The policy type that will be fetched by the |client_|, with the optional
   // |settings_entity_id_|.

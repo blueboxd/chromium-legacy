@@ -16,25 +16,14 @@ namespace content {
 PictureInPictureSession::PictureInPictureSession(
     PictureInPictureServiceImpl* service,
     const MediaPlayerId& player_id,
-    const base::Optional<viz::SurfaceId>& surface_id,
-    const gfx::Size& natural_size,
-    bool show_play_pause_button,
     mojo::PendingReceiver<blink::mojom::PictureInPictureSession> receiver,
-    mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer,
-    gfx::Size* window_size)
+    mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver> observer)
     : service_(service),
       receiver_(this, std::move(receiver)),
       player_id_(player_id),
       observer_(std::move(observer)) {
   receiver_.set_disconnect_handler(base::BindOnce(
       &PictureInPictureSession::OnConnectionError, base::Unretained(this)));
-
-  GetController().SetActiveSession(this);
-  GetController().EmbedSurface(surface_id.value(), natural_size);
-  GetController().SetAlwaysHidePlayPauseButton(show_play_pause_button);
-  GetController().Show();
-
-  *window_size = GetController().GetSize();
 }
 
 PictureInPictureSession::~PictureInPictureSession() {
@@ -50,15 +39,26 @@ void PictureInPictureSession::Update(
     const base::Optional<viz::SurfaceId>& surface_id,
     const gfx::Size& natural_size,
     bool show_play_pause_button) {
-  player_id_ = MediaPlayerId(service_->render_frame_host_, player_id);
+  player_id_ = MediaPlayerId(service_->render_frame_host(), player_id);
 
   GetController().EmbedSurface(surface_id.value(), natural_size);
   GetController().SetAlwaysHidePlayPauseButton(show_play_pause_button);
-  GetController().SetActiveSession(this);
 }
 
 void PictureInPictureSession::NotifyWindowResized(const gfx::Size& size) {
   observer_->OnWindowSizeChanged(size);
+}
+
+void PictureInPictureSession::Disconnect() {
+  // |is_stopping_| shouldn't be true for the implementation in //chrome but if
+  // the WebContentsDelegate's Picture-in-Picture calls are empty, it's possible
+  // for `Disconnect()` to be called even after `StopInternal()` as the
+  // expectation of self-destruction will no longer be true.
+  if (is_stopping_)
+    return;
+
+  is_stopping_ = true;
+  observer_->OnStopped();
 }
 
 void PictureInPictureSession::Shutdown() {
@@ -73,8 +73,6 @@ void PictureInPictureSession::StopInternal(StopCallback callback) {
 
   is_stopping_ = true;
 
-  GetWebContentsImpl()->ExitPictureInPicture();
-
   // `OnStopped()` should only be called if there is no callback to run, as a
   // contract in the API.
   if (callback)
@@ -82,10 +80,8 @@ void PictureInPictureSession::StopInternal(StopCallback callback) {
   else
     observer_->OnStopped();
 
-  GetController().SetActiveSession(nullptr);
-
-  // Reset must happen after everything is done as it will destroy |this|.
-  service_->active_session_.reset();
+  // |this| will be deleted after this call.
+  GetWebContentsImpl()->ExitPictureInPicture();
 }
 
 void PictureInPictureSession::OnConnectionError() {

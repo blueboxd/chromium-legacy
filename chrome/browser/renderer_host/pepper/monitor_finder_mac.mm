@@ -7,7 +7,6 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -30,8 +29,8 @@ int64_t MonitorFinder::GetMonitor() {
     request_sent_ = true;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&MonitorFinder::FetchMonitorFromWidget, this));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MonitorFinder::FetchMonitorFromWidget, this));
   return display_id_;
 }
 

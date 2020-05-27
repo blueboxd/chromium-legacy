@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/memory/read_only_shared_memory_region.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/printing/common/print_messages.h"
@@ -328,8 +327,8 @@ PrintCompositeClient::CreateCompositeRequest() {
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       discardable_memory_manager;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &BindDiscardableSharedMemoryManagerOnIOThread,
           discardable_memory_manager.InitWithNewPipeAndPassReceiver()));

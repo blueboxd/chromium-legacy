@@ -1202,9 +1202,9 @@ class CONTENT_EXPORT NavigationRequest
   // TrustableWebBundleFileUrl switch is set.
   // For navigations to Web Bundle file, this is cloned from
   // |web_bundle_handle_| in CommitNavigation(), and is passed to
-  // NavigationEntry for the navigation. And for history (back / forward)
+  // FrameNavigationEntry for the navigation. And for history (back / forward)
   // navigations within the Web Bundle file, this is cloned from the
-  // NavigationEntry and is used to create a WebBundleHandle.
+  // FrameNavigationEntry and is used to create a WebBundleHandle.
   std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info_;
 
   // Which proxy server was used for this navigation, if any.

@@ -119,6 +119,11 @@ OptionsPage = class {
       }
     });
 
+    $('openTtsSettings').addEventListener('click', (evt) => {
+      chrome.accessibilityPrivate.openSettingsSubpage(
+          'manageAccessibility/tts');
+    });
+
     $('enableAllEventStreamFilters').addEventListener('click', () => {
       OptionsPage.setAllEventStreamLoggingFilters(true);
     });

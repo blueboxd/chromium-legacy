@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
-#include "base/task/post_task.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "components/storage_monitor/image_capture_device.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
@@ -139,8 +138,8 @@ MTPDeviceDelegateImplMac::MTPDeviceDelegateImplMac(
   file_info_[root_path_.value()] = info;
 
   camera_interface_.reset(new DeviceListener(this));
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DeviceListener::OpenCameraSession,
                      base::Unretained(camera_interface_.get()), device_id_));
 }
@@ -170,8 +169,8 @@ void MTPDeviceDelegateImplMac::GetFileInfo(
   base::File::Info* info = new base::File::Info;
   base::File::Error* error = new base::File::Error;
   // Note: ownership of these objects passed into the reply callback.
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::Bind(&MTPDeviceDelegateImplMac::GetFileInfoImpl,
                  base::Unretained(this), file_path, info, error),
       base::Bind(&ForwardGetFileInfo, base::Owned(info), base::Owned(error),
@@ -191,8 +190,8 @@ void MTPDeviceDelegateImplMac::ReadDirectory(
       const base::FilePath& root,
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&MTPDeviceDelegateImplMac::ReadDirectoryImpl,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MTPDeviceDelegateImplMac::ReadDirectoryImpl,
                                 base::Unretained(this), root, success_callback,
                                 error_callback));
 }
@@ -202,8 +201,8 @@ void MTPDeviceDelegateImplMac::CreateSnapshotFile(
       const base::FilePath& local_path,
       const CreateSnapshotFileSuccessCallback& success_callback,
       const ErrorCallback& error_callback) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&MTPDeviceDelegateImplMac::DownloadFile,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MTPDeviceDelegateImplMac::DownloadFile,
                                 base::Unretained(this), device_file_path,
                                 local_path, success_callback, error_callback));
 }
@@ -287,8 +286,8 @@ void MTPDeviceDelegateImplMac::RemoveWatcher(
 }
 
 void MTPDeviceDelegateImplMac::CancelPendingTasksAndDeleteDelegate() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&MTPDeviceDelegateImplMac::CancelAndDelete,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MTPDeviceDelegateImplMac::CancelAndDelete,
                                 base::Unretained(this)));
 }
 
@@ -321,8 +320,8 @@ void MTPDeviceDelegateImplMac::ReadDirectoryImpl(
   }
 
   // Schedule a timeout in case the directory read doesn't complete.
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(&MTPDeviceDelegateImplMac::ReadDirectoryTimeout,
                      weak_factory_.GetWeakPtr(), root),
       base::TimeDelta::FromSeconds(kReadDirectoryTimeLimitSeconds));
@@ -355,8 +354,8 @@ void MTPDeviceDelegateImplMac::DownloadFile(
   base::File::Info info;
   GetFileInfoImpl(device_file_path, &info, &error);
   if (error != base::File::FILE_OK) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(error_callback, error));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(error_callback, error));
     return;
   }
 
@@ -381,8 +380,8 @@ void MTPDeviceDelegateImplMac::CancelAndDelete() {
   // Schedule the camera session to be closed and the interface deleted.
   // This will cancel any downloads in progress.
   camera_interface_->ResetDelegate();
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&DeviceListener::CloseCameraSessionAndDelete,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DeviceListener::CloseCameraSessionAndDelete,
                                 base::Unretained(camera_interface_.release())));
 
   delete this;
@@ -392,16 +391,16 @@ void MTPDeviceDelegateImplMac::CancelDownloads() {
   // Cancel any outstanding callbacks.
   for (ReadFileTransactionList::iterator iter = read_file_transactions_.begin();
        iter != read_file_transactions_.end(); ++iter) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(iter->error_callback, base::File::FILE_ERROR_ABORT));
   }
   read_file_transactions_.clear();
 
   for (ReadDirTransactionList::iterator iter = read_dir_transactions_.begin();
        iter != read_dir_transactions_.end(); ++iter) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(iter->error_callback, base::File::FILE_ERROR_ABORT));
   }
   read_dir_transactions_.clear();
@@ -472,11 +471,11 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
     }
 
     if (found_path) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                     base::BindOnce(iter->success_callback, entry_list, false));
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(iter->success_callback, entry_list, false));
     } else {
-      base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                     base::BindOnce(iter->error_callback,
+      content::GetIOThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(iter->error_callback,
                                     base::File::FILE_ERROR_NOT_FOUND));
     }
   }
@@ -503,8 +502,8 @@ void MTPDeviceDelegateImplMac::DownloadedFile(
     return;
 
   if (error != base::File::FILE_OK) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(iter->error_callback, error));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(iter->error_callback, error));
     read_file_transactions_.erase(iter);
     return;
   }
@@ -520,8 +519,8 @@ void MTPDeviceDelegateImplMac::DownloadedFile(
   }
 
   base::File::Info info = file_info_[item_filename.value()];
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(iter->success_callback, info, iter->snapshot_file));
   read_file_transactions_.erase(iter);
 }

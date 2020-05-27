@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/graph/page_node.h"
@@ -15,6 +14,7 @@
 #include "components/performance_manager/public/web_contents_proxy.h"
 #include "components/performance_manager/test_support/performance_manager_browsertest_harness.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -57,8 +57,8 @@ IN_PROC_BROWSER_TEST_F(PerformanceManagerBrowserTest,
 
   auto call_on_graph_cb = base::BindLambdaForTesting([&]() {
     EXPECT_TRUE(frame_node.get());
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(std::move(check_rfh_on_main_thread),
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(check_rfh_on_main_thread),
                                   frame_node->GetRenderFrameHostProxy()));
   });
 

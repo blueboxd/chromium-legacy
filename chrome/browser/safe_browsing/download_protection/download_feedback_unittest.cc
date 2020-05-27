@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/safe_browsing/download_protection/two_phase_uploader.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
@@ -100,8 +99,7 @@ class DownloadFeedbackTest : public testing::Test {
   DownloadFeedbackTest()
       : file_task_runner_(base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
-        io_task_runner_(
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
+        io_task_runner_(content::GetIOThreadTaskRunner({})),
         feedback_finish_called_(false) {
     EXPECT_NE(io_task_runner_, file_task_runner_);
     shared_url_loader_factory_ =

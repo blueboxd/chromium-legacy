@@ -3236,8 +3236,8 @@ bool ContextMenuFilter::OnMessageReceived(const IPC::Message& message) {
     FrameHostMsg_ContextMenu::Param params;
     FrameHostMsg_ContextMenu::Read(&message, &params);
     content::UntrustworthyContextMenuParams menu_params = std::get<0>(params);
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ContextMenuFilter::OnContextMenu, this, menu_params));
   }
   return false;
@@ -3476,15 +3476,15 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
                       1.f / visual_properties.screen_info.device_scale_factor));
   }
   // Track each rect updates.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameRectOnUI,
           this, screen_space_rect_in_dip));
 
   // Track each surface id update.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI,
           this,
@@ -3502,11 +3502,11 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
 
   // We can't nest on the IO thread. So tests will wait on the UI thread, so
   // post there to exit the nesting.
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&SynchronizeVisualPropertiesMessageFilter::
-                                    OnUpdatedFrameSinkIdOnUI,
-                                this));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameSinkIdOnUI,
+          this));
 }
 
 void SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameRectOnUI(

@@ -24,7 +24,7 @@ std::unique_ptr<DefaultWindowResizer> DefaultWindowResizer::Create(
 void DefaultWindowResizer::Drag(const gfx::PointF& location, int event_flags) {
   gfx::Rect bounds(CalculateBoundsForDrag(location));
   if (bounds != GetTarget()->bounds()) {
-    if (!did_move_or_resize_ && !details().restore_bounds.IsEmpty())
+    if (!did_move_or_resize_ && !details().restore_bounds_in_parent.IsEmpty())
       window_state_->ClearRestoreBounds();
     did_move_or_resize_ = true;
     SetBoundsDuringResize(bounds);
@@ -39,8 +39,8 @@ void DefaultWindowResizer::RevertDrag() {
 
   GetTarget()->SetBounds(details().initial_bounds_in_parent);
 
-  if (!details().restore_bounds.IsEmpty())
-    window_state_->SetRestoreBoundsInScreen(details().restore_bounds);
+  if (!details().restore_bounds_in_parent.IsEmpty())
+    window_state_->SetRestoreBoundsInParent(details().restore_bounds_in_parent);
 }
 
 void DefaultWindowResizer::FlingOrSwipe(ui::GestureEvent* event) {}

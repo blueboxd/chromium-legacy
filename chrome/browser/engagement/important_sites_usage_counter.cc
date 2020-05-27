@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -45,8 +44,8 @@ ImportantSitesUsageCounter::~ImportantSitesUsageCounter() {}
 void ImportantSitesUsageCounter::RunAndDestroySelfWhenFinished() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   tasks_ += 1;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ImportantSitesUsageCounter::GetQuotaUsageOnIOThread,
                      base::Unretained(this)));
   tasks_ += 1;
@@ -65,8 +64,8 @@ void ImportantSitesUsageCounter::GetQuotaUsageOnIOThread() {
 void ImportantSitesUsageCounter::ReceiveQuotaUsageOnIOThread(
     std::vector<storage::UsageInfo> usage_infos) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ImportantSitesUsageCounter::ReceiveQuotaUsage,
                      base::Unretained(this), std::move(usage_infos)));
 }

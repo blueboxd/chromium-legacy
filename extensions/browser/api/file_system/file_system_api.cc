@@ -22,7 +22,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
@@ -188,8 +187,8 @@ void PassFileInfoToUIThread(const FileInfoOptCallback& callback,
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   std::unique_ptr<base::File::Info> file_info(
       result == base::File::FILE_OK ? new base::File::Info(info) : NULL);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(callback, std::move(file_info)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(callback, std::move(file_info)));
 }
 
 // Gets a WebContents instance handle for a platform app hosted in
@@ -395,8 +394,8 @@ void FileSystemChooseEntryFunction::ShowPicker(
     else if (g_paths_to_be_picked_for_test)
       test_paths = *g_paths_to_be_picked_for_test;
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         test_paths.size() > 0
             ? base::BindOnce(&FileSystemChooseEntryFunction::FilesSelected,
                              this, test_paths)
@@ -542,8 +541,8 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
   const base::FilePath check_path =
       non_native_path ? paths[0] : base::MakeAbsoluteFilePath(paths[0]);
   if (check_path.empty()) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&FileSystemChooseEntryFunction::FileSelectionCanceled,
                        this));
     return;
@@ -559,23 +558,23 @@ void FileSystemChooseEntryFunction::ConfirmDirectoryAccessAsync(
     if (g_skip_directory_confirmation_for_test) {
       if (g_allow_directory_access_for_test)
         break;
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&FileSystemChooseEntryFunction::FileSelectionCanceled,
                          this));
       return;
     }
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &FileSystemChooseEntryFunction::ConfirmSensitiveDirectoryAccess,
             this, paths, web_contents));
     return;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FileSystemChooseEntryFunction::OnDirectoryAccessConfirmed,
                      this, paths));
 }
@@ -826,8 +825,8 @@ ExtensionFunction::ResponseAction FileSystemRetainEntryFunction::Run() {
 
     // It is safe to use base::Unretained() for operation_runner(), since it
     // is owned by |context| which will delete it on the IO thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             base::IgnoreResult(
                 &storage::FileSystemOperationRunner::GetMetadata),

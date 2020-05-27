@@ -1970,6 +1970,43 @@ TEST_F(WorkspaceWindowResizerTest, DoNotCreateResizerIfNotActiveSession) {
   EXPECT_TRUE(CreateResizerForTest(window_.get()));
 }
 
+// Tests that windows dragged across multiple displays have their restore bounds
+// updated.
+TEST_F(WorkspaceWindowResizerTest, MultiDisplayRestoreBounds) {
+  UpdateDisplay("800x800,800x800");
+
+  // Create a window and maximize it on the primary display.
+  window_->SetBounds(gfx::Rect(200, 200));
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       aura::client::kResizeBehaviorCanResize |
+                           aura::client::kResizeBehaviorCanMaximize);
+  auto* window_state = WindowState::Get(window_.get());
+  window_state->Maximize();
+  ASSERT_TRUE(window_state->HasRestoreBounds());
+  ASSERT_EQ(gfx::Rect(200, 200), window_state->GetRestoreBoundsInScreen());
+
+  // Drag the window to the secondary display and end it in a snap to maximize
+  // region. Drag() doesn't update the display, so manually do it in the test.
+  // Also we need to first drag the window out of the maximized snap zone,
+  // otherwise it won't snap on drag completed.
+  std::unique_ptr<WindowResizer> resizer =
+      CreateResizerForTest(window_.get(), gfx::Point(400.f, 1.f), HTCAPTION);
+  Shell::Get()->cursor_manager()->SetDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestPoint(
+          gfx::Point(1200, 200)));
+  resizer->Drag(gfx::PointF(1200.f, 200.f), 0);
+  resizer->Drag(gfx::PointF(1200.f, 20.f), 0);
+  resizer->CompleteDrag();
+  ASSERT_TRUE(window_state->IsMaximized());
+
+  // Tests that the window and its restore bounds on on the secondary display.
+  ASSERT_EQ(2, display::Screen::GetScreen()->GetNumDisplays());
+  EXPECT_EQ(display::Screen::GetScreen()->GetAllDisplays()[1].id(),
+            window_state->GetDisplay().id());
+  EXPECT_EQ(gfx::Rect(800, 0, 200, 200),
+            window_state->GetRestoreBoundsInScreen());
+}
+
 using MultiDisplayWorkspaceWindowResizerTest = AshTestBase;
 
 // Makes sure that window drag magnetism still works when a window is dragged

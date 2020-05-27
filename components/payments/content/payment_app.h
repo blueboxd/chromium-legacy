@@ -18,7 +18,7 @@
 #include "components/payments/core/payer_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
-#include "ui/gfx/image/image_skia.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace payments {
 
@@ -74,7 +74,9 @@ class PaymentApp {
   // Return the sub/label of payment app, to be displayed to the user.
   virtual base::string16 GetLabel() const = 0;
   virtual base::string16 GetSublabel() const = 0;
-  virtual gfx::ImageSkia icon_image_skia() const;
+
+  // Returns the icon bitmap or null.
+  virtual const SkBitmap* icon_bitmap() const;
 
   // Returns true if this payment app can be used to fulfill a request
   // specifying |method| as supported method of payment. The parsed basic-card

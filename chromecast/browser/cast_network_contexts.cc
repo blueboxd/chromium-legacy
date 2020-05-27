@@ -161,8 +161,6 @@ void CastNetworkContexts::OnNetworkServiceCreated(
   if (!chromecast::IsFeatureEnabled(kEnableQuic))
     network_service->DisableQuic();
 
-  // The system NetworkContext must be created first, since it sets
-  // |primary_network_context| to true.
   network_service->CreateNetworkContext(
       system_network_context_.BindNewPipeAndPassReceiver(),
       CreateSystemNetworkContextParams());
@@ -218,8 +216,6 @@ CastNetworkContexts::CreateSystemNetworkContextParams() {
   ConfigureDefaultNetworkContextParams(network_context_params.get());
 
   network_context_params->context_name = std::string("system");
-
-  network_context_params->primary_network_context = true;
 
   return network_context_params;
 }

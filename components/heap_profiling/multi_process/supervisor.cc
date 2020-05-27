@@ -8,7 +8,6 @@
 #include "base/callback_helpers.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
-#include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/heap_profiling/multi_process/client_connection_manager.h"
 #include "components/services/heap_profiling/heap_profiling_service.h"
@@ -89,12 +88,12 @@ void Supervisor::StartProfilingOnMemoryInfraThread(Mode mode,
   auto profiler_receiver = profiler.InitWithNewPipeAndPassReceiver();
   content::GetResourceCoordinatorService()->RegisterHeapProfiler(
       std::move(profiler), helper.InitWithNewPipeAndPassReceiver());
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(FROM_HERE, base::BindOnce(&Supervisor::StartServiceOnIOThread,
-                                           base::Unretained(this),
-                                           std::move(profiler_receiver),
-                                           std::move(helper), mode, stack_mode,
-                                           sampling_rate, std::move(closure)));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Supervisor::StartServiceOnIOThread,
+                     base::Unretained(this), std::move(profiler_receiver),
+                     std::move(helper), mode, stack_mode, sampling_rate,
+                     std::move(closure)));
 }
 
 Mode Supervisor::GetMode() {
@@ -112,9 +111,8 @@ void Supervisor::GetProfiledPids(GetProfiledPidsCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK(HasStarted());
 
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&Supervisor::GetProfiledPidsOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&Supervisor::GetProfiledPidsOnIOThread,
                                 base::Unretained(this), std::move(callback)));
 }
 
@@ -146,10 +144,9 @@ void Supervisor::RequestTraceWithHeapDump(TraceFinishedCallback callback,
                std::unique_ptr<std::string> in) {
               std::string result;
               result.swap(*in);
-              base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-                  ->PostTask(FROM_HERE,
-                             base::BindOnce(std::move(callback), true,
-                                            std::move(result)));
+              content::GetUIThreadTaskRunner({})->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(std::move(callback), true, std::move(result)));
             },
             std::move(callback));
         scoped_refptr<content::TracingController::TraceDataEndpoint> sink =
@@ -201,9 +198,8 @@ void Supervisor::StartServiceOnIOThread(
                                              sampling_rate);
   base::WeakPtr<Controller> controller_weak_ptr = controller_->GetWeakPtr();
 
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&Supervisor::FinishInitializationOnUIhread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&Supervisor::FinishInitializationOnUIhread,
                                 base::Unretained(this), mode,
                                 std::move(closure), controller_weak_ptr));
 }
@@ -234,8 +230,8 @@ void Supervisor::GetProfiledPidsOnIOThread(GetProfiledPidsCallback callback) {
   auto post_result_to_ui_thread = base::BindOnce(
       [](GetProfiledPidsCallback callback,
          const std::vector<base::ProcessId>& result) {
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-            ->PostTask(FROM_HERE, base::BindOnce(std::move(callback), result));
+        content::GetUIThreadTaskRunner({})->PostTask(
+            FROM_HERE, base::BindOnce(std::move(callback), result));
       },
       std::move(callback));
   controller_->GetProfiledPids(std::move(post_result_to_ui_thread));

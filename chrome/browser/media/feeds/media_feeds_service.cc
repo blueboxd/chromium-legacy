@@ -187,7 +187,7 @@ void MediaFeedsService::SetSafeSearchCompletionCallbackForTest(
 }
 
 void MediaFeedsService::FetchMediaFeed(int64_t feed_id,
-                                       base::OnceClosure callback) {
+                                       FetchMediaFeedCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Skip the fetch if there is already an ongoing fetch for this feed. However,
@@ -352,7 +352,7 @@ bool MediaFeedsService::IsSafeSearchCheckingEnabled() const {
 
 MediaFeedsService::InflightFeedFetch::InflightFeedFetch(
     std::unique_ptr<MediaFeedsFetcher> fetcher,
-    base::OnceClosure callback)
+    FetchMediaFeedCallback callback)
     : fetcher(std::move(fetcher)) {
   callbacks.push_back(std::move(callback));
 }
@@ -378,7 +378,7 @@ void MediaFeedsService::OnGotFetchDetails(
   DCHECK(base::Contains(fetches_, feed_id));
 
   if (!details.has_value()) {
-    OnCompleteFetch(feed_id, false);
+    OnCompleteFetch(feed_id, false, "Missing feed fetch details");
     return;
   }
 
@@ -402,7 +402,9 @@ void MediaFeedsService::OnFetchResponse(
   if (result.gone) {
     GetMediaHistoryService()->DeleteMediaFeed(
         feed_id, base::BindOnce(&MediaFeedsService::OnCompleteFetch,
-                                weak_factory_.GetWeakPtr(), feed_id, false));
+                                weak_factory_.GetWeakPtr(), feed_id, false,
+                                "The server returned 410 Gone which resulted "
+                                "in the feed being deleted."));
     return;
   }
 
@@ -410,20 +412,23 @@ void MediaFeedsService::OnFetchResponse(
   result.reset_token = reset_token;
 
   const bool has_items = !result.items.empty();
+  std::string error_logs;
+  error_logs.swap(result.error_logs);
 
   GetMediaHistoryService()->StoreMediaFeedFetchResult(
-      std::move(result),
-      base::BindOnce(&MediaFeedsService::OnCompleteFetch,
-                     weak_factory_.GetWeakPtr(), feed_id, has_items));
+      std::move(result), base::BindOnce(&MediaFeedsService::OnCompleteFetch,
+                                        weak_factory_.GetWeakPtr(), feed_id,
+                                        has_items, error_logs));
 }
 
 void MediaFeedsService::OnCompleteFetch(const int64_t feed_id,
-                                        const bool has_items) {
+                                        const bool has_items,
+                                        const std::string& error_logs) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(base::Contains(fetches_, feed_id));
 
   for (auto& callback : fetches_.at(feed_id).callbacks) {
-    std::move(callback).Run();
+    std::move(callback).Run(error_logs);
   }
 
   fetches_.erase(feed_id);

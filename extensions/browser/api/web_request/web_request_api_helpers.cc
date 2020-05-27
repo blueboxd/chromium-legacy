@@ -23,7 +23,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/web_cache/browser/web_cache_manager.h"
@@ -1467,8 +1466,8 @@ void ClearCacheOnNavigation() {
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
     ClearCacheOnNavigationOnUI();
   } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ClearCacheOnNavigationOnUI));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ClearCacheOnNavigationOnUI));
   }
 }
 

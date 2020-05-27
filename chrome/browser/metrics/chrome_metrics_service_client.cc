@@ -30,7 +30,6 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/platform_thread.h"
@@ -842,8 +841,8 @@ void ChromeMetricsServiceClient::OnMemoryDetailCollectionDone() {
 #endif
 
   // Merge histograms from metrics providers into StatisticsRecorder.
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&base::StatisticsRecorder::ImportProvidedHistograms),
       callback);
 

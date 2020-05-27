@@ -10,9 +10,9 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_update.h"
 
 namespace em = enterprise_management;
 

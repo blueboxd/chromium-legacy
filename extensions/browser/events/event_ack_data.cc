@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/guid.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/service_worker_context.h"
@@ -123,8 +122,7 @@ void EventAckData::IncrementInflightEvent(
                                      event_id, unacked_events_);
   } else {
     content::ServiceWorkerContext::RunTask(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-        FROM_HERE, context,
+        content::GetIOThreadTaskRunner({}), FROM_HERE, context,
         base::BindOnce(&EventAckData::StartExternalRequestOnCoreThread, context,
                        render_process_id, version_id, event_id,
                        unacked_events_));
@@ -146,8 +144,7 @@ void EventAckData::DecrementInflightEvent(
                                       std::move(failure_callback));
   } else {
     content::ServiceWorkerContext::RunTask(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-        FROM_HERE, context,
+        content::GetIOThreadTaskRunner({}), FROM_HERE, context,
         base::BindOnce(&EventAckData::FinishExternalRequestOnCoreThread,
                        context, render_process_id, version_id, event_id,
                        worker_stopped, unacked_events_,

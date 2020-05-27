@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "components/security_interstitials/content/ssl_error_assistant.h"
 #include "components/security_interstitials/content/ssl_error_handler.h"
@@ -59,9 +58,8 @@ void LoadProtoFromDisk(const base::FilePath& pb_path) {
     proto = std::move(default_proto);
   }
 
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&SSLErrorHandler::SetErrorAssistantProto,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SSLErrorHandler::SetErrorAssistantProto,
                                 std::move(proto)));
 }
 

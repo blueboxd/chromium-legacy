@@ -27,7 +27,7 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   get automationNode() {
-    return BackButtonNode.automationNode;
+    return BackButtonNode.automationNode_;
   }
 
   /** @override */
@@ -69,28 +69,30 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   isValidAndVisible() {
-    return this.automationNode !== null;
+    return this.automationNode !== null && !!this.location;
   }
 
   /** @override */
   onFocus() {
     super.onFocus();
-    chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        true, this.group_.location, 0 /* num_actions */);
+    chrome.accessibilityPrivate.updateSwitchAccessBubble(
+        chrome.accessibilityPrivate.SwitchAccessBubble.BACK_BUTTON,
+        true /* show */, this.group_.location);
+    BackButtonNode.findAutomationNode_();
   }
 
   /** @override */
   onUnfocus() {
     super.onUnfocus();
-    chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false, RectHelper.ZERO_RECT, 0 /* num_actions */);
+    chrome.accessibilityPrivate.updateSwitchAccessBubble(
+        chrome.accessibilityPrivate.SwitchAccessBubble.BACK_BUTTON,
+        false /* show */);
   }
 
   /** @override */
   performAction(action) {
-    if (action === SwitchAccessMenuAction.SELECT &&
-        BackButtonNode.automationNode_) {
-      BackButtonNode.automationNode_.doDefault();
+    if (action === SwitchAccessMenuAction.SELECT && this.automationNode) {
+      BackButtonNode.onClick_();
       return SAConstants.ActionResponse.CLOSE_MENU;
     }
     return SAConstants.ActionResponse.NO_ACTION_TAKEN;
@@ -106,18 +108,48 @@ class BackButtonNode extends SAChildNode {
   // ================= Static methods =================
 
   /**
-   * Looks for the back button node.
-   * @return {?AutomationNode}
+   * Looks for the back button automation node.
+   * @private
    */
-  static get automationNode() {
-    if (BackButtonNode.automationNode_) {
-      return BackButtonNode.automationNode_;
+  static findAutomationNode_() {
+    if (BackButtonNode.automationNode_ && BackButtonNode.automationNode_.role) {
+      return;
     }
+    SwitchAccess.findNodeMatchingPredicate(
+        BackButtonNode.isBackButton_, BackButtonNode.saveAutomationNode_);
+  }
 
-    const treeWalker = new AutomationTreeWalker(
-        NavigationManager.desktopNode, constants.Dir.FORWARD,
-        {visit: (node) => node.htmlAttributes.id === SAConstants.BACK_ID});
-    BackButtonNode.automationNode_ = treeWalker.next().node;
-    return BackButtonNode.automationNode_;
+  /**
+   * Checks if the given node is the back button automation node.
+   * @param {!AutomationNode} node
+   * @return {boolean}
+   * @private
+   */
+  static isBackButton_(node) {
+    return node.htmlAttributes.id === 'switch_access_back_button';
+  }
+
+  /**
+   * This function defines the behavior that should be taken when the back
+   * button is pressed.
+   * @private
+   */
+  static onClick_() {
+    if (MenuManager.isMenuOpen()) {
+      MenuManager.exit();
+    } else {
+      NavigationManager.exitGroupUnconditionally();
+    }
+  }
+
+  /**
+   * Saves the back button automation node.
+   * @param {!AutomationNode} automationNode
+   * @private
+   */
+  static saveAutomationNode_(automationNode) {
+    BackButtonNode.automationNode_ = automationNode;
+    BackButtonNode.automationNode_.addEventListener(
+        chrome.automation.EventType.CLICKED, BackButtonNode.onClick_, false);
   }
 }

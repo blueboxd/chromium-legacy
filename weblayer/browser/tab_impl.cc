@@ -9,7 +9,6 @@
 #include "base/auto_reset.h"
 #include "base/guid.h"
 #include "base/logging.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "cc/layers/layer.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
@@ -183,8 +182,8 @@ void ConvertToJavaBitmapBackgroundThread(
   // Make sure to only pass ScopedJavaGlobalRef between threads.
   ScopedJavaGlobalRef<jobject> java_bitmap = ScopedJavaGlobalRef<jobject>(
       gfx::ConvertToJavaBitmap(&bitmap, gfx::OomBehavior::kReturnNullOnOom));
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), std::move(java_bitmap)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(java_bitmap)));
 }
 
 void OnScreenShotCaptured(const ScopedJavaGlobalRef<jobject>& value_callback,
@@ -211,6 +210,18 @@ void OnScreenShotCaptured(const ScopedJavaGlobalRef<jobject>& value_callback,
 }  // namespace
 
 #if defined(OS_ANDROID)
+
+static ScopedJavaLocalRef<jobject> JNI_TabImpl_FromWebContents(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  TabImpl* tab = TabImpl::FromWebContents(web_contents);
+  if (tab)
+    return ScopedJavaLocalRef<jobject>(tab->GetJavaTab());
+  return nullptr;
+}
+
 TabImpl::TabImpl(ProfileImpl* profile, const JavaParamRef<jobject>& java_impl)
     : TabImpl(profile) {
   java_impl_ = java_impl;

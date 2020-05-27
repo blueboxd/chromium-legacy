@@ -65,18 +65,19 @@ class NavigationManager {
     navigator.jumpTo_(keyboard);
   }
 
-  /**
-   * Open the Switch Access menu for the currently highlighted node. If there
-   * are not enough actions available to trigger the menu, the current element
-   * is selected.
-   */
-  static enterMenu() {
-    const navigator = NavigationManager.instance;
-    const didEnter = MenuManager.enter(navigator.node_);
+  /** Unconditionally exits the current group. */
+  static exitGroupUnconditionally() {
+    NavigationManager.instance.exitGroup_();
+  }
 
-    // If the menu does not or cannot open, select the current node.
-    if (!didEnter) {
-      navigator.selectCurrentNode();
+  /**
+   * Exits the specified node, if it is the currently focused group.
+   * @param {?AutomationNode|!SAChildNode|!SARootNode} node
+   */
+  static exitIfInGroup(node) {
+    const navigator = NavigationManager.instance;
+    if (navigator.group_.isEquivalentTo(node)) {
+      navigator.exitGroup_();
     }
   }
 
@@ -134,18 +135,20 @@ class NavigationManager {
     NavigationManager.instance = new NavigationManager(desktop);
   }
 
+  /** @param {AutomationNode} menuNode */
+  static jumpToSwitchAccessMenu(menuNode) {
+    if (!menuNode) {
+      return;
+    }
+    const menu = RootNodeWrapper.buildTree(menuNode);
+    NavigationManager.instance.jumpTo_(menu, false /* shouldExitMenu */);
+  }
+
   /**
    * Move to the previous interesting node.
    */
   static moveBackward() {
     const navigator = NavigationManager.instance;
-
-    if (MenuManager.moveBackward()) {
-      // The menu navigation is handled separately. If we are in the menu, do
-      // not change the primary focus node.
-      return;
-    }
-
     navigator.setNode_(navigator.node_.previous);
   }
 
@@ -157,12 +160,6 @@ class NavigationManager {
 
     if (navigator.onMoveForwardForTesting_) {
       navigator.onMoveForwardForTesting_();
-    }
-
-    if (MenuManager.moveForward()) {
-      // The menu navigation is handled separately. If we are in the menu, do
-      // not change the primary focus node.
-      return;
     }
 
     navigator.setNode_(navigator.node_.next);
@@ -207,6 +204,17 @@ class NavigationManager {
         navigator.node_, navigator.group_);
   }
 
+  // =============== Getter Methods ==============
+
+  /**
+   * Returns the currently focused node.
+   * @return {!SAChildNode}
+   */
+  static get currentNode() {
+    NavigationManager.moveToValidNode();
+    return NavigationManager.instance.node_;
+  }
+
   /**
    * Returns the desktop automation node object.
    * @return {!AutomationNode}
@@ -215,45 +223,7 @@ class NavigationManager {
     return NavigationManager.instance.desktop_;
   }
 
-  // =============== Instance Methods ==============
-
-  /**
-   * Selects the current node.
-   */
-  selectCurrentNode() {
-    if (MenuManager.selectCurrentNode()) {
-      // The menu navigation is handled separately. If we are in the menu, do
-      // not change the primary focus node.
-      return;
-    }
-
-    if (this.node_.isGroup()) {
-      NavigationManager.enterGroup();
-      return;
-    }
-
-    if (this.node_.hasAction(SwitchAccessMenuAction.KEYBOARD)) {
-      SwitchAccessMetrics.recordMenuAction(SwitchAccessMenuAction.KEYBOARD);
-      this.node_.performAction(SwitchAccessMenuAction.KEYBOARD);
-      return;
-    }
-
-    if (this.node_.hasAction(SwitchAccessMenuAction.SELECT)) {
-      SwitchAccessMetrics.recordMenuAction(SwitchAccessMenuAction.SELECT);
-      this.node_.performAction(SwitchAccessMenuAction.SELECT);
-    }
-  }
-
   // =============== Event Handlers ==============
-
-  /**
-   * Sets up the connection between the menuPanel and menuManager.
-   * @param {!PanelInterface} menuPanel
-   */
-  connectMenuPanel(menuPanel) {
-    menuPanel.backButtonElement().addEventListener(
-        'click', this.exitGroup_.bind(this));
-  }
 
   /**
    * When focus shifts, move to the element. Find the closest interesting
@@ -303,18 +273,12 @@ class NavigationManager {
     this.group_.onFocus();
     this.node_.onFocus();
 
-    if (window.menuPanel) {
-      this.connectMenuPanel(window.menuPanel);
-    }
-
     this.desktop_.addEventListener(
         chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),
         false);
-
     this.desktop_.addEventListener(
         chrome.automation.EventType.MENU_START, this.onMenuStart_.bind(this),
         false);
-
     chrome.automation.addTreeChangeObserver(
         chrome.automation.TreeChangeObserverFilter.ALL_TREE_CHANGES,
         this.onTreeChange_.bind(this));
@@ -324,10 +288,13 @@ class NavigationManager {
    * Jumps Switch Access focus to a specified node, such as when opening a menu
    * or the keyboard. Does not modify the groups already in the group stack.
    * @param {!SARootNode} group
+   * @param {boolean} shouldExitMenu
    * @private
    */
-  jumpTo_(group) {
-    MenuManager.exit();
+  jumpTo_(group, shouldExitMenu = true) {
+    if (shouldExitMenu) {
+      MenuManager.exit();
+    }
 
     this.history_.save(new FocusData(this.group_, this.node_));
     this.setGroup_(group);

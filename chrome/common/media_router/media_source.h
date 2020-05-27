@@ -90,6 +90,7 @@ class MediaSource {
 
   // Protocol-specific media source object creation.
   // Returns MediaSource URI depending on the type of source.
+  static MediaSource ForAnyTab();
   static MediaSource ForTab(int tab_id);
   static MediaSource ForPresentationUrl(const GURL& presentation_url);
 
@@ -107,9 +108,8 @@ class MediaSource {
   // extension-based Cast MRP is removed.
   static MediaSource ForDesktop();
 
-  // Returns true if source outputs its content via mirroring.
-  bool IsDesktopMirroringSource() const;
   bool IsTabMirroringSource() const;
+  bool IsDesktopMirroringSource() const;
   bool IsMirroringSource() const;
 
   // Returns true if this is represents a Cast Presentation URL.

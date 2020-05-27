@@ -58,15 +58,6 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
 
   app_method_names_.insert(stored_payment_app_info_->enabled_methods.begin(),
                            stored_payment_app_info_->enabled_methods.end());
-
-  if (stored_payment_app_info_->icon) {
-    icon_image_ =
-        gfx::ImageSkia::CreateFrom1xBitmap(*(stored_payment_app_info_->icon))
-            .DeepCopy();
-  } else {
-    // Create an empty icon image to avoid using invalid icon resource id.
-    icon_image_ = gfx::ImageSkia::CreateFrom1xBitmap(SkBitmap()).DeepCopy();
-  }
 }
 
 // Service worker payment app provides icon through bitmap, so set 0 as invalid
@@ -101,15 +92,6 @@ ServiceWorkerPaymentApp::ServiceWorkerPaymentApp(
   DCHECK(spec_);
 
   app_method_names_.insert(installable_enabled_method_);
-
-  if (installable_web_app_info_->icon) {
-    icon_image_ =
-        gfx::ImageSkia::CreateFrom1xBitmap(*(installable_web_app_info_->icon))
-            .DeepCopy();
-  } else {
-    // Create an empty icon image to avoid using invalid icon resource id.
-    icon_image_ = gfx::ImageSkia::CreateFrom1xBitmap(SkBitmap()).DeepCopy();
-  }
 }
 
 ServiceWorkerPaymentApp::~ServiceWorkerPaymentApp() {
@@ -391,7 +373,7 @@ uint32_t ServiceWorkerPaymentApp::GetCompletenessScore() const {
 
 bool ServiceWorkerPaymentApp::CanPreselect() const {
   // Do not preselect the payment app when the name and/or icon is missing.
-  return !GetLabel().empty() && !icon_image_.size().IsEmpty();
+  return !GetLabel().empty() && icon_bitmap() && !icon_bitmap()->drawsNothing();
 }
 
 base::string16 ServiceWorkerPaymentApp::GetMissingInfoLabel() const {
@@ -487,8 +469,9 @@ base::WeakPtr<PaymentApp> ServiceWorkerPaymentApp::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-gfx::ImageSkia ServiceWorkerPaymentApp::icon_image_skia() const {
-  return icon_image_;
+const SkBitmap* ServiceWorkerPaymentApp::icon_bitmap() const {
+  return stored_payment_app_info_ ? stored_payment_app_info_->icon.get()
+                                  : installable_web_app_info_->icon.get();
 }
 
 bool ServiceWorkerPaymentApp::HandlesShippingAddress() const {

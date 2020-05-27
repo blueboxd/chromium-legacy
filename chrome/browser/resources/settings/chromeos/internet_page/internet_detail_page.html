@@ -138,48 +138,25 @@
       </controlled-button>
     </div>
 
-    <!-- Disabled by policy / Shared messages. -->
-    <div class="settings-box continuation"
-        hidden$="[[!isBlockedByPolicy_(managedProperties_, globalPolicy,
-            managedNetworkAvailable)]]">
-      <iron-icon class="policy" icon="cr20:domain"></iron-icon>
-      <div class="settings-box-text">$i18n{networkConnectNotAllowed}</div>
-    </div>
 
 
-    <!-- Notice of synced and/or shared network. -->
-    <template is="dom-if"
-        if="[[showSyncedShared_(managedProperties_, globalPolicy,
-            managedNetworkAvailable, isWifiSyncEnabled_)]]">
-      <!-- Network is both synced and shared. -->
-      <div class="settings-box continuation settings-box-text">
-          <settings-localized-link
-            localized-string="[[i18nAdvanced('networkSyncedShared')]]">
-          </settings-localized-link>
-      </div>
-    </template>
-    <template is="dom-if"
-        if="[[showSyncedUser_(managedProperties_, globalPolicy,
-            managedNetworkAvailable, isWifiSyncEnabled_)]]">
-      <!-- Network is synced but not shared. -->
-      <div class="settings-box continuation settings-box-text">
-          <settings-localized-link
-            localized-string="[[i18nAdvanced('networkSyncedUser')]]">
-          </settings-localized-link>
-      </div>
-    </template>
-    <template is="dom-if"
-        if="[[showShared_(managedProperties_, globalPolicy,
-            managedNetworkAvailable, isWifiSyncEnabled_)]]">
-      <!-- Network is shared but not synced. -->
-      <div class="settings-box continuation settings-box-text">
-        [[i18n('networkShared')]]
+    <!-- Start of NOTICES section. -->
+    <!-- If row ordering changes, messagesDividerClass_() must be updated. -->
+    <template is="dom-if" if="[[isBlockedByPolicy_(managedProperties_,
+                                globalPolicy, managedNetworkAvailable)]]">
+      <!-- Disabled by policy -->
+      <div class="settings-box continuation">
+        <iron-icon class="policy" icon="cr20:domain"></iron-icon>
+        <div class="settings-box-text">$i18n{networkConnectNotAllowed}</div>
       </div>
     </template>
 
     <template is="dom-if" if="[[isSecondaryUser_]]">
-      <!-- Show message for non primary users. -->
-      <div class="settings-box continuation single-column">
+      <!-- Non primary users. -->
+      <div class$="settings-box single-column
+                  [[messagesDividerClass_('secondary', managedProperties_,
+                      globalPolicy, managedNetworkAvailable,
+                      isSecondaryUser_, isWifiSyncEnabled_)]]">
         <div class="layout horizontal center">
           <iron-icon class="policy" icon="cr:group"></iron-icon>
           <div class="settings-box-text">
@@ -188,6 +165,34 @@
         </div>
       </div>
     </template>
+
+
+    <template is="dom-if"
+        if="[[showShared_(managedProperties_, globalPolicy,
+            managedNetworkAvailable)]]">
+      <!-- Shared network. -->
+      <div class$="settings-box settings-box-text
+                  [[messagesDividerClass_('shared', managedProperties_,
+                      globalPolicy, managedNetworkAvailable,
+                      isSecondaryUser_, isWifiSyncEnabled_)]]">
+          [[sharedString_(managedProperties_)]]
+      </div>
+    </template>
+
+    <template is="dom-if"
+        if="[[showSynced_(managedProperties_, globalPolicy,
+            managedNetworkAvailable, isWifiSyncEnabled_)]]">
+      <!-- Synced network. -->
+      <div class$="settings-box settings-box-text
+                   [[messagesDividerClass_('synced', managedProperties_,
+                      globalPolicy, managedNetworkAvailable,
+                      isSecondaryUser_, isWifiSyncEnabled_)]]">
+          <settings-localized-link
+            localized-string="[[syncedString_(managedProperties_)]]">
+          </settings-localized-link>
+      </div>
+    </template>
+    <!-- End of NOTICES section -->
 
     <template is="dom-if" if="[[!isSecondaryUser_]]">
       <!-- Prefer this network. -->

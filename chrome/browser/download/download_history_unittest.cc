@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/download/public/common/download_features.h"
 #include "components/download/public/common/mock_download_item.h"
@@ -25,6 +24,7 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_utils.h"
@@ -55,8 +55,8 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   void QueryDownloads(
       history::HistoryService::DownloadQueryCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
                                   base::Unretained(this), std::move(callback)));
   }
 

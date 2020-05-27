@@ -120,4 +120,41 @@ TEST_F(LocationBarMediatorTest, HTTPAuthDialog) {
   EXPECT_FALSE(consumer_.statusText);
 }
 
+// Tests that the location text is updated correctly when an HTTP auth dialog
+// finishes its dismissal after the active WebState is set to null.
+TEST_F(LocationBarMediatorTest, HTTPAuthDialogDismissalWithNullWebState) {
+  const GURL kUrl("https://chromium.test");
+  std::unique_ptr<web::TestWebState> passed_web_state =
+      std::make_unique<web::TestWebState>();
+  web::TestWebState* web_state = passed_web_state.get();
+  web_state->SetCurrentURL(kUrl);
+  web_state_list_.InsertWebState(0, std::move(passed_web_state),
+                                 WebStateList::INSERT_ACTIVATE,
+                                 WebStateOpener(nullptr));
+
+  // Present an HTTP authentication dialog over the WebState
+  const std::string kMessage("message");
+  const std::string kDefaultUsername("username");
+  OverlayRequestQueue* queue = OverlayRequestQueue::FromWebState(
+      web_state, OverlayModality::kWebContentArea);
+  queue->AddRequest(
+      OverlayRequest::CreateWithConfig<HTTPAuthOverlayRequestConfig>(
+          kUrl, kMessage, kDefaultUsername));
+  ASSERT_NSEQ(l10n_util::GetNSString(IDS_IOS_LOCATION_BAR_SIGN_IN),
+              consumer_.locationText);
+
+  // Disable dismissal callbacks in the presentation context so that the active
+  // WebState can be reset to null before the dismisal callbacks are executed.
+  presentation_context_.SetDismissalCallbacksEnabled(false);
+  web_state_list_.CloseAllWebStates(WebStateList::CLOSE_NO_FLAGS);
+  EXPECT_FALSE(web_state_list_.GetActiveWebState());
+
+  // Execute the dismissal callback and verify that the location text has been
+  // updated.
+  presentation_context_.SetDismissalCallbacksEnabled(true);
+  EXPECT_EQ(0U, consumer_.locationText.length);
+  EXPECT_EQ(0U, consumer_.statusText.length);
+  EXPECT_TRUE(consumer_.icon);
+}
+
 // TODO(crbug.com/992578): Add more tests to this suite.

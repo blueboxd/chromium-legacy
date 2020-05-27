@@ -104,6 +104,10 @@ class HistogramTester {
   // Returns the value of the |sample| bucket for ths histogram |name|.
   HistogramBase::Count GetBucketCount(StringPiece name,
                                       HistogramBase::Sample sample) const;
+  template <typename T>
+  HistogramBase::Count GetBucketCount(StringPiece name, T sample) const {
+    return GetBucketCount(name, static_cast<HistogramBase::Sample>(sample));
+  }
 
   // Finds histograms whose names start with |prefix|, and returns them along
   // with the counts of any samples added since the creation of this object.

@@ -258,9 +258,12 @@ can also step or execute backwards. This works by first recording a trace
 and then debugging based on that. I recommend installing it by compiling
 [from source](https://github.com/mozilla/rr/wiki/Building-And-Installing).
 
-Currently you must apply a patch adding
-[support for recording the MADV_WIPEONFORK](https://bugs.chromium.org/p/chromium/issues/detail?id=1082304#c6)
-syscall as upstream rr triggers an internal assert on this call.
+As of May 2020, you must build from source for [`MADV_WIPEONFORK`
+support](https://bugs.chromium.org/p/chromium/issues/detail?id=1082304). If you
+get the following error, rr is too old:
+```
+Expected EINVAL for 'madvise' but got result 0 (errno SUCCESS); unknown madvise(18)
+```
 
 Once installed, you can use it like this:
 ```

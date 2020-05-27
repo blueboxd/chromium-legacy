@@ -33,8 +33,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_H_
 
 #include "cc/paint/paint_canvas.h"
+#include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-shared.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_drag_status.h"

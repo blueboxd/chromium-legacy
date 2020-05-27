@@ -10161,6 +10161,7 @@ histogram as enum -->
 Called by update_net_error_codes.py.-->
 
   <int value="-1478" label="SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS"/>
+  <int value="-808" label="DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED"/>
   <int value="-807" label="DNS_HTTP_FAILED"/>
   <int value="-806" label="DNS_SORT_ERROR"/>
   <int value="-805" label="DNS_SEARCH_EMPTY"/>
@@ -10191,6 +10192,8 @@ Called by update_net_error_codes.py.-->
   <int value="-603" label="FTP_TRANSFER_ABORTED"/>
   <int value="-602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="-601" label="FTP_FAILED"/>
+  <int value="-507" label="TRUST_TOKEN_OPERATION_CACHE_HIT"/>
+  <int value="-506" label="TRUST_TOKEN_OPERATION_FAILED"/>
   <int value="-505" label="INVALID_WEB_BUNDLE"/>
   <int value="-504" label="INVALID_SIGNED_EXCHANGE"/>
   <int value="-503" label="ADD_USER_CERT_FAILED"/>
@@ -10277,6 +10280,8 @@ Called by update_net_error_codes.py.-->
   <int value="-302" label="UNKNOWN_URL_SCHEME"/>
   <int value="-301" label="DISALLOWED_URL_SCHEME"/>
   <int value="-300" label="INVALID_URL"/>
+  <int value="-218" label="SSL_OBSOLETE_VERSION"/>
+  <int value="-217" label="CERT_KNOWN_INTERCEPTION_BLOCKED"/>
   <int value="-216" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
   <int value="-215" label="CERT_SYMANTEC_LEGACY"/>
   <int value="-214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
@@ -12519,6 +12524,19 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="HFP_CODEC_ID_MSBC"/>
 </enum>
 
+<enum name="CrasHfpScoError">
+  <summary>
+    List of results(success or error code) of setting up a SCO connection for
+    Bluetooth Hands-free profile. This list should be aligned with CRAS:
+    https://chromium.googlesource.com/chromiumos/third_party/adhd/+/master/cras/src/server/cras_server_metrics.h
+  </summary>
+  <int value="0" label="SKT_SUCCESS"/>
+  <int value="1" label="SKT_CONNECTION_ERROR"/>
+  <int value="2" label="SKT_OPEN_ERROR"/>
+  <int value="3" label="SKT_POLL_TIMEOUT"/>
+  <int value="4" label="SKT_POLL_ERR_HUP"/>
+</enum>
+
 <enum name="CrashHandler">
   <int value="0" label="Crashpad"/>
   <int value="1" label="Breakpad"/>
@@ -14205,6 +14223,19 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="2" label="Channel is reliable."/>
   <int value="3" label="Channel is ordered."/>
   <int value="4" label="Channel is negotiated."/>
+</enum>
+
+<enum name="DataPackLoadErrors">
+  <int value="1" label="INIT_FAILED (obsolete)"/>
+  <int value="2" label="BAD_VERSION"/>
+  <int value="3" label="INDEX_TRUNCATED"/>
+  <int value="4" label="ENTRY_NOT_FOUND"/>
+  <int value="5" label="HEADER_TRUNCATED"/>
+  <int value="6" label="WRONG_ENCODING"/>
+  <int value="7" label="INIT_FAILED_FROM_FILE"/>
+  <int value="8" label="UNZIP_FAILED"/>
+  <int value="9" label="OPEN_FAILED"/>
+  <int value="10" label="MAP_FAILED"/>
 </enum>
 
 <enum name="DataReductionProxyAutoLoFiAccuracy">
@@ -38136,6 +38167,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="2" label="Load failed - File read error"/>
   <int value="3" label="Load failed - Checksum mismatch"/>
   <int value="4" label="Load failed - Version mismatch"/>
+  <int value="5" label="Load failed - Checksum not found in prefs"/>
 </enum>
 
 <enum name="LoadType">
@@ -46357,6 +46389,8 @@ Called by update_net_error_codes.py.-->
   <int value="214" label="CERTIFICATE_TRANSPARENCY_REQUIRED"/>
   <int value="215" label="CERT_SYMANTEC_LEGACY"/>
   <int value="216" label="QUIC_CERT_ROOT_NOT_KNOWN"/>
+  <int value="217" label="CERT_KNOWN_INTERCEPTION_BLOCKED"/>
+  <int value="218" label="SSL_OBSOLETE_VERSION"/>
   <int value="300" label="INVALID_URL"/>
   <int value="301" label="DISALLOWED_URL_SCHEME"/>
   <int value="302" label="UNKNOWN_URL_SCHEME"/>
@@ -46444,6 +46478,8 @@ Called by update_net_error_codes.py.-->
   <int value="503" label="ADD_USER_CERT_FAILED"/>
   <int value="504" label="INVALID_SIGNED_EXCHANGE"/>
   <int value="505" label="INVALID_WEB_BUNDLE"/>
+  <int value="506" label="TRUST_TOKEN_OPERATION_FAILED"/>
+  <int value="507" label="TRUST_TOKEN_OPERATION_CACHE_HIT"/>
   <int value="601" label="FTP_FAILED"/>
   <int value="602" label="FTP_SERVICE_UNAVAILABLE"/>
   <int value="603" label="FTP_TRANSFER_ABORTED"/>
@@ -46474,6 +46510,7 @@ Called by update_net_error_codes.py.-->
   <int value="805" label="DNS_SEARCH_EMPTY"/>
   <int value="806" label="DNS_SORT_ERROR"/>
   <int value="807" label="DNS_HTTP_FAILED"/>
+  <int value="808" label="DNS_SECURE_RESOLVER_HOSTNAME_RESOLUTION_FAILED"/>
   <int value="1478" label="SSL_CLIENT_AUTH_NO_COMMON_ALGORITHMS"/>
 </enum>
 
@@ -58954,6 +58991,10 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
   <int value="7"
       label="The page triggered a permission request. It was denied and the
              warning was shown."/>
+  <int value="8"
+      label="The page tried to display a JavaScript dialog
+             (alert/confirm/prompt). It was blocked and the warning was
+             shown."/>
 </enum>
 
 <enum name="SafeBrowsingParseV4HashResult">

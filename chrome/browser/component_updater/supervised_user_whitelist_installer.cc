@@ -26,7 +26,6 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -122,12 +121,11 @@ base::FilePath GetSanitizedWhitelistPath(const std::string& crx_id) {
 }
 
 void RecordUncleanUninstall() {
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&base::RecordAction,
-                         base::UserMetricsAction(
-                             "ManagedUsers_Whitelist_UncleanUninstall")));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &base::RecordAction,
+          base::UserMetricsAction("ManagedUsers_Whitelist_UncleanUninstall")));
 }
 
 void DeleteFileOnTaskRunner(const base::FilePath& path) {

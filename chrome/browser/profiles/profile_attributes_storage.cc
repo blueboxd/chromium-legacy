@@ -118,7 +118,7 @@ void RunCallbackIfFileMissing(const base::FilePath& file_path,
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   if (!base::PathExists(file_path))
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback);
 }
 
 // Compares two ProfileAttributesEntry using locale-sensitive comparison of
@@ -496,8 +496,8 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
   if (downloader_iter != avatar_images_downloads_in_progress_.end()) {
     // We mustn't delete the avatar downloader right here, since we're being
     // called by it.
-    base::DeleteSoon(FROM_HERE, {content::BrowserThread::UI},
-                     downloader_iter->second.release());
+    content::GetUIThreadTaskRunner({})->DeleteSoon(
+        FROM_HERE, downloader_iter->second.release());
     avatar_images_downloads_in_progress_.erase(downloader_iter);
   }
 

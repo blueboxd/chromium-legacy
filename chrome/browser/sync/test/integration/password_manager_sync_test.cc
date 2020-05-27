@@ -23,11 +23,13 @@
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/sync/driver/profile_sync_service.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/test/fake_server/fake_server_nigori_helper.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_status_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,9 +98,12 @@ class PasswordManagerSyncTest : public SyncTest {
     SyncTest::TearDownOnMainThread();
   }
 
+  // Also stores the AccountInfo for the signed-in account in
+  // |signed_in_account_| as a side effect.
   void SetupSyncTransportWithPasswordAccountStorage() {
+    ASSERT_TRUE(signed_in_account_.IsEmpty());
     // Setup Sync for a secondary account (i.e. in transport mode).
-    secondary_account_helper::SignInSecondaryAccount(
+    signed_in_account_ = secondary_account_helper::SignInSecondaryAccount(
         GetProfile(0), &test_url_loader_factory_, "user@email.com");
     ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
     ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
@@ -109,6 +114,15 @@ class PasswordManagerSyncTest : public SyncTest {
         GetProfile(0)->GetPrefs(), GetSyncService(0));
     PasswordSyncActiveChecker(GetSyncService(0)).Wait();
     ASSERT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PASSWORDS));
+  }
+
+  // Should only be called after SetupSyncTransportWithPasswordAccountStorage().
+  void SignOut() {
+    ASSERT_FALSE(signed_in_account_.IsEmpty());
+    secondary_account_helper::SignOutSecondaryAccount(
+        GetProfile(0), &test_url_loader_factory_,
+        signed_in_account_.account_id);
+    signed_in_account_ = AccountInfo();
   }
 
   GURL GetWWWOrigin() {
@@ -223,6 +237,7 @@ class PasswordManagerSyncTest : public SyncTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
+  AccountInfo signed_in_account_;
 
   secondary_account_helper::ScopedSigninClientFactory
       test_signin_client_factory_;
@@ -572,6 +587,42 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerSyncTest,
                   MatchesLoginAndRealm("user", "pass", GetWWWOrigin()),
                   MatchesLoginAndRealm("user", "pass", GetPSLOrigin())));
 }
+
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerSyncTest,
+    SaveInProfileStoreIfSaveButtonClickedInUnsyncedPasswordsBubble) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  content::WebContents* web_contents = nullptr;
+  GetNewTab(GetBrowser(0), &web_contents);
+
+  SetupSyncTransportWithPasswordAccountStorage();
+
+  // Force credentials saved to the account to be unsynced.
+  GetFakeServer()->SetHttpError(net::HTTP_BAD_REQUEST);
+
+  NavigateToFile(web_contents, "/password/password_form.html");
+  FillAndSubmitPasswordForm(web_contents, "accountuser", "accountpass");
+
+  // Save the password in the account store.
+  BubbleObserver bubble_observer(web_contents);
+  bubble_observer.AcceptSavePrompt();
+  std::vector<std::unique_ptr<autofill::PasswordForm>> account_credentials =
+      GetAllLoginsFromAccountPasswordStore();
+  ASSERT_THAT(account_credentials,
+              ElementsAre(MatchesLogin("accountuser", "accountpass")));
+
+  SignOut();
+
+  // Fake user clicking the Save button in the UI.
+  bubble_observer.WaitForSaveUnsyncedCredentialsPrompt();
+  bubble_observer.AcceptSaveUnsyncedCredentialsPrompt();
+
+  std::vector<std::unique_ptr<autofill::PasswordForm>> profile_credentials =
+      GetAllLoginsFromProfilePasswordStore();
+  EXPECT_THAT(profile_credentials,
+              ElementsAre(MatchesLogin("accountuser", "accountpass")));
+}
+
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace

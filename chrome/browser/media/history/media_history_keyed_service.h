@@ -135,7 +135,7 @@ class MediaHistoryKeyedService : public KeyedService,
     std::string cookie_name_filter;
 
     // Logs about any errors that may have occurred while fetching or converting
-    // the feed data.
+    // the feed data. New-line delimited human-readable text.
     std::string error_logs;
 
     // If true then the backend returned a 410 Gone error.

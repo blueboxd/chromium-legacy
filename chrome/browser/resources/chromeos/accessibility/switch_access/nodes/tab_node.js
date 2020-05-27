@@ -25,7 +25,7 @@ class TabNode extends NodeWrapper {
 
   /** @override */
   get actions() {
-    return [];
+    return [SwitchAccessMenuAction.SELECT];
   }
 
   // ================= General methods =================
@@ -38,6 +38,15 @@ class TabNode extends NodeWrapper {
   /** @override */
   isGroup() {
     return true;
+  }
+
+  /** @override */
+  performAction(action) {
+    if (action !== SwitchAccessMenuAction.SELECT) {
+      return SAConstants.ActionResponse.NO_ACTION_TAKEN;
+    }
+    NavigationManager.enterGroup();
+    return SAConstants.ActionResponse.CLOSE_MENU;
   }
 
   // ================= Static methods =================

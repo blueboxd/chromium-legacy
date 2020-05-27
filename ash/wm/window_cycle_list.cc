@@ -10,7 +10,6 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/public/cpp/fps_counter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -109,6 +108,17 @@ class CustomWindowTargeter : public aura::WindowTargeter {
 
  private:
   aura::Window* tab_cycler_;
+};
+
+// Reporter of fade-in animation smoothness.
+class FadeInAnimationMetricsReporter : public ui::AnimationMetricsReporter {
+ public:
+  FadeInAnimationMetricsReporter() = default;
+  ~FadeInAnimationMetricsReporter() override = default;
+
+  void Report(int value) override {
+    UMA_HISTOGRAM_PERCENTAGE(kShowAnimationSmoothness, value);
+  }
 };
 
 }  // namespace
@@ -270,13 +280,11 @@ class WindowCycleView : public views::WidgetDelegateView,
   void FadeInLayer() {
     DCHECK(GetWidget());
 
-    fade_in_fps_counter_ =
-        std::make_unique<FpsCounter>(GetWidget()->GetCompositor());
-
     layer()->SetOpacity(0.f);
     ui::ScopedLayerAnimationSettings settings(layer()->GetAnimator());
     settings.SetTransitionDuration(kFadeInDuration);
     settings.AddObserver(this);
+    settings.SetAnimationMetricsReporter(&fade_in_reporter_);
     settings.CacheRenderSurface();
     layer()->SetOpacity(1.f);
   }
@@ -403,11 +411,6 @@ class WindowCycleView : public views::WidgetDelegateView,
 
   // ui::ImplicitAnimationObserver:
   void OnImplicitAnimationsCompleted() override {
-    DCHECK(fade_in_fps_counter_);
-    int smoothness = fade_in_fps_counter_->ComputeSmoothness();
-    if (smoothness > 0)
-      UMA_HISTOGRAM_PERCENTAGE(kShowAnimationSmoothness, smoothness);
-    fade_in_fps_counter_.reset();
     occlusion_tracker_pauser_.reset();
   }
 
@@ -430,7 +433,7 @@ class WindowCycleView : public views::WidgetDelegateView,
   base::flat_set<WindowCycleItemView*> no_previews_set_;
 
   // Records the animation smoothness of the fade in animation.
-  std::unique_ptr<FpsCounter> fade_in_fps_counter_;
+  FadeInAnimationMetricsReporter fade_in_reporter_;
 
   // Used for preventng occlusion state computations for the duration of the
   // fade in animation.

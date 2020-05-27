@@ -12,7 +12,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "components/autofill_assistant/browser/actions/collect_user_data_action.h"
@@ -699,10 +698,11 @@ void Controller::StartPeriodicScriptChecks() {
   if (periodic_script_check_scheduled_)
     return;
   periodic_script_check_scheduled_ = true;
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&Controller::OnPeriodicScriptCheck,
-                                       weak_ptr_factory_.GetWeakPtr()),
-                        settings_.periodic_script_check_interval);
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&Controller::OnPeriodicScriptCheck,
+                     weak_ptr_factory_.GetWeakPtr()),
+      settings_.periodic_script_check_interval);
 }
 
 void Controller::StopPeriodicScriptChecks() {
@@ -732,10 +732,11 @@ void Controller::OnPeriodicScriptCheck() {
   }
 
   script_tracker()->CheckScripts();
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&Controller::OnPeriodicScriptCheck,
-                                       weak_ptr_factory_.GetWeakPtr()),
-                        settings_.periodic_script_check_interval);
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(&Controller::OnPeriodicScriptCheck,
+                     weak_ptr_factory_.GetWeakPtr()),
+      settings_.periodic_script_check_interval);
 }
 
 void Controller::OnGetScripts(const GURL& url,

@@ -3541,7 +3541,6 @@ TEST_F(NetworkContextTest, CreateHostResolverWithConfigOverrides) {
 TEST_F(NetworkContextTest, ActivateDohProbes) {
   auto resolver = std::make_unique<net::MockHostResolver>();
   mojom::NetworkContextParamsPtr params = CreateContextParams();
-  params->primary_network_context = true;
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(std::move(params));
   network_context->url_request_context()->set_host_resolver(resolver.get());

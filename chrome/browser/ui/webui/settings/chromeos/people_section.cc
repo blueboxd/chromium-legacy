@@ -40,6 +40,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_pref_names.h"
 #include "components/google/core/common/google_util.h"
+#include "components/omnibox/common/omnibox_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -713,6 +714,10 @@ void PeopleSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
           chromeos::prefs::kSecondaryGoogleAccountSigninAllowed));
   html_source->AddBoolean("isEduCoexistenceEnabled",
                           ::chromeos::features::IsEduCoexistenceEnabled());
+
+  html_source->AddBoolean(
+      "driveSuggestAvailable",
+      base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
 
   AddAccountManagerPageStrings(html_source);
   AddKerberosAccountsPageStrings(html_source);

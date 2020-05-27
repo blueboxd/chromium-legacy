@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/notreached.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -62,8 +61,8 @@ class MonitorFinder : public base::RefCountedThreadSafe<MonitorFinder> {
     // do this because we don't know how often our client is going
     // to call and we can't cache the |monitor_| value.
     if (InterlockedCompareExchange(&request_sent_, 1, 0) == 0) {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&MonitorFinder::FetchMonitorFromWidget, this));
     }
     return reinterpret_cast<int64_t>(monitor_);

@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
@@ -120,8 +119,8 @@ class PatchTest : public InProcessBrowserTest {
   void PatchDone(int expected, int result) {
     EXPECT_EQ(expected, result);
     done_called_ = true;
-    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-        ->PostTask(FROM_HERE, std::move(quit_closure_));
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(quit_closure_));
   }
 
   static void CopyFile(const base::FilePath& source,

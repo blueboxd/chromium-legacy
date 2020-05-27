@@ -5,7 +5,6 @@
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/memory/ptr_util.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/chrome_component_updater_configurator.h"
 #include "chrome/browser/policy/policy_test_utils.h"
@@ -17,6 +16,7 @@
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
@@ -190,8 +190,8 @@ void ComponentUpdaterPolicyTest::UpdateComponent(
 }
 
 void ComponentUpdaterPolicyTest::CallAsync(TestCaseAction action) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(action, base::Unretained(this)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(action, base::Unretained(this)));
 }
 
 void ComponentUpdaterPolicyTest::OnDemandComplete(update_client::Error error) {

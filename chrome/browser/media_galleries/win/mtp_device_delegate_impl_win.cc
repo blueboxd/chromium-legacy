@@ -321,8 +321,8 @@ void CreateMTPDeviceAsyncDelegate(
   DCHECK(!device_location.empty());
   base::string16* pnp_device_id = new base::string16;
   base::string16* storage_object_id = new base::string16;
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTaskAndReplyWithResult(
+      FROM_HERE,
       base::BindOnce(&GetStorageInfoOnUIThread, device_location,
                      base::Unretained(pnp_device_id),
                      base::Unretained(storage_object_id)),

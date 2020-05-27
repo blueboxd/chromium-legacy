@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -63,16 +62,16 @@ void SandboxedDMGAnalyzer::PrepareFileToAnalyze() {
     return;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&SandboxedDMGAnalyzer::AnalyzeFile, this,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SandboxedDMGAnalyzer::AnalyzeFile, this,
                                 std::move(file)));
 }
 
 void SandboxedDMGAnalyzer::ReportFileFailure() {
   DCHECK(!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback_),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_),
                                 safe_browsing::ArchiveAnalyzerResults()));
 }
 

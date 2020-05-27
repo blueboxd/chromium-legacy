@@ -22,7 +22,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
 #include "chrome/grit/generated_resources.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace {

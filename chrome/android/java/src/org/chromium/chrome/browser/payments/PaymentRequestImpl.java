@@ -13,6 +13,7 @@ import androidx.annotation.VisibleForTesting;
 import androidx.collection.ArrayMap;
 
 import org.chromium.base.Callback;
+import org.chromium.base.LocaleUtils;
 import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -61,6 +62,7 @@ import org.chromium.components.payments.PaymentApp;
 import org.chromium.components.payments.PaymentDetailsConverter;
 import org.chromium.components.payments.PaymentFeatureList;
 import org.chromium.components.payments.PaymentHandlerHost;
+import org.chromium.components.payments.PaymentRequestSpec;
 import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.payments.UrlUtil;
@@ -460,6 +462,7 @@ public class PaymentRequestImpl
      */
     private SectionInformation mUiShippingOptions;
 
+    private PaymentRequestSpec mSpec;
     private String mId;
     private Map<String, PaymentMethodData> mMethodData;
     private int mShippingType;
@@ -695,6 +698,8 @@ public class PaymentRequestImpl
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
+        mSpec = new PaymentRequestSpec(mPaymentOptions, details, mMethodData.values(),
+                LocaleUtils.getDefaultLocaleString());
 
         if (mRawTotal == null) {
             mJourneyLogger.setAborted(AbortReason.INVALID_DATA_FROM_RENDERER);
@@ -1393,6 +1398,7 @@ public class PaymentRequestImpl
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
+        mSpec.updateWith(details);
 
         if (mInvokedPaymentApp != null && mInvokedPaymentApp.isWaitingForPaymentDetailsUpdate()) {
             // After a payment app has been invoked, all of the merchant's calls to update the price
@@ -1427,6 +1433,7 @@ public class PaymentRequestImpl
         }
 
         if (!parseAndValidateDetailsOrDisconnectFromClient(details)) return;
+        mSpec.updateWith(details);
 
         if (!TextUtils.isEmpty(details.error)) {
             mJourneyLogger.setNotShown(NotShownReason.OTHER);
@@ -2246,6 +2253,7 @@ public class PaymentRequestImpl
             disconnectFromClientWithDebugMessage(ErrorStrings.INVALID_VALIDATION_ERRORS);
             return;
         }
+        mSpec.retry(errors);
 
         mWasRetryCalled = true;
 
@@ -2573,6 +2581,12 @@ public class PaymentRequestImpl
     @Override
     public boolean requestShippingOrPayerContact() {
         return mRequestShipping || mRequestPayerName || mRequestPayerPhone || mRequestPayerEmail;
+    }
+
+    // PaymentAppFactoryParams implementation.
+    @Override
+    public PaymentRequestSpec getSpec() {
+        return mSpec;
     }
 
     // PaymentAppFactoryDelegate implementation.
@@ -2987,6 +3001,11 @@ public class PaymentRequestImpl
         if (mPaymentHandlerHost != null) {
             mPaymentHandlerHost.destroy();
             mPaymentHandlerHost = null;
+        }
+
+        if (mSpec != null) {
+            mSpec.destroy();
+            mSpec = null;
         }
     }
 

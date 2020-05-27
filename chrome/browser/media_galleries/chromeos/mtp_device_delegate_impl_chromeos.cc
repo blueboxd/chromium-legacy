@@ -850,8 +850,8 @@ void MTPDeviceDelegateImplLinux::NotifyFileChange(
 void MTPDeviceDelegateImplLinux::CancelPendingTasksAndDeleteDelegate() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   // To cancel all the pending tasks, destroy the MTPDeviceTaskHelper object.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&CloseStorageAndDestroyTaskHelperOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CloseStorageAndDestroyTaskHelperOnUIThread,
                                 storage_name_, read_only_));
   delete this;
 }
@@ -975,7 +975,7 @@ void MTPDeviceDelegateImplLinux::ReadDirectoryInternal(
       base::Bind(&GetFileInfoOnUIThread, storage_name_, read_only_, *dir_id,
                  success_callback_wrapper, error_callback_wrapper);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, closure);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, closure);
 }
 
 void MTPDeviceDelegateImplLinux::CreateSnapshotFileInternal(
@@ -1299,8 +1299,8 @@ void MTPDeviceDelegateImplLinux::EnsureInitAndRunTask(
   if (init_state_ == UNINITIALIZED) {
     init_state_ = PENDING_INIT;
     task_in_progress_ = true;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&OpenStorageOnUIThread, storage_name_, read_only_,
                        base::Bind(&MTPDeviceDelegateImplLinux::OnInitCompleted,
                                   weak_ptr_factory_.GetWeakPtr())));
@@ -1349,7 +1349,7 @@ void MTPDeviceDelegateImplLinux::WriteDataIntoSnapshotFile(
                                           read_only_,
                                           request_info,
                                           file_info);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, task_closure);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, task_closure);
 }
 
 void MTPDeviceDelegateImplLinux::PendingRequestDone() {
@@ -1449,7 +1449,7 @@ void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToReadDirectory(
                  weak_ptr_factory_.GetWeakPtr(), dir_id, success_callback),
       base::Bind(&MTPDeviceDelegateImplLinux::HandleDeviceFileError,
                  weak_ptr_factory_.GetWeakPtr(), error_callback, dir_id));
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, task_closure);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, task_closure);
 }
 
 void MTPDeviceDelegateImplLinux::OnDidGetFileInfoToCreateSnapshotFile(

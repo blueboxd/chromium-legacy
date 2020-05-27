@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/containers/unique_ptr_adapters.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_service_base.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -16,13 +15,16 @@
 
 namespace content {
 
-class PictureInPictureSession;
+class PictureInPictureWindowControllerImpl;
 
 // Receives Picture-in-Picture messages from a given RenderFrame. There is one
-// PictureInPictureServiceImpl per RenderFrameHost. The service gets a hold of
-// a PictureInPictureSession to which it delegates most of the interactions with
-// the rest of the Picture-in-Picture classes such as
-// PictureInPictureWindowController.
+// PictureInPictureServiceImpl per RenderFrameHost. The service pipes the
+// `StartSession()` call to the PictureInPictureWindowControllerImpl which owns
+// the created session. The same object will get notified when the service is
+// killed given that the PictureInPictureWindowControllerImpl is
+// WebContents-bound instead of RenderFrameHost.
+// PictureInPictureServiceImpl owns itself. It self-destruct as needed, see the
+// FrameServiceBase's documentation for more information.
 class CONTENT_EXPORT PictureInPictureServiceImpl final
     : public content::FrameServiceBase<blink::mojom::PictureInPictureService> {
  public:
@@ -43,10 +45,6 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>,
       StartSessionCallback) final;
 
-  PictureInPictureSession* active_session_for_testing() const {
-    return active_session_.get();
-  }
-
  private:
   friend class PictureInPictureSession;
 
@@ -55,9 +53,7 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
       mojo::PendingReceiver<blink::mojom::PictureInPictureService>);
   ~PictureInPictureServiceImpl() override;
 
-  RenderFrameHost* render_frame_host_ = nullptr;
-
-  std::unique_ptr<PictureInPictureSession> active_session_;
+  PictureInPictureWindowControllerImpl& GetController();
 
   DISALLOW_COPY_AND_ASSIGN(PictureInPictureServiceImpl);
 };

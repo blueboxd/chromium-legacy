@@ -18,7 +18,6 @@
 #include "base/notreached.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
@@ -101,9 +100,8 @@ class ReindexHelper : public base::RefCountedThreadSafe<ReindexHelper> {
 
     // In case of updates to the ruleset version, the change of ruleset checksum
     // is expected.
-    if (result.success &&
-        ruleset->load_ruleset_result() ==
-            RulesetMatcher::LoadRulesetResult::kLoadErrorVersionMismatch) {
+    if (result.success && ruleset->load_ruleset_result() ==
+                              LoadRulesetResult::kErrorVersionMismatch) {
       ruleset->set_new_checksum(result.ruleset_checksum);
 
       // Also change the |expected_checksum| so that any subsequent load
@@ -131,21 +129,21 @@ class ReindexHelper : public base::RefCountedThreadSafe<ReindexHelper> {
   DISALLOW_COPY_AND_ASSIGN(ReindexHelper);
 };
 
-UpdateDynamicRulesStatus GetStatusForLoadRulesetError(
-    RulesetMatcher::LoadRulesetResult result) {
-  using Result = RulesetMatcher::LoadRulesetResult;
+UpdateDynamicRulesStatus GetUpdateDynamicRuleStatus(LoadRulesetResult result) {
   switch (result) {
-    case Result::kLoadSuccess:
+    case LoadRulesetResult::kSuccess:
       break;
-    case Result::kLoadErrorInvalidPath:
+    case LoadRulesetResult::kErrorInvalidPath:
       return UpdateDynamicRulesStatus::kErrorCreateMatcher_InvalidPath;
-    case Result::kLoadErrorFileRead:
+    case LoadRulesetResult::kErrorCannotReadFile:
       return UpdateDynamicRulesStatus::kErrorCreateMatcher_FileReadError;
-    case Result::kLoadErrorChecksumMismatch:
+    case LoadRulesetResult::kErrorChecksumMismatch:
       return UpdateDynamicRulesStatus::kErrorCreateMatcher_ChecksumMismatch;
-    case Result::kLoadErrorVersionMismatch:
+    case LoadRulesetResult::kErrorVersionMismatch:
       return UpdateDynamicRulesStatus::kErrorCreateMatcher_VersionMismatch;
-    case Result::kLoadResultMax:
+    case LoadRulesetResult::kErrorChecksumNotFound:
+      // Updating dynamic rules shouldn't require looking up checksum from
+      // prefs.
       break;
   }
 
@@ -336,23 +334,23 @@ std::unique_ptr<RulesetMatcher> RulesetInfo::TakeMatcher() {
   return std::move(matcher_);
 }
 
-RulesetMatcher::LoadRulesetResult RulesetInfo::load_ruleset_result() const {
-  DCHECK(load_ruleset_result_);
+const base::Optional<LoadRulesetResult>& RulesetInfo::load_ruleset_result()
+    const {
   // |matcher_| is valid only on success.
-  DCHECK_EQ(load_ruleset_result_ == RulesetMatcher::kLoadSuccess, !!matcher_);
-  return *load_ruleset_result_;
+  DCHECK_EQ(load_ruleset_result_ == LoadRulesetResult::kSuccess, !!matcher_);
+  return load_ruleset_result_;
 }
 
 void RulesetInfo::CreateVerifiedMatcher() {
   DCHECK(expected_checksum_);
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
+  // Ensure we aren't calling this redundantly. If did_load_successfully()
+  // returns true, we should already have a valid RulesetMatcher.
+  DCHECK(!did_load_successfully());
+
   load_ruleset_result_ = RulesetMatcher::CreateVerifiedMatcher(
       source_, *expected_checksum_, &matcher_);
-
-  UMA_HISTOGRAM_ENUMERATION(
-      "Extensions.DeclarativeNetRequest.LoadRulesetResult",
-      load_ruleset_result(), RulesetMatcher::kLoadResultMax);
 }
 
 LoadRequestData::LoadRequestData(ExtensionId extension_id)
@@ -380,10 +378,9 @@ void FileSequenceHelper::LoadRulesets(
 
   if (success) {
     // Set priority explicitly to avoid unwanted task priority inheritance.
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(std::move(ui_callback), std::move(load_data)));
+    content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+        ->PostTask(FROM_HERE, base::BindOnce(std::move(ui_callback),
+                                             std::move(load_data)));
     return;
   }
 
@@ -417,11 +414,10 @@ void FileSequenceHelper::UpdateDynamicRules(
     base::UmaHistogramEnumeration(kUpdateDynamicRulesStatusHistogram, status);
 
     // Set priority explicitly to avoid unwanted task priority inheritance.
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
-        base::BindOnce(std::move(ui_callback), std::move(load_data),
-                       std::move(error)));
+    content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+        ->PostTask(FROM_HERE,
+                   base::BindOnce(std::move(ui_callback), std::move(load_data),
+                                  std::move(error)));
   };
 
   int new_ruleset_checksum = -1;
@@ -439,10 +435,10 @@ void FileSequenceHelper::UpdateDynamicRules(
   dynamic_ruleset.set_expected_checksum(new_ruleset_checksum);
   dynamic_ruleset.set_new_checksum(new_ruleset_checksum);
   dynamic_ruleset.CreateVerifiedMatcher();
+  DCHECK(dynamic_ruleset.load_ruleset_result());
 
   if (!dynamic_ruleset.did_load_successfully()) {
-    status =
-        GetStatusForLoadRulesetError(dynamic_ruleset.load_ruleset_result());
+    status = GetUpdateDynamicRuleStatus(*dynamic_ruleset.load_ruleset_result());
     log_status_and_dispatch_callback(kInternalErrorUpdatingDynamicRules,
                                      status);
     return;
@@ -466,10 +462,9 @@ void FileSequenceHelper::OnRulesetsReindexed(LoadRulesetsUICallback ui_callback,
   }
 
   // The UI thread will handle success or failure.
-  base::PostTask(
-      FROM_HERE,
-      {content::BrowserThread::UI, base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(std::move(ui_callback), std::move(load_data)));
+  content::GetUIThreadTaskRunner({base::TaskPriority::USER_BLOCKING})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(std::move(ui_callback), std::move(load_data)));
 }
 
 }  // namespace declarative_net_request

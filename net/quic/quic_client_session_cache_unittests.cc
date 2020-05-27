@@ -53,11 +53,11 @@ std::unique_ptr<quic::TransportParameters> MakeFakeTransportParams() {
   params->version = kFakeVersionLabel;
   params->supported_versions.push_back(kFakeVersionLabel);
   params->supported_versions.push_back(kFakeVersionLabel2);
-  params->idle_timeout_milliseconds.set_value(kFakeIdleTimeoutMilliseconds);
+  params->max_idle_timeout_ms.set_value(kFakeIdleTimeoutMilliseconds);
   params->stateless_reset_token = CreateFakeStatelessResetToken();
-  params->max_packet_size.set_value(kFakeMaxPacketSize);
+  params->max_udp_payload_size.set_value(kFakeMaxPacketSize);
   params->initial_max_data.set_value(kFakeInitialMaxData);
-  params->disable_migration = kFakeDisableMigration;
+  params->disable_active_migration = kFakeDisableMigration;
   params->custom_parameters[kCustomParameter1] = kCustomParameter1Value;
   params->custom_parameters[kCustomParameter2] = kCustomParameter2Value;
   return params;

@@ -355,6 +355,8 @@ class AppCacheCacheTestHelperTest : public testing::Test {
     constexpr int kRenderFrameIdForTests = 456;
     hosts_.push_back(std::make_unique<AppCacheHost>(
         base::UnguessableToken::Create(), process_id_, kRenderFrameIdForTests,
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            process_id_),
         mojo::NullRemote(), service_.get()));
     hosts_.back()->set_frontend_for_testing(frontend);
     return hosts_.back().get();

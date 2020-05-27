@@ -408,8 +408,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Clear any AXPlatformRelationWin nodes owned by this node.
   void ClearOwnRelations();
 
-  void ForceNewHypertext();
-
   // AXPlatformNode overrides.
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void NotifyAccessibilityEvent(ax::mojom::Event event_type) override;
@@ -1123,7 +1121,6 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   std::vector<Microsoft::WRL::ComPtr<AXPlatformRelationWin>> relations_;
 
   AXHypertext old_hypertext_;
-  bool force_new_hypertext_;
 
   // These protected methods are still used by BrowserAccessibilityComWin. At
   // some point post conversion, we can probably move these to be private

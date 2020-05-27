@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
 #include "chromeos/attestation/attestation_flow.h"
@@ -165,8 +164,8 @@ void EnrollmentCertificateUploaderImpl::HandleGetCertificateFailure(
 
 void EnrollmentCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&EnrollmentCertificateUploaderImpl::GetCertificate,
                        weak_factory_.GetWeakPtr()),
         retry_delay_);

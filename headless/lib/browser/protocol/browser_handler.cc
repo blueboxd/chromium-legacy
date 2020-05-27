@@ -5,7 +5,6 @@
 #include "headless/lib/browser/protocol/browser_handler.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -73,8 +72,8 @@ Response BrowserHandler::GetWindowBounds(
 }
 
 Response BrowserHandler::Close() {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&HeadlessBrowserImpl::Shutdown, browser_->GetWeakPtr()));
   return Response::Success();
 }

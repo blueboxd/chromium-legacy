@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/optional.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
@@ -593,7 +592,7 @@ void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
   auto changed = [](base::RepeatingClosure deleted, const base::FilePath& path,
                     bool error) {
     if (!error && !base::PathExists(path)) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI}, deleted);
+      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, deleted);
     }
   };
   // Start watcher on its sequenced task runner.  It must also be destroyed

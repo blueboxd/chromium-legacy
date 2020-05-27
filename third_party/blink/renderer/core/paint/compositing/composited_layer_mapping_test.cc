@@ -56,15 +56,27 @@ class CompositedLayerMappingTest : public RenderingTest {
     return graphics_layer->previous_interest_rect_;
   }
 
-  const GraphicsLayerPaintInfo* GetSquashedLayerInScrollingContents(
-      const CompositedLayerMapping& mapping,
+  static const GraphicsLayerPaintInfo* GetSquashedLayer(
+      const Vector<GraphicsLayerPaintInfo>& squashed_layers,
       const PaintLayer& layer) {
-    for (const auto& squashed_layer :
-         mapping.squashed_layers_in_scrolling_contents_) {
+    for (const auto& squashed_layer : squashed_layers) {
       if (squashed_layer.paint_layer == &layer)
         return &squashed_layer;
     }
     return nullptr;
+  }
+
+  const GraphicsLayerPaintInfo* GetNonScrollingSquashedLayer(
+      const CompositedLayerMapping& mapping,
+      const PaintLayer& layer) {
+    return GetSquashedLayer(mapping.non_scrolling_squashed_layers_, layer);
+  }
+
+  const GraphicsLayerPaintInfo* GetSquashedLayerInScrollingContents(
+      const CompositedLayerMapping& mapping,
+      const PaintLayer& layer) {
+    return GetSquashedLayer(mapping.squashed_layers_in_scrolling_contents_,
+                            layer);
   }
 
  private:
@@ -1933,6 +1945,55 @@ TEST_F(CompositedLayerMappingTest, SquashIntoScrollingContents) {
   // the scrolling contents and target2.
   EXPECT_FALSE(target2->GroupedMapping());
   EXPECT_TRUE(target2->HasCompositedLayerMapping());
+}
+
+TEST_F(CompositedLayerMappingTest,
+       SwitchSquashingBetweenScrollingAndNonScrolling) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <style>.scroll { overflow: scroll; }</style>
+    <div id="container"
+         style="backface-visibility: hidden; width: 100px; height: 100px">
+      <div id="squashed"
+           style="z-index: 1; position: relative; width: 10px; height: 10px"></div>
+      <div id="filler" style="height: 300px"></div>
+    </div>
+  )HTML");
+
+  auto* container_element = GetDocument().getElementById("container");
+  auto* container = container_element->GetLayoutBox()->Layer();
+  auto* squashed = ToLayoutBox(GetLayoutObjectByElementId("squashed"))->Layer();
+  auto* mapping = container->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+  EXPECT_EQ(mapping, squashed->GroupedMapping());
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            squashed->GraphicsLayerBacking());
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            mapping->SquashingLayer(*squashed));
+  EXPECT_TRUE(GetNonScrollingSquashedLayer(*mapping, *squashed));
+  EXPECT_FALSE(GetSquashedLayerInScrollingContents(*mapping, *squashed));
+
+  container_element->setAttribute(html_names::kClassAttr, "scroll");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(mapping, container->GetCompositedLayerMapping());
+  EXPECT_EQ(mapping, squashed->GroupedMapping());
+  EXPECT_EQ(mapping->ScrollingContentsLayer(),
+            squashed->GraphicsLayerBacking());
+  EXPECT_EQ(mapping->ScrollingContentsLayer(),
+            mapping->SquashingLayer(*squashed));
+  EXPECT_FALSE(GetNonScrollingSquashedLayer(*mapping, *squashed));
+  EXPECT_TRUE(GetSquashedLayerInScrollingContents(*mapping, *squashed));
+
+  container_element->setAttribute(html_names::kClassAttr, "");
+  UpdateAllLifecyclePhasesForTest();
+  ASSERT_EQ(mapping, container->GetCompositedLayerMapping());
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            squashed->GraphicsLayerBacking());
+  EXPECT_EQ(mapping->NonScrollingSquashingLayer(),
+            mapping->SquashingLayer(*squashed));
+  EXPECT_TRUE(GetNonScrollingSquashedLayer(*mapping, *squashed));
+  EXPECT_FALSE(GetSquashedLayerInScrollingContents(*mapping, *squashed));
 }
 
 }  // namespace blink

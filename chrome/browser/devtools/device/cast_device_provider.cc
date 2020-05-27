@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -156,8 +155,8 @@ void CastDeviceProvider::QueryDevices(const SerialsCallback& callback) {
   if (!lister_delegate_) {
     lister_delegate_.reset(new DeviceListerDelegate(
         weak_factory_.GetWeakPtr(), base::ThreadTaskRunnerHandle::Get()));
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&DeviceListerDelegate::StartDiscovery,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&DeviceListerDelegate::StartDiscovery,
                                   lister_delegate_->AsWeakPtr()));
   }
   std::set<net::HostPortPair> targets;

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -37,8 +36,8 @@ void MockReportSender::Send(
   if (!content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI))
     return;
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&MockReportSender::NotifyReportSentOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MockReportSender::NotifyReportSentOnUIThread,
                                 base::Unretained(this)));
 }
 

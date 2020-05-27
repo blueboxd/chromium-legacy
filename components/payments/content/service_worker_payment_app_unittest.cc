@@ -148,9 +148,9 @@ TEST_F(ServiceWorkerPaymentAppTest, AppInfo) {
   EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetLabel()), "bobpay");
   EXPECT_EQ(base::UTF16ToUTF8(GetApp()->GetSublabel()), "bobpay.com");
 
-  const gfx::Size expected_size{icon_bitmap()->width(),
-                                icon_bitmap()->height()};
-  EXPECT_EQ(GetApp()->icon_image_skia().size(), expected_size);
+  ASSERT_NE(nullptr, GetApp()->icon_bitmap());
+  EXPECT_EQ(GetApp()->icon_bitmap()->width(), icon_bitmap()->width());
+  EXPECT_EQ(GetApp()->icon_bitmap()->height(), icon_bitmap()->height());
 }
 
 // Test payment request event data can be correctly constructed for invoking

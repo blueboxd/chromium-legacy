@@ -276,6 +276,10 @@ class TextNavigationManager {
    * @private
    */
   manageNavigationListener_(addListener) {
+    if (!this.selectionStartObject_) {
+      return;
+    }
+
     if (addListener) {
       this.selectionStartObject_.addEventListener(
           chrome.automation.EventType.TEXT_SELECTION_CHANGED,
@@ -296,20 +300,21 @@ class TextNavigationManager {
   onNavChange_() {
     this.manageNavigationListener_(false);
     if (this.currentlySelecting_) {
-      this.saveSelectEnd();
+      TextNavigationManager.saveSelectEnd();
     }
   }
 
   /**
    * Sets the selectionEnd variable based on the selection of the current node.
    */
-  saveSelectEnd() {
+  static saveSelectEnd() {
+    const manager = TextNavigationManager.instance;
     chrome.automation.getFocus((focusedNode) => {
-      this.selectionEndObject_ = focusedNode;
-      this.selectionEndIndex_ = this.getSelectionIndexFromNode_(
-          this.selectionEndObject_,
+      manager.selectionEndObject_ = focusedNode;
+      manager.selectionEndIndex_ = manager.getSelectionIndexFromNode_(
+          manager.selectionEndObject_,
           false /*We are not getting the start index.*/);
-      this.saveSelection_();
+      manager.saveSelection_();
     });
   }
 
@@ -371,7 +376,10 @@ class TextNavigationManager {
    */
   updateClipboardHasData_() {
     this.clipboardHasData_ = true;
-    MenuManager.reloadMenuIfNeeded();
+    const node = NavigationManager.currentNode;
+    if (node.hasAction(SwitchAccessMenuAction.PASTE)) {
+      MenuManager.reloadActionsForNode(node);
+    }
   }
 }
 

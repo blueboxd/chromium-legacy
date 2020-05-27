@@ -156,7 +156,7 @@ base::Optional<crx_file::VerifierFormat> g_verifier_format_override_for_test;
 
 SandboxedUnpackerClient::SandboxedUnpackerClient()
     : RefCountedDeleteOnSequence<SandboxedUnpackerClient>(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})) {
+          content::GetUIThreadTaskRunner({})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

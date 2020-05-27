@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -106,7 +105,7 @@ void ProfileResetter::Reset(
   CHECK_EQ(static_cast<ResettableFlags>(0), pending_reset_flags_);
 
   if (!resettable_flags) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback);
     return;
   }
 
@@ -157,7 +156,7 @@ void ProfileResetter::MarkAsDone(Resettable resettable) {
   pending_reset_flags_ &= ~resettable;
 
   if (!pending_reset_flags_) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback_);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback_);
     callback_.Reset();
     master_settings_.reset();
     template_url_service_sub_.reset();

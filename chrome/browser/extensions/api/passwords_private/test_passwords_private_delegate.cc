@@ -26,6 +26,7 @@ api::passwords_private::PasswordUiEntry CreateEntry(int id) {
   entry.urls.link = entry.urls.origin;
   entry.username = "testName" + base::NumberToString(id);
   entry.id = id;
+  entry.frontend_id = id;
   return entry;
 }
 
@@ -35,6 +36,7 @@ api::passwords_private::ExceptionEntry CreateException(int id) {
   exception.urls.origin = "http://" + exception.urls.shown + "/login";
   exception.urls.link = exception.urls.origin;
   exception.id = id;
+  exception.frontend_id = id;
   return exception;
 }
 }  // namespace

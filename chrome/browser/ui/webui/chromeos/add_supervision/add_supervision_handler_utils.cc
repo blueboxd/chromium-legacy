@@ -9,8 +9,8 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 
 bool ShouldIncludeAppUpdate(const apps::AppUpdate& app_update) {
   // TODO(danan): update this to only return sticky = true arc apps when that

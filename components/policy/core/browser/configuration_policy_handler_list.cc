@@ -87,7 +87,7 @@ bool ConfigurationPolicyHandlerList::IsPlatformDevicePolicy(
   if (!policy_details) {
     const std::string prefix(kPolicyCommentPrefix);
     if (iter->first.compare(0, prefix.length(), prefix) != 0) {
-      LOG(WARNING) << "Unknown policy: " << iter->first;
+      DVLOG(1) << "Unknown policy: " << iter->first;
     }
     return false;
   }

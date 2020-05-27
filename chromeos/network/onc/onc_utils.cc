@@ -649,15 +649,14 @@ const char kEmptyUnencryptedConfiguration[] =
     "\"Certificates\":[]}";
 
 std::unique_ptr<base::Value> ReadDictionaryFromJson(const std::string& json) {
-  std::string error;
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::ReadAndReturnErrorDeprecated(
-          json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, &error);
-  if (!root || !root->is_dict()) {
-    NET_LOG(ERROR) << "Invalid JSON Dictionary: " << error;
+  base::JSONReader::ValueWithError parsed_json =
+      base::JSONReader::ReadAndReturnValueWithError(
+          json, base::JSON_ALLOW_TRAILING_COMMAS);
+  if (!parsed_json.value || !parsed_json.value->is_dict()) {
+    NET_LOG(ERROR) << "Invalid JSON Dictionary: " << parsed_json.error_message;
     return nullptr;
   }
-  return root;
+  return base::Value::ToUniquePtrValue(std::move(*parsed_json.value));
 }
 
 std::unique_ptr<base::Value> Decrypt(const std::string& passphrase,

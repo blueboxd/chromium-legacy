@@ -130,7 +130,7 @@
   },
   {
     "name": "app-service-instance-registry",
-    "owners": [ "//chrome/services/app_service/OWNERS" ],
+    "owners": [ "//components/services/app_service/OWNERS" ],
     "expiry_milestone": 85
   },
   {

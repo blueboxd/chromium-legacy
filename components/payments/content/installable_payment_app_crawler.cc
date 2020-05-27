@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "components/payments/content/icon/icon_size.h"
 #include "components/payments/core/native_error_strings.h"
 #include "content/public/browser/browser_context.h"
@@ -79,8 +78,8 @@ void InstallablePaymentAppCrawler::Start(
 
   if (manifests_to_download.empty()) {
     // Post the result back asynchronously.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &InstallablePaymentAppCrawler::FinishCrawlingPaymentAppsIfReady,
             weak_ptr_factory_.GetWeakPtr()));
@@ -437,8 +436,8 @@ bool InstallablePaymentAppCrawler::DownloadAndDecodeWebAppIcon(
       content::WebContents::FromRenderFrameHost(render_frame_host) !=
           web_contents()) {
     // Post the result back asynchronously.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &InstallablePaymentAppCrawler::FinishCrawlingPaymentAppsIfReady,
             weak_ptr_factory_.GetWeakPtr()));

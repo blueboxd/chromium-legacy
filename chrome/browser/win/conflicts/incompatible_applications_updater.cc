@@ -13,7 +13,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -459,8 +458,8 @@ void IncompatibleApplicationsUpdater::OnModuleDatabaseIdle() {
   // Update the list of incompatible applications on the UI thread. On the first
   // call to UpdateIncompatibleApplications(), the previous value must always be
   // overwritten.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&UpdateIncompatibleApplications, before_first_idle_,
                      std::move(incompatible_applications_)));
   incompatible_applications_.clear();

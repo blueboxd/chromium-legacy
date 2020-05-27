@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/mac/bluetooth_utility.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -51,10 +50,8 @@ void ReportBluetoothAvailability() {
   // GetAdapter must be called on the UI thread, because it creates a
   // WeakPtr, which is checked from that thread on future calls.
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE,
-        {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(&ReportBluetoothAvailability));
+    content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
+        ->PostTask(FROM_HERE, base::BindOnce(&ReportBluetoothAvailability));
     return;
   }
 

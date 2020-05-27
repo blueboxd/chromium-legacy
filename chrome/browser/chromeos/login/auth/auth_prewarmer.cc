@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -68,8 +67,8 @@ void AuthPrewarmer::DoPrewarm() {
         kConnectionsNeeded, url, kAllowCredentials, net::NetworkIsolationKey());
   }
   if (!completion_callback_.is_null()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   std::move(completion_callback_));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, std::move(completion_callback_));
   }
 }
 

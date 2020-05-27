@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/services/paint_preview_compositor/public/mojom/paint_preview_compositor.mojom.h"
@@ -56,8 +55,8 @@ void BindDiscardableSharedMemoryManager(
       discardable_memory_manager;
 
   // Set up the discardable memory manager.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &BindDiscardableSharedMemoryManagerOnIOThread,
           discardable_memory_manager.InitWithNewPipeAndPassReceiver()));

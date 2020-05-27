@@ -8,6 +8,6 @@ dictionary IntersectionObserverInit {
     (Element or Document)? root = null;
     DOMString rootMargin = "0px";
     (double or sequence<double>) threshold = 0;
-    [RuntimeEnabled=IntersectionObserverV2] DOMHighResTimeStamp delay = 0;
-    [RuntimeEnabled=IntersectionObserverV2] boolean trackVisibility = false;
+    DOMHighResTimeStamp delay = 0;
+    boolean trackVisibility = false;
 };

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -101,8 +100,8 @@ void ServiceWorkerTaskQueue::DidStartWorkerForScopeOnCoreThread(
                                          thread_id);
     }
   } else {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerForScope,
                        task_queue, context_id, version_id, process_id,
                        thread_id));
@@ -118,8 +117,8 @@ void ServiceWorkerTaskQueue::DidStartWorkerFailOnCoreThread(
     if (task_queue)
       task_queue->DidStartWorkerFail(context_id);
   } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerFail,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ServiceWorkerTaskQueue::DidStartWorkerFail,
                                   task_queue, context_id));
   }
 }
@@ -454,8 +453,7 @@ void ServiceWorkerTaskQueue::RunTasksAfterStartWorker(
         weak_factory_.GetWeakPtr(), context_id, service_worker_context);
   } else {
     content::ServiceWorkerContext::RunTask(
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-        FROM_HERE, service_worker_context,
+        content::GetIOThreadTaskRunner({}), FROM_HERE, service_worker_context,
         base::BindOnce(
             &ServiceWorkerTaskQueue::StartServiceWorkerOnCoreThreadToRunTasks,
             weak_factory_.GetWeakPtr(), context_id, service_worker_context));

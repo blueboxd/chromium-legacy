@@ -12,7 +12,6 @@
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
 #include "base/synchronization/atomic_flag.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -127,8 +126,8 @@ void FileFlusher::Job::ScheduleFinish() {
     return;
 
   finish_scheduled_ = true;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&Job::FinishOnUIThread, base::Unretained(this)));
 }
 

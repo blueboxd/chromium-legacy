@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/scoped_test_system_nss_key_slot.h"
@@ -27,8 +26,8 @@ PK11SlotInfo* ScopedTestSystemNSSKeySlotMixin::slot() {
 void ScopedTestSystemNSSKeySlotMixin::SetUpOnMainThread() {
   bool system_slot_initialized_successfully = false;
   base::RunLoop loop;
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&ScopedTestSystemNSSKeySlotMixin::InitializeOnIo,
                      base::Unretained(this),
                      &system_slot_initialized_successfully),
@@ -39,8 +38,8 @@ void ScopedTestSystemNSSKeySlotMixin::SetUpOnMainThread() {
 
 void ScopedTestSystemNSSKeySlotMixin::TearDownOnMainThread() {
   base::RunLoop loop;
-  base::PostTaskAndReply(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+      FROM_HERE,
       base::BindOnce(&ScopedTestSystemNSSKeySlotMixin::DestroyOnIo,
                      base::Unretained(this)),
       loop.QuitClosure());

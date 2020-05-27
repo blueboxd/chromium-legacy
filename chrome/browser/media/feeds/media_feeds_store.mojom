@@ -437,6 +437,7 @@ interface MediaFeedsStore {
 
   // Fetch the details of a previously-discovered media feed and store them in
   // media history. The feed ID is the unique ID for the feed from the Media
-  // History store.
-  FetchMediaFeed(int64 feed_id) => ();
+  // History store. The logs contain information about any problems fetching or
+  // parsing the feed.
+  FetchMediaFeed(int64 feed_id) => (string logs);
 };

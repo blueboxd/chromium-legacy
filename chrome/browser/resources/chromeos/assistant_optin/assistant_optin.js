@@ -56,6 +56,13 @@ cr.define('login.AssistantOptInFlowScreen', function() {
     onVoiceMatchUpdate(state) {
       $('assistant-optin-flow-card').onVoiceMatchUpdate(state);
     },
+
+    /**
+     * Called when the flow finished and close the dialog.
+     */
+    closeDialog() {
+      assistant.BrowserProxyImpl.getInstance().dialogClose();
+    },
   };
 });
 

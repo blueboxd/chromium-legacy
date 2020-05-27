@@ -201,8 +201,8 @@ CommandHandler.onCommand = function(command) {
       return false;
     case 'reportIssue':
       let url = 'https://code.google.com/p/chromium/issues/entry?' +
-          'labels=Type-Bug,Pri-2,cvox2,OS-Chrome&' +
-          'components=UI>accessibility&' +
+          'labels=Type-Bug,Pri-2,OS-Chrome&' +
+          'components=UI>accessibility>ChromeVox&' +
           'description=';
 
       const description = {};

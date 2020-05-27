@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "components/crx_file/crx_verifier.h"
 #include "components/update_client/utils.h"
@@ -153,21 +152,19 @@ void UpdateDataProvider::RunInstallCallback(
         FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
         base::BindOnce(base::IgnoreResult(&base::DeleteFile), unpacked_dir,
                        true));
-    base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-        ->PostTask(
-            FROM_HERE,
-            base::BindOnce(std::move(update_client_callback),
-                           update_client::CrxInstaller::Result(
-                               update_client::InstallError::GENERIC_ERROR)));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(update_client_callback),
+                       update_client::CrxInstaller::Result(
+                           update_client::InstallError::GENERIC_ERROR)));
     return;
   }
 
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(InstallUpdateCallback, browser_context_, extension_id,
-                         public_key, unpacked_dir, install_immediately,
-                         std::move(update_client_callback)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(InstallUpdateCallback, browser_context_, extension_id,
+                     public_key, unpacked_dir, install_immediately,
+                     std::move(update_client_callback)));
 }
 
 }  // namespace extensions

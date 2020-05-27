@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/android/history_report/delta_file_commons.h"
 #include "chrome/browser/android/history_report/delta_file_service.h"
 #include "chrome/browser/android/history_report/get_all_urls_from_history_task.h"
@@ -123,8 +122,8 @@ std::unique_ptr<std::vector<DeltaFileEntryWithData>> DataProvider::Query(
     if (!entries->empty()) {
       Context context(history_service_,
                       &history_task_tracker_);
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&QueryUrlsHistoryInUiThread,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&QueryUrlsHistoryInUiThread,
                                     base::Unretained(&context),
                                     base::Unretained(entries.get())));
       std::vector<UrlAndTitle> bookmarks;
@@ -161,8 +160,8 @@ void DataProvider::StartVisitMigrationToUsageBuffer(
   base::WaitableEvent finished(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                                base::WaitableEvent::InitialState::NOT_SIGNALED);
   buffer_service->Clear();
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&StartVisitMigrationToUsageBufferUiThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&StartVisitMigrationToUsageBufferUiThread,
                                 base::Unretained(history_service_),
                                 buffer_service, base::Unretained(&finished),
                                 base::Unretained(&history_task_tracker_)));
@@ -179,8 +178,8 @@ void DataProvider::RecreateLog() {
     std::unique_ptr<history::HistoryDBTask> task =
         std::unique_ptr<history::HistoryDBTask>(
             new GetAllUrlsFromHistoryTask(&finished, &urls));
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             base::IgnoreResult(&history::HistoryService::ScheduleDBTask),
             base::Unretained(history_service_), FROM_HERE, std::move(task),

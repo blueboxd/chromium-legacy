@@ -680,6 +680,17 @@ def _CollectReferencedKinds(module, all_defined_kinds):
   return referenced_user_kinds
 
 
+def _AssignDefaultOrdinals(items):
+  """Assigns default ordinal values to a sequence of items if necessary."""
+  next_ordinal = 0
+  for item in items:
+    if item.ordinal is not None:
+      next_ordinal = item.ordinal + 1
+    else:
+      item.ordinal = next_ordinal
+      next_ordinal += 1
+
+
 def _Module(tree, path, imports):
   """
   Args:
@@ -739,15 +750,19 @@ def _Module(tree, path, imports):
     struct.fields = list(
         map(lambda field: _StructField(module, field, struct),
             struct.fields_data))
+    _AssignDefaultOrdinals(struct.fields)
     del struct.fields_data
     all_defined_kinds[struct.spec] = struct
     for enum in struct.enums:
       all_defined_kinds[enum.spec] = enum
+
   for union in module.unions:
     union.fields = list(
         map(lambda field: _UnionField(module, field, union), union.fields_data))
+    _AssignDefaultOrdinals(union.fields)
     del union.fields_data
     all_defined_kinds[union.spec] = union
+
   for interface in module.interfaces:
     interface.methods = list(
         map(lambda method: _Method(module, method, interface),

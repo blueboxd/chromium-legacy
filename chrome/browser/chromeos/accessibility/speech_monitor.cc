@@ -5,9 +5,9 @@
 #include "chrome/browser/chromeos/accessibility/speech_monitor.h"
 
 #include "base/strings/pattern.h"
-#include "base/task/post_task.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_controller.h"
 
 namespace chromeos {
@@ -213,8 +213,8 @@ void SpeechMonitor::MaybeContinueReplay() {
   }
 
   if (!replay_queue_.empty()) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&SpeechMonitor::MaybePrintExpectations,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(kPrintExpectationDelayMs));

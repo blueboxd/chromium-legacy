@@ -313,14 +313,15 @@ gfx::Point WindowResizer::GetOriginForDrag(int delta_x,
   // modify the origin so that the cursor remains within the dragged window.
   // The ratio of the new origin to the new location should match the ratio
   // from the initial origin to the initial location.
-  if (!details().restore_bounds.IsEmpty()) {
+  if (!details().restore_bounds_in_parent.IsEmpty()) {
     // The ratios that should match is the (drag location x - bounds origin x) /
     // bounds width.
     const float ratio = (details().initial_location_in_parent.x() -
                          float{details().initial_bounds_in_parent.x()}) /
                         details().initial_bounds_in_parent.width();
-    const int new_origin_x = gfx::ToRoundedInt(
-        event_location.x() - ratio * details().restore_bounds.width());
+    const int new_origin_x =
+        gfx::ToRoundedInt(event_location.x() -
+                          ratio * details().restore_bounds_in_parent.width());
     origin.set_x(new_origin_x);
   }
 
@@ -335,8 +336,8 @@ gfx::Size WindowResizer::GetSizeForDrag(int* delta_x, int* delta_y) {
                              : gfx::Size();
     size.SetSize(GetWidthForDrag(min_size.width(), delta_x),
                  GetHeightForDrag(min_size.height(), delta_y));
-  } else if (!details().restore_bounds.IsEmpty()) {
-    size = details().restore_bounds.size();
+  } else if (!details().restore_bounds_in_parent.IsEmpty()) {
+    size = details().restore_bounds_in_parent.size();
   }
   return size;
 }

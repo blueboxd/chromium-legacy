@@ -86,7 +86,6 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
   // parameters if needed.
   virtual SensorConfigurationPtr CreateSensorConfig();
 
-  bool IsActivated() const { return state_ == SensorState::kActivated; }
   bool IsIdleOrErrored() const;
   const device::SensorReading& GetReading() const;
 

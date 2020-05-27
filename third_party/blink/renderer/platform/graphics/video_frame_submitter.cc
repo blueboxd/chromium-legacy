@@ -195,30 +195,37 @@ void VideoFrameSubmitter::OnBeginFrame(
   for (const auto& pair : timing_details) {
     if (viz::FrameTokenGT(pair.key, *next_frame_token_))
       continue;
-
+    auto& feedback = *pair.value->presentation_feedback;
 #ifdef OS_LINUX
     // TODO: On Linux failure flag is unreliable, and perfectly rendered frames
     // are reported as failures all the time.
     bool presentation_failure = false;
 #else
-    bool presentation_failure = !!(pair.value->presentation_feedback->flags &
-                                   gfx::PresentationFeedback::kFailure);
+    bool presentation_failure =
+        feedback.flags & gfx::PresentationFeedback::kFailure;
 #endif
     if (!presentation_failure &&
         !ignorable_submitted_frames_.contains(pair.key)) {
       frame_trackers_.NotifyFramePresented(
           pair.key, gfx::PresentationFeedback(
-                        pair.value->presentation_feedback->timestamp,
-                        pair.value->presentation_feedback->interval,
-                        pair.value->presentation_feedback->flags));
-      roughness_reporter_->FramePresented(
-          pair.key, pair.value->presentation_feedback->timestamp);
+                        feedback.timestamp, feedback.interval, feedback.flags));
+
+      // We assume that presentation feedback is reliable if
+      // 1. (kHWCompletion) OS told us that the frame was shown at that time
+      //  or
+      // 2. (kVSync) at least presentation time is aligned with vsyncs intervals
+      uint32_t reliable_feedback_mask =
+          gfx::PresentationFeedback::kHWCompletion |
+          gfx::PresentationFeedback::kVSync;
+      bool reliable_timestamp = feedback.flags & reliable_feedback_mask;
+      roughness_reporter_->FramePresented(pair.key, feedback.timestamp,
+                                          reliable_timestamp);
     }
 
     ignorable_submitted_frames_.erase(pair.key);
     TRACE_EVENT_NESTABLE_ASYNC_END_WITH_TIMESTAMP0(
         "media", "VideoFrameSubmitter", TRACE_ID_LOCAL(pair.key),
-        pair.value->presentation_feedback->timestamp);
+        feedback.timestamp);
   }
   frame_trackers_.NotifyBeginImplFrame(args);
 

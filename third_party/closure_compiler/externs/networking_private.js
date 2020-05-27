@@ -252,6 +252,7 @@ chrome.networkingPrivate.ManagedIssuerSubjectPattern;
  * @typedef {{
  *   EnrollmentURI: (!Array<string>|undefined),
  *   Issuer: (!chrome.networkingPrivate.IssuerSubjectPattern|undefined),
+ *   IssuerCAPEMs: (!Array<string>|undefined),
  *   IssuerCARef: (!Array<string>|undefined),
  *   Subject: (!chrome.networkingPrivate.IssuerSubjectPattern|undefined)
  * }}
@@ -862,6 +863,7 @@ chrome.networkingPrivate.NetworkConfigProperties;
  *   IPAddressConfigType: (!chrome.networkingPrivate.IPConfigType|undefined),
  *   IPConfigs: (!Array<!chrome.networkingPrivate.IPConfigProperties>|undefined),
  *   MacAddress: (string|undefined),
+ *   Metered: (boolean|undefined),
  *   Name: (string|undefined),
  *   NameServersConfigType: (!chrome.networkingPrivate.IPConfigType|undefined),
  *   Priority: (number|undefined),
@@ -889,6 +891,7 @@ chrome.networkingPrivate.NetworkProperties;
  *   IPAddressConfigType: (!chrome.networkingPrivate.ManagedIPConfigType|undefined),
  *   IPConfigs: (!Array<!chrome.networkingPrivate.IPConfigProperties>|undefined),
  *   MacAddress: (string|undefined),
+ *   Metered: (!chrome.networkingPrivate.ManagedBoolean|undefined),
  *   Name: (!chrome.networkingPrivate.ManagedDOMString|undefined),
  *   NameServersConfigType: (!chrome.networkingPrivate.ManagedIPConfigType|undefined),
  *   Priority: (!chrome.networkingPrivate.ManagedLong|undefined),

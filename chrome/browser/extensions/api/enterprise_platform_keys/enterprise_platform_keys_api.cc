@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
 #include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
@@ -300,7 +299,7 @@ EnterprisePlatformKeysChallengeMachineKeyFunction::Run() {
       chromeos::attestation::KEY_DEVICE, scoped_refptr<ExtensionFunction>(this),
       std::move(callback), StringFromVector(params->challenge),
       params->register_key ? *params->register_key : false);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(task));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   return RespondLater();
 }
 
@@ -334,7 +333,7 @@ EnterprisePlatformKeysChallengeUserKeyFunction::Run() {
       chromeos::attestation::KEY_USER, scoped_refptr<ExtensionFunction>(this),
       std::move(callback), StringFromVector(params->challenge),
       params->register_key);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, std::move(task));
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, std::move(task));
   return RespondLater();
 }
 

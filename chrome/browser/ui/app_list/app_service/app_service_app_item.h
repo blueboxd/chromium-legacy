@@ -11,8 +11,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
-#include "chrome/services/app_service/public/cpp/app_update.h"
-#include "chrome/services/app_service/public/mojom/types.mojom-forward.h"
+#include "components/services/app_service/public/cpp/app_update.h"
+#include "components/services/app_service/public/mojom/types.mojom-forward.h"
 
 class AppServiceAppItem : public ChromeAppListItem,
                           public app_list::AppContextMenuDelegate {

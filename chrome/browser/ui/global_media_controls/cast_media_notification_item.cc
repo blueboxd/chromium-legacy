@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 #include "components/media_message_center/media_notification_controller.h"
@@ -182,8 +181,8 @@ void CastMediaNotificationItem::SetView(
     // delay rather than waiting for OnMediaStatusUpdated(), because it could
     // get called multiple times with increasing amounts of info, or not get
     // called at all.
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&CastMediaNotificationItem::RecordMetadataMetrics,
                        weak_ptr_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(3));

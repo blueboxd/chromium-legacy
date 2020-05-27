@@ -887,6 +887,7 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
     // but before the IO thread is started.
     if (base::FeatureList::IsEnabled(base::HangWatcher::kEnableHangWatcher)) {
       hang_watcher_ = new base::HangWatcher();
+      hang_watcher_->Start();
       ANNOTATE_LEAKING_OBJECT_PTR(hang_watcher_);
     }
 

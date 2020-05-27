@@ -89,7 +89,7 @@ class ServiceWorkerPaymentApp : public PaymentApp {
       bool supported_networks_specified,
       const std::set<std::string>& supported_networks) const override;
   base::WeakPtr<PaymentApp> AsWeakPtr() override;
-  gfx::ImageSkia icon_image_skia() const override;
+  const SkBitmap* icon_bitmap() const override;
   bool HandlesShippingAddress() const override;
   bool HandlesPayerName() const override;
   bool HandlesPayerEmail() const override;
@@ -126,7 +126,6 @@ class ServiceWorkerPaymentApp : public PaymentApp {
   GURL frame_origin_;
   const PaymentRequestSpec* spec_;
   std::unique_ptr<content::StoredPaymentApp> stored_payment_app_info_;
-  gfx::ImageSkia icon_image_;
 
   // Weak pointer is fine here since the owner of this object is
   // PaymentRequestState which also owns PaymentResponseHelper.

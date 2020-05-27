@@ -95,6 +95,9 @@ class HangWatcherTest : public testing::Test {
     // We're not testing the monitoring loop behavior in this test so we want to
     // trigger monitoring manually.
     hang_watcher_.SetMonitoringPeriodForTesting(base::TimeDelta::Max());
+
+    // Start the monitoring loop.
+    hang_watcher_.Start();
   }
 
   HangWatcherTest(const HangWatcherTest& other) = delete;
@@ -168,19 +171,6 @@ class HangWatcherBlockingThreadTest : public HangWatcherTest {
   BlockingThread thread_;
 };
 }  // namespace
-
-TEST_F(HangWatcherTest, NoRegisteredThreads) {
-  ASSERT_FALSE(monitor_event_.IsSignaled());
-
-  // Signal to advance the Run() loop.
-  base::HangWatcher::GetInstance()->SignalMonitorEventForTesting();
-
-  // Monitoring should just not happen when there are no registered threads.
-  // Wait a while to make sure it does not.
-  ASSERT_FALSE(monitor_event_.TimedWait(base::TimeDelta::FromSeconds(1)));
-
-  ASSERT_FALSE(hang_event_.IsSignaled());
-}
 
 TEST_F(HangWatcherTest, NestedScopes) {
   // Create a state object for the test thread since this test is single
@@ -307,7 +297,7 @@ class HangWatcherSnapshotTest : public testing::Test {
 }  // namespace
 
 // TODO(crbug.com/2193655): Test flaky on iPad.
-TEST_F(HangWatcherSnapshotTest, DISABLED_HungThreadIDs) {
+TEST_F(HangWatcherSnapshotTest, HungThreadIDs) {
   // During hang capture the list of hung threads should be populated.
   hang_watcher_.SetOnHangClosureForTesting(base::BindLambdaForTesting([this]() {
     EXPECT_EQ(hang_watcher_.GrabWatchStateSnapshotForTesting()
@@ -324,6 +314,8 @@ TEST_F(HangWatcherSnapshotTest, DISABLED_HungThreadIDs) {
                   "");
         monitor_event_.Signal();
       }));
+
+  hang_watcher_.Start();
 
   // Register the main test thread for hang watching.
   auto unregister_thread_closure_ = hang_watcher_.RegisterThread();
@@ -437,6 +429,8 @@ TEST_F(HangWatcherPeriodicMonitoringTest,
   // wrong reasons.
   InstallAfterWaitCallback(kMonitoringPeriod);
 
+  hang_watcher_.Start();
+
   // Unblock the test thread. No thread ever registered after the HangWatcher
   // was created in the test's constructor. No monitoring should have taken
   // place.
@@ -475,7 +469,9 @@ TEST_F(HangWatcherPeriodicMonitoringTest, PeriodicCallsTakePlace) {
   // Monitor(). This would inhibit monitoring.
   InstallAfterWaitCallback(kMonitoringPeriod);
 
-  // Register a thread, kicks off monitoring.
+  hang_watcher_.Start();
+
+  // Register a thread,
   unregister_thread_closure_ = hang_watcher_.RegisterThread();
 
   run_loop.Run();
@@ -487,7 +483,7 @@ TEST_F(HangWatcherPeriodicMonitoringTest, PeriodicCallsTakePlace) {
 // If the HangWatcher detects it slept for longer than expected it will not
 // monitor.
 // TODO(crbug.com/1081654): Test flaky on ChromeOS.
-TEST_F(HangWatcherPeriodicMonitoringTest, DISABLED_NoMonitorOnOverSleep) {
+TEST_F(HangWatcherPeriodicMonitoringTest, NoMonitorOnOverSleep) {
   RunLoop run_loop;
 
   // If a call to HangWatcher::Monitor() takes place the test will instantly
@@ -502,7 +498,9 @@ TEST_F(HangWatcherPeriodicMonitoringTest, DISABLED_NoMonitorOnOverSleep) {
   // detect oversleeping every time. This will keep it from monitoring.
   InstallAfterWaitCallback(base::TimeDelta::FromMinutes(1));
 
-  // Register a thread, kicks off monitoring.
+  hang_watcher_.Start();
+
+  // Register a thread.
   unregister_thread_closure_ = hang_watcher_.RegisterThread();
 
   // Unblock the test thread. All waits were perceived as oversleeping so all
@@ -537,6 +535,8 @@ class HangWatchScopeBlockingTest : public testing::Test {
 
     // Make sure no periodic monitoring takes place.
     hang_watcher_.SetMonitoringPeriodForTesting(base::TimeDelta::Max());
+
+    hang_watcher_.Start();
 
     // Register the test main thread for hang watching.
     unregister_thread_closure_ = hang_watcher_.RegisterThread();

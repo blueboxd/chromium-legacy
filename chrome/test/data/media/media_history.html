@@ -19,6 +19,11 @@ function attemptPlayVideoOnly() {
   attemptPlay('video-only.webm');
 }
 
+function mute() {
+  const video = document.querySelector('video');
+  video.muted = true;
+}
+
 function attemptPlay(src) {
   const video = document.querySelector('video');
   video.src = src;

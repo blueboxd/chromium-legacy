@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -114,8 +113,8 @@ CrowdDenySafeBrowsingRequest::CrowdDenySafeBrowsingRequest(
   client_ = std::make_unique<SafeBrowsingClient>(
       database_manager, weak_factory_.GetWeakPtr(),
       base::SequencedTaskRunnerHandle::Get());
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&SafeBrowsingClient::CheckOrigin,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SafeBrowsingClient::CheckOrigin,
                                 base::Unretained(client_.get()), origin));
 }
 

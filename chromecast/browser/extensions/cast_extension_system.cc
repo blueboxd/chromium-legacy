@@ -134,8 +134,8 @@ const Extension* CastExtensionSystem::LoadExtension(
       LOG(WARNING) << warning.message;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&CastExtensionSystem::PostLoadExtension,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CastExtensionSystem::PostLoadExtension,
                                 base::Unretained(this), extension));
 
   return extension.get();

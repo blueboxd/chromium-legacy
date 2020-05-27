@@ -468,10 +468,6 @@ void NetworkContext::SetCertVerifierForTesting(
   g_cert_verifier_for_testing = cert_verifier;
 }
 
-bool NetworkContext::IsPrimaryNetworkContext() const {
-  return params_ && params_->primary_network_context;
-}
-
 void NetworkContext::CreateURLLoaderFactory(
     mojo::PendingReceiver<mojom::URLLoaderFactory> receiver,
     mojom::URLLoaderFactoryParamsPtr params,

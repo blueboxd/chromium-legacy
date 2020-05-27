@@ -1,0 +1,34 @@
+include_rules = [
+  "+components/prefs",
+  "+components/services/app_service/public/cpp",
+  "+content/public",
+]
+
+specific_include_rules = {
+  "instance_registry\.h": [
+    "+ash/public/cpp/shelf_types.h",
+  ],
+  "icon_cache\.h": [
+    "+ui/gfx/image/image_skia.h",
+  ],
+  "instance\.h": [
+    "+ui/aura/window.h",
+    "+ui/gfx/image/image_skia_rep.h",
+  ],
+  "icon_cache_unittest\.cc": [
+    "+chrome/test/base/testing_profile.h",
+    "+ui/gfx/geometry/size.h",
+    "+ui/gfx/image/image_skia_rep.h",
+  ],
+  "instance_registry_unittest\.cc": [
+    "+ui/aura/window.h",
+    "+chrome/test/base/testing_profile.h",
+  ],
+  "instance_update_unittest\.cc": [
+    "+chrome/test/base/testing_profile.h",
+  ],
+  "stub_icon_loader\.cc": [
+    "+ui/gfx/image/image_skia.h",
+    "+ui/gfx/image/image_skia_rep.h",
+  ],
+}

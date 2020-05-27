@@ -5,7 +5,6 @@
 #include "content/browser/tracing/background_startup_tracing_observer.h"
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "components/tracing/common/trace_startup_config.h"
 #include "content/browser/tracing/background_tracing_rule.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -68,8 +67,8 @@ void BackgroundStartupTracingObserver::OnScenarioActivated(
   DCHECK(startup_rule);
 
   // Post task to avoid reentrancy.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &BackgroundTracingManagerImpl::OnRuleTriggered,
           base::Unretained(BackgroundTracingManagerImpl::GetInstance()),

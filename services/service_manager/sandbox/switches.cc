@@ -80,6 +80,7 @@ const char kGpuSandboxAllowSysVShm[] = "gpu-sandbox-allow-sysv-shm";
 const char kGpuSandboxFailuresFatal[] = "gpu-sandbox-failures-fatal";
 
 // Disables the sandbox for all process types that are normally sandboxed.
+// Meant to be used as a browser-level switch for testing purposes only.
 const char kNoSandbox[] = "no-sandbox";
 
 #if defined(OS_LINUX)

@@ -12,7 +12,6 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -348,8 +347,8 @@ void RulesRegistry::ProcessChangedRules(const std::string& extension_id) {
 
   std::vector<const api::events::Rule*> new_rules;
   GetRules(extension_id, &rules_, &new_rules);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&RulesCacheDelegate::UpdateRules, cache_delegate_,
                      extension_id, RulesToValue(new_rules)));
 }

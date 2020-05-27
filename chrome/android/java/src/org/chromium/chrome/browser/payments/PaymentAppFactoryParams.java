@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments;
 
 import androidx.annotation.Nullable;
 
+import org.chromium.components.payments.PaymentRequestSpec;
 import org.chromium.components.payments.PaymentRequestUpdateEventListener;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
@@ -102,5 +103,10 @@ public interface PaymentAppFactoryParams {
      */
     default boolean requestShippingOrPayerContact() {
         return false;
+    }
+
+    /** @return The Payment Request information received from the merchant. */
+    default PaymentRequestSpec getSpec() {
+        return null;
     }
 }

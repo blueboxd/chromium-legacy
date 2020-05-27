@@ -184,6 +184,19 @@ std::string MojoVpnTypeToOnc(mojom::VpnType mojo_vpn_type) {
   return ::onc::vpn::kOpenVPN;
 }
 
+bool GetIsConfiguredByUser(const std::string& network_guid) {
+  if (!NetworkHandler::IsInitialized())
+    return false;
+
+  NetworkMetadataStore* network_metadata_store =
+      NetworkHandler::Get()->network_metadata_store();
+
+  if (!network_metadata_store)
+    return false;
+
+  return network_metadata_store->GetIsCreatedByUser(network_guid);
+}
+
 mojom::DeviceStateType GetMojoDeviceStateType(
     NetworkStateHandler::TechnologyState technology_state) {
   switch (technology_state) {
@@ -1207,6 +1220,8 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
   // Managed properties
   result->ip_address_config_type =
       GetManagedString(properties, ::onc::network_config::kIPAddressConfigType);
+  result->metered =
+      GetManagedBoolean(properties, ::onc::network_config::kMetered);
   result->name = GetManagedString(properties, ::onc::network_config::kName);
   result->name_servers_config_type = GetManagedString(
       properties, ::onc::network_config::kNameServersConfigType);
@@ -1408,8 +1423,9 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       wifi->tethering_state =
           GetString(wifi_dict, ::onc::wifi::kTetheringState);
       wifi->is_syncable = sync_wifi::IsEligibleForSync(
-          result->guid, result->connectable, result->source, wifi->security,
+          result->guid, result->connectable, wifi->security,
           /*log_result=*/false);
+      wifi->is_configured_by_active_user = GetIsConfiguredByUser(result->guid);
 
       result->type_properties =
           mojom::NetworkTypeManagedProperties::NewWifi(std::move(wifi));
@@ -1598,9 +1614,11 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
     onc->SetStringKey(::onc::network_config::kIPAddressConfigType,
                       *properties->ip_address_config_type);
   }
-
+  if (properties->metered) {
+    onc->SetBoolKey(::onc::network_config::kMetered,
+                    properties->metered->value);
+  }
   SetString(::onc::network_config::kName, properties->name, onc.get());
-
   SetString(::onc::network_config::kNameServersConfigType,
             properties->name_servers_config_type, onc.get());
 

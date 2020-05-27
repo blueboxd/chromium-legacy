@@ -72,7 +72,7 @@ void AmbientLightSensor::OnSensorReadingChanged() {
   // The platform sensor may start sending readings before the sensor is fully
   // activated on the Blink side. In this case, bail out early, otherwise we
   // will set |latest_reading_| and not send a "reading" event.
-  if (!IsActivated())
+  if (!activated())
     return;
 
   const double new_reading = GetReading().als.value;

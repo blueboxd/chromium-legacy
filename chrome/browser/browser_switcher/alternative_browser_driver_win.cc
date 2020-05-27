@@ -16,7 +16,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/win/registry.h"
@@ -289,8 +288,8 @@ void TryLaunchBlocking(GURL url,
                        LaunchCallback cb) {
   const bool success =
       (TryLaunchWithDde(url, path) || TryLaunchWithExec(url, path, params));
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           [](bool success, LaunchCallback cb) { std::move(cb).Run(success); },
           success, std::move(cb)));

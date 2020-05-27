@@ -43,6 +43,7 @@ class TerminalSource : public content::URLDataSource {
   std::string GetMimeType(const std::string& path) override;
   bool ShouldServeMimeTypeAsContentTypeHeader() override;
   const ui::TemplateReplacements* GetReplacements() override;
+  std::string GetContentSecurityPolicyDefaultSrc() override;
 
   Profile* profile_;
   std::string source_;

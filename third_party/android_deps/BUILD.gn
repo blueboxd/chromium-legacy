@@ -30,6 +30,32 @@ java_group("android_support_v7_appcompat_java") {
   ]
 }
 
+java_group("robolectric_all_java") {
+  testonly = true
+  deps = [
+    ":org_robolectric_annotations_java",
+    ":org_robolectric_junit_java",
+    ":org_robolectric_pluginapi_java",
+    ":org_robolectric_plugins_maven_dependency_resolver_java",
+    ":org_robolectric_resources_java",
+    ":org_robolectric_robolectric_java",
+    ":org_robolectric_sandbox_java",
+    ":org_robolectric_shadowapi_java",
+    ":org_robolectric_shadows_framework_java",
+    ":org_robolectric_shadows_multidex_java",
+    ":org_robolectric_shadows_playservices_java",
+    ":org_robolectric_utils_java",
+    ":org_robolectric_utils_reflector_java",
+    "//third_party/robolectric:android-all-10-robolectric-5803371_java",
+    "//third_party/robolectric:android-all-4.4_r1-robolectric-r2_java",
+    "//third_party/robolectric:android-all-5.0.2_r3-robolectric-r0_java",
+    "//third_party/robolectric:android-all-7.1.0_r7-robolectric-r1_java",
+    "//third_party/robolectric:android-all-8.0.0_r4-robolectric-r1_java",
+    "//third_party/robolectric:android-all-8.1.0-robolectric-4611349_java",
+    "//third_party/robolectric:android-all-9-robolectric-4913185-2_java",
+  ]
+}
+
 # The dependencies below are used by chromecast internal.
 java_group("android_support_v7_preference_java") {
   deps = [ ":androidx_preference_preference_java" ]
@@ -1451,6 +1477,23 @@ java_prebuilt("org_robolectric_shadows_playservices_java") {
   deps = [
     ":com_google_guava_guava_java",
     ":org_robolectric_annotations_java",
+  ]
+  bypass_platform_checks = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("org_robolectric_utils_java") {
+  jar_path = "libs/org_robolectric_utils/utils-4.3.1.jar"
+  output_name = "org_robolectric_utils"
+  enable_bytecode_checks = false
+  testonly = true
+  deps = [
+    ":com_google_auto_service_auto_service_java",
+    ":javax_annotation_javax_annotation_api_java",
+    ":javax_inject_javax_inject_java",
+    ":org_robolectric_annotations_java",
+    ":org_robolectric_pluginapi_java",
+    ":org_robolectric_utils_reflector_java",
   ]
   bypass_platform_checks = true
 }
@@ -2974,27 +3017,6 @@ java_prebuilt("org_robolectric_shadows_framework_java") {
     "//third_party/accessibility_test_framework:accessibility_test_framework_java",
     "//third_party/icu4j:icu4j_java",
     "//third_party/sqlite4java:sqlite4java_java",
-  ]
-  bypass_platform_checks = true
-}
-
-# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
-java_prebuilt("org_robolectric_utils_java") {
-  jar_path = "libs/org_robolectric_utils/utils-4.3.1.jar"
-  output_name = "org_robolectric_utils"
-  enable_bytecode_checks = false
-
-  # To remove visibility constraint, add this dependency to
-  # //third_party/android_deps/build.gradle.
-  visibility = [ ":*" ]
-  testonly = true
-  deps = [
-    ":com_google_auto_service_auto_service_java",
-    ":javax_annotation_javax_annotation_api_java",
-    ":javax_inject_javax_inject_java",
-    ":org_robolectric_annotations_java",
-    ":org_robolectric_pluginapi_java",
-    ":org_robolectric_utils_reflector_java",
   ]
   bypass_platform_checks = true
 }

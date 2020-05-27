@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/browser/cast_download_manager_delegate.h"
@@ -59,8 +58,8 @@ CastBrowserContext::~CastBrowserContext() {
   SimpleKeyMap::GetInstance()->Dissociate(this);
   BrowserContext::NotifyWillBeDestroyed(this);
   ShutdownStoragePartitions();
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO},
-                   resource_context_.release());
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 resource_context_.release());
 }
 
 void CastBrowserContext::InitWhileIOAllowed() {

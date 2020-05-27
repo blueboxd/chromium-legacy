@@ -22,7 +22,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/win/core_winrt_util.h"
 #include "base/win/registry.h"
@@ -569,8 +568,8 @@ class NotificationPlatformBridgeWinImpl
       displayed_notifications.insert(launch_id.notification_id());
     }
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(callback), std::move(displayed_notifications),
                        /*supports_synchronization=*/true));
   }
@@ -613,8 +612,8 @@ class NotificationPlatformBridgeWinImpl
 
     LogSetReadyCallbackStatus(static_cast<SetReadyCallbackStatus>(status));
 
-    bool success = base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                                  base::BindOnce(std::move(callback), enabled));
+    bool success = content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), enabled));
     DCHECK(success);
   }
 
@@ -629,8 +628,8 @@ class NotificationPlatformBridgeWinImpl
       return;
     }
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&ForwardNotificationOperationOnUiThread, operation,
                        launch_id.notification_type(), launch_id.origin_url(),
                        launch_id.notification_id(), launch_id.profile_id(),

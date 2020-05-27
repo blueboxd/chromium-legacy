@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/android/remote_database_manager.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/safe_browsing/content/browser/browser_url_loader_throttle.h"
@@ -49,8 +48,8 @@ void MaybeCreateSafeBrowsing(
   if (!render_process_host)
     return;
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&safe_browsing::MojoSafeBrowsingImpl::MaybeCreate, rph_id,
                      resource_context, std::move(get_checker_delegate),
                      std::move(receiver)));
@@ -162,8 +161,8 @@ scoped_refptr<network::SharedURLLoaderFactory>
 SafeBrowsingService::GetURLLoaderFactoryOnIOThread() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!shared_url_loader_factory_on_io_) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&SafeBrowsingService::CreateURLLoaderFactoryForIO,
                        base::Unretained(this),
                        url_loader_factory_on_io_.BindNewPipeAndPassReceiver()));
@@ -197,12 +196,12 @@ void SafeBrowsingService::AddInterface(
           base::BindRepeating(
               &SafeBrowsingService::GetSafeBrowsingUrlCheckerDelegate,
               base::Unretained(this))),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+      content::GetUIThreadTaskRunner({}));
 }
 
 void SafeBrowsingService::StopDBManager() {
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&SafeBrowsingService::StopDBManagerOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SafeBrowsingService::StopDBManagerOnIOThread,
                                 base::Unretained(this)));
 }
 

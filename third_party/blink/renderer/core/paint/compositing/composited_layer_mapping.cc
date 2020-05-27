@@ -2148,23 +2148,6 @@ void CompositedLayerMapping::VerifyNotPainting() {
 }
 #endif
 
-bool CompositedLayerMapping::InvalidateSquashedLayerIfNoPrecedingEntry(
-    Vector<GraphicsLayerPaintInfo>& squashed_layers,
-    wtf_size_t index_to_clear) {
-  PaintLayer* layer_to_remove = squashed_layers[index_to_clear].paint_layer;
-  wtf_size_t previous_index = 0;
-  for (; previous_index < index_to_clear; ++previous_index) {
-    if (squashed_layers[previous_index].paint_layer == layer_to_remove)
-      break;
-  }
-  if (previous_index == index_to_clear &&
-      layer_to_remove->GroupedMapping() == this) {
-    Compositor()->PaintInvalidationOnCompositingChange(layer_to_remove);
-    return true;
-  }
-  return false;
-}
-
 bool CompositedLayerMapping::UpdateSquashingLayerAssignmentInternal(
     Vector<GraphicsLayerPaintInfo>& squashed_layers,
     PaintLayer& squashed_layer,
@@ -2181,22 +2164,12 @@ bool CompositedLayerMapping::UpdateSquashingLayerAssignmentInternal(
     if (paint_info.paint_layer ==
         squashed_layers[next_squashed_layer_index].paint_layer)
       return false;
-
-    // Must invalidate before adding the squashed layer to the mapping.
-    Compositor()->PaintInvalidationOnCompositingChange(&squashed_layer);
-
-    // If the layer which was previously at |nextSquashedLayerIndex| is not
-    // earlier in the grouped mapping, invalidate its current backing now, since
-    // it will move later or be removed from the squashing layer.
-    InvalidateSquashedLayerIfNoPrecedingEntry(squashed_layers,
-                                              next_squashed_layer_index);
-
     squashed_layers.insert(next_squashed_layer_index, paint_info);
   } else {
-    // Must invalidate before adding the squashed layer to the mapping.
-    Compositor()->PaintInvalidationOnCompositingChange(&squashed_layer);
     squashed_layers.push_back(paint_info);
   }
+  // Must invalidate before adding the squashed layer to the mapping.
+  Compositor()->PaintInvalidationOnCompositingChange(&squashed_layer);
   squashed_layer.SetGroupedMapping(
       this, PaintLayer::kInvalidateLayerAndRemoveFromMapping);
 
@@ -2239,7 +2212,6 @@ void CompositedLayerMapping::RemoveLayerFromSquashingGraphicsLayer(
   NOTREACHED();
 }
 
-#if DCHECK_IS_ON()
 static bool LayerInSquashedLayersVector(
     const Vector<GraphicsLayerPaintInfo>& squashed_layers,
     const PaintLayer& layer) {
@@ -2250,6 +2222,7 @@ static bool LayerInSquashedLayersVector(
   return false;
 }
 
+#if DCHECK_IS_ON()
 void CompositedLayerMapping::AssertInSquashedLayersVector(
     const PaintLayer& squashed_layer) const {
   auto* in = &non_scrolling_squashed_layers_;
@@ -2261,43 +2234,44 @@ void CompositedLayerMapping::AssertInSquashedLayersVector(
 }
 #endif
 
-void CompositedLayerMapping::FinishAccumulatingSquashingLayersInternal(
+static void RemoveExtraSquashedLayers(
     Vector<GraphicsLayerPaintInfo>& squashed_layers,
-    wtf_size_t new_squashed_layer_count,
+    wtf_size_t new_count,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
-  if (new_squashed_layer_count < squashed_layers.size()) {
-    // Any additional squashed Layers in the array no longer belong here, but
-    // they might have been added already at an earlier index. Clear pointers on
-    // those that do not appear in the valid set before removing all the extra
-    // entries.
-    for (wtf_size_t i = new_squashed_layer_count; i < squashed_layers.size();
-         ++i) {
-      if (InvalidateSquashedLayerIfNoPrecedingEntry(squashed_layers, i)) {
-        squashed_layers[i].paint_layer->SetGroupedMapping(
-            nullptr, PaintLayer::kDoNotInvalidateLayerAndRemoveFromMapping);
-        squashed_layers[i].paint_layer->SetLostGroupedMapping(true);
-      }
-      layers_needing_paint_invalidation.push_back(
-          squashed_layers[i].paint_layer);
-    }
-
-    squashed_layers.EraseAt(new_squashed_layer_count,
-                            squashed_layers.size() - new_squashed_layer_count);
-  }
+  DCHECK_GE(squashed_layers.size(), new_count);
+  if (squashed_layers.size() == new_count)
+    return;
+  for (auto i = new_count; i < squashed_layers.size(); i++)
+    layers_needing_paint_invalidation.push_back(squashed_layers[i].paint_layer);
+  squashed_layers.Shrink(new_count);
 }
 
 void CompositedLayerMapping::FinishAccumulatingSquashingLayers(
-    wtf_size_t new_squashed_layer_in_non_scrolling_squashing_layer_count,
+    wtf_size_t new_non_scrolling_squashed_layer_count,
     wtf_size_t new_squashed_layer_in_scrolling_contents_count,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
-  FinishAccumulatingSquashingLayersInternal(
-      non_scrolling_squashed_layers_,
-      new_squashed_layer_in_non_scrolling_squashing_layer_count,
-      layers_needing_paint_invalidation);
-  FinishAccumulatingSquashingLayersInternal(
-      squashed_layers_in_scrolling_contents_,
-      new_squashed_layer_in_scrolling_contents_count,
-      layers_needing_paint_invalidation);
+  wtf_size_t first_removed_layer = layers_needing_paint_invalidation.size();
+  RemoveExtraSquashedLayers(non_scrolling_squashed_layers_,
+                            new_non_scrolling_squashed_layer_count,
+                            layers_needing_paint_invalidation);
+  RemoveExtraSquashedLayers(squashed_layers_in_scrolling_contents_,
+                            new_squashed_layer_in_scrolling_contents_count,
+                            layers_needing_paint_invalidation);
+  for (auto i = first_removed_layer;
+       i < layers_needing_paint_invalidation.size(); i++) {
+    PaintLayer* layer = layers_needing_paint_invalidation[i];
+    // Deal with layers that are no longer squashed. Need to check both vectors
+    // to exclude the layers that are still squashed. A layer may change from
+    // scrolling to non-scrolling or vice versa and still be squashed.
+    if (!LayerInSquashedLayersVector(non_scrolling_squashed_layers_, *layer) &&
+        !LayerInSquashedLayersVector(squashed_layers_in_scrolling_contents_,
+                                     *layer)) {
+      Compositor()->PaintInvalidationOnCompositingChange(layer);
+      layer->SetGroupedMapping(
+          nullptr, PaintLayer::kDoNotInvalidateLayerAndRemoveFromMapping);
+      layer->SetLostGroupedMapping(true);
+    }
+  }
 }
 
 String CompositedLayerMapping::DebugName(

@@ -1006,7 +1006,8 @@ void ShelfWidget::OnGestureEvent(ui::GestureEvent* event) {
 
   // Tap on in-app shelf should show a contextual nudge for in-app to home
   // gesture.
-  if (event->type() == ui::ET_GESTURE_TAP && ShelfConfig::Get()->is_in_app()) {
+  if (event->type() == ui::ET_GESTURE_TAP && ShelfConfig::Get()->is_in_app() &&
+      features::AreContextualNudgesEnabled()) {
     if (delegate_view_->drag_handle()->MaybeShowDragHandleNudge()) {
       event->StopPropagation();
       return;

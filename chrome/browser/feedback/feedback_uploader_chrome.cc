@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/feedback/feedback_report.h"
@@ -26,8 +25,8 @@ constexpr char kAuthenticationErrorLogMessage[] =
 
 void QueueSingleReport(base::WeakPtr<feedback::FeedbackUploader> uploader,
                        scoped_refptr<FeedbackReport> report) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&FeedbackUploaderChrome::RequeueReport,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FeedbackUploaderChrome::RequeueReport,
                                 std::move(uploader), std::move(report)));
 }
 

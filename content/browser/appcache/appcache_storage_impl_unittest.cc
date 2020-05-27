@@ -1616,9 +1616,12 @@ class AppCacheStorageImplTest : public testing::Test {
       // Try to create a new appcache, the resulting update job will
       // eventually fail when it gets to disk cache initialization.
       host1_id_ = base::UnguessableToken::Create();
-      service_->RegisterHost(host_remote_.BindNewPipeAndPassReceiver(),
-                             BindFrontend(), host1_id_, kMockRenderFrameId,
-                             kMockProcessId, GetBadMessageCallback());
+      service_->RegisterHost(
+          host_remote_.BindNewPipeAndPassReceiver(), BindFrontend(), host1_id_,
+          kMockRenderFrameId, kMockProcessId,
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              kMockProcessId),
+          GetBadMessageCallback());
       AppCacheHost* host1 = service_->GetHost(host1_id_);
       const GURL kEmptyPageUrl(GetMockUrl("empty.html"));
       host1->SetSiteForCookiesForTesting(
@@ -1631,9 +1634,12 @@ class AppCacheStorageImplTest : public testing::Test {
       // The URLRequestJob  will eventually fail when it gets to disk
       // cache initialization.
       host2_id_ = base::UnguessableToken::Create();
-      service_->RegisterHost(host_remote_.BindNewPipeAndPassReceiver(),
-                             BindFrontend(), host2_id_, kMockRenderFrameId,
-                             kMockProcessId, GetBadMessageCallback());
+      service_->RegisterHost(
+          host_remote_.BindNewPipeAndPassReceiver(), BindFrontend(), host2_id_,
+          kMockRenderFrameId, kMockProcessId,
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              kMockProcessId),
+          GetBadMessageCallback());
       AppCacheHost* host2 = service_->GetHost(host2_id_);
       network::ResourceRequest request;
       request.url = GetMockUrl("manifest");

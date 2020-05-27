@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/rand_util.h"
-#include "base/task/post_task.h"
 #include "components/services/heap_profiling/public/cpp/controller.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/services/heap_profiling/public/cpp/settings.h"
@@ -218,9 +217,9 @@ void ClientConnectionManager::StartProfilingProcess(base::ProcessId pid) {
   }
 
   // The BrowserChildProcessHostIterator iterator must be used on the IO thread.
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(FROM_HERE, base::BindOnce(&StartProfilingPidOnIOThread,
-                                           controller_, pid));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&StartProfilingPidOnIOThread, controller_, pid));
 }
 
 bool ClientConnectionManager::AllowedToProfileRenderer(
@@ -239,10 +238,9 @@ void ClientConnectionManager::StartProfilingExistingProcessesIfNecessary() {
   // Start profiling the current process.
   if (ShouldProfileNonRendererProcessType(
           mode_, content::ProcessType::PROCESS_TYPE_BROWSER)) {
-    base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-        ->PostTask(FROM_HERE,
-                   base::BindOnce(&StartProfilingBrowserProcessOnIOThread,
-                                  controller_));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(&StartProfilingBrowserProcessOnIOThread, controller_));
   }
 
   // Start profiling connected renderers.
@@ -255,11 +253,10 @@ void ClientConnectionManager::StartProfilingExistingProcessesIfNecessary() {
     }
   }
 
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&StartProfilingNonRenderersIfNecessaryOnIOThread,
-                         GetMode(), controller_));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&StartProfilingNonRenderersIfNecessaryOnIOThread,
+                     GetMode(), controller_));
 }
 
 void ClientConnectionManager::BrowserChildProcessLaunchedAndConnected(
@@ -279,9 +276,8 @@ void ClientConnectionManager::BrowserChildProcessLaunchedAndConnected(
 void ClientConnectionManager::StartProfilingNonRendererChild(
     const content::ChildProcessData& data) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&StartProfilingNonRendererChildOnIOThread,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&StartProfilingNonRendererChildOnIOThread,
                                 controller_, data.Duplicate()));
 }
 
@@ -336,9 +332,8 @@ void ClientConnectionManager::StartProfilingRenderer(
 
   mojo::PendingRemote<mojom::ProfilingClient> client;
   host->BindReceiver(client.InitWithNewPipeAndPassReceiver());
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->PostTask(FROM_HERE,
-                 base::BindOnce(&StartProfilingClientOnIOThread, controller_,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&StartProfilingClientOnIOThread, controller_,
                                 std::move(client), host->GetProcess().Pid(),
                                 mojom::ProcessType::RENDERER));
 }

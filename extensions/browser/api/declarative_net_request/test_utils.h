@@ -57,6 +57,7 @@ std::ostream& operator<<(std::ostream& output, const RequestAction& action);
 std::ostream& operator<<(std::ostream& output, const ParseResult& result);
 std::ostream& operator<<(std::ostream& output,
                          const base::Optional<RequestAction>& action);
+std::ostream& operator<<(std::ostream& output, LoadRulesetResult result);
 
 // Returns true if the given extension's indexed static rulesets are all valid.
 // Should be called on a sequence where file IO is allowed.

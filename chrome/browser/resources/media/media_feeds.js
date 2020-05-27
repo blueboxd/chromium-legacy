@@ -53,6 +53,10 @@ class MediaFeedsTableDelegate {
 
       a.addEventListener('click', () => {
         showFeedContents(dataRow);
+
+        // Clear old logs and hide the area from display.
+        $('fetch-logs').style.display = 'none';
+        $('fetch-logs-content').textContent = '';
       });
 
       td.appendChild(document.createElement('br'));
@@ -66,6 +70,9 @@ class MediaFeedsTableDelegate {
         store.fetchMediaFeed(dataRow.id).then(response => {
           updateFeedsTable();
           showFeedContents(dataRow);
+
+          $('fetch-logs').style.display = 'block';
+          $('fetch-logs-content').textContent = response.logs;
         });
       });
     }

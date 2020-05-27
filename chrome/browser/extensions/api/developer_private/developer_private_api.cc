@@ -19,7 +19,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/devtools/devtools_window.h"
@@ -1486,8 +1485,8 @@ void DeveloperPrivateLoadDirectoryFunction::ClearExistingDirectoryContent(
 
   pending_copy_operations_count_ = 1;
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPI,
           this, project_path, project_path.BaseName()));
@@ -1555,8 +1554,8 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
         response = NoArguments();
       else
         response = Error(error_);
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::Respond, this,
                          std::move(response)));
     }
@@ -1597,8 +1596,8 @@ void DeveloperPrivateLoadDirectoryFunction::CopyFile(
   pending_copy_operations_count_--;
 
   if (!pending_copy_operations_count_) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&DeveloperPrivateLoadDirectoryFunction::Load, this));
   }
 }

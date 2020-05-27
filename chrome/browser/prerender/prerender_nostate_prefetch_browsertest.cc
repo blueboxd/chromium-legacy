@@ -14,7 +14,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/platform_thread.h"
@@ -136,9 +135,9 @@ class NoStatePrefetchBrowserTest
                       &found_manifest);
       // There seems to be some flakiness in the appcache getting back to us, so
       // use a timeout task to try the appcache query again.
-      base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                            wait_loop.QuitClosure(),
-                            base::TimeDelta::FromMilliseconds(2000));
+      content::GetUIThreadTaskRunner({})->PostDelayedTask(
+          FROM_HERE, wait_loop.QuitClosure(),
+          base::TimeDelta::FromMilliseconds(2000));
       wait_loop.Run();
     } while (!found_manifest);
   }
@@ -210,7 +209,7 @@ class NoStatePrefetchBrowserTest
         }
       }
     }
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, callback);
   }
 
   base::test::ScopedFeatureList feature_list_;

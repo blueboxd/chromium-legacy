@@ -418,8 +418,8 @@ void ShowWidgetMessageFilter::Reset() {
 
 void ShowWidgetMessageFilter::OnShowWidget(int route_id,
                                            const gfx::Rect& initial_rect) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
                                 this, route_id, initial_rect));
 }
 
@@ -434,8 +434,8 @@ bool ShowWidgetMessageFilter::ShowPopupMenu(
     std::vector<blink::mojom::MenuItemPtr>* menu_items,
     bool right_aligned,
     bool allow_multiple_selection) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ShowWidgetMessageFilter::OnShowWidgetOnUI,
                                 this, MSG_ROUTING_NONE, bounds));
   return true;
 }

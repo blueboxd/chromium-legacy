@@ -8,7 +8,6 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -68,8 +67,8 @@ void RequestProxyResolvingSocketFactory(
     base::WeakPtr<GCMProfileService> service,
     mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
         receiver) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread, profile,
                      std::move(service), std::move(receiver)));
 }
@@ -150,8 +149,7 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       IdentityManagerFactory::GetForProfile(profile),
       std::unique_ptr<GCMClientFactory>(new GCMClientFactory),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+      content::GetUIThreadTaskRunner({}), content::GetIOThreadTaskRunner({}),
       blocking_task_runner);
 #endif
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)

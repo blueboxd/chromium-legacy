@@ -17,7 +17,6 @@
 #include "base/pickle.h"
 #include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -105,7 +104,7 @@ void WriteCache(const base::FilePath& filename, const base::Pickle* pickle) {
 
 void RemoveCache(const base::FilePath& filename, base::OnceClosure callback) {
   base::DeleteFile(filename, false);
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO}, std::move(callback));
+  content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE, std::move(callback));
 }
 
 void LogCacheQuery(nacl::NaClBrowser::ValidationCacheStatus status) {
@@ -320,8 +319,8 @@ void NaClBrowser::SetProcessGdbDebugStubPort(int process_id, int port) {
   gdb_debug_stub_port_map_[process_id] = port;
   if (port != kGdbDebugStubPortUnknown &&
       !debug_stub_port_listener_.is_null()) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(debug_stub_port_listener_, port));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(debug_stub_port_listener_, port));
   }
 }
 
@@ -529,8 +528,8 @@ void NaClBrowser::ClearValidationCache(base::OnceClosure callback) {
 
   if (validation_cache_file_path_.empty()) {
     // Can't figure out what file to remove, but don't drop the callback.
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   std::move(callback));
+    content::GetIOThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 std::move(callback));
   } else {
     // Delegate the removal of the cache from the filesystem to another thread
     // to avoid blocking the IO thread.

@@ -23,10 +23,10 @@ bool TextMatchesQueryTile(base::string16 input_text,
                           base::Optional<query_tiles::Tile> tile) {
   auto trimmed_input =
       base::TrimWhitespace(input_text, base::TrimPositions::TRIM_TRAILING);
-  auto tile_text = tile.has_value() ? tile->query_text : "";
+  auto tile_text = base::UTF8ToUTF16(tile.has_value() ? tile->query_text : "");
   auto trimmed_tile_text =
-      base::TrimWhitespaceASCII(tile_text, base::TrimPositions::TRIM_TRAILING);
-  return base::EqualsASCII(trimmed_input, trimmed_tile_text);
+      base::TrimWhitespace(tile_text, base::TrimPositions::TRIM_TRAILING);
+  return trimmed_input == trimmed_tile_text;
 }
 
 // Helper function to determine if we are currently showing an URL and the

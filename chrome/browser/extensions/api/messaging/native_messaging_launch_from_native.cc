@@ -11,7 +11,6 @@
 #include "base/bind_helpers.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/browser_process.h"
@@ -75,8 +74,8 @@ class NativeMessagingHostErrorReporter : public NativeMessageHost::Client {
     MovableScopedKeepAlive keep_alive(
         new ScopedKeepAlive(KeepAliveOrigin::NATIVE_MESSAGING_HOST_ERROR_REPORT,
                             KeepAliveRestartOption::DISABLED));
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&NativeMessagingHostErrorReporter::ReportOnIoThread,
                        std::move(host), std::move(keep_alive)));
   }

@@ -205,6 +205,8 @@ component("web_engine_core") {
     "renderer/url_request_rules_receiver.h",
     "renderer/web_engine_content_renderer_client.cc",
     "renderer/web_engine_content_renderer_client.h",
+    "renderer/web_engine_render_frame_observer.cc",
+    "renderer/web_engine_render_frame_observer.h",
     "renderer/web_engine_url_loader_throttle_provider.cc",
     "renderer/web_engine_url_loader_throttle_provider.h",
     "url_request_rewrite_type_converters.cc",

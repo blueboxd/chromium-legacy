@@ -9,8 +9,8 @@
 
 #include "chrome/browser/apps/app_service/extension_apps_base.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -28,7 +28,7 @@ namespace apps {
 //
 // In the future, desktop PWAs will be migrated to a new system.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class ExtensionApps : public apps::ExtensionAppsBase {
  public:
   ExtensionApps(const mojo::Remote<apps::mojom::AppService>& app_service,

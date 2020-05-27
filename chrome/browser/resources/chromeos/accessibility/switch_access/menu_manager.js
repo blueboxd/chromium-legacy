@@ -6,90 +6,30 @@
  * Class to handle interactions with the Switch Access menu, including moving
  * through and selecting actions.
  */
-
 class MenuManager {
   /** @private */
   constructor() {
     /**
-     * A list of the Menu actions that are currently enabled.
-     * @private {!Array<!SwitchAccessMenuAction>}
-     */
-    this.actions_ = [];
-
-    /**
-     * The root node of the menu panel.
-     * @private {AutomationNode}
-     */
-    this.menuPanelNode_;
-
-    /**
-     * The root node of the menu.
-     * @private {SARootNode}
-     */
-    this.menuNode_;
-
-    /**
-     * The current node of the menu.
+     * The node that was focused when the menu was opened.
+     * Null if the menu is closed.
      * @private {SAChildNode}
      */
-    this.node_;
+    this.actionNode_;
 
-    /**
-     * The node that the menu has been opened for. Null if the menu is not
-     * currently open.
-     * @private {SAChildNode}
-     */
-    this.menuOriginNode_;
+    /** @private {?Array<!SwitchAccessMenuAction>} */
+    this.displayedActions_ = null;
 
-    /**
-     * Keeps track of when we're in the Switch Access menu.
-     * @private {boolean}
-     */
-    this.inMenu_ = false;
+    /** @private {chrome.accessibilityPrivate.ScreenRect} */
+    this.displayedLocation_;
 
-    /**
-     * A function to be called when the menu exits.
-     * @private {?function()}
-     */
-    this.onExitCallback_ = null;
+    /** @private {boolean} */
+    this.isMenuOpen_ = false;
 
-    /**
-     * A reference to the Switch Access Menu Panel class.
-     * @private {PanelInterface}
-     */
-    this.menuPanel_;
+    /** @private {boolean} */
+    this.inTextNavigation_ = false;
 
-    /**
-     * Callback for highlighting the first available action once a menu has been
-     *     loaded in the panel. This function is created here, rather than below
-     *     with the other methods, because we need a consistent function object
-     *     to be able to add and remove the listener. If this function were a
-     *     method, it would need to have the |this| reference bound to it, and
-     *     each call to |.bind()| creates a new function (meaning the listener
-     *     could never be removed).
-     * Why does this work? While methods use call scoping (they look for
-     *     variables in the context of the call site), fat arrow functions,
-     *     like below, use lexical scoping (they look for variables in the
-     *     context of where the function was declared). So the proper |this|
-     *     object is referenced without the need for binding.
-     * @private {function()}
-     */
-    this.onMenuPanelChildrenChanged_ = () => {
-      this.buildMenuTree_();
-      this.highlightFirstAction_();
-    };
-
-    /**
-     * A stack to keep track of all menus that have been opened before
-     * the current menu (so the top of the stack will be the parent
-     * menu of the current menu).
-     * @private {!Array<SAConstants.MenuId>}
-     */
-    this.menuStack_ = [];
-
-    if (window.menuPanel) {
-      this.connectMenuPanel(window.menuPanel);
-    }
+    /** @private {AutomationNode} */
+    this.menuAutomationNode_;
   }
 
   static initialize() {
@@ -100,529 +40,269 @@ class MenuManager {
 
   /**
    * If multiple actions are available for the currently highlighted node,
-   * opens the main menu. Otherwise, selects the node by default.
-   * @param {!SAChildNode} navNode the currently highlighted node, for which the
-   *     menu is to be displayed.
-   * @return {boolean} True if the menu opened or an action was selected, false
-   *     otherwise.
+   * opens the menu. Otherwise performs the node's default action.
    */
-  static enter(navNode) {
-    const manager = MenuManager.instance;
-    if (!manager) {
-      return false;
-    }
-    if (!manager.menuPanel_) {
-      console.log('Error: Menu panel has not loaded.');
-      return false;
+  static enter() {
+    const node = NavigationManager.currentNode;
+    if (!MenuManager.instance || node.actions.length <= 1 || !node.location) {
+      node.doDefaultAction();
+      return;
     }
 
-    // If the menu is already open, select the highlighted element.
-    if (MenuManager.selectCurrentNode()) {
-      return true;
-    }
-
-    if (!manager.openMenu_(navNode, SAConstants.MenuId.MAIN)) {
-      // openMenu_ will return false (indicating that the menu was not opened
-      // successfully) when there is only one interesting action (selection)
-      // specific to manager node. In manager case, rather than forcing the user
-      // to repeatedly disambiguate, we will simply select by default.
-      return false;
-    }
-
-    manager.inMenu_ = true;
-    return true;
+    MenuManager.instance.actionNode_ = node;
+    MenuManager.instance.openMainMenu_();
   }
 
   /** Exits the menu. */
   static exit() {
     if (MenuManager.instance) {
-      MenuManager.instance.exit_();
+      if (MenuManager.instance.inTextNavigation_) {
+        // If we're exiting the text navigation menu, we simply return to the
+        // main menu.
+        MenuManager.instance.openMainMenu_();
+        return;
+      }
+
+      MenuManager.instance.isMenuOpen_ = false;
+      MenuManager.instance.actionNode_ = null;
+      MenuManager.instance.displayedActions_ = null;
+      MenuManager.instance.displayedLocation_ = null;
+      NavigationManager.exitIfInGroup(MenuManager.instance.menuAutomationNode_);
+      MenuManager.instance.menuAutomationNode_ = null;
     }
+    chrome.accessibilityPrivate.updateSwitchAccessBubble(
+        chrome.accessibilityPrivate.SwitchAccessBubble.MENU, false /* show */);
   }
 
-  /**
-   * Move to the next available action in the menu. If this is no next action,
-   * focus the whole menu to loop again.
-   * @return {boolean} Whether this function had any effect.
-   */
-  static moveForward() {
-    const manager = MenuManager.instance;
-    if (!manager || !manager.inMenu_ || !manager.node_) {
-      return false;
-    }
-
-    manager.clearFocusRing_();
-    manager.node_ = manager.node_.next;
-    manager.updateFocusRing_();
-    return true;
+  /** @return {boolean} */
+  static isMenuOpen() {
+    return MenuManager.instance && MenuManager.instance.isMenuOpen_;
   }
 
-  /**
-   * Move to the previous available action in the menu. If we're at the
-   * beginning of the list, start again at the end.
-   * @return {boolean} Whether this function had any effect.
-   */
-  static moveBackward() {
-    const manager = MenuManager.instance;
-    if (!manager || !manager.inMenu_ || !manager.node_) {
-      return false;
-    }
-
-    manager.clearFocusRing_();
-    manager.node_ = manager.node_.previous;
-    manager.updateFocusRing_();
-    return true;
-  }
-
-  /** Reloads the menu, if it has changed. */
-  static reloadMenuIfNeeded() {
-    const manager = MenuManager.instance;
-    if (manager && manager.menuOriginNode_) {
-      manager.openMenu_(manager.menuOriginNode_, SAConstants.MenuId.MAIN);
-    }
-  }
-
-  /**
-   * Perform the action indicated by the current button.
-   * @return {boolean} Whether this function had any effect.
-   */
-  static selectCurrentNode() {
-    const manager = MenuManager.instance;
-    if (!manager || !manager.inMenu_ || !manager.node_) {
-      return false;
-    }
-
-    if (manager.node_ instanceof BackButtonNode) {
-      // The back button was selected.
-      manager.selectBackButton_();
-    } else {
-      // A menu action was selected.
-      manager.node_.performAction(SwitchAccessMenuAction.SELECT);
-    }
-    return true;
-  }
-
-  /**
-   * This method allows the FocusRingManager to request a change to the back
-   *      button focus ring, without overriding navigation through the menu.
-   * @param {boolean} should_focus If false, indicates the focus ring aroun
-   *      the back button should be cleared.
-   */
-  static requestBackButtonFocusChange(should_focus) {
-    // Ignore attempts from outside the class to set focus when the menu is
-    // open.
-    if (!MenuManager.instance || MenuManager.instance.inMenu_) {
+  /** @param {!SAChildNode} node */
+  static reloadActionsForNode(node) {
+    if (!MenuManager.isMenuOpen() ||
+        !node.equals(MenuManager.instance.actionNode_)) {
       return;
     }
-    MenuManager.instance.updateFocusRing_(should_focus);
+    MenuManager.instance.refreshActions_();
   }
 
-  // ================= Instance Methods ==================
-
   /**
-   * Builds the tree for the current menu.
+   * Checks if the given node is the Switch Access menu node.
+   * @param {AutomationNode} node
+   * @return {boolean}
    * @private
    */
-  buildMenuTree_() {
-    // menu_panel.html controls the contents of the menu panel, and we are
-    // guaranteed that the menu will be the first child.
-    if (this.menuPanelNode_ && this.menuPanelNode_.firstChild) {
-      this.menuNode_ =
-          RootNodeWrapper.buildTree(this.menuPanelNode_.firstChild);
-    }
+  static isSwitchAccessMenuNode_(node) {
+    return !!node && node.role === chrome.automation.RoleType.MENU &&
+        node.htmlAttributes.id === 'switch_access_menu_view';
   }
 
+  // ================= Private Methods ==================
+
   /**
-   * Clear the focus ring.
+   * @param {!Array<!SwitchAccessMenuAction>} actions
+   * @return {!Array<!SwitchAccessMenuAction>}
    * @private
    */
-  clearFocusRing_() {
-    this.updateFocusRing_(false);
-  }
-
-  /**
-   * Closes the current menu and clears the menu panel.
-   * @private
-   */
-  closeCurrentMenu_() {
-    this.clearFocusRing_();
-    this.menuPanel_.clear();
-    this.actions_ = [];
-    this.node_ = null;
-    this.menuNode_ = null;
-  }
-
-  /**
-   * Sets up the connection between the menuPanel and the menuManager.
-   * @param {!PanelInterface} menuPanel
-   */
-  connectMenuPanel(menuPanel) {
-    menuPanel.menuManager = this;
-    this.menuPanel_ = menuPanel;
-    this.findMenuPanelNode_();
-  }
-
-  /**
-   * Exits the menu.
-   * @private
-   */
-  exit_() {
-    if (!this.inMenu_) {
-      return;
-    }
-
-    this.closeCurrentMenu_();
-    this.inMenu_ = false;
-
-    if (this.onExitCallback_) {
-      this.onExitCallback_();
-      this.onExitCallback_ = null;
-    }
-    this.menuOriginNode_ = null;
-
-    chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        false /** should_show */, RectHelper.ZERO_RECT, 0);
-  }
-
-  /**
-   * Searches for the menu panel node.
-   * @private
-   */
-  findMenuPanelNode_() {
-    const treeWalker = new AutomationTreeWalker(
-        NavigationManager.desktopNode, constants.Dir.FORWARD,
-        SwitchAccessPredicate.switchAccessMenuPanelDiscoveryRestrictions());
-    const node = treeWalker.next().node;
-    if (!node) {
-      setTimeout(this.findMenuPanelNode_.bind(this), 500);
-      return;
-    }
-    this.menuPanelNode_ = node;
-    this.buildMenuTree_();
-  }
-
-  /**
-   * Determines which menu actions are relevant, given the current node. If
-   * there are no node-specific actions, return |null|, to indicate that we
-   * should select the current node automatically.
-   *
-   * @param {!SAChildNode} node
-   * @return {Array<!SwitchAccessMenuAction>}
-   * @private
-   */
-  getMainMenuActionsForNode_(node) {
-    const actions = node.actions;
-
-    // If there is at most one available action, perform it by default.
-    if (actions.length <= 1) {
-      return null;
-    }
-
-    // Add global actions.
+  addGlobalActions_(actions) {
     actions.push(SwitchAccessMenuAction.SETTINGS);
     return actions;
   }
 
-
   /**
-   * Get the actions applicable for |navNode| from the menu with given
-   * |menuId|.
-   * @param {!SAChildNode} navNode The currently selected node, for which the
-   *     menu is being opened.
-   * @param {SAConstants.MenuId} menuId
-   * @return {Array<!SwitchAccessMenuAction>}
+   * @param {string=} actionString
+   * @return {?SwitchAccessMenuAction}
    * @private
    */
-  getMenuActions_(navNode, menuId) {
-    switch (menuId) {
-      case SAConstants.MenuId.MAIN:
-        return this.getMainMenuActionsForNode_(navNode);
-      case SAConstants.MenuId.TEXT_NAVIGATION:
-        return this.getTextNavigationActions_();
-      default:
-        return this.getMainMenuActionsForNode_(navNode);
+  asAction_(actionString) {
+    if (Object.values(SwitchAccessMenuAction).includes(actionString)) {
+      return /** @type {!SwitchAccessMenuAction} */ (actionString);
     }
+    return null;
   }
 
   /**
-   * Get the actions in the text navigation submenu.
-   * @return {Array<!SwitchAccessMenuAction>}
+   * Opens or reloads the menu for the current action node with the specified
+   * actions.
+   * @param {!Array<SwitchAccessMenuAction>} actions
    * @private
    */
-  getTextNavigationActions_() {
-    return [
+  displayMenuWithActions_(actions) {
+    const location = this.displayedLocation_ || this.actionNode_.location;
+    chrome.accessibilityPrivate.updateSwitchAccessBubble(
+        chrome.accessibilityPrivate.SwitchAccessBubble.MENU, true /* show */,
+        location, actions);
+
+    this.findMenuAutomationNode_();
+    this.isMenuOpen_ = true;
+    this.displayedActions_ = actions;
+    this.displayedLocation_ = location;
+  }
+
+  /**
+   * Searches the automation tree to find the node for the Switch Access menu.
+   * If we've already found a node, and it's still valid, then we do nothing.
+   * @private
+   */
+  findMenuAutomationNode_() {
+    if (this.hasValidMenuAutomationNode_()) {
+      return;
+    }
+    SwitchAccess.findNodeMatchingPredicate(
+        MenuManager.isSwitchAccessMenuNode_,
+        this.jumpToMenuAutomationNode_.bind(this));
+  }
+
+  /**
+   * If the action is a global action, perform the action and return true.
+   * Otherwise return false.
+   * @param {!SwitchAccessMenuAction} action
+   * @return {boolean}
+   * @private
+   */
+  handleGlobalActions_(action) {
+    switch (action) {
+      case SwitchAccessMenuAction.SETTINGS:
+        chrome.accessibilityPrivate.openSettingsSubpage(
+            'manageAccessibility/switchAccess');
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  /** @private */
+  hasValidMenuAutomationNode_() {
+    return this.menuAutomationNode_ && this.menuAutomationNode_.role &&
+        !this.menuAutomationNode_.state[chrome.automation.StateType.OFFSCREEN];
+  }
+
+  /**
+   * Saves the automation node representing the menu, adds all listeners, and
+   * jumps to the node.
+   * @param {!AutomationNode} node
+   * @private
+   */
+  jumpToMenuAutomationNode_(node) {
+    // If the menu hasn't loaded, wait for that before jumping.
+    if (node.children.length < 1 ||
+        node.firstChild.state[chrome.automation.StateType.OFFSCREEN]) {
+      const callback = () => {
+        node.removeEventListener(
+            chrome.automation.EventType.CHILDREN_CHANGED, callback, false);
+        this.jumpToMenuAutomationNode_(node);
+      };
+      node.addEventListener(
+          chrome.automation.EventType.CHILDREN_CHANGED, callback, false);
+      return;
+    }
+
+    this.menuAutomationNode_ = node;
+    this.menuAutomationNode_.addEventListener(
+        chrome.automation.EventType.CLICKED, this.onButtonClicked_.bind(this),
+        false);
+    NavigationManager.jumpToSwitchAccessMenu(this.menuAutomationNode_);
+  }
+
+  /**
+   * Listener for when buttons are clicked. Identifies the action to perform
+   * and forwards the request to the current node.
+   * @param {!chrome.automation.AutomationEvent} event
+   * @private
+   */
+  onButtonClicked_(event) {
+    const selectedAction = this.asAction_(event.target.value);
+    if (!this.isMenuOpen_ || !selectedAction ||
+        this.handleGlobalActions_(selectedAction)) {
+      return;
+    }
+
+    if (!this.actionNode_.hasAction(selectedAction)) {
+      this.refreshActions_();
+      return;
+    }
+
+    // We exit the menu before asking the node to perform the action, because
+    // having the menu on the group stack interferes with some actions. We do
+    // not close the menu bubble until we receive the ActionResponse CLOSE_MENU.
+    // If we receive a different response, we re-enter the menu.
+    NavigationManager.exitIfInGroup(this.menuAutomationNode_);
+    const response = this.actionNode_.performAction(selectedAction);
+    if (response === SAConstants.ActionResponse.CLOSE_MENU ||
+        !this.hasValidMenuAutomationNode_()) {
+      MenuManager.exit();
+    } else {
+      NavigationManager.jumpToSwitchAccessMenu(this.menuAutomationNode_);
+    }
+
+    switch (response) {
+      case SAConstants.ActionResponse.RELOAD_MAIN_MENU:
+        this.refreshActions_();
+        break;
+      case SAConstants.ActionResponse.OPEN_TEXT_NAVIGATION_MENU:
+        this.openTextNavigation_();
+    }
+  }
+
+  /** @private */
+  openMainMenu_() {
+    this.inTextNavigation_ = false;
+    let actions = this.actionNode_.actions;
+    actions = this.addGlobalActions_(actions);
+    actions = actions.filter((a) => !this.textNavigationActions_.includes(a));
+
+    if (ArrayUtil.contentsAreEqual(actions, this.displayedActions_)) {
+      return;
+    }
+    this.displayMenuWithActions_(actions);
+  }
+
+  /** @private */
+  openTextNavigation_() {
+    if (!SwitchAccess.instance.improvedTextInputEnabled()) {
+      this.openMainMenu_();
+      return;
+    }
+
+    this.inTextNavigation_ = true;
+    this.displayMenuWithActions_(this.textNavigationActions_);
+  }
+
+  /**
+   * Checks if we can still show a menu for the node, and if so, changes the
+   * actions displayed in the menu.
+   * @private
+   */
+  refreshActions_() {
+    if (!this.actionNode_.location || this.actionNode_.actions.length <= 1) {
+      MenuManager.exit();
+      return;
+    }
+
+    this.openMainMenu_();
+  }
+
+  /**
+   * @return {!Array<!SwitchAccessMenuAction>}
+   * @private
+   */
+  get textNavigationActions_() {
+    const actions = [
       SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT,
       SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT,
-      SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT,
-      SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT,
       SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT,
-      SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT,
       SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT,
-      SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT
+      SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT,
+      SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT,
     ];
-  }
-
-  /**
-   * Highlights the first available action in the menu.
-   * @private
-   */
-  highlightFirstAction_() {
-    if (!this.menuNode_) {
-      return;
+    if (SwitchAccess.instance.improvedTextInputEnabled() &&
+        TextNavigationManager.currentlySelecting()) {
+      actions.unshift(SwitchAccessMenuAction.END_TEXT_SELECTION);
     }
-    this.node_ = this.menuNode_.firstChild;
-    this.updateFocusRing_();
-
-    // The event is fired multiple times when a new menu is opened in the
-    // panel, so remove the listener once the callback has been called once.
-    // This ensures the first action is not continually highlighted as we
-    // navigate through the menu.
-    this.menuPanelNode_.removeEventListener(
-        chrome.automation.EventType.CHILDREN_CHANGED,
-        this.onMenuPanelChildrenChanged_, false /** Don't use capture. */);
-  }
-
-  /**
-   * Returns if there is a selection in the current node.
-   * @return {boolean} whether or not there's a selection
-   * @private
-   */
-  nodeHasSelection_() {
-    const node = this.menuOriginNode_.automationNode;
-
-    if (node && node.textSelStart !== node.textSelEnd) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Opens the menu with given |menuId|. Shows the menu actions that are
-   * applicable to the currently highlighted node in the menu panel. If the
-   * menu being opened is the same as the current menu open (i.e. the menu is
-   * being reloaded), then the action that triggered the reload
-   * will be highlighted. Otherwise, the first available action will
-   * be highlighted. Returns a boolean of whether or not the menu was
-   * successfully opened.
-   * @param {!SAChildNode} navNode The currently highlighted node, for which the
-   *     menu is being opened.
-   * @param {!SAConstants.MenuId} menuId Indicates the menu being opened.
-   * @param {boolean=} isSubmenu Whether or not the menu being opened is a
-   *     submenu of the current menu.
-   * @return {boolean} Whether or not the menu was successfully opened.
-   * @private
-   */
-  openMenu_(navNode, menuId, isSubmenu = false) {
-    // Action currently highlighted in the menu (null if the menu was closed
-    // before this function was called).
-    let actionNode = null;
-    if (this.node_) {
-      actionNode = this.node_.automationNode;
-    }
-
-    const currentMenuId = this.menuPanel_.currentMenuId();
-    const shouldReloadMenu = (currentMenuId === menuId);
-
-    if (!shouldReloadMenu) {
-      // Close the current menu before opening a new one.
-      this.closeCurrentMenu_();
-
-      if (currentMenuId && isSubmenu) {
-        // Opening a submenu, so push the parent menu onto the stack.
-        this.menuStack_.push(currentMenuId);
-      }
-    }
-
-    const actions = this.getMenuActions_(navNode, menuId);
-
-    if (!actions) {
-      return false;
-    }
-
-    // Converting to JSON strings to check equality of Array contents.
-    if (JSON.stringify(actions) !== JSON.stringify(this.actions_)) {
-      // Set new menu actions in the panel.
-      this.actions_ = actions;
-      this.menuPanel_.setActions(this.actions_, menuId);
-    }
-
-    const loc = navNode.location;
-    if (!loc) {
-      console.log('Unable to show Switch Access menu.');
-      return false;
-    }
-    // Show the menu panel.
-    chrome.accessibilityPrivate.setSwitchAccessMenuState(
-        true, loc, actions.length);
-
-    this.menuOriginNode_ = navNode;
-
-    const autoNode = this.menuOriginNode_.automationNode;
-    if (autoNode && !shouldReloadMenu &&
-        SwitchAccess.instance.improvedTextInputEnabled()) {
-      const callback = this.reloadMenuForSelectionChange_.bind(this);
-
-      autoNode.addEventListener(
-          chrome.automation.EventType.TEXT_SELECTION_CHANGED, callback,
-          false /** use_capture */);
-      this.onExitCallback_ = autoNode.removeEventListener.bind(
-          autoNode, chrome.automation.EventType.TEXT_SELECTION_CHANGED,
-          callback, false /** use_capture */);
-    }
-
-    if (shouldReloadMenu) {
-      this.buildMenuTree_();
-      const buttonId = actionNode ? actionNode.htmlAttributes.id : '';
-      if (actions.includes(buttonId)) {
-        // Highlight the same action that was highlighted before the menu was
-        // reloaded.
-        this.updateFocusRing_();
-      } else {
-        this.highlightFirstAction_();
-      }
-    } else {
-      // Wait for the menu to appear in the panel before highlighting the
-      // first available action.
-      this.menuPanelNode_.addEventListener(
-          chrome.automation.EventType.CHILDREN_CHANGED,
-          this.onMenuPanelChildrenChanged_, false /** use_capture */);
-    }
-
-    return true;
-  }
-
-  /**
-   * Perform a specified action on the Switch Access menu.
-   * @param {!SwitchAccessMenuAction} action
-   */
-  performAction(action) {
-    SwitchAccessMetrics.recordMenuAction(action);
-    // Handle global actions.
-    if (action === SwitchAccessMenuAction.SETTINGS) {
-      chrome.accessibilityPrivate.openSettingsSubpage(
-          'manageAccessibility/switchAccess');
-      this.exit_();
-      return;
-    }
-
-    // Handle text editing actions.
-    // TODO(anastasi): Move these actions into the nodes themselves.
-    switch (action) {
-      case SwitchAccessMenuAction.MOVE_CURSOR:
-        if (this.menuOriginNode_) {
-          this.openMenu_(
-              this.menuOriginNode_, SAConstants.MenuId.TEXT_NAVIGATION,
-              true /** Opening a submenu. */);
-        }
-        return;
-      case SwitchAccessMenuAction.JUMP_TO_BEGINNING_OF_TEXT:
-        TextNavigationManager.jumpToBeginning();
-        return;
-      case SwitchAccessMenuAction.JUMP_TO_END_OF_TEXT:
-        TextNavigationManager.jumpToEnd();
-        return;
-      case SwitchAccessMenuAction.MOVE_BACKWARD_ONE_CHAR_OF_TEXT:
-        TextNavigationManager.moveBackwardOneChar();
-        return;
-      case SwitchAccessMenuAction.MOVE_BACKWARD_ONE_WORD_OF_TEXT:
-        TextNavigationManager.moveBackwardOneWord();
-        return;
-      case SwitchAccessMenuAction.MOVE_DOWN_ONE_LINE_OF_TEXT:
-        TextNavigationManager.moveDownOneLine();
-        return;
-      case SwitchAccessMenuAction.MOVE_FORWARD_ONE_CHAR_OF_TEXT:
-        TextNavigationManager.moveForwardOneChar();
-        return;
-      case SwitchAccessMenuAction.MOVE_FORWARD_ONE_WORD_OF_TEXT:
-        TextNavigationManager.moveForwardOneWord();
-        return;
-      case SwitchAccessMenuAction.MOVE_UP_ONE_LINE_OF_TEXT:
-        TextNavigationManager.moveUpOneLine();
-        return;
-      case SwitchAccessMenuAction.START_TEXT_SELECTION:
-        TextNavigationManager.saveSelectStart();
-        if (this.menuOriginNode_) {
-          this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
-        }
-        return;
-      case SwitchAccessMenuAction.END_TEXT_SELECTION:
-        TextNavigationManager.resetCurrentlySelecting();
-        if (this.menuOriginNode_) {
-          this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
-        }
-        return;
-    }
-
-    // Otherwise, ask the node to perform the action itself.
-    if (this.menuOriginNode_.performAction(action) ===
-        SAConstants.ActionResponse.CLOSE_MENU) {
-      this.exit_();
-    }
-  }
-
-  /**
-   * Check to see if there is a change in the selection in the current node and
-   * reload the menu if so.
-   * @private
-   */
-  reloadMenuForSelectionChange_() {
-    const newSelectionState = this.nodeHasSelection_();
-    if (TextNavigationManager.selectionExists != newSelectionState) {
-      TextNavigationManager.selectionExists = newSelectionState;
-      if (this.menuOriginNode_ && !TextNavigationManager.currentlySelecting()) {
-        const currentMenuId = this.menuPanel_.currentMenuId();
-        if (currentMenuId) {
-          this.openMenu_(this.menuOriginNode_, currentMenuId);
-        } else {
-          this.openMenu_(this.menuOriginNode_, SAConstants.MenuId.MAIN);
-        }
-      }
-    }
-  }
-
-  /**
-   * Selects the back button for the menu. If the current menu is a submenu
-   * (i.e. not the main menu), then the current menu will be
-   * closed and the parent menu that opened the current menu will be re-opened.
-   * If the current menu is the main menu, then exit the menu panel entirely
-   * and return to traditional navigation.
-   * @private
-   */
-  selectBackButton_() {
-    // Id of the menu that opened the current menu (null if the current
-    // menu is the main menu and not a submenu).
-    const parentMenuId = this.menuStack_.pop();
-    if (parentMenuId && this.menuOriginNode_) {
-      // Re-open the parent menu.
-      this.openMenu_(this.menuOriginNode_, parentMenuId);
-    } else {
-      this.exit_();
-    }
-  }
-
-  /**
-   * Send a message to the menu to update the focus ring around the current
-   * node.
-   * TODO(anastasi): Use real focus rings in the menu
-   * @param {boolean} should_set If true, will set the focus ring.
-   *      If false, will clear the focus ring.
-   * @private
-   */
-  updateFocusRing_(should_set = true) {
-    if (!this.menuPanel_) {
-      console.log('Error: Menu panel has not loaded.');
-      return;
-    }
-
-    let id = this.inMenu_ && this.node_ ?
-        this.node_.automationNode.htmlAttributes.id :
-        SAConstants.BACK_ID;
-
-    // If the selection will close the menu, highlight the back button.
-    if (id === this.menuPanel_.currentMenuId()) {
-      id = SAConstants.BACK_ID;
-    }
-
-    this.menuPanel_.setFocusRing(id, should_set);
+    return actions;
   }
 }

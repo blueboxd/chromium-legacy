@@ -43,15 +43,10 @@ class FocusRingManager {
    * @param {!SARootNode} group
    */
   setFocusNodes(primary, group) {
-    if (!primary.location) {
-      throw SwitchAccess.error(
-          SAConstants.ErrorType.MISSING_LOCATION,
-          'Cannot set focus rings if node location is undefined');
-    }
-
     if (primary instanceof BackButtonNode) {
-      MenuManager.requestBackButtonFocusChange(true);
-
+      // The back button node handles setting its own focus, as it has special
+      // requirements (a round focus ring that has no gap with the edges of the
+      // view).
       this.rings_.get(SAConstants.Focus.ID.PRIMARY).rects = [];
       // Clear the dashed ring between transitions, as the animation is
       // distracting.
@@ -61,8 +56,12 @@ class FocusRingManager {
       this.rings_.get(SAConstants.Focus.ID.NEXT).rects = [group.location];
       this.updateFocusRings_();
       return;
-    } else {
-      MenuManager.requestBackButtonFocusChange(false);
+    }
+
+    if (!primary.location) {
+      throw SwitchAccess.error(
+          SAConstants.ErrorType.MISSING_LOCATION,
+          'Cannot set focus rings if node location is undefined');
     }
 
     // If the primary node is a group, show its first child as the "next" focus.

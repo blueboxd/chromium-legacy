@@ -81,12 +81,6 @@
       'Linux FYI GPU TSAN Release',
     ],
   },
-  'aura_unittests': {
-    'remove_from': [
-      'Fuchsia ARM64', # https://crbug.com/1075803
-      'Fuchsia x64', # https://crbug.com/1075803
-    ],
-  },
   'blink_web_tests': {
     'remove_from': [
       'Win 7 Tests x64 (1)',  # 64-bit win is unsupported by the layout tests.
@@ -758,6 +752,12 @@
       },
     },
   },
+  'compositor_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1086742
+      'Fuchsia x64', # https://crbug.com/1086742
+    ],
+  },
   'content_browsertests': {
     'remove_from': [
       'CrWinAsan(dll)', # https://crbug.com/935598
@@ -995,7 +995,6 @@
     # exception once there is enough capacity to run these tests.
     'remove_from': [
       'Android FYI Release (Pixel 2)',
-      'Fuchsia x64' # https://crbug.com/1058255
     ],
     'modifications': {
       'Win10 x64 Debug (NVIDIA)': {
@@ -1161,7 +1160,6 @@
     # exception once there is enough capacity to run these tests.
     'remove_from': [
       'Android FYI Release (Pixel 2)',
-      'Fuchsia x64', # https://crbug.com/1075803
     ],
     'modifications': {
       'Win10 x64 Debug (NVIDIA)': {
@@ -1309,12 +1307,6 @@
         },
       },
     },
-  },
-  'latency_unittests': {
-    'remove_from': [
-      'Fuchsia ARM64', # https://crbug.com/1084174
-      'Fuchsia x64', # https://crbug.com/1084174
-    ],
   },
   'maps_pixel_test': {
     # TODO(https://crbug.com/850107): Remove the Android FYI Release (Pixel 2)
@@ -1476,12 +1468,6 @@
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
       'Mac10.15 Tests',  # All 10.15 builders set enable_nacl=false
-    ],
-  },
-  'native_theme_unittests': {
-    'remove_from': [
-      'Fuchsia ARM64', # https://crbug.com/1084174
-      'Fuchsia x64', # https://crbug.com/1084174
     ],
   },
   'net_unittests': {
@@ -1919,12 +1905,6 @@
     },
   },
   'pixel_skia_gold_test': {
-    'remove_from': [
-      # TODO(crbug.com/1084796): Enable these tests once the consistent crash on
-      # CrOS is fixed.
-      'ChromeOS FYI Release (amd64-generic)',
-      'ChromeOS FYI Release (kevin)',
-    ],
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
       # use ${got_cr_revision}, which is only set on the V8 bots.
@@ -2047,6 +2027,12 @@
       },
     },
   },
+  'shell_dialogs_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1086742
+      'Fuchsia x64', # https://crbug.com/1086742
+    ],
+  },
   'skia_renderer_gl_blink_web_tests': {
     'modifications': {
       'Win10 FYI x64 SkiaRenderer GL (NVIDIA)': {
@@ -2056,6 +2042,12 @@
         ],
       },
     },
+  },
+  'snapshot_unittests': {
+    'remove_from': [
+      'Fuchsia ARM64',  # https://crbug.com/1086742
+      'Fuchsia x64', # https://crbug.com/1086742
+    ],
   },
   'storage_service_unsandboxed_interactive_ui_tests': {
     'modifications': {

@@ -25,6 +25,18 @@ namespace display {
 
 namespace {
 
+// EDID with non-ascii char in display name.
+constexpr unsigned char kBadDisplayName[] =
+    "\x00\xff\xff\xff\xff\xff\xff\x00\x22\xf0\x6c\x28\x01\x01\x01\x01"
+    "\x02\x16\x01\x04\xb5\x40\x28\x78\xe2\x8d\x85\xad\x4f\x35\xb1\x25"
+    "\x0e\x50\x54\x00\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01"
+    "\x01\x01\x01\x01\x01\x01\xe2\x68\x00\xa0\xa0\x40\x2e\x60\x30\x20"
+    "\x36\x00\x81\x90\x21\x00\x00\x1a\xbc\x1b\x00\xa0\x50\x20\x17\x30"
+    "\x30\x20\x36\x00\x81\x90\x21\x00\x00\x1a\x00\x00\x00\xfc\x00\x48"
+    "\x50\x20\x5a\x00\x33\x30\x77\x0a\x20\x20\x20\x20\x00\x00\x00\xff"
+    "\x00\x43\x4e\x34\x32\x30\x32\x31\x33\x37\x51\x0a\x20\x20\x00\x71";
+constexpr size_t kBadDisplayNameLength = base::size(kBadDisplayName);
+
 // Sample EDID data extracted from real devices.
 constexpr unsigned char kNormalDisplay[] =
     "\x00\xff\xff\xff\xff\xff\xff\x00\x22\xf0\x6c\x28\x01\x01\x01\x01"
@@ -249,6 +261,24 @@ struct TestParams {
   const unsigned char* edid_blob;
   size_t edid_blob_length;
 } kTestCases[] = {
+    {0x22f0u,
+     0x6c28u,
+     "HP Z 30w",  // non-ascii char in display name.
+     gfx::Size(2560, 1600),
+     2012,
+     false,
+     2.2,
+     10,
+     kNormalDisplayPrimaries,
+     586181672,
+     9834990092472576,
+     "HWP",
+     "286C",
+     {},
+     {},
+     base::nullopt,
+     kBadDisplayName,
+     kBadDisplayNameLength},
     {0x22f0u,
      0x6c28u,
      "HP ZR30w",

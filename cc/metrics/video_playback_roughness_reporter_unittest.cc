@@ -60,7 +60,7 @@ class VideoPlaybackRoughnessReporterTest : public ::testing::Test {
       base::TimeDelta duration = vsync * frame_cadence;
       auto frame = MakeFrame(ideal_duration);
       reporter()->FrameSubmitted(idx, *frame, vsync);
-      reporter()->FramePresented(idx, time);
+      reporter()->FramePresented(idx, time, true);
       reporter()->ProcessFrameWindow();
       time += duration;
     }
@@ -83,7 +83,7 @@ class VideoPlaybackRoughnessReporterTest : public ::testing::Test {
           int presented_idx = idx - i;
           int frame_cadence = cadence[presented_idx % cadence.size()];
           base::TimeDelta duration = vsync * frame_cadence;
-          reporter()->FramePresented(presented_idx, time);
+          reporter()->FramePresented(presented_idx, time, true);
           time += duration;
         }
       }
@@ -204,7 +204,7 @@ TEST_F(VideoPlaybackRoughnessReporterTest, PredictableRoughnessValue) {
 
       auto frame = MakeFrame(vsync);
       reporter()->FrameSubmitted(token, *frame, vsync);
-      reporter()->FramePresented(token++, time);
+      reporter()->FramePresented(token++, time, true);
       reporter()->ProcessFrameWindow();
     }
   }
@@ -252,7 +252,7 @@ TEST_F(VideoPlaybackRoughnessReporterTest, TakingPercentile) {
 
       auto frame = MakeFrame(vsync);
       reporter()->FrameSubmitted(token, *frame, vsync);
-      reporter()->FramePresented(token++, time);
+      reporter()->FramePresented(token++, time, true);
       reporter()->ProcessFrameWindow();
     }
   }
@@ -271,7 +271,7 @@ TEST_F(VideoPlaybackRoughnessReporterTest, LongRunWithoutWindows) {
     auto frame = MakeFrame(vsync);
     reporter()->FrameSubmitted(i, *frame, vsync);
     if (i % 2 == 0)
-      reporter()->FramePresented(i, base::TimeTicks() + i * vsync);
+      reporter()->FramePresented(i, base::TimeTicks() + i * vsync, true);
     reporter()->ProcessFrameWindow();
     ASSERT_TRUE(CheckSizes());
   }
@@ -288,7 +288,24 @@ TEST_F(VideoPlaybackRoughnessReporterTest, PresentingUnknownFrames) {
   for (int i = 0; i < 10000; i++) {
     auto frame = MakeFrame(vsync);
     reporter()->FrameSubmitted(i, *frame, vsync);
-    reporter()->FramePresented(i + 100000, base::TimeTicks() + i * vsync);
+    reporter()->FramePresented(i + 100000, base::TimeTicks() + i * vsync, true);
+    reporter()->ProcessFrameWindow();
+    ASSERT_TRUE(CheckSizes());
+  }
+  EXPECT_EQ(call_count, 0);
+}
+
+// Test that the reporter is ignoring frames with unreliable
+// presentation timestamp.
+TEST_F(VideoPlaybackRoughnessReporterTest, IgnoringUnreliableTimings) {
+  int call_count = 0;
+  base::TimeDelta vsync = base::TimeDelta::FromMilliseconds(1);
+  SetReportingCallabck([&](int size, base::TimeDelta duration,
+                           double roughness) { call_count++; });
+  for (int i = 0; i < 10000; i++) {
+    auto frame = MakeFrame(vsync);
+    reporter()->FrameSubmitted(i, *frame, vsync);
+    reporter()->FramePresented(i, base::TimeTicks() + i * vsync, false);
     reporter()->ProcessFrameWindow();
     ASSERT_TRUE(CheckSizes());
   }

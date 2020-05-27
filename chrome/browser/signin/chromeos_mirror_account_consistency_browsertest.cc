@@ -18,7 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
-#include "components/google/core/common/google_util.h"
+#include "components/google/core/common/google_switches.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/signin_header_helper.h"
@@ -80,13 +80,13 @@ class ChromeOsMirrorAccountConsistencyTest : public chromeos::LoginManagerTest {
     // HTTPS server only serves a valid cert for localhost, so this is needed to
     // load pages from "www.google.com" without an interstitial.
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
+
+    // The production code only allows known ports (80 for http and 443 for
+    // https), but the test server runs on a random port.
+    command_line->AppendSwitch(switches::kIgnoreGooglePortNumbers);
   }
 
   void SetUpOnMainThread() override {
-    // The production code only allows known ports (80 for http and 443 for
-    // https), but the test server runs on a random port.
-    google_util::IgnorePortNumbersForGoogleURLChecksForTesting();
-
     // We can't use BrowserTestBase's EmbeddedTestServer because google.com
     // URL's have to be https.
     test_server_ = std::make_unique<net::EmbeddedTestServer>(

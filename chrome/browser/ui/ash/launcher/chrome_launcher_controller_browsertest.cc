@@ -2431,17 +2431,10 @@ IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest, LaunchAppFromContextMenu) {
             controller->shelf()->shelf_layout_manager()->hotseat_state());
 }
 
-// crbug.com/1021011: Disable on ChromeOS
-#if defined(OS_CHROMEOS)
-#define MAYBE_TappingAppIconsHidesHotseat DISABLED_TappingAppIconsHidesHotseat
-#else
-#define MAYBE_TappingAppIconsHidesHotseat TappingAppIconsHidesHotseat
-#endif
-
 // Tests that launching and switching apps by tapping shelf buttons hides the
 // hotseat.
 IN_PROC_BROWSER_TEST_F(HotseatShelfAppBrowserTest,
-                       MAYBE_TappingAppIconsHidesHotseat) {
+                       TappingAppIconsHidesHotseat) {
   ash::Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
 
   // Create two apps, then extend the hotseat.

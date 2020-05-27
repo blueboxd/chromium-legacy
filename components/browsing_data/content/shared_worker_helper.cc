@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/location.h"
-#include "base/task/post_task.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -50,8 +49,8 @@ void SharedWorkerHelper::StartFetching(FetchCallback callback) {
   // We always return an empty list, as there are no "persistent" shared
   // workers.
   std::list<SharedWorkerInfo> result;
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 void SharedWorkerHelper::DeleteSharedWorker(
     const GURL& worker,
@@ -104,8 +103,8 @@ void CannedSharedWorkerHelper::StartFetching(FetchCallback callback) {
   std::list<SharedWorkerInfo> result;
   for (auto& it : pending_shared_worker_info_)
     result.push_back(it);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), result));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void CannedSharedWorkerHelper::DeleteSharedWorker(

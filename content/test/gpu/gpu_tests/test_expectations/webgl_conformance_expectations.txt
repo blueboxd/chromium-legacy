@@ -8,6 +8,7 @@
 # tags: [ amd amd-0x6613 amd-0x699f amd-0x679e
 #         intel intel-0xa011 intel-0xa2e
 #         nvidia nvidia-0x1cb3 nvidia-0x2184 nvidia-0xfe9
+#         arm-mali-t860
 #         qualcomm qualcomm-adreno-(tm)-330 qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 qualcomm-adreno-(tm)-430 ]
 # tags: [ d3d11 d3d9 no-angle opengl opengles vulkan ]
 # tags: [ no-passthrough passthrough ]
@@ -613,10 +614,14 @@ crbug.com/995652 [ chromeos amd ] conformance/uniforms/out-of-bounds-uniform-arr
 crbug.com/1042897 [ chromeos amd ] conformance/textures/webgl_canvas/tex-2d-rgba-rgba-unsigned_byte.html [ RetryOnFailure ]
 
 # Texture compression is only expected to be available on desktop GPUs.
-crbug.com/1080360 [ chromeos-board-kevin ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
-crbug.com/1080360 [ chromeos-board-kevin ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
-crbug.com/1080408 [ chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
-crbug.com/1080377 [ chromeos-board-kevin ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+crbug.com/1080360 [ chromeos arm-mali-t860 ] WebglExtension_EXT_texture_compression_bptc [ Skip ]
+crbug.com/1080401 [ chromeos arm-mali-t860 ] WebglExtension_EXT_texture_compression_rgtc [ Skip ]
+crbug.com/1080408 [ chromeos arm-mali-t860 ] WebglExtension_WEBGL_compressed_texture_s3tc [ Skip ]
+crbug.com/1080377 [ chromeos arm-mali-t860 ] WebglExtension_WEBGL_compressed_texture_s3tc_srgb [ Skip ]
+
+# GPU supports ES 3.2, but supporting draw_buffers on WebGL 1.0/ ES 2.0 requires
+# a significant amount of emulation.
+crbug.com/1080411 [ chromeos arm-mali-t860 ] WebglExtension_WEBGL_draw_buffers [ Skip ]
 
 # Arm-based issues.
 crbug.com/1080400 [ chromeos-board-kevin ] WebglExtension_EXT_color_buffer_half_float [ Failure ]
@@ -626,7 +631,6 @@ crbug.com/1080402 [ chromeos-board-kevin ] WebglExtension_OES_texture_float_line
 crbug.com/1080403 [ chromeos-board-kevin ] WebglExtension_OES_texture_half_float [ Failure ]
 crbug.com/1080404 [ chromeos-board-kevin ] WebglExtension_OES_texture_half_float_linear [ Failure ]
 crbug.com/1080407 [ chromeos-board-kevin ] WebglExtension_WEBGL_color_buffer_float [ Failure ]
-crbug.com/1080411 [ chromeos-board-kevin ] WebglExtension_WEBGL_draw_buffers [ Failure ]
 crbug.com/1080379 [ chromeos-board-kevin ] conformance/glsl/bugs/constant-precision-qualifier.html [ Failure ]
 crbug.com/1080380 [ chromeos-board-kevin ] conformance/offscreencanvas/context-lost-restored-worker.html [ Failure ]
 crbug.com/1080380 [ chromeos-board-kevin ] conformance/offscreencanvas/context-lost-restored.html [ Failure ]

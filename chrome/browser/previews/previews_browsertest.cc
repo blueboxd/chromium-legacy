@@ -7,7 +7,6 @@
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -31,6 +30,7 @@
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
@@ -126,8 +126,8 @@ class PreviewsBrowserTest : public InProcessBrowserTest {
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&PreviewsBrowserTest::MonitorResourceRequestOnUIThread,
                        base::Unretained(this), request));
   }

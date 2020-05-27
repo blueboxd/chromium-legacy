@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/web_package/web_bundle_navigation_info.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/navigation_params.h"
 #include "content/common/page_state_serialization.h"
@@ -77,7 +78,8 @@ void RecursivelyGenerateFrameEntries(
                state.referrer_policy),
       state.initiator_origin, std::vector<GURL>(),
       PageState::CreateFromEncodedData(data), "GET", -1,
-      nullptr /* blob_url_loader_factory */);
+      nullptr /* blob_url_loader_factory */,
+      nullptr /* web_bundle_navigation_info */);
 
   // Don't pass the file list to subframes, since that would result in multiple
   // copies of it ending up in the combined list in GetPageState (via
@@ -356,23 +358,24 @@ NavigationEntryImpl::NavigationEntryImpl(
     ui::PageTransition transition_type,
     bool is_renderer_initiated,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory)
-    : frame_tree_(
-          std::make_unique<TreeNode>(nullptr,
-                                     base::MakeRefCounted<FrameNavigationEntry>(
-                                         "",
-                                         -1,
-                                         -1,
-                                         std::move(instance),
-                                         nullptr,
-                                         url,
-                                         nullptr /* origin */,
-                                         referrer,
-                                         initiator_origin,
-                                         std::vector<GURL>(),
-                                         PageState(),
-                                         "GET",
-                                         -1,
-                                         std::move(blob_url_loader_factory)))),
+    : frame_tree_(std::make_unique<TreeNode>(
+          nullptr,
+          base::MakeRefCounted<FrameNavigationEntry>(
+              "",
+              -1,
+              -1,
+              std::move(instance),
+              nullptr,
+              url,
+              nullptr /* origin */,
+              referrer,
+              initiator_origin,
+              std::vector<GURL>(),
+              PageState(),
+              "GET",
+              -1,
+              std::move(blob_url_loader_factory),
+              nullptr /* web_bundle_navigation_info */))),
       unique_id_(CreateUniqueEntryID()),
       page_type_(PAGE_TYPE_NORMAL),
       update_virtual_url_with_url_(false),
@@ -885,7 +888,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
     const PageState& page_state,
     const std::string& method,
     int64_t post_id,
-    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
+    std::unique_ptr<WebBundleNavigationInfo> web_bundle_navigation_info) {
   // If this is called for the main frame, the FrameNavigationEntry is
   // guaranteed to exist, so just update it directly and return.
   if (frame_tree_node->IsMainFrame()) {
@@ -900,7 +904,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
         document_sequence_number, site_instance,
         std::move(source_site_instance), url, origin, referrer,
         initiator_origin, redirect_chain, page_state, method, post_id,
-        std::move(blob_url_loader_factory));
+        std::move(blob_url_loader_factory),
+        std::move(web_bundle_navigation_info));
     return;
   }
 
@@ -929,7 +934,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
           unique_name, item_sequence_number, document_sequence_number,
           site_instance, std::move(source_site_instance), url, origin, referrer,
           initiator_origin, redirect_chain, page_state, method, post_id,
-          std::move(blob_url_loader_factory));
+          std::move(blob_url_loader_factory),
+          std::move(web_bundle_navigation_info));
       return;
     }
   }
@@ -942,7 +948,8 @@ void NavigationEntryImpl::AddOrUpdateFrameEntry(
       site_instance, std::move(source_site_instance), url,
       base::OptionalOrNullptr(origin), referrer, initiator_origin,
       redirect_chain, page_state, method, post_id,
-      std::move(blob_url_loader_factory));
+      std::move(blob_url_loader_factory),
+      std::move(web_bundle_navigation_info));
   parent_node->children.push_back(
       std::make_unique<NavigationEntryImpl::TreeNode>(parent_node,
                                                       std::move(frame_entry)));

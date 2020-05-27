@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -282,8 +281,8 @@ void WebRtcEventLogUploaderImpl::StartUpload(const std::string& upload_data) {
   // immediately, even though it needs to finish initialization on the UI
   // thread.
   mojo::Remote<network::mojom::URLLoaderFactory> url_loader_factory_remote;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(BindURLLoaderFactoryReceiver,
                      url_loader_factory_remote.BindNewPipeAndPassReceiver()));
 

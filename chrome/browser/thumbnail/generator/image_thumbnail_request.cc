@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -110,7 +109,7 @@ void ImageThumbnailRequest::OnLoadComplete(const std::vector<uint8_t>& data) {
 
 void ImageThumbnailRequest::FinishRequest(SkBitmap thumbnail) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback_), std::move(thumbnail)));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback_), std::move(thumbnail)));
   delete this;
 }

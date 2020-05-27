@@ -17,7 +17,6 @@
 #include "base/notreached.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/ActionInfo_jni.h"
 #include "chrome/android/chrome_jni_headers/NotificationPlatformBridge_jni.h"
 #include "chrome/browser/browser_process.h"
@@ -359,8 +358,8 @@ void NotificationPlatformBridgeAndroid::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
   std::set<std::string> displayed_notifications;
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      false /* supports_synchronization */));
 }

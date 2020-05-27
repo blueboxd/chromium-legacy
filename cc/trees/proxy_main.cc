@@ -378,6 +378,10 @@ void ProxyMain::NotifyThroughputTrackerResults(CustomTrackerResults results) {
   layer_tree_host_->NotifyThroughputTrackerResults(std::move(results));
 }
 
+void ProxyMain::DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {
+  layer_tree_host_->DidObserveFirstScrollDelay(first_scroll_delay);
+}
+
 bool ProxyMain::IsStarted() const {
   DCHECK(IsMainThread());
   return started_;

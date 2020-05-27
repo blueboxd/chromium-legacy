@@ -79,7 +79,7 @@ class CORE_EXPORT FontBuilder {
   // FIXME: These need to just vend a Font object eventually.
   void UpdateFontDescription(FontDescription&,
                              FontOrientation = FontOrientation::kHorizontal);
-  void CreateFont(ComputedStyle&);
+  void CreateFont(ComputedStyle&, const ComputedStyle* parent_style);
   void CreateFontForDocument(ComputedStyle&);
 
   bool FontDirty() const { return flags_; }
@@ -128,7 +128,9 @@ class CORE_EXPORT FontBuilder {
   // This function fixes up the default font size if it detects that the current
   // generic font family has changed. -dwh
   void CheckForGenericFamilyChange(const FontDescription&, FontDescription&);
-  void UpdateSpecifiedSize(FontDescription&, const ComputedStyle&);
+  void UpdateSpecifiedSize(FontDescription&,
+                           const ComputedStyle&,
+                           const ComputedStyle* parent_style);
   void UpdateComputedSize(FontDescription&, const ComputedStyle&);
   void UpdateAdjustedSize(FontDescription&,
                           const ComputedStyle&,

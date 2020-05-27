@@ -281,8 +281,8 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
   if (request.relative_url != relative_url)
     return nullptr;
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 crash_network_service_callback);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                               crash_network_service_callback);
 
   return std::make_unique<net::test_server::HungResponse>();
 }

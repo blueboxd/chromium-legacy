@@ -17,7 +17,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/speech/proto/google_streaming_api.pb.h"
@@ -61,8 +60,8 @@ class MockAudioSystem : public media::AudioSystem {
 
     // Posting callback to allow current SpeechRecognizerImpl dispatching event
     // to complete before transitioning to the next FSM state.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(std::move(on_params_cb),
                        media::AudioParameters::UnavailableDeviceParams()));
   }
@@ -230,8 +229,8 @@ class SpeechRecognitionBrowserTest : public ContentBrowserTest {
     // AudioCaptureSourcer::Stop() again.
     SpeechRecognizerImpl::SetAudioEnvironmentForTesting(nullptr, nullptr);
 
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&SpeechRecognitionBrowserTest::SendResponse,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&SpeechRecognitionBrowserTest::SendResponse,
                                   base::Unretained(this)));
   }
 

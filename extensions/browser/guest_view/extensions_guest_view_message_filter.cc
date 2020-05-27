@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "components/guest_view/browser/bad_message.h"
 #include "components/guest_view/browser/guest_view_manager.h"
@@ -119,8 +118,8 @@ void ExtensionsGuestViewMessageFilter::CreateMimeHandlerViewGuest(
     const gfx::Size& element_size,
     mojo::PendingRemote<mime_handler::BeforeUnloadControl>
         before_unload_control) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExtensionsGuestViewMessageFilter::
                          CreateMimeHandlerViewGuestOnUIThread,
                      this, render_frame_id, view_id, element_instance_id,
@@ -131,8 +130,8 @@ void ExtensionsGuestViewMessageFilter::ReadyToCreateMimeHandlerView(
     int32_t render_frame_id,
     bool success) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &ExtensionsGuestViewMessageFilter::ReadyToCreateMimeHandlerView,
             this, render_frame_id, success));
@@ -205,8 +204,8 @@ void ExtensionsGuestViewMessageFilter::CreateEmbeddedMimeHandlerViewGuest(
     const gfx::Size& element_size,
     content::mojom::TransferrableURLLoaderPtr transferrable_url_loader) {
   if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&ExtensionsGuestViewMessageFilter::
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ExtensionsGuestViewMessageFilter::
                                       CreateEmbeddedMimeHandlerViewGuest,
                                   this, render_frame_id, tab_id, original_url,
                                   element_instance_id, element_size,

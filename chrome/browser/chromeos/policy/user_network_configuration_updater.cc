@@ -10,7 +10,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -142,8 +141,7 @@ void UserNetworkConfigurationUpdater::CreateAndSetClientCertificateImporter(
   DCHECK(database);
   SetClientCertificateImporter(
       std::make_unique<chromeos::onc::CertificateImporterImpl>(
-          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
-          database));
+          content::GetIOThreadTaskRunner({}), database));
 }
 
 void UserNetworkConfigurationUpdater::SetClientCertificateImporter(

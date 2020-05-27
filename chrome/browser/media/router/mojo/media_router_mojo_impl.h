@@ -150,43 +150,14 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
   friend class MediaRouterFactory;
   friend class MediaRouterMojoImplTest;
   friend class MediaRouterMojoTest;
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, JoinRoute);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, JoinRouteTimedOutFails);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            JoinRouteIncognitoMismatchFails);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           IncognitoRoutesTerminatedOnProfileShutdown);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           RegisterAndUnregisterMediaSinksObserver);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           RegisterMediaSinksObserverWithAvailabilityChange);
-  FRIEND_TEST_ALL_PREFIXES(
-      MediaRouterMojoImplTest,
-      RegisterAndUnregisterMediaSinksObserverWithAvailabilityChange);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           RegisterAndUnregisterMediaRoutesObserver);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           RouteMessagesSingleObserver);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           RouteMessagesMultipleObservers);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, HandleIssue);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest, GetMediaController);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           FailToCreateRouteController);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           RegisterMediaRoutesObserver_DedupingWithCache);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            PresentationConnectionStateChangedCallback);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
                            PresentationConnectionStateChangedCallbackRemoved);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           SendSinkRequestsToMultipleProviders);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           SendRouteRequestsToMultipleProviders);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           ObserveSinksFromMultipleProviders);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterMojoImplTest,
-                           ObserveRoutesFromMultipleProviders);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest,
                            SyncStateToMediaRouteProvider);
   FRIEND_TEST_ALL_PREFIXES(ExtensionMediaRouteProviderProxyTest,
@@ -198,6 +169,9 @@ class MediaRouterMojoImpl : public MediaRouterBase, public mojom::MediaRouter {
    public:
     MediaSinksQuery();
     ~MediaSinksQuery();
+
+    static MediaSource GetKey(const MediaSource::Id& source_id);
+    static MediaSource GetKey(const MediaSinksObserver& observer);
 
     // Caches the list of sinks for the provider returned from the query.
     void SetSinksForProvider(MediaRouteProviderId provider_id,

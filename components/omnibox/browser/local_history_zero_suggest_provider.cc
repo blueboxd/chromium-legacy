@@ -48,6 +48,19 @@ base::string16 GetSearchTermsFromURL(const GURL& url,
   return base::i18n::ToLower(base::CollapseWhitespace(search_terms, false));
 }
 
+// Whether zero suggest suggestions are allowed in the given context.
+// Invoked early, confirms all the conditions for zero suggestions are met.
+bool AllowLocalHistoryZeroSuggestSuggestions(const AutocompleteInput& input) {
+#if defined(OS_ANDROID)  // Default-enabled on Android.
+  return true;
+#else
+  return base::Contains(
+      OmniboxFieldTrial::GetZeroSuggestVariants(
+          input.current_page_classification()),
+      LocalHistoryZeroSuggestProvider::kZeroSuggestLocalVariant);
+#endif
+}
+
 }  // namespace
 
 // static
@@ -91,11 +104,8 @@ void LocalHistoryZeroSuggestProvider::Start(const AutocompleteInput& input,
     return;
   }
 
-  if (!base::Contains(OmniboxFieldTrial::GetZeroSuggestVariants(
-                          input.current_page_classification()),
-                      kZeroSuggestLocalVariant)) {
+  if (!AllowLocalHistoryZeroSuggestSuggestions(input))
     return;
-  }
 
   QueryURLDatabase(input);
 }

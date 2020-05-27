@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -339,8 +338,8 @@ void ChromeNativeFileSystemPermissionContext::ConfirmDirectoryReadAccess(
     int frame_id,
     base::OnceCallback<void(PermissionStatus)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &ShowDirectoryAccessConfirmationPromptOnUIThread, process_id,
           frame_id, origin, path,
@@ -389,8 +388,8 @@ void ChromeNativeFileSystemPermissionContext::PerformAfterWriteChecks(
     int frame_id,
     base::OnceCallback<void(AfterWriteCheckResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &DoSafeBrowsingCheckOnUIThread, process_id, frame_id, std::move(item),
           base::BindOnce(
@@ -424,8 +423,8 @@ void ChromeNativeFileSystemPermissionContext::
   auto result_callback =
       BindResultCallbackToCurrentSequence(std::move(callback));
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ShowNativeFileSystemRestrictedDirectoryDialogOnUIThread,
                      process_id, frame_id, origin, paths[0], is_directory,
                      std::move(result_callback)));

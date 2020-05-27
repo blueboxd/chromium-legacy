@@ -233,7 +233,7 @@ CreditCardEditorViewController::CreateHeaderView() {
     std::unique_ptr<views::ImageView> card_icon_view = CreateAppIconView(
         autofill::data_util::GetPaymentRequestData(autofill_card_network)
             .icon_resource_id,
-        gfx::ImageSkia(), base::UTF8ToUTF16(supported_network), opacity);
+        /*icon_bitmap=*/nullptr, base::UTF8ToUTF16(supported_network), opacity);
     card_icon_view->SetImageSize(kCardIconSize);
 
     // Keep track of this card icon to later adjust opacity.

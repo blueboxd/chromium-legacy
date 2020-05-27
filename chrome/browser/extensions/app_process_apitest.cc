@@ -357,25 +357,29 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
   OpenWindow(tab, base_url.Resolve("path2/empty.html"), true, true, NULL);
 
   // Now let's have a tab navigate out of and back into the app's web
-  // extent. Neither navigation should switch processes.
+  // extent. Neither navigation should switch processes (but may change
+  // RenderViewHosts, so we are saving and comparing the processes directly).
   const GURL& app_url(base_url.Resolve("path1/empty.html"));
   const GURL& non_app_url(base_url.Resolve("path3/empty.html"));
-  RenderViewHost* host2 =
-      browser()->tab_strip_model()->GetWebContentsAt(2)->GetRenderViewHost();
+  content::RenderProcessHost* old_process = browser()
+                                                ->tab_strip_model()
+                                                ->GetWebContentsAt(2)
+                                                ->GetRenderViewHost()
+                                                ->GetProcess();
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(2),
                      non_app_url);
-  EXPECT_EQ(host2->GetProcess(), browser()
-                                     ->tab_strip_model()
-                                     ->GetWebContentsAt(2)
-                                     ->GetMainFrame()
-                                     ->GetProcess());
+  EXPECT_EQ(old_process, browser()
+                             ->tab_strip_model()
+                             ->GetWebContentsAt(2)
+                             ->GetMainFrame()
+                             ->GetProcess());
   NavigateInRenderer(browser()->tab_strip_model()->GetWebContentsAt(2),
                      app_url);
-  EXPECT_EQ(host2->GetProcess(), browser()
-                                     ->tab_strip_model()
-                                     ->GetWebContentsAt(2)
-                                     ->GetMainFrame()
-                                     ->GetProcess());
+  EXPECT_EQ(old_process, browser()
+                             ->tab_strip_model()
+                             ->GetWebContentsAt(2)
+                             ->GetMainFrame()
+                             ->GetProcess());
 }
 
 // Tests that app process switching works properly in the following scenario:

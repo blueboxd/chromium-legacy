@@ -14,11 +14,11 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
-#include "chrome/services/app_service/public/cpp/icon_cache.h"
-#include "chrome/services/app_service/public/cpp/icon_coalescer.h"
-#include "chrome/services/app_service/public/cpp/preferred_apps_list.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/icon_cache.h"
+#include "components/services/app_service/public/cpp/icon_coalescer.h"
+#include "components/services/app_service/public/cpp/preferred_apps_list.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -31,7 +31,7 @@
 #include "chrome/browser/apps/app_service/extension_apps_chromeos.h"
 #include "chrome/browser/apps/app_service/plugin_vm_apps.h"
 #include "chrome/browser/apps/app_service/web_apps_chromeos.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
 #else
 #include "chrome/browser/apps/app_service/extension_apps.h"
 #include "chrome/browser/apps/app_service/web_apps.h"
@@ -64,7 +64,7 @@ struct PauseData {
 // On Chrome OS, an instance is created for the lock screen apps profile, but
 // not for the signin profile.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class AppServiceProxy : public KeyedService,
                         public apps::IconLoader,
                         public apps::mojom::Subscriber,

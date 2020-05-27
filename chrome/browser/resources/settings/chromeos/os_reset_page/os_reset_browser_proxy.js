@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
-
 cr.define('settings', function() {
   /** @interface */
-  /* #export */ class OsResetBrowserProxy {
+  class OsResetBrowserProxy {
     /**
      * A method to be called when the reset powerwash dialog is shown.
      */
@@ -21,7 +19,7 @@ cr.define('settings', function() {
   /**
    * @implements {settings.OsResetBrowserProxy}
    */
-  /* #export */ class OsResetBrowserProxyImpl {
+  class OsResetBrowserProxyImpl {
     /** @override */
     onPowerwashDialogShow() {
       chrome.send('onPowerwashDialogShow');

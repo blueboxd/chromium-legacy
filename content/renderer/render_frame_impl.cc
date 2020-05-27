@@ -4736,6 +4736,12 @@ void RenderFrameImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
     observer.DidObserveInputDelay(input_delay);
   }
 }
+
+void RenderFrameImpl::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay) {
+  // TODO(hbsong): Plumbing first_scroll_delay to UKM observer.
+  return;
+}
 void RenderFrameImpl::DidChangeCpuTiming(base::TimeDelta time) {
   for (auto& observer : observers_)
     observer.DidChangeCpuTiming(time);

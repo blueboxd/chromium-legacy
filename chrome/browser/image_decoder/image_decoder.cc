@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -153,8 +152,8 @@ void ImageDecoder::StartWithOptionsImpl(
   // operation happening on a thread which always has a ThreadTaskRunnerHandle.
   // We arbitrarily use the IO thread here to match details of the legacy
   // implementation.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&DecodeImage, std::move(image_data), codec, shrink_to_fit,
                      desired_image_frame_size, callback,
                      base::WrapRefCounted(image_request->task_runner())));

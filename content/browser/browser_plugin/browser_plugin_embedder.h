@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
+#include "third_party/blink/public/common/page/web_drag_operation.h"
 
 namespace content {
 

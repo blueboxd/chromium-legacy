@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/device_service.h"
@@ -193,8 +192,8 @@ void UsbDeviceManagerHelper::EnsureUsbDeviceManagerConnection() {
     return;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&BindDeviceServiceOnUIThread,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&BindDeviceServiceOnUIThread,
                                 device_manager_.BindNewPipeAndPassReceiver()));
 
   device_manager_.set_disconnect_handler(

@@ -7,7 +7,6 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
@@ -133,8 +132,8 @@ void SpellingRequest::OnLocalCheckCompletedOnAnyThread(
     base::WeakPtr<SpellingRequest> request,
     const std::vector<SpellCheckResult>& results) {
   // Local checking can happen on any thread - don't DCHECK thread.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&SpellingRequest::OnLocalCheckCompleted,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&SpellingRequest::OnLocalCheckCompleted,
                                 request, results));
 }
 

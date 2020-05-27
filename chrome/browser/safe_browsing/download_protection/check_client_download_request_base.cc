@@ -651,8 +651,8 @@ void CheckClientDownloadRequestBase::SendRequest() {
   // The following is to log this ClientDownloadRequest on any open
   // chrome://safe-browsing pages. If no such page is open, the request is
   // dropped and the |request| object deleted.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&WebUIInfoSingleton::AddToClientDownloadRequestsSent,
                      base::Unretained(WebUIInfoSingleton::GetInstance()),
                      std::move(request)));
@@ -725,8 +725,8 @@ void CheckClientDownloadRequestBase::OnURLLoaderComplete(
       }
     }
 
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &WebUIInfoSingleton::AddToClientDownloadResponsesReceived,
             base::Unretained(WebUIInfoSingleton::GetInstance()),

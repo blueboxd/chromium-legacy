@@ -149,25 +149,25 @@ class NodeWrapper extends SAChildNode {
         if (ancestor.scrollable) {
           ancestor.scrollDown(() => this.parent_.refresh());
         }
-        return SAConstants.ActionResponse.CLOSE_MENU;
+        return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       case SwitchAccessMenuAction.SCROLL_UP:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollUp(() => this.parent_.refresh());
         }
-        return SAConstants.ActionResponse.CLOSE_MENU;
+        return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       case SwitchAccessMenuAction.SCROLL_RIGHT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollRight(() => this.parent_.refresh());
         }
-        return SAConstants.ActionResponse.CLOSE_MENU;
+        return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       case SwitchAccessMenuAction.SCROLL_LEFT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollLeft(() => this.parent_.refresh());
         }
-        return SAConstants.ActionResponse.CLOSE_MENU;
+        return SAConstants.ActionResponse.RELOAD_MAIN_MENU;
       default:
         if (Object.values(chrome.automation.ActionType).includes(action)) {
           this.baseNode_.performStandardAction(

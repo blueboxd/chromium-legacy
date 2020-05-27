@@ -14,11 +14,9 @@
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/libavif/src/include/avif/avif.h"
 
-#define FIXME_CRASH_IF_COLOR_TRANSFORMATION_IS_ENABLED 0
 #define FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM 0
 #define FIXME_SUPPORT_ICC_PROFILE_TRANSFORM 0
 #define FIXME_DISTINGUISH_LOSSY_OR_LOSSLESS 0
-#define FIXME_CRASH_IF_COLOR_BEHAVIOR_IS_IGNORE 0
 
 namespace blink {
 
@@ -109,7 +107,6 @@ StaticColorCheckParam kTestParams[] = {
         0,
         {},  // we just check that this image is lossy.
     },
-#if FIXME_CRASH_IF_COLOR_BEHAVIOR_IS_IGNORE
     {
         "/images/resources/avif/red-at-12-oclock-with-color-profile-lossy.avif",
         8,
@@ -121,7 +118,6 @@ StaticColorCheckParam kTestParams[] = {
         {},  // we just check that the decoder won't crash when
              // ColorBehavior::Ignore() is used.
     },
-#endif
     {"/images/resources/avif/red-with-alpha-8bpc.avif",
      8,
      ColorType::kRgbA,
@@ -182,7 +178,6 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 128, 128, 128)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 255, 255)},
      }},
-#if FIXME_CRASH_IF_COLOR_TRANSFORMATION_IS_ENABLED
     {"/images/resources/avif/red-with-alpha-8bpc.avif",
      8,
      ColorType::kRgbA,
@@ -195,9 +190,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-#endif
-#if FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM && \
-    FIXME_CRASH_IF_COLOR_BEHAVIOR_IS_IGNORE
+#if FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM
     {"/images/resources/avif/red-with-profile-8bpc.avif",
      8,
      ColorType::kRgb,
@@ -253,7 +246,6 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-#if FIXME_CRASH_IF_COLOR_TRANSFORMATION_IS_ENABLED
     {"/images/resources/avif/red-with-alpha-10bpc.avif",
      10,
      ColorType::kRgbA,
@@ -266,7 +258,6 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-#endif
     {"/images/resources/avif/red-full-ranged-10bpc.avif",
      10,
      ColorType::kRgb,
@@ -303,8 +294,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 128, 128, 128)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 255, 255)},
      }},
-#if FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM && \
-    FIXME_CRASH_IF_COLOR_BEHAVIOR_IS_IGNORE
+#if FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM
     {"/images/resources/avif/red-with-profile-10bpc.avif",
      10,
      ColorType::kRgb,
@@ -360,7 +350,6 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-#if FIXME_CRASH_IF_COLOR_TRANSFORMATION_IS_ENABLED
     {"/images/resources/avif/red-with-alpha-12bpc.avif",
      12,
      ColorType::kRgbA,
@@ -373,7 +362,6 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
-#endif
     {"/images/resources/avif/red-full-ranged-12bpc.avif",
      12,
      ColorType::kRgb,
@@ -410,8 +398,7 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(1, 1), SkColorSetARGB(255, 128, 128, 128)},
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 255, 255)},
      }},
-#if FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM && \
-    FIXME_CRASH_IF_COLOR_BEHAVIOR_IS_IGNORE
+#if FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM
     {"/images/resources/avif/red-with-profile-12bpc.avif",
      12,
      ColorType::kRgb,
@@ -454,30 +441,16 @@ StaticColorCheckParam kTestParams[] = {
     // TODO(ryoh): Add Mono + Alpha Images.
 };
 
-enum class ErrorPhase { kParse, kDecode };
-
-// If 'error_phase' is ErrorPhase::kParse, error is expected during parse
-// (SetData() call); else error is expected during decode
-// (DecodeFrameBufferAtIndex() call).
-void TestInvalidStaticImage(const char* avif_file, ErrorPhase error_phase) {
+void TestInvalidStaticImage(const char* avif_file) {
   std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
 
   scoped_refptr<SharedBuffer> data = ReadFile(avif_file);
   ASSERT_TRUE(data.get());
   decoder->SetData(data.get(), true);
 
-  if (error_phase == ErrorPhase::kParse) {
-    EXPECT_TRUE(decoder->Failed());
-    EXPECT_EQ(0u, decoder->FrameCount());
-    EXPECT_FALSE(decoder->DecodeFrameBufferAtIndex(0));
-  } else {
-    EXPECT_FALSE(decoder->Failed());
-    EXPECT_GT(decoder->FrameCount(), 0u);
-    ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
-    ASSERT_TRUE(frame);
-    EXPECT_NE(ImageFrame::kFrameComplete, frame->GetStatus());
-  }
   EXPECT_TRUE(decoder->Failed());
+  EXPECT_EQ(0u, decoder->FrameCount());
+  EXPECT_FALSE(decoder->DecodeFrameBufferAtIndex(0));
 }
 
 }  // namespace
@@ -510,13 +483,11 @@ TEST(StaticAVIFTests, invalidImages) {
   // Image data is truncated.
   TestInvalidStaticImage(
       "/images/resources/avif/"
-      "red-at-12-oclock-with-color-profile-truncated.avif",
-      ErrorPhase::kParse);
+      "red-at-12-oclock-with-color-profile-truncated.avif");
   // Chunk size in AV1 frame header doesn't match the file size.
   TestInvalidStaticImage(
       "/images/resources/avif/"
-      "red-at-12-oclock-with-color-profile-with-wrong-frame-header.avif",
-      ErrorPhase::kDecode);
+      "red-at-12-oclock-with-color-profile-with-wrong-frame-header.avif");
 }
 
 TEST(StaticAVIFTests, ValidImages) {

@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
@@ -81,8 +80,8 @@ UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 void UrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
     content::WebContents::OnceGetter web_contents_getter) {
   // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&DestroyPrerenderContents,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DestroyPrerenderContents,
                                 std::move(web_contents_getter)));
 }
 
@@ -92,8 +91,8 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const net::HttpRequestHeaders& headers,
     bool is_main_frame,
     bool has_user_gesture) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&SafeBrowsingUIManager::StartDisplayingBlockingPage,
                      ui_manager_, resource));
 }
@@ -103,8 +102,8 @@ void UrlCheckerDelegateImpl::
     StartObservingInteractionsForDelayedBlockingPageHelper(
         const security_interstitials::UnsafeResource& resource,
         bool is_main_frame) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&CreateSafeBrowsingUserInteractionObserver,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CreateSafeBrowsingUserInteractionObserver,
                                 resource.web_contents_getter, resource,
                                 is_main_frame, ui_manager_));
 }
@@ -125,8 +124,8 @@ bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(
     const base::RepeatingCallback<content::WebContents*()>&
         web_contents_getter) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&NotifySuspiciousSiteTriggerDetected,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&NotifySuspiciousSiteTriggerDetected,
                                 web_contents_getter));
 }
 

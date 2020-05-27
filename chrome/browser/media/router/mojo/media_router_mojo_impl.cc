@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/media/cast_mirroring_service_host.h"
 #include "chrome/browser/media/router/event_page_request_manager.h"
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
@@ -205,7 +204,7 @@ void MediaRouterMojoImpl::OnSinksReceived(
     const std::vector<url::Origin>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
-  auto it = sinks_queries_.find(media_source);
+  auto it = sinks_queries_.find(MediaSinksQuery::GetKey(media_source).id());
   if (it == sinks_queries_.end()) {
     DVLOG_WITH_INSTANCE(1) << "Received sink list without MediaSinksQuery.";
     return;
@@ -486,6 +485,25 @@ void MediaRouterMojoImpl::GetMediaController(
       std::move(callback));
 }
 
+// static
+MediaSource MediaRouterMojoImpl::MediaSinksQuery::GetKey(
+    const MediaSource::Id& id) {
+  MediaSource source(id);
+  if (source.IsTabMirroringSource()) {
+    return MediaSource::ForAnyTab();
+  }
+  return source;
+}
+
+// static
+MediaSource MediaRouterMojoImpl::MediaSinksQuery::GetKey(
+    const MediaSinksObserver& observer) {
+  if (!observer.source()) {
+    return MediaSource{""};
+  }
+  return GetKey(observer.source()->id());
+}
+
 void MediaRouterMojoImpl::MediaSinksQuery::SetSinksForProvider(
     MediaRouteProviderId provider_id,
     const std::vector<MediaSink>& sinks) {
@@ -652,12 +670,11 @@ void MediaRouterMojoImpl::ProviderSinkAvailability::
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
   // Create an observer list for the media source and add |observer|
   // to it. Fail if |observer| is already registered.
-  const std::string& source_id =
-      observer->source() ? observer->source()->id() : "";
-  std::unique_ptr<MediaSinksQuery>& sinks_query = sinks_queries_[source_id];
+
+  const MediaSource source = MediaSinksQuery::GetKey(*observer);
+  std::unique_ptr<MediaSinksQuery>& sinks_query = sinks_queries_[source.id()];
   bool is_new_query = false;
   if (!sinks_query) {
     is_new_query = true;
@@ -672,7 +689,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   if (is_new_query) {
     for (const auto& provider : media_route_providers_) {
       if (sink_availability_.IsAvailableForProvider(provider.first)) {
-        provider.second->StartObservingMediaSinks(source_id);
+        provider.second->StartObservingMediaSinks(source.id());
       }
     }
   }
@@ -683,9 +700,8 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  const std::string& source_id =
-      observer->source() ? observer->source()->id() : "";
-  auto it = sinks_queries_.find(source_id);
+  const MediaSource source = MediaSinksQuery::GetKey(*observer);
+  auto it = sinks_queries_.find(source.id());
   if (it == sinks_queries_.end() || !it->second->HasObserver(observer))
     return;
 
@@ -694,15 +710,17 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
   // HasObservers() is reliable here on the assumption that this call
   // is not inside the ObserverList iteration.
   it->second->RemoveObserver(observer);
-  if (!it->second->HasObservers()) {
+  // Since all tabs share the tab sinks query, we don't want to delete it
+  // here.
+  if (!it->second->HasObservers() && !source.IsTabMirroringSource()) {
     // Only ask MRPs to stop observing media sinks if there are sinks available.
     // Otherwise, the MRPs would have discarded the queries already.
     for (const auto& provider : media_route_providers_) {
       if (sink_availability_.IsAvailableForProvider(provider.first)) {
-        provider.second->StopObservingMediaSinks(source_id);
+        provider.second->StopObservingMediaSinks(source.id());
       }
     }
-    sinks_queries_.erase(source_id);
+    sinks_queries_.erase(source.id());
   }
 }
 
@@ -729,8 +747,8 @@ void MediaRouterMojoImpl::RegisterMediaRoutesObserver(
     // Return to the event loop before notifying of a cached route list because
     // MediaRoutesObserver is calling this method from its constructor, and that
     // must complete before invoking its virtual OnRoutesUpdated() method.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MediaRouterMojoImpl::NotifyOfExistingRoutesIfRegistered,
                        weak_factory_.GetWeakPtr(), source_id, observer));
   }

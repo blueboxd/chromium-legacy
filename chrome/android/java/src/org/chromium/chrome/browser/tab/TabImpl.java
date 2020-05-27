@@ -1262,7 +1262,8 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             WebContents oldWebContents = mWebContents;
             mWebContents = webContents;
 
-            ContentView cv = ContentView.createContentView(mThemedApplicationContext, webContents);
+            ContentView cv = ContentView.createContentView(
+                    mThemedApplicationContext, null /* eventOffsetHandler */, webContents);
             cv.setContentDescription(mThemedApplicationContext.getResources().getString(
                     R.string.accessibility_content_view));
             mContentView = cv;

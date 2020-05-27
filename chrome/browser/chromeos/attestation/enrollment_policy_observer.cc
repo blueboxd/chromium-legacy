@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/attestation/attestation_ca_client.h"
@@ -158,8 +157,8 @@ void EnrollmentPolicyObserver::HandleEnrollmentId(
 
 void EnrollmentPolicyObserver::RescheduleGetEnrollmentId() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
         base::BindOnce(&EnrollmentPolicyObserver::GetEnrollmentId,
                        weak_factory_.GetWeakPtr()),
         base::TimeDelta::FromSeconds(retry_delay_));

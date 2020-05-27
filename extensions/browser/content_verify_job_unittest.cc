@@ -8,7 +8,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/version.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -241,8 +240,8 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
 
  private:
   void StartJob(scoped_refptr<ContentVerifyJob> job) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&ContentVerifyJob::Start, job,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&ContentVerifyJob::Start, job,
                                   base::Unretained(content_verifier_.get())));
   }
 
@@ -808,8 +807,8 @@ class ContentVerifyJobWithHashFetchUnittest : public ContentVerifyJobUnittest {
     // we've already deleted verified_contents.json.
     // Use this opportunity to
     base::RunLoop run_loop;
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             [](scoped_refptr<ContentVerifier> content_verifier) {
               content_verifier->ClearCacheForTesting();
@@ -880,8 +879,8 @@ TEST_F(ContentVerifyJobWithHashFetchUnittest, ReadErrorBeforeHashReady) {
         };
 
     base::RunLoop run_loop;
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(do_read_abort_and_done, verify_job,
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(do_read_abort_and_done, verify_job,
                                   content_verifier(), run_loop.QuitClosure()));
     run_loop.Run();
 

@@ -54,6 +54,10 @@ void SelectToSpeakEventHandlerDelegate::DispatchMouseEvent(
   // don't ever try to run this code on some other thread.
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
+  // MouseWheel not handled by ui::MakeWebMouseEvent.
+  if (event.type() == ui::EventType::ET_MOUSEWHEEL)
+    return;
+
   extensions::ExtensionHost* host = chromeos::GetAccessibilityExtensionHost(
       extension_misc::kSelectToSpeakExtensionId);
   if (!host)

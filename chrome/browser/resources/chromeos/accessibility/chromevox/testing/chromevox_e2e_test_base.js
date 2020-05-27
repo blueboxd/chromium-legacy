@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-GEN_INCLUDE(['common.js', 'callback_helper.js', 'assert_additions.js']);
+GEN_INCLUDE([
+  'common.js', '../../common/testing/assert_additions.js',
+  '../../common/testing/callback_helper.js'
+]);
 
 /**
  * Base test fixture for ChromeVox end to end tests.

@@ -18,7 +18,6 @@
 #include "base/notreached.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -38,6 +37,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 #if defined(OS_WIN)
 #include "base/enterprise_util.h"
@@ -473,12 +473,12 @@ void UpgradeDetectorImpl::Init() {
   // of branding.
 
   // Start checking for outdated builds sometime after startup completes.
-  base::PostTask(
-      FROM_HERE,
-      {content::BrowserThread::UI, base::TaskPriority::BEST_EFFORT,
-       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&UpgradeDetectorImpl::StartOutdatedBuildDetector,
-                     weak_factory_.GetWeakPtr()));
+  content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT,
+                                  base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
+      ->PostTask(
+          FROM_HERE,
+          base::BindOnce(&UpgradeDetectorImpl::StartOutdatedBuildDetector,
+                         weak_factory_.GetWeakPtr()));
 
   auto* const build_state = g_browser_process->GetBuildState();
   build_state->AddObserver(this);

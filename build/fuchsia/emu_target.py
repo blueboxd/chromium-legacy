@@ -92,15 +92,18 @@ class EmuTarget(target.Target):
       logging.error('%s did not start' % (self._GetEmulatorName()))
       return
     returncode = self._emu_process.poll()
-    if returncode:
-      logging.error('%s quit unexpectedly with exit code %d' %
-                    (self._GetEmulatorName(), returncode))
+    if returncode == None:
+      logging.info('Shutting down %s' % (self._GetEmulatorName()))
+      self._emu_process.kill()
     elif returncode == 0:
       logging.info('%s quit unexpectedly without errors' %
                    self._GetEmulatorName())
+    elif returncode < 0:
+      logging.error('%s was terminated by signal %d' %
+                    (self._GetEmulatorName(), -returncode))
     else:
-      logging.info('Shutting down %s' % (self._GetEmulatorName()))
-      self._emu_process.kill()
+      logging.error('%s quit unexpectedly with exit code %d' %
+                    (self._GetEmulatorName(), returncode))
 
   def _IsEmuStillRunning(self):
     if not self._emu_process:

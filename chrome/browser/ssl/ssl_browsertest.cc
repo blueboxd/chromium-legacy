@@ -26,7 +26,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_command_line.h"
@@ -381,7 +380,7 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForJsonRequest(
   base::Optional<base::Value> value = base::JSONReader::Read(request.content);
   EXPECT_TRUE(value);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure);
+  content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE, quit_closure);
 
   if (hung_response)
     return std::make_unique<net::test_server::HungResponse>();
@@ -871,8 +870,8 @@ class SSLUITestBase : public InProcessBrowserTest,
 
   void RunOnIOThreadBlocking(base::OnceClosure task) {
     base::RunLoop run_loop;
-    base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(task), run_loop.QuitClosure());
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, std::move(task), run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -7931,8 +7930,8 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
  private:
   void RunOnIOThreadBlocking(base::OnceClosure task) {
     base::RunLoop run_loop;
-    base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
-                           std::move(task), run_loop.QuitClosure());
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE, std::move(task), run_loop.QuitClosure());
     run_loop.Run();
   }
 

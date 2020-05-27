@@ -14,7 +14,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/pattern.h"
-#include "base/task/post_task.h"
 #include "cc/base/switches.h"
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/browser_context.h"
@@ -207,7 +206,7 @@ WebTestContentBrowserClient::GetNextFakeBluetoothChooser() {
 void WebTestContentBrowserClient::BrowserChildProcessHostCreated(
     BrowserChildProcessHost* host) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+      content::GetUIThreadTaskRunner({});
   ui_task_runner->PostTask(FROM_HERE,
                            base::BindOnce(&CreateChildProcessCrashWatcher));
 }
@@ -217,7 +216,7 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
     blink::AssociatedInterfaceRegistry* associated_registry,
     RenderProcessHost* render_process_host) {
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner =
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+      content::GetUIThreadTaskRunner({});
   registry->AddInterface(
       base::BindRepeating(&WebTestBluetoothFakeAdapterSetterImpl::Create),
       ui_task_runner);

@@ -11,7 +11,6 @@
 #include "base/files/file.h"
 #include "base/memory/ref_counted.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
@@ -82,8 +81,8 @@ void ComputeSpaceNeedToBeFreed(
     const storage::FileSystemURL& url,
     GetNecessaryFreeSpaceCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetMetadataOnIOThread, profile->GetPath(), context, url,
                      google_apis::CreateRelayCallback(std::move(callback))));
 }
@@ -221,8 +220,8 @@ void SnapshotManager::CreateManagedSnapshotAfterSpaceComputed(
   DCHECK(context.get());
 
   // Free up space if needed and start creating the snapshot.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FileRefsHolder::FreeSpaceAndCreateSnapshotFile, holder_,
                      context, filesystem_url, needed_space,
                      google_apis::CreateRelayCallback(std::move(callback))));

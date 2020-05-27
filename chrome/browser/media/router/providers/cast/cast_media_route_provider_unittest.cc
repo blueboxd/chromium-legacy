@@ -14,6 +14,7 @@
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -42,8 +43,7 @@ static constexpr base::TimeDelta kRouteTimeout =
 class CastMediaRouteProviderTest : public testing::Test {
  public:
   CastMediaRouteProviderTest()
-      : socket_service_(
-            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
+      : socket_service_(content::GetUIThreadTaskRunner({})),
         message_handler_(&socket_service_) {}
   ~CastMediaRouteProviderTest() override = default;
 

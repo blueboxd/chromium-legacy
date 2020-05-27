@@ -95,7 +95,7 @@ class ManagePasswordsUIController
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_move)
       override;
 
-  void NotifyUnsyncedCredentialsWillBeDeleted(
+  virtual void NotifyUnsyncedCredentialsWillBeDeleted(
       const std::vector<autofill::PasswordForm>& unsynced_credentials);
 
   // PasswordStore::Observer:

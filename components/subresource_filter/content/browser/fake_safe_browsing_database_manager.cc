@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/check_op.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
@@ -57,8 +56,8 @@ bool FakeSafeBrowsingDatabaseManager::CheckUrlForSubresourceFilter(
   checks_.insert(client);
   if (simulate_timeout_)
     return false;
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&FakeSafeBrowsingDatabaseManager::
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&FakeSafeBrowsingDatabaseManager::
                                     OnCheckUrlForSubresourceFilterComplete,
                                 weak_factory_.GetWeakPtr(),
                                 base::Unretained(client), url));

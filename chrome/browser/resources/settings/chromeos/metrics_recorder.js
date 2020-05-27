@@ -2,11 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js'
-// #import '../search/user_action_recorder.mojom-lite.js';
-// clang-format on
-
 /**
  * @fileoverview
  * Provides functions used for recording user actions within settings.
@@ -21,7 +16,7 @@ cr.define('settings', function() {
    * @param {!chromeos.settings.mojom.UserActionRecorderInterface}
    *     testRecorder
    */
-  /* #export */ function setUserActionRecorderForTesting(testRecorder) {
+  function setUserActionRecorderForTesting(testRecorder) {
     userActionRecorder = testRecorder;
   }
 
@@ -37,27 +32,27 @@ cr.define('settings', function() {
     return userActionRecorder;
   }
 
-  /* #export */ function recordPageFocus() {
+  function recordPageFocus() {
     getRecorder().recordPageFocus();
   }
 
-  /* #export */ function recordPageBlur() {
+  function recordPageBlur() {
     getRecorder().recordPageBlur();
   }
 
-  /* #export */ function recordClick() {
+  function recordClick() {
     getRecorder().recordClick();
   }
 
-  /* #export */ function recordNavigation() {
+  function recordNavigation() {
     getRecorder().recordNavigation();
   }
 
-  /* #export */ function recordSearch() {
+  function recordSearch() {
     getRecorder().recordSearch();
   }
 
-  /* #export */ function recordSettingChange() {
+  function recordSettingChange() {
     getRecorder().recordSettingChange();
   }
 

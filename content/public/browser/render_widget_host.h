@@ -20,8 +20,8 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
+#include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
-#include "third_party/blink/public/platform/web_drag_operation.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/surface/transport_dib.h"
 

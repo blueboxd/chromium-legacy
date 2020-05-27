@@ -13,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/hash/md5.h"
 #include "base/path_service.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
@@ -44,8 +43,8 @@ void AppShimListener::Init() {
 }
 
 AppShimListener::~AppShimListener() {
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
-      ->DeleteSoon(FROM_HERE, std::move(mach_acceptor_));
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE,
+                                                 std::move(mach_acceptor_));
 
   // The AppShimListener is only initialized if the Chrome process
   // successfully took the singleton lock. If it was not initialized, do not
@@ -98,11 +97,10 @@ void AppShimListener::OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
   // TODO(https://crbug.com/1052131): Remove NSLog logging, and move to an
   // internal debugging URL.
   NSLog(@"AppShim: Connection received from pid %d", peer_pid);
-  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
-      ->PostTask(
-          FROM_HERE,
-          base::BindOnce(&AppShimHostBootstrap::CreateForChannelAndPeerID,
-                         std::move(endpoint), peer_pid));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AppShimHostBootstrap::CreateForChannelAndPeerID,
+                     std::move(endpoint), peer_pid));
 }
 
 void AppShimListener::OnServerChannelCreateError() {

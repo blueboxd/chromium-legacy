@@ -19,9 +19,6 @@ class KeyboardNode extends NodeWrapper {
 
   /** @override */
   get actions() {
-    if (this.isGroup()) {
-      return [];
-    }
     return [SwitchAccessMenuAction.SELECT];
   }
 
@@ -45,8 +42,13 @@ class KeyboardNode extends NodeWrapper {
 
   /** @override */
   performAction(action) {
-    if (this.isGroup() || action !== SwitchAccessMenuAction.SELECT) {
+    if (action !== SwitchAccessMenuAction.SELECT) {
       return SAConstants.ActionResponse.NO_ACTION_TAKEN;
+    }
+
+    if (this.isGroup()) {
+      NavigationManager.enterGroup();
+      return SAConstants.ActionResponse.CLOSE_MENU;
     }
 
     const keyLocation = this.location;

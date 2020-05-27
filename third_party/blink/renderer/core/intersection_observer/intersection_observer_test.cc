@@ -80,11 +80,9 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
 
 class IntersectionObserverTest : public SimTest {};
 
-class IntersectionObserverV2Test : public IntersectionObserverTest,
-                                   public ScopedIntersectionObserverV2ForTest {
+class IntersectionObserverV2Test : public IntersectionObserverTest {
  public:
-  IntersectionObserverV2Test()
-      : IntersectionObserverTest(), ScopedIntersectionObserverV2ForTest(true) {
+  IntersectionObserverV2Test() {
     IntersectionObserver::SetThrottleDelayEnabledForTesting(false);
   }
 

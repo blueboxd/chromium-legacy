@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/deferred_sequenced_task_runner.h"
 #include "base/memory/singleton.h"
-#include "base/task/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
@@ -70,11 +69,10 @@ KeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
       new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
           BookmarkSyncServiceFactory::GetForProfile(profile)));
-  bookmark_model->Load(
-      profile->GetPrefs(), profile->GetPath(),
-      StartupTaskRunnerServiceFactory::GetForProfile(profile)
-          ->GetBookmarkTaskRunner(),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
+                       StartupTaskRunnerServiceFactory::GetForProfile(profile)
+                           ->GetBookmarkTaskRunner(),
+                       content::GetUIThreadTaskRunner({}));
   BookmarkUndoServiceFactory::GetForProfile(profile)->Start(bookmark_model);
 
   return bookmark_model;

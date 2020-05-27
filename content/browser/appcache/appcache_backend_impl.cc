@@ -20,7 +20,12 @@ namespace content {
 AppCacheBackendImpl::AppCacheBackendImpl(AppCacheServiceImpl* service,
                                          int process_id,
                                          int routing_id)
-    : service_(service), process_id_(process_id), routing_id_(routing_id) {
+    : service_(service),
+      process_id_(process_id),
+      routing_id_(routing_id),
+      security_policy_handle_(
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              process_id)) {
   DCHECK(service);
 }
 
@@ -32,6 +37,7 @@ void AppCacheBackendImpl::RegisterHost(
     const base::UnguessableToken& host_id) {
   service_->RegisterHost(std::move(host_receiver), std::move(frontend_remote),
                          host_id, routing_id_, process_id_,
+                         security_policy_handle_.Duplicate(),
                          mojo::GetBadMessageCallback());
 }
 

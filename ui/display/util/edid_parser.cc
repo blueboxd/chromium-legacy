@@ -328,14 +328,10 @@ void EdidParser::ParseEdid(const std::vector<uint8_t>& edid) {
   }
 
   // Verify if the |display_name_| consists of printable characters only.
-  // TODO(oshima|muka): Consider replacing unprintable chars with white space.
-  for (const char c : display_name_) {
-    if (!isascii(c) || !isprint(c)) {
-      display_name_.clear();
-      base::UmaHistogramEnumeration(kParseEdidFailureMetric,
-                                    ParseEdidFailure::kDisplayName);
-    }
-  }
+  // Replace unprintable chars with white space.
+  std::replace_if(
+      display_name_.begin(), display_name_.end(),
+      [](char c) { return !isascii(c) || !isprint(c); }, ' ');
 
   // See http://en.wikipedia.org/wiki/Extended_display_identification_data
   // for the extension format of EDID.  Also see EIA/CEA-861 spec for

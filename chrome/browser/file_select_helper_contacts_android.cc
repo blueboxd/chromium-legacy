@@ -7,10 +7,10 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/shell_dialogs/selected_file_info.h"
 
 FileSelectHelperContactsAndroid::FileSelectHelperContactsAndroid(
@@ -40,8 +40,8 @@ void FileSelectHelperContactsAndroid::ProcessContactsForAndroid(
       temp_file = base::FilePath();
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &FileSelectHelperContactsAndroid::ProcessContactsForAndroidOnUIThread,
           this, temp_file));

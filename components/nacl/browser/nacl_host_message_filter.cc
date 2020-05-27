@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "build/build_config.h"
 #include "components/nacl/browser/bad_message.h"
@@ -150,8 +149,8 @@ void NaClHostMessageFilter::OnLaunchNaCl(
   // of the whitelisting parameters anyway.
   if (launch_params.process_type == kPNaClTranslatorProcessType) {
     uint32_t perms = launch_params.permission_bits & ppapi::PERMISSION_DEV;
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
                        this, launch_params, reply_msg,
                        std::vector<NaClResourcePrefetchResult>(),
@@ -245,8 +244,8 @@ void NaClHostMessageFilter::BatchOpenResourceFiles(
       break;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&NaClHostMessageFilter::LaunchNaClContinuationOnIOThread,
                      this, launch_params, reply_msg, prefetched_resource_files,
                      permissions, nonsfi_mode_allowed, map_url_callback));

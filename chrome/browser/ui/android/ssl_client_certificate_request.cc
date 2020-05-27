@@ -13,7 +13,6 @@
 #include "base/containers/queue.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/post_task.h"
 #include "chrome/android/chrome_jni_headers/SSLClientCertificateRequest_jni.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
@@ -375,8 +374,8 @@ JNI_SSLClientCertificateRequest_NotifyClientCertificatesChangedOnIOThread(
   if (content::BrowserThread::CurrentlyOn(content::BrowserThread::IO)) {
     NotifyClientCertificatesChanged();
   } else {
-    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                   base::BindOnce(&NotifyClientCertificatesChanged));
+    content::GetIOThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&NotifyClientCertificatesChanged));
   }
 }
 

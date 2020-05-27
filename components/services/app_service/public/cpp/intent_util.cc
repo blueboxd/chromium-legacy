@@ -5,91 +5,80 @@
 #include "components/services/app_service/public/cpp/intent_util.h"
 
 #include "base/compiler_specific.h"
+#include "base/optional.h"
+#include "base/strings/string_util.h"
+#include "components/services/app_service/public/cpp/arc_intent_util.h"
+
+namespace {
+
+// Get the intent condition value based on the condition type.
+base::Optional<std::string> GetIntentConditionValueByType(
+    apps::mojom::ConditionType condition_type,
+    const apps::mojom::IntentPtr& intent) {
+  switch (condition_type) {
+    case apps::mojom::ConditionType::kScheme:
+      return intent->scheme;
+    case apps::mojom::ConditionType::kHost:
+      return intent->host;
+    case apps::mojom::ConditionType::kPattern:
+      return intent->path;
+  }
+}
+
+}  // namespace
 
 namespace apps_util {
 
-// TODO(crbug.com/853604): For glob match, it is currently only for Android
-// intent filters, so we will use the ARC intent filter implementation that is
-// transcribed from Android codebase, to prevent divergence from Android code.
-bool MatchGlob(const std::string& value, const std::string& pattern) {
-#define GET_CHAR(s, i) ((UNLIKELY(i >= s.length())) ? '\0' : s[i])
+apps::mojom::IntentPtr CreateIntentFromUrl(const GURL& url) {
+  auto intent = apps::mojom::Intent::New();
+  intent->scheme = url.scheme();
+  intent->host = url.host();
+  intent->port = url.port();
+  intent->path = url.path();
+  return intent;
+}
 
-  const size_t NP = pattern.length();
-  const size_t NS = value.length();
-  if (NP == 0) {
-    return NS == 0;
+bool ConditionValueMatches(
+    const std::string& value,
+    const apps::mojom::ConditionValuePtr& condition_value) {
+  switch (condition_value->match_type) {
+    // Fallthrough as kNone and kLiteral has same matching type.
+    case apps::mojom::PatternMatchType::kNone:
+    case apps::mojom::PatternMatchType::kLiteral:
+      return value == condition_value->value;
+    case apps::mojom::PatternMatchType::kPrefix:
+      return base::StartsWith(value, condition_value->value,
+                              base::CompareCase::INSENSITIVE_ASCII);
+    case apps::mojom::PatternMatchType::kGlob:
+      return MatchGlob(value, condition_value->value);
   }
-  size_t ip = 0, is = 0;
-  char nextChar = GET_CHAR(pattern, 0);
-  while (ip < NP && is < NS) {
-    char c = nextChar;
-    ++ip;
-    nextChar = GET_CHAR(pattern, ip);
-    const bool escaped = (c == '\\');
-    if (escaped) {
-      c = nextChar;
-      ++ip;
-      nextChar = GET_CHAR(pattern, ip);
-    }
-    if (nextChar == '*') {
-      if (!escaped && c == '.') {
-        if (ip >= (NP - 1)) {
-          // At the end with a pattern match
-          return true;
-        }
-        ++ip;
-        nextChar = GET_CHAR(pattern, ip);
-        // Consume everything until the next char in the pattern is found.
-        if (nextChar == '\\') {
-          ++ip;
-          nextChar = GET_CHAR(pattern, ip);
-        }
-        do {
-          if (GET_CHAR(value, is) == nextChar) {
-            break;
-          }
-          ++is;
-        } while (is < NS);
-        if (is == NS) {
-          // Next char in the pattern didn't exist in the match.
-          return false;
-        }
-        ++ip;
-        nextChar = GET_CHAR(pattern, ip);
-        ++is;
-      } else {
-        // Consume only characters matching the one before '*'.
-        do {
-          if (GET_CHAR(value, is) != c) {
-            break;
-          }
-          ++is;
-        } while (is < NS);
-        ++ip;
-        nextChar = GET_CHAR(pattern, ip);
-      }
-    } else {
-      if (c != '.' && GET_CHAR(value, is) != c)
-        return false;
-      ++is;
+}
+
+bool IntentMatchesCondition(const apps::mojom::IntentPtr& intent,
+                            const apps::mojom::ConditionPtr& condition) {
+  base::Optional<std::string> value_to_match =
+      GetIntentConditionValueByType(condition->condition_type, intent);
+  if (!value_to_match.has_value()) {
+    return false;
+  }
+  for (const auto& condition_value : condition->condition_values) {
+    if (ConditionValueMatches(value_to_match.value(), condition_value)) {
+      return true;
     }
   }
-
-  if (ip >= NP && is >= NS) {
-    // Reached the end of both strings
-    return true;
-  }
-
-  // One last check: we may have finished the match string, but still have a
-  // '.*' at the end of the pattern, which is still a match.
-  if (ip == NP - 2 && GET_CHAR(pattern, ip) == '.' &&
-      GET_CHAR(pattern, ip + 1) == '*') {
-    return true;
-  }
-
   return false;
+}
 
-#undef GET_CHAR
+bool IntentMatchesFilter(const apps::mojom::IntentPtr& intent,
+                         const apps::mojom::IntentFilterPtr& filter) {
+  // Intent matches with this intent filter when all of the existing conditions
+  // match.
+  for (const auto& condition : filter->conditions) {
+    if (!IntentMatchesCondition(intent, condition)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace apps_util

@@ -22,6 +22,7 @@ namespace extensions {
 
 namespace declarative_net_request {
 class RulesetSource;
+enum class LoadRulesetResult;
 
 namespace flat {
 struct ExtensionIndexedRuleset;
@@ -35,35 +36,8 @@ struct UrlRuleMetadata;
 // inherits from RulesetMatcherBase.
 class RulesetMatcher {
  public:
-  // Describes the result of creating a RulesetMatcher instance.
-  // This is logged as part of UMA. Hence existing values should not be re-
-  // numbered or deleted. New values should be added before kLoadRulesetMax.
-  enum LoadRulesetResult {
-    // Ruleset loading succeeded.
-    kLoadSuccess = 0,
-
-    // Ruleset loading failed since the provided path did not exist.
-    kLoadErrorInvalidPath = 1,
-
-    // Ruleset loading failed due to a file read error.
-    kLoadErrorFileRead = 2,
-
-    // Ruleset loading failed due to a checksum mismatch.
-    kLoadErrorChecksumMismatch = 3,
-
-    // Ruleset loading failed due to version header mismatch.
-    // TODO(karandeepb): This should be split into two cases:
-    //    - When the indexed ruleset doesn't have the version header in the
-    //      correct format.
-    //    - When the indexed ruleset's version is not the same as that used by
-    //      Chrome.
-    kLoadErrorVersionMismatch = 4,
-
-    kLoadResultMax
-  };
-
   // Factory function to create a verified RulesetMatcher for |source|. Must be
-  // called on a sequence where file IO is allowed. Returns kLoadSuccess on
+  // called on a sequence where file IO is allowed. Returns kSuccess on
   // success along with the ruleset |matcher|.
   static LoadRulesetResult CreateVerifiedMatcher(
       const RulesetSource& source,

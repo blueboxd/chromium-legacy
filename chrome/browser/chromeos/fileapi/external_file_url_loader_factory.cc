@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/file_manager/fileapi_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_resolver.h"
@@ -364,8 +363,8 @@ void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
     mojo::ReportBadMessage("Unauthorized externalfile request");
     return;
   }
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ExternalFileURLLoader::CreateAndStart, profile_id_,
                      request, std::move(loader), std::move(client)));
 }

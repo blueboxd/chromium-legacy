@@ -641,7 +641,7 @@ template("component") {
     assert(invoker.static_component_type == "static_library" ||
            invoker.static_component_type == "source_set")
     _component_mode = invoker.static_component_type
-  } else if (!defined(invoker.sources)) {
+  } else if (!defined(invoker.sources) || invoker.sources == []) {
     # When there are no sources defined, use a source set to avoid creating
     # an empty static library (which generally don't work).
     _component_mode = "source_set"

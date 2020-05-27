@@ -32,9 +32,7 @@ class AppRegistrarObserver : public base::CheckedObserver {
   }
 
   // The disabled status WebApp::chromeos_data().is_disabled of the app backing
-  // |app_id| is updated. Sometimes OnWebAppDisabledStateChanged is called but
-  // WebApp::chromos_data().is_disabled isn't updated yet, that's why it's
-  // recommended to depend on the value of |is_disabled|.
+  // |app_id| changed.
   virtual void OnWebAppDisabledStateChanged(const AppId& app_id,
                                             bool is_disabled) {}
 };

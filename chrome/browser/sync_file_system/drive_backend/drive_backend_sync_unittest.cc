@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -38,6 +37,7 @@
 #include "components/drive/service/test_util.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
@@ -90,8 +90,7 @@ class DriveBackendSyncTest : public testing::Test,
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     in_memory_env_ = leveldb_chrome::NewMemEnv("DriveBackendSyncTest");
 
-    io_task_runner_ =
-        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+    io_task_runner_ = content::GetIOThreadTaskRunner({});
     worker_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     file_task_runner_ = io_task_runner_;

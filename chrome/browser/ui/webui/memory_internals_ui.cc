@@ -17,7 +17,6 @@
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiling_host/profiling_process_host.h"
@@ -209,8 +208,8 @@ void MemoryInternalsDOMHandler::HandleRequestProcessList(
 
   // This is called on the UI thread, the child process iterator must run on
   // the IO thread, while the render process iterator must run on the UI thread.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&MemoryInternalsDOMHandler::GetChildProcessesOnIOThread,
                      weak_factory_.GetWeakPtr(), std::move(callback_id)));
 }
@@ -297,8 +296,8 @@ void MemoryInternalsDOMHandler::GetChildProcessesOnIOThread(
     }
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&MemoryInternalsDOMHandler::GetProfiledPids,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&MemoryInternalsDOMHandler::GetProfiledPids,
                                 dom_handler, callback_id, std::move(result)));
 }
 
@@ -311,8 +310,8 @@ void MemoryInternalsDOMHandler::GetProfiledPids(
 
   // The supervisor hasn't started, so return an empty list.
   if (!supervisor->HasStarted()) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&MemoryInternalsDOMHandler::ReturnProcessListOnUIThread,
                        weak_factory_.GetWeakPtr(), callback_id,
                        std::move(children), std::vector<base::ProcessId>()));

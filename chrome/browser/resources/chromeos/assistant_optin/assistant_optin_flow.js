@@ -138,7 +138,6 @@ Polymer({
       case this.$['voice-match']:
         if (this.flowType == this.FlowType.SPEAKER_ID_ENROLLMENT ||
             this.flowType == this.FlowType.SPEAKER_ID_RETRAIN) {
-          chrome.send('login.AssistantOptInFlowScreen.flowFinished');
           this.browserProxy_.flowFinished();
         } else {
           this.showScreen(this.$['get-more']);

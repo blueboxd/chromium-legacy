@@ -605,8 +605,8 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         if (mQueryTileSection != null) mQueryTileSection.onUrlFocusAnimationChanged(percent);
     }
 
-    void onLoadUrl() {
-        if (mQueryTileSection != null) mQueryTileSection.reloadTiles();
+    void onLoadUrl(boolean isNtpUrl) {
+        if (isNtpUrl && mQueryTileSection != null) mQueryTileSection.reloadTiles();
     }
 
     /**

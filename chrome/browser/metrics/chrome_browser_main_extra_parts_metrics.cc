@@ -17,7 +17,6 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -78,9 +77,9 @@ void RecordMemoryMetrics();
 
 // Records memory metrics after a delay.
 void RecordMemoryMetricsAfterDelay() {
-  base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                        base::BindOnce(&RecordMemoryMetrics),
-                        memory_instrumentation::GetDelayForNextMemoryLog());
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE, base::BindOnce(&RecordMemoryMetrics),
+      memory_instrumentation::GetDelayForNextMemoryLog());
 }
 
 // Records memory metrics, and then triggers memory colleciton after a delay.

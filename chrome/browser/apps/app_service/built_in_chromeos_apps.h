@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/services/app_service/public/cpp/publisher_base.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/cpp/publisher_base.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -20,7 +20,7 @@ namespace apps {
 
 // An app publisher (in the App Service sense) of built-in Chrome OS apps.
 //
-// See chrome/services/app_service/README.md.
+// See components/services/app_service/README.md.
 class BuiltInChromeOsApps : public apps::PublisherBase {
  public:
   BuiltInChromeOsApps(const mojo::Remote<apps::mojom::AppService>& app_service,

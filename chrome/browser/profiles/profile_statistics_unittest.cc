@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/chrome_bookmark_client.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
@@ -50,9 +49,9 @@ std::unique_ptr<KeyedService> BuildBookmarkModelWithoutLoad(
 
 void LoadBookmarkModel(Profile* profile,
                        bookmarks::BookmarkModel* bookmark_model) {
-  bookmark_model->Load(
-      profile->GetPrefs(), profile->GetPath(), profile->GetIOTaskRunner(),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
+                       profile->GetIOTaskRunner(),
+                       content::GetUIThreadTaskRunner({}));
 }
 
 bookmarks::BookmarkModel* CreateBookmarkModelWithoutLoad(Profile* profile) {

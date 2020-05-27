@@ -299,7 +299,11 @@ TEST_F(LocalHistoryZeroSuggestProviderTest, MAYBE_ZeroSuggestVariant) {
   SetZeroSuggestVariant(metrics::OmniboxEventProto::NTP_REALBOX,
                         /*zero_suggest_variant_value=*/"blah");
   StartProviderAndWaitUntilDone();
+#if defined(OS_ANDROID)  // Enabled by default.
+  ExpectMatches({{"hello world", 500}});
+#else
   ExpectMatches({});
+#endif
 
   SetZeroSuggestVariant(
       metrics::OmniboxEventProto::NTP_REALBOX,

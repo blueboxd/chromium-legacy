@@ -16,6 +16,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
@@ -458,6 +459,11 @@ void WebFrameWidgetBase::EndCommitCompositorFrame(
 
 void WebFrameWidgetBase::DidCommitAndDrawCompositorFrame() {
   Client()->DidCommitAndDrawCompositorFrame();
+}
+
+void WebFrameWidgetBase::DidObserveFirstScrollDelay(
+    base::TimeDelta first_scroll_delay) {
+  LocalRoot()->Client()->DidObserveFirstScrollDelay(first_scroll_delay);
 }
 
 void WebFrameWidgetBase::OnDeferMainFrameUpdatesChanged(bool defer) {

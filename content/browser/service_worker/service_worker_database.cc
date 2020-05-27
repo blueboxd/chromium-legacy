@@ -484,7 +484,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::GetAllRegistrations(
       registrations->push_back(std::move(registration));
     }
   }
-
+  UMA_HISTOGRAM_COUNTS_10000("ServiceWorker.RegistrationCount",
+                             registrations->size());
   HandleReadResult(FROM_HERE, status);
   return status;
 }

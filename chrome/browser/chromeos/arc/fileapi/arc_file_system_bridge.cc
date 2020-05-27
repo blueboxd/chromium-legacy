@@ -15,7 +15,6 @@
 #include "base/memory/singleton.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
@@ -102,8 +101,8 @@ void GetFileSizeOnIOThread(scoped_refptr<storage::FileSystemContext> context,
                 file_info.size >= 0) {
               size = file_info.size;
             }
-            base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(std::move(callback), size));
+            content::GetUIThreadTaskRunner({})->PostTask(
+                FROM_HERE, base::BindOnce(std::move(callback), size));
           },
           base::Passed(&callback)));
 }
@@ -249,8 +248,8 @@ void ArcFileSystemBridge::GetFileSize(const std::string& url,
       GetFileSystemContext(profile_, url_decoded);
   file_manager::util::FileSystemURLAndHandle file_system_url_and_handle =
       GetFileSystemURL(*context, url_decoded);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&GetFileSizeOnIOThread, std::move(context),
                      file_system_url_and_handle.url, std::move(callback)));
   // TODO(https://crbug.com/963027): This is currently leaking the isolated

@@ -150,6 +150,9 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // non-actionable stack trace in the crash recorded.
   void BlockIfCaptureInProgress();
 
+  // Begin executing the monitoring loop on the HangWatcher thread.
+  void Start();
+
  private:
   // Use to assert that functions are called on the monitoring thread.
   THREAD_CHECKER(hang_watcher_thread_checker_);
@@ -210,9 +213,6 @@ class BASE_EXPORT HangWatcher : public DelegateSimpleThread::Delegate {
   // Record the hang and perform the necessary housekeeping before and after.
   void CaptureHang(base::TimeTicks capture_time)
       EXCLUSIVE_LOCKS_REQUIRED(watch_state_lock_) LOCKS_EXCLUDED(capture_lock_);
-
-  // Call Run() on the HangWatcher thread.
-  void Start();
 
   // Stop all monitoring and join the HangWatcher thread.
   void Stop();

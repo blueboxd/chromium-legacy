@@ -36,6 +36,9 @@ content::WebUIDataSource* CreateHelpAppUntrustedDataSource(
 
   source->UseStringsJs();
   source->AddFrameAncestor(GURL(kChromeUIHelpAppURL));
+
+  // TODO(https://crbug.com/1085328): Audit and tighten CSP.
+  source->OverrideContentSecurityPolicyDefaultSrc("");
   return source;
 }
 

@@ -99,7 +99,8 @@ public class ContextualSearchTapEventTest {
             super(activity, null);
             setSelectionController(new MockCSSelectionController(activity, this));
             WebContents webContents = WebContentsFactory.createWebContents(false, false);
-            ContentView cv = ContentView.createContentView(activity, webContents);
+            ContentView cv = ContentView.createContentView(
+                    activity, null /* eventOffsetHandler */, webContents);
             webContents.initialize(null, ViewAndroidDelegate.createBasicDelegate(cv), null,
                     activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
             SelectionPopupController selectionPopupController =

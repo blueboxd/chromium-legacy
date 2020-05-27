@@ -23,7 +23,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "build/build_config.h"
@@ -113,8 +112,8 @@ void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
     return;
   }
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&DecodeFileAndCopyToClipboard, png_data));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&DecodeFileAndCopyToClipboard, png_data));
 }
 
 // Delegate for a notification. This class has two roles: to implement callback
@@ -464,8 +463,8 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
     return;
 
   if (result != ScreenshotResult::SUCCESS) {
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &ChromeScreenshotGrabber::OnReadScreenshotFileForPreviewCompleted,
             weak_factory_.GetWeakPtr(), result, screenshot_path, gfx::Image()));
@@ -476,8 +475,8 @@ void ChromeScreenshotGrabber::OnScreenshotCompleted(
   SYSLOG(INFO) << "Screenshot taken";
 #endif
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&ChromeScreenshotGrabber::ReadScreenshotFileForPreview,
                      weak_factory_.GetWeakPtr(), screenshot_path));
 }

@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "components/security_interstitials/content/captive_portal_helper_android.h"
-#include "base/task/post_task.h"
 #include "components/security_interstitials/content/captive_portal_helper.h"
 #include "content/public/browser/browser_task_traits.h"
 
@@ -27,8 +26,8 @@ void JNI_CaptivePortalHelper_SetCaptivePortalCertificateForTesting(
     const base::android::JavaParamRef<jstring>& jhash) {
   auto default_proto =
       SSLErrorAssistant::GetErrorAssistantProtoFromResourceBundle();
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(SSLErrorHandler::SetErrorAssistantProto,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(SSLErrorHandler::SetErrorAssistantProto,
                                 std::move(default_proto)));
 
   const std::string hash = ConvertJavaStringToUTF8(env, jhash);
@@ -37,16 +36,16 @@ void JNI_CaptivePortalHelper_SetCaptivePortalCertificateForTesting(
   config_proto->set_version_id(INT_MAX);
   config_proto->add_captive_portal_cert()->set_sha256_hash(hash);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(SSLErrorHandler::SetErrorAssistantProto,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(SSLErrorHandler::SetErrorAssistantProto,
                                 std::move(config_proto)));
 }
 
 void JNI_CaptivePortalHelper_SetOSReportsCaptivePortalForTesting(
     JNIEnv* env,
     jboolean os_reports_captive_portal) {
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(SSLErrorHandler::SetOSReportsCaptivePortalForTesting,
                      os_reports_captive_portal));
 }

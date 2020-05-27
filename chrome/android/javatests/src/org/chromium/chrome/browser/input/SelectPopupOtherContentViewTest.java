@@ -100,7 +100,8 @@ public class SelectPopupOtherContentViewTest {
             WebContents webContents = WebContentsFactory.createWebContents(false, false);
             ChromeActivity activity = mActivityTestRule.getActivity();
 
-            ContentView cv = ContentView.createContentView(activity, webContents);
+            ContentView cv = ContentView.createContentView(
+                    activity, null /* eventOffsetHandler */, webContents);
             webContents.initialize("", ViewAndroidDelegate.createBasicDelegate(cv), cv,
                     activity.getWindowAndroid(), WebContents.createDefaultInternalsHolder());
             webContents.destroy();

@@ -17,7 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
-#include "base/task/post_task.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/metrics_proto/chrome_os_app_list_launch_event.pb.h"
 
@@ -74,8 +74,8 @@ class AppListLaunchRecorder {
                   "Non enum passed to AppListLaunchRecorder::Log");
 
     if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(&AppListLaunchRecorder::Log<T>, base::Unretained(this),
                          client, hashed, unhashed));
       return;

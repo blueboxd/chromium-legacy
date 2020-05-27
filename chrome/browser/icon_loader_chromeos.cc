@@ -16,7 +16,6 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task/post_task.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -195,7 +194,7 @@ IconLoader::IconGroup IconLoader::GroupForFilepath(
 scoped_refptr<base::TaskRunner> IconLoader::GetReadIconTaskRunner() {
   // ReadIcon touches non thread safe ResourceBundle images, so it must be on
   // the UI thread.
-  return base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
+  return content::GetUIThreadTaskRunner({});
 }
 
 void IconLoader::ReadIcon() {

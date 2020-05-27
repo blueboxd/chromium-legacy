@@ -6,7 +6,6 @@
 
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/password_form_metrics_recorder.h"
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
@@ -71,8 +70,8 @@ class WebsiteLoginManagerImpl::PendingRequest
     // destruction of |this|, which needs to happen *after* this call has
     // returned.
     if (notify_finished_callback_) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     base::BindOnce(&PendingRequest::NotifyFinished,
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE, base::BindOnce(&PendingRequest::NotifyFinished,
                                     weak_ptr_factory_.GetWeakPtr(),
                                     std::move(notify_finished_callback_)));
     }

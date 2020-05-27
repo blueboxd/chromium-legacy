@@ -108,6 +108,15 @@ Polymer({
     searchInput.addEventListener(
         'focus', this.onSearchInputFocused_.bind(this));
 
+    // If the search was initiated by directly entering a search URL, need to
+    // sync the URL parameter to the textbox.
+    const urlSearchQuery =
+        settings.Router.getInstance().getQueryParameters().get('search') || '';
+
+    // Setting the search box value without triggering a 'search-changed'
+    // event, to prevent an unnecessary duplicate entry in |window.history|.
+    toolbarSearchField.setValue(urlSearchQuery, /*noEvent=*/true);
+
     // Initialize the announcer once.
     Polymer.IronA11yAnnouncer.requestAvailability();
   },

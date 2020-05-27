@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -171,8 +170,8 @@ void DialURLFetcher::StartDownload() {
   // this conditional.
   auto mojo_receiver = loader_factory.BindNewPipeAndPassReceiver();
   if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI)) {
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&BindURLLoaderFactoryReceiverOnUIThread,
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(&BindURLLoaderFactoryReceiverOnUIThread,
                                   std::move(mojo_receiver)));
   }
 

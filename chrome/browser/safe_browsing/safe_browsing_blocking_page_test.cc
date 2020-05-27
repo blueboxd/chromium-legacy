@@ -2041,8 +2041,6 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   // Page tries to request a notification permission. The prompt should be
   // cancelled and an interstitial should be shown.
   EXPECT_TRUE(RequestPermissionAndWaitForInterstitial(browser()));
-  EXPECT_FALSE(
-      browser()->tab_strip_model()->GetActiveWebContents()->IsFullscreen());
 
   EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
   AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
@@ -2059,6 +2057,33 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
   histograms.ExpectBucketCount(
       "Permissions.Action.Notifications",
       static_cast<int>(permissions::PermissionAction::DENIED), 1);
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageDelayedWarningBrowserTest,
+                       JavaScriptDialog_WarningShown) {
+  base::HistogramTester histograms;
+  NavigateAndAssertNoInterstitial();
+
+  // Page tries to show a JavaScript dialog. The dialog should be
+  // cancelled and an interstitial should be shown.
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationObserver observer(contents);
+  EXPECT_TRUE(content::ExecuteScript(contents, "alert('test')"));
+  observer.WaitForNavigationFinished();
+  EXPECT_TRUE(WaitForReady(browser()));
+
+  EXPECT_TRUE(ClickAndWaitForDetach(browser(), "primary-button"));
+  AssertNoInterstitial(browser(), false);  // Assert the interstitial is gone
+  EXPECT_EQ(GURL(url::kAboutBlankURL),     // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  histograms.ExpectTotalCount(kDelayedWarningsHistogram, 2);
+  histograms.ExpectBucketCount(kDelayedWarningsHistogram,
+                               DelayedWarningEvent::kPageLoaded, 1);
+  histograms.ExpectBucketCount(
+      kDelayedWarningsHistogram,
+      DelayedWarningEvent::kWarningShownOnJavaScriptDialog, 1);
 }
 
 // The user clicks on the page. Feature isn't configured to show a warning on

@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -162,8 +161,8 @@ void LocalPrinterHandlerChromeos::GetDefaultPrinter(DefaultPrinterCallback cb) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(crbug.com/660898): Add default printers to ChromeOS.
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(cb), ""));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(cb), ""));
 }
 
 void LocalPrinterHandlerChromeos::StartGetPrinters(
@@ -197,8 +196,8 @@ void LocalPrinterHandlerChromeos::StartGetCapability(
       printers_manager_->GetPrinter(printer_name);
   if (!printer) {
     // If the printer was removed, the lookup will fail.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(std::move(cb), base::Value()));
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE, base::BindOnce(std::move(cb), base::Value()));
     return;
   }
 

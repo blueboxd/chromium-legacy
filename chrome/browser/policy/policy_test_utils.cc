@@ -276,12 +276,9 @@ void PolicyTest::CheckSafeSearch(Browser* browser,
 // static
 void PolicyTest::CheckYouTubeRestricted(
     int youtube_restrict_mode,
-    const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
-    const GURL& url) {
-  auto iter = urls_requested.find(url);
-  ASSERT_TRUE(iter != urls_requested.end());
+    const net::HttpRequestHeaders& headers) {
   std::string header;
-  iter->second.GetHeader(safe_search_util::kYouTubeRestrictHeaderName, &header);
+  headers.GetHeader(safe_search_util::kYouTubeRestrictHeaderName, &header);
   if (youtube_restrict_mode == safe_search_util::YOUTUBE_RESTRICT_OFF) {
     EXPECT_TRUE(header.empty());
   } else if (youtube_restrict_mode ==
@@ -296,18 +293,15 @@ void PolicyTest::CheckYouTubeRestricted(
 // static
 void PolicyTest::CheckAllowedDomainsHeader(
     const std::string& allowed_domain,
-    const std::map<GURL, net::HttpRequestHeaders>& urls_requested,
-    const GURL& url) {
-  auto iter = urls_requested.find(url);
-  ASSERT_TRUE(iter != urls_requested.end());
+    const net::HttpRequestHeaders& headers) {
   if (allowed_domain.empty()) {
     EXPECT_TRUE(
-        !iter->second.HasHeader(safe_search_util::kGoogleAppsAllowedDomains));
+        !headers.HasHeader(safe_search_util::kGoogleAppsAllowedDomains));
     return;
   }
 
   std::string header;
-  iter->second.GetHeader(safe_search_util::kGoogleAppsAllowedDomains, &header);
+  headers.GetHeader(safe_search_util::kGoogleAppsAllowedDomains, &header);
   EXPECT_EQ(header, allowed_domain);
 }
 

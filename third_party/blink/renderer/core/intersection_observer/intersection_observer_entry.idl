@@ -13,7 +13,7 @@
     readonly attribute DOMRectReadOnly boundingClientRect;
     readonly attribute DOMRectReadOnly intersectionRect;
     readonly attribute boolean isIntersecting;
-    [RuntimeEnabled=IntersectionObserverV2] readonly attribute boolean isVisible;
+    readonly attribute boolean isVisible;
     readonly attribute double intersectionRatio;
     readonly attribute Element target;
 };

@@ -6,7 +6,6 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/browser_main_loop.h"
@@ -254,8 +253,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest, StartAndImmediatelyStop) {
       base::BindOnce(&VideoCaptureBrowserTest::TearDownCaptureDeviceOnIOThread,
                      base::Unretained(this),
                      std::move(quit_run_loop_on_current_thread_cb), true);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
           base::Unretained(this), std::move(after_start_continuation)));
@@ -338,8 +337,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
             }
           }));
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &VideoCaptureBrowserTest::SetUpAndStartCaptureDeviceOnIOThread,
           base::Unretained(this), base::DoNothing::Once()));

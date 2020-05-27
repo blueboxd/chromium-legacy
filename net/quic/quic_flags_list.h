@@ -444,3 +444,7 @@ QUIC_FLAG(
 
 // If true, enable QUIC version h3-28.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_draft_28, false)
+
+// If true, the B2HI connection option limits reduction of inflight_hi to
+// (1-Beta)*CWND.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr2_limit_inflight_hi, false)

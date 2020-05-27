@@ -1,5 +1,5 @@
 include_rules = [
-  "+chrome/services/app_service/public",
+  "+components/services/app_service/public",
   "+device/bluetooth",
   "+extensions/strings/grit/extensions_strings.h",
 

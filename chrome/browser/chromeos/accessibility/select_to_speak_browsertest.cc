@@ -306,6 +306,27 @@ IN_PROC_BROWSER_TEST_F(SelectToSpeakTestWithLanguageDetection,
   sm_.Replay();
 }
 
+IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DoesNotCrashWithMousewheelEvent) {
+  ui_test_utils::NavigateToURL(
+      browser(), GURL("data:text/html;charset=utf-8,<p>This is some text</p>"));
+  gfx::Rect bounds = GetWebContentsBounds();
+
+  // Hold down Search and drag over the web contents to select everything.
+  generator_->PressKey(ui::VKEY_LWIN, 0 /* flags */);
+  generator_->MoveMouseTo(bounds.x(), bounds.y());
+  generator_->PressLeftButton();
+  // Ensure this does not crash. It should have no effect.
+  generator_->MoveMouseWheel(10, 10);
+  generator_->MoveMouseTo(bounds.x() + bounds.width(),
+                          bounds.y() + bounds.height());
+  generator_->MoveMouseWheel(100, 5);
+  generator_->ReleaseLeftButton();
+  generator_->ReleaseKey(ui::VKEY_LWIN, 0 /* flags */);
+
+  sm_.ExpectSpeechPattern("This is some text*");
+  sm_.Replay();
+}
+
 // Flaky test: crbug.com/950049.
 IN_PROC_BROWSER_TEST_F(SelectToSpeakTest, DISABLED_FocusRingMovesWithMouse) {
   // Create a callback for the focus ring observer.

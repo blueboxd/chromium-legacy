@@ -341,6 +341,9 @@ void PasswordsPrivateDelegateImpl::SetPasswordList(
     entry.username = base::UTF16ToUTF8(form->username_value);
     entry.id = password_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
+    entry.frontend_id = password_frontend_id_generator_.GenerateId(
+        password_manager::CreateSortKey(*form,
+                                        password_manager::IgnoreStore(true)));
 
     if (!form->federation_origin.opaque()) {
       entry.federation_text.reset(new std::string(l10n_util::GetStringFUTF8(
@@ -376,6 +379,10 @@ void PasswordsPrivateDelegateImpl::SetPasswordExceptionList(
     current_exception_entry.urls = CreateUrlCollectionFromForm(*form);
     current_exception_entry.id = exception_id_generator_.GenerateId(
         password_manager::CreateSortKey(*form));
+    current_exception_entry.frontend_id =
+        exception_frontend_id_generator_.GenerateId(
+            password_manager::CreateSortKey(
+                *form, password_manager::IgnoreStore(true)));
 
     current_exception_entry.from_account_store = form->IsUsingAccountStore();
     current_exceptions_.push_back(std::move(current_exception_entry));

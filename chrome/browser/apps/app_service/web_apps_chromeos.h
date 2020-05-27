@@ -16,9 +16,9 @@
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/web_applications/components/web_app_id.h"
-#include "chrome/services/app_service/public/cpp/instance_registry.h"
-#include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/instance_registry.h"
+#include "components/services/app_service/public/mojom/app_service.mojom.h"
+#include "components/services/app_service/public/mojom/types.mojom.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;

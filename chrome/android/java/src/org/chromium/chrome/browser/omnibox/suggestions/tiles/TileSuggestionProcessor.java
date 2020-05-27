@@ -14,10 +14,12 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionProcessor;
 import org.chromium.components.query_tiles.QueryTile;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** A class that handles model and view creation for the query tile suggestions. */
 public class TileSuggestionProcessor implements SuggestionProcessor {
+    private List<QueryTile> mLastProcessedTiles;
     private final Callback<List<QueryTile>> mQueryTileSuggestionCallback;
     private final int mMinViewHeight;
 
@@ -49,7 +51,13 @@ public class TileSuggestionProcessor implements SuggestionProcessor {
     }
 
     @Override
-    public void onUrlFocusChange(boolean hasFocus) {}
+    public void onUrlFocusChange(boolean hasFocus) {
+        if (hasFocus) return;
+
+        // Clear out any old UI state for this processor.
+        mLastProcessedTiles = null;
+        mQueryTileSuggestionCallback.onResult(new ArrayList<>());
+    }
 
     @Override
     public void onNativeInitialized() {}
@@ -61,7 +69,11 @@ public class TileSuggestionProcessor implements SuggestionProcessor {
 
     @Override
     public void populateModel(OmniboxSuggestion suggestion, PropertyModel model, int position) {
-        mQueryTileSuggestionCallback.onResult(suggestion.getQueryTiles());
+        List<QueryTile> tiles = suggestion.getQueryTiles();
+
+        if (mLastProcessedTiles != null && mLastProcessedTiles.equals(tiles)) return;
+        mLastProcessedTiles = new ArrayList<>(tiles);
+        mQueryTileSuggestionCallback.onResult(tiles);
     }
 
     @Override

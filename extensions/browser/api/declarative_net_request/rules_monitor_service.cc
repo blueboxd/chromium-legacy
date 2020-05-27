@@ -14,6 +14,7 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -53,6 +54,10 @@ static base::LazyInstance<
 
 bool RulesetInfoCompareByID(const RulesetInfo& lhs, const RulesetInfo& rhs) {
   return lhs.source().id() < rhs.source().id();
+}
+
+void LogLoadRulesetResult(LoadRulesetResult result) {
+  UMA_HISTOGRAM_ENUMERATION(kLoadRulesetResultHistogram, result);
 }
 
 }  // namespace
@@ -223,6 +228,7 @@ void RulesMonitorService::OnExtensionLoaded(
       if (!prefs_->GetDNRStaticRulesetChecksum(extension->id(), source.id(),
                                                &expected_ruleset_checksum)) {
         // This might happen on prefs corruption.
+        LogLoadRulesetResult(LoadRulesetResult::kErrorChecksumNotFound);
         ruleset_failed_to_load = true;
         continue;
       }
@@ -365,7 +371,7 @@ void RulesMonitorService::UpdateEnabledStaticRulesetsInternal(
     if (!prefs_->GetDNRStaticRulesetChecksum(extension_id, id_to_enable,
                                              &expected_ruleset_checksum)) {
       // This might happen on prefs corruption.
-      // TODO(crbug.com/754526): Log metrics on how often this happens.
+      LogLoadRulesetResult(LoadRulesetResult::kErrorChecksumNotFound);
       std::move(callback).Run(kInternalErrorUpdatingEnabledRulesets);
       return;
     }
@@ -400,7 +406,7 @@ void RulesMonitorService::OnInitialRulesetsLoaded(LoadRequestData load_data) {
   if (test_observer_)
     test_observer_->OnRulesetLoadComplete(load_data.extension_id);
 
-  UpdateRulesetChecksumsIfNeeded(load_data);
+  LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // It's possible that the extension has been disabled since the initial load
   // ruleset request. If it's disabled, do nothing.
@@ -477,7 +483,7 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
     std::set<RulesetID> ids_to_disable,
     std::set<RulesetID> ids_to_enable,
     LoadRequestData load_data) {
-  UpdateRulesetChecksumsIfNeeded(load_data);
+  LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // It's possible that the extension has been disabled since the initial
   // request. If it's disabled, return early.
@@ -518,7 +524,6 @@ void RulesMonitorService::OnNewStaticRulesetsLoaded(
   new_matchers.reserve(load_data.rulesets.size());
   for (RulesetInfo& ruleset : load_data.rulesets) {
     if (!ruleset.did_load_successfully()) {
-      // TODO(crbug.com/754526): Log metrics on how often this happens.
       std::move(callback).Run(kInternalErrorUpdatingEnabledRulesets);
       return;
     }
@@ -592,33 +597,13 @@ void RulesMonitorService::OnDynamicRulesUpdated(
     base::Optional<std::string> error) {
   DCHECK_EQ(1u, load_data.rulesets.size());
 
-  RulesetInfo& dynamic_ruleset = load_data.rulesets[0];
-  DCHECK_EQ(dynamic_ruleset.did_load_successfully(), !error.has_value());
-
-  // The extension may have been uninstalled by this point. Return early if
-  // that's the case.
-  if (!extension_registry_->GetInstalledExtension(load_data.extension_id)) {
-    // Still dispatch the |callback|, even though it's probably a no-op.
-    std::move(callback).Run(std::move(error));
-    return;
-  }
-
-  // Update the ruleset checksums if needed. Note it's possible that
-  // new_checksum() is valid while did_load_successfully() returns false below.
-  // This should be rare but can happen when updating the rulesets succeeds but
-  // we fail to create a RulesetMatcher from the indexed ruleset file (e.g. due
-  // to a file read error). We still update the prefs checksum to ensure the
-  // next ruleset load succeeds.
-  // Note: We also do this for a non-enabled extension. The ruleset on the disk
-  // has already been modified at this point. So we do want to update the
-  // checksum for it to be in sync with what's on disk.
-  if (dynamic_ruleset.new_checksum()) {
-    prefs_->SetDNRDynamicRulesetChecksum(load_data.extension_id,
-                                         *dynamic_ruleset.new_checksum());
-  }
+  LogMetricsAndUpdateChecksumsIfNeeded(load_data);
 
   // Respond to the extension.
   std::move(callback).Run(std::move(error));
+
+  RulesetInfo& dynamic_ruleset = load_data.rulesets[0];
+  DCHECK_EQ(dynamic_ruleset.did_load_successfully(), !error.has_value());
 
   if (!dynamic_ruleset.did_load_successfully())
     return;
@@ -686,8 +671,15 @@ void RulesMonitorService::AdjustExtraHeaderListenerCountIfNeeded(
   }
 }
 
-void RulesMonitorService::UpdateRulesetChecksumsIfNeeded(
+void RulesMonitorService::LogMetricsAndUpdateChecksumsIfNeeded(
     const LoadRequestData& load_data) {
+  for (const RulesetInfo& ruleset : load_data.rulesets) {
+    // The |load_ruleset_result()| might be empty if CreateVerifiedMatcher
+    // wasn't called on the ruleset.
+    if (ruleset.load_ruleset_result())
+      LogLoadRulesetResult(*ruleset.load_ruleset_result());
+  }
+
   // The extension may have been uninstalled by this point. Return early if
   // that's the case.
   if (!extension_registry_->GetInstalledExtension(load_data.extension_id))

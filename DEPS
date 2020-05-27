@@ -178,11 +178,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '06266f79ede7ac4e05e2367218ec504434723ff5',
+  'skia_revision': '64391c4a55c73c4678d51f12cd3eed347d327565',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '2b302be3502d19cdfd7749d2b4d4b98b9f82b68f',
+  'v8_revision': 'c3f190850b60a6aa2a3967fa3d4d426347a1fe93',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -190,7 +190,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'ba4e2b94289d1317406fa2feeab64692a35f0cf5',
+  'angle_revision': '9dac86c9c4587cc8d5d6c4ac1630d50890bebbe0',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -241,7 +241,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling catapult
   # and whatever else without interference from each other.
-  'catapult_revision': 'f3393ea589ecf343146916e9bb0ca363be9e9b6a',
+  'catapult_revision': 'a03bec408ff6611b7bdf4a8b4f8d97f99c34e58f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling libFuzzer
   # and whatever else without interference from each other.
@@ -301,11 +301,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '31c9c6949e0224dbeeea566902fb4f7e6c21afde',
+  'dawn_revision': '6a029fc9d84edb5ddfb88c6be6c02c5dbc1ccd63',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'quiche_revision': '8aff71f6f3e170724cfd5b1f7c43a07e29b160be',
+  'quiche_revision': '517beaa4782d4ea46e207004ff1bcedca8cc6adf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ios_webkit
   # and whatever else without interference from each other.
@@ -871,7 +871,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '2be61a1df411ae154bc440052b396e62cbf4ea36',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0c7d654c747414f2765bb93771567c64cb26b881',
 
   'src/third_party/devtools-frontend/src':
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
@@ -1220,7 +1220,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + 'af27e58ea40ac58dc14746b624786365176d068e',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '1a97f7367f8363e6d3cde098ca6a5c2e6a9c8df9',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1453,7 +1453,7 @@ deps = {
   },
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + 'adef79808a7d452d861aa0d7f5364c06d2db7448',
+    Var('webrtc_git') + '/src.git' + '@' + 'a5e07cc3db44bcb31b142ca33cd6130a8f25ba6e',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1525,7 +1525,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@fd68d827923438b54e6b21045fa98470a5233999',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@aef138255c4c67154e709564dfb88e0b2db3826f',
     'condition': 'checkout_src_internal',
   },
 
@@ -4742,9 +4742,6 @@ hooks = [
       '--download-vm',
       '--boards={cros_boards}',
       '--cache-dir=src/build/cros_cache/',
-      # TODO(crbug.com/834134): Remove the cache clobber when the sdk is smart
-      # enough to eject old toolchains from the cache.
-      '--clear-sdk-cache',
       '--log-level=error',
       '--no-shell',
     ],

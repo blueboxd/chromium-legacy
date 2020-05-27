@@ -13,7 +13,6 @@
 #include "base/process/process.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/time/time.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -158,8 +157,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
   // Wait a little bit and check it's still running.
   {
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                          run_loop.QuitClosure(), kServiceShutdownTimeout);
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kServiceShutdownTimeout);
     run_loop.Run();
   }
 
@@ -202,8 +201,8 @@ IN_PROC_BROWSER_TEST_F(ChromeMojoProxyResolverFactoryBrowserTest,
   // Wait a little bit and check it's still running.
   {
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, {content::BrowserThread::UI},
-                          run_loop.QuitClosure(), kServiceShutdownTimeout);
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kServiceShutdownTimeout);
     run_loop.Run();
   }
 

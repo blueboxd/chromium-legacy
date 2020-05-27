@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -36,6 +35,7 @@
 #include "components/nacl/common/buildflags.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -239,8 +239,8 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
   msg.encoded_message = msg.owned_encoded_message;
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &content::ServiceWorkerContext::StartServiceWorkerAndDispatchMessage,
           base::Unretained(GetServiceWorkerContext()),

@@ -12,7 +12,6 @@
 #include "base/feature_list.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
@@ -213,10 +212,9 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile) : profile_(profile) {
 
   component_factory_ = std::make_unique<ProfileSyncComponentsFactoryImpl>(
       this, chrome::GetChannel(), prefs::kSavingBrowserHistoryDisabled,
-      base::CreateSequencedTaskRunner({content::BrowserThread::UI}),
-      web_data_service_thread_, profile_web_data_service_,
-      account_web_data_service_, profile_password_store_,
-      account_password_store_,
+      content::GetUIThreadTaskRunner({}), web_data_service_thread_,
+      profile_web_data_service_, account_web_data_service_,
+      profile_password_store_, account_password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_));
 
 #if defined(OS_ANDROID)

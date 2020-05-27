@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -147,8 +146,8 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
     base::CreateDirectory(suggested_directory);
 
   base::FilePath suggested_path(suggested_directory.Append(generated_name));
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(std::move(callback), suggested_path));
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), suggested_path));
 }
 
 void DevToolsDownloadManagerDelegate::OnDownloadPathGenerated(

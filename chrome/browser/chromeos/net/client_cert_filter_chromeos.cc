@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
@@ -81,8 +80,8 @@ class ClientCertFilterChromeOS::CertFilterIO {
         crypto::GetPublicSlotForChromeOSUser(username_hash_),
         std::move(private_slot_), std::move(system_slot_));
     if (!init_callback_.is_null()) {
-      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                     std::move(init_callback_));
+      content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                   std::move(init_callback_));
     }
   }
 
@@ -126,8 +125,8 @@ bool ClientCertFilterChromeOS::Init(base::OnceClosure callback) {
 
   // base::Unretained() is safe here because |cert_filter_io_| is destroyed on
   // a post to the IO thread.
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(
           &CertFilterIO::Init, base::Unretained(cert_filter_io_.get()),
           // Wrap |callback| in OnInitComplete so it is cancelled if the

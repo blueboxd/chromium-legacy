@@ -184,6 +184,9 @@ base::span<const PermissionsUIInfo> GetContentSettingsUIInfo() {
      IDS_PAGE_INFO_TYPE_CAMERA_PAN_TILT_ZOOM},
     {ContentSettingsType::WINDOW_PLACEMENT,
      IDS_PAGE_INFO_TYPE_WINDOW_PLACEMENT},
+#if !defined(OS_ANDROID)
+    {ContentSettingsType::HID_GUARD, IDS_PAGE_INFO_TYPE_HID},
+#endif
   };
   return kPermissionsUIInfo;
 }
@@ -631,6 +634,9 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
     case ContentSettingsType::WINDOW_PLACEMENT:
       icon = &vector_icons::kWindowPlacementIcon;
       break;
+    case ContentSettingsType::HID_GUARD:
+      icon = &vector_icons::kVideogameAssetIcon;
+      break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are
       // not shown in the Page Info bubble.
@@ -671,6 +677,9 @@ const gfx::ImageSkia PageInfoUI::GetChosenObjectIcon(
       break;
     case ContentSettingsType::BLUETOOTH_CHOOSER_DATA:
       icon = &vector_icons::kBluetoothIcon;
+      break;
+    case ContentSettingsType::HID_CHOOSER_DATA:
+      icon = &vector_icons::kVideogameAssetIcon;
       break;
     default:
       // All other content settings types do not represent chosen object

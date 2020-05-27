@@ -380,7 +380,10 @@
     Show Log
   </message>
   <message desc="Keyboard shortcut to show the ChromeVox log." name="IDS_CHROMEVOX_OPTIONS_SHOW_LOG_KEY">
-    Search + O + W
+    Search + O, then W
+  </message>
+  <message desc="Keyboard shortcut to show the TTS settings page." name="IDS_CHROMEVOX_OPTIONS_SHOW_TTS_SETTINGS">
+    Search + O, then S. Use to install, manage, and customize voices.
   </message>
   <message desc="Show event stream filters options for event stream logging." name="IDS_CHROMEVOX_OPTIONS_SHOW_EVENT_STREAM_FILTERS">
     Show event stream filters

@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/check_op.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/discard_metrics_lifecycle_unit_observer.h"
@@ -127,8 +126,8 @@ class TabLifecycleStateObserver
   // performance_manager::PageNode::ObserverDefaultImpl::
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(&TabLifecycleStateObserver::OnLifecycleStateChangedImpl,
                        page_node->GetContentsProxy(),
                        page_node->GetLifecycleState()));
@@ -137,8 +136,8 @@ class TabLifecycleStateObserver
   void OnPageOriginTrialFreezePolicyChanged(
       const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &TabLifecycleStateObserver::OnOriginTrialFreezePolicyChangedImpl,
             page_node->GetContentsProxy(),
@@ -147,8 +146,8 @@ class TabLifecycleStateObserver
 
   void OnPageIsHoldingWebLockChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &TabLifecycleStateObserver::OnPageIsHoldingWebLockChangedImpl,
             page_node->GetContentsProxy(), page_node->IsHoldingWebLock()));
@@ -156,8 +155,8 @@ class TabLifecycleStateObserver
 
   void OnPageIsHoldingIndexedDBLockChanged(const PageNode* page_node) override {
     // Forward the notification over to the UI thread.
-    base::PostTask(
-        FROM_HERE, {content::BrowserThread::UI},
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
         base::BindOnce(
             &TabLifecycleStateObserver::OnPageIsHoldingIndexedDBLockChangedImpl,
             page_node->GetContentsProxy(),

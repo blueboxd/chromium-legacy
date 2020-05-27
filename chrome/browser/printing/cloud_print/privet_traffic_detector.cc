@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/sys_byteorder.h"
-#include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
@@ -51,8 +50,8 @@ void OnGetNetworkList(
       "lo", "lo", 0, net::NetworkChangeNotifier::CONNECTION_UNKNOWN,
       localhost_prefix, 8, net::IP_ADDRESS_ATTRIBUTE_NONE));
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(std::move(callback), std::move(ip4_networks)));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(ip4_networks)));
 }
 
 void GetNetworkListOnUIThread(
@@ -85,22 +84,22 @@ PrivetTrafficDetector::PrivetTrafficDetector(
     : helper_(new Helper(profile, on_traffic_detected)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(&PrivetTrafficDetector::Helper::ScheduleRestart,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&PrivetTrafficDetector::Helper::ScheduleRestart,
                                 base::Unretained(helper_)));
 }
 
 PrivetTrafficDetector::~PrivetTrafficDetector() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(this);
-  base::DeleteSoon(FROM_HERE, {content::BrowserThread::IO}, helper_);
+  content::GetIOThreadTaskRunner({})->DeleteSoon(FROM_HERE, helper_);
 }
 
 void PrivetTrafficDetector::OnConnectionChanged(
     network::mojom::ConnectionType type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&PrivetTrafficDetector::Helper::HandleConnectionChanged,
                      base::Unretained(helper_), type));
 }
@@ -131,8 +130,8 @@ void PrivetTrafficDetector::Helper::ScheduleRestart() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   ResetConnection();
   weak_ptr_factory_.InvalidateWeakPtrs();
-  base::PostDelayedTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
+      FROM_HERE,
       base::BindOnce(
           &GetNetworkListOnUIThread,
           base::BindOnce(&Helper::Restart, weak_ptr_factory_.GetWeakPtr())),
@@ -149,8 +148,8 @@ void PrivetTrafficDetector::Helper::Restart(
 void PrivetTrafficDetector::Helper::Bind() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&CreateUDPSocketOnUIThread, profile_,
                                 socket_.BindNewPipeAndPassReceiver(),
                                 listener_receiver_.BindNewPipeAndPassRemote()));
 
@@ -251,8 +250,8 @@ void PrivetTrafficDetector::Helper::OnReceived(
   recv_addr_ = src_addr.value();
   if (IsPrivetPacket(data.value())) {
     ResetConnection();
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   on_traffic_detected_);
+    content::GetUIThreadTaskRunner({})->PostTask(FROM_HERE,
+                                                 on_traffic_detected_);
   } else {
     socket_->ReceiveMoreWithBufferSize(1, net::dns_protocol::kMaxMulticastSize);
   }

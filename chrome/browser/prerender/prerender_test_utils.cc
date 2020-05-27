@@ -16,7 +16,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -104,8 +103,8 @@ bool FakeSafeBrowsingDatabaseManager::CheckBrowseUrl(
     return true;
   }
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::IO},
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&FakeSafeBrowsingDatabaseManager::OnCheckBrowseURLDone,
                      this, gurl, client));
   return false;

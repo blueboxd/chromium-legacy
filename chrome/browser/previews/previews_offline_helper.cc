@@ -16,7 +16,6 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
@@ -29,6 +28,7 @@
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 // The maximum number of entries to keep in the pref.
@@ -154,14 +154,14 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
     // Schedule a low priority task with a slight delay to ensure that the
     // expensive DB query doesn't occur during startup or during other user
     // visible actions.
-    base::PostDelayedTask(
-        FROM_HERE,
-        {base::MayBlock(), content::BrowserThread::UI,
-         base::TaskPriority::LOWEST,
-         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-        base::BindOnce(&PreviewsOfflineHelper::RequestDBUpdate,
-                       weak_factory_.GetWeakPtr()),
-        base::TimeDelta::FromSeconds(30));
+    content::GetUIThreadTaskRunner(
+        {base::MayBlock(), base::TaskPriority::LOWEST,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})
+        ->PostDelayedTask(
+            FROM_HERE,
+            base::BindOnce(&PreviewsOfflineHelper::RequestDBUpdate,
+                           weak_factory_.GetWeakPtr()),
+            base::TimeDelta::FromSeconds(30));
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 }

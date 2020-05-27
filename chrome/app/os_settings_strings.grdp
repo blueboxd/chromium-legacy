@@ -1797,14 +1797,8 @@
   <message name="IDS_SETTINGS_INTERNET_NETWORK_NOT_SYNCED" desc="Settings > Internet > Network details: Text to show when a network is not synced to the user's account.">
     This network is not synced to your account. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SYNCED" desc="Settings > Internet > Network details: Text to show when a network is synced to the user's account.">
-    Synced with other devices on your account. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-  </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SYNCED_DEVICE" desc="Settings > Internet > Network details: Text to show when a shared network is synced to the user's account.  Also notes that changes to the network that are made by other users are not synced.">
     Synced with other devices on your account. Settings modified by other users will not be synced. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_SETTINGS_INTERNET_NETWORK_SYNCED_SHARED" desc="Settings > Internet > Network details: Text to show when a network is both synced to the users account and shared to all users on the device.  Also notes that changes made by other users are not synced.">
-    Synced with other devices on your account. Other users of this device can use this network. Settings modified by other users will not be synced. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SYNCED_USER" desc="Settings > Internet > Network details: Text to show when a user network is synced.">
     Synced with other devices on your account. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>

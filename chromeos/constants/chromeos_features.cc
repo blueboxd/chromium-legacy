@@ -401,10 +401,6 @@ const base::Feature kUserActivityPrediction{"UserActivityPrediction",
 const base::Feature kUseSearchClickForRightClick{
     "UseSearchClickForRightClick", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable or disable native controls in video player on Chrome OS.
-const base::Feature kVideoPlayerNativeControls{
-    "VideoPlayerNativeControls", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable or disable bordered key for virtual keyboard on Chrome OS.
 const base::Feature kVirtualKeyboardBorderedKey{
     "VirtualKeyboardBorderedKey", base::FEATURE_DISABLED_BY_DEFAULT};

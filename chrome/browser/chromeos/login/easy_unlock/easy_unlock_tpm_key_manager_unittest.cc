@@ -10,7 +10,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -235,8 +234,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
     bool success = false;
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&EasyUnlockTpmKeyManagerTest::InitTestNssUserOnIOThread,
                        base::Unretained(this), base::Unretained(&success)),
         run_loop.QuitClosure());
@@ -259,8 +258,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
 
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(
             &EasyUnlockTpmKeyManagerTest::FinalizeTestNssUserOnIOThread,
             base::Unretained(this)),
@@ -273,8 +272,8 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   void ResetTestNssUser() {
     base::RunLoop run_loop;
     // Has to be done on IO thread due to thread assertions in nss code.
-    base::PostTaskAndReply(
-        FROM_HERE, {content::BrowserThread::IO},
+    content::GetIOThreadTaskRunner({})->PostTaskAndReply(
+        FROM_HERE,
         base::BindOnce(&EasyUnlockTpmKeyManagerTest::ResetTestNssUserOnIOThread,
                        base::Unretained(this)),
         run_loop.QuitClosure());

@@ -162,7 +162,9 @@ class PasswordsPrivateDelegateImpl : public PasswordsPrivateDelegate,
   // Generators that map between sort keys used by |password_manager_presenter_|
   // and ids used by the JavaScript front end.
   IdGenerator<std::string> password_id_generator_;
+  IdGenerator<std::string> password_frontend_id_generator_;
   IdGenerator<std::string> exception_id_generator_;
+  IdGenerator<std::string> exception_frontend_id_generator_;
 
   // Whether SetPasswordList and SetPasswordExceptionList have been called, and
   // whether this class has been initialized, meaning both have been called.

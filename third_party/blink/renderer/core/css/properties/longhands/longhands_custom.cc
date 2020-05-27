@@ -3103,6 +3103,11 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
 }
 
 void GridTemplateAreas::ApplyInitial(StyleResolverState& state) const {
+  state.Style()->SetImplicitNamedGridColumnLines(
+      ComputedStyleInitialValues::InitialImplicitNamedGridColumnLines());
+  state.Style()->SetImplicitNamedGridRowLines(
+      ComputedStyleInitialValues::InitialImplicitNamedGridRowLines());
+
   state.Style()->SetNamedGridArea(
       ComputedStyleInitialValues::InitialNamedGridArea());
   state.Style()->SetNamedGridAreaRowCount(
@@ -3112,6 +3117,11 @@ void GridTemplateAreas::ApplyInitial(StyleResolverState& state) const {
 }
 
 void GridTemplateAreas::ApplyInherit(StyleResolverState& state) const {
+  state.Style()->SetImplicitNamedGridColumnLines(
+      state.ParentStyle()->ImplicitNamedGridColumnLines());
+  state.Style()->SetImplicitNamedGridRowLines(
+      state.ParentStyle()->ImplicitNamedGridRowLines());
+
   state.Style()->SetNamedGridArea(state.ParentStyle()->NamedGridArea());
   state.Style()->SetNamedGridAreaRowCount(
       state.ParentStyle()->NamedGridAreaRowCount());
@@ -3122,8 +3132,8 @@ void GridTemplateAreas::ApplyInherit(StyleResolverState& state) const {
 void GridTemplateAreas::ApplyValue(StyleResolverState& state,
                                    const CSSValue& value) const {
   if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    // FIXME: Shouldn't we clear the grid-area values
     DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
+    ApplyInitial(state);
     return;
   }
 
@@ -8190,7 +8200,7 @@ const CSSValue* ZIndex::CSSValueFromComputedStyleInternal(
     const SVGComputedStyle&,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (style.HasAutoZIndex() || !style.IsStackingContext())
+  if (style.HasAutoZIndex())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
   return CSSNumericLiteralValue::Create(style.ZIndex(),
                                         CSSPrimitiveValue::UnitType::kInteger);

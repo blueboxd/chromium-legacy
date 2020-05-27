@@ -4,7 +4,6 @@
 
 #include <map>
 
-#include "base/task/post_task.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/content/base_blocking_page.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
@@ -34,8 +33,8 @@ void RunCallbackOnIOThread(
         callback,
     safe_browsing::SBThreatType threat_type,
     const safe_browsing::ThreatMetadata& metadata) {
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(std::move(*callback), threat_type, metadata));
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(*callback), threat_type, metadata));
 }
 
 }  // namespace

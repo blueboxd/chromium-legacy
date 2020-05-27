@@ -20,7 +20,6 @@
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
-#include "base/task/post_task.h"
 #include "components/safe_browsing/core/db/database_manager.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/features.h"
@@ -84,8 +83,8 @@ void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
   AwWebResourceRequest request(resource.url.spec(), method, is_main_frame,
                                has_user_gesture, headers);
 
-  base::PostTask(
-      FROM_HERE, {content::BrowserThread::UI},
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
       base::BindOnce(&AwUrlCheckerDelegateImpl::StartApplicationResponse,
                      ui_manager_, resource, std::move(request)));
 }
@@ -216,8 +215,8 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
   bool proceed;
   switch (action) {
     case SafeBrowsingAction::SHOW_INTERSTITIAL: {
-      base::PostTask(
-          FROM_HERE, {content::BrowserThread::UI},
+      content::GetUIThreadTaskRunner({})->PostTask(
+          FROM_HERE,
           base::BindOnce(
               &AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
               ui_manager, resource));
@@ -279,8 +278,8 @@ void AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
   }
 
   // Reporting back that it is not okay to proceed with loading the URL.
-  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
-                 base::BindOnce(resource.callback, false /* proceed */,
+  content::GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(resource.callback, false /* proceed */,
                                 false /* showed_interstitial */));
 }
 

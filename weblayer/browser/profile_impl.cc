@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -206,8 +205,8 @@ void ProfileImpl::NukeDataAfterRemovingData(
     std::unique_ptr<ProfileImpl> profile,
     base::OnceClosure done_callback) {
   // Need PostTask to avoid reentrancy for deleting |browser_context_|.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&ProfileImpl::DoNukeData, std::move(profile),
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&ProfileImpl::DoNukeData, std::move(profile),
                                 std::move(done_callback)));
 }
 

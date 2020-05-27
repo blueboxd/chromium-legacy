@@ -71,7 +71,7 @@
                use_base_dir="false"
                type="BINDATA" />
       <include name="IDR_OS_SETTINGS_APP_MANAGEMENT_TYPES_MOJO_LITE_JS"
-               file="${root_gen_dir}\chrome\services\app_service\public\mojom\types.mojom-lite.js"
+               file="${root_gen_dir}\components\services\app_service\public\mojom\types.mojom-lite.js"
                use_base_dir="false"
                type="BINDATA" />
 

@@ -2118,7 +2118,7 @@ void StyleEngine::UpdateColorScheme() {
     preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
   }
   if (GetDocument().Printing())
-    preferred_color_scheme_ = PreferredColorScheme::kNoPreference;
+    preferred_color_scheme_ = PreferredColorScheme::kLight;
   if (forced_colors_ != old_forced_colors ||
       preferred_color_scheme_ != old_preferred_color_scheme)
     PlatformColorsChanged();

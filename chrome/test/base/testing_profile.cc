@@ -204,9 +204,9 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(
       new BookmarkModel(std::make_unique<ChromeBookmarkClient>(
           profile, ManagedBookmarkServiceFactory::GetForProfile(profile),
           BookmarkSyncServiceFactory::GetForProfile(profile))));
-  bookmark_model->Load(
-      profile->GetPrefs(), profile->GetPath(), profile->GetIOTaskRunner(),
-      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
+  bookmark_model->Load(profile->GetPrefs(), profile->GetPath(),
+                       profile->GetIOTaskRunner(),
+                       content::GetUIThreadTaskRunner({}));
   return std::move(bookmark_model);
 }
 

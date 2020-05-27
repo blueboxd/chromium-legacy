@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -78,8 +77,8 @@ void RequirementsChecker::PostRunCallback() {
   // to maintain the assumption in
   // ExtensionService::LoadExtensionsFromCommandLineFlag(). Remove these helper
   // functions after crbug.com/708354 is addressed.
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                 base::BindOnce(&RequirementsChecker::RunCallback,
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&RequirementsChecker::RunCallback,
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 

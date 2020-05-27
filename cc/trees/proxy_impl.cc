@@ -542,6 +542,13 @@ void ProxyImpl::NotifyThroughputTrackerResults(CustomTrackerResults results) {
                                 proxy_main_weak_ptr_, std::move(results)));
 }
 
+void ProxyImpl::DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) {
+  DCHECK(IsImplThread());
+  MainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&ProxyMain::DidObserveFirstScrollDelay,
+                                proxy_main_weak_ptr_, first_scroll_delay));
+}
+
 bool ProxyImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
   DCHECK(IsImplThread());
   return host_impl_->WillBeginImplFrame(args);

@@ -184,6 +184,8 @@ class AppCacheHostTest : public testing::Test {
 TEST_F(AppCacheHostTest, Basic) {
   // Construct a host and test what state it appears to be in.
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   EXPECT_EQ(kHostIdForTest, host.host_id());
@@ -237,8 +239,11 @@ TEST_F(AppCacheHostTest, SelectNoCache) {
 
     const url::Origin kOrigin(url::Origin::Create(document_url));
     {
-      AppCacheHost host(kHostIdForTest, kProcessIdForTest,
-                        kRenderFrameIdForTest, mojo::NullRemote(), &service_);
+      AppCacheHost host(
+          kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+          ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+              kProcessIdForTest),
+          mojo::NullRemote(), &service_);
       host.set_frontend_for_testing(&mock_frontend_);
 
       {
@@ -288,6 +293,8 @@ TEST_F(AppCacheHostTest, ForeignEntry) {
   cache->AddEntry(kDocumentURL, AppCacheEntry(AppCacheEntry::EXPLICIT));
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   host.MarkAsForeignEntry(kDocumentURL, kCacheId);
@@ -321,6 +328,8 @@ TEST_F(AppCacheHostTest, ForeignFallbackEntry) {
   cache->AddEntry(kFallbackURL, AppCacheEntry(AppCacheEntry::FALLBACK));
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   host.NotifyMainResourceIsNamespaceEntry(kFallbackURL);
@@ -342,6 +351,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
       blink::mojom::AppCacheStatus::APPCACHE_STATUS_OBSOLETE;
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   EXPECT_FALSE(host.is_selection_pending());
@@ -375,6 +386,8 @@ TEST_F(AppCacheHostTest, FailedCacheLoad) {
 
 TEST_F(AppCacheHostTest, FailedGroupLoad) {
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
 
@@ -407,6 +420,8 @@ TEST_F(AppCacheHostTest, FailedGroupLoad) {
 
 TEST_F(AppCacheHostTest, SetSwappableCache) {
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   host.SetSwappableCache(nullptr);
@@ -511,8 +526,11 @@ TEST_F(AppCacheHostTest, SelectCacheAllowed) {
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl("http://whatever/cache.manifest");
   {
-    AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                      mojo::NullRemote(), &service_);
+    AppCacheHost host(
+        kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            kProcessIdForTest),
+        mojo::NullRemote(), &service_);
     host.set_frontend_for_testing(&mock_frontend_);
     host.SetSiteForCookiesForTesting(
         net::SiteForCookies::FromUrl(kDocAndOriginUrl));
@@ -561,8 +579,11 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
   const url::Origin kOrigin(url::Origin::Create(kDocAndOriginUrl));
   const GURL kManifestUrl(GURL("http://whatever/cache.manifest"));
   {
-    AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
-                      mojo::NullRemote(), &service_);
+    AppCacheHost host(
+        kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+        ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+            kProcessIdForTest),
+        mojo::NullRemote(), &service_);
     host.set_frontend_for_testing(&mock_frontend_);
     host.SetSiteForCookiesForTesting(
         net::SiteForCookies::FromUrl(kDocAndOriginUrl));
@@ -597,6 +618,8 @@ TEST_F(AppCacheHostTest, SelectCacheBlocked) {
 TEST_F(AppCacheHostTest, SelectCacheTwice) {
   const GURL kDocAndOriginUrl(GURL("http://whatever/").GetOrigin());
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   mojo::Remote<blink::mojom::AppCacheHost> host_remote;
@@ -642,6 +665,8 @@ TEST_F(AppCacheHostTest, SelectCacheInvalidCacheId) {
   const GURL kDocumentURL("http://origin/document");
   auto cache = base::MakeRefCounted<AppCache>(service_.storage(), kCacheId);
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   mojo::Remote<blink::mojom::AppCacheHost> host_remote;
@@ -665,6 +690,8 @@ TEST_F(AppCacheHostTest, SelectCacheURLsForWrongSite) {
       kInitialDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   mojo::Remote<blink::mojom::AppCacheHost> host_remote;
@@ -716,6 +743,8 @@ TEST_F(AppCacheHostTest, ForeignEntryForWrongSite) {
       kInitialDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   mojo::Remote<blink::mojom::AppCacheHost> host_remote;
@@ -743,6 +772,8 @@ TEST_F(AppCacheHostTest, SelectCacheAfterProcessCleanup) {
                                          kProcessIdForTest, kDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   mojo::Remote<blink::mojom::AppCacheHost> host_remote;
@@ -794,6 +825,8 @@ TEST_F(AppCacheHostTest, ForeignEntryAfterProcessCleanup) {
                                          kProcessIdForTest, kDocumentURL);
 
   AppCacheHost host(kHostIdForTest, kProcessIdForTest, kRenderFrameIdForTest,
+                    ChildProcessSecurityPolicyImpl::GetInstance()->CreateHandle(
+                        kProcessIdForTest),
                     mojo::NullRemote(), &service_);
   host.set_frontend_for_testing(&mock_frontend_);
   mojo::Remote<blink::mojom::AppCacheHost> host_remote;

@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/omnibox_pedal.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/views/controls/focus_ring.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
 namespace {
 
@@ -55,12 +56,18 @@ OmniboxSuggestionButtonRowView::OmniboxSuggestionButtonRowView(
     };
   };
   keyword_button_focus_ring_ = views::FocusRing::Install(keyword_button_);
+  keyword_button_focus_ring_->SetPathGenerator(
+      std::make_unique<views::PillHighlightPathGenerator>());
   keyword_button_focus_ring_->SetHasFocusPredicate(
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_KEYWORD));
   pedal_button_focus_ring_ = views::FocusRing::Install(pedal_button_);
+  pedal_button_focus_ring_->SetPathGenerator(
+      std::make_unique<views::PillHighlightPathGenerator>());
   pedal_button_focus_ring_->SetHasFocusPredicate(
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_PEDAL));
   tab_switch_button_focus_ring_ = views::FocusRing::Install(tab_switch_button_);
+  tab_switch_button_focus_ring_->SetPathGenerator(
+      std::make_unique<views::PillHighlightPathGenerator>());
   tab_switch_button_focus_ring_->SetHasFocusPredicate(
       make_predicate(OmniboxPopupModel::FOCUSED_BUTTON_TAB_SWITCH));
 }

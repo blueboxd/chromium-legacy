@@ -185,6 +185,15 @@ class MockWebExternalWidgetClient : public blink::WebExternalWidgetClient {
       blink::WebInputEventResult(const blink::WebCoalescedInputEvent&));
   MOCK_METHOD1(RequestNewLayerTreeFrameSink, void(LayerTreeFrameSinkCallback));
   MOCK_METHOD0(DidCommitAndDrawCompositorFrame, void());
+  MOCK_METHOD1(WillHandleGestureEvent, bool(const blink::WebGestureEvent&));
+  MOCK_METHOD4(DidHandleGestureScrollEvent,
+               void(const blink::WebGestureEvent& gesture_event,
+                    const gfx::Vector2dF& unused_delta,
+                    const cc::OverscrollBehavior& overscroll_behavior,
+                    bool event_processed));
+
+  // Because we mock DispatchBufferedTouchEvents indicate we have support.
+  bool SupportsBufferedTouchEvents() override { return true; }
 };
 
 }  // namespace
@@ -217,16 +226,6 @@ class InteractiveRenderWidget : public RenderWidget {
         std::move(callback));
   }
 
-  void set_always_overscroll(bool overscroll) {
-    always_overscroll_ = overscroll;
-  }
-
-  MOCK_METHOD4(ObserveGestureEventAndResult,
-               void(const blink::WebGestureEvent& gesture_event,
-                    const gfx::Vector2dF& unused_delta,
-                    const cc::OverscrollBehavior& overscroll_behavior,
-                    bool event_processed));
-
   IPC::TestSink* sink() { return &sink_; }
 
   MockWidgetInputHandlerHost* mock_input_handler_host() {
@@ -238,24 +237,22 @@ class InteractiveRenderWidget : public RenderWidget {
     return local_surface_id_allocation_from_parent_;
   }
 
- protected:
-  // Overridden from RenderWidget:
-  bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override {
-    if (always_overscroll_ &&
-        event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate) {
-      DidOverscroll(gfx::Vector2dF(event.data.scroll_update.delta_x,
-                                   event.data.scroll_update.delta_y),
-                    gfx::Vector2dF(event.data.scroll_update.delta_x,
-                                   event.data.scroll_update.delta_y),
-                    event.PositionInWidget(),
-                    gfx::Vector2dF(event.data.scroll_update.velocity_x,
-                                   event.data.scroll_update.velocity_y));
+  bool OverscrollGestureEvent(const blink::WebGestureEvent& event) {
+    if (event.GetType() == blink::WebInputEvent::Type::kGestureScrollUpdate) {
+      GetWebWidget()->DidOverscrollForTesting(
+          gfx::Vector2dF(event.data.scroll_update.delta_x,
+                         event.data.scroll_update.delta_y),
+          gfx::Vector2dF(event.data.scroll_update.delta_x,
+                         event.data.scroll_update.delta_y),
+          event.PositionInWidget(),
+          gfx::Vector2dF(event.data.scroll_update.velocity_x,
+                         event.data.scroll_update.velocity_y));
       return true;
     }
-
     return false;
   }
 
+ protected:
   bool Send(IPC::Message* msg) override {
     sink_.OnMessageReceived(*msg);
     delete msg;
@@ -264,7 +261,6 @@ class InteractiveRenderWidget : public RenderWidget {
 
  private:
   IPC::TestSink sink_;
-  bool always_overscroll_ = false;
   std::unique_ptr<MockWidgetInputHandlerHost> mock_input_handler_host_;
   static int next_routing_id_;
 
@@ -418,11 +414,11 @@ TEST_F(RenderWidgetExternalWidgetUnittest, CursorChange) {
 
   auto set_cursor_interceptor =
       std::make_unique<SetCursorInterceptor>(render_widget_host());
-  widget()->DidChangeCursor(cursor);
+  widget()->GetWebWidget()->SetCursor(cursor);
   render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
   EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 1);
 
-  widget()->DidChangeCursor(cursor);
+  widget()->GetWebWidget()->SetCursor(cursor);
   render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
   EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 1);
 
@@ -434,13 +430,15 @@ TEST_F(RenderWidgetExternalWidgetUnittest, CursorChange) {
   render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
   EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 1);
 
-  widget()->DidChangeCursor(cursor);
+  widget()->GetWebWidget()->SetCursor(cursor);
   render_widget_host()->widget_host_receiver_for_testing().FlushForTesting();
   EXPECT_EQ(set_cursor_interceptor->set_cursor_count(), 2);
 }
 
 TEST_F(RenderWidgetExternalWidgetUnittest, EventOverscroll) {
-  widget()->set_always_overscroll(true);
+  ON_CALL(*mock_web_external_widget_client(), WillHandleGestureEvent(_))
+      .WillByDefault(testing::Invoke(
+          widget(), &InteractiveRenderWidget::OverscrollGestureEvent));
 
   EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
       .WillRepeatedly(
@@ -547,10 +545,12 @@ TEST_F(RenderWidgetExternalWidgetUnittest, SendElasticOverscrollForTouchpad) {
   scroll.SetPositionInWidget(gfx::PointF(-10, 0));
   scroll.data.scroll_update.delta_y = 10;
 
-  // We only really care that ObserveGestureEventAndResult was called; we
+  // We only really care that DidHandleGestureScrollEvent was called; we
   // therefore suppress the warning for the call to
   // mock_webwidget()->HandleInputEvent().
-  EXPECT_CALL(*widget(), ObserveGestureEventAndResult(_, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_web_external_widget_client(),
+              DidHandleGestureScrollEvent(_, _, _, _))
+      .Times(1);
   EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
       .Times(testing::AnyNumber());
 
@@ -568,10 +568,12 @@ TEST_F(RenderWidgetExternalWidgetUnittest,
   scroll.SetPositionInWidget(gfx::PointF(-10, 0));
   scroll.data.scroll_update.delta_y = 10;
 
-  // We only really care that ObserveGestureEventAndResult was called; we
+  // We only really care that DidHandleGestureScrollEvent was called; we
   // therefore suppress the warning for the call to
   // mock_webwidget()->HandleInputEvent().
-  EXPECT_CALL(*widget(), ObserveGestureEventAndResult(_, _, _, _)).Times(1);
+  EXPECT_CALL(*mock_web_external_widget_client(),
+              DidHandleGestureScrollEvent(_, _, _, _))
+      .Times(1);
   EXPECT_CALL(*mock_web_external_widget_client(), HandleInputEvent(_))
       .Times(testing::AnyNumber());
 

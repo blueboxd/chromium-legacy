@@ -776,9 +776,10 @@
     // whereas a containing stacking context defines in which order the stacking
     // contexts below are painted.
     // See CSS 2.1, Appendix E (https://www.w3.org/TR/CSS21/zindex.html) for more
-    // details.
+    // details. Note that this field does _not_ consider paint or layout
+    // containment, since it depends on the type of layout object created.
     {
-      name: "IsStackingContext",
+      name: "IsStackingContextWithoutContainment",
       field_template: "primitive",
       type_name: "bool",
       field_group: "*",

@@ -24,13 +24,13 @@ AccountMigrationWelcomeUITest.prototype = {
   /** @override */
   extraLibraries: [
     '//chrome/test/data/webui/test_browser_proxy.js',
-    'account_migration_proxy_test.js',
+    'account_manager_proxy_test.js',
   ],
 
   /** @override */
   setUp: function() {
-    testBrowserProxy = new TestAccountMigrationBrowserProxy();
-    account_migration.AccountMigrationBrowserProxyImpl.instance_ =
+    testBrowserProxy = new TestAccountManagerBrowserProxy();
+    account_manager.AccountManagerBrowserProxyImpl.instance_ =
         testBrowserProxy;
     testing.Test.prototype.setUp.call(this);
   },

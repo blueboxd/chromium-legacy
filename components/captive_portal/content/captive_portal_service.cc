@@ -52,45 +52,6 @@ enum CaptivePortalDetectionResult {
   DETECTION_RESULT_COUNT
 };
 
-// Records histograms relating to how often captive portal detection attempts
-// ended with |result| in a row, and for how long |result| was the last result
-// of a detection attempt.  Recorded both on quit and on a new Result.
-//
-// |repeat_count| may be 0 if there were no captive portal checks during
-// a session.
-//
-// |result_duration| is the time between when a captive portal check first
-// returned |result| and when a check returned a different result, or when the
-// CaptivePortalService was shut down.
-void RecordRepeatHistograms(CaptivePortalResult result,
-                            int repeat_count,
-                            base::TimeDelta result_duration) {
-  // Histogram macros can't be used with variable names, since they cache
-  // pointers, so have to use the histogram functions directly.
-
-  // Record number of times the last result was received in a row.
-  base::HistogramBase* result_repeated_histogram = base::Histogram::FactoryGet(
-      "CaptivePortal.ResultRepeated." + CaptivePortalResultToString(result),
-      1,    // min
-      100,  // max
-      100,  // bucket_count
-      base::Histogram::kUmaTargetedHistogramFlag);
-  result_repeated_histogram->Add(repeat_count);
-
-  if (repeat_count == 0)
-    return;
-
-  // Time between first request that returned |result| and now.
-  base::HistogramBase* result_duration_histogram =
-      base::Histogram::FactoryTimeGet(
-          "CaptivePortal.ResultDuration." + CaptivePortalResultToString(result),
-          base::TimeDelta::FromSeconds(1),  // min
-          base::TimeDelta::FromHours(1),    // max
-          50,                               // bucket_count
-          base::Histogram::kUmaTargetedHistogramFlag);
-  result_duration_histogram->AddTime(result_duration);
-}
-
 CaptivePortalDetectionResult GetHistogramEntryForDetectionResult(
     const CaptivePortalDetector::Results& results) {
   bool is_https = results.landing_url.SchemeIs("https");
@@ -161,7 +122,6 @@ CaptivePortalService::CaptivePortalService(
       state_(STATE_IDLE),
       enabled_(false),
       last_detection_result_(RESULT_INTERNET_CONNECTED),
-      num_checks_with_same_result_(0),
       test_url_(CaptivePortalDetector::kDefaultURL),
       tick_clock_for_testing_(clock_for_testing) {
   network::mojom::URLLoaderFactory* loader_factory;
@@ -286,25 +246,7 @@ void CaptivePortalService::OnPortalDetectionCompleted(
                             GetHistogramEntryForDetectionResult(results),
                             DETECTION_RESULT_COUNT);
 
-  // If this isn't the first captive portal result, record stats.
-  if (!last_check_time_.is_null()) {
-    UMA_HISTOGRAM_LONG_TIMES("CaptivePortal.TimeBetweenChecks",
-                             now - last_check_time_);
-
-    if (last_detection_result_ != result) {
-      // If the last result was different from the result of the latest test,
-      // record histograms about the previous period over which the result was
-      // the same.
-      RecordRepeatHistograms(last_detection_result_,
-                             num_checks_with_same_result_,
-                             now - first_check_time_with_same_result_);
-    }
-  }
-
   if (last_check_time_.is_null() || result != last_detection_result_) {
-    first_check_time_with_same_result_ = now;
-    num_checks_with_same_result_ = 1;
-
     // Reset the backoff entry both to update the default time and clear
     // previous failures.
     ResetBackoffEntry(result);
@@ -315,9 +257,6 @@ void CaptivePortalService::OnPortalDetectionCompleted(
     // portal is first detected.  It can also help when moving between captive
     // portals.
   } else {
-    DCHECK_LE(1, num_checks_with_same_result_);
-    ++num_checks_with_same_result_;
-
     // Requests that have the same Result as the last one are considered
     // "failures", to trigger backoff.
     backoff_entry_->SetCustomReleaseTime(now + retry_after_delta);
@@ -331,11 +270,6 @@ void CaptivePortalService::OnPortalDetectionCompleted(
 
 void CaptivePortalService::Shutdown() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (enabled_) {
-    RecordRepeatHistograms(
-        last_detection_result_, num_checks_with_same_result_,
-        GetCurrentTimeTicks() - first_check_time_with_same_result_);
-  }
 }
 
 void CaptivePortalService::OnResult(CaptivePortalResult result,
@@ -376,11 +310,7 @@ void CaptivePortalService::UpdateEnabledState() {
   if (enabled_before == enabled_)
     return;
 
-  // Clear data used for histograms.
-  num_checks_with_same_result_ = 0;
-  first_check_time_with_same_result_ = base::TimeTicks();
   last_check_time_ = base::TimeTicks();
-
   ResetBackoffEntry(last_detection_result_);
 
   if (state_ == STATE_CHECKING_FOR_PORTAL || state_ == STATE_TIMER_RUNNING) {

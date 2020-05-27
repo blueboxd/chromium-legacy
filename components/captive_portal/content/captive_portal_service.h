@@ -190,12 +190,6 @@ class CaptivePortalService : public KeyedService {
 
   base::CallbackList<void(const Results&)> callback_list_;
 
-  // Number of sequential checks with the same captive portal result.
-  int num_checks_with_same_result_;
-
-  // Time when |last_detection_result_| was first received.
-  base::TimeTicks first_check_time_with_same_result_;
-
   // Time the last captive portal check completed.
   base::TimeTicks last_check_time_;
 

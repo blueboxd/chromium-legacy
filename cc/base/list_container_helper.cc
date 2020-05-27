@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <cstring>
 #include <vector>
 
 #include "base/check_op.h"

@@ -4567,6 +4567,11 @@ TEST_F(WebFrameTest, ContextNotificationsIsolatedWorlds) {
   ASSERT_NE(web_view_helper.LocalMainFrame()->MainWorldScriptContext(),
             v8::Local<v8::Context>::New(isolate, notification->context));
 
+  // Check that the context we got has the right isolated world id.
+  ASSERT_EQ(isolated_world_id,
+            web_view_helper.LocalMainFrame()->GetScriptContextWorldId(
+                v8::Local<v8::Context>::New(isolate, notification->context)));
+
   web_view_helper.Reset();
 
   // We should have gotten three release notifications (one for each of the
@@ -9670,46 +9675,6 @@ TEST_F(WebFrameTest, RemoteFrameInitialCommitType) {
   helper.Reset();
 }
 
-class GestureEventTestWebWidgetClient
-    : public frame_test_helpers::TestWebWidgetClient {
- public:
-  GestureEventTestWebWidgetClient() : did_handle_gesture_event_(false) {}
-  ~GestureEventTestWebWidgetClient() override = default;
-
-  // frame_test_helpers::TestWebWidgetClient:
-  void DidHandleGestureEvent(const WebGestureEvent& event,
-                             bool event_cancelled) override {
-    did_handle_gesture_event_ = true;
-  }
-  bool DidHandleGestureEvent() const { return did_handle_gesture_event_; }
-
- private:
-  bool did_handle_gesture_event_;
-};
-
-TEST_F(WebFrameTest, FrameWidgetTest) {
-  frame_test_helpers::WebViewHelper helper;
-  helper.InitializeRemote();
-
-  GestureEventTestWebWidgetClient child_widget_client;
-  WebLocalFrame* child_frame = frame_test_helpers::CreateLocalChild(
-      *helper.RemoteMainFrame(), WebString(), WebFrameOwnerProperties(),
-      nullptr, nullptr, &child_widget_client);
-
-  helper.GetWebView()->Resize(WebSize(1000, 1000));
-
-  WebGestureEvent event(WebInputEvent::Type::kGestureTap,
-                        WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests(),
-                        WebGestureDevice::kTouchscreen);
-  event.SetPositionInWidget(gfx::PointF(20, 20));
-  child_frame->FrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(event, ui::LatencyInfo()));
-  EXPECT_TRUE(child_widget_client.DidHandleGestureEvent());
-
-  helper.Reset();
-}
-
 TEST_F(WebFrameTest, DetachRemoteFrame) {
   frame_test_helpers::WebViewHelper helper;
   helper.InitializeRemote();
@@ -10018,11 +9983,12 @@ TEST_F(WebFrameTest, PausedPageLoadWithRemoteMainFrame) {
 class OverscrollWebWidgetClient
     : public frame_test_helpers::TestWebWidgetClient {
  public:
-  MOCK_METHOD4(DidOverscroll,
+  MOCK_METHOD5(DidOverscroll,
                void(const gfx::Vector2dF&,
                     const gfx::Vector2dF&,
                     const gfx::PointF&,
-                    const gfx::Vector2dF&));
+                    const gfx::Vector2dF&,
+                    cc::OverscrollBehavior));
 };
 
 class WebFrameOverscrollTest
@@ -10094,40 +10060,44 @@ TEST_P(WebFrameOverscrollTest,
   ScrollBegin(&web_view_helper, -300, -316);
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(8, 16), gfx::Vector2dF(8, 16),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, -308, -316);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(0, 13), gfx::Vector2dF(8, 29),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -13);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(20, 13), gfx::Vector2dF(28, 42),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, -20, -13);
   Mock::VerifyAndClearExpectations(&client);
 
   // Overscroll is not reported.
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 0, 1);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 1, 0);
   Mock::VerifyAndClearExpectations(&client);
 
   // Overscroll is reported.
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(0, -701), gfx::Vector2dF(0, -701),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 1000);
   Mock::VerifyAndClearExpectations(&client);
 
   // Overscroll is not reported.
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollEnd(&web_view_helper);
   Mock::VerifyAndClearExpectations(&client);
 }
@@ -10146,7 +10116,7 @@ TEST_P(WebFrameOverscrollTest,
   ScrollBegin(&web_view_helper, 0, -316);
 
   // Scroll the Div to the end.
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 0, -316);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10156,7 +10126,8 @@ TEST_P(WebFrameOverscrollTest,
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(0, 100), gfx::Vector2dF(0, 100),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -100);
   ScrollUpdate(&web_view_helper, 0, -100);
   Mock::VerifyAndClearExpectations(&client);
@@ -10195,7 +10166,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
   ScrollBegin(&web_view_helper, 0, -316);
 
   // Scroll the Div to the end.
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 0, -316);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10205,7 +10176,8 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerDivOverScroll) {
   // Now On Scrolling DIV, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(0, 50), gfx::Vector2dF(0, 50),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -150);
   Mock::VerifyAndClearExpectations(&client);
 }
@@ -10223,7 +10195,7 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
 
   ScrollBegin(&web_view_helper, 0, -320);
   // Scroll the IFrame to the end.
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
 
   // This scroll will fully scroll the iframe but will be consumed before being
   // counted as overscroll.
@@ -10240,7 +10212,8 @@ TEST_P(WebFrameOverscrollTest, RootLayerOverscrolledOnInnerIFrameOverScroll) {
   // Now On Scrolling IFrame, scroll is bubbled and root layer is over-scrolled.
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(0, 50), gfx::Vector2dF(0, 50),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, -150);
   Mock::VerifyAndClearExpectations(&client);
 
@@ -10262,32 +10235,34 @@ TEST_P(WebFrameOverscrollTest, ScaledPageRootLayerOverscrolled) {
   // The point is (99, 99) because we clamp in the division by 3 to 33 so when
   // we go back to viewport coordinates it becomes (99, 99).
   ScrollBegin(&web_view_helper, 0, 30);
-  EXPECT_CALL(client,
-              DidOverscroll(gfx::Vector2dF(0, -30), gfx::Vector2dF(0, -30),
-                            gfx::PointF(99, 99), gfx::Vector2dF()));
+  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(0, -30),
+                                    gfx::Vector2dF(0, -30), gfx::PointF(99, 99),
+                                    gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 30);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client,
-              DidOverscroll(gfx::Vector2dF(0, -30), gfx::Vector2dF(0, -60),
-                            gfx::PointF(99, 99), gfx::Vector2dF()));
+  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(0, -30),
+                                    gfx::Vector2dF(0, -60), gfx::PointF(99, 99),
+                                    gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 30);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(-30, -30), gfx::Vector2dF(-30, -90),
-                            gfx::PointF(99, 99), gfx::Vector2dF()));
+                            gfx::PointF(99, 99), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 30, 30);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(-30, 0), gfx::Vector2dF(-60, -90),
-                            gfx::PointF(99, 99), gfx::Vector2dF()));
+                            gfx::PointF(99, 99), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 30, 0);
   Mock::VerifyAndClearExpectations(&client);
 
   // Overscroll is not reported.
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollEnd(&web_view_helper);
   Mock::VerifyAndClearExpectations(&client);
 }
@@ -10305,49 +10280,52 @@ TEST_P(WebFrameOverscrollTest, NoOverscrollForSmallvalues) {
   ScrollBegin(&web_view_helper, 10, 10);
   EXPECT_CALL(client,
               DidOverscroll(gfx::Vector2dF(-10, -10), gfx::Vector2dF(-10, -10),
-                            gfx::PointF(100, 100), gfx::Vector2dF()));
+                            gfx::PointF(100, 100), gfx::Vector2dF(),
+                            kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 10, 10);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(0, -0.10),
-                                    gfx::Vector2dF(-10, -10.10),
-                                    gfx::PointF(100, 100), gfx::Vector2dF()));
+  EXPECT_CALL(client,
+              DidOverscroll(gfx::Vector2dF(0, -0.10),
+                            gfx::Vector2dF(-10, -10.10), gfx::PointF(100, 100),
+                            gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0, 0.10);
   Mock::VerifyAndClearExpectations(&client);
 
   EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(-0.10, 0),
                                     gfx::Vector2dF(-10.10, -10.10),
-                                    gfx::PointF(100, 100), gfx::Vector2dF()));
+                                    gfx::PointF(100, 100), gfx::Vector2dF(),
+                                    kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 0.10, 0);
   Mock::VerifyAndClearExpectations(&client);
 
   // For residual values overscrollDelta should be reset and DidOverscroll
   // shouldn't be called.
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 0, 0.09);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 0.09, 0.09);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 0.09, 0);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, 0, -0.09);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, -0.09, -0.09);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollUpdate(&web_view_helper, -0.09, 0);
   Mock::VerifyAndClearExpectations(&client);
 
-  EXPECT_CALL(client, DidOverscroll(_, _, _, _)).Times(0);
+  EXPECT_CALL(client, DidOverscroll(_, _, _, _, _)).Times(0);
   ScrollEnd(&web_view_helper);
   Mock::VerifyAndClearExpectations(&client);
 }
@@ -10365,14 +10343,15 @@ TEST_P(WebFrameOverscrollTest, OverscrollBehaviorGoesToCompositor) {
   WebLocalFrame* mainFrame =
       web_view_helper.GetWebView()->MainFrame()->ToWebLocalFrame();
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
-            cc::OverscrollBehavior());
+            kOverscrollBehaviorAuto);
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: auto;'")));
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(-100, -100),
-                                    gfx::Vector2dF(-100, -100),
-                                    gfx::PointF(100, 100), gfx::Vector2dF()));
+  EXPECT_CALL(client,
+              DidOverscroll(gfx::Vector2dF(-100, -100),
+                            gfx::Vector2dF(-100, -100), gfx::PointF(100, 100),
+                            gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
@@ -10382,9 +10361,10 @@ TEST_P(WebFrameOverscrollTest, OverscrollBehaviorGoesToCompositor) {
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: contain;'")));
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(-100, -100),
-                                    gfx::Vector2dF(-200, -200),
-                                    gfx::PointF(100, 100), gfx::Vector2dF()));
+  EXPECT_CALL(client,
+              DidOverscroll(gfx::Vector2dF(-100, -100),
+                            gfx::Vector2dF(-200, -200), gfx::PointF(100, 100),
+                            gfx::Vector2dF(), kOverscrollBehaviorContain));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
@@ -10394,9 +10374,10 @@ TEST_P(WebFrameOverscrollTest, OverscrollBehaviorGoesToCompositor) {
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: none;'")));
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(-100, -100),
-                                    gfx::Vector2dF(-300, -300),
-                                    gfx::PointF(100, 100), gfx::Vector2dF()));
+  EXPECT_CALL(client,
+              DidOverscroll(gfx::Vector2dF(-100, -100),
+                            gfx::Vector2dF(-300, -300), gfx::PointF(100, 100),
+                            gfx::Vector2dF(), kOverscrollBehaviorNone));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
@@ -10428,9 +10409,10 @@ TEST_P(WebFrameOverscrollTest, OnlyMainFrameOverscrollBehaviorHasEffect) {
                                 "'overscroll-behavior: none;'")));
 
   ScrollBegin(&web_view_helper, 100, 116);
-  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(-100, -100),
-                                    gfx::Vector2dF(-100, -100),
-                                    gfx::PointF(100, 100), gfx::Vector2dF()));
+  EXPECT_CALL(client,
+              DidOverscroll(gfx::Vector2dF(-100, -100),
+                            gfx::Vector2dF(-100, -100), gfx::PointF(100, 100),
+                            gfx::Vector2dF(), kOverscrollBehaviorAuto));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
@@ -10439,9 +10421,10 @@ TEST_P(WebFrameOverscrollTest, OnlyMainFrameOverscrollBehaviorHasEffect) {
   mainFrame->ExecuteScript(
       WebScriptSource(WebString("document.body.style="
                                 "'overscroll-behavior: contain;'")));
-  EXPECT_CALL(client, DidOverscroll(gfx::Vector2dF(-100, -100),
-                                    gfx::Vector2dF(-200, -200),
-                                    gfx::PointF(100, 100), gfx::Vector2dF()));
+  EXPECT_CALL(client,
+              DidOverscroll(gfx::Vector2dF(-100, -100),
+                            gfx::Vector2dF(-200, -200), gfx::PointF(100, 100),
+                            gfx::Vector2dF(), kOverscrollBehaviorContain));
   ScrollUpdate(&web_view_helper, 100, 100);
   Mock::VerifyAndClearExpectations(&client);
   EXPECT_EQ(web_view_helper.GetLayerTreeHost()->overscroll_behavior(),
@@ -12475,9 +12458,7 @@ class ShowVirtualKeyboardObserverWidgetClient
   ~ShowVirtualKeyboardObserverWidgetClient() override = default;
 
   // frame_test_helpers::TestWebWidgetClient:
-  void ShowVirtualKeyboardOnElementFocus() override {
-    did_show_virtual_keyboard_ = true;
-  }
+  void ShowVirtualKeyboard() override { did_show_virtual_keyboard_ = true; }
 
   bool DidShowVirtualKeyboard() const { return did_show_virtual_keyboard_; }
 
@@ -12506,8 +12487,11 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
                       "document.querySelector('input').focus();"));
 
   // Verify that the right WebWidgetClient has been notified.
+#if defined(OS_CHROMEOS)
+  EXPECT_FALSE(web_widget_client.DidShowVirtualKeyboard());
+#else
   EXPECT_TRUE(web_widget_client.DidShowVirtualKeyboard());
-
+#endif
   web_view_helper.Reset();
 }
 

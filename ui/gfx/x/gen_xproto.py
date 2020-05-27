@@ -358,6 +358,9 @@ class GenXproto(FileWriter):
         # Map from (XML tag, XML name) to XML element
         self.module_names = {}
 
+        # Enums that represent bit masks.
+        self.bitenums = []
+
     # Geenerate an ID suitable for use in temporary variable names.
     def new_uid(self, ):
         self.prev_id += 1
@@ -953,6 +956,9 @@ class GenXproto(FileWriter):
             return
         self.types[renamed].add(t)
 
+        if isinstance(t, self.xcbgen.xtypes.Enum):
+            self.bitenums.append((t, name))
+
         if not t.is_container:
             return
 
@@ -1102,6 +1108,16 @@ class GenXproto(FileWriter):
 
         self.write()
         self.write('}  // namespace x11')
+        self.write()
+        self.namespace = []
+        for enum, name in self.bitenums:
+            name = self.qualtype(enum, name)
+            self.write('inline %s operator|(' % name)
+            with Indent(self, '    {0} l, {0} r)'.format(name) + ' {', '}'):
+                self.write('using T = std::underlying_type_t<%s>;' % name)
+                self.write('return static_cast<%s>(' % name)
+                self.write('    static_cast<T>(l) | static_cast<T>(r));')
+            self.write()
         self.write()
         self.write('#endif  // ' + include_guard)
 

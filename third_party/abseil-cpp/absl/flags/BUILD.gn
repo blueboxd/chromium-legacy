@@ -9,28 +9,15 @@ import("//third_party/abseil-cpp/absl.gni")
 # If this is a problem, feel free to remove "testonly" and use "assert_no_deps"
 # on the main Chrome binary.
 
-absl_source_set("flag_internal") {
+absl_source_set("path_util") {
   testonly = true
-  sources = [ "internal/flag.cc" ]
-  public = [ "internal/flag.h" ]
+  public = [ "internal/path_util.h" ]
   deps = [
-    ":config",
-    ":handle",
-    ":marshalling",
-    ":registry",
-    "//third_party/abseil-cpp/absl/base",
     "//third_party/abseil-cpp/absl/base:config",
-    "//third_party/abseil-cpp/absl/base:core_headers",
-    "//third_party/abseil-cpp/absl/memory",
-    "//third_party/abseil-cpp/absl/meta:type_traits",
     "//third_party/abseil-cpp/absl/strings",
-    "//third_party/abseil-cpp/absl/synchronization",
   ]
   visibility = []
-  visibility += [
-    ":*",
-    "//third_party/abseil-cpp/absl/base/*",
-  ]
+  visibility += [ ":*" ]
 }
 
 absl_source_set("program_name") {
@@ -43,17 +30,6 @@ absl_source_set("program_name") {
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/synchronization",
-  ]
-  visibility = []
-  visibility += [ ":*" ]
-}
-
-absl_source_set("path_util") {
-  testonly = true
-  public = [ "internal/path_util.h" ]
-  deps = [
-    "//third_party/abseil-cpp/absl/base:config",
-    "//third_party/abseil-cpp/absl/strings",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -89,19 +65,27 @@ absl_source_set("marshalling") {
   ]
 }
 
-absl_source_set("handle") {
+absl_source_set("commandlineflag_internal") {
   testonly = true
-  sources = [ "internal/commandlineflag.cc" ]
   public = [ "internal/commandlineflag.h" ]
   deps = [
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/base:fast_type_id",
     "//third_party/abseil-cpp/absl/strings",
-    "//third_party/abseil-cpp/absl/types:optional",
   ]
   visibility = []
   visibility += [ ":*" ]
+}
+
+absl_source_set("commandlineflag") {
+  testonly = true
+  sources = [ "commandlineflag.cc" ]
+  public = [ "commandlineflag.h" ]
+  deps = [
+    ":commandlineflag_internal",
+    "//third_party/abseil-cpp/absl/types:optional",
+  ]
 }
 
 absl_source_set("private_handle_accessor") {
@@ -109,7 +93,7 @@ absl_source_set("private_handle_accessor") {
   sources = [ "internal/private_handle_accessor.cc" ]
   public = [ "internal/private_handle_accessor.h" ]
   deps = [
-      ":handle",
+      ":commandlineflag",
   ]
   visibility = []
   visibility += [ ":*" ]
@@ -126,8 +110,9 @@ absl_source_set("registry") {
     "internal/type_erased.h",
   ]
   deps = [
+    ":commandlineflag",
+    ":commandlineflag_internal",
     ":config",
-    ":handle",
     ":private_handle_accessor",
     "//third_party/abseil-cpp/absl/base:config",
     "//third_party/abseil-cpp/absl/base:core_headers",
@@ -137,6 +122,30 @@ absl_source_set("registry") {
   ]
   visibility = []
   visibility += [ ":*" ]
+}
+
+absl_source_set("flag_internal") {
+  testonly = true
+  sources = [ "internal/flag.cc" ]
+  public = [ "internal/flag.h" ]
+  deps = [
+    ":commandlineflag",
+    ":config",
+    ":marshalling",
+    ":registry",
+    "//third_party/abseil-cpp/absl/base",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/base:core_headers",
+    "//third_party/abseil-cpp/absl/memory",
+    "//third_party/abseil-cpp/absl/meta:type_traits",
+    "//third_party/abseil-cpp/absl/strings",
+    "//third_party/abseil-cpp/absl/synchronization",
+  ]
+  visibility = []
+  visibility += [
+    ":*",
+    "//third_party/abseil-cpp/absl/base/*",
+  ]
 }
 
 absl_source_set("flag") {
@@ -149,7 +158,6 @@ absl_source_set("flag") {
   deps = [
     ":config",
     ":flag_internal",
-    ":handle",
     ":marshalling",
     ":registry",
     "//third_party/abseil-cpp/absl/base",
@@ -164,10 +172,10 @@ absl_source_set("usage_internal") {
   sources = [ "internal/usage.cc" ]
   public = [ "internal/usage.h" ]
   deps = [
+    ":commandlineflag",
     ":config",
     ":flag",
     ":flag_internal",
-    ":handle",
     ":path_util",
     ":private_handle_accessor",
     ":program_name",
@@ -201,10 +209,10 @@ absl_source_set("parse") {
     "parse.h",
   ]
   deps = [
+    ":commandlineflag",
     ":config",
     ":flag",
     ":flag_internal",
-    ":handle",
     ":private_handle_accessor",
     ":program_name",
     ":registry",

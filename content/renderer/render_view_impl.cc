@@ -1438,7 +1438,7 @@ void RenderViewImpl::PrintPage(WebLocalFrame* frame) {
   RenderWidget* render_widget = render_frame->GetLocalRootRenderWidget();
 
   render_frame->ScriptedPrint(
-      render_widget->input_handler().handling_input_event());
+      render_widget->GetWebWidget()->HandlingInputEvent());
 }
 
 bool RenderViewImpl::SetZoomLevel(double zoom_level) {

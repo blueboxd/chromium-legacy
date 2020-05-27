@@ -17,6 +17,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/app_service_impl.h"
+#include "components/services/app_service/public/cpp/app_registry_cache_wrapper.h"
 #include "components/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
@@ -30,6 +31,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/supervised_user/grit/supervised_user_unscaled_resources.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/user_manager/user.h"
+#include "components/user_manager/user_manager.h"
 #include "extensions/common/constants.h"
 #endif
 
@@ -93,7 +96,11 @@ AppServiceProxy::AppServiceProxy(Profile* profile)
   Initialize();
 }
 
-AppServiceProxy::~AppServiceProxy() = default;
+AppServiceProxy::~AppServiceProxy() {
+#if defined(OS_CHROMEOS)
+  AppRegistryCacheWrapper::Get().RemoveAppRegistryCache(&cache_);
+#endif
+}
 
 // static
 void AppServiceProxy::RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -121,6 +128,15 @@ void AppServiceProxy::Initialize() {
   if (profile_->IsOffTheRecord() && !profile_->IsGuestSession()) {
     return;
   }
+
+#if defined(OS_CHROMEOS)
+  if (user_manager::UserManager::Get() &&
+      user_manager::UserManager::Get()->GetActiveUser()) {
+    AppRegistryCacheWrapper::Get().AddAppRegistryCache(
+        user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
+        &cache_);
+  }
+#endif
 
   browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
 

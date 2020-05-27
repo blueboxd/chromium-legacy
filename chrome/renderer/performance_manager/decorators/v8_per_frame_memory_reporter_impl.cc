@@ -5,6 +5,7 @@
 #include "chrome/renderer/performance_manager/decorators/v8_per_frame_memory_reporter_impl.h"
 
 #include "content/public/common/isolated_world_ids.h"
+#include "extensions/renderer/script_injection.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
@@ -51,11 +52,7 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
       blink::WebLocalFrame* frame =
           blink::WebLocalFrame::FrameForContext(context);
 
-      // TODO(siggi): Expose a way to get the WorldId for a context in
-      //     blink/public somewhere. The WorldId is already exposed at that
-      //     level except only in the WebLocalFrameClient callbacks.
-      //     From the WorldId it's then possible to resolve the host ID.
-      if (!frame || context != frame->MainWorldScriptContext()) {
+      if (!frame) {
         // TODO(siggi): It would be prefereable to count the V8SchemaRegistry
         //     context's overhead with unassociated_bytes, but at present there
         //     isn't a public API that allows this distinction.
@@ -63,18 +60,25 @@ class FrameAssociatedMeasurementDelegate : public v8::MeasureMemoryDelegate {
         result->unassociated_context_bytes_used += size;
       } else {
         base::UnguessableToken token = frame->Client()->GetDevToolsFrameToken();
-        DCHECK(!base::Contains(result->associated_memory, token));
+
+        mojom::PerFrameV8MemoryUsageData* per_frame_resources =
+            result->associated_memory[token].get();
+        if (!per_frame_resources) {
+          auto new_resources = mojom::PerFrameV8MemoryUsageData::New();
+          per_frame_resources = new_resources.get();
+          result->associated_memory[token] = std::move(new_resources);
+        }
 
         mojom::V8IsolatedWorldMemoryUsagePtr isolated_world_usage =
             mojom::V8IsolatedWorldMemoryUsage::New();
         isolated_world_usage->bytes_used = size;
-        mojom::PerFrameV8MemoryUsageDataPtr per_frame_resources =
-            mojom::PerFrameV8MemoryUsageData::New();
-        per_frame_resources
-            ->associated_bytes[content::ISOLATED_WORLD_ID_GLOBAL] =
+        int32_t world_id = frame->GetScriptContextWorldId(context);
+        isolated_world_usage->host_id =
+            extensions::ScriptInjection::GetHostIdForIsolatedWorld(world_id);
+        DCHECK(
+            !base::Contains(per_frame_resources->associated_bytes, world_id));
+        per_frame_resources->associated_bytes[world_id] =
             std::move(isolated_world_usage);
-
-        result->associated_memory[token] = std::move(per_frame_resources);
       }
     }
 

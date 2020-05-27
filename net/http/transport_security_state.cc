@@ -853,7 +853,8 @@ void TransportSecurityState::MaybeNotifyExpectCTFailed(
 
   expect_ct_reporter_->OnExpectCTFailed(
       host_port_pair, report_uri, expiration, validated_certificate_chain,
-      served_certificate_chain, signed_certificate_timestamps);
+      served_certificate_chain, signed_certificate_timestamps,
+      NetworkIsolationKey::Todo());
 }
 
 bool TransportSecurityState::DeleteDynamicDataForHost(const std::string& host) {

@@ -1018,14 +1018,22 @@ void UsbDeviceHandleWin::GotDescriptorFromNodeConnection(
   if (win32_result != ERROR_SUCCESS) {
     SetLastError(win32_result);
     USB_PLOG(ERROR) << "Failed to read descriptor from node connection";
-    std::move(callback).Run(UsbTransferStatus::TRANSFER_ERROR, nullptr, 0);
+    std::move(callback).Run(UsbTransferStatus::TRANSFER_ERROR,
+                            /*buffer=*/nullptr, /*length=*/0);
     return;
   }
 
-  // Converted to CHECKs to investigate https://crbug.com/1084316.
-  CHECK_GE(bytes_transferred, sizeof(USB_DESCRIPTOR_REQUEST));
+  if (bytes_transferred < sizeof(USB_DESCRIPTOR_REQUEST)) {
+    USB_LOG(ERROR) << "Descriptor response too short (" << bytes_transferred
+                   << " < " << sizeof(USB_DESCRIPTOR_REQUEST) << ")";
+    std::move(callback).Run(UsbTransferStatus::TRANSFER_ERROR,
+                            /*buffer=*/nullptr, /*length=*/0);
+    return;
+  }
+
   bytes_transferred -= sizeof(USB_DESCRIPTOR_REQUEST);
-  CHECK_LE(bytes_transferred, original_buffer->size());
+  bytes_transferred = std::min(bytes_transferred, original_buffer->size());
+
   memcpy(original_buffer->front(),
          request_buffer->front() + sizeof(USB_DESCRIPTOR_REQUEST),
          bytes_transferred);

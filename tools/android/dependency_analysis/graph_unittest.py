@@ -82,6 +82,8 @@ class TestGraph(unittest.TestCase):
         """Tests that the graph was initialized correctly."""
         self.assertEqual(self.test_graph.num_nodes, 0)
         self.assertEqual(self.test_graph.num_edges, 0)
+        self.assertEqual(self.test_graph.nodes, [])
+        self.assertEqual(self.test_graph.edges, [])
 
     def test_get_node_exists(self):
         """Tests getting a node that we know exists in the graph."""
@@ -95,48 +97,59 @@ class TestGraph(unittest.TestCase):
 
     def test_add_nodes(self):
         """Tests adding two different nodes to the graph."""
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
+        node1 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
+        node2 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
         self.assertEqual(self.test_graph.num_nodes, 2)
+        self.assertEqual(graph.sorted_nodes_by_name(self.test_graph.nodes),
+                         graph.sorted_nodes_by_name([node1, node2]))
 
     def test_add_nodes_duplicate(self):
         """Tests adding the same node twice to the graph."""
         self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
+        node = self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
         self.assertEqual(self.test_graph.num_nodes, 1)
+        self.assertEqual(self.test_graph.nodes, [node])
 
     def test_add_edge(self):
         """Tests adding a new edge to the graph."""
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
+        node1 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
+        node2 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
         self.test_graph.add_edge_if_new(self.UNIQUE_KEY_1, self.UNIQUE_KEY_2)
+
         self.assertEqual(self.test_graph.num_edges, 1)
-        node1 = self.test_graph.get_node_by_key(self.UNIQUE_KEY_1)
-        node2 = self.test_graph.get_node_by_key(self.UNIQUE_KEY_2)
         self.assertEqual(node2.inbound, {node1})
         self.assertEqual(node1.outbound, {node2})
+        self.assertEqual(self.test_graph.edges, [(node1, node2)])
 
     def test_add_edge_double_sided(self):
         """Tests adding a bidirectional edge to the graph."""
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
+        node1 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
+        node2 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
         self.test_graph.add_edge_if_new(self.UNIQUE_KEY_1, self.UNIQUE_KEY_2)
         self.test_graph.add_edge_if_new(self.UNIQUE_KEY_2, self.UNIQUE_KEY_1)
+
         self.assertEqual(self.test_graph.num_edges, 2)
-        node1 = self.test_graph.get_node_by_key(self.UNIQUE_KEY_1)
-        node2 = self.test_graph.get_node_by_key(self.UNIQUE_KEY_2)
         self.assertEqual(node1.inbound, {node2})
         self.assertEqual(node1.outbound, {node2})
         self.assertEqual(node2.inbound, {node1})
         self.assertEqual(node2.outbound, {node1})
+        self.assertEqual(
+            graph.sorted_edges_by_name(self.test_graph.edges),
+            graph.sorted_edges_by_name([(node1, node2), (node2, node1)]))
 
     def test_add_edge_duplicate(self):
         """Tests adding a duplicate edge to the graph."""
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
-        self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
-        self.test_graph.add_edge_if_new(self.UNIQUE_KEY_1, self.UNIQUE_KEY_2)
-        self.test_graph.add_edge_if_new(self.UNIQUE_KEY_1, self.UNIQUE_KEY_2)
+        node1 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_1)
+        node2 = self.test_graph.add_node_if_new(self.UNIQUE_KEY_2)
+        edge_added_first = self.test_graph.add_edge_if_new(
+            self.UNIQUE_KEY_1, self.UNIQUE_KEY_2)
+        edge_added_second = self.test_graph.add_edge_if_new(
+            self.UNIQUE_KEY_1, self.UNIQUE_KEY_2)
+
         self.assertEqual(self.test_graph.num_edges, 1)
+        self.assertTrue(edge_added_first)
+        self.assertFalse(edge_added_second)
+        self.assertEqual(self.test_graph.edges, [(node1, node2)])
 
     def test_add_edge_nodes_do_not_exist(self):
         """Tests adding a new edge to a graph without the edge's nodes."""

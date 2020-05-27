@@ -345,7 +345,8 @@ void WifiConfigurationBridge::OnNetworkUpdate(
   if (!set_properties)
     return;
 
-  if (network_metadata_store_->GetIsConfiguredBySync(guid)) {
+  if (synced_network_updater_->IsUpdateInProgress(guid) ||
+      network_metadata_store_->GetIsConfiguredBySync(guid)) {
     // Don't have to upload a configuration that came from sync.
     NET_LOG(EVENT) << "Not uploading change to " << NetworkGuidId(guid)
                    << ", modified network was configured "

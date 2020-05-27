@@ -30,7 +30,7 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) FakeDlcserviceClient
   // Purging removes the DLC entirely from disk.
   void Purge(const std::string& dlc_id, PurgeCallback callback) override;
   void GetExistingDlcs(GetExistingDlcsCallback callback) override;
-  void OnInstallStatusForTest(dbus::Signal* signal) override;
+  void DlcStateChangedForTest(dbus::Signal* signal) override;
 
   // Setters:
   // TODO(hsuregan/kimjae): Convert setters and at tests that use them to

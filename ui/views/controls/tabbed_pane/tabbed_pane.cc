@@ -510,6 +510,11 @@ TabbedPane::TabbedPane(TabbedPane::Orientation orientation,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded));
   contents_->SetLayoutManager(std::make_unique<views::FillLayout>());
+
+  // Support navigating tabs by Ctrl+Tab and Ctrl+Shift+Tab.
+  AddAccelerator(
+      ui::Accelerator(ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
+  AddAccelerator(ui::Accelerator(ui::VKEY_TAB, ui::EF_CONTROL_DOWN));
 }
 
 TabbedPane::~TabbedPane() = default;
@@ -598,16 +603,6 @@ bool TabbedPane::MoveSelectionBy(int delta) {
     return false;
   SelectTab(tab_strip_->GetTabAtDeltaFromSelected(delta));
   return true;
-}
-
-void TabbedPane::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
-  if (details.is_add) {
-    // Support navigating tabs by Ctrl+Tab and Ctrl+Shift+Tab.
-    AddAccelerator(
-        ui::Accelerator(ui::VKEY_TAB, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN));
-    AddAccelerator(ui::Accelerator(ui::VKEY_TAB, ui::EF_CONTROL_DOWN));
-  }
 }
 
 bool TabbedPane::AcceleratorPressed(const ui::Accelerator& accelerator) {

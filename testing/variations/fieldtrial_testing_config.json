@@ -651,6 +651,27 @@
             ]
         }
     ],
+    "AutofillEnableSurfacingServerCardNickname": [
+        {
+            "platforms": [
+                "android",
+                "android_webview",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "AutofillEnableSurfacingServerCardNickname"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillFieldMetadata": [
         {
             "platforms": [
@@ -2727,34 +2748,6 @@
             ]
         }
     ],
-    "HistoryServiceAndProfileSyncServiceUseThreadPool": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "all_enabled_20200129",
-                    "enable_features": [
-                        "HistoryServiceUsesTaskScheduler",
-                        "ProfileSyncServiceUsesThreadPool"
-                    ]
-                },
-                {
-                    "name": "all_disabled_20200129",
-                    "disable_features": [
-                        "HistoryServiceUsesTaskScheduler",
-                        "ProfileSyncServiceUsesThreadPool"
-                    ]
-                }
-            ]
-        }
-    ],
     "HomepagePromoCard": [
         {
             "platforms": [
@@ -3459,6 +3452,36 @@
             "experiments": [
                 {
                     "name": "DBWindow5000Frames_20190225"
+                }
+            ]
+        }
+    ],
+    "MediaFoundationAsyncH264Encoding": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaFoundationAsyncH264Encoding"
+                    ]
+                }
+            ]
+        }
+    ],
+    "MediaFoundationVP8Decoding": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "MediaFoundationVP8Decoding"
+                    ]
                 }
             ]
         }
@@ -6410,7 +6433,10 @@
     "UsePreferredIntervalForVideo": [
         {
             "platforms": [
-                "chromeos"
+                "chromeos",
+                "mac",
+                "windows",
+                "linux"
             ],
             "experiments": [
                 {

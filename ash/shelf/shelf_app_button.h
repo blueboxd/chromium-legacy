@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_button_delegate.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -194,6 +195,9 @@ class ASH_EXPORT ShelfAppButton : public ShelfButton,
 
   // A timer to activate the ink drop ripple during a long press.
   base::OneShotTimer ripple_activation_timer_;
+
+  std::unique_ptr<ShelfButtonDelegate::ScopedActiveInkDropCount>
+      ink_drop_count_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfAppButton);
 };

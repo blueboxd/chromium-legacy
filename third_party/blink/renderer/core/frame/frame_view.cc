@@ -42,18 +42,17 @@ bool FrameView::DisplayLockedInParentFrame() {
   return owner && DisplayLockUtilities::NearestLockedInclusiveAncestor(*owner);
 }
 
-bool FrameView::UpdateViewportIntersection(unsigned flags,
+void FrameView::UpdateViewportIntersection(unsigned flags,
                                            bool needs_occlusion_tracking) {
-  bool can_skip_sticky_frame_tracking =
-      flags & IntersectionObservation::kCanSkipStickyFrameTracking;
-
   if (!(flags & IntersectionObservation::kImplicitRootObserversNeedUpdate))
-    return can_skip_sticky_frame_tracking;
+    return;
+
   // This should only run in child frames.
   Frame& frame = GetFrame();
   HTMLFrameOwnerElement* owner_element = frame.DeprecatedLocalOwner();
   if (!owner_element)
-    return can_skip_sticky_frame_tracking;
+    return;
+
   Document& owner_document = owner_element->GetDocument();
   IntPoint viewport_offset;
   IntRect viewport_intersection, mainframe_document_intersection;
@@ -105,30 +104,12 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
     PhysicalOffset content_box_offset =
         owner_layout_object->PhysicalContentBoxOffset();
 
-    if (NeedsViewportOffset() || !can_skip_sticky_frame_tracking) {
+    if (NeedsViewportOffset()) {
       viewport_offset = -RoundedIntPoint(
           owner_layout_object->AbsoluteToLocalPoint(
               PhysicalOffset(),
               kTraverseDocumentBoundaries | kApplyRemoteRootFrameOffset) -
           content_box_offset);
-      if (!can_skip_sticky_frame_tracking) {
-        // If the frame is small, skip tracking this frame and its subframes.
-        if (frame.GetMainFrameViewportSize().IsEmpty() ||
-            !StickyFrameTracker::IsLarge(
-                frame.GetMainFrameViewportSize(),
-                new_rect_in_parent.PixelSnappedSize())) {
-          can_skip_sticky_frame_tracking = true;
-        }
-        // If the frame is a large sticky ad, record a use counter and skip
-        // tracking its subframes; otherwise continue tracking its subframes.
-        else if (frame.IsAdSubframe() &&
-                 GetStickyFrameTracker()->UpdateStickyStatus(
-                     frame.GetMainFrameScrollOffset(), viewport_offset)) {
-          UseCounter::Count(owner_element->GetDocument(),
-                            WebFeature::kLargeStickyAd);
-          can_skip_sticky_frame_tracking = true;
-        }
-      }
     }
 
     // Generate matrix to transform from the space of the containing document
@@ -179,10 +160,10 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
     occlusion_state = FrameOcclusionState::kUnknown;
   }
 
-  SetViewportIntersection(
-      {viewport_offset, viewport_intersection, mainframe_document_intersection,
-       WebRect(), occlusion_state, frame.GetMainFrameViewportSize(),
-       frame.GetMainFrameScrollOffset(), can_skip_sticky_frame_tracking});
+  SetViewportIntersection({viewport_offset, viewport_intersection,
+                           mainframe_document_intersection, WebRect(),
+                           occlusion_state, frame.GetMainFrameViewportSize(),
+                           frame.GetMainFrameScrollOffset()});
 
   UpdateFrameVisibility(!viewport_intersection.IsEmpty());
 
@@ -202,7 +183,6 @@ bool FrameView::UpdateViewportIntersection(unsigned flags,
         parent_frame->View()->CanThrottleRenderingForPropagation();
   }
   UpdateRenderThrottlingStatus(hidden_for_throttling, subtree_throttled);
-  return can_skip_sticky_frame_tracking;
 }
 
 void FrameView::UpdateFrameVisibility(bool intersects_viewport) {
@@ -256,12 +236,6 @@ bool FrameView::RectInParentIsStable(
   if (!parent)
     return true;
   return parent->RectInParentIsStable(event_timestamp);
-}
-
-StickyFrameTracker* FrameView::GetStickyFrameTracker() {
-  if (!sticky_frame_tracker_)
-    sticky_frame_tracker_ = std::make_unique<StickyFrameTracker>();
-  return sticky_frame_tracker_.get();
 }
 
 }  // namespace blink

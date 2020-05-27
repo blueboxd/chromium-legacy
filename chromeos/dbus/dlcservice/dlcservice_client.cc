@@ -122,7 +122,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
     progress_callback_holder_ = std::move(progress_callback);
     install_callback_holder_ = std::move(install_callback);
-    install_field_holder_ = dlc_id;
+    dlc_id_holder_ = dlc_id;
 
     VLOG(1) << "Requesting to install DLC(s).";
     dlcservice_proxy_->CallMethodWithErrorResponse(
@@ -171,8 +171,8 @@ class DlcserviceClientImpl : public DlcserviceClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void OnInstallStatusForTest(dbus::Signal* signal) override {
-    OnInstallStatus(signal);
+  void DlcStateChangedForTest(dbus::Signal* signal) override {
+    DlcStateChanged(signal);
   }
 
   void Init(dbus::Bus* bus) {
@@ -180,10 +180,10 @@ class DlcserviceClientImpl : public DlcserviceClient {
         dlcservice::kDlcServiceServiceName,
         dbus::ObjectPath(dlcservice::kDlcServiceServicePath));
     dlcservice_proxy_->ConnectToSignal(
-        dlcservice::kDlcServiceInterface, dlcservice::kOnInstallStatusSignal,
-        base::BindRepeating(&DlcserviceClientImpl::OnInstallStatus,
+        dlcservice::kDlcServiceInterface, dlcservice::kDlcStateChangedSignal,
+        base::BindRepeating(&DlcserviceClientImpl::DlcStateChanged,
                             weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&DlcserviceClientImpl::OnInstallStatusConnected,
+        base::BindOnce(&DlcserviceClientImpl::DlcStateChangedConnected,
                        weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -198,7 +198,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
     // |Install()|
     install_callback_holder_.reset();
     progress_callback_holder_.reset();
-    install_field_holder_.reset();
+    dlc_id_holder_.reset();
   }
 
   void EnqueueTask(base::OnceClosure task) {
@@ -213,57 +213,59 @@ class DlcserviceClientImpl : public DlcserviceClient {
     }
   }
 
-  void SendProgress(const dlcservice::InstallStatus& install_status) {
-    const double progress = install_status.progress();
+  void SendProgress(double progress) {
     VLOG(2) << "Install in progress: " << progress;
     if (progress_callback_holder_.has_value())
       progress_callback_holder_.value().Run(progress);
   }
 
-  void SendCompleted(const dlcservice::InstallStatus& install_status) {
-    // TODO(crbug.com/1078556): We should not be getting the DLC ID from the
-    // module list returned by the signal.
-    std::string dlc_id, root_path;
-    if (install_status.dlc_module_list().dlc_module_infos_size() > 0) {
-      auto dlc_info = install_status.dlc_module_list().dlc_module_infos(0);
-      dlc_id = dlc_info.dlc_id();
-      root_path = dlc_info.dlc_root();
-    }
-
-    InstallResult install_result = {
-        .error = install_status.error_code(),
-        .dlc_id = dlc_id,
-        .root_path = root_path,
-    };
-    std::move(install_callback_holder_.value()).Run(install_result);
-  }
-
-  void OnInstallStatus(dbus::Signal* signal) {
-    if (!install_callback_holder_.has_value())
+  void SendCompleted(const dlcservice::DlcState& dlc_state) {
+    if (!install_callback_holder_.has_value() || !dlc_id_holder_.has_value())
       return;
 
-    dlcservice::InstallStatus install_status;
-    if (!dbus::MessageReader(signal).PopArrayOfBytesAsProto(&install_status)) {
+    if (dlc_id_holder_ != dlc_state.id()) {
+      // We are not interested in this DLC. Some other process might be
+      // installing it.
+      return;
+    }
+
+    if (dlc_state.state() == dlcservice::DlcState::NOT_INSTALLED) {
+      LOG(ERROR) << "Failed to install DLC " << dlc_state.id()
+                 << " with error code: " << dlc_state.last_error_code();
+
+    } else {
+      VLOG(1) << "DLC " << dlc_state.id() << " installed successfully.";
+      if (dlc_state.last_error_code() != dlcservice::kErrorNone) {
+        LOG(WARNING) << "DLC installation was sucessful but non-success "
+                     << "error code: " << dlc_state.last_error_code();
+      }
+    }
+
+    InstallResult result = {
+        .error = dlc_state.last_error_code(),
+        .dlc_id = dlc_state.id(),
+        .root_path = dlc_state.root_path(),
+    };
+    std::move(install_callback_holder_.value()).Run(result);
+  }
+
+  void DlcStateChanged(dbus::Signal* signal) {
+    dlcservice::DlcState dlc_state;
+    if (!dbus::MessageReader(signal).PopArrayOfBytesAsProto(&dlc_state)) {
       LOG(ERROR) << "Failed to parse proto as install status.";
       return;
     }
 
-    switch (install_status.status()) {
-      case dlcservice::Status::COMPLETED:
-        VLOG(1) << "DLC(s) install successful.";
-        SendCompleted(install_status);
+    switch (dlc_state.state()) {
+      case dlcservice::DlcState::NOT_INSTALLED:
+      case dlcservice::DlcState::INSTALLED:
+        SendCompleted(dlc_state);
         break;
-      case dlcservice::Status::RUNNING: {
-        SendProgress(install_status);
+      case dlcservice::DlcState::INSTALLING:
+        SendProgress(dlc_state.progress());
         // Need to return here since we don't want to try starting another
         // pending install from the queue (would waste time checking).
         return;
-      }
-      case dlcservice::Status::FAILED:
-        LOG(ERROR) << "Failed to install with error code: "
-                   << install_status.error_code();
-        SendCompleted(install_status);
-        break;
       default:
         NOTREACHED();
     }
@@ -274,10 +276,10 @@ class DlcserviceClientImpl : public DlcserviceClient {
     CheckAndRunPendingTask();
   }
 
-  void OnInstallStatusConnected(const std::string& interface,
+  void DlcStateChangedConnected(const std::string& interface,
                                 const std::string& signal,
                                 bool success) {
-    LOG_IF(ERROR, !success) << "Failed to connect to install status signal.";
+    LOG_IF(ERROR, !success) << "Failed to connect to DlcStateChanged signal.";
   }
 
   void OnInstall(dbus::Response* response, dbus::ErrorResponse* err_response) {
@@ -286,7 +288,7 @@ class DlcserviceClientImpl : public DlcserviceClient {
 
     // Perform DCHECKs only when an error occurs, platform dlcservice currently
     // sends a signal prior to DBus method callback on quick install scenarios.
-    DCHECK(install_field_holder_.has_value());
+    DCHECK(dlc_id_holder_.has_value());
     DCHECK(install_callback_holder_.has_value());
     DCHECK(progress_callback_holder_.has_value());
 
@@ -294,13 +296,14 @@ class DlcserviceClientImpl : public DlcserviceClient {
     if (err == dlcservice::kErrorBusy) {
       EnqueueTask(base::BindOnce(&DlcserviceClientImpl::Install,
                                  weak_ptr_factory_.GetWeakPtr(),
-                                 std::move(install_field_holder_.value()),
+                                 std::move(dlc_id_holder_.value()),
                                  std::move(install_callback_holder_.value()),
                                  std::move(progress_callback_holder_.value())));
     } else {
-      dlcservice::InstallStatus install_status;
-      install_status.set_error_code(err);
-      SendCompleted(install_status);
+      dlcservice::DlcState dlc_state;
+      dlc_state.set_id(dlc_id_holder_.value());
+      dlc_state.set_last_error_code(err);
+      SendCompleted(dlc_state);
     }
     CheckAndRunPendingTask();
   }
@@ -347,8 +350,8 @@ class DlcserviceClientImpl : public DlcserviceClient {
   // The cached callback to call on during progress of |Install()|.
   base::Optional<ProgressCallback> progress_callback_holder_;
 
-  // The cached field of string (DLC ID) for retrying call to install.
-  base::Optional<std::string> install_field_holder_;
+  // The cached DLC ID for retrying call to install.
+  base::Optional<std::string> dlc_id_holder_;
 
   // A list of postponed installs to dlcservice.
   std::deque<base::OnceClosure> pending_tasks_;

@@ -106,6 +106,7 @@ component("web_engine_core") {
     "//media",
     "//media/fuchsia/cdm/service",
     "//media/fuchsia/mojom",
+    "//media/mojo/common",
     "//media/mojo/services",
     "//mojo/public/cpp/bindings",
     "//services/media_session/public/mojom",
@@ -199,6 +200,8 @@ component("web_engine_core") {
     "context_provider_impl.h",
     "context_provider_main.cc",
     "context_provider_main.h",
+    "renderer/cast_streaming_demuxer.cc",
+    "renderer/cast_streaming_demuxer.h",
     "renderer/on_load_script_injector.cc",
     "renderer/on_load_script_injector.h",
     "renderer/url_request_rules_receiver.cc",
@@ -278,6 +281,7 @@ source_set("browsertest_core") {
 test("web_engine_browsertests") {
   sources = [
     "browser/accessibility_bridge_browsertest.cc",
+    "browser/cast_streaming_browsertest.cc",
     "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",

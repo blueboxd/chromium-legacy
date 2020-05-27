@@ -97,12 +97,16 @@ public class TopToolbarCoordinator implements Toolbar {
      *         browsing mode toolbar.
      * @param overviewModeBehaviorSupplier Supplier of the overview mode manager for the current
      *                                     profile.
+     * @param normalThemeColorProvider The {@link ThemeColorProvider} for normal mode.
+     * @param overviewThemeColorProvider The {@link ThemeColorProvider} for overview mode.
      */
     public TopToolbarCoordinator(ToolbarControlContainer controlContainer,
             ToolbarLayout toolbarLayout, IdentityDiscController identityDiscController,
             ToolbarDataProvider toolbarDataProvider, ToolbarTabController tabController,
             UserEducationHelper userEducationHelper, List<ButtonDataProvider> buttonDataProviders,
-            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier) {
+            ObservableSupplier<OverviewModeBehavior> overviewModeBehaviorSupplier,
+            ThemeColorProvider normalThemeColorProvider,
+            ThemeColorProvider overviewThemeColorProvider) {
         mToolbarLayout = toolbarLayout;
         mIdentityDiscController = identityDiscController;
         mOptionalButtonController = new OptionalBrowsingModeButtonController(buttonDataProviders,
@@ -116,8 +120,8 @@ public class TopToolbarCoordinator implements Toolbar {
             if (StartSurfaceConfiguration.isStartSurfaceEnabled()) {
                 mStartSurfaceToolbarCoordinator = new StartSurfaceToolbarCoordinator(
                         controlContainer.getRootView().findViewById(R.id.tab_switcher_toolbar_stub),
-                        mIdentityDiscController, userEducationHelper,
-                        mOverviewModeBehaviorSupplier);
+                        mIdentityDiscController, userEducationHelper, mOverviewModeBehaviorSupplier,
+                        overviewThemeColorProvider);
             } else {
                 mTabSwitcherModeCoordinatorPhone = new TabSwitcherModeTTCoordinatorPhone(
                         controlContainer.getRootView().findViewById(
@@ -127,6 +131,12 @@ public class TopToolbarCoordinator implements Toolbar {
         controlContainer.setToolbar(this);
         HomepageManager.getInstance().addListener(mHomepageStateListener);
         mToolbarLayout.initialize(toolbarDataProvider, tabController);
+
+        final MenuButton menuButtonWrapper = getMenuButtonWrapper();
+        if (menuButtonWrapper != null) {
+            menuButtonWrapper.setThemeColorProvider(normalThemeColorProvider);
+        }
+        mToolbarLayout.setThemeColorProvider(normalThemeColorProvider);
     }
 
     /**
@@ -519,20 +529,6 @@ public class TopToolbarCoordinator implements Toolbar {
             mTabSwitcherModeCoordinatorPhone.setIncognitoStateProvider(provider);
         } else if (mStartSurfaceToolbarCoordinator != null) {
             mStartSurfaceToolbarCoordinator.setIncognitoStateProvider(provider);
-        }
-    }
-
-    /**
-     * @param provider The provider used to determine theme color.
-     */
-    public void setThemeColorProvider(ThemeColorProvider provider) {
-        final MenuButton menuButtonWrapper = getMenuButtonWrapper();
-        if (menuButtonWrapper != null) {
-            menuButtonWrapper.setThemeColorProvider(provider);
-        }
-        mToolbarLayout.setThemeColorProvider(provider);
-        if (mStartSurfaceToolbarCoordinator != null) {
-            mStartSurfaceToolbarCoordinator.setThemeColorProvider(provider);
         }
     }
 

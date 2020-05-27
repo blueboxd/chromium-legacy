@@ -839,7 +839,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
             pos_in_local_frame_root, block_bounds);
       }
       event_result = WebInputEventResult::kHandledSystem;
-      Client()->DidHandleGestureEvent(event, event_cancelled);
+      DidHandleGestureEvent(event, event_cancelled);
       return event_result;
     case WebInputEvent::Type::kGestureTwoFingerTap:
     case WebInputEvent::Type::kGestureLongPress:
@@ -853,7 +853,7 @@ WebInputEventResult WebFrameWidgetImpl::HandleGestureEvent(
   LocalFrame* frame = LocalRootImpl()->GetFrame();
   WebGestureEvent scaled_event = TransformWebGestureEvent(frame->View(), event);
   event_result = frame->GetEventHandler().HandleGestureEvent(scaled_event);
-  Client()->DidHandleGestureEvent(event, event_cancelled);
+  DidHandleGestureEvent(event, event_cancelled);
   return event_result;
 }
 

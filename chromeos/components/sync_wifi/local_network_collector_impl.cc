@@ -165,21 +165,35 @@ void LocalNetworkCollectorImpl::OnGetManagedPropertiesResult(
   proto.set_automatically_connect(AutomaticallyConnectProtoFromMojo(
       properties->type_properties->get_wifi()->auto_connect));
   proto.set_is_preferred(IsPreferredProtoFromMojo(properties->priority));
-  if (properties->source == network_config::mojom::OncSource::kUser ||
-      !network_metadata_store_->GetIsFieldExternallyModified(
-          properties->guid, shill::kProxyConfigProperty))
-    proto.mutable_proxy_configuration()->CopyFrom(
-        ProxyConfigurationProtoFromMojo(properties->proxy_settings));
 
+  bool is_proxy_modified =
+      network_metadata_store_->GetIsFieldExternallyModified(
+          properties->guid, shill::kProxyConfigProperty);
+  sync_pb::WifiConfigurationSpecifics_ProxyConfiguration proxy_config =
+      ProxyConfigurationProtoFromMojo(properties->proxy_settings,
+                                      /*is_unspecified=*/is_proxy_modified);
+  proto.mutable_proxy_configuration()->CopyFrom(proxy_config);
+
+  bool is_dns_externally_modified =
+      network_metadata_store_->GetIsFieldExternallyModified(
+          properties->guid, shill::kNameServersProperty);
   if (properties->static_ip_config &&
       properties->static_ip_config->name_servers &&
       (properties->source == network_config::mojom::OncSource::kUser ||
-       !network_metadata_store_->GetIsFieldExternallyModified(
-           properties->guid, shill::kNameServersProperty))) {
+       !is_dns_externally_modified)) {
+    proto.set_dns_option(
+        sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_CUSTOM);
     for (const std::string& nameserver :
          properties->static_ip_config->name_servers->active_value) {
       proto.add_custom_dns(nameserver);
     }
+  } else if (properties->source == network_config::mojom::OncSource::kDevice &&
+             is_dns_externally_modified) {
+    proto.set_dns_option(
+        sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_UNSPECIFIED);
+  } else {
+    proto.set_dns_option(
+        sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_DEFAULT_DHCP);
   }
 
   ShillServiceClient::Get()->GetWiFiPassphrase(

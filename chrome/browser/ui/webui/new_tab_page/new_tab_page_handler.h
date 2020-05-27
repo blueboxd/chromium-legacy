@@ -206,9 +206,7 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   ScopedObserver<OneGoogleBarService, OneGoogleBarServiceObserver>
       one_google_bar_service_observer_{this};
   base::Optional<base::TimeTicks> one_google_bar_load_start_time_;
-  mojo::Remote<new_tab_page::mojom::Page> page_;
   Profile* profile_;
-  mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;
   scoped_refptr<ui::SelectFileDialog> select_file_dialog_;
   std::unique_ptr<AutocompleteController> autocomplete_controller_;
   FaviconCache favicon_cache_;
@@ -219,6 +217,11 @@ class NewTabPageHandler : public new_tab_page::mojom::PageHandler,
   std::unordered_map<const network::SimpleURLLoader*,
                      std::unique_ptr<network::SimpleURLLoader>>
       loader_map_;
+
+  // These are located at the end of the list of member variables to ensure the
+  // WebUI page is disconnected before other members are destroyed.
+  mojo::Remote<new_tab_page::mojom::Page> page_;
+  mojo::Receiver<new_tab_page::mojom::PageHandler> receiver_;
 
   base::WeakPtrFactory<NewTabPageHandler> weak_ptr_factory_{this};
 

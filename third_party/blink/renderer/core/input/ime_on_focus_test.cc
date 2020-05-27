@@ -27,9 +27,7 @@ class ImeRequestTrackingWebWidgetClient
   ImeRequestTrackingWebWidgetClient() : virtual_keyboard_request_count_(0) {}
 
   // WebWidgetClient methods
-  void ShowVirtualKeyboardOnElementFocus() override {
-    ++virtual_keyboard_request_count_;
-  }
+  void ShowVirtualKeyboard() override { ++virtual_keyboard_request_count_; }
 
   // Local methds
   void Reset() { virtual_keyboard_request_count_ = 0; }
@@ -118,8 +116,14 @@ void ImeOnFocusTest::RunImeOnFocusTest(
 
   if (!focus_element.IsNull())
     Focus(focus_element);
-  EXPECT_EQ(expected_virtual_keyboard_request_count,
-            client.VirtualKeyboardRequestCount());
+  if (expected_virtual_keyboard_request_count == 0) {
+    EXPECT_EQ(0, client.VirtualKeyboardRequestCount());
+  } else {
+    // Some builds (Aura, android) request the virtual keyboard on
+    // gesture tap.
+    EXPECT_LE(expected_virtual_keyboard_request_count,
+              client.VirtualKeyboardRequestCount());
+  }
 
   web_view_helper_.Reset();
 }

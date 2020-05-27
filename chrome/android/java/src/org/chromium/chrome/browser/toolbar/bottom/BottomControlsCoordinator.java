@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
+import android.annotation.SuppressLint;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -75,6 +76,7 @@ public class BottomControlsCoordinator {
      *         whether the bar should be focused, and the second is the OmniboxFocusReason.
      * @param overviewModeBehaviorSupplier Supplier for the overview mode manager.
      */
+    @SuppressLint("CutPasteId") // Not actually cut and paste since it's View vs ViewGroup.
     public BottomControlsCoordinator(ChromeFullscreenManager fullscreenManager, ViewStub stub,
             ActivityTabProvider tabProvider, OnLongClickListener tabSwitcherLongclickListener,
             ThemeColorProvider themeColorProvider,

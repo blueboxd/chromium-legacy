@@ -17,7 +17,7 @@
 #include "base/containers/stack.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
@@ -476,8 +476,8 @@ bool ObserveMessageFilter::OnMessageReceived(const IPC::Message& message) {
     // Exit the Wait() method if it's being used, but in a fresh stack once the
     // message is actually handled.
     if (quit_closure_ && !received_) {
-      base::PostTask(FROM_HERE,
-                     base::BindOnce(&ObserveMessageFilter::QuitWait, this));
+      base::ThreadPool::PostTask(
+          FROM_HERE, base::BindOnce(&ObserveMessageFilter::QuitWait, this));
     }
     received_ = true;
   }

@@ -10,13 +10,13 @@ for more details on the presubmit API built into depot_tools.
 
 def CommonChecks(input_api, output_api):
     checks = input_api.canned_checks.GetUnitTestsRecursively(
-            input_api,
-            output_api,
-            input_api.PresubmitLocalPath(),
-            whitelist=[r'.+_unittest\.py$'],
-            blacklist=[],
-            run_on_python2=False,
-            run_on_python3=True)
+        input_api,
+        output_api,
+        input_api.PresubmitLocalPath(),
+        whitelist=[r'.+_unittest\.py$'],
+        blacklist=[],
+        run_on_python2=False,
+        run_on_python3=True)
 
     return input_api.RunTests(checks, False)
 

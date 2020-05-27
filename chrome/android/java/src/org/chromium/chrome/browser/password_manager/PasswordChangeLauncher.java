@@ -17,10 +17,13 @@ public class PasswordChangeLauncher {
 
     /**
      * Name for the parameter that stores session username. Should be synced with
-     * |kSessionUsernameParameterName| from components/autofill_assistant/browser/controller.cc
+     * |kSessionUsernameParameterName| from
+     * components/autofill_assistant/browser/controller.cc
      * TODO(b/151401974): Eliminate duplicate parameter definitions.
      */
     private static final String PASSWORD_CHANGE_USERNAME_PARAMETER = "PASSWORD_CHANGE_USERNAME";
+    private static final String INTENT_PARAMETER = "INTENT";
+    private static final String INTENT = "PASSWORD_CHANGE";
 
     @CalledByNative
     public static void start(WindowAndroid windowAndroid, String origin, String username) {
@@ -33,6 +36,7 @@ public class PasswordChangeLauncher {
                 AutofillAssistantArguments.newBuilder()
                         .withInitialUrl(origin)
                         .addParameter(PASSWORD_CHANGE_USERNAME_PARAMETER, username)
+                        .addParameter(INTENT_PARAMETER, INTENT)
                         .build());
     }
 }

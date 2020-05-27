@@ -167,6 +167,8 @@
   if (!isNTP && !IsSplitToolbarMode(self)) {
     // Reset any location bar view updates when not an NTP.
     [self setScrollProgressForTabletOmnibox:1];
+  } else if (isNTP && !IsSplitToolbarMode(self)) {
+    [self setScrollProgressForTabletOmnibox:0];
   }
 }
 

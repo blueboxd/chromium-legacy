@@ -8,6 +8,8 @@
 #include "base/time/time.h"
 #include "cc/paint/element_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/platform/input/input_handler_proxy.h"
+#include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_lifecycle_update.h"
 
 namespace cc {
@@ -17,6 +19,9 @@ class RenderFrameMetadataObserver;
 }  // namespace cc
 
 namespace blink {
+
+class WebGestureEvent;
+class WebMouseEvent;
 
 // This class is part of the foundation of all widgets. It provides
 // callbacks from the compositing infrastructure that the individual widgets
@@ -108,6 +113,29 @@ class WidgetBaseClient {
 
   virtual void WillBeginMainFrame() {}
   virtual void DidCompletePageScaleAnimation() {}
+
+  virtual void FocusChangeComplete() {}
+  virtual void ShowVirtualKeyboard() {}
+  virtual void UpdateTextInputState() {}
+
+  virtual WebInputEventResult DispatchBufferedTouchEvents() = 0;
+  virtual WebInputEventResult HandleInputEvent(
+      const WebCoalescedInputEvent&) = 0;
+  virtual bool SupportsBufferedTouchEvents() = 0;
+
+  virtual void DidHandleKeyEvent() = 0;
+  virtual bool WillHandleGestureEvent(const WebGestureEvent& event) = 0;
+  virtual bool WillHandleMouseEvent(const WebMouseEvent& event) = 0;
+  virtual void ObserveGestureEventAndResult(
+      const WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      const cc::OverscrollBehavior& overscroll_behavior,
+      bool event_processed) = 0;
+  virtual void QueueSyntheticEvent(std::unique_ptr<WebCoalescedInputEvent>) = 0;
+
+  virtual WebTextInputType GetTextInputType() {
+    return WebTextInputType::kWebTextInputTypeNone;
+  }
 };
 
 }  // namespace blink

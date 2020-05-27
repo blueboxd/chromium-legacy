@@ -122,7 +122,6 @@ class MediaEngagementServiceTest : public ChromeRenderViewHostTestHarness,
     if (GetParam()) {
       scoped_feature_list_.InitWithFeatures(
           {media::kRecordMediaEngagementScores,
-           history::HistoryService::kHistoryServiceUsesTaskScheduler,
            media::kMediaEngagementHTTPSOnly},
           {});
     } else {
@@ -362,7 +361,7 @@ TEST_P(MediaEngagementServiceTest, IncognitoEngagementService) {
   RecordVisitAndPlaybackAndAdvanceClock(origin2);
 
   MediaEngagementService* incognito_service =
-      MediaEngagementService::Get(profile()->GetOffTheRecordProfile());
+      MediaEngagementService::Get(profile()->GetPrimaryOTRProfile());
   ExpectScores(incognito_service, origin1, 0.05, 1, 1, origin1_time);
   ExpectScores(incognito_service, origin2, 0.05, 1, 1, Now());
   ExpectScores(incognito_service, origin3, 0.0, 0, 0, TimeNotSet());
@@ -397,7 +396,7 @@ TEST_P(MediaEngagementServiceTest, IncognitoOverrideRegularProfile) {
   ExpectScores(kOrigin2, 0.0, 1, 0, TimeNotSet());
 
   MediaEngagementService* incognito_service =
-      MediaEngagementService::Get(profile()->GetOffTheRecordProfile());
+      MediaEngagementService::Get(profile()->GetPrimaryOTRProfile());
   ExpectScores(incognito_service, kOrigin1, 0.05,
                MediaEngagementScore::GetScoreMinVisits(), 1, TimeNotSet());
   ExpectScores(incognito_service, kOrigin2, 0.0, 1, 0, TimeNotSet());

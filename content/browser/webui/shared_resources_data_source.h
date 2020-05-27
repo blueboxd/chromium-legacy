@@ -31,7 +31,7 @@ class SharedResourcesDataSource : public URLDataSource {
   static std::unique_ptr<SharedResourcesDataSource>
   CreateForChromeUntrustedScheme();
 
-  explicit SharedResourcesDataSource(PassKey, const std::string& source_name);
+  SharedResourcesDataSource(PassKey, const std::string& scheme);
   SharedResourcesDataSource(const SharedResourcesDataSource&) = delete;
   SharedResourcesDataSource& operator=(const SharedResourcesDataSource&) =
       delete;
@@ -59,7 +59,9 @@ class SharedResourcesDataSource : public URLDataSource {
   bool IsPolymer2DisabledForPage(const WebContents::Getter& wc_getter);
 #endif  // defined (OS_CHROMEOS)
 
-  const std::string source_name_;
+  // The URL scheme this data source is accessed from, e.g. "chrome" or
+  // "chrome-untrusted".
+  const std::string scheme_;
 };
 
 }  // namespace content

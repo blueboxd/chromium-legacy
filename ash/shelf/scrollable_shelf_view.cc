@@ -275,6 +275,12 @@ class ScrollableShelfView::ScrollableShelfArrowView
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
     SetPaintToLayer();
     layer()->SetFillsBoundsOpaquely(false);
+
+    // When the spoken feedback is enabled, scrollable shelf should ensure that
+    // the hidden icon which receives the accessibility focus shows through
+    // scroll animation. So the arrow button is not useful for the spoken
+    // feedback users. The spoken feedback should ignore the arrow button.
+    GetViewAccessibility().OverrideIsIgnored(/*value=*/true);
   }
   ~ScrollableShelfArrowView() override = default;
 
@@ -308,6 +314,30 @@ class ScrollableShelfView::ScrollableShelfArrowView
 
  private:
   Shelf* const shelf_ = nullptr;
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// ScopedActiveInkDropCountImpl
+
+class ScrollableShelfView::ScopedActiveInkDropCountImpl
+    : public ScrollableShelfView::ScopedActiveInkDropCount {
+ public:
+  explicit ScopedActiveInkDropCountImpl(ScrollableShelfView* owner)
+      : owner_(owner) {
+    owner_->OnActiveInkDropChange(/*increase=*/true);
+  }
+
+  ~ScopedActiveInkDropCountImpl() override {
+    owner_->OnActiveInkDropChange(/*increase=*/false);
+  }
+
+  ScopedActiveInkDropCountImpl(const ScopedActiveInkDropCountImpl& rhs) =
+      delete;
+  ScopedActiveInkDropCountImpl& operator=(
+      const ScopedActiveInkDropCountImpl& rhs) = delete;
+
+ private:
+  ScrollableShelfView* owner_ = nullptr;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -700,6 +730,10 @@ void ScrollableShelfView::SetTestObserver(TestObserver* test_observer) {
   test_observer_ = test_observer;
 }
 
+bool ScrollableShelfView::IsAnyCornerButtonInkDropActivatedForTest() const {
+  return activated_corner_buttons_ > 0;
+}
+
 int ScrollableShelfView::GetSumOfButtonSizeAndSpacing() const {
   return shelf_view_->GetButtonSize() + ShelfConfig::Get()->button_spacing();
 }
@@ -754,7 +788,7 @@ void ScrollableShelfView::StartShelfScrollAnimation(float scroll_distance) {
   const bool one_arrow_in_target_state =
       (layout_strategy_ == LayoutStrategy::kShowLeftArrowButton ||
        layout_strategy_ == LayoutStrategy::kShowRightArrowButton);
-  if (one_arrow_in_target_state && Shell::Get()->IsInTabletMode())
+  if (one_arrow_in_target_state)
     EnableShelfRoundedCorners(/*enable=*/true);
 
   ui::ScopedLayerAnimationSettings animation_settings(
@@ -1120,25 +1154,12 @@ void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible(
   }
 }
 
-void ScrollableShelfView::NotifyInkDropActivity(bool activated,
-                                                views::Button* sender) {
-  // When scrolling shelf by gestures, the shelf icon's ink drop ripple may be
-  // activated accidentally. So ignore the ink drop activity during animation.
-  if (during_scroll_animation_)
-    return;
+std::unique_ptr<ScrollableShelfView::ScopedActiveInkDropCount>
+ScrollableShelfView::CreateScopedActiveInkDropCount(const ShelfButton* sender) {
+  if (!ShouldCountActivatedInkDrop(sender))
+    return nullptr;
 
-  // When long pressing icons, sometimes there are more ripple animations
-  // pending over others buttons. Only activate rounded corners when at least
-  // one button needs them.
-  if (InkDropNeedsClipping(sender)) {
-    if (activated)
-      ++activated_corner_buttons_;
-    else
-      --activated_corner_buttons_;
-  }
-  DCHECK_GE(activated_corner_buttons_, 0);
-  DCHECK_LE(activated_corner_buttons_, 2);
-  EnableShelfRoundedCorners(activated_corner_buttons_ > 0);
+  return std::make_unique<ScopedActiveInkDropCountImpl>(this);
 }
 
 void ScrollableShelfView::ShowContextMenuForViewImpl(
@@ -2171,8 +2192,8 @@ ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
   // This function may access TabletModeController during destruction of
   // Hotseat. However, TabletModeController is destructed before Hotseat. So
   // check the pointer explicitly here.
-  // TODO(andrewxu): reorder the destruction order in Shell::~Shell then remove
-  // the explicit check.
+  // TODO(https://crbug.com/1067490): reorder the destruction order in
+  // Shell::~Shell then remove the explicit check.
   const bool is_in_tablet_mode =
       Shell::Get()->tablet_mode_controller() && Shell::Get()->IsInTabletMode();
 
@@ -2332,22 +2353,41 @@ int ScrollableShelfView::CalculateScrollOffsetForTargetAvailableSpace(
   return target_scroll_offset;
 }
 
-bool ScrollableShelfView::InkDropNeedsClipping(views::Button* sender) const {
+bool ScrollableShelfView::ShouldCountActivatedInkDrop(
+    const views::View* sender) const {
+  bool should_count = false;
+
+  // When scrolling shelf by gestures, the shelf icon's ink drop ripple may be
+  // activated accidentally. So ignore the ink drop activity during animation.
+  if (during_scroll_animation_)
+    return should_count;
+
   // The ink drop needs to be clipped only if |sender| is the app at one of the
   // corners of the shelf. This happens if it is either the first or the last
   // tappable app and no arrow is showing on its side.
   if (shelf_view_->view_model()->view_at(first_tappable_app_index_) == sender) {
-    return !(layout_strategy_ == kShowButtons ||
-             layout_strategy_ == kShowLeftArrowButton);
+    should_count = !(layout_strategy_ == kShowButtons ||
+                     layout_strategy_ == kShowLeftArrowButton);
+  } else if (shelf_view_->view_model()->view_at(last_tappable_app_index_) ==
+             sender) {
+    should_count = !(layout_strategy_ == kShowButtons ||
+                     layout_strategy_ == kShowRightArrowButton);
   }
-  if (shelf_view_->view_model()->view_at(last_tappable_app_index_) == sender) {
-    return !(layout_strategy_ == kShowButtons ||
-             layout_strategy_ == kShowRightArrowButton);
-  }
-  return false;
+
+  return should_count;
 }
 
 void ScrollableShelfView::EnableShelfRoundedCorners(bool enable) {
+  // Only enable shelf rounded corners in tablet mode. Note that we allow
+  // disabling rounded corners in clamshell. Because when switching to clamshell
+  // from tablet, this method may be called after tablet mode ends.
+  // TODO(https://crbug.com/1067490): reorder the destruction order in
+  // Shell::~Shell then remove the explicit check.
+  const bool is_in_tablet_mode =
+      Shell::Get()->tablet_mode_controller() && Shell::Get()->IsInTabletMode();
+  if (enable && !is_in_tablet_mode)
+    return;
+
   ui::Layer* layer = shelf_container_view_->layer();
 
   const bool has_rounded_corners = !(layer->rounded_corner_radii().IsEmpty());
@@ -2359,6 +2399,20 @@ void ScrollableShelfView::EnableShelfRoundedCorners(bool enable) {
 
   if (!layer->is_fast_rounded_corner())
     layer->SetIsFastRoundedCorner(/*enable=*/true);
+}
+
+void ScrollableShelfView::OnActiveInkDropChange(bool increase) {
+  if (increase)
+    ++activated_corner_buttons_;
+  else
+    --activated_corner_buttons_;
+
+  // When long pressing icons, sometimes there are more ripple animations
+  // pending over others buttons. Only activate rounded corners when at least
+  // one button needs them.
+  CHECK_GE(activated_corner_buttons_, 0);
+  CHECK_LE(activated_corner_buttons_, 2);
+  EnableShelfRoundedCorners(activated_corner_buttons_ > 0);
 }
 
 }  // namespace ash

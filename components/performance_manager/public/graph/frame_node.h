@@ -57,6 +57,7 @@ class FrameNode : public Node {
   using InterventionPolicy = mojom::InterventionPolicy;
   using LifecycleState = mojom::LifecycleState;
   using Observer = FrameNodeObserver;
+  using PageNodeVisitor = base::RepeatingCallback<bool(const PageNode*)>;
   using PriorityAndReason = frame_priority::PriorityAndReason;
 
   class ObserverDefaultImpl;
@@ -109,6 +110,17 @@ class FrameNode : public Node {
   // incurs a full container copy of all child nodes. Please use
   // VisitChildFrameNodes when that makes sense.
   virtual const base::flat_set<const FrameNode*> GetChildFrameNodes() const = 0;
+
+  // Visits the page nodes that have been opened by this frame. The iteration
+  // is halted if the visitor returns false. Returns true if every call to the
+  // visitor returned true, false otherwise.
+  virtual bool VisitOpenedPageNodes(const PageNodeVisitor& visitor) const = 0;
+
+  // Returns the set of opened pages associatted with this frame. Note that
+  // this incurs a full container copy all the opened nodes. Please use
+  // VisitOpenedPageNodes when that makes sense. This can change over the
+  // lifetime of the frame.
+  virtual const base::flat_set<const PageNode*> GetOpenedPageNodes() const = 0;
 
   // Returns the current lifecycle state of this frame. See
   // FrameNodeObserver::OnFrameLifecycleStateChanged.

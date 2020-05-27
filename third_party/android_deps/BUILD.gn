@@ -497,8 +497,27 @@ android_aar_prebuilt("androidx_test_core_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_espresso_espresso_contrib_java") {
+  aar_path =
+      "libs/androidx_test_espresso_espresso_contrib/espresso-contrib-3.2.0.aar"
+  info_path = "libs/androidx_test_espresso_espresso_contrib/androidx_test_espresso_espresso_contrib.info"
+  testonly = true
+  deps = [
+    ":androidx_core_core_java",
+    ":androidx_drawerlayout_drawerlayout_java",
+    ":androidx_legacy_legacy_support_core_utils_java",
+    ":androidx_recyclerview_recyclerview_java",
+    ":androidx_test_espresso_espresso_core_java",
+    ":androidx_test_espresso_espresso_idling_resource_java",
+    ":androidx_viewpager_viewpager_java",
+    ":com_google_android_material_material_java",
+    "//third_party/accessibility_test_framework:accessibility_test_framework_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_test_espresso_espresso_core_java") {
-  aar_path = "libs/androidx_test_espresso_espresso_core/espresso-core-3.1.0.aar"
+  aar_path = "libs/androidx_test_espresso_espresso_core/espresso-core-3.2.0.aar"
   info_path = "libs/androidx_test_espresso_espresso_core/androidx_test_espresso_espresso_core.info"
   testonly = true
   deps = [
@@ -510,6 +529,32 @@ android_aar_prebuilt("androidx_test_espresso_espresso_core_java") {
     "//third_party/hamcrest:hamcrest_integration_java",
     "//third_party/hamcrest:hamcrest_library_java",
   ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_espresso_espresso_intents_java") {
+  aar_path =
+      "libs/androidx_test_espresso_espresso_intents/espresso-intents-3.2.0.aar"
+  info_path = "libs/androidx_test_espresso_espresso_intents/androidx_test_espresso_espresso_intents.info"
+  testonly = true
+  deps = [
+    ":androidx_test_core_java",
+    ":androidx_test_espresso_espresso_core_java",
+    ":androidx_test_rules_java",
+  ]
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+android_aar_prebuilt("androidx_test_espresso_espresso_web_java") {
+  aar_path = "libs/androidx_test_espresso_espresso_web/espresso-web-3.2.0.aar"
+  info_path = "libs/androidx_test_espresso_espresso_web/androidx_test_espresso_espresso_web.info"
+  testonly = true
+  deps = [
+    ":androidx_annotation_annotation_java",
+    ":androidx_test_espresso_espresso_core_java",
+    ":org_ccil_cowan_tagsoup_tagsoup_java",
+  ]
+  enable_bytecode_checks = false
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
@@ -1392,6 +1437,14 @@ java_prebuilt("javax_inject_javax_inject_java") {
 }
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
+java_prebuilt("org_ccil_cowan_tagsoup_tagsoup_java") {
+  jar_path = "libs/org_ccil_cowan_tagsoup_tagsoup/tagsoup-1.2.1.jar"
+  output_name = "org_ccil_cowan_tagsoup_tagsoup"
+  supports_android = true
+  testonly = true
+}
+
+# This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 java_prebuilt("org_ow2_asm_asm_java") {
   jar_path = "libs/org_ow2_asm_asm/asm-7.0.jar"
   output_name = "org_ow2_asm_asm"
@@ -1770,7 +1823,7 @@ android_aar_prebuilt("androidx_slidingpanelayout_slidingpanelayout_java") {
 
 # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.
 android_aar_prebuilt("androidx_test_espresso_espresso_idling_resource_java") {
-  aar_path = "libs/androidx_test_espresso_espresso_idling_resource/espresso-idling-resource-3.1.0.aar"
+  aar_path = "libs/androidx_test_espresso_espresso_idling_resource/espresso-idling-resource-3.2.0.aar"
   info_path = "libs/androidx_test_espresso_espresso_idling_resource/androidx_test_espresso_espresso_idling_resource.info"
 
   # To remove visibility constraint, add this dependency to

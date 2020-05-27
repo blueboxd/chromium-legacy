@@ -82,6 +82,27 @@ class PLATFORM_EXPORT FrameWidget {
   // Sets the ink metadata on the layer tree host
   virtual void SetDelegatedInkMetadata(
       std::unique_ptr<viz::DelegatedInkMetadata> metadata) = 0;
+
+  // Called when the main thread overscrolled.
+  virtual void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                             const gfx::Vector2dF& accumulated_overscroll,
+                             const gfx::PointF& position,
+                             const gfx::Vector2dF& velocity) = 0;
+
+  // Requests that a gesture of |injected_type| be reissued at a later point in
+  // time. |injected_type| is required to be one of
+  // GestureScroll{Begin,Update,End}. The dispatched gesture will scroll the
+  // ScrollableArea identified by |scrollable_area_element_id| by the given
+  // delta + granularity.
+  virtual void InjectGestureScrollEvent(
+      WebGestureDevice device,
+      const gfx::Vector2dF& delta,
+      ui::ScrollGranularity granularity,
+      cc::ElementId scrollable_area_element_id,
+      WebInputEvent::Type injected_type) = 0;
+
+  // Called when the cursor for the widget changes.
+  virtual void DidChangeCursor(const ui::Cursor&) = 0;
 };
 
 }  // namespace blink

@@ -55,10 +55,16 @@ void AddSupervisionHandler::RequestClose(RequestCloseCallback callback) {
 void AddSupervisionHandler::GetInstalledArcApps(
     GetInstalledArcAppsCallback callback) {
   Profile* profile = Profile::FromWebUI(web_ui_);
+  if (!profile) {
+    DLOG(WARNING) << "Profile not found in WebUI";
+    std::move(callback).Run({});
+    return;
+  }
+
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile);
 
-  if (arc::ArcSessionManager::Get() == nullptr) {
+  if (!arc::ArcSessionManager::Get()) {
     DLOG(WARNING) << "No ArcSessionManager available";
     std::move(callback).Run({});
     return;
@@ -71,15 +77,9 @@ void AddSupervisionHandler::GetInstalledArcApps(
   }
 
   std::vector<std::string> installed_arc_apps;
-
   proxy->AppRegistryCache().ForEachApp(
       [&installed_arc_apps, profile](const apps::AppUpdate& update) {
-        // We don't include "sticky" ARC apps because they are system-required
-        // apps that should not be offered for uninstallation. TODO(danan):
-        // check for stickyness via the App Service instead when that is
-        // available. (https://crbug.com/948408).
-        if (ShouldIncludeAppUpdate(update) &&
-            !arc::IsArcAppSticky(update.AppId(), profile)) {
+        if (ShouldIncludeAppUpdate(update)) {
           std::string package_name =
               arc::AppIdToArcPackageName(update.AppId(), profile);
           if (!package_name.empty())

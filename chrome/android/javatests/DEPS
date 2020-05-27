@@ -2,6 +2,7 @@ include_rules = [
   "+chrome/app",
   "+chrome/browser/android/lifecycle",
   "+chrome/browser/profiles/android/java",
+  "+chrome/browser/share/android/java",
   "+chrome/browser/tab/java",
   "+chrome/browser/thumbnail/generator/android/java",
   "+chrome/browser/ui/android/appmenu",

@@ -455,11 +455,6 @@ const base::Feature kLowLatencyWebGLSwapChain{"LowLatencyWebGLSwapChain",
 const base::Feature kDawn2dCanvas{"Dawn2dCanvas",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables forcing additional rendering of subframes for the purpose of sticky
-// frame tracking.
-const base::Feature kForceExtraRenderingToTrackStickyFrame{
-    "ForceExtraRenderingToTrackStickyFrame", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kCSSReducedFontLoadingInvalidations{
     "CSSReducedFontLoadingInvalidations", base::FEATURE_DISABLED_BY_DEFAULT};
 

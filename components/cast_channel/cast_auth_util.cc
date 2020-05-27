@@ -259,9 +259,26 @@ AuthContext AuthContext::Create() {
   return AuthContext(CastNonce::Get());
 }
 
+// static
+AuthContext AuthContext::CreateForTest(const std::string& nonce_data) {
+  // Given some garbage data, try to turn it into a string that at least has the
+  // right length.
+  std::string nonce;
+  if (nonce_data.empty()) {
+    nonce = std::string(kNonceSizeInBytes, '0');
+  } else {
+    while (nonce.size() < kNonceSizeInBytes) {
+      nonce += nonce_data;
+    }
+    nonce.erase(kNonceSizeInBytes);
+  }
+  DCHECK(nonce.size() == kNonceSizeInBytes);
+  return AuthContext(nonce);
+}
+
 AuthContext::AuthContext(const std::string& nonce) : nonce_(nonce) {}
 
-AuthContext::~AuthContext() {}
+AuthContext::~AuthContext() = default;
 
 AuthResult AuthContext::VerifySenderNonce(
     const std::string& nonce_response) const {

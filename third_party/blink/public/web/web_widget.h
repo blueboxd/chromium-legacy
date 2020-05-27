@@ -39,7 +39,9 @@
 #include "cc/trees/layer_tree_host_client.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
+#include "third_party/blink/public/mojom/input/input_event_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
+#include "third_party/blink/public/platform/input/input_handler_proxy.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -60,6 +62,7 @@ class LayerTreeSettings;
 
 namespace ui {
 class Cursor;
+class LatencyInfo;
 }
 
 namespace blink {
@@ -188,6 +191,29 @@ class WebWidget {
 
   // Get the current tooltip text.
   virtual WebString GetLastToolTipTextForTesting() const { return WebString(); }
+
+  // Whether or not the widget is in the process of handling input events.
+  virtual bool HandlingInputEvent() = 0;
+
+  // Set state that the widget is in the process of handling input events.
+  virtual void SetHandlingInputEvent(bool handling) = 0;
+
+  using HandledEventCallback = base::OnceCallback<void(
+      mojom::InputEventResultState ack_state,
+      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<InputHandlerProxy::DidOverscrollParams>,
+      base::Optional<cc::TouchAction>)>;
+
+  // Process the input event, invoking the callback when complete. This
+  // method will call the callback synchronously.
+  virtual void ProcessInputEventSynchronously(const WebCoalescedInputEvent&,
+                                              HandledEventCallback) = 0;
+
+  virtual void DidOverscrollForTesting(
+      const gfx::Vector2dF& overscroll_delta,
+      const gfx::Vector2dF& accumulated_overscroll,
+      const gfx::PointF& position_in_viewport,
+      const gfx::Vector2dF& velocity_in_viewport) {}
 
  protected:
   ~WebWidget() = default;

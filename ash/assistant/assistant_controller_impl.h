@@ -12,7 +12,7 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/assistant/assistant_alarm_timer_controller.h"
+#include "ash/assistant/assistant_alarm_timer_controller_impl.h"
 #include "ash/assistant/assistant_interaction_controller_impl.h"
 #include "ash/assistant/assistant_notification_controller.h"
 #include "ash/assistant/assistant_screen_context_controller_impl.h"

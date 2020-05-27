@@ -1321,8 +1321,10 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   _sideSwipeController = nil;
   _webStateListObserver.reset();
   _allWebStateObservationForwarder = nullptr;
-  if (_voiceSearchController)
+  if (_voiceSearchController) {
     _voiceSearchController->SetDispatcher(nil);
+    _voiceSearchController = nullptr;
+  }
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 

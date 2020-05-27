@@ -31,6 +31,7 @@ enum class CTPolicyCompliance;
 }
 
 class HostPortPair;
+class NetworkIsolationKey;
 class SSLInfo;
 class X509Certificate;
 
@@ -299,7 +300,8 @@ class NET_EXPORT TransportSecurityState {
         const X509Certificate* validated_certificate_chain,
         const X509Certificate* served_certificate_chain,
         const SignedCertificateTimestampAndStatusList&
-            signed_certificate_timestamps) = 0;
+            signed_certificate_timestamps,
+        const net::NetworkIsolationKey& network_isolation_key) = 0;
 
    protected:
     virtual ~ExpectCTReporter() {}

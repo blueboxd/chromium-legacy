@@ -187,6 +187,17 @@ public class IntentHandler {
     public static final String EXTRA_INCOGNITO_MODE = "org.chromium.chrome.browser.incognito_mode";
 
     /**
+     * Byte array for the POST data when load a url, only Intents sent by Chrome can use this.
+     */
+    public static final String EXTRA_POST_DATA = "com.android.chrome.post_data";
+
+    /**
+     * The type of the POST data, need to be added to the HTTP request header, only Intents sent by
+     * Chrome can use this.
+     */
+    public static final String EXTRA_POST_DATA_TYPE = "com.android.chrome.post_data_type";
+
+    /**
      * Fake ComponentName used in constructing TRUSTED_APPLICATION_CODE_EXTRA.
      */
     private static ComponentName sFakeComponentName;

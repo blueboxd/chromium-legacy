@@ -895,7 +895,7 @@ void FrameImpl::SetPermissionState(
 
 void FrameImpl::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
-  context_->DestroyFrame(this);
+  CloseAndDestroyFrame(ZX_OK);
 }
 
 void FrameImpl::SetBlockMediaLoading(bool blocked) {

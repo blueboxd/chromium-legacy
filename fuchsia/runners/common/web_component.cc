@@ -67,11 +67,14 @@ void WebComponent::StartComponent() {
   create_params.set_enable_remote_debugging(enable_remote_debugging_);
   frame_ = runner_->CreateFrame(std::move(create_params));
 
-  // If the Frame unexpectedly disconnect us then tear-down this Component.
+  // If the Frame unexpectedly disconnects then tear-down this Component.
+  // ZX_OK indicates intentional termination (e.g. via window.close()).
+  // ZX_ERR_PEER_CLOSED will usually indicate a crash, reported elsewhere.
+  // Therefore only log other, more unusual, |status| codes.
   frame_.set_error_handler([this](zx_status_t status) {
-    ZX_LOG_IF(ERROR, status != ZX_ERR_PEER_CLOSED, status)
-        << " Frame disconnected";
-    DestroyComponent(0, fuchsia::sys::TerminationReason::EXITED);
+    if (status != ZX_OK && status != ZX_ERR_PEER_CLOSED)
+      ZX_LOG(ERROR, status) << " Frame disconnected";
+    DestroyComponent(status, fuchsia::sys::TerminationReason::EXITED);
   });
 
   if (startup_context()->has_outgoing_directory_request()) {
@@ -132,9 +135,9 @@ void WebComponent::CreateView(
   view_is_bound_ = true;
 }
 
-void WebComponent::DestroyComponent(int termination_exit_code,
+void WebComponent::DestroyComponent(int64_t exit_code,
                                     fuchsia::sys::TerminationReason reason) {
   termination_reason_ = reason;
-  termination_exit_code_ = termination_exit_code;
+  termination_exit_code_ = exit_code;
   runner_->DestroyComponent(this);
 }

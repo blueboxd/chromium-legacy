@@ -1050,10 +1050,11 @@ static bool HasPropertyThatCreatesStackingContext(
   return false;
 }
 
-void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
-                                            bool is_in_top_layer,
-                                            bool is_svg_stacking) {
-  if (IsStackingContext())
+void ComputedStyle::UpdateIsStackingContextWithoutContainment(
+    bool is_document_element,
+    bool is_in_top_layer,
+    bool is_svg_stacking) {
+  if (IsStackingContextWithoutContainment())
     return;
 
   // Force a stacking context for transform-style: preserve-3d. This happens
@@ -1063,7 +1064,7 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
   // This is legacy behavior that is left ambiguous in the official specs.
   // See https://crbug.com/663650 for more details."
   if (TransformStyle3D() == ETransformStyle3D::kPreserve3d) {
-    SetIsStackingContext(true);
+    SetIsStackingContextWithoutContainment(true);
     return;
   }
 
@@ -1076,9 +1077,8 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
       HasPropertyThatCreatesStackingContext(WillChangeProperties()) ||
       /* TODO(882625): This becomes unnecessary when will-change correctly takes
       into account active animations. */
-      ShouldCompositeForCurrentAnimations() || ContainsPaint() ||
-      ContainsLayout()) {
-    SetIsStackingContext(true);
+      ShouldCompositeForCurrentAnimations()) {
+    SetIsStackingContextWithoutContainment(true);
   }
 }
 

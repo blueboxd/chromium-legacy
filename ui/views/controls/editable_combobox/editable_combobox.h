@@ -14,6 +14,7 @@
 #include "ui/base/ui_base_types.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/layout/animating_layout_manager.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
@@ -37,10 +38,12 @@ class MenuRunner;
 class Textfield;
 
 // Textfield that also shows a drop-down list with suggestions.
-class VIEWS_EXPORT EditableCombobox : public View,
-                                      public TextfieldController,
-                                      public ViewObserver,
-                                      public ButtonListener {
+class VIEWS_EXPORT EditableCombobox
+    : public View,
+      public TextfieldController,
+      public ViewObserver,
+      public ButtonListener,
+      public views::AnimatingLayoutManager::Observer {
  public:
   METADATA_HEADER(EditableCombobox);
 
@@ -139,6 +142,10 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // Overridden from ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
+  // Overridden from views::AnimatingLayoutManager::Observer:
+  void OnLayoutIsAnimatingChanged(views::AnimatingLayoutManager* source,
+                                  bool is_animating) override;
+
   Textfield* textfield_;
   Button* arrow_ = nullptr;
   std::unique_ptr<ui::ComboboxModel> combobox_model_;
@@ -170,6 +177,8 @@ class VIEWS_EXPORT EditableCombobox : public View,
   // Whether we are currently showing the passwords for type
   // Type::kPassword.
   bool showing_password_text_;
+
+  bool dropdown_blocked_for_animation_ = false;
 
   ScopedObserver<View, ViewObserver> observer_{this};
 

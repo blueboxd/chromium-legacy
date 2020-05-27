@@ -134,10 +134,11 @@ void CastComponent::StartComponent() {
         application_config_.force_content_dimensions()));
   }
 
-  application_controller_ = std::make_unique<ApplicationControllerImpl>(
-      frame(),
+  application_context_ =
       agent_manager_->ConnectToAgentService<chromium::cast::ApplicationContext>(
-          application_config_.agent_url()));
+          application_config_.agent_url());
+  application_controller_ = std::make_unique<ApplicationControllerImpl>(
+      frame(), application_context_.get());
 
   // Pass application permissions to the frame.
   if (application_config_.has_permissions()) {
@@ -152,13 +153,20 @@ void CastComponent::StartComponent() {
   }
 }
 
-void CastComponent::DestroyComponent(int termination_exit_code,
+void CastComponent::DestroyComponent(int64_t exit_code,
                                      fuchsia::sys::TerminationReason reason) {
   DCHECK(!constructor_active_);
 
   std::move(on_destroyed_).Run();
 
-  WebComponent::DestroyComponent(termination_exit_code, reason);
+  // If the component EXITED then pass the |exit_code| to the Agent, to allow it
+  // to distinguish graceful termination from crashes.
+  if (reason == fuchsia::sys::TerminationReason::EXITED &&
+      application_controller_) {
+    application_context_->OnApplicationExit(exit_code);
+  }
+
+  WebComponent::DestroyComponent(exit_code, reason);
 }
 
 void CastComponent::OnRewriteRulesReceived(

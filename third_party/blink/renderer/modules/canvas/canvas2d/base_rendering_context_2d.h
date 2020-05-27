@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 
 namespace blink {
@@ -195,7 +196,11 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   // For deferred canvases this will have the side effect of drawing recorded
   // commands in order to finalize the frame
-  ImageData* getImageData(int sx, int sy, int sw, int sh, ExceptionState&);
+  virtual ImageData* getImageData(int sx,
+                                  int sy,
+                                  int sw,
+                                  int sh,
+                                  ExceptionState&);
   void putImageData(ImageData*, int dx, int dy, ExceptionState&);
   void putImageData(ImageData*,
                     int dx,

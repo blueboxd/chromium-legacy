@@ -456,6 +456,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
           UMA(policy::
                   kMetricEnrollmentRegisterEnterpriseAccountIsNotEligibleToEnroll);
           break;
+        case policy::DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED:
+          UMA(policy::kMetricEnrollmentRegisterEnterpriseTosHasNotBeenAccepted);
+          break;
       }
       break;
     case policy::EnrollmentStatus::REGISTRATION_BAD_MODE:

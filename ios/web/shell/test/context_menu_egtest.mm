@@ -48,7 +48,7 @@ const char kHtmlFile[] =
 }
 
 // Tests context menu appears on a regular link.
-- (void)testContextMenu {
+- (void)DISABLED_testContextMenu {
   const char linkID[] = "normal-link";
   NSString* const linkText = @"normal-link-text";
   const GURL pageURL = _server.GetURL(kHtmlFile);

@@ -23,4 +23,23 @@ Polymer({
       notify: true,
     },
   },
+
+  listeners: {
+    'click': 'onHostTap_',
+  },
+
+  /**
+   * Handles non cr-toggle button clicks (cr-toggle handles its own click events
+   * which don't bubble).
+   * @param {!Event} e
+   * @private
+   */
+  onHostTap_(e) {
+    e.stopPropagation();
+    if (this.getDisabled_(this.disabled, this.property)) {
+      return;
+    }
+    this.checked = !this.checked;
+    this.fire('change');
+  },
 });

@@ -45,21 +45,32 @@ class COMPONENT_EXPORT(
 #endif
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
-  // Provides information on the dump state of resident pages.
+  // Provides information on the dump state of resident pages. These values are
+  // written to logs. New enum values can be added, but existing enums must
+  // never be renumbered or deleted and reused.
   enum class MappedAndResidentPagesDumpState {
     // Access to /proc/<pid>/pagemap can be denied for android devices running
     // a kernel version < 4.4.
-    kAccessPagemapDenied,
-    kFailure,
-    kSuccess
+    kAccessPagemapDenied = 0,
+    kFailure = 1,
+    kSuccess = 2,
+
+    // Must be equal to the greatest among enumeraiton values.
+    kMaxValue = kSuccess
   };
 
-  // Depends on /proc/self/pagemap to determine mapped and resident pages
-  // within bounds (start_address inclusive and end_address exclusive).
-  // It does not use mincore() because it only checks to see
-  // if the page is in the cache and up to date.
-  // mincore() has no guarantee a page has been mapped by the current process.
-  // Guaranteed to work on Android.
+  // Fills out a bitmap of memory pages accessed by the current process that are
+  // still in pagecache.
+  //
+  // Depends on /proc/self/pagemap to determine the mapped and resident pages
+  // within bounds (|start_address| inclusive and |end_address| exclusive).
+  //
+  // Does not use mincore() because the latter only reports resident pages. The
+  // mincore() would report a page as resident if that page was accessed from a
+  // different process (such as the commonly used prefetch of the native
+  // library).
+  //
+  // Tested only on Android.
   static MappedAndResidentPagesDumpState GetMappedAndResidentPages(
       const size_t start_address,
       const size_t end_address,

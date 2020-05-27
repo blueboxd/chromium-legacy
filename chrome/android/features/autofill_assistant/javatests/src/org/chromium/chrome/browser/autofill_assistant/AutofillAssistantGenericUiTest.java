@@ -335,6 +335,7 @@ public class AutofillAssistantGenericUiTest {
     @Test
     @MediumTest
     @DisableIf.Build(sdk_is_less_than = 21)
+    @DisabledTest(message = "crbug.com/1087042")
     public void testOnViewClickedWriteToModel() {
         ViewProto clickableView1 = (ViewProto) ViewProto.newBuilder()
                                            .setTextView(TextViewProto.newBuilder().setText(

@@ -119,7 +119,7 @@ js2gtest("browser_tests_js_webui") {
     "settings/test_password_manager_proxy.js",
     "settings/passwords_and_autofill_fake_data.js",
     "//chrome/browser/resources/signin/sync_confirmation/sync_confirmation_browser_proxy.js",
-    "//chrome/browser/ui/webui/chromeos/account_manager/account_migration_proxy_test.js",
+    "//chrome/browser/ui/webui/chromeos/account_manager/account_manager_proxy_test.js",
   ]
 
   if (is_chromeos) {

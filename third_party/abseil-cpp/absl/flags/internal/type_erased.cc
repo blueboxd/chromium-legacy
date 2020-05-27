@@ -21,7 +21,7 @@
 
 #include "absl/base/config.h"
 #include "absl/base/internal/raw_logging.h"
-#include "absl/flags/internal/commandlineflag.h"
+#include "absl/flags/commandlineflag.h"
 #include "absl/flags/internal/private_handle_accessor.h"
 #include "absl/flags/internal/registry.h"
 #include "absl/flags/usage_config.h"
@@ -58,7 +58,7 @@ bool SetCommandLineOptionWithMode(absl::string_view name,
 
   std::string error;
   if (!flags_internal::PrivateHandleAccessor::ParseFrom(
-          flag, value, set_mode, kProgrammaticChange, &error)) {
+          *flag, value, set_mode, kProgrammaticChange, error)) {
     // Errors here are all of the form: the provided name was a recognized
     // flag, but the value was invalid (bad type, or validation failed).
     flags_internal::ReportUsageError(error, false);

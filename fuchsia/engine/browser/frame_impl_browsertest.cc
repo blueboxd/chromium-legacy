@@ -24,7 +24,6 @@
 #include "fuchsia/base/test_navigation_listener.h"
 #include "fuchsia/base/url_request_rewrite_test_util.h"
 #include "fuchsia/engine/browser/frame_impl.h"
-#include "fuchsia/engine/switches.h"
 #include "fuchsia/engine/test/test_data.h"
 #include "fuchsia/engine/test/web_engine_browser_test.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -69,21 +68,6 @@ const char kPage3Title[] = "websql not available";
 const char kDataUrl[] =
     "data:text/html;base64,PGI+SGVsbG8sIHdvcmxkLi4uPC9iPg==";
 const int64_t kOnLoadScriptId = 0;
-
-fuchsia::web::WebMessage CreateWebMessageWithMessagePortRequest(
-    fidl::InterfaceRequest<fuchsia::web::MessagePort> message_port_request,
-    fuchsia::mem::Buffer buffer) {
-  fuchsia::web::OutgoingTransferable outgoing;
-  outgoing.set_message_port(std::move(message_port_request));
-
-  std::vector<fuchsia::web::OutgoingTransferable> outgoing_vector;
-  outgoing_vector.push_back(std::move(outgoing));
-
-  fuchsia::web::WebMessage web_message;
-  web_message.set_outgoing_transfer(std::move(outgoing_vector));
-  web_message.set_data(std::move(buffer));
-  return web_message;
-}
 
 MATCHER_P(NavigationHandleUrlEquals,
           url,
@@ -1212,7 +1196,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessagePassMessagePort) {
         post_result;
     frame->PostMessage(
         post_message_url.GetOrigin().spec(),
-        CreateWebMessageWithMessagePortRequest(
+        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
             message_port.NewRequest(),
             cr_fuchsia::MemBufferFromString("hi", "test")),
         cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
@@ -1272,7 +1256,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageMessagePortDisconnected) {
         post_result;
     frame->PostMessage(
         post_message_url.GetOrigin().spec(),
-        CreateWebMessageWithMessagePortRequest(
+        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
             message_port.NewRequest(),
             cr_fuchsia::MemBufferFromString("hi", "test")),
         cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
@@ -1327,7 +1311,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
         post_result;
     frame->PostMessage(
         "*",
-        CreateWebMessageWithMessagePortRequest(
+        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
             message_port.NewRequest(),
             cr_fuchsia::MemBufferFromString("hi", "test")),
         cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
@@ -1373,7 +1357,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageUseContentProvidedPort) {
         post_result;
     frame->PostMessage(
         "*",
-        CreateWebMessageWithMessagePortRequest(
+        cr_fuchsia::CreateWebMessageWithMessagePortRequest(
             ack_message_port.NewRequest(),
             cr_fuchsia::MemBufferFromString("hi", "test")),
         cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
@@ -1428,7 +1412,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
       unused_post_result;
   frame->PostMessage(
       "https://example.com",
-      CreateWebMessageWithMessagePortRequest(
+      cr_fuchsia::CreateWebMessageWithMessagePortRequest(
           unused_message_port.NewRequest(),
           cr_fuchsia::MemBufferFromString("bad origin, bad!", "test")),
       cr_fuchsia::CallbackToFitFunction(
@@ -1449,7 +1433,7 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, PostMessageBadOriginDropped) {
       post_result;
   frame->PostMessage(
       "*",
-      CreateWebMessageWithMessagePortRequest(
+      cr_fuchsia::CreateWebMessageWithMessagePortRequest(
           message_port.NewRequest(),
           cr_fuchsia::MemBufferFromString("good origin", "test")),
       cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
@@ -1673,44 +1657,6 @@ IN_PROC_BROWSER_TEST_F(FrameImplTest, InvalidHeader) {
     EXPECT_EQ(result->err(),
               fuchsia::web::NavigationControllerError::INVALID_HEADER);
   }
-}
-
-// Test fixture for Cast Streaming tests.
-class CastStreamingFrameImplTest : public FrameImplTest {
- public:
-  CastStreamingFrameImplTest() = default;
-  ~CastStreamingFrameImplTest() override = default;
-
- private:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    content::BrowserTestBase::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kEnableCastStreamingReceiver);
-  }
-};
-
-// Check that the Cast Streaming MessagePort is properly set.
-IN_PROC_BROWSER_TEST_F(CastStreamingFrameImplTest, CastStreamingMessagePort) {
-  fuchsia::web::FramePtr frame = CreateFrame();
-
-  FrameImpl* frame_impl = context_impl()->GetFrameImplForTest(&frame);
-  ASSERT_TRUE(frame_impl);
-  EXPECT_FALSE(frame_impl->cast_streaming_session_client_for_test());
-
-  fuchsia::web::MessagePortPtr cast_streaming_message_port;
-
-  base::RunLoop run_loop;
-  cr_fuchsia::ResultReceiver<fuchsia::web::Frame_PostMessage_Result>
-      post_result(run_loop.QuitClosure());
-  frame->PostMessage(
-      "cast-streaming:receiver",
-      CreateWebMessageWithMessagePortRequest(
-          cast_streaming_message_port.NewRequest(),
-          cr_fuchsia::MemBufferFromString("hi", "test")),
-      cr_fuchsia::CallbackToFitFunction(post_result.GetReceiveCallback()));
-  run_loop.Run();
-  ASSERT_TRUE(post_result->is_response());
-
-  EXPECT_TRUE(frame_impl->cast_streaming_session_client_for_test());
 }
 
 class RequestMonitoringFrameImplBrowserTest : public FrameImplTest {

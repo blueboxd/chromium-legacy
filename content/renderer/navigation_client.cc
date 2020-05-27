@@ -35,7 +35,7 @@ void NavigationClient::CommitNavigation(
   // race conditions leading to the early deletion of NavigationRequest would
   // unexpectedly abort the ongoing navigation. Remove when the races are fixed.
   ResetDisconnectionHandler();
-  render_frame_->CommitPerNavigationMojoInterfaceNavigation(
+  render_frame_->CommitNavigation(
       std::move(common_params), std::move(commit_params),
       std::move(response_head), std::move(response_body),
       std::move(url_loader_client_endpoints), std::move(subresource_loaders),

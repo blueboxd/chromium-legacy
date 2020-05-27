@@ -7360,6 +7360,35 @@
       'label': '''Allow merging dictionary policies from different sources''',
     },
     {
+      'name': 'EnableExperimentalPolicies',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome.*:85-', 'chrome_os:85-', 'android:85-', 'webview_android:85-', 'ios:85-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': ['ExtensionInstallWhitelist', 'ExtensionInstallBlacklist'],
+      'id': 711,
+      'caption': '''Enables experimental policies''',
+      'tags': [],
+      'desc': '''Allows <ph name="PRODUCT_NAME">$1<ex>google Chrome</ex></ph>load experimental policies.
+
+        WARNING: Experimental policies are unsupported and subject to change or be removed without notice in future version of the browser!
+
+        An experimental policy may not be finished or still have known or unknown defects. It may be changed or even removed without any notification. By enabling experimental policies, you could lose browser data or compromise your security or privacy.
+
+        If a policy is not in the list and it's not officially released, its value will be ignored on Chrome Beta and Chrome Stable.
+
+        If a policy is in the list and it's not officially released, its value will be applied.
+
+        This policy has no effect on already released policies.''',
+    },
+    {
       'name': 'OpenNetworkConfiguration',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
@@ -22159,6 +22188,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 476, 546, 562, 569, 578],
-  'highest_id_currently_used': 710,
+  'highest_id_currently_used': 711,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -136,8 +136,10 @@ enum MetricEnrollment {
   kMetricEnrollmentDeviceNotPreProvisioned = 59,
   // Enrollment failed: Enterprise account is not eligible to enroll.
   kMetricEnrollmentRegisterEnterpriseAccountIsNotEligibleToEnroll = 60,
+  // Enrollment failed: Enterprise TOS has not been accepted.
+  kMetricEnrollmentRegisterEnterpriseTosHasNotBeenAccepted = 61,
   // Max value for use with enumeration histogram UMA functions.
-  kMaxValue = kMetricEnrollmentDeviceNotPreProvisioned
+  kMaxValue = kMetricEnrollmentRegisterEnterpriseTosHasNotBeenAccepted
 };
 
 // Events related to policy refresh.

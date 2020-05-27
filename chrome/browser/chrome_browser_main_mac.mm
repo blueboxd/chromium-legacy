@@ -114,6 +114,15 @@ void RecordChromeQueryResults(NSMetadataQuery* query) {
     // Filed as FB7689234.
     NSString* app_path = base::mac::ObjCCast<NSString>(
         [result valueForAttribute:NSMetadataItemPathKey]);
+    if (!app_path) {
+      // It seems implausible, but there are Macs in the field for which
+      // Spotlight will find results for the query of locating Chrome but cannot
+      // actually return a path to the result. https://crbug.com/1086555
+      failed_to_read_plist = true;
+      *stop = YES;
+      return;
+    }
+
     NSURL* app_url = [NSURL fileURLWithPath:app_path isDirectory:YES];
     if ([app_url isEqual:this_url])
       return;

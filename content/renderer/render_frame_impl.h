@@ -526,13 +526,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void AllowBindings(int32_t enabled_bindings_flags) override;
   void EnableMojoJsBindings() override;
 
-  // mojom::FrameNavigationControl implementation:
-  void ForwardMessageFromHost(
-      blink::TransferableMessage message,
-      const url::Origin& source_origin,
-      const base::Optional<url::Origin>& target_origin) override;
-
-  // mojom::FrameNavigationControl implementation:
+  // These mirror mojom::NavigationClient, called by NavigationClient.
   void CommitNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
@@ -549,31 +543,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
           prefetch_loader_factory,
       const base::UnguessableToken& devtools_navigation_token,
-      mojom::FrameNavigationControl::CommitNavigationCallback commit_callback)
-      override;
-
-  // This is the version to be used with PerNavigationMojoInterface enabled.
-  // It essentially works the same way, except the navigation callback is
-  // the one from NavigationClient mojo interface.
-  void CommitPerNavigationMojoInterfaceNavigation(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
-      network::mojom::URLResponseHeadPtr response_head,
-      mojo::ScopedDataPipeConsumerHandle response_body,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          subresource_loader_factories,
-      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-          subresource_overrides,
-      blink::mojom::ControllerServiceWorkerInfoPtr
-          controller_service_worker_info,
-      blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          prefetch_loader_factory,
-      const base::UnguessableToken& devtools_navigation_token,
-      mojom::NavigationClient::CommitNavigationCallback
-          per_navigation_mojo_interface_callback);
-
+      mojom::NavigationClient::CommitNavigationCallback commit_callback);
   void CommitFailedNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
@@ -586,6 +556,7 @@ class CONTENT_EXPORT RenderFrameImpl
       mojom::NavigationClient::CommitFailedNavigationCallback
           per_navigation_mojo_interface_callback);
 
+  // mojom::FrameNavigationControl implementation:
   void CommitSameDocumentNavigation(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
@@ -598,7 +569,6 @@ class CONTENT_EXPORT RenderFrameImpl
       mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host,
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> receiver)
       override;
-
   void JavaScriptExecuteRequest(
       const base::string16& javascript,
       bool wants_result,
@@ -614,6 +584,10 @@ class CONTENT_EXPORT RenderFrameImpl
       bool wants_result,
       int32_t world_id,
       JavaScriptExecuteRequestInIsolatedWorldCallback callback) override;
+  void ForwardMessageFromHost(
+      blink::TransferableMessage message,
+      const url::Origin& source_origin,
+      const base::Optional<url::Origin>& target_origin) override;
   void OnPortalActivated(
       const base::UnguessableToken& portal_token,
       mojo::PendingAssociatedRemote<blink::mojom::Portal> portal,
@@ -1263,35 +1237,11 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebHistoryItem* item_for_history_navigation,
       blink::WebFrameLoadType* load_type);
 
-  // These functions avoid duplication between Commit*Navigation and
-  // Commit*PerNavigationMojoInterfaceNavigation functions.
-  void CommitNavigationInternal(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
-      network::mojom::URLResponseHeadPtr response_head,
-      mojo::ScopedDataPipeConsumerHandle response_body,
-      network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-          subresource_loader_factories,
-      base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-          subresource_overrides,
-      blink::mojom::ControllerServiceWorkerInfoPtr
-          controller_service_worker_info,
-      blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
-      mojo::PendingRemote<network::mojom::URLLoaderFactory>
-          prefetch_loader_factory,
-      const base::UnguessableToken& devtools_navigation_token,
-      mojom::FrameNavigationControl::CommitNavigationCallback callback,
-      mojom::NavigationClient::CommitNavigationCallback
-          per_navigation_mojo_interface_callback);
-
   // Ignores the navigation commit and stop its processing in the RenderFrame.
   // This will drop the NavigationRequest in the RenderFrameHost.
   // Note: This is only meant to be used before building the DocumentState.
   // Commit abort and navigation end is handled by it afterwards.
-  void AbortCommitNavigation(
-      mojom::FrameNavigationControl::CommitNavigationCallback callback,
-      blink::mojom::CommitResult reason);
+  void AbortCommitNavigation();
 
   // Implements AddMessageToConsole().
   void AddMessageToConsoleImpl(blink::mojom::ConsoleMessageLevel level,

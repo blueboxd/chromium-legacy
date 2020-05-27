@@ -6,9 +6,11 @@
 #define COMPONENTS_POLICY_CORE_BROWSER_CONFIGURATION_POLICY_HANDLER_LIST_H_
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "components/policy/core/browser/policy_conversions_client.h"
 #include "components/policy/core/common/policy_details.h"
@@ -20,6 +22,7 @@ class PrefValueMap;
 namespace policy {
 
 class ConfigurationPolicyHandler;
+struct PolicyDetails;
 class PolicyErrorMap;
 struct PolicyHandlerParameters;
 class Schema;
@@ -54,7 +57,17 @@ class POLICY_EXPORT ConfigurationPolicyHandlerList {
   void PrepareForDisplaying(PolicyMap* policies) const;
 
  private:
-  bool IsPlatformDevicePolicy(const PolicyMap::const_iterator iter) const;
+  // Returns true if the policy |iter| shouldn't be passed to the |handlers_|.
+  bool FilterOutUnsupportedPolicies(
+      const base::flat_set<std::string>& enabled_future_policies,
+      const PolicyMap::const_iterator iter) const;
+
+  bool IsPlatformDevicePolicy(const PolicyDetails& policy_details,
+                              const PolicyMap::const_iterator iter) const;
+  bool IsFuturePolicy(
+      const base::flat_set<std::string>& enabled_future_policies,
+      const PolicyDetails& policy_details,
+      const PolicyMap::const_iterator iter) const;
 
   std::vector<std::unique_ptr<ConfigurationPolicyHandler>> handlers_;
   const PopulatePolicyHandlerParametersCallback parameters_callback_;

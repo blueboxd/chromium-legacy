@@ -253,9 +253,7 @@ NewTabPageHandler::NewTabPageHandler(
       logo_service_(LogoServiceFactory::GetForProfile(profile)),
       one_google_bar_service_(
           OneGoogleBarServiceFactory::GetForProfile(profile)),
-      page_{std::move(pending_page)},
       profile_(profile),
-      receiver_{this, std::move(pending_page_handler)},
       favicon_cache_(FaviconServiceFactory::GetForProfile(
                          profile,
                          ServiceAccessType::EXPLICIT_ACCESS),
@@ -264,7 +262,9 @@ NewTabPageHandler::NewTabPageHandler(
                          ServiceAccessType::EXPLICIT_ACCESS)),
       web_contents_(web_contents),
       ntp_navigation_start_time_(ntp_navigation_start_time),
-      logger_(NTPUserDataLogger::GetOrCreateFromWebContents(web_contents)) {
+      logger_(NTPUserDataLogger::GetOrCreateFromWebContents(web_contents)),
+      page_{std::move(pending_page)},
+      receiver_{this, std::move(pending_page_handler)} {
   CHECK(instant_service_);
   CHECK(ntp_background_service_);
   CHECK(logo_service_);

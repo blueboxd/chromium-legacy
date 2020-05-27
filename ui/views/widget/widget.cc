@@ -93,7 +93,7 @@ bool Widget::g_disable_activation_change_handling_ = false;
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
  public:
-  explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {
+  DefaultWidgetDelegate() {
     // In most situations where a Widget is used without a delegate the Widget
     // is used as a container, so that we want focus to advance to the top-level
     // widget. A good example of this is the find bar.
@@ -103,12 +103,8 @@ class DefaultWidgetDelegate : public WidgetDelegate {
 
   // WidgetDelegate:
   void DeleteDelegate() override { delete this; }
-  Widget* GetWidget() override { return widget_; }
-  const Widget* GetWidget() const override { return widget_; }
 
  private:
-  Widget* widget_;
-
   DISALLOW_COPY_AND_ASSIGN(DefaultWidgetDelegate);
 };
 
@@ -300,8 +296,7 @@ void Widget::Init(InitParams params) {
     // ViewsDelegate::OnBeforeWidgetInit() may change `params.delegate` either
     // by setting it to null or assigning a different value to it, so handle
     // both cases.
-    auto default_widget_delegate =
-        std::make_unique<DefaultWidgetDelegate>(this);
+    auto default_widget_delegate = std::make_unique<DefaultWidgetDelegate>();
     widget_delegate_ =
         params.delegate ? params.delegate : default_widget_delegate.get();
 

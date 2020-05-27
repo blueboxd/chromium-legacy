@@ -110,6 +110,12 @@ class DiscardsGraphDumpImpl : public discards::mojom::GraphDump,
   void OnPageNodeAdded(const performance_manager::PageNode* page_node) override;
   void OnBeforePageNodeRemoved(
       const performance_manager::PageNode* page_node) override;
+  // Ignored for now.
+  // TODO(chrisha): Wire this relationship up with a dotted line!
+  void OnOpenerFrameNodeChanged(
+      const performance_manager::PageNode* page_node,
+      const performance_manager::FrameNode* previous_opener,
+      OpenedType previous_opened_type) override {}
   void OnIsVisibleChanged(
       const performance_manager::PageNode* page_node) override {}  // Ignored.
   void OnIsAudibleChanged(

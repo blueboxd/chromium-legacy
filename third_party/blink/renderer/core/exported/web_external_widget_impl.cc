@@ -97,6 +97,32 @@ void WebExternalWidgetImpl::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
 }
 
+bool WebExternalWidgetImpl::HandlingInputEvent() {
+  return widget_base_->input_handler().handling_input_event();
+}
+
+void WebExternalWidgetImpl::SetHandlingInputEvent(bool handling) {
+  widget_base_->input_handler().set_handling_input_event(handling);
+}
+
+void WebExternalWidgetImpl::ProcessInputEventSynchronously(
+    const WebCoalescedInputEvent& event,
+    HandledEventCallback callback) {
+  widget_base_->input_handler().HandleInputEvent(event, std::move(callback));
+}
+
+void WebExternalWidgetImpl::DidOverscrollForTesting(
+    const gfx::Vector2dF& overscroll_delta,
+    const gfx::Vector2dF& accumulated_overscroll,
+    const gfx::PointF& position,
+    const gfx::Vector2dF& velocity) {
+  cc::OverscrollBehavior overscroll_behavior =
+      widget_base_->LayerTreeHost()->overscroll_behavior();
+  widget_base_->input_handler().DidOverscrollFromBlink(
+      overscroll_delta, accumulated_overscroll, position, velocity,
+      overscroll_behavior);
+}
+
 void WebExternalWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   widget_base_->LayerTreeHost()->SetNonBlinkManagedRootLayer(layer);
 }
@@ -114,5 +140,32 @@ void WebExternalWidgetImpl::RecordTimeToFirstActivePaint(
 void WebExternalWidgetImpl::DidCommitAndDrawCompositorFrame() {
   client_->DidCommitAndDrawCompositorFrame();
 }
+
+bool WebExternalWidgetImpl::WillHandleGestureEvent(
+    const WebGestureEvent& event) {
+  return client_->WillHandleGestureEvent(event);
+}
+
+bool WebExternalWidgetImpl::WillHandleMouseEvent(const WebMouseEvent& event) {
+  return false;
+}
+
+void WebExternalWidgetImpl::ObserveGestureEventAndResult(
+    const WebGestureEvent& gesture_event,
+    const gfx::Vector2dF& unused_delta,
+    const cc::OverscrollBehavior& overscroll_behavior,
+    bool event_processed) {
+  client_->DidHandleGestureScrollEvent(gesture_event, unused_delta,
+                                       overscroll_behavior, event_processed);
+}
+
+bool WebExternalWidgetImpl::SupportsBufferedTouchEvents() {
+  return client_->SupportsBufferedTouchEvents();
+}
+
+void WebExternalWidgetImpl::DidHandleKeyEvent() {}
+
+void WebExternalWidgetImpl::QueueSyntheticEvent(
+    std::unique_ptr<blink::WebCoalescedInputEvent>) {}
 
 }  // namespace blink

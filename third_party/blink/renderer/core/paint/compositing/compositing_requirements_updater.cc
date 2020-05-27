@@ -179,7 +179,7 @@ static CompositingReasons SubtreeReasonsForCompositing(
                      CompositingReason::kComboCompositedDescendants;
 
   if (layer->ShouldIsolateCompositedDescendants()) {
-    DCHECK(layer->GetLayoutObject().StyleRef().IsStackingContext());
+    DCHECK(layer->GetLayoutObject().IsStackingContext());
     subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
   }
 
@@ -499,7 +499,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // Now that the subtree has been traversed, we can check for compositing
   // reasons that depended on the state of the subtree.
 
-  if (layer->GetLayoutObject().StyleRef().IsStackingContext()) {
+  if (layer->GetLayoutObject().IsStackingContext()) {
     layer->SetShouldIsolateCompositedDescendants(
         child_recursion_data.has_unisolated_composited_blending_descendant_);
   } else {

@@ -841,9 +841,7 @@ std::unique_ptr<DocumentState> BuildDocumentState() {
 std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     const mojom::CommonNavigationParams& common_params,
     const mojom::CommitNavigationParams& commit_params,
-    mojom::FrameNavigationControl::CommitNavigationCallback commit_callback,
-    mojom::NavigationClient::CommitNavigationCallback
-        per_navigation_mojo_interface_commit_callback,
+    mojom::NavigationClient::CommitNavigationCallback commit_callback,
     std::unique_ptr<NavigationClient> navigation_client,
     int request_id,
     bool was_initiated_in_this_frame) {
@@ -872,7 +870,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
       ->set_navigation_state(NavigationState::CreateBrowserInitiated(
           common_params.Clone(), commit_params.Clone(),
           std::move(commit_callback),
-          std::move(per_navigation_mojo_interface_commit_callback),
           std::move(navigation_client), was_initiated_in_this_frame));
   return document_state;
 }
@@ -1982,7 +1979,7 @@ void RenderFrameImpl::PepperDidChangeCursor(PepperPluginInstanceImpl* instance,
   // the plugin would like to set an invisible cursor when there isn't any user
   // input for a while.
   if (instance == pepper_last_mouse_event_target_)
-    GetLocalRootRenderWidget()->DidChangeCursor(cursor);
+    GetLocalRootRenderWidget()->GetWebWidget()->SetCursor(cursor);
 }
 
 void RenderFrameImpl::PepperDidReceiveMouseEvent(
@@ -2990,8 +2987,6 @@ void RenderFrameImpl::EnableMojoJsBindings() {
   enable_mojo_js_bindings_ = true;
 }
 
-// mojom::FrameNavigationControl implementation --------------------------------
-
 void RenderFrameImpl::CommitNavigation(
     mojom::CommonNavigationParamsPtr common_params,
     mojom::CommitNavigationParamsPtr commit_params,
@@ -3007,75 +3002,13 @@ void RenderFrameImpl::CommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token,
-    CommitNavigationCallback commit_callback) {
-  DCHECK(!navigation_client_impl_);
-  // Note: We can only have FrameNavigationControl::CommitNavigation for
-  // non-committed interstitials where no NavigationRequest was created.
-  // TODO(ahemery): Remove when https://crbug.com/448486 is done.
-  CommitNavigationInternal(
-      std::move(common_params), std::move(commit_params),
-      std::move(response_head), std::move(response_body),
-      std::move(url_loader_client_endpoints),
-      std::move(subresource_loader_factories), std::move(subresource_overrides),
-      std::move(controller_service_worker_info), std::move(container_info),
-      std::move(prefetch_loader_factory), devtools_navigation_token,
-      std::move(commit_callback),
-      mojom::NavigationClient::CommitNavigationCallback());
-}
-
-void RenderFrameImpl::CommitPerNavigationMojoInterfaceNavigation(
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
-    network::mojom::URLResponseHeadPtr response_head,
-    mojo::ScopedDataPipeConsumerHandle response_body,
-    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-        subresource_loader_factories,
-    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-        subresource_overrides,
-    blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        prefetch_loader_factory,
-    const base::UnguessableToken& devtools_navigation_token,
-    mojom::NavigationClient::CommitNavigationCallback
-        per_navigation_mojo_interface_callback) {
+    mojom::NavigationClient::CommitNavigationCallback commit_callback) {
   DCHECK(navigation_client_impl_);
-  CommitNavigationInternal(
-      std::move(common_params), std::move(commit_params),
-      std::move(response_head), std::move(response_body),
-      std::move(url_loader_client_endpoints),
-      std::move(subresource_loader_factories), std::move(subresource_overrides),
-      std::move(controller_service_worker_info), std::move(container_info),
-      std::move(prefetch_loader_factory), devtools_navigation_token,
-      mojom::FrameNavigationControl::CommitNavigationCallback(),
-      std::move(per_navigation_mojo_interface_callback));
-}
-
-void RenderFrameImpl::CommitNavigationInternal(
-    mojom::CommonNavigationParamsPtr common_params,
-    mojom::CommitNavigationParamsPtr commit_params,
-    network::mojom::URLResponseHeadPtr response_head,
-    mojo::ScopedDataPipeConsumerHandle response_body,
-    network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
-        subresource_loader_factories,
-    base::Optional<std::vector<mojom::TransferrableURLLoaderPtr>>
-        subresource_overrides,
-    blink::mojom::ControllerServiceWorkerInfoPtr controller_service_worker_info,
-    blink::mojom::ServiceWorkerContainerInfoForClientPtr container_info,
-    mojo::PendingRemote<network::mojom::URLLoaderFactory>
-        prefetch_loader_factory,
-    const base::UnguessableToken& devtools_navigation_token,
-    mojom::FrameNavigationControl::CommitNavigationCallback callback,
-    mojom::NavigationClient::CommitNavigationCallback
-        per_navigation_mojo_interface_callback) {
   DCHECK(!IsRendererDebugURL(common_params->url));
   DCHECK(!NavigationTypeUtils::IsSameDocument(common_params->navigation_type));
   if (ShouldIgnoreCommitNavigation(*commit_params)) {
     browser_side_navigation_pending_url_ = GURL();
-    AbortCommitNavigation(std::move(callback),
-                          blink::mojom::CommitResult::Aborted);
+    AbortCommitNavigation();
     return;
   }
 
@@ -3090,8 +3023,7 @@ void RenderFrameImpl::CommitNavigationInternal(
 
   int request_id = ResourceDispatcher::MakeRequestID();
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
-      *common_params, *commit_params, std::move(callback),
-      std::move(per_navigation_mojo_interface_callback),
+      *common_params, *commit_params, std::move(commit_callback),
       std::move(navigation_client_impl_), request_id,
       was_initiated_in_this_frame);
 
@@ -3370,9 +3302,7 @@ void RenderFrameImpl::CommitFailedNavigation(
   if (!ShouldDisplayErrorPageForFailedLoad(error_code, common_params->url)) {
     // The browser expects this frame to be loading an error page. Inform it
     // that the load stopped.
-    AbortCommitNavigation(
-        base::NullCallback() /* deprecated interface callback */,
-        blink::mojom::CommitResult::Aborted);
+    AbortCommitNavigation();
     Send(new FrameHostMsg_DidStopLoading(routing_id_));
     browser_side_navigation_pending_ = false;
     browser_side_navigation_pending_url_ = GURL();
@@ -3399,9 +3329,7 @@ void RenderFrameImpl::CommitFailedNavigation(
   }
 
   if (fallback_result != blink::WebNavigationControl::NoFallbackContent) {
-    AbortCommitNavigation(
-        base::NullCallback() /* deprecated interface callback */,
-        blink::mojom::CommitResult::Aborted);
+    AbortCommitNavigation();
     if (fallback_result == blink::WebNavigationControl::NoLoadInProgress) {
       // If the frame wasn't loading but was fallback-eligible, the fallback
       // content won't be shown. However, showing an error page isn't right
@@ -3461,7 +3389,7 @@ void RenderFrameImpl::CommitFailedNavigation(
   // was not initiated through BeginNavigation, therefore
   // |was_initiated_in_this_frame| is false.
   std::unique_ptr<DocumentState> document_state = BuildDocumentStateFromParams(
-      *common_params, *commit_params, base::NullCallback(), std::move(callback),
+      *common_params, *commit_params, std::move(callback),
       std::move(navigation_client_impl_), ResourceDispatcher::MakeRequestID(),
       false /* was_initiated_in_this_frame */);
 
@@ -3481,6 +3409,8 @@ void RenderFrameImpl::CommitFailedNavigation(
   browser_side_navigation_pending_ = false;
   browser_side_navigation_pending_url_ = GURL();
 }
+
+// mojom::FrameNavigationControl implementation --------------------------------
 
 void RenderFrameImpl::CommitSameDocumentNavigation(
     mojom::CommonNavigationParamsPtr common_params,
@@ -3531,7 +3461,6 @@ void RenderFrameImpl::CommitSameDocumentNavigation(
     auto url = common_params->url;
     internal_data->set_navigation_state(NavigationState::CreateBrowserInitiated(
         std::move(common_params), std::move(commit_params),
-        mojom::FrameNavigationControl::CommitNavigationCallback(),
         mojom::NavigationClient::CommitNavigationCallback(), nullptr,
         false /* was_initiated_in_this_frame */));
 
@@ -4237,11 +4166,6 @@ void RenderFrameImpl::DidCommitNavigation(
   if (media_permission_dispatcher_)
     media_permission_dispatcher_->OnNavigation();
 
-  if (!navigation_state->uses_per_navigation_mojo_interface()) {
-    navigation_state->RunCommitNavigationCallback(
-        blink::mojom::CommitResult::Ok);
-  }
-
   ui::PageTransition transition =
       GetTransitionType(frame_->GetDocumentLoader(), IsMainFrame());
 
@@ -4472,7 +4396,7 @@ void RenderFrameImpl::AbortClientNavigation() {
 }
 
 void RenderFrameImpl::DidChangeSelection(bool is_empty_selection) {
-  if (!GetLocalRootRenderWidget()->input_handler().handling_input_event() &&
+  if (!GetLocalRootRenderWidget()->GetWebWidget()->HandlingInputEvent() &&
       !handling_select_range_)
     return;
 
@@ -5272,8 +5196,8 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   } else {
     NavigationState* navigation_state =
         NavigationState::FromDocumentLoader(frame_->GetDocumentLoader());
-    if (navigation_state->uses_per_navigation_mojo_interface()) {
-      navigation_state->RunPerNavigationInterfaceCommitNavigationCallback(
+    if (navigation_state->has_navigation_client()) {
+      navigation_state->RunCommitNavigationCallback(
           std::move(params), std::move(interface_params));
     } else {
       GetFrameHost()->DidCommitProvisionalLoad(std::move(params),
@@ -6599,21 +6523,11 @@ RenderFrameImpl::CreateWebSocketHandshakeThrottle() {
       render_frame->GetTaskRunner(blink::TaskType::kInternalDefault));
 }
 
-void RenderFrameImpl::AbortCommitNavigation(
-    mojom::FrameNavigationControl::CommitNavigationCallback callback,
-    blink::mojom::CommitResult reason) {
-  DCHECK(callback || navigation_client_impl_);
-  // The callback will trigger
-  // RenderFrameHostImpl::OnCrossDocumentCommitProcessed() as will the interface
-  // disconnection. Note: We are using the callback to determine if
-  // NavigationClient::CommitNavigation was used, because in certain cases we
-  // still use the old FrameNavigationControl path (e.g. some interstitials).
-  // TODO(ahemery): Update when https://crbug.com/448486 is done.
-  if (callback) {
-    std::move(callback).Run(reason);
-  } else {
-    navigation_client_impl_.reset();
-  }
+void RenderFrameImpl::AbortCommitNavigation() {
+  DCHECK(navigation_client_impl_);
+  // Interface disconnection will trigger
+  // RenderFrameHostImpl::OnCrossDocumentCommitProcessed().
+  navigation_client_impl_.reset();
 }
 
 void RenderFrameImpl::TransferUserActivationFrom(

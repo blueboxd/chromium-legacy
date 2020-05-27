@@ -87,6 +87,9 @@ class SERVICE_MANAGER_SANDBOX_EXPORT SandboxWin {
   // will be an empty value if an error is encountered.
   static sandbox::ResultCode GetPolicyDiagnostics(
       base::OnceCallback<void(base::Value)> response);
+
+  // Provides a friendly name for the sandbox for chrome://sandbox and tracing.
+  static std::string GetSandboxTypeInEnglish(SandboxType sandbox_type);
 };
 
 SERVICE_MANAGER_SANDBOX_EXPORT

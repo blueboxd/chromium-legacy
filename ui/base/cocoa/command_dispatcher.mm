@@ -23,6 +23,44 @@
 - (NSWindow<CommandDispatchingWindow>*)bubbleParent;
 @end
 
+namespace {
+
+// Duplicate the given key event, but changing the associated window.
+NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
+  NSEventType event_type = [event type];
+
+  // Convert the event's location from the original window's coordinates into
+  // our own.
+  NSPoint location = [event locationInWindow];
+  location = ui::ConvertPointFromWindowToScreen([event window], location);
+  location = ui::ConvertPointFromScreenToWindow(window, location);
+
+  // Various things *only* apply to key down/up.
+  bool is_a_repeat = false;
+  NSString* characters = nil;
+  NSString* charactors_ignoring_modifiers = nil;
+  if (event_type == NSKeyDown || event_type == NSKeyUp) {
+    is_a_repeat = [event isARepeat];
+    characters = [event characters];
+    charactors_ignoring_modifiers = [event charactersIgnoringModifiers];
+  }
+
+  // This synthesis may be slightly imperfect: we provide nil for the context,
+  // since I (viettrungluu) am sceptical that putting in the original context
+  // (if one is given) is valid.
+  return [NSEvent keyEventWithType:event_type
+                          location:location
+                     modifierFlags:[event modifierFlags]
+                         timestamp:[event timestamp]
+                      windowNumber:[window windowNumber]
+                           context:nil
+                        characters:characters
+       charactersIgnoringModifiers:charactors_ignoring_modifiers
+                         isARepeat:is_a_repeat
+                           keyCode:[event keyCode]];
+}
+
+}  // namespace
 
 @implementation CommandDispatcher {
  @private
@@ -169,10 +207,14 @@
     return YES;  // Pretend it's been handled in an effort to limit damage.
   }
 
-  // TODO(lgrey): This is a temporary sanity check since the code that was
-  // here previously did *not* assume this. Remove shortly after this lands if
-  // nothing blew up.
-  DCHECK_EQ([event window], _owner);
+  // Ordinarily, the event's window should be |owner_|. However, when switching
+  // between normal and fullscreen mode, we switch out the window, and the
+  // event's window might be the previous window (or even an earlier one if the
+  // renderer is running slowly and several mode switches occur). In this rare
+  // case, we synthesize a new key event so that its associate window (number)
+  // is our |owner_|'s.
+  if ([event window] != _owner)
+    event = KeyEventForWindow(_owner, event);
 
   // Redispatch the event.
   _eventHandled = YES;

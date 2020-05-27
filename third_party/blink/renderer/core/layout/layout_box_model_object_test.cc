@@ -1070,16 +1070,16 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   auto* parent = target->Parent();
   auto* original_compositing_container =
       target->Layer()->CompositingContainer();
-  EXPECT_FALSE(target->StyleRef().IsStackingContext());
-  EXPECT_TRUE(target->StyleRef().IsStacked());
-  EXPECT_FALSE(parent->StyleRef().IsStacked());
+  EXPECT_FALSE(target->IsStackingContext());
+  EXPECT_TRUE(target->IsStacked());
+  EXPECT_FALSE(parent->IsStacked());
   EXPECT_NE(parent, original_compositing_container->GetLayoutObject());
 
   target_element->setAttribute(html_names::kClassAttr, "non-stacked");
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 
-  EXPECT_FALSE(target->StyleRef().IsStacked());
+  EXPECT_FALSE(target->IsStacked());
   EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
   EXPECT_TRUE(original_compositing_container->DescendantNeedsRepaint());
   auto* new_compositing_container = target->Layer()->CompositingContainer();
@@ -1090,7 +1090,7 @@ TEST_F(LayoutBoxModelObjectTest, InvalidatePaintLayerOnStackedChange) {
   GetDocument().View()->UpdateLifecycleToLayoutClean(
       DocumentUpdateReason::kTest);
 
-  EXPECT_TRUE(target->StyleRef().IsStacked());
+  EXPECT_TRUE(target->IsStacked());
   EXPECT_TRUE(target->Layer()->SelfNeedsRepaint());
   EXPECT_TRUE(new_compositing_container->DescendantNeedsRepaint());
   EXPECT_EQ(original_compositing_container,
@@ -1327,7 +1327,7 @@ TEST_F(LayoutBoxModelObjectTest, UpdateStackingContextForOption) {
   auto* option_element = GetDocument().getElementById("opt");
   auto* option_layout = option_element->GetLayoutObject();
   ASSERT_TRUE(option_layout);
-  EXPECT_TRUE(option_layout->StyleRef().IsStackingContext());
+  EXPECT_TRUE(option_layout->IsStackingContext());
   EXPECT_TRUE(option_layout->StyleRef().HasCurrentOpacityAnimation());
 }
 

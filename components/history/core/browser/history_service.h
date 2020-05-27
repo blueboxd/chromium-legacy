@@ -27,10 +27,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/favicon_base/favicon_callback.h"
@@ -51,7 +51,6 @@ class TestingProfile;
 
 namespace base {
 class FilePath;
-class Thread;
 }  // namespace base
 
 namespace favicon {
@@ -88,8 +87,6 @@ class WebHistoryService;
 // as information about downloads.
 class HistoryService : public KeyedService {
  public:
-  static const base::Feature kHistoryServiceUsesTaskScheduler;
-
   // Must call Init after construction. The empty constructor provided only for
   // unit tests. When using the full constructor, |history_client| may only be
   // null during testing, while |visit_delegate| may be null if the embedder use
@@ -850,13 +847,7 @@ class HistoryService : public KeyedService {
   void NotifyFaviconsChanged(const std::set<GURL>& page_urls,
                              const GURL& icon_url);
 
-  base::ThreadChecker thread_checker_;
-
-  // The thread used by the history service to run HistoryBackend operations.
-  // Intentionally not a BrowserThread because the sync integration unit tests
-  // need to create multiple HistoryServices which each have their own thread.
-  // Nullptr if TaskScheduler is used for HistoryBackend operations.
-  std::unique_ptr<base::Thread> thread_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   // The TaskRunner to which HistoryBackend tasks are posted. Nullptr once
   // Cleanup() is called.

@@ -33,7 +33,6 @@ MediaPlaybackOptions::MediaPlaybackOptions(content::RenderFrame* render_frame)
   // Override default content MediaPlaybackOptions
   renderer_media_playback_options_
       .is_background_video_track_optimization_supported = false;
-  renderer_media_playback_options_.is_background_suspend_enabled = false;
   render_frame->SetRenderFrameMediaPlaybackOptions(
       renderer_media_playback_options_);
 

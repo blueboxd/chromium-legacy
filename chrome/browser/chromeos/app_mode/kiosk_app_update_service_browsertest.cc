@@ -20,8 +20,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "base/task/thread_pool.h"
 #include "base/test/scoped_path_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
@@ -108,7 +108,7 @@ class KioskAppUpdateServiceTest
     // Wait for |automatic_reboot_manager_| to finish initializing.
     bool initialized = false;
     base::RunLoop run_loop;
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
         base::BindOnce(&WaitForAutomaticRebootManagerInit,
                        base::Unretained(automatic_reboot_manager_),

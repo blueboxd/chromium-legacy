@@ -226,7 +226,8 @@ std::vector<int> SystemMemoryPressureEvaluator::GetMarginFileParts(
       margin_values.push_back(value);
     }
   } else {
-    LOG(ERROR) << "Unable to read margin file: " << kMarginMemFile;
+    PLOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "Unable to read margin file: " << kMarginMemFile;
   }
   return margin_values;
 }

@@ -257,16 +257,10 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 }
 
-// crbug.com/777258 Flaky on Android and Chrome OS.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS)
-#define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
-  DISABLED_WheelScrollingRelatchWhenLatchedScrollerRemoved
-#else
-#define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
-  WheelScrollingRelatchWhenLatchedScrollerRemoved
-#endif
-IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
+// crbug.com/777258 Flaky everywhere.
+IN_PROC_BROWSER_TEST_F(
+    WheelScrollLatchingBrowserTest,
+    DISABLED_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
   LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(
       ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop"), 0);

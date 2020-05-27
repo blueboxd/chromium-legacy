@@ -2371,7 +2371,7 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
     // we need to dirty our stacking context's z-order list.
     if (visibility_changed ||
         style_->EffectiveZIndex() != new_style.EffectiveZIndex() ||
-        style_->IsStackingContext() != new_style.IsStackingContext()) {
+        IsStackingContext(*style_) != IsStackingContext(new_style)) {
       GetDocument().SetAnnotatedRegionsDirty(true);
       if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
         if (GetNode())

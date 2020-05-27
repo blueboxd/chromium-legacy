@@ -176,13 +176,6 @@ WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame& parent,
                                       scoped_refptr<SecurityOrigin> = nullptr,
                                       TestWebRemoteFrameClient* = nullptr);
 
-struct InjectedScrollGestureData {
-  gfx::Vector2dF delta;
-  ScrollGranularity granularity;
-  CompositorElementId scrollable_area_element_id;
-  WebInputEvent::Type type;
-};
-
 class TestWebWidgetClient : public WebWidgetClient {
  public:
   TestWebWidgetClient();
@@ -209,9 +202,9 @@ class TestWebWidgetClient : public WebWidgetClient {
   int FinishedLoadingLayoutCount() const {
     return finished_loading_layout_count_;
   }
-  const Vector<InjectedScrollGestureData>& GetInjectedScrollGestureData()
-      const {
-    return injected_scroll_gesture_data_;
+  const Vector<std::unique_ptr<blink::WebCoalescedInputEvent>>&
+  GetInjectedScrollEvents() const {
+    return injected_scroll_events_;
   }
 
   cc::TaskGraphRunner* task_graph_runner() { return &test_task_graph_runner_; }
@@ -227,11 +220,8 @@ class TestWebWidgetClient : public WebWidgetClient {
                                   bool is_pinch_gesture_active,
                                   float minimum,
                                   float maximum) override;
-  void InjectGestureScrollEvent(WebGestureDevice device,
-                                const gfx::Vector2dF& delta,
-                                ScrollGranularity granularity,
-                                cc::ElementId scrollable_area_element_id,
-                                WebInputEvent::Type injected_type) override;
+  void QueueSyntheticEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
   void DidMeaningfulLayout(WebMeaningfulLayout) override;
   viz::FrameSinkId GetFrameSinkId() override;
   void RequestNewLayerTreeFrameSink(
@@ -242,7 +232,8 @@ class TestWebWidgetClient : public WebWidgetClient {
   cc::LayerTreeHost* layer_tree_host_ = nullptr;
   cc::TestTaskGraphRunner test_task_graph_runner_;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
-  Vector<InjectedScrollGestureData> injected_scroll_gesture_data_;
+  Vector<std::unique_ptr<blink::WebCoalescedInputEvent>>
+      injected_scroll_events_;
   bool animation_scheduled_ = false;
   int visually_non_empty_layout_count_ = 0;
   int finished_parsing_layout_count_ = 0;

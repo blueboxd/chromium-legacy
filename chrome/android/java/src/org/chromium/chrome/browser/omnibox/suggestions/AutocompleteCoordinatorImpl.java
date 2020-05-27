@@ -46,6 +46,7 @@ import org.chromium.ui.ViewProvider;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.LazyConstructionPropertyMcp;
 import org.chromium.ui.modelutil.MVCListAdapter;
+import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -334,6 +335,11 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     @VisibleForTesting
     OnSuggestionsReceivedListener getSuggestionsReceivedListenerForTest() {
         return mMediator;
+    }
+
+    @VisibleForTesting
+    ModelList getSuggestionModelList() {
+        return mMediator.getSuggestionModelList();
     }
 
     private void onTileSelected(QueryTile queryTile) {

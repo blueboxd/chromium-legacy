@@ -897,7 +897,7 @@ bool CreditCard::HasValidNickname() const {
     return false;
   }
   // Must not contain digits.
-  for (char c : nickname_) {
+  for (base::char16 c : nickname_) {
     if (base::IsAsciiDigit(c))
       return false;
   }

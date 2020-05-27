@@ -83,8 +83,6 @@ float IfNanUseMaxFloat(float value);
 blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
     ui::DomCode code);
 
-bool IsGestureScroll(blink::WebInputEvent::Type);
-
 bool IsContinuousGestureEvent(blink::WebInputEvent::Type);
 
 EventPointerType WebPointerTypeToEventPointerType(
@@ -98,9 +96,6 @@ inline const blink::WebGestureEvent& ToWebGestureEvent(
 
 blink::WebGestureEvent ScrollBeginFromScrollUpdate(
     const blink::WebGestureEvent& scroll_update);
-
-// Returns the position in the widget if it exists for the passed in event type
-gfx::PointF PositionInWidgetFromInputEvent(const blink::WebInputEvent& event);
 
 #if defined(OS_ANDROID)
 // Convenience method that converts an instance to blink event.

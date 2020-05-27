@@ -544,6 +544,7 @@ static const ClientErrorTestParam kClientErrorTestCases[] = {
     {DM_STATUS_SERVICE_POLICY_NOT_FOUND, kPolicyRefreshRate, 1},
     {DM_STATUS_SERVICE_CONSUMER_ACCOUNT_WITH_PACKAGED_LICENSE, -1, 1},
     {DM_STATUS_SERVICE_ENTERPRISE_ACCOUNT_IS_NOT_ELIGIBLE_TO_ENROLL, -1, 1},
+    {DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED, -1, 1},
 };
 
 class CloudPolicyRefreshSchedulerClientErrorTest

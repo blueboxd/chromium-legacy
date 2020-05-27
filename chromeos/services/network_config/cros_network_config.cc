@@ -1869,6 +1869,7 @@ void CrosNetworkConfig::GetManagedPropertiesSuccess(
   if (!network_state) {
     NET_LOG(ERROR) << "Network not found: " << service_path;
     std::move(iter->second).Run(nullptr);
+    get_managed_properties_callbacks_.erase(iter);
     return;
   }
   mojom::ManagedPropertiesPtr managed_properties =

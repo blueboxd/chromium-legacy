@@ -51,7 +51,7 @@ constexpr uint8_t kAttestationKey[]{
 
 // CBBFunctionToVector converts a BoringSSL function that writes to a CBB to one
 // that returns a std::vector. Invoke for a function, f, with:
-//   CBBFunctionToVector<decltype(f), f>(args, to, f);
+//   CBBFunctionToVector<decltype(&f), f>(args, to, f);
 template <typename F, F function, typename... Args>
 std::vector<uint8_t> CBBFunctionToVector(Args&&... args) {
   uint8_t* der = nullptr;
@@ -102,7 +102,7 @@ class EVPBackedPrivateKey : public VirtualFidoDevice::PrivateKey {
   }
 
   std::vector<uint8_t> GetPKCS8PrivateKey() const override {
-    return CBBFunctionToVector<decltype(EVP_marshal_private_key),
+    return CBBFunctionToVector<decltype(&EVP_marshal_private_key),
                                EVP_marshal_private_key>(pkey_.get());
   }
 
@@ -122,7 +122,7 @@ class P256PrivateKey : public EVPBackedPrivateKey {
 
   std::vector<uint8_t> GetX962PublicKey() const override {
     const EC_KEY* ec_key = EVP_PKEY_get0_EC_KEY(pkey_.get());
-    return CBBFunctionToVector<decltype(EC_POINT_point2cbb),
+    return CBBFunctionToVector<decltype(&EC_POINT_point2cbb),
                                EC_POINT_point2cbb>(
         EC_KEY_get0_group(ec_key), EC_KEY_get0_public_key(ec_key),
         POINT_CONVERSION_UNCOMPRESSED, /*ctx=*/nullptr);
@@ -172,7 +172,7 @@ class RSAPrivateKey : public EVPBackedPrivateKey {
         cbor::Writer::Write(cbor::Value(std::move(map))));
 
     std::vector<uint8_t> der_bytes(
-        CBBFunctionToVector<decltype(EVP_marshal_public_key),
+        CBBFunctionToVector<decltype(&EVP_marshal_public_key),
                             EVP_marshal_public_key>(pkey_.get()));
 
     return std::make_unique<PublicKey>(

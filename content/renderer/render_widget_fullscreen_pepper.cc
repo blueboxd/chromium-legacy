@@ -237,7 +237,7 @@ void RenderWidgetFullscreenPepper::Destroy() {
 
 void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
     const ui::Cursor& cursor) {
-  DidChangeCursor(cursor);
+  blink_widget_->SetCursor(cursor);
 }
 
 void RenderWidgetFullscreenPepper::SetLayer(scoped_refptr<cc::Layer> layer) {

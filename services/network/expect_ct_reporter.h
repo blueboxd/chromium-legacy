@@ -10,6 +10,7 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "net/base/network_isolation_key.h"
 #include "net/http/transport_security_state.h"
 #include "net/url_request/url_request.h"
 
@@ -42,13 +43,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ExpectCTReporter
   ~ExpectCTReporter() override;
 
   // net::TransportSecurityState::ExpectCTReporter:
-  void OnExpectCTFailed(const net::HostPortPair& host_port_pair,
-                        const GURL& report_uri,
-                        base::Time expiration,
-                        const net::X509Certificate* validated_certificate_chain,
-                        const net::X509Certificate* served_certificate_chain,
-                        const net::SignedCertificateTimestampAndStatusList&
-                            signed_certificate_timestamps) override;
+  void OnExpectCTFailed(
+      const net::HostPortPair& host_port_pair,
+      const GURL& report_uri,
+      base::Time expiration,
+      const net::X509Certificate* validated_certificate_chain,
+      const net::X509Certificate* served_certificate_chain,
+      const net::SignedCertificateTimestampAndStatusList&
+          signed_certificate_timestamps,
+      const net::NetworkIsolationKey& network_isolation_key) override;
 
   // net::URLRequest::Delegate:
   void OnResponseStarted(net::URLRequest* request, int net_error) override;
@@ -61,19 +64,24 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ExpectCTReporter
   struct PreflightInProgress {
     PreflightInProgress(std::unique_ptr<net::URLRequest> request,
                         const std::string& serialized_report,
-                        const GURL& report_uri);
+                        const GURL& report_uri,
+                        const net::NetworkIsolationKey& network_isolation_key);
     ~PreflightInProgress();
+
     // The preflight request.
     const std::unique_ptr<net::URLRequest> request;
     // |serialized_report| should be sent to |report_uri| if the preflight
     // succeeds.
     const std::string serialized_report;
     const GURL report_uri;
+    const net::NetworkIsolationKey network_isolation_key;
   };
 
   FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, FeatureDisabled);
   FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, EmptyReportURI);
   FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, SendReport);
+  FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest,
+                           PreflightUsesNetworkIsolationKey);
   FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest, PreflightContainsWhitespace);
   FRIEND_TEST_ALL_PREFIXES(ExpectCTReporterTest,
                            BadCorsPreflightResponseOrigin);
@@ -87,7 +95,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ExpectCTReporter
   // preflight result is checked in OnResponseStarted(), and an actual report is
   // sent with |report_sender_| if the preflight succeeds.
   void SendPreflight(const GURL& report_uri,
-                     const std::string& serialized_report);
+                     const std::string& serialized_report,
+                     const net::NetworkIsolationKey& network_isolation_key);
 
   // When a report fails to send, this method records an UMA histogram and calls
   // |failure_callback_|.

@@ -85,7 +85,8 @@ class FakeNetworkConfig {
 
     ['getNetworkState', 'getNetworkStateList', 'getDeviceStateList',
      'getManagedProperties', 'setNetworkTypeEnabledState', 'requestNetworkScan',
-     'getGlobalPolicy', 'getVpnProviders', 'getNetworkCertificates']
+     'getGlobalPolicy', 'getVpnProviders', 'getNetworkCertificates',
+     'setProperties']
         .forEach((methodName) => {
           this.resolverMap_.set(methodName, new PromiseResolver());
         });

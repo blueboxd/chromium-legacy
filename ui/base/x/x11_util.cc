@@ -773,23 +773,10 @@ void SetWMSpecState(XID window,
                     bool enabled,
                     x11::Atom state1,
                     x11::Atom state2) {
-  XEvent xclient;
-  memset(&xclient, 0, sizeof(xclient));
-  xclient.type = ClientMessage;
-  xclient.xclient.window = window;
-  xclient.xclient.message_type =
-      static_cast<uint32_t>(gfx::GetAtom("_NET_WM_STATE"));
-  // The data should be viewed as a list of longs, because x11::Atom is a
-  // typedef of long.
-  xclient.xclient.format = 32;
-  xclient.xclient.data.l[0] = enabled ? kNetWMStateAdd : kNetWMStateRemove;
-  xclient.xclient.data.l[1] = static_cast<uint32_t>(state1);
-  xclient.xclient.data.l[2] = static_cast<uint32_t>(state2);
-  xclient.xclient.data.l[3] = 1;
-  xclient.xclient.data.l[4] = 0;
-
-  XSendEvent(gfx::GetXDisplay(), GetX11RootWindow(), x11::False,
-             SubstructureRedirectMask | SubstructureNotifyMask, &xclient);
+  SendClientMessage(
+      window, GetX11RootWindow(), gfx::GetAtom("_NET_WM_STATE"),
+      {enabled ? kNetWMStateAdd : kNetWMStateRemove,
+       static_cast<uint32_t>(state1), static_cast<uint32_t>(state2), 1, 0});
 }
 
 void DoWMMoveResize(XDisplay* display,
@@ -803,20 +790,8 @@ void DoWMMoveResize(XDisplay* display,
   // grabs when it receives the event below.
   XUngrabPointer(display, x11::CurrentTime);
 
-  XEvent event;
-  memset(&event, 0, sizeof(event));
-  event.xclient.type = ClientMessage;
-  event.xclient.display = display;
-  event.xclient.window = window;
-  event.xclient.message_type =
-      static_cast<uint32_t>(gfx::GetAtom("_NET_WM_MOVERESIZE"));
-  event.xclient.format = 32;
-  event.xclient.data.l[0] = location_px.x();
-  event.xclient.data.l[1] = location_px.y();
-  event.xclient.data.l[2] = direction;
-
-  XSendEvent(display, root_window, x11::False,
-             SubstructureRedirectMask | SubstructureNotifyMask, &event);
+  SendClientMessage(window, root_window, gfx::GetAtom("_NET_WM_MOVERESIZE"),
+                    {location_px.x(), location_px.y(), direction, 0, 0});
 }
 
 bool HasWMSpecProperty(const base::flat_set<x11::Atom>& properties,
@@ -1175,6 +1150,24 @@ SkColorType ColorTypeForVisual(void* visual) {
              << vis->blue_mask
              << ".  Please report this to https://crbug.com/1025266";
   return kUnknown_SkColorType;
+}
+
+x11::Future<void> SendClientMessage(XID window,
+                                    XID target,
+                                    x11::Atom type,
+                                    const std::array<uint32_t, 5> data,
+                                    x11::XProto::EventMask event_mask) {
+  x11::XProto::ClientMessageEvent event{
+      .format = 32, .window = static_cast<x11::Window>(window), .type = type};
+  event.data.data32 = data;
+  auto event_bytes = x11::Write(event);
+  DCHECK_EQ(event_bytes.size(), 32ul);
+
+  auto* connection = x11::Connection::Get();
+  x11::XProto::SendEventRequest request{false, static_cast<x11::Window>(target),
+                                        event_mask};
+  std::copy(event_bytes.begin(), event_bytes.end(), request.event.begin());
+  return connection->SendEvent(request);
 }
 
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)

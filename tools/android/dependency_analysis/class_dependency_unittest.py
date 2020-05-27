@@ -4,7 +4,7 @@
 # found in the LICENSE file.
 """Unit tests for dependency_analysis.class_dependency."""
 
-import unittest
+import unittest.mock
 import class_dependency
 
 
@@ -16,29 +16,31 @@ class TestHelperFunctions(unittest.TestCase):
         self.assertEqual(result, 'pkg.name.class')
 
     def test_split_nested_class_from_key(self):
-        """Tests that the helper correctly splits out a nested class"""
+        """Tests that the helper correctly splits out a nested class."""
         part1, part2 = class_dependency.split_nested_class_from_key(
             'pkg.name.class$nested')
         self.assertEqual(part1, 'pkg.name.class')
         self.assertEqual(part2, 'nested')
 
     def test_split_nested_class_from_key_no_nested(self):
-        """Tests that the helper works when there is no nested class"""
+        """Tests that the helper works when there is no nested class."""
         part1, part2 = class_dependency.split_nested_class_from_key(
             'pkg.name.class')
         self.assertEqual(part1, 'pkg.name.class')
         self.assertIsNone(part2)
 
     def test_split_nested_class_from_key_lambda(self):
-        """Tests that the helper works for common jdeps output (lambdas)"""
+        """Tests that the helper works for jdeps' formatting of lambdas."""
         part1, part2 = class_dependency.split_nested_class_from_key(
             'pkg.name.class$$Lambda$1')
         self.assertEqual(part1, 'pkg.name.class')
         self.assertEqual(part2, '$Lambda$1')
 
     def test_split_nested_class_from_key_numeric(self):
-        """Tests that the helper works for common jdeps output
-            (numeric class name, used for private nested classes)"""
+        """Tests that the helper works for jdeps' formatting of nested classes.
+
+        Specifically, jdeps uses a numeric name for private nested classes.
+        """
         part1, part2 = class_dependency.split_nested_class_from_key(
             'pkg.name.class$1')
         self.assertEqual(part1, 'pkg.name.class')
@@ -53,9 +55,11 @@ class TestJavaClass(unittest.TestCase):
     UNIQUE_KEY_2 = 'def'
 
     def test_initialization(self):
-        """Tests that the JavaClass's unique_key was initialized correctly."""
+        """Tests that JavaClass is initialized correctly."""
         test_node = class_dependency.JavaClass(self.TEST_PKG, self.TEST_CLS)
         self.assertEqual(test_node.name, f'{self.TEST_PKG}.{self.TEST_CLS}')
+        self.assertEqual(test_node.package, self.TEST_PKG)
+        self.assertEqual(test_node.class_name, self.TEST_CLS)
 
     def test_equality(self):
         """Tests that two JavaClasses with the same package+class are equal."""
@@ -86,8 +90,9 @@ class TestJavaClass(unittest.TestCase):
 
 
 class TestJavaClassDependencyGraph(unittest.TestCase):
-    """Unit tests for
-        dependency_analysis.class_dependency.JavaClassDependencyGraph.
+    """Unit tests for JavaClassDependencyGraph.
+
+    Full name: dependency_analysis.class_dependency.JavaClassDependencyGraph.
     """
     def setUp(self):
         """Sets up a new JavaClassDependencyGraph."""
@@ -103,11 +108,11 @@ class TestJavaClassDependencyGraph(unittest.TestCase):
 
     def test_add_nested_class_to_key(self):
         """Tests adding a nested class to an existing node."""
-        self.test_graph.add_node_if_new('package.class')
+        added = self.test_graph.add_node_if_new('package.class')
+        added.add_nested_class = unittest.mock.Mock()
+
         self.test_graph.add_nested_class_to_key('package.class', 'nested')
-        added = self.test_graph.get_node_by_key('package.class')
-        self.assertEqual(len(added.nested_classes), 1)
-        self.assertIn('nested', added.nested_classes)
+        added.add_nested_class.assert_called_once_with('nested')
 
 
 if __name__ == '__main__':

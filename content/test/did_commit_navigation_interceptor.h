@@ -21,13 +21,6 @@ class NavigationRequest;
 // before they are processed by the implementation. This enables unit/browser
 // tests to scrutinize/alter the parameters, or simulate race conditions by
 // triggering other calls just before processing DidCommitProvisionalLoad.
-//
-// IMPORTANT NOTE: Avoid using this when IsPerNavigationMojoInterfaceEnabled()
-// is false as this might not do what you expect it to.
-// In real code and without the above flag, DidCommit* calls are sent right
-// after OnCrossDocumentCommitProcessed, which is NOT handled by this class.
-// You might end up with a deleted NavigationRequest and/or mismatched params
-// and NavigationRequest.
 class DidCommitNavigationInterceptor : public WebContentsObserver {
  public:
   // Constructs an instance that will intercept DidCommitProvisionalLoad calls

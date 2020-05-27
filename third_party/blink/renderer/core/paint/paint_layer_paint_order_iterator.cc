@@ -51,7 +51,7 @@ PaintLayer* PaintLayerPaintOrderIterator::Next() {
     for (; current_normal_flow_child_;
          current_normal_flow_child_ =
              current_normal_flow_child_->NextSibling()) {
-      if (current_normal_flow_child_->GetLayoutObject().StyleRef().IsStacked())
+      if (current_normal_flow_child_->GetLayoutObject().IsStacked())
         continue;
 
       PaintLayer* normal_flow_child = current_normal_flow_child_;
@@ -94,7 +94,7 @@ PaintLayer* PaintLayerPaintOrderReverseIterator::Next() {
     for (; current_normal_flow_child_;
          current_normal_flow_child_ =
              current_normal_flow_child_->PreviousSibling()) {
-      if (current_normal_flow_child_->GetLayoutObject().StyleRef().IsStacked())
+      if (current_normal_flow_child_->GetLayoutObject().IsStacked())
         continue;
 
       PaintLayer* normal_flow_child = current_normal_flow_child_;

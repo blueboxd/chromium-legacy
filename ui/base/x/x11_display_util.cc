@@ -102,18 +102,13 @@ float GetRefreshRateFromXRRModeInfo(
   return 0;
 }
 
-int DefaultScreenDepth(XDisplay* xdisplay) {
-  return DefaultDepth(xdisplay, DefaultScreen(xdisplay));
-}
-
-int DefaultBitsPerComponent(XDisplay* xdisplay) {
-  Visual* visual = DefaultVisual(xdisplay, DefaultScreen(xdisplay));
+int DefaultBitsPerComponent() {
+  auto* connection = x11::Connection::Get();
+  const x11::XProto::VisualType* visual = connection->default_root_visual();
 
   // The mask fields are only valid for DirectColor and TrueColor classes.
-  if (visual->c_class ==
-          static_cast<int>(x11::XProto::VisualClass::DirectColor) ||
-      visual->c_class ==
-          static_cast<int>(x11::XProto::VisualClass::TrueColor)) {
+  if (visual->c_class == x11::XProto::VisualClass::DirectColor ||
+      visual->c_class == x11::XProto::VisualClass::TrueColor) {
     // RGB components are packed into fixed size integers for each visual.  The
     // layout of bits in the packing is given by
     // |visual->{red,green,blue}_mask|.  Count the number of bits to get the
@@ -130,12 +125,12 @@ int DefaultBitsPerComponent(XDisplay* xdisplay) {
 
   // Next, try getting the number of colormap entries per subfield.  If it's a
   // power of 2, log2 is a possible guess for the number of bits per component.
-  if (base::bits::IsPowerOfTwo(visual->map_entries))
-    return base::bits::Log2Ceiling(visual->map_entries);
+  if (base::bits::IsPowerOfTwo(visual->colormap_entries))
+    return base::bits::Log2Ceiling(visual->colormap_entries);
 
   // |bits_per_rgb| can sometimes be unreliable (may be 11 for 30bpp visuals),
   // so only use it as a last resort.
-  return visual->bits_per_rgb;
+  return visual->bits_per_rgb_value;
 }
 
 // Get the EDID data from the |output| and stores to |edid|.
@@ -168,12 +163,12 @@ int GetXrandrVersion(XDisplay* xdisplay) {
 }
 
 std::vector<display::Display> GetFallbackDisplayList(float scale) {
-  XDisplay* display = gfx::GetXDisplay();
-  ::Screen* screen = DefaultScreenOfDisplay(display);
-  gfx::Size physical_size(WidthMMOfScreen(screen), HeightMMOfScreen(screen));
+  const auto* screen = x11::Connection::Get()->default_screen();
+  gfx::Size physical_size(screen->width_in_millimeters,
+                          screen->height_in_millimeters);
 
-  int width = WidthOfScreen(screen);
-  int height = HeightOfScreen(screen);
+  int width = screen->width_in_pixels;
+  int height = screen->height_in_pixels;
   gfx::Rect bounds_in_pixels(0, 0, width, height);
   display::Display gfx_display(0, bounds_in_pixels);
 
@@ -187,8 +182,8 @@ std::vector<display::Display> GetFallbackDisplayList(float scale) {
     scale = 1;
   }
 
-  gfx_display.set_color_depth(DefaultScreenDepth(display));
-  gfx_display.set_depth_per_component(DefaultBitsPerComponent(display));
+  gfx_display.set_color_depth(screen->root_depth);
+  gfx_display.set_depth_per_component(DefaultBitsPerComponent());
 
   std::vector<display::Display> displays{gfx_display};
   ClipWorkArea(&displays, 0, scale);
@@ -201,7 +196,8 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
     int64_t* primary_display_index_out) {
   DCHECK(primary_display_index_out);
   DCHECK_GE(version, kMinVersionXrandr);
-  auto* randr = x11::Connection::Get()->randr();
+  auto* connection = x11::Connection::Get();
+  auto* randr = connection->randr();
   if (!randr)
     return GetFallbackDisplayList(scale);
   auto x_root_window = static_cast<x11::Window>(ui::GetX11RootWindow());
@@ -212,8 +208,8 @@ std::vector<display::Display> BuildDisplaysFromXRandRInfo(
     return GetFallbackDisplayList(scale);
   }
 
-  const int depth = DefaultScreenDepth(gfx::GetXDisplay());
-  const int bits_per_component = DefaultBitsPerComponent(gfx::GetXDisplay());
+  const int depth = connection->default_screen()->root_depth;
+  const int bits_per_component = DefaultBitsPerComponent();
 
   std::map<x11::RandR::Output, int> output_to_monitor =
       GetMonitors(version, randr, x_root_window);

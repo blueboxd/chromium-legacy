@@ -62,6 +62,8 @@ class Commit {
                                      StatusController* status,
                                      ExtensionsActivity* extensions_activity);
 
+  ModelTypeSet GetContributingDataTypes() const;
+
   // Cleans up state associated with this commit.  Must be called before the
   // destructor.
   void CleanUp();

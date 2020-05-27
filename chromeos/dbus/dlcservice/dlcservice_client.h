@@ -99,7 +99,7 @@ class COMPONENT_EXPORT(DLCSERVICE_CLIENT) DlcserviceClient {
   virtual void GetExistingDlcs(GetExistingDlcsCallback callback) = 0;
 
   // During testing, can be used to mimic signals received back from dlcservice.
-  virtual void OnInstallStatusForTest(dbus::Signal* signal) = 0;
+  virtual void DlcStateChangedForTest(dbus::Signal* signal) = 0;
 
   // Creates and initializes the global instance. |bus| must not be nullptr.
   static void Initialize(dbus::Bus* bus);

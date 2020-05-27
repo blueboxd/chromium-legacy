@@ -29,8 +29,8 @@ TEST_F(LocalPresentationManagerFactoryTest, CreateForRegularProfile) {
       LocalPresentationManagerFactory::GetOrCreateForBrowserContext(profile()));
 }
 
-TEST_F(LocalPresentationManagerFactoryTest, CreateForOffTheRecordProfile) {
-  Profile* incognito_profile = profile()->GetOffTheRecordProfile();
+TEST_F(LocalPresentationManagerFactoryTest, CreateForIncognitoProfile) {
+  Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
   ASSERT_TRUE(incognito_profile);
 
   // Makes sure a LocalPresentationManager can be created from an incognito

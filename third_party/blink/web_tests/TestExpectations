@@ -100,7 +100,6 @@ crbug.com/1050826 external/wpt/mixed-content/gen/top.http-rp/opt-in/object-tag.h
 
 # Tests temporarily disabled with Site Isolation - uninvestigated bugs:
 # TODO(lukasza, alexmos): Burn down this list.
-crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.js [ Failure Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-blockable.js [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-none.js [ Timeout ]
 crbug.com/623268 http/tests/inspector-protocol/request-mixed-content-status-optionally-blockable.js [ Timeout ]
@@ -2055,6 +2054,7 @@ crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/devtools/service-workers/user-agent-override.js [ Pass Timeout ]
+crbug.com/1011811 http/tests/devtools/profiler/agents-disabled-check.js [ Pass Failure ]
 
 # Temporarily disabled after chromium change
 crbug.com/492511 [ Mac ] virtual/text-antialias/atsui-negative-spacing-features.html [ Failure ]
@@ -2644,10 +2644,9 @@ crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-001.html [ Failu
 crbug.com/1078474 external/wpt/css/css-pseudo/cascade-highlight-002.html [ Failure ]
 crbug.com/1024156 external/wpt/css/css-pseudo/cascade-highlight-004.html [ Failure ]
 
+crbug.com/1086855 external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-pseudo/file-chooser-button-001.tentative.html [ Failure ]
 crbug.com/626703 [ Mac10.14 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-screenx-screeny.html [ Timeout ]
 crbug.com/626703 [ Mac10.15 ] external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-tokenization-innerheight-innerwidth.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/webrtc/RTCDataChannel-close.html [ Timeout ]
@@ -5363,6 +5362,9 @@ crbug.com/1029941 [ Linux ] virtual/exotic-color-space/images/yuv-decode-eligibl
 
 # Failing document policy tests
 crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
+
+# Skipping because of unimplemented behaviour
+crbug.com/965495 external/wpt/feature-policy/experimental-features/focus-without-user-activation-enabled-tentative.sub.html [ Skip ]
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure Timeout ]

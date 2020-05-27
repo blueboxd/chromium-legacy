@@ -35,6 +35,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "build/build_config.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/test/test_ukm_recorder_factory.h"
 #include "cc/trees/layer_tree_host.h"
@@ -122,6 +123,9 @@ cc::LayerTreeSettings GetSynchronousSingleThreadLayerTreeSettings() {
   // test makes progress.
   settings.single_thread_proxy_scheduler = false;
   settings.use_layer_lists = true;
+#if defined(OS_MACOSX)
+  settings.enable_elastic_overscroll = true;
+#endif
   return settings;
 }
 
@@ -747,15 +751,9 @@ void TestWebWidgetClient::SetPageScaleStateAndLimits(
                                                  maximum);
 }
 
-void TestWebWidgetClient::InjectGestureScrollEvent(
-    WebGestureDevice device,
-    const gfx::Vector2dF& delta,
-    ScrollGranularity granularity,
-    cc::ElementId scrollable_area_element_id,
-    WebInputEvent::Type injected_type) {
-  InjectedScrollGestureData data{delta, granularity, scrollable_area_element_id,
-                                 injected_type};
-  injected_scroll_gesture_data_.push_back(data);
+void TestWebWidgetClient::QueueSyntheticEvent(
+    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
+  injected_scroll_events_.push_back(std::move(event));
 }
 
 bool TestWebWidgetClient::HaveScrollEventHandlers() const {

@@ -38,12 +38,12 @@ TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
   // an ancestor. This function traverses all such descendants. See (legacy
   // layout only: Case 1a and) Case 2 below for details.
   DCHECK(object.IsPaintInvalidationContainer() &&
-         (!object.StyleRef().IsStackingContext() ||
+         (!object.IsStackingContext() ||
           MayBeSkippedContainerForFloating(object)));
 
   LayoutObject* descendant = object.NextInPreOrder(&object);
   while (descendant) {
-    if (!descendant->HasLayer() || !descendant->StyleRef().IsStacked()) {
+    if (!descendant->HasLayer() || !descendant->IsStacked()) {
       // Case 1: The descendant is not stacked (or is stacked but has not been
       // allocated a layer yet during style change), so either it's a paint
       // invalidation container in the same situation as |object|, or its paint
@@ -73,7 +73,7 @@ TraverseNonCompositingDescendantsBelongingToAncestorPaintInvalidationContainer(
       // thus recur into the subtree.
       TraverseNonCompositingDescendantsInPaintOrder(*descendant, functor);
       descendant = descendant->NextInPreOrderAfterChildren(&object);
-    } else if (descendant->StyleRef().IsStackingContext() &&
+    } else if (descendant->IsStackingContext() &&
                !MayBeSkippedContainerForFloating(*descendant)) {
       // Case 3: The descendant is an invalidation container and is a stacking
       // context.  No objects in the subtree can have invalidation container
@@ -101,7 +101,7 @@ static void TraverseNonCompositingDescendantsInPaintOrder(
     if (!descendant->IsPaintInvalidationContainer()) {
       functor(*descendant);
       descendant = descendant->NextInPreOrder(&object);
-    } else if (descendant->StyleRef().IsStackingContext() &&
+    } else if (descendant->IsStackingContext() &&
                !MayBeSkippedContainerForFloating(*descendant)) {
       // The descendant is an invalidation container and is a stacking context.
       // No objects in the subtree can have invalidation container outside of

@@ -1669,7 +1669,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                       LifecycleState lifecycle_state);
 
   // The SendCommit* functions below are wrappers for commit calls
-  // made to mojom::FrameNavigationControl and mojom::NavigationClient.
+  // made to mojom::NavigationClient.
   // These exist to be overridden in tests to retain mojo callbacks.
   // Note: |navigation_id| is used in test overrides, but is unused otherwise.
   virtual void SendCommitNavigation(
@@ -2216,6 +2216,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Called by the renderer process when it is done processing a cross-document
   // commit request.
+  // TODO(https://crbug.com/1020175): this is only called with
+  // blink::mojom::CommitResult::Aborted.
   void OnCrossDocumentCommitProcessed(NavigationRequest* navigation_request,
                                       blink::mojom::CommitResult result);
 

@@ -4,6 +4,7 @@
 
 #include "components/performance_manager/graph/frame_node_impl.h"
 
+#include "base/test/gtest_util.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"
 #include "components/performance_manager/test_support/graph_test_harness.h"
@@ -19,6 +20,10 @@ using FrameNodeImplTest = GraphTestHarness;
 
 const FrameNode* ToPublic(FrameNodeImpl* frame_node) {
   return frame_node;
+}
+
+const PageNode* ToPublic(PageNodeImpl* page_node) {
+  return page_node;
 }
 
 }  // namespace
@@ -453,6 +458,179 @@ TEST_F(FrameNodeImplTest, VisitChildFrameNodes) {
               },
               base::Unretained(&visited))));
   EXPECT_EQ(1u, visited.size());
+}
+
+namespace {
+
+class LenientMockPageObserver : public PageNode::ObserverDefaultImpl {
+ public:
+  LenientMockPageObserver() = default;
+  ~LenientMockPageObserver() override = default;
+
+  // Note that opener functionality is actually tested in the
+  MOCK_METHOD3(OnOpenerFrameNodeChanged,
+               void(const PageNode*, const FrameNode*, OpenedType));
+};
+
+using MockPageObserver = ::testing::StrictMock<LenientMockPageObserver>;
+
+}  // namespace
+
+TEST_F(FrameNodeImplTest, OpenerRelationships) {
+  using OpenedType = PageNode::OpenedType;
+
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto pageA = CreateNode<PageNodeImpl>();
+  auto frameA1 = CreateFrameNodeAutoId(process.get(), pageA.get());
+  auto frameA2 =
+      CreateFrameNodeAutoId(process.get(), pageA.get(), frameA1.get());
+  auto pageB = CreateNode<PageNodeImpl>();
+  auto frameB1 = CreateFrameNodeAutoId(process.get(), pageB.get());
+  auto pageC = CreateNode<PageNodeImpl>();
+  auto frameC1 = CreateFrameNodeAutoId(process.get(), pageC.get());
+
+  // Use these to test the public APIs as well.
+  const FrameNode* pframeA1 = static_cast<const FrameNode*>(frameA1.get());
+  const PageNode* ppageB = static_cast<const PageNode*>(pageB.get());
+
+  MockPageObserver obs;
+  graph()->AddPageNodeObserver(&obs);
+
+  // You can always call the pre-delete opener clearing helper, even if you
+  // have no such relationships.
+  frameB1->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+
+  // You can't clear an opener if you don't already have one.
+  EXPECT_DCHECK_DEATH(pageB->ClearOpenerFrameNodeAndOpenedType());
+
+  // You can't be an opener for your own frame tree.
+  EXPECT_DCHECK_DEATH(pageA->SetOpenerFrameNodeAndOpenedType(
+      frameA1.get(), OpenedType::kPopup));
+
+  // You can't set a null opener or an invalid opened type.
+  EXPECT_DCHECK_DEATH(
+      pageB->SetOpenerFrameNodeAndOpenedType(nullptr, OpenedType::kInvalid));
+  EXPECT_DCHECK_DEATH(pageB->SetOpenerFrameNodeAndOpenedType(
+      frameA1.get(), OpenedType::kInvalid));
+
+  EXPECT_EQ(nullptr, pageB->opener_frame_node());
+  EXPECT_EQ(nullptr, ppageB->GetOpenerFrameNode());
+  EXPECT_EQ(OpenedType::kInvalid, pageB->opened_type());
+  EXPECT_EQ(OpenedType::kInvalid, ppageB->GetOpenedType());
+  EXPECT_TRUE(frameA1->opened_page_nodes().empty());
+  EXPECT_TRUE(pframeA1->GetOpenedPageNodes().empty());
+
+  // Set an opener relationship.
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), nullptr,
+                                            OpenedType::kInvalid));
+  pageB->SetOpenerFrameNodeAndOpenedType(frameA1.get(), OpenedType::kGuestView);
+  EXPECT_EQ(frameA1.get(), pageB->opener_frame_node());
+  EXPECT_EQ(frameA1.get(), ppageB->GetOpenerFrameNode());
+  EXPECT_EQ(OpenedType::kGuestView, pageB->opened_type());
+  EXPECT_EQ(OpenedType::kGuestView, ppageB->GetOpenedType());
+  EXPECT_EQ(1u, frameA1->opened_page_nodes().size());
+  EXPECT_EQ(1u, pframeA1->GetOpenedPageNodes().size());
+  EXPECT_EQ(1u, frameA1->opened_page_nodes().count(pageB.get()));
+  EXPECT_EQ(1u, pframeA1->GetOpenedPageNodes().count(pageB.get()));
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Once you have an opener, you can't set it again (it has to be cleared
+  // first).
+  EXPECT_DCHECK_DEATH(pageB->SetOpenerFrameNodeAndOpenedType(
+      frameA1.get(), OpenedType::kPopup));
+
+  // Set another opener relationship.
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageC.get(), nullptr,
+                                            OpenedType::kInvalid));
+  pageC->SetOpenerFrameNodeAndOpenedType(frameA1.get(), OpenedType::kPopup);
+  EXPECT_EQ(frameA1.get(), pageC->opener_frame_node());
+  EXPECT_EQ(OpenedType::kPopup, pageC->opened_type());
+  EXPECT_EQ(2u, frameA1->opened_page_nodes().size());
+  EXPECT_EQ(1u, frameA1->opened_page_nodes().count(pageB.get()));
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Do a traversal.
+  std::set<const PageNode*> visited;
+  EXPECT_TRUE(
+      ToPublic(frameA1.get())
+          ->VisitOpenedPageNodes(base::BindRepeating(
+              [](std::set<const PageNode*>* visited, const PageNode* page) {
+                EXPECT_TRUE(visited->insert(page).second);
+                return true;
+              },
+              base::Unretained(&visited))));
+  EXPECT_THAT(visited, testing::UnorderedElementsAre(ToPublic(pageB.get()),
+                                                     ToPublic(pageC.get())));
+
+  // Do an aborted visit.
+  visited.clear();
+  EXPECT_FALSE(
+      ToPublic(frameA1.get())
+          ->VisitOpenedPageNodes(base::BindRepeating(
+              [](std::set<const PageNode*>* visited, const PageNode* page) {
+                EXPECT_TRUE(visited->insert(page).second);
+                return false;
+              },
+              base::Unretained(&visited))));
+  EXPECT_EQ(1u, visited.size());
+
+  // Manually clear the first relationship (initiated from the page).
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), frameA1.get(),
+                                            OpenedType::kGuestView));
+  pageB->ClearOpenerFrameNodeAndOpenedType();
+  EXPECT_EQ(nullptr, pageB->opener_frame_node());
+  EXPECT_EQ(OpenedType::kInvalid, pageB->opened_type());
+  EXPECT_EQ(frameA1.get(), pageC->opener_frame_node());
+  EXPECT_EQ(OpenedType::kPopup, pageC->opened_type());
+  EXPECT_EQ(1u, frameA1->opened_page_nodes().size());
+  EXPECT_EQ(0u, frameA1->opened_page_nodes().count(pageB.get()));
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Clear the second relationship (initiated from the frame).
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageC.get(), frameA1.get(),
+                                            OpenedType::kPopup));
+  frameA1->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+  EXPECT_EQ(nullptr, pageC->opener_frame_node());
+  EXPECT_EQ(OpenedType::kInvalid, pageC->opened_type());
+  EXPECT_TRUE(frameA1->opened_page_nodes().empty());
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Set a popup opener relationship on node A2.
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), nullptr,
+                                            OpenedType::kInvalid));
+  pageB->SetOpenerFrameNodeAndOpenedType(frameA2.get(), OpenedType::kPopup);
+  EXPECT_EQ(frameA2.get(), pageB->opener_frame_node());
+  EXPECT_EQ(OpenedType::kPopup, pageB->opened_type());
+  EXPECT_TRUE(frameA1->opened_page_nodes().empty());
+  EXPECT_EQ(1u, frameA2->opened_page_nodes().size());
+  EXPECT_EQ(1u, frameA2->opened_page_nodes().count(pageB.get()));
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Clear it with the helper, and expect it to be reparented to node A1.
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), frameA2.get(),
+                                            OpenedType::kPopup));
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), nullptr,
+                                            OpenedType::kInvalid));
+  frameA2->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+  EXPECT_EQ(frameA1.get(), pageB->opener_frame_node());
+  EXPECT_EQ(OpenedType::kPopup, pageB->opened_type());
+  EXPECT_EQ(1u, frameA1->opened_page_nodes().size());
+  EXPECT_EQ(1u, frameA1->opened_page_nodes().count(pageB.get()));
+  EXPECT_TRUE(frameA2->opened_page_nodes().empty());
+  testing::Mock::VerifyAndClear(&obs);
+
+  // Clear it again with the helper. This time reparenting can't happen, as it
+  // was already parented to the root.
+  EXPECT_CALL(obs, OnOpenerFrameNodeChanged(pageB.get(), frameA1.get(),
+                                            OpenedType::kPopup));
+  frameA1->SeverOpenedPagesAndMaybeReparentPopupsForTesting();
+  EXPECT_EQ(nullptr, pageB->opener_frame_node());
+  EXPECT_EQ(OpenedType::kInvalid, pageB->opened_type());
+  EXPECT_TRUE(frameA1->opened_page_nodes().empty());
+  EXPECT_TRUE(frameA2->opened_page_nodes().empty());
+  testing::Mock::VerifyAndClear(&obs);
+
+  graph()->RemovePageNodeObserver(&obs);
 }
 
 }  // namespace performance_manager

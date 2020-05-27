@@ -10,11 +10,13 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/swap_promise.h"
 #include "cc/trees/ukm_manager.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/web_render_widget_scheduling_state.h"
+#include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_widget_client.h"
@@ -695,6 +697,39 @@ void WebFrameWidgetBase::DispatchRafAlignedInput(base::TimeTicks frame_time) {
   }
 }
 
+bool WebFrameWidgetBase::WillHandleGestureEvent(const WebGestureEvent& event) {
+  return Client()->WillHandleGestureEvent(event);
+}
+
+bool WebFrameWidgetBase::WillHandleMouseEvent(const WebMouseEvent& event) {
+  return Client()->WillHandleMouseEvent(event);
+}
+
+void WebFrameWidgetBase::ObserveGestureEventAndResult(
+    const WebGestureEvent& gesture_event,
+    const gfx::Vector2dF& unused_delta,
+    const cc::OverscrollBehavior& overscroll_behavior,
+    bool event_processed) {
+  Client()->DidHandleGestureScrollEvent(gesture_event, unused_delta,
+                                        overscroll_behavior, event_processed);
+}
+
+void WebFrameWidgetBase::DidHandleKeyEvent() {
+  Client()->DidHandleKeyEvent();
+}
+
+void WebFrameWidgetBase::QueueSyntheticEvent(
+    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
+  Client()->QueueSyntheticEvent(std::move(event));
+}
+
+WebTextInputType WebFrameWidgetBase::GetTextInputType() {
+  WebInputMethodController* controller = GetActiveWebInputMethodController();
+  if (!controller)
+    return WebTextInputType::kWebTextInputTypeNone;
+  return controller->TextInputType();
+}
+
 void WebFrameWidgetBase::ApplyViewportChangesForTesting(
     const ApplyViewportChangesArgs& args) {
   widget_base_->ApplyViewportChanges(args);
@@ -711,6 +746,20 @@ void WebFrameWidgetBase::SetDisplayMode(mojom::blink::DisplayMode mode) {
 
 void WebFrameWidgetBase::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
+}
+
+bool WebFrameWidgetBase::HandlingInputEvent() {
+  return widget_base_->input_handler().handling_input_event();
+}
+
+void WebFrameWidgetBase::SetHandlingInputEvent(bool handling) {
+  widget_base_->input_handler().set_handling_input_event(handling);
+}
+
+void WebFrameWidgetBase::ProcessInputEventSynchronously(
+    const WebCoalescedInputEvent& event,
+    HandledEventCallback callback) {
+  widget_base_->input_handler().HandleInputEvent(event, std::move(callback));
 }
 
 void WebFrameWidgetBase::AutoscrollStart(const gfx::PointF& position) {
@@ -955,6 +1004,91 @@ void WebFrameWidgetBase::SetMainFrameOverlayColor(SkColor color) {
 void WebFrameWidgetBase::SetToolTipText(const String& tooltip_text,
                                         TextDirection dir) {
   widget_base_->SetToolTipText(tooltip_text, dir);
+}
+
+void WebFrameWidgetBase::DidOverscroll(
+    const gfx::Vector2dF& overscroll_delta,
+    const gfx::Vector2dF& accumulated_overscroll,
+    const gfx::PointF& position,
+    const gfx::Vector2dF& velocity) {
+#if defined(OS_MACOSX)
+  // On OSX the user can disable the elastic overscroll effect. If that's the
+  // case, don't forward the overscroll notification.
+  if (!widget_base_->LayerTreeHost()->GetSettings().enable_elastic_overscroll)
+    return;
+#endif
+
+  cc::OverscrollBehavior overscroll_behavior =
+      widget_base_->LayerTreeHost()->overscroll_behavior();
+  if (!widget_base_->input_handler().DidOverscrollFromBlink(
+          overscroll_delta, accumulated_overscroll, position, velocity,
+          overscroll_behavior))
+    return;
+
+  // If we're currently handling an event, stash the overscroll data such that
+  // it can be bundled in the event ack.
+  Client()->DidOverscroll(overscroll_delta, accumulated_overscroll, position,
+                          velocity, overscroll_behavior);
+}
+
+void WebFrameWidgetBase::InjectGestureScrollEvent(
+    blink::WebGestureDevice device,
+    const gfx::Vector2dF& delta,
+    ui::ScrollGranularity granularity,
+    cc::ElementId scrollable_area_element_id,
+    blink::WebInputEvent::Type injected_type) {
+  widget_base_->input_handler().InjectGestureScrollEvent(
+      device, delta, granularity, scrollable_area_element_id, injected_type);
+}
+
+void WebFrameWidgetBase::DidChangeCursor(const ui::Cursor& cursor) {
+  widget_base_->SetCursor(cursor);
+  Client()->DidChangeCursor(cursor);
+}
+
+void WebFrameWidgetBase::FocusChangeComplete() {
+  blink::WebLocalFrame* focused = LocalRoot()->View()->FocusedFrame();
+
+  if (focused && focused->AutofillClient())
+    focused->AutofillClient()->DidCompleteFocusChangeInFrame();
+}
+
+void WebFrameWidgetBase::ShowVirtualKeyboard() {
+  Client()->ShowVirtualKeyboard();
+}
+
+void WebFrameWidgetBase::UpdateTextInputState() {
+  Client()->UpdateTextInputState();
+}
+
+void WebFrameWidgetBase::ShowVirtualKeyboardOnElementFocus() {
+  widget_base_->ShowVirtualKeyboardOnElementFocus();
+}
+
+void WebFrameWidgetBase::ProcessTouchAction(WebTouchAction touch_action) {
+  if (!widget_base_->ProcessTouchAction(touch_action))
+    return;
+  Client()->SetTouchAction(touch_action);
+}
+
+void WebFrameWidgetBase::DidHandleGestureEvent(const WebGestureEvent& event,
+                                               bool event_cancelled) {
+  if (event_cancelled) {
+    // The delegate() doesn't need to hear about cancelled events.
+    return;
+  }
+
+#if defined(OS_ANDROID) || defined(USE_AURA)
+  if (event.GetType() == WebInputEvent::Type::kGestureTap) {
+    widget_base_->input_handler().ShowVirtualKeyboard();
+  } else if (event.GetType() == WebInputEvent::Type::kGestureLongPress) {
+    WebInputMethodController* controller = GetActiveWebInputMethodController();
+    if (!controller || controller->TextInputInfo().value.IsEmpty())
+      widget_base_->input_handler().UpdateTextInputState();
+    else
+      widget_base_->input_handler().ShowVirtualKeyboard();
+  }
+#endif
 }
 
 }  // namespace blink

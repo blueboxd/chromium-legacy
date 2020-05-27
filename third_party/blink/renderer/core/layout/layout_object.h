@@ -551,6 +551,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
            ShouldApplySizeContainment();
   }
 
+  inline bool IsStackingContext() const {
+    return IsStackingContext(StyleRef());
+  }
+  inline bool IsStackingContext(const ComputedStyle& style) const {
+    return style.IsStackingContextWithoutContainment() ||
+           ShouldApplyPaintContainment(style) ||
+           ShouldApplyLayoutContainment(style);
+  }
+
+  inline bool IsStacked() const { return IsStacked(StyleRef()); }
+  inline bool IsStacked(const ComputedStyle& style) const {
+    return IsStackingContext(style) ||
+           style.GetPosition() != EPosition::kStatic;
+  }
+
   void NotifyPriorityScrollAnchorStatusChanged();
 
  private:

@@ -149,7 +149,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseFloatUnderCompositedInline) {
   auto fragments = NGPaintFragment::InlineFragmentsFor(span);
 
   EXPECT_TRUE(span->IsPaintInvalidationContainer());
-  EXPECT_TRUE(span->StyleRef().IsStackingContext());
+  EXPECT_TRUE(span->IsStackingContext());
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
     EXPECT_EQ(span, &target->ContainerForPaintInvalidation());
     EXPECT_EQ(span_layer, target->PaintingLayer());
@@ -281,7 +281,7 @@ TEST_F(ObjectPaintInvalidatorTest, TraverseStackedFloatUnderCompositedInline) {
   auto fragments = NGPaintFragment::InlineFragmentsFor(span);
 
   EXPECT_TRUE(span->IsPaintInvalidationContainer());
-  EXPECT_TRUE(span->StyleRef().IsStackingContext());
+  EXPECT_TRUE(span->IsStackingContext());
   EXPECT_EQ(span, &target->ContainerForPaintInvalidation());
   EXPECT_EQ(target_layer, target->PaintingLayer());
 

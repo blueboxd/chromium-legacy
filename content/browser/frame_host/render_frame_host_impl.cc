@@ -5628,11 +5628,11 @@ void RenderFrameHostImpl::CommitNavigation(
                "frame_tree_node", frame_tree_node_->frame_tree_node_id(), "url",
                common_params->url.possibly_invalid_spec());
   DCHECK(!IsRendererDebugURL(common_params->url));
+  DCHECK(navigation_request);
 
   bool is_same_document =
       NavigationTypeUtils::IsSameDocument(common_params->navigation_type);
-  bool is_mhtml_iframe =
-      navigation_request && navigation_request->IsForMhtmlSubframe();
+  bool is_mhtml_iframe = navigation_request->IsForMhtmlSubframe();
 
   // A |response| and a |url_loader_client_endpoints| must always be provided,
   // except for edge cases, where another way to load the document exist.
@@ -5745,7 +5745,7 @@ void RenderFrameHostImpl::CommitNavigation(
   }
   DCHECK(!isolation_info_.IsEmpty());
 
-  if (navigation_request && navigation_request->appcache_handle()) {
+  if (navigation_request->appcache_handle()) {
     // AppCache may create a subresource URLLoaderFactory later, so make sure it
     // has the correct origin to use when calling
     // ContentBrowserClient::WillCreateURLLoaderFactory().
@@ -5844,7 +5844,7 @@ void RenderFrameHostImpl::CommitNavigation(
       // NavigationRequest in this function.
       recreate_default_url_loader_factory_after_network_service_crash_ = true;
       CrossOriginEmbedderPolicyReporter* const coep_reporter =
-          navigation_request ? navigation_request->coep_reporter() : nullptr;
+          navigation_request->coep_reporter();
       mojo::PendingRemote<network::mojom::CrossOriginEmbedderPolicyReporter>
           coep_reporter_remote;
       if (coep_reporter) {
@@ -5856,9 +5856,7 @@ void RenderFrameHostImpl::CommitNavigation(
           CreateNetworkServiceDefaultFactoryAndObserve(
               CreateURLLoaderFactoryParamsForMainWorld(
                   main_world_origin_for_url_loader_factory,
-                  navigation_request
-                      ? mojo::Clone(navigation_request->client_security_state())
-                      : network::mojom::ClientSecurityState::New(),
+                  mojo::Clone(navigation_request->client_security_state()),
                   std::move(coep_reporter_remote),
                   DetermineWhetherToForbidTrustTokenRedemption(
                       GetParent(), *commit_params,
@@ -5982,9 +5980,7 @@ void RenderFrameHostImpl::CommitNavigation(
         CreateURLLoaderFactoriesForIsolatedWorlds(
             main_world_origin_for_url_loader_factory,
             isolated_worlds_requiring_separate_url_loader_factory_,
-            navigation_request
-                ? mojo::Clone(navigation_request->client_security_state())
-                : network::mojom::ClientSecurityState::New(),
+            mojo::Clone(navigation_request->client_security_state()),
             DetermineWhetherToForbidTrustTokenRedemption(
                 GetParent(), *commit_params,
                 main_world_origin_for_url_loader_factory));
@@ -6057,9 +6053,8 @@ void RenderFrameHostImpl::CommitNavigation(
           EnsurePrefetchedSignedExchangeCache());
     }
 
-    mojom::NavigationClient* navigation_client = nullptr;
-    if (navigation_request)
-      navigation_client = navigation_request->GetCommitNavigationClient();
+    mojom::NavigationClient* navigation_client =
+        navigation_request->GetCommitNavigationClient();
 
     // Record the metrics about the state of the old main frame at the moment
     // when we navigate away from it as it matters for whether the page
@@ -8139,32 +8134,14 @@ void RenderFrameHostImpl::SendCommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
-  // For committed interstitials, we do not have a NavigationRequest and use the
-  // old NavigationControl mojo interface. For anything else we should have a
-  // NavigationRequest, containing a NavigationClient, and commit through it.
-  // TODO(ahemery): Update when https://crbug.com/448486 is done.
-  if (navigation_client) {
-    navigation_client->CommitNavigation(
-        std::move(common_params), std::move(commit_params),
-        std::move(response_head), std::move(response_body),
-        std::move(url_loader_client_endpoints),
-        std::move(subresource_loader_factories),
-        std::move(subresource_overrides), std::move(controller),
-        std::move(container_info), std::move(prefetch_loader_factory),
-        devtools_navigation_token,
-        BuildCommitNavigationCallback(navigation_request));
-  } else {
-    DCHECK(!navigation_request);
-    GetNavigationControl()->CommitNavigation(
-        std::move(common_params), std::move(commit_params),
-        std::move(response_head), std::move(response_body),
-        std::move(url_loader_client_endpoints),
-        std::move(subresource_loader_factories),
-        std::move(subresource_overrides), std::move(controller),
-        std::move(container_info), std::move(prefetch_loader_factory),
-        devtools_navigation_token,
-        mojom::FrameNavigationControl::CommitNavigationCallback());
-  }
+  navigation_client->CommitNavigation(
+      std::move(common_params), std::move(commit_params),
+      std::move(response_head), std::move(response_body),
+      std::move(url_loader_client_endpoints),
+      std::move(subresource_loader_factories), std::move(subresource_overrides),
+      std::move(controller), std::move(container_info),
+      std::move(prefetch_loader_factory), devtools_navigation_token,
+      BuildCommitNavigationCallback(navigation_request));
 }
 
 void RenderFrameHostImpl::SendCommitFailedNavigation(

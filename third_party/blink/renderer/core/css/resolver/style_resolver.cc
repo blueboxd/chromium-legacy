@@ -769,7 +769,7 @@ scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport(
       InitialStyleForElement(document);
 
   viewport_style->SetZIndex(0);
-  viewport_style->SetIsStackingContext(true);
+  viewport_style->SetIsStackingContextWithoutContainment(true);
   viewport_style->SetDisplay(EDisplay::kBlock);
   viewport_style->SetPosition(EPosition::kAbsolute);
 

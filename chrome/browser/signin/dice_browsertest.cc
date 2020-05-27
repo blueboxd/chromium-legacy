@@ -27,6 +27,7 @@
 #include "chrome/browser/policy/cloud/user_policy_signin_service_internal.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search/ntp_features.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/account_reconcilor_factory.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
@@ -63,7 +64,9 @@
 #include "components/variations/variations_switches.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/load_notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "google_apis/gaia/gaia_switches.h"
@@ -871,9 +874,24 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, EnableSyncAfterToken) {
                                GetDeviceId().c_str()),
             dice_request_header_);
 
-  ui_test_utils::UrlLoadObserver ntp_url_observer(
-      GURL(chrome::kChromeSearchLocalNtpUrl),
-      content::NotificationService::AllSources());
+  content::WindowedNotificationObserver ntp_url_observer(
+      content::NOTIFICATION_LOAD_STOP,
+      base::BindRepeating([](const content::NotificationSource&,
+                             const content::NotificationDetails& details) {
+        auto url =
+            content::Details<content::LoadNotificationDetails>(details)->url;
+        // Some test flags (e.g. ForceWebRequestProxyForTest) can change whether
+        // the reported NTP URL is the virtual chrome://newtab or one of the
+        // concrete chrome://new-tab-page or
+        // chrome-search://local-ntp/local-ntp.html. As far as this test is
+        // concerned either URL is fine.
+        auto concrete_ntp_url =
+            base::FeatureList::IsEnabled(ntp_features::kWebUI)
+                ? GURL(chrome::kChromeUINewTabPageURL)
+                : GURL(chrome::kChromeSearchLocalNtpUrl);
+        return url == concrete_ntp_url ||
+               url == GURL(chrome::kChromeUINewTabURL);
+      }));
 
   WaitForSigninSucceeded();
   EXPECT_EQ(GetMainAccountID(), GetIdentityManager()->GetPrimaryAccountId());
@@ -933,7 +951,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_EnableSyncBeforeToken) {
             dice_request_header_);
 
   ui_test_utils::UrlLoadObserver ntp_url_observer(
-      GURL(chrome::kChromeSearchLocalNtpUrl),
+      GURL(chrome::kChromeUINewTabURL),
       content::NotificationService::AllSources());
 
   WaitForSigninSucceeded();

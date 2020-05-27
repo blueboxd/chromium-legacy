@@ -185,16 +185,11 @@
       <!-- Share (WiFi) -->
       <template is="dom-if" if="[[shareIsVisible_(managedProperties_)]]"
           restamp>
-        <div class="property-box">
-          <div id="shareLabel" class="start">
-            [[i18n('networkConfigShare')]]
-          </div>
-          <cr-toggle id="share" checked="{{shareNetwork_}}"
-              disabled="[[!shareIsEnabled_(configProperties_.*,
-                        eapProperties_.*, shareAllowEnable)]]"
-              aria-labeledby="shareLabel" on-change="onShareChanged_">
-          </cr-toggle>
-        </div>
+        <network-config-toggle id="share" label="[[i18n('networkConfigShare')]]"
+            checked="{{shareNetwork_}}" on-change="onShareChanged_"
+            disabled="[[!shareIsEnabled_(configProperties_.*,
+                      eapProperties_.*, shareAllowEnable)]]">
+        </network-config-toggle>
       </template>
 
       <!-- AutoConnect (WiFi) -->

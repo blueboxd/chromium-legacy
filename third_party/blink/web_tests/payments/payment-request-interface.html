@@ -226,10 +226,6 @@ test(function() {
 }, 'Non-negative total value in PaymentDetailsModifier should not throw.');
 
 test(function() {
-    new PaymentRequest([{'supportedMethods': 'foo'}, {'supportedMethods': 'foo'}], buildDetails(), {});
-}, 'Duplicate supported payment method identifiers in separate methodData objects should not throw.');
-
-test(function() {
     new PaymentRequest([{'supportedMethods': 'foo'}], {'total': buildItem(), 'modifiers': [{'supportedMethods': 'foo'}, {'supportedMethods': 'foo'}]});
 }, 'Duplicate supported payment method identifiers in separate methoData objects of modifiers should not throw.');
 

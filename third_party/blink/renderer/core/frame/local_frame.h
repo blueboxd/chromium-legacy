@@ -401,10 +401,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return intersection_state_.main_frame_document_intersection;
   }
 
-  bool CanSkipStickyFrameTracking() const {
-    return intersection_state_.can_skip_sticky_frame_tracking;
-  }
-
   FrameOcclusionState GetOcclusionState() const;
 
   bool NeedsOcclusionTracking() const;

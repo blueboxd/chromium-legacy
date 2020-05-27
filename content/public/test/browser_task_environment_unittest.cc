@@ -10,6 +10,7 @@
 #include "base/message_loop/message_loop_current.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/bind_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,8 +39,8 @@ void PostToThreadPool(int iteration, base::subtle::Atomic32* tasks_run) {
   if (iteration == kNumHops)
     return;
 
-  base::PostTask(FROM_HERE,
-                 base::BindOnce(&PostTaskToUIThread, iteration + 1, tasks_run));
+  base::ThreadPool::PostTask(
+      FROM_HERE, base::BindOnce(&PostTaskToUIThread, iteration + 1, tasks_run));
 }
 
 void PostTaskToUIThread(int iteration, base::subtle::Atomic32* tasks_run) {

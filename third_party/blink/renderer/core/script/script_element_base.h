@@ -22,6 +22,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_SCRIPT_ELEMENT_BASE_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -99,8 +100,7 @@ class CORE_EXPORT ScriptElementBase : public GarbageCollectedMixin {
   virtual Type GetScriptElementType() = 0;
 
  protected:
-  ScriptLoader* InitializeScriptLoader(bool parser_inserted,
-                                       bool already_started);
+  ScriptLoader* InitializeScriptLoader(CreateElementFlags);
 
   virtual ScriptLoader* Loader() const = 0;
 };

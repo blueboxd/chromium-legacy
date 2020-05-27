@@ -646,7 +646,7 @@ int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(LayoutObject* layout_object,
     }
   }
 
-  if (layout_object->Style() && layout_object->Style()->IsStackingContext())
+  if (layout_object->IsStackingContext())
     SetRare(layout_tree_snapshot->getStackingContexts(), layout_index);
 
   if (paint_order_map_) {

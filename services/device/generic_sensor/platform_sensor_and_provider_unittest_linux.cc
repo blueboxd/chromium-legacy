@@ -196,18 +196,16 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
  public:
   void SetUp() override {
     provider_ = base::WrapUnique(new PlatformSensorProviderLinux);
-
-    auto manager = MockSensorDeviceManager::Create(
-        provider_->weak_ptr_factory_.GetWeakPtr());
-    manager_ = manager.get();
-    provider_->SetSensorDeviceManagerForTesting(std::move(manager));
-  }
-
-  void TearDown() override {
-    base::RunLoop().RunUntilIdle();
+    provider_->SetSensorDeviceManagerForTesting(MockSensorDeviceManager::Create(
+        provider_->weak_ptr_factory_.GetWeakPtr()));
   }
 
  protected:
+  MockSensorDeviceManager* mock_sensor_device_manager() const {
+    return static_cast<MockSensorDeviceManager*>(
+        provider_->sensor_device_manager_.get());
+  }
+
   // Sensor creation is asynchronous, therefore inner loop is used to wait for
   // PlatformSensorProvider::CreateSensorCallback completion.
   scoped_refptr<PlatformSensor> CreateSensor(mojom::SensorType type) {
@@ -237,7 +235,8 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
     {
       base::ScopedAllowBlockingForTesting allow_blocking;
 
-      const base::FilePath& sensor_dir = manager_->GetSensorsBasePath();
+      const base::FilePath& sensor_dir =
+          mock_sensor_device_manager()->GetSensorsBasePath();
       if (!data.sensor_scale_name.empty() && scaling != 0) {
         base::FilePath sensor_scale_file =
             base::FilePath(sensor_dir).Append(data.sensor_scale_name);
@@ -275,9 +274,10 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   // Emulates device enumerations and initial udev events. Once all
   // devices are added, tells manager its ready.
   void SetServiceStart() {
-    EXPECT_CALL(*manager_, Start()).WillOnce(Invoke([this]() {
-      manager_->DeviceAdded();
-      manager_->EnumerationReady();
+    auto* manager = mock_sensor_device_manager();
+    EXPECT_CALL(*manager, Start()).WillOnce(Invoke([manager]() {
+      manager->DeviceAdded();
+      manager->EnumerationReady();
     }));
   }
 
@@ -303,8 +303,9 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
   // been added.
   void GenerateDeviceAddedEvent() {
     bool success = provider_->blocking_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MockSensorDeviceManager::DeviceAdded,
-                                  base::Unretained(manager_)));
+        FROM_HERE,
+        base::BindOnce(&MockSensorDeviceManager::DeviceAdded,
+                       base::Unretained(mock_sensor_device_manager())));
     ASSERT_TRUE(success);
     // Make sure all tasks have been delivered (including SensorDeviceManager
     // notifying PlatformSensorProviderLinux of a device addition).
@@ -319,8 +320,9 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
       DeleteFile(sensor_dir);
     }
     bool success = provider_->blocking_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&MockSensorDeviceManager::DeviceRemoved,
-                                  base::Unretained(manager_)));
+        FROM_HERE,
+        base::BindOnce(&MockSensorDeviceManager::DeviceRemoved,
+                       base::Unretained(mock_sensor_device_manager())));
     ASSERT_TRUE(success);
     // Make sure all tasks have been delivered (including SensorDeviceManager
     // notifying PlatformSensorProviderLinux of a device removal).
@@ -329,7 +331,6 @@ class PlatformSensorAndProviderLinuxTest : public ::testing::Test {
 
   base::test::TaskEnvironment task_environment_;
 
-  MockSensorDeviceManager* manager_;
   std::unique_ptr<PlatformSensorProviderLinux> provider_;
 
   // Used to simulate the non-test scenario where we're running in an IO thread
@@ -417,7 +418,8 @@ TEST_F(PlatformSensorAndProviderLinuxTest, SensorRemoved) {
       std::make_unique<NiceMock<LinuxMockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(5);
   EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
-  GenerateDeviceRemovedEvent(manager_->GetSensorsBasePath());
+  GenerateDeviceRemovedEvent(
+      mock_sensor_device_manager()->GetSensorsBasePath());
   WaitOnSensorErrorEvent(client.get());
 }
 

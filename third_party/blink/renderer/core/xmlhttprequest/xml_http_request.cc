@@ -357,8 +357,7 @@ void XMLHttpRequest::InitResponseDocument() {
   DocumentInit init = DocumentInit::Create()
                           .WithExecutionContext(GetExecutionContext())
                           .WithOwnerDocument(GetDocument())
-                          .WithURL(response_.ResponseUrl())
-                          .WithContentSecurityPolicyFromExecutionContext();
+                          .WithURL(response_.ResponseUrl());
   if (is_html)
     response_document_ = MakeGarbageCollected<HTMLDocument>(init);
   else

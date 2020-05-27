@@ -38,6 +38,7 @@
 #include "base/win/shlwapi.h"  // For PathIsUNC()
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "components/policy/core/common/management/platform_management_service.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_load_status.h"
 #include "components/policy/core/common/policy_loader_common.h"
@@ -71,11 +72,12 @@ enum DomainCheckErrors {
 
 // Encapsulates logic to determine if enterprise policies should be honored.
 bool ShouldHonorPolicies() {
-  bool is_enterprise_version =
-      base::win::OSInfo::GetInstance()->version_type() != base::win::SUITE_HOME;
-  return base::win::IsEnrolledToDomain() ||
-         (base::win::IsDeviceRegisteredWithManagement() &&
-          is_enterprise_version);
+  auto& platform_management_service = PlatformManagementService::GetInstance();
+  auto management_authorities =
+      platform_management_service.GetManagementAuthorities();
+  return management_authorities.find(
+             policy::EnterpriseManagementAuthority::DOMAIN_LOCAL) !=
+         management_authorities.end();
 }
 
 // Parses |gpo_dict| according to |schema| and writes the resulting policy

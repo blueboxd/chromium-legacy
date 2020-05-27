@@ -202,7 +202,7 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
 
   if (object.IsPaintInvalidationContainer()) {
     context.paint_invalidation_container = ToLayoutBoxModelObject(&object);
-    if (object.StyleRef().IsStackingContext() || object.IsSVGRoot())
+    if (object.IsStackingContext() || object.IsSVGRoot())
       context.paint_invalidation_container_for_stacked_contents =
           ToLayoutBoxModelObject(&object);
   } else if (IsA<LayoutView>(object)) {
@@ -223,7 +223,7 @@ void PaintInvalidator::UpdatePaintInvalidationContainer(
     // check can be removed as floats will be painted by the correct layer.
     context.paint_invalidation_container =
         &object.ContainerForPaintInvalidation();
-  } else if (object.StyleRef().IsStacked() &&
+  } else if (object.IsStacked() &&
              // This is to exclude some objects (e.g. LayoutText) inheriting
              // stacked style from parent but aren't actually stacked.
              object.HasLayer() &&

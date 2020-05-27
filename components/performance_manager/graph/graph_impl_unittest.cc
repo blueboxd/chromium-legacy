@@ -322,4 +322,24 @@ TEST_F(GraphImplTest, NodeDataDescribers) {
   EXPECT_EQ(0u, descr.DictSize());
 }
 
+TEST_F(GraphImplTest, OpenersClearedOnTeardown) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  auto pageA = CreateNode<PageNodeImpl>();
+  auto frameA1 = CreateFrameNodeAutoId(process.get(), pageA.get());
+  auto frameA2 =
+      CreateFrameNodeAutoId(process.get(), pageA.get(), frameA1.get());
+  auto pageB = CreateNode<PageNodeImpl>();
+  auto frameB1 = CreateFrameNodeAutoId(process.get(), pageB.get());
+  auto pageC = CreateNode<PageNodeImpl>();
+  auto frameC1 = CreateFrameNodeAutoId(process.get(), pageC.get());
+
+  // Set up some opener relationships. These should be gracefully torn down as
+  // the graph cleans up nodes, otherwise the frame and page node destructors
+  // will explode.
+  pageB->SetOpenerFrameNodeAndOpenedType(frameA1.get(),
+                                         PageNode::OpenedType::kGuestView);
+  pageC->SetOpenerFrameNodeAndOpenedType(frameA2.get(),
+                                         PageNode::OpenedType::kPopup);
+}
+
 }  // namespace performance_manager

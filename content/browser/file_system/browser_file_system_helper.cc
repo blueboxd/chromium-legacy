@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/lazy_thread_pool_task_runner.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -168,8 +169,8 @@ void SyncGetPlatformPath(storage::FileSystemContext* context,
   if (!FileSystemURLIsValid(context, url)) {
     // Note: Posting a task here so this function always returns
     // before the callback is called no matter which path is taken.
-    base::PostTask(FROM_HERE,
-                   base::BindOnce(std::move(callback), base::FilePath()));
+    base::ThreadPool::PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), base::FilePath()));
     return;
   }
 

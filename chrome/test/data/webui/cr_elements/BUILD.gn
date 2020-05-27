@@ -57,13 +57,13 @@ js_type_check("closure_compile") {
     ":cr_checkbox_test.m",
     ":cr_container_shadow_behavior_test.m",
     ":cr_dialog_test.m",
+    ":cr_drawer_tests.m",
+    ":cr_expand_button_focus_tests.m",
+    ":cr_expand_button_tests.m",
+    ":cr_fingerprint_progress_arc_tests.m",
+    ":cr_icon_button_focus_tests.m",
+    ":cr_icon_button_tests.m",
 
-    #":cr_drawer_tests",
-    #":cr_expand_button_focus_tests",
-    #":cr_expand_button_tests",
-    #":cr_fingerprint_progress_arc_tests",
-    #":cr_icon_button_focus_tests",
-    #":cr_icon_button_tests",
     #":cr_input_test",
     #":cr_lazy_render_tests",
     #":cr_link_row_tests",
@@ -164,6 +164,79 @@ js_library("cr_dialog_test.m") {
     "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_drawer_tests.m") {
+  sources = [
+    "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_drawer_tests.m.js",
+  ]
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_drawer:cr_drawer.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_expand_button_focus_tests.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_expand_button_focus_tests.m.js" ]
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
+    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button.m",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+    "//ui/webui/resources/js:util.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_expand_button_tests.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_expand_button_tests.m.js" ]
+  deps = [
+    "..:chai_assert",
+    "//ui/webui/resources/cr_elements/cr_expand_button:cr_expand_button.m",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_fingerprint_progress_arc_tests.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_fingerprint_progress_arc_tests.m.js" ]
+  deps = [
+    "..:chai_assert",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/cr_elements/cr_fingerprint:cr_fingerprint_progress_arc.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_icon_button_focus_tests.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_focus_tests.m.js" ]
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
+  ]
+  externs_list = [ "$externs_path/mocha-2.5.js" ]
+  extra_deps = [ ":modulize" ]
+}
+
+js_library("cr_icon_button_tests.m") {
+  sources = [ "$root_gen_dir/chrome/test/data/webui/cr_elements/cr_icon_button_tests.m.js" ]
+  deps = [
+    "..:chai_assert",
+    "..:test_util.m",
+    "//third_party/polymer/v3_0/components-chromium/iron-test-helpers:mock-interactions",
+    "//ui/webui/resources/cr_elements/cr_icon_button:cr_icon_button.m",
   ]
   externs_list = [ "$externs_path/mocha-2.5.js" ]
   extra_deps = [ ":modulize" ]

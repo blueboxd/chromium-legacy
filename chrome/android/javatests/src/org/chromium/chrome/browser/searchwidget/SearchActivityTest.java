@@ -12,11 +12,18 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Instrumentation;
 import android.app.Instrumentation.ActivityMonitor;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 import android.text.TextUtils;
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
+
+import androidx.core.content.FileProvider;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -29,6 +36,9 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
+import org.chromium.base.ContentUriUtils;
+import org.chromium.base.ContextUtils;
+import org.chromium.base.IntentUtils;
 import org.chromium.base.test.params.ParameterAnnotations;
 import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
@@ -38,6 +48,8 @@ import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.locale.DefaultSearchEngineDialogHelperUtils;
@@ -46,14 +58,19 @@ import org.chromium.chrome.browser.locale.DefaultSearchEnginePromoDialog.Default
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorTestUtils;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteResult;
 import org.chromium.chrome.browser.omnibox.suggestions.CachedZeroSuggestionsManager;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionBuilderForTest;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
+import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdown;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.searchwidget.SearchActivity.SearchActivityDelegate;
+import org.chromium.chrome.browser.share.clipboard.ClipboardImageFileProvider;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.MultiActivityTestRule;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -64,9 +81,13 @@ import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
+import org.chromium.content_public.browser.test.util.TestTouchUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.base.Clipboard;
 import org.chromium.url.GURL;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -89,6 +110,7 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SearchActivityTest {
     private static final long OMNIBOX_SHOW_TIMEOUT_MS = 5000L;
+    private static final String TEST_PNG_IMAGE_FILE_EXTENSION = ".png";
 
     @ParameterAnnotations.ClassParameter
     private static List<ParameterSet> sClassParams =
@@ -157,8 +179,24 @@ public class SearchActivityTest {
         }
     }
 
+    // Helper class for clipboard Omnibox test.
+    private class FileProviderHelper implements ContentUriUtils.FileProviderUtil {
+        private static final String API_AUTHORITY_SUFFIX = ".FileProvider";
+
+        @Override
+        public Uri getContentUriFromFile(File file) {
+            Context appContext = ContextUtils.getApplicationContext();
+            return FileProvider.getUriForFile(
+                    appContext, appContext.getPackageName() + API_AUTHORITY_SUFFIX, file);
+        }
+    }
+
     @Rule
     public MultiActivityTestRule mTestRule = new MultiActivityTestRule();
+
+    @Rule
+    public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
+            new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
 
     @Mock
     VoiceRecognitionHandler mHandler;
@@ -538,6 +576,160 @@ public class SearchActivityTest {
                 return TextUtils.isEmpty(urlBar.getText());
             }
         });
+    }
+
+    @Test
+    @SmallTest
+    @Features.
+    EnableFeatures({ChromeFeatureList.OMNIBOX_ENABLE_CLIPBOARD_PROVIDER_IMAGE_SUGGESTIONS})
+    public void testImageSearch() throws InterruptedException, Exception {
+        // Put an image into system clipboard.
+        putAnImageIntoClipboard();
+
+        // Start the Activity.
+        final SearchActivity searchActivity = startSearchActivity();
+
+        // Omnibox suggestions should appear now.
+        final SearchActivityLocationBarLayout locationBar =
+                (SearchActivityLocationBarLayout) searchActivity.findViewById(
+                        R.id.search_location_bar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
+        OmniboxSuggestionsDropdown suggestionsDropdown =
+                AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                        locationBar.getAutocompleteCoordinator());
+
+        int imageSuggestionIndex = -1;
+        // Find the index of the image clipboard suggestion.
+        for (int i = 0; i < suggestionsDropdown.getItemCount(); ++i) {
+            OmniboxSuggestion suggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
+                    locationBar.getAutocompleteCoordinator(), i);
+            if (suggestion != null
+                    && suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
+                imageSuggestionIndex = i;
+                break;
+            }
+        }
+        Assert.assertNotEquals(
+                "Cannot find the image clipboard Omnibox suggestion", -1, imageSuggestionIndex);
+
+        OmniboxSuggestion imageSuggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
+                locationBar.getAutocompleteCoordinator(), imageSuggestionIndex);
+        Assert.assertNotNull("The image clipboard suggestion should contains post content type.",
+                imageSuggestion.getPostContentType());
+        Assert.assertNotEquals(
+                "The image clipboard suggestion should not contains am empty post content type.", 0,
+                imageSuggestion.getPostContentType().length());
+        Assert.assertNotNull("The image clipboard suggestion should contains post data.",
+                imageSuggestion.getPostData());
+        Assert.assertNotEquals(
+                "The image clipboard suggestion should not contains am empty post data.", 0,
+                imageSuggestion.getPostData().length);
+
+        // Find the index of clipboard suggestion in the dropdown list.
+        final int clipboardSuggestionIndexInDropdown =
+                AutocompleteCoordinatorTestUtils.getIndexForFirstSuggestionOfType(
+                        locationBar.getAutocompleteCoordinator(),
+                        OmniboxSuggestionUiType.CLIPBOARD_SUGGESTION);
+        Assert.assertNotEquals("Cannot find the image clipboard Omnibox suggestion in UI.", -1,
+                clipboardSuggestionIndexInDropdown);
+
+        // Make sure the new tab is launched.
+        waitForChromeTabbedActivityToStart(new Callable<Void>() {
+            @Override
+            public Void call() {
+                clickSuggestionAt(suggestionsDropdown, clipboardSuggestionIndexInDropdown);
+                return null;
+            }
+        }, imageSuggestion.getUrl().getSpec());
+    }
+
+    @Test
+    @SmallTest
+    @Features.
+    EnableFeatures({ChromeFeatureList.OMNIBOX_ENABLE_CLIPBOARD_PROVIDER_IMAGE_SUGGESTIONS})
+    public void testImageSearch_OnlyTrustedIntentCanPost() throws InterruptedException, Exception {
+        // Put an image into system clipboard.
+        putAnImageIntoClipboard();
+
+        // Start the Activity.
+        final SearchActivity searchActivity = startSearchActivity();
+
+        // Omnibox suggestions should appear now.
+        final SearchActivityLocationBarLayout locationBar =
+                (SearchActivityLocationBarLayout) searchActivity.findViewById(
+                        R.id.search_location_bar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
+        OmniboxSuggestionsDropdown suggestionsDropdown =
+                AutocompleteCoordinatorTestUtils.getSuggestionsDropdown(
+                        locationBar.getAutocompleteCoordinator());
+
+        int imageSuggestionIndex = -1;
+        // Find the index of the image clipboard suggestion.
+        for (int i = 0; i < suggestionsDropdown.getItemCount(); ++i) {
+            OmniboxSuggestion suggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
+                    locationBar.getAutocompleteCoordinator(), i);
+            if (suggestion != null
+                    && suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE) {
+                imageSuggestionIndex = i;
+                break;
+            }
+        }
+        Assert.assertNotEquals(
+                "Cannot find the image clipboard Omnibox suggestion", -1, imageSuggestionIndex);
+
+        OmniboxSuggestion imageSuggestion = AutocompleteCoordinatorTestUtils.getOmniboxSuggestionAt(
+                locationBar.getAutocompleteCoordinator(), imageSuggestionIndex);
+
+        Intent intent =
+                new Intent(Intent.ACTION_VIEW, Uri.parse(imageSuggestion.getUrl().getSpec()));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        intent.setClass(searchActivity, ChromeLauncherActivity.class);
+        intent.putExtra(IntentHandler.EXTRA_POST_DATA_TYPE, imageSuggestion.getPostContentType());
+        intent.putExtra(IntentHandler.EXTRA_POST_DATA, imageSuggestion.getPostData());
+
+        final ChromeTabbedActivity cta =
+                ActivityUtils.waitForActivity(InstrumentationRegistry.getInstrumentation(),
+                        ChromeTabbedActivity.class, new Callable<Void>() {
+                            @Override
+                            public Void call() {
+                                IntentUtils.safeStartActivity(searchActivity, intent);
+                                return null;
+                            }
+                        });
+
+        // Because no POST data, Google wont go to the result page.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                Tab tab = cta.getActivityTab();
+                return !tab.getUrlString().startsWith("https://www.google.com/search?");
+            }
+        }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+    }
+
+    private void putAnImageIntoClipboard() {
+        mActivityTestRule.startMainActivityFromLauncher();
+        ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
+        Bitmap bitmap =
+                Bitmap.createBitmap(/* width = */ 10, /* height = */ 10, Bitmap.Config.ARGB_8888);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.PNG, /*quality = (0-100) */ 100, baos);
+        byte[] mTestImageData = baos.toByteArray();
+        Clipboard.getInstance().setImageFileProvider(new ClipboardImageFileProvider());
+        Clipboard.getInstance().setImage(mTestImageData, TEST_PNG_IMAGE_FILE_EXTENSION);
+
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return Clipboard.getInstance().getImage() != null;
+            }
+        });
+    }
+
+    private void clickSuggestionAt(OmniboxSuggestionsDropdown suggestionsDropdown, int index) {
+        ViewGroup viewGroup = suggestionsDropdown.getViewGroup();
+        View view = viewGroup.getChildAt(index);
+        TestTouchUtils.singleClickView(InstrumentationRegistry.getInstrumentation(), view);
     }
 
     private SearchActivity startSearchActivity() {

@@ -37,8 +37,9 @@ void TabStateDB::LoadContent(const std::string& key, LoadCallback callback) {
         base::BindOnce(&TabStateDB::LoadContent, weak_ptr_factory_.GetWeakPtr(),
                        std::move(key), std::move(callback)));
   } else if (FailedToInit()) {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false,
-                                             std::vector<KeyAndValue>()));
+    base::ThreadPool::PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), false, std::vector<KeyAndValue>()));
   } else {
     storage_database_->LoadEntriesWithFilter(
         base::BindRepeating(&DatabasePrefixFilter, key), CreateReadOptions(),
@@ -56,7 +57,8 @@ void TabStateDB::InsertContent(const std::string& key,
         &TabStateDB::InsertContent, weak_ptr_factory_.GetWeakPtr(),
         std::move(key), std::move(value), std::move(callback)));
   } else if (FailedToInit()) {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
+    base::ThreadPool::PostTask(FROM_HERE,
+                               base::BindOnce(std::move(callback), false));
   } else {
     auto contents_to_save = std::make_unique<ContentEntry>();
     tab_state_db::TabStateContentProto proto;
@@ -78,7 +80,8 @@ void TabStateDB::DeleteContent(const std::string& key,
         &TabStateDB::DeleteContent, weak_ptr_factory_.GetWeakPtr(),
         std::move(key), std::move(callback)));
   } else if (FailedToInit()) {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
+    base::ThreadPool::PostTask(FROM_HERE,
+                               base::BindOnce(std::move(callback), false));
   } else {
     storage_database_->UpdateEntriesWithRemoveFilter(
         std::make_unique<ContentEntry>(),
@@ -94,7 +97,8 @@ void TabStateDB::DeleteAllContent(OperationCallback callback) {
         base::BindOnce(&TabStateDB::DeleteAllContent,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   } else if (FailedToInit()) {
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), false));
+    base::ThreadPool::PostTask(FROM_HERE,
+                               base::BindOnce(std::move(callback), false));
   } else {
     storage_database_->Destroy(std::move(callback));
   }

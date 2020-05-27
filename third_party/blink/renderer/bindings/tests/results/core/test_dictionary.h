@@ -109,6 +109,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setDoubleOrNullMember(double);
   inline void setDoubleOrNullMemberToNull();
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool hasDoubleOrNullMemberNonNull() const { return has_double_or_null_member_; }
+  // Returns the value if this member has a non-null value.  Call
+  // |hasDoubleOrNullMemberNonNull| in advance to check the condition.
+  double doubleOrNullMemberNonNull() const {
+    DCHECK(hasDoubleOrNullMemberNonNull());
+    return double_or_null_member_;
+  }
 
   bool hasDoubleOrNullOrDoubleOrNullSequenceMember() const { return !double_or_null_or_double_or_null_sequence_member_.IsNull(); }
   const DoubleOrDoubleOrNullSequence& doubleOrNullOrDoubleOrNullSequenceMember() const {
@@ -149,6 +159,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setElementOrNullMember(Element*);
   inline void setElementOrNullMemberToNull();
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool hasElementOrNullMemberNonNull() const { return has_element_or_null_member_; }
+  // Returns the value if this member has a non-null value.  Call
+  // |hasElementOrNullMemberNonNull| in advance to check the condition.
+  Element* elementOrNullMemberNonNull() const {
+    DCHECK(hasElementOrNullMemberNonNull());
+    return element_or_null_member_;
+  }
 
   bool hasElementOrNullRecordMember() const { return has_element_or_null_record_member_; }
   const HeapVector<std::pair<String, Member<Element>>>& elementOrNullRecordMember() const {
@@ -176,6 +196,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setEnumOrNullMember(const String&);
   inline void setEnumOrNullMemberToNull();
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool hasEnumOrNullMemberNonNull() const { return !enum_or_null_member_.IsNull(); }
+  // Returns the value if this member has a non-null value.  Call
+  // |hasEnumOrNullMemberNonNull| in advance to check the condition.
+  const String& enumOrNullMemberNonNull() const {
+    DCHECK(hasEnumOrNullMemberNonNull());
+    return enum_or_null_member_;
+  }
 
   bool hasEnumSequenceMember() const { return has_enum_sequence_member_; }
   const Vector<String>& enumSequenceMember() const {
@@ -237,6 +267,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setObjectOrNullMember(ScriptValue);
   void setObjectOrNullMemberToNull();
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool hasObjectOrNullMemberNonNull() const { return !(object_or_null_member_.IsEmpty() || object_or_null_member_.IsNull() || object_or_null_member_.IsUndefined()); }
+  // Returns the value if this member has a non-null value.  Call
+  // |hasObjectOrNullMemberNonNull| in advance to check the condition.
+  ScriptValue objectOrNullMemberNonNull() const {
+    DCHECK(hasObjectOrNullMemberNonNull());
+    return object_or_null_member_;
+  }
 
   bool hasObjectOrNullSequenceMember() const { return has_object_or_null_sequence_member_; }
   const HeapVector<ScriptValue>& objectOrNullSequenceMember() const {
@@ -311,6 +351,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setStringOrNullMember(const String&);
   inline void setStringOrNullMemberToNull();
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool hasStringOrNullMemberNonNull() const { return !string_or_null_member_.IsNull(); }
+  // Returns the value if this member has a non-null value.  Call
+  // |hasStringOrNullMemberNonNull| in advance to check the condition.
+  const String& stringOrNullMemberNonNull() const {
+    DCHECK(hasStringOrNullMemberNonNull());
+    return string_or_null_member_;
+  }
 
   bool hasStringOrNullRecordMember() const { return has_string_or_null_record_member_; }
   const Vector<std::pair<String, String>>& stringOrNullRecordMember() const {
@@ -369,6 +419,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setTestInterfaceOrNullMember(TestInterfaceImplementation*);
   inline void setTestInterfaceOrNullMemberToNull();
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool hasTestInterfaceOrNullMemberNonNull() const { return has_test_interface_or_null_member_; }
+  // Returns the value if this member has a non-null value.  Call
+  // |hasTestInterfaceOrNullMemberNonNull| in advance to check the condition.
+  TestInterfaceImplementation* testInterfaceOrNullMemberNonNull() const {
+    DCHECK(hasTestInterfaceOrNullMemberNonNull());
+    return test_interface_or_null_member_;
+  }
 
   bool hasTestInterfaceSequenceMember() const { return has_test_interface_sequence_member_; }
   const HeapVector<Member<TestInterfaceImplementation>>& testInterfaceSequenceMember() const {
@@ -455,6 +515,16 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setUsvStringOrNullMember(const String&);
   inline void setUsvStringOrNullMemberToNull();
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool hasUsvStringOrNullMemberNonNull() const { return !usv_string_or_null_member_.IsNull(); }
+  // Returns the value if this member has a non-null value.  Call
+  // |hasUsvStringOrNullMemberNonNull| in advance to check the condition.
+  const String& usvStringOrNullMemberNonNull() const {
+    DCHECK(hasUsvStringOrNullMemberNonNull());
+    return usv_string_or_null_member_;
+  }
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
   void Trace(Visitor*) const override;

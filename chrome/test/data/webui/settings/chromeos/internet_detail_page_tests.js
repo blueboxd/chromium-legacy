@@ -324,5 +324,38 @@ suite('InternetDetailPage', function() {
             assertFalse(toggle.checked);
           });
     });
+
+    test.only('Auto Connect updates don\'t trigger a re-save', function() {
+      const mojom = chromeos.networkConfig.mojom;
+      mojoApi_.setNetworkTypeEnabledState(mojom.NetworkType.kWiFi, true);
+      let wifi1 = getManagedProperties(
+          mojom.NetworkType.kWiFi, 'wifi1', mojom.OncSource.kDevice);
+      wifi1.typeProperties.wifi.autoConnect = OncMojo.createManagedBool(true);
+      mojoApi_.setManagedPropertiesForTest(wifi1);
+
+      mojoApi_.whenCalled('setProperties').then(() => assert(false));
+      internetDetailPage.init('wifi1_guid', 'WiFi', 'wifi1');
+      internetDetailPage.onNetworkStateChanged({guid: 'wifi1_guid'});
+      return flushAsync()
+          .then(() => {
+            const toggle = internetDetailPage.$$('#autoConnectToggle');
+            assertTrue(!!toggle);
+            assertTrue(toggle.checked);
+
+            // Rebuild the object to force polymer to recognize a change.
+            wifi1 = getManagedProperties(
+                mojom.NetworkType.kWiFi, 'wifi1', mojom.OncSource.kDevice);
+            wifi1.typeProperties.wifi.autoConnect =
+                OncMojo.createManagedBool(false);
+            mojoApi_.setManagedPropertiesForTest(wifi1);
+            internetDetailPage.onNetworkStateChanged({guid: 'wifi1_guid'});
+            return flushAsync();
+          })
+          .then(() => {
+            const toggle = internetDetailPage.$$('#autoConnectToggle');
+            assertTrue(!!toggle);
+            assertFalse(toggle.checked);
+          });
+    });
   });
 });

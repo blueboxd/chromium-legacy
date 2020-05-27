@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/explore_sites/history_statistics_reporter.h"
 
-#include "base/feature_list.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -38,9 +37,6 @@ class HistoryStatisticsReporterTest : public testing::Test {
   ~HistoryStatisticsReporterTest() override {}
 
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {history::HistoryService::kHistoryServiceUsesTaskScheduler}, {});
-
     HistoryStatisticsReporter::RegisterPrefs(pref_service_.registry());
     ASSERT_TRUE(history_dir_.CreateUniqueTempDir());
     // Creates HistoryService, but does not load it yet. Use LoadHistory() from
@@ -81,7 +77,6 @@ class HistoryStatisticsReporterTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir history_dir_;
   TestingPrefServiceSimple pref_service_;
   base::HistogramTester histogram_tester_;

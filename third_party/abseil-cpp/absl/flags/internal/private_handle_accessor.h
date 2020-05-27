@@ -16,7 +16,7 @@
 #ifndef ABSL_FLAGS_INTERNAL_PRIVATE_HANDLE_ACCESSOR_H_
 #define ABSL_FLAGS_INTERNAL_PRIVATE_HANDLE_ACCESSOR_H_
 
-#include "absl/flags/internal/commandlineflag.h"
+#include "absl/flags/commandlineflag.h"
 
 namespace absl {
 ABSL_NAMESPACE_BEGIN
@@ -31,7 +31,7 @@ class PrivateHandleAccessor {
   static FlagFastTypeId TypeId(const CommandLineFlag& flag);
 
   // Access to CommandLineFlag::SaveState.
-  static std::unique_ptr<FlagStateInterface> SaveState(CommandLineFlag* flag);
+  static std::unique_ptr<FlagStateInterface> SaveState(CommandLineFlag& flag);
 
   // Access to CommandLineFlag::IsSpecifiedOnCommandLine.
   static bool IsSpecifiedOnCommandLine(const CommandLineFlag& flag);
@@ -43,9 +43,9 @@ class PrivateHandleAccessor {
   // Access to CommandLineFlag::CheckDefaultValueParsingRoundtrip.
   static void CheckDefaultValueParsingRoundtrip(const CommandLineFlag& flag);
 
-  static bool ParseFrom(CommandLineFlag* flag, absl::string_view value,
+  static bool ParseFrom(CommandLineFlag& flag, absl::string_view value,
                         flags_internal::FlagSettingMode set_mode,
-                        flags_internal::ValueSource source, std::string* error);
+                        flags_internal::ValueSource source, std::string& error);
 };
 
 }  // namespace flags_internal

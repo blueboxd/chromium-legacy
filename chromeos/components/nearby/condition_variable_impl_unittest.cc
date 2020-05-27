@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/test/gtest_util.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
@@ -99,7 +99,7 @@ class ConditionVariableImplTest : public testing::Test {
   FakeLock* fake_lock() { return fake_lock_.get(); }
 
   void WaitOnConditionVariableFromParallelSequence(bool should_succeed) {
-    base::PostTask(
+    base::ThreadPool::PostTask(
         FROM_HERE,
         base::BindOnce(&ConditionVariableImplTest::WaitOnConditionVariable,
                        base::Unretained(this), should_succeed));

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/widget/widget_base.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "build/build_config.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/ukm_manager.h"
@@ -238,7 +239,9 @@ void WidgetBase::AddPresentationCallback(
 }
 
 void WidgetBase::SetCursor(const ui::Cursor& cursor) {
-  widget_host_->SetCursor(cursor);
+  if (input_handler_.DidChangeCursor(cursor)) {
+    widget_host_->SetCursor(cursor);
+  }
 }
 
 void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
@@ -247,6 +250,27 @@ void WidgetBase::SetToolTipText(const String& tooltip_text, TextDirection dir) {
       dir == TextDirection::kLtr
           ? mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT
           : mojo_base::mojom::blink::TextDirection::RIGHT_TO_LEFT);
+}
+
+void WidgetBase::ShowVirtualKeyboardOnElementFocus() {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, virtual keyboard is triggered only when users leave the
+  // mouse button or the finger and a text input element is focused at that
+  // time. Focus event itself shouldn't trigger virtual keyboard.
+  client_->UpdateTextInputState();
+#else
+  client_->ShowVirtualKeyboard();
+#endif
+
+// TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
+// virtual keyboard.
+#if !defined(OS_ANDROID)
+  client_->FocusChangeComplete();
+#endif
+}
+
+bool WidgetBase::ProcessTouchAction(cc::TouchAction touch_action) {
+  return input_handler_.ProcessTouchAction(touch_action);
 }
 
 }  // namespace blink

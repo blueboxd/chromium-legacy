@@ -377,14 +377,8 @@ DocumentInit& DocumentInit::WithContentSecurityPolicy(
   return *this;
 }
 
-DocumentInit& DocumentInit::WithContentSecurityPolicyFromExecutionContext() {
-  content_security_policy_from_context_ = true;
-  return *this;
-}
-
 ContentSecurityPolicy* DocumentInit::GetContentSecurityPolicy() const {
-  DCHECK(!(content_security_policy_ && content_security_policy_from_context_));
-  if (execution_context_ && content_security_policy_from_context_) {
+  if (execution_context_) {
     // Return a copy of the context documents' CSP. The return value will be
     // modified, so this must be a copy.
     ContentSecurityPolicy* csp = MakeGarbageCollected<ContentSecurityPolicy>();

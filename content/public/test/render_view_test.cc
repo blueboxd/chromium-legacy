@@ -694,7 +694,6 @@ void RenderViewTest::SimulateRectTap(const gfx::Rect& rect) {
   widget->HandleInputEvent(
       blink::WebCoalescedInputEvent(gesture_event, ui::LatencyInfo()),
       HandledEventCallback());
-  widget->FocusChangeComplete();
 }
 
 void RenderViewTest::SetFocused(const blink::WebElement& element) {

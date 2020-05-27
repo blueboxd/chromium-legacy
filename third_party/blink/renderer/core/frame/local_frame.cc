@@ -1564,17 +1564,11 @@ void LocalFrame::SetViewportIntersectionFromParent(
   DCHECK(IsLocalRoot());
   // TODO(https://crbug/1085175): Re-enable main frame document intersections
   // here once intersections are in the root document coordinate system.
-  bool can_skip_sticky_frame_tracking =
-      intersection_state.can_skip_sticky_frame_tracking ||
-      !base::FeatureList::IsEnabled(
-          features::kForceExtraRenderingToTrackStickyFrame);
 
   // We only schedule an update if the viewport intersection or occlusion state
-  // has changed, or if we cannot skip sticky frame tracking; neither the
-  // viewport offset nor the compositing bounds will affect
-  // IntersectionObserver.
+  // has changed; neither the viewport offset nor the compositing bounds will
+  // affect IntersectionObserver.
   bool needs_update =
-      !can_skip_sticky_frame_tracking ||
       intersection_state_.viewport_intersection !=
           intersection_state.viewport_intersection ||
       intersection_state_.occlusion_state != intersection_state.occlusion_state;

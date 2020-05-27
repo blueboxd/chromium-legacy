@@ -76,6 +76,7 @@ class PerformanceManagerTabHelper
   // WebContentsProxyImpl overrides.
   content::WebContents* GetWebContents() const override;
   int64_t LastNavigationId() const override;
+  int64_t LastNewDocNavigationId() const override;
 
   void BindDocumentCoordinationUnit(
       content::RenderFrameHost* render_frame_host,
@@ -110,7 +111,7 @@ class PerformanceManagerTabHelper
   // PerformanceManagerRegistry.
   using WebContentsUserData<PerformanceManagerTabHelper>::CreateForWebContents;
 
-  void OnMainFrameNavigation(int64_t navigation_id);
+  void OnMainFrameNavigation(int64_t navigation_id, bool same_doc);
 
   std::unique_ptr<PageNodeImpl> page_node_;
   ukm::SourceId ukm_source_id_ = ukm::kInvalidSourceId;
@@ -125,6 +126,10 @@ class PerformanceManagerTabHelper
   // The last navigation ID that was committed to a main frame in this web
   // contents.
   int64_t last_navigation_id_ = 0;
+  // Similar to the above, but for the last non same-document navigation
+  // associated with this WebContents. This is always for a navigation that is
+  // older or equal to |last_navigation_id_|.
+  int64_t last_new_doc_navigation_id_ = 0;
 
   // Maps from RenderFrameHost to the associated PM node.
   std::map<content::RenderFrameHost*, std::unique_ptr<FrameNodeImpl>> frames_;

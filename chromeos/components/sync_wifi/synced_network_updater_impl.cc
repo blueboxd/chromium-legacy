@@ -72,6 +72,10 @@ void SyncedNetworkUpdaterImpl::StartAddOrUpdateOperation(
   if (existing_network) {
     NET_LOG(EVENT) << "Updating existing network "
                    << NetworkGuidId(existing_network->guid);
+    if (network_guid_to_updates_counter_.contains(existing_network->guid))
+      network_guid_to_updates_counter_[existing_network->guid]++;
+    else
+      network_guid_to_updates_counter_[existing_network->guid] = 1;
     cros_network_config_->SetProperties(
         existing_network->guid, std::move(config),
         base::BindOnce(&SyncedNetworkUpdaterImpl::OnSetPropertiesResult,
@@ -109,6 +113,12 @@ void SyncedNetworkUpdaterImpl::StartDeleteOperation(
   cros_network_config_->ForgetNetwork(
       guid, base::BindOnce(&SyncedNetworkUpdaterImpl::OnForgetNetworkResult,
                            weak_ptr_factory_.GetWeakPtr(), change_guid, id));
+}
+
+bool SyncedNetworkUpdaterImpl::IsUpdateInProgress(
+    const std::string& network_guid) {
+  return network_guid_to_updates_counter_.contains(network_guid) &&
+         network_guid_to_updates_counter_[network_guid] > 0;
 }
 
 network_config::mojom::NetworkStatePropertiesPtr
@@ -182,6 +192,8 @@ void SyncedNetworkUpdaterImpl::OnSetPropertiesResult(
     metrics_logger_->RecordApplyNetworkFailureReason(
         ApplyNetworkFailureReason::kFailedToUpdate, error_message);
   }
+  if (network_guid_to_updates_counter_.contains(network_guid))
+    network_guid_to_updates_counter_[network_guid]--;
   HandleShillResult(change_guid, NetworkIdentifier::FromProto(proto),
                     is_success);
 }

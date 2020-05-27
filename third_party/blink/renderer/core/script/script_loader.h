@@ -53,7 +53,7 @@ class CORE_EXPORT ScriptLoader final : public GarbageCollected<ScriptLoader>,
   USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
 
  public:
-  ScriptLoader(ScriptElementBase*, bool created_by_parser, bool is_evaluated);
+  ScriptLoader(ScriptElementBase*, const CreateElementFlags);
   ~ScriptLoader() override;
   void Trace(Visitor*) const override;
   const char* NameInHeapSnapshot() const override { return "ScriptLoader"; }

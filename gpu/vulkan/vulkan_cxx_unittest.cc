@@ -66,16 +66,14 @@ TEST_F(VulkanCXXTest, CreateInstanceUnique) {
   auto* vulkan_function_pointers = GetVulkanFunctionPointers();
   EXPECT_TRUE(vulkan_function_pointers->BindUnassociatedFunctionPointers());
 
-  constexpr uint32_t kRequiredApiVersion = VK_MAKE_VERSION(1, 1, 0);
-
   vk::Result result;
   uint32_t api_version;
   std::tie(result, api_version) = vk::enumerateInstanceVersion();
   EXPECT_EQ(result, vk::Result::eSuccess);
-  EXPECT_GE(api_version, kRequiredApiVersion);
+  EXPECT_GE(api_version, kVulkanRequiredApiVersion);
 
   vk::ApplicationInfo app_info("VulkanCXXTest", 0, nullptr, 0,
-                               kRequiredApiVersion);
+                               kVulkanRequiredApiVersion);
   vk::InstanceCreateInfo instance_create_info({}, &app_info);
   auto result_value = vk::createInstanceUnique(instance_create_info);
   EXPECT_EQ(result_value.result, vk::Result::eSuccess);
@@ -84,7 +82,7 @@ TEST_F(VulkanCXXTest, CreateInstanceUnique) {
   EXPECT_TRUE(instance);
 
   EXPECT_TRUE(vulkan_function_pointers->BindInstanceFunctionPointers(
-      instance.get(), kRequiredApiVersion, gfx::ExtensionSet()));
+      instance.get(), kVulkanRequiredApiVersion, gfx::ExtensionSet()));
 
   instance.reset();
 }

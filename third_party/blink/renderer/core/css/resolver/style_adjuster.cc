@@ -672,11 +672,11 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   if (style.GetPosition() == EPosition::kStatic &&
       !LayoutParentStyleForcesZIndexToCreateStackingContext(
           layout_parent_style)) {
-    style.SetIsStackingContext(false);
+    style.SetIsStackingContextWithoutContainment(false);
     if (!style.HasAutoZIndex())
       style.SetEffectiveZIndexZero(true);
   } else if (!style.HasAutoZIndex()) {
-    style.SetIsStackingContext(true);
+    style.SetIsStackingContextWithoutContainment(true);
   }
 
   if (style.OverflowX() != EOverflow::kVisible ||

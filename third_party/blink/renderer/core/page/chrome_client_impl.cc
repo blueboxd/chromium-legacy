@@ -285,7 +285,7 @@ void ChromeClientImpl::DidOverscroll(
     return;
   // TODO(darin): Change caller to pass LocalFrame.
   DCHECK(web_view_->MainFrameImpl());
-  web_view_->MainFrameImpl()->FrameWidgetImpl()->Client()->DidOverscroll(
+  web_view_->MainFrameImpl()->FrameWidgetImpl()->DidOverscroll(
       overscroll_delta, accumulated_overscroll, position_in_viewport,
       velocity_in_viewport);
 }
@@ -297,9 +297,8 @@ void ChromeClientImpl::InjectGestureScrollEvent(
     ScrollGranularity granularity,
     CompositorElementId scrollable_area_element_id,
     WebInputEvent::Type injected_type) {
-  WebWidgetClient* client = local_frame.GetWidgetForLocalRoot()->Client();
-  client->InjectGestureScrollEvent(device, delta, granularity,
-                                   scrollable_area_element_id, injected_type);
+  local_frame.GetWidgetForLocalRoot()->InjectGestureScrollEvent(
+      device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 void ChromeClientImpl::SetOverscrollBehavior(
@@ -721,7 +720,7 @@ void ChromeClientImpl::SetCursorInternal(const ui::Cursor& cursor,
 
   // TODO(dcheng): Why is this null check necessary?
   if (FrameWidget* widget = local_frame->GetWidgetForLocalRoot())
-    widget->Client()->DidChangeCursor(cursor);
+    widget->DidChangeCursor(cursor);
 }
 
 void ChromeClientImpl::SetCursorForPlugin(const ui::Cursor& cursor,
@@ -1050,8 +1049,7 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
   if (!widget)
     return;
 
-  if (WebWidgetClient* client = widget->Client())
-    client->SetTouchAction(static_cast<TouchAction>(touch_action));
+  widget->ProcessTouchAction(touch_action);
 }
 
 bool ChromeClientImpl::RequestPointerLock(
@@ -1092,7 +1090,6 @@ void ChromeClientImpl::DidAssociateFormControlsAfterLoad(LocalFrame* frame) {
 void ChromeClientImpl::ShowVirtualKeyboardOnElementFocus(LocalFrame& frame) {
   WebLocalFrameImpl::FromFrame(frame)
       ->LocalRootFrameWidget()
-      ->Client()
       ->ShowVirtualKeyboardOnElementFocus();
 }
 

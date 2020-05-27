@@ -386,7 +386,7 @@ int LegacyDOMSnapshotAgent::VisitLayoutTreeNode(LayoutObject* layout_object,
   if (style_index != -1)
     layout_tree_node->setStyleIndex(style_index);
 
-  if (layout_object->Style() && layout_object->Style()->IsStackingContext())
+  if (layout_object->Style() && layout_object->IsStackingContext())
     layout_tree_node->setIsStackingContext(true);
 
   if (paint_order_map_) {

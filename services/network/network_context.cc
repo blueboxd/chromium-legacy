@@ -1006,7 +1006,11 @@ void NetworkContext::SetExpectCTTestReport(
   net::SignedCertificateTimestampAndStatusList dummy_sct_list;
   expect_ct_reporter_->OnExpectCTFailed(
       net::HostPortPair("expect-ct-report.test", 443), report_uri,
-      base::Time::Now(), dummy_cert.get(), dummy_cert.get(), dummy_sct_list);
+      base::Time::Now(), dummy_cert.get(), dummy_cert.get(), dummy_sct_list,
+      // No need for a shared NetworkIsolationKey here, as this is test-only
+      // code and none
+      // of the tests that call it care about the NetworkIsolationKey.
+      net::NetworkIsolationKey::CreateTransient());
 }
 
 void NetworkContext::LazyCreateExpectCTReporter(

@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/ptr_util.h"
+#include "chrome/android/features/stack_unwinder/public/memory_regions_map.h"
 #include "chrome/android/modules/stack_unwinder/provider/jni_headers/StackUnwinderModuleProvider_jni.h"
 
 namespace stack_unwinder {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/assistant/assistant_alarm_timer_controller.h"
+#include "ash/assistant/assistant_alarm_timer_controller_impl.h"
 
 #include <memory>
 #include <utility>
@@ -149,10 +149,6 @@ class AssistantAlarmTimerControllerTest : public AshTestBase {
 
     feature_list_.InitAndDisableFeature(
         chromeos::assistant::features::kAssistantTimersV2);
-
-    controller_ =
-        Shell::Get()->assistant_controller()->alarm_timer_controller();
-    DCHECK(controller_);
   }
 
   // Advances the clock by |time_delta|, running any sequenced tasks in the
@@ -164,11 +160,12 @@ class AssistantAlarmTimerControllerTest : public AshTestBase {
     task_environment()->RunUntilIdle();
   }
 
-  AssistantAlarmTimerController* controller() { return controller_; }
+  AssistantAlarmTimerController* controller() {
+    return AssistantAlarmTimerController::Get();
+  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  AssistantAlarmTimerController* controller_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantAlarmTimerControllerTest);
 };
@@ -257,6 +254,166 @@ TEST_F(AssistantAlarmTimerControllerTest, AddsAndUpdatesTimerNotification) {
     EXPECT_EQ(expected_title, last_notification->title);
     EXPECT_EQ(i18n_test_case.expected_message_at_01_01_01,
               last_notification->message);
+  }
+}
+
+// Tests that a notification is added for a timer and has the expected title.
+// This test is only applicable to timers v1.
+TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedTitle) {
+  ASSERT_FALSE(chromeos::assistant::features::IsTimersV2Enabled());
+
+  // Observe notifications.
+  ScopedNotificationModelObserver notification_model_observer;
+
+  // Fire a timer.
+  std::vector<AssistantTimerPtr> timers;
+  timers.push_back(CreateFiredTimer(/*id=*/"1"));
+  controller()->OnTimerStateChanged(std::move(timers));
+
+  // We expect that a notification exists.
+  auto* last_notification = notification_model_observer.last_notification();
+  ASSERT_NE(nullptr, last_notification);
+  EXPECT_EQ("assistant/timer1", last_notification->client_id);
+
+  // We expect our title to be internationalized.
+  const std::string expected_title =
+      l10n_util::GetStringUTF8(IDS_ASSISTANT_TIMER_NOTIFICATION_TITLE);
+  EXPECT_EQ(expected_title, last_notification->title);
+}
+
+// Tests that a notification is added for a timer and has the expected title at
+// various states in its lifecycle. This test is only applicable to timers v2.
+TEST_F(AssistantAlarmTimerControllerTest, TimerNotificationHasExpectedTitleV2) {
+  // Enable timers v2.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      chromeos::assistant::features::kAssistantTimersV2);
+  ASSERT_TRUE(chromeos::assistant::features::IsTimersV2Enabled());
+
+  // We're going to run our test over a few locales to ensure i18n compliance.
+  typedef struct {
+    std::string locale;
+    std::string expected_title_at_00_00_00;
+    std::string expected_title_at_01_00_00;
+    std::string expected_title_at_01_01_00;
+    std::string expected_title_at_01_01_01;
+    std::string expected_title_at_01_01_02;
+    std::string expected_title_at_01_02_02;
+    std::string expected_title_at_02_02_02;
+  } I18nTestCase;
+
+  std::vector<I18nTestCase> i18n_test_cases;
+
+  // We'll test in English (United States).
+  i18n_test_cases.push_back({
+      /*locale=*/"en_US",
+      /*expected_title_at_00_00_00=*/"1:01:01",
+      /*expected_title_at_01_00_00=*/"1:01",
+      /*expected_title_at_01_01_00=*/"0:01",
+      /*expected_title_at_01_01_01=*/"0:00",
+      /*expected_title_at_01_01_02=*/"-0:01",
+      /*expected_title_at_01_02_02=*/"-1:01",
+      /*expected_title_at_02_02_02=*/"-1:01:01",
+  });
+
+  // We'll also test in Slovenian (Slovenia).
+  i18n_test_cases.push_back({
+      /*locale=*/"sl_SI",
+      /*expected_title_at_00_00_00=*/"1.01.01",
+      /*expected_title_at_01_00_00=*/"1.01",
+      /*expected_title_at_01_01_00=*/"0.01",
+      /*expected_title_at_01_01_01=*/"0.00",
+      /*expected_title_at_01_01_02=*/"-0.01",
+      /*expected_title_at_01_02_02=*/"-1.01",
+      /*expected_title_at_02_02_02=*/"-1.01.01",
+  });
+
+  // Run all of our internationalized test cases.
+  for (auto& i18n_test_case : i18n_test_cases) {
+    base::test::ScopedRestoreICUDefaultLocale locale(i18n_test_case.locale);
+
+    // Observe notifications.
+    ScopedNotificationModelObserver notification_model_observer;
+
+    // Schedule a timer.
+    std::vector<AssistantTimerPtr> timers;
+    timers.push_back(CreateScheduledTimer(
+        /*id=*/"1", /*remaining_time=*/base::TimeDelta::FromHours(1) +
+                        base::TimeDelta::FromMinutes(1) +
+                        base::TimeDelta::FromSeconds(1)));
+    controller()->OnTimerStateChanged(std::move(timers));
+
+    // Make assertions about the newly added notification.
+    auto* last_notification = notification_model_observer.last_notification();
+    ASSERT_NE(nullptr, last_notification);
+    EXPECT_EQ("assistant/timer1", last_notification->client_id);
+    EXPECT_EQ(i18n_test_case.expected_title_at_00_00_00,
+              last_notification->title);
+
+    // Advance clock by 1 hour.
+    AdvanceClock(base::TimeDelta::FromHours(1));
+
+    // Make assertions about the updated notification.
+    last_notification = notification_model_observer.last_notification();
+    ASSERT_NE(nullptr, last_notification);
+    EXPECT_EQ("assistant/timer1", last_notification->client_id);
+    EXPECT_EQ(i18n_test_case.expected_title_at_01_00_00,
+              last_notification->title);
+
+    // Advance clock by 1 minute.
+    AdvanceClock(base::TimeDelta::FromMinutes(1));
+
+    // Make assertions about the updated notification.
+    last_notification = notification_model_observer.last_notification();
+    ASSERT_NE(nullptr, last_notification);
+    EXPECT_EQ("assistant/timer1", last_notification->client_id);
+    EXPECT_EQ(i18n_test_case.expected_title_at_01_01_00,
+              last_notification->title);
+
+    // Advance clock by 1 second.
+    AdvanceClock(base::TimeDelta::FromSeconds(1));
+
+    // Make assertions about the updated notification.
+    last_notification = notification_model_observer.last_notification();
+    ASSERT_NE(nullptr, last_notification);
+    EXPECT_EQ("assistant/timer1", last_notification->client_id);
+    EXPECT_EQ(i18n_test_case.expected_title_at_01_01_01,
+              last_notification->title);
+
+    // Timer is now firing.
+    timers.clear();
+    timers.push_back(CreateFiredTimer(/*id=*/"1"));
+    controller()->OnTimerStateChanged(std::move(timers));
+
+    // Advance clock by 1 second.
+    AdvanceClock(base::TimeDelta::FromSeconds(1));
+
+    // Make assertions about the updated notification.
+    last_notification = notification_model_observer.last_notification();
+    ASSERT_NE(nullptr, last_notification);
+    EXPECT_EQ("assistant/timer1", last_notification->client_id);
+    EXPECT_EQ(i18n_test_case.expected_title_at_01_01_02,
+              last_notification->title);
+
+    // Advance clock by 1 minute.
+    AdvanceClock(base::TimeDelta::FromMinutes(1));
+
+    // Make assertions about the updated notification.
+    last_notification = notification_model_observer.last_notification();
+    ASSERT_NE(nullptr, last_notification);
+    EXPECT_EQ("assistant/timer1", last_notification->client_id);
+    EXPECT_EQ(i18n_test_case.expected_title_at_01_02_02,
+              last_notification->title);
+
+    // Advance clock by 1 hour.
+    AdvanceClock(base::TimeDelta::FromHours(1));
+
+    // Make assertions about the updated notification.
+    last_notification = notification_model_observer.last_notification();
+    ASSERT_NE(nullptr, last_notification);
+    EXPECT_EQ("assistant/timer1", last_notification->client_id);
+    EXPECT_EQ(i18n_test_case.expected_title_at_02_02_02,
+              last_notification->title);
   }
 }
 

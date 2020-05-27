@@ -1,0 +1,7 @@
+CONSOLE ERROR: Refused to send form data to 'about:blank' because it violates the following Content Security Policy directive: "form-action 'self'".
+
+CONSOLE ERROR: Refused to send form data to 'about:blank' because it violates the following Content Security Policy directive: "form-action 'self'".
+
+CONSOLE ERROR: Refused to send form data to 'about:blank' because it violates the following Content Security Policy directive: "form-action 'self'".
+
+PASS if no crash

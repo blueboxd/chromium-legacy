@@ -17,6 +17,7 @@
 namespace sandbox {
 
 class AppContainerProfile;
+class PolicyInfo;
 
 class TargetPolicy {
  public:
@@ -278,6 +279,9 @@ class TargetPolicy {
 
   // Returns the size of policy memory used at process start.
   virtual size_t GetPolicyGlobalSize() const = 0;
+
+  // Returns a snapshot of the policy configuration.
+  virtual std::unique_ptr<PolicyInfo> GetPolicyInfo() = 0;
 
  protected:
   ~TargetPolicy() {}

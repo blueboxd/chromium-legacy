@@ -245,7 +245,11 @@ def ParseArgs(args):
   parser.add_argument(
       '--system-webview-pathmap',
       help='The system webview APK resources pathmap path.')
-  return parser.parse_args(args)
+
+  # This script is called from test bots that sometimes would add extra unneeded
+  # arguments. Just ignore unknown ones. crbug.com/1084351
+  parsed, _ = parser.parse_known_args(args)
+  return parsed
 
 
 def main():

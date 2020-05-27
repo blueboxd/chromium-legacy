@@ -48,10 +48,15 @@ group("telemetry_chrome_test") {
   }
 
   if (is_linux) {
-    data_deps += [
-      "//third_party/breakpad:dump_syms($host_toolchain)",
-      "//third_party/crashpad/crashpad/tools:crashpad_database_util",
-    ]
+    data_deps += [ "//third_party/breakpad:dump_syms($host_toolchain)" ]
+
+    # CrOS currently has issues with the locally compiled version of
+    # crashpad_database_util, so only include it on traditional Linux
+    # platforms.
+    if (is_desktop_linux) {
+      data_deps +=
+          [ "//third_party/crashpad/crashpad/tools:crashpad_database_util" ]
+    }
   }
 
   if (is_mac) {

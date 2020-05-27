@@ -11,6 +11,7 @@
 
 namespace blink {
 class WebCoalescedInputEvent;
+class WebGestureEvent;
 
 // The interface from blink to Widgets with implementations outside of blink.
 class WebExternalWidgetClient {
@@ -49,6 +50,22 @@ class WebExternalWidgetClient {
   // Notification that the BeginMainFrame completed, was committed into the
   // compositor (thread) and submitted to the display compositor.
   virtual void DidCommitAndDrawCompositorFrame() = 0;
+
+  // Called before gesture events are processed and allows the
+  // client to handle the event itself. Return true if event was handled
+  // and further processing should stop.
+  virtual bool WillHandleGestureEvent(const WebGestureEvent& event) {
+    return false;
+  }
+
+  virtual bool SupportsBufferedTouchEvents() { return false; }
+
+  // Returns whether we handled a GestureScrollEvent.
+  virtual void DidHandleGestureScrollEvent(
+      const WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      const cc::OverscrollBehavior& overscroll_behavior,
+      bool event_processed) {}
 };
 
 }  // namespace blink

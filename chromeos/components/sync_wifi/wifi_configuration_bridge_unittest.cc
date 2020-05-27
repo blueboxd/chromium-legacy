@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_map.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -105,7 +106,14 @@ class TestSyncedNetworkUpdater : public SyncedNetworkUpdater {
 
   const std::vector<NetworkIdentifier>& remove_calls() { return remove_calls_; }
 
- private:
+  void set_update_in_progress(const std::string& network_guid, bool value) {
+    if (value)
+      guid_update_in_progress_.insert(network_guid);
+    else
+      guid_update_in_progress_.erase(network_guid);
+  }
+
+  // SyncedNetworkUpdater:
   void AddOrUpdateNetwork(
       const sync_pb::WifiConfigurationSpecifics& specifics) override {
     add_update_calls_.push_back(specifics);
@@ -115,8 +123,14 @@ class TestSyncedNetworkUpdater : public SyncedNetworkUpdater {
     remove_calls_.push_back(id);
   }
 
+  bool IsUpdateInProgress(const std::string& network_guid) override {
+    return guid_update_in_progress_.contains(network_guid);
+  }
+
+ private:
   std::vector<sync_pb::WifiConfigurationSpecifics> add_update_calls_;
   std::vector<NetworkIdentifier> remove_calls_;
+  base::flat_set<std::string> guid_update_in_progress_;
 };
 
 class WifiConfigurationBridgeTest : public testing::Test {
@@ -432,6 +446,23 @@ TEST_F(WifiConfigurationBridgeTest, LocalUpdate_UntrackedField) {
   std::string guid = meow_network_id().SerializeToString();
   base::DictionaryValue set_properties;
   set_properties.SetString(shill::kUIDataProperty, "random_change");
+  bridge()->OnNetworkUpdate(guid, &set_properties);
+  base::RunLoop().RunUntilIdle();
+  histogram_tester.ExpectTotalCount(kTotalCountHistogram, 0);
+}
+
+TEST_F(WifiConfigurationBridgeTest, LocalUpdate_FromSync) {
+  base::HistogramTester histogram_tester;
+  WifiConfigurationSpecifics meow_local =
+      GenerateTestWifiSpecifics(meow_network_id(), kSyncPsk, /*timestamp=*/100);
+  std::string guid = meow_network_id().SerializeToString();
+  local_network_collector()->AddNetwork(meow_local);
+  synced_network_updater()->set_update_in_progress(guid, true);
+
+  EXPECT_CALL(*processor(), Put(_, _, _)).Times(testing::Exactly(0));
+
+  base::DictionaryValue set_properties;
+  set_properties.SetBoolean(shill::kAutoConnectProperty, true);
   bridge()->OnNetworkUpdate(guid, &set_properties);
   base::RunLoop().RunUntilIdle();
   histogram_tester.ExpectTotalCount(kTotalCountHistogram, 0);

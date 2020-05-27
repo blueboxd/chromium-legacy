@@ -13,10 +13,8 @@
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 bool ShouldIncludeAppUpdate(const apps::AppUpdate& app_update) {
-  // TODO(danan): update this to only return sticky = true arc apps when that
-  // attribute is available via the App Service (https://crbug.com/948408).
-
-  return app_update.AppType() == apps::mojom::AppType::kArc;
+  return app_update.AppType() == apps::mojom::AppType::kArc &&
+         app_update.InstallSource() != apps::mojom::InstallSource::kSystem;
 }
 
 void LogOutHelper() {

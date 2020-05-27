@@ -1236,7 +1236,8 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
 
   std::string classes;
-  if (_owner->GetHtmlAttribute("class", &classes)) {
+  if (_owner->GetStringAttribute(ax::mojom::StringAttribute::kClassName,
+                                 &classes)) {
     std::vector<std::string> split_classes = base::SplitString(
         classes, " ", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
     for (const auto& className : split_classes)

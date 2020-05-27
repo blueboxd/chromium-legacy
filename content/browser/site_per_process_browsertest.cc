@@ -12719,50 +12719,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(filter->GetIntersectionState().viewport_intersection.IsEmpty());
 }
 
-// Test to verify that viewport intersection is propagated to nested OOPIFs
-// when the feature kForceExtraRenderingToTrackStickyFrame is enabled and the
-// child frame is large, even when there's no animation frame in the child
-// frame.
-IN_PROC_BROWSER_TEST_F(
-    SitePerProcessBrowserTest,
-    NestedFrameViewportIntersectionUpdatedForStickyFrameTracking) {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kForceExtraRenderingToTrackStickyFrame)) {
-    return;
-  }
-
-  GURL main_url(embedded_test_server()->GetURL(
-      "foo.com",
-      "/frame_tree/scrollable_page_with_large_positioned_frame.html"));
-  EXPECT_TRUE(NavigateToURL(shell(), main_url));
-
-  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  FrameTreeNode* child_node = root->child_at(0);
-  GURL site_url(embedded_test_server()->GetURL(
-      "bar.com", "/frame_tree/page_with_large_positioned_frame.html"));
-  NavigateFrameToURL(child_node, site_url);
-
-  // This will intercept messages sent from B to C, describing C's viewport
-  // intersection.
-  scoped_refptr<UpdateViewportIntersectionMessageFilter> filter =
-      new UpdateViewportIntersectionMessageFilter();
-  child_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
-
-  // Run requestAnimationFrame in A and B to make sure initial layout has
-  // completed and initial IPCs sent.
-  ASSERT_TRUE(EvalJsAfterLifecycleUpdate(root->current_frame_host(), "", "")
-                  .error.empty());
-  ASSERT_TRUE(
-      EvalJsAfterLifecycleUpdate(child_node->current_frame_host(), "", "")
-          .error.empty());
-  filter->Clear();
-
-  ASSERT_TRUE(ExecJs(root->current_frame_host(), "window.scrollTo(0, 1)"));
-  filter->Wait();
-
-  EXPECT_FALSE(filter->GetIntersectionState().can_skip_sticky_frame_tracking);
-}
-
 // Test to verify that the main frame document intersection
 // is propagated to out of process iframes by scrolling a nested iframe
 // in and out of intersecting with the main frame document.

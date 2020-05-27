@@ -198,6 +198,14 @@ SyncerError Commit::PostAndProcessResponse(
   return processing_result;
 }
 
+ModelTypeSet Commit::GetContributingDataTypes() const {
+  ModelTypeSet contributed_data_types;
+  for (const auto& model_type_and_contribution : contributions_) {
+    contributed_data_types.Put(model_type_and_contribution.first);
+  }
+  return contributed_data_types;
+}
+
 void Commit::CleanUp() {
   for (ContributionMap::const_iterator it = contributions_.begin();
        it != contributions_.end(); ++it) {

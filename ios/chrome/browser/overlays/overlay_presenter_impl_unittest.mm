@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_presenter_observer.h"
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
+#include "ios/chrome/browser/overlays/test/fake_overlay_request_cancel_handler.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -446,6 +447,79 @@ TEST_F(OverlayPresenterImplTest, CancelRequests) {
             presentation_context().GetPresentationState(active_request));
   EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kCancelled,
             presentation_context().GetPresentationState(queued_request));
+}
+
+// Tests that the presented UI is correctly hidden if the presentation
+// capabilities change to kNone during the dismissal of overlay UI whose request
+// is owned by an inactive WebState.
+TEST_F(OverlayPresenterImplTest,
+       ChangePresentationCapabilitiesDuringDismissalForInactiveWebState) {
+  // Insert an activated WebState to the list and add a request.
+  presenter().SetPresentationContext(&presentation_context());
+  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
+                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
+                                  WebStateOpener());
+  OverlayRequest* request = AddRequest(active_web_state());
+
+  // Disable dismissal callbacks in the fake context and activate a new
+  // WebState.
+  presentation_context().SetDismissalCallbacksEnabled(false);
+  web_state_list().InsertWebState(1, std::make_unique<web::TestWebState>(),
+                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
+                                  WebStateOpener());
+
+  // Reset the presentation capabilities to kNone.  Since the context can no
+  // longer support presenting |request|, it will be hidden.
+  presentation_context().SetPresentationCapabilities(
+      OverlayPresentationContext::UIPresentationCapabilities::kNone);
+
+  // Re-enable dismissal callbacks to dimulate the dismissal finishing after the
+  // presentation capability reset.
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
+  presentation_context().SetDismissalCallbacksEnabled(true);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kHidden,
+            presentation_context().GetPresentationState(request));
+}
+
+// Tests that the presented UI is correctly hidden if the presentation
+// capabilities change to kNone during the dismissal of overlay UI whose request
+// that was cancelled.
+TEST_F(OverlayPresenterImplTest,
+       ChangePresentationCapabilitiesDuringDismissalForCancelledRequest) {
+  // Insert an activated WebState to the list.
+  presenter().SetPresentationContext(&presentation_context());
+  web_state_list().InsertWebState(0, std::make_unique<web::TestWebState>(),
+                                  WebStateList::InsertionFlags::INSERT_ACTIVATE,
+                                  WebStateOpener());
+  OverlayRequestQueueImpl* queue = GetQueueForWebState(active_web_state());
+
+  // Add a request with a fake cancel handler.
+  std::unique_ptr<OverlayRequest> inserted_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>();
+  OverlayRequest* request = inserted_request.get();
+  std::unique_ptr<FakeOverlayRequestCancelHandler> inserted_cancel_handler =
+      std::make_unique<FakeOverlayRequestCancelHandler>(request, queue);
+  FakeOverlayRequestCancelHandler* cancel_handler =
+      inserted_cancel_handler.get();
+  EXPECT_CALL(observer(), WillShowOverlay(&presenter(), request));
+  queue->AddRequest(std::move(inserted_request));
+
+  // Disable dismissal callbacks in the fake context and cancel the request.
+  presentation_context().SetDismissalCallbacksEnabled(false);
+  cancel_handler->TriggerCancellation();
+  EXPECT_FALSE(queue->front_request());
+
+  // Reset the presentation capabilities to kNone.  Since the context can no
+  // longer support presenting |request|, it will be hidden.
+  presentation_context().SetPresentationCapabilities(
+      OverlayPresentationContext::UIPresentationCapabilities::kNone);
+
+  // Re-enable dismissal callbacks to dimulate the dismissal finishing after the
+  // presentation capability reset.
+  EXPECT_CALL(observer(), DidHideOverlay(&presenter(), request));
+  presentation_context().SetDismissalCallbacksEnabled(true);
+  EXPECT_EQ(FakeOverlayPresentationContext::PresentationState::kHidden,
+            presentation_context().GetPresentationState(request));
 }
 
 // Tests that deleting the presenter

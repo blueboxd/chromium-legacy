@@ -29,13 +29,12 @@
 namespace blink {
 
 Document* DOMParser::parseFromString(const String& str, const String& type) {
-  Document* doc = DOMImplementation::createDocument(
-      DocumentInit::Create()
-          .WithURL(GetDocument()->Url())
-          .WithTypeFrom(type)
-          .WithExecutionContext(window_)
-          .WithOwnerDocument(GetDocument())
-          .WithContentSecurityPolicyFromExecutionContext());
+  Document* doc =
+      DOMImplementation::createDocument(DocumentInit::Create()
+                                            .WithURL(GetDocument()->Url())
+                                            .WithTypeFrom(type)
+                                            .WithExecutionContext(window_)
+                                            .WithOwnerDocument(GetDocument()));
   doc->SetContent(str);
   doc->SetMimeType(AtomicString(type));
   return doc;

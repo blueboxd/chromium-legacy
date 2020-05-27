@@ -14,6 +14,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class AnimatingLayoutManager;
 class Combobox;
 class EditableCombobox;
 class ToggleImageButton;
@@ -88,6 +89,13 @@ class PasswordSaveUpdateWithAccountStoreView
   // The view for the password value.
   views::EditableCombobox* password_dropdown_;
   bool are_passwords_revealed_;
+
+  // Used to add |username_dropdown_| as an observer to the
+  // AnimatingLayoutManager. This is needed such that the |username_dropdown_|
+  // keeps the dropdown menu closed while the layout is animating.
+  std::unique_ptr<ScopedObserver<views::AnimatingLayoutManager,
+                                 views::AnimatingLayoutManager::Observer>>
+      observed_animating_layout_;
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PASSWORDS_PASSWORD_SAVE_UPDATE_WITH_ACCOUNT_STORE_VIEW_H_

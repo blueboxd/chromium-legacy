@@ -43,7 +43,8 @@ component("stack_unwinder") {
     ":jni_headers",
     ":jni_registration",
     "//base",
-    "//chrome/android/features/stack_unwinder/public:memory_regions_map",
+    "//base:native_unwinder_android",
+    "//chrome/android/features/stack_unwinder/public:native",
   ]
 
   # stack unwinder native entrypoints belong in the partition.

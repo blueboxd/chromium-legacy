@@ -21,31 +21,16 @@ namespace {
 constexpr base::TimeDelta kFireInterval = base::TimeDelta::FromSeconds(1);
 constexpr double kLargeAdSizeToViewportSizeThreshold = 0.1;
 
-bool IsIframeAd(Element* element) {
-  HTMLFrameOwnerElement* frame_owner_element =
-      DynamicTo<HTMLFrameOwnerElement>(element);
-  if (!frame_owner_element)
-    return false;
-
-  Frame* frame = frame_owner_element->ContentFrame();
-  return frame && frame->IsAdSubframe();
-}
-
-bool IsImageAd(Element* element) {
-  HTMLImageElement* image_element = DynamicTo<HTMLImageElement>(element);
-  if (!image_element)
-    return false;
-
-  return image_element->IsAdRelated();
-}
-
 // An overlay interstitial element shouldn't move with scrolling and should be
 // able to overlap with other contents. So, either:
 // 1) one of its container ancestors (including itself) has fixed position.
 // 2) <body> or <html> has style="overflow:hidden", and among its container
 // ancestors (including itself), the 2nd to the top (where the top should always
 // be the <body>) has absolute position.
-bool IsImmobileAndCanOverlapWithOtherContent(Element* element) {
+bool IsOverlayAdCandidate(Element* element) {
+  if (!element->IsAdRelated())
+    return false;
+
   const ComputedStyle* style = nullptr;
   LayoutView* layout_view = element->GetDocument().GetLayoutView();
   LayoutObject* object = element->GetLayoutObject();
@@ -70,11 +55,6 @@ bool IsImmobileAndCanOverlapWithOtherContent(Element* element) {
     return !object->StyleRef().ScrollsOverflow();
 
   return false;
-}
-
-bool IsOverlayAdCandidate(Element* element) {
-  return (IsIframeAd(element) || IsImageAd(element)) &&
-         IsImmobileAndCanOverlapWithOtherContent(element);
 }
 
 }  // namespace

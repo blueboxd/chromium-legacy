@@ -50,7 +50,7 @@ GraphicsLayerUpdater::UpdateContext::UpdateContext(const UpdateContext& other,
   if (compositing_state != kNotComposited &&
       compositing_state != kPaintsIntoGroupedBacking) {
     compositing_ancestor_ = &layer;
-    if (layer.GetLayoutObject().StyleRef().IsStackingContext())
+    if (layer.GetLayoutObject().IsStackingContext())
       compositing_stacking_context_ = &layer;
   }
   // Any composited content under SVG must be a descendant of (but not
@@ -76,7 +76,7 @@ const PaintLayer* GraphicsLayerUpdater::UpdateContext::CompositingContainer(
     return layer.EnclosingLayerWithCompositedLayerMapping(kExcludeSelf);
 
   const PaintLayer* compositing_container;
-  if (layer.GetLayoutObject().StyleRef().IsStacked() &&
+  if (layer.GetLayoutObject().IsStacked() &&
       !layer.IsReplacedNormalFlowStacking()) {
     compositing_container = compositing_stacking_context_;
   } else if ((layer.Parent() &&

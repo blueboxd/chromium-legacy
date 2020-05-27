@@ -223,11 +223,11 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   void InjectGestureScrollEvent(LocalFrame& local_frame,
                                 WebGestureDevice device,
                                 const gfx::Vector2dF& delta,
-                                ScrollGranularity granularity,
+                                ui::ScrollGranularity granularity,
                                 cc::ElementId scrollable_area_element_id,
                                 WebInputEvent::Type injected_type) override {
-    popup_->WidgetClient()->InjectGestureScrollEvent(
-        device, delta, granularity, scrollable_area_element_id, injected_type);
+    popup_->InjectGestureScrollEvent(device, delta, granularity,
+                                     scrollable_area_element_id, injected_type);
   }
 
   WebPagePopupImpl* popup_;
@@ -364,6 +364,20 @@ WebPagePopupImpl::RendererWidgetSchedulingState() {
 
 void WebPagePopupImpl::SetCursor(const ui::Cursor& cursor) {
   widget_base_->SetCursor(cursor);
+}
+
+bool WebPagePopupImpl::HandlingInputEvent() {
+  return widget_base_->input_handler().handling_input_event();
+}
+
+void WebPagePopupImpl::SetHandlingInputEvent(bool handling) {
+  widget_base_->input_handler().set_handling_input_event(handling);
+}
+
+void WebPagePopupImpl::ProcessInputEventSynchronously(
+    const WebCoalescedInputEvent& event,
+    HandledEventCallback callback) {
+  widget_base_->input_handler().HandleInputEvent(event, std::move(callback));
 }
 
 void WebPagePopupImpl::SetCompositorVisible(bool visible) {
@@ -507,6 +521,32 @@ void WebPagePopupImpl::BeginMainFrame(base::TimeTicks last_frame_time) {
 
 void WebPagePopupImpl::DispatchRafAlignedInput(base::TimeTicks frame_time) {
   WidgetClient()->DispatchRafAlignedInput(frame_time);
+}
+
+bool WebPagePopupImpl::WillHandleGestureEvent(const WebGestureEvent& event) {
+  return WidgetClient()->WillHandleGestureEvent(event);
+}
+
+bool WebPagePopupImpl::WillHandleMouseEvent(const WebMouseEvent& event) {
+  return WidgetClient()->WillHandleMouseEvent(event);
+}
+
+void WebPagePopupImpl::ObserveGestureEventAndResult(
+    const WebGestureEvent& gesture_event,
+    const gfx::Vector2dF& unused_delta,
+    const cc::OverscrollBehavior& overscroll_behavior,
+    bool event_processed) {
+  WidgetClient()->DidHandleGestureScrollEvent(
+      gesture_event, unused_delta, overscroll_behavior, event_processed);
+}
+
+void WebPagePopupImpl::DidHandleKeyEvent() {
+  WidgetClient()->DidHandleKeyEvent();
+}
+
+void WebPagePopupImpl::QueueSyntheticEvent(
+    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
+  WidgetClient()->QueueSyntheticEvent(std::move(event));
 }
 
 WebInputEventResult WebPagePopupImpl::HandleCharEvent(
@@ -741,6 +781,16 @@ void WebPagePopupImpl::Cancel() {
 
 WebRect WebPagePopupImpl::WindowRectInScreen() const {
   return WidgetClient()->WindowRect();
+}
+
+void WebPagePopupImpl::InjectGestureScrollEvent(
+    WebGestureDevice device,
+    const gfx::Vector2dF& delta,
+    ScrollGranularity granularity,
+    cc::ElementId scrollable_area_element_id,
+    WebInputEvent::Type injected_type) {
+  widget_base_->input_handler().InjectGestureScrollEvent(
+      device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 // WebPagePopup ----------------------------------------------------------------

@@ -14,6 +14,7 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_fuchsia.h"
 #include "base/optional.h"
+#include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/api_bindings_client.h"
 #include "fuchsia/runners/cast/application_controller_impl.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
@@ -64,7 +65,7 @@ class CastComponent : public WebComponent,
 
   // WebComponent overrides.
   void StartComponent() final;
-  void DestroyComponent(int termination_exit_code,
+  void DestroyComponent(int64_t termination_exit_code,
                         fuchsia::sys::TerminationReason reason) final;
 
   const chromium::cast::ApplicationConfig& application_config() {
@@ -106,6 +107,7 @@ class CastComponent : public WebComponent,
   std::unique_ptr<NamedMessagePortConnector> connector_;
   std::unique_ptr<ApiBindingsClient> api_bindings_client_;
   std::unique_ptr<ApplicationControllerImpl> application_controller_;
+  chromium::cast::ApplicationContextPtr application_context_;
   uint64_t media_session_id_ = 0;
   zx::eventpair headless_view_token_;
   base::MessagePumpForIO::ZxHandleWatchController headless_disconnect_watch_;

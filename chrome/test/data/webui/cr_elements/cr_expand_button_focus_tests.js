@@ -8,15 +8,20 @@
 // #import {eventToPromise} from '../test_util.m.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 // #import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-expand-button-focus-tests', () => {
+  /** @type {!CrExpandButtonElement} */
   let button;
 
-  /** @param {boolean} */
+  /** @type {!CrIconButtonElement} */
+  let icon;
+
+  /** @param {boolean} rippleShown */
   function assertRippleState(rippleShown) {
-    assertEquals(button.$.icon, getDeepActiveElement());
-    assertEquals(rippleShown, button.$.icon.getRipple().holdDown);
+    assertEquals(icon, getDeepActiveElement());
+    assertEquals(rippleShown, icon.getRipple().holdDown);
   }
 
   function assertRipple() {
@@ -27,41 +32,50 @@ suite('cr-expand-button-focus-tests', () => {
     assertRippleState(false);
   }
 
-  /** @param {!Function} toggler */
-  async function waitForExpansion(toggler) {
+  /**
+   * @param {!Function} toggler
+   * @return {!Promise<void>}
+   */
+  function waitForExpansion(toggler) {
     const wait = test_util.eventToPromise('expanded-changed', button);
     toggler();
-    await wait;
+    return wait;
   }
 
-  async function click() {
-    await waitForExpansion(() => {
+  /** @return {!Promise<void>} */
+  function click() {
+    return waitForExpansion(() => {
       // This is used in cr.ui.focusWithoutInk to change mode into ink hidden
       // when focused.
       button.dispatchEvent(new PointerEvent('pointerdown'));
       // Used to simulate releasing the mouse button.
-      button.$.icon.fire('up');
+      icon.fire('up');
       // When the mouse is pressed and released, it will also emit a 'click'
       // event which is used in cr-expand-button to toggle expansion.
       button.fire('click');
     });
   }
 
-  async function enter() {
-    await waitForExpansion(() => {
-      MockInteractions.pressAndReleaseKeyOn(button.$.icon, '', '', 'Enter');
+  /** @return {!Promise<void>} */
+  function enter() {
+    return waitForExpansion(() => {
+      MockInteractions.pressAndReleaseKeyOn(icon, 0, '', 'Enter');
     });
   }
 
-  async function space() {
-    await waitForExpansion(() => {
-      MockInteractions.pressAndReleaseKeyOn(button.$.icon, '', '', ' ');
+  /** @return {!Promise<void>} */
+  function space() {
+    return waitForExpansion(() => {
+      MockInteractions.pressAndReleaseKeyOn(icon, 0, '', ' ');
     });
   }
 
   setup(() => {
-    document.body.innerHTML = '<cr-expand-button></cr-expand-button>';
-    button = document.body.querySelector('cr-expand-button');
+    document.body.innerHTML = '';
+    button = /** @type {!CrExpandButtonElement} */ (
+        document.createElement('cr-expand-button'));
+    document.body.appendChild(button);
+    icon = /** @type {!CrIconButtonElement} */ (button.$$('#icon'));
   });
 
   test('focus, ripple', () => {

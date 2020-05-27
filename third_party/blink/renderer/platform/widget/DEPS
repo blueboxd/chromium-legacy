@@ -1,5 +1,6 @@
 include_rules = [
     "+cc/paint/element_id.h",
+    "+cc/trees/latency_info_swap_promise_monitor.h",
     "+cc/trees/layer_tree_host.h",
     "+cc/trees/layer_tree_settings.h",
     "+cc/trees/ukm_manager.h",

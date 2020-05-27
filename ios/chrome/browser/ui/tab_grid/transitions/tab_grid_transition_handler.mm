@@ -102,6 +102,14 @@ const CGFloat kReducedMotionDuration = 0.25;
 
   browser.view.accessibilityViewIsModal = YES;
 
+  if (self.animationDisabled) {
+    browser.view.alpha = 1;
+    [tabGrid setNeedsStatusBarAppearanceUpdate];
+    if (completion)
+      completion();
+    return;
+  }
+
   browser.view.alpha = 0;
 
   if (UIAccessibilityIsReduceMotionEnabled() ||

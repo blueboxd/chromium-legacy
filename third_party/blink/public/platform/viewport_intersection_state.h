@@ -39,9 +39,7 @@ struct BLINK_PLATFORM_EXPORT ViewportIntersectionState {
            compositor_visible_rect == other.compositor_visible_rect &&
            occlusion_state == other.occlusion_state &&
            main_frame_viewport_size == other.main_frame_viewport_size &&
-           main_frame_scroll_offset == other.main_frame_scroll_offset &&
-           can_skip_sticky_frame_tracking ==
-               other.can_skip_sticky_frame_tracking;
+           main_frame_scroll_offset == other.main_frame_scroll_offset;
   }
   bool operator!=(const ViewportIntersectionState& other) const {
     return !(*this == other);
@@ -63,10 +61,6 @@ struct BLINK_PLATFORM_EXPORT ViewportIntersectionState {
   WebSize main_frame_viewport_size;
   // Main frame's scrolling offset.
   gfx::Point main_frame_scroll_offset;
-  // Indicates whether to force an intersection observation update in
-  // LocalFrame::SetViewportIntersectionFromParent in order to track sticky
-  // frames, or whether we could skip it.
-  bool can_skip_sticky_frame_tracking = false;
 };
 
 }  // namespace blink

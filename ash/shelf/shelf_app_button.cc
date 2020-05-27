@@ -887,7 +887,12 @@ void ShelfAppButton::SetInkDropAnimationStarted(bool started) {
     return;
 
   ink_drop_animation_started_ = started;
-  shelf_button_delegate()->NotifyInkDropActivity(started, /*sender=*/this);
+  if (started) {
+    ink_drop_count_ = shelf_button_delegate()->CreateScopedActiveInkDropCount(
+        /*sender=*/this);
+  } else {
+    ink_drop_count_.reset(nullptr);
+  }
 }
 
 }  // namespace ash

@@ -36,6 +36,10 @@ class WebEngineContentRendererClient : public content::ContentRendererClient {
   bool DeferMediaLoad(content::RenderFrame* render_frame,
                       bool has_played_media_before,
                       base::OnceClosure closure) override;
+  std::unique_ptr<media::Demuxer> OverrideDemuxerForUrl(
+      content::RenderFrame* render_frame,
+      const GURL& url,
+      scoped_refptr<base::SingleThreadTaskRunner> media_task_runner) override;
 
   bool RunClosureWhenInForeground(content::RenderFrame* render_frame,
                                   base::OnceClosure closure);

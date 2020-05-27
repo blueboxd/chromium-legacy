@@ -8,7 +8,6 @@
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
 #include "third_party/blink/renderer/core/frame/embedded_content_view.h"
-#include "third_party/blink/renderer/core/frame/sticky_frame_tracker.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
@@ -67,8 +66,7 @@ class CORE_EXPORT [[clang::lto_visibility_public]] FrameView
       const ViewportIntersectionState& intersection_state) = 0;
   virtual void VisibilityForThrottlingChanged() = 0;
   virtual bool LifecycleUpdatesThrottled() const { return false; }
-  // Returns whether we can skip tracking sticky frames.
-  bool UpdateViewportIntersection(unsigned, bool);
+  void UpdateViewportIntersection(unsigned, bool);
   // FrameVisibility is tracked by the browser process, which may suppress
   // lifecycle updates for a frame outside the viewport.
   void UpdateFrameVisibility(bool);
@@ -78,15 +76,12 @@ class CORE_EXPORT [[clang::lto_visibility_public]] FrameView
   virtual void VisibilityChanged(blink::mojom::FrameVisibility visibilty) = 0;
 
  private:
-  StickyFrameTracker* GetStickyFrameTracker();
-
   PhysicalRect rect_in_parent_;
   base::TimeTicks rect_in_parent_stable_since_;
   blink::mojom::FrameVisibility frame_visibility_ =
       blink::mojom::FrameVisibility::kRenderedInViewport;
   bool hidden_for_throttling_;
   bool subtree_throttled_;
-  std::unique_ptr<StickyFrameTracker> sticky_frame_tracker_;
 };
 
 template <>

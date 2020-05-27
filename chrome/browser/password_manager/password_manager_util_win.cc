@@ -209,6 +209,10 @@ void PasswordCheckPrefs::Write(PrefService* local_state) {
 }
 
 int64_t GetPasswordLastChanged(const WCHAR* username) {
+  // Mitigate the issues caused by loading DLLs on a background thread
+  // (http://crbug/973868).
+  SCOPED_MAY_LOAD_LIBRARY_AT_BACKGROUND_PRIORITY();
+
   LPUSER_INFO_1 user_info = NULL;
   DWORD age = 0;
 

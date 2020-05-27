@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
-#import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_mediator.h"
+#import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_manager.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -24,15 +24,15 @@ using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
 
 @interface AddAccountSigninCoordinator () <
-    AddAccountSigninMediatorDelegate,
+    AddAccountSigninManagerDelegate,
     ChromeIdentityInteractionManagerDelegate>
 
 // Coordinator to display modal alerts to the user.
 @property(nonatomic, strong) AlertCoordinator* alertCoordinator;
 // Coordinator that handles the sign-in UI flow.
 @property(nonatomic, strong) SigninCoordinator* userSigninCoordinator;
-// Mediator that handles sign-in state.
-@property(nonatomic, strong) AddAccountSigninMediator* mediator;
+// Manager that handles sign-in add account UI.
+@property(nonatomic, strong) AddAccountSigninManager* manager;
 // Manager that handles interactions to add identities.
 @property(nonatomic, strong)
     ChromeIdentityInteractionManager* identityInteractionManager;
@@ -87,20 +87,19 @@ using signin_metrics::PromoAction;
   // ensure that the interrupt completion is called on sign-in completion.
   // TODO(crbug.com/1072347): Update IdentityInteractionManager dismiss API.
   self.interruptCompletion = completion;
-  self.mediator.signinInterrupted = YES;
+  self.manager.signinInterrupted = YES;
   switch (action) {
+    // SSO doesn't support cancel without dismiss, so to make sure the cancel
+    // is properly done, -[ChromeIdentityInteractionManager
+    // cancelAndDismissAnimated:NO] has to be called.
     case SigninCoordinatorInterruptActionNoDismiss:
-      // SSO doesn't support cancel without dismiss, so to make sure the cancel
-      // is properly done, -[ChromeIdentityInteractionManager
-      // cancelAndDismissAnimated:NO] has to be called.
     case SigninCoordinatorInterruptActionDismissWithoutAnimation:
-      [self.identityInteractionManager cancelAndDismissAnimated:NO];
+      [self.identityInteractionManager cancelAddAccountWithAnimation:NO
+                                                          completion:nil];
       break;
     case SigninCoordinatorInterruptActionDismissWithAnimation:
-      // TODO(crbug.com/1051340): SSO doesn't support dismiss completion block.
-      // To make sure |completion| is called after the SSO view is fully
-      // dismissed, we need to dismiss without animation.
-      [self.identityInteractionManager cancelAndDismissAnimated:NO];
+      [self.identityInteractionManager cancelAddAccountWithAnimation:YES
+                                                          completion:nil];
       break;
   }
 }
@@ -118,13 +117,14 @@ using signin_metrics::PromoAction;
   signin::IdentityManager* identityManager =
       IdentityManagerFactory::GetForBrowserState(
           self.browser->GetBrowserState());
-  self.mediator = [[AddAccountSigninMediator alloc]
-      initWithIdentityInteractionManager:self.identityInteractionManager
-                             prefService:self.browser->GetBrowserState()
-                                             ->GetPrefs()
-                         identityManager:identityManager];
-  self.mediator.delegate = self;
-  [self.mediator handleSigninWithIntent:self.signinIntent];
+  self.manager = [[AddAccountSigninManager alloc]
+      initWithPresentingViewController:self.baseViewController
+            identityInteractionManager:self.identityInteractionManager
+                           prefService:self.browser->GetBrowserState()
+                                           ->GetPrefs()
+                       identityManager:identityManager];
+  self.manager.delegate = self;
+  [self.manager showSigninWithIntent:self.signinIntent];
 }
 
 - (void)stop {
@@ -155,15 +155,15 @@ using signin_metrics::PromoAction;
                                       completion:completion];
 }
 
-#pragma mark - AddAccountSigninMediatorDelegate
+#pragma mark - AddAccountSigninManagerDelegate
 
-- (void)addAccountSigninMediatorFailedWithError:(NSError*)error {
+- (void)addAccountSigninManagerFailedWithError:(NSError*)error {
   DCHECK(error);
   __weak AddAccountSigninCoordinator* weakSelf = self;
   ProceduralBlock dismissAction = ^{
-    [weakSelf addAccountSigninMediatorFinishedWithSigninResult:
+    [weakSelf addAccountSigninManagerFinishedWithSigninResult:
                   SigninCoordinatorResultCanceledByUser
-                                                      identity:nil];
+                                                     identity:nil];
   };
 
   self.alertCoordinator = ErrorCoordinator(
@@ -171,10 +171,10 @@ using signin_metrics::PromoAction;
   [self.alertCoordinator start];
 }
 
-- (void)addAccountSigninMediatorFinishedWithSigninResult:
+- (void)addAccountSigninManagerFinishedWithSigninResult:
             (SigninCoordinatorResult)signinResult
-                                                identity:
-                                                    (ChromeIdentity*)identity {
+                                               identity:
+                                                   (ChromeIdentity*)identity {
   if (!self.identityInteractionManager) {
     // The IdentityInteractionManager callback might be called after the
     // interrupt method. If this is the case, the AddAccountSigninCoordinator

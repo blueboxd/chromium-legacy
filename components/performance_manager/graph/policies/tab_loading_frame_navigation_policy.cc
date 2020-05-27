@@ -345,7 +345,8 @@ void TabLoadingFrameNavigationPolicy::StopThrottlingExpiredPages() {
                                     auto* contents = proxy.Get();
                                     if (contents)
                                       mechanism->StopThrottling(
-                                          contents, proxy.LastNavigationId());
+                                          contents,
+                                          proxy.LastNewDocNavigationId());
                                   },
                                   base::Unretained(mechanism_),
                                   page_node->GetContentsProxy()));

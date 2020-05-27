@@ -135,6 +135,8 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return embedding_token_;
   }
 
+  bool IsAdRelated() const override;
+
   void Trace(Visitor*) const override;
 
  protected:

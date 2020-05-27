@@ -103,7 +103,7 @@ class DraggedNodeImageBuilder {
     // object contains transparency and there are other elements in the same
     // stacking context which stacked below.
     PaintLayer* layer = dragged_layout_object->EnclosingLayer();
-    if (!layer->GetLayoutObject().StyleRef().IsStackingContext())
+    if (!layer->GetLayoutObject().IsStackingContext())
       layer = layer->AncestorStackingContext();
 
     IntRect absolute_bounding_box =

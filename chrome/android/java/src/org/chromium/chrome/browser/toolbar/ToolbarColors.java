@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
+import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.util.ColorUtils;
 
@@ -160,6 +161,8 @@ public class ToolbarColors {
         final boolean isHorizontalTabSwitcherEnabled = ChromeFeatureList.isInitialized()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
         final boolean isTabGridEnabled = TabUiFeatureUtilities.isGridTabSwitcherEnabled();
-        return (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled);
+        final boolean isStartSurfaceEnabled = StartSurfaceConfiguration.isStartSurfaceEnabled();
+        return (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled
+                || isStartSurfaceEnabled);
     }
 }

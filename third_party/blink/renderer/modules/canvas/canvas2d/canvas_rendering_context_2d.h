@@ -30,16 +30,19 @@
 #include <random>
 
 #include "base/macros.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_canvas_rendering_context_2d_settings.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
+#include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/base_rendering_context_2d.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/identifiability_study_helper.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -203,6 +206,12 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void Trace(Visitor*) const override;
 
+  ImageData* getImageData(int sx,
+                          int sy,
+                          int sw,
+                          int sh,
+                          ExceptionState&) override;
+
   CanvasColorParams ColorParamsForTest() const { return ColorParams(); }
 
   uint64_t IdentifiabilityTextDigest() override {
@@ -283,6 +292,9 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   std::bernoulli_distribution bernoulli_distribution_;
 
   IdentifiabilityStudyHelper identifiability_study_helper_;
+
+  ukm::UkmRecorder* ukm_recorder_;
+  ukm::SourceId ukm_source_id_;
 };
 
 }  // namespace blink

@@ -65,6 +65,10 @@ namespace fakeApi {
 
   callback OptionalParamCallback = void(optional Qux qux);
 
+  interface Properties {
+    static DOMString lastError();
+  };
+
   interface Functions {
     // Does something exciting! And what's more, this is a multiline function
     // comment! It goes onto multiple lines!
@@ -192,6 +196,12 @@ chrome.fakeApi.Qux.prototype.go = function() {};
  */
 chrome.fakeApi.Qux.prototype.stop = function() {};
 
+
+/**
+ * @type {string}
+ * @see https://developer.chrome.com/extensions/fakeApi#type-lastError
+ */
+chrome.fakeApi.lastError;
 
 /**
  * Does something exciting! And what's more, this is a multiline function
@@ -336,6 +346,12 @@ fake_json = """// Copyright 2014 The Chromium Authors. All rights reserved.
         "additionalProperties": {"type": "string"}
       }
     ],
+    "properties": {
+      "lastError": {
+        "type": "string",
+        "description": "The lastError."
+      }
+    },
     "functions": [ {
       "name": "funcWithInlineObj",
       "type": "function",
@@ -428,6 +444,13 @@ chrome.fakeJson.CrazyEnum = {
  * @see https://developer.chrome.com/extensions/fakeJson#type-CrazyObject
  */
 chrome.fakeJson.CrazyObject;
+
+/**
+ * The lastError.
+ * @type {string}
+ * @see https://developer.chrome.com/extensions/fakeJson#type-lastError
+ */
+chrome.fakeJson.lastError;
 
 /**
  * @param {{

@@ -152,10 +152,12 @@ void WebEngineContentBrowserClient::
 void WebEngineContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
+  // TODO(https://crbug.com/1083520): Pass based on process type.
   constexpr char const* kSwitchesToCopy[] = {
       switches::kContentDirectories,
       switches::kCorsExemptHeaders,
       switches::kDisableSoftwareVideoDecoders,
+      switches::kEnableCastStreamingReceiver,
       switches::kEnableProtectedVideoBuffers,
       switches::kEnableWidevine,
       switches::kForceProtectedVideoOutputBuffers,

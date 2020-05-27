@@ -41,8 +41,9 @@ class ApplicationControllerImplTest : public chromium::cast::ApplicationContext,
                                       public testing::Test {
  public:
   ApplicationControllerImplTest()
-      : application_context_(this),
-        application_(&frame_, application_context_.NewBinding()) {
+      : application_context_binding_(this),
+        application_context_(application_context_binding_.NewBinding().Bind()),
+        application_(&frame_, application_context_.get()) {
     base::RunLoop run_loop;
     wait_for_controller_callback_ = run_loop.QuitClosure();
     run_loop.Run();
@@ -51,7 +52,7 @@ class ApplicationControllerImplTest : public chromium::cast::ApplicationContext,
   ~ApplicationControllerImplTest() override = default;
 
  protected:
-  // chromium::cast::ApplicationReceiver implementation.
+  // chromium::cast::ApplicationContext implementation.
   void GetMediaSessionId(GetMediaSessionIdCallback callback) final {
     NOTREACHED();
   }
@@ -68,10 +69,12 @@ class ApplicationControllerImplTest : public chromium::cast::ApplicationContext,
       base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
 
   MockFrame frame_;
-  fidl::Binding<chromium::cast::ApplicationContext> application_context_;
+  fidl::Binding<chromium::cast::ApplicationContext>
+      application_context_binding_;
+  chromium::cast::ApplicationContextPtr application_context_;
+  ApplicationControllerImpl application_;
 
   chromium::cast::ApplicationControllerPtr application_ptr_;
-  ApplicationControllerImpl application_;
   base::OnceClosure wait_for_controller_callback_;
 
  private:

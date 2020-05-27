@@ -38,6 +38,18 @@ class {{exported}}{{cpp_class}} : public {{parent_cpp_class}} {
   {% if member.null_setter_name %}
   {{member.setter_inline}}void {{member.null_setter_name}}();
   {% endif %}
+  {% if member.is_nullable %}
+  // Migration adapters
+  // Returns true iff this member has a non-null value.  Returns false if the
+  // value is missing or a null value.
+  bool {{member.non_null_has_method_name}}() const { return {{member.has_method_expression}}; }
+  // Returns the value if this member has a non-null value.  Call
+  // |{{member.non_null_has_method_name}}| in advance to check the condition.
+  {{member.rvalue_cpp_type}} {{member.non_null_getter_name}}() const {
+    DCHECK({{member.non_null_has_method_name}}());
+    return {{member.getter_expression}};
+  }
+  {% endif %}
 
   {% endfor %}
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;

@@ -35,6 +35,12 @@ class WebContentsProxyImpl {
   // web contents. This must only be called on the UI thread.
   virtual int64_t LastNavigationId() const = 0;
 
+  // Similar to the above, but for the last non same-document navigation
+  // associated with this WebContents. This is always for a navigation that is
+  // older or equal to "LastNavigationId". This must only be called on the UI
+  // thread.
+  virtual int64_t LastNewDocNavigationId() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebContentsProxyImpl);
 };

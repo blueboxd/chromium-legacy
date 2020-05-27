@@ -90,6 +90,8 @@ WebCoalescedInputEvent::WebCoalescedInputEvent(
     predicted_events_.emplace_back(predicted_event->Clone());
 }
 
+WebCoalescedInputEvent::~WebCoalescedInputEvent() = default;
+
 bool WebCoalescedInputEvent::CanCoalesceWith(
     const WebCoalescedInputEvent& other) const {
   return event_->CanCoalesce(*other.event_);

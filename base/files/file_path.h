@@ -193,7 +193,7 @@ class BASE_EXPORT FilePath {
   FilePath(FilePath&& that) noexcept;
   // Replaces the contents with those of |that|, which is left in valid but
   // unspecified state.
-  FilePath& operator=(FilePath&& that);
+  FilePath& operator=(FilePath&& that) noexcept;
 
   bool operator==(const FilePath& that) const;
 

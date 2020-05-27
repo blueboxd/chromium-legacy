@@ -33,6 +33,7 @@ import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
+import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
@@ -298,8 +299,9 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
      * @param intentTimestamp the time the intent was received.
      * @return the tab the URL was opened in, could be a new tab or a reused one.
      */
-    public Tab launchUrlFromExternalApp(String url, String referer, String headers,
-            String appId, boolean forceNewTab, Intent intent, long intentTimestamp) {
+    // TODO(crbug.com/1081924): Clean up the launches from SearchActivity/Chrome.
+    public Tab launchUrlFromExternalApp(String url, String referer, String headers, String appId,
+            boolean forceNewTab, Intent intent, long intentTimestamp) {
         assert !mIncognito;
         boolean isLaunchedFromChrome = TextUtils.equals(appId, mActivity.getPackageName());
 
@@ -309,11 +311,26 @@ public class ChromeTabCreator extends TabCreatorManager.TabCreator {
             // reused either.
             LoadUrlParams loadUrlParams = new LoadUrlParams(url);
             loadUrlParams.setIntentReceivedTimestamp(intentTimestamp);
-            loadUrlParams.setVerbatimHeaders(headers);
             if (referer != null) {
                 loadUrlParams.setReferrer(
                         new Referrer(referer, IntentHandler.getReferrerPolicyFromIntent(intent)));
             }
+            // Handle post data case.
+            if (IntentHandler.wasIntentSenderChrome(intent)) {
+                String postDataType =
+                        IntentUtils.safeGetStringExtra(intent, IntentHandler.EXTRA_POST_DATA_TYPE);
+                byte[] postData =
+                        IntentUtils.safeGetByteArrayExtra(intent, IntentHandler.EXTRA_POST_DATA);
+                if (!TextUtils.isEmpty(postDataType) && postData != null && postData.length != 0) {
+                    StringBuilder appendToHeader = new StringBuilder();
+                    if (!TextUtils.isEmpty(headers)) appendToHeader.append("\r\n");
+                    appendToHeader.append("Content-Type: ");
+                    appendToHeader.append(postDataType);
+                    headers = headers + appendToHeader.toString();
+                    loadUrlParams.setPostData(ResourceRequestBody.createFromBytes(postData));
+                }
+            }
+            loadUrlParams.setVerbatimHeaders(headers);
             return createNewTab(loadUrlParams, TabLaunchType.FROM_EXTERNAL_APP, null, intent);
         }
 

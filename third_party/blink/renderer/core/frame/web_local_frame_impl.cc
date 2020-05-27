@@ -941,6 +941,12 @@ v8::Local<v8::Context> WebLocalFrameImpl::MainWorldScriptContext() const {
   return script_state->GetContext();
 }
 
+int32_t WebLocalFrameImpl::GetScriptContextWorldId(
+    v8::Local<v8::Context> script_context) const {
+  DCHECK_EQ(this, FrameForContext(script_context));
+  return DOMWrapperWorld::World(script_context).GetWorldId();
+}
+
 v8::Local<v8::Object> WebLocalFrameImpl::GlobalProxy() const {
   return MainWorldScriptContext()->Global();
 }

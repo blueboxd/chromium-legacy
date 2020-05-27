@@ -520,8 +520,6 @@ void TestRenderFrameHost::SendCommitNavigation(
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         prefetch_loader_factory,
     const base::UnguessableToken& devtools_navigation_token) {
-  if (!navigation_request)
-    return;
   CHECK(navigation_client);
   commit_callback_[navigation_request] =
       BuildCommitNavigationCallback(navigation_request);

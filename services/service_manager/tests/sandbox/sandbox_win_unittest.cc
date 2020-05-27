@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "sandbox/win/src/app_container_profile_base.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_policy_diagnostic.h"
 #include "sandbox/win/src/sid.h"
 #include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -164,6 +165,10 @@ class TestTargetPolicy : public sandbox::TargetPolicy {
 
   const std::vector<std::wstring>& blocklisted_dlls() const {
     return blocklisted_dlls_;
+  }
+
+  std::unique_ptr<sandbox::PolicyInfo> GetPolicyInfo() override {
+    return std::unique_ptr<sandbox::PolicyDiagnostic>();
   }
 
  private:

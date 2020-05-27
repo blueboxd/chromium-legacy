@@ -110,7 +110,7 @@ void WebDataRequestManager::RequestCompleted(
   if (task_runner)
     task_runner->PostTask(FROM_HERE, std::move(task));
   else
-    base::PostTask(FROM_HERE, std::move(task));
+    base::ThreadPool::PostTask(FROM_HERE, std::move(task));
 }
 
 WebDataRequestManager::~WebDataRequestManager() {

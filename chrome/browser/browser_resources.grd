@@ -242,8 +242,8 @@
         <include name="IDR_ACCOUNT_MANAGER_WELCOME_JS" file="resources\chromeos\account_manager\account_manager_welcome.js" type="BINDATA" />
         <include name="IDR_ACCOUNT_MIGRATION_WELCOME_HTML" file="resources\chromeos\account_manager\account_migration_welcome.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ACCOUNT_MIGRATION_WELCOME_JS" file="resources\chromeos\account_manager\account_migration_welcome.js" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_ACCOUNT_MIGRATION_BROWSER_PROXY_HTML" file="resources\chromeos\account_manager\account_migration_browser_proxy.html" type="BINDATA" />
-        <include name="IDR_ACCOUNT_MIGRATION_BROWSER_PROXY_JS" file="resources\chromeos\account_manager\account_migration_browser_proxy.js" type="BINDATA" />
+        <include name="IDR_ACCOUNT_MANAGER_BROWSER_PROXY_HTML" file="resources\chromeos\account_manager\account_manager_browser_proxy.html" type="BINDATA" />
+        <include name="IDR_ACCOUNT_MANAGER_BROWSER_PROXY_JS" file="resources\chromeos\account_manager\account_manager_browser_proxy.js" type="BINDATA" />
         <include name="IDR_ACCOUNT_MANAGER_ERROR_HTML" file="resources\chromeos\account_manager\account_manager_error.html" allowexternalscript="true" type="BINDATA" preprocess="true"/>
         <include name="IDR_ACCOUNT_MANAGER_ERROR_JS" file="resources\chromeos\account_manager\account_manager_error.js" type="BINDATA" />
         <if expr="_google_chrome">

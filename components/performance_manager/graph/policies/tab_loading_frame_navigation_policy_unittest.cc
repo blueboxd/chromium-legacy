@@ -9,11 +9,13 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/performance_manager/performance_manager_tab_helper.h"
 #include "components/performance_manager/public/features.h"
 #include "components/performance_manager/public/performance_manager.h"
 #include "components/performance_manager/test_support/performance_manager_test_harness.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/navigation_simulator.h"
@@ -152,7 +154,8 @@ class TabLoadingFrameNavigationPolicyTest
 
   // The MechanismDelegate calls redirect here.
   MOCK_METHOD1(OnSetThrottlingEnabled, void(bool));
-  MOCK_METHOD1(OnStopThrottling, void(content::WebContents*));
+  MOCK_METHOD2(OnStopThrottling,
+               void(content::WebContents*, int64_t last_navigation_id));
 
   // Accessors.
   TabLoadingFrameNavigationPolicy* policy() const { return policy_; }
@@ -175,8 +178,8 @@ class TabLoadingFrameNavigationPolicyTest
     quit_closure_.Run();
   }
   void StopThrottling(content::WebContents* contents,
-                      int64_t last_navigation_id_unused) override {
-    OnStopThrottling(contents);
+                      int64_t last_navigation_id) override {
+    OnStopThrottling(contents, last_navigation_id);
 
     // Time can be manually advanced as well, so we're not always in a RunLoop.
     // Only try to invoke the quit closure if it has been set.
@@ -189,6 +192,35 @@ class TabLoadingFrameNavigationPolicyTest
   base::RepeatingClosure quit_closure_;
   base::TimeTicks start_;
 };
+
+// Navigates and commits from the browser, returning the navigation id.
+int64_t NavigateAndCommitFromBrowser(content::WebContents* contents,
+                                     GURL gurl) {
+  std::unique_ptr<content::NavigationSimulator> simulator(
+      content::NavigationSimulator::CreateBrowserInitiated(gurl, contents));
+  simulator->Start();
+  int64_t navigation_id = simulator->GetNavigationHandle()->GetNavigationId();
+  simulator->Commit();
+  auto* pmth = PerformanceManagerTabHelper::FromWebContents(contents);
+  CHECK(pmth);
+  EXPECT_EQ(pmth->LastNavigationId(), navigation_id);
+  EXPECT_EQ(pmth->LastNewDocNavigationId(), navigation_id);
+  return navigation_id;
+}
+
+// Navigates and commits a same document navigation from the renderer.
+// Returns the navigation id.
+int64_t NavigateAndCommitSameDocFromRenderer(content::WebContents* contents,
+                                             GURL gurl) {
+  std::unique_ptr<content::NavigationSimulator> simulator(
+      content::NavigationSimulator::CreateRendererInitiated(
+          gurl, contents->GetMainFrame()));
+  simulator->CommitSameDocument();
+  auto* pmth = PerformanceManagerTabHelper::FromWebContents(contents);
+  CHECK(pmth);
+  EXPECT_NE(pmth->LastNavigationId(), pmth->LastNewDocNavigationId());
+  return pmth->LastNavigationId();
+}
 
 }  // namespace
 
@@ -297,7 +329,7 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
 
   // Navigate and throttle a first contents. It will expire at time T.
   std::unique_ptr<content::WebContents> contents1 = CreateTestWebContents();
-  content::NavigationSimulator::NavigateAndCommitFromBrowser(
+  int64_t navigation_id = NavigateAndCommitFromBrowser(
       contents1.get(), GURL("http://www.foo1.com/"));
   EXPECT_TRUE(policy()->ShouldThrottleWebContents(contents1.get()));
   ExpectThrottledPageCount(1);
@@ -314,13 +346,12 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
 
   // Navigate and throttle a second contents. It will expire at 1.5 T.
   std::unique_ptr<content::WebContents> contents2 = CreateTestWebContents();
-  content::NavigationSimulator::NavigateAndCommitFromBrowser(
-      contents2.get(), GURL("https://www.foo2.com/"));
+  NavigateAndCommitFromBrowser(contents2.get(), GURL("https://www.foo2.com/"));
   EXPECT_TRUE(policy()->ShouldThrottleWebContents(contents2.get()));
   ExpectThrottledPageCount(2);
 
   // Run until the first contents times out.
-  EXPECT_CALL(*this, OnStopThrottling(contents1.get()));
+  EXPECT_CALL(*this, OnStopThrottling(contents1.get(), navigation_id));
   RunUntilStopThrottling();
   ExpectThrottledPageCount(1);
   base::TimeTicks stop1 = task_environment()->GetMockTickClock()->NowTicks();
@@ -331,8 +362,8 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
 
   // Navigate and throttle a third contents. It will expire at time 2 T.
   std::unique_ptr<content::WebContents> contents3 = CreateTestWebContents();
-  content::NavigationSimulator::NavigateAndCommitFromBrowser(
-      contents3.get(), GURL("https://www.foo3.com/"));
+  navigation_id = NavigateAndCommitFromBrowser(contents3.get(),
+                                               GURL("https://www.foo3.com/"));
   EXPECT_TRUE(policy()->ShouldThrottleWebContents(contents3.get()));
   ExpectThrottledPageCount(2);
 
@@ -345,6 +376,12 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
 
   // We are now at time 1.25 T.
   ASSERT_EQ(1.25, GetRelativeTime());
+
+  // Do a same document navigation. This will cause another navigation commit,
+  // but the policy should remain bound to the previous navigation id.
+  int64_t same_doc_navigation_id = NavigateAndCommitSameDocFromRenderer(
+      contents3.get(), GURL("https://www.foo3.com/#somehash"));
+  ASSERT_NE(navigation_id, same_doc_navigation_id);
 
   // Close the 2nd contents before the timeout expires, and expect the throttled
   // count to drop. Now the timer should be running for the 3rd contents.
@@ -363,7 +400,7 @@ TEST_F(TabLoadingFrameNavigationPolicyTest, TimeoutWorks) {
   ASSERT_EQ(1.6, GetRelativeTime());
 
   // Finally, run until the third contents times out.
-  EXPECT_CALL(*this, OnStopThrottling(contents3.get()));
+  EXPECT_CALL(*this, OnStopThrottling(contents3.get(), navigation_id));
   RunUntilStopThrottling();
   ExpectThrottledPageCount(0);
   base::TimeTicks stop3 = task_environment()->GetMockTickClock()->NowTicks();

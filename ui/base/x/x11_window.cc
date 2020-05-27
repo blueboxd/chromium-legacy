@@ -1577,23 +1577,13 @@ bool XWindow::InitializeAsStatusIcon() {
         static_cast<int>(x11::XProto::BackPixmap::ParentRelative);
   }
   XChangeWindowAttributes(xdisplay_, xwindow_, flags, &attrs);
-  XEvent ev;
-  memset(&ev, 0, sizeof(ev));
-  ev.xclient.type = ClientMessage;
-  ev.xclient.window = manager;
-  ev.xclient.message_type =
-      static_cast<uint32_t>(gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE"));
-  ev.xclient.format = 32;
-  ev.xclient.data.l[0] = ui::X11EventSource::GetInstance()->GetTimestamp();
-  ev.xclient.data.l[1] = kSystemTrayRequestDock;
-  ev.xclient.data.l[2] = xwindow_;
-  bool error;
-  {
-    gfx::X11ErrorTracker error_tracker;
-    XSendEvent(xdisplay_, manager, false, NoEventMask, &ev);
-    error = error_tracker.FoundNewError();
-  }
-  return !error;
+
+  auto future = ui::SendClientMessage(
+      manager, manager, gfx::GetAtom("_NET_SYSTEM_TRAY_OPCODE"),
+      {ui::X11EventSource::GetInstance()->GetTimestamp(),
+       kSystemTrayRequestDock, xwindow_, 0, 0},
+      x11::XProto::EventMask::NoEvent);
+  return !future.Sync().error;
 }
 
 }  // namespace ui

@@ -867,8 +867,6 @@ template("test_runner_script") {
 }
 
 if (enable_java_templates) {
-  android_sdk_jar = "$android_sdk/android.jar"
-
   template("android_lint") {
     action_with_pydeps(target_name) {
       forward_variables_from(invoker,
@@ -878,59 +876,45 @@ if (enable_java_templates) {
                                "public_deps",
                                "testonly",
                              ])
+      _suppressions_file = "//build/android/lint/suppressions.xml"
       if (defined(invoker.lint_suppressions_file)) {
-        lint_suppressions_file = invoker.lint_suppressions_file
-      } else if (!defined(lint_suppressions_file)) {
+        _suppressions_file = invoker.lint_suppressions_file
+      } else if (defined(lint_suppressions_file)) {
         # WebRTC defines its own lint_suppressions_file:
         # //tools_webrtc/android/suppressions.xml
-        lint_suppressions_file = "//build/android/lint/suppressions.xml"
+        _suppressions_file = lint_suppressions_file
       }
 
       _min_sdk_version = default_min_sdk_version
       if (defined(invoker.min_sdk_version)) {
         _min_sdk_version = invoker.min_sdk_version
       }
-      _lint_path = "$lint_android_sdk_root/cmdline-tools/latest/bin/lint"
+
+      _lint_binary_path = "$lint_android_sdk_root/cmdline-tools/latest/bin/lint"
       _cache_dir = "$root_build_dir/android_lint_cache"
-      _result_path = "$target_out_dir/$target_name/result.xml"
-      _config_path = "$target_out_dir/$target_name/config.xml"
-      _stamp_path = "$target_out_dir/$target_name/build.lint.stamp"
-      _suppressions_file = lint_suppressions_file
-      _platform_xml_path =
-          "$lint_android_sdk_root/platform-tools/api/api-versions.xml"
+
+      # Save these generated xml files in a consistent location for debugging.
+      _lint_gen_dir = "$target_gen_dir/$target_name"
 
       script = "//build/android/gyp/lint.py"
       depfile = "$target_gen_dir/$target_name.d"
       inputs = [
-        _lint_path,
-        _platform_xml_path,
+        _lint_binary_path,
         _suppressions_file,
       ]
-
-      # _result_path is also an output, but do not list it in order to avoid it
-      # being uploaded to swarming as part of isolates. This happens as a
-      # side-effect of lint targets being listed as "data_deps" in order to
-      # have them run concurrently with other targets.
-      outputs = [ _stamp_path ]
 
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--lint-path",
-        rebase_path(_lint_path, root_build_dir),
+        "--lint-binary-path",
+        rebase_path(_lint_binary_path, root_build_dir),
         "--cache-dir",
         rebase_path(_cache_dir, root_build_dir),
-        "--platform-xml-path",
-        rebase_path(_platform_xml_path, root_build_dir),
-        "--android-sdk-version=${lint_android_sdk_version}",
         "--config-path",
         rebase_path(_suppressions_file, root_build_dir),
-        "--product-dir=.",
-        "--result-path",
-        rebase_path(_result_path, root_build_dir),
-        "--stamp",
-        rebase_path(_stamp_path, root_build_dir),
-        "--include-unexpected-failures",
+        "--lint-gen-dir",
+        rebase_path(_lint_gen_dir, root_build_dir),
+        "--android-sdk-version=${lint_android_sdk_version}",
         "--min-sdk-version=$_min_sdk_version",
         "--android-sdk-root",
         rebase_path(lint_android_sdk_root, root_build_dir),
@@ -941,11 +925,24 @@ if (enable_java_templates) {
         args += [ "--testonly" ]
       }
 
+      if (defined(invoker.manifest_package)) {
+        args += [ "--manifest-package=${invoker.manifest_package}" ]
+      }
+
+      if (java_warnings_as_errors) {
+        args += [ "--can-fail-build" ]
+      }
+
+      _stamp_path = "$target_out_dir/$target_name/build.lint.stamp"
       if (defined(invoker.create_cache) && invoker.create_cache) {
         args += [ "--silent" ]
+
+        # Putting the stamp file in the cache dir allows us to depend on ninja
+        # to create the cache dir for us.
+        _stamp_path = "$_cache_dir/build.lint.stamp"
       } else {
-        inputs += [ invoker.build_config ]
         deps += [ "//build/android:prepare_android_lint_cache" ]
+        inputs += [ invoker.build_config ]
         _rebased_build_config =
             rebase_path(invoker.build_config, root_build_dir)
         args += [
@@ -955,14 +952,13 @@ if (enable_java_templates) {
           "--resource-sources=@FileArg($_rebased_build_config:deps_info:lint_resource_sources)",
           "--resource-zips=@FileArg($_rebased_build_config:deps_info:lint_resource_zips)",
         ]
-        if (java_warnings_as_errors) {
-          args += [ "--can-fail-build" ]
-        }
       }
 
-      if (defined(invoker.manifest_package)) {
-        args += [ "--manifest-package=${invoker.manifest_package}" ]
-      }
+      outputs = [ _stamp_path ]
+      args += [
+        "--stamp",
+        rebase_path(_stamp_path, root_build_dir),
+      ]
     }
   }
 

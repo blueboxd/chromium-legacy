@@ -20,11 +20,16 @@ source_set("app_update") {
   sources = [
     "app_registry_cache.cc",
     "app_registry_cache.h",
+    "app_registry_cache_wrapper.cc",
+    "app_registry_cache_wrapper.h",
     "app_update.cc",
     "app_update.h",
   ]
 
-  public_deps = [ "//components/services/app_service/public/mojom" ]
+  public_deps = [
+    "//components/account_id:account_id",
+    "//components/services/app_service/public/mojom",
+  ]
 }
 
 if (is_chromeos) {

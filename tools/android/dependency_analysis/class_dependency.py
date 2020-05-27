@@ -33,9 +33,6 @@ class JavaClass(graph.Node):
     Some classes may have nested classes (eg. explicitly, or
     implicitly through lambdas). We treat these nested classes as part of
     the outer class, storing only their names as metadata.
-
-    Attributes:
-        nested_classes: A set of nested classes contained within this class.
     """
     def __init__(self, package: str, class_name: str):
         """Initializes a new Java class structure.
@@ -53,6 +50,19 @@ class JavaClass(graph.Node):
         self._class_name = class_name
 
         self._nested_classes = set()
+
+    @property
+    def package(self):
+        """The package the class belongs to."""
+        return self._package
+
+    @property
+    def class_name(self):
+        """The name of the class.
+
+        For nested classes, this is the name of the class that contains them.
+        """
+        return self._class_name
 
     @property
     def nested_classes(self):

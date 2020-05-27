@@ -399,10 +399,10 @@ void OverlayPresenterImpl::
   DCHECK_EQ(presentation_context_, presentation_context);
   // Hide the presented overlay UI if the presentation context is transitioning
   // to a state where that UI is not supported.
-  OverlayRequest* request = GetActiveRequest();
-  if (request && presenting_ &&
-      !presentation_context->CanShowUIForRequest(request, capabilities)) {
-    presentation_context_->HideOverlayUI(GetActiveRequest());
+  if (presented_request_ && !presentation_context->CanShowUIForRequest(
+                                presented_request_, capabilities)) {
+    DCHECK(presenting_);
+    presentation_context_->HideOverlayUI(presented_request_);
   }
 }
 

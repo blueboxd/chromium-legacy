@@ -121,6 +121,16 @@ class CORE_EXPORT WebFrameWidgetBase
   mojom::blink::DisplayMode DisplayMode() const override;
   void SetDelegatedInkMetadata(
       std::unique_ptr<viz::DelegatedInkMetadata> metadata) final;
+  void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                     const gfx::Vector2dF& accumulated_overscroll,
+                     const gfx::PointF& position,
+                     const gfx::Vector2dF& velocity) override;
+  void InjectGestureScrollEvent(WebGestureDevice device,
+                                const gfx::Vector2dF& delta,
+                                ui::ScrollGranularity granularity,
+                                cc::ElementId scrollable_area_element_id,
+                                WebInputEvent::Type injected_type) override;
+  void DidChangeCursor(const ui::Cursor&) override;
 
   // WebFrameWidget implementation.
   WebLocalFrame* LocalRoot() const override;
@@ -186,6 +196,10 @@ class CORE_EXPORT WebFrameWidgetBase
   void SetCompositorVisible(bool visible) override;
   void SetDisplayMode(mojom::blink::DisplayMode) override;
   void SetCursor(const ui::Cursor& cursor) override;
+  bool HandlingInputEvent() override;
+  void SetHandlingInputEvent(bool handling) override;
+  void ProcessInputEventSynchronously(const WebCoalescedInputEvent&,
+                                      HandledEventCallback) override;
 
   // WidgetBaseClient methods.
   void DispatchRafAlignedInput(base::TimeTicks frame_time) override;
@@ -200,6 +214,21 @@ class CORE_EXPORT WebFrameWidgetBase
   void DidObserveFirstScrollDelay(base::TimeDelta first_scroll_delay) override;
   void DidBeginMainFrame() override;
   void WillBeginMainFrame() override;
+  void FocusChangeComplete() override;
+  void ShowVirtualKeyboard() override;
+  void UpdateTextInputState() override;
+  bool WillHandleGestureEvent(const WebGestureEvent& event) override;
+  bool WillHandleMouseEvent(const WebMouseEvent& event) override;
+  void ObserveGestureEventAndResult(
+      const WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      const cc::OverscrollBehavior& overscroll_behavior,
+      bool event_processed) override;
+  bool SupportsBufferedTouchEvents() override { return true; }
+  void DidHandleKeyEvent() override;
+  void QueueSyntheticEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
+  WebTextInputType GetTextInputType() override;
 
   // mojom::blink::FrameWidget methods.
   void DragSourceSystemDragEnded() override;
@@ -290,6 +319,13 @@ class CORE_EXPORT WebFrameWidgetBase
   void SynchronouslyCompositeForTesting(base::TimeTicks frame_time);
 
   void SetToolTipText(const String& tooltip_text, TextDirection dir);
+
+  void ShowVirtualKeyboardOnElementFocus();
+  void ProcessTouchAction(WebTouchAction touch_action);
+
+  // Called when a gesture event has been processed.
+  void DidHandleGestureEvent(const WebGestureEvent& event,
+                             bool event_cancelled);
 
  protected:
   enum DragAction { kDragEnter, kDragOver };

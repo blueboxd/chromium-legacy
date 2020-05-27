@@ -17,6 +17,7 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/widget/compositing/layer_tree_view_delegate.h"
+#include "third_party/blink/renderer/platform/widget/input/widget_base_input_handler.h"
 
 namespace cc {
 class AnimationHost;
@@ -115,7 +116,19 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
   // compositor thread this returns false.
   static bool ShouldRecordBeginMainFrameMetrics();
 
+  // Set the current cursor relay to browser if necessary.
   void SetCursor(const ui::Cursor& cursor);
+
+  // Dispatch the virtual keyboard and update text input state.
+  void ShowVirtualKeyboardOnElementFocus();
+
+  // Process the touch action, return true if the action should be
+  // sent to the browser.
+  bool ProcessTouchAction(cc::TouchAction touch_action);
+
+  WidgetBaseInputHandler& input_handler() { return input_handler_; }
+
+  WidgetBaseClient* client() { return client_; }
 
   void SetToolTipText(const String& tooltip_text, TextDirection dir);
 
@@ -128,6 +141,7 @@ class PLATFORM_EXPORT WidgetBase : public mojom::blink::Widget,
       render_widget_scheduling_state_;
   bool first_update_visual_state_after_hidden_ = false;
   base::TimeTicks was_shown_time_ = base::TimeTicks::Now();
+  WidgetBaseInputHandler input_handler_{this};
 };
 
 }  // namespace blink

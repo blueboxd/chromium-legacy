@@ -684,6 +684,90 @@ TEST_F(HotseatScrollableShelfViewTest, CheckRoundedCornersSetForInkDrop) {
   EXPECT_FALSE(HasRoundedCornersOnAppButtonAfterMouseRightClick(first_icon));
 }
 
+// Verify that the rounded corners work as expected after transition from
+// clamshell mode to tablet mode (https://crbug.com/1086484).
+TEST_F(ScrollableShelfViewTest, CheckRoundedCornersAfterTabletStateTransition) {
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  PopulateAppShortcut(1);
+
+  ShelfAppButton* icon = test_api_->GetButton(0);
+
+  // Right click on the app button to activate the ripple ring.
+  GetEventGenerator()->MoveMouseTo(icon->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickRightButton();
+  {
+    InkDropAnimationWaiter waiter(icon);
+    waiter.Wait();
+  }
+  ASSERT_EQ(views::InkDropState::ACTIVATED,
+            icon->GetInkDrop()->GetTargetInkDropState());
+
+  // Verify that in clamshell when the ripple ring is activated, the rounded
+  // corners should not be applied.
+  EXPECT_TRUE(
+      scrollable_shelf_view_->IsAnyCornerButtonInkDropActivatedForTest());
+  EXPECT_TRUE(scrollable_shelf_view_->shelf_container_view()
+                  ->layer()
+                  ->rounded_corner_radii()
+                  .IsEmpty());
+
+  // Switch to tablet mode. The ripple ring should be hidden.
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  {
+    InkDropAnimationWaiter waiter(icon);
+    waiter.Wait();
+  }
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            icon->GetInkDrop()->GetTargetInkDropState());
+
+  // Verify that the rounded corners should not be applied when the ripple ring
+  // is hidden.
+  ASSERT_TRUE(scrollable_shelf_view_->shelf_container_view()
+                  ->layer()
+                  ->rounded_corner_radii()
+                  .IsEmpty());
+  EXPECT_FALSE(
+      scrollable_shelf_view_->IsAnyCornerButtonInkDropActivatedForTest());
+}
+
+// Verify that the count of activated corner buttons is expected after removing
+// an app icon from context menu (https://crbug.com/1086484).
+TEST_F(ScrollableShelfViewTest,
+       CheckRoundedCornersAfterUnpinningFromContextMenu) {
+  ui::ScopedAnimationDurationScaleMode regular_animations(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
+  AddAppShortcut();
+  const ShelfID app_id = AddAppShortcut();
+  ASSERT_EQ(2, test_api_->GetButtonCount());
+
+  ShelfModel* shelf_model = ShelfModel::Get();
+  const int index = shelf_model->ItemIndexByID(app_id);
+
+  ShelfAppButton* icon = test_api_->GetButton(index);
+
+  // Right click on the app button to activate the ripple ring.
+  GetEventGenerator()->MoveMouseTo(icon->GetBoundsInScreen().CenterPoint());
+  GetEventGenerator()->ClickRightButton();
+  {
+    InkDropAnimationWaiter waiter(icon);
+    waiter.Wait();
+  }
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            icon->GetInkDrop()->GetTargetInkDropState());
+
+  // Emulate to remove a shelf icon from context menu.
+  shelf_model->RemoveItemAt(index);
+  test_api_->RunMessageLoopUntilAnimationsDone();
+  ASSERT_EQ(1, test_api_->GetButtonCount());
+
+  // Verify the count of activated corner buttons.
+  EXPECT_FALSE(
+      scrollable_shelf_view_->IsAnyCornerButtonInkDropActivatedForTest());
+}
+
 // Verifies that when two shelf app buttons are animating at the same time,
 // rounded corners are being kept if needed. (see https://crbug.com/1079330)
 TEST_F(ScrollableShelfViewTest, CheckRoundedCornersAfterLongPress) {

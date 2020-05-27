@@ -38,10 +38,10 @@ cr.define('account_migration_welcome', function() {
   }
 
   /**
-   * @return {AccountMigrationBrowserProxy}
+   * @return {AccountManagerBrowserProxy}
    */
   function getBrowserProxy() {
-    return account_migration.AccountMigrationBrowserProxyImpl.getInstance();
+    return account_manager.AccountManagerBrowserProxyImpl.getInstance();
   }
 
   function closeDialog() {

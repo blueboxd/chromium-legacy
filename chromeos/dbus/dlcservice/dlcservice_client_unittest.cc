@@ -303,13 +303,13 @@ TEST_F(DlcserviceClientTest, InstallProgressTest) {
   EXPECT_EQ(0u, counter.load());
 
   dbus::Signal signal("com.example.Interface", "SomeSignal");
-  dlcservice::InstallStatus install_status;
-  install_status.set_status(dlcservice::Status::RUNNING);
+  dlcservice::DlcState dlc_state;
+  dlc_state.set_state(dlcservice::DlcState::INSTALLING);
 
   dbus::MessageWriter writer(&signal);
-  writer.AppendProtoAsArrayOfBytes(install_status);
+  writer.AppendProtoAsArrayOfBytes(dlc_state);
 
-  client_->OnInstallStatusForTest(&signal);
+  client_->DlcStateChangedForTest(&signal);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u, counter.load());
 }
@@ -358,14 +358,14 @@ TEST_F(DlcserviceClientTest, PendingTaskTest) {
   EXPECT_EQ(0u, counter.load());
 
   dbus::Signal signal("com.example.Interface", "SomeSignal");
-  dlcservice::InstallStatus install_status;
-  install_status.set_status(dlcservice::Status::COMPLETED);
+  dlcservice::DlcState dlc_state;
+  dlc_state.set_state(dlcservice::DlcState::INSTALLED);
 
   dbus::MessageWriter writer(&signal);
-  writer.AppendProtoAsArrayOfBytes(install_status);
+  writer.AppendProtoAsArrayOfBytes(dlc_state);
 
   for (size_t i = 1; i < 100; ++i) {
-    client_->OnInstallStatusForTest(&signal);
+    client_->DlcStateChangedForTest(&signal);
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(i <= kLoopCount ? i : kLoopCount, counter.load());
   }

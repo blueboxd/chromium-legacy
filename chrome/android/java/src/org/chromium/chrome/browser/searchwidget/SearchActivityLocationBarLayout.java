@@ -28,7 +28,7 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     /** Delegates calls out to the containing Activity. */
     public static interface Delegate {
         /** Load a URL in the associated tab. */
-        void loadUrl(String url);
+        void loadUrl(String url, @Nullable String postDataType, @Nullable byte[] postData);
 
         /** The user hit the back button. */
         void backKeyPressed();
@@ -56,8 +56,9 @@ public class SearchActivityLocationBarLayout extends LocationBarLayout {
     }
 
     @Override
-    public void loadUrl(String url, int transition, long inputStart) {
-        mDelegate.loadUrl(url);
+    public void loadUrlWithPostData(String url, int transition, long inputStart,
+            @Nullable String postDataType, @Nullable byte[] postData) {
+        mDelegate.loadUrl(url, postDataType, postData);
         LocaleManager.getInstance().recordLocaleBasedSearchMetrics(true, url, transition);
     }
 

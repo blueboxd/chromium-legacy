@@ -191,8 +191,7 @@ Document* DOMImplementation::createHTMLDocument(const String& title) {
       DocumentInit::Create()
           .WithExecutionContext(window)
           .WithOwnerDocument(window->document())
-          .WithRegistrationContext(document_->RegistrationContext())
-          .WithContentSecurityPolicyFromExecutionContext();
+          .WithRegistrationContext(document_->RegistrationContext());
   auto* d = MakeGarbageCollected<HTMLDocument>(init);
   d->open();
   d->write("<!doctype html><html><head></head><body></body></html>");

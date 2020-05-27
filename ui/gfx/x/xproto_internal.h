@@ -49,11 +49,17 @@ struct ReadBuffer {
 };
 
 template <typename T>
-void Write(const T* t, WriteBuffer* buf) {
-  static_assert(std::is_trivially_copyable<T>::value, "");
+void VerifyAlignment(T* t, size_t offset) {
   // On the wire, X11 types are always aligned to their size.  This is a sanity
   // check to ensure padding etc are working properly.
-  DCHECK_EQ(buf->size() % sizeof(*t), 0UL);
+  if (sizeof(T) == 2 || sizeof(T) == 4 || sizeof(T) == 8)
+    DCHECK_EQ(offset % sizeof(*t), 0UL);
+}
+
+template <typename T>
+void Write(const T* t, WriteBuffer* buf) {
+  static_assert(std::is_trivially_copyable<T>::value, "");
+  VerifyAlignment(t, buf->size());
   const uint8_t* start = reinterpret_cast<const uint8_t*>(t);
   std::copy(start, start + sizeof(*t), std::back_inserter(*buf));
 }
@@ -61,9 +67,7 @@ void Write(const T* t, WriteBuffer* buf) {
 template <typename T>
 void Read(T* t, ReadBuffer* buf) {
   static_assert(std::is_trivially_copyable<T>::value, "");
-  // On the wire, X11 types are always aligned to their size.  This is a sanity
-  // check to ensure padding etc are working properly.
-  DCHECK_EQ(buf->offset % sizeof(*t), 0UL);
+  VerifyAlignment(t, buf->offset);
   memcpy(t, buf->data + buf->offset, sizeof(*t));
   buf->offset += sizeof(*t);
 }

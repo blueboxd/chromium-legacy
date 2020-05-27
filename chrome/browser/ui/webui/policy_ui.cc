@@ -57,6 +57,7 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
     {"noPoliciesSet", IDS_POLICY_NO_POLICIES_SET},
     {"offHoursActive", IDS_POLICY_OFFHOURS_ACTIVE},
     {"offHoursNotActive", IDS_POLICY_OFFHOURS_NOT_ACTIVE},
+    {"policyCopyValue", IDS_POLICY_COPY_VALUE},
     {"policiesPushOff", IDS_POLICY_PUSH_POLICIES_OFF},
     {"policiesPushOn", IDS_POLICY_PUSH_POLICIES_ON},
     {"policyLearnMore", IDS_POLICY_LEARN_MORE},
@@ -91,5 +92,4 @@ PolicyUI::PolicyUI(content::WebUI* web_ui) : WebUIController(web_ui) {
                                 CreatePolicyUIHtmlSource());
 }
 
-PolicyUI::~PolicyUI() {
-}
+PolicyUI::~PolicyUI() = default;

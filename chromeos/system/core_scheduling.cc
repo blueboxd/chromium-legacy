@@ -12,8 +12,8 @@
 #include "base/metrics/field_trial_params.h"
 
 #ifndef PR_SET_CORE_SCHED
-// Setup core-scheduling for the task. This value is a temporary
-// place holder till the final upstream value is known.
+// Setup core-scheduling for the task.
+// TODO(b/152605392): Replace this once upstream interface is known.
 #define PR_SET_CORE_SCHED 0x200
 #endif
 

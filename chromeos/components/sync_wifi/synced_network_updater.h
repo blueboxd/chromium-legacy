@@ -27,6 +27,7 @@ class SyncedNetworkUpdater {
   virtual void AddOrUpdateNetwork(
       const sync_pb::WifiConfigurationSpecifics& specifics) = 0;
   virtual void RemoveNetwork(const NetworkIdentifier& id) = 0;
+  virtual bool IsUpdateInProgress(const std::string& network_guid) = 0;
 
  protected:
   SyncedNetworkUpdater() = default;

@@ -49,6 +49,7 @@ FrameNodeImpl::FrameNodeImpl(ProcessNodeImpl* process_node,
 FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(child_worker_nodes_.empty());
+  DCHECK(opened_page_nodes_.empty());
 }
 
 void FrameNodeImpl::Bind(
@@ -154,6 +155,11 @@ const RenderFrameHostProxy& FrameNodeImpl::render_frame_host_proxy() const {
 const base::flat_set<FrameNodeImpl*>& FrameNodeImpl::child_frame_nodes() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return child_frame_nodes_;
+}
+
+const base::flat_set<PageNodeImpl*>& FrameNodeImpl::opened_page_nodes() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return opened_page_nodes_;
 }
 
 mojom::LifecycleState FrameNodeImpl::lifecycle_state() const {
@@ -321,6 +327,28 @@ void FrameNodeImpl::SetPriorityAndReason(
   priority_and_reason_.SetAndMaybeNotify(this, priority_and_reason);
 }
 
+void FrameNodeImpl::AddOpenedPage(util::PassKey<PageNodeImpl>,
+                                  PageNodeImpl* page_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(page_node);
+  DCHECK_NE(page_node_, page_node);
+  DCHECK(graph()->NodeInGraph(page_node));
+  DCHECK_EQ(this, page_node->opener_frame_node());
+  bool inserted = opened_page_nodes_.insert(page_node).second;
+  DCHECK(inserted);
+}
+
+void FrameNodeImpl::RemoveOpenedPage(util::PassKey<PageNodeImpl>,
+                                     PageNodeImpl* page_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(page_node);
+  DCHECK_NE(page_node_, page_node);
+  DCHECK(graph()->NodeInGraph(page_node));
+  DCHECK_EQ(this, page_node->opener_frame_node());
+  size_t removed = opened_page_nodes_.erase(page_node);
+  DCHECK_EQ(1u, removed);
+}
+
 const FrameNode* FrameNodeImpl::GetParentFrameNode() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return parent_frame_node();
@@ -375,6 +403,26 @@ const base::flat_set<const FrameNode*> FrameNodeImpl::GetChildFrameNodes()
     children.insert(static_cast<const FrameNode*>(child));
   DCHECK_EQ(children.size(), child_frame_nodes().size());
   return children;
+}
+
+bool FrameNodeImpl::VisitOpenedPageNodes(const PageNodeVisitor& visitor) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto* page_impl : opened_page_nodes()) {
+    const PageNode* page = page_impl;
+    if (!visitor.Run(page))
+      return false;
+  }
+  return true;
+}
+
+const base::flat_set<const PageNode*> FrameNodeImpl::GetOpenedPageNodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::flat_set<const PageNode*> opened;
+  for (auto* page : opened_page_nodes())
+    opened.insert(static_cast<const PageNode*>(page));
+  DCHECK_EQ(opened.size(), opened_page_nodes().size());
+  return opened;
 }
 
 FrameNodeImpl::LifecycleState FrameNodeImpl::GetLifecycleState() const {
@@ -491,6 +539,9 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
 
   DCHECK(child_frame_nodes_.empty());
 
+  // Sever opener relationships.
+  SeverOpenedPagesAndMaybeReparentPopups();
+
   // Leave the page.
   DCHECK(graph()->NodeInGraph(page_node_));
   page_node_->RemoveFrame(this);
@@ -508,6 +559,39 @@ void FrameNodeImpl::OnBeforeLeavingGraph() {
   // Disable querying this node using process and frame routing ids.
   graph()->UnregisterFrameNodeForId(process_node_->GetRenderProcessId(),
                                     render_frame_id_, this);
+}
+
+void FrameNodeImpl::SeverOpenedPagesAndMaybeReparentPopups() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  using OpenedType = PageNode::OpenedType;
+
+  // Copy |opened_page_nodes_| as we'll be modifying it in this loop.
+  base::flat_set<PageNodeImpl*> opened_nodes = opened_page_nodes_;
+  for (auto* opened_node : opened_nodes) {
+    const bool is_popup = opened_node->opened_type() == OpenedType::kPopup;
+
+    opened_node->ClearOpenerFrameNodeAndOpenedType();
+
+    // Special case: child popups are reparented to the root of the frame tree.
+    // See WebContentsImpl::SetOpenerForNewContents.
+    if (is_popup) {
+      auto* main_frame = GetFrameTreeRoot();
+      if (main_frame != this) {
+        opened_node->SetOpenerFrameNodeAndOpenedType(main_frame,
+                                                     OpenedType::kPopup);
+      }
+    }
+  }
+  DCHECK(opened_page_nodes_.empty());
+}
+
+FrameNodeImpl* FrameNodeImpl::GetFrameTreeRoot() const {
+  FrameNodeImpl* root = const_cast<FrameNodeImpl*>(this);
+  while (root->parent_frame_node())
+    root = parent_frame_node();
+  DCHECK_NE(nullptr, root);
+  return root;
 }
 
 bool FrameNodeImpl::HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const {
@@ -528,6 +612,11 @@ bool FrameNodeImpl::HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const {
     }
   }
   return false;
+}
+
+bool FrameNodeImpl::HasFrameNodeInTree(FrameNodeImpl* frame_node) const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return GetFrameTreeRoot() == frame_node->GetFrameTreeRoot();
 }
 
 FrameNodeImpl::DocumentProperties::DocumentProperties() = default;

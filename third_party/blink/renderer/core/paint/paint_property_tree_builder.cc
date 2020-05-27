@@ -897,7 +897,7 @@ static bool NeedsEffect(const LayoutObject& object,
   // don't create layer thus are not actual stacking contexts, so the HasLayer()
   // condition. TODO(crbug.com/892734): Support effects for LayoutTableCol.
   const bool is_css_isolated_group =
-      object.HasLayer() && style.IsStackingContext();
+      object.HasLayer() && object.IsStackingContext();
 
   if (!is_css_isolated_group && !object.IsSVG())
     return false;

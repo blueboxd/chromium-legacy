@@ -229,8 +229,8 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
   // invalidate the current compositing container chain which may have painted
   // cached subsequences containing this object or descendant objects.
   if (Style() &&
-      (StyleRef().IsStacked() != new_style.IsStacked() ||
-       StyleRef().IsStackingContext() != new_style.IsStackingContext()) &&
+      (IsStacked() != IsStacked(new_style) ||
+       IsStackingContext() != IsStackingContext(new_style)) &&
       // ObjectPaintInvalidator requires this.
       IsRooted()) {
     if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {

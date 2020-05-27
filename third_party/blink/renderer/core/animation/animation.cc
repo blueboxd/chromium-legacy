@@ -179,15 +179,6 @@ AtomicString GetCSSTransitionCSSPropertyName(const Animation* animation) {
       .GetCSSPropertyName()
       .ToAtomicString();
 }
-
-bool CheckElementComposited(const Node& target) {
-  DCHECK(target.GetDocument().Lifecycle().GetState() >=
-         DocumentLifecycle::kCompositingClean);
-  auto* layout_box_model_object = target.GetLayoutBoxModelObject();
-  if (!layout_box_model_object)
-    return false;
-  return layout_box_model_object->UsesCompositedScrolling();
-}
 }  // namespace
 
 Animation* Animation::Create(AnimationEffect* effect,
@@ -1697,7 +1688,7 @@ Animation::CheckCanStartAnimationOnCompositorInternal() const {
   // TODO(crbug.com/476553): Once all ScrollNodes including uncomposited ones
   // are in the compositor, the animation should be composited.
   if (timeline_->IsScrollTimeline() &&
-      !CheckElementComposited(
+      !CompositorAnimations::CheckUsesCompositedScrolling(
           *To<ScrollTimeline>(*timeline_).ResolvedScrollSource()))
     reasons |= CompositorAnimations::kTimelineSourceHasInvalidCompositingState;
 

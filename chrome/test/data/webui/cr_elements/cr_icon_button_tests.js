@@ -8,9 +8,11 @@
 
 // #import {downAndUp, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {eventToPromise, flushTasks} from '../test_util.m.js';
+// #import {assertEquals, assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-icon-button', function() {
+  /** @type {!CrIconButtonElement} */
   let button;
 
   /** @override */
@@ -26,8 +28,9 @@ suite('cr-icon-button', function() {
   }
 
   setup(async () => {
-    PolymerTest.clearBody();
-    button = document.createElement('cr-icon-button');
+    document.body.innerHTML = '';
+    button = /** @type {!CrIconButtonElement} */ (
+        document.createElement('cr-icon-button'));
     document.body.appendChild(button);
     await test_util.flushTasks();
   });
@@ -129,7 +132,8 @@ suite('cr-icon-button', function() {
     document.body.innerHTML =
         '<cr-icon-button custom-tab-index="-1"></cr-icon-button>';
     await test_util.flushTasks();
-    button = document.body.querySelector('cr-icon-button');
+    button = /** @type {!CrIconButtonElement} */ (
+        document.body.querySelector('cr-icon-button'));
     assertEquals('-1', button.getAttribute('tabindex'));
     button.disabled = true;
     assertEquals('-1', button.getAttribute('tabindex'));
@@ -139,7 +143,8 @@ suite('cr-icon-button', function() {
 
   test('tabindex update', async () => {
     document.body.innerHTML = '<cr-icon-button></cr-icon-button>';
-    button = document.body.querySelector('cr-icon-button');
+    button = /** @type {!CrIconButtonElement} */ (
+        document.body.querySelector('cr-icon-button'));
     assertEquals('0', button.getAttribute('tabindex'));
     button.customTabIndex = 1;
     assertEquals('1', button.getAttribute('tabindex'));

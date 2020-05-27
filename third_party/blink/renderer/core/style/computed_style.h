@@ -681,7 +681,8 @@ class ComputedStyle : public ComputedStyleBase,
     // We only need do layout for opacity changes if adding or losing opacity
     // could trigger a change
     // in us being a stacking context.
-    if (IsStackingContext() == other.IsStackingContext() ||
+    if (IsStackingContextWithoutContainment() ==
+            other.IsStackingContextWithoutContainment() ||
         HasOpacity() == other.HasOpacity()) {
       // FIXME: We would like to use SimplifiedLayout here, but we can't quite
       // do that yet.  We need to make sure SimplifiedLayout can operate
@@ -2437,11 +2438,13 @@ class ComputedStyle : public ComputedStyleBase,
   // they don't determine the stacking of the elements underneath them.  (Note:
   // There are also other elements treated as stacking context during painting,
   // but not managed in stacks. See ObjectPainter::PaintAllPhasesAtomically().)
-  CORE_EXPORT void UpdateIsStackingContext(bool is_document_element,
-                                           bool is_in_top_layer,
-                                           bool is_svg_stacking);
-  bool IsStacked() const {
-    return IsStackingContext() || GetPosition() != EPosition::kStatic;
+  CORE_EXPORT void UpdateIsStackingContextWithoutContainment(
+      bool is_document_element,
+      bool is_in_top_layer,
+      bool is_svg_stacking);
+  bool IsStackedWithoutContainment() const {
+    return IsStackingContextWithoutContainment() ||
+           GetPosition() != EPosition::kStatic;
   }
 
   // Pseudo element styles.

@@ -7,7 +7,6 @@ package org.chromium.components.browser_ui.widget;
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
-import android.util.LayoutDirection;
 import android.view.View;
 import android.view.View.MeasureSpec;
 
@@ -525,7 +524,7 @@ public class WrappingLayoutTest {
             ViewExpectation expectationB, ViewExpectation expectationC) {
         WrappingLayoutSubclass layout = WrappingLayoutSubclass.create(
                 mContext, leftTopPadding, bottomRightPadding, spacing);
-        layout.setLayoutDirection(LayoutDirection.RTL);
+        layout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
         layout.addTestViews(margin);
 
         layout.layoutAtSize(width, height, specWidth, specHeight, 0, 0);

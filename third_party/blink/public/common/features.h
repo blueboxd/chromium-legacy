@@ -144,9 +144,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kLowLatencyWebGLSwapChain;
 BLINK_COMMON_EXPORT extern const base::Feature kDawn2dCanvas;
 
 BLINK_COMMON_EXPORT extern const base::Feature
-    kForceExtraRenderingToTrackStickyFrame;
-
-BLINK_COMMON_EXPORT extern const base::Feature
     kCSSReducedFontLoadingInvalidations;
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;

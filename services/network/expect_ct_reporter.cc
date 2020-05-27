@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/time/time_to_iso8601.h"
 #include "base/values.h"
+#include "net/base/isolation_info.h"
 #include "net/base/load_flags.h"
 #include "net/cert/ct_serialization.h"
 #include "net/http/http_request_headers.h"
@@ -158,7 +159,8 @@ void ExpectCTReporter::OnExpectCTFailed(
     const net::X509Certificate* validated_certificate_chain,
     const net::X509Certificate* served_certificate_chain,
     const net::SignedCertificateTimestampAndStatusList&
-        signed_certificate_timestamps) {
+        signed_certificate_timestamps,
+    const net::NetworkIsolationKey& network_isolation_key) {
   if (report_uri.is_empty())
     return;
 
@@ -193,7 +195,7 @@ void ExpectCTReporter::OnExpectCTFailed(
 
   UMA_HISTOGRAM_BOOLEAN("SSL.ExpectCTReportSendingAttempt", true);
 
-  SendPreflight(report_uri, serialized_report);
+  SendPreflight(report_uri, serialized_report, network_isolation_key);
 }
 
 void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
@@ -228,6 +230,8 @@ void ExpectCTReporter::OnResponseStarted(net::URLRequest* request,
     return;
   }
 
+  // TODO(https://crbug.com/993805):  Pass in preflight->network_isolation_key,
+  // once reporting API accepts NetworkIsolationKeys.
   report_sender_->Send(preflight->report_uri,
                        "application/expect-ct-report+json; charset=utf-8",
                        preflight->serialized_report, success_callback_,
@@ -247,21 +251,27 @@ void ExpectCTReporter::OnReadCompleted(net::URLRequest* request,
 ExpectCTReporter::PreflightInProgress::PreflightInProgress(
     std::unique_ptr<net::URLRequest> request,
     const std::string& serialized_report,
-    const GURL& report_uri)
+    const GURL& report_uri,
+    const net::NetworkIsolationKey& network_isolation_key)
     : request(std::move(request)),
       serialized_report(serialized_report),
-      report_uri(report_uri) {}
+      report_uri(report_uri),
+      network_isolation_key(network_isolation_key) {}
 
 ExpectCTReporter::PreflightInProgress::~PreflightInProgress() {}
 
-void ExpectCTReporter::SendPreflight(const GURL& report_uri,
-                                     const std::string& serialized_report) {
+void ExpectCTReporter::SendPreflight(
+    const GURL& report_uri,
+    const std::string& serialized_report,
+    const net::NetworkIsolationKey& network_isolation_key) {
   std::unique_ptr<net::URLRequest> url_request =
       request_context_->CreateRequest(report_uri, net::DEFAULT_PRIORITY, this,
                                       kExpectCTReporterTrafficAnnotation);
   url_request->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE);
   url_request->set_allow_credentials(false);
   url_request->set_method(net::HttpRequestHeaders::kOptionsMethod);
+  url_request->set_isolation_info(net::IsolationInfo::CreatePartial(
+      net::IsolationInfo::RedirectMode::kUpdateNothing, network_isolation_key));
 
   net::HttpRequestHeaders extra_headers;
   extra_headers.SetHeader("Origin", "null");
@@ -272,7 +282,8 @@ void ExpectCTReporter::SendPreflight(const GURL& report_uri,
 
   net::URLRequest* raw_request = url_request.get();
   inflight_preflights_[raw_request] = std::make_unique<PreflightInProgress>(
-      std::move(url_request), serialized_report, report_uri);
+      std::move(url_request), serialized_report, report_uri,
+      network_isolation_key);
   raw_request->Start();
 }
 

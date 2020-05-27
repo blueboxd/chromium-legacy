@@ -41,6 +41,7 @@
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
+#include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 #include "third_party/blink/public/mojom/input/pointer_lock_result.mojom-forward.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -52,7 +53,6 @@
 class SkBitmap;
 
 namespace cc {
-struct ElementId;
 class PaintImage;
 }
 
@@ -67,6 +67,7 @@ class Cursor;
 
 namespace blink {
 class WebDragData;
+class WebMouseEvent;
 class WebGestureEvent;
 struct WebFloatRect;
 class WebWidget;
@@ -133,28 +134,13 @@ class WebWidgetClient {
   // Returns true iff the pointer is locked to this widget.
   virtual bool IsPointerLocked() { return false; }
 
-  // Called when a gesture event is handled.
-  virtual void DidHandleGestureEvent(const WebGestureEvent& event,
-                                     bool event_cancelled) {}
-
   // Called when overscrolled on main thread. All parameters are in
   // viewport-space.
   virtual void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
                              const gfx::Vector2dF& accumulated_overscroll,
                              const gfx::PointF& position_in_viewport,
-                             const gfx::Vector2dF& velocity_in_viewport) {}
-
-  // Requests that a gesture of |injected_type| be reissued at a later point in
-  // time. |injected_type| is required to be one of
-  // GestureScroll{Begin,Update,End}. The dispatched gesture will scroll the
-  // ScrollableArea identified by |scrollable_area_element_id| by the given
-  // delta + granularity.
-  virtual void InjectGestureScrollEvent(
-      WebGestureDevice device,
-      const gfx::Vector2dF& delta,
-      ui::ScrollGranularity granularity,
-      cc::ElementId scrollable_area_element_id,
-      WebInputEvent::Type injected_type) {}
+                             const gfx::Vector2dF& velocity_in_viewport,
+                             cc::OverscrollBehavior overscroll_behavior) {}
 
   // Called to update if pointerrawupdate events should be sent.
   virtual void SetHasPointerRawUpdateEventHandlers(bool) {}
@@ -173,9 +159,6 @@ class WebWidgetClient {
   // Called during WebWidget::HandleInputEvent for a TouchStart event to inform
   // the embedder of the touch actions that are permitted for this touch.
   virtual void SetTouchAction(WebTouchAction touch_action) {}
-
-  // Request the browser to show virtual keyboard for current input type.
-  virtual void ShowVirtualKeyboardOnElementFocus() {}
 
   // Converts the |rect| from Blink's Viewport coordinates to the
   // coordinates in the native window used to display the content, in
@@ -274,6 +257,41 @@ class WebWidgetClient {
 
   // Returns a scale of the device emulator from the widget.
   virtual float GetEmulatorScale() const { return 1.0f; }
+
+  // Returns whether we handled a GestureScrollEvent.
+  virtual void DidHandleGestureScrollEvent(
+      const WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      const cc::OverscrollBehavior& overscroll_behavior,
+      bool event_processed) {}
+
+  // Called after a key event has been processed.
+  virtual void DidHandleKeyEvent() {}
+
+  // Requests the virtual keyboard be displayed.
+  virtual void ShowVirtualKeyboard() {}
+
+  // Requests the text input state be updated.
+  virtual void UpdateTextInputState() {}
+
+  // Called before gesture events are processed and allows the
+  // client to handle the event itself. Return true if event was handled
+  // and further processing should stop.
+  virtual bool WillHandleGestureEvent(const WebGestureEvent& event) {
+    return false;
+  }
+
+  // Called before mouse events are processed and allows the
+  // client to handle the event itself. Return true if event was handled
+  // and further processing should stop.
+  virtual bool WillHandleMouseEvent(const WebMouseEvent& event) {
+    return false;
+  }
+
+  // Queue a sythentic event in the MainThreadEventQueue. This is called
+  // for when handling scrollbars.
+  virtual void QueueSyntheticEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent>) {}
 };
 
 }  // namespace blink

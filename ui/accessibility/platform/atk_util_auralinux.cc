@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/no_destructor.h"
 #include "ui/accessibility/platform/atk_util_auralinux.h"
+#include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_auralinux.h"
 
 namespace {
@@ -55,6 +56,10 @@ static KeySnoopFuncMap& GetActiveKeySnoopFunctions() {
 static guint AtkUtilAuraLinuxAddKeyEventListener(
     AtkKeySnoopFunc key_snoop_function,
     gpointer data) {
+  if (!ui::AXPlatformNode::GetAccessibilityMode().has_mode(
+          ui::AXMode::kNativeAPIs))
+    return 0;
+
   static guint current_key_event_listener_id = 0;
 
   current_key_event_listener_id++;

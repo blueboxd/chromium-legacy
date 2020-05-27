@@ -14,6 +14,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/format_macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -280,9 +281,13 @@ bool OSMetrics::FillOSMemoryDump(base::ProcessId pid,
       OSMetrics::GetMappedAndResidentPages(base::android::kStartOfText,
                                            base::android::kEndOfText,
                                            &accessed_pages_bitmap);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Memory.NativeLibrary.MappedAndResidentMemoryFootprintCollectionStatus",
+      state);
 
   // MappedAndResidentPagesDumpState |state| can be |kAccessPagemapDenied|
-  // for Android devices running a kernel version < 4.4.
+  // for Android devices running a kernel version < 4.4 or because the process
+  // is not "dumpable", as described in proc(5).
   if (state != OSMetrics::MappedAndResidentPagesDumpState::kSuccess)
     return state != OSMetrics::MappedAndResidentPagesDumpState::kFailure;
 

@@ -404,6 +404,16 @@ COMPONENT_EXPORT(UI_BASE_X) bool IsSyncExtensionAvailable();
 COMPONENT_EXPORT(UI_BASE_X)
 SkColorType ColorTypeForVisual(void* visual);
 
+COMPONENT_EXPORT(UI_BASE_X)
+x11::Future<void> SendClientMessage(
+    XID window,
+    XID target,
+    x11::Atom type,
+    const std::array<uint32_t, 5> data,
+    x11::XProto::EventMask event_mask =
+        x11::XProto::EventMask::SubstructureNotify |
+        x11::XProto::EventMask::SubstructureRedirect);
+
 // Manages a piece of X11 allocated memory as a RefCountedMemory segment. This
 // object takes ownership over the passed in memory and will free it with the
 // X11 allocator when done.

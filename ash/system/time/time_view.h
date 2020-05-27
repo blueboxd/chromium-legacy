@@ -80,18 +80,24 @@ class ASH_EXPORT TimeView : public ActionableView, public ClockObserver {
   // Updates labels to display the current time.
   void UpdateTextInternal(const base::Time& now);
 
-  void SetupLabels();
+  void SetupSubviews(ClockLayout clock_layout);
   void SetupLabel(views::Label* label);
 
   // Starts |timer_| to schedule the next update.
   void SetTimer(const base::Time& now);
 
+  // Subviews used for different layouts.
+  // When either of the subviews is in use, it transfers the ownership to the
+  // views hierarchy and becomes nullptr.
+  std::unique_ptr<views::View> horizontal_view_;
+  std::unique_ptr<views::View> vertical_view_;
+
   // Label text used for the normal horizontal shelf.
-  std::unique_ptr<views::Label> horizontal_label_;
+  views::Label* horizontal_label_;
 
   // The time label is split into two lines for the vertical shelf.
-  std::unique_ptr<views::Label> vertical_label_hours_;
-  std::unique_ptr<views::Label> vertical_label_minutes_;
+  views::Label* vertical_label_hours_;
+  views::Label* vertical_label_minutes_;
 
   // Invokes UpdateText() when the displayed time should change.
   base::OneShotTimer timer_;

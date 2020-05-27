@@ -159,6 +159,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       int argc,
       v8::Local<v8::Value> argv[]) override;
   v8::Local<v8::Context> MainWorldScriptContext() const override;
+  int32_t GetScriptContextWorldId(
+      v8::Local<v8::Context> script_context) const override;
   void RequestExecuteScriptAndReturnValue(const WebScriptSource&,
                                           bool user_gesture,
                                           WebScriptExecutionCallback*) override;

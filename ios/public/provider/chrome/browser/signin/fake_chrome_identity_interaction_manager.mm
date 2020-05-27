@@ -125,6 +125,31 @@
   _isCanceling = NO;
 }
 
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                    completion:
+                                        (SigninCompletionCallback)completion {
+  _completionCallback = completion;
+  _viewController =
+      [[FakeAddAccountViewController alloc] initWithInteractionManager:self];
+  [viewController presentViewController:_viewController
+                               animated:YES
+                             completion:nil];
+}
+
+- (void)addAccountWithPresentingViewController:(UIViewController*)viewController
+                                     userEmail:(NSString*)userEmail
+                                    completion:
+                                        (SigninCompletionCallback)completion {
+  [self addAccountWithPresentingViewController:viewController
+                                    completion:completion];
+}
+
+- (void)cancelAddAccountWithAnimation:(BOOL)animated
+                           completion:(void (^)(void))completion {
+  [self dismissAndRunCompletionCallbackWithError:[self canceledError]
+                                        animated:animated];
+}
+
 - (void)addAccountViewControllerDidTapSignIn {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentity(_fakeIdentity);

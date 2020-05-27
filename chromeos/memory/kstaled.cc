@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/system/sys_info.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/debug_daemon/debug_daemon_client.h"
 
@@ -51,7 +52,10 @@ void InitializeKstaled() {
   }
 
   if (!KernelSupportsKstaled()) {
-    LOG(ERROR) << "Unable to configure kstaled: no kernel support";
+    // Only log an error when we're running on REAL CrOS without kernel
+    // support.
+    LOG_IF(ERROR, base::SysInfo::IsRunningOnChromeOS())
+        << "Unable to configure kstaled: no kernel support";
     return;
   }
 

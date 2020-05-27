@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/frame_node.h"
 #include "components/performance_manager/public/render_frame_host_proxy.h"
@@ -99,6 +100,7 @@ class FrameNodeImpl
 
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
+  const base::flat_set<PageNodeImpl*>& opened_page_nodes() const;
   LifecycleState lifecycle_state() const;
   InterventionPolicy origin_trial_freeze_policy() const;
   bool has_nonempty_beforeunload() const;
@@ -133,10 +135,22 @@ class FrameNodeImpl
     return weak_factory_.GetWeakPtr();
   }
 
+  void SeverOpenedPagesAndMaybeReparentPopupsForTesting() {
+    SeverOpenedPagesAndMaybeReparentPopups();
+  }
+
+ protected:
+  friend class PageNodeImpl;
+
+  // Invoked by opened pages when this frame is set/cleared as their opener.
+  // See PageNodeImpl::(Set|Clear)OpenerFrameNodeAndOpenedType.
+  void AddOpenedPage(util::PassKey<PageNodeImpl> key, PageNodeImpl* page_node);
+  void RemoveOpenedPage(util::PassKey<PageNodeImpl> key,
+                        PageNodeImpl* page_node);
+
  private:
   friend class FrameNodeImplDescriber;
   friend class FramePriorityAccess;
-  friend class PageNodeImpl;
   friend class ProcessNodeImpl;
 
   // Rest of FrameNode implementation. These are private so that users of the
@@ -150,6 +164,8 @@ class FrameNodeImpl
   int32_t GetSiteInstanceId() const override;
   bool VisitChildFrameNodes(const FrameNodeVisitor& visitor) const override;
   const base::flat_set<const FrameNode*> GetChildFrameNodes() const override;
+  bool VisitOpenedPageNodes(const PageNodeVisitor& visitor) const override;
+  const base::flat_set<const PageNode*> GetOpenedPageNodes() const override;
   LifecycleState GetLifecycleState() const override;
   InterventionPolicy GetOriginTrialFreezePolicy() const override;
   bool HasNonemptyBeforeUnload() const override;
@@ -208,8 +224,21 @@ class FrameNodeImpl
   void OnJoiningGraph() override;
   void OnBeforeLeavingGraph() override;
 
+  // Helper function to sever all opened page relationships. This is called
+  // before destroying the frame node in "OnBeforeLeavingGraph". Note that this
+  // will reparent popups to the root frame of the page if this frame isn't
+  // the root.
+  void SeverOpenedPagesAndMaybeReparentPopups();
+
+  // This is not quite the same as GetMainFrame, because there can be multiple
+  // main frames while the main frame is navigating. This explicitly walks up
+  // the tree to find the main frame that corresponds to this frame tree node,
+  // even if it is not current.
+  FrameNodeImpl* GetFrameTreeRoot() const;
+
   bool HasFrameNodeInAncestors(FrameNodeImpl* frame_node) const;
   bool HasFrameNodeInDescendants(FrameNodeImpl* frame_node) const;
+  bool HasFrameNodeInTree(FrameNodeImpl* frame_node) const;
 
   mojo::Receiver<mojom::DocumentCoordinationUnit> receiver_{this};
 
@@ -240,6 +269,9 @@ class FrameNodeImpl
   const RenderFrameHostProxy render_frame_host_proxy_;
 
   base::flat_set<FrameNodeImpl*> child_frame_nodes_;
+
+  // The set of pages that have been opened by this frame.
+  base::flat_set<PageNodeImpl*> opened_page_nodes_;
 
   // Does *not* change when a navigation is committed.
   ObservedProperty::NotifiesOnlyOnChanges<

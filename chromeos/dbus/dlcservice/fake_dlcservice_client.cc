@@ -48,7 +48,7 @@ void FakeDlcserviceClient::GetExistingDlcs(GetExistingDlcsCallback callback) {
                                 dlcs_with_content_));
 }
 
-void FakeDlcserviceClient::OnInstallStatusForTest(dbus::Signal* signal) {
+void FakeDlcserviceClient::DlcStateChangedForTest(dbus::Signal* signal) {
   NOTREACHED();
 }
 

@@ -181,7 +181,8 @@
           },
           {
             predicate: "a.OpacityChangedStackingContext(b)",
-            field_dependencies: ["IsStackingContext", "opacity"]
+            field_dependencies: ["IsStackingContextWithoutContainment",
+                                 "opacity"]
           },
         ]
     },
@@ -334,8 +335,8 @@
         fields_to_diff: ["z-index"],
         methods_to_diff: [
           {
-            method: "IsStackingContext()",
-            field_dependencies: ["IsStackingContext"]
+            method: "IsStackingContextWithoutContainment()",
+            field_dependencies: ["IsStackingContextWithoutContainment"]
           },
         ]
     },

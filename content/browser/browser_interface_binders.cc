@@ -87,7 +87,6 @@
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/mojom/input/input_host.mojom.h"
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
-#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
@@ -122,6 +121,7 @@
 #include "content/public/common/content_switches.h"
 #include "media/mojo/mojom/speech_recognition_service.mojom.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom.h"
 #endif
 
@@ -676,10 +676,6 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
                             base::Unretained(host)));
   }
 
-  map->Add<blink::mojom::InstalledAppProvider>(
-      base::BindRepeating(&RenderFrameHostImpl::CreateInstalledAppProvider,
-                          base::Unretained(host)));
-
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
     map->Add<device::mojom::NFC>(base::BindRepeating(
@@ -688,6 +684,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
 #else
   map->Add<blink::mojom::HidService>(base::BindRepeating(
       &RenderFrameHostImpl::GetHidService, base::Unretained(host)));
+
+  map->Add<blink::mojom::InstalledAppProvider>(
+      base::BindRepeating(&RenderFrameHostImpl::CreateInstalledAppProvider,
+                          base::Unretained(host)));
 
   map->Add<blink::mojom::SerialService>(base::BindRepeating(
       &RenderFrameHostImpl::BindSerialService, base::Unretained(host)));

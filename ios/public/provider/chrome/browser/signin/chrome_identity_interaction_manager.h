@@ -48,7 +48,7 @@ typedef void (^SigninCompletionCallback)(ChromeIdentity* identity,
                       completion:(SigninCompletionCallback)completion;
 
 // Deprecated.
-// Use |cancelAddAccountWithAnimation|.
+// Use |cancelAddAccountWithAnimation:completion|.
 - (void)cancelAndDismissAnimated:(BOOL)animated;
 
 // Starts the add account operation for a user. Presents user with the screen to

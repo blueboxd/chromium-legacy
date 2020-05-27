@@ -732,6 +732,7 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     D.PutSpecifics(encrypted_bookmark);
     D.PutNonUniqueName(kEncryptedString);
   }
+  base::HistogramTester histogram_tester;
   EXPECT_TRUE(SyncShareNudge());
   {
     const StatusController& status_controller = cycle_->status_controller();
@@ -744,6 +745,10 @@ TEST_F(SyncerTest, GetCommitIdsFiltersUnreadyEntries) {
     VERIFY_ENTRY(2, false, false, false, 0, 11, 11, ids_, &rtrans);
     VERIFY_ENTRY(3, false, false, false, 0, 11, 11, ids_, &rtrans);
     VERIFY_ENTRY(4, false, false, false, 0, 11, 11, ids_, &rtrans);
+    histogram_tester.ExpectUniqueSample("Sync.CommitResponse.BOOKMARK",
+                                        SyncerError::SYNCER_OK, /*count=*/1);
+    histogram_tester.ExpectUniqueSample("Sync.CommitResponse",
+                                        SyncerError::SYNCER_OK, /*count=*/1);
   }
 }
 
@@ -3023,6 +3028,7 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
   // The second commit should fail.  It will be preceded by one successful
   // GetUpdate and one succesful commit.
   mock_server_->FailNthPostBufferToPathCall(3);
+  base::HistogramTester histogram_tester;
   EXPECT_FALSE(SyncShareNudge());
 
   EXPECT_EQ(1U, mock_server_->commit_messages().size());
@@ -3031,6 +3037,12 @@ TEST_F(SyncerTest, CommitManyItemsInOneGo_PostBufferFail) {
       cycle_->status_controller().model_neutral_state().commit_result.value());
   EXPECT_EQ(items_to_commit - kDefaultMaxCommitBatchSize,
             directory()->unsynced_entity_count());
+  histogram_tester.ExpectBucketCount("Sync.CommitResponse.BOOKMARK",
+                                     SyncerError::SYNC_SERVER_ERROR,
+                                     /*count=*/1);
+  histogram_tester.ExpectBucketCount("Sync.CommitResponse",
+                                     SyncerError::SYNC_SERVER_ERROR,
+                                     /*count=*/1);
 }
 
 // Test that a single conflict response from the server will cause us to exit

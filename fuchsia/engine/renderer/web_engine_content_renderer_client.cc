@@ -9,6 +9,8 @@
 #include "components/cdm/renderer/widevine_key_system_properties.h"
 #include "components/media_control/renderer/media_playback_options.h"
 #include "content/public/renderer/render_frame.h"
+#include "fuchsia/engine/common/cast_streaming.h"
+#include "fuchsia/engine/renderer/cast_streaming_demuxer.h"
 #include "fuchsia/engine/renderer/on_load_script_injector.h"
 #include "fuchsia/engine/renderer/web_engine_url_loader_throttle_provider.h"
 #include "fuchsia/engine/switches.h"
@@ -234,6 +236,20 @@ bool WebEngineContentRendererClient::DeferMediaLoad(
     bool has_played_media_before,
     base::OnceClosure closure) {
   return RunClosureWhenInForeground(render_frame, std::move(closure));
+}
+
+std::unique_ptr<media::Demuxer>
+WebEngineContentRendererClient::OverrideDemuxerForUrl(
+    content::RenderFrame* render_frame,
+    const GURL& url,
+    scoped_refptr<base::SingleThreadTaskRunner> media_task_runner) {
+  if (IsCastStreamingEnabled() && IsCastStreamingMediaSourceUrl(url)) {
+    // TODO(crbug.com/1042501): Add a mojo service to properly initialize the
+    // demuxer and send frames to it.
+    return std::make_unique<CastStreamingDemuxer>(media_task_runner);
+  }
+
+  return nullptr;
 }
 
 bool WebEngineContentRendererClient::RunClosureWhenInForeground(

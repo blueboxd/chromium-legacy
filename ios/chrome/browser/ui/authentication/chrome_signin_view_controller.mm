@@ -222,7 +222,7 @@ enum AuthenticationState {
   }
   if (_interactionManager) {
     DCHECK(!_alertCoordinator && !_authenticationFlow);
-    [_interactionManager cancelAndDismissAnimated:NO];
+    [_interactionManager cancelAddAccountWithAnimation:NO completion:nil];
   }
   if (_authenticationFlow) {
     DCHECK(!_alertCoordinator && !_interactionManager);
@@ -575,7 +575,8 @@ enum AuthenticationState {
         [weakSelf addAccountCompletedWithIdentity:identity error:error];
       };
   [_delegate willStartAddAccount:self];
-  [_interactionManager addAccountWithCompletion:completion];
+  [_interactionManager addAccountWithPresentingViewController:self
+                                                   completion:completion];
 }
 
 // Sets the added identity as the selected identity (if no error), and signs in

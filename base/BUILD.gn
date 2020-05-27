@@ -1315,6 +1315,10 @@ jumbo_component("base") {
     "//third_party/modp_b64",
   ]
 
+  # native_unwinder_android is intended for use solely via a dynamic feature
+  # module, to avoid increasing Chrome's executable size.
+  assert_no_deps = [ ":native_unwinder_android" ]
+
   public_deps = [
     ":anchor_functions_buildflags",
     ":base_static",
@@ -2422,8 +2426,16 @@ if ((is_win && (current_cpu == "x64" || current_cpu == "arm64")) || is_mac ||
   }
 }
 
-if (is_android && (current_cpu == "arm" || current_cpu == "arm64")) {
+if (is_android) {
   source_set("native_unwinder_android") {
+    # This target is intended to be used only within the stack_unwinder dynamic
+    # feature module, to avoid binary size increase in Chrome due to the
+    # libunwindstack dependency. The additional :* visibility is needed to allow
+    # use by base test targets.
+    visibility = [
+      ":*",
+      "//chrome/android/modules/stack_unwinder/internal:*",
+    ]
     sources = [
       "profiler/native_unwinder_android.cc",
       "profiler/native_unwinder_android.h",

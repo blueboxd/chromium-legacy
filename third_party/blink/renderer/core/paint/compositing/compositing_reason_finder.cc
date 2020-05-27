@@ -220,7 +220,6 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
     if (scrolling_ancestor->NeedsCompositedScrolling() &&
         layer.ScrollParent()) {
       DCHECK(!scrolling_ancestor->GetLayoutObject()
-                  .StyleRef()
                   .IsStackingContext());
       direct_reasons |= CompositingReason::kOverflowScrollingParent;
     }

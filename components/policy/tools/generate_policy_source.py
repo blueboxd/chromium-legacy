@@ -128,7 +128,8 @@ class PolicyDetails:
 
     self.is_supported = (target_platform in self.platforms
                          or target_platform in self.future_on)
-    self.is_future = self.is_future or target_platform in self.future_on
+    self.is_future_on = target_platform in self.future_on
+    self.is_future = self.is_future or self.is_future_on
 
     if policy['type'] not in PolicyDetails.TYPE_MAP:
       raise NotImplementedError(
@@ -1080,7 +1081,7 @@ namespace policy {
       f.write('  // %s\n' % policy.name)
       f.write('  { %-14s%-10s%-17s%4s,%22s, %s },\n' %
               ('true,' if policy.is_deprecated else 'false,',
-               'true,' if policy.is_future else 'false, ',
+               'true,' if policy.is_future_on else 'false, ',
                'true,' if policy.is_device_only else 'false,', policy.id,
                policy.max_size, risk_tags.ToInitString(policy.tags)))
   f.write('};\n\n')

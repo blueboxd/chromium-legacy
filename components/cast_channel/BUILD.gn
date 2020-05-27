@@ -101,8 +101,11 @@ source_set("unit_tests") {
   ]
 }
 
+# TODO(jrw): Rename target to cast_framer_ingest_fuzzer.  The name
+# is left unchanged for now to avoid the need to get reviews for
+# various files that include it.
 fuzzer_test("cast_message_fuzzer") {
-  sources = [ "cast_message_fuzzer.cc" ]
+  sources = [ "cast_framer_ingest_fuzzer.cc" ]
   deps = [
     ":test_support",
     "//base",
@@ -114,4 +117,37 @@ fuzzer_test("cast_message_fuzzer") {
 
   # See MessageFramer::MessageHeader::max_message_size()
   libfuzzer_options = [ "max_len=65535" ]
+}
+
+fuzzer_test("cast_auth_util_fuzzer") {
+  sources = [ "cast_auth_util_fuzzer.cc" ]
+  dict = "fuzz.dict"
+  deps = [
+    ":cast_channel",
+    "//components/cast_channel/proto:cast_channel_fuzzer_inputs_proto",
+    "//net/data/ssl/certificates:generate_fuzzer_cert_includes",
+    "//third_party/libprotobuf-mutator",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
+  ]
+}
+
+fuzzer_test("cast_framer_serialize_fuzzer") {
+  sources = [ "cast_framer_serialize_fuzzer.cc" ]
+  deps = [
+    ":cast_channel",
+    "//components/cast_channel/proto:cast_channel_fuzzer_inputs_proto",
+    "//third_party/libprotobuf-mutator",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
+  ]
+}
+
+fuzzer_test("cast_message_util_fuzzer") {
+  sources = [ "cast_message_util_fuzzer.cc" ]
+  dict = "fuzz.dict"
+  deps = [
+    ":cast_channel",
+    "//components/cast_channel/proto:cast_channel_fuzzer_inputs_proto",
+    "//third_party/libprotobuf-mutator",
+    "//third_party/openscreen/src/cast/common/channel/proto:channel_proto",
+  ]
 }

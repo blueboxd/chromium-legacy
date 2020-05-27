@@ -61,8 +61,11 @@ const char* const kInvalidNumbers[] = {
 };
 
 const char* const kValidNicknames[] = {
-    "Grocery Card", "Two percent Cashback",
+    "Grocery Card",
+    "Two percent Cashback",
     "Mastercard \xF0\x9F\x92\xB3", /* Nickname with UTF-8 hex encoded emoji */
+    "\u0634\u063a\u0645\u0688",    /* arbitrary Arabic script in unicode */
+    "\u0434\u0444\u0431\u044A",    /* arbitrary Cyrillic script in unicode */
 };
 
 const char* const kInvalidNicknames[] = {

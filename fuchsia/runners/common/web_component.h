@@ -73,8 +73,10 @@ class WebComponent : public fuchsia::sys::ComponentController,
       override;
 
   // Reports the supplied exit-code and reason to the |controller_binding_| and
-  // requests that the |runner_| delete this component.
-  virtual void DestroyComponent(int termination_exit_code,
+  // requests that the |runner_| delete this component. The EXITED |reason| is
+  // used to indicate Frame disconnection, in which case the |exit_code| is set
+  // to the status reported by the FramePtr's error handler.
+  virtual void DestroyComponent(int64_t exit_code,
                                 fuchsia::sys::TerminationReason reason);
 
   // Returns the component's startup context (e.g. incoming services, public
@@ -105,7 +107,7 @@ class WebComponent : public fuchsia::sys::ComponentController,
   // sys::ComponentController::OnTerminated event.
   fuchsia::sys::TerminationReason termination_reason_ =
       fuchsia::sys::TerminationReason::UNKNOWN;
-  int termination_exit_code_ = 0;
+  int64_t termination_exit_code_ = 0;
 
   bool view_is_bound_ = false;
 

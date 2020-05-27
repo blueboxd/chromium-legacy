@@ -643,7 +643,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         has_visible_descendant_ = true;
 
       has_non_isolated_descendant_with_blend_mode_ |=
-          (!child_style.IsStackingContext() &&
+          (!child->GetLayoutObject().IsStackingContext() &&
            child->HasNonIsolatedDescendantWithBlendMode()) ||
           child_style.HasBlendMode();
 
@@ -664,9 +664,9 @@ void PaintLayer::UpdateDescendantDependentFlags() {
       }
 
       if (!has_stacked_descendant_in_current_stacking_context_) {
-        if (child_style.IsStacked()) {
+        if (child->GetLayoutObject().IsStacked()) {
           has_stacked_descendant_in_current_stacking_context_ = true;
-        } else if (!child_style.IsStackingContext()) {
+        } else if (!child->GetLayoutObject().IsStackingContext()) {
           has_stacked_descendant_in_current_stacking_context_ =
               child->has_stacked_descendant_in_current_stacking_context_;
         }
@@ -935,7 +935,7 @@ PhysicalOffset PaintLayer::ComputeOffsetFromAncestor(
 PaintLayer* PaintLayer::CompositingContainer() const {
   if (IsReplacedNormalFlowStacking())
     return Parent();
-  if (!GetLayoutObject().StyleRef().IsStacked()) {
+  if (!GetLayoutObject().IsStacked()) {
     if (IsSelfPaintingLayer() || GetLayoutObject().IsColumnSpanAll())
       return Parent();
     return ContainingLayer();
@@ -946,7 +946,7 @@ PaintLayer* PaintLayer::CompositingContainer() const {
 PaintLayer* PaintLayer::AncestorStackingContext() const {
   for (PaintLayer* ancestor = Parent(); ancestor;
        ancestor = ancestor->Parent()) {
-    if (ancestor->GetLayoutObject().StyleRef().IsStackingContext())
+    if (ancestor->GetLayoutObject().IsStackingContext())
       return ancestor;
   }
   return nullptr;
@@ -1204,14 +1204,13 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
 
   SetNeedsCompositingInputsUpdate();
 
-  const ComputedStyle& child_style = child->GetLayoutObject().StyleRef();
-
   if (Compositor()) {
-    if (!child_style.IsStacked() && !GetLayoutObject().DocumentBeingDestroyed())
+    if (!child->GetLayoutObject().IsStacked() &&
+        !GetLayoutObject().DocumentBeingDestroyed())
       Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
   }
 
-  if (child_style.IsStacked() || child->FirstChild()) {
+  if (child->GetLayoutObject().IsStacked() || child->FirstChild()) {
     // Dirty the z-order list in which we are contained. The
     // ancestorStackingContextNode() can be null in the case where we're
     // building up generated content layers. This is ok, since the lists will
@@ -1249,12 +1248,9 @@ void PaintLayer::RemoveChild(PaintLayer* old_child) {
   if (last_ == old_child)
     last_ = old_child->PreviousSibling();
 
-  const ComputedStyle& old_child_style =
-      old_child->GetLayoutObject().StyleRef();
-
   if (!GetLayoutObject().DocumentBeingDestroyed()) {
     if (Compositor()) {
-      if (!old_child_style.IsStacked())
+      if (!old_child->GetLayoutObject().IsStacked())
         Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
 
       if (Compositor()->GetCompositingInputsRoot() == old_child)
@@ -1293,7 +1289,7 @@ void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
   if (!parent_)
     return;
 
-  if (old_style && old_style->IsStacked())
+  if (old_style && GetLayoutObject().IsStacked(*old_style))
     DirtyStackingContextZOrderLists();
 
   bool did_set_paint_invalidation = false;
@@ -1368,10 +1364,10 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
   bool did_set_paint_invalidation = false;
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() &&
       !IsA<LayoutView>(GetLayoutObject()) && GetLayoutObject().IsRooted() &&
-      GetLayoutObject().StyleRef().IsStacked()) {
+      GetLayoutObject().IsStacked()) {
     const LayoutBoxModelObject& previous_paint_invalidation_container =
         GetLayoutObject().Parent()->ContainerForPaintInvalidation();
-    if (!previous_paint_invalidation_container.StyleRef().IsStackingContext()) {
+    if (!previous_paint_invalidation_container.IsStackingContext()) {
       ObjectPaintInvalidator(GetLayoutObject())
           .InvalidatePaintIncludingNonSelfPaintingLayerDescendants();
       // Set needsRepaint along the original compositingContainer chain.
@@ -1503,7 +1499,7 @@ void PaintLayer::UpdateStackingNode() {
 
   bool needs_stacking_node =
       has_stacked_descendant_in_current_stacking_context_ &&
-      GetLayoutObject().StyleRef().IsStackingContext();
+      GetLayoutObject().IsStackingContext();
 
   if (needs_stacking_node != !!stacking_node_) {
     if (needs_stacking_node)
@@ -2872,7 +2868,7 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
     return false;
 
   // Create subsequence for only stacking contexts whose painting are atomic.
-  return GetLayoutObject().StyleRef().IsStackingContext();
+  return GetLayoutObject().IsStackingContext();
 }
 
 ScrollingCoordinator* PaintLayer::GetScrollingCoordinator() {

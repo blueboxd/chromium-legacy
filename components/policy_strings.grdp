@@ -542,6 +542,9 @@ Additional details:
   <message name="IDS_POLICY_SIGNIN_PROFILE" desc="Label to indicate that the policy is for the sign-in screen profile.">
     sign-in screen profile
   </message>
+  <message name ="IDS_POLICY_COPY_VALUE" desc="Help text for link that copies the value of a policy.">
+    Copy the value of <ph name="POLICY_NAME">$1<ex>AllowDinosaurEasterEgg</ex></ph> policy
+  </message>
 
   <!-- Strings for Disabled chrome://.* screen -->
   <message name="IDS_CHROME_URLS_DISABLED_PAGE_HEADER" desc="A heading for the user when the application is blocked.">

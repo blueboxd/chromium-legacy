@@ -29,6 +29,7 @@ class BLINK_COMMON_EXPORT WebCoalescedInputEvent {
                          const ui::LatencyInfo&);
   // Copy constructor to deep copy the event.
   WebCoalescedInputEvent(const WebCoalescedInputEvent&);
+  ~WebCoalescedInputEvent();
 
   WebInputEvent* EventPointer();
   void AddCoalescedEvent(const blink::WebInputEvent&);

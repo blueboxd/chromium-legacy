@@ -280,7 +280,8 @@ void PerformanceManagerTabHelper::DidFinishNavigation(
 
   // Make sure the hierarchical structure is constructed before sending signal
   // to the performance manager.
-  OnMainFrameNavigation(navigation_handle->GetNavigationId());
+  OnMainFrameNavigation(navigation_handle->GetNavigationId(),
+                        navigation_handle->IsSameDocument());
   PerformanceManagerImpl::CallOnGraphImpl(
       FROM_HERE,
       base::BindOnce(
@@ -354,6 +355,10 @@ int64_t PerformanceManagerTabHelper::LastNavigationId() const {
   return last_navigation_id_;
 }
 
+int64_t PerformanceManagerTabHelper::LastNewDocNavigationId() const {
+  return last_new_doc_navigation_id_;
+}
+
 FrameNodeImpl* PerformanceManagerTabHelper::GetFrameNode(
     content::RenderFrameHost* render_frame_host) {
   auto it = frames_.find(render_frame_host);
@@ -368,8 +373,11 @@ void PerformanceManagerTabHelper::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id) {
+void PerformanceManagerTabHelper::OnMainFrameNavigation(int64_t navigation_id,
+                                                        bool same_doc) {
   last_navigation_id_ = navigation_id;
+  if (!same_doc)
+    last_new_doc_navigation_id_ = navigation_id;
   ukm_source_id_ =
       ukm::ConvertToSourceId(navigation_id, ukm::SourceIdType::NAVIGATION_ID);
   PerformanceManagerImpl::CallOnGraphImpl(

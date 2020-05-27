@@ -33,6 +33,7 @@ namespace sandbox {
 
 class LowLevelPolicy;
 class PolicyDiagnostic;
+class PolicyInfo;
 class TargetProcess;
 struct PolicyGlobal;
 
@@ -81,6 +82,7 @@ class PolicyBase final : public TargetPolicy {
   scoped_refptr<AppContainerProfile> GetAppContainerProfile() override;
   void SetEffectiveToken(HANDLE token) override;
   size_t GetPolicyGlobalSize() const override;
+  std::unique_ptr<PolicyInfo> GetPolicyInfo() override;
 
   // Get the AppContainer profile as its internal type.
   scoped_refptr<AppContainerProfileBase> GetAppContainerProfileBase();

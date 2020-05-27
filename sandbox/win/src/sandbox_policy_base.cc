@@ -29,6 +29,7 @@
 #include "sandbox/win/src/registry_policy.h"
 #include "sandbox/win/src/restricted_token_utils.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "sandbox/win/src/sandbox_policy_diagnostic.h"
 #include "sandbox/win/src/sandbox_utils.h"
 #include "sandbox/win/src/security_capabilities.h"
 #include "sandbox/win/src/signed_policy.h"
@@ -815,6 +816,11 @@ ResultCode PolicyBase::AddRuleInternal(SubSystem subsystem,
   }
 
   return SBOX_ALL_OK;
+}
+
+std::unique_ptr<PolicyInfo> PolicyBase::GetPolicyInfo() {
+  auto diagnostic = std::make_unique<PolicyDiagnostic>(this);
+  return diagnostic;
 }
 
 }  // namespace sandbox

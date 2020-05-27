@@ -291,35 +291,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
   EXPECT_EQ("visa", supported_card_networks[7]);
 }
 
-// Specifying 'basic-card' with some networks after having explicitely included
-// the same networks does not yield duplicates and has the expected order.
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
-                       RepeatedBasicCardWithSameNetworkAreDeduped) {
-  NavigateTo("/payment_request_payment_method_identifier_test.html");
-  InvokePaymentRequestWithJs(
-      "buyHelper([{"
-      "  supportedMethods: 'basic-card',"
-      "  data: {"
-      "    supportedNetworks: ['mastercard'],"
-      "  }"
-      "}, {"
-      "  supportedMethods: 'basic-card',"
-      "  data: {"
-      "    supportedNetworks: ['visa', 'mastercard', 'jcb'],"
-      "  }"
-      "}]);");
-
-  std::vector<PaymentRequest*> requests =
-      GetPaymentRequests(GetActiveWebContents());
-  EXPECT_EQ(1u, requests.size());
-  std::vector<std::string> supported_card_networks =
-      requests[0]->spec()->supported_card_networks();
-  EXPECT_EQ(3u, supported_card_networks.size());
-  EXPECT_EQ("mastercard", supported_card_networks[0]);
-  EXPECT_EQ("visa", supported_card_networks[1]);
-  EXPECT_EQ("jcb", supported_card_networks[2]);
-}
-
 // A url-based payment method identifier is only supported if it has an https
 // scheme.
 IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest, Url_Valid) {
@@ -338,41 +309,6 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest, Url_Valid) {
       requests[0]->spec()->url_payment_method_identifiers();
   EXPECT_EQ(1u, url_payment_method_identifiers.size());
   EXPECT_EQ(GURL("https://bobpay.xyz"), url_payment_method_identifiers[0]);
-}
-
-// Specifiying multiple different types of payment method identifiers still
-// yields the correct supported methods in payment request.
-IN_PROC_BROWSER_TEST_F(PaymentRequestPaymentMethodIdentifierTest,
-                       MultiplePaymentMethodIdentifiers) {
-  NavigateTo("/payment_request_payment_method_identifier_test.html");
-  InvokePaymentRequestWithJs(
-      "buyHelper([{"
-      "  supportedMethods: 'https://bobpay.xyz'"
-      "}, {"
-      "  supportedMethods: 'https://bobpay.xyz'"
-      "}, {"
-      "  supportedMethods: 'https://alicepay.com'"
-      "}, {"
-      "  supportedMethods: 'basic-card',"
-      "  data: {"
-      "    supportedNetworks: ['visa', 'mastercard', 'jcb'],"
-      "  }"
-      "}]);");
-
-  std::vector<PaymentRequest*> requests =
-      GetPaymentRequests(GetActiveWebContents());
-  EXPECT_EQ(1u, requests.size());
-
-  std::vector<std::string> supported_card_networks =
-      requests[0]->spec()->supported_card_networks();
-  EXPECT_THAT(supported_card_networks,
-              UnorderedElementsAre("mastercard", "visa", "jcb"));
-
-  std::vector<GURL> url_payment_method_identifiers =
-      requests[0]->spec()->url_payment_method_identifiers();
-  EXPECT_EQ(2u, url_payment_method_identifiers.size());
-  EXPECT_EQ(GURL("https://bobpay.xyz"), url_payment_method_identifiers[0]);
-  EXPECT_EQ(GURL("https://alicepay.com"), url_payment_method_identifiers[1]);
 }
 
 // Test harness integrating with DialogBrowserTest to present the dialog in an

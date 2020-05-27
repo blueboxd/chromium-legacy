@@ -87,7 +87,6 @@ void CompositingLayerAssigner::SquashingState::
       most_recent_mapping->OwningLayer().NeedsCompositedScrolling() &&
       !most_recent_mapping->OwningLayer()
            .GetLayoutObject()
-           .StyleRef()
            .IsStackingContext();
 }
 

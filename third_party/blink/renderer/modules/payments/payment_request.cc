@@ -659,6 +659,13 @@ void ValidateAndConvertPaymentMethodData(
           "Invalid payment method identifier format");
       return;
     }
+
+    if (method_names.Contains(payment_method_data->supportedMethod())) {
+      exception_state.ThrowRangeError(
+          "Cannot have duplicate payment method identifiers");
+      return;
+    }
+
     method_names.insert(payment_method_data->supportedMethod());
 
     output.push_back(payments::mojom::blink::PaymentMethodData::New());

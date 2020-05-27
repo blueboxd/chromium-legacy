@@ -1191,7 +1191,7 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
   )HTML");
 
   Compositor().BeginFrame();
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // PageTestBase sizes the page to 800x600. Click on the scrollbar
   // track, move off, then release the mouse and verify that GestureScrollEnd
@@ -1213,13 +1213,13 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
 
   // Mouse down on the scrollbar track should have generated GSB/GSU.
   if (scrollbar_theme_allows_hit_test) {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 2u);
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData()[0].type,
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 2u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents()[0]->Event().GetType(),
               WebInputEvent::Type::kGestureScrollBegin);
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData()[1].type,
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents()[1]->Event().GetType(),
               WebInputEvent::Type::kGestureScrollUpdate);
   } else {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
   }
 
   const gfx::PointF middle_of_page(100, 100);
@@ -1233,9 +1233,9 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
 
   // Mouse move should not have generated any gestures.
   if (scrollbar_theme_allows_hit_test) {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 2u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 2u);
   } else {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
   }
 
   WebMouseEvent mouse_up(WebInputEvent::Type::kMouseUp, middle_of_page,
@@ -1246,11 +1246,11 @@ TEST_F(EventHandlerSimTest, MouseUpOffScrollbarGeneratesScrollEnd) {
 
   // Mouse up must generate GestureScrollEnd.
   if (scrollbar_theme_allows_hit_test) {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 3u);
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData()[2].type,
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 3u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents()[2]->Event().GetType(),
               WebInputEvent::Type::kGestureScrollEnd);
   } else {
-    EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+    EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
   }
 }
 
@@ -1266,7 +1266,7 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // Mouse down on the page, the move the mouse to the scrollbar and release.
   // Validate that we don't inject a ScrollEnd (since no ScrollBegin was
@@ -1281,7 +1281,7 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(mouse_down);
 
   // Mouse down on the page should not generate scroll gestures.
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   const gfx::PointF scrollbar_forward_track(795, 560);
   WebMouseEvent mouse_move(WebInputEvent::Type::kMouseMove,
@@ -1293,7 +1293,7 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
       mouse_move, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
 
   // Mouse move should not have generated any gestures.
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   WebMouseEvent mouse_up(WebInputEvent::Type::kMouseUp, scrollbar_forward_track,
                          scrollbar_forward_track,
@@ -1303,7 +1303,7 @@ TEST_F(EventHandlerSimTest, MouseUpOnlyOnScrollbar) {
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(mouse_up);
 
   // Mouse up should not have generated any gestures.
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 }
 
 TEST_F(EventHandlerSimTest, RightClickNoGestures) {
@@ -1318,7 +1318,7 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // PageTestBase sizes the page to 800x600. Right click on the scrollbar
   // track, and release the mouse and verify that no gesture events are
@@ -1332,7 +1332,7 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
   mouse_down.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMousePressEvent(mouse_down);
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   WebMouseEvent mouse_up(WebInputEvent::Type::kMouseUp, scrollbar_forward_track,
                          scrollbar_forward_track,
@@ -1341,7 +1341,7 @@ TEST_F(EventHandlerSimTest, RightClickNoGestures) {
   mouse_up.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleMouseReleaseEvent(mouse_up);
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 }
 
 // https://crbug.com/976557 tracks the fix for re-enabling this test on Mac.
@@ -1391,7 +1391,7 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
 
   Compositor().BeginFrame();
 
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 0u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 0u);
 
   // Only run this test if scrollbars are hit-testable (they are not on
   // Android).
@@ -1408,42 +1408,24 @@ TEST_F(EventHandlerSimTest, MAYBE_GestureTapWithScrollSnaps) {
 
   TapEventBuilder tap(scrollbar_forward_track, 1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap);
-  EXPECT_EQ(WebWidgetClient().GetInjectedScrollGestureData().size(), 3u);
+  EXPECT_EQ(WebWidgetClient().GetInjectedScrollEvents().size(), 3u);
 
-  const Vector<frame_test_helpers::InjectedScrollGestureData>& data =
-      WebWidgetClient().GetInjectedScrollGestureData();
-  const frame_test_helpers::InjectedScrollGestureData gsb_data = data[0];
-  const frame_test_helpers::InjectedScrollGestureData gsu_data = data[1];
-  const frame_test_helpers::InjectedScrollGestureData gse_data = data[2];
-  EXPECT_EQ(gsb_data.type, WebInputEvent::Type::kGestureScrollBegin);
-  EXPECT_EQ(gsu_data.type, WebInputEvent::Type::kGestureScrollUpdate);
-  EXPECT_EQ(gse_data.type, WebInputEvent::Type::kGestureScrollEnd);
+  const Vector<std::unique_ptr<blink::WebCoalescedInputEvent>>& data =
+      WebWidgetClient().GetInjectedScrollEvents();
+  EXPECT_EQ(data[0]->Event().GetType(),
+            WebInputEvent::Type::kGestureScrollBegin);
+  EXPECT_EQ(data[1]->Event().GetType(),
+            WebInputEvent::Type::kGestureScrollUpdate);
+  EXPECT_EQ(data[2]->Event().GetType(), WebInputEvent::Type::kGestureScrollEnd);
+  const WebGestureEvent& gsb =
+      static_cast<const WebGestureEvent&>(data[0]->Event());
+  const WebGestureEvent& gsu =
+      static_cast<const WebGestureEvent&>(data[1]->Event());
+  const WebGestureEvent& gse =
+      static_cast<const WebGestureEvent&>(data[2]->Event());
 
-  // Inject the gesture sequence based on the injected data.
-  WebGestureEvent gsb{WebInputEvent::Type::kGestureScrollBegin,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests()};
-  gsb.SetFrameScale(1);
-  gsb.SetSourceDevice(WebGestureDevice::kScrollbar);
-  gsb.data.scroll_begin.delta_x_hint = -gsb_data.delta.x();
-  gsb.data.scroll_begin.delta_y_hint = -gsb_data.delta.y();
-  gsb.data.scroll_begin.scrollable_area_element_id =
-      gsb_data.scrollable_area_element_id.GetStableId();
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gsb);
-  WebGestureEvent gsu{WebInputEvent::Type::kGestureScrollUpdate,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests()};
-  gsu.SetSourceDevice(WebGestureDevice::kScrollbar);
-  gsu.SetFrameScale(1);
-  gsu.data.scroll_update.delta_x = -gsu_data.delta.x();
-  gsu.data.scroll_update.delta_y = -gsu_data.delta.y();
-  gsu.data.scroll_update.delta_units = gsu_data.granularity;
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gsu);
-  WebGestureEvent gse{WebInputEvent::Type::kGestureScrollEnd,
-                      WebInputEvent::kNoModifiers,
-                      WebInputEvent::GetStaticTimeStampForTests()};
-  gse.SetSourceDevice(WebGestureDevice::kScrollbar);
-  gse.SetFrameScale(1);
   GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(gse);
 
   // Ensure that there is an active animation on the scrollable area event

@@ -36,7 +36,7 @@ TEST_F(MediaRouterFactoryTest, CreateForRegularProfile) {
 }
 
 TEST_F(MediaRouterFactoryTest, CreateForIncognitoProfile) {
-  Profile* incognito_profile = profile()->GetOffTheRecordProfile();
+  Profile* incognito_profile = profile()->GetPrimaryOTRProfile();
   ASSERT_TRUE(incognito_profile);
 
   // Makes sure a MediaRouter can be created from an incognito Profile.

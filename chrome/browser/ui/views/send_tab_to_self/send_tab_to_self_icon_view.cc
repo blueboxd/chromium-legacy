@@ -143,6 +143,9 @@ void SendTabToSelfIconView::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void SendTabToSelfIconView::UpdateOpacity() {
+  if (!GetVisible()) {
+    ResetSlideAnimation(false);
+  }
   if (!IsShrinking()) {
     DestroyLayer();
     SetTextSubpixelRenderingEnabled(true);

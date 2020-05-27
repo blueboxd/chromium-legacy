@@ -103,12 +103,15 @@ Polymer({
 
   // Also put these values as member values so they can be overridden by tests
   // and the tests do not need to be changed every time the UI is.
-  /** @private {number} */
-  canvasCircleStrokeWidth_: CANVAS_CIRCLE_STROKE_WIDTH,
-  /** @private {string} */
-  canvasCircleBackgroundColor_: CANVAS_CIRCLE_BACKGROUND_COLOR,
-  /** @private {string} */
-  canvasCircleProgressColor_: CANVAS_CIRCLE_PROGRESS_COLOR,
+
+  /** @type {number} */
+  canvasCircleStrokeWidth: CANVAS_CIRCLE_STROKE_WIDTH,
+
+  /** @type {string} */
+  canvasCircleBackgroundColor: CANVAS_CIRCLE_BACKGROUND_COLOR,
+
+  /** @type {string} */
+  canvasCircleProgressColor: CANVAS_CIRCLE_PROGRESS_COLOR,
 
   /**
    * Animation ID for fingerprint scan progress bar.
@@ -145,7 +148,7 @@ Polymer({
 
     ctx.beginPath();
     ctx.arc(c.width / 2, c.height / 2, this.circleRadius, startAngle, endAngle);
-    ctx.lineWidth = this.canvasCircleStrokeWidth_;
+    ctx.lineWidth = this.canvasCircleStrokeWidth;
     ctx.strokeStyle = color;
     ctx.stroke();
   },
@@ -155,7 +158,7 @@ Polymer({
    * |circleRadius| and color |CANVAS_CIRCLE_BACKGROUND_COLOR|.
    */
   drawBackgroundCircle() {
-    this.drawArc(0, 2 * Math.PI, this.canvasCircleBackgroundColor_);
+    this.drawArc(0, 2 * Math.PI, this.canvasCircleBackgroundColor);
   },
 
   /**
@@ -203,11 +206,10 @@ Polymer({
       // |start| + |currentAngle| to 7 * Math.PI / 2 (start is 3 * Math.PI /
       // 2) otherwise the regular draw from |start| to |currentAngle| will
       // draw nothing which will cause a flicker for one frame.
-      this.drawArc(
-          start, start + currentAngle, this.canvasCircleProgressColor_);
+      this.drawArc(start, start + currentAngle, this.canvasCircleProgressColor);
       this.drawArc(
           start + currentAngle, currentAngle <= 0 ? 7 * Math.PI / 2 : start,
-          this.canvasCircleBackgroundColor_);
+          this.canvasCircleBackgroundColor);
       currentAngle += step;
     };
 

@@ -2758,6 +2758,10 @@
     "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
+  "EnableExperimentalPolicies":{
+    "note": "This policy has no pref as it is only directly read by the policy system."
+  },
+
   "PolicyAtomicGroupsEnabled": {
     "note": "This policy has no pref as it is only directly read by the policy system."
   },

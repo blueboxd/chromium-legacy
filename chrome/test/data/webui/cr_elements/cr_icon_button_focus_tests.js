@@ -6,14 +6,17 @@
 // #import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 //
 // #import {flushTasks} from '../test_util.m.js';
+// #import {assertFalse, assertTrue} from '../chai_assert.js';
 // clang-format on
 
 suite('cr-icon-button-focus-tests', function() {
+  /** @type {!CrIconButtonElement} */
   let button;
 
   setup(async () => {
-    PolymerTest.clearBody();
-    button = document.createElement('cr-icon-button');
+    document.body.innerHTML = '';
+    button = /** @type {!CrIconButtonElement} */ (
+        document.createElement('cr-icon-button'));
     document.body.appendChild(button);
     await test_util.flushTasks();
   });

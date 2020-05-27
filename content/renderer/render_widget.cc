@@ -77,6 +77,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/input/web_input_event_attribution.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "third_party/blink/public/common/page/web_drag_operation.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
@@ -106,6 +107,7 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -374,6 +376,30 @@ static bool ComputePreferCompositingToLCDText(
 #endif
 }
 
+viz::FrameSinkId GetRemoteFrameSinkId(const blink::WebHitTestResult& result) {
+  const blink::WebNode& node = result.GetNode();
+  DCHECK(!node.IsNull());
+  blink::WebFrame* result_frame = blink::WebFrame::FromFrameOwnerElement(node);
+  if (!result_frame || !result_frame->IsWebRemoteFrame())
+    return viz::FrameSinkId();
+
+  blink::WebRemoteFrame* remote_frame = result_frame->ToWebRemoteFrame();
+  if (remote_frame->IsIgnoredForHitTest() || !result.ContentBoxContainsPoint())
+    return viz::FrameSinkId();
+
+  return RenderFrameProxy::FromWebFrame(remote_frame)->frame_sink_id();
+}
+
+blink::mojom::DidOverscrollParamsPtr ToOverscrollParams(
+    const blink::InputHandlerProxy::DidOverscrollParams* params) {
+  if (!params)
+    return nullptr;
+  return blink::mojom::DidOverscrollParams::New(
+      params->accumulated_overscroll, params->latest_overscroll_delta,
+      params->current_fling_velocity, params->causal_event_viewport_point,
+      params->overscroll_behavior);
+}
+
 }  // namespace
 
 // RenderWidget ---------------------------------------------------------------
@@ -497,8 +523,6 @@ void RenderWidget::Initialize(ShowCallback show_callback,
                               const ScreenInfo& screen_info) {
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
   DCHECK(web_widget);
-
-  input_handler_ = std::make_unique<RenderWidgetInputHandler>(this, this);
 
   show_callback_ = std::move(show_callback);
 
@@ -1053,13 +1077,57 @@ void RenderWidget::DidPresentForceDrawFrame(
 
 viz::FrameSinkId RenderWidget::GetFrameSinkIdAtPoint(const gfx::PointF& point,
                                                      gfx::PointF* local_point) {
-  return input_handler_->GetFrameSinkIdAtPoint(point, local_point);
+  blink::WebHitTestResult result = GetHitTestResultAtPoint(point);
+
+  blink::WebNode result_node = result.GetNode();
+  *local_point = gfx::PointF(point);
+
+  // TODO(crbug.com/797828): When the node is null the caller may
+  // need to do extra checks. Like maybe update the layout and then
+  // call the hit-testing API. Either way it might be better to have
+  // a DCHECK for the node rather than a null check here.
+  if (result_node.IsNull()) {
+    return GetFrameSinkId();
+  }
+
+  viz::FrameSinkId frame_sink_id = GetRemoteFrameSinkId(result);
+  if (frame_sink_id.is_valid()) {
+    *local_point = gfx::PointF(result.LocalPointWithoutContentBoxOffset());
+    if (compositor_deps()->IsUseZoomForDSFEnabled()) {
+      *local_point = gfx::ConvertPointToDIP(
+          GetOriginalScreenInfo().device_scale_factor, *local_point);
+    }
+    return frame_sink_id;
+  }
+
+  // Return the FrameSinkId for the current widget if the point did not hit
+  // test to a remote frame, or the point is outside of the remote frame's
+  // content box, or the remote frame doesn't have a valid FrameSinkId yet.
+  return GetFrameSinkId();
 }
 
 bool RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     HandledEventCallback callback) {
-  input_handler_->HandleInputEvent(input_event, std::move(callback));
+  // Temporarily convert between the blink callback and the main thread
+  // event queue callback. This will go away once the MainThreadEventQueue
+  // moves into blink.
+  WebWidget::HandledEventCallback blink_callback = base::BindOnce(
+      [](HandledEventCallback callback,
+         blink::mojom::InputEventResultState ack_state,
+         const ui::LatencyInfo& latency_info,
+         std::unique_ptr<blink::InputHandlerProxy::DidOverscrollParams>
+             overscroll_params,
+         base::Optional<cc::TouchAction> touch_action) {
+        if (!callback)
+          return;
+        std::move(callback).Run(ack_state, latency_info,
+                                ToOverscrollParams(overscroll_params.get()),
+                                touch_action);
+      },
+      std::move(callback));
+  webwidget_->ProcessInputEventSynchronously(input_event,
+                                             std::move(blink_callback));
   return true;
 }
 
@@ -1202,22 +1270,7 @@ void RenderWidget::WillBeginMainFrame() {
   UpdateSelectionBounds();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetInputHandlerDelegate
-
-void RenderWidget::FocusChangeComplete() {
-  blink::WebFrameWidget* frame_widget = GetFrameWidget();
-  if (!frame_widget)
-    return;
-
-  blink::WebLocalFrame* focused =
-      frame_widget->LocalRoot()->View()->FocusedFrame();
-
-  if (focused && focused->AutofillClient())
-    focused->AutofillClient()->DidCompleteFocusChangeInFrame();
-}
-
-void RenderWidget::ObserveGestureEventAndResult(
+void RenderWidget::DidHandleGestureScrollEvent(
     const blink::WebGestureEvent& gesture_event,
     const gfx::Vector2dF& unused_delta,
     const cc::OverscrollBehavior& overscroll_behavior,
@@ -1235,7 +1288,7 @@ void RenderWidget::ObserveGestureEventAndResult(
                                                                  scroll_result);
 }
 
-void RenderWidget::OnDidHandleKeyEvent() {
+void RenderWidget::DidHandleKeyEvent() {
   ClearEditCommands();
 }
 
@@ -1249,19 +1302,28 @@ void RenderWidget::ClearEditCommands() {
   edit_commands_.clear();
 }
 
-void RenderWidget::OnDidOverscroll(
-    blink::mojom::DidOverscrollParamsPtr params) {
+void RenderWidget::DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                                 const gfx::Vector2dF& accumulated_overscroll,
+                                 const gfx::PointF& position_in_viewport,
+                                 const gfx::Vector2dF& velocity_in_viewport,
+                                 cc::OverscrollBehavior overscroll_behavior) {
   if (blink::mojom::WidgetInputHandlerHost* host =
           widget_input_handler_manager_->GetWidgetInputHandlerHost()) {
-    host->DidOverscroll(std::move(params));
+    host->DidOverscroll(blink::mojom::DidOverscrollParams::New(
+        accumulated_overscroll, overscroll_delta, velocity_in_viewport,
+        position_in_viewport, overscroll_behavior));
   }
 }
 
-void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {
-  // Nothing to do here. RenderWidget created the |input_handler| and will take
-  // ownership of it. We just verify here that we don't already have an input
-  // handler.
-  DCHECK(!input_handler_);
+void RenderWidget::QueueSyntheticEvent(
+    std::unique_ptr<blink::WebCoalescedInputEvent> event) {
+  // TODO(acomminos): If/when we add support for gesture event attribution on
+  //                  the impl thread, have the caller provide attribution.
+  blink::WebInputEventAttribution attribution;
+  GetInputEventQueue()->HandleEvent(
+      std::move(event), DISPATCH_TYPE_NON_BLOCKING,
+      blink::mojom::InputEventResultState::kNotConsumed, attribution,
+      HandledEventCallback());
 }
 
 void RenderWidget::ShowVirtualKeyboard() {
@@ -1412,11 +1474,6 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   return mouse_lock_dispatcher()->WillHandleMouseEvent(event);
 }
 
-bool RenderWidget::SupportsBufferedTouchEvents() {
-  // Buffered touch events aren't supported for pepper.
-  return !pepper_fullscreen_;
-}
-
 void RenderWidget::ResizeWebWidget() {
   // In auto resize mode, blink controls sizes and RenderWidget should not be
   // passing values back in.
@@ -1550,7 +1607,7 @@ std::unique_ptr<cc::SwapPromise> RenderWidget::QueueMessageImpl(
 }
 
 void RenderWidget::SetHandlingInputEvent(bool handling_input_event) {
-  input_handler_->set_handling_input_event(handling_input_event);
+  GetWebWidget()->SetHandlingInputEvent(handling_input_event);
 }
 
 void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
@@ -1574,12 +1631,6 @@ void RenderWidget::QueueMessage(std::unique_ptr<IPC::Message> msg) {
     // EarlyOut_NoUpdates).
     layer_tree_host_->SetNeedsAnimateIfNotInsideMainFrame();
   }
-}
-
-void RenderWidget::DidChangeCursor(const ui::Cursor& cursor) {
-  // Only send a SetCursor message if we need to make a change.
-  if (input_handler_->DidChangeCursor(cursor))
-    GetWebWidget()->SetCursor(cursor);
 }
 
 // We are supposed to get a single call to Show for a newly created RenderWidget
@@ -1948,7 +1999,7 @@ void RenderWidget::OnImeCommitText(
   }
 #endif
   ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
-  input_handler_->set_handling_input_event(true);
+  GetWebWidget()->SetHandlingInputEvent(true);
   if (auto* controller = GetInputMethodController()) {
     controller->CommitText(
         WebString::FromUTF16(text), WebVector<WebImeTextSpan>(ime_text_spans),
@@ -1957,7 +2008,7 @@ void RenderWidget::OnImeCommitText(
             : WebRange(),
         relative_cursor_pos);
   }
-  input_handler_->set_handling_input_event(false);
+  GetWebWidget()->SetHandlingInputEvent(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }
 
@@ -1973,13 +2024,13 @@ void RenderWidget::OnImeFinishComposingText(bool keep_selection) {
 #endif
 
   ImeEventGuard guard(weak_ptr_factory_.GetWeakPtr());
-  input_handler_->set_handling_input_event(true);
+  GetWebWidget()->SetHandlingInputEvent(true);
   if (auto* controller = GetInputMethodController()) {
     controller->FinishComposingText(
         keep_selection ? WebInputMethodController::kKeepSelection
                        : WebInputMethodController::kDoNotKeepSelection);
   }
-  input_handler_->set_handling_input_event(false);
+  GetWebWidget()->SetHandlingInputEvent(false);
   UpdateCompositionInfo(false /* not an immediate request */);
 }
 
@@ -2165,23 +2216,6 @@ void RenderWidget::OnDragSourceEnded(const gfx::PointF& client_point,
 
   frame_widget->DragSourceEndedAt(ConvertWindowPointToViewport(client_point),
                                   screen_point, op);
-}
-
-void RenderWidget::ShowVirtualKeyboardOnElementFocus() {
-#if defined(OS_CHROMEOS)
-  // On ChromeOS, virtual keyboard is triggered only when users leave the
-  // mouse button or the finger and a text input element is focused at that
-  // time. Focus event itself shouldn't trigger virtual keyboard.
-  UpdateTextInputState();
-#else
-  ShowVirtualKeyboard();
-#endif
-
-// TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
-// virtual keyboard.
-#if !defined(OS_ANDROID)
-  FocusChangeComplete();
-#endif
 }
 
 ui::TextInputType RenderWidget::GetTextInputType() {
@@ -2477,53 +2511,6 @@ bool RenderWidget::CanComposeInline() {
     return plugin->IsPluginAcceptingCompositionEvents();
 #endif
   return true;
-}
-
-void RenderWidget::DidHandleGestureEvent(const WebGestureEvent& event,
-                                         bool event_cancelled) {
-  if (event_cancelled) {
-    // The delegate() doesn't need to hear about cancelled events.
-    return;
-  }
-
-#if defined(OS_ANDROID) || defined(USE_AURA)
-  if (event.GetType() == WebInputEvent::Type::kGestureTap) {
-    ShowVirtualKeyboard();
-  } else if (event.GetType() == WebInputEvent::Type::kGestureLongPress) {
-    DCHECK(GetWebWidget());
-    blink::WebInputMethodController* controller = GetInputMethodController();
-    if (!controller || controller->TextInputInfo().value.IsEmpty())
-      UpdateTextInputState();
-    else
-      ShowVirtualKeyboard();
-  }
-#endif
-}
-
-void RenderWidget::DidOverscroll(const gfx::Vector2dF& overscroll_delta,
-                                 const gfx::Vector2dF& accumulated_overscroll,
-                                 const gfx::PointF& position,
-                                 const gfx::Vector2dF& velocity) {
-#if defined(OS_MACOSX)
-  // On OSX the user can disable the elastic overscroll effect. If that's the
-  // case, don't forward the overscroll notification.
-  DCHECK(compositor_deps());
-  if (!compositor_deps()->IsElasticOverscrollEnabled())
-    return;
-#endif
-  input_handler_->DidOverscrollFromBlink(
-      overscroll_delta, accumulated_overscroll, position, velocity,
-      layer_tree_host_->overscroll_behavior());
-}
-
-void RenderWidget::InjectGestureScrollEvent(
-    blink::WebGestureDevice device,
-    const gfx::Vector2dF& delta,
-    ui::ScrollGranularity granularity,
-    cc::ElementId scrollable_area_element_id,
-    blink::WebInputEvent::Type injected_type) {
-  input_handler_->InjectGestureScrollEvent(
-      device, delta, granularity, scrollable_area_element_id, injected_type);
 }
 
 // static
@@ -3068,9 +3055,6 @@ void RenderWidget::RequestUnbufferedInputEvents() {
 }
 
 void RenderWidget::SetTouchAction(cc::TouchAction touch_action) {
-  if (!input_handler_->ProcessTouchAction(touch_action))
-    return;
-
   widget_input_handler_manager_->ProcessTouchAction(touch_action);
 }
 
@@ -3220,7 +3204,12 @@ void RenderWidget::UseSynchronousResizeModeForTesting(bool enable) {
 
 blink::WebHitTestResult RenderWidget::GetHitTestResultAtPoint(
     const gfx::PointF& point) {
-  return input_handler_->GetHitTestResultAtPoint(point);
+  gfx::PointF point_in_pixel(point);
+  if (compositor_deps()->IsUseZoomForDSFEnabled()) {
+    point_in_pixel = gfx::ConvertPointToPixel(
+        GetOriginalScreenInfo().device_scale_factor, point_in_pixel);
+  }
+  return GetWebWidget()->HitTestResultAt(point_in_pixel);
 }
 
 void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {

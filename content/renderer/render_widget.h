@@ -38,8 +38,6 @@
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
 #include "content/renderer/input/main_thread_event_queue.h"
-#include "content/renderer/input/render_widget_input_handler.h"
-#include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "content/renderer/render_widget_mouse_lock_dispatcher.h"
@@ -101,10 +99,6 @@ struct PresentationFeedback;
 class Range;
 }
 
-namespace ui {
-class Cursor;
-}
-
 namespace content {
 class CompositorDependencies;
 class FrameSwapMessageQueue;
@@ -142,7 +136,6 @@ class CONTENT_EXPORT RenderWidget
       public IPC::Sender,
       public blink::WebPagePopupClient,  // Is-a WebWidgetClient also.
       public mojom::Widget,
-      public RenderWidgetInputHandlerDelegate,
       public RenderWidgetScreenMetricsEmulatorDelegate,
       public MainThreadEventQueueClient {
  public:
@@ -297,24 +290,6 @@ class CONTENT_EXPORT RenderWidget
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
 
-  // RenderWidgetInputHandlerDelegate
-  void FocusChangeComplete() override;
-  void ObserveGestureEventAndResult(
-      const blink::WebGestureEvent& gesture_event,
-      const gfx::Vector2dF& unused_delta,
-      const cc::OverscrollBehavior& overscroll_behavior,
-      bool event_processed) override;
-
-  void OnDidHandleKeyEvent() override;
-  void OnDidOverscroll(blink::mojom::DidOverscrollParamsPtr params) override;
-  void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
-  void ShowVirtualKeyboard() override;
-  void UpdateTextInputState() override;
-  void ClearTextInputState() override;
-  bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
-  bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
-  bool SupportsBufferedTouchEvents() override;
-
   // RenderWidgetScreenMetricsEmulatorDelegate
   void SetScreenMetricsEmulationParameters(
       bool enabled,
@@ -328,26 +303,12 @@ class CONTENT_EXPORT RenderWidget
   // blink::WebWidgetClient
   void ScheduleAnimation() override;
   void DidMeaningfulLayout(blink::WebMeaningfulLayout layout_type) override;
-  void DidChangeCursor(const ui::Cursor& cursor) override;
   void ClosePopupWidgetSoon() override;
   void Show(blink::WebNavigationPolicy) override;
   blink::WebScreenInfo GetScreenInfo() override;
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
   void SetWindowRect(const blink::WebRect&) override;
-  void DidHandleGestureEvent(const blink::WebGestureEvent& event,
-                             bool event_cancelled) override;
-  void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
-                     const gfx::Vector2dF& accumulated_overscroll,
-                     const gfx::PointF& position,
-                     const gfx::Vector2dF& velocity) override;
-  void InjectGestureScrollEvent(
-      blink::WebGestureDevice device,
-      const gfx::Vector2dF& delta,
-      ui::ScrollGranularity granularity,
-      cc::ElementId scrollable_area_element_id,
-      blink::WebInputEvent::Type injected_type) override;
-  void ShowVirtualKeyboardOnElementFocus() override;
   void ConvertViewportToWindow(blink::WebRect* rect) override;
   void ConvertViewportToWindow(blink::WebFloatRect* rect) override;
   void ConvertWindowToViewport(blink::WebFloatRect* rect) override;
@@ -387,12 +348,31 @@ class CONTENT_EXPORT RenderWidget
   void WillBeginMainFrame() override;
   void RequestNewLayerTreeFrameSink(
       LayerTreeFrameSinkCallback callback) override;
+  void DidHandleGestureScrollEvent(
+      const blink::WebGestureEvent& gesture_event,
+      const gfx::Vector2dF& unused_delta,
+      const cc::OverscrollBehavior& overscroll_behavior,
+      bool event_processed) override;
+  void DidHandleKeyEvent() override;
+  void DidOverscroll(const gfx::Vector2dF& overscroll_delta,
+                     const gfx::Vector2dF& accumulated_overscroll,
+                     const gfx::PointF& position_in_viewport,
+                     const gfx::Vector2dF& velocity_in_viewport,
+                     cc::OverscrollBehavior overscroll_behavior) override;
+  void ShowVirtualKeyboard() override;
+  void UpdateTextInputState() override;
+  bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
+  bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
+  void QueueSyntheticEvent(
+      std::unique_ptr<blink::WebCoalescedInputEvent>) override;
 
   // Returns the scale being applied to the document in blink by the device
   // emulator. Returns 1 if there is no emulation active. Use this to position
   // things when the coordinates did not come from blink, such as from the mouse
   // position.
   float GetEmulatorScale() const override;
+
+  void ClearTextInputState();
 
   // Override point to obtain that the current input method state and caret
   // position.
@@ -415,10 +395,6 @@ class CONTENT_EXPORT RenderWidget
   WidgetInputHandlerManager* widget_input_handler_manager() {
     return widget_input_handler_manager_.get();
   }
-  const RenderWidgetInputHandler& input_handler() const {
-    return *input_handler_;
-  }
-
   void SetHandlingInputEvent(bool handling_input_event);
 
   // Queues the IPC |message| to be sent to the browser, delaying sending until
@@ -911,8 +887,6 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect window_screen_rect_;
 
   scoped_refptr<WidgetInputHandlerManager> widget_input_handler_manager_;
-
-  std::unique_ptr<RenderWidgetInputHandler> input_handler_;
 
   // The time spent in input handlers this frame. Used to throttle input acks.
   base::TimeDelta total_input_handling_time_this_frame_;

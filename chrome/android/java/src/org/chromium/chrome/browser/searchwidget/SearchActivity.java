@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.app.ActivityOptionsCompat;
 
@@ -102,6 +103,8 @@ public class SearchActivity extends AsyncInitializationActivity
 
     /** Input submitted before before the native library was loaded. */
     private String mQueuedUrl;
+    private String mQueuedPostDataType;
+    private byte[] mQueuedPostData;
 
     /** The View that represents the search box. */
     private SearchActivityLocationBarLayout mSearchBox;
@@ -273,7 +276,7 @@ public class SearchActivity extends AsyncInitializationActivity
         assert !mIsActivityUsable
                 : "finishDeferredInitialization() incorrectly called multiple times";
         mIsActivityUsable = true;
-        if (mQueuedUrl != null) loadUrl(mQueuedUrl);
+        if (mQueuedUrl != null) loadUrl(mQueuedUrl, mQueuedPostDataType, mQueuedPostData);
 
         // TODO(tedchoc): Warmup triggers the CustomTab layout to be inflated, but this widget
         //                will navigate to Tabbed mode.  Investigate whether this can inflate
@@ -327,29 +330,53 @@ public class SearchActivity extends AsyncInitializationActivity
     }
 
     @Override
-    public void loadUrl(String url) {
+    public void loadUrl(String url, @Nullable String postDataType, @Nullable byte[] postData) {
         // Wait until native has loaded.
         if (!mIsActivityUsable) {
             mQueuedUrl = url;
+            mQueuedPostDataType = postDataType;
+            mQueuedPostData = postData;
             return;
         }
 
-        // Don't do anything if the input was empty. This is done after the native check to prevent
-        // resending a queued query after the user deleted it.
-        if (TextUtils.isEmpty(url)) return;
+        Intent intent = createIntentForStartActivity(url, postDataType, postData);
+        if (intent == null) return;
 
-        // Fix up the URL and send it to the full browser.
-        GURL fixedUrl = UrlFormatter.fixupUrl(url);
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(fixedUrl.getValidSpecOrEmpty()));
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-        intent.setClass(this, ChromeLauncherActivity.class);
-        IntentHandler.addTrustedIntentExtras(intent);
         IntentUtils.safeStartActivity(this, intent,
                 ActivityOptionsCompat
                         .makeCustomAnimation(this, android.R.anim.fade_in, android.R.anim.fade_out)
                         .toBundle());
         RecordUserAction.record("SearchWidget.SearchMade");
         finish();
+    }
+
+    /**
+     * Creates an intent that will be used to launch Chrome.
+     *
+     * @param url The URL to be loaded.
+     * @param postDataType   postData type.
+     * @param postData       Post-data to include in the tab URL's request body, ex. bitmap when
+     *         image search.
+     * @return the intent will be passed to ChromeLauncherActivity, null if input was emprty.
+     */
+    private Intent createIntentForStartActivity(
+            String url, @Nullable String postDataType, @Nullable byte[] postData) {
+        // Don't do anything if the input was empty. This is done after the native check to prevent
+        // resending a queued query after the user deleted it.
+        if (TextUtils.isEmpty(url)) return null;
+
+        // Fix up the URL and send it to the full browser.
+        GURL fixedUrl = UrlFormatter.fixupUrl(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(fixedUrl.getValidSpecOrEmpty()));
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        intent.setClass(this, ChromeLauncherActivity.class);
+        if (!TextUtils.isEmpty(postDataType) && postData != null && postData.length != 0) {
+            intent.putExtra(IntentHandler.EXTRA_POST_DATA_TYPE, postDataType);
+            intent.putExtra(IntentHandler.EXTRA_POST_DATA, postData);
+        }
+        IntentHandler.addTrustedIntentExtras(intent);
+
+        return intent;
     }
 
     private ViewGroup createContentView() {

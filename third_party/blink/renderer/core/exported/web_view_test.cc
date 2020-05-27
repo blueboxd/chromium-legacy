@@ -213,40 +213,6 @@ class AutoResizeWebViewClient : public frame_test_helpers::TestWebViewClient {
   TestData test_data_;
 };
 
-class TapHandlingWebWidgetClient
-    : public frame_test_helpers::TestWebWidgetClient {
- public:
-  // WebWidgetClient overrides.
-  void DidHandleGestureEvent(const WebGestureEvent& event,
-                             bool event_cancelled) override {
-    if (event.GetType() == WebInputEvent::Type::kGestureTap) {
-      tap_x_ = event.PositionInWidget().x();
-      tap_y_ = event.PositionInWidget().y();
-    } else if (event.GetType() == WebInputEvent::Type::kGestureLongPress) {
-      longpress_x_ = event.PositionInWidget().x();
-      longpress_y_ = event.PositionInWidget().y();
-    }
-  }
-
-  // Local methods
-  void Reset() {
-    tap_x_ = -1;
-    tap_y_ = -1;
-    longpress_x_ = -1;
-    longpress_y_ = -1;
-  }
-  int TapX() { return tap_x_; }
-  int TapY() { return tap_y_; }
-  int LongpressX() { return longpress_x_; }
-  int LongpressY() { return longpress_y_; }
-
- private:
-  int tap_x_;
-  int tap_y_;
-  int longpress_x_;
-  int longpress_y_;
-};
-
 class WebViewTest : public testing::Test {
  public:
   WebViewTest() : base_url_("http://www.test.com/") {}
@@ -2727,33 +2693,6 @@ ExternalDateTimeChooser* WebViewTest::GetExternalDateTimeChooser(
     WebViewImpl* web_view_impl) {
   return web_view_impl->GetChromeClient()
       .GetExternalDateTimeChooserForTesting();
-}
-
-TEST_F(WebViewTest, ClientTapHandling) {
-  TapHandlingWebWidgetClient client;
-  WebView* web_view = web_view_helper_.InitializeAndLoad("about:blank", nullptr,
-                                                         nullptr, &client);
-  WebGestureEvent event(WebInputEvent::Type::kGestureTap,
-                        WebInputEvent::kNoModifiers,
-                        WebInputEvent::GetStaticTimeStampForTests(),
-                        WebGestureDevice::kTouchscreen);
-  event.SetPositionInWidget(gfx::PointF(3, 8));
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(event, ui::LatencyInfo()));
-  RunPendingTasks();
-  EXPECT_EQ(3, client.TapX());
-  EXPECT_EQ(8, client.TapY());
-  client.Reset();
-  event.SetType(WebInputEvent::Type::kGestureLongPress);
-  event.SetPositionInWidget(gfx::PointF(25, 7));
-  web_view->MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(event, ui::LatencyInfo()));
-  RunPendingTasks();
-  EXPECT_EQ(25, client.LongpressX());
-  EXPECT_EQ(7, client.LongpressY());
-
-  // Explicitly reset to break dependency on locally scoped client.
-  web_view_helper_.Reset();
 }
 
 TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {

@@ -3,15 +3,23 @@
 # found in the LICENSE file.
 """Utility classes (and functions, in the future) for graph operations."""
 
+from typing import List, Tuple
+
+
+def sorted_nodes_by_name(nodes):
+    """Sorts a list of Nodes by their name."""
+    return sorted(nodes, key=lambda node: node.name)
+
+
+def sorted_edges_by_name(edges):
+    """Sorts a list of edges (tuples) by their names.
+
+    Prioritizes sorting by the first node in an edge."""
+    return sorted(edges, key=lambda edge: (edge[0].name, edge[1].name))
+
 
 class Node(object):  # pylint: disable=useless-object-inheritance
-    """A node/vertex in a directed graph.
-
-    Attributes:
-        name: A unique string representation of the node.
-        inbound: A set of Nodes that have a directed edge into this Node.
-        outbound: A set of Nodes that this Node has a directed edge into.
-    """
+    """A node/vertex in a directed graph."""
     def __init__(self, unique_key: str):
         """Initializes a new node with the given key.
 
@@ -57,21 +65,30 @@ class Graph(object):  # pylint: disable=useless-object-inheritance
 
     Maintains an internal Dict[str, Node] _key_to_node
     mapping the unique key of nodes to their Node objects.
-
-    Attributes:
-        num_nodes: The number of nodes in the graph.
-        num_edges: The number of edges in the graph.
     """
     def __init__(self):  # pylint: disable=missing-function-docstring
         self._key_to_node = {}
+        self._edges = []
 
     @property
-    def num_nodes(self):  # pylint: disable=missing-function-docstring
-        return len(self._key_to_node)
+    def num_nodes(self) -> int:
+        """The number of nodes in the graph."""
+        return len(self.nodes)
 
     @property
-    def num_edges(self):  # pylint: disable=missing-function-docstring
-        return sum(len(node.outbound) for node in self._key_to_node.values())
+    def num_edges(self) -> int:
+        """The number of edges in the graph."""
+        return len(self.edges)
+
+    @property
+    def nodes(self) -> List:
+        """A list of Nodes in the graph."""
+        return list(self._key_to_node.values())
+
+    @property
+    def edges(self) -> List[Tuple]:
+        """A list of tuples (begin, end) representing directed edges."""
+        return self._edges
 
     def get_node_by_key(self, key: str):  # pylint: disable=missing-function-docstring
         return self._key_to_node.get(key)
@@ -83,19 +100,25 @@ class Graph(object):  # pylint: disable=useless-object-inheritance
         """
         return Node(key)
 
-    def add_node_if_new(self, key: str):
+    def add_node_if_new(self, key: str) -> Node:
         """Adds a Node to the graph.
 
         A new Node object is constructed from the given key and added.
-        If the key already exists in the graph, this is a no-op.
+        If the key already exists in the graph, no change is made to the graph.
 
         Args:
             key: A unique key to create the new Node from.
-        """
-        if key not in self._key_to_node:
-            self._key_to_node[key] = self.create_node_from_key(key)
 
-    def add_edge_if_new(self, src: str, dest: str):
+        Returns:
+            The Node with the given key in the graph.
+        """
+        node = self._key_to_node.get(key)
+        if node is None:
+            node = self.create_node_from_key(key)
+            self._key_to_node[key] = node
+        return node
+
+    def add_edge_if_new(self, src: str, dest: str) -> bool:
         """Adds a directed edge to the graph.
 
         The source and destination nodes are created and added if they
@@ -105,10 +128,17 @@ class Graph(object):  # pylint: disable=useless-object-inheritance
         Args:
             src: A unique key representing the source node.
             dest: A unique key representing the destination node.
+
+        Returns:
+            True if the edge was added (did not already exist), else False
         """
-        self.add_node_if_new(src)
-        self.add_node_if_new(dest)
-        src_node = self.get_node_by_key(src)
-        dest_node = self.get_node_by_key(dest)
-        src_node.add_outbound(dest_node)
-        dest_node.add_inbound(src_node)
+        src_node = self.add_node_if_new(src)
+        dest_node = self.add_node_if_new(dest)
+
+        # The following check is much faster than `if (src, dest) not in _edges`
+        if dest_node not in src_node.outbound:
+            src_node.add_outbound(dest_node)
+            dest_node.add_inbound(src_node)
+            self._edges.append((src_node, dest_node))
+            return True
+        return False

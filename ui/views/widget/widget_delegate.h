@@ -196,7 +196,25 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual Widget* GetWidget();
   virtual const Widget* GetWidget() const;
 
-  // Returns the View that is contained within this Widget.
+  // Get the view that is contained within this widget.
+  //
+  // WARNING: This method has unusual ownership behavior:
+  // * If the returned view is owned_by_client(), then the returned pointer is
+  //   never an owning pointer;
+  // * If the returned view is !owned_by_client() (the default & the
+  //   recommendation), then the returned pointer is *sometimes* an owning
+  //   pointer and sometimes not. Specifically, it is an owning pointer exactly
+  //   once, when this method is being used to construct the ClientView, which
+  //   takes ownership of the ContentsView() when !owned_by_client().
+  //
+  // Apart from being difficult to reason about this introduces a problem: a
+  // WidgetDelegate can't know whether it owns its contents view or not, so
+  // constructing a WidgetDelegate which one does not then use to construct a
+  // Widget (often done in tests) leaks memory in a way that can't be locally
+  // fixed.
+  //
+  // TODO(ellyjones): This is not tenable - figure out how this should work and
+  // replace it.
   virtual View* GetContentsView();
 
   // Called by the Widget to create the Client View used to host the contents

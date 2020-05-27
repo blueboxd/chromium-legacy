@@ -249,7 +249,7 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
     case kNotComposited:
       break;
     case kPaintsIntoOwnBacking:
-      if (style.IsStackingContext())
+      if (layout_object.IsStackingContext())
         enclosing_stacking_composited_layer = layer;
       break;
     case kPaintsIntoGroupedBacking:
@@ -336,7 +336,7 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
   if (layout_object.HasClip())
     info.clip_chain_parent_for_fixed = layer;
 
-  if (style.IsStackingContext()) {
+  if (layout_object.IsStackingContext()) {
     info.escape_clip_to = nullptr;
     const LayoutBoxModelObject* clipping_container =
         ClippingContainerFromClipChainParent(layer);
@@ -362,12 +362,10 @@ void CompositingInputsUpdater::UpdateAncestorInfo(PaintLayer* const layer,
     // </div>
     if (info.escape_clip_to_for_absolute && style.EffectiveZIndex() < 0 &&
         !info.escape_clip_to_for_absolute->GetLayoutObject()
-             .StyleRef()
              .IsStackingContext())
       info.escape_clip_to_for_absolute = nullptr;
     if (info.escape_clip_to_for_fixed && style.EffectiveZIndex() < 0 &&
         !info.escape_clip_to_for_fixed->GetLayoutObject()
-             .StyleRef()
              .IsStackingContext())
       info.escape_clip_to_for_fixed = nullptr;
 
@@ -465,7 +463,7 @@ void CompositingInputsUpdater::UpdateAncestorDependentCompositingInputs(
   properties.clip_parent = info.escape_clip_to;
 
   properties.ancestor_scrolling_layer = info.scrolling_ancestor;
-  if (info.needs_reparent_scroll && layout_object.StyleRef().IsStacked())
+  if (info.needs_reparent_scroll && layout_object.IsStacked())
     properties.scroll_parent = info.scrolling_ancestor;
 
   properties.nearest_contained_layout_layer =

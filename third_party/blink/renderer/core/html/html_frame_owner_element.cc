@@ -621,6 +621,13 @@ void HTMLFrameOwnerElement::SetEmbeddingToken(
   embedding_token_ = embedding_token;
 }
 
+bool HTMLFrameOwnerElement::IsAdRelated() const {
+  if (!content_frame_)
+    return false;
+
+  return content_frame_->IsAdSubframe();
+}
+
 void HTMLFrameOwnerElement::Trace(Visitor* visitor) const {
   visitor->Trace(content_frame_);
   visitor->Trace(embedded_content_view_);

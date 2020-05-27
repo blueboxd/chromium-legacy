@@ -326,7 +326,7 @@ class MediaFeedsServiceTest : public ChromeRenderViewHostTestHarness {
 TEST_F(MediaFeedsServiceTest, GetForProfile) {
   EXPECT_NE(nullptr, MediaFeedsServiceFactory::GetForProfile(profile()));
 
-  Profile* otr_profile = profile()->GetOffTheRecordProfile();
+  Profile* otr_profile = profile()->GetPrimaryOTRProfile();
   EXPECT_EQ(nullptr, MediaFeedsServiceFactory::GetForProfile(otr_profile));
 }
 

@@ -33,7 +33,6 @@ class CONTENT_EXPORT NavigationState {
   static std::unique_ptr<NavigationState> CreateBrowserInitiated(
       mojom::CommonNavigationParamsPtr common_params,
       mojom::CommitNavigationParamsPtr commit_params,
-      mojom::FrameNavigationControl::CommitNavigationCallback callback,
       mojom::NavigationClient::CommitNavigationCallback
           per_navigation_mojo_interface_callback,
       std::unique_ptr<NavigationClient> navigation_client,
@@ -56,9 +55,7 @@ class CONTENT_EXPORT NavigationState {
   const mojom::CommitNavigationParams& commit_params() const {
     return *commit_params_;
   }
-  bool uses_per_navigation_mojo_interface() const {
-    return navigation_client_.get();
-  }
+  bool has_navigation_client() const { return navigation_client_.get(); }
   void set_was_within_same_document(bool value) {
     was_within_same_document_ = value;
   }
@@ -71,28 +68,18 @@ class CONTENT_EXPORT NavigationState {
     common_params_->transition = transition;
   }
 
-  // Only used when PerNavigationMojoInterface is enabled.
-  void set_navigation_client(
-      std::unique_ptr<NavigationClient> navigation_client_impl) {
-    navigation_client_ = std::move(navigation_client_impl);
-  }
-
-  void RunCommitNavigationCallback(blink::mojom::CommitResult result);
-
-  void RunPerNavigationInterfaceCommitNavigationCallback(
+  void RunCommitNavigationCallback(
       std::unique_ptr<::FrameHostMsg_DidCommitProvisionalLoad_Params> params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
 
  private:
-  NavigationState(
-      mojom::CommonNavigationParamsPtr common_params,
-      mojom::CommitNavigationParamsPtr commit_params,
-      bool is_content_initiated,
-      content::mojom::FrameNavigationControl::CommitNavigationCallback callback,
-      content::mojom::NavigationClient::CommitNavigationCallback
-          per_navigation_mojo_interface_callback,
-      std::unique_ptr<NavigationClient> navigation_client,
-      bool was_initiated_in_this_frame);
+  NavigationState(mojom::CommonNavigationParamsPtr common_params,
+                  mojom::CommitNavigationParamsPtr commit_params,
+                  bool is_content_initiated,
+                  content::mojom::NavigationClient::CommitNavigationCallback
+                      commit_callback,
+                  std::unique_ptr<NavigationClient> navigation_client,
+                  bool was_initiated_in_this_frame);
 
   bool was_within_same_document_;
 
@@ -129,13 +116,7 @@ class CONTENT_EXPORT NavigationState {
 
   // Used to notify whether a commit request from the browser process was
   // successful or not.
-  mojom::FrameNavigationControl::CommitNavigationCallback commit_callback_;
-
-  // Temporary member meant to be used in place of |commit_callback_| when
-  // PerNavigationMojoInterface is enabled. Should eventually replace it
-  // completely.
-  mojom::NavigationClient::CommitNavigationCallback
-      per_navigation_mojo_interface_commit_callback_;
+  mojom::NavigationClient::CommitNavigationCallback commit_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };

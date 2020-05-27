@@ -219,9 +219,7 @@
       <template is="dom-if"
           if="[[showAutoConnect_(managedProperties_, globalPolicy,
               managedNetworkAvailable)]]">
-        <settings-toggle-button
-            id="autoConnectToggle"
-            class="hr"
+        <settings-toggle-button id="autoConnectToggle" class="hr"
             pref="{{autoConnectPref_}}"
             label="[[getAutoConnectToggleLabel_(managedProperties_)]]">
         </settings-toggle-button>

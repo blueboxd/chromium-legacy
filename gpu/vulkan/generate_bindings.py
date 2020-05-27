@@ -22,6 +22,8 @@ from reg import Registry
 registry = Registry()
 registry.loadFile(open(path.join(vulkan_reg_path, "vk.xml")))
 
+VULKAN_REQUIRED_API_VERSION = 'VK_API_VERSION_1_1'
+
 VULKAN_UNASSOCIATED_FUNCTIONS = [
   {
     'functions': [
@@ -43,9 +45,11 @@ VULKAN_INSTANCE_FUNCTIONS = [
       'vkEnumerateDeviceLayerProperties',
       'vkEnumeratePhysicalDevices',
       'vkGetDeviceProcAddr',
-      'vkGetPhysicalDeviceFeatures',
+      'vkGetPhysicalDeviceFeatures2',
       'vkGetPhysicalDeviceFormatProperties',
+      'vkGetPhysicalDeviceImageFormatProperties2',
       'vkGetPhysicalDeviceMemoryProperties',
+      'vkGetPhysicalDeviceMemoryProperties2',
       'vkGetPhysicalDeviceProperties',
       'vkGetPhysicalDeviceQueueFamilyProperties',
     ]
@@ -97,22 +101,6 @@ VULKAN_INSTANCE_FUNCTIONS = [
       'vkCreateImagePipeSurfaceFUCHSIA',
     ]
   },
-  {
-  'min_api_version': 'VK_API_VERSION_1_1',
-    'functions': [
-      'vkGetPhysicalDeviceImageFormatProperties2',
-    ]
-  },
-  {
-    # vkGetPhysicalDeviceFeatures2() is defined in Vulkan 1.1 or suffixed in the
-    # VK_KHR_get_physical_device_properties2 extension.
-    'min_api_version': 'VK_API_VERSION_1_1',
-    'extension': 'VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME',
-    'extension_suffix': 'KHR',
-    'functions': [
-      'vkGetPhysicalDeviceFeatures2',
-    ]
-  },
 ]
 
 VULKAN_DEVICE_FUNCTIONS = [
@@ -123,7 +111,9 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkAllocateMemory',
       'vkBeginCommandBuffer',
       'vkBindBufferMemory',
+      'vkBindBufferMemory2',
       'vkBindImageMemory',
+      'vkBindImageMemory2',
       'vkCmdBeginRenderPass',
       'vkCmdCopyBuffer',
       'vkCmdCopyBufferToImage',
@@ -164,9 +154,12 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkFreeMemory',
       'vkInvalidateMappedMemoryRanges',
       'vkGetBufferMemoryRequirements',
+      'vkGetBufferMemoryRequirements2',
       'vkGetDeviceQueue',
+      'vkGetDeviceQueue2',
       'vkGetFenceStatus',
       'vkGetImageMemoryRequirements',
+      'vkGetImageMemoryRequirements2',
       'vkMapMemory',
       'vkQueueSubmit',
       'vkQueueWaitIdle',
@@ -175,14 +168,6 @@ VULKAN_DEVICE_FUNCTIONS = [
       'vkUnmapMemory',
       'vkUpdateDescriptorSets',
       'vkWaitForFences',
-    ]
-  },
-  {
-    'min_api_version': 'VK_API_VERSION_1_1',
-    'functions': [
-      'vkGetDeviceQueue2',
-      'vkGetBufferMemoryRequirements2',
-      'vkGetImageMemoryRequirements2',
     ]
   },
   {
@@ -408,6 +393,8 @@ namespace gpu {
 
 struct VulkanFunctionPointers;
 
+constexpr uint32_t kVulkanRequiredApiVersion = %s;
+
 COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers* GetVulkanFunctionPointers();
 
 struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
@@ -462,7 +449,7 @@ struct COMPONENT_EXPORT(VULKAN) VulkanFunctionPointers {
   // Unassociated functions
   VulkanFunction<PFN_vkGetInstanceProcAddr> vkGetInstanceProcAddr;
 
-""")
+""" % VULKAN_REQUIRED_API_VERSION)
 
   WriteFunctionDeclarations(file, VULKAN_UNASSOCIATED_FUNCTIONS)
 
@@ -585,6 +572,7 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     VkInstance vk_instance,
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
+  DCHECK_GE(api_version, kVulkanRequiredApiVersion);
 """)
 
   WriteInstanceFunctionPointerInitialization(file, VULKAN_INSTANCE_FUNCTIONS);
@@ -598,6 +586,7 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
     VkDevice vk_device,
     uint32_t api_version,
     const gfx::ExtensionSet& enabled_extensions) {
+  DCHECK_GE(api_version, kVulkanRequiredApiVersion);
   // Device functions
 """)
   WriteDeviceFunctionPointerInitialization(file, VULKAN_DEVICE_FUNCTIONS)

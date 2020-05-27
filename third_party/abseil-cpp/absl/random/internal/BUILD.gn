@@ -14,18 +14,6 @@ absl_source_set("distribution_caller") {
   deps = [ "//third_party/abseil-cpp/absl/base:config" ]
 }
 
-absl_source_set("distributions") {
-  public = [ "distributions.h" ]
-  deps = [
-    ":distribution_caller",
-    ":traits",
-    ":uniform_helper",
-    "//third_party/abseil-cpp/absl/base",
-    "//third_party/abseil-cpp/absl/meta:type_traits",
-    "//third_party/abseil-cpp/absl/strings",
-  ]
-}
-
 absl_source_set("fast_uniform_bits") {
   public = [ "fast_uniform_bits.h" ]
   deps = [ "//third_party/abseil-cpp/absl/base:config" ]
@@ -129,7 +117,6 @@ absl_source_set("nonsecure_base") {
     ":seed_material",
     "//third_party/abseil-cpp/absl/base:core_headers",
     "//third_party/abseil-cpp/absl/meta:type_traits",
-    "//third_party/abseil-cpp/absl/strings",
     "//third_party/abseil-cpp/absl/types:optional",
     "//third_party/abseil-cpp/absl/types:span",
   ]
@@ -259,5 +246,9 @@ absl_source_set("nanobenchmark") {
 
 absl_source_set("uniform_helper") {
   public = [ "uniform_helper.h" ]
-  deps = [ "//third_party/abseil-cpp/absl/meta:type_traits" ]
+  deps = [
+    ":traits",
+    "//third_party/abseil-cpp/absl/base:config",
+    "//third_party/abseil-cpp/absl/meta:type_traits"
+  ]
 }

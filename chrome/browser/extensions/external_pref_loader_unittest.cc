@@ -122,6 +122,10 @@ class ExternalPrefLoaderTest : public testing::Test {
 // Tests that we fire pref reading correctly after priority sync state
 // is resolved by ExternalPrefLoader.
 TEST_F(ExternalPrefLoaderTest, PrefReadInitiatesCorrectly) {
+  // This test is only relevant pre-SplitSettingsSync.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(chromeos::features::kSplitSettingsSync);
+
   base::RunLoop run_loop;
   scoped_refptr<ExternalPrefLoader> loader(
       new TestExternalPrefLoader(profile(), run_loop.QuitWhenIdleClosure()));

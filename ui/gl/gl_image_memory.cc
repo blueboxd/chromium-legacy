@@ -12,7 +12,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
+#include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -370,8 +370,9 @@ bool GLImageMemory::CopyTexImage(unsigned target) {
           memcpy_tasks_, base::BindOnce(&base::WaitableEvent::Signal,
                                         base::Unretained(&event)));
       for (int i = 1; i < memcpy_tasks_; ++i) {
-        base::PostTask(FROM_HERE, base::BindOnce(&MemcpyTask, src, dst, size, i,
-                                                 memcpy_tasks_, &barrier));
+        base::ThreadPool::PostTask(
+            FROM_HERE, base::BindOnce(&MemcpyTask, src, dst, size, i,
+                                      memcpy_tasks_, &barrier));
       }
       MemcpyTask(src, dst, size, 0, memcpy_tasks_, &barrier);
       event.Wait();

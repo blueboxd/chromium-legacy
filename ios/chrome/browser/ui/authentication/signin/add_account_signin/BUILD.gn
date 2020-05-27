@@ -10,8 +10,8 @@ source_set("add_account_signin") {
     "add_account_signin_coordinator.h",
     "add_account_signin_coordinator.mm",
     "add_account_signin_enums.h",
-    "add_account_signin_mediator.h",
-    "add_account_signin_mediator.mm",
+    "add_account_signin_manager.h",
+    "add_account_signin_manager.mm",
   ]
   deps = [
     "//components/prefs",
@@ -34,7 +34,7 @@ source_set("add_account_signin") {
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
-  sources = [ "add_account_signin_mediator_unittest.mm" ]
+  sources = [ "add_account_signin_manager_unittest.mm" ]
   deps = [
     ":add_account_signin",
     "//base/test:test_support",

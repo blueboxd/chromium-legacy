@@ -838,6 +838,12 @@ Document::Document(const DocumentInit& initializer,
   PoliciesInitialized(initializer);
   InitDNSPrefetch();
 
+  // Documents associated with a dom_window_ need to BindContentSecurityPolicy()
+  // later, because they depend on state that isn't fully initialized until this
+  // constructor exits.
+  if (!dom_window_ && GetExecutionContext())
+    BindContentSecurityPolicy();
+
   InstanceCounters::IncrementCounter(InstanceCounters::kDocumentCounter);
 
   lifecycle_.AdvanceTo(DocumentLifecycle::kInactive);
@@ -1125,7 +1131,7 @@ String Document::addressSpaceForBindings(ScriptState* script_state) const {
   // "public" is the lowest-privilege value.
   if (!script_state->ContextIsValid())
     return "public";
-  return GetExecutionContext()->addressSpaceForBindings();
+  return ExecutionContext::From(script_state)->addressSpaceForBindings();
 }
 
 void Document::ChildrenChanged(const ChildrenChange& change) {

@@ -114,6 +114,13 @@ Polymer({
     autoConnectPref_: {
       type: Object,
       observer: 'autoConnectPrefChanged_',
+      value() {
+        return {
+          key: 'fakeAutoConnectPref',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: false,
+        };
+      },
     },
 
     /**
@@ -129,7 +136,7 @@ Polymer({
           type: chrome.settingsPrivate.PrefType.BOOLEAN,
           value: false,
         };
-      }
+      },
     },
 
     /**
@@ -211,6 +218,12 @@ Polymer({
 
   /** @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
+
+  /**
+   * Prevents re-saving incoming changes.
+   * @private {boolean}
+   */
+  applyingChanges_: false,
 
   /** @override */
   attached() {
@@ -558,7 +571,8 @@ Polymer({
       return;
     }
 
-    this.managedProperties_ = properties;
+    this.updateManagedProperties_(properties);
+
     // Detail page should not be shown when Arc VPN is not connected.
     if (this.isArcVpn_(this.managedProperties_) &&
         !this.isConnectedState_(this.managedProperties_)) {
@@ -570,6 +584,17 @@ Polymer({
     if (!this.deviceState_) {
       this.getDeviceState_();
     }
+  },
+
+  /**
+   * @param {!mojom.ManagedProperties|undefined} properties
+   * @private
+   */
+  updateManagedProperties_(properties) {
+    this.applyingChanges_ = true;
+    this.managedProperties_ = properties;
+    Polymer.RenderStatus.afterNextRender(
+        this, () => this.applyingChanges_ = false);
   },
 
   /**
@@ -601,7 +626,7 @@ Polymer({
             networkState.typeState.wifi.signalStrength;
         break;
     }
-    this.managedProperties_ = managedProperties;
+    this.updateManagedProperties_(managedProperties);
 
     this.propertiesReceived_ = true;
     this.outOfRange_ = false;
@@ -631,7 +656,7 @@ Polymer({
    * @private
    */
   setMojoNetworkProperties_(config) {
-    if (!this.propertiesReceived_ || !this.guid) {
+    if (!this.propertiesReceived_ || !this.guid || this.applyingChanges_) {
       return;
     }
     this.networkConfig_.setProperties(this.guid, config).then(response => {

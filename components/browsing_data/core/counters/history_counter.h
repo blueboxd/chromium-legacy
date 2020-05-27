@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/sequence_checker.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/timer/timer.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
@@ -76,7 +77,7 @@ class HistoryCounter : public browsing_data::BrowsingDataCounter {
   std::unique_ptr<history::WebHistoryService::Request> web_history_request_;
   base::OneShotTimer web_history_timeout_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   BrowsingDataCounter::ResultInt local_result_;
 

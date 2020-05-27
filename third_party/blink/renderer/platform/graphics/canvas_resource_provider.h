@@ -69,7 +69,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kSoftwareCompositedResourceUsage = 1,     // deprecated
     kAcceleratedResourceUsage = 2,            // deprecated
     kAcceleratedCompositedResourceUsage = 3,  // deprecated
-    kAcceleratedDirect2DResourceUsage = 4,
+    kAcceleratedDirect2DResourceUsage = 4,    // deprecated
     kAcceleratedDirect3DResourceUsage = 5,
     kSoftwareCompositedDirect2DResourceUsage = 6,  // deprecated
     kMaxValue = kSoftwareCompositedDirect2DResourceUsage,
@@ -142,6 +142,15 @@ class PLATFORM_EXPORT CanvasResourceProvider
       const CanvasColorParams&,
       bool is_origin_top_left,
       base::WeakPtr<CanvasResourceDispatcher>);
+
+  static std::unique_ptr<CanvasResourceProvider> CreateSwapChainProvider(
+      const IntSize&,
+      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
+      SkFilterQuality,
+      const CanvasColorParams&,
+      bool is_origin_top_left,
+      base::WeakPtr<CanvasResourceDispatcher>,
+      unsigned msaa_sample_count);
 
   // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.
   static std::unique_ptr<CanvasResourceProvider> Create(

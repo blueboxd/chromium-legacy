@@ -4,6 +4,8 @@
 
 #include "ash/system/time/time_view.h"
 
+#include <memory>
+
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -59,9 +61,8 @@ TimeView::TimeView(ClockLayout clock_layout, ClockModel* model)
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);
   model_->AddObserver(this);
-  SetupLabels();
+  SetupSubviews(clock_layout);
   UpdateTextInternal(base::Time::Now());
-  UpdateClockLayout(clock_layout);
 }
 
 TimeView::~TimeView() {
@@ -71,46 +72,23 @@ TimeView::~TimeView() {
 
 void TimeView::UpdateClockLayout(ClockLayout clock_layout) {
   // Do nothing if the layout hasn't changed.
-  if (((clock_layout == ClockLayout::HORIZONTAL_CLOCK) ? horizontal_label_
-                                                       : vertical_label_hours_)
-          ->parent() == this)
+  if (clock_layout == ClockLayout::HORIZONTAL_CLOCK ? vertical_view_
+                                                    : horizontal_view_)
     return;
 
-  SetBorder(views::NullBorder());
   if (clock_layout == ClockLayout::HORIZONTAL_CLOCK) {
-    RemoveChildView(vertical_label_hours_.get());
-    RemoveChildView(vertical_label_minutes_.get());
-    SetLayoutManager(std::make_unique<views::FillLayout>());
-    AddChildView(horizontal_label_.get());
+    vertical_view_ = RemoveChildViewT(children()[0]);
+    AddChildView(std::move(horizontal_view_));
   } else {
-    RemoveChildView(horizontal_label_.get());
-    // Remove the current layout manager since it could be the FillLayout which
-    // only allows one child.
-    SetLayoutManager(nullptr);
-    // Pre-add the children since ownership is being retained by this.
-    AddChildView(vertical_label_hours_.get());
-    AddChildView(vertical_label_minutes_.get());
-    views::GridLayout* layout =
-        SetLayoutManager(std::make_unique<views::GridLayout>());
-    const int kColumnId = 0;
-    views::ColumnSet* columns = layout->AddColumnSet(kColumnId);
-    columns->AddPaddingColumn(0, kVerticalClockLeftPadding);
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                       0, views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
-    layout->AddPaddingRow(0, kClockLeadingPadding);
-    layout->StartRow(0, kColumnId);
-    // Add the views as existing since ownership isn't being transferred.
-    layout->AddExistingView(vertical_label_hours_.get());
-    layout->StartRow(0, kColumnId);
-    layout->AddExistingView(vertical_label_minutes_.get());
-    layout->AddPaddingRow(0, kVerticalClockMinutesTopOffset);
+    horizontal_view_ = RemoveChildViewT(children()[0]);
+    AddChildView(std::move(vertical_view_));
   }
   Layout();
 }
 
 void TimeView::SetTextColorBasedOnSession(
     session_manager::SessionState session_state) {
-  auto set_color = [&](std::unique_ptr<views::Label>& label) {
+  auto set_color = [&](views::Label* label) {
     label->SetEnabledColor(TrayIconColor(session_state));
   };
 
@@ -220,20 +198,40 @@ void TimeView::UpdateTextInternal(const base::Time& now) {
   Layout();
 }
 
-void TimeView::SetupLabels() {
-  horizontal_label_.reset(new views::Label());
-  SetupLabel(horizontal_label_.get());
-  vertical_label_hours_.reset(new views::Label());
-  SetupLabel(vertical_label_hours_.get());
-  vertical_label_minutes_.reset(new views::Label());
-  SetupLabel(vertical_label_minutes_.get());
+void TimeView::SetupSubviews(ClockLayout clock_layout) {
+  horizontal_view_ = std::make_unique<View>();
+  horizontal_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  horizontal_label_ =
+      horizontal_view_->AddChildView(std::make_unique<views::Label>());
+  SetupLabel(horizontal_label_);
+
+  vertical_view_ = std::make_unique<View>();
+  views::GridLayout* layout =
+      vertical_view_->SetLayoutManager(std::make_unique<views::GridLayout>());
+  const int kColumnId = 0;
+  views::ColumnSet* columns = layout->AddColumnSet(kColumnId);
+  columns->AddPaddingColumn(0, kVerticalClockLeftPadding);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
+                     views::GridLayout::ColumnSize::kUsePreferred, 0, 0);
+  layout->AddPaddingRow(0, kClockLeadingPadding);
+  layout->StartRow(0, kColumnId);
+  vertical_label_hours_ = layout->AddView(std::make_unique<views::Label>());
+  SetupLabel(vertical_label_hours_);
+  layout->StartRow(0, kColumnId);
+  vertical_label_minutes_ = layout->AddView(std::make_unique<views::Label>());
+  SetupLabel(vertical_label_minutes_);
   // Pull the minutes up closer to the hours by using a negative top border.
   vertical_label_minutes_->SetBorder(
       views::CreateEmptyBorder(kVerticalClockMinutesTopOffset, 0, 0, 0));
+  layout->AddPaddingRow(0, kVerticalClockMinutesTopOffset);
+
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  AddChildView(clock_layout == ClockLayout::HORIZONTAL_CLOCK
+                   ? std::move(horizontal_view_)
+                   : std::move(vertical_view_));
 }
 
 void TimeView::SetupLabel(views::Label* label) {
-  label->set_owned_by_client();
   SetupLabelForTray(label);
   label->SetElideBehavior(gfx::NO_ELIDE);
 }

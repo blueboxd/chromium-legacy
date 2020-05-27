@@ -173,7 +173,6 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithSandboxFlags(network::mojom::blink::WebSandboxFlags flags);
 
   DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
-  DocumentInit& WithContentSecurityPolicyFromExecutionContext();
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
 
   DocumentInit& WithFramePolicy(
@@ -265,7 +264,6 @@ class CORE_EXPORT DocumentInit final {
 
   // Loader's CSP
   ContentSecurityPolicy* content_security_policy_ = nullptr;
-  bool content_security_policy_from_context_ = false;
 
   network::mojom::IPAddressSpace ip_address_space_ =
       network::mojom::IPAddressSpace::kUnknown;

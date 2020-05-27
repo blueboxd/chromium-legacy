@@ -118,8 +118,7 @@
       IdentityManagerFactory::GetForBrowserState(browserState)
           ->GetPrimaryAccountInfo();
   std::string emailToReauthenticate = accountInfo.email;
-  std::string idToReauthenticate = accountInfo.gaia;
-  if (emailToReauthenticate.empty() || idToReauthenticate.empty()) {
+  if (emailToReauthenticate.empty()) {
     // This corresponds to a re-authenticate request after the user was signed
     // out. This corresponds to the case where the identity was removed as a
     // result of the permissions being removed on the server or the identity
@@ -129,24 +128,23 @@
     // the entire sign-in flow as sync needs to be configured.
     emailToReauthenticate =
         browserState->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
-    idToReauthenticate = browserState->GetPrefs()->GetString(
-        prefs::kGoogleServicesLastAccountId);
   }
   DCHECK(!emailToReauthenticate.empty());
-  DCHECK(!idToReauthenticate.empty());
   _identityInteractionManager =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
           ->CreateChromeIdentityInteractionManager(browserState, self);
   __weak SigninInteractionController* weakSelf = self;
   [_identityInteractionManager
-      reauthenticateUserWithID:base::SysUTF8ToNSString(idToReauthenticate)
-                         email:base::SysUTF8ToNSString(emailToReauthenticate)
-                    completion:^(ChromeIdentity* identity, NSError* error) {
-                      [weakSelf handleIdentityAdded:identity
-                                              error:error
-                                       shouldSignIn:YES];
-                    }];
+      addAccountWithPresentingViewController:_signinViewController
+                                   userEmail:base::SysUTF8ToNSString(
+                                                 emailToReauthenticate)
+                                  completion:^(ChromeIdentity* identity,
+                                               NSError* error) {
+                                    [weakSelf handleIdentityAdded:identity
+                                                            error:error
+                                                     shouldSignIn:YES];
+                                  }];
 }
 
 #pragma mark - ChromeIdentityInteractionManager operations

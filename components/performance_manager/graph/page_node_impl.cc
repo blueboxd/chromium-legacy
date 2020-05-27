@@ -34,6 +34,8 @@ PageNodeImpl::PageNodeImpl(const WebContentsProxy& contents_proxy,
 
 PageNodeImpl::~PageNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_EQ(nullptr, opener_frame_node_);
+  DCHECK_EQ(OpenedType::kInvalid, opened_type_);
 }
 
 const WebContentsProxy& PageNodeImpl::contents_proxy() const {
@@ -150,6 +152,18 @@ FrameNodeImpl* PageNodeImpl::GetMainFrameNodeImpl() const {
   return *main_frame_nodes_.begin();
 }
 
+FrameNodeImpl* PageNodeImpl::opener_frame_node() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(opener_frame_node_ || opened_type_ == OpenedType::kInvalid);
+  return opener_frame_node_;
+}
+
+PageNodeImpl::OpenedType PageNodeImpl::opened_type() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(opener_frame_node_ || opened_type_ == OpenedType::kInvalid);
+  return opened_type_;
+}
+
 bool PageNodeImpl::is_visible() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_visible_.value();
@@ -231,6 +245,42 @@ bool PageNodeImpl::had_form_interaction() const {
   return had_form_interaction_.value();
 }
 
+void PageNodeImpl::SetOpenerFrameNodeAndOpenedType(FrameNodeImpl* opener,
+                                                   OpenedType opened_type) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(opener);
+  DCHECK(graph()->NodeInGraph(opener));
+  DCHECK_NE(this, opener->page_node());
+  DCHECK_NE(OpenedType::kInvalid, opened_type);
+
+  // Can't already have an opener.
+  DCHECK_EQ(nullptr, opener_frame_node_);
+  DCHECK_EQ(OpenedType::kInvalid, opened_type_);
+
+  opener_frame_node_ = opener;
+  opened_type_ = opened_type;
+  opener->AddOpenedPage(PassKey(), this);
+
+  for (auto* observer : GetObservers())
+    observer->OnOpenerFrameNodeChanged(this, nullptr, OpenedType::kInvalid);
+}
+
+void PageNodeImpl::ClearOpenerFrameNodeAndOpenedType() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_NE(nullptr, opener_frame_node_);
+  DCHECK_NE(OpenedType::kInvalid, opened_type_);
+
+  auto* previous_opener = opener_frame_node_;
+  auto previous_type = opened_type_;
+
+  opener_frame_node_->RemoveOpenedPage(PassKey(), this);
+  opener_frame_node_ = nullptr;
+  opened_type_ = OpenedType::kInvalid;
+
+  for (auto* observer : GetObservers())
+    observer->OnOpenerFrameNodeChanged(this, previous_opener, previous_type);
+}
+
 void PageNodeImpl::set_usage_estimate_time(
     base::TimeTicks usage_estimate_time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -262,12 +312,26 @@ void PageNodeImpl::OnJoiningGraph() {
 void PageNodeImpl::OnBeforeLeavingGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // Sever opener relationships.
+  if (opener_frame_node_)
+    ClearOpenerFrameNodeAndOpenedType();
+
   DCHECK_EQ(0u, frame_node_count_);
 }
 
 const std::string& PageNodeImpl::GetBrowserContextID() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return browser_context_id();
+}
+
+const FrameNode* PageNodeImpl::GetOpenerFrameNode() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return opener_frame_node();
+}
+
+PageNodeImpl::OpenedType PageNodeImpl::GetOpenedType() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return opened_type();
 }
 
 bool PageNodeImpl::IsVisible() const {

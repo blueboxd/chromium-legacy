@@ -106,6 +106,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   void SetTestObserver(TestObserver* test_observer);
 
+  // Returns true if any shelf corner button has ripple ring activated.
+  bool IsAnyCornerButtonInkDropActivatedForTest() const;
+
   ShelfView* shelf_view() { return shelf_view_; }
   ShelfContainerView* shelf_container_view() { return shelf_container_view_; }
   const ShelfContainerView* shelf_container_view() const {
@@ -150,6 +153,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   class GradientLayerDelegate;
   class ScrollableShelfArrowView;
   class DragIconDropAnimationDelegate;
+  class ScopedActiveInkDropCountImpl;
 
   struct FadeZone {
     // Bounds of the fade in/out zone.
@@ -227,7 +231,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                      const ui::Event& event,
                      views::InkDrop* ink_drop) override;
   void HandleAccessibleActionScrollToMakeVisible(ShelfButton* button) override;
-  void NotifyInkDropActivity(bool activated, views::Button* sender) override;
+  std::unique_ptr<ScopedActiveInkDropCount> CreateScopedActiveInkDropCount(
+      const ShelfButton* sender) override;
 
   // ContextMenuController:
   void ShowContextMenuForViewImpl(views::View* source,
@@ -450,11 +455,15 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   int CalculateScrollOffsetForTargetAvailableSpace(
       const gfx::Rect& target_space) const;
 
-  // Returns whether the ink drop for the |sender| needs to be clipped.
-  bool InkDropNeedsClipping(views::Button* sender) const;
+  // Returns whether |sender|'s activated ink drop should be counted.
+  bool ShouldCountActivatedInkDrop(const views::View* sender) const;
 
   // Enable/disable the rounded corners of the shelf container.
   void EnableShelfRoundedCorners(bool enable);
+
+  // Update the number of corner buttons with ripple ring activated. |increase|
+  // indicates whether the number increases or decreases.
+  void OnActiveInkDropChange(bool increase);
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
@@ -503,8 +512,7 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   int first_tappable_app_index_ = -1;
   int last_tappable_app_index_ = -1;
 
-  // The number of activated buttons that need to have an ink drop clipping at
-  // the edges.
+  // The number of corner buttons whose ink drop is activated.
   int activated_corner_buttons_ = 0;
 
   // Whether this view should focus its last focusable child (instead of its

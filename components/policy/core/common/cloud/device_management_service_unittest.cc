@@ -458,6 +458,11 @@ INSTANTIATE_TEST_SUITE_P(
             net::OK,
             905,
             PROTO_STRING(kResponseEmpty)),
+        FailedRequestParams(
+            DM_STATUS_SERVICE_ENTERPRISE_TOS_HAS_NOT_BEEN_ACCEPTED,
+            net::OK,
+            906,
+            PROTO_STRING(kResponseEmpty)),
         FailedRequestParams(DM_STATUS_REQUEST_TOO_LARGE,
                             net::OK,
                             413,

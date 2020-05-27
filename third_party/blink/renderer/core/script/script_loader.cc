@@ -75,8 +75,7 @@
 namespace blink {
 
 ScriptLoader::ScriptLoader(ScriptElementBase* element,
-                           bool parser_inserted,
-                           bool already_started)
+                           const CreateElementFlags flags)
     : element_(element),
       will_be_parser_executed_(false),
       will_execute_when_document_finished_parsing_(false),
@@ -88,10 +87,10 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
   // TODO(hiroshige): Cloning is implemented together with
   // {HTML,SVG}ScriptElement::cloneElementWithoutAttributesAndChildren().
   // Clean up these later.
-  if (already_started)
+  if (flags.WasAlreadyStarted())
     already_started_ = true;
 
-  if (parser_inserted) {
+  if (flags.IsCreatedByParser()) {
     // <spec href="https://html.spec.whatwg.org/C/#parser-inserted">... It is
     // set by the HTML parser and the XML parser on script elements they insert
     // ...</spec>

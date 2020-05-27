@@ -33,6 +33,11 @@ def getter_name_for_dictionary_member(member):
     return NameStyleConverter(name).to_lower_camel_case()
 
 
+def non_null_getter_name_for_dictionary_member(member):
+    name = v8_utilities.cpp_name(member)
+    return NameStyleConverter('{}_non_null'.format(name)).to_lower_camel_case()
+
+
 def setter_name_for_dictionary_member(member):
     name = 'set_{}'.format(v8_utilities.cpp_name(member))
     return NameStyleConverter(name).to_lower_camel_case()
@@ -48,6 +53,11 @@ def null_setter_name_for_dictionary_member(member):
 def has_method_name_for_dictionary_member(member):
     name = NameStyleConverter('has_' + v8_utilities.cpp_name(member))
     return name.to_lower_camel_case()
+
+
+def non_null_has_method_name_for_dictionary_member(member, for_non_null=False):
+    name = 'has_{}_non_null'.format(v8_utilities.cpp_name(member))
+    return NameStyleConverter(name).to_lower_camel_case()
 
 
 def unwrap_nullable_if_needed(idl_type):
@@ -343,20 +353,23 @@ def member_impl_context(member, interfaces_info, header_includes,
         'has_method_name':
         has_method_name_for_dictionary_member(member),
         'is_nullable':
-        idl_type.is_nullable,
+        member.idl_type.is_nullable,
         'is_traceable':
         idl_type.is_traceable,
         'member_cpp_type':
-        idl_type.cpp_type_args(
-            used_in_cpp_sequence=True,
-            extended_attributes=extended_attributes),
+        idl_type.cpp_type_args(used_in_cpp_sequence=True,
+                               extended_attributes=extended_attributes),
+        'non_null_getter_name':
+        non_null_getter_name_for_dictionary_member(member),
+        'non_null_has_method_name':
+        non_null_has_method_name_for_dictionary_member(member),
         'null_setter_name':
         null_setter_name_for_dictionary_member(member),
         'nullable_indicator_name':
         nullable_indicator_name,
         'rvalue_cpp_type':
-        idl_type.cpp_type_args(
-            used_as_rvalue_type=True, extended_attributes=extended_attributes),
+        idl_type.cpp_type_args(used_as_rvalue_type=True,
+                               extended_attributes=extended_attributes),
         'setter_inline':
         setter_inline,
         'setter_name':

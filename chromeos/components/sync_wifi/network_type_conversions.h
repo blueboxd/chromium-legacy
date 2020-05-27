@@ -35,11 +35,13 @@ sync_pb::WifiConfigurationSpecifics_IsPreferredOption IsPreferredProtoFromMojo(
 
 sync_pb::WifiConfigurationSpecifics_ProxyConfiguration_ProxyOption
 ProxyOptionProtoFromMojo(
-    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings);
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings,
+    bool is_unspecified);
 
 sync_pb::WifiConfigurationSpecifics_ProxyConfiguration
 ProxyConfigurationProtoFromMojo(
-    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings);
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings,
+    bool is_unspecified);
 
 network_config::mojom::SecurityType MojoSecurityTypeFromString(
     const std::string& security_type);

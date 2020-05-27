@@ -8,7 +8,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
@@ -57,9 +56,6 @@ class DomainDiversityReporterTest : public testing::Test {
   ~DomainDiversityReporterTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {history::HistoryService::kHistoryServiceUsesTaskScheduler}, {});
-
     DomainDiversityReporter::RegisterProfilePrefs(pref_service_.registry());
     ASSERT_TRUE(history_dir_.CreateUniqueTempDir());
 
@@ -122,7 +118,6 @@ class DomainDiversityReporterTest : public testing::Test {
   std::unique_ptr<DomainDiversityReporter> reporter_;
 
  private:
-  base::test::ScopedFeatureList feature_list_;
   base::ScopedTempDir history_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   base::HistogramTester histogram_tester_;

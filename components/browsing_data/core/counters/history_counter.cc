@@ -124,7 +124,7 @@ void HistoryCounter::OnGetLocalHistoryCount(
     history::HistoryCountResult result) {
   // Ensure that all callbacks are on the same thread, so that we do not need
   // a mutex for |MergeResults|.
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!result.success) {
     return;
@@ -140,7 +140,7 @@ void HistoryCounter::OnGetWebHistoryCount(
     const base::DictionaryValue* result) {
   // Ensure that all callbacks are on the same thread, so that we do not need
   // a mutex for |MergeResults|.
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the timeout for this request already fired, ignore the result.
   if (!web_history_timeout_.IsRunning())
@@ -161,7 +161,7 @@ void HistoryCounter::OnGetWebHistoryCount(
 void HistoryCounter::OnWebHistoryTimeout() {
   // Ensure that all callbacks are on the same thread, so that we do not need
   // a mutex for |MergeResults|.
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // If the query timed out, err on the safe side and inform the user that they
   // may have history items stored in Sync.

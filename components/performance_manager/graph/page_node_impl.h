@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "base/util/type_safety/pass_key.h"
 #include "components/performance_manager/graph/node_attached_data.h"
 #include "components/performance_manager/graph/node_base.h"
 #include "components/performance_manager/public/graph/page_node.h"
@@ -27,6 +28,8 @@ class PageNodeImpl
     : public PublicNodeImpl<PageNodeImpl, PageNode>,
       public TypedNodeBase<PageNodeImpl, PageNode, PageNodeObserver> {
  public:
+  using PassKey = util::PassKey<PageNodeImpl>;
+
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kPage; }
 
   PageNodeImpl(const WebContentsProxy& contents_proxy,
@@ -70,6 +73,8 @@ class PageNodeImpl
 
   // Accessors.
   const std::string& browser_context_id() const;
+  FrameNodeImpl* opener_frame_node() const;
+  OpenedType opened_type() const;
   bool is_visible() const;
   bool is_audible() const;
   bool is_loading() const;
@@ -85,6 +90,11 @@ class PageNodeImpl
   int64_t navigation_id() const;
   const std::string& contents_mime_type() const;
   bool had_form_interaction() const;
+
+  // Invoked to set/clear the opener of this page.
+  void SetOpenerFrameNodeAndOpenedType(FrameNodeImpl* opener,
+                                       OpenedType opened_type);
+  void ClearOpenerFrameNodeAndOpenedType();
 
   void set_usage_estimate_time(base::TimeTicks usage_estimate_time);
   void set_private_footprint_kb_estimate(
@@ -116,6 +126,8 @@ class PageNodeImpl
 
   // PageNode implementation.
   const std::string& GetBrowserContextID() const override;
+  const FrameNode* GetOpenerFrameNode() const override;
+  OpenedType GetOpenedType() const override;
   bool IsVisible() const override;
   base::TimeDelta GetTimeSinceLastVisibilityChange() const override;
   bool IsAudible() const override;
@@ -195,6 +207,12 @@ class PageNodeImpl
 
   // The unique ID of the browser context that this page belongs to.
   const std::string browser_context_id_;
+
+  // The opener of this page, if there is one.
+  FrameNodeImpl* opener_frame_node_ = nullptr;
+
+  // The way in which this page was opened, if it was opened.
+  OpenedType opened_type_ = OpenedType::kInvalid;
 
   // Whether or not the page is visible. Driven by browser instrumentation.
   // Initialized on construction.

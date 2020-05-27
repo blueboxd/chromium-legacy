@@ -281,9 +281,7 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
                        grand_child, EXECUTE_SCRIPT_NO_USER_GESTURE));
 }
 
-// Flaky test crbug.com/1077306
-IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
-                       DISABLED_PointerLockEventRouting) {
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   GURL main_url(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));

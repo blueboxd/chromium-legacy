@@ -8,6 +8,7 @@ import pathlib
 import subprocess
 
 import class_dependency
+import package_dependency
 
 SRC_PATH = pathlib.Path(__file__).resolve().parents[3]  # src/
 JDEPS_PATH = SRC_PATH.joinpath('third_party/jdk/current/bin/jdeps')
@@ -21,12 +22,7 @@ def class_is_interesting(name: str):
 
 
 class JavaClassJdepsParser(object):  # pylint: disable=useless-object-inheritance
-    """A parser for jdeps class-level dependency output.
-
-    Attributes:
-        graph: The dependency graph of the jdeps output. Initialized as empty
-            and updated using parse_raw_jdeps_output.
-    """
+    """A parser for jdeps class-level dependency output."""
     def __init__(self):  # pylint: disable=missing-function-docstring
         self._graph = class_dependency.JavaClassDependencyGraph()
 
@@ -102,10 +98,18 @@ def main():
     raw_jdeps_output = run_jdeps(arguments.filepath)
     jdeps_parser = JavaClassJdepsParser()
     jdeps_parser.parse_raw_jdeps_output(raw_jdeps_output)
-    graph = jdeps_parser.graph
 
-    print(f'Parsed graph, got {graph.num_nodes} nodes '
-          f'and {graph.num_edges} edges.')
+    class_graph = jdeps_parser.graph
+
+    print(f"Parsed class-level dependency graph, "
+          f"got {class_graph.num_nodes} nodes "
+          f"and {class_graph.num_edges} edges.")
+
+    package_graph = package_dependency.JavaPackageDependencyGraph(class_graph)
+
+    print(f"Created package-level dependency graph, "
+          f"got {package_graph.num_nodes} nodes "
+          f"and {package_graph.num_edges} edges.")
 
 
 if __name__ == '__main__':

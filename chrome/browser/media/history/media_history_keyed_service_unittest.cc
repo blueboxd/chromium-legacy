@@ -72,10 +72,7 @@ class MediaHistoryKeyedServiceTest
       public testing::WithParamInterface<TestState> {
  public:
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {media::kMediaFeeds,
-         history::HistoryService::kHistoryServiceUsesTaskScheduler},
-        {});
+    scoped_feature_list_.InitWithFeatures({media::kMediaFeeds}, {});
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     g_temp_history_dir = temp_dir_.GetPath();

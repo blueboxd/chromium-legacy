@@ -5,6 +5,9 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  "app_registry_cache_wrapper\.cc": [
+    "+components/account_id/account_id.h",
+  ],
   "instance_registry\.h": [
     "+ash/public/cpp/shelf_types.h",
   ],

@@ -2952,9 +2952,9 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject() {
     element_animations->UpdateAnimationFlags(*style);
   }
 
-  style->UpdateIsStackingContext(this == GetDocument().documentElement(),
-                                 IsInTopLayer(),
-                                 IsA<SVGForeignObjectElement>(*this));
+  style->UpdateIsStackingContextWithoutContainment(
+      this == GetDocument().documentElement(), IsInTopLayer(),
+      IsA<SVGForeignObjectElement>(*this));
 
   return style;
 }

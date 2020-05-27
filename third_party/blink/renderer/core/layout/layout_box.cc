@@ -272,8 +272,7 @@ PaintLayerType LayoutBox::LayerTypeRequired() const {
   if (IsPositioned() || CreatesGroup() || HasTransformRelatedProperty() ||
       HasHiddenBackface() || HasReflection() ||
       (StyleRef().SpecifiesColumns() && !CanTraversePhysicalFragments()) ||
-      StyleRef().IsStackingContext() ||
-      StyleRef().ShouldCompositeForCurrentAnimations() ||
+      IsStackingContext() || StyleRef().ShouldCompositeForCurrentAnimations() ||
       IsEffectiveRootScroller())
     return kNormalPaintLayer;
 
@@ -1981,7 +1980,7 @@ static bool IsCandidateForOpaquenessTest(const LayoutBox& child_box) {
     if (child_layer->GetCompositingState() != kNotComposited)
       return false;
     // FIXME: Deal with z-index.
-    if (child_style.IsStackingContext())
+    if (child_box.IsStackingContext())
       return false;
     if (child_layer->HasTransformRelatedProperty() ||
         child_layer->IsTransparent() ||

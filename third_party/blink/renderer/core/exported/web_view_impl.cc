@@ -490,7 +490,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
         }
       }
       event_result = WebInputEventResult::kHandledSystem;
-      MainFrameImpl()->FrameWidgetImpl()->Client()->DidHandleGestureEvent(
+      MainFrameImpl()->FrameWidgetImpl()->DidHandleGestureEvent(
           event, event_cancelled);
       return event_result;
     case WebInputEvent::Type::kGestureScrollBegin:
@@ -505,7 +505,7 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
                          ->GetFrame()
                          ->GetEventHandler()
                          .HandleGestureScrollEvent(scaled_event);
-      MainFrameImpl()->FrameWidgetImpl()->Client()->DidHandleGestureEvent(
+      MainFrameImpl()->FrameWidgetImpl()->DidHandleGestureEvent(
           event, event_cancelled);
       return event_result;
     default:
@@ -618,8 +618,8 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
     }
     default: { NOTREACHED(); }
   }
-  MainFrameImpl()->FrameWidgetImpl()->Client()->DidHandleGestureEvent(
-      event, event_cancelled);
+  MainFrameImpl()->FrameWidgetImpl()->DidHandleGestureEvent(event,
+                                                            event_cancelled);
   return event_result;
 }
 

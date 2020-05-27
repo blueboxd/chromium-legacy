@@ -29,14 +29,6 @@ class TestTileProvider implements TileProvider {
     }
 
     /**
-     * Builds and populates a {@link TestTileProvider} around the real provider. Convenient for
-     * matching purposes.
-     */
-    public TestTileProvider(TileProvider realProvider) {
-        realProvider.getQueryTiles(tiles -> { mTiles = tiles; });
-    }
-
-    /**
      * Finds a tile by traversing the tree.
      * @param indices The indices for each child to select as the tree is traversed.
      * @return        The matching {@link QueryTile} node.

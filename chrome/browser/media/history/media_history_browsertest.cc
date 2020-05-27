@@ -321,7 +321,7 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest,
 
   static MediaHistoryKeyedService* GetOTRMediaHistoryService(Browser* browser) {
     return MediaHistoryKeyedServiceFactory::GetForProfile(
-        browser->profile()->GetOffTheRecordProfile());
+        browser->profile()->GetPrimaryOTRProfile());
   }
 
   static void WaitForDB(MediaHistoryKeyedService* service) {

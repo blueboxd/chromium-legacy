@@ -176,14 +176,9 @@ class EditableCombobox::EditableComboboxMenuModel
                                 gfx::RenderText::kPasswordReplacementChar);
   }
 
-  //////////////////////////////////////////////////////////////////////////////
-  // Overridden from ComboboxModelObserver:
   void OnComboboxModelChanged(ui::ComboboxModel* model) override {
     UpdateItemsShown();
   }
-
-  //////////////////////////////////////////////////////////////////////////////
-  // Overridden from MenuModel:
 
   int GetItemCount() const override { return items_shown_.size(); }
 
@@ -309,8 +304,6 @@ class EditableCombobox::EditableComboboxPreTargetHandler
   DISALLOW_COPY_AND_ASSIGN(EditableComboboxPreTargetHandler);
 };
 
-////////////////////////////////////////////////////////////////////////////////
-// EditableCombobox, public, non-overridden methods:
 EditableCombobox::EditableCombobox(
     std::unique_ptr<ui::ComboboxModel> combobox_model,
     const bool filter_on_edit,
@@ -399,9 +392,6 @@ base::string16 EditableCombobox::GetItemForTest(int index) {
   return menu_model_->GetItemTextAt(index, showing_password_text_);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// EditableCombobox, View overrides:
-
 void EditableCombobox::Layout() {
   View::Layout();
   if (arrow_) {
@@ -435,9 +425,6 @@ void EditableCombobox::OnVisibleBoundsChanged() {
   CloseMenu();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// EditableCombobox, TextfieldController overrides:
-
 void EditableCombobox::ContentsChanged(Textfield* sender,
                                        const base::string16& new_contents) {
   HandleNewContent(new_contents);
@@ -455,15 +442,9 @@ bool EditableCombobox::HandleKeyEvent(Textfield* sender,
   return false;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// EditableCombobox, View overrides:
-
 void EditableCombobox::OnViewBlurred(View* observed_view) {
   CloseMenu();
 }
-
-////////////////////////////////////////////////////////////////////////////////
-// EditableCombobox, ButtonListener overrides:
 
 void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
   textfield_->RequestFocus();
@@ -479,8 +460,13 @@ void EditableCombobox::ButtonPressed(Button* sender, const ui::Event& event) {
   ShowDropDownMenu(source_type);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// EditableCombobox, Private methods:
+void EditableCombobox::OnLayoutIsAnimatingChanged(
+    views::AnimatingLayoutManager* source,
+    bool is_animating) {
+  dropdown_blocked_for_animation_ = is_animating;
+  if (dropdown_blocked_for_animation_)
+    CloseMenu();
+}
 
 void EditableCombobox::CloseMenu() {
   menu_runner_.reset();
@@ -520,6 +506,9 @@ void EditableCombobox::ShowDropDownMenu(ui::MenuSourceType source_type) {
   constexpr int kMenuBorderWidthLeft = 1;
   constexpr int kMenuBorderWidthTop = 1;
   constexpr int kMenuBorderWidthRight = 1;
+
+  if (dropdown_blocked_for_animation_)
+    return;
 
   if (!menu_model_->GetItemCount()) {
     CloseMenu();

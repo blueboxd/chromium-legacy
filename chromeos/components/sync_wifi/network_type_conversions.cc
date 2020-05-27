@@ -100,8 +100,9 @@ sync_pb::WifiConfigurationSpecifics_IsPreferredOption IsPreferredProtoFromMojo(
 
 sync_pb::WifiConfigurationSpecifics_ProxyConfiguration_ProxyOption
 ProxyOptionProtoFromMojo(
-    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
-  if (!proxy_settings) {
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings,
+    bool is_unspecified) {
+  if (!proxy_settings || is_unspecified) {
     return sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
         PROXY_OPTION_UNSPECIFIED;
   }
@@ -127,9 +128,11 @@ ProxyOptionProtoFromMojo(
 
 sync_pb::WifiConfigurationSpecifics_ProxyConfiguration
 ProxyConfigurationProtoFromMojo(
-    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings) {
+    const network_config::mojom::ManagedProxySettingsPtr& proxy_settings,
+    bool is_unspecified) {
   sync_pb::WifiConfigurationSpecifics_ProxyConfiguration proto;
-  proto.set_proxy_option(ProxyOptionProtoFromMojo(proxy_settings));
+  proto.set_proxy_option(
+      ProxyOptionProtoFromMojo(proxy_settings, is_unspecified));
 
   if (proto.proxy_option() ==
       sync_pb::WifiConfigurationSpecifics_ProxyConfiguration::
@@ -262,7 +265,14 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
           ? 1
           : 0);
 
-  if (specifics.custom_dns().size()) {
+  // For backwards compatibility, any available custom nameservers are still
+  // applied when the dns_option is not set.
+  if (specifics.dns_option() ==
+          sync_pb::WifiConfigurationSpecifics_DnsOption_DNS_OPTION_CUSTOM ||
+      (specifics.dns_option() ==
+           sync_pb::
+               WifiConfigurationSpecifics_DnsOption_DNS_OPTION_UNSPECIFIED &&
+       specifics.custom_dns().size())) {
     auto ip_config = network_config::mojom::IPConfigProperties::New();
     std::vector<std::string> custom_dns;
     for (const std::string& nameserver : specifics.custom_dns()) {
@@ -271,7 +281,9 @@ network_config::mojom::ConfigPropertiesPtr MojoNetworkConfigFromProto(
     ip_config->name_servers = std::move(custom_dns);
     config->static_ip_config = std::move(ip_config);
     config->name_servers_config_type = onc::network_config::kIPConfigTypeStatic;
-  } else {
+  } else if (specifics.dns_option() ==
+             sync_pb::
+                 WifiConfigurationSpecifics_DnsOption_DNS_OPTION_DEFAULT_DHCP) {
     config->name_servers_config_type = onc::network_config::kIPConfigTypeDHCP;
   }
 

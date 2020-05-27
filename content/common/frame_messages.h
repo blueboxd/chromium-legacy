@@ -242,7 +242,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::ViewportIntersectionState)
   IPC_STRUCT_TRAITS_MEMBER(occlusion_state)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_viewport_size)
   IPC_STRUCT_TRAITS_MEMBER(main_frame_scroll_offset)
-  IPC_STRUCT_TRAITS_MEMBER(can_skip_sticky_frame_tracking)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameNavigateParams)

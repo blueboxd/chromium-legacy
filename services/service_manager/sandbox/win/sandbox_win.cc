@@ -33,6 +33,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/trace_event/trace_arguments.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/iat_patch_function.h"
 #include "base/win/scoped_handle.h"
@@ -44,6 +45,7 @@
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_nt_util.h"
 #include "sandbox/win/src/sandbox_policy_base.h"
+#include "sandbox/win/src/sandbox_policy_diagnostic.h"
 #include "sandbox/win/src/win_utils.h"
 #include "services/service_manager/sandbox/features.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -149,6 +151,26 @@ const wchar_t* const kTroublesomeDlls[] = {
 // This is for finch. See also crbug.com/464430 for details.
 const base::Feature kEnableCsrssLockdownFeature{
     "EnableCsrssLockdown", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Helps emit trace events for sandbox policy. This mediates memory between
+// chrome.exe and chrome.dll.
+class PolicyTraceHelper : public base::trace_event::ConvertableToTraceFormat {
+ public:
+  PolicyTraceHelper(sandbox::TargetPolicy* policy) {
+    // |info| must live until JsonString() output is copied.
+    std::unique_ptr<sandbox::PolicyInfo> info = policy->GetPolicyInfo();
+    json_string_ = std::string(info->JsonString());
+  }
+  ~PolicyTraceHelper() override = default;
+
+  // ConvertableToTraceFormat.
+  void AppendAsTraceFormat(std::string* out) const override {
+    out->append(json_string_);
+  }
+
+ private:
+  std::string json_string_;
+};  // PolicyTraceHelper
 
 #if !defined(NACL_WIN64)
 // Adds the policy rules for the path and path\ with the semantic |access|.
@@ -845,6 +867,7 @@ bool SandboxWin::InitTargetServices(sandbox::TargetServices* target_services) {
   return sandbox::SBOX_ALL_OK == result;
 }
 
+// static
 sandbox::ResultCode SandboxWin::StartSandboxedProcess(
     base::CommandLine* cmd_line,
     const std::string& process_type,
@@ -1031,6 +1054,13 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
 
   TRACE_EVENT_END0("startup", "StartProcessWithAccess::LAUNCHPROCESS");
 
+  // Trace policy as processes are started. Useful for both failure and success.
+  TRACE_EVENT_INSTANT2(TRACE_DISABLED_BY_DEFAULT("sandbox"), "processLaunch",
+                       TRACE_EVENT_SCOPE_PROCESS, "sandboxType",
+                       GetSandboxTypeInEnglish(delegate->GetSandboxType()),
+                       "policy",
+                       std::make_unique<PolicyTraceHelper>(policy.get()));
+
   if (sandbox::SBOX_ALL_OK != result) {
     base::UmaHistogramSparse("Process.Sandbox.Launch.Error", last_error);
     if (result == sandbox::SBOX_ERROR_GENERIC)
@@ -1057,6 +1087,7 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
   return sandbox::SBOX_ALL_OK;
 }
 
+// static
 sandbox::ResultCode SandboxWin::GetPolicyDiagnostics(
     base::OnceCallback<void(base::Value)> response) {
   CHECK(g_broker_services);
@@ -1070,6 +1101,44 @@ void BlocklistAddOneDllForTesting(const wchar_t* module_name,
                                   bool check_in_browser,
                                   sandbox::TargetPolicy* policy) {
   BlocklistAddOneDll(module_name, check_in_browser, policy);
+}
+
+// static
+std::string SandboxWin::GetSandboxTypeInEnglish(SandboxType sandbox_type) {
+  switch (sandbox_type) {
+    case SandboxType::kNoSandbox:
+      return "Unsandboxed";
+    case SandboxType::kNoSandboxAndElevatedPrivileges:
+      return "Unsandboxed (Elevated)";
+    case SandboxType::kXrCompositing:
+      return "XR Compositing";
+    case SandboxType::kRenderer:
+      return "Renderer";
+    case SandboxType::kUtility:
+      return "Utility";
+    case SandboxType::kGpu:
+      return "GPU";
+    case SandboxType::kPpapi:
+      return "PPAPI";
+    case SandboxType::kNetwork:
+      return "Network";
+    case SandboxType::kCdm:
+      return "CDM";
+    case SandboxType::kPrintCompositor:
+      return "Print Compositor";
+    case SandboxType::kAudio:
+      return "Audio";
+    case SandboxType::kSpeechRecognition:
+      return "Speech Recognition";
+    case SandboxType::kProxyResolver:
+      return "Proxy Resolver";
+    case SandboxType::kPdfConversion:
+      return "PDF Conversion";
+    case SandboxType::kSharingService:
+      return "Sharing";
+    case SandboxType::kVideoCapture:
+      return "Video Capture";
+  }
 }
 
 }  // namespace service_manager

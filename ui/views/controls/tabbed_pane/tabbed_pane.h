@@ -123,8 +123,6 @@ class VIEWS_EXPORT TabbedPane : public View {
   bool MoveSelectionBy(int delta);
 
   // Overridden from View:
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 

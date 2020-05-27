@@ -5,9 +5,11 @@
 #include "components/sync/engine_impl/syncer.h"
 
 #include <memory>
+#include <string>
 
 #include "base/auto_reset.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/trace_event/trace_event.h"
 #include "components/sync/base/cancelation_signal.h"
 #include "components/sync/engine/sync_engine_switches.h"
@@ -163,6 +165,12 @@ SyncerError Syncer::BuildAndPostCommits(const ModelTypeSet& request_types,
     SyncerError error = commit->PostAndProcessResponse(
         nudge_tracker, cycle, cycle->mutable_status_controller(),
         cycle->context()->extensions_activity());
+    base::UmaHistogramEnumeration("Sync.CommitResponse", error.value());
+    for (ModelType type : commit->GetContributingDataTypes()) {
+      const std::string kPrefix = "Sync.CommitResponse.";
+      base::UmaHistogramEnumeration(kPrefix + ModelTypeToHistogramSuffix(type),
+                                    error.value());
+    }
     commit->CleanUp();
     if (error.value() != SyncerError::SYNCER_OK) {
       return error;

@@ -37,8 +37,7 @@ SVGScriptElement::SVGScriptElement(Document& document,
                                    const CreateElementFlags flags)
     : SVGElement(svg_names::kScriptTag, document),
       SVGURIReference(this),
-      loader_(InitializeScriptLoader(flags.IsCreatedByParser(),
-                                     flags.WasAlreadyStarted())) {}
+      loader_(InitializeScriptLoader(flags)) {}
 
 void SVGScriptElement::ParseAttribute(
     const AttributeModificationParams& params) {
